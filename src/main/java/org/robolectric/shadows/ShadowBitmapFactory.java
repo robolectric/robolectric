@@ -6,11 +6,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.net.Uri;
-import org.robolectric.Robolectric;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
-import org.robolectric.util.Join;
-
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -19,6 +14,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
+import org.robolectric.Robolectric;
+import org.robolectric.internal.Implementation;
+import org.robolectric.internal.Implements;
+import org.robolectric.util.Join;
 
 import static org.robolectric.Robolectric.shadowOf;
 
@@ -30,7 +29,7 @@ public class ShadowBitmapFactory {
     @Implementation
     public static Bitmap decodeResource(Resources res, int id, BitmapFactory.Options options) {
         Bitmap bitmap = create("resource:" + getResourceName(id), options);
-        shadowOf(bitmap).setLoadedFromResourceId(id);
+        shadowOf(bitmap).createdFromResId = id;
         return bitmap;
     }
 
@@ -38,19 +37,22 @@ public class ShadowBitmapFactory {
     public static Bitmap decodeResource(Resources res, int id) {
         return decodeResource(res, id, null);
     }
-    
+
     private static String getResourceName(int id) {
         return shadowOf(Robolectric.application).getResourceLoader().getNameForId(id);
     }
 
     @Implementation
     public static Bitmap decodeFile(String pathName) {
-        return create("file:" + pathName);
+        return decodeFile(pathName, null);
     }
 
     @Implementation
     public static Bitmap decodeFile(String pathName, BitmapFactory.Options options) {
-        return create("file:" + pathName, options);
+        Bitmap bitmap = create("file:" + pathName, options);
+        ShadowBitmap shadowBitmap = shadowOf(bitmap);
+        shadowBitmap.createdFromPath = pathName;
+        return bitmap;
     }
 
     @Implementation
@@ -60,12 +62,18 @@ public class ShadowBitmapFactory {
 
     @Implementation
     public static Bitmap decodeStream(InputStream is, Rect outPadding, BitmapFactory.Options opts) {
-        return create(is.toString().replaceFirst("stream for ", ""), opts);
+        Bitmap bitmap = create(is.toString().replaceFirst("stream for ", ""), opts);
+        ShadowBitmap shadowBitmap = shadowOf(bitmap);
+        shadowBitmap.createdFromStream = is;
+        return bitmap;
     }
 
     @Implementation
     public static Bitmap decodeByteArray(byte[] data, int offset, int length) {
-    	return decodeByteArray(data, offset, length, new BitmapFactory.Options());
+        Bitmap bitmap = decodeByteArray(data, offset, length, new BitmapFactory.Options());
+        ShadowBitmap shadowBitmap = shadowOf(bitmap);
+        shadowBitmap.createdFromBytes = data;
+        return bitmap;
     }
 
     @Implementation
@@ -83,20 +91,18 @@ public class ShadowBitmapFactory {
         }
         return create(desc, opts);
     }
-    
+
     static Bitmap create(String name) {
         return create(name, null);
     }
 
     public static Bitmap create(String name, BitmapFactory.Options options) {
-        if (options == null) options = new BitmapFactory.Options();
-        
         Bitmap bitmap = Robolectric.newInstanceOf(Bitmap.class);
         ShadowBitmap shadowBitmap = shadowOf(bitmap);
         shadowBitmap.appendDescription("Bitmap for " + name);
 
         String optionsString = stringify(options);
-        if (optionsString.length() > 0) {
+        if (!optionsString.isEmpty()) {
             shadowBitmap.appendDescription(" with options ");
             shadowBitmap.appendDescription(optionsString);
         }
@@ -110,11 +116,11 @@ public class ShadowBitmapFactory {
         if (options != null && options.inSampleSize > 1) {
         	p.x = p.x / options.inSampleSize;
         	p.y = p.y / options.inSampleSize;
-        	
+
         	p.x = p.x == 0 ? 1 : p.x;
         	p.y = p.y == 0 ? 1 : p.y;
         }
-        
+
         shadowBitmap.setWidth(p.x);
         shadowBitmap.setHeight(p.y);
         if (options != null) {

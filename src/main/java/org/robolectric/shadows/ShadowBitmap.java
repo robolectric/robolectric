@@ -1,13 +1,14 @@
 package org.robolectric.shadows;
 
 import android.graphics.Bitmap;
+import android.graphics.Matrix;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import org.robolectric.Robolectric;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;
-
-import java.io.IOException;
-import java.io.OutputStream;
 
 import static org.robolectric.Robolectric.shadowOf;
 
@@ -16,13 +17,99 @@ import static org.robolectric.Robolectric.shadowOf;
 public class ShadowBitmap {
     @RealObject private Bitmap realBitmap;
 
+    int createdFromResId;
+    String createdFromPath;
+    InputStream createdFromStream;
+    byte[] createdFromBytes;
+    private Bitmap createdFromBitmap;
+    private int createdFromX = -1;
+    private int createdFromY = -1;
+    private int createdFromWidth = -1;
+    private int createdFromHeight = -1;
+    private Matrix createdFromMatrix;
+    private boolean createdFromFilter;
+
     private int width;
     private int height;
     private Bitmap.Config config;
     private boolean mutable;
     private String description = "";
-    private int loadedFromResourceId = -1;
     private boolean recycled = false;
+
+    /**
+     * Reference to original Bitmap from which this Bitmap was created. {@code null} if this Bitmap
+     * was not copied from another instance.
+     */
+    public Bitmap getCreatedFromBitmap() {
+        return createdFromBitmap;
+    }
+
+    /**
+     * Resource ID from which this Bitmap was created. {@code 0} if this Bitmap was not created
+     * from a resource.
+     */
+    public int getCreatedFromResId() {
+        return createdFromResId;
+    }
+
+    /**
+     * Path from which this Bitmap was created. {@code null} if this Bitmap was not create from a
+     * path.
+     */
+    public String getCreatedFromPath() {
+        return createdFromPath;
+    }
+
+    /**
+     * {@link InputStream} from which this Bitmap was created. {@code null} if this Bitmap was not
+     * created from a stream.
+     */
+    public InputStream getCreatedFromStream() {
+        return createdFromStream;
+    }
+
+    /**
+     * Bytes from which this Bitmap was created. {@code null} if this Bitmap was not created from
+     * bytes.
+     */
+    public byte[] getCreatedFromBytes() {
+        return createdFromBytes;
+    }
+
+    /** Horizontal offset within {@link #getCreatedFromBitmap()} of this Bitmap's content, or -1. */
+    public int getCreatedFromX() {
+        return createdFromX;
+    }
+    /** Vertical offset within {@link #getCreatedFromBitmap()} of this Bitmap's content, or -1. */
+    public int getCreatedFromY() {
+        return createdFromY;
+    }
+
+    /**
+     * Width from {@link #getCreatedFromX()} within {@link #getCreatedFromBitmap()} of this Bitmap's
+     * content, or -1.
+     */
+    public int getCreatedFromWidth() {
+        return createdFromWidth;
+    }
+
+    /**
+     * Height from {@link #getCreatedFromX()} within {@link #getCreatedFromBitmap()} of this Bitmap's
+     * content, or -1.
+     */
+    public int getCreatedFromHeight() {
+        return createdFromHeight;
+    }
+
+    /** Matrix from which this Bitmap's content was transformed, or {@code null}. */
+    public Matrix getCreateFromMatrix() {
+        return createdFromMatrix;
+    }
+
+    /** {@code true} if this Bitmap was created with filtering. */
+    public boolean getCreatedFromFilter() {
+        return createdFromFilter;
+    }
 
     @Implementation
     public boolean compress(Bitmap.CompressFormat format, int quality, OutputStream stream) {
@@ -39,32 +126,84 @@ public class ShadowBitmap {
     public static Bitmap createBitmap(int width, int height, Bitmap.Config config) {
         Bitmap scaledBitmap = Robolectric.newInstanceOf(Bitmap.class);
         ShadowBitmap shadowBitmap = shadowOf(scaledBitmap);
-        shadowBitmap.appendDescription("Bitmap (" + width + " x " + height + ")");
-        shadowBitmap.setWidth(width);
-        shadowBitmap.setHeight(height);
-        shadowBitmap.setConfig(config);
+
+        shadowBitmap.setDescription("Bitmap (" + width + " x " + height + ")");
+
+        shadowBitmap.width = width;
+        shadowBitmap.height = height;
+        shadowBitmap.config = config;
         return scaledBitmap;
     }
 
     @Implementation
-    public static Bitmap createBitmap(Bitmap bitmap) {
-        ShadowBitmap shadowBitmap = shadowOf(bitmap);
+    public static Bitmap createBitmap(Bitmap src) {
+        ShadowBitmap shadowBitmap = shadowOf(src);
         shadowBitmap.appendDescription(" created from Bitmap object");
-        return bitmap;
+        return src;
     }
 
     @Implementation
     public static Bitmap createScaledBitmap(Bitmap src, int dstWidth, int dstHeight, boolean filter) {
         Bitmap scaledBitmap = Robolectric.newInstanceOf(Bitmap.class);
         ShadowBitmap shadowBitmap = shadowOf(scaledBitmap);
+
         shadowBitmap.appendDescription(shadowOf(src).getDescription());
         shadowBitmap.appendDescription(" scaled to " + dstWidth + " x " + dstHeight);
         if (filter) {
             shadowBitmap.appendDescription(" with filter " + filter);
         }
-        shadowBitmap.setWidth(dstWidth);
-        shadowBitmap.setHeight(dstHeight);
+
+        shadowBitmap.createdFromBitmap = src;
+        shadowBitmap.createdFromFilter = filter;
+        shadowBitmap.width = dstWidth;
+        shadowBitmap.height = dstHeight;
         return scaledBitmap;
+    }
+
+    @Implementation
+    public static Bitmap createBitmap(Bitmap src, int x, int y, int width, int height) {
+        Bitmap newBitmap = Robolectric.newInstanceOf(Bitmap.class);
+        ShadowBitmap shadowBitmap = shadowOf(newBitmap);
+
+        shadowBitmap.appendDescription(shadowOf(src).getDescription());
+        shadowBitmap.appendDescription(" at (" + x + "," + y);
+        shadowBitmap.appendDescription(" with width " + width + " and height " + height);
+
+        shadowBitmap.createdFromBitmap = src;
+        shadowBitmap.createdFromX = x;
+        shadowBitmap.createdFromY = y;
+        shadowBitmap.createdFromWidth = width;
+        shadowBitmap.createdFromHeight = height;
+        shadowBitmap.width = width;
+        shadowBitmap.height = height;
+        return newBitmap;
+    }
+
+    @Implementation
+    public static Bitmap createBitmap(Bitmap src, int x, int y, int width, int height, Matrix matrix, boolean filter) {
+        Bitmap newBitmap = Robolectric.newInstanceOf(Bitmap.class);
+        ShadowBitmap shadowBitmap = shadowOf(newBitmap);
+
+        shadowBitmap.appendDescription(shadowOf(src).getDescription());
+        shadowBitmap.appendDescription(" at (" + x + "," + y);
+        shadowBitmap.appendDescription(" with width " + width + " and height " + height);
+        if (matrix != null) {
+            shadowBitmap.appendDescription(" using matrix " + matrix);
+        }
+        if (filter) {
+            shadowBitmap.appendDescription(" with filter " + filter);
+        }
+
+        shadowBitmap.createdFromBitmap = src;
+        shadowBitmap.createdFromX = x;
+        shadowBitmap.createdFromY = y;
+        shadowBitmap.createdFromWidth = width;
+        shadowBitmap.createdFromHeight = height;
+        shadowBitmap.createdFromMatrix = matrix;
+        shadowBitmap.createdFromFilter = filter;
+        shadowBitmap.width = width;
+        shadowBitmap.height = height;
+        return newBitmap;
     }
 
     @Implementation
@@ -79,10 +218,12 @@ public class ShadowBitmap {
 
     @Implementation
     public Bitmap copy(Bitmap.Config config, boolean isMutable) {
-        ShadowBitmap shadowBitmap = shadowOf(realBitmap);
-        shadowBitmap.setConfig(config);
-        shadowBitmap.setMutable(isMutable);
-        return realBitmap;
+        Bitmap newBitmap = Robolectric.newInstanceOf(Bitmap.class);
+        ShadowBitmap shadowBitmap = shadowOf(newBitmap);
+        shadowBitmap.createdFromBitmap = realBitmap;
+        shadowBitmap.config = config;
+        shadowBitmap.mutable = isMutable;
+        return newBitmap;
     }
 
     @Implementation
@@ -113,23 +254,6 @@ public class ShadowBitmap {
 
     public String getDescription() {
         return description;
-    }
-
-    public static Bitmap create(String name) {
-        Bitmap bitmap = Robolectric.newInstanceOf(Bitmap.class);
-        shadowOf(bitmap).appendDescription(name);
-        return bitmap;
-    }
-
-    public void setLoadedFromResourceId(int loadedFromResourceId) {
-        this.loadedFromResourceId = loadedFromResourceId;
-    }
-
-    public int getLoadedFromResourceId() {
-        if (loadedFromResourceId == -1) {
-            throw new IllegalStateException("not loaded from a resource");
-        }
-        return loadedFromResourceId;
     }
 
     public void setWidth(int width) {
