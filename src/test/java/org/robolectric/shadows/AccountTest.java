@@ -29,6 +29,15 @@ public class AccountTest {
         assertThat(account.name).isEqualTo("name");
         assertThat(account.type).isEqualTo("type");
     }
+    
+    @Test
+    public void shouldBeParcelable() throws Exception {
+    	Account expected = new Account("name", "type");
+    	Parcel p = Parcel.obtain();
+    	expected.writeToParcel(p, 0);
+    	Account actual = Account.CREATOR.createFromParcel(p);
+    	assertThat(expected).isEqualTo(actual);
+    }
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowIfNameIsEmpty() throws Exception {

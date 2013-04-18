@@ -7,7 +7,6 @@ import org.robolectric.shadows.ShadowAbsoluteLayout;
 import org.robolectric.shadows.ShadowAbstractCursor;
 import org.robolectric.shadows.ShadowAbstractWindowedCursor;
 import org.robolectric.shadows.ShadowAccessibilityManager;
-import org.robolectric.shadows.ShadowAccount;
 import org.robolectric.shadows.ShadowAccountManager;
 import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.shadows.ShadowActivityGroup;
@@ -262,7 +261,6 @@ public class RobolectricBase {
             ShadowAbstractCursor.class,
             ShadowAbstractWindowedCursor.class,
             ShadowAccessibilityManager.class,
-            ShadowAccount.class,
             ShadowAccountManager.class,
             ShadowActivity.class,
             ShadowActivityInfo.class,
