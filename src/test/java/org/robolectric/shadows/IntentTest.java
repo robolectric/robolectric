@@ -83,7 +83,7 @@ public class IntentTest {
         assertEquals(1, intent.getIntArrayExtra("foo")[0]);
         assertEquals(2, intent.getIntArrayExtra("foo")[1]);
     }
-    
+
     @Test
     public void testLongArrayExtra() throws Exception {
         Intent intent = new Intent();
@@ -150,7 +150,7 @@ public class IntentTest {
         assertEquals(2L, intent.getLongExtra("foo", -1));
         assertEquals(-1L, intent.getLongExtra("bar", -1));
     }
-    
+
     @Test
     public void testBundleExtra() throws Exception {
         Intent intent = new Intent();
@@ -388,9 +388,9 @@ public class IntentTest {
 
         intent.putStringArrayListExtra("KEY", strings);
         assertThat(intent.getStringArrayListExtra("KEY")).isEqualTo(strings);
-        assertThat(Robolectric.shadowOf(intent.getExtras()).getStringArrayList("KEY")).isEqualTo(strings);
+        assertThat(intent.getExtras().getStringArrayList("KEY")).isEqualTo(strings);
     }
-    
+
     @Test
     public void putIntegerArrayListExtra_addsListToExtras() {
         Intent intent = new Intent();
@@ -398,7 +398,7 @@ public class IntentTest {
 
         intent.putIntegerArrayListExtra("KEY", integers);
         assertThat(intent.getIntegerArrayListExtra("KEY")).isEqualTo(integers);
-        assertThat(Robolectric.shadowOf(intent.getExtras()).getIntegerArrayList("KEY")).isEqualTo(integers);
+        assertThat(intent.getExtras().getIntegerArrayList("KEY")).isEqualTo(integers);
     }
 
     private static class TestSerializable implements Serializable {
