@@ -1,8 +1,8 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.app.Activity;
+import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
-import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.util.Strings;
 import org.junit.Before;
@@ -14,6 +14,7 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.xtremelabs.robolectric.Robolectric.application;
 import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -30,10 +31,10 @@ public class AssetManagerTest {
     public void assertGetAssetsNotNull() {
         assertNotNull(assetManager);
 
-        assetManager = Robolectric.application.getAssets();
+        assetManager = application.getAssets();
         assertNotNull(assetManager);
 
-        assetManager = Robolectric.application.getResources().getAssets();
+        assetManager = application.getResources().getAssets();
         assertNotNull(assetManager);
     }
 
@@ -83,5 +84,12 @@ public class AssetManagerTest {
         inputStream = assetManager.open(testPath);
         fileContents = Strings.fromStream(inputStream);
         assertEquals("hello!", fileContents);
+    }
+
+    @Test
+    public void openFd_providesName() throws Exception {
+        AssetFileDescriptor afd = assetManager.openFd("afdasdf");
+        assertEquals("afdasdf", ShadowAssetManager.getLatestFileOpenedForDescriptor());
+        assertSame(AssetFileDescriptor.class, afd.getClass());
     }
 }
