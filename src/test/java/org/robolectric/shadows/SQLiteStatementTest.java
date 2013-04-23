@@ -66,6 +66,34 @@ public class SQLiteStatementTest {
     }
 
     @Test
+    public void testExecuteInsertShouldCloseGeneratedKeysResultSet() throws Exception {
+
+
+        //
+        // NOTE:
+        // As a side-effect we will get "database locked" exception
+        // on rollback when generatedKeys isn't closed
+        //
+        // Don't know how suitable to use Mockito here, but
+        // it will be a little bit simpler to test ShadowSQLiteStatement
+        // if actualDBStatement become mockable
+        //
+
+        database.beginTransaction();
+        try {
+            SQLiteStatement insertStatement = database.compileStatement("INSERT INTO `routine` " +
+                    "(`name` ,`lastUsed`) VALUES ('test',0)");
+            try {
+                insertStatement.executeInsert();
+            } finally {
+                insertStatement.close();
+            }
+        } finally {
+            database.endTransaction();
+        }
+    }
+
+    @Test
     public void testExecuteUpdateDelete() throws Exception {
 
         SQLiteStatement insertStatement = database.compileStatement("INSERT INTO `routine` (`name`) VALUES (?)");

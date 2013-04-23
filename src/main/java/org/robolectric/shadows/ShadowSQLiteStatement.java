@@ -5,6 +5,7 @@ import android.database.sqlite.SQLiteDoneException;
 import android.database.sqlite.SQLiteStatement;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
+import org.robolectric.util.SQLite;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -34,13 +35,7 @@ public class ShadowSQLiteStatement extends ShadowSQLiteProgram {
     public long executeInsert() {
         try {
             actualDBstatement.executeUpdate();
-            ResultSet resultSet = actualDBstatement.getGeneratedKeys();
-
-            if (resultSet.next()) {
-                return resultSet.getLong(1);
-            } else {
-                throw new RuntimeException("Could not retrive generatedKeys");
-            }
+            return SQLite.fetchGeneratedKey(actualDBstatement.getGeneratedKeys());
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
