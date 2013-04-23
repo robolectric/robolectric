@@ -10,6 +10,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.*;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -176,8 +177,24 @@ public class ContentResolverTest {
     }
 
     @Test
-    public void openInputStream_shouldReturnAnInputStream() throws Exception {
-        assertThat(contentResolver.openInputStream(uri21), CoreMatchers.instanceOf(InputStream.class));
+    public void openInputStream_shouldReturnAnInputStreamThatExceptionsOnRead() throws Exception {
+        InputStream inputStream = contentResolver.openInputStream(uri21);
+        assertThat(inputStream, CoreMatchers.instanceOf(InputStream.class));
+        try {
+            inputStream.read();
+        } catch (UnsupportedOperationException e) {
+            return;
+        }
+        fail();
+    }
+
+    @Test
+    public void openInputStream_returnsPreRegisteredStream() throws Exception {
+        shadowContentResolver.registerInputStream(uri21, new ByteArrayInputStream("ourStream".getBytes()));
+        InputStream inputStream = contentResolver.openInputStream(uri21);
+        byte[] data = new byte[9];
+        inputStream.read(data);
+        assertThat(new String(data), equalTo("ourStream"));
     }
 
     @Test

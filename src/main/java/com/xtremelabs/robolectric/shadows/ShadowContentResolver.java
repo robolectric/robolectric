@@ -36,7 +36,8 @@ public class ShadowContentResolver {
             new HashMap<String, Map<Account, Status>>();
     private static final Map<String, ContentProvider> providers = new HashMap<String, ContentProvider>();
     private static boolean masterSyncAutomatically;
-    
+    private Map<Uri, InputStream> inputStreams = new HashMap<Uri, InputStream>();
+
     public static void reset() {
         syncableAccounts.clear();
         providers.clear();
@@ -65,6 +66,10 @@ public class ShadowContentResolver {
 
     @Implementation
     public final InputStream openInputStream(final Uri uri) {
+        InputStream inputStream = inputStreams.get(uri);
+        if (inputStream != null) {
+            return inputStream;
+        }
         return new InputStream() {
             @Override
             public int read() throws IOException {
@@ -77,7 +82,11 @@ public class ShadowContentResolver {
             }
         };
     }
-    
+
+    public void registerInputStream(Uri uri, InputStream inputStream) {
+        inputStreams.put(uri, inputStream);
+    }
+
     @Implementation
     public final OutputStream openOutputStream(final Uri uri) {
         return new OutputStream() {
