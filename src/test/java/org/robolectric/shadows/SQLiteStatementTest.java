@@ -72,11 +72,11 @@ public class SQLiteStatementTest {
         //
         // NOTE:
         // As a side-effect we will get "database locked" exception
-        // on rollback when generatedKeys isn't closed
+        // on rollback if generatedKeys wasn't closed
         //
         // Don't know how suitable to use Mockito here, but
         // it will be a little bit simpler to test ShadowSQLiteStatement
-        // if actualDBStatement become mockable
+        // if actualDBStatement will be mocked
         //
 
         database.beginTransaction();

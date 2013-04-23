@@ -191,7 +191,7 @@ public class SQLite {
     }
 
     /**
-     * Fetches generated key from {@link ResultSet resultSet} and immediately closes him.
+     * Fetches generated key from <code>resultSet</code> and immediately closes supplied <code>resultSet</code>.
      * @param resultSet resultSet returned from {@link java.sql.Statement#getGeneratedKeys()}
      * @return fetched key, <code>-1</code> otherwise
      * @throws SQLException if {@link java.sql.ResultSet#next()} or {@link java.sql.ResultSet#close()}
