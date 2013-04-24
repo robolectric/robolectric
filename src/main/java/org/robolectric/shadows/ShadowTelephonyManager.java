@@ -14,9 +14,11 @@ public class ShadowTelephonyManager {
     private String networkOperatorName;
     private String networkCountryIso;
     private String networkOperator;
+    private String simOperator;
     private boolean readPhoneStatePermission = true;
     private int phoneType = TelephonyManager.PHONE_TYPE_GSM;
     private String simCountryIso;
+    private int simState = TelephonyManager.SIM_STATE_READY;
 
     @Implementation
 	public void listen(PhoneStateListener listener, int events) {
@@ -81,12 +83,30 @@ public class ShadowTelephonyManager {
     }
 
     @Implementation
+    public String getSimOperator() {
+        return simOperator;
+    }
+
+    public void setSimOperator(String simOperator) {
+        this.simOperator = simOperator;
+    }
+
+    @Implementation
     public String getSimCountryIso() {
         return simCountryIso;
     }
 
     public void setSimCountryIso(String simCountryIso) {
         this.simCountryIso = simCountryIso;
+    }
+
+    @Implementation
+    public int getSimState() {
+        return simState;
+    }
+
+    public void setSimState(int simState) {
+        this.simState = simState;
     }
 
     public void setReadPhoneStatePermission(boolean readPhoneStatePermission) {
