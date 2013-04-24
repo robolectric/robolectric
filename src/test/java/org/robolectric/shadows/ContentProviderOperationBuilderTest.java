@@ -1,65 +1,93 @@
 package org.robolectric.shadows;
 
-import android.content.ContentProviderOperation;
-import android.content.ContentProviderOperation.Builder;
-import org.junit.Before;
+import static org.fest.assertions.api.Assertions.assertThat;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
-import java.util.Map;
-
-import static org.fest.assertions.api.Assertions.assertThat;
+import android.content.ContentProvider;
+import android.content.ContentProviderOperation;
+import android.content.ContentProviderOperation.Builder;
+import android.content.ContentValues;
+import android.database.Cursor;
+import android.net.Uri;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ContentProviderOperationBuilderTest {
     private Builder builder;
-    private ShadowContentProviderOperation.ShadowBuilder shadowBuilder;
-    
-    @Before
-    public void before() {
-        builder = Robolectric.newInstanceOf(Builder.class);
-        shadowBuilder = Robolectric.shadowOf(builder);
-    }
     
     @Test
-    public void withValue() {
-        builder
-            .withValue("stringTest", "bar")
-            .withValue("intTest", 5)
-            .withValue("longTest", 10L);
+    public void build() throws Exception {
+        Uri uri = Uri.parse("content://authority/path");
         
-        Map<String, Object> values = shadowBuilder.getValues();
-        assertThat(values.size()).isEqualTo(3);
-        assertThat(values.get("stringTest").toString()).isEqualTo("bar");
-        assertThat(Integer.parseInt(values.get("intTest").toString())).isEqualTo(5);
-        assertThat(Long.parseLong(values.get("longTest").toString())).isEqualTo(10L);
-    }
-    
-    @Test
-    public void withSelection() {
-        builder
-            .withSelection("first", new String[] { "a", "b" })
-            .withSelection("second", new String[] { "c", "d" });
+        builder = ContentProviderOperation.newUpdate(uri);
+        builder.withSelection("a=?", new String[] {"a"});
+        builder.withValue("k1", "v1");
+        ContentValues cv = new ContentValues();
+        cv.put("k2", "v2");
+        builder.withValues(cv);
+        ContentProviderOperation op = builder.build();
+
+        assertThat(op).isNotNull();
+        assertThat(op.getUri()).isEqualTo(uri);
         
-        Map<String, String[]> selections = shadowBuilder.getSelections();
-        assertThat(selections.size()).isEqualTo(2);
-        assertThat(selections.get("first")).isEqualTo(new String[]{"a", "b"});
-        assertThat(selections.get("second")).isEqualTo(new String[]{"c", "d"});
-    }
-    
-    @Test
-    public void withValueBackReference() {
-        builder.withValueBackReference("foo", 5);
+        final ContentRequest request = new ContentRequest();
+        ContentProvider provider = new ContentProvider() {
+            @Override
+            public boolean onCreate() {
+                return true;
+            }
+
+            @Override
+            public Cursor query(Uri uri, String[] projection, String selection,
+                    String[] selectionArgs, String sortOrder) {
+                return null;
+            }
+
+            @Override
+            public String getType(Uri uri) {
+                return null;
+            }
+
+            @Override
+            public Uri insert(Uri uri, ContentValues values) {
+                return null;
+            }
+
+            @Override
+            public int delete(Uri uri, String selection, String[] selectionArgs) {
+                return 0;
+            }
+
+            @Override
+            public int update(Uri uri, ContentValues values, String selection,
+                    String[] selectionArgs) {
+                request.uri = uri;
+                request.values = values;
+                request.selection = selection;
+                request.selectionArgs = selectionArgs;
+                return 0;
+            }
+            
+        };
         
-        int backReference = shadowBuilder.getWithValueBackReference("foo");
-        assertThat(backReference).isEqualTo(5);
+        op.apply(provider, null, 0);
+        
+        assertThat(request.uri).isEqualTo(uri);
+        assertThat(request.selection).isEqualTo("a=?");
+        assertThat(request.selectionArgs).isEqualTo(new String[] {"a"});
+        
+        assertThat(request.values.containsKey("k1")).isTrue();
+        assertThat(request.values.containsKey("k2")).isTrue();
+        
     }
     
-    @Test
-    public void build() {
-        ContentProviderOperation operation = builder.build();
-        assertThat(operation).isNotNull();
+    static class ContentRequest {
+        Uri uri;
+        String selection;
+        String[] selectionArgs;
+        ContentValues values;
     }
+    
 }
