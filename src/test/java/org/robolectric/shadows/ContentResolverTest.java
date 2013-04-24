@@ -6,12 +6,14 @@ import android.content.ContentProvider;
 import android.content.ContentProviderOperation;
 import android.content.ContentProviderResult;
 import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.OperationApplicationException;
 import android.content.PeriodicSync;
 import android.database.ContentObserver;
 import android.database.Cursor;
+import android.database.MatrixCursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -199,8 +201,63 @@ public class ContentResolverTest {
         assertNull(uri.observer);
     }
 
+    @SuppressWarnings("serial")
     @Test
-    public void applyBatch() throws RemoteException, OperationApplicationException {
+    public void applyBatchForRegisteredProvider() throws RemoteException, OperationApplicationException {
+        final ArrayList<String> operations = new ArrayList<String>();
+        ShadowContentResolver.registerProvider("registeredProvider", new ContentProvider() {
+            @Override
+            public boolean onCreate() { return true; }
+            @Override
+            public Cursor query(Uri uri, String[] projection, String selection,
+                    String[] selectionArgs, String sortOrder) {
+                operations.add("query");
+                MatrixCursor cursor = new MatrixCursor(new String[] {"a"});
+                cursor.addRow(new Object[] {"b"});
+                return cursor;
+            }
+
+            @Override
+            public String getType(Uri uri) {
+                return null;
+            }
+
+            @Override
+            public Uri insert(Uri uri, ContentValues values) {
+                operations.add("insert");
+                return ContentUris.withAppendedId(uri, 1);
+            }
+
+            @Override
+            public int delete(Uri uri, String selection, String[] selectionArgs) {
+                operations.add("delete");
+                return 0;
+            }
+
+            @Override
+            public int update(Uri uri, ContentValues values, String selection,
+                    String[] selectionArgs) {
+                operations.add("update");
+                return 0;
+            }
+            
+        });
+        
+        final Uri uri = Uri.parse("content://registeredProvider/path");
+        contentResolver.applyBatch("registeredProvider", new ArrayList<ContentProviderOperation>() {
+            {
+                add(ContentProviderOperation.newInsert(uri).withValue("a", "b").build());
+                add(ContentProviderOperation.newUpdate(uri).withValue("a", "b").build());
+                add(ContentProviderOperation.newDelete(uri).build());
+                add(ContentProviderOperation.newAssertQuery(uri).withValue("a", "b").build());
+            }
+        });
+        
+        assertThat(operations).containsExactly("insert", "update", "delete", "query");
+    }
+    
+    @Test
+    public void applyBatchForUnregisteredProvider() throws RemoteException, OperationApplicationException {
         ArrayList<ContentProviderOperation> resultOperations = shadowContentResolver.getContentProviderOperations(AUTHORITY);
         assertThat(resultOperations).isNotNull();
         assertThat(resultOperations.size()).isEqualTo(0);
