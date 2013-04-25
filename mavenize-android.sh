@@ -1,7 +1,19 @@
 #!/bin/sh
 
+# modify build/core/combo/javac.mk:
+# add "-g" on line 15:
+#
+# 10 # Whatever compiler is on this system.
+# 11 ifeq ($(BUILD_OS), windows)
+# 12     COMMON_JAVAC := development/host/windows/prebuilt/javawrap.exe -J-Xmx256m \
+# 13         -target 1.5 -Xmaxerrs 9999999
+# 14 else
+# 15     COMMON_JAVAC := javac -J-Xmx512M -target 1.5 -Xmaxerrs 9999999 -g
+# 16 endif
+
+
 ANDROID_SOURCES_BASE=/Volumes/android
-ANDROID_VERSION=4.1.2_r1
+ANDROID_VERSION=4.1.2_r1_rc
 OUT=`mktemp -t mavenize-android -d`
 
 SRC_JAR=$OUT/android-base-sources.jar
