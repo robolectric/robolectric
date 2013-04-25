@@ -390,7 +390,7 @@ public class Robolectric {
         return RobolectricInternals.directlyOn(shadowedObject, clazz);
     }
 
-    public static <T> Invoker directlyOn(T shadowedObject, Class<T> clazz, String methodName, Class<T>... paramTypes) {
+    public static <T> Invoker directlyOn(T shadowedObject, Class<T> clazz, String methodName, Class<?>... paramTypes) {
         String directMethodName = RobolectricInternals.directMethodName(clazz.getName(), methodName);
         return method(directMethodName).withReturnType(Object.class).withParameterTypes(paramTypes).in(shadowedObject);
     }
