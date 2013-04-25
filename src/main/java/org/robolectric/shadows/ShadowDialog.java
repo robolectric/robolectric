@@ -152,7 +152,7 @@ public class ShadowDialog {
     public View findViewById(int viewId) {
         if (context != null) {
             if (inflatedView == null && layoutId > 0) {
-                inflatedView = ShadowLayoutInflater.from(context).inflate(layoutId, null);
+                inflatedView = LayoutInflater.from(context).inflate(layoutId, null);
             }
             if (inflatedView != null) return inflatedView.findViewById(viewId);
         }
@@ -234,7 +234,7 @@ public class ShadowDialog {
 
     public void clickOnText(int textId) {
         if (inflatedView == null) {
-            inflatedView = ShadowLayoutInflater.from(context).inflate(layoutId, null);
+            inflatedView = LayoutInflater.from(context).inflate(layoutId, null);
         }
         String text = getContext().getResources().getString(textId);
         if (!clickOnText(inflatedView, text)) {

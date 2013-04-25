@@ -361,7 +361,7 @@ public class ActivityTest {
         assertEquals("Hello", string);
 
         int id = activity.getResources().getIdentifier("hello", "string", "org.robolectric");
-        assertTrue(id > 0);
+        assertThat(id).isEqualTo(R.string.hello);
 
         String hello = activity.getResources().getString(id);
         assertEquals("Hello", hello);
@@ -372,7 +372,7 @@ public class ActivityTest {
         Activity activity = new Activity();
 
         int id = activity.getResources().getIdentifier("just_alot_of_crap", "string", "org.robolectric");
-        assertTrue(id == 0);
+        assertThat(id).isEqualTo(0);
     }
 
     @Test

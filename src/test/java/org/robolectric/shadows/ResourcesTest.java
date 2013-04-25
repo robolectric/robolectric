@@ -209,7 +209,7 @@ public class ResourcesTest {
 
     @Test
     public void systemResourcesShouldReturnZeroForLocalId() throws Exception {
-        assertThat(Resources.getSystem().getIdentifier("copy", "string", null)).isEqualTo(0);
+        assertThat(Resources.getSystem().getIdentifier("copy", "string", TestUtil.TEST_PACKAGE)).isEqualTo(0);
     }
 
     @Test

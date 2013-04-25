@@ -43,7 +43,7 @@ public class MenuLoader extends XmlLoader {
             int length = attributesNodes.getLength();
             for (int i = 0; i < length; i++) {
                 Node attr = attributesNodes.item(i);
-                String resourceName = ResName.qualifyResourceName(attr.getNodeName(), xmlContext.packageName);
+                String resourceName = Attribute.qualifyName(attr.getNodeName(), xmlContext.packageName);
                 attributes.add(new Attribute(Attribute.addType(resourceName, "attr"), attr.getNodeValue(), xmlContext.packageName));
             }
         }

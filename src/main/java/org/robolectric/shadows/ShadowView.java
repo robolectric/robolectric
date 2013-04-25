@@ -9,6 +9,7 @@ import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.TouchDelegate;
 import android.view.View;
@@ -43,6 +44,7 @@ import static org.robolectric.Robolectric.shadowOf;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(View.class)
 public class ShadowView {
+    public static final String ANDROID_NS = "android"; // todo: this really oughta be "http://schemas.android.com/apk/res/android"
     // This is dumb, we should have a Robolectric-wide way of warning about weird states. todo [xw]
     public static boolean strict = false;
 
@@ -214,7 +216,7 @@ public class ShadowView {
      */
     @Implementation
     public static View inflate(Context context, int resource, ViewGroup root) {
-        return ShadowLayoutInflater.from(context).inflate(resource, root);
+        return LayoutInflater.from(context).inflate(resource, root);
     }
 
     /**
@@ -875,7 +877,7 @@ public class ShadowView {
 
     public void applyFocus() {
         if (noParentHasFocus(realView)) {
-            Boolean focusRequested = attributeSet.getAttributeBooleanValue("android", "focus", false);
+            Boolean focusRequested = attributeSet.getAttributeBooleanValue(ANDROID_NS, "focus", false);
             if (focusRequested || realView.isFocusableInTouchMode()) {
                 realView.requestFocus();
             }
@@ -883,21 +885,21 @@ public class ShadowView {
     }
 
     private void applyIdAttribute() {
-        Integer id = attributeSet.getAttributeResourceValue("android", "id", 0);
+        Integer id = attributeSet.getAttributeResourceValue(ANDROID_NS, "id", 0);
         if (getId() == 0) {
             setId(id);
         }
     }
 
     private void applyTagAttribute() {
-        Object tag = attributeSet.getAttributeValue("android", "tag");
+        Object tag = attributeSet.getAttributeValue(ANDROID_NS, "tag");
         if (tag != null) {
             setTag(tag);
         }
     }
 
     private void applyVisibilityAttribute() {
-        String visibility = attributeSet.getAttributeValue("android", "visibility");
+        String visibility = attributeSet.getAttributeValue(ANDROID_NS, "visibility");
         if (visibility != null) {
             if (visibility.equals("gone")) {
                 setVisibility(View.GONE);
@@ -908,20 +910,20 @@ public class ShadowView {
     }
 
     private void applyEnabledAttribute() {
-        setEnabled(attributeSet.getAttributeBooleanValue("android", "enabled", true));
+        setEnabled(attributeSet.getAttributeBooleanValue(ANDROID_NS, "enabled", true));
     }
 
     private void applyBackgroundAttribute() {
-        String source = attributeSet.getAttributeValue("android", "background");
+        String source = attributeSet.getAttributeValue(ANDROID_NS, "background");
         if (source != null) {
             if (source.startsWith("@drawable/")) {
-                setBackgroundResource(attributeSet.getAttributeResourceValue("android", "background", 0));
+                setBackgroundResource(attributeSet.getAttributeResourceValue(ANDROID_NS, "background", 0));
             }
         }
     }
 
     private void applyOnClickAttribute() {
-        final String handlerName = attributeSet.getAttributeValue("android", "onClick");
+        final String handlerName = attributeSet.getAttributeValue(ANDROID_NS, "onClick");
         if (handlerName == null) {
             return;
         }
@@ -959,17 +961,17 @@ public class ShadowView {
     }
 
     private void applyAlphaAttribute() {
-        Float alpha = attributeSet.getAttributeFloatValue("android", "alpha", 1f);
+        Float alpha = attributeSet.getAttributeFloatValue(ANDROID_NS, "alpha", 1f);
         if (alpha != null) {
             setAlpha(alpha);
         }
     }
 
     private void applyContentDescriptionAttribute() {
-        String contentDescription = attributeSet.getAttributeValue("android", "contentDescription");
+        String contentDescription = attributeSet.getAttributeValue(ANDROID_NS, "contentDescription");
         if (contentDescription != null) {
             if (contentDescription.startsWith("@string/")) {
-                int resId = attributeSet.getAttributeResourceValue("android", "contentDescription", 0);
+                int resId = attributeSet.getAttributeResourceValue(ANDROID_NS, "contentDescription", 0);
                 contentDescription = context.getResources().getString(resId);
             }
             setContentDescription(contentDescription);

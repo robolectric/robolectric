@@ -1,6 +1,7 @@
 package org.robolectric.res;
 
-import java.io.FileFilter;
+import org.jetbrains.annotations.NotNull;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -13,7 +14,7 @@ public interface FsFile {
 
     FsFile[] listFiles();
 
-    FsFile[] listFiles(FileFilter fileFilter);
+    FsFile[] listFiles(Filter filter);
 
     String[] listFileNames();
 
@@ -34,4 +35,10 @@ public interface FsFile {
     @Override int hashCode();
 
     String getBaseName();
+
+    String getPath();
+
+    public interface Filter {
+        boolean accept(@NotNull FsFile fsFile);
+    }
 }

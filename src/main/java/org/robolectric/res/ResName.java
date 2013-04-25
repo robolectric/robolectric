@@ -33,12 +33,21 @@ public class ResName {
         if (namespace.equals("xmlns")) throw new IllegalStateException("\"" + fullyQualifiedName + "\" unexpected");
     }
 
-    public static @NotNull String qualifyResourceName(String possiblyQualifiedResourceName, String contextPackageName) {
-        if (possiblyQualifiedResourceName.contains(":")) {
-            return possiblyQualifiedResourceName;
-        } else {
-            return contextPackageName + ":" + possiblyQualifiedResourceName;
-        }
+    public static @NotNull String qualifyResourceName(@NotNull String possiblyQualifiedResourceName, String defaultPackageName, String defaultType) {
+        ResName resName = qualifyResName(possiblyQualifiedResourceName, defaultPackageName, defaultType);
+        return resName.getFullyQualifiedName();
+    }
+
+    public static @NotNull ResName qualifyResName(@NotNull String possiblyQualifiedResourceName, String defaultPackageName, String defaultType) {
+        int indexOfColon = possiblyQualifiedResourceName.indexOf(':');
+        int indexOfSlash = possiblyQualifiedResourceName.indexOf('/');
+        String packageName = indexOfColon == -1 ? null : possiblyQualifiedResourceName.substring(0, indexOfColon);
+        String type = indexOfSlash == -1 ? null : possiblyQualifiedResourceName.substring(indexOfColon == -1 ? 0 : indexOfColon + 1, indexOfSlash);
+        int indexBeforeName = indexOfColon > indexOfSlash ? indexOfColon : indexOfSlash;
+
+        return new ResName(packageName == null ? defaultPackageName : packageName,
+                type == null ? defaultType : type,
+                possiblyQualifiedResourceName.substring(indexBeforeName + 1));
     }
 
     public static Integer getResourceId(ResourceIndex resourceIndex, String possiblyQualifiedResourceName, String contextPackageName) {
@@ -50,7 +59,7 @@ public class ResName {
             return 0;
         }
 
-        String fullyQualifiedResourceName = qualifyResourceName(possiblyQualifiedResourceName, contextPackageName);
+        String fullyQualifiedResourceName = qualifyResourceName(possiblyQualifiedResourceName, contextPackageName, null);
 
         fullyQualifiedResourceName = fullyQualifiedResourceName.replaceAll("[@+]", "");
         Integer resourceId = resourceIndex.getResourceId(new ResName(fullyQualifiedResourceName));
@@ -59,7 +68,7 @@ public class ResName {
     }
 
     public ResName qualify(String string) {
-        return new ResName(qualifyResourceName(string.replace("@", ""), namespace));
+        return new ResName(qualifyResourceName(string.replace("@", ""), namespace, null));
     }
 
     @Override
