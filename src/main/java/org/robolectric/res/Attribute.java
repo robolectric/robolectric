@@ -121,9 +121,16 @@ public class Attribute {
         return possiblyPartiallyQualifiedAttrName.contains(":") ? possiblyPartiallyQualifiedAttrName.replaceFirst(":", ":" + typeName + "/") : ":" + typeName + "/" + possiblyPartiallyQualifiedAttrName;
     }
 
+    public static String qualifyName(String possiblyQualifiedAttrName, String defaultPackage) {
+        if (possiblyQualifiedAttrName.indexOf(':') == -1) {
+            return defaultPackage + ":" + possiblyQualifiedAttrName;
+        }
+        return possiblyQualifiedAttrName;
+    }
+
     public String qualifiedValue() {
         if (value.startsWith("@")) {
-            return ResName.qualifyResourceName(value.substring(1), contextPackageName);
+            return ResName.qualifyResourceName(value.substring(1), contextPackageName, null);
         } else {
             return value;
         }

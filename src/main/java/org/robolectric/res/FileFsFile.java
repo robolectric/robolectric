@@ -31,8 +31,12 @@ public class FileFsFile implements FsFile {
         return asFsFiles(file.listFiles());
     }
 
-    @Override public FsFile[] listFiles(FileFilter fileFilter) {
-        return asFsFiles(file.listFiles(fileFilter));
+    @Override public FsFile[] listFiles(final Filter filter) {
+        return asFsFiles(file.listFiles(new FileFilter() {
+            @Override public boolean accept(File pathname) {
+                return filter.accept(new FileFsFile(pathname));
+            }
+        }));
     }
 
     @Override public String[] listFileNames() {
@@ -109,5 +113,9 @@ public class FileFsFile implements FsFile {
         String name = getName();
         int dotIndex = name.indexOf(".");
         return dotIndex >= 0 ? name.substring(0, dotIndex) : name;
+    }
+
+    @Override public String getPath() {
+        return file.getPath();
     }
 }

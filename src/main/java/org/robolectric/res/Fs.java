@@ -4,9 +4,10 @@ import org.robolectric.util.Join;
 import org.robolectric.util.Util;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -22,6 +23,21 @@ import static java.util.Arrays.asList;
 abstract public class Fs {
     public static Fs fromJar(URL url) {
         return new JarFs(new File(url.getFile()));
+    }
+
+    public static FsFile fileFromJar(String urlString) {
+        URI uri = URI.create(urlString);
+        if (uri.getScheme().equals("jar")) {
+            String[] parts = uri.getPath().split("!");
+            try {
+                Fs fs = fromJar(URI.create("file:" + parts[0]).toURL());
+                return fs.join(parts[1].substring(1));
+            } catch (MalformedURLException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            throw new RuntimeException("not sure what to do with " + urlString);
+        }
     }
 
     public static FsFile newFile(File file) {
@@ -86,10 +102,10 @@ abstract public class Fs {
                 return fsFiles.toArray(new FsFile[fsFiles.size()]);
             }
 
-            @Override public FsFile[] listFiles(FileFilter fileFilter) {
+            @Override public FsFile[] listFiles(Filter filter) {
                 List<FsFile> filteredFsFiles = new ArrayList<FsFile>();
                 for (FsFile fsFile : listFiles()) {
-                    if (fileFilter.accept(new File(((JarFsFile) fsFile).path))) {
+                    if (filter.accept(fsFile)) {
                         filteredFsFiles.add(fsFile);
                     }
                 }
@@ -132,6 +148,10 @@ abstract public class Fs {
                 return dotIndex >= 0 ? name.substring(0, dotIndex) : name;
             }
 
+            @Override public String getPath() {
+                return "jar:" + getJarFileName() + "!/" + path;
+            }
+
             @Override
             public boolean equals(Object o) {
                 if (this == o) return true;
@@ -155,7 +175,7 @@ abstract public class Fs {
             }
 
             @Override public String toString() {
-                return "jar:" + getJarFileName() + "!/" + path;
+                return getPath();
             }
         }
     }

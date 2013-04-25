@@ -235,7 +235,7 @@ public class ShadowApplication extends ShadowContextWrapper {
         }
         return service;
     }
-    
+
     @Implementation
     @Override
     public void startActivity(Intent intent) {

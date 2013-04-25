@@ -452,10 +452,10 @@ public class ShadowTextView extends ShadowView {
     }
 
     private void applyTextAttribute() {
-        String text = attributeSet.getAttributeValue("android", "text");
+        String text = attributeSet.getAttributeValue(ANDROID_NS, "text");
         if (text != null) {
             if (text.startsWith("@")) {
-                int textResId = attributeSet.getAttributeResourceValue("android", "text", 0);
+                int textResId = attributeSet.getAttributeResourceValue(ANDROID_NS, "text", 0);
                 text = context.getResources().getString(textResId);
             }
             setText(text);
@@ -463,10 +463,10 @@ public class ShadowTextView extends ShadowView {
     }
 
     private void applyTextColorAttribute() {
-        String colorValue = attributeSet.getAttributeValue("android", "textColor");
+        String colorValue = attributeSet.getAttributeValue(ANDROID_NS, "textColor");
         if (colorValue != null) {
             if (colorValue.startsWith("@")) {
-                int colorResId = attributeSet.getAttributeResourceValue("android", "textColor", 0);
+                int colorResId = attributeSet.getAttributeResourceValue(ANDROID_NS, "textColor", 0);
                 setTextColor(context.getResources().getColor(colorResId));
             } else if (colorValue.startsWith("?")) {
                 // ignore for now... todo fix
@@ -477,10 +477,10 @@ public class ShadowTextView extends ShadowView {
     }
 
     private void applyHintAttribute() {
-        String hint = attributeSet.getAttributeValue("android", "hint");
+        String hint = attributeSet.getAttributeValue(ANDROID_NS, "hint");
         if (hint != null) {
             if (hint.startsWith("@")) {
-                int textResId = attributeSet.getAttributeResourceValue("android", "hint", 0);
+                int textResId = attributeSet.getAttributeResourceValue(ANDROID_NS, "hint", 0);
                 hint = context.getResources().getString(textResId);
             }
             setHint(hint);
@@ -488,10 +488,10 @@ public class ShadowTextView extends ShadowView {
     }
 
     private void applyHintColorAttribute() {
-        String colorValue = attributeSet.getAttributeValue("android", "hintColor");
+        String colorValue = attributeSet.getAttributeValue(ANDROID_NS, "hintColor");
         if (colorValue != null) {
             if (colorValue.startsWith("@")) {
-                int colorResId = attributeSet.getAttributeResourceValue("android", "hintColor", 0);
+                int colorResId = attributeSet.getAttributeResourceValue(ANDROID_NS, "hintColor", 0);
                 setHintTextColor(context.getResources().getColor(colorResId));
             } else if (colorValue.startsWith("?")) {
                 // ignore for now... todo fix
@@ -503,10 +503,10 @@ public class ShadowTextView extends ShadowView {
 
     private void applyCompoundDrawablesWithIntrinsicBoundsAttributes() {
         setCompoundDrawablesWithIntrinsicBounds(
-                attributeSet.getAttributeResourceValue("android", "drawableLeft", 0),
-                attributeSet.getAttributeResourceValue("android", "drawableTop", 0),
-                attributeSet.getAttributeResourceValue("android", "drawableRight", 0),
-                attributeSet.getAttributeResourceValue("android", "drawableBottom", 0));
+                attributeSet.getAttributeResourceValue(ANDROID_NS, "drawableLeft", 0),
+                attributeSet.getAttributeResourceValue(ANDROID_NS, "drawableTop", 0),
+                attributeSet.getAttributeResourceValue(ANDROID_NS, "drawableRight", 0),
+                attributeSet.getAttributeResourceValue(ANDROID_NS, "drawableBottom", 0));
     }
 
     @Implementation

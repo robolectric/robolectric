@@ -217,7 +217,7 @@ abstract class XResourceLoader implements ResourceLoader {
         T resolveValue(String qualifiers, String value, String packageName) {
             if (value == null) return null;
             if (value.startsWith("@")) {
-                ResName resName = new ResName(ResName.qualifyResourceName(value.substring(1), packageName));
+                ResName resName = new ResName(ResName.qualifyResourceName(value.substring(1), packageName, null));
                 return resolve(resName, qualifiers);
             } else {
                 return convert(value);

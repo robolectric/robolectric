@@ -4,8 +4,6 @@ import com.ximpleware.VTDGen;
 import com.ximpleware.VTDNav;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
-import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -16,9 +14,9 @@ public class DocumentLoader {
     public static boolean DEBUG_PERF = false;
     private Map<String, Long> perfResponsibleParties = new HashMap<String, Long>();
 
-    private static final FileFilter ENDS_WITH_XML = new FileFilter() {
-        @Override public boolean accept(@NotNull File file) {
-            return file.getName().endsWith(".xml");
+    private static final FsFile.Filter ENDS_WITH_XML = new FsFile.Filter() {
+        @Override public boolean accept(@NotNull FsFile fsFile) {
+            return fsFile.getName().endsWith(".xml");
         }
     };
 
@@ -36,7 +34,7 @@ public class DocumentLoader {
         long startTime = System.currentTimeMillis();
         if (DEBUG_PERF) perfResponsibleParties.clear();
 
-        FsFile[] files = resourceBase.listFiles(new DirectoryMatchingFileFilter(folderBaseName));
+        FsFile[] files = resourceBase.listFiles(new DirectoryMatchingFilter(folderBaseName));
         if (files == null) {
             throw new RuntimeException(resourceBase.join(folderBaseName) + " is not a directory");
         }

@@ -244,7 +244,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
                     parallelUniverseInterface.setDatabaseMap(databaseMap); //Set static DatabaseMap in DBConfig
 
                     boolean strictI18n = RobolectricTestRunner.determineI18nStrictState(bootstrappedMethod);
-                    
+
                     int sdkVersion = pickReportedSdkVersion(config, appManifest);
                     Class<?> versionClass = sdkEnvironment.bootstrappedClass(Build.VERSION.class);
                     staticField("SDK_INT").ofType(int.class).in(versionClass).set(sdkVersion);

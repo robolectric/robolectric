@@ -117,10 +117,10 @@ abstract public class ShadowContext {
         return FILES_DIR;
     }
 
-	@Implementation
-	public String[] fileList() {
-		return getFilesDir().list();
-	}
+    @Implementation
+    public String[] fileList() {
+        return getFilesDir().list();
+    }
 
     @Implementation
     public File getDatabasePath(String name) {
@@ -136,7 +136,7 @@ abstract public class ShadowContext {
 
     @Implementation
     public File getExternalFilesDir(String type) {
-    	File f = (type == null) ? EXTERNAL_FILES_DIR : new File( EXTERNAL_FILES_DIR, type );
+        File f = (type == null) ? EXTERNAL_FILES_DIR : new File( EXTERNAL_FILES_DIR, type );
         f.mkdirs();
         return f;
     }

@@ -6,6 +6,7 @@ import org.robolectric.AndroidManifest;
 import org.robolectric.RobolectricBase;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.SdkEnvironment;
+import org.robolectric.TestLifecycle;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.DisableStrictI18n;
 import org.robolectric.annotation.EnableStrictI18n;
@@ -15,7 +16,6 @@ import org.robolectric.internal.Implements;
 import org.robolectric.internal.Instrument;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.RealObject;
-import org.robolectric.TestLifecycle;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.util.DatabaseConfig;
@@ -86,22 +86,12 @@ public class Setup {
             return false;
         }
 
-        if (isFromAndroidSdk(classInfo)) return true;
-        return false;
+        // allow explicit control with @Instrument, mostly for tests
+        return classInfo.hasAnnotation(Instrument.class) || isFromAndroidSdk(classInfo);
     }
 
     public boolean isFromAndroidSdk(ClassInfo classInfo) {
-        // allow explicit control with @Instrument, mostly for tests
-        return classInfo.hasAnnotation(Instrument.class) || isFromAndroidSdk(classInfo.getName());
-    }
-
-    public boolean isFromAndroidSdk(Class clazz) {
-        // allow explicit control with @Instrument, mostly for tests
-        //noinspection unchecked
-        return clazz.getAnnotation(Instrument.class) != null || isFromAndroidSdk(clazz.getName());
-    }
-
-    public boolean isFromAndroidSdk(String className) {
+        String className = classInfo.getName();
         return className.startsWith("android.")
                 || className.startsWith("libcore.")
                 || className.startsWith("com.google.android.maps.")
