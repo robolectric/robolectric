@@ -171,7 +171,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     @Implementation
     public AssetManager getAssets() {
         if (assetManager == null) {
-            assetManager = ShadowAssetManager.bind(Robolectric.newInstanceOf(AssetManager.class), appManifest);
+            assetManager = ShadowAssetManager.bind(Robolectric.newInstanceOf(AssetManager.class), appManifest, resourceLoader);
         }
         return assetManager;
     }

@@ -21,10 +21,6 @@ public class OverlayResourceLoader extends XResourceLoader {
         for (PackageResourceLoader subResourceLoader : subResourceLoaders) {
             subResourceLoader.initialize();
 
-            booleanData.mergeLibraryStyle(subResourceLoader.booleanData, packageName);
-            colorData.mergeLibraryStyle(subResourceLoader.colorData, packageName);
-            dimenData.mergeLibraryStyle(subResourceLoader.dimenData, packageName);
-            integerData.mergeLibraryStyle(subResourceLoader.integerData, packageName);
             pluralsData.mergeLibraryStyle(subResourceLoader.pluralsData, packageName);
             stringData.mergeLibraryStyle(subResourceLoader.stringData, packageName);
             layoutData.mergeLibraryStyle(subResourceLoader.layoutData, packageName);
@@ -33,6 +29,7 @@ public class OverlayResourceLoader extends XResourceLoader {
             preferenceData.mergeLibraryStyle(subResourceLoader.preferenceData, packageName);
             xmlDocuments.mergeLibraryStyle(subResourceLoader.xmlDocuments, packageName);
             rawResources.mergeLibraryStyle(subResourceLoader.rawResources, packageName);
+            data.mergeLibraryStyle(subResourceLoader.data, packageName);
         }
     }
 

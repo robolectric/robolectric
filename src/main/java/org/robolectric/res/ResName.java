@@ -38,6 +38,10 @@ public class ResName {
         return resName.getFullyQualifiedName();
     }
 
+    public static @NotNull ResName qualifyResName(@NotNull String possiblyQualifiedResourceName, ResName defaults) {
+        return qualifyResName(possiblyQualifiedResourceName, defaults.namespace, defaults.type);
+    }
+
     public static @NotNull ResName qualifyResName(@NotNull String possiblyQualifiedResourceName, String defaultPackageName, String defaultType) {
         int indexOfColon = possiblyQualifiedResourceName.indexOf(':');
         int indexOfSlash = possiblyQualifiedResourceName.indexOf('/');

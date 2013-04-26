@@ -6,7 +6,6 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
@@ -17,9 +16,12 @@ import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;
 import org.robolectric.res.Attribute;
 import org.robolectric.res.DrawableNode;
+import org.robolectric.res.Plural;
 import org.robolectric.res.ResName;
+import org.robolectric.res.ResType;
 import org.robolectric.res.ResourceIndex;
 import org.robolectric.res.ResourceLoader;
+import org.robolectric.res.TypedResource;
 import org.robolectric.res.builder.DrawableBuilder;
 import org.robolectric.res.builder.XmlFileBuilder;
 import org.w3c.dom.Document;
@@ -28,6 +30,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Locale;
 
+import static org.robolectric.Robolectric.directlyOn;
 import static org.robolectric.Robolectric.newInstanceOf;
 import static org.robolectric.Robolectric.shadowOf;
 
@@ -42,16 +45,15 @@ public class ShadowResources {
     private static Resources system = null;
 
     private float density = 1.0f;
-    Configuration configuration = null;
     private DisplayMetrics displayMetrics;
     private Display display;
     @RealObject Resources realResources;
     private ResourceLoader resourceLoader;
     private ResourceIndex resourceIndex;
-    private AssetManager assetManager;
 
     public static void setSystemResources(ResourceLoader systemResourceLoader) {
         AssetManager assetManager = Robolectric.newInstanceOf(AssetManager.class);
+        ShadowAssetManager.bind(assetManager, null, systemResourceLoader);
         DisplayMetrics metrics = new DisplayMetrics();
         Configuration config = new Configuration();
         system = ShadowResources.bind(new Resources(assetManager, metrics, config), systemResourceLoader);
@@ -64,27 +66,16 @@ public class ShadowResources {
         return resources;
     }
 
-    public ShadowResources() {
-        Configuration configuration = new Configuration();
-        configuration.setToDefaults();
-        setConfiguration(configuration);
-    }
-
     @Implementation
-    public void __constructor__(AssetManager assets, DisplayMetrics metrics, Configuration config) {
-        this.assetManager = assets;
-        this.displayMetrics = metrics;
-        setConfiguration(config);
+    public void updateConfiguration(Configuration config, DisplayMetrics metrics) {
+        shadowOf(realResources.getAssets()).setQualifiers(shadowOf(config).getQualifiers());
+        directlyOn(realResources, Resources.class).updateConfiguration(config, metrics);
     }
 
-    /**
-     * Non-Android accessor that sets the value to be returned by {@link #getConfiguration()}
-     *
-     * @param configuration Configuration instance to set on this Resources obj
-     */
-    public void setConfiguration(Configuration configuration) {
-        this.configuration = configuration;
-    }
+//    todo: should implement this:
+//    @Implementation
+//    public void updateConfiguration(Configuration config, DisplayMetrics metrics, CompatibilityInfo compat) {
+//    }
 
     @Implementation
     public int getIdentifier(String name, String defType, String defPackage) {
@@ -103,13 +94,6 @@ public class ShadowResources {
         return index;
     }
 
-    @Implementation
-    public int getColor(int id) throws Resources.NotFoundException {
-        String colorValue = resourceLoader.getColorValue(getResName(id), getQualifiers());
-        if (isEmpty(colorValue)) throw new Resources.NotFoundException(notFound(id));
-        return Color.parseColor(colorValue);
-    }
-
     private boolean isEmpty(String s) {
         return s == null || s.length() == 0;
     }
@@ -123,35 +107,12 @@ public class ShadowResources {
     }
 
     private String getQualifiers() {
-        return shadowOf(getConfiguration()).getQualifiers();
+        return shadowOf(realResources.getConfiguration()).getQualifiers();
     }
 
     @Implementation
     public ColorStateList getColorStateList(int id) {
         return new ColorStateList(new int[0][0], new int[0]);
-    }
-
-    @Implementation
-    public Configuration getConfiguration() {
-        if (configuration == null) {
-            configuration = new Configuration();
-            configuration.setToDefaults();
-        }
-        if (configuration.locale == null) {
-            configuration.locale = Locale.getDefault();
-        }
-        return configuration;
-    }
-
-    @Implementation
-    public String getString(int id) throws Resources.NotFoundException {
-        return resourceLoader.getStringValue(getResName(id), getQualifiers());
-    }
-
-    @Implementation
-    public String getString(int id, Object... formatArgs) throws Resources.NotFoundException {
-        String raw = getString(id);
-        return String.format(Locale.ENGLISH, raw, formatArgs);
     }
 
     @Implementation
@@ -162,31 +123,18 @@ public class ShadowResources {
 
     @Implementation
     public String getQuantityString(int id, int quantity) throws Resources.NotFoundException {
-        return resourceLoader.getPluralStringValue(getResName(id), quantity, getQualifiers());
+        ResName resName = getResName(id);
+        Plural plural = resourceLoader.getPlural(resName, quantity, getQualifiers());
+        String string = plural.getString();
+        ShadowAssetManager shadowAssetManager = shadowOf(realResources.getAssets());
+        TypedResource typedResource = shadowAssetManager.resolve(new TypedResource(string, ResType.CHAR_SEQUENCE), getQualifiers(),
+                new ResName(resName.namespace, "string", resName.name));
+        return typedResource == null ? null : typedResource.asString();
     }
 
     @Implementation
     public InputStream openRawResource(int id) throws Resources.NotFoundException {
         return resourceLoader.getRawValue(getResName(id));
-    }
-
-    @Implementation
-    public String[] getStringArray(int id) throws Resources.NotFoundException {
-        String[] arrayValue = resourceLoader.getStringArrayValue(getResName(id), getQualifiers());
-        if (arrayValue == null) {
-            throw new Resources.NotFoundException();
-        }
-        return arrayValue;
-    }
-
-    @Implementation
-    public CharSequence[] getTextArray(int id) throws Resources.NotFoundException {
-        return getStringArray(id);
-    }
-
-    @Implementation
-    public CharSequence getText(int id) throws Resources.NotFoundException {
-        return getString(id);
     }
 
     public void setDensity(float density) {
@@ -224,14 +172,6 @@ public class ShadowResources {
         return drawableBuilder.getDrawable(resName, realResources, drawableNode);
     }
 
-    @Implementation
-    public float getDimension(int id) throws Resources.NotFoundException {
-        String dimenValue = resourceLoader.getDimenValue(getResName(id), getQualifiers());
-        if (dimenValue == null) throw new Resources.NotFoundException(notFound(id));
-//        DimensionConverter.stringToDimension(dimenValue, displayMetrics);
-        return temporaryDimenConverter(dimenValue);
-    }
-
     private static final String[] UNITS = {"dp", "dip", "pt", "px", "sp"};
     Float temporaryDimenConverter(String rawValue) {
         int end = rawValue.length();
@@ -243,42 +183,6 @@ public class ShadowResources {
         }
 
         return Float.parseFloat(rawValue.substring(0, end));
-    }
-
-    @Implementation
-    public int getInteger(int id) throws Resources.NotFoundException {
-        return resourceLoader.getIntegerValue(getResName(id), getQualifiers());
-    }
-
-    @Implementation
-    public int[] getIntArray(int id) throws Resources.NotFoundException {
-        int[] arrayValue = resourceLoader.getIntegerArrayValue(getResName(id), getQualifiers());
-        if (arrayValue == null) throw new Resources.NotFoundException(notFound(id));
-        return arrayValue;
-    }
-
-    @Implementation
-    public boolean getBoolean(int id) throws Resources.NotFoundException {
-        try {
-            return resourceLoader.getBooleanValue(getResName(id), getQualifiers());
-        } catch (NullPointerException e) {
-            throw new Resources.NotFoundException(notFound(id));
-        }
-    }
-
-    @Implementation
-    public int getDimensionPixelSize(int id) throws Resources.NotFoundException {
-        return (int) getDimension(id);
-    }
-
-    @Implementation
-    public int getDimensionPixelOffset(int id) throws Resources.NotFoundException {
-        return (int) getDimension(id);
-    }
-
-    @Implementation
-    public AssetManager getAssets() {
-        return assetManager;
     }
 
     @Implementation

@@ -7,19 +7,19 @@ import java.util.List;
 public class PluralResourceLoader extends XpathResourceXmlLoader {
     private ResBundle<PluralRules> pluralRulesResBundle;
 
-    public PluralResourceLoader(ResourceIndex resourceIndex, ResBundle<PluralRules> pluralRulesResBundle) {
-        super("/resources/plurals", "plurals");
+    public PluralResourceLoader(ResBundle<PluralRules> pluralRulesResBundle) {
+        super("/resources/plurals");
         this.pluralRulesResBundle = pluralRulesResBundle;
     }
 
-    @Override protected void processNode(String name, XmlNode xmlNode, XmlContext xmlContext, String attrType) throws XPathExpressionException {
+    @Override protected void processNode(String name, XmlNode xmlNode, XmlContext xmlContext) throws XPathExpressionException {
         PluralRules rules = new PluralRules();
         for (XmlNode item : xmlNode.selectElements("item")) {
             String value = item.getTextContent();
             String quantity = item.getAttrValue("quantity");
             rules.add(new Plural(quantity, value));
         }
-        pluralRulesResBundle.put(attrType, name, rules, xmlContext);
+        pluralRulesResBundle.put("plurals", name, rules, xmlContext);
     }
 
     static class PluralRules {
@@ -37,27 +37,6 @@ public class PluralResourceLoader extends XpathResourceXmlLoader {
 
         void add(Plural p) {
             plurals.add(p);
-        }
-    }
-
-    static class Plural {
-        final String quantity, string;
-        final int num;
-
-        Plural(String quantity, String string) {
-            this.quantity = quantity;
-            this.string = string;
-            if ("zero".equals(quantity)) {
-                num = 0;
-            } else if ("one".equals(quantity)) {
-                num = 1;
-            } else if ("two".equals(quantity)) {
-                num = 2;
-            } else if ("other".equals(quantity)) {
-                num = -1;
-            } else {
-                num = -1;
-            }
         }
     }
 }

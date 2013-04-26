@@ -23,7 +23,6 @@ import org.xmlpull.v1.XmlPullParser;
 import java.io.InputStream;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.junit.Assert.assertSame;
 import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -35,6 +34,108 @@ public class ResourcesTest {
         resources = new Activity().getResources();
     }
 
+    @Test
+    public void getString() throws Exception {
+        assertThat(resources.getString(R.string.hello)).isEqualTo("Hello");
+    }
+
+    @Test
+    public void getString_withReference() throws Exception {
+        assertThat(resources.getString(R.string.greeting)).isEqualTo("Howdy");
+    }
+
+    @Test
+    public void getString_withInterpolation() throws Exception {
+        assertThat(resources.getString(R.string.interpolate, "value")).isEqualTo("Here's a value!");
+    }
+
+    @Test
+    public void getString_withHtml() throws Exception {
+        assertThat(resources.getString(R.string.some_html, "value")).isEqualTo("Hello, world");
+    }
+
+    @Test
+    public void getText_withHtml() throws Exception {
+        // todo: this needs to change...
+        assertThat(resources.getText(R.string.some_html, "value")).isEqualTo("Hello, world");
+    }
+
+    @Test
+    public void getStringArray() throws Exception {
+        assertThat(resources.getStringArray(R.array.items)).isEqualTo(new String[] {"foo", "bar"});
+        assertThat(resources.getStringArray(R.array.greetings)).isEqualTo(new String[] {"hola", "Hello"});
+    }
+
+    @Test
+    public void getInt() throws Exception {
+        assertThat(resources.getInteger(R.integer.meaning_of_life)).isEqualTo(42);
+        assertThat(resources.getInteger(R.integer.test_integer1)).isEqualTo(2000);
+        assertThat(resources.getInteger(R.integer.test_integer2)).isEqualTo(9);
+        assertThat(resources.getInteger(R.integer.test_large_hex)).isEqualTo(-65536);
+        assertThat(resources.getInteger(R.integer.test_value_with_zero)).isEqualTo(7210);
+    }
+
+    @Test
+    public void getInt_withReference() throws Exception {
+        assertThat(resources.getInteger(R.integer.reference_to_meaning_of_life)).isEqualTo(42);
+    }
+
+    @Test
+    public void getIntArray() throws Exception {
+        assertThat(resources.getIntArray(R.array.empty_int_array)).isEqualTo(new int[] {});
+        assertThat(resources.getIntArray(R.array.zero_to_four_int_array)).isEqualTo(new int[] {0, 1, 2, 3, 4});
+        assertThat(resources.getIntArray(R.array.with_references_int_array)).isEqualTo(new int[] {0, 2000, 1});
+    }
+
+    @Test
+    public void getBoolean() throws Exception {
+        assertThat(resources.getBoolean(R.bool.false_bool_value)).isEqualTo(false);
+        assertThat(resources.getBoolean(R.bool.integers_are_true)).isEqualTo(true);
+    }
+
+    @Test
+    public void getBoolean_withReference() throws Exception {
+        assertThat(resources.getBoolean(R.bool.reference_to_true)).isEqualTo(true);
+    }
+
+    @Test
+    public void getDimension() throws Exception {
+        assertThat(resources.getDimension(R.dimen.test_dip_dimen)).isEqualTo(20f);
+        assertThat(resources.getDimension(R.dimen.test_dp_dimen)).isEqualTo(8f);
+        assertThat(resources.getDimension(R.dimen.test_in_dimen)).isEqualTo(99f * 240);
+        assertThat(resources.getDimension(R.dimen.test_mm_dimen)).isEqualTo(((float) (42f / 25.4 * 240)));
+        assertThat(resources.getDimension(R.dimen.test_px_dimen)).isEqualTo(15f);
+        assertThat(resources.getDimension(R.dimen.test_pt_dimen)).isEqualTo(12 / 0.3f);
+        assertThat(resources.getDimension(R.dimen.test_sp_dimen)).isEqualTo(0); // huh?
+    }
+
+    @Test
+    public void getDimensionPixelSize() throws Exception {
+        assertThat(resources.getDimensionPixelSize(R.dimen.test_dip_dimen)).isEqualTo(20);
+        assertThat(resources.getDimensionPixelSize(R.dimen.test_dp_dimen)).isEqualTo(8);
+        assertThat(resources.getDimensionPixelSize(R.dimen.test_in_dimen)).isEqualTo(99 * 240);
+        assertThat(resources.getDimensionPixelSize(R.dimen.test_mm_dimen)).isEqualTo(397);
+        assertThat(resources.getDimensionPixelSize(R.dimen.test_px_dimen)).isEqualTo(15);
+        assertThat(resources.getDimensionPixelSize(R.dimen.test_pt_dimen)).isEqualTo(40);
+        assertThat(resources.getDimensionPixelSize(R.dimen.test_sp_dimen)).isEqualTo(1);
+    }
+
+    @Test
+    public void getDimensionPixelOffset() throws Exception {
+        assertThat(resources.getDimensionPixelOffset(R.dimen.test_dip_dimen)).isEqualTo(20);
+        assertThat(resources.getDimensionPixelOffset(R.dimen.test_dp_dimen)).isEqualTo(8);
+        assertThat(resources.getDimensionPixelOffset(R.dimen.test_in_dimen)).isEqualTo(99 * 240);
+        assertThat(resources.getDimensionPixelOffset(R.dimen.test_mm_dimen)).isEqualTo(396);
+        assertThat(resources.getDimensionPixelOffset(R.dimen.test_px_dimen)).isEqualTo(15);
+        assertThat(resources.getDimensionPixelOffset(R.dimen.test_pt_dimen)).isEqualTo(40);
+        assertThat(resources.getDimensionPixelOffset(R.dimen.test_sp_dimen)).isEqualTo(0);
+    }
+
+    @Test
+    public void getDimension_withReference() throws Exception {
+        assertThat(resources.getBoolean(R.bool.reference_to_true)).isEqualTo(true);
+    }
+
     @Test(expected = Resources.NotFoundException.class)
     public void getStringArray_shouldThrowExceptionIfNotFound() throws Exception {
         resources.getStringArray(-1);
@@ -43,6 +144,13 @@ public class ResourcesTest {
     @Test(expected = Resources.NotFoundException.class)
     public void getIntegerArray_shouldThrowExceptionIfNotFound() throws Exception {
         resources.getIntArray(-1);
+    }
+
+    @Test public void getQuantityString() throws Exception {
+        assertThat(resources.getQuantityString(R.plurals.beer, 0)).isEqualTo("Howdy");
+        assertThat(resources.getQuantityString(R.plurals.beer, 1)).isEqualTo("One beer");
+        assertThat(resources.getQuantityString(R.plurals.beer, 2)).isEqualTo("Two beers");
+        assertThat(resources.getQuantityString(R.plurals.beer, 3)).isEqualTo("%d beers, yay!");
     }
 
     @Test
@@ -62,16 +170,6 @@ public class ResourcesTest {
         assertThat(resources.newTheme()).isNotNull();
     }
 
-    @Test
-    public void testGetAndSetConfiguration_SameInstance() throws Exception {
-        Activity activity = new Activity();
-        Resources resources = activity.getResources();
-        assertSame(resources.getConfiguration(), resources.getConfiguration());
-        Configuration diffConfig = new Configuration();
-        shadowOf(resources).setConfiguration(diffConfig);
-        assertSame(diffConfig, resources.getConfiguration());
-    }
-
     @Test(expected = Resources.NotFoundException.class)
     public void testGetDrawableNullRClass() throws Exception {
         assertThat(resources.getDrawable(-12345)).isInstanceOf(BitmapDrawable.class);
@@ -85,11 +183,9 @@ public class ResourcesTest {
         assertThat(resources.getDrawable(R.anim.test_anim_1)).isInstanceOf(AnimationDrawable.class);
     }
 
-    @Test
-    @Config(qualifiers = "fr")
-    public void testGetValuesResFromSpecifiecQualifiers() {
-        String hello = resources.getString(R.string.hello);
-        assertThat(hello).isEqualTo("Bonjour");
+    @Test @Config(qualifiers = "fr")
+    public void testGetValuesResFromSpecificQualifiers() {
+        assertThat(resources.getString(R.string.hello)).isEqualTo("Bonjour");
     }
 
     /**
@@ -101,8 +197,13 @@ public class ResourcesTest {
     }
 
     @Test
-    public void testGetColor() {
+    public void getColor() {
         assertThat(resources.getColor(R.color.color_with_alpha)).isEqualTo(0x802C76AD);
+    }
+
+    @Test
+    public void getColor_withReference() {
+        assertThat(resources.getColor(R.color.background)).isEqualTo(0xfff5f5f5);
     }
 
     @Test(expected = Resources.NotFoundException.class)

@@ -27,34 +27,13 @@ public class RoutingResourceLoader implements ResourceLoader {
         return pickFor(id).getNameForId(id);
     }
 
-    @Override
-    public String getColorValue(ResName resName, String qualifiers) {
-        return pickFor(resName).getColorValue(resName, qualifiers);
+    @Override public TypedResource getValue(ResName resName, String qualifiers) {
+        return pickFor(resName).getValue(resName, qualifiers);
     }
 
     @Override
-    public String getStringValue(ResName resName, String qualifiers) {
-        return pickFor(resName).getStringValue(resName, qualifiers);
-    }
-
-    @Override
-    public String getPluralStringValue(ResName resName, int quantity, String qualifiers) {
-        return pickFor(resName).getPluralStringValue(resName, quantity, qualifiers);
-    }
-
-    @Override
-    public String getDimenValue(ResName resName, String qualifiers) {
-        return pickFor(resName).getDimenValue(resName, qualifiers);
-    }
-
-    @Override
-    public int getIntegerValue(ResName resName, String qualifiers) {
-        return pickFor(resName).getIntegerValue(resName, qualifiers);
-    }
-
-    @Override
-    public boolean getBooleanValue(ResName resName, String qualifiers) {
-        return pickFor(resName).getBooleanValue(resName, qualifiers);
+    public Plural getPlural(ResName resName, int quantity, String qualifiers) {
+        return pickFor(resName).getPlural(resName, quantity, qualifiers);
     }
 
     @Override
@@ -70,16 +49,6 @@ public class RoutingResourceLoader implements ResourceLoader {
     @Override
     public InputStream getRawValue(ResName resName) {
         return pickFor(resName).getRawValue(resName);
-    }
-
-    @Override
-    public String[] getStringArrayValue(ResName resName, String qualifiers) {
-        return pickFor(resName).getStringArrayValue(resName, qualifiers);
-    }
-
-    @Override
-    public int[] getIntegerArrayValue(ResName resName, String qualifiers) {
-        return pickFor(resName).getIntegerArrayValue(resName, qualifiers);
     }
 
     @Override

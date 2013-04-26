@@ -1,6 +1,7 @@
 package org.robolectric.internal;
 
 import android.app.Application;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import org.robolectric.AndroidManifest;
 import org.robolectric.Robolectric;
@@ -28,7 +29,10 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
         ShadowResources.setSystemResources(systemResourceLoader);
         String qualifiers = RobolectricTestRunner.determineResourceQualifiers(method);
-        shadowOf(Resources.getSystem().getConfiguration()).overrideQualifiers(qualifiers);
+        Resources systemResources = Resources.getSystem();
+        Configuration configuration = systemResources.getConfiguration();
+        shadowOf(configuration).overrideQualifiers(qualifiers);
+        systemResources.updateConfiguration(configuration, systemResources.getDisplayMetrics());
 
         ResourceLoader resourceLoader = null;
         if (appManifest != null) {
@@ -38,7 +42,8 @@ public class ParallelUniverse implements ParallelUniverseInterface {
         final Application application = (Application) testLifecycle.createApplication(method, appManifest);
         if (application != null) {
             shadowOf(application).bind(appManifest, resourceLoader);
-            shadowOf(application.getResources().getConfiguration()).overrideQualifiers(qualifiers);
+            Resources resources = application.getResources();
+            resources.updateConfiguration(configuration, resources.getDisplayMetrics());
             shadowOf(application).setStrictI18n(strictI18n);
 
             Robolectric.application = application;

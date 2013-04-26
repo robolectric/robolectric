@@ -114,6 +114,7 @@ public final class R {
         public static final int in_lib2_and_lib3 = 0x1010b;
         public static final int in_lib1_and_lib3 = 0x1010c;
         public static final int in_main_and_lib1 = 0x1010d;
+        public static final int interpolate = 0x1010e;
     }
 
     public static final class plurals {
@@ -239,6 +240,8 @@ public final class R {
         public static final int test_pt_dimen = 0x10c02;
         public static final int test_px_dimen = 0x10c03;
         public static final int test_sp_dimen = 0x10c04;
+        public static final int test_in_dimen = 0x10c05;
+        public static final int test_mm_dimen = 0x10c06;
     }
 
     public static final class integer {
@@ -251,6 +254,7 @@ public final class R {
         public static final int there_can_be_only = 0x10d06;
         public static final int hex_int = 0x10d07;
         public static final int test_value_with_zero = 0x10d08;
+        public static final int reference_to_meaning_of_life = 0x10d09;
     }
 
     public static final class bool {
@@ -258,6 +262,7 @@ public final class R {
         public static final int true_bool_value = 0x10e01;
         public static final int zero_is_false = 0x10e02;
         public static final int integers_are_true = 0x10e03;
+        public static final int reference_to_true = 0x10e04;
     }
 
     public static final class style {
