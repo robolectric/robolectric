@@ -12,6 +12,7 @@ import java.util.Map;
 
 @Implements(Log.class)
 public class ShadowLog {
+    private static final int extraLogLength = "l/: \n".length();
     private static Map<String,List<LogItem>> logsByTag = new HashMap<String,List<LogItem>>();
     private static List<LogItem> logs = new ArrayList<LogItem>();
     public static PrintStream stream;
@@ -85,6 +86,12 @@ public class ShadowLog {
     @Implementation
     public static boolean isLoggable(String tag, int level) {
         return stream != null || level >= Log.INFO;
+    }
+
+    @Implementation
+    public static int println(int priority, String tag, String msg) {
+        addLog(priority, tag, msg, null);
+        return extraLogLength + tag.length() + msg.length();
     }
 
     private static void addLog(int level, String tag, String msg, Throwable throwable) {
