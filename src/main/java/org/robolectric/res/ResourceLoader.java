@@ -10,27 +10,15 @@ public interface ResourceLoader {
 
     String getNameForId(int id);
 
-    String getColorValue(ResName resName, String qualifiers);
+    TypedResource getValue(ResName resName, String qualifiers);
 
-    String getStringValue(ResName resName, String qualifiers);
-
-    String getPluralStringValue(ResName resName, int quantity, String qualifiers);
-
-    String getDimenValue(ResName resName, String qualifiers);
-
-    int getIntegerValue(ResName resName, String qualifiers);
-
-    boolean getBooleanValue(ResName resName, String qualifiers);
+    Plural getPlural(ResName resName, int quantity, String qualifiers);
 
     Document getXml(ResName resName, String qualifiers);
 
     DrawableNode getDrawableNode(ResName resName, String qualifiers);
 
     InputStream getRawValue(ResName resName);
-
-    String[] getStringArrayValue(ResName resName, String qualifiers);
-
-    int[] getIntegerArrayValue(ResName resName, String qualifiers);
 
     PreferenceNode getPreferenceNode(ResName resName, String qualifiers);
 

@@ -3,32 +3,41 @@ package org.robolectric.res;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class ResBundle<T> {
-    private final ResMap<T> valuesMap = new ResMap<T>();
-    private final ResMap<List<T>> valuesArrayMap = new ResMap<List<T>>();
-    private String overrideNamespace;
+public class ResBunch {
+    private final Map<String, ResMap<TypedResource>> types = new LinkedHashMap<String, ResMap<TypedResource>>();
 
-    public void put(String attrType, String name, T value, XmlLoader.XmlContext xmlContext) {
-        ResName resName = new ResName(maybeOverride(xmlContext.packageName), attrType, name);
-        Values<T> values = valuesMap.find(resName);
-        values.add(new Value<T>(xmlContext.getQualifiers(), value, xmlContext));
+    public void put(String attrType, String name, TypedResource value, XmlLoader.XmlContext xmlContext) {
+        ResName resName = new ResName(xmlContext.packageName, attrType, name);
+        ResMap<TypedResource> valuesMap = getValuesMap(attrType);
+        Values values = valuesMap.find(resName);
+        values.add(new Value(xmlContext.getQualifiers(), value, xmlContext));
         Collections.sort(values);
     }
 
-    public T get(ResName resName, String qualifiers) {
-        Value<T> value = getValue(resName, qualifiers);
+    private ResMap<TypedResource> getValuesMap(String attrType) {
+        ResMap<TypedResource> valuesMap = types.get(attrType);
+        if (valuesMap == null) {
+            valuesMap = new ResMap<TypedResource>();
+            types.put(attrType, valuesMap);
+        }
+        return valuesMap;
+    }
+
+    public TypedResource get(ResName resName, String qualifiers) {
+        Value value = getValue(resName, qualifiers);
         return value == null ? null : value.value;
     }
 
-    public Value<T> getValue(ResName resName, String qualifiers) {
-        Values<T> values = valuesMap.find(maybeOverride(resName));
+    public Value getValue(ResName resName, String qualifiers) {
+        ResMap<TypedResource> valuesMap = getValuesMap(resName.type);
+        Values values = valuesMap.find(resName);
         return (values != null) ? pick(values, qualifiers) : null;
     }
 
-    public static <T> Value<T> pick(Values<T> values, String qualifiers) {
+    public static <T> Value pick(Values values, String qualifiers) {
         final int count = values.size();
         if (count >= Long.SIZE) throw new RuntimeException("really, more than " + Long.SIZE + " qualifiers?!?");
         if (count == 0) return null;
@@ -63,38 +72,31 @@ public class ResBundle<T> {
     }
 
     public int size() {
-        return valuesMap.size() + valuesArrayMap.size();
+        int size = 0;
+        for (ResMap<TypedResource> map : types.values()) {
+            size += map.size();
+        }
+        return size;
     }
 
     public void makeImmutable() {
-        valuesMap.makeImmutable();
-        valuesArrayMap.makeImmutable();
+        for (ResMap<TypedResource> map : types.values()) {
+            map.makeImmutable();
+        }
     }
 
-    public void overrideNamespace(String overrideNamespace) {
-        this.overrideNamespace = overrideNamespace;
-        if (size() > 0) throw new RuntimeException();
+    public void mergeLibraryStyle(ResBunch fromResBundle, String packageName) {
+        for (Map.Entry<String, ResMap<TypedResource>> entry : fromResBundle.types.entrySet()) {
+            getValuesMap(entry.getKey()).merge(packageName, entry.getValue());
+        }
     }
 
-    String maybeOverride(String namespace) {
-        return overrideNamespace == null ? namespace : overrideNamespace;
-    }
-
-    ResName maybeOverride(ResName resName) {
-        return overrideNamespace == null ? resName : new ResName(overrideNamespace, resName.type, resName.name);
-    }
-
-    public void mergeLibraryStyle(ResBundle<T> fromResBundle, String packageName) {
-        valuesMap.merge(packageName, fromResBundle.valuesMap);
-        valuesArrayMap.merge(packageName, fromResBundle.valuesArrayMap);
-    }
-
-    static class Value<T> implements Comparable<Value<T>> {
+    public static class Value implements Comparable<Value> {
         final String qualifiers;
-        final T value;
+        final TypedResource value;
         final XmlLoader.XmlContext xmlContext;
 
-        Value(String qualifiers, T value, XmlLoader.XmlContext xmlContext) {
+        Value(String qualifiers, TypedResource value, XmlLoader.XmlContext xmlContext) {
             if (value == null) {
                 throw new NullPointerException();
             }
@@ -105,21 +107,29 @@ public class ResBundle<T> {
         }
 
         @Override
-        public int compareTo(Value<T> o) {
+        public int compareTo(Value o) {
             return qualifiers.compareTo(o.qualifiers);
+        }
+
+        public TypedResource getTypedResource() {
+            return value;
+        }
+
+        public XmlLoader.XmlContext getXmlContext() {
+            return xmlContext;
         }
     }
 
-    static class Values<T> extends ArrayList<Value<T>> {
+    static class Values extends ArrayList<Value> {
     }
 
     private static class ResMap<T> {
-        private final Map<ResName, Values<T>> map = new HashMap<ResName, Values<T>>();
+        private final Map<ResName, Values> map = new HashMap<ResName, Values>();
         private boolean immutable;
 
-        public Values<T> find(ResName resName) {
-            Values<T> values = map.get(resName);
-            if (values == null) map.put(resName, values = new Values<T>());
+        public Values find(ResName resName) {
+            Values values = map.get(resName);
+            if (values == null) map.put(resName, values = new Values());
             return values;
         }
 
@@ -128,7 +138,7 @@ public class ResBundle<T> {
                 throw new IllegalStateException("immutable!");
             }
 
-            for (Map.Entry<ResName, Values<T>> entry : sourceMap.map.entrySet()) {
+            for (Map.Entry<ResName, Values> entry : sourceMap.map.entrySet()) {
                 ResName resName = entry.getKey().withPackageName(packageName);
                 find(resName).addAll(entry.getValue());
             }

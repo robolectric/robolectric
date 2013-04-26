@@ -30,12 +30,14 @@ public class PackageResourceLoader extends XResourceLoader {
 
         DocumentLoader documentLoader = new DocumentLoader(resourcePath);
         documentLoader.load("values",
-                new ValueResourceLoader(booleanData, "bool", false),
-                new ValueResourceLoader(colorData, "color", false),
-                new ValueResourceLoader(dimenData, "dimen", false),
-                new ValueResourceLoader(integerData, "integer", true),
-                new PluralResourceLoader(resourceIndex, pluralsData),
-                new ValueResourceLoader(stringData, "string", true),
+                new ValueResourceLoader(data, "/resources/bool", "bool", ResType.BOOLEAN),
+                new ValueResourceLoader(data, "/resources/color", "color", ResType.COLOR),
+                new ValueResourceLoader(data, "/resources/dimen", "dimen", ResType.DIMEN),
+                new ValueResourceLoader(data, "/resources/integer", "integer", ResType.INTEGER),
+                new ValueResourceLoader(data, "/resources/integer-array", "array", ResType.INTEGER_ARRAY),
+                new PluralResourceLoader(pluralsData),
+                new ValueResourceLoader(data, "/resources/string", "string", ResType.CHAR_SEQUENCE),
+                new ValueResourceLoader(data, "/resources/string-array", "array", ResType.CHAR_SEQUENCE_ARRAY),
                 attrResourceLoader
         );
 

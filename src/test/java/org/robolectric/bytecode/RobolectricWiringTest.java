@@ -71,7 +71,7 @@ public class RobolectricWiringTest {
             }
             if (implementedMember == null) {
                 if (!isAnnotatedHiddenApi(shadowMethod)) {
-                    mismatches.add(shadowMethod.toGenericString() + " doesn't match a real method");
+                    mismatches.add(shadowMethod.toGenericString() + " doesn't match a real method (maybe it's a @HiddenApi?)");
                 }
             } else if (staticMismatch(shadowMethod, implementedMember)) {
                 mismatches.add(shadowMethod.toGenericString() + " doesn't match the staticness of the real method");

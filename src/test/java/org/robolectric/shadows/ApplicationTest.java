@@ -25,9 +25,11 @@ import org.robolectric.TestRunners;
 import org.robolectric.res.EmptyResourceLoader;
 import org.robolectric.res.Fs;
 import org.robolectric.res.ResName;
+import org.robolectric.res.ResType;
 import org.robolectric.res.ResourceExtractor;
 import org.robolectric.res.ResourceIndex;
 import org.robolectric.res.ResourceLoader;
+import org.robolectric.res.TypedResource;
 import org.robolectric.test.TemporaryFolder;
 import org.robolectric.util.TestBroadcastReceiver;
 
@@ -58,12 +60,22 @@ public class ApplicationTest {
     @Test
     public void shouldBeBindableToAResourceLoader() throws Exception {
         ResourceLoader resourceLoader1 = new EmptyResourceLoader() {
-            @Override public String getStringValue(ResName resName, String qualifiers) { return "title from resourceLoader1"; }
-            @Override public ResourceIndex getResourceIndex() { return new ImperviousResourceExtractor(); }
+            @Override public TypedResource getValue(ResName resName, String qualifiers) {
+                return new TypedResource("title from resourceLoader1", ResType.CHAR_SEQUENCE);
+            }
+
+            @Override public ResourceIndex getResourceIndex() {
+                return new ImperviousResourceExtractor();
+            }
         };
         ResourceLoader resourceLoader2 = new EmptyResourceLoader() {
-            @Override public String getStringValue(ResName resName, String qualifiers) { return "title from resourceLoader2"; }
-            @Override public ResourceIndex getResourceIndex() { return new ImperviousResourceExtractor(); }
+            @Override public TypedResource getValue(ResName resName, String qualifiers) {
+                return new TypedResource("title from resourceLoader2", ResType.CHAR_SEQUENCE);
+            }
+
+            @Override public ResourceIndex getResourceIndex() {
+                return new ImperviousResourceExtractor();
+            }
         };
 
         final Application app1 = new Application();

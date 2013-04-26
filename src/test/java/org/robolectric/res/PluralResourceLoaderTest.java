@@ -12,10 +12,8 @@ public class PluralResourceLoaderTest {
 
     @Before
     public void setUp() throws Exception {
-        ResourceIndex extractor = new ResourceExtractor(testResources());
-
         pluralRulesResBundle = new ResBundle<PluralResourceLoader.PluralRules>();
-        PluralResourceLoader pluralResourceLoader = new PluralResourceLoader(extractor, pluralRulesResBundle);
+        PluralResourceLoader pluralResourceLoader = new PluralResourceLoader(pluralRulesResBundle);
 
         new DocumentLoader(testResources()).load("values", pluralResourceLoader);
     }
