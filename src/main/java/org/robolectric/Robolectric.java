@@ -1402,6 +1402,7 @@ public class Robolectric {
         ShadowPowerManager.reset();
         ShadowStatFs.reset();
         ShadowTypeface.reset();
+        ShadowSQLiteDatabase.reset();
     }
 
     /**

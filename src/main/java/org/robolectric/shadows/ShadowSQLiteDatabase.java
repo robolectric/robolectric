@@ -31,6 +31,9 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+
 import static org.robolectric.Robolectric.newInstanceOf;
 import static org.robolectric.Robolectric.shadowOf;
 import static org.robolectric.util.SQLite.*;
@@ -53,7 +56,6 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
     };
 
     @RealObject	SQLiteDatabase realSQLiteDatabase;
-    private static Connection connection;
     private final ReentrantLock mLock = new ReentrantLock(true);
     private boolean mLockingEnabled = true;
     private WeakHashMap<SQLiteClosable, Object> mPrograms;
@@ -61,6 +63,11 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
     private boolean throwOnInsert;
     private Set<Cursor> cursors = new HashSet<Cursor>();
     private List<String> querySql = new ArrayList<String>();
+
+    private boolean isOpen; // never close connections bc that deletes the in-memory db
+    private String path;
+    private static Object connectionLock = new Object();
+    private static Connection connection;
 
     @Implementation
     public void setLockingEnabled(boolean lockingEnabled) {
@@ -77,14 +84,61 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
         mLock.unlock();
     }
 
+    private void init(String path) {
+        this.path = path;
+        isOpen = true;
+    }
+
     public void setThrowOnInsert(boolean throwOnInsert) {
         this.throwOnInsert = throwOnInsert;
     }
 
     @Implementation
     public static SQLiteDatabase openDatabase(String path, SQLiteDatabase.CursorFactory factory, int flags) {
-        connection = DatabaseConfig.getMemoryConnection();
-        return newInstanceOf(SQLiteDatabase.class);
+        SQLiteDatabase db = newInstanceOf(SQLiteDatabase.class);
+        try {
+            Field field = db.getClass().getDeclaredField("__robo_data__");
+            ShadowSQLiteDatabase shadow = (ShadowSQLiteDatabase)field.get(db);
+            shadow.init(path);
+        } catch (NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+        return db;
+    }
+
+    public static void reset() {
+        try {
+            synchronized (connectionLock) {
+                if (connection != null) {
+                    connection.close();
+                }
+                connection = null;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Allows test cases access to the underlying JDBC connection, for use in
+     * setup or assertions.
+     *
+     * @return the connection
+     */
+    public Connection getConnection() {
+        synchronized (connectionLock) {
+            if (connection == null) {
+                connection = DatabaseConfig.getMemoryConnection();
+            }
+        }
+        return connection;
+    }
+
+    @Implementation
+    public String getPath() {
+        return path;
     }
 
     @Implementation
@@ -123,7 +177,7 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
 
         try {
             SQLStringAndBindings sqlInsertString = buildInsertString(table, initialValues, conflictAlgorithm);
-            PreparedStatement insert = connection.prepareStatement(sqlInsertString.sql, Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement insert = getConnection().prepareStatement(sqlInsertString.sql, Statement.RETURN_GENERATED_KEYS);
             Iterator<Object> columns = sqlInsertString.columnValues.iterator();
             int i = 1;
             long result = -1;
@@ -158,7 +212,7 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
 
         ResultSet resultSet;
         try {
-            Statement statement = connection.createStatement(DatabaseConfig.getResultSetType(), ResultSet.CONCUR_READ_ONLY);
+            Statement statement = getConnection().createStatement(DatabaseConfig.getResultSetType(), ResultSet.CONCUR_READ_ONLY);
             resultSet = statement.executeQuery(sql);
         } catch (SQLException e) {
             throw new RuntimeException("SQL exception in query", e);
@@ -189,7 +243,7 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
         SQLStringAndBindings sqlUpdateString = buildUpdateString(table, values, whereClause, whereArgs);
 
         try {
-            PreparedStatement statement = connection.prepareStatement(sqlUpdateString.sql);
+            PreparedStatement statement = getConnection().prepareStatement(sqlUpdateString.sql);
             Iterator<Object> columns = sqlUpdateString.columnValues.iterator();
             int i = 1;
             while (columns.hasNext()) {
@@ -207,7 +261,7 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
         String sql = buildDeleteString(table, whereClause, whereArgs);
 
         try {
-            return connection.prepareStatement(sql).executeUpdate();
+            return getConnection().prepareStatement(sql).executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException("SQL exception in delete", e);
         }
@@ -221,7 +275,7 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
 
         try {
             String scrubbedSql = DatabaseConfig.getScrubSQL(sql);
-            connection.createStatement().execute(scrubbedSql);
+            getConnection().createStatement().execute(scrubbedSql);
         } catch (java.sql.SQLException e) {
             android.database.SQLException ase = new android.database.SQLException();
             ase.initCause(e);
@@ -297,26 +351,18 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
 
     @Implementation
     public boolean isOpen() {
-        return (connection != null);
+        return isOpen;
     }
 
     @Implementation
     public void close() {
-        if (!isOpen()) {
-            return;
-        }
-        try {
-            connection.close();
-            connection = null;
-        } catch (SQLException e) {
-            throw new RuntimeException("SQL exception in close", e);
-        }
+        isOpen = false;
     }
 
     @Implementation
     public void beginTransaction() {
         try {
-            connection.setAutoCommit(false);
+            getConnection().setAutoCommit(false);
         } catch (SQLException e) {
             throw new RuntimeException("SQL exception in beginTransaction", e);
         }
@@ -346,11 +392,11 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
       } else {
           try {
               if (transaction.success && transaction.descendantsSuccess) {
-                  connection.commit();
+                  getConnection().commit();
               } else {
-                  connection.rollback();
+                  getConnection().rollback();
               }
-                    connection.setAutoCommit(true);
+                    getConnection().setAutoCommit(true);
           } catch (SQLException e) {
               throw new RuntimeException("SQL exception in beginTransaction", e);
           }
@@ -369,16 +415,6 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
      */
     public boolean isTransactionSuccess() {
         return transaction != null && transaction.success && transaction.descendantsSuccess;
-    }
-
-    /**
-     * Allows test cases access to the underlying JDBC connection, for use in
-     * setup or assertions.
-     *
-     * @return the connection
-     */
-    public Connection getConnection() {
-        return connection;
     }
 
     @Implementation
