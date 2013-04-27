@@ -3,6 +3,7 @@ package org.robolectric.util;
 import android.content.ContentValues;
 import android.database.sqlite.SQLiteException;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -187,6 +188,21 @@ public class SQLite {
         }
 
         return new SQLStringAndBindings(clause.toString(), columnValues);
+    }
+
+    /**
+     * Fetches generated key from <code>resultSet</code> and immediately closes supplied <code>resultSet</code>.
+     * @param resultSet resultSet returned from {@link java.sql.Statement#getGeneratedKeys()}
+     * @return fetched key, <code>-1</code> otherwise
+     * @throws SQLException if {@link java.sql.ResultSet#next()} or {@link java.sql.ResultSet#close()}
+     *      will throw an exception
+     */
+    public static long fetchGeneratedKey(ResultSet resultSet) throws SQLException {
+        try {
+            return resultSet.next() ? resultSet.getLong(1) : -1;
+        } finally {
+            resultSet.close();
+        }
     }
 
     /**

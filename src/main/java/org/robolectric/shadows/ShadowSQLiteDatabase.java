@@ -126,17 +126,11 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
             PreparedStatement insert = connection.prepareStatement(sqlInsertString.sql, Statement.RETURN_GENERATED_KEYS);
             Iterator<Object> columns = sqlInsertString.columnValues.iterator();
             int i = 1;
-            long result = -1;
             while (columns.hasNext()) {
                 insert.setObject(i++, columns.next());
             }
             insert.executeUpdate();
-            ResultSet resultSet = insert.getGeneratedKeys();
-            if (resultSet.next()) {
-                result = resultSet.getLong(1);
-            }
-            resultSet.close();
-            return result;
+            return fetchGeneratedKey(insert.getGeneratedKeys());
         } catch (SQLException e) {
             throw new android.database.SQLException(e.getLocalizedMessage());
         }
