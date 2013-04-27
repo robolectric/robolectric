@@ -15,7 +15,6 @@ import static junit.framework.Assert.*;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class LocalBroadcastManagerTest {
-    private static LocalBroadcastManager lastInstance;
     private Transcript transcript = new Transcript();
 
     @Test
@@ -57,19 +56,6 @@ public class LocalBroadcastManagerTest {
         instance.unregisterReceiver(receiver);
         instance.sendBroadcast(new Intent("com.foo"));
         assertFalse(called[0]);
-    }
-
-    @Test
-    public void shouldResetStateBetweenTests1() throws Exception {
-        lastInstance = LocalBroadcastManager.getInstance(Robolectric.application);
-        assertNotNull(lastInstance);
-    }
-
-    @Test
-    public void shouldResetStateBetweenTests2() throws Exception {
-        assertNotNull(lastInstance);
-        assertNotSame(lastInstance, LocalBroadcastManager.getInstance(Robolectric.application));
-        lastInstance = null;
     }
 
     @Test
