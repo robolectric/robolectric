@@ -121,6 +121,13 @@ public class LogTest {
     }
 
     @Test
+    public void println_shouldLogAppropriately() {
+        int len = Log.println(Log.ASSERT, "tag", "msg");
+        assertLogged(Log.ASSERT, "tag", "msg", null);
+        assertThat(len).isEqualTo(11);
+    }
+
+    @Test
     public void shouldLogToProvidedStream() throws Exception {
         final ByteArrayOutputStream bos = new ByteArrayOutputStream();
         PrintStream old = ShadowLog.stream;
