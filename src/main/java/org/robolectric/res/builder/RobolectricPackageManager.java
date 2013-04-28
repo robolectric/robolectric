@@ -13,6 +13,7 @@ import org.robolectric.AndroidManifest;
 import org.robolectric.tester.android.content.pm.StubPackageManager;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -78,8 +79,12 @@ public class RobolectricPackageManager extends StubPackageManager {
 
     @Override
     public List<ResolveInfo> queryIntentActivities(Intent intent, int flags) {
-        List<ResolveInfo> result = resolveInfoForIntent.get(intent);
-        return (result == null) ? new ArrayList<ResolveInfo>() : result;
+        return queryIntent(intent, flags);
+    }
+
+    @Override
+    public List<ResolveInfo> queryIntentServices(Intent intent, int flags) {
+        return queryIntent(intent, flags);
     }
 
     @Override
@@ -280,5 +285,14 @@ public class RobolectricPackageManager extends StubPackageManager {
             resolveInfoForIntent.put(intent, infoList);
         }
         return infoList;
+    }
+
+    private List<ResolveInfo> queryIntent(Intent intent, int flags) {
+        List<ResolveInfo> result = resolveInfoForIntent.get(intent);
+        if (result == null) {
+            return Collections.emptyList();
+        } else {
+            return result;
+        }
     }
 }

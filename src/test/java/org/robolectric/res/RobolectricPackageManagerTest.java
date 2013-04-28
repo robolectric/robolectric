@@ -83,8 +83,7 @@ public class RobolectricPackageManagerTest {
         i.addCategory(Intent.CATEGORY_LAUNCHER);
 
         List<ResolveInfo> activities = rpm.queryIntentActivities(i, 0);
-        assertThat(activities).isNotNull();        // empty list, not null
-        assertThat(activities.size()).isEqualTo(0);
+        assertThat(activities).isEmpty();
     }
 
     @Test
@@ -99,7 +98,7 @@ public class RobolectricPackageManagerTest {
 
         List<ResolveInfo> activities = rpm.queryIntentActivities(i, 0);
         assertThat(activities).isNotNull();
-        assertThat(activities.size()).isEqualTo(1);
+        assertThat(activities).hasSize(1);
         assertThat(activities.get(0).nonLocalizedLabel.toString()).isEqualTo(TEST_PACKAGE_LABEL);
     }
 
@@ -121,14 +120,34 @@ public class RobolectricPackageManagerTest {
     }
 
     @Test
-    public void resolveService__Match() throws Exception {
+    public void queryIntentServices__EmptyResult() throws Exception {
         Intent i = new Intent(Intent.ACTION_MAIN, null);
         i.addCategory(Intent.CATEGORY_LAUNCHER);
 
+        List<ResolveInfo> activities = rpm.queryIntentServices(i, 0);
+        assertThat(activities).isEmpty();
+    }
+
+
+    @Test
+    public void queryIntentServices__Match() throws Exception {
+        Intent i = new Intent(Intent.ACTION_MAIN, null);
+
         ResolveInfo info = new ResolveInfo();
         info.nonLocalizedLabel = TEST_PACKAGE_LABEL;
+
         rpm.addResolveInfoForIntent(i, info);
 
+        List<ResolveInfo> activities = rpm.queryIntentServices(i, 0);
+        assertThat(activities).hasSize(1);
+        assertThat(activities.get(0).nonLocalizedLabel.toString()).isEqualTo(TEST_PACKAGE_LABEL);
+    }
+
+    @Test
+    public void resolveService__Match() throws Exception {
+        Intent i = new Intent(Intent.ACTION_MAIN, null);
+        ResolveInfo info = new ResolveInfo();
+        rpm.addResolveInfoForIntent(i, info);
         assertThat(rpm.resolveService(i, 0)).isSameAs(info);
     }
 
