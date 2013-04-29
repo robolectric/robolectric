@@ -80,11 +80,11 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
      * your tests assert that the bitmap is correct without having to actually load the bitmap.
      *
      * @return resource id from which this {@code BitmapDrawable} was loaded
-     * @deprecated use org.robolectric.shadows.ShadowBitmap#getLoadedFromResourceId() instead.
+     * @deprecated use org.robolectric.shadows.ShadowBitmap#getCreatedFromResId() instead.
      */
     @Override
     public int getLoadedFromResourceId() {
-        return shadowOf(bitmap).getLoadedFromResourceId();
+        return shadowOf(bitmap).getCreatedFromResId();
     }
 
     // Used by ShadowDrawable.createFromStream()

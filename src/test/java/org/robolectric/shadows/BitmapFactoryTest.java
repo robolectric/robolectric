@@ -19,26 +19,43 @@ import static org.robolectric.Robolectric.shadowOf;
 @RunWith(TestRunners.WithDefaults.class)
 public class BitmapFactoryTest {
     @Test
-    public void decodeResource_shouldSetDescription() throws Exception {
+    public void decodeResource_shouldSetDescriptionAndCreatedFrom() throws Exception {
         Bitmap bitmap = BitmapFactory.decodeResource(Robolectric.application.getResources(), R.drawable.an_image);
-        assertEquals("Bitmap for resource:org.robolectric:drawable/an_image", shadowOf(bitmap).getDescription());
+        ShadowBitmap shadowBitmap = shadowOf(bitmap);
+        assertEquals("Bitmap for resource:org.robolectric:drawable/an_image", shadowBitmap.getDescription());
+        assertEquals(R.drawable.an_image, shadowBitmap.getCreatedFromResId());
         assertEquals(100, bitmap.getWidth());
         assertEquals(100, bitmap.getHeight());
     }
 
     @Test
-    public void decodeFile_shouldSetDescription() throws Exception {
+    public void decodeFile_shouldSetDescriptionAndCreatedFrom() throws Exception {
         Bitmap bitmap = BitmapFactory.decodeFile("/some/file.jpg");
-        assertEquals("Bitmap for file:/some/file.jpg", shadowOf(bitmap).getDescription());
+        ShadowBitmap shadowBitmap = shadowOf(bitmap);
+        assertEquals("Bitmap for file:/some/file.jpg", shadowBitmap.getDescription());
+        assertEquals("/some/file.jpg", shadowBitmap.getCreatedFromPath());
         assertEquals(100, bitmap.getWidth());
         assertEquals(100, bitmap.getHeight());
     }
 
     @Test
-    public void decodeStream_shouldSetDescription() throws Exception {
+    public void decodeStream_shouldSetDescriptionAndCreatedFrom() throws Exception {
         InputStream inputStream = Robolectric.application.getContentResolver().openInputStream(Uri.parse("content:/path"));
         Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
-        assertEquals("Bitmap for content:/path", shadowOf(bitmap).getDescription());
+        ShadowBitmap shadowBitmap = shadowOf(bitmap);
+        assertEquals("Bitmap for content:/path", shadowBitmap.getDescription());
+        assertEquals(inputStream, shadowBitmap.getCreatedFromStream());
+        assertEquals(100, bitmap.getWidth());
+        assertEquals(100, bitmap.getHeight());
+    }
+
+    @Test
+    public void decodeBytes_shouldSetDescriptionAndCreatedFrom() throws Exception {
+        byte[] yummyBites = "Hi!".getBytes("UTF-8");
+        Bitmap bitmap = BitmapFactory.decodeByteArray(yummyBites, 100, 100);
+        ShadowBitmap shadowBitmap = shadowOf(bitmap);
+        assertEquals("Bitmap for Hi! bytes 100..100", shadowBitmap.getDescription());
+        assertEquals(yummyBites, shadowBitmap.getCreatedFromBytes());
         assertEquals(100, bitmap.getWidth());
         assertEquals(100, bitmap.getHeight());
     }
@@ -142,7 +159,6 @@ public class BitmapFactoryTest {
         assertThat(shadowOf(bitmap).getDescription()).isEqualTo("Bitmap for byte array, checksum: 3693078531");
         assertThat(bitmap.getWidth()).isEqualTo(100);
         assertThat(bitmap.getHeight()).isEqualTo(100);
-
     }
 
     @Test

@@ -9,8 +9,6 @@ import android.widget.ImageView;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 
-import static org.robolectric.Robolectric.shadowOf;
-
 @Implements(value = ImageView.class, inheritImplementationMethods = true)
 public class ShadowImageView extends ShadowView {
     private Drawable imageDrawable;
@@ -83,13 +81,12 @@ public class ShadowImageView extends ShadowView {
     }
 
     @Implementation
+    public Matrix getImageMatrix() {
+        return matrix;
+    }
+
+    @Implementation
     public void draw(Canvas canvas) {
-        if (matrix != null) {
-            canvas.translate(shadowOf(matrix).getTransX(), shadowOf(matrix)
-                    .getTransY());
-            canvas.scale(shadowOf(matrix).getScaleX(), shadowOf(matrix)
-                    .getScaleY());
-        }
         if (imageDrawable != null) {
             imageDrawable.draw(canvas);
         }
