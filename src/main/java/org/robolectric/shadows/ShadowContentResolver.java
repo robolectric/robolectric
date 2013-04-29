@@ -6,11 +6,13 @@ import android.content.ContentProviderOperation;
 import android.content.ContentProviderResult;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.OperationApplicationException;
 import android.content.PeriodicSync;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+
 import org.robolectric.Robolectric;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
@@ -197,9 +199,14 @@ public class ShadowContentResolver {
     }
 
     @Implementation
-    public ContentProviderResult[] applyBatch(String authority, ArrayList<ContentProviderOperation> operations) {
-        contentProviderOperations.put(authority, operations);
-        return contentProviderResults;
+    public ContentProviderResult[] applyBatch(String authority, ArrayList<ContentProviderOperation> operations) throws OperationApplicationException {
+        ContentProvider provider = providers.get(authority);
+        if (provider != null) {
+            return provider.applyBatch(operations);
+        } else {
+            contentProviderOperations.put(authority, operations);
+            return contentProviderResults;
+        }
     }
 
     @Implementation
