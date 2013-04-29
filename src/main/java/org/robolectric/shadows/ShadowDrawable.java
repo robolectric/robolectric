@@ -54,7 +54,7 @@ public class ShadowDrawable {
 
     public static Drawable createFromResourceId(int resourceId) {
         Bitmap bitmap = Robolectric.newInstanceOf(Bitmap.class);
-        shadowOf(bitmap).setLoadedFromResourceId(resourceId);
+        shadowOf(bitmap).createdFromResId = resourceId;
         BitmapDrawable drawable = new BitmapDrawable(bitmap);
         shadowOf(drawable).validate(); // start off not invalidated
         return drawable;
