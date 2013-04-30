@@ -35,6 +35,10 @@ public class ShadowSQLiteOpenHelper {
         this.close();
     }
 
+    public static void reset() {
+        dbMap = new HashMap<String, SQLiteDatabase>();
+    }
+
     @Implementation
     public synchronized void close() {
         SQLiteDatabase database = getOrCreateDb(false);

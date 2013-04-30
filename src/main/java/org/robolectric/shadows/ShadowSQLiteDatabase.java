@@ -31,9 +31,6 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-
 import static org.robolectric.Robolectric.newInstanceOf;
 import static org.robolectric.Robolectric.shadowOf;
 import static org.robolectric.util.SQLite.*;
@@ -66,7 +63,7 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
 
     private boolean isOpen; // never close connections bc that deletes the in-memory db
     private String path;
-    private static Object connectionLock = new Object();
+    private final static Object connectionLock = new Object();
     private static Connection connection;
 
     @Implementation
@@ -96,15 +93,7 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
     @Implementation
     public static SQLiteDatabase openDatabase(String path, SQLiteDatabase.CursorFactory factory, int flags) {
         SQLiteDatabase db = newInstanceOf(SQLiteDatabase.class);
-        try {
-            Field field = db.getClass().getDeclaredField("__robo_data__");
-            ShadowSQLiteDatabase shadow = (ShadowSQLiteDatabase)field.get(db);
-            shadow.init(path);
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
+        shadowOf(db).init(path);
         return db;
     }
 
@@ -119,6 +108,7 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+        ShadowSQLiteOpenHelper.reset();
     }
 
     /**

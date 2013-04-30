@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-
 import android.content.Context;
 import android.content.ContentValues;
 import android.database.sqlite.SQLiteDatabase;
@@ -9,6 +8,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -75,6 +75,29 @@ public class SQLiteOpenHelperTest {
         assertThat(database.isOpen()).isTrue();
         helper.close();
         assertThat(database.isOpen()).isFalse();
+    }
+
+    @Test
+    public void testGetConnection() throws Exception {
+        SQLiteDatabase db1 = helper.getReadableDatabase();
+        ShadowSQLiteDatabase shadow = Robolectric.shadowOf(db1);
+        assertThat(shadow.getConnection()).isNotNull();
+        db1.close();
+        assertThat(shadow.getConnection()).isNotNull();
+        ShadowSQLiteDatabase.reset();
+        assertThat(shadow.getConnection()).isNotNull();
+    }
+
+    @Test
+    public void testGetPath() throws Exception {
+        String path1 = "pather", path2 = "path_test";
+
+        TestOpenHelper helper1 = new TestOpenHelper(null, path1, null, 1);
+        assertThat(helper1.getReadableDatabase().getPath()).isEqualTo(path1);
+
+        TestOpenHelper helper2 = new TestOpenHelper(null, path2, null, 1);
+        assertThat(helper2.getReadableDatabase().getPath()).isEqualTo(path2);
+        assertThat(helper1.getReadableDatabase().getPath()).isEqualTo(path1);
     }
 
     @Test
