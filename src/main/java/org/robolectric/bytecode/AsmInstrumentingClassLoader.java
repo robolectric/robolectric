@@ -42,7 +42,6 @@ import java.util.Set;
 
 import static org.objectweb.asm.Type.*;
 import static org.robolectric.util.Util.readBytes;
-import static org.robolectric.util.Util.reverse;
 
 public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes, InstrumentingClassLoader {
     private static final String OBJECT_DESC = Type.getDescriptor(Object.class);
@@ -681,21 +680,46 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
 
             instructions.remove(); // remove the method invocation
 
-            // first, throw away arguments (ugh)
-            for (Type type : reverse(Type.getArgumentTypes(targetMethod.desc))) {
-                instructions.add(type.getSize() == 2 ? new InsnNode(POP2) : new InsnNode(POP));
-            }
+            Type[] argumentTypes = Type.getArgumentTypes(targetMethod.desc);
 
-            instructions.add(new LdcInsnNode(targetMethod.owner + "/" + targetMethod.name + targetMethod.desc)); // target method signature
-            if (isStatic) {
-                instructions.add(new InsnNode(Opcodes.ACONST_NULL));  // self or null if static
-            } else {
-                instructions.add(new InsnNode(SWAP)); // keep instance at the top of the stack
-            }
-
-            instructions.add(new LdcInsnNode(0));
+            instructions.add(new LdcInsnNode(argumentTypes.length));
             instructions.add(new TypeInsnNode(ANEWARRAY, "java/lang/Object"));
-            instructions.add(new LdcInsnNode(classType));
+
+            // first, move any arguments into an Object[]
+            for (int i = argumentTypes.length - 1; i >= 0 ; i--) {
+                Type type = argumentTypes[i];
+                int argWidth = type.getSize();
+
+                if (argWidth == 1) {                         // A B C []
+                    instructions.add(new InsnNode(DUP_X1));  // A B [] C []
+                    instructions.add(new InsnNode(SWAP));    // A B [] [] C
+                    instructions.add(new LdcInsnNode(i));    // A B [] [] C 2
+                    instructions.add(new InsnNode(SWAP));    // A B [] [] 2 C
+                    box(type, instructions);                 // A B [] [] 2 (C)
+                    instructions.add(new InsnNode(AASTORE)); // A B [(C)]
+                } else if (argWidth == 2) {                  // A B _C_ []
+                    instructions.add(new InsnNode(DUP_X2));  // A B [] _C_ []
+                    instructions.add(new InsnNode(DUP_X2));  // A B [] [] _C_ []
+                    instructions.add(new InsnNode(POP));     // A B [] [] _C_
+                    box(type, instructions);                 // A B [] [] (C)
+                    instructions.add(new LdcInsnNode(i));    // A B [] [] (C) 2
+                    instructions.add(new InsnNode(SWAP));    // A B [] [] 2 (C)
+                    instructions.add(new InsnNode(AASTORE)); // A B [(C)]
+                }
+            }
+
+            if (isStatic) { // []
+                instructions.add(new InsnNode(Opcodes.ACONST_NULL)); // [] null
+                instructions.add(new InsnNode(Opcodes.SWAP));        // null []
+            }
+
+            // instance []
+            instructions.add(new LdcInsnNode(targetMethod.owner + "/" + targetMethod.name + targetMethod.desc)); // target method signature
+            // instance [] signature
+            instructions.add(new InsnNode(DUP_X2));       // signature instance [] signature
+            instructions.add(new InsnNode(POP));          // signature instance []
+
+            instructions.add(new LdcInsnNode(classType)); // signature instance [] class
             instructions.add(new MethodInsnNode(INVOKESTATIC,
                     Type.getType(RobolectricInternals.class).getInternalName(), "intercept",
                     "(Ljava/lang/String;Ljava/lang/Object;[Ljava/lang/Object;Ljava/lang/Class;)Ljava/lang/Object;"));
@@ -873,6 +897,52 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
         private boolean isEnum() {
             return (classNode.access & ACC_ENUM) != 0;
         }
+    }
+
+    public static void box(final Type type, ListIterator<AbstractInsnNode> instructions) {
+        if (type.getSort() == Type.OBJECT || type.getSort() == Type.ARRAY) {
+            return;
+        }
+
+        if (type == Type.VOID_TYPE) {
+            instructions.add(new InsnNode(ACONST_NULL));
+        } else {
+            Type boxed = getBoxedType(type);
+            instructions.add(new TypeInsnNode(NEW, boxed.getInternalName()));
+            if (type.getSize() == 2) {
+                // Pp -> Ppo -> oPpo -> ooPpo -> ooPp -> o
+                instructions.add(new InsnNode(DUP_X2));
+                instructions.add(new InsnNode(DUP_X2));
+                instructions.add(new InsnNode(POP));
+            } else {
+                // p -> po -> opo -> oop -> o
+                instructions.add(new InsnNode(DUP_X1));
+                instructions.add(new InsnNode(SWAP));
+            }
+            instructions.add(new MethodInsnNode(INVOKESPECIAL, boxed.getInternalName(), "<init>", "(" + type.getDescriptor() + ")V"));
+        }
+    }
+
+    private static Type getBoxedType(final Type type) {
+        switch (type.getSort()) {
+            case Type.BYTE:
+                return Type.getObjectType("java/lang/Byte");
+            case Type.BOOLEAN:
+                return Type.getObjectType("java/lang/Boolean");
+            case Type.SHORT:
+                return Type.getObjectType("java/lang/Short");
+            case Type.CHAR:
+                return Type.getObjectType("java/lang/Character");
+            case Type.INT:
+                return Type.getObjectType("java/lang/Integer");
+            case Type.FLOAT:
+                return Type.getObjectType("java/lang/Float");
+            case Type.LONG:
+                return Type.getObjectType("java/lang/Long");
+            case Type.DOUBLE:
+                return Type.getObjectType("java/lang/Double");
+        }
+        return type;
     }
 
     private boolean shouldIntercept(MethodInsnNode targetMethod) {

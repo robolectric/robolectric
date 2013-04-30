@@ -25,7 +25,7 @@ public class AClassToForget {
         return new int[0];
     }
 
-    public static long longReturningMethod() {
+    public static long longReturningMethod(String str, int i, long l) {
         return 1;
     }
 

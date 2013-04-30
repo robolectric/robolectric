@@ -22,7 +22,7 @@ public class AClassThatRefersToAForgettableClassInMethodCallsReturningPrimitive 
     }
     
     long longMethod() {
-        return AClassToForget.longReturningMethod();
+        return AClassToForget.longReturningMethod("str", 123, 456);
     }
 
     long[] longArrayMethod() {
