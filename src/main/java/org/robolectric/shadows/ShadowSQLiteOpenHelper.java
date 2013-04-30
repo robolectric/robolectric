@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;
+import java.util.HashMap;
 
 /**
  * Shadow for {@code SQLiteOpenHelper}.  Provides basic support for retrieving
@@ -16,43 +17,47 @@ import org.robolectric.internal.RealObject;
 @Implements(SQLiteOpenHelper.class)
 public class ShadowSQLiteOpenHelper {
     @RealObject private SQLiteOpenHelper realHelper;
-    private static SQLiteDatabase database;
     private String name;
+    private static HashMap<String, SQLiteDatabase> dbMap = new HashMap<String, SQLiteDatabase>();
+
+    private SQLiteDatabase getOrCreateDb(boolean shouldCreate) {
+        SQLiteDatabase db = dbMap.get(name);
+        if (shouldCreate && db == null) {
+            db = SQLiteDatabase.openDatabase(name, null, 0);
+            dbMap.put(name, db);
+            realHelper.onCreate(db);
+        }
+        return db;
+    }
 
     public void __constructor__(Context context, String name, CursorFactory factory, int version) {
         this.name = name;
-        if (database != null) {
-            database.close();
-        }
-        database = null;
+        this.close();
+    }
+
+    public static void reset() {
+        dbMap = new HashMap<String, SQLiteDatabase>();
     }
 
     @Implementation
     public synchronized void close() {
+        SQLiteDatabase database = getOrCreateDb(false);
         if (database != null) {
             database.close();
+            dbMap.remove(name);
         }
-        database = null;
     }
 
     @Implementation
     public synchronized SQLiteDatabase getReadableDatabase() {
-        if (database == null) {
-            database = SQLiteDatabase.openDatabase("path", null, 0);
-            realHelper.onCreate(database);
-        }
-
+        SQLiteDatabase database = getOrCreateDb(true);
         realHelper.onOpen(database);
         return database;
     }
 
     @Implementation
     public synchronized SQLiteDatabase getWritableDatabase() {
-        if (database == null) {
-            database = SQLiteDatabase.openDatabase("path", null, 0);
-            realHelper.onCreate(database);
-        }
-
+        SQLiteDatabase database = getOrCreateDb(true);
         realHelper.onOpen(database);
         return database;
     }
