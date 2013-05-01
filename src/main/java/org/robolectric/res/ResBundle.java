@@ -30,7 +30,6 @@ public class ResBundle<T> {
 
     public static <T> Value<T> pick(Values<T> values, String qualifiers) {
         final int count = values.size();
-        if (count >= Long.SIZE) throw new RuntimeException("really, more than " + Long.SIZE + " qualifiers?!?");
         if (count == 0) return null;
 
         long possibles = 0;

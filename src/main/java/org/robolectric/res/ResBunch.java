@@ -39,7 +39,6 @@ public class ResBunch {
 
     public static <T> Value pick(Values values, String qualifiers) {
         final int count = values.size();
-        if (count >= Long.SIZE) throw new RuntimeException("really, more than " + Long.SIZE + " qualifiers?!?");
         if (count == 0) return null;
 
         long possibles = 0;
