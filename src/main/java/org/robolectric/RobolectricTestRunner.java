@@ -101,6 +101,10 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
         databaseMap = setupDatabaseMap(testClass, new SQLiteMap());
     }
+    
+    public EnvHolder getEnvHolder() {
+		return envHolder;
+	}
 
     private void assureTestLifecycle(SdkEnvironment sdkEnvironment) {
         try {

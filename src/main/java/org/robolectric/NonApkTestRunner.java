@@ -1,4 +1,4 @@
-package transapps.mapi.osm.provider;
+package org.robolectric;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -7,10 +7,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.AndroidManifest;
-import org.robolectric.RobolectricContext;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
 /**
  * A {@link RobolectricTestRunner} that will run test cases for non apk projects.  This is useful in situations where
@@ -24,14 +26,16 @@ public class NonApkTestRunner extends RobolectricTestRunner {
 	// Constants
 	// ===========================================================
 	
+	private static final Log log = LogFactory.getLog(NonApkTestRunner.class);
+	
 	/**
 	 * Root dir for the fake apk directory
 	 */
-	private static final String BASE_FAKEAPK_DIR = System.getProperty("java.io.tmpdir");
+	public static final String BASE_FAKEAPK_DIR = System.getProperty("java.io.tmpdir");
 	/**
 	 * Directories required by Robolectric
 	 */
-	private static final String[] REQUIRED_APK_DIRS = {File.separator + "res"+File.separator+"values"+File.separator, File.separator+"assets"+File.separator};
+	public static final String[] REQUIRED_APK_DIRS = {File.separator + "res"+File.separator+"values"+File.separator, File.separator+"assets"+File.separator};
 
 	
 	// ===========================================================
@@ -64,38 +68,6 @@ public class NonApkTestRunner extends RobolectricTestRunner {
 		int targetSdkVersion() default 1;
 	}
 	
-	/**
-	 * Special {@link RobolectricContext} that will create a manifest based on a
-	 * generated android project dir
-	 * 
-	 * @author mriley
-	 */
-    private static final class Context extends RobolectricContext {
-    	@Override
-    	protected AndroidManifest createAppManifest() {
-    		return new AndroidManifest(buildFakeApkDir(ContextFactory.testClass));
-    	}
-    }
-    
-    /**
-     * Special {@link Factory} for our {@link Context}
-     * 
-     * @author mriley
-     */
-    private static final class ContextFactory implements RobolectricContext.Factory {
-    	
-    	private static Class<?> testClass; 
-    	
-    	public ContextFactory( Class<?> testClass ) {
-    		ContextFactory.testClass = testClass;
-		}
-    	
-    	@Override
-    	public RobolectricContext create() {
-    		return new Context();
-    	}
-    }
-	
     // ===========================================================
 	// Static methods
 	// ===========================================================
@@ -110,14 +82,14 @@ public class NonApkTestRunner extends RobolectricTestRunner {
     	
     	// guess the manifest things
     	Manifest annotation = testClass.getAnnotation(Manifest.class);
-    	int target = 8;
-    	int min = 8;
+    	int target = 1;
+    	int min = 1;
     	String pkg = "";
     	if( annotation != null ) {
     		target = annotation.targetSdkVersion();
     		min = annotation.minSdkVersion();
     		pkg = annotation.packageName();
-    	}    	
+    	}
 		if( "".equals(pkg.trim()) ) {
 			pkg = testClass.getPackage().getName();
 		}
@@ -126,7 +98,7 @@ public class NonApkTestRunner extends RobolectricTestRunner {
 		try {
 			testClass.getClassLoader().loadClass(pkg + ".R");
 		} catch (ClassNotFoundException e) {
-			throw new RuntimeException("Robolectric wants a " + pkg + ".R.class.  Please add an empty R.java.", e);
+			log.warn("Robolectric wants a(n) " + pkg + ".R.class.  Please add an empty R.java.");
 		}
 		
 		// make the dir structure
@@ -181,10 +153,37 @@ public class NonApkTestRunner extends RobolectricTestRunner {
 	}
 	
 	// ===========================================================
+	// Member vars
+	// ===========================================================
+	
+	private final Class<?> testClass;
+	
+	// ===========================================================
 	// CTORs
 	// ===========================================================
 	
     public NonApkTestRunner(final Class<?> testClass) throws InitializationError {
-        super(RobolectricContext.bootstrap(NonApkTestRunner.class, testClass, new ContextFactory(testClass)));
+        super(testClass);
+        this.testClass = testClass;
+    }
+    
+    @Override
+    protected AndroidManifest getAppManifest(Config config) {
+        File appManifestBaseDir = buildFakeApkDir(testClass);
+        EnvHolder envHolder = getEnvHolder();        
+        synchronized (envHolder) {
+            AndroidManifest appManifest;
+            appManifest = envHolder.appManifestsByFile.get(appManifestBaseDir);
+            if (appManifest == null) {
+                appManifest = createAppManifest(appManifestBaseDir);
+                envHolder.appManifestsByFile.put(appManifestBaseDir, appManifest);
+            }
+            return appManifest;
+        }
+    }
+    
+    @Override
+    protected AndroidManifest createAppManifest(File baseDir) {
+    	return super.createAppManifest(baseDir);
     }
 }
