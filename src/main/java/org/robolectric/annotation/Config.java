@@ -18,11 +18,24 @@ import java.util.Arrays;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
 public @interface Config {
+    @SuppressWarnings("UnusedDeclaration")
+    public static final String NONE = "--none";
+    public static final String DEFAULT = "--default";
 
     /**
      * The Android SDK level to emulate. If not specified, Robolectric defaults to the targetSdkVersion in your app's manifest.
      */
     int emulateSdk() default -1;
+
+    /**
+     * The Android manifest file to load; Robolectric will look relative to the current directory.
+     * Resources and assets will be loaded relative to the manifest.
+     *
+     * If not specified, Robolectric defaults to {@code AndroidManifest.xml}.
+     *
+     * If your project has no manifest or resources, use {@link Config#NONE}.
+     */
+    String manifest() default DEFAULT;
 
     /**
      * Qualifiers for the resource resolution, such as "fr-normal-port-hdpi".
@@ -41,12 +54,14 @@ public @interface Config {
 
     public class Implementation implements Config {
         private final int emulateSdk;
+        private final String manifest;
         private final String qualifiers;
         private final int reportSdk;
         private final Class<?>[] shadows;
 
-        public Implementation(int emulateSdk, String qualifiers, int reportSdk, Class<?>[] shadows) {
+        public Implementation(int emulateSdk, String manifest, String qualifiers, int reportSdk, Class<?>[] shadows) {
             this.emulateSdk = emulateSdk;
+            this.manifest = manifest;
             this.qualifiers = qualifiers;
             this.reportSdk = reportSdk;
             this.shadows = shadows;
@@ -54,6 +69,7 @@ public @interface Config {
 
         public Implementation(Config baseConfig, Config overlayConfig) {
             this.emulateSdk = pick(baseConfig.emulateSdk(), overlayConfig.emulateSdk(), -1);
+            this.manifest = pick(baseConfig.manifest(), overlayConfig.manifest(), DEFAULT);
             this.qualifiers = pick(baseConfig.qualifiers(), overlayConfig.qualifiers(), "");
             this.reportSdk = pick(baseConfig.reportSdk(), overlayConfig.reportSdk(), -1);
             ArrayList<Class<?>> shadows = new ArrayList<Class<?>>();
@@ -68,6 +84,10 @@ public @interface Config {
 
         @Override public int emulateSdk() {
             return emulateSdk;
+        }
+
+        @Override public String manifest() {
+            return manifest;
         }
 
         @Override public String qualifiers() {

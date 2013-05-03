@@ -8,9 +8,9 @@ import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
 import org.robolectric.bytecode.Setup;
+import org.robolectric.res.FsFile;
 import org.robolectric.util.Transcript;
 
-import java.io.File;
 import java.lang.reflect.Method;
 
 import static org.fest.assertions.api.Assertions.fail;
@@ -45,7 +45,7 @@ public class TestRunnerSequenceTest {
     @Test public void whenNoAppManifest_shouldRunThingsInTheRightOrder() throws Exception {
         StateHolder.transcript = new Transcript();
         assertNoFailures(run(new Runner(SimpleTest.class) {
-            @Override protected AndroidManifest createAppManifest(File baseDir) {
+            @Override protected AndroidManifest createAppManifest(FsFile manifestFile) {
                 return null;
             }
         }));
@@ -107,7 +107,7 @@ public class TestRunnerSequenceTest {
         }
 
         @Override
-        protected AndroidManifest createAppManifest(File baseDir) {
+        protected AndroidManifest createAppManifest(FsFile manifestFile) {
             return new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"), resourceFile("assets"));
         }
 
