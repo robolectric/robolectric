@@ -68,6 +68,10 @@ public class AndroidManifest {
         this.assetsDirectory = assetsDirectory;
     }
 
+    public FsFile getAndroidManifestFile() {
+        return androidManifestFile;
+    }
+
     public String getRClassName() throws Exception {
         parseAndroidManifest();
         return rClassName;
