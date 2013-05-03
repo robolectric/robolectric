@@ -41,6 +41,7 @@ public class AndroidManifest {
      * <p/>
      * The manifest will be baseDir/AndroidManifest.xml, res will be baseDir/res, and assets in baseDir/assets.
      *
+     * @deprecated Use {@link #AndroidManifest(org.robolectric.res.FsFile, org.robolectric.res.FsFile, org.robolectric.res.FsFile)} instead.}
      * @param baseDir the base directory of your Android project
      */
     public AndroidManifest(final File baseDir) {
@@ -51,6 +52,9 @@ public class AndroidManifest {
         this(androidManifestFile, resDirectory, resDirectory.getParent().join("assets"));
     }
 
+    /**
+     * @deprecated Use {@link #AndroidManifest(org.robolectric.res.FsFile, org.robolectric.res.FsFile, org.robolectric.res.FsFile)} instead.}
+     */
     public AndroidManifest(final FsFile baseDir) {
         this(baseDir.join("AndroidManifest.xml"), baseDir.join("res"), baseDir.join("assets"));
     }

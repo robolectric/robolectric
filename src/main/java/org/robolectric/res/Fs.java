@@ -44,6 +44,10 @@ abstract public class Fs {
         return new FileFsFile(file);
     }
 
+    public static FsFile currentDirectory() {
+        return newFile(new File("."));
+    }
+
     private static class JarFs extends Fs {
         private final JarFile jarFile;
         private final NavigableMap<String, JarEntry> jarEntryMap = new TreeMap<String, JarEntry>();

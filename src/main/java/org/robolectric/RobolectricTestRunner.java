@@ -26,6 +26,8 @@ import org.robolectric.bytecode.ShadowWrangler;
 import org.robolectric.bytecode.ZipClassCache;
 import org.robolectric.internal.ParallelUniverse;
 import org.robolectric.internal.ParallelUniverseInterface;
+import org.robolectric.res.Fs;
+import org.robolectric.res.FsFile;
 import org.robolectric.res.OverlayResourceLoader;
 import org.robolectric.res.PackageResourceLoader;
 import org.robolectric.res.ResourceLoader;
@@ -80,7 +82,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
     /**
      * Creates a runner to run {@code testClass}. Looks in your working directory for your AndroidManifest.xml file
-     * and res directory.
+     * and res directory by default. Use the {@link Config} annotation to configure.
      *
      * @param testClass the test class to be run
      * @throws InitializationError if junit says so
@@ -125,14 +127,16 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
         return new ShadowWrangler(shadowMap);
     }
 
-    protected AndroidManifest createAppManifest(File baseDir) {
-      AndroidManifest androidManifest = new AndroidManifest(baseDir);
-      if (!androidManifest.getAndroidManifestFile().exists()) {
-        System.out.print("No manifest file found at " + baseDir.getAbsolutePath() + ". ");
-        System.out.println("Falling back to the Android OS resources only.");
-        return null;
-      }
-      return androidManifest;
+    protected AndroidManifest createAppManifest(FsFile manifestFile) {
+        if (!manifestFile.exists()) {
+            System.out.print("WARNING: No manifest file found at " + manifestFile.getPath() + ".");
+            System.out.println("Falling back to the Android OS resources only.");
+            System.out.println("To remove this warning, annotate your test class with @Config(manifest=Config.NONE).");
+            return null;
+        }
+
+        FsFile appBaseDir = manifestFile.getParent();
+        return new AndroidManifest(manifestFile, appBaseDir.join("res"), appBaseDir.join("assets"));
     }
 
     public Setup createSetup() {
@@ -330,13 +334,19 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     }
 
     protected AndroidManifest getAppManifest(Config config) {
-        File appManifestBaseDir = new File(".");
+        if (config.manifest().equals(Config.NONE)) {
+            return null;
+        }
+
+        FsFile fsFile = Fs.currentDirectory();
+        String manifestStr = config.manifest().equals(Config.DEFAULT) ? "AndroidManifest.xml" : config.manifest();
+        FsFile manifestFile = fsFile.join(manifestStr);
         synchronized (envHolder) {
             AndroidManifest appManifest;
-            appManifest = envHolder.appManifestsByFile.get(appManifestBaseDir);
+            appManifest = envHolder.appManifestsByFile.get(manifestFile);
             if (appManifest == null) {
-                appManifest = createAppManifest(appManifestBaseDir);
-                envHolder.appManifestsByFile.put(appManifestBaseDir, appManifest);
+                appManifest = createAppManifest(manifestFile);
+                envHolder.appManifestsByFile.put(manifestFile, appManifest);
             }
             return appManifest;
         }
