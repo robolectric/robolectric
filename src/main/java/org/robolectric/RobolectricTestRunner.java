@@ -103,8 +103,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     }
     
     public EnvHolder getEnvHolder() {
-		return envHolder;
-	}
+        return envHolder;
+    }
 
     private void assureTestLifecycle(SdkEnvironment sdkEnvironment) {
         try {
