@@ -15,24 +15,6 @@
     <name>Robolectric</name>
     <description>An alternative Android testing framework.</description>
     <url>http://robolectric.org/</url>
-    
-    <distributionManagement>
-        <repository>
-            <id>${transapps.release.id}</id>
-            <url>${transapps.release.url}</url>
-        </repository>
-        <snapshotRepository>
-            <id>${transapps.snapshot.id}</id>
-            <url>${transapps.snapshot.url}</url>
-        </snapshotRepository>
-    </distributionManagement>
-
-    <pluginRepositories>
-        <pluginRepository>
-            <id>${transapps.public.id}</id>
-            <url>${transapps.public.url}</url>
-        </pluginRepository>
-    </pluginRepositories>
 
     <dependencies>
         <dependency>
