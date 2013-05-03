@@ -207,6 +207,16 @@ public class ShadowBitmap {
     }
 
     @Implementation
+    public int getRowBytes() {
+        return getBytesPerPixel(config) * getWidth();
+    }
+
+    @Implementation
+    public int getByteCount() {
+        return getRowBytes() * getHeight();
+    }
+
+    @Implementation
     public void recycle() {
         recycled = true;
     }
@@ -307,5 +317,22 @@ public class ShadowBitmap {
 
     public Bitmap getRealBitmap() {
         return realBitmap;
+    }
+
+    public static int getBytesPerPixel(Bitmap.Config config) {
+        if (config == null) {
+            throw new NullPointerException("Bitmap config was null.");
+        }
+        switch (config) {
+            case ARGB_8888:
+                return 4;
+            case RGB_565:
+            case ARGB_4444:
+                return 2;
+            case ALPHA_8:
+                return 1;
+            default:
+                throw new IllegalArgumentException("Unknown bitmap config: " + config);
+        }
     }
 }
