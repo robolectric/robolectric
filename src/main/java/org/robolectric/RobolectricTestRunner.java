@@ -126,7 +126,13 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     }
 
     protected AndroidManifest createAppManifest(File baseDir) {
-        return new AndroidManifest(baseDir);
+      AndroidManifest androidManifest = new AndroidManifest(baseDir);
+      if (!androidManifest.getAndroidManifestFile().exists()) {
+        System.out.print("No manifest file found at " + baseDir.getAbsolutePath() + ". ");
+        System.out.println("Falling back to the Android OS resources only.");
+        return null;
+      }
+      return androidManifest;
     }
 
     public Setup createSetup() {
