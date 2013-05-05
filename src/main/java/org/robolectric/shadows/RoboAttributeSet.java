@@ -8,8 +8,6 @@ import org.robolectric.res.ResourceIndex;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.util.I18nException;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.List;
 
 public class RoboAttributeSet implements AttributeSet {
@@ -217,14 +215,9 @@ public class RoboAttributeSet implements AttributeSet {
         }
     }
 
-    private Attribute findByName(String packageName, String attrName) {
-        String namespace;
-        try {
-            namespace = URLEncoder.encode(packageName, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
-        return findByName(new ResName(namespace, "attr", attrName));
+    private Attribute findByName(String namespace, String attrName) {
+        String packageName = Attribute.extractPackageName(namespace);
+        return findByName(new ResName(packageName, "attr", attrName));
     }
 
     private Attribute findByName(ResName resName) {
