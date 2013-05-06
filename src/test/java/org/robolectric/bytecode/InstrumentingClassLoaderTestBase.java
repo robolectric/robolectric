@@ -265,7 +265,7 @@ abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" 
         directMethod.setAccessible(true);
         Object exampleInstance = exampleClass.newInstance();
         transcript.assertEventsSoFar("methodInvoked: AClassWithMethodReturningArray.__constructor__()");
-        assertArrayEquals(new String[]{"miao, mieuw"}, (String[]) directMethod.invoke(exampleInstance));
+        assertArrayEquals(new String[] {"miao, mieuw"}, (String[]) directMethod.invoke(exampleInstance));
         transcript.assertEventsSoFar("methodInvoked: AClassWithMethodReturningArray.normalMethodReturningArray()");
     }
 
@@ -456,6 +456,17 @@ abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" 
     }
 
     @Test
+    public void shouldPassArgumentsFromInterceptedMethods() throws Exception {
+        setClassLoader(createClassLoader(new MethodInterceptingSetup(new Setup.MethodRef(AClassToForget.class, "*"))));
+        Class<?> theClass = loadClass(AClassThatRefersToAForgettableClassInMethodCallsReturningPrimitive.class);
+        Object instance = theClass.newInstance();
+        directlyOn(instance, (Class<Object>) theClass, "longMethod").invoke();
+        transcript.assertEventsSoFar(
+                "methodInvoked: AClassThatRefersToAForgettableClassInMethodCallsReturningPrimitive.__constructor__()",
+                "intercept: org/robolectric/bytecode/testing/AClassToForget/longReturningMethod(Ljava/lang/String;IJ)J with params (str str, 123 123, 456 456)");
+    }
+
+    @Test
     public void shouldRemapClassesWhileInterceptingMethods() throws Exception {
         setClassLoader(createClassLoader(new MethodInterceptingClassRemappingSetup(new Setup.MethodRef(AClassThatCallsAMethodReturningAForgettableClass.class, "getAForgettableClass"))));
         Class<?> theClass = loadClass(AClassThatCallsAMethodReturningAForgettableClass.class);
@@ -499,6 +510,7 @@ abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" 
         private static Object GENERATE_YOUR_OWN_VALUE = new Object();
         private Transcript transcript;
         private Object valueToReturn = GENERATE_YOUR_OWN_VALUE;
+        private Object valueToReturnFromIntercept = null;
 
         public MyClassHandler(Transcript transcript) {
             this.transcript = transcript;
@@ -543,8 +555,19 @@ abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" 
         }
 
         @Override
-        public Object intercept(String clazzName, Object instance, Object[] paramTypes, Class theClass) throws Throwable {
-            return null;
+        public Object intercept(String signature, Object instance, Object[] params, Class theClass) throws Throwable {
+            StringBuilder buf = new StringBuilder();
+            buf.append("intercept: ").append(signature).append(" with params (");
+            for (int i = 0; i < params.length; i++) {
+                if (i > 0) buf.append(", ");
+                Object param = params[i];
+                Object display = param == null ? "null" : param.getClass().isArray() ? "{}" : param;
+                buf.append(params[i]).append(" ").append(display);
+            }
+            buf.append(")");
+            transcript.add(buf.toString());
+
+            return valueToReturnFromIntercept;
         }
 
         @Override public <T extends Throwable> T stripStackTrace(T throwable) {

@@ -46,6 +46,10 @@ public class Attribute {
             return xmlContext.packageName;
         }
 
+        return extractPackageName(namespaceUri);
+    }
+
+    public static String extractPackageName(String namespaceUri) {
         Matcher matcher = NS_URI_PATTERN.matcher(namespaceUri);
         if (!matcher.find()) {
             if (!namespaceUri.equals("http://schemas.android.com/apk/prv/res/android")) {

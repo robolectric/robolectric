@@ -44,7 +44,7 @@ import static org.robolectric.Robolectric.shadowOf;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(View.class)
 public class ShadowView {
-    public static final String ANDROID_NS = "android"; // todo: this really oughta be "http://schemas.android.com/apk/res/android"
+    public static final String ANDROID_NS = "http://schemas.android.com/apk/res/android";
     // This is dumb, we should have a Robolectric-wide way of warning about weird states. todo [xw]
     public static boolean strict = false;
 

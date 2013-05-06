@@ -1,6 +1,14 @@
 package org.robolectric.shadows;
 
-import android.content.*;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.ContentResolver;
+import android.content.Context;
+import android.content.ContextWrapper;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
@@ -14,6 +22,7 @@ import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;
 import org.robolectric.res.Attribute;
+import org.robolectric.res.Fs;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.tester.android.content.TestSharedPreferences;
@@ -225,7 +234,7 @@ public class ShadowContextWrapper extends ShadowContext {
 
     private PackageManager requirePackageManager() {
         if (packageManager == null) {
-            packageManager = new RobolectricPackageManager(realContextWrapper, new AndroidManifest(new File(".")));
+            packageManager = new RobolectricPackageManager(realContextWrapper, new AndroidManifest(Fs.currentDirectory()));
         }
         return packageManager;
     }

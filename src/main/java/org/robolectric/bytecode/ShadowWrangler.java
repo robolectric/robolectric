@@ -176,7 +176,7 @@ public class ShadowWrangler implements ClassHandler {
     }
 
     @Override
-    public Object intercept(String signature, Object instance, Object[] paramTypes, Class theClass) throws Throwable {
+    public Object intercept(String signature, Object instance, Object[] params, Class theClass) throws Throwable {
         MethodSignature methodSignature = MethodSignature.parse(signature);
 
         if (debug) {

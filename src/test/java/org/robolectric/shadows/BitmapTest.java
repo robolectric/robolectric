@@ -12,7 +12,11 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
-import static org.junit.Assert.*;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -118,6 +122,38 @@ public class BitmapTest {
         Bitmap bitmapCopy = bitmap.copy(Config.ARGB_8888, true);
         assertEquals(shadowOf(bitmapCopy).getConfig(), Config.ARGB_8888);
         assertTrue(shadowOf(bitmapCopy).isMutable());
+    }
+
+    @Test
+    public void rowBytesIsAccurate() {
+        Bitmap b1 = Bitmap.createBitmap(10, 10, Config.ARGB_8888);
+        assertThat(b1.getRowBytes()).isEqualTo(40);
+        Bitmap b2 = Bitmap.createBitmap(10, 10, Config.RGB_565);
+        assertThat(b2.getRowBytes()).isEqualTo(20);
+
+        // Null config is not allowed.
+        try {
+            Bitmap b3 = Bitmap.createBitmap(10, 10, null);
+            b3.getRowBytes();
+            fail();
+        } catch (NullPointerException expected) {
+        }
+    }
+
+    @Test
+    public void byteCountIsAccurate() {
+        Bitmap b1 = Bitmap.createBitmap(10, 10, Config.ARGB_8888);
+        assertThat(b1.getByteCount()).isEqualTo(400);
+        Bitmap b2 = Bitmap.createBitmap(10, 10, Config.RGB_565);
+        assertThat(b2.getByteCount()).isEqualTo(200);
+
+        // Null config is not allowed.
+        try {
+            Bitmap b3 = Bitmap.createBitmap(10, 10, null);
+            b3.getByteCount();
+            fail();
+        } catch (NullPointerException expected) {
+        }
     }
 
     private static Bitmap create(String name) {

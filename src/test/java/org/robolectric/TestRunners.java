@@ -7,10 +7,10 @@ import org.robolectric.bytecode.ClassInfo;
 import org.robolectric.bytecode.Setup;
 import org.robolectric.bytecode.ShadowMap;
 import org.robolectric.internal.ParallelUniverseInterface;
+import org.robolectric.res.FsFile;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.shadows.ShadowSystemProperties;
 
-import java.io.File;
 import java.lang.reflect.Method;
 
 import static org.robolectric.util.TestUtil.resourceFile;
@@ -22,7 +22,7 @@ public class TestRunners {
         }
 
         @Override
-        protected AndroidManifest createAppManifest(File baseDir) {
+        protected AndroidManifest createAppManifest(FsFile manifestFile) {
             return new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"), resourceFile("assets"));
         }
 
@@ -54,7 +54,7 @@ public class TestRunners {
                     .build();
         }
 
-        @Override protected AndroidManifest createAppManifest(File baseDir) {
+        @Override protected AndroidManifest createAppManifest(FsFile manifestFile) {
             return null;
         }
 
@@ -80,7 +80,7 @@ public class TestRunners {
         }
 
         @Override
-        protected AndroidManifest createAppManifest(File baseDir) {
+        protected AndroidManifest createAppManifest(FsFile manifestFile) {
             return new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"), resourceFile("assets"));
         }
     }
