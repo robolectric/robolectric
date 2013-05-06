@@ -200,13 +200,19 @@ public class ContextWrapperTest {
     }
 
     @Test
-    public void checkCallingPermissionShouldGrantPermissionByDefault() throws Exception {
-        assertThat(contextWrapper.checkCallingPermission("")).isEqualTo(PERMISSION_GRANTED);
+    public void checkCallingPermissionsShouldReturnPermissionGrantedToAddedPermissions() throws Exception {
+        shadowOf(contextWrapper).grantPermissions("foo", "bar");
+        assertThat(contextWrapper.checkCallingPermission("foo")).isEqualTo(PERMISSION_GRANTED);
+        assertThat(contextWrapper.checkCallingPermission("bar")).isEqualTo(PERMISSION_GRANTED);
+        assertThat(contextWrapper.checkCallingPermission("baz")).isEqualTo(PERMISSION_DENIED);
     }
 
     @Test
-    public void checkCallingOrSelfPermissionShouldGrantPermissionByDefault() throws Exception {
-        assertThat(contextWrapper.checkCallingOrSelfPermission("")).isEqualTo(PERMISSION_GRANTED);
+    public void checkCallingOrSelfPermissionsShouldReturnPermissionGrantedToAddedPermissions() throws Exception {
+        shadowOf(contextWrapper).grantPermissions("foo", "bar");
+        assertThat(contextWrapper.checkCallingOrSelfPermission("foo")).isEqualTo(PERMISSION_GRANTED);
+        assertThat(contextWrapper.checkCallingOrSelfPermission("bar")).isEqualTo(PERMISSION_GRANTED);
+        assertThat(contextWrapper.checkCallingOrSelfPermission("baz")).isEqualTo(PERMISSION_DENIED);
     }
 
     @Test

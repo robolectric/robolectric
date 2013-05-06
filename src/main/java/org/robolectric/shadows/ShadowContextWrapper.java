@@ -49,12 +49,12 @@ public class ShadowContextWrapper extends ShadowContext {
 
     @Implementation
     public int checkCallingPermission(String permission) {
-        return PackageManager.PERMISSION_GRANTED;
+        return checkPermission(permission, -1 , -1);
     }
 
     @Implementation
     public int checkCallingOrSelfPermission(String permission) {
-        return PackageManager.PERMISSION_GRANTED;
+        return checkPermission(permission, -1, -1);
     }
 
     @Implementation
@@ -171,7 +171,7 @@ public class ShadowContextWrapper extends ShadowContext {
     }
 
     @Implementation
-    public int checkPermission(java.lang.String permission, int pid, int uid) {
+    public int checkPermission(String permission, int pid, int uid) {
         return grantedPermissions.contains(permission) ? PERMISSION_GRANTED : PERMISSION_DENIED;
     }
 
