@@ -30,12 +30,10 @@ import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.tester.org.apache.http.FakeHttpLayer;
 import org.robolectric.util.Scheduler;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+import static android.content.pm.PackageManager.PERMISSION_DENIED;
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static org.fest.reflect.core.Reflection.constructor;
 import static org.robolectric.Robolectric.newInstanceOf;
 import static org.robolectric.Robolectric.shadowOf;
@@ -99,6 +97,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     private Object bluetoothAdapter = Robolectric.newInstanceOf("android.bluetooth.BluetoothAdapter");
     private Resources resources;
     private AssetManager assetManager;
+    private Set<String> grantedPermissions = new HashSet<String>();
 
     // these are managed by the AppSingletonizier... kinda gross, sorry [xw]
     LayoutInflater layoutInflater;
@@ -651,6 +650,22 @@ public class ShadowApplication extends ShadowContextWrapper {
 
         public Context getContext() {
             return context;
+        }
+    }
+
+    public int checkPermission(String permission, int pid, int uid) {
+        return grantedPermissions.contains(permission) ? PERMISSION_GRANTED : PERMISSION_DENIED;
+    }
+
+    public void grantPermissions(String... permissionNames) {
+        for (String permissionName : permissionNames) {
+            grantedPermissions.add(permissionName);
+        }
+    }
+
+    public void denyPermissions(String... permissionNames) {
+        for (String permissionName : permissionNames) {
+            grantedPermissions.remove(permissionName);
         }
     }
 }

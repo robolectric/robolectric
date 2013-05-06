@@ -38,6 +38,8 @@ import java.io.FileDescriptor;
 import java.io.IOException;
 import java.util.List;
 
+import static android.content.pm.PackageManager.PERMISSION_DENIED;
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 import static org.robolectric.Robolectric.shadowOf;
@@ -347,6 +349,17 @@ public class ApplicationTest {
         Resources res = application.getResources();
         shadowOf(application).resetResources();
         assertFalse(res == application.getResources());
+    }
+
+    @Test
+    public void checkPermission_shouldTrackGrantedAndDeniedPermissions() throws Exception {
+        Application application = new DefaultTestLifecycle().createApplication(null, newConfigWith("com.wacka.wa", ""));
+        shadowOf(application).grantPermissions("foo", "bar");
+        shadowOf(application).denyPermissions("foo", "qux");
+        assertThat(application.checkPermission("foo", -1, -1)).isEqualTo(PERMISSION_DENIED);
+        assertThat(application.checkPermission("bar", -1, -1)).isEqualTo(PERMISSION_GRANTED);
+        assertThat(application.checkPermission("baz", -1, -1)).isEqualTo(PERMISSION_DENIED);
+        assertThat(application.checkPermission("qux", -1, -1)).isEqualTo(PERMISSION_DENIED);
     }
 
     /////////////////////////////

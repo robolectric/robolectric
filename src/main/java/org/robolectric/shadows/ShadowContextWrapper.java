@@ -50,10 +50,10 @@ public class ShadowContextWrapper extends ShadowContext {
 
     private String appName;
     private String packageName;
-    private Set<String> grantedPermissions = new HashSet<String>();
 
     public void __constructor__(Context baseContext) {
         this.baseContext = baseContext;
+
     }
 
     @Implementation
@@ -181,7 +181,7 @@ public class ShadowContextWrapper extends ShadowContext {
 
     @Implementation
     public int checkPermission(String permission, int pid, int uid) {
-        return grantedPermissions.contains(permission) ? PERMISSION_GRANTED : PERMISSION_DENIED;
+        return getShadowApplication().checkPermission(permission, pid, uid);
     }
 
     @Implementation
@@ -369,22 +369,12 @@ public class ShadowContextWrapper extends ShadowContext {
         getShadowApplication().unbindService(serviceConnection);
     }
 
-    /**
-     * Non-Android accessor that is used to grant permissions checked via
-     * {@link android.content.ContextWrapper#checkPermission(String, int, int)}
-     *
-     * @param permissionNames permission names that should be granted
-     */
     public void grantPermissions(String... permissionNames) {
-        for (String permissionName : permissionNames) {
-            grantedPermissions.add(permissionName);
-        }
+        getShadowApplication().grantPermissions(permissionNames);
     }
 
     public void denyPermissions(String... permissionNames) {
-        for (String permissionName : permissionNames) {
-            grantedPermissions.remove(permissionName);
-        }
+        getShadowApplication().denyPermissions(permissionNames);
     }
 
     @Implementation
