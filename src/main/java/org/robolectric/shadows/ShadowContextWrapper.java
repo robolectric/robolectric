@@ -381,6 +381,12 @@ public class ShadowContextWrapper extends ShadowContext {
         }
     }
 
+    public void denyPermissions(String... permissionNames) {
+        for (String permissionName : permissionNames) {
+            grantedPermissions.remove(permissionName);
+        }
+    }
+
     @Implementation
     public SQLiteDatabase openOrCreateDatabase(String name, int mode, CursorFactory factory) {
         return SQLiteDatabase.openDatabase(name, factory, 0);

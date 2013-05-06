@@ -216,6 +216,26 @@ public class ContextWrapperTest {
     }
 
     @Test
+    public void checkCallingPermission_shouldReturnPermissionDeniedForRemovedPermissions() throws Exception {
+        shadowOf(contextWrapper).grantPermissions("foo", "bar");
+        shadowOf(contextWrapper).denyPermissions("foo", "qux");
+        assertThat(contextWrapper.checkCallingPermission("foo")).isEqualTo(PERMISSION_DENIED);
+        assertThat(contextWrapper.checkCallingPermission("bar")).isEqualTo(PERMISSION_GRANTED);
+        assertThat(contextWrapper.checkCallingPermission("baz")).isEqualTo(PERMISSION_DENIED);
+        assertThat(contextWrapper.checkCallingPermission("qux")).isEqualTo(PERMISSION_DENIED);
+    }
+
+    @Test
+    public void checkCallingOrSelfPermission_shouldReturnPermissionDeniedForRemovedPermissions() throws Exception {
+        shadowOf(contextWrapper).grantPermissions("foo", "bar");
+        shadowOf(contextWrapper).denyPermissions("foo", "qux");
+        assertThat(contextWrapper.checkCallingOrSelfPermission("foo")).isEqualTo(PERMISSION_DENIED);
+        assertThat(contextWrapper.checkCallingOrSelfPermission("bar")).isEqualTo(PERMISSION_GRANTED);
+        assertThat(contextWrapper.checkCallingOrSelfPermission("baz")).isEqualTo(PERMISSION_DENIED);
+        assertThat(contextWrapper.checkCallingOrSelfPermission("qux")).isEqualTo(PERMISSION_DENIED);
+    }
+
+    @Test
     public void openOrCreateDatabaseShouldAlwaysReturnSameDatabase() throws Exception {
         assertThat(contextWrapper.openOrCreateDatabase("db", 0, null)).isNotNull();
     }
