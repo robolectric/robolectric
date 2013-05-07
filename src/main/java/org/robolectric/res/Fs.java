@@ -48,7 +48,7 @@ abstract public class Fs {
         return newFile(new File("."));
     }
 
-    private static class JarFs extends Fs {
+    static class JarFs extends Fs {
         private final JarFile jarFile;
         private final NavigableMap<String, JarEntry> jarEntryMap = new TreeMap<String, JarEntry>();
 
@@ -69,7 +69,7 @@ abstract public class Fs {
             return new JarFsFile(folderBaseName);
         }
 
-        private class JarFsFile implements FsFile {
+        class JarFsFile implements FsFile {
             private final String path;
 
             public JarFsFile(String path) {
