@@ -144,6 +144,10 @@ public class ShadowBitmap {
 
     @Implementation
     public static Bitmap createScaledBitmap(Bitmap src, int dstWidth, int dstHeight, boolean filter) {
+        if (dstWidth == src.getWidth() && dstHeight == src.getHeight() && !filter) {
+            return src; // Return the original.
+        }
+
         Bitmap scaledBitmap = Robolectric.newInstanceOf(Bitmap.class);
         ShadowBitmap shadowBitmap = shadowOf(scaledBitmap);
 
@@ -162,6 +166,10 @@ public class ShadowBitmap {
 
     @Implementation
     public static Bitmap createBitmap(Bitmap src, int x, int y, int width, int height) {
+        if (x == 0 && y == 0 && width == src.getWidth() && height == src.getHeight()) {
+            return src; // Return the original.
+        }
+
         Bitmap newBitmap = Robolectric.newInstanceOf(Bitmap.class);
         ShadowBitmap shadowBitmap = shadowOf(newBitmap);
 
@@ -181,6 +189,10 @@ public class ShadowBitmap {
 
     @Implementation
     public static Bitmap createBitmap(Bitmap src, int x, int y, int width, int height, Matrix matrix, boolean filter) {
+        if (x == 0 && y == 0 && width == src.getWidth() && height == src.getHeight() && (matrix == null || matrix.isIdentity()) && !filter) {
+            return src; // Return the original.
+        }
+
         Bitmap newBitmap = Robolectric.newInstanceOf(Bitmap.class);
         ShadowBitmap shadowBitmap = shadowOf(newBitmap);
 
