@@ -156,9 +156,20 @@ public class BitmapTest {
         }
     }
 
+    @Test
+    public void bitmapsAreReused() {
+        Bitmap b = Bitmap.createBitmap(10, 10, Config.ARGB_8888);
+        Bitmap b1 = Bitmap.createBitmap(b, 0, 0, 10, 10);
+        assertThat(b1).isSameAs(b);
+        Bitmap b2 = Bitmap.createBitmap(b, 0, 0, 10, 10, null, false);
+        assertThat(b2).isSameAs(b);
+        Bitmap b3 = Bitmap.createScaledBitmap(b, 10, 10, false);
+        assertThat(b3).isSameAs(b);
+    }
+
     private static Bitmap create(String name) {
-      Bitmap bitmap = Robolectric.newInstanceOf(Bitmap.class);
-      shadowOf(bitmap).appendDescription(name);
-      return bitmap;
+        Bitmap bitmap = Robolectric.newInstanceOf(Bitmap.class);
+        shadowOf(bitmap).appendDescription(name);
+        return bitmap;
     }
 }
