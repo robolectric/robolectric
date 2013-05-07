@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.media.AudioManager;
 import android.os.Bundle;
 import android.text.Selection;
 import android.text.SpannableStringBuilder;
@@ -64,6 +65,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     private int mDefaultKeyMode = Activity.DEFAULT_KEYS_DISABLE;
     private SpannableStringBuilder mDefaultKeySsb = null;
     private boolean destroyed = false;
+    private int streamType = -1;
 
     public void callOnCreate(Bundle bundle) {
         invokeReflectively("onCreate", Bundle.class, bundle);
@@ -653,6 +655,16 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
     public List<Cursor> getManagedCursors() {
     	return managedCusors;
+    }
+
+    @Implementation
+    public final void setVolumeControlStream(int streamType) {
+        this.streamType = streamType;
+    }
+
+    @Implementation
+    public final int getVolumeControlStream() {
+        return streamType;
     }
 
     private final class ActivityInvoker {
