@@ -16,11 +16,6 @@ import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Looper;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.util.List;
 import org.robolectric.AndroidManifest;
 import org.robolectric.Robolectric;
 import org.robolectric.internal.Implementation;
@@ -28,6 +23,12 @@ import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.tester.android.content.TestSharedPreferences;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.util.List;
 
 import static android.database.sqlite.SQLiteDatabase.CursorFactory;
 import static org.robolectric.Robolectric.shadowOf;

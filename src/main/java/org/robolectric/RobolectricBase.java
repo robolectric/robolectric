@@ -115,6 +115,7 @@ import org.robolectric.shadows.ShadowIntentSender;
 import org.robolectric.shadows.ShadowItemizedOverlay;
 import org.robolectric.shadows.ShadowJsPromptResult;
 import org.robolectric.shadows.ShadowJsResult;
+import org.robolectric.shadows.ShadowKeyCharacterMap;
 import org.robolectric.shadows.ShadowKeyEvent;
 import org.robolectric.shadows.ShadowKeyguardManager;
 import org.robolectric.shadows.ShadowLayerDrawable;
@@ -382,6 +383,7 @@ public class RobolectricBase {
             ShadowLayoutAnimationController.class,
             ShadowJsPromptResult.class,
             ShadowJsResult.class,
+            ShadowKeyCharacterMap.class,
             ShadowKeyEvent.class,
             ShadowKeyguardManager.class,
             ShadowKeyguardManager.ShadowKeyguardLock.class,
@@ -406,7 +408,6 @@ public class RobolectricBase {
             ShadowViewGroup.ShadowMarginLayoutParams.class,
             ShadowMatrix.class,
             ShadowMatrixCursor.class,
-            ShadowView.ShadowMeasureSpec.class,
             ShadowMediaPlayer.class,
             ShadowMediaRecorder.class,
             ShadowMediaScannerConnection.class,
@@ -520,7 +521,6 @@ public class RobolectricBase {
             ShadowViewGroup.class,
             ShadowViewFlipper.class,
             ShadowViewRootImpl.class,
-            ShadowView.ShadowMeasureSpec.class,
             ShadowViewTreeObserver.class,
             ShadowWebView.class,
             ShadowWebViewDatabase.class,

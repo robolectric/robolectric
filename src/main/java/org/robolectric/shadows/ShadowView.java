@@ -12,20 +12,18 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.TouchDelegate;
 import android.view.View;
-import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.view.animation.Animation;
+import java.io.PrintStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import org.robolectric.Robolectric;
 import org.robolectric.internal.HiddenApi;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;
-
-import java.io.PrintStream;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 import static org.robolectric.Robolectric.directlyOn;
 import static org.robolectric.Robolectric.shadowOf;
@@ -510,54 +508,5 @@ public class ShadowView {
 
     private View directly() {
         return directlyOn(realView, View.class);
-    }
-
-    @SuppressWarnings({"UnusedDeclaration"})
-    /**
-     * Shadow for {@code View.MeasureSpec} inner class.
-     *
-     * As the implementation is very simple, it is taken from the AOSP source.
-     */
-    @Implements(MeasureSpec.class)
-    public static class ShadowMeasureSpec {
-
-        private static final int MODE_SHIFT = 30;
-        private static final int MODE_MASK = 0x3 << MODE_SHIFT;
-
-        @Implementation
-        public static int getMode(int measureSpec) {
-            return (measureSpec & MODE_MASK);
-        }
-
-        @Implementation
-        public static int getSize(int measureSpec) {
-            return (measureSpec & ~MODE_MASK);
-        }
-
-        @Implementation
-        public static int makeMeasureSpec(int size, int mode) {
-            return size + mode;
-        }
-
-        @Implementation
-        public static String toString(int measureSpec) {
-            int mode = getMode(measureSpec);
-            int size = getSize(measureSpec);
-
-            StringBuilder sb = new StringBuilder("MeasureSpec: ");
-
-            if (mode == MeasureSpec.UNSPECIFIED)
-                sb.append("UNSPECIFIED ");
-            else if (mode == MeasureSpec.EXACTLY)
-                sb.append("EXACTLY ");
-            else if (mode == MeasureSpec.AT_MOST)
-                sb.append("AT_MOST ");
-            else
-                sb.append(mode).append(" ");
-
-            sb.append(size);
-            return sb.toString();
-        }
-
     }
 }
