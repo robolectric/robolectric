@@ -1,29 +1,22 @@
 package org.robolectric.shadows;
 
 import android.widget.AbsSpinner;
-import android.widget.SpinnerAdapter;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
+import org.robolectric.internal.RealObject;
+
+import static org.robolectric.Robolectric.directlyOn;
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(value = AbsSpinner.class, inheritImplementationMethods = true)
+@Implements(AbsSpinner.class)
 public class ShadowAbsSpinner extends ShadowAdapterView {
-
+    @RealObject AbsSpinner realAbsSpinner;
     private boolean animatedTransition;
 
     @Implementation
-    public void setAdapter(SpinnerAdapter adapter) {
-        super.setAdapter(adapter);
-    }
-
-    @Override @Implementation
-    public SpinnerAdapter getAdapter() {
-        return (SpinnerAdapter) super.getAdapter();
-    }
-
-    @Implementation
     public void setSelection(int position, boolean animate) {
-        super.setSelection(position);
+        directlyOn(realAbsSpinner, AbsSpinner.class, "setSelection", int.class, boolean.class)
+                .invoke(position, animate);
         animatedTransition = animate;
     }
 

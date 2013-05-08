@@ -11,6 +11,7 @@ import org.robolectric.res.ResourceLoader;
 import org.robolectric.util.I18nException;
 
 import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.res.ResourceLoader.ANDROID_NS;
 
 /**
  * Shadow of {@code MenuInflater} that actually inflates menus into {@code View}s that are functional enough to
@@ -53,17 +54,17 @@ public class ShadowMenuInflater {
             if (name.equals("item")) {
                 if (child.isSubMenuItem()) {
                     SubMenu sub = root.addSubMenu(groupId,
-                            attributes.getAttributeResourceValue("android", "id", 0),
-                            0, attributes.getAttributeValue("android", "title"));
+                            attributes.getAttributeResourceValue(ANDROID_NS, "id", 0),
+                            0, attributes.getAttributeValue(ANDROID_NS, "title"));
                     MenuNode subMenuNode = child.getChildren().get(0);
                     addChildrenInGroup(subMenuNode, groupId, sub);
                 } else {
                     root.add(groupId,
-                            attributes.getAttributeResourceValue("android", "id", 0),
-                            0, attributes.getAttributeValue("android", "title"));
+                            attributes.getAttributeResourceValue(ANDROID_NS, "id", 0),
+                            0, attributes.getAttributeValue(ANDROID_NS, "title"));
                 }
             } else if (name.equals("group")) {
-                int newGroupId = attributes.getAttributeResourceValue("android", "id", 0);
+                int newGroupId = attributes.getAttributeResourceValue(ANDROID_NS, "id", 0);
                 addChildrenInGroup(child, newGroupId, root);
             }
         }

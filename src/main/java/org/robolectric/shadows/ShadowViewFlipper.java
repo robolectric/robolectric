@@ -5,7 +5,7 @@ import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;
 
-@Implements(value = ViewFlipper.class, inheritImplementationMethods = true)
+@Implements(value = ViewFlipper.class)
 public class ShadowViewFlipper extends ShadowViewAnimator {
     @RealObject
     protected ViewFlipper realObject;

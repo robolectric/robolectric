@@ -2,7 +2,10 @@ package org.robolectric.shadows;
 
 import android.content.Context;
 import android.graphics.Point;
+import android.util.AttributeSet;
 import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ZoomButtonsController;
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapController;
@@ -10,13 +13,18 @@ import com.google.android.maps.MapView;
 import com.google.android.maps.Overlay;
 import com.google.android.maps.Projection;
 import org.robolectric.Robolectric;
+import org.robolectric.internal.HiddenApi;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
+import org.robolectric.res.Attribute;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.fest.reflect.core.Reflection.field;
+import static org.robolectric.Robolectric.directlyOn;
 import static org.robolectric.RobolectricForMaps.shadowOf;
+import static org.robolectric.bytecode.RobolectricInternals.getConstructor;
 
 /**
  * Shadow of {@code MapView} that simulates the internal state of a {@code MapView}. Supports {@code Projection}s,
@@ -48,16 +56,55 @@ public class ShadowMapView extends ShadowViewGroup {
         zoomButtonsController = new ZoomButtonsController(mapView);
     }
 
-    public void __constructor__(Context context, String title) {
-        super.__constructor__(context);
+    @HiddenApi
+    public void __constructor__(Context context) {
+        field("mContext").ofType(Context.class).in(realView).set(context);
+        this.attributeSet = new RoboAttributeSet(new ArrayList<Attribute>(), context.getResources(), null);
+        getConstructor(View.class, realView, Context.class)
+                .invoke(context);
+        getConstructor(ViewGroup.class, realView, Context.class)
+                .invoke(context);
+    }
+
+    public void __constructor__(Context context, AttributeSet attributeSet) {
+        field("mContext").ofType(Context.class).in(realView).set(context);
+        this.attributeSet = attributeSet;
+        getConstructor(View.class, realView, Context.class, AttributeSet.class, int.class)
+                .invoke(context, attributeSet, 0);
+        getConstructor(ViewGroup.class, realView, Context.class, AttributeSet.class, int.class)
+                .invoke(context, attributeSet, 0);
+    }
+
+    @Override public void __constructor__(Context context, AttributeSet attributeSet, int defStyle) {
+        field("mContext").ofType(Context.class).in(realView).set(context);
+        this.attributeSet = attributeSet;
+        getConstructor(View.class, realView, Context.class, AttributeSet.class, int.class)
+                .invoke(context, attributeSet, defStyle);
+        getConstructor(ViewGroup.class, realView, Context.class, AttributeSet.class, int.class)
+                .invoke(context, attributeSet, defStyle);
+        super.__constructor__(context, attributeSet, defStyle);
     }
 
     public static int toE6(double d) {
-        return (int) (d * 1e6);
+        return (int) (d * 0x1e6);
     }
 
     public static double fromE6(int i) {
-        return i / 1e6;
+        return i / 0x1e6;
+    }
+
+    @Implementation // todo 2.0-cleanup
+    public boolean isOpaque() {
+        return true;
+    }
+
+    @Implementation // todo 2.0-cleanup
+    public void onSizeChanged(int newWidth, int newHeight, int oldWidth, int oldHeight) {
+    }
+
+    @Implementation // todo 2.0-cleanup
+    public boolean onTouchEvent(MotionEvent event) {
+        return directlyOn(realView, View.class).onTouchEvent(event);
     }
 
     @Implementation
@@ -108,14 +155,14 @@ public class ShadowMapView extends ShadowViewGroup {
                         point = new Point();
                     }
 
-                    point.y = scaleDegree(geoPoint.getLatitudeE6(), bottom, top, mapCenter.getLatitudeE6(), latitudeSpan);
-                    point.x = scaleDegree(geoPoint.getLongitudeE6(), left, right, mapCenter.getLongitudeE6(), longitudeSpan);
+                    point.y = scaleDegree(geoPoint.getLatitudeE6(), realView.getBottom(), realView.getTop(), mapCenter.getLatitudeE6(), latitudeSpan);
+                    point.x = scaleDegree(geoPoint.getLongitudeE6(), realView.getLeft(), realView.getRight(), mapCenter.getLongitudeE6(), longitudeSpan);
                     return point;
                 }
 
                 @Override public GeoPoint fromPixels(int x, int y) {
-                    int lat = scalePixel(y, bottom, -realMapView.getHeight(), mapCenter.getLatitudeE6(), latitudeSpan);
-                    int lng = scalePixel(x, left, realMapView.getWidth(), mapCenter.getLongitudeE6(), longitudeSpan);
+                    int lat = scalePixel(y, realView.getBottom(), -realMapView.getHeight(), mapCenter.getLatitudeE6(), latitudeSpan);
+                    int lng = scalePixel(x, realView.getLeft(), realMapView.getWidth(), mapCenter.getLongitudeE6(), longitudeSpan);
                     return new GeoPoint(lat, lng);
                 }
 
@@ -168,7 +215,7 @@ public class ShadowMapView extends ShadowViewGroup {
     }
 
     @Implementation
-    @Override public boolean dispatchTouchEvent(MotionEvent event) {
+    public boolean dispatchTouchEvent(MotionEvent event) {
         for (Overlay overlay : overlays) {
             if (overlay.onTouchEvent(event, realMapView)) {
                 return true;
@@ -208,12 +255,16 @@ public class ShadowMapView extends ShadowViewGroup {
 
         lastTouchEventPoint = new Point((int) event.getX(), (int) event.getY());
 
-        return super.dispatchTouchEvent(event);
+        return realView.dispatchTouchEvent(event);
     }
 
     @Implementation
     public void preLoad() {
         preLoadWasCalled = true;
+    }
+
+    @Implementation
+    public void onLayout(boolean b, int i, int i1, int i2, int i3) {
     }
 
     private void moveByPixels(int x, int y) {

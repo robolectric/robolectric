@@ -25,9 +25,9 @@ abstract public class Fs {
         return new JarFs(new File(url.getFile()));
     }
 
-    public static FsFile fileFromJar(String urlString) {
+    public static FsFile fileFromPath(String urlString) {
         URI uri = URI.create(urlString);
-        if (uri.getScheme().equals("jar")) {
+        if ("jar".equals(uri.getScheme())) {
             String[] parts = uri.getPath().split("!");
             try {
                 Fs fs = fromJar(URI.create("file:" + parts[0]).toURL());
@@ -36,7 +36,7 @@ abstract public class Fs {
                 throw new RuntimeException(e);
             }
         } else {
-            throw new RuntimeException("not sure what to do with " + urlString);
+            return new FileFsFile(new File(urlString));
         }
     }
 

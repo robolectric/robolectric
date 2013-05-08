@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.accessibility.AccessibilityManager;
 import org.fest.reflect.field.Invoker;
 import org.robolectric.Robolectric;
+import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 
 import java.lang.reflect.Field;
@@ -24,6 +25,16 @@ public class ShadowAccessibilityManager {
         Invoker<Handler> mHandlerField = field("mHandler").ofType(Handler.class).in(AccessibilityManager.class);
         makeNonFinal(mHandlerField.info()).set(accessibilityManager, handler);
         return accessibilityManager;
+    }
+
+    @Implementation
+    public boolean addAccessibilityStateChangeListener(AccessibilityManager.AccessibilityStateChangeListener listener) {
+        return true;
+    }
+
+    @Implementation
+    public boolean removeAccessibilityStateChangeListener(AccessibilityManager.AccessibilityStateChangeListener listener) {
+        return true;
     }
 
     static Field makeNonFinal(Field field) {

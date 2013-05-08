@@ -10,7 +10,7 @@ import java.util.List;
 import static org.robolectric.Robolectric.newInstanceOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
-public class TestWindowManager implements WindowManager {
+public class RoboWindowManager implements WindowManager {
 
     private Display display;
     private List<View> views = new ArrayList<View>();

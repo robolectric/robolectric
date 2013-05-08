@@ -4,11 +4,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 public enum ResType {
+    ATTR_DATA,
     BOOLEAN,
     COLOR,
     CHAR_SEQUENCE,
+    COLOR_STATE_LIST,
     DIMEN,
+    FILE,
+    FLOAT,
     INTEGER,
+    STYLE {
+        @Override public TypedResource getValueWithType(XpathResourceXmlLoader.XmlNode xmlNode) {
+            throw new UnsupportedOperationException();
+        }
+    },
 
     CHAR_SEQUENCE_ARRAY {
         @Override public TypedResource getValueWithType(XpathResourceXmlLoader.XmlNode xmlNode) {

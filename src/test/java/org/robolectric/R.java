@@ -106,15 +106,16 @@ public final class R {
         public static final int greeting = 0x10103;
         public static final int copy = 0x10104;
         public static final int ok = 0x10105;
-        public static final int only_in_main = 0x10106;
-        public static final int only_in_lib1 = 0x10107;
-        public static final int only_in_lib2 = 0x10108;
-        public static final int only_in_lib3 = 0x10109;
-        public static final int in_all_libs = 0x1010a;
-        public static final int in_lib2_and_lib3 = 0x1010b;
-        public static final int in_lib1_and_lib3 = 0x1010c;
-        public static final int in_main_and_lib1 = 0x1010d;
-        public static final int interpolate = 0x1010e;
+        public static final int ok2 = 0x10106;
+        public static final int only_in_main = 0x10107;
+        public static final int only_in_lib1 = 0x10108;
+        public static final int only_in_lib2 = 0x10109;
+        public static final int only_in_lib3 = 0x1010a;
+        public static final int in_all_libs = 0x1010b;
+        public static final int in_lib2_and_lib3 = 0x1010c;
+        public static final int in_lib1_and_lib3 = 0x1010d;
+        public static final int in_main_and_lib1 = 0x1010e;
+        public static final int interpolate = 0x1010f;
     }
 
     public static final class plurals {
@@ -143,6 +144,8 @@ public final class R {
         public static final int android_namespaced_transparent = 0x10408;
         public static final int android_red = 0x10409;
         public static final int test_color_1 = 0x1040a;
+        public static final int color_state_list = 0x1040b;
+        public static final int list_separator = 0x1040c;
     }
 
     public static final class drawable {
@@ -161,9 +164,7 @@ public final class R {
         public static final int l7_white = 0x1050c;
         public static final int rainbow = 0x1050d;
         public static final int state_drawable = 0x1050e;
-        public static final int animation_list = 0x1050f;
-        public static final int nine_patch_drawable = 0x10510;
-        public static final int test_drawable_1 = 0x10511;
+        public static final int nine_patch_drawable = 0x1050f;
     }
 
     public static final class layout {
@@ -182,10 +183,12 @@ public final class R {
         public static final int fragment_contents = 0x1060c;
         public static final int lam_outer = 0x1060d;
         public static final int lam_inner = 0x1060e;
+        public static final int styles_button_layout = 0x1060f;
     }
 
     public static final class anim {
         public static final int test_anim_1 = 0x10700;
+        public static final int animation_list = 0x10700;
     }
 
     public static final class raw {
@@ -203,6 +206,9 @@ public final class R {
         public static final int aspectRatio = 0x10905;
         public static final int aspectRatioEnabled = 0x10906;
         public static final int items = 0x10907;
+        public static final int logoHeight = 0x10908;
+        public static final int quitKeyCombo = 0x1090a;
+        public static final int responses = 0x1090b;
     }
 
     public static final class menu {
@@ -216,11 +222,12 @@ public final class R {
 
     public static final class styleable {
         public static final int[] CustomView = {
-                id.itemType,
-                id.scrollBars,
-                id.keycode,
-                id.aspectRatio,
-                id.aspectRatioEnabled,
+                attr.itemType,
+                attr.scrollBars,
+                attr.keycode,
+                attr.aspectRatio,
+                attr.aspectRatioEnabled,
+                attr.quitKeyCombo,
         };
 
         public static final int CustomView_itemType = 0;
@@ -228,6 +235,7 @@ public final class R {
         public static final int CustomView_keycode = 2;
         public static final int CustomView_aspectRatio = 3;
         public static final int CustomView_aspectRatioEnabled = 4;
+        public static final int CustomView_quitKeyCombo = 5;
 
         public static final int[] HeaderBar = {id.textStyle2, id.textStyle3};
         public static final int HeaderBar_textStyle2 = 0;
@@ -267,5 +275,10 @@ public final class R {
 
     public static final class style {
         public static final int FancyStyle = 0x10f00;
+        public static final int Theme_Robolectric = 0x10f01;
+        public static final int Theme_AnotherTheme = 0x10f02;
+        public static final int MyCustomView = 0x10f03;
+        public static final int Widget_Robolectric_Button = 0x10f04;
+        public static final int Widget_AnotherTheme_Button = 0x10f05;
     }
 }

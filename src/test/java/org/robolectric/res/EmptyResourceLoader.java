@@ -7,4 +7,8 @@ public class EmptyResourceLoader extends XResourceLoader {
 
     void doInitialize() {
     }
+
+    @Override public boolean providesFor(String namespace) {
+        return true;
+    }
 }

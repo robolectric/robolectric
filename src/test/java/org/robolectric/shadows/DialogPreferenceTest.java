@@ -11,7 +11,7 @@ import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.res.Attribute;
-import org.robolectric.res.EmptyResourceLoader;
+import org.robolectric.util.TestUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,14 +34,14 @@ public class DialogPreferenceTest {
         List<Attribute> attributes = new ArrayList<Attribute>();
         attributes.add(new Attribute("android:attr/dialogMessage", TEST_DIALOG_MESSAGE, R.class.getPackage().getName()));
         context = new Activity();
-        attrs = new RoboAttributeSet(attributes, new EmptyResourceLoader(), null);
+        attrs = new RoboAttributeSet(attributes, TestUtil.emptyResources(), null);
         preference = new TestDialogPreference(context, attrs);
         shadow = Robolectric.shadowOf(preference);
     }
 
     @Test
     public void testConstructors() {
-        int defStyle = 7;
+        int defStyle = android.R.attr.buttonStyle;
 
         preference = new TestDialogPreference(context, attrs, defStyle);
         shadow = Robolectric.shadowOf(preference);

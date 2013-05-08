@@ -771,7 +771,7 @@ public class ActivityTest {
         @Override
         protected Dialog onCreateDialog(int id) {
             onCreateDialogWasCalled = true;
-            return new Dialog(null);
+            return new Dialog(this);
         }
     }
 }

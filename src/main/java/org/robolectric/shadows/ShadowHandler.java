@@ -150,6 +150,13 @@ public class ShadowHandler {
     }
 
     @Implementation
+    public boolean sendMessageAtTime(Message msg, long uptimeMillis) {
+        long delay = uptimeMillis - System.currentTimeMillis();
+        sendMessageDelayed(msg, delay);
+        return true;
+    }
+
+    @Implementation
     public final Looper getLooper() {
         return looper;
     }

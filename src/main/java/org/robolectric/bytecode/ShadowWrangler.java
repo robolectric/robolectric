@@ -1,9 +1,6 @@
 package org.robolectric.bytecode;
 
-import org.robolectric.internal.Implements;
-import org.robolectric.internal.RealObject;
-import org.robolectric.util.Function;
-
+import android.view.ContextThemeWrapper;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -15,13 +12,18 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.robolectric.internal.Implements;
+import org.robolectric.internal.RealObject;
+import org.robolectric.shadows.ShadowWindow;
+import org.robolectric.util.Function;
 
 import static org.fest.reflect.core.Reflection.method;
+import static org.fest.reflect.core.Reflection.type;
 
 public class ShadowWrangler implements ClassHandler {
     public static final Function<Object, Object> DO_NOTHING_HANDLER = new Function<Object, Object>() {
         @Override
-        public Object call(Object value) {
+        public Object call(Class<?> theClass, Object value, Object[] params) {
             return null;
         }
     };
@@ -76,6 +78,7 @@ public class ShadowWrangler implements ClassHandler {
 
     @Override
     synchronized public Plan methodInvoked(String signature, boolean isStatic, Class<?> theClass) {
+        if (debug) System.out.println("[DEBUG] " + signature);
         if (planCache.containsKey(signature)) return planCache.get(signature);
         Plan plan = calculatePlan(signature, isStatic, theClass);
         planCache.put(signature, plan);
@@ -183,16 +186,31 @@ public class ShadowWrangler implements ClassHandler {
             System.out.println("DEBUG: intercepted call to " + methodSignature);
         }
 
-        return getInterceptionHandler(methodSignature).call(instance);
+        return getInterceptionHandler(methodSignature).call(theClass, instance, params);
     }
 
     public Function<Object, Object> getInterceptionHandler(MethodSignature methodSignature) {
-        if (methodSignature.className.equals(LinkedHashMap.class.getName()) && methodSignature.methodName.equals("eldest")) {
+        // todo: move these somewhere else!
+        if (methodSignature.matches(LinkedHashMap.class.getName(), "eldest")) {
             return new Function<Object, Object>() {
                 @Override
-                public Object call(Object value) {
+                public Object call(Class<?> theClass, Object value, Object[] params) {
                     LinkedHashMap map = (LinkedHashMap) value;
                     return map.entrySet().iterator().next();
+                }
+            };
+        } else if (methodSignature.matches("com.android.internal.policy.PolicyManager", "makeNewWindow")) {
+            return new Function<Object, Object>() {
+                @Override public Object call(Class<?> theClass, Object value, Object[] params) {
+                    ClassLoader cl = theClass.getClassLoader();
+                    Class<?> shadowWindowClass = type(ShadowWindow.class.getName()).withClassLoader(cl).load();
+                    Class<?> activityClass = type(ContextThemeWrapper.class.getName()).withClassLoader(cl).load();
+
+                    Object context = params[0];
+                    return method("create")
+                            .withParameterTypes(activityClass)
+                            .in(shadowWindowClass)
+                            .invoke(context);
                 }
             };
         }

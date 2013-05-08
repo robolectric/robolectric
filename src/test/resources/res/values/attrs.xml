@@ -12,6 +12,8 @@
             <flag name="sideways" value="0x00000400" />
         </attr>
 
+        <attr name="quitKeyCombo" format="string"/>
+
         <attr name="gravity"/>
 
         <attr name="keycode"/>
@@ -29,4 +31,6 @@
         <enum name="KEYCODE_SOFT_RIGHT" value="2" />
         <enum name="KEYCODE_HOME" value="3" />
     </attr>
+
+    <attr name="responses" format="reference"/>
 </resources>

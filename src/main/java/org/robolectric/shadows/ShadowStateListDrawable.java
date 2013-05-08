@@ -1,11 +1,16 @@
 package org.robolectric.shadows;
 
+import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.StateListDrawable;
+import android.util.AttributeSet;
 import android.util.StateSet;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,13 +19,8 @@ import java.util.Map;
 @Implements(StateListDrawable.class)
 public class ShadowStateListDrawable extends ShadowDrawable {
 
-    private Map<Integer, Integer> stateToResource;
-    private Map<List<Integer>, Drawable> stateToDrawable;
-
-    public void __constructor__() {
-        stateToResource = new HashMap<Integer, Integer>();
-        stateToDrawable = new HashMap<List<Integer>, Drawable>();
-    }
+    private Map<Integer, Integer> stateToResource = new HashMap<Integer, Integer>();
+    private Map<List<Integer>, Drawable> stateToDrawable = new HashMap<List<Integer>, Drawable>();
 
     public void addState(int stateId, int resId) {
         stateToResource.put(stateId, resId);
@@ -33,6 +33,11 @@ public class ShadowStateListDrawable extends ShadowDrawable {
     @Implementation
     public void addState(int[] stateSet, Drawable drawable) {
         stateToDrawable.put(createStateList(stateSet), drawable);
+    }
+
+    @Implementation
+    public void inflate(Resources r, XmlPullParser parser, AttributeSet attrs) throws XmlPullParserException, IOException {
+        // todo 2.0-cleanup
     }
 
     /**

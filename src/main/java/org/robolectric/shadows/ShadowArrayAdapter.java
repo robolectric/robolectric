@@ -136,13 +136,7 @@ public class ShadowArrayAdapter<T> extends ShadowBaseAdapter {
         } else {
             text = (TextView) view.findViewById(textViewResourceId);
         }
-
-        if (item instanceof CharSequence) {
-            Robolectric.shadowOf(text).setText((CharSequence)item);
-        } else {
-        	Robolectric.shadowOf(text).setText(item.toString());
-        }
-
+        text.setText(item instanceof CharSequence ? (CharSequence) item : item.toString());
         return view;
     }
 

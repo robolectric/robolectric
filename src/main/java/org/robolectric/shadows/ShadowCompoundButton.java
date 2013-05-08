@@ -4,6 +4,9 @@ import android.widget.Checkable;
 import android.widget.CompoundButton;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
+import org.robolectric.internal.RealObject;
+
+import static org.robolectric.Robolectric.directlyOn;
 
 /**
  * Shadows the {@code android.widget.CompoundButton} class.
@@ -11,15 +14,11 @@ import org.robolectric.internal.Implements;
  * Keeps track of whether or not its "checked" state is set and deals with listeners in an appropriate way.
  */
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(value = CompoundButton.class, inheritImplementationMethods = true)
+@Implements(value = CompoundButton.class)
 public class ShadowCompoundButton extends ShadowTextView implements Checkable {
+    @RealObject CompoundButton realCompoundButton;
     private boolean checked;
     private CompoundButton.OnCheckedChangeListener onCheckedChangeListener;
-
-    @Override public void applyAttributes() {
-        super.applyAttributes();
-        setChecked(this.attributeSet.getAttributeBooleanValue("android", "checked", false));
-    }
 
     @Implementation
     @Override public void toggle() {
@@ -27,9 +26,9 @@ public class ShadowCompoundButton extends ShadowTextView implements Checkable {
     }
 
     @Implementation
-    @Override public boolean performClick() {
+    public boolean performClick() {
         toggle();
-        return super.performClick();
+        return (Boolean) directlyOn(realCompoundButton, CompoundButton.class, "performClick").invoke();
     }
 
     @Implementation

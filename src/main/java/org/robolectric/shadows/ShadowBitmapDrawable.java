@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
@@ -12,13 +11,12 @@ import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;
 
 import static android.graphics.Shader.TileMode;
-import static org.robolectric.Robolectric.newInstanceOf;
+import static org.robolectric.Robolectric.newInstance;
 import static org.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(value = BitmapDrawable.class, inheritImplementationMethods = true)
+@Implements(value = BitmapDrawable.class)
 public class ShadowBitmapDrawable extends ShadowDrawable {
-    private Bitmap bitmap;
     private ColorFilter colorFilter;
     private String drawableCreateFromStreamSource;
     private String drawableCreateFromPath;
@@ -26,22 +24,6 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
     @RealObject private BitmapDrawable realBitmapDrawable;
     private TileMode tileModeX;
     private TileMode tileModeY;
-
-    public void __constructor__(Bitmap bitmap) {
-        __constructor__(null, bitmap);
-    }
-
-    public void __constructor__(Resources resources, Bitmap bitmap) {
-        setBitmap(bitmap);
-    }
-
-    private void setBitmap(Bitmap bitmap) {
-        this.bitmap = bitmap;
-        if (bitmap != null) {
-            setIntrinsicWidth(bitmap.getWidth());
-            setIntrinsicHeight(bitmap.getHeight());
-        }
-    }
 
     /**
      * Draws the contained bitmap onto the canvas at 0,0 with a default {@code Paint}
@@ -57,9 +39,9 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
 
     @Implementation
     public Drawable mutate() {
-        BitmapDrawable real = newInstanceOf(BitmapDrawable.class);
+        Bitmap bitmap = realBitmapDrawable.getBitmap();
+        BitmapDrawable real = newInstance(BitmapDrawable.class, new Class[] {Bitmap.class}, new Object[] {bitmap});
         ShadowBitmapDrawable shadow = shadowOf(real);
-        shadow.setBitmap(bitmap);
         shadow.colorFilter = this.colorFilter;
         shadow.drawableCreateFromStreamSource = drawableCreateFromStreamSource;
         return real;
@@ -68,11 +50,6 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
     @Implementation
     public void setColorFilter(android.graphics.ColorFilter colorFilter) {
         this.colorFilter = colorFilter;
-    }
-
-    @Implementation
-    public android.graphics.Bitmap getBitmap() {
-        return bitmap;
     }
 
     /**
@@ -84,7 +61,7 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
      */
     @Override
     public int getLoadedFromResourceId() {
-        return shadowOf(bitmap).getCreatedFromResId();
+        return shadowOf(realBitmapDrawable.getBitmap()).getCreatedFromResId();
     }
 
     // Used by ShadowDrawable.createFromStream()
@@ -139,7 +116,9 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
 
         ShadowBitmapDrawable that = shadowOf((BitmapDrawable) o);
 
-        if (bitmap != null ? !bitmap.equals(that.bitmap) : that.bitmap != null) return false;
+        Bitmap bitmap = realBitmapDrawable.getBitmap();
+        Bitmap thatBitmap = that.realBitmapDrawable.getBitmap();
+        if (bitmap != null ? !bitmap.equals(thatBitmap) : thatBitmap != null) return false;
 
         return super.equals(o);
     }
@@ -147,14 +126,14 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
     @Override
     @Implementation
     public int hashCode() {
+        Bitmap bitmap = realBitmapDrawable.getBitmap();
         return bitmap != null ? bitmap.hashCode() : 0;
     }
 
     @Override
     @Implementation
     public String toString() {
-        return "ShadowBitmapDrawable{" +
-                "bitmap=" + bitmap +
-                '}';
+        Bitmap bitmap = realBitmapDrawable.getBitmap();
+        return "BitmapDrawable{bitmap=" + bitmap + '}';
     }
 }

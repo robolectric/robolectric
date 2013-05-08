@@ -2,13 +2,15 @@ package org.robolectric.shadows;
 
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import org.robolectric.Robolectric;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;
+import org.robolectric.res.ResName;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 import static org.robolectric.Robolectric.shadowOf;
 
@@ -17,7 +19,7 @@ import static org.robolectric.Robolectric.shadowOf;
 public class ShadowBitmap {
     @RealObject private Bitmap realBitmap;
 
-    int createdFromResId;
+    int createdFromResId = -1;
     String createdFromPath;
     InputStream createdFromStream;
     byte[] createdFromBytes;
@@ -299,7 +301,7 @@ public class ShadowBitmap {
     @Override @Implementation
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != ShadowBitmap.class) return false;
+        if (!(o instanceof Bitmap)) return false;
 
         ShadowBitmap that = shadowOf((Bitmap) o);
 
@@ -320,7 +322,7 @@ public class ShadowBitmap {
 
     @Override @Implementation
     public String toString() {
-        return "ShadowBitmap{" +
+        return "Bitmap{" +
                 "description='" + description + '\'' +
                 ", width=" + width +
                 ", height=" + height +
@@ -346,5 +348,10 @@ public class ShadowBitmap {
             default:
                 throw new IllegalArgumentException("Unknown bitmap config: " + config);
         }
+    }
+
+    public void setCreatedFromResId(int resId, ResName resName) {
+        this.createdFromResId = resId;
+        appendDescription(" for resource:" + resName.getFullyQualifiedName());
     }
 }

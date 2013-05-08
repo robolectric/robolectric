@@ -3,9 +3,11 @@ package org.robolectric.tester.android.view;
 import android.R;
 import android.content.Context;
 import android.content.res.Configuration;
+import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.view.InputQueue;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -13,24 +15,32 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 
-import static org.robolectric.Robolectric.shadowOf;
+import static org.fest.reflect.core.Reflection.constructor;
+import static org.fest.reflect.core.Reflection.field;
+import static org.fest.reflect.core.Reflection.method;
+import static org.fest.reflect.core.Reflection.type;
 
-public class TestWindow extends Window {
+public class RoboWindow extends Window {
+    private static boolean debug = false;
+
     public int requestedFeatureId;
     public int featureDrawableResourceFeatureId;
     public int featureDrawableResourceResId;
     public int softInputMode;
-    private TestWindowManager windowManager;
+    private RoboWindowManager windowManager;
     private View contentView;
     private FrameLayout decorView;
+    private ViewParent viewRootImpl;
+    private CharSequence title;
 
-    public TestWindow(Context context) {
+    public RoboWindow(Context context) {
         super(context);
-        windowManager = new TestWindowManager();
+        windowManager = new RoboWindowManager();
     }
 
     @Override
@@ -47,6 +57,9 @@ public class TestWindow extends Window {
     @Override
     public WindowManager getWindowManager() {
         return windowManager;
+    }
+
+    public void setWindowManager(WindowManager wm, IBinder appToken, String appName, boolean hardwareAccelerated) {
     }
 
     @Override
@@ -67,13 +80,11 @@ public class TestWindow extends Window {
         setContentView(getLayoutInflater().inflate(layoutResID, getDecorView()));
     }
 
-    @Override 
+    @Override
     public void setContentView(View view) {
         ViewGroup decorView = getDecorView();
-        if (contentView != null) {
-            shadowOf(contentView).callOnDetachedFromWindow();
+        if (contentView != null) { // android doesn't actually allow this
             decorView.removeView(contentView);
-
         }
         contentView = view;
 
@@ -81,17 +92,15 @@ public class TestWindow extends Window {
             if (contentView.getParent() != decorView && contentView != decorView) {
                 decorView.addView(contentView);
             }
-
-            shadowOf(contentView).callOnAttachedToWindow();
         }
     }
 
-    @Override 
+    @Override
     public void setContentView(View view, ViewGroup.LayoutParams params) {
         setContentView(view);
     }
 
-    @Override 
+    @Override
     public void addContentView(View view, ViewGroup.LayoutParams params) {
         setContentView(view);
     }
@@ -101,13 +110,18 @@ public class TestWindow extends Window {
         return null;
     }
 
-    @Override 
+    @Override
     public LayoutInflater getLayoutInflater() {
         return LayoutInflater.from(getContext());
     }
 
     @Override
     public void setTitle(CharSequence title) {
+        this.title = title;
+    }
+
+    public CharSequence getTitle() {
+        return title;
     }
 
     @Override
@@ -201,12 +215,40 @@ public class TestWindow extends Window {
 
     @Override public ViewGroup getDecorView() {
         if (decorView == null) {
-            decorView = new FrameLayout(getContext());
+            decorView = new FrameLayout(getContext()) {
+                @Override public void requestLayout() {
+                    if (debug) System.out.println("[DEBUG] RoboWindow: request window layout!");
+                    super.requestLayout();
+                }
+            };
             // On a typical Android device you can call:
             //   myWindow.getDecorView().findViewById(android.R.content)
             decorView.setId(R.id.content);
+
+            viewRootImpl = createViewRootImpl(getContext());
+            WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
+            layoutParams.width = 800;
+            layoutParams.height = 1280;
+
+
+            field("inputFeatures").ofType(int.class).in(layoutParams)
+                    .set(field("INPUT_FEATURE_NO_INPUT_CHANNEL").ofType(int.class)
+                        .in(WindowManager.LayoutParams.class)
+                        .get());
+            method("setView").withParameterTypes(View.class, WindowManager.LayoutParams.class, View.class)
+                    .in(viewRootImpl).invoke(decorView, layoutParams, null);
+
+            method("dispatchResized")
+                .withParameterTypes(int.class, int.class, Rect.class, Rect.class, boolean.class, Configuration.class)
+                .in(viewRootImpl)
+                .invoke(layoutParams.width, layoutParams.height, new Rect(), new Rect(), false, new Configuration());
         }
         return decorView;
+    }
+
+    private ViewParent createViewRootImpl(Context context) {
+        Class<? extends ViewParent> viewRootImplClass = type("android.view.ViewRootImpl").withClassLoader(View.class.getClassLoader()).loadAs(ViewParent.class);
+        return constructor().withParameterTypes(Context.class).in(viewRootImplClass).newInstance(context);
     }
 
     @Override
@@ -219,7 +261,7 @@ public class TestWindow extends Window {
         return getDecorView().findViewById(id);
     }
 
-    @Override 
+    @Override
     public Bundle saveHierarchyState() {
         return null;
     }
@@ -266,5 +308,12 @@ public class TestWindow extends Window {
     @Override
     public boolean superDispatchKeyShortcutEvent(KeyEvent event) {
         return false;
+    }
+
+    public void alwaysReadCloseOnTouchAttr() {
+    }
+
+    public void performLayout() {
+        //method("performLayout").in(viewRootImpl).invoke();
     }
 }

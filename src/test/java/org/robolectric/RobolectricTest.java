@@ -18,6 +18,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.shadows.ShadowDisplay;
+import org.robolectric.shadows.StubViewRoot;
 import org.robolectric.util.TestOnClickListener;
 
 import java.io.ByteArrayOutputStream;
@@ -138,6 +139,7 @@ public class RobolectricTest {
     @Test
     public void clickOn_shouldCallClickListener() throws Exception {
         View view = new View(Robolectric.application);
+        shadowOf(view).setMyParent(new StubViewRoot());
         TestOnClickListener testOnClickListener = new TestOnClickListener();
         view.setOnClickListener(testOnClickListener);
         Robolectric.clickOn(view);

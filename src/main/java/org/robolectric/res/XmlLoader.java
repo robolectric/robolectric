@@ -23,7 +23,7 @@ public abstract class XmlLoader {
 
     private DocumentBuilder documentBuilder;
 
-    synchronized protected Document parse(FsFile xmlFile) {
+    synchronized public Document parse(FsFile xmlFile) {
         InputStream inputStream = null;
         try {
             if (documentBuilder == null) {
@@ -63,11 +63,27 @@ public abstract class XmlLoader {
             this.xmlFile = xmlFile;
         }
 
+        public String getDirPrefix() {
+            String parentDir = xmlFile.getParent().getName();
+            return parentDir.split("-")[0];
+        }
+
         public String getQualifiers() {
             String parentDir = xmlFile.getParent().getName();
             Matcher matcher = DIR_QUALIFIER_PATTERN.matcher(parentDir);
             if (!matcher.find()) throw new IllegalStateException(parentDir);
             return matcher.group(1);
+        }
+
+        public FsFile getXmlFile() {
+            return xmlFile;
+        }
+
+        @Override public String toString() {
+            return "XmlContext{" +
+                    "packageName='" + packageName + '\'' +
+                    ", xmlFile=" + xmlFile +
+                    '}';
         }
     }
 }

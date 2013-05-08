@@ -34,7 +34,7 @@ public class RadioButtonTest {
         assertTrue(radioButton.isChecked());
 
         radioButton.toggle();
-        assertFalse(radioButton.isChecked());
+        assertTrue(radioButton.isChecked()); // radio buttons can't be turned off again with a click
     }
 
     @Test
@@ -46,7 +46,7 @@ public class RadioButtonTest {
         assertTrue(radioButton.isChecked());
 
         radioButton.performClick();
-        assertFalse(radioButton.isChecked());
+        assertTrue(radioButton.isChecked()); // radio buttons can't be turned off again with a click
     }
 
     @Test

@@ -19,6 +19,7 @@ public class ShadowSystemProperties {
         VALUES.put("ro.debuggable", 0);
         VALUES.put("ro.secure", 1);
         VALUES.put("log.closeguard.Animation", false);
+        VALUES.put("debug.choreographer.vsync", false); // disable vsync for Choreographer
     }
 
     @Implementation

@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import android.app.Application;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentResolver;
@@ -15,18 +16,6 @@ import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Looper;
-import android.view.View;
-import org.robolectric.AndroidManifest;
-import org.robolectric.internal.HiddenApi;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
-import org.robolectric.internal.RealObject;
-import org.robolectric.res.Attribute;
-import org.robolectric.res.Fs;
-import org.robolectric.res.ResourceLoader;
-import org.robolectric.res.builder.RobolectricPackageManager;
-import org.robolectric.tester.android.content.TestSharedPreferences;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -34,6 +23,13 @@ import java.io.FileOutputStream;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.robolectric.AndroidManifest;
+import org.robolectric.Robolectric;
+import org.robolectric.internal.Implementation;
+import org.robolectric.internal.Implements;
+import org.robolectric.internal.RealObject;
+import org.robolectric.res.ResourceLoader;
+import org.robolectric.tester.android.content.TestSharedPreferences;
 
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
@@ -44,17 +40,9 @@ import static org.robolectric.Robolectric.shadowOf;
 @Implements(ContextWrapper.class)
 public class ShadowContextWrapper extends ShadowContext {
     @RealObject private ContextWrapper realContextWrapper;
-    protected Context baseContext;
-
-    private PackageManager packageManager;
 
     private String appName;
     private String packageName;
-
-    public void __constructor__(Context baseContext) {
-        this.baseContext = baseContext;
-
-    }
 
     @Implementation
     public int checkCallingPermission(String permission) {
@@ -68,12 +56,7 @@ public class ShadowContextWrapper extends ShadowContext {
 
     @Implementation
     public Context getApplicationContext() {
-        return baseContext.getApplicationContext();
-    }
-
-    @Implementation
-    public Resources.Theme getTheme() {
-        return getResources().newTheme();
+        return realContextWrapper.getBaseContext().getApplicationContext();
     }
 
     @Implementation
@@ -86,11 +69,6 @@ public class ShadowContextWrapper extends ShadowContext {
         return super.getCacheDir();
     }
 
-    @HiddenApi @Implementation
-    @Override public RoboAttributeSet createAttributeSet(List<Attribute> attributes, Class<? extends View> viewClass) {
-        return super.createAttributeSet(attributes, viewClass);
-    }
-
     @Implementation
     @Override public String[] fileList() {
         return super.fileList();
@@ -101,11 +79,11 @@ public class ShadowContextWrapper extends ShadowContext {
         return super.getDatabasePath(name);
     }
 
-    @Implementation
-    @Override public File getDir(String name, int mode) {
-        return super.getDir(name, mode);
-    }
-
+    //@Implementation
+    //@Override public File getDir(String name, int mode) {
+    //    return super.getDir(name, mode);
+    //}
+    //
     @Implementation
     @Override public File getFileStreamPath(String name) {
         return super.getFileStreamPath(name);
@@ -210,6 +188,8 @@ public class ShadowContextWrapper extends ShadowContext {
         appInfo.name = appName;
         appInfo.packageName = packageName;
         appInfo.processName = packageName;
+        AndroidManifest appManifest = shadowOf((Application) getApplicationContext()).getAppManifest();
+        appInfo.targetSdkVersion = appManifest.getTargetSdkVersion();
         return appInfo;
     }
 
@@ -229,14 +209,7 @@ public class ShadowContextWrapper extends ShadowContext {
      */
     @Implementation
     public PackageManager getPackageManager() {
-        return realContextWrapper == getApplicationContext() ? requirePackageManager() : getApplicationContext().getPackageManager();
-    }
-
-    private PackageManager requirePackageManager() {
-        if (packageManager == null) {
-            packageManager = new RobolectricPackageManager(realContextWrapper, new AndroidManifest(Fs.currentDirectory()));
-        }
-        return packageManager;
+        return Robolectric.packageManager;
     }
 
     @Implementation
@@ -330,29 +303,9 @@ public class ShadowContextWrapper extends ShadowContext {
         this.packageName = packageName;
     }
 
-    /**
-     * Non-Android accessor that is used at start-up to set the packageManager =
-     *
-     * @param packageManager the package manager
-     */
-    public void setPackageManager(PackageManager packageManager) {
-        this.packageManager = packageManager;
-    }
-
-
     @Implementation
     public Looper getMainLooper() {
         return getShadowApplication().getMainLooper();
-    }
-
-    @Implementation
-    public Context getBaseContext() {
-        return baseContext;
-    }
-
-    @Implementation
-    public void attachBaseContext(Context context) {
-        baseContext = context;
     }
 
     public ShadowApplication getShadowApplication() {
@@ -367,6 +320,11 @@ public class ShadowContextWrapper extends ShadowContext {
     @Implementation
     public void unbindService(final ServiceConnection serviceConnection) {
         getShadowApplication().unbindService(serviceConnection);
+    }
+
+    @Implementation
+    public boolean isRestricted() {
+        return false;
     }
 
     public void grantPermissions(String... permissionNames) {

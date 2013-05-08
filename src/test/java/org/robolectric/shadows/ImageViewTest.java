@@ -17,9 +17,7 @@ import org.robolectric.TestRunners;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.fest.assertions.data.MapEntry.entry;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.robolectric.Robolectric.application;
 import static org.robolectric.Robolectric.shadowOf;
 
@@ -68,7 +66,7 @@ public class ImageViewTest {
 
     @Test
     public void testSetAnimatedImage_drawable() {
-        imageView.setImageResource(R.drawable.animation_list);
+        imageView.setImageResource(R.anim.animation_list);
         Drawable animation = imageView.getDrawable();
         assertTrue(animation instanceof Drawable);
         assertTrue(animation instanceof AnimationDrawable);
@@ -76,7 +74,7 @@ public class ImageViewTest {
 
     @Test
     public void testSetAnimationItem() throws Exception {
-        imageView.setImageResource(R.drawable.animation_list);
+        imageView.setImageResource(R.anim.animation_list);
         AnimationDrawable animation = (AnimationDrawable) imageView.getDrawable();
         assertEquals(3, animation.getNumberOfFrames());
         assertEquals(400, animation.getDuration(0));

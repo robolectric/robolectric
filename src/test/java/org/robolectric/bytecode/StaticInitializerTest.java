@@ -4,7 +4,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
-import org.robolectric.annotation.Config;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.Instrument;
 

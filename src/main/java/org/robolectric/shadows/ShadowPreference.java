@@ -7,6 +7,7 @@ import android.util.AttributeSet;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;
+import org.robolectric.res.ResourceLoader;
 
 @Implements(Preference.class)
 public class ShadowPreference {
@@ -46,7 +47,7 @@ public class ShadowPreference {
 		this.defStyle = defStyle;
 		
 		if (attributeSet != null) {
-			key = attributeSet.getAttributeValue("android", "key");
+			key = attributeSet.getAttributeValue(ResourceLoader.ANDROID_NS, "key");
         }
 	}
 

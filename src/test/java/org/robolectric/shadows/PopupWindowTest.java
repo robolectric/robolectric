@@ -13,7 +13,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
-import org.robolectric.tester.android.view.TestWindowManager;
+import org.robolectric.tester.android.view.RoboWindowManager;
 
 import static android.view.MotionEvent.ACTION_DOWN;
 import static android.view.MotionEvent.obtain;
@@ -123,13 +123,13 @@ public class PopupWindowTest {
     @RunWith(TestRunners.WithDefaults.class)
     public static class WithContentView {
 
-        private TestWindowManager windowManager;
+        private RoboWindowManager windowManager;
         private View contentView;
         private View anchor;
 
         @Before
         public void setUp() throws Exception {
-            windowManager = (TestWindowManager) Robolectric.application.getSystemService(Context.WINDOW_SERVICE);
+            windowManager = (RoboWindowManager) Robolectric.application.getSystemService(Context.WINDOW_SERVICE);
             contentView = new View(Robolectric.application);
             contentView.setId(R.id.content_view);
             anchor = new View(Robolectric.application);

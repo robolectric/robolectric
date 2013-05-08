@@ -26,6 +26,7 @@ import org.robolectric.bytecode.ShadowWrangler;
 import org.robolectric.bytecode.ZipClassCache;
 import org.robolectric.internal.ParallelUniverse;
 import org.robolectric.internal.ParallelUniverseInterface;
+import org.robolectric.res.DocumentLoader;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
 import org.robolectric.res.OverlayResourceLoader;
@@ -345,7 +346,12 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
             AndroidManifest appManifest;
             appManifest = envHolder.appManifestsByFile.get(manifestFile);
             if (appManifest == null) {
+
+                long startTime = System.currentTimeMillis();
                 appManifest = createAppManifest(manifestFile);
+                if (DocumentLoader.DEBUG_PERF)
+                    System.out.println(String.format("%4dms spent in %s", System.currentTimeMillis() - startTime, manifestFile));
+
                 envHolder.appManifestsByFile.put(manifestFile, appManifest);
             }
             return appManifest;
@@ -591,7 +597,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
         return resourceLoader;
     }
 
-    // this method must live on a InstrumentingClassLoader-loaded class, so it can't be on SdkEnvironment
     protected static ResourceLoader createAppResourceLoader(ResourceLoader systemResourceLoader, AndroidManifest appManifest) {
         List<PackageResourceLoader> appAndLibraryResourceLoaders = new ArrayList<PackageResourceLoader>();
         for (ResourcePath resourcePath : appManifest.getIncludedResourcePaths()) {

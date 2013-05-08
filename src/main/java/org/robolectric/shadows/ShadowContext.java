@@ -3,8 +3,6 @@ package org.robolectric.shadows;
 import android.app.Application;
 import android.content.Context;
 import android.content.res.Resources;
-import android.content.res.TypedArray;
-import android.util.AttributeSet;
 import android.view.View;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
@@ -21,6 +19,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
+import static org.fest.reflect.core.Reflection.method;
 import static org.robolectric.Robolectric.shadowOf;
 
 /**
@@ -39,16 +38,6 @@ abstract public class ShadowContext {
     private ShadowApplication shadowApplication;
 
     @Implementation
-    public File getDir(String name, int mode) {
-        // TODO: honor operating mode.
-        File file = new File(FILES_DIR, name);
-        if (!file.exists()) {
-            file.mkdir();
-        }
-        return file;
-    }
-
-    @Implementation
     public String getString(int resId) {
         return realContext.getResources().getString(resId);
     }
@@ -63,37 +52,8 @@ abstract public class ShadowContext {
         return realContext.getResources().getString(resId, formatArgs);
     }
 
-    @Implementation
-    abstract public Resources.Theme getTheme();
-
-    @Implementation
-    public final TypedArray obtainStyledAttributes(int[] attrs) {
-        return getTheme().obtainStyledAttributes(attrs);
-    }
-
-    @Implementation
-    public final TypedArray obtainStyledAttributes(int resid, int[] attrs) throws Resources.NotFoundException {
-        return getTheme().obtainStyledAttributes(resid, attrs);
-    }
-
-    @Implementation
-    public final TypedArray obtainStyledAttributes(AttributeSet set, int[] attrs) {
-        if (set == null) {
-            return getTheme().obtainStyledAttributes(attrs);
-        }
-
-        return ShadowTypedArray.create(realContext.getResources(), set, attrs);
-    }
-
-    @Implementation
-    public final TypedArray obtainStyledAttributes(
-            AttributeSet set, int[] attrs, int defStyleAttr, int defStyleRes) {
-        return getTheme().obtainStyledAttributes(
-                set, attrs, defStyleAttr, defStyleRes);
-    }
-
     public RoboAttributeSet createAttributeSet(List<Attribute> attributes, Class<? extends View> viewClass) {
-        RoboAttributeSet attributeSet = new RoboAttributeSet(attributes, getResourceLoader(), viewClass);
+        RoboAttributeSet attributeSet = new RoboAttributeSet(attributes, getResources(), viewClass);
         if (isStrictI18n()) {
             attributeSet.validateStrictI18n();
         }
@@ -199,7 +159,8 @@ abstract public class ShadowContext {
         }
     }
 
-    private static File createTempDir(String name) {
+    public static File createTempDir(String name) {
+        // todo: need to clear these out between tests, delete recursively, etc...
         try {
             File tmp = File.createTempFile(name, "robolectric");
             if (!tmp.delete()) throw new IOException("could not delete "+tmp);
@@ -219,5 +180,12 @@ abstract public class ShadowContext {
 
     public ShadowApplication getShadowApplication() {
         return shadowApplication;
+    }
+
+    public void callAttachBaseContext(Context context) {
+        method("attachBaseContext")
+                .withParameterTypes(Context.class)
+                .in(realContext)
+                .invoke(context);
     }
 }

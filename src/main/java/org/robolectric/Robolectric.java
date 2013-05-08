@@ -23,7 +23,6 @@ import android.appwidget.AppWidgetHostView;
 import android.appwidget.AppWidgetManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.content.ContentProviderOperation;
 import android.content.ContentProviderResult;
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -101,10 +100,6 @@ import android.telephony.TelephonyManager;
 import android.text.ClipboardManager;
 import android.text.TextPaint;
 import android.text.format.DateFormat;
-import android.text.method.PasswordTransformationMethod;
-import android.util.SparseArray;
-import android.util.SparseBooleanArray;
-import android.util.SparseIntArray;
 import android.view.Display;
 import android.view.GestureDetector;
 import android.view.InputDevice;
@@ -174,6 +169,7 @@ import org.fest.reflect.method.Invoker;
 import org.robolectric.bytecode.RobolectricInternals;
 import org.robolectric.bytecode.ShadowWrangler;
 import org.robolectric.res.ResourceLoader;
+import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.shadows.HttpResponseGenerator;
 import org.robolectric.shadows.ShadowAbsListView;
 import org.robolectric.shadows.ShadowAbsSeekBar;
@@ -210,6 +206,7 @@ import org.robolectric.shadows.ShadowBundle;
 import org.robolectric.shadows.ShadowCamera;
 import org.robolectric.shadows.ShadowCanvas;
 import org.robolectric.shadows.ShadowCheckedTextView;
+import org.robolectric.shadows.ShadowChoreographer;
 import org.robolectric.shadows.ShadowClipboardManager;
 import org.robolectric.shadows.ShadowColor;
 import org.robolectric.shadows.ShadowColorDrawable;
@@ -281,7 +278,6 @@ import org.robolectric.shadows.ShadowNumberPicker;
 import org.robolectric.shadows.ShadowObjectAnimator;
 import org.robolectric.shadows.ShadowPaint;
 import org.robolectric.shadows.ShadowParcel;
-import org.robolectric.shadows.ShadowPasswordTransformationMethod;
 import org.robolectric.shadows.ShadowPath;
 import org.robolectric.shadows.ShadowPendingIntent;
 import org.robolectric.shadows.ShadowPopupWindow;
@@ -345,6 +341,7 @@ import org.robolectric.shadows.ShadowZoomButtonsController;
 import org.robolectric.tester.org.apache.http.FakeHttpLayer;
 import org.robolectric.tester.org.apache.http.HttpRequestInfo;
 import org.robolectric.tester.org.apache.http.RequestMatcher;
+import org.robolectric.util.ActivityController;
 import org.robolectric.util.Scheduler;
 
 import java.lang.reflect.Field;
@@ -354,8 +351,10 @@ import java.util.List;
 import static org.fest.reflect.core.Reflection.method;
 
 public class Robolectric {
-    public static Application application;
     public static final int DEFAULT_SDK_VERSION = 16;
+
+    public static Application application;
+    public static RobolectricPackageManager packageManager;
 
     public static <T> T newInstanceOf(Class<T> clazz) {
         return RobolectricInternals.newInstanceOf(clazz);
@@ -392,6 +391,15 @@ public class Robolectric {
     public static <T> Invoker directlyOn(T shadowedObject, Class<T> clazz, String methodName, Class<?>... paramTypes) {
         String directMethodName = RobolectricInternals.directMethodName(clazz.getName(), methodName);
         return method(directMethodName).withReturnType(Object.class).withParameterTypes(paramTypes).in(shadowedObject);
+    }
+
+    public static <T> Invoker directlyOn(Object shadowedObject, String clazzName, String methodName, Class<?>... paramTypes) {
+        try {
+            Class<Object> aClass = (Class<Object>) shadowedObject.getClass().getClassLoader().loadClass(clazzName);
+            return directlyOn(shadowedObject, aClass, methodName, paramTypes);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static ShadowAbsListView shadowOf(AbsListView instance) {
@@ -817,10 +825,6 @@ public class Robolectric {
 
     public static ShadowParcel shadowOf(Parcel instance) {
         return (ShadowParcel) shadowOf_(instance);
-    }
-
-    public static ShadowPasswordTransformationMethod shadowOf(PasswordTransformationMethod instance) {
-        return (ShadowPasswordTransformationMethod) shadowOf_(instance);
     }
 
     public static ShadowPath shadowOf(Path instance) {
@@ -1380,12 +1384,14 @@ public class Robolectric {
     public static void reset() {
         Robolectric.application = null;
         ShadowAccountManager.reset();
+        ShadowResources.reset();
         ShadowBitmapFactory.reset();
         ShadowDrawable.reset();
         ShadowMediaStore.reset();
         ShadowLog.reset();
         ShadowContext.clearFilesAndCache();
         ShadowLooper.resetThreadLoopers();
+        ShadowChoreographer.resetThreadLoopers();
         ShadowDialog.reset();
         ShadowContentResolver.reset();
 //        ShadowLocalBroadcastManager.reset();
@@ -1393,6 +1399,10 @@ public class Robolectric {
         ShadowPowerManager.reset();
         ShadowStatFs.reset();
         ShadowTypeface.reset();
+    }
+
+    public static <T extends Activity> ActivityController<T> buildActivity(Class<T> activityClass) {
+        return new ActivityController<T>(activityClass);
     }
 
     /**

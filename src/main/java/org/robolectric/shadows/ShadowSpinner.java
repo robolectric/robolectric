@@ -5,7 +5,7 @@ import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(value = Spinner.class, inheritImplementationMethods = true)
+@Implements(value = Spinner.class)
 public class ShadowSpinner extends ShadowAbsSpinner {
 
     private CharSequence prompt;

@@ -46,12 +46,6 @@ public class LayerDrawableTest {
     }
 
     @Test
-    public void testConstruction() {
-        LayerDrawable layerDrawable = new LayerDrawable(drawables);
-        assertSame("drawables", drawables, shadowOf(layerDrawable).drawables);
-    }
-
-    @Test
     public void testGetNumberOfLayers() {
         LayerDrawable layerDrawable = new LayerDrawable(drawables);
         assertEquals("count", 3, layerDrawable.getNumberOfLayers());

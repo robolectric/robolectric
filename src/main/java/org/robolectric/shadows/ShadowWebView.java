@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import android.content.Context;
-import android.util.AttributeSet;
 import android.webkit.TestWebSettings;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -43,11 +41,6 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
     private LoadData lastLoadData;
     private LoadDataWithBaseURL lastLoadDataWithBaseURL;
     private WebView.PictureListener pictureListener;
-
-    @Override
-    public void __constructor__(Context context, AttributeSet attributeSet) {
-        super.__constructor__(context, attributeSet);
-    }
 
     @HiddenApi @Implementation
     public void ensureProviderCreated() {

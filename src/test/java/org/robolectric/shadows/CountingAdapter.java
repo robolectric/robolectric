@@ -12,10 +12,10 @@ class CountingAdapter extends BaseAdapter {
     public CountingAdapter(int itemCount) {
         this.itemCount = itemCount;
     }
-    
+
     public void setCount(int itemCount) {
-    	this.itemCount = itemCount;
-    	notifyDataSetChanged();
+        this.itemCount = itemCount;
+        notifyDataSetChanged();
     }
 
     @Override

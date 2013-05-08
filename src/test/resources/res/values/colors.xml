@@ -14,5 +14,6 @@
     <color name="android_namespaced_transparent">@android:color/transparent</color>
 
     <color name="android_red">red</color>
+    <color name="list_separator">#111111</color>
 
 </resources>

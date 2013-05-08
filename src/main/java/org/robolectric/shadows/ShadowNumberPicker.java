@@ -5,7 +5,7 @@ import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 
 
-@Implements(value = NumberPicker.class, inheritImplementationMethods = true)
+@Implements(value = NumberPicker.class)
 public class ShadowNumberPicker extends ShadowLinearLayout {
     private int value;
     private String[] displayedValues;

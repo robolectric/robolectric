@@ -447,10 +447,6 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
             }
             instrumentSpecial(foundMethods, "toString", "()Ljava/lang/String;");
 
-//            for (MethodNode method : (List<MethodNode>)classNode.methods) {
-//                System.out.println("method = " + method.name + method.desc);
-//            }
-
             {
                 MethodNode initMethodNode = new MethodNode(ACC_PROTECTED, ROBO_INIT_METHOD_NAME, "()V", null, null);
                 MyGenerator m = new MyGenerator(initMethodNode);
@@ -545,54 +541,25 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
                 li.remove();
                 removedInstructions.add(node);
 
-                if (node.getOpcode() == INVOKESPECIAL) {
-                    MethodInsnNode mnode = (MethodInsnNode) node;
-                    if (mnode.owner.equals(internalClassName) || mnode.owner.equals(classNode.superName)) {
-                        assert mnode.name.equals("<init>");
-                        return removedInstructions;
-                    }
-                }
+                switch (node.getOpcode()) {
+                    case INVOKESPECIAL:
+                        MethodInsnNode mnode = (MethodInsnNode) node;
+                        if (mnode.owner.equals(internalClassName) || mnode.owner.equals(classNode.superName)) {
+                            assert mnode.name.equals("<init>");
+                            return removedInstructions;
+                        }
+                        break;
 
-                if (node.getOpcode() == ATHROW) {
-//                    removedInstructions.clear();
-                    ctor.visitCode();
-                    ctor.visitInsn(RETURN);
-                    ctor.visitEnd();
-                    System.out.println("ignoring throw in " + ctor.name + ctor.desc);
-                    return removedInstructions;
+                    case ATHROW:
+                        ctor.visitCode();
+                        ctor.visitInsn(RETURN);
+                        ctor.visitEnd();
+                        System.out.println("ignoring throw in " + ctor.name + ctor.desc);
+                        return removedInstructions;
                 }
             }
 
             throw new RuntimeException("huh? " + ctor.name + ctor.desc);
-
-//            // Look for the ALOAD 0 (i.e., push this on the stack)
-//            while (li.hasNext()) {
-//                AbstractInsnNode node = (AbstractInsnNode) li.next();
-//                if (node.getOpcode() == ALOAD) {
-//                    VarInsnNode varNode = (VarInsnNode) node;
-//                    assert varNode.var == 0;
-//                    // Remove the ALOAD
-//                    li.remove();
-//                    break;
-//                }
-//            }
-//
-//            // Look for the call to the super-class, an INVOKESPECIAL
-//            while (li.hasNext()) {
-//                AbstractInsnNode node = (AbstractInsnNode) li.next();
-//                if (node.getOpcode() == INVOKESPECIAL) {
-//                    MethodInsnNode mnode = (MethodInsnNode) node;
-////                assert mnode.owner.equals(methodNo.superName);
-//                    assert mnode.name.equals("<init>");
-////                assert mnode.desc.equals(cons.desc);
-//
-//                    li.remove();
-//                    return removedInstructions;
-//                }
-//            }
-//
-////        throw new AssertionError("Could not convert constructor " + classNode.name + ctor.name + " to simple method.");
-//            return removedInstructions;
         }
 
         private void instrumentNormalMethod(MethodNode method) {
@@ -946,6 +913,7 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
     }
 
     private boolean shouldIntercept(MethodInsnNode targetMethod) {
+        if (targetMethod.name.equals("<init>")) return false; // sorry, can't strip out calls to super() in constructor
         return methodsToIntercept.contains(new Setup.MethodRef(targetMethod.owner, targetMethod.name))
                 || methodsToIntercept.contains(new Setup.MethodRef(targetMethod.owner, "*"));
     }

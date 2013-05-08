@@ -2,15 +2,10 @@ package org.robolectric.res.builder;
 
 import android.R;
 import android.content.res.Resources;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.AnimationDrawable;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
-import android.graphics.drawable.NinePatchDrawable;
 import android.graphics.drawable.StateListDrawable;
-import org.jetbrains.annotations.NotNull;
 import org.robolectric.Robolectric;
 import org.robolectric.res.DrawableNode;
 import org.robolectric.res.ResName;
@@ -34,6 +29,7 @@ public class DrawableBuilder {
     // Put all the states for a StateListDrawable in the into a Map for looking up
     // http://developer.android.com/guide/topics/resources/drawable-resource.html#StateList
     static final Map<String, Integer> STATE_MAP = new HashMap<String, Integer>();
+
     static {
         STATE_MAP.put("android:state_selected", R.attr.state_selected);
         STATE_MAP.put("android:state_pressed", R.attr.state_pressed);
@@ -50,7 +46,7 @@ public class DrawableBuilder {
         this.resourceIndex = resourceIndex;
     }
 
-    private Drawable getXmlDrawable(Resources resources, DrawableNode.Xml drawableNode, ResName resName) {
+    public Drawable getXmlDrawable(Resources resources, DrawableNode.Xml drawableNode, ResName resName) {
         Document xmlDoc = drawableNode.document;
         NodeList nodes = xmlDoc.getElementsByTagName("selector");
         if (nodes != null && nodes.getLength() > 0) {
@@ -128,33 +124,5 @@ public class DrawableBuilder {
 
         // if a state wasn't specified, return the default state
         return R.attr.state_active;
-    }
-
-    public Drawable getDrawable(@NotNull ResName resName, Resources resources, DrawableNode drawableNode) {
-        if (drawableNode instanceof DrawableNode.Xml) {
-            Drawable xmlDrawable = getXmlDrawable(resources, (DrawableNode.Xml) drawableNode, resName);
-            if (xmlDrawable != null) {
-                return xmlDrawable;
-            }
-        }
-
-
-        if ("anim".equals(resName.type)) {
-            return new AnimationDrawable();
-        }
-
-        if ("color".equals(resName.type)) {
-            return new ColorDrawable();
-        }
-
-        if (isNinePatchDrawable(drawableNode)) {
-            return new NinePatchDrawable(resources, null);
-        }
-
-        return new BitmapDrawable(BitmapFactory.decodeResource(resources, resourceIndex.getResourceId(resName)));
-    }
-
-    public boolean isNinePatchDrawable(DrawableNode drawableNode) {
-        return drawableNode instanceof DrawableNode.ImageFile && ((DrawableNode.ImageFile) drawableNode).isNinePatch;
     }
 }

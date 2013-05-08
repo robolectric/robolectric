@@ -6,7 +6,7 @@ import android.widget.VideoView;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 
-@Implements(value = VideoView.class, inheritImplementationMethods = true)
+@Implements(value = VideoView.class)
 @SuppressWarnings({"UnusedDeclaration"})
 public class ShadowVideoView extends ShadowSurfaceView {
 	

@@ -22,7 +22,7 @@ public class ShadowEditTextTest {
     public void setup() {
         List<Attribute> attributes = new ArrayList<Attribute>();
         attributes.add(new Attribute("android:attr/maxLength", "5", R.class.getPackage().getName()));
-        RoboAttributeSet attributeSet = new RoboAttributeSet(attributes, Robolectric.getShadowApplication().getResourceLoader(), null);
+        RoboAttributeSet attributeSet = new RoboAttributeSet(attributes, Robolectric.application.getResources(), null);
         editText = new EditText(Robolectric.application, attributeSet);
     }
 

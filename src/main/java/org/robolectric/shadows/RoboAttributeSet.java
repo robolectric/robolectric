@@ -1,19 +1,31 @@
 package org.robolectric.shadows;
 
+import android.content.res.Resources;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.View;
+import org.robolectric.res.AttrData;
 import org.robolectric.res.Attribute;
 import org.robolectric.res.ResName;
+import org.robolectric.res.ResType;
 import org.robolectric.res.ResourceIndex;
 import org.robolectric.res.ResourceLoader;
+import org.robolectric.res.TypedResource;
 import org.robolectric.util.I18nException;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
+import static org.robolectric.Robolectric.shadowOf;
 
 public class RoboAttributeSet implements AttributeSet {
+    private static final Set<String> ALREADY_WARNED_ABOUT = new HashSet<String>();
+
     private final List<Attribute> attributes;
-    private final ResourceLoader resourceLoader;
+    private final Resources resources;
     private Class<? extends View> viewClass;
+    private final ResourceLoader resourceLoader;
 
     /**
      * Names of attributes to be validated for i18n-safe values.
@@ -25,10 +37,11 @@ public class RoboAttributeSet implements AttributeSet {
             new ResName("android:attr/summary")
     };
 
-    public RoboAttributeSet(List<Attribute> attributes, ResourceLoader resourceLoader, Class<? extends View> viewClass) {
+    public RoboAttributeSet(List<Attribute> attributes, Resources resources, Class<? extends View> viewClass) {
         this.attributes = attributes;
-        this.resourceLoader = resourceLoader;
+        this.resources = resources;
         this.viewClass = viewClass;
+        this.resourceLoader = shadowOf(resources).getResourceLoader();
     }
 
     public RoboAttributeSet put(String fullyQualifiedName, String value, String valuePackage) {
@@ -42,44 +55,31 @@ public class RoboAttributeSet implements AttributeSet {
 
     @Override
     public boolean getAttributeBooleanValue(String namespace, String attribute, boolean defaultValue) {
-        Attribute attr = findByName(namespace, attribute);
+        ResName resName = getAttrResName(namespace, attribute);
+        Attribute attr = findByName(resName);
         return (attr != null) ? Boolean.valueOf(attr.value) : defaultValue;
     }
 
     @Override
     public int getAttributeIntValue(String namespace, String attribute, int defaultValue) {
-        Attribute attr = findByName(namespace, attribute);
+        ResName resName = getAttrResName(namespace, attribute);
+        Attribute attr = findByName(resName);
         if (attr == null) return defaultValue;
-        String value = attr.value;
 
-        if (isEnum(namespace, attribute)) {
-            return getEnumValue(namespace, attribute, value);
+        String qualifiers = shadowOf(resources.getAssets()).getQualifiers();
+        TypedResource<AttrData> typedResource = resourceLoader.getValue(resName, qualifiers);
+        if (typedResource == null) {
+            System.out.println("WARN: no attr found for " + resName + ", assuming it's an integer...");
+            typedResource = new TypedResource<AttrData>(new AttrData(attribute, "integer", null), ResType.INTEGER);
         }
 
-        return extractInt(value, defaultValue);
-    }
-
-    private int extractInt(String value, int defaultValue) {
-        if (value == null) return defaultValue;
-        if (value.startsWith("0x")) return Integer.parseInt(value.substring(2), 16);
-      try {
-        return Integer.parseInt(value);
-      } catch (NumberFormatException e) {
-        System.out.println("WARN: couldn't parse \"" + value + "\" as an integer");
-        return defaultValue;
-      }
-    }
-
-    public boolean isEnum(String namespace, String attribute) {
-        return resourceLoader.hasAttributeFor(viewClass, namespace, attribute);
-    }
-
-    public int getEnumValue(String namespace, String attribute, String value) {
-        int intValue = 0;
-        for (String part : value.split("\\|")) {
-            intValue |= extractInt(resourceLoader.convertValueToEnum(viewClass, namespace, attribute, part), 0);
+        TypedValue outValue = new TypedValue();
+        Converter.convertAndFill(attr, outValue, resourceLoader, qualifiers, typedResource.getData());
+        if (outValue.type == TypedValue.TYPE_NULL) {
+            return defaultValue;
         }
-        return intValue;
+
+        return outValue.data;
     }
 
     @Override
@@ -94,20 +94,28 @@ public class RoboAttributeSet implements AttributeSet {
 
     @Override
     public String getAttributeValue(String namespace, String attribute) {
-        Attribute attr = findByName(namespace, attribute);
-        return (attr != null) ? attr.value : null;
+        ResName resName = getAttrResName(namespace, attribute);
+        Attribute attr = findByName(resName);
+        if (attr != null && !attr.isNull()) {
+            return attr.qualifiedValue();
+        }
+
+        return null;
     }
 
     @Override
     public String getAttributeValue(int index) {
-        try {
-            return attributes.get(index).value;
-        } catch (IndexOutOfBoundsException e) {
-            return null;
+        if (index > attributes.size()) return null;
+
+        Attribute attr = attributes.get(index);
+        if (attr != null && !attr.isNull()) {
+            return attr.qualifiedValue();
         }
+
+        return null;
     }
 
-  @Override
+    @Override
     public String getPositionDescription() {
         throw new UnsupportedOperationException();
     }
@@ -131,7 +139,8 @@ public class RoboAttributeSet implements AttributeSet {
 
     @Override
     public float getAttributeFloatValue(String namespace, String attribute, float defaultValue) {
-        Attribute attr = findByName(namespace, attribute);
+        ResName resName = getAttrResName(namespace, attribute);
+        Attribute attr = findByName(resName);
         return (attr != null) ? Float.valueOf(attr.value) : defaultValue;
     }
 
@@ -146,7 +155,8 @@ public class RoboAttributeSet implements AttributeSet {
     }
 
     @Override public int getAttributeResourceValue(String namespace, String attribute, int defaultValue) {
-        Attribute attr = findByName(namespace, attribute);
+        ResName resName = getAttrResName(namespace, attribute);
+        Attribute attr = findByName(resName);
         if (attr == null) return defaultValue;
 
         Integer resourceId = ResName.getResourceId(resourceLoader.getResourceIndex(), attr.value, attr.contextPackageName);
@@ -156,7 +166,8 @@ public class RoboAttributeSet implements AttributeSet {
     @Override
     public int getAttributeResourceValue(int resourceId, int defaultValue) {
         String attrName = resourceLoader.getResourceIndex().getResourceName(resourceId);
-        Attribute attr = findByName(null, attrName);
+        ResName resName = getAttrResName(null, attrName);
+        Attribute attr = findByName(resName);
         if (attr == null) return defaultValue;
         Integer extracted = ResName.getResourceId(resourceLoader.getResourceIndex(), attr.value, attr.contextPackageName);
         return (extracted == null) ? defaultValue : extracted;
@@ -215,9 +226,9 @@ public class RoboAttributeSet implements AttributeSet {
         }
     }
 
-    private Attribute findByName(String namespace, String attrName) {
+    private ResName getAttrResName(String namespace, String attrName) {
         String packageName = Attribute.extractPackageName(namespace);
-        return findByName(new ResName(packageName, "attr", attrName));
+        return new ResName(packageName, "attr", attrName);
     }
 
     private Attribute findByName(ResName resName) {

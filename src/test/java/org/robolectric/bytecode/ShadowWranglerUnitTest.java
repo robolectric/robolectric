@@ -25,7 +25,7 @@ public class ShadowWranglerUnitTest {
         assertThat(handler)
                 .isNotNull()
                 .isSameAs(ShadowWrangler.DO_NOTHING_HANDLER);
-        assertThat(handler.call(null)).isNull();
+        assertThat(handler.call(null, null, new Object[0])).isNull();
     }
 
     @Test

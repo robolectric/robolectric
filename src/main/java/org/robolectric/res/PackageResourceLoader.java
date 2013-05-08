@@ -4,7 +4,6 @@ import org.robolectric.util.I18nException;
 
 public class PackageResourceLoader extends XResourceLoader {
     ResourcePath resourcePath;
-    ResourceIndex resourceIndex;
 
     public PackageResourceLoader(ResourcePath resourcePath) {
         this(resourcePath, new ResourceExtractor(resourcePath));
@@ -38,16 +37,18 @@ public class PackageResourceLoader extends XResourceLoader {
                 new PluralResourceLoader(pluralsData),
                 new ValueResourceLoader(data, "/resources/string", "string", ResType.CHAR_SEQUENCE),
                 new ValueResourceLoader(data, "/resources/string-array", "array", ResType.CHAR_SEQUENCE_ARRAY),
-                attrResourceLoader
+                new AttrResourceLoader(data),
+                new StyleResourceLoader(data)
         );
 
         documentLoader.load("layout", new LayoutLoader(layoutData));
         documentLoader.load("menu", new MenuLoader(menuData));
         DrawableResourceLoader drawableResourceLoader = new DrawableResourceLoader(drawableData);
-        drawableResourceLoader.findNinePatchResources(resourcePath);
+        drawableResourceLoader.findDrawableResources(resourcePath);
         documentLoader.load("drawable", drawableResourceLoader);
-        documentLoader.load("xml", new PreferenceLoader(preferenceData));
-        documentLoader.load("xml", new XmlFileLoader(xmlDocuments));
+        documentLoader.load("anim", drawableResourceLoader);
+        documentLoader.load("color", new ColorResourceLoader(data));
+        documentLoader.load("xml", new PreferenceLoader(preferenceData), new XmlFileLoader(xmlDocuments));
         new RawResourceLoader(resourcePath).loadTo(rawResources);
 
         loadOtherResources(resourcePath);
@@ -61,5 +62,9 @@ public class PackageResourceLoader extends XResourceLoader {
         return "PackageResourceLoader{" +
                 "resourcePath=" + resourcePath +
                 '}';
+    }
+
+    @Override public boolean providesFor(String namespace) {
+        return resourcePath.getPackageName().equals(namespace);
     }
 }
