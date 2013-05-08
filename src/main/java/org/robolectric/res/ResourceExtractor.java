@@ -89,7 +89,7 @@ public class ResourceExtractor extends ResourceIndex {
     @Override
     public synchronized Integer getResourceId(ResName resName) {
         Integer id = resourceNameToId.get(resName);
-        if (id == null && ("android".equals(resName.namespace) || "".equals(resName.namespace))) {
+        if (id == null && ("android".equals(resName.packageName) || "".equals(resName.packageName))) {
             if (maxUsedInt == null) {
                 maxUsedInt = resourceIdToResName.isEmpty() ? 0 : Collections.max(resourceIdToResName.keySet());
             }

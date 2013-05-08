@@ -257,7 +257,7 @@ public class ShadowResources {
 
     @Implementation
     public String getResourcePackageName(int resId) throws Resources.NotFoundException {
-        return getResName(resId).namespace;
+        return getResName(resId).packageName;
     }
 
     @Implementation
@@ -303,7 +303,7 @@ public class ShadowResources {
         String string = plural.getString();
         ShadowAssetManager shadowAssetManager = shadowOf(realResources.getAssets());
         TypedResource typedResource = shadowAssetManager.resolve(new TypedResource(string, ResType.CHAR_SEQUENCE), getQualifiers(),
-                new ResName(resName.namespace, "string", resName.name));
+                new ResName(resName.packageName, "string", resName.name));
         return typedResource == null ? null : typedResource.asString();
     }
 
@@ -345,7 +345,7 @@ public class ShadowResources {
         if (document == null) {
             throw new Resources.NotFoundException();
         }
-        return new XmlFileBuilder().getXml(document, resName.getFullyQualifiedName(), resName.namespace, realResources);
+        return new XmlFileBuilder().getXml(document, resName.getFullyQualifiedName(), resName.packageName, realResources);
     }
 
     @HiddenApi @Implementation
@@ -355,7 +355,7 @@ public class ShadowResources {
         if (document == null) {
             throw new Resources.NotFoundException(notFound(id));
         }
-        String packageName = getResName(id).namespace;
+        String packageName = getResName(id).packageName;
         return new XmlFileBuilder().getXml(document, fsFile.getPath(), packageName, realResources);
     }
 

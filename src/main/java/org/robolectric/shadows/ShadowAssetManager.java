@@ -123,7 +123,7 @@ public final class ShadowAssetManager {
         //
         //// Load the style for the default style attribute. E.g. "@style/Widget.Robolectric.Button";
         //String defStyleNameValue = themeStyle.getAttrValue(defStyleName);
-        //ResName defStyleResName = new ResName(defStyleName.namespace, "style", defStyleName.name);
+        //ResName defStyleResName = new ResName(defStyleName.packageName, "style", defStyleName.name);
         //Style style = resolveStyle(resourceLoader, defStyleResName, getQualifiers());
         if (themeStyle != null) {
             Attribute attrValue = themeStyle.getAttrValue(resName);

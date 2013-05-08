@@ -82,7 +82,7 @@ public class RoutingResourceLoader implements ResourceLoader {
 
     private ResourceLoader pickFor(ResName resName) {
         if (resName == null) return new NullResourceLoader();
-        return pickFor(resName.namespace);
+        return pickFor(resName.packageName);
     }
 
     private ResourceLoader pickFor(String namespace) {

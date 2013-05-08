@@ -101,7 +101,7 @@ public class Converter<T> {
                     outValue.string = dereferencedRef.asString();
                     return;
                 } else if (dereferencedRef.getData() instanceof String) {
-                    attribute = new Attribute(attribute.resName, dereferencedRef.asString(), resName.namespace);
+                    attribute = new Attribute(attribute.resName, dereferencedRef.asString(), resName.packageName);
                     if (attribute.isResourceReference()) {
                         continue;
                     }

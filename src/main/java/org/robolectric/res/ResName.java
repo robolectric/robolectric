@@ -11,14 +11,14 @@ public class ResName {
     private static final int TYPE = 2;
     private static final int NAME = 3;
 
-    public final @NotNull String namespace;
+    public final @NotNull String packageName;
     public final @NotNull String type;
     public final @NotNull String name;
 
-    public ResName(@NotNull String namespace, @NotNull String type, @NotNull String name) {
-        this.name = name.indexOf('.') != -1 ? name.replace('.', '_') : name;
-        this.namespace = namespace;
+    public ResName(@NotNull String packageName, @NotNull String type, @NotNull String name) {
+        this.packageName = packageName;
         this.type = type;
+        this.name = name.indexOf('.') != -1 ? name.replace('.', '_') : name;
     }
 
     public ResName(@NotNull String fullyQualifiedName) {
@@ -26,12 +26,12 @@ public class ResName {
         if (!matcher.find()) {
             throw new IllegalStateException("\"" + fullyQualifiedName + "\" is not fully qualified");
         }
-        namespace = matcher.group(NAMESPACE);
+        packageName = matcher.group(NAMESPACE);
         type = matcher.group(TYPE);
         String nameStr = matcher.group(NAME);
         name = nameStr.indexOf('.') != -1 ? nameStr.replace('.', '_') : nameStr;
 
-        if (namespace.equals("xmlns")) throw new IllegalStateException("\"" + fullyQualifiedName + "\" unexpected");
+        if (packageName.equals("xmlns")) throw new IllegalStateException("\"" + fullyQualifiedName + "\" unexpected");
     }
 
     public static @NotNull String qualifyResourceName(@NotNull String possiblyQualifiedResourceName, String defaultPackageName, String defaultType) {
@@ -40,7 +40,7 @@ public class ResName {
     }
 
     public static @NotNull ResName qualifyResName(@NotNull String possiblyQualifiedResourceName, ResName defaults) {
-        return qualifyResName(possiblyQualifiedResourceName, defaults.namespace, defaults.type);
+        return qualifyResName(possiblyQualifiedResourceName, defaults.packageName, defaults.type);
     }
 
     public static @NotNull ResName qualifyResName(@NotNull String possiblyQualifiedResourceName, String defaultPackageName, String defaultType) {
@@ -73,7 +73,7 @@ public class ResName {
     }
 
     public ResName qualify(String string) {
-        return new ResName(qualifyResourceName(string.replace("@", ""), namespace, null));
+        return new ResName(qualifyResourceName(string.replace("@", ""), packageName, null));
     }
 
     @Override
@@ -83,7 +83,7 @@ public class ResName {
 
         ResName resName = (ResName) o;
 
-        if (!namespace.equals(resName.namespace)) return false;
+        if (!packageName.equals(resName.packageName)) return false;
         if (!type.equals(resName.type)) return false;
         if (!name.equals(resName.name)) return false;
 
@@ -92,7 +92,7 @@ public class ResName {
 
     @Override
     public int hashCode() {
-        int result = namespace.hashCode();
+        int result = packageName.hashCode();
         result = 31 * result + type.hashCode();
         result = 31 * result + name.hashCode();
         return result;
@@ -104,15 +104,15 @@ public class ResName {
     }
 
     public String getFullyQualifiedName() {
-        return namespace + ":" + type + "/" + name;
+        return packageName + ":" + type + "/" + name;
     }
 
     public String getNamespaceUri() {
-        return "http://schemas.android.com/apk/res/" + namespace;
+        return "http://schemas.android.com/apk/res/" + packageName;
     }
 
     public ResName withPackageName(String packageName) {
-        if (packageName.equals(namespace)) return this;
+        if (packageName.equals(this.packageName)) return this;
         return new ResName(packageName, type, name);
     }
 
