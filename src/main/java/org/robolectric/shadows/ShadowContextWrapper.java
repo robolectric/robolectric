@@ -20,9 +20,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import org.robolectric.AndroidManifest;
 import org.robolectric.Robolectric;
 import org.robolectric.internal.Implementation;
@@ -31,8 +29,6 @@ import org.robolectric.internal.RealObject;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.tester.android.content.TestSharedPreferences;
 
-import static android.content.pm.PackageManager.PERMISSION_DENIED;
-import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.database.sqlite.SQLiteDatabase.CursorFactory;
 import static org.robolectric.Robolectric.shadowOf;
 
@@ -189,7 +185,9 @@ public class ShadowContextWrapper extends ShadowContext {
         appInfo.packageName = packageName;
         appInfo.processName = packageName;
         AndroidManifest appManifest = shadowOf((Application) getApplicationContext()).getAppManifest();
-        appInfo.targetSdkVersion = appManifest.getTargetSdkVersion();
+        if (appManifest != null) {
+            appInfo.targetSdkVersion = appManifest.getTargetSdkVersion();
+        }
         return appInfo;
     }
 
