@@ -234,8 +234,10 @@ public class LayoutBuilder {
 
     public void applyFocusOverride(ViewNode viewNode, ViewParent parent) {
         if (viewNode.shouldRequestFocusOverride()) {
+            if (!(parent instanceof View)) return;
+
             View ancestor = (View) parent;
-            while (ancestor.getParent() != null) {
+            while (ancestor.getParent() instanceof View) {
                 ancestor = (View) ancestor.getParent();
             }
             ancestor.clearFocus();

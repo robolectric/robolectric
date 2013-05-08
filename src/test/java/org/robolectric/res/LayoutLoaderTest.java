@@ -31,6 +31,7 @@ import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 import org.robolectric.res.builder.LayoutBuilder;
 import org.robolectric.shadows.ShadowImageView;
+import org.robolectric.shadows.StubViewRoot;
 import org.robolectric.util.CustomView;
 import org.robolectric.util.CustomView2;
 import org.robolectric.util.I18nException;
@@ -170,6 +171,15 @@ public class LayoutLoaderTest {
     @Test
     public void shouldNotCountRequestFocusElementAsChild() throws Exception {
         ViewGroup viewGroup = (ViewGroup) inflate("request_focus");
+        ViewGroup frameLayout = (ViewGroup) viewGroup.getChildAt(1);
+        assertEquals(0, frameLayout.getChildCount());
+    }
+
+    @Test
+    public void focusRequest_shouldNotExplodeOnViewRootImpl() throws Exception {
+        LinearLayout parent = new LinearLayout(context);
+        shadowOf(parent).setMyParent(new StubViewRoot());
+        ViewGroup viewGroup = (ViewGroup) inflate(context, TEST_PACKAGE, "request_focus", parent, "");
         ViewGroup frameLayout = (ViewGroup) viewGroup.getChildAt(1);
         assertEquals(0, frameLayout.getChildCount());
     }
