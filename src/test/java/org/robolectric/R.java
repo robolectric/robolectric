@@ -188,7 +188,7 @@ public final class R {
 
     public static final class anim {
         public static final int test_anim_1 = 0x10700;
-        public static final int animation_list = 0x10700;
+        public static final int animation_list = 0x10701;
     }
 
     public static final class raw {
