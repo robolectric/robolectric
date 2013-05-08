@@ -2,12 +2,16 @@ package org.robolectric.shadows;
 
 import android.content.res.AssetManager;
 import android.graphics.Typeface;
+import org.robolectric.AndroidManifest;
+import org.robolectric.Robolectric;
 import org.robolectric.internal.HiddenApi;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.robolectric.Robolectric.shadowOf;
@@ -42,6 +46,42 @@ public class ShadowTypeface {
         return fontId;
     }
 
+    @HiddenApi @Implementation
+    public static int nativeGetStyle(int native_instance) {
+        return findById(native_instance).style;
+    }
+
+    @HiddenApi @Implementation
+    public static int nativeCreateFromAsset(AssetManager mgr, String fontName) {
+        List<String> paths = new ArrayList<String>();
+
+        AndroidManifest appManifest = shadowOf(Robolectric.application).getAppManifest();
+        paths.add(getAssetsPath(appManifest, fontName));
+
+        List<AndroidManifest> libraryManifests = appManifest.getLibraryManifests();
+        for (AndroidManifest libraryManifest : libraryManifests) {
+            paths.add(getAssetsPath(libraryManifest, fontName));
+        }
+
+        return nativeCreateFromFile(paths);
+    }
+
+    @HiddenApi @Implementation
+    public static int nativeCreateFromFile(List<String> paths) {
+        for (String path : paths) {
+            File file = new File(path);
+            if (file.exists()) {
+                return nativeCreate(file.getPath(), 0);
+            }
+        }
+
+        throw new RuntimeException("Font not found at " + paths);
+    }
+
+    private static String getAssetsPath(AndroidManifest appManifest, String fontName) {
+        return appManifest.getAssetsDirectory().join(fontName).toString();
+    }
+
     synchronized private static FontDesc findById(int fontId) {
         for (Map.Entry<FontDesc, Integer> entry : fonts.entrySet()) {
             if (entry.getValue().equals(fontId)) {
@@ -50,27 +90,6 @@ public class ShadowTypeface {
         }
         throw new RuntimeException("unknown font id " + fontId);
     }
-
-    @HiddenApi @Implementation
-    public static int nativeCreateFromAsset(AssetManager mgr, String path) {
-        return nativeCreateFromFile(shadowOf(mgr).getAssetsDirectory().join(path).toString());
-    }
-
-    @HiddenApi @Implementation
-    public static int nativeGetStyle(int native_instance) {
-        return findById(native_instance).style;
-    }
-
-    @HiddenApi @Implementation
-    public static int nativeCreateFromFile(String path) {
-        File file = new File(path);
-        if (file.exists()) {
-            return nativeCreate(file.getPath(), 0);
-        } else {
-            throw new RuntimeException("Font not found at " + file.getAbsolutePath());
-        }
-    }
-
 
     private static class FontDesc {
         public final String familyName;
