@@ -61,9 +61,11 @@ public class ParallelUniverse implements ParallelUniverseInterface {
                 .in(activityThreadClass)
                 .newInstance();
 
-        ResourceLoader resourceLoader = null;
+        ResourceLoader resourceLoader;
         if (appManifest != null) {
             resourceLoader = RobolectricTestRunner.getAppResourceLoader(systemResourceLoader, appManifest);
+        } else {
+            resourceLoader = systemResourceLoader;
         }
 
         Context systemContextImpl = (Context) method("createSystemContext")
