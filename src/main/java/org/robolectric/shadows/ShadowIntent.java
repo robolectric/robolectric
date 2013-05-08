@@ -410,6 +410,22 @@ public class ShadowIntent {
     }
 
     @Implementation
+    public Intent replaceExtras(Bundle extras) {
+        this.extras.clear();
+        if (extras != null) {
+            this.extras.putAll(extras);
+        }
+        return realIntent;
+    }
+
+    @Implementation
+    public Intent replaceExtras(Intent src) {
+        extras.clear();
+        extras.putAll(shadowOf(src).extras);
+        return realIntent;
+    }
+
+    @Implementation
     public Serializable getSerializableExtra(String name) {
         return extras.getSerializable(name);
     }

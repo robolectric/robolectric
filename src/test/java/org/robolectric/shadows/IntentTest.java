@@ -169,6 +169,40 @@ public class IntentTest {
     }
 
     @Test
+    public void testReplaceExtrasWithBundle() throws Exception {
+        Intent intent = new Intent();
+        intent.putExtra("foo", 1);
+        Bundle extras = new Bundle();
+        extras.putInt("bar", 2);
+        assertEquals(1, intent.getIntExtra("foo", 0));
+        assertSame(intent, intent.replaceExtras(extras));
+        assertEquals(2, intent.getIntExtra("bar", 0));
+        assertFalse(intent.hasExtra("foo"));
+    }
+
+    @Test
+    public void testReplaceExtrasWithNullBundle() throws Exception {
+        Intent intent = new Intent();
+        intent.putExtra("foo", 1);
+        assertEquals(1, intent.getIntExtra("foo", 0));
+        assertSame(intent, intent.replaceExtras((Bundle) null));
+        assertFalse(intent.hasExtra("foo"));
+    }
+
+    @Test
+    public void testReplaceExtrasWithIntent() throws Exception {
+        Intent intent = new Intent();
+        intent.putExtra("bar", 1);
+        Intent src = new Intent();
+        src.putExtra("foo", 2);
+        assertEquals(1, intent.getIntExtra("bar", 0));
+        assertSame(intent, intent.replaceExtras(src));
+        assertEquals(2, intent.getIntExtra("foo", 0));
+        assertFalse(intent.hasExtra("bar"));
+
+    }
+
+    @Test
     public void testGetActionReturnsWhatWasSet() throws Exception {
         Intent intent = new Intent();
         assertSame(intent, intent.setAction("foo"));
