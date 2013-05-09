@@ -3,20 +3,17 @@ package org.robolectric.bytecode;
 import org.fest.reflect.method.Invoker;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.fest.reflect.core.Reflection.method;
 
-@SuppressWarnings({"UnusedDeclaration"})
 public class RobolectricInternals {
     public static final String ROBO_PREFIX = "$$robo$$";
-    // initialized via magic by SdkEnvironment
-    private static ClassHandler classHandler;
-    private static final Map<Class, Field> shadowFieldMap = new HashMap<Class, Field>();
+
+    @SuppressWarnings({"UnusedDeclaration"})
+    private static ClassHandler classHandler; // initialized via magic by SdkEnvironment
+
     public static boolean inActivityControllerBlock = false;
 
     public static ClassHandler getClassHandler() {
@@ -67,20 +64,6 @@ public class RobolectricInternals {
                         : "instance 0x" + Integer.toHexString(System.identityHashCode(o)) + " of " + o.getClass().getName());
     }
 
-    public static Field getShadowField(Object instance) {
-        Class clazz = instance.getClass();
-        Field field = shadowFieldMap.get(clazz);
-        if (field == null) {
-            try {
-                field = clazz.getField(InstrumentingClassLoader.CLASS_HANDLER_DATA_FIELD_NAME);
-            } catch (NoSuchFieldException e) {
-                throw new RuntimeException(instance.getClass().getName() + " has no shadow field", e);
-            }
-            shadowFieldMap.put(clazz, field);
-        }
-        return field;
-    }
-
     @SuppressWarnings({"UnusedDeclaration"})
     public static void classInitializing(Class clazz) throws Exception {
         classHandler.classInitializing(clazz);
@@ -91,6 +74,7 @@ public class RobolectricInternals {
         return classHandler.initializing(instance);
     }
 
+    @SuppressWarnings({"UnusedDeclaration"})
     public static ClassHandler.Plan methodInvoked(String signature, boolean isStatic, Class<?> theClass) {
         return classHandler.methodInvoked(signature, isStatic, theClass);
     }
@@ -104,6 +88,7 @@ public class RobolectricInternals {
         }
     }
 
+    @SuppressWarnings({"UnusedDeclaration"})
     public static Throwable cleanStackTrace(Throwable exception) throws Throwable {
         return classHandler.stripStackTrace(exception);
     }
