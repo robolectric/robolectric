@@ -16,7 +16,7 @@ title: Help and Resources
 * [RoboGuice](http://code.google.com/p/roboguice/ "roboguice - Google Guice on Android - Google Project Hosting")
 * [Android in Practice](http://code.google.com/p/android-in-practice/ "android-in-practice -Source code and demo apps for the Manning book &quot;Android in Practice&quot; - Google Project Hosting")
 * [Xtreme Labs Inc.](http://www.xtremelabs.com/ "Mobile App Development | Blackberry Apps| iPhone Apps | Xtreme Labs Inc.")
-* [Robolectric Sample](https://github.com/pivotal/RobolectricSample)
+* [Robolectric Sample](https://github.com/robolectric/RobolectricSample)
 * [Android IntelliJ Starter](https://github.com/pivotal/AndroidIntelliJStarter)
 
 ## Presentation: TDD Android Applications with Robolectric

@@ -4,19 +4,19 @@ title: User Guide
 ---
 
 ## Getting Started
-[RobolectricSample](http://github.com/pivotal/RobolectricSample) is a Maven-enabled sample app that shows how to layout your project, includes example tests, and a `build.xml` file for compiling and
+[RobolectricSample](http://github.com/robolectric/RobolectricSample) is a Maven-enabled sample app that shows how to layout your project, includes example tests, and a `build.xml` file for compiling and
 running tests.
 
-<a href="http://github.com/pivotal/RobolectricSample"><img src="images/robolectricsample.jpg" style="border:1px solid #000;"/></a>
+<a href="http://github.com/robolectric/RobolectricSample"><img src="images/robolectricsample.jpg" style="border:1px solid #000;"/></a>
 
 ### Sample Tests
-[RobolectricSample's tests](https://github.com/pivotal/RobolectricSample/tree/master/src/test/java/com/pivotallabs) are an excellent source for sample test code. Of note:
+[RobolectricSample's tests](https://github.com/robolectric/RobolectricSample/tree/master/src/test/java/com/pivotallabs) are an excellent source for sample test code. Of note:
 
-* **[HomeActivityTest.java](https://github.com/pivotal/RobolectricSample/blob/master/src/test/java/com/pivotallabs/HomeActivityTest.java)**: a simple Activity test exercising Buttons, presence of Images.
-* **[LoadingTextViewTest.java](https://github.com/pivotal/RobolectricSample/blob/master/src/test/java/com/pivotallabs/views/LoadingTextViewTest.java)**: Testing custom views.
-* **[HttpTest.java](https://github.com/pivotal/RobolectricSample/blob/master/src/test/java/com/pivotallabs/api/HttpTest.java)**: Testing HTTP requests and responses.
-* **[ApiGatewayTest.java](https://github.com/pivotal/RobolectricSample/blob/master/src/test/java/com/pivotallabs/api/ApiGatewayTest.java)**: More HTTP traffic tests; incorporates pausing and resuming the background scheduler.
-* **[InjectedActivityTest.java](https://github.com/pivotal/RobolectricSample/blob/master/src/test/java/com/pivotallabs/injected/InjectedActivityTest.java)**: Example of using [RoboGuice](http://code.google.com/p/roboguice/ "roboguice - Google Guice on Android - Google Project Hosting") dependency injection.
+* **[HomeActivityTest.java](https://github.com/robolectric/RobolectricSample/blob/master/src/test/java/com/pivotallabs/HomeActivityTest.java)**: a simple Activity test exercising Buttons, presence of Images.
+* **[LoadingTextViewTest.java](https://github.com/robolectric/RobolectricSample/blob/master/src/test/java/com/pivotallabs/views/LoadingTextViewTest.java)**: Testing custom views.
+* **[HttpTest.java](https://github.com/robolectric/RobolectricSample/blob/master/src/test/java/com/pivotallabs/api/HttpTest.java)**: Testing HTTP requests and responses.
+* **[ApiGatewayTest.java](https://github.com/robolectric/RobolectricSample/blob/master/src/test/java/com/pivotallabs/api/ApiGatewayTest.java)**: More HTTP traffic tests; incorporates pausing and resuming the background scheduler.
+* **[InjectedActivityTest.java](https://github.com/robolectric/RobolectricSample/blob/master/src/test/java/com/pivotallabs/injected/InjectedActivityTest.java)**: Example of using [RoboGuice](http://code.google.com/p/roboguice/ "roboguice - Google Guice on Android - Google Project Hosting") dependency injection.
 
 ## Android IntelliJ Starter
 Another resource, especially for IntelliJ users, is the [Android IntelliJ Starter](https://github.com/pivotal/AndroidIntelliJStarter).  This "template" project configures Robolectric as a [git submodule](http://kernel.org/pub/software/scm/git/docs/git-submodule.html "git-submodule(1)"). 

@@ -15,7 +15,7 @@ Why "Shadow?" Shadow objects are note quite [Proxies](http://en.wikipedia.org/wi
 ### Adding Functionality
 The library of Shadow classes supplied with Robolectric does not cover the entire Android API. Even if it did, some projects will require behavior that differs from what is in the library. When these situations are encountered it will be necessary to extend existing or add new Shadow classes. Creating new Shadow classes or adding methods to exiting Shadows is easy. Here is an outline of the process, details about each step will follow:
 
-- **Clone the [Robolectric project on GitHub](https://github.com/pivotal/robolectric/):**
+- **Clone the [Robolectric project on GitHub](https://github.com/robolectric/robolectric/):**
 We very often make Robolectric a [`git submodule`](http://book.git-scm.com/5_submodules.html "Git Book - Submodules") of the project that we are working on in order to make it easier to add Robolectric functionality as we need it, but you could also create dependencies between projects or build and copy `.jar` files depending on your needs. See [GitHub - Fork A Repo](http://help.github.com/fork-a-repo/ "Help.GitHub - Fork A Repo").
 
 - **Add tests for your Shadow class:**

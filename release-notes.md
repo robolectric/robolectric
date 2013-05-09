@@ -216,7 +216,7 @@ both IntelliJ and Eclipse.
 
 #### Other
 - We have added [Roboguice](http://code.google.com/p/roboguice/) integration to the
-  [RobolectricSample](http://github.com/pivotal/RobolectricSample) project.
+  [RobolectricSample](http://github.com/robolectric/RobolectricSample) project.
 - Support for maven and submission to central is WIP
 
 

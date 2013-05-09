@@ -91,7 +91,7 @@ public class MyTest {
 }
 {% endhighlight %}
 
-* See the [Robolectric sample application](https://github.com/pivotal/robolectricsample) for more examples to get you
+* See the [Robolectric sample application](https://github.com/robolectric/robolectricsample) for more examples to get you
 started.
 
 ## Setting up for Robolectric development
@@ -104,7 +104,7 @@ its [Tracker page](http://www.pivotaltracker.com/projects/105008)
 ### Using Maven:
 
 Clone the robolectric git repository, modify it as needed, and use maven to install a snapshot of Robolectric:
-* <code>git clone git@github.com:pivotal/robolectric.git</code>
+* <code>git clone git://github.com/robolectric/robolectric.git</code>
 * modify <code>pom.xml</code> and modify Robolectric's version by appending <code>-SNAPSHOT</code>
 if it's not there already (e.g. <code>0.9.6-SNAPSHOT</code>)
 * <code>mvn install</code>
@@ -128,7 +128,7 @@ library dependencies (such as junit.jar).
 robolectric-X.X.X-jar-with-dependencies.jar. Instead, use git to
 clone the Robolectric repository:
 
-  <code>git clone git@github.com:pivotal/robolectric.git</code>
+  <code>git clone git://github.com/robolectric/robolectric.git</code>
 
 (You'll probably want to fork the repo on github first so you can submit pull requests back to us.)
 

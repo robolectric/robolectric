@@ -11,7 +11,7 @@ or more. That's no way to do TDD. There must be a better way.
 Wouldn't it be nice to run your Android tests directly from inside your IDE? Perhaps you've tried, and been thwarted by
 the dreaded <code>'java.lang.RuntimeException: Stub!'</code>?
 
-[Robolectric](http://github.com/pivotal/robolectric) is a unit test framework that de-fangs the Android SDK jar so you
+[Robolectric](http://robolectric.org/) is a unit test framework that de-fangs the Android SDK jar so you
 can test-drive the development of your Android app.  Tests run inside the JVM on your workstation in seconds. With
 Robolectric you can write tests like this:
 
@@ -68,12 +68,12 @@ use a mocking framework along with Robolectric if you like.
 
 ## Contributing
 
-We welcome contributions. Please [fork](http://github.com/pivotal/robolectric) and submit pull requests. Don't forget to
+We welcome contributions. Please [fork](http://github.com/robolectric/robolectric) and submit pull requests. Don't forget to
 include tests!
 
 ## Sample Project
 
-Look at the [sample project](https://github.com/pivotal/robolectricsample) to see how fast and easy it can be to test
+Look at the [sample project](https://github.com/robolectric/robolectricsample) to see how fast and easy it can be to test
 drive the development of Android applications.
 
 #### Robolectric's current maintainers are:
@@ -96,4 +96,4 @@ drive the development of Android applications.
 
 __Google Group:__ [http://groups.google.com/group/robolectric](http://groups.google.com/group/robolectric)<br/>
 __Group Email:__ [robolectric@googlegroups.com](mailto:robolectric@googlegroups.com)<br/>
-__Samples:__ [http://github.com/pivotal/RobolectricSample](http://github.com/pivotal/RobolectricSample)
+__Samples:__ [http://github.com/robolectric/RobolectricSample](http://github.com/robolectric/RobolectricSample)
