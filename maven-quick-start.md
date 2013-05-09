@@ -39,16 +39,9 @@ Create a file named <code>pom.xml</code> in the root of your project based on th
             <scope>provided</scope>
         </dependency>
 
-        <dependency>
-            <groupId>com.google.android.maps</groupId>
-            <artifactId>maps</artifactId>
-            <version>8_r2</version>
-            <scope>provided</scope>
-        </dependency>
-
         <!-- Make sure this is below the android dependencies -->
         <dependency>
-            <groupId>com.pivotallabs</groupId>
+            <groupId>org.robolectric</groupId>
             <artifactId>robolectric</artifactId>
             <version>X.X.X</version>
             <scope>test</scope>
@@ -67,15 +60,15 @@ Create a file named <code>pom.xml</code> in the root of your project based on th
 
         <plugins>
             <plugin>
-                <!-- See http://code.google.com/p/maven-android-plugin/ -->
                 <groupId>com.jayway.maven.plugins.android.generation2</groupId>
-                <artifactId>maven-android-plugin</artifactId>
-                <version>2.8.3</version>
+                <artifactId>android-maven-plugin</artifactId>
+                <version>3.5.0</version>
                 <configuration>
                     <sdk>
-                        <!-- platform or api level (api level 8 = platform 2.2)-->
-                        <platform>8</platform>
+                        <!-- platform or api level (api level 16 = platform 4.1)-->
+                        <platform>16</platform>
                     </sdk>
+                    <undeployBeforeDeploy>true</undeployBeforeDeploy>
                 </configuration>
                 <extensions>true</extensions>
             </plugin>
@@ -84,7 +77,7 @@ Create a file named <code>pom.xml</code> in the root of your project based on th
 </project>
 {% endhighlight %}
 
-Note that you need Robolectric and JUnit 4 in 'test' scope, and android, android-test, and maps in 'provided' scope.
+Note that you need Robolectric and JUnit 4 in 'test' scope, and android (and maps if you're using it) in 'provided' scope.
 
 ### Prepare directory structures
 You'll need the standard <code>AndroidManifest.xml</code> file in your root directory, as well as something like
@@ -96,7 +89,7 @@ the following files:
   /src/test/java/com/pivotallabs/MyActivityTest.java
 </pre>
 
-You should then be able to build your project and run tests using <code>maven install</code>.
+You should then be able to build your project and run tests using <code>mvn install</code>.
 
 ### Verify your setup
 In Project View, right click on MyProject>code>test -> New -> Java class ->  MyActivityTest
@@ -127,42 +120,10 @@ public class MyActivityTest {
 Typing: <code>mvn clean test</code> will run the tests.
 
 ### Importing into an IDE
-Go check out the Maven sections of [IntelliJ](intellij-quick-start.html) and [Eclipse](eclipse-quick-start.html).
+If you're using JetBrains' excellent [IntelliJ IDEA](http://www.jetbrains.com/idea/), just open your
+<code>pom.xml</code> as a project, and you're set.
 
-When running tests from within IntelliJ or Eclipse, be sure to run tests using the JUnit runner, not the Android Test
+If you're using Eclipse, you can try to get it to work by following the instructions [here](eclipse-quick-start.html).
+
+When running tests from within IntelliJ or Eclipse, be sure to run tests using the JUnit runner and not the Android Test
 runner.
-
-### Troubleshooting
-
-####No Android SDK path could be found.
-
-export the `ANDROID_HOME` environment variable. You might want to set this in `.bash_profile` or `.bashrc`.
-
-    export ANDROID_HOME="PATH/TO/THE/ANDROID/SDK"
-
--or-
-
-Tell Maven where to find Android by making your `~/.m2/settings.xml` file look something like this:
-
-{% highlight xml %}
-    <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
-            http://maven.apache.org/xsd/settings-1.0.0.xsd">
-        <profiles>
-            <profile>
-                <id>android</id>
-                <properties>
-                    <android.sdk.path>
-                        PATH / TO / THE / ANDROID / SDK
-                    </android.sdk.path>
-                </properties>
-            </profile>
-        </profiles>
-        <activeProfiles>
-            <!--make the profile active all the time -->
-            <activeProfile>android</activeProfile>
-        </activeProfiles>
-    </settings>
-{% endhighlight %}
-

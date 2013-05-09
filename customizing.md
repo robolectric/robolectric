@@ -3,6 +3,12 @@ layout: default
 title: Customizing
 ---
 
+> # NOTE:
+> This page mostly refers to Robolectric 1.x. Things have changed significantly with Robolectric 2.0. See
+> [this blog post](http://robolectric.blogspot.com/2013/04/the-test-lifecycle-in-20.html) for more information.
+
+--
+
 # Customizing Robolectric
 
 Many aspects of Robolectric can be configured at runtime by subclassing <code>RobolectricTestRunner</code> to create a

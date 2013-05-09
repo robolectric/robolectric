@@ -30,11 +30,25 @@ Pivotal Labs developers have given this presentation several times.
 
 ### java.lang.RuntimeException: Stub!
 
-Make sure that robolectric and its dependencies (including JUnit) appear before the Android API jars in the classpath.
+* Make sure you've put `@RunWith(RobolectricTestRunner.class)` at the top of your test class.
+* Make sure that robolectric and its dependencies (including JUnit) appear before the Android API jars in the classpath.
+
+----
+
+### Could not resolve dependencies for project: Could not find artifact com.google.android.maps:maps:jar:16_r3 in central (http://repo1.maven.org/maven2)
+
+The jerk lawyers at Google won't allow the Google maps add-on library stubs to be uploaded to Maven Central. You need to manually install them yourself.
+
+Make sure you've got Android SDK 16 or later downloaded, then do this:
+
+    cd $ANDROID_HOME
+    ls -1d add-ons/addon-google_apis-google-* | sort | tail -1 |
+        xargs -I% mvn install:install-file -DgroupId=com.google.android.maps -DartifactId=maps -Dversion=16_r3 -Dpackaging=jar -Dfile=%/libs/maps.jar
 
 ----
 
 ### Unable to find Android SDK
+> **NOTE: this problem no longer happens in Robolectric 2.0. You oughta upgrade!**
 Robolectric cannot find your Android SDK. You can tell Robolectric how to find your SDK root in several ways:
 
 ##### `local.properties` file
@@ -67,13 +81,3 @@ Caused by: java.lang.ClassNotFoundException: caught an exception while obtaining
 
 1. Make sure you have the Google Maps API jar in your build path.
 2. Even if you're building against an earlier version of the API, link Robolectric to version 7 or higher.
-
-### Could not resolve dependencies for project: Could not find artifact com.google.android.maps:maps:jar:16_r2 in central (http://repo1.maven.org/maven2)
-
-The jerk lawyers at Google won't allow the Google maps add-on library stubs to be uploaded to Maven Central. You need to manually install them yourself.
-
-Make sure you've got Android SDK 16 or later downloaded, then do this:
-
-    cd $ANDROID_HOME
-    ls -1d add-ons/addon-google_apis-google-* | sort | tail -1 |
-        xargs -I% mvn install:install-file -DgroupId=com.google.android.maps -DartifactId=maps -Dversion=16_r2 -Dpackaging=jar -Dfile=%/libs/maps.jar

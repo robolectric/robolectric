@@ -9,6 +9,30 @@ title: Release Notes
 ## 2.x Branch
 
 -----
+## [Release 2.0-alpha-3](http://repo1.maven.org/maven2/org/robolectric/robolectric/2.0-alpha-3/) - May 8, 2013
+-----
+
+_Note:_
+This is an unstable alpha release: expect bugs and upcoming changes to the API.
+
+See [this blog post](http://robolectric.blogspot.com/2013/04/the-test-lifecycle-in-20.html) for notes about changes to how tests are run.
+
+#### Features
+- Massive realism upgrade: we removed many, many shadows, particularly for views and widgets, so they'll behave much more realistically.
+- Dramatically improved resource loading, with support for themes and styles.
+- Easier TestRunner setup and configuration.
+- The new <code>@Config</code> annotation to specify config for a test class or test method:
+- The SDK level to report: <code>@Config(reportSdk=Build.VERSION_CODES.FROYO)</code>
+- Qualifiers for resource loading: <code>@Config(qualifiers="fr-port-hdpi")</code>
+- Custom shadow classes to enable.
+- For classes and methods that aren't explicitly shadowed, Robolectric now calls through to the real SDK code.
+- Views now complain if you try to pass in a null Context. Don't do it!
+- SDK method execution is now much much faster, especially in cases where we use the actual SDK code rather than a shadow (which will increasingly be the normal case).
+- Performance and memory use improvements.
+- Removed Hamcrest matchers; use [fest-android](https://github.com/square/fest-android) instead.
+- Numerous fixes and improvements from the Robolectric community. Thank you, contributors!
+
+-----
 ## [Release 2.0-alpha-2](http://repo1.maven.org/maven2/org/robolectric/robolectric/2.0-alpha-2/) - February 26, 2013
 -----
 
@@ -19,7 +43,7 @@ See [this blog post](http://robolectric.blogspot.com/2013/02/migrating-to-robole
 
 #### Features
 - Switched from Javassist to ASM for bytecode manipulation: much faster.
-- All classes in android.support.* are now unshadowed and should work as expected.
+- All classes in <code>android.support.*</code> are now unshadowed and should work as expected.
 - Improved resource and library project support.
 
 -----
