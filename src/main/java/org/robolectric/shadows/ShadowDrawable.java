@@ -37,7 +37,7 @@ public class ShadowDrawable {
     private int alpha;
     private InputStream inputStream;
     private int level;
-    private int loadedFromResourceId = -1;
+    private int createdFromResId = -1;
     private boolean wasInvalidated;
 
     @Implementation
@@ -103,7 +103,7 @@ public class ShadowDrawable {
         shadowOf(bitmap).createdFromResId = resourceId;
         BitmapDrawable drawable = new BitmapDrawable(bitmap);
         shadowOf(drawable).validate(); // start off not invalidated
-        shadowOf(drawable).setLoadedFromResourceId(resourceId);
+        shadowOf(drawable).setCreatedFromResId(resourceId);
         return drawable;
     }
 
@@ -228,12 +228,19 @@ public class ShadowDrawable {
         corruptStreamSources.clear();
     }
 
+    /**
+     * @deprecated Use {@link org.robolectric.shadows.ShadowDrawable#getCreatedFromResId()} instead.
+     */
     public int getLoadedFromResourceId() {
-        return loadedFromResourceId;
+        return getCreatedFromResId();
     }
 
-    public void setLoadedFromResourceId(int resourceId) {
-        loadedFromResourceId = resourceId;
+    public int getCreatedFromResId() {
+        return createdFromResId;
+    }
+
+    public void setCreatedFromResId(int resourceId) {
+        createdFromResId = resourceId;
     }
 
     public boolean wasInvalidated() {

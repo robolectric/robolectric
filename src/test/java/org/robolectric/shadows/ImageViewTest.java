@@ -87,7 +87,7 @@ public class ImageViewTest {
         assertTrue("Drawable", imageView.getDrawable() instanceof Drawable);
         assertTrue("LayerDrawable",
                 imageView.getDrawable() instanceof LayerDrawable);
-        assertThat(shadowOf(imageView.getDrawable()).getLoadedFromResourceId()).isEqualTo(R.drawable.rainbow);
+        assertThat(shadowOf(imageView.getDrawable()).getCreatedFromResId()).isEqualTo(R.drawable.rainbow);
     }
 
     @Test

@@ -60,7 +60,7 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
      * @deprecated use org.robolectric.shadows.ShadowBitmap#getCreatedFromResId() instead.
      */
     @Override
-    public int getLoadedFromResourceId() {
+    public int getCreatedFromResId() {
         return shadowOf(realBitmapDrawable.getBitmap()).getCreatedFromResId();
     }
 

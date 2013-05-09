@@ -60,8 +60,8 @@ public class LayerDrawableTest {
 
         layerDrawable.setDrawableByLayerId(layerId, drawable4000);
 
-        assertEquals(shadowOf(drawable4000).getLoadedFromResourceId(),
-                shadowOf(layerDrawable.getDrawable(index)).getLoadedFromResourceId());
+        assertEquals(shadowOf(drawable4000).getCreatedFromResId(),
+                shadowOf(layerDrawable.getDrawable(index)).getCreatedFromResId());
     }
 
     @Test
@@ -73,8 +73,8 @@ public class LayerDrawableTest {
 
         layerDrawable.setDrawableByLayerId(layerId, drawable4000);
 
-        assertEquals(shadowOf(drawable4000).getLoadedFromResourceId(),
-                shadowOf(layerDrawable.getDrawable(index)).getLoadedFromResourceId());
+        assertEquals(shadowOf(drawable4000).getCreatedFromResId(),
+                shadowOf(layerDrawable.getDrawable(index)).getCreatedFromResId());
     }
 
     @Test

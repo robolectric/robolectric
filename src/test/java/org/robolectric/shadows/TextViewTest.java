@@ -325,10 +325,10 @@ public class TextViewTest {
     public void testSetCompountDrawablesWithIntrinsicBounds_int_shouldCreateDrawablesWithResourceIds() throws Exception {
         textView.setCompoundDrawablesWithIntrinsicBounds(R.drawable.an_image, R.drawable.an_other_image, R.drawable.third_image, R.drawable.fourth_image);
 
-        assertEquals(R.drawable.an_image, shadowOf(textView.getCompoundDrawables()[0]).getLoadedFromResourceId());
-        assertEquals(R.drawable.an_other_image, shadowOf(textView.getCompoundDrawables()[1]).getLoadedFromResourceId());
-        assertEquals(R.drawable.third_image, shadowOf(textView.getCompoundDrawables()[2]).getLoadedFromResourceId());
-        assertEquals(R.drawable.fourth_image, shadowOf(textView.getCompoundDrawables()[3]).getLoadedFromResourceId());
+        assertEquals(R.drawable.an_image, shadowOf(textView.getCompoundDrawables()[0]).getCreatedFromResId());
+        assertEquals(R.drawable.an_other_image, shadowOf(textView.getCompoundDrawables()[1]).getCreatedFromResId());
+        assertEquals(R.drawable.third_image, shadowOf(textView.getCompoundDrawables()[2]).getCreatedFromResId());
+        assertEquals(R.drawable.fourth_image, shadowOf(textView.getCompoundDrawables()[3]).getCreatedFromResId());
     }
 
     @Test

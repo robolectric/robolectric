@@ -62,7 +62,7 @@ public class DrawableBuilder {
                 layers[i] = getDrawableForNode(node, resName, resources);
             }
             LayerDrawable layerDrawable = new LayerDrawable(layers);
-            shadowOf(layerDrawable).setLoadedFromResourceId(resourceIndex.getResourceId(resName));
+            shadowOf(layerDrawable).setCreatedFromResId(resourceIndex.getResourceId(resName));
             return layerDrawable;
         }
 

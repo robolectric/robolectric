@@ -20,6 +20,7 @@ import org.robolectric.shadows.ShadowLooper;
 import static org.fest.reflect.core.Reflection.*;
 import static org.robolectric.Robolectric.shadowOf_;
 
+@SuppressWarnings("UnusedDeclaration")
 public class ActivityController<T extends Activity> {
     private final T activity;
     private final ShadowActivity shadowActivity;
@@ -121,33 +122,45 @@ public class ActivityController<T extends Activity> {
         return this;
     }
 
-    public ActivityController<T> postCreate(Bundle bundle) {
-        shadowActivity.callOnPostCreate(bundle);
+    public ActivityController<T> postCreate(final Bundle bundle) {
+        runPaused(new Runnable() {
+            @Override public void run() {
+                shadowActivity.callOnPostCreate(bundle);
+            }
+        });
         return this;
     }
 
     public ActivityController<T> start() {
-        method("performStart").in(activity).invoke();
+        invokeWhilePaused("performStart");
         return this;
     }
 
     public ActivityController<T> restart() {
-        method("performRestart").in(activity).invoke();
+        invokeWhilePaused("performRestart");
         return this;
     }
 
     public ActivityController<T> resume() {
-        method("performResume").in(activity).invoke();
+        invokeWhilePaused("performResume");
         return this;
     }
 
     public ActivityController<T> postResume() {
-        shadowActivity.callOnPostResume();
+        runPaused(new Runnable() {
+            @Override public void run() {
+                shadowActivity.callOnPostResume();
+            }
+        });
         return this;
     }
 
-    public ActivityController<T> newIntent(android.content.Intent intent) {
-        shadowActivity.callOnNewIntent(intent);
+    public ActivityController<T> newIntent(final android.content.Intent intent) {
+        runPaused(new Runnable() {
+            @Override public void run() {
+                shadowActivity.callOnNewIntent(intent);
+            }
+        });
         return this;
     }
 
@@ -157,22 +170,22 @@ public class ActivityController<T extends Activity> {
     }
 
     public ActivityController<T> pause() {
-        method("performPause").in(activity).invoke();
+        invokeWhilePaused("performPause");
         return this;
     }
 
     public ActivityController<T> userLeaving() {
-        method("performUserLeaving").in(activity).invoke();
+        invokeWhilePaused("performUserLeaving");
         return this;
     }
 
     public ActivityController<T> stop() {
-        method("performStop").in(activity).invoke();
+        invokeWhilePaused("performStop");
         return this;
     }
 
     public ActivityController<T> destroy() {
-        method("performDestroy").in(activity).invoke();
+        invokeWhilePaused("performDestroy");
         return this;
     }
 
@@ -184,5 +197,13 @@ public class ActivityController<T extends Activity> {
             if (!wasPaused) shadowMainLooper.unPause();
         }
         return this;
+    }
+
+    private ActivityController<T> invokeWhilePaused(final String performStart) {
+        return runPaused(new Runnable() {
+            @Override public void run() {
+                method(performStart).in(activity).invoke();
+            }
+        });
     }
 }

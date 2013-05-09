@@ -81,22 +81,22 @@ public class DrawableTest {
     @Test
     public void testGetLoadedFromResourceId_shouldDefaultToNegativeOne() throws Exception {
         Drawable drawable = new TestDrawable();
-        assertThat(shadowOf(drawable).getLoadedFromResourceId()).isEqualTo(-1);
+        assertThat(shadowOf(drawable).getCreatedFromResId()).isEqualTo(-1);
     }
 
     @Test
     public void testSetLoadedFromResourceId() throws Exception {
         Drawable drawable = new TestDrawable();
         ShadowDrawable shadowDrawable = shadowOf(drawable);
-        shadowDrawable.setLoadedFromResourceId(99);
-        assertThat(shadowDrawable.getLoadedFromResourceId()).isEqualTo(99);
+        shadowDrawable.setCreatedFromResId(99);
+        assertThat(shadowDrawable.getCreatedFromResId()).isEqualTo(99);
     }
 
     @Test
     public void testCreateFromResourceId_shouldSetTheId() throws Exception {
         Drawable drawable = ShadowDrawable.createFromResourceId(34758);
         ShadowDrawable shadowDrawable = shadowOf(drawable);
-        assertThat(shadowDrawable.getLoadedFromResourceId()).isEqualTo(34758);
+        assertThat(shadowDrawable.getCreatedFromResId()).isEqualTo(34758);
     }
 
     @Test
