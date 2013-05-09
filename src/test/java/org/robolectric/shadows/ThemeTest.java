@@ -65,8 +65,8 @@ public class ThemeTest {
 
 //    @Test public void shouldPerformFastly() throws Exception {
 //        TestActivity activity = Robolectric.buildActivity(TestActivityWithAnotherTheme.class).create().get();
-//        Class type = type("com.android.internal.R$styleable").withClassLoader(TestActivity.class.getClassLoader()).load();
-//        int[] styleableIds = field("TextView").ofType(int[].class).in(type).get();
+//        Class clazz = type("com.android.internal.R$styleable").withClassLoader(TestActivity.class.getClassLoader()).load();
+//        int[] styleableIds = field("TextView").ofType(int[].class).in(clazz).get();
 //        // once for warm-up
 //        long start = System.currentTimeMillis();
 //        activity.obtainStyledAttributes(null, styleableIds, 0, R.style.MyCustomView);

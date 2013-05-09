@@ -29,7 +29,7 @@ public class ShadowWrangler implements ClassHandler {
         }
     };
     public static final Plan DO_NOTHING_PLAN = new Plan() {
-        @Override public Object run(Object instance, Object[] params) throws Exception {
+        @Override public Object run(Object instance, Object roboData, Object[] params) throws Exception {
             return null;
         }
     };
@@ -432,8 +432,9 @@ public class ShadowWrangler implements ClassHandler {
             this.shadowMethod = shadowMethod;
         }
 
-        @Override public Object run(Object instance, Object[] params) throws Throwable {
-            Object shadow = instance == null ? null : shadowOf(instance);
+        @Override public Object run(Object instance, Object roboData, Object[] params) throws Throwable {
+            //noinspection UnnecessaryLocalVariable
+            Object shadow = roboData;
             try {
 //                System.out.println("invoke " + shadowMethod);
                 return shadowMethod.invoke(shadow, params);

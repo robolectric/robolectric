@@ -49,14 +49,15 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
     private static final Type STRING_TYPE = getType(String.class);
     private static final Type ROBOLECTRIC_INTERNALS_TYPE = Type.getType(RobolectricInternals.class);
     private static final Type PLAN_TYPE = Type.getType(ClassHandler.Plan.class);
-    private static final Method PLAN_RUN_METHOD = new Method("run", OBJECT_TYPE, new Type[]{OBJECT_TYPE, Type.getType(Object[].class)});
     private static final Type THROWABLE_TYPE = Type.getType(Throwable.class);
     private static final Method INITIALIZING_METHOD = new Method("initializing", "(Ljava/lang/Object;)Ljava/lang/Object;");
     private static final Method METHOD_INVOKED_METHOD = new Method("methodInvoked", "(Ljava/lang/String;ZLjava/lang/Class;)L" + PLAN_TYPE.getInternalName() + ";");
+    private static final Method PLAN_RUN_METHOD = new Method("run", OBJECT_TYPE, new Type[]{OBJECT_TYPE, OBJECT_TYPE, Type.getType(Object[].class)});
     private static final Method HANDLE_EXCEPTION_METHOD = new Method("cleanStackTrace", THROWABLE_TYPE, new Type[]{THROWABLE_TYPE});
     private static final String DIRECT_OBJECT_MARKER_TYPE_DESC = Type.getObjectType(DirectObjectMarker.class.getName().replace('.', '/')).getDescriptor();
     private static final String ROBO_INIT_METHOD_NAME = "$$robo$init";
     static final String GET_ROBO_DATA_METHOD_NAME = "$$robo$getData";
+    private static final String GET_ROBO_DATA_SIGNATURE = "()Ljava/lang/Object;";
 
     private static boolean debug = false;
 
@@ -464,7 +465,7 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
             }
 
             {
-                MethodNode initMethodNode = new MethodNode(ACC_PRIVATE, GET_ROBO_DATA_METHOD_NAME, "()Ljava/lang/Object;", null, null);
+                MethodNode initMethodNode = new MethodNode(ACC_PROTECTED, GET_ROBO_DATA_METHOD_NAME, GET_ROBO_DATA_SIGNATURE, null, null);
                 MyGenerator m = new MyGenerator(initMethodNode);
                 m.loadThis();                                         // this
                 m.getField(classType, CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);  // contents of __robo_data__
@@ -801,8 +802,14 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
             // prepare for call to plan.run(Object instance, Object[] params)
             TryCatch tryCatchForHandler = m.tryStart(THROWABLE_TYPE);
             m.loadLocal(planLocalVar); // plan
-            m.loadThisOrNull();
-            m.loadArgArray();
+            m.loadThisOrNull();        // instance
+            if (m.isStatic()) {        // roboData
+                m.loadNull();
+            } else {
+                m.loadThis();
+                m.invokeVirtual(classType, new Method(GET_ROBO_DATA_METHOD_NAME, GET_ROBO_DATA_SIGNATURE));
+            }
+            m.loadArgArray();          // params
             m.invokeInterface(PLAN_TYPE, PLAN_RUN_METHOD);
 
             Type returnType = m.getReturnType();
