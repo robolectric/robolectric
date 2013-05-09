@@ -24,28 +24,24 @@ public class ThemeTest {
         TestActivity activity = new TestActivity();
         activity.setTheme(R.style.Theme_Robolectric);
         shadowOf(activity).callOnCreate(null);
-        System.out.println("theme: " + shadowOf(activity).callGetThemeResId());
         Button theButton = (Button) activity.findViewById(R.id.button);
         assertThat(theButton.getBackground()).isEqualTo(new ColorDrawable(0xff00ff00));
     }
 
     @Test public void whenSetOnActivityInManifest_activityGetsThemeFromActivityInManifest() throws Exception {
         TestActivity activity = Robolectric.buildActivity(TestActivity.class).create().get();
-        System.out.println("theme: " + shadowOf(activity).callGetThemeResId());
         Button theButton = (Button) activity.findViewById(R.id.button);
         assertThat(theButton.getBackground()).isEqualTo(new ColorDrawable(0xff00ff00));
     }
 
     @Test public void whenNotSetOnActivityInManifest_activityGetsThemeFromApplicationInManifest() throws Exception {
         TestActivity activity = Robolectric.buildActivity(TestActivityWithAnotherTheme.class).create().get();
-        System.out.println("theme: " + shadowOf(activity).callGetThemeResId());
         Button theButton = (Button) activity.findViewById(R.id.button);
         assertThat(theButton.getBackground()).isEqualTo(new ColorDrawable(0xffff0000));
     }
 
     @Test public void shouldResolveReferencesThatStartWithAQuestionMark() throws Exception {
         TestActivity activity = Robolectric.buildActivity(TestActivityWithAnotherTheme.class).create().get();
-        System.out.println("theme: " + shadowOf(activity).callGetThemeResId());
         Button theButton = (Button) activity.findViewById(R.id.button);
         assertThat(theButton.getMinWidth()).isEqualTo(42); // via AnotherTheme.Button -> logoWidth and logoHeight
 //        assertThat(theButton.getMinHeight()).isEqualTo(42); todo 2.0-cleanup
@@ -66,6 +62,23 @@ public class ThemeTest {
         assertThat(style.getAttrValue(new ResName("android", "attr", "background")).value)
                 .isEqualTo("#ffff0000");
     }
+
+//    @Test public void shouldPerformFastly() throws Exception {
+//        TestActivity activity = Robolectric.buildActivity(TestActivityWithAnotherTheme.class).create().get();
+//        Class type = type("com.android.internal.R$styleable").withClassLoader(TestActivity.class.getClassLoader()).load();
+//        int[] styleableIds = field("TextView").ofType(int[].class).in(type).get();
+//        // once for warm-up
+//        long start = System.currentTimeMillis();
+//        activity.obtainStyledAttributes(null, styleableIds, 0, R.style.MyCustomView);
+//        System.out.println(String.format("Warm-up took %4dms", System.currentTimeMillis() - start));
+//
+//        start = System.currentTimeMillis();
+//        int count = 5000;
+//        for (int i = 0; i < count; i++) {
+//            activity.obtainStyledAttributes(null, styleableIds, 0, R.style.MyCustomView);
+//        }
+//        System.out.println(String.format("Took %4.1fms", (System.currentTimeMillis() - start) / ((float) count)));
+//    }
 
     public static class TestActivity extends Activity {
         @Override protected void onCreate(Bundle savedInstanceState) {
