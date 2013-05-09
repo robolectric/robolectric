@@ -10,6 +10,7 @@ import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteCursor;
+import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.KeyEvent;
@@ -541,6 +542,13 @@ public class ActivityTest {
 
         assertThat(shadow.getManagedCursors()).isNotNull();
         assertThat(shadow.getManagedCursors().size()).isEqualTo(0);
+    }
+
+    @Test
+    public void setVolumeControlStream_setsTheSpecifiedStreamType() {
+        TestActivity activity = new TestActivity();
+        activity.setVolumeControlStream(AudioManager.STREAM_ALARM);
+        assertThat(activity.getVolumeControlStream()).isEqualTo(AudioManager.STREAM_ALARM);
     }
 
     private static class TestActivity extends Activity {
