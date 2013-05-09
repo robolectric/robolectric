@@ -76,11 +76,6 @@ public class ShadowContextWrapper extends ShadowContext {
         return super.getDatabasePath(name);
     }
 
-    //@Implementation
-    //@Override public File getDir(String name, int mode) {
-    //    return super.getDir(name, mode);
-    //}
-    //
     @Implementation
     @Override public File getFileStreamPath(String name) {
         return super.getFileStreamPath(name);

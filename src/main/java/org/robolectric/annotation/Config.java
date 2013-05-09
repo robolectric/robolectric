@@ -24,6 +24,8 @@ public @interface Config {
 
     /**
      * The Android SDK level to emulate. If not specified, Robolectric defaults to the targetSdkVersion in your app's manifest.
+     *
+     * Not yet supported as of Robolectric 2.0.
      */
     int emulateSdk() default -1;
 
@@ -39,11 +41,15 @@ public @interface Config {
 
     /**
      * Qualifiers for the resource resolution, such as "fr-normal-port-hdpi".
+     *
+     * @see <a href="http://developer.android.com/guide/topics/resources/providing-resources.html">Providing Resources</a> in the Android Developer docs for more information.
      */
     String qualifiers() default "";
 
     /**
      * The Android SDK level to report in Build.VERSION.SDK_INT.
+     *
+     * @see <a href="http://en.wikipedia.org/wiki/Android_version_history">Android Version History</a>.
      */
     int reportSdk() default -1;
 
