@@ -1,6 +1,11 @@
 package org.robolectric.bytecode;
 
 import android.view.ContextThemeWrapper;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.shadows.ShadowWindow;
+import org.robolectric.util.Function;
+
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -12,10 +17,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
-import org.robolectric.shadows.ShadowWindow;
-import org.robolectric.util.Function;
 
 import static org.fest.reflect.core.Reflection.method;
 import static org.fest.reflect.core.Reflection.type;
@@ -27,14 +28,14 @@ public class ShadowWrangler implements ClassHandler {
             return null;
         }
     };
-    private static final boolean STRIP_SHADOW_STACK_TRACES = true;
     public static final Plan DO_NOTHING_PLAN = new Plan() {
         @Override public Object run(Object instance, Object[] params) throws Exception {
             return null;
         }
     };
     public static final Plan CALL_REAL_CODE_PLAN = null;
-
+    private static final boolean STRIP_SHADOW_STACK_TRACES = true;
+    private static final ShadowConfig NO_SHADOW_CONFIG = new ShadowConfig(Object.class.getName(), true, false);
     public boolean debug = false;
 
     private final ShadowMap shadowMap;
@@ -44,6 +45,7 @@ public class ShadowWrangler implements ClassHandler {
             return size() > 500;
         }
     };
+    private final Map<Class, ShadowConfig> shadowConfigCache = new HashMap<Class, ShadowConfig>();
 
     public ShadowWrangler(ShadowMap shadowMap) {
         this.shadowMap = shadowMap;
@@ -87,13 +89,13 @@ public class ShadowWrangler implements ClassHandler {
 
     private Plan calculatePlan(String signature, boolean isStatic, Class<?> theClass) {
         final InvocationProfile invocationProfile = new InvocationProfile(signature, isStatic, theClass.getClassLoader());
-        ShadowConfig shadowConfig = shadowMap.get(invocationProfile.clazz);
+        ShadowConfig shadowConfig = getShadowConfig(invocationProfile.clazz);
 
         // enable call-through for for inner classes if an outer class has call-through turned on
         Class<?> clazz = invocationProfile.clazz;
         while (shadowConfig == null && clazz.getDeclaringClass() != null) {
             clazz = clazz.getDeclaringClass();
-            ShadowConfig outerConfig = shadowMap.get(clazz);
+            ShadowConfig outerConfig = getShadowConfig(clazz);
             if (outerConfig != null && outerConfig.callThroughByDefault) {
                 shadowConfig = new ShadowConfig(Object.class.getName(), true, false);
             }
@@ -133,6 +135,17 @@ public class ShadowWrangler implements ClassHandler {
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException(e);
             }
+        }
+    }
+
+    synchronized private ShadowConfig getShadowConfig(Class clazz) {
+        ShadowConfig shadowConfig = shadowConfigCache.get(clazz);
+        if (shadowConfig == null) {
+            shadowConfig = shadowMap.get(clazz);
+            shadowConfigCache.put(clazz, shadowConfig == null ? NO_SHADOW_CONFIG : shadowConfig);
+            return shadowConfig;
+        } else {
+            return (shadowConfig == NO_SHADOW_CONFIG) ? null : shadowConfig;
         }
     }
 
@@ -296,7 +309,7 @@ public class ShadowWrangler implements ClassHandler {
     public Object createShadowFor(Object instance) {
         Object shadow;
 
-        String shadowClassName = shadowMap.getShadowClassName(instance.getClass());
+        String shadowClassName = getShadowClassName(instance);
 
         if (shadowClassName == null) return new Object();
 
@@ -323,6 +336,16 @@ public class ShadowWrangler implements ClassHandler {
         }
     }
 
+    private String getShadowClassName(Object instance) {
+        Class clazz = instance.getClass();
+        ShadowConfig shadowConfig = null;
+        while (shadowConfig == null && clazz != null) {
+            shadowConfig = getShadowConfig(clazz);
+            clazz = clazz.getSuperclass();
+        }
+        return shadowConfig == null ? null : shadowConfig.shadowClassName;
+    }
+
     private void injectRealObjectOn(Object shadow, Class<?> shadowClass, Object instance) {
         MetaShadow metaShadow = getMetaShadow(shadowClass);
         for (Field realObjectField : metaShadow.realObjectFields) {
@@ -342,7 +365,7 @@ public class ShadowWrangler implements ClassHandler {
     }
 
     private Class<?> findDirectShadowClass(Class<?> originalClass) {
-        ShadowConfig shadowConfig = shadowMap.get(originalClass);
+        ShadowConfig shadowConfig = getShadowConfig(originalClass);
         if (shadowConfig == null) {
             return null;
         }

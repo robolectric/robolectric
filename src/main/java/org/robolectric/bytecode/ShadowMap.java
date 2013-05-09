@@ -107,15 +107,6 @@ public class ShadowMap {
         return new Builder(this);
     }
 
-    String getShadowClassName(Class clazz) {
-        ShadowConfig shadowConfig = null;
-        while (shadowConfig == null && clazz != null) {
-            shadowConfig = get(clazz);
-            clazz = clazz.getSuperclass();
-        }
-        return shadowConfig == null ? null : shadowConfig.shadowClassName;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
