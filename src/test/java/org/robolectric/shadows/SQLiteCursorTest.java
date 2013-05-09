@@ -1,7 +1,9 @@
 package org.robolectric.shadows;
 
 
+import android.database.Cursor;
 import android.database.sqlite.SQLiteCursor;
+import android.database.sqlite.SQLiteException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -253,6 +255,56 @@ public class SQLiteCursorTest {
     }
 
     @Test
+    public void testGetStringWhenInteger() throws Exception {
+        cursor.moveToFirst();
+
+        assertThat(cursor.getString(0)).isEqualTo("1234");
+    }
+
+    @Test
+    public void testGetStringWhenLong() throws Exception {
+        cursor.moveToFirst();
+
+        assertThat(cursor.getString(2)).isEqualTo("3463");
+    }
+
+    @Test
+    public void testGetStringWhenFloat() throws Exception {
+        cursor.moveToFirst();
+
+        assertThat(cursor.getString(3)).isEqualTo("1.5");
+    }
+
+    @Test
+    public void testGetStringWhenDouble() throws Exception {
+        cursor.moveToFirst();
+
+        assertThat(cursor.getString(4)).isEqualTo("3.14159");
+    }
+
+    @Test(expected = SQLiteException.class)
+    public void testGetStringWhenBlob() throws Exception {
+        String sql = "UPDATE table_name set blob_value=? where id=1234";
+        byte[] byteData = sql.getBytes();
+
+        PreparedStatement statement = connection.prepareStatement(sql);
+        statement.setObject(1, byteData);
+        statement.executeUpdate();
+
+        setupCursor();
+        cursor.moveToFirst();
+
+        cursor.getString(5);
+    }
+
+    @Test
+    public void testGetStringWhenNull() throws Exception {
+        cursor.moveToFirst();
+
+        assertThat(cursor.getString(5)).isNull();
+    }
+
+    @Test
     public void testGetInt() throws Exception {
         cursor.moveToFirst();
 
@@ -320,6 +372,63 @@ public class SQLiteCursorTest {
 
         // column index 5 is out-of-bounds
         assertThat(cursor.isNull(5)).isTrue();
+    }
+
+    @Test
+    public void testGetTypeWhenInteger() throws Exception {
+        cursor.moveToFirst();
+
+        assertThat(cursor.getType(0)).isEqualTo(Cursor.FIELD_TYPE_INTEGER);
+    }
+
+    @Test
+    public void testGetTypeWhenString() throws Exception {
+        cursor.moveToFirst();
+
+        assertThat(cursor.getType(1)).isEqualTo(Cursor.FIELD_TYPE_STRING);
+    }
+
+    @Test
+    public void testGetTypeWhenLong() throws Exception {
+        cursor.moveToFirst();
+
+        assertThat(cursor.getType(2)).isEqualTo(Cursor.FIELD_TYPE_INTEGER);
+    }
+
+    @Test
+    public void testGetTypeWhenFloat() throws Exception {
+        cursor.moveToFirst();
+
+        assertThat(cursor.getType(3)).isEqualTo(Cursor.FIELD_TYPE_FLOAT);
+    }
+
+    @Test
+    public void testGetTypeWhenDouble() throws Exception {
+        cursor.moveToFirst();
+
+        assertThat(cursor.getType(4)).isEqualTo(Cursor.FIELD_TYPE_FLOAT);
+    }
+
+    @Test
+    public void testGetTypeWhenBlob() throws Exception {
+        String sql = "UPDATE table_name set blob_value=? where id=1234";
+        byte[] byteData = sql.getBytes();
+
+        PreparedStatement statement = connection.prepareStatement(sql);
+        statement.setObject(1, byteData);
+        statement.executeUpdate();
+
+        setupCursor();
+        cursor.moveToFirst();
+
+        assertThat(cursor.getType(5)).isEqualTo(Cursor.FIELD_TYPE_BLOB);
+    }
+
+    @Test
+    public void testGetTypeWhenNull() throws Exception {
+        cursor.moveToFirst();
+
+        assertThat(cursor.getType(5)).isEqualTo(Cursor.FIELD_TYPE_NULL);
     }
 
     private void addPeople() throws Exception {
