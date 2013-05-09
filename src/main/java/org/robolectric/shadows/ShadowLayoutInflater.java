@@ -6,8 +6,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import org.robolectric.internal.AppSingletonizer;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.builder.LayoutBuilder;
 

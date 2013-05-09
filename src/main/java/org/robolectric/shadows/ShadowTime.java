@@ -3,9 +3,9 @@ package org.robolectric.shadows;
 
 import android.text.format.Time;
 import android.util.TimeFormatException;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
-import org.robolectric.internal.RealObject;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

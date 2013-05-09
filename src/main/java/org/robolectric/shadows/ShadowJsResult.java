@@ -1,8 +1,8 @@
 package org.robolectric.shadows;
 
 import android.webkit.JsResult;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 @Implements(JsResult.class)
 public class ShadowJsResult {

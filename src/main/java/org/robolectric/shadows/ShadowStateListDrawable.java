@@ -5,8 +5,8 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.StateListDrawable;
 import android.util.AttributeSet;
 import android.util.StateSet;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 

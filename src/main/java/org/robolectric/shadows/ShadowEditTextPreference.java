@@ -4,8 +4,8 @@ import android.content.Context;
 import android.preference.EditTextPreference;
 import android.util.AttributeSet;
 import android.widget.EditText;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 @Implements(EditTextPreference.class)
 public class ShadowEditTextPreference extends ShadowDialogPreference {

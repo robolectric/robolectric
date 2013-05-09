@@ -3,9 +3,9 @@ package org.robolectric.shadows;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import org.robolectric.Robolectric;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
-import org.robolectric.internal.RealObject;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 import org.robolectric.res.ResName;
 
 import java.io.IOException;

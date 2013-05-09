@@ -2,8 +2,8 @@ package org.robolectric.shadows;
 
 import android.graphics.Color;
 import org.robolectric.bytecode.RobolectricInternals;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 import static org.fest.reflect.core.Reflection.method;
 

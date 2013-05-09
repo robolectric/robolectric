@@ -2,7 +2,7 @@ package org.robolectric.shadows;
 
 import android.app.DatePickerDialog;
 import android.content.Context;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implements;
 
 @Implements(value = DatePickerDialog.class, inheritImplementationMethods = true)
 public class ShadowDatePickerDialog extends ShadowAlertDialog {

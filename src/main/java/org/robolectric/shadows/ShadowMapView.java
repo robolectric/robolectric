@@ -14,8 +14,8 @@ import com.google.android.maps.Overlay;
 import com.google.android.maps.Projection;
 import org.robolectric.Robolectric;
 import org.robolectric.internal.HiddenApi;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 import org.robolectric.res.Attribute;
 
 import java.util.ArrayList;

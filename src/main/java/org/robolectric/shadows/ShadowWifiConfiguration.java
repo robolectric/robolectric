@@ -1,8 +1,8 @@
 package org.robolectric.shadows;
 
 import android.net.wifi.WifiConfiguration;
-import org.robolectric.internal.Implements;
-import org.robolectric.internal.RealObject;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 
 import java.util.BitSet;
 

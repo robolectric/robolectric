@@ -1,9 +1,9 @@
 package org.robolectric.shadows;
 
 import android.util.SparseBooleanArray;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
-import org.robolectric.internal.RealObject;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 
 import java.util.HashMap;
 import java.util.Map;

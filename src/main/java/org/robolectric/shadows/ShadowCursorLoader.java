@@ -3,8 +3,8 @@ package org.robolectric.shadows;
 import android.content.Context;
 import android.net.Uri;
 import android.support.v4.content.CursorLoader;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 @Implements(CursorLoader.class)
 public class ShadowCursorLoader {

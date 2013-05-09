@@ -5,8 +5,8 @@ import android.graphics.Typeface;
 import org.robolectric.AndroidManifest;
 import org.robolectric.Robolectric;
 import org.robolectric.internal.HiddenApi;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 import java.io.File;
 import java.util.ArrayList;

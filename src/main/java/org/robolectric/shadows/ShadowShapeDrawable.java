@@ -2,8 +2,8 @@ package org.robolectric.shadows;
 
 import android.graphics.Paint;
 import android.graphics.drawable.ShapeDrawable;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 @Implements(ShapeDrawable.class)
 public class ShadowShapeDrawable extends ShadowDrawable {

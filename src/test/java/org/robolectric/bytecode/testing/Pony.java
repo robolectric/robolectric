@@ -1,7 +1,7 @@
 package org.robolectric.bytecode.testing;
 
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 import org.robolectric.internal.Instrument;
 
 @Instrument

@@ -2,8 +2,8 @@ package org.robolectric.shadows;
 
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.OverlayItem;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 import org.robolectric.util.Strings;
 
 import static org.robolectric.Robolectric.shadowOf_;

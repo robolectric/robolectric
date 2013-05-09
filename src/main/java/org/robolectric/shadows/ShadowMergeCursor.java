@@ -2,8 +2,8 @@ package org.robolectric.shadows;
 
 import android.database.Cursor;
 import android.database.MergeCursor;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 /**
  * Implementation for Android {@code MergeCursor} class.

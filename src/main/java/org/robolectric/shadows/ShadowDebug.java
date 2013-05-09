@@ -1,8 +1,8 @@
 package org.robolectric.shadows;
 
 import android.os.Debug;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 @Implements(Debug.class)
 public class ShadowDebug {

@@ -3,8 +3,8 @@ package org.robolectric.shadows;
 import android.graphics.Rect;
 import android.view.TouchDelegate;
 import android.view.View;
-import org.robolectric.internal.Implements;
-import org.robolectric.internal.RealObject;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 
 @Implements(TouchDelegate.class)
 public class ShadowTouchDelegate {

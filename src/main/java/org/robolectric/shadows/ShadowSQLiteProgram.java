@@ -3,9 +3,9 @@ package org.robolectric.shadows;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteProgram;
 import org.robolectric.Robolectric;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
-import org.robolectric.internal.RealObject;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

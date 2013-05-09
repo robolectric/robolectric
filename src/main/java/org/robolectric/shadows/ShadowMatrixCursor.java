@@ -2,8 +2,8 @@ package org.robolectric.shadows;
 
 import android.database.CursorIndexOutOfBoundsException;
 import android.database.MatrixCursor;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 import java.util.ArrayList;
 import java.util.List;

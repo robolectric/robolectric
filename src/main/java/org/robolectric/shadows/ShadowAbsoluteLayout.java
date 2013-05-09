@@ -1,8 +1,8 @@
 package org.robolectric.shadows;
 
 import android.widget.AbsoluteLayout;
-import org.robolectric.internal.Implements;
-import org.robolectric.internal.RealObject;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(value = AbsoluteLayout.class)

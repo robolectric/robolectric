@@ -1,6 +1,6 @@
 package org.robolectric.bytecode;
 
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implements;
 
 import java.util.Collection;
 import java.util.Collections;

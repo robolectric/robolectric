@@ -2,8 +2,8 @@ package org.robolectric.shadows;
 
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.text.TextUtils;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 import org.robolectric.util.Join;
 
 /**

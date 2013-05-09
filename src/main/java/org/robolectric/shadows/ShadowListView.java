@@ -3,8 +3,8 @@ package org.robolectric.shadows;
 import android.view.View;
 import android.widget.HeaderViewListAdapter;
 import android.widget.ListView;
-import org.robolectric.internal.Implements;
-import org.robolectric.internal.RealObject;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -5,9 +5,9 @@ import android.view.Choreographer;
 import org.fest.reflect.field.Invoker;
 import org.robolectric.bytecode.RobolectricInternals;
 import org.robolectric.internal.HiddenApi;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
-import org.robolectric.internal.RealObject;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 import org.robolectric.util.SoftThreadLocal;
 
 import static org.fest.reflect.core.Reflection.field;

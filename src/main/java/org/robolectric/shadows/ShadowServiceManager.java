@@ -3,7 +3,7 @@ package org.robolectric.shadows;
 import android.os.IBinder;
 import android.os.RemoteException;
 import org.robolectric.Robolectric;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implements;
 
 import java.util.Map;
 

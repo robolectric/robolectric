@@ -2,8 +2,8 @@ package org.robolectric.shadows;
 
 import org.jetbrains.annotations.NotNull;
 import org.robolectric.Robolectric;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;

@@ -2,8 +2,8 @@ package org.robolectric.shadows;
 
 import android.text.method.LinkMovementMethod;
 import android.text.method.MovementMethod;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(LinkMovementMethod.class)

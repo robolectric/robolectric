@@ -1,8 +1,8 @@
 package org.robolectric.shadows;
 
 import android.net.Uri;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;

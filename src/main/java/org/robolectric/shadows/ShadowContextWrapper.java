@@ -18,9 +18,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Looper;
 import org.robolectric.AndroidManifest;
 import org.robolectric.Robolectric;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
-import org.robolectric.internal.RealObject;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.tester.android.content.TestSharedPreferences;
 

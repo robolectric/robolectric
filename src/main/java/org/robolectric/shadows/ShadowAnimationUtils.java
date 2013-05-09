@@ -8,8 +8,8 @@ import android.view.animation.LayoutAnimationController;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.TranslateAnimation;
 import org.robolectric.Robolectric;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AnimationUtils.class)

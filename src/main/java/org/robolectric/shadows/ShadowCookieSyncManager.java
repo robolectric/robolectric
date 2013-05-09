@@ -3,8 +3,8 @@ package org.robolectric.shadows;
 import android.content.Context;
 import android.webkit.CookieSyncManager;
 import org.robolectric.Robolectric;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 /**
  * Shadows the {@code android.webkit.CookieSyncManager} class.

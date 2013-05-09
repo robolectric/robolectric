@@ -2,8 +2,8 @@ package org.robolectric.shadows;
 
 import android.view.View;
 import android.widget.ZoomButtonsController;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 /**
  * Shadow of {@code ZoomButtonsController} that allows simulated clicking of the zoom button controls to trigger

@@ -1,4 +1,4 @@
-package org.robolectric.internal;
+package org.robolectric.annotation;
 
 /**
  * Indicates that a method declaration is intended to Shadow a method with the same signature on the associated

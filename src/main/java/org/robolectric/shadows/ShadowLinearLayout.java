@@ -2,8 +2,8 @@ package org.robolectric.shadows;
 
 import android.view.Gravity;
 import android.widget.LinearLayout;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 @Implements(value = LinearLayout.class)
 public class ShadowLinearLayout extends ShadowViewGroup {

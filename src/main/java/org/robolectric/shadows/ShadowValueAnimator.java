@@ -3,8 +3,8 @@ package org.robolectric.shadows;
 import android.animation.TimeInterpolator;
 import android.animation.ValueAnimator;
 import android.view.animation.LinearInterpolator;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 @Implements(ValueAnimator.class)
 public class ShadowValueAnimator extends ShadowAnimator {

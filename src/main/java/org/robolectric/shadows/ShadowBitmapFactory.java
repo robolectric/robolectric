@@ -7,8 +7,8 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.net.Uri;
 import org.robolectric.Robolectric;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 import org.robolectric.internal.NamedStream;
 import org.robolectric.util.Join;
 

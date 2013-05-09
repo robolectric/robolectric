@@ -4,9 +4,9 @@ import android.animation.ObjectAnimator;
 import android.os.Handler;
 import android.os.Looper;
 import org.robolectric.RobolectricShadowOfLevel16;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
-import org.robolectric.internal.RealObject;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;

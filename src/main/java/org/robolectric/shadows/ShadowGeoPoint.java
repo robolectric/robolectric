@@ -1,8 +1,8 @@
 package org.robolectric.shadows;
 
 import com.google.android.maps.GeoPoint;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 import static org.robolectric.Robolectric.shadowOf_;
 import static org.robolectric.shadows.ShadowMapView.fromE6;

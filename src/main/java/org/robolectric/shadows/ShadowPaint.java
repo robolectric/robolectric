@@ -5,9 +5,9 @@ import android.graphics.Paint;
 import android.graphics.PathEffect;
 import android.graphics.Shader;
 import android.graphics.Typeface;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
-import org.robolectric.internal.RealObject;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 
 /**
  * Shadow of {@code Paint} that has some extra accessors so that tests can tell whether a {@code Paint} object was

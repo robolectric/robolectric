@@ -4,9 +4,9 @@ import android.view.animation.Animation;
 import android.view.animation.Interpolator;
 import android.view.animation.ShadowAnimationBridge;
 import android.view.animation.Transformation;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
-import org.robolectric.internal.RealObject;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 
 /**
  * Shadow implementation of {@code Animation} that provides support for invoking listener callbacks.

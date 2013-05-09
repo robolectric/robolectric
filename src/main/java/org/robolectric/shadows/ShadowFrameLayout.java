@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
 import android.widget.FrameLayout;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implements;
 
 /**
  * Shadow for {@link FrameLayout} that simulates its implementation.

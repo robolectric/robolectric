@@ -1,8 +1,8 @@
 package org.robolectric.shadows;
 
 import android.content.ClipboardManager;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 @Implements(ClipboardManager.class)
 public class ShadowClipboardManager {

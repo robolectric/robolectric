@@ -2,8 +2,8 @@ package org.robolectric.shadows;
 
 import android.view.View;
 import android.widget.AdapterView;
-import org.robolectric.internal.Implements;
-import org.robolectric.internal.RealObject;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 
 import static org.robolectric.Robolectric.shadowOf;
 

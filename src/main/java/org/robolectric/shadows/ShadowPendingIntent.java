@@ -7,8 +7,8 @@ import android.content.Intent;
 import android.content.IntentSender;
 import android.content.TestIntentSender;
 import org.robolectric.Robolectric;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 /**
  * Shadow of {@code PendingIntent} that creates and sends {@code Intent}s appropriately.

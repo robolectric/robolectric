@@ -1,7 +1,7 @@
 package android.webkit;
 
 import org.robolectric.internal.DoNotInstrument;
-import org.robolectric.internal.Implementation;
+import org.robolectric.annotation.Implementation;
 
 /**
  * Concrete implementation of the abstract WebSettings class.

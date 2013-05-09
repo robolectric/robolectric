@@ -5,8 +5,8 @@ import android.graphics.Rect;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 @Implements(value = SurfaceView.class)
 @SuppressWarnings({"UnusedDeclaration"})

@@ -4,10 +4,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 import org.robolectric.internal.Instrument;
-import org.robolectric.internal.RealObject;
+import org.robolectric.annotation.RealObject;
 
 import java.lang.reflect.Field;
 

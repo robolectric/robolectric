@@ -2,7 +2,7 @@ package org.robolectric.shadows;
 
 import android.graphics.LinearGradient;
 import android.graphics.Shader;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implements;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(LinearGradient.class)

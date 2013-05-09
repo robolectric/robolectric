@@ -2,8 +2,8 @@ package org.robolectric.shadows;
 
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 @Implements(TelephonyManager.class)
 public class ShadowTelephonyManager {

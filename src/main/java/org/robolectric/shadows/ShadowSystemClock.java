@@ -2,8 +2,8 @@ package org.robolectric.shadows;
 
 import android.os.SystemClock;
 import org.robolectric.internal.HiddenApi;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 @Implements(value = SystemClock.class, callThroughByDefault = true)
 public class ShadowSystemClock {

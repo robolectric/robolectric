@@ -1,4 +1,4 @@
-package org.robolectric.internal;
+package org.robolectric.annotation;
 
 /**
  * Shadow fields annotated @RealObject will have the real instance injected.

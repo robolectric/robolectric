@@ -2,8 +2,8 @@ package org.robolectric.shadows;
 
 import android.app.Activity;
 import android.app.ActivityGroup;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 @Implements(ActivityGroup.class)
 public class ShadowActivityGroup extends ShadowActivity {

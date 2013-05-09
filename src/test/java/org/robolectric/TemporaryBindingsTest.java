@@ -4,7 +4,7 @@ import android.view.View;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implements;
 import org.robolectric.shadows.ShadowView;
 
 import static org.fest.assertions.api.Assertions.assertThat;

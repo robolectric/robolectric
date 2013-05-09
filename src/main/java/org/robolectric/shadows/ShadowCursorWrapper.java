@@ -8,8 +8,8 @@ import android.database.CursorWrapper;
 import android.database.DataSetObserver;
 import android.net.Uri;
 import android.os.Bundle;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 @Implements(CursorWrapper.class)
 public class ShadowCursorWrapper implements Cursor {

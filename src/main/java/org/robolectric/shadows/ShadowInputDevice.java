@@ -2,8 +2,8 @@ package org.robolectric.shadows;
 
 import android.view.InputDevice;
 import org.robolectric.Robolectric;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 import static org.robolectric.Robolectric.shadowOf;
 

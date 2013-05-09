@@ -2,8 +2,8 @@ package org.robolectric.shadows;
 
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapController;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 /**
  * A Shadow of {@code MapController} that tracks its own state and keeps the state of the {@code MapView} it controlls

@@ -14,8 +14,8 @@ import android.net.Uri;
 import android.os.Bundle;
 
 import org.robolectric.Robolectric;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 import org.robolectric.internal.NamedStream;
 import org.robolectric.tester.android.database.TestCursor;
 

@@ -5,9 +5,9 @@ import android.os.IBinder;
 import android.os.Parcel;
 import android.os.Parcelable;
 import org.robolectric.Robolectric;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
-import org.robolectric.internal.RealObject;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;

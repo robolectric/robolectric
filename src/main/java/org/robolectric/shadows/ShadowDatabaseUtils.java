@@ -2,8 +2,8 @@ package org.robolectric.shadows;
 
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteProgram;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 @Implements(DatabaseUtils.class)
 public class ShadowDatabaseUtils {

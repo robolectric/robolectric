@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
 import android.widget.EditText;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implements;
 
 /**
  * A shadow for EditText that provides support for listeners

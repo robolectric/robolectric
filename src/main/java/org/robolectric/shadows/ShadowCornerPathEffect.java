@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
 import android.graphics.CornerPathEffect;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implements;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(CornerPathEffect.class)

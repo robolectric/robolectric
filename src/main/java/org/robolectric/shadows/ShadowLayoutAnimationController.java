@@ -1,8 +1,8 @@
 package org.robolectric.shadows;
 
 import android.view.animation.LayoutAnimationController;
-import org.robolectric.internal.Implements;
-import org.robolectric.internal.RealObject;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 
 @Implements(LayoutAnimationController.class)
 public class ShadowLayoutAnimationController {
