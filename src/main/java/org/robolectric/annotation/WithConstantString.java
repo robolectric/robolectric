@@ -3,6 +3,8 @@ package org.robolectric.annotation;
 /**
  * Annotation to run test with setFinalStaticField() defined in a synchronized 
  * block with automatic reversion to the original value.
+ *
+ * @deprecated
  */
 @java.lang.annotation.Documented
 @java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy.RUNTIME)
