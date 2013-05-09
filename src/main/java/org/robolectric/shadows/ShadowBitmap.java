@@ -104,7 +104,7 @@ public class ShadowBitmap {
     }
 
     /** Matrix from which this Bitmap's content was transformed, or {@code null}. */
-    public Matrix getCreateFromMatrix() {
+    public Matrix getCreatedFromMatrix() {
         return createdFromMatrix;
     }
 
