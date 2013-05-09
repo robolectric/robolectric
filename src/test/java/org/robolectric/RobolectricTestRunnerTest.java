@@ -4,8 +4,13 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowView;
+import org.robolectric.shadows.ShadowViewGroup;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.Arrays;
+import java.util.Properties;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.fest.reflect.core.Reflection.method;
@@ -31,6 +36,25 @@ public class RobolectricTestRunnerTest {
 
         assertConfig(configFor(Test2.class, "withOverrideAnnotation"),
                 9, "furf", "from-method", 8, new Class[]{Test1.class});
+    }
+
+    @Test public void shouldLoadDefaultsFromPropertiesFile() throws Exception {
+        Properties properties = properties(
+                "emulateSdk: 432\n" +
+                        "manifest: --none\n" +
+                        "qualifiers: from-properties-file\n" +
+                        "reportSdk: 234\n" +
+                        "shadows: org.robolectric.shadows.ShadowView, org.robolectric.shadows.ShadowViewGroup\n");
+        assertConfig(configFor(Test2.class, "withoutAnnotation", properties),
+                432, "--none", "from-properties-file", 234, new Class[] {ShadowView.class, ShadowViewGroup.class});
+    }
+
+    private Config configFor(Class<?> testClass, String methodName, final Properties configProperties) throws InitializationError {
+        return new RobolectricTestRunner(testClass) {
+            @Override protected Properties getConfigProperties() {
+                return configProperties;
+            }
+        }.getConfig(method(methodName).withParameterTypes().in(testClass).info());
     }
 
     private Config configFor(Class<?> testClass, String methodName) throws InitializationError {
@@ -85,5 +109,12 @@ public class RobolectricTestRunnerTest {
                 "qualifiers=" + qualifiers + "\n" +
                 "reportSdk=" + reportSdk + "\n" +
                 "shadows=" + Arrays.toString(shadows);
+    }
+
+    private Properties properties(String s) throws IOException {
+        StringReader reader = new StringReader(s);
+        Properties properties = new Properties();
+        properties.load(reader);
+        return properties;
     }
 }

@@ -10,6 +10,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Properties;
 
 /**
  * Indicate that robolectric should look for values that is specific by those qualifiers
@@ -64,6 +65,30 @@ public @interface Config {
         private final String qualifiers;
         private final int reportSdk;
         private final Class<?>[] shadows;
+
+        public static Config fromProperties(Properties configProperties) {
+            if (configProperties == null || configProperties.size() == 0) return null;
+            return new Implementation(
+                    Integer.parseInt(configProperties.getProperty("emulateSdk", "-1")),
+                    configProperties.getProperty("manifest", DEFAULT),
+                    configProperties.getProperty("qualifiers", ""),
+                    Integer.parseInt(configProperties.getProperty("reportSdk", "-1")),
+                    parseClasses(configProperties.getProperty("shadows", ""))
+            );
+        }
+
+        private static Class<?>[] parseClasses(String classList) {
+            String[] classNames = classList.split("[, ]+");
+            Class[] classes = new Class[classNames.length];
+            for (int i = 0; i < classNames.length; i++) {
+                try {
+                    classes[i] = Implementation.class.getClassLoader().loadClass(classNames[i]);
+                } catch (ClassNotFoundException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            return classes;
+        }
 
         public Implementation(int emulateSdk, String manifest, String qualifiers, int reportSdk, Class<?>[] shadows) {
             this.emulateSdk = emulateSdk;
@@ -135,6 +160,5 @@ public @interface Config {
             result = 31 * result + Arrays.hashCode(shadows);
             return result;
         }
-
     }
 }

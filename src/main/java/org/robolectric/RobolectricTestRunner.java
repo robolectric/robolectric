@@ -43,6 +43,7 @@ import org.robolectric.util.SQLiteMap;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -53,6 +54,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import static org.fest.reflect.core.Reflection.staticField;
 
@@ -359,17 +361,37 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     }
 
     public Config getConfig(Method method) {
-        Config methodConfig = method.getAnnotation(Config.class);
-        if (methodConfig == null) {
-            methodConfig = AnnotationUtil.defaultsFor(Config.class);
+        Config config = AnnotationUtil.defaultsFor(Config.class);
+
+        Config globalConfig = Config.Implementation.fromProperties(getConfigProperties());
+        if (globalConfig != null) {
+            config = new Config.Implementation(config, globalConfig);
         }
 
         Config classConfig = method.getDeclaringClass().getAnnotation(Config.class);
-        if (classConfig == null) {
-            classConfig = AnnotationUtil.defaultsFor(Config.class);
+        if (classConfig != null) {
+            config = new Config.Implementation(config, classConfig);
         }
 
-        return new Config.Implementation(classConfig, methodConfig);
+        Config methodConfig = method.getAnnotation(Config.class);
+        if (methodConfig != null) {
+            config = new Config.Implementation(config, methodConfig);
+        }
+
+        return config;
+    }
+
+    protected Properties getConfigProperties() {
+        ClassLoader classLoader = getTestClass().getClass().getClassLoader();
+        InputStream resourceAsStream = classLoader.getResourceAsStream("org.robolectric.Config.properties");
+        if (resourceAsStream == null) return null;
+        Properties properties = new Properties();
+        try {
+            properties.load(resourceAsStream);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return properties;
     }
 
     protected void configureShadows(SdkEnvironment sdkEnvironment, Config config) {
