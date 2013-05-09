@@ -1,15 +1,16 @@
 package org.robolectric.shadows;
 
 import android.net.http.HttpResponseCache;
+import org.robolectric.Robolectric;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+
 import java.io.File;
 import java.net.CacheResponse;
 import java.net.URI;
 import java.net.URLConnection;
 import java.util.List;
 import java.util.Map;
-import org.robolectric.Robolectric;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
 
 import static org.robolectric.Robolectric.newInstanceOf;
 
