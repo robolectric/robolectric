@@ -653,6 +653,7 @@ public class ShadowApplication extends ShadowContextWrapper {
         }
     }
 
+    @Implementation
     public int checkPermission(String permission, int pid, int uid) {
         return grantedPermissions.contains(permission) ? PERMISSION_GRANTED : PERMISSION_DENIED;
     }
