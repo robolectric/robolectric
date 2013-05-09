@@ -157,6 +157,8 @@ public class Setup {
         map.put("com.android.i18n.phonenumbers.Phonenumber$PhoneNumber", FakeClass.class.getName());
         map.put("dalvik.system.CloseGuard", Object.class.getName());
         map.put("java.lang.AutoCloseable", Object.class.getName());
+        map.put("java.net.ExtendedResponseCache", ExtendedResponseCache.class.getName());
+        map.put("java.net.ResponseSource", ResponseSource.class.getName());
         return map;
     }
 
