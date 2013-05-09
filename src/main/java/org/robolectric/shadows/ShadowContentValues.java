@@ -33,9 +33,10 @@ import static org.robolectric.Robolectric.shadowOf_;
  * <p/>
  * This is a fancy map from String to... something. Works just like the Android class it shadows.
  */
-@SuppressWarnings({"UnusedDeclaration"})
+@SuppressWarnings({ "UnusedDeclaration" })
 @Implements(ContentValues.class)
 public final class ShadowContentValues {
+
     private static final String TAG = "ShadowContentValues";
     private HashMap<String, Object> values = new HashMap<String, Object>();
 
@@ -44,7 +45,8 @@ public final class ShadowContentValues {
     }
 
     @Implementation
-    public void put(String key, String value) {
+    public void put(String key,
+                    String value) {
         values.put(key, value);
     }
 
@@ -54,42 +56,50 @@ public final class ShadowContentValues {
     }
 
     @Implementation
-    public void put(String key, Byte value) {
+    public void put(String key,
+                    Byte value) {
         values.put(key, value);
     }
 
     @Implementation
-    public void put(String key, Short value) {
+    public void put(String key,
+                    Short value) {
         values.put(key, value);
     }
 
     @Implementation
-    public void put(String key, Integer value) {
+    public void put(String key,
+                    Integer value) {
         values.put(key, value);
     }
 
     @Implementation
-    public void put(String key, Long value) {
+    public void put(String key,
+                    Long value) {
         values.put(key, value);
     }
 
     @Implementation
-    public void put(String key, Float value) {
+    public void put(String key,
+                    Float value) {
         values.put(key, value);
     }
 
     @Implementation
-    public void put(String key, Double value) {
+    public void put(String key,
+                    Double value) {
         values.put(key, value);
     }
 
     @Implementation
-    public void put(String key, Boolean value) {
+    public void put(String key,
+                    Boolean value) {
         values.put(key, value);
     }
 
     @Implementation
-    public void put(String key, byte[] value) {
+    public void put(String key,
+                    byte[] value) {
         values.put(key, value);
     }
 
@@ -257,6 +267,8 @@ public final class ShadowContentValues {
         } catch (ClassCastException e) {
             if (value instanceof CharSequence) {
                 return Boolean.valueOf(value.toString());
+            } else if (value instanceof Number) {
+                return ((Number) value).intValue() != 0;
             } else {
                 Log.e(TAG, "Cannot cast value for " + key + " to a Boolean: " + value, e);
                 return null;
@@ -284,13 +296,22 @@ public final class ShadowContentValues {
         return 0;
     }
 
-    @Override @Implementation
+    @Override
+    @Implementation
     public boolean equals(Object object) {
-        if (object == null) return false;
+        if (object == null) {
+            return false;
+        }
         Object o = shadowOf_(object);
-        if (o == null) return false;
-        if (this == o) return true;
-        if (getClass() != o.getClass()) return false;
+        if (o == null) {
+            return false;
+        }
+        if (this == o) {
+            return true;
+        }
+        if (getClass() != o.getClass()) {
+            return false;
+        }
 
         if (!(o instanceof ContentValues)) {
             return false;
@@ -298,17 +319,21 @@ public final class ShadowContentValues {
         return values.equals(shadowOf((ContentValues) o).values);
     }
 
-    @Override @Implementation
+    @Override
+    @Implementation
     public int hashCode() {
         return values.hashCode();
     }
 
-    @Override @Implementation
+    @Override
+    @Implementation
     public String toString() {
         StringBuilder sb = new StringBuilder();
         for (String name : values.keySet()) {
             String value = getAsString(name);
-            if (sb.length() > 0) sb.append(" ");
+            if (sb.length() > 0) {
+                sb.append(" ");
+            }
             sb.append(name + "=" + value);
         }
         return sb.toString();
