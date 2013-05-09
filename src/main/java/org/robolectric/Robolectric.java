@@ -72,6 +72,7 @@ import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.http.HttpResponseCache;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
@@ -161,6 +162,9 @@ import android.widget.VideoView;
 import android.widget.ViewAnimator;
 import android.widget.ViewFlipper;
 import android.widget.ZoomButtonsController;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.List;
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
@@ -242,6 +246,7 @@ import org.robolectric.shadows.ShadowGestureDetector;
 import org.robolectric.shadows.ShadowGridView;
 import org.robolectric.shadows.ShadowHandler;
 import org.robolectric.shadows.ShadowHandlerThread;
+import org.robolectric.shadows.ShadowHttpResponseCache;
 import org.robolectric.shadows.ShadowImageView;
 import org.robolectric.shadows.ShadowInputDevice;
 import org.robolectric.shadows.ShadowInputMethodManager;
@@ -343,10 +348,6 @@ import org.robolectric.tester.org.apache.http.HttpRequestInfo;
 import org.robolectric.tester.org.apache.http.RequestMatcher;
 import org.robolectric.util.ActivityController;
 import org.robolectric.util.Scheduler;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.List;
 
 import static org.fest.reflect.core.Reflection.method;
 
@@ -693,6 +694,10 @@ public class Robolectric {
 
     public static ShadowHandlerThread shadowOf(HandlerThread instance) {
         return (ShadowHandlerThread) shadowOf_(instance);
+    }
+
+    public static ShadowHttpResponseCache shadowOf(HttpResponseCache instance) {
+        return (ShadowHttpResponseCache) shadowOf_(instance);
     }
 
     public static ShadowImageView shadowOf(ImageView instance) {
