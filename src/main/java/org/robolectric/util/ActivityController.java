@@ -9,11 +9,13 @@ import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.Looper;
 import org.robolectric.RoboInstrumentation;
 import org.robolectric.Robolectric;
 import org.robolectric.bytecode.RobolectricInternals;
 import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.shadows.ShadowActivityThread;
+import org.robolectric.shadows.ShadowLooper;
 
 import static org.fest.reflect.core.Reflection.*;
 import static org.robolectric.Robolectric.shadowOf_;
@@ -21,6 +23,7 @@ import static org.robolectric.Robolectric.shadowOf_;
 public class ActivityController<T extends Activity> {
     private final T activity;
     private final ShadowActivity shadowActivity;
+    private final ShadowLooper shadowMainLooper;
 
     private Application application;
     private Context baseContext;
@@ -37,11 +40,13 @@ public class ActivityController<T extends Activity> {
             RobolectricInternals.inActivityControllerBlock = priorValue;
         }
         shadowActivity = shadowOf_(activity);
+        shadowMainLooper = shadowOf_(Looper.getMainLooper());
     }
 
     public ActivityController(T activity) {
         this.activity = activity;
         shadowActivity = shadowOf_(activity);
+        shadowMainLooper = shadowOf_(Looper.getMainLooper());
         attached = true;
     }
 
@@ -96,11 +101,15 @@ public class ActivityController<T extends Activity> {
         return this;
     }
 
-    public ActivityController<T> create(Bundle bundle) {
-        if (!attached) attach();
+    public ActivityController<T> create(final Bundle bundle) {
+        return runPaused(new Runnable() {
+            @Override
+            public void run() {
+                if (!attached) attach();
 
-        method("performCreate").withParameterTypes(Bundle.class).in(activity).invoke(bundle);
-        return this;
+                method("performCreate").withParameterTypes(Bundle.class).in(activity).invoke(bundle);
+            }
+        });
     }
 
     public ActivityController<T> create() {
@@ -167,4 +176,13 @@ public class ActivityController<T extends Activity> {
         return this;
     }
 
+    private ActivityController<T> runPaused(Runnable r) {
+        boolean wasPaused = shadowMainLooper.setPaused(true);
+        try {
+            r.run();
+        } finally {
+            if (!wasPaused) shadowMainLooper.unPause();
+        }
+        return this;
+    }
 }

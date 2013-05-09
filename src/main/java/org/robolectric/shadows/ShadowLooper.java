@@ -219,6 +219,20 @@ public class ShadowLooper {
         scheduler.unPause();
     }
 
+    public boolean isPaused() {
+        return scheduler.isPaused();
+    }
+
+    public boolean setPaused(boolean shouldPause) {
+        boolean wasPaused = isPaused();
+        if (shouldPause) {
+            pause();
+        } else {
+            unPause();
+        }
+        return wasPaused;
+    }
+
     /**
      * Causes all enqueued tasks to be discarded, and pause state to be reset
      */
