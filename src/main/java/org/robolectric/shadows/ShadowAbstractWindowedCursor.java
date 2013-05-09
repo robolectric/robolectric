@@ -1,6 +1,8 @@
 package org.robolectric.shadows;
 
 import android.database.AbstractWindowedCursor;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteException;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 
@@ -59,14 +61,18 @@ public class ShadowAbstractWindowedCursor extends ShadowAbstractCursor {
     public String getString(int columnIndex) {
         checkPosition();
         Object value = this.currentRow.get(getColumnNames()[columnIndex]);
-        if (value instanceof Clob) {
+        if (value == null) {
+            return null;
+        } else if (value instanceof Clob) {
             try {
                 return ((Clob) value).getSubString(1, (int)((Clob) value).length());
             } catch (SQLException x) {
                 throw new RuntimeException(x);
             }
+        } else if (value instanceof byte[]) {
+            throw new SQLiteException("getString called on a blob field");
         } else {
-            return (String)value;
+            return value.toString();
         }
     }
 
@@ -109,6 +115,23 @@ public class ShadowAbstractWindowedCursor extends ShadowAbstractCursor {
         Object o =this.currentRow.get(getColumnNames()[columnIndex]);
         if (o==null) return 0;
         return new Double(o.toString());
+    }
+
+    @Implementation
+    public int getType(int columnIndex) {
+        checkPosition();
+        Object o = this.currentRow.get(getColumnNames()[columnIndex]);
+        if (o == null) {
+            return Cursor.FIELD_TYPE_NULL;
+        } else if (o instanceof Double || o instanceof Float) {
+            return Cursor.FIELD_TYPE_FLOAT;
+        } else if (o instanceof Number) {
+            return Cursor.FIELD_TYPE_INTEGER;
+        } else if (o instanceof byte[]) {
+            return Cursor.FIELD_TYPE_BLOB;
+        } else {
+            return Cursor.FIELD_TYPE_STRING;
+        }
     }
 
     @Implementation
