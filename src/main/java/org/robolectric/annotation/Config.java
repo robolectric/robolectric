@@ -78,6 +78,7 @@ public @interface Config {
         }
 
         private static Class<?>[] parseClasses(String classList) {
+            if (classList.length() == 0) return new Class[0];
             String[] classNames = classList.split("[, ]+");
             Class[] classes = new Class[classNames.length];
             for (int i = 0; i < classNames.length; i++) {

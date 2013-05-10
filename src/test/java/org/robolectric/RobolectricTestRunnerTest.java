@@ -49,6 +49,12 @@ public class RobolectricTestRunnerTest {
                 432, "--none", "from-properties-file", 234, new Class[] {ShadowView.class, ShadowViewGroup.class});
     }
 
+    @Test public void withEmptyShadowList_shouldLoadDefaultsFromPropertiesFile() throws Exception {
+        Properties properties = properties("shadows:");
+        assertConfig(configFor(Test2.class, "withoutAnnotation", properties),
+                -1, "--default", "", -1, new Class[] {});
+    }
+
     private Config configFor(Class<?> testClass, String methodName, final Properties configProperties) throws InitializationError {
         return new RobolectricTestRunner(testClass) {
             @Override protected Properties getConfigProperties() {
