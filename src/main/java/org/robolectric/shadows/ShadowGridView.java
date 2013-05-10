@@ -5,5 +5,5 @@ import org.robolectric.annotation.Implements;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(GridView.class)
-public class ShadowGridView extends ShadowAdapterView {
+public class ShadowGridView extends ShadowAbsListView {
 }
