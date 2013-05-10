@@ -189,7 +189,7 @@ public class ShadowResources {
             }
         }
 
-        return ShadowTypedArray.create(realResources, attributes, attrs);
+        return ShadowTypedArray.create(attributes, attrs, this);
     }
 
     private Attribute findAttributeValue(ResName attrName, AttributeSet attributeSet, Style defStyleFromAttr, Style defStyleFromRes, Style theme) {

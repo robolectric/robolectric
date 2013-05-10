@@ -11,6 +11,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.res.Attribute;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceIndex;
+import org.robolectric.res.ResourceLoader;
 import org.robolectric.util.Util;
 
 import java.util.List;
@@ -25,7 +26,12 @@ public class ShadowTypedArray {
     private CharSequence[] stringData;
     private int[] attrs;
 
-    public static TypedArray create(Resources resources, List<Attribute> set, int[] attrs) {
+    public static TypedArray create(List<Attribute> set, int[] attrs, ShadowResources shadowResources) {
+        Resources realResources = shadowResources.realResources;
+        ResourceLoader resourceLoader = shadowResources.getResourceLoader();
+        ResourceIndex resourceIndex = resourceLoader.getResourceIndex();
+        String qualifiers = shadowOf(realResources.getAssets()).getQualifiers();
+
         CharSequence[] stringData = new CharSequence[attrs.length];
         int[] data = new int[attrs.length * ShadowAssetManager.STYLE_NUM_ENTRIES];
         int[] indices = new int[attrs.length + 1];
@@ -37,12 +43,11 @@ public class ShadowTypedArray {
             int offset = i * ShadowAssetManager.STYLE_NUM_ENTRIES;
 
             int attr = attrs[i];
-            ResourceIndex resourceIndex = shadowOf(resources).getResourceLoader().getResourceIndex();
             ResName attrName = resourceIndex.getResName(attr);
             if (attrName != null) {
                 Attribute attribute = Attribute.find(set, attrName.getFullyQualifiedName());
                 TypedValue typedValue = new TypedValue();
-                Converter.convertAndFill(attribute, typedValue, shadowOf(resources).getResourceLoader(), shadowOf(resources.getAssets()).getQualifiers());
+                Converter.convertAndFill(attribute, typedValue, resourceLoader, qualifiers);
 
                 if (attribute != null && !attribute.isNull()) {
                     //noinspection PointlessArithmeticExpression
@@ -65,8 +70,8 @@ public class ShadowTypedArray {
         TypedArray typedArray = constructor()
                 .withParameterTypes(Resources.class, int[].class, int[].class, int.class)
                 .in(TypedArray.class)
-                .newInstance(resources, data, indices, nextIndex);
-        TypedArray result = ShadowResources.inject(resources, typedArray);
+                .newInstance(realResources, data, indices, nextIndex);
+        TypedArray result = ShadowResources.inject(realResources, typedArray);
         ShadowTypedArray shadowTypedArray = Robolectric.shadowOf(result);
         shadowTypedArray.stringData = stringData;
         shadowTypedArray.attrs = attrs;
