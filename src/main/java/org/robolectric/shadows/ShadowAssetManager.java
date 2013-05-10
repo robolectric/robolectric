@@ -334,7 +334,7 @@ public final class ShadowAssetManager {
 
             if (parent == null) return null;
 
-            if (parent.charAt(0) == '@') parent = parent.substring(1);
+            if (parent.startsWith("@")) parent = parent.substring(1);
 
             ResName style = ResName.qualifyResName(parent, currentStyle.getPackageName(), "style");
             TypedResource typedResource = resourceLoader.getValue(style, qualifiers);
