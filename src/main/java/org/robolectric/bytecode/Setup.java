@@ -1,7 +1,6 @@
 package org.robolectric.bytecode;
 
 import android.R;
-import android.net.Uri__FromAndroid;
 import org.robolectric.AndroidManifest;
 import org.robolectric.RobolectricBase;
 import org.robolectric.RobolectricTestRunner;
@@ -36,7 +35,6 @@ import static java.util.Arrays.asList;
 public class Setup {
     public static final List<String> CLASSES_TO_ALWAYS_DELEGATE = stringify(
             RobolectricBase.class,
-            Uri__FromAndroid.class,
             TestLifecycle.class,
             RealObject.class,
             ShadowWrangler.class,
