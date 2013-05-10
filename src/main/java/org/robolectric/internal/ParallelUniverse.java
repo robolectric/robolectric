@@ -82,7 +82,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
                 applicationInfo.packageName = "some.package.name";
                 applicationInfo.sourceDir = new File(".").getAbsolutePath();
                 // todo: this should be deleted after each test... 2.0-cleanup
-                applicationInfo.dataDir = ShadowContext.createTempDir("data").getAbsolutePath();
+                applicationInfo.dataDir = ShadowContext.FILES_DIR.getAbsolutePath();
             } else {
                 try {
                     applicationInfo = Robolectric.packageManager.getApplicationInfo(appManifest.getPackageName(), 0);

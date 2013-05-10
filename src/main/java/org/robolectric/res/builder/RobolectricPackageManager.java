@@ -57,8 +57,7 @@ public class RobolectricPackageManager extends StubPackageManager {
                 applicationInfo.processName = androidManifest.getProcessName();
                 applicationInfo.name = androidManifest.getApplicationName();
                 applicationInfo.sourceDir = new File(".").getAbsolutePath();
-                // todo: this should be deleted after each test...
-                applicationInfo.dataDir = ShadowContext.createTempDir("data-" + androidManifest.getPackageName()).getAbsolutePath();
+                applicationInfo.dataDir = ShadowContext.FILES_DIR.getAbsolutePath();
             }
             return applicationInfo;
         }
