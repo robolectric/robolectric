@@ -33,6 +33,7 @@ import org.robolectric.res.TypedResource;
 import org.robolectric.res.XmlFileLoader;
 import org.robolectric.res.builder.DrawableBuilder;
 import org.robolectric.res.builder.XmlFileBuilder;
+import org.robolectric.util.Util;
 import org.w3c.dom.Document;
 
 import java.io.InputStream;
@@ -105,14 +106,14 @@ public class ShadowResources {
     }
 
     private TypedArray attrsToTypedArray(AttributeSet set, int[] attrs, int defStyleAttr, int themeResourceId, int defStyleRes) {
-            /*
-             * When determining the final value of a particular attribute, there are four inputs that come into play:
-             *
-             * 1. Any attribute values in the given AttributeSet.
-             * 2. The style resource specified in the AttributeSet (named "style").
-             * 3. The default style specified by defStyleAttr and defStyleRes
-             * 4. The base values in this theme.
-             */
+        /*
+         * When determining the final value of a particular attribute, there are four inputs that come into play:
+         *
+         * 1. Any attribute values in the given AttributeSet.
+         * 2. The style resource specified in the AttributeSet (named "style").
+         * 3. The default style specified by defStyleAttr and defStyleRes
+         * 4. The base values in this theme.
+         */
         ResourceLoader resourceLoader = getResourceLoader();
         ShadowAssetManager shadowAssetManager = shadowOf(realResources.getAssets());
         String qualifiers = shadowAssetManager.getQualifiers();
@@ -189,7 +190,50 @@ public class ShadowResources {
             }
         }
 
-        return ShadowTypedArray.create(attributes, attrs, this);
+        return this.createTypedArray(attributes, attrs);
+    }
+
+    public TypedArray createTypedArray(List<Attribute> set, int[] attrs) {
+        ResourceLoader resourceLoader = getResourceLoader();
+        ResourceIndex resourceIndex = resourceLoader.getResourceIndex();
+        String qualifiers = shadowOf(realResources.getAssets()).getQualifiers();
+
+        CharSequence[] stringData = new CharSequence[attrs.length];
+        int[] data = new int[attrs.length * ShadowAssetManager.STYLE_NUM_ENTRIES];
+        int[] indices = new int[attrs.length + 1];
+        int nextIndex = 0;
+
+        List<Integer> wantedAttrsList = Util.intArrayToList(attrs);
+
+        for (int i = 0; i < attrs.length; i++) {
+            int offset = i * ShadowAssetManager.STYLE_NUM_ENTRIES;
+
+            int attr = attrs[i];
+            ResName attrName = resourceIndex.getResName(attr);
+            if (attrName != null) {
+                Attribute attribute = Attribute.find(set, attrName);
+                TypedValue typedValue = new TypedValue();
+                Converter.convertAndFill(attribute, typedValue, resourceLoader, qualifiers);
+
+                if (attribute != null && !attribute.isNull()) {
+                    //noinspection PointlessArithmeticExpression
+                    data[offset + ShadowAssetManager.STYLE_TYPE] = typedValue.type;
+                    data[offset + ShadowAssetManager.STYLE_DATA] = typedValue.type == TypedValue.TYPE_STRING ? i : typedValue.data;
+                    data[offset + ShadowAssetManager.STYLE_ASSET_COOKIE] = typedValue.assetCookie;
+                    data[offset + ShadowAssetManager.STYLE_RESOURCE_ID] = typedValue.resourceId;
+                    data[offset + ShadowAssetManager.STYLE_CHANGING_CONFIGURATIONS] = typedValue.changingConfigurations;
+                    data[offset + ShadowAssetManager.STYLE_DENSITY] = typedValue.density;
+                    stringData[i] = typedValue.string;
+
+                    indices[nextIndex + 1] = i;
+                    nextIndex++;
+                }
+            }
+        }
+
+        indices[0] = nextIndex;
+
+        return ShadowTypedArray.create(realResources, attrs, data, indices, nextIndex, stringData);
     }
 
     private Attribute findAttributeValue(ResName attrName, AttributeSet attributeSet, Style defStyleFromAttr, Style defStyleFromRes, Style theme) {
@@ -442,14 +486,6 @@ public class ShadowResources {
             }
         }
         return drawable;
-    }
-
-    public static <T> T inject(Resources resources, T instance) {
-        Object shadow = Robolectric.shadowOf_(instance);
-        if (shadow instanceof UsesResources) {
-            ((UsesResources) shadow).injectResources(resources);
-        }
-        return instance;
     }
 
     @Implements(Resources.NotFoundException.class)
