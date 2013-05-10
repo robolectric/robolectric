@@ -6,8 +6,6 @@ import org.robolectric.util.Util;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -26,15 +24,10 @@ abstract public class Fs {
     }
 
     public static FsFile fileFromPath(String urlString) {
-        URI uri = URI.create(urlString);
-        if ("jar".equals(uri.getScheme())) {
-            String[] parts = uri.getPath().split("!");
-            try {
-                Fs fs = fromJar(URI.create("file:" + parts[0]).toURL());
-                return fs.join(parts[1].substring(1));
-            } catch (MalformedURLException e) {
-                throw new RuntimeException(e);
-            }
+        if (urlString.startsWith("jar:")) {
+            String[] parts = urlString.replaceFirst("jar:", "").split("!");
+            Fs fs = new JarFs(new File(parts[0]));
+            return fs.join(parts[1].substring(1));
         } else {
             return new FileFsFile(new File(urlString));
         }
