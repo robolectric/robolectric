@@ -1,11 +1,13 @@
 package org.robolectric.res;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import org.jetbrains.annotations.NotNull;
+import java.util.StringTokenizer;
 
 public class ResBunch {
     private final Map<String, ResMap<TypedResource>> types = new LinkedHashMap<String, ResMap<TypedResource>>();
@@ -46,8 +48,9 @@ public class ResBunch {
         long possibles = 0;
         for (int i = 0; i < count; i++) possibles |= 1 << i;
 
-        String[] qualifierList = qualifiers.split("-");
-        for (String qualifier : qualifierList) {
+        StringTokenizer st = new StringTokenizer(qualifiers, "-");
+        while (st.hasMoreTokens()) {
+            String qualifier = st.nextToken();
             String paddedQualifier = "-" + qualifier + "-";
             long matches = 0;
 
