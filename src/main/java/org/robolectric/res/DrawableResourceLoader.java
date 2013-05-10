@@ -1,5 +1,7 @@
 package org.robolectric.res;
 
+import java.io.File;
+
 /**
  * DrawableResourceLoader
  */
@@ -44,7 +46,13 @@ public class DrawableResourceLoader extends XmlLoader {
         FsFile[] files = dir.listFiles();
         if (files != null) {
             for (FsFile f : files) {
-                if (f.isDirectory() && (f.toString().contains("/drawable"))) {
+                boolean isFilePathContainsDrawable;
+                if (f instanceof Fs.JarFs.JarFsFile) {
+                    isFilePathContainsDrawable = f.toString().contains("/drawable");
+                } else {
+                    isFilePathContainsDrawable = f.toString().contains(File.separator + "drawable");
+                }
+                if (f.isDirectory() && isFilePathContainsDrawable) {
                     listDrawableResources(resourcePath, f);
                 } else {
                     String name = f.getName();
