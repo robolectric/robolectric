@@ -80,12 +80,15 @@ public class ShadowMap {
         ClassLoader classLoader = clazz.getClassLoader();
         if (shadowConfig == null && classLoader != null) {
             String shadowClassName = convertToShadowName(className);
+            Class<?> shadowClass;
             try {
-                Class<?> shadowClass = classLoader.loadClass(shadowClassName);
-                ShadowInfo shadowInfo = getShadowInfo(shadowClass);
-                return shadowInfo.getShadowConfig();
+                shadowClass = classLoader.loadClass(shadowClassName);
             } catch (ClassNotFoundException e) {
                 return null;
+            }
+            ShadowInfo shadowInfo = getShadowInfo(shadowClass);
+            if (shadowInfo != null && shadowInfo.shadowedClassName.equals(className)) {
+                return shadowInfo.getShadowConfig();
             }
         }
         return shadowConfig;
