@@ -45,14 +45,12 @@ public class Setup {
             R.class,
 
             org.robolectric.bytecode.InstrumentingClassLoader.class,
-            org.robolectric.bytecode.JavassistInstrumentingClassLoader.class,
             org.robolectric.bytecode.AsmInstrumentingClassLoader.class,
             SdkEnvironment.class,
             RobolectricTestRunner.class,
             RobolectricTestRunner.HelperTestRunner.class,
             ResourcePath.class,
             ResourceLoader.class,
-            AndroidTranslator.class,
             ClassHandler.class,
             ClassHandler.Plan.class,
             Implements.class,
@@ -122,7 +120,7 @@ public class Setup {
                         || name.startsWith("org.hamcrest")
                         || name.startsWith("org.specs2") // allows for android projects with mixed scala\java tests to be
                         || name.startsWith("scala.")     //  run with Maven Surefire (see the RoboSpecs project on github)
-                        || name.startsWith("org.sqlite.") // ugh, javassist is barfing while loading org.sqlite now for some reason?!?
+                        || name.startsWith("org.sqlite.") // ugh, we're barfing while loading org.sqlite now for some reason?!? todo: still?
         );
     }
 

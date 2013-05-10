@@ -1,43 +1,41 @@
 package org.robolectric.bytecode;
 
-import javassist.ClassPool;
-import javassist.CtClass;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.lang.annotation.Annotation;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class SetupTest {
-    private ClassPool classPool;
     private Setup setup;
 
     @Before
     public void setUp() throws Exception {
-        classPool = new ClassPool(true);
         setup = new Setup();
     }
 
     @Test
     public void shouldInstrumentDefaultRequestDirector() throws Exception {
-        assertTrue(setup.shouldInstrument(wrap(classPool.makeClass("org.apache.http.impl.client.DefaultRequestDirector"))));
+        assertTrue(setup.shouldInstrument(wrap("org.apache.http.impl.client.DefaultRequestDirector")));
     }
 
     @Test
     public void shouldInstrumentGoogleMapsClasses() throws Exception {
-        assertTrue(setup.shouldInstrument(wrap(classPool.makeClass("com.google.android.maps.SomeMapsClass"))));
+        assertTrue(setup.shouldInstrument(wrap("com.google.android.maps.SomeMapsClass")));
     }
 
     @Test
     public void shouldNotInstrumentCoreJdkClasses() throws Exception {
-        assertFalse(setup.shouldInstrument(wrap(classPool.get("java.lang.Object"))));
-        assertFalse(setup.shouldInstrument(wrap(classPool.get("java.lang.String"))));
+        assertFalse(setup.shouldInstrument(wrap("java.lang.Object")));
+        assertFalse(setup.shouldInstrument(wrap("java.lang.String")));
     }
 
     @Test
     public void shouldInstrumentAndroidCoreClasses() throws Exception {
-        assertTrue(setup.shouldInstrument(wrap(classPool.makeClass("android.content.Intent"))));
-        assertTrue(setup.shouldInstrument(wrap(classPool.makeClass("android.and.now.for.something.completely.different"))));
+        assertTrue(setup.shouldInstrument(wrap("android.content.Intent")));
+        assertTrue(setup.shouldInstrument(wrap("android.and.now.for.something.completely.different")));
     }
 
     @Test
@@ -49,7 +47,23 @@ public class SetupTest {
         assertTrue(setup.shouldAcquire("com.whatever.R$anything$else"));
     }
 
-    ClassInfo wrap(CtClass ctClass) {
-        return new AndroidTranslator.JavassistClassInfo(ctClass);
+    ClassInfo wrap(final String className) {
+        return new ClassInfo() {
+            @Override public String getName() {
+                return className;
+            }
+
+            @Override public boolean isInterface() {
+                return false;
+            }
+
+            @Override public boolean isAnnotation() {
+                return false;
+            }
+
+            @Override public boolean hasAnnotation(Class<? extends Annotation> annotationClass) {
+                return false;
+            }
+        };
     }
 }

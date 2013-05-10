@@ -14,16 +14,12 @@ import org.robolectric.annotation.DisableStrictI18n;
 import org.robolectric.annotation.EnableStrictI18n;
 import org.robolectric.annotation.WithConstantInt;
 import org.robolectric.annotation.WithConstantString;
-import org.robolectric.bytecode.AndroidTranslator;
 import org.robolectric.bytecode.AsmInstrumentingClassLoader;
-import org.robolectric.bytecode.ClassCache;
 import org.robolectric.bytecode.ClassHandler;
-import org.robolectric.bytecode.JavassistInstrumentingClassLoader;
 import org.robolectric.bytecode.RobolectricInternals;
 import org.robolectric.bytecode.Setup;
 import org.robolectric.bytecode.ShadowMap;
 import org.robolectric.bytecode.ShadowWrangler;
-import org.robolectric.bytecode.ZipClassCache;
 import org.robolectric.internal.ParallelUniverse;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.res.DocumentLoader;
@@ -40,7 +36,6 @@ import org.robolectric.util.DatabaseConfig.DatabaseMap;
 import org.robolectric.util.DatabaseConfig.UsingDatabaseMap;
 import org.robolectric.util.SQLiteMap;
 
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -152,36 +147,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
     protected ClassLoader createRobolectricClassLoader(Setup setup, SdkConfig sdkConfig) {
         URL[] urls = MAVEN_CENTRAL.getLocalArtifactUrls(this, sdkConfig.getSdkClasspathDependencies()).values().toArray(new URL[0]);
-        ClassLoader robolectricClassLoader;
-        if (useAsm()) {
-            robolectricClassLoader = new AsmInstrumentingClassLoader(setup, urls);
-        } else {
-            ClassCache classCache = createClassCache();
-            AndroidTranslator androidTranslator = createAndroidTranslator(setup, classCache);
-            ClassLoader realSdkClassLoader = JavassistInstrumentingClassLoader.makeClassloader(this.getClass().getClassLoader(), urls);
-            robolectricClassLoader = new JavassistInstrumentingClassLoader(realSdkClassLoader, classCache, androidTranslator, setup);
-        }
-        return robolectricClassLoader;
-    }
-
-    public ClassCache createClassCache() {
-        final String classCachePath = System.getProperty("cached.robolectric.classes.path");
-        final File classCacheDirectory;
-        if (null == classCachePath || "".equals(classCachePath.trim())) {
-            classCacheDirectory = new File("./tmp");
-        } else {
-            classCacheDirectory = new File(classCachePath);
-        }
-
-        return new ZipClassCache(new File(classCacheDirectory, "cached-robolectric-classes.jar").getAbsolutePath(), AndroidTranslator.CACHE_VERSION);
-    }
-
-    public AndroidTranslator createAndroidTranslator(Setup setup, ClassCache classCache) {
-        return new AndroidTranslator(classCache, setup);
-    }
-
-    public boolean useAsm() {
-        return true;
+        return new AsmInstrumentingClassLoader(setup, urls);
     }
 
     public static void injectClassHandler(ClassLoader robolectricClassLoader, ClassHandler classHandler) {

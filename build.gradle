@@ -15,7 +15,6 @@ dependencies {
     compile group: 'org.objenesis', name: 'objenesis', version: '1.3'
     compile group: 'org.xerial', name: 'sqlite-jdbc', version: '3.7.2'
     compile group: 'com.h2database', name: 'h2', version: '1.2.147'
-    compile group: 'org.javassist', name: 'javassist', version: '3.14.0-GA'
     compile group: 'org.ow2.asm', name: 'asm', version: '4.1'
     compile group: 'org.ow2.asm', name: 'asm-commons', version: '4.1'
     compile group: 'org.ow2.asm', name: 'asm-util', version: '4.1'

@@ -65,11 +65,6 @@ public class ShadowMap {
 
     private static boolean isIgnorableClassLoadingException(Throwable typeLoadingException) {
         if (typeLoadingException != null) {
-            // instanceof doesn't work here. Are we in different classloaders?
-            if (typeLoadingException.getClass().getName().equals(IgnorableClassNotFoundException.class.getName())) {
-                return true;
-            }
-
             if (typeLoadingException instanceof NoClassDefFoundError
                     || typeLoadingException instanceof ClassNotFoundException
                     || typeLoadingException instanceof TypeNotPresentException) {
