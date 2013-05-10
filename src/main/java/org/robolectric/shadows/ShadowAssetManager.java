@@ -4,16 +4,11 @@ import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.util.TypedValue;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import org.jetbrains.annotations.NotNull;
 import org.robolectric.AndroidManifest;
-import org.robolectric.internal.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.internal.HiddenApi;
 import org.robolectric.res.Attribute;
 import org.robolectric.res.DrawableNode;
 import org.robolectric.res.DrawableResourceLoader;
@@ -26,6 +21,12 @@ import org.robolectric.res.Style;
 import org.robolectric.res.StyleData;
 import org.robolectric.res.TypedResource;
 import org.robolectric.res.ViewNode;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import static org.robolectric.Robolectric.shadowOf;
 
@@ -330,8 +331,12 @@ public final class ShadowAssetManager {
 
         private StyleData getParent(StyleData currentStyle) {
             String parent = currentStyle.getParent();
+
             if (parent == null) return null;
-            ResName style = ResName.qualifyResName(parent.replace("@", ""), currentStyle.getPackageName(), "style");
+
+            if (parent.charAt(0) == '@') parent = parent.substring(1);
+
+            ResName style = ResName.qualifyResName(parent, currentStyle.getPackageName(), "style");
             TypedResource typedResource = resourceLoader.getValue(style, qualifiers);
             if (typedResource == null) {
                 throw new RuntimeException("huh? can't find parent for " + currentStyle);
