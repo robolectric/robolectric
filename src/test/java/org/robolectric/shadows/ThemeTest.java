@@ -63,23 +63,6 @@ public class ThemeTest {
                 .isEqualTo("#ffff0000");
     }
 
-//    @Test public void shouldPerformFastly() throws Exception {
-//        TestActivity activity = Robolectric.buildActivity(TestActivityWithAnotherTheme.class).create().get();
-//        Class clazz = type("com.android.internal.R$styleable").withClassLoader(TestActivity.class.getClassLoader()).load();
-//        int[] styleableIds = field("TextView").ofType(int[].class).in(clazz).get();
-//        // once for warm-up
-//        long start = System.currentTimeMillis();
-//        activity.obtainStyledAttributes(null, styleableIds, 0, R.style.MyCustomView);
-//        System.out.println(String.format("Warm-up took %4dms", System.currentTimeMillis() - start));
-//
-//        start = System.currentTimeMillis();
-//        int count = 5000;
-//        for (int i = 0; i < count; i++) {
-//            activity.obtainStyledAttributes(null, styleableIds, 0, R.style.MyCustomView);
-//        }
-//        System.out.println(String.format("Took %4.1fms", (System.currentTimeMillis() - start) / ((float) count)));
-//    }
-
     public static class TestActivity extends Activity {
         @Override protected void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
