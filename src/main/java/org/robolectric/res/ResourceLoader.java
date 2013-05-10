@@ -6,8 +6,7 @@ import org.w3c.dom.Document;
 import java.io.InputStream;
 
 public interface ResourceLoader {
-    String ANDROID_RES_NS_PREFIX = "http://schemas.android.com/apk/res/";
-    String ANDROID_NS = ANDROID_RES_NS_PREFIX + "android";
+    String ANDROID_NS = Attribute.ANDROID_RES_NS_PREFIX + "android";
 
     String getNameForId(int id);
 

@@ -7,12 +7,11 @@ import java.net.URLEncoder;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class Attribute {
+    public static final String ANDROID_RES_NS_PREFIX = "http://schemas.android.com/apk/res/";
+    private static final int ANDROID_RES_NS_PREFIX_LENGTH = ANDROID_RES_NS_PREFIX.length();
     private static final Logger LOGGER = Logger.getLogger(Attribute.class.getName());
-    private static final Pattern NS_URI_PATTERN = Pattern.compile("^http://schemas.android.com/apk/res/(.*)$");
     private static final String RES_AUTO_NS_URI = "http://schemas.android.com/apk/res-auto";
 
     public final @NotNull ResName resName;
@@ -113,15 +112,15 @@ public class Attribute {
         return extractPackageName(namespaceUri);
     }
 
-    public static String extractPackageName(String namespaceUri) {
-        Matcher matcher = NS_URI_PATTERN.matcher(namespaceUri);
-        if (!matcher.find()) {
+    public static String extractPackageName(@NotNull String namespaceUri) {
+        if (namespaceUri.startsWith(ANDROID_RES_NS_PREFIX)) {
+            return namespaceUri.substring(ANDROID_RES_NS_PREFIX_LENGTH);
+        } else {
             if (!namespaceUri.equals("http://schemas.android.com/apk/prv/res/android")) {
                 LOGGER.log(Level.WARNING, "unexpected ns uri \"" + namespaceUri + "\"");
             }
             return URLEncoder.encode(namespaceUri);
         }
-        return matcher.group(1);
     }
 
     public String qualifiedValue() {

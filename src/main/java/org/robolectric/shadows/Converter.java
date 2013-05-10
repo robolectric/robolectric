@@ -10,6 +10,7 @@ import org.robolectric.res.DrawableResourceLoader;
 import org.robolectric.res.FsFile;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResType;
+import org.robolectric.res.ResourceIndex;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.TypedResource;
 import org.robolectric.util.Util;
@@ -63,9 +64,10 @@ public class Converter<T> {
             return;
         }
 
+        ResourceIndex resourceIndex = resourceLoader.getResourceIndex();
         while (attribute.isResourceReference()) {
             ResName resName = attribute.getResourceReference();
-            Integer resourceId = resourceLoader.getResourceIndex().getResourceId(resName);
+            Integer resourceId = resourceIndex.getResourceId(resName);
             if (resourceId == null) {
                 throw new Resources.NotFoundException("unknown resource " + resName);
             }

@@ -15,7 +15,7 @@ import org.robolectric.util.CustomView;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.robolectric.res.ResourceLoader.ANDROID_NS;
-import static org.robolectric.res.ResourceLoader.ANDROID_RES_NS_PREFIX;
+import static org.robolectric.res.Attribute.ANDROID_RES_NS_PREFIX;
 import static org.robolectric.util.TestUtil.*;
 
 @RunWith(TestRunners.WithDefaults.class)

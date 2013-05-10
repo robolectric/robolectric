@@ -5,6 +5,7 @@ import org.robolectric.AndroidManifest;
 import org.robolectric.MavenCentral;
 import org.robolectric.R;
 import org.robolectric.SdkConfig;
+import org.robolectric.res.Attribute;
 import org.robolectric.res.EmptyResourceLoader;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
@@ -30,7 +31,7 @@ public abstract class TestUtil {
     public static final ResourcePath TEST_RESOURCE_PATH = new ResourcePath(R.class, resourceFile("res"), resourceFile("assets"));
     public static final String SYSTEM_PACKAGE = android.R.class.getPackage().getName();
     public static final String TEST_PACKAGE = R.class.getPackage().getName();
-    public static final String TEST_PACKAGE_NS = ResourceLoader.ANDROID_RES_NS_PREFIX + R.class.getPackage().getName();
+    public static final String TEST_PACKAGE_NS = Attribute.ANDROID_RES_NS_PREFIX + R.class.getPackage().getName();
     public static File testDirLocation;
 
     public static void assertEquals(Collection<?> expected, Collection<?> actual) {

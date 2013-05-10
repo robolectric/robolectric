@@ -45,7 +45,7 @@ public class ShadowTypedArray {
             int attr = attrs[i];
             ResName attrName = resourceIndex.getResName(attr);
             if (attrName != null) {
-                Attribute attribute = Attribute.find(set, attrName.getFullyQualifiedName());
+                Attribute attribute = Attribute.find(set, attrName);
                 TypedValue typedValue = new TypedValue();
                 Converter.convertAndFill(attribute, typedValue, resourceLoader, qualifiers);
 
