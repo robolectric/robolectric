@@ -58,12 +58,14 @@ public class ShadowAccountManager {
 
     @Implementation
     public synchronized void setAuthToken(Account account, String tokenType, String authToken) {
-        Map<String, String> tokenMap = authTokens.get(account);
-        if(tokenMap == null) {
-            tokenMap = new HashMap<String, String>();
-            authTokens.put(account, tokenMap);
+        if(accounts.contains(account)) {
+            Map<String, String> tokenMap = authTokens.get(account);
+            if(tokenMap == null) {
+                tokenMap = new HashMap<String, String>();
+                authTokens.put(account, tokenMap);
+            }
+            tokenMap.put(tokenType, authToken);
         }
-        tokenMap.put(tokenType, authToken);
     }
 
     @Implementation
