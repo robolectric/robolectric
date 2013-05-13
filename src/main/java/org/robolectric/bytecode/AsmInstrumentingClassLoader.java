@@ -355,7 +355,10 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
     private Map<String, String> convertToSlashes(Map<String, String> map) {
         HashMap<String, String> newMap = new HashMap<String, String>();
         for (Map.Entry<String, String> entry : map.entrySet()) {
-            newMap.put(internalize(entry.getKey()), internalize(entry.getValue()));
+            String key = internalize(entry.getKey());
+            String value = internalize(entry.getValue());
+            newMap.put(key, value);
+            newMap.put("L" + key + ";", "L" + value + ";"); // also the param reference form
         }
         return newMap;
     }
@@ -622,7 +625,7 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
                     case GETSTATIC:
                     case PUTSTATIC:
                         FieldInsnNode fieldInsnNode = (FieldInsnNode) node;
-                        fieldInsnNode.desc = remapType(fieldInsnNode.desc);//todo test
+                        fieldInsnNode.desc = remapType(fieldInsnNode.desc); // todo test
                         break;
 
                     case INVOKESTATIC:

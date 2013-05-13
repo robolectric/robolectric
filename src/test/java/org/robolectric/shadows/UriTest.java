@@ -21,4 +21,9 @@ public class UriTest {
         assertThat(testUri.getPath()).isEqualTo("/a/path");
         assertThat(testUri.getScheme()).isEqualTo("http");
     }
+
+    @Test public void getQueryParameter_shouldWork() throws Exception {
+        Uri testUri = Uri.parse("http://someplace.com:8080/a/path?param=value&another_param=another_value#top");
+        assertThat(testUri.getQueryParameter("param")).isEqualTo("value");
+    }
 }

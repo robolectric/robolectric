@@ -10,7 +10,9 @@ import org.robolectric.annotation.Config;
 import org.robolectric.annotation.DisableStrictI18n;
 import org.robolectric.annotation.EnableStrictI18n;
 import org.robolectric.impl.ExtendedResponseCache;
+import org.robolectric.impl.FakeCharsets;
 import org.robolectric.impl.ResponseSource;
+import org.robolectric.impl.UriCodec;
 import org.robolectric.internal.DoNotInstrument;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -162,6 +164,8 @@ public class Setup {
         map.put("java.lang.AutoCloseable", Object.class.getName());
         map.put("java.net.ExtendedResponseCache", ExtendedResponseCache.class.getName());
         map.put("java.net.ResponseSource", ResponseSource.class.getName());
+        map.put("java.nio.charset.Charsets", FakeCharsets.class.getName());
+        map.put("libcore.net.UriCodec", UriCodec.class.getName());
         return map;
     }
 

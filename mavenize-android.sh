@@ -60,6 +60,9 @@ mvn org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file \
 echo "building jar for android-res..."
 ( cd $BASE_DIR/core/res && jar cf $OUT/android-res-$ANDROID_VERSION.jar . )
 
+########### todo: need to add libcore.net.UriCodec class to luni
+
+
 # install android-luni
 mvn install:install-file \
     -Dfile=$OUT/android-res-$ANDROID_VERSION.jar \
