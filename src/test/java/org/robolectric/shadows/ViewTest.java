@@ -24,7 +24,6 @@ import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.res.Attribute;
-import org.robolectric.res.ResourceLoader;
 import org.robolectric.tester.android.view.RoboWindow;
 import org.robolectric.util.TestAnimationListener;
 import org.robolectric.util.TestOnClickListener;
@@ -687,6 +686,7 @@ public class ViewTest {
         transcript.assertEventsSoFar("child detached", "another child detached", "parent detached");
     }
 
+    // todo looks like this is flaky...
     @Test public void removeAllViews_shouldCallOnAttachedToAndDetachedFromWindow() throws Exception {
         MyView parent = new MyView("parent", transcript);
         new RoboWindow(application).setContentView(parent);
