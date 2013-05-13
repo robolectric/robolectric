@@ -18,6 +18,7 @@ package org.robolectric.shadows;
 
 import android.content.ContentValues;
 import android.util.Log;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
@@ -287,15 +288,16 @@ public final class ShadowContentValues {
     @Override @Implementation
     public boolean equals(Object object) {
         if (object == null) return false;
-        Object o = shadowOf_(object);
-        if (o == null) return false;
-        if (this == o) return true;
-        if (getClass() != o.getClass()) return false;
-
-        if (!(o instanceof ContentValues)) {
+        final ShadowContentValues shadowObject;
+        if (object instanceof ShadowContentValues) {
+            shadowObject = (ShadowContentValues) object;
+        } else if (object instanceof ContentValues) {
+            shadowObject = Robolectric.shadowOf((ContentValues) object);
+        } else {
             return false;
         }
-        return values.equals(shadowOf((ContentValues) o).values);
+        if (this == shadowObject) return true;
+        return values.equals(shadowObject.values);
     }
 
     @Override @Implementation
