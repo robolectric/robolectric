@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.net.Uri;
+import android.util.TypedValue;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -21,12 +22,29 @@ import java.util.Map;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
+import static org.fest.reflect.core.Reflection.method;
+import static org.robolectric.Robolectric.directlyOn;
 import static org.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(BitmapFactory.class)
 public class ShadowBitmapFactory {
     private static Map<String, Point> widthAndHeightMap = new HashMap<String, Point>();
+
+    @Implementation
+    public static Bitmap decodeResourceStream(Resources res, TypedValue value,
+                                              InputStream is, Rect pad, BitmapFactory.Options opts) {
+        Bitmap bitmap = (Bitmap) directlyOn(BitmapFactory.class, "decodeResourceStream",
+                Resources.class, TypedValue.class,
+                InputStream.class, Rect.class, BitmapFactory.Options.class)
+                .invoke(res, value, is, pad, opts);
+
+        if (value.string != null && value.string.toString().contains(".9.")) {
+            // todo: better support for nine-patches
+            method("setNinePatchChunk").withParameterTypes(byte[].class).in(bitmap).invoke(new byte[0]);
+        }
+        return bitmap;
+    }
 
     @Implementation
     public static Bitmap decodeResource(Resources res, int id, BitmapFactory.Options options) {

@@ -162,9 +162,6 @@ import android.widget.VideoView;
 import android.widget.ViewAnimator;
 import android.widget.ViewFlipper;
 import android.widget.ZoomButtonsController;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.List;
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
@@ -349,6 +346,10 @@ import org.robolectric.tester.org.apache.http.RequestMatcher;
 import org.robolectric.util.ActivityController;
 import org.robolectric.util.Scheduler;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.List;
+
 import static org.fest.reflect.core.Reflection.method;
 
 public class Robolectric {
@@ -392,6 +393,11 @@ public class Robolectric {
     public static <T> Invoker directlyOn(T shadowedObject, Class<T> clazz, String methodName, Class<?>... paramTypes) {
         String directMethodName = RobolectricInternals.directMethodName(clazz.getName(), methodName);
         return method(directMethodName).withReturnType(Object.class).withParameterTypes(paramTypes).in(shadowedObject);
+    }
+
+    public static <T> Invoker directlyOn(Class<T> clazz, String methodName, Class<?>... paramTypes) {
+        String directMethodName = RobolectricInternals.directMethodName(clazz.getName(), methodName);
+        return method(directMethodName).withReturnType(Object.class).withParameterTypes(paramTypes).in(clazz);
     }
 
     public static <T> Invoker directlyOn(Object shadowedObject, String clazzName, String methodName, Class<?>... paramTypes) {

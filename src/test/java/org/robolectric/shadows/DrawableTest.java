@@ -6,6 +6,8 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.R;
+import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
 import java.io.ByteArrayInputStream;
@@ -106,6 +108,11 @@ public class DrawableTest {
         assertThat(shadowDrawable.wasInvalidated()).isFalse();
         drawable.invalidateSelf();
         assertThat(shadowDrawable.wasInvalidated()).isTrue();
+    }
+
+    @Test public void shouldLoadNinePatchFromDrawableXml() throws Exception {
+        assertThat(Robolectric.application.getResources()
+                .getDrawable(R.drawable.drawable_with_nine_patch)).isNotNull();
     }
 
     private static class TestDrawable extends Drawable {
