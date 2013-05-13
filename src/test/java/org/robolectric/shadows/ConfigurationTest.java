@@ -32,10 +32,10 @@ public class ConfigurationTest {
 
   @Test
   public void testSetLocale() {
-  	shConfiguration.setLocale( Locale.US );
+    shConfiguration.setLocale( Locale.US );
     assertThat(configuration.locale).isEqualTo(Locale.US);
 
-  	shConfiguration.setLocale( Locale.FRANCE);
+    shConfiguration.setLocale( Locale.FRANCE);
     assertThat(configuration.locale).isEqualTo(Locale.FRANCE);
   }
 

@@ -56,8 +56,8 @@ import org.robolectric.annotation.RealObject;
  */
 @Implements(SimpleCursorAdapter.class)
 public class ShadowSimpleCursorAdapter extends ShadowResourceCursorAdapter {
-	@RealObject private SimpleCursorAdapter realSimpleCursorAdapter;
-	
+  @RealObject private SimpleCursorAdapter realSimpleCursorAdapter;
+
   /**
    * A list of columns containing the data to bind to the UI.
    * This field should be made private, so it is hidden from the SDK.
@@ -93,7 +93,7 @@ public class ShadowSimpleCursorAdapter extends ShadowResourceCursorAdapter {
    *            parameter.  Can be null if the cursor is not available yet.
    */
   public void __constructor__(Context context, int layout, Cursor c, String[] from, int[] to) {
-  	super.__constructor__(context, layout, c);
+    super.__constructor__(context, layout, c);
     mTo = to;
     mOriginalFrom = from;
     findColumns(from);

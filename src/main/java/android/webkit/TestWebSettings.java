@@ -8,7 +8,7 @@ import org.robolectric.annotation.Implementation;
  */
 @DoNotInstrument
 public class TestWebSettings extends WebSettings {
-	
+
   private boolean allowFileAccess = true;
   private boolean allowFileAccessFromFile = true;
   private boolean allowUniversalAccessFromFile = true;

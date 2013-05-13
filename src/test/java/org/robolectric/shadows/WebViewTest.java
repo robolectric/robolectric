@@ -81,15 +81,15 @@ public class WebViewTest {
 
   @Test
   public void shouldRecordPictureListener() {
-  	WebView.PictureListener pictureListener = new WebView.PictureListener() {
-			@Override
-			public void onNewPicture(WebView view, Picture picture) {
-				;
-			}
-		};
+    WebView.PictureListener pictureListener = new WebView.PictureListener() {
+      @Override
+      public void onNewPicture(WebView view, Picture picture) {
+        ;
+      }
+    };
 
     assertThat(shadowWebView.getPictureListener()).isNull();
-		webView.setPictureListener(pictureListener);
+    webView.setPictureListener(pictureListener);
     assertThat(shadowWebView.getPictureListener()).isSameAs(pictureListener);
   }
 
@@ -184,14 +184,14 @@ public class WebViewTest {
   @Test
   public void shouldRecordOnPause() {
     assertThat(shadowWebView.wasOnPauseCalled()).isFalse();
-  	webView.onPause();
+    webView.onPause();
     assertThat(shadowWebView.wasOnPauseCalled()).isTrue();
   }
 
   @Test
   public void shouldRecordOnResume() {
     assertThat(shadowWebView.wasOnResumeCalled()).isFalse();
-  	webView.onResume();
+    webView.onResume();
     assertThat(shadowWebView.wasOnResumeCalled()).isTrue();
   }
 }

@@ -138,7 +138,7 @@ public class AlarmManagerTest {
 
   private void assertScheduledAlarm(long now, PendingIntent pendingIntent,
                     ShadowAlarmManager.ScheduledAlarm scheduledAlarm) {
-	    assertRepeatingScheduledAlarm(now, 0L, pendingIntent, scheduledAlarm);
+    assertRepeatingScheduledAlarm(now, 0L, pendingIntent, scheduledAlarm);
   }
 
   private void assertRepeatingScheduledAlarm(long now, long interval, PendingIntent pendingIntent,

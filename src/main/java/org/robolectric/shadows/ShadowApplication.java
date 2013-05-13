@@ -388,7 +388,7 @@ public class ShadowApplication extends ShadowContextWrapper {
   @Implementation
   public void sendBroadcast(Intent intent) {
     broadcastIntents.add(intent);
-		
+
     List<Wrapper> copy = new ArrayList<Wrapper>();
     copy.addAll(registeredReceivers);
     for (Wrapper wrapper : copy) {
@@ -397,7 +397,7 @@ public class ShadowApplication extends ShadowContextWrapper {
       }
     }
   }
-	
+
   public List<Intent> getBroadcastIntents() {
     return broadcastIntents;
   }
@@ -590,15 +590,15 @@ public class ShadowApplication extends ShadowContextWrapper {
   }
 
   public PowerManager.WakeLock getLatestWakeLock() {
-  	return latestWakeLock;
+    return latestWakeLock;
   }
 
   public void addWakeLock( PowerManager.WakeLock wl ) {
-  	latestWakeLock = wl;
+    latestWakeLock = wl;
   }
 
   public void clearWakeLocks() {
-  	latestWakeLock = null;
+    latestWakeLock = null;
   }
 
   public boolean isStrictI18n() {

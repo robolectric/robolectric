@@ -199,57 +199,57 @@ public class TestMenuItem implements MenuItem {
     }
   }
 
-	@Override
-	public void setShowAsAction(int actionEnum) {
-	}
+  @Override
+  public void setShowAsAction(int actionEnum) {
+  }
 
-	@Override
-	public MenuItem setShowAsActionFlags(int actionEnum) {
-		return null;
-	}
+  @Override
+  public MenuItem setShowAsActionFlags(int actionEnum) {
+    return null;
+  }
 
-	@Override
-	public MenuItem setActionView(View view) {
-		return null;
-	}
+  @Override
+  public MenuItem setActionView(View view) {
+    return null;
+  }
 
-	@Override
-	public MenuItem setActionView(int resId) {
-		return null;
-	}
+  @Override
+  public MenuItem setActionView(int resId) {
+    return null;
+  }
 
-	@Override
-	public View getActionView() {
-		return null;
-	}
+  @Override
+  public View getActionView() {
+    return null;
+  }
 
-	@Override
-	public MenuItem setActionProvider(ActionProvider actionProvider) {
-		return null;
-	}
+  @Override
+  public MenuItem setActionProvider(ActionProvider actionProvider) {
+    return null;
+  }
 
-	@Override
-	public ActionProvider getActionProvider() {
-		return null;
-	}
+  @Override
+  public ActionProvider getActionProvider() {
+    return null;
+  }
 
-	@Override
-	public boolean expandActionView() {
-		return false;
-	}
+  @Override
+  public boolean expandActionView() {
+    return false;
+  }
 
-	@Override
-	public boolean collapseActionView() {
-		return false;
-	}
+  @Override
+  public boolean collapseActionView() {
+    return false;
+  }
 
-	@Override
-	public boolean isActionViewExpanded() {
-		return false;
-	}
+  @Override
+  public boolean isActionViewExpanded() {
+    return false;
+  }
 
-	@Override
-	public MenuItem setOnActionExpandListener(OnActionExpandListener listener) {
-		return null;
-	}
+  @Override
+  public MenuItem setOnActionExpandListener(OnActionExpandListener listener) {
+    return null;
+  }
 }

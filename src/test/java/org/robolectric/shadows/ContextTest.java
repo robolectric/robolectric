@@ -50,23 +50,23 @@ public class ContextTest {
 
   @After
   public void after() {
-  	deleteDir(context.getFilesDir());
-  	deleteDir(context.getCacheDir());
-  	deleteDir(context.getExternalCacheDir());
-  	deleteDir(context.getExternalFilesDir(null));
-  	deleteDir(ShadowContext.DATABASE_DIR);
+    deleteDir(context.getFilesDir());
+    deleteDir(context.getCacheDir());
+    deleteDir(context.getExternalCacheDir());
+    deleteDir(context.getExternalFilesDir(null));
+    deleteDir(ShadowContext.DATABASE_DIR);
   }
 
   public void deleteDir(File path) {
-		if (path.isDirectory()) {
-			File[] files = path.listFiles();
+    if (path.isDirectory()) {
+      File[] files = path.listFiles();
       assertNotNull(files);
-			for (File f : files) {
-				deleteDir(f);
-			}
-		}
-		path.delete();
-	}
+      for (File f : files) {
+        deleteDir(f);
+      }
+    }
+    path.delete();
+  }
 
   @Test
   public void shouldGetApplicationDataDirectory() throws IOException {
@@ -153,10 +153,10 @@ public class ContextTest {
     assertTrue(context.getFilesDir().exists());
   }
 
-	@Test
-	public void fileList() throws Exception {
+  @Test
+  public void fileList() throws Exception {
     assertThat(context.fileList()).isEqualTo(context.getFilesDir().list());
-	}
+  }
 
   @Test
   public void getExternalFilesDir_shouldCreateDirectory() throws Exception {
@@ -165,18 +165,18 @@ public class ContextTest {
 
   @Test
   public void getExternalFilesDir_shouldCreateNamedDirectory() throws Exception {
-  	File f = context.getExternalFilesDir("__test__");
+    File f = context.getExternalFilesDir("__test__");
     assertTrue(f.exists());
     assertTrue(f.getAbsolutePath().endsWith("__test__"));
   }
 
   @Test
   public void getDatabasePath_shouldCreateDirectory() {
-  	assertFalse(ShadowContext.DATABASE_DIR.exists());
-  	String testDBName = "abc.db";
-  	File dbFile = context.getDatabasePath(testDBName);
-  	assertTrue(ShadowContext.DATABASE_DIR.exists());
-  	assertEquals(ShadowContext.DATABASE_DIR, dbFile.getParentFile());
+    assertFalse(ShadowContext.DATABASE_DIR.exists());
+    String testDBName = "abc.db";
+    File dbFile = context.getDatabasePath(testDBName);
+    assertTrue(ShadowContext.DATABASE_DIR.exists());
+    assertEquals(ShadowContext.DATABASE_DIR, dbFile.getParentFile());
   }
 
   @Test

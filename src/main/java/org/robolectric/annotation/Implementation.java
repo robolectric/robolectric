@@ -10,5 +10,5 @@ package org.robolectric.annotation;
 @java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy.RUNTIME)
 @java.lang.annotation.Target({java.lang.annotation.ElementType.METHOD})
 public @interface Implementation {
-	boolean i18nSafe() default true;
+  boolean i18nSafe() default true;
 }

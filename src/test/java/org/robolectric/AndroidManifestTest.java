@@ -68,12 +68,12 @@ public class AndroidManifestTest {
 
   @Test
   public void shouldReadProcessFromAndroidManifest() throws Exception {
-  	assertEquals("robolectricprocess", newConfig("TestAndroidManifestWithProcess.xml").getProcessName());
+    assertEquals("robolectricprocess", newConfig("TestAndroidManifestWithProcess.xml").getProcessName());
   }
 
   @Test
   public void shouldReturnPackageNameWhenNoProcessIsSpecifiedInTheManifest() {
-  	assertEquals("org.robolectric", newConfig("TestAndroidManifestWithNoProcess.xml").getProcessName());
+    assertEquals("org.robolectric", newConfig("TestAndroidManifestWithNoProcess.xml").getProcessName());
   }
 
   @Test public void shouldLoadAllResourcesForLibraries() {
@@ -130,7 +130,7 @@ public class AndroidManifestTest {
   }
 
   private boolean hasFlag(final int flags, final int flag) {
-  	return (flags & flag) != 0;
+    return (flags & flag) != 0;
   }
 
   public static class ConfigTestReceiver extends BroadcastReceiver {

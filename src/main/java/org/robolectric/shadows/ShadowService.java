@@ -47,11 +47,11 @@ public class ShadowService extends ShadowContextWrapper {
 
   @Implementation
   public void stopSelf() {
-  	selfStopped = true;
+    selfStopped = true;
   }
 
   public void setUnbindServiceShouldThrowIllegalArgument(boolean flag) {
-  	unbindServiceShouldThrowIllegalArgument = flag;
+    unbindServiceShouldThrowIllegalArgument = flag;
   }
 
   @Implementation
@@ -84,7 +84,7 @@ public class ShadowService extends ShadowContextWrapper {
    * @return
    */
   public boolean isStoppedBySelf() {
-  	return selfStopped;
+    return selfStopped;
   }
 
   public boolean isForegroundStopped() {

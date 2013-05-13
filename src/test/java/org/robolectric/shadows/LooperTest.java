@@ -118,7 +118,7 @@ public class LooperTest {
 
   @Test
   public void testLoopThread() {
-  	assertTrue(shadowOf(Looper.getMainLooper()).getThread() == Thread.currentThread());
+    assertTrue(shadowOf(Looper.getMainLooper()).getThread() == Thread.currentThread());
   }
 
   @Test public void soStaticRefsToLoopersInAppWorksAcrossTests_shouldRetainSameLooperForMainThreadBetweenResetsButGiveItAFreshScheduler() throws Exception {

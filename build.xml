@@ -34,17 +34,17 @@
 
   <condition property="isWindows"> <os family="windows" /> </condition>
 
-	<target name="findMavenWindows" if="isWindows">
-		<property name="maven" value="mvn.bat"/>
+  <target name="findMavenWindows" if="isWindows">
+    <property name="maven" value="mvn.bat"/>
   </target>
   <target name="findMavenUnix" unless="isWindows">
-		<property name="maven" value="mvn"/>
+    <property name="maven" value="mvn"/>
   </target>
 
   <target name="findAndroidWindows" if="isWindows">
     <echo message="Finding the Android version in windows"/>
     <!--<exec executable="./find-android.bat"/>-->
-		<property name="sdk.dir" value="${env.ANDROID_HOME}"/>
+    <property name="sdk.dir" value="${env.ANDROID_HOME}"/>
   </target>
   <target name="findAndroidUnix" unless="isWindows">
     <echo message="Finding the Android version in *nix"/>
@@ -103,10 +103,10 @@
     <mkdir dir="${out.main.absolute.dir}"/>
 
     <javac encoding="ascii" source="1.6" target="1.6" debug="true" extdirs=""
-         destdir="${out.main.absolute.dir}"
-         verbose="${verbose}"
-         classpath="${extensible.classpath}"
-         includeantruntime="false">
+        destdir="${out.main.absolute.dir}"
+        verbose="${verbose}"
+        classpath="${extensible.classpath}"
+        includeantruntime="false">
       <src path="${main.absolute.dir}"/>
       <classpath>
         <pathelement path="${out.main.absolute.dir}"/>
@@ -147,10 +147,10 @@
     <mkdir dir="${out.test.absolute.dir}"/>
 
     <javac encoding="ascii" source="1.6" target="1.6" debug="true" extdirs=""
-         destdir="${out.test.absolute.dir}"
-         verbose="${verbose}"
-         classpath="${extensible.classpath}"
-         includeantruntime="false">
+        destdir="${out.test.absolute.dir}"
+        verbose="${verbose}"
+        classpath="${extensible.classpath}"
+        includeantruntime="false">
       <src path="${test.absolute.dir}"/>
       <classpath>
         <pathelement path="${out.main.absolute.dir}"/>
@@ -228,8 +228,8 @@
   </target>
 
   <target name="maven-install-jars"
-			depends="findMavenUnix, findMavenWindows, findAndroidUnix, findAndroidWindows"
-			description="Install the jar files that Maven can't find for itself">
+      depends="findMavenUnix, findMavenWindows, findAndroidUnix, findAndroidWindows"
+      description="Install the jar files that Maven can't find for itself">
     <exec executable="${maven}">
       <arg line="install:install-file -DgroupId=com.google.android.maps -DartifactId=maps -Dversion=${default.sdk.revision} -Dpackaging=jar -Dfile=${sdk.dir}/add-ons/addon_google_apis_google_inc_${default.sdk.version}/libs/maps.jar" />
     </exec>
@@ -242,7 +242,7 @@
   </target>
 
   <target name="install-real-android-jars"
-			depends="findMavenUnix, findMavenWindows">
+      depends="findMavenUnix, findMavenWindows">
     <mkdir dir="tmp"/>
     <get src="https://s3.amazonaws.com/robolectric/android-base-4.1.2_r1_rc-real.jar" dest="tmp" skipexisting="true"/>
     <get src="https://s3.amazonaws.com/robolectric/android-kxml2-4.1.2_r1_rc-real.jar" dest="tmp" skipexisting="true"/>
@@ -260,8 +260,8 @@
 
   <!-- used by travis-ci -->
   <target name="prepare-travis-ci"
-			depends="findMavenUnix, findMavenWindows"
-			description="Prepare for travis ci build">
+      depends="findMavenUnix, findMavenWindows"
+      description="Prepare for travis ci build">
     <mkdir dir="tmp"/>
     <get src="http://dl.google.com/android/android-sdk_r21.0.1-linux.tgz" dest="tmp" skipexisting="true"/>
     <untar src="tmp/android-sdk_r21.0.1-linux.tgz" compression="gzip" dest="tmp/sdk"/>

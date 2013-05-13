@@ -20,18 +20,18 @@ import static org.junit.Assert.assertTrue;
  */
 @RunWith(TestRunners.WithDefaults.class)
 public class TestSharedPreferencesTest {
-	protected final static String FILENAME = "filename";
-	private HashMap<String, Map<String, Object>> content;
+  protected final static String FILENAME = "filename";
+  private HashMap<String, Map<String, Object>> content;
   private SharedPreferences.Editor editor;
   private TestSharedPreferences sharedPreferences;
 
   private static final Set<String> stringSet;
 
   static {
-  	stringSet = new HashSet<String>();
-  	stringSet.add( "string1" );
-  	stringSet.add( "string2" );
-  	stringSet.add( "string3" );
+    stringSet = new HashSet<String>();
+    stringSet.add( "string1" );
+    stringSet.add( "string2" );
+    stringSet.add( "string3" );
   }
 
   @Before
@@ -71,12 +71,12 @@ public class TestSharedPreferencesTest {
 
   @Test
   public void commit_shouldRemoveValuesThenSetValues() throws Exception {
-  	content.put(FILENAME, new HashMap<String, Object>());
-  	content.get(FILENAME).put("deleteMe", "foo");
+    content.put(FILENAME, new HashMap<String, Object>());
+    content.get(FILENAME).put("deleteMe", "foo");
 
-  	editor.remove("deleteMe");
+    editor.remove("deleteMe");
 
-  	editor.putString("dontDeleteMe", "baz");
+    editor.putString("dontDeleteMe", "baz");
     editor.remove("dontDeleteMe");
 
     editor.commit();
@@ -94,11 +94,11 @@ public class TestSharedPreferencesTest {
 
   @Test
   public void commit_shouldClearThenSetValues() throws Exception {
-  	content.put(FILENAME, new HashMap<String, Object>());
-  	content.get(FILENAME).put("deleteMe", "foo");
+    content.put(FILENAME, new HashMap<String, Object>());
+    content.get(FILENAME).put("deleteMe", "foo");
 
-  	editor.clear();
-  	editor.putString("dontDeleteMe", "baz");
+    editor.clear();
+    editor.putString("dontDeleteMe", "baz");
 
     editor.commit();
 

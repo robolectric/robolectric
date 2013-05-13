@@ -60,11 +60,11 @@ public class ConnectivityManagerTest {
 
   @Test
   public void networkInfoShouldReturnTypeCorrectly(){
-  	shadowOfActiveNetworkInfo.setConnectionType(ConnectivityManager.TYPE_MOBILE);
-  	assertEquals(ConnectivityManager.TYPE_MOBILE, shadowOfActiveNetworkInfo.getType());
+    shadowOfActiveNetworkInfo.setConnectionType(ConnectivityManager.TYPE_MOBILE);
+    assertEquals(ConnectivityManager.TYPE_MOBILE, shadowOfActiveNetworkInfo.getType());
 
-  	shadowOfActiveNetworkInfo.setConnectionType(ConnectivityManager.TYPE_WIFI);
-  	assertEquals(ConnectivityManager.TYPE_WIFI, shadowOfActiveNetworkInfo.getType());
+    shadowOfActiveNetworkInfo.setConnectionType(ConnectivityManager.TYPE_WIFI);
+    assertEquals(ConnectivityManager.TYPE_WIFI, shadowOfActiveNetworkInfo.getType());
   }
 
   @Test

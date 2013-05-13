@@ -32,7 +32,7 @@ public class ShadowListActivity extends ShadowActivity {
   }
 
   public void setListView(ListView view) {
-  	listView = view;
+    listView = view;
   }
 
   @Implementation

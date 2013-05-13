@@ -410,39 +410,39 @@ public class ContentResolverTest {
 
   @Test
   public void shouldRegisterContentObservers() throws Exception {
-  	TestContentObserver co = new TestContentObserver(null);
-  	ShadowContentResolver scr = Robolectric.shadowOf(contentResolver);
+    TestContentObserver co = new TestContentObserver(null);
+    ShadowContentResolver scr = Robolectric.shadowOf(contentResolver);
 
     assertThat(scr.getContentObserver(EXTERNAL_CONTENT_URI)).isNull();
 
-  	contentResolver.registerContentObserver(EXTERNAL_CONTENT_URI, true, co);
+    contentResolver.registerContentObserver(EXTERNAL_CONTENT_URI, true, co);
 
     assertThat(scr.getContentObserver(EXTERNAL_CONTENT_URI)).isSameAs((ContentObserver) co);
 
     assertThat(co.changed).isFalse();
-  	contentResolver.notifyChange(EXTERNAL_CONTENT_URI, null);
+    contentResolver.notifyChange(EXTERNAL_CONTENT_URI, null);
     assertThat(co.changed).isTrue();
 
-  	scr.clearContentObservers();
+    scr.clearContentObservers();
     assertThat(scr.getContentObserver(EXTERNAL_CONTENT_URI)).isNull();
   }
 
   @Test
   public void shouldUnregisterContentObservers() throws Exception {
-  	TestContentObserver co = new TestContentObserver(null);
-  	ShadowContentResolver scr = Robolectric.shadowOf(contentResolver);
-  	contentResolver.registerContentObserver(EXTERNAL_CONTENT_URI, true, co);
+    TestContentObserver co = new TestContentObserver(null);
+    ShadowContentResolver scr = Robolectric.shadowOf(contentResolver);
+    contentResolver.registerContentObserver(EXTERNAL_CONTENT_URI, true, co);
     assertThat(scr.getContentObserver(EXTERNAL_CONTENT_URI)).isSameAs((ContentObserver) co);
 
-  	contentResolver.unregisterContentObserver(co);
+    contentResolver.unregisterContentObserver(co);
     assertThat(scr.getContentObserver(EXTERNAL_CONTENT_URI)).isNull();
 
     assertThat(co.changed).isFalse();
-  	contentResolver.notifyChange(EXTERNAL_CONTENT_URI, null);
+    contentResolver.notifyChange(EXTERNAL_CONTENT_URI, null);
     assertThat(co.changed).isFalse();
   }
 
-   
+
   static class QueryParamTrackingTestCursor extends TestCursor {
     public Uri uri;
     public String[] projection;
@@ -460,21 +460,21 @@ public class ContentResolverTest {
     }
   }
 
-	private class TestContentObserver extends ContentObserver {
-		public TestContentObserver(Handler handler) {
-			super(handler);
-		}
+  private class TestContentObserver extends ContentObserver {
+    public TestContentObserver(Handler handler) {
+      super(handler);
+    }
 
-		public boolean changed = false;
-		
-		@Override
-		public void onChange(boolean selfChange) {
-			changed = true;
-		}
+    public boolean changed = false;
 
-		@Override
-		public void onChange(boolean selfChange, Uri uri) {
-			changed = true;
-		}
-	}
+    @Override
+    public void onChange(boolean selfChange) {
+      changed = true;
+    }
+
+    @Override
+    public void onChange(boolean selfChange, Uri uri) {
+      changed = true;
+    }
+  }
 }

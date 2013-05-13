@@ -53,33 +53,33 @@ public class LocationTest {
   @Test
   public void removeFieldShouldReportHasFieldAsFalse()
   {
-  	assertTrue(location.hasAccuracy());
-  	location.removeAccuracy();
-  	assertFalse(location.hasAccuracy());
+    assertTrue(location.hasAccuracy());
+    location.removeAccuracy();
+    assertFalse(location.hasAccuracy());
 
-  	assertTrue(location.hasBearing());
-  	location.removeBearing();
-  	assertFalse(location.hasBearing());
+    assertTrue(location.hasBearing());
+    location.removeBearing();
+    assertFalse(location.hasBearing());
 
-  	assertTrue(location.hasAltitude());
-  	location.removeAltitude();
-  	assertFalse(location.hasAltitude());
+    assertTrue(location.hasAltitude());
+    location.removeAltitude();
+    assertFalse(location.hasAltitude());
 
-  	assertTrue(location.hasSpeed());
-  	location.removeSpeed();
-  	assertFalse(location.hasSpeed());
+    assertTrue(location.hasSpeed());
+    location.removeSpeed();
+    assertFalse(location.hasSpeed());
   }
 
   @Test
   public void defaultLocationShouldNotReportFieldsAsAvailable()
   {
-  	Location defaultLocation = new Location(LocationManager.GPS_PROVIDER);
-  	assertFalse(defaultLocation.hasAccuracy());
-  	assertFalse(defaultLocation.hasBearing());
-  	assertFalse(defaultLocation.hasAltitude());
-  	assertFalse(defaultLocation.hasSpeed());
+    Location defaultLocation = new Location(LocationManager.GPS_PROVIDER);
+    assertFalse(defaultLocation.hasAccuracy());
+    assertFalse(defaultLocation.hasBearing());
+    assertFalse(defaultLocation.hasAltitude());
+    assertFalse(defaultLocation.hasSpeed());
 
-  	assertEquals(0.0d, defaultLocation.getLatitude());
+    assertEquals(0.0d, defaultLocation.getLatitude());
     assertEquals(0.0d, defaultLocation.getLongitude());
     assertEquals(0.0f, defaultLocation.getAccuracy());
     assertEquals(0.0f, defaultLocation.getBearing());
@@ -90,22 +90,22 @@ public class LocationTest {
   @Test
   public void settingFieldShouldMakeHasFieldReturnTrue()
   {
-  	Location l = new Location(LocationManager.GPS_PROVIDER);
-  	assertFalse(l.hasAccuracy());
-  	l.setAccuracy(0.5f);
-  	assertTrue(l.hasAccuracy());
+    Location l = new Location(LocationManager.GPS_PROVIDER);
+    assertFalse(l.hasAccuracy());
+    l.setAccuracy(0.5f);
+    assertTrue(l.hasAccuracy());
 
-  	assertFalse(l.hasBearing());
-  	l.setBearing(1);
-  	assertTrue(l.hasBearing());
+    assertFalse(l.hasBearing());
+    l.setBearing(1);
+    assertTrue(l.hasBearing());
 
-  	assertFalse(l.hasAltitude());
-  	l.setAltitude(1);
-  	assertTrue(l.hasAltitude());
+    assertFalse(l.hasAltitude());
+    l.setAltitude(1);
+    assertTrue(l.hasAltitude());
 
-  	assertFalse(l.hasSpeed());
-  	l.setSpeed(5);
-  	assertTrue(l.hasSpeed());
+    assertFalse(l.hasSpeed());
+    l.setSpeed(5);
+    assertTrue(l.hasSpeed());
   }
 
   private void assertLocationFieldsFromTestSetup(Location l) {

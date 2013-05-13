@@ -44,7 +44,7 @@ public class BitmapTest {
 
   @Test
   public void shouldCreateBitmapFromAnotherBitmap() {
-  	Bitmap originalBitmap = create("Original bitmap");
+    Bitmap originalBitmap = create("Original bitmap");
     Bitmap newBitmap = Bitmap.createBitmap(originalBitmap);
     assertEquals("Original bitmap created from Bitmap object", shadowOf(newBitmap).getDescription());
   }

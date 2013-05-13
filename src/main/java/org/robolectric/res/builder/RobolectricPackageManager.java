@@ -136,11 +136,11 @@ public class RobolectricPackageManager extends StubPackageManager {
   }
 
   @Override
-	public Intent getLaunchIntentForPackage(String packageName) {
-		Intent i = new Intent();
-		i.setComponent( new ComponentName(packageName, "") );
-		return i;
-	}
+  public Intent getLaunchIntentForPackage(String packageName) {
+    Intent i = new Intent();
+    i.setComponent( new ComponentName(packageName, "") );
+    return i;
+  }
 
   @Override
   public CharSequence getApplicationLabel(ApplicationInfo info) {

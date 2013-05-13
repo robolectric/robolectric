@@ -214,12 +214,12 @@ public class AbstractCursorTest {
     assertThat(shadow.getNotificationUri_Compatibility()).isEqualTo(uri);
   }
 
-	@Test
-	public void testIsClosedWhenAfterCallingClose() {
+  @Test
+  public void testIsClosedWhenAfterCallingClose() {
     assertThat(cursor.isClosed()).isFalse();
-		cursor.close();
+    cursor.close();
     assertThat(cursor.isClosed()).isTrue();
-	}
+  }
 
   private class TestCursor extends AbstractCursor {
 

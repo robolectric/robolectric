@@ -290,9 +290,9 @@ public class StubPackageManager extends PackageManager {
     return false;
   }
 
-	@Override public void verifyPendingInstall(int id, int verificationCode) {
+  @Override public void verifyPendingInstall(int id, int verificationCode) {
   }
 
-	@Override public void setInstallerPackageName(String targetPackage, String installerPackageName) {
+  @Override public void setInstallerPackageName(String targetPackage, String installerPackageName) {
   }
 }

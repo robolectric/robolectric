@@ -13,16 +13,16 @@ import org.robolectric.res.FileFsFile;
  *
  * <pre>
  * public static class HasTempFolder {
- * 	&#064;Rule
+ *   &#064;Rule
  *  public TemporaryAsset temporaryAsset = new TemporaryAsset();
 
  *
- * 	&#064;Test
- * 	public void testUsingTempFolder() throws IOException {
- * 	  AndroidManifest appManifest = shadowOf(Robolectric.application).getAppManifest();
- * 		fontFile = temporaryAsset.createFile(appManifest, &quot;myFont.ttf&quot;, &quot;myFontData&quot;);
- * 		// ...
- * 	}
+ *   &#064;Test
+ *   public void testUsingTempFolder() throws IOException {
+ *     AndroidManifest appManifest = shadowOf(Robolectric.application).getAppManifest();
+ *     fontFile = temporaryAsset.createFile(appManifest, &quot;myFont.ttf&quot;, &quot;myFontData&quot;);
+ *     // ...
+ *   }
  * }
  * </pre>
  */

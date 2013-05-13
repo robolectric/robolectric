@@ -1439,7 +1439,7 @@ public class Robolectric {
     }
 
     public static Object setFinalStaticField(Field field, Object newValue) {
-    	Object oldValue;
+      Object oldValue;
 
       try {
         field.setAccessible(true);

@@ -146,35 +146,35 @@ public class LogTest {
 
   @Test
   public void shouldLogAccordingToTag() throws Exception {
-  	Log.d( "tag1", "1" );
-  	Log.i( "tag2", "2" );
-  	Log.e( "tag3", "3" );
-  	Log.w( "tag1", "4" );
-  	Log.i( "tag1", "5" );
-  	Log.d( "tag2", "6" );
+    Log.d( "tag1", "1" );
+    Log.i( "tag2", "2" );
+    Log.e( "tag3", "3" );
+    Log.w( "tag1", "4" );
+    Log.i( "tag1", "5" );
+    Log.d( "tag2", "6" );
 
-  	List<LogItem> allItems = ShadowLog.getLogs();
+    List<LogItem> allItems = ShadowLog.getLogs();
     assertThat(allItems.size()).isEqualTo(6);
-  	int i = 1;
-  	for ( LogItem item : allItems ) {
+    int i = 1;
+    for ( LogItem item : allItems ) {
       assertThat(item.msg).isEqualTo(Integer.toString(i));
-  		i++;
-  	}
-  	assertUniformLogsForTag( "tag1", 3 );
-  	assertUniformLogsForTag( "tag2", 2 );
-  	assertUniformLogsForTag( "tag3", 1 );
+      i++;
+    }
+    assertUniformLogsForTag( "tag1", 3 );
+    assertUniformLogsForTag( "tag2", 2 );
+    assertUniformLogsForTag( "tag3", 1 );
   }
 
   private void assertUniformLogsForTag( String tag, int count ) {
-  	List<LogItem> tag1Items = ShadowLog.getLogsForTag( tag );
+    List<LogItem> tag1Items = ShadowLog.getLogsForTag( tag );
     assertThat(tag1Items.size()).isEqualTo(count);
-  	int last = -1;
-  	for (LogItem item : tag1Items) {
+    int last = -1;
+    for (LogItem item : tag1Items) {
       assertThat(item.tag).isEqualTo(tag);
-  		int current = Integer.parseInt(item.msg);
+      int current = Integer.parseInt(item.msg);
       assertThat(current > last).isTrue();
-  		last = current;
-  	}
+      last = current;
+    }
   }
 
   @Test

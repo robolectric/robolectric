@@ -13,8 +13,8 @@ import static org.fest.assertions.api.Assertions.assertThat;
 @RunWith(TestRunners.WithDefaults.class)
 public class H2Map_TypeForwardOnlyTest {
 
-	H2Map_TypeForwardOnly map;
-	@Before
+  H2Map_TypeForwardOnly map;
+  @Before
   public void setUp() throws Exception {
     map = new H2Map_TypeForwardOnly();
   }

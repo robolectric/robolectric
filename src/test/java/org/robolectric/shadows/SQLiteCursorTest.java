@@ -28,7 +28,7 @@ public class SQLiteCursorTest {
 
   @Before
   public void setUp() throws Exception {
-  	connection = DatabaseConfig.getMemoryConnection();
+    connection = DatabaseConfig.getMemoryConnection();
 
     Statement statement = connection.createStatement();
     statement.execute("CREATE TABLE table_name(" +
@@ -171,8 +171,8 @@ public class SQLiteCursorTest {
 
   @Test
   public void testMoveToPrevious() throws Exception {
-  	cursor.moveToFirst();
-  	cursor.moveToNext();
+    cursor.moveToFirst();
+    cursor.moveToNext();
 
     assertThat(cursor.moveToPrevious()).isTrue();
     assertThat(cursor.getInt(0)).isEqualTo(1234);
@@ -181,18 +181,18 @@ public class SQLiteCursorTest {
 
   @Test
   public void testMoveToPreviousPastStart() throws Exception {
-  	cursor.moveToFirst();
+    cursor.moveToFirst();
 
-  	// Possible to move cursor before the first item
+    // Possible to move cursor before the first item
     assertThat(cursor.moveToPrevious()).isTrue();
-  	// After that, attempts to move cursor back return false
+    // After that, attempts to move cursor back return false
     assertThat(cursor.moveToPrevious()).isFalse();
   }
 
   @Test
   public void testMoveToPreviousEmpty() throws Exception {
     setupEmptyResult();
-  	cursor.moveToFirst();
+    cursor.moveToFirst();
 
     assertThat(cursor.moveToPrevious()).isFalse();
   }

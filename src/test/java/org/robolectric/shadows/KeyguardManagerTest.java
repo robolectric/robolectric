@@ -15,15 +15,15 @@ import static org.robolectric.Robolectric.shadowOf;
 @RunWith(TestRunners.WithDefaults.class)
 public class KeyguardManagerTest {
 
-	@Test
-	public void testIsInRestrcitedInputMode() {
-		Activity activity = new Activity();
-		KeyguardManager mgr = ( KeyguardManager ) activity.getSystemService( KEYGUARD_SERVICE );
+  @Test
+  public void testIsInRestrcitedInputMode() {
+    Activity activity = new Activity();
+    KeyguardManager mgr = ( KeyguardManager ) activity.getSystemService( KEYGUARD_SERVICE );
     assertThat(mgr.inKeyguardRestrictedInputMode()).isFalse();
-		ShadowKeyguardManager shadowMgr = shadowOf(mgr);
-		shadowMgr.setinRestrictedInputMode( true );
+    ShadowKeyguardManager shadowMgr = shadowOf(mgr);
+    shadowMgr.setinRestrictedInputMode( true );
     assertThat(mgr.inKeyguardRestrictedInputMode()).isTrue();
-	}
+  }
 
   @Test
   public void testShouldBeAbleToDisableTheKeyguardLock() throws Exception {

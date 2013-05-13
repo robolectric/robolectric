@@ -36,9 +36,9 @@ public class TranslateAnimationTest {
 
   @Test
   public void animationParametersFromConstructor2() throws Exception {
-  	TranslateAnimation animation2 = new TranslateAnimation(1, 2, 3, 4);
-  	ShadowTranslateAnimation shadow2 = shadowOf(animation2);
-  	int defType = Animation.ABSOLUTE;
+    TranslateAnimation animation2 = new TranslateAnimation(1, 2, 3, 4);
+    ShadowTranslateAnimation shadow2 = shadowOf(animation2);
+    int defType = Animation.ABSOLUTE;
     assertThat(shadow2.getFromXType()).isEqualTo(defType);
     assertThat(shadow2.getFromXValue()).isEqualTo(1f);
     assertThat(shadow2.getToXType()).isEqualTo(defType);

@@ -177,7 +177,7 @@ public class XmlFileBuilder {
 
     public int getLineNumber() {
       // TODO(msama): The current implementation is
-      //		unable to return line numbers.
+      //   unable to return line numbers.
       return -1;
     }
 
@@ -559,7 +559,7 @@ public class XmlFileBuilder {
     }
 
     public int getAttributeListValue(String namespace, String attribute,
-                     String[] options, int defaultValue) {
+        String[] options, int defaultValue) {
       String attr = getAttribute(namespace, attribute);
       if (attr == null) {
         return 0;
@@ -573,7 +573,7 @@ public class XmlFileBuilder {
     }
 
     public boolean getAttributeBooleanValue(String namespace, String attribute,
-                        boolean defaultValue) {
+        boolean defaultValue) {
       String attr = getAttribute(namespace, attribute);
       if (attr == null) {
         return defaultValue;
@@ -581,13 +581,11 @@ public class XmlFileBuilder {
       return Boolean.parseBoolean(attr);
     }
 
-    public int getAttributeResourceValue(String namespace, String attribute,
-                       int defaultValue) {
+    public int getAttributeResourceValue(String namespace, String attribute, int defaultValue) {
       throw new RuntimeException("Not implemented yet");
     }
 
-    public int getAttributeIntValue(String namespace, String attribute,
-                    int defaultValue) {
+    public int getAttributeIntValue(String namespace, String attribute, int defaultValue) {
       String attr = getAttribute(namespace, attribute);
       if (attr == null) {
         return defaultValue;
@@ -599,8 +597,7 @@ public class XmlFileBuilder {
       }
     }
 
-    public int getAttributeUnsignedIntValue(
-        String namespace, String attribute, int defaultValue) {
+    public int getAttributeUnsignedIntValue(String namespace, String attribute, int defaultValue) {
       int value = getAttributeIntValue(namespace, attribute, defaultValue);
       if (value < 0) {
         return defaultValue;
@@ -609,7 +606,7 @@ public class XmlFileBuilder {
     }
 
     public float getAttributeFloatValue(String namespace, String attribute,
-                      float defaultValue) {
+        float defaultValue) {
       String attr = getAttribute(namespace, attribute);
       if (attr == null) {
         return defaultValue;

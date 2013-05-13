@@ -140,9 +140,9 @@ public class TestSharedPreferences implements SharedPreferences {
 
     @Override
     public Editor putStringSet(String key, Set<String> value ){
-    	editsThatNeedCommit.put( key, value );
-    	editsThatNeedRemove.remove(key);
-    	return this;
+      editsThatNeedCommit.put( key, value );
+      editsThatNeedRemove.remove(key);
+      return this;
     }
 
     @Override
@@ -184,9 +184,9 @@ public class TestSharedPreferences implements SharedPreferences {
     }
   }
 
-	@Override
-	public Set< String > getStringSet( String key, Set< String > defValues ) {
-		Set< String > v = ( Set< String > ) getValue( key, defValues );
-		return v != null ? v : defValues;
-	}
+  @Override
+  public Set< String > getStringSet( String key, Set< String > defValues ) {
+    Set< String > v = ( Set< String > ) getValue( key, defValues );
+    return v != null ? v : defValues;
+  }
 }

@@ -191,11 +191,11 @@ public class WifiManagerTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void shouldThrowIllegalArgumentExceptionWhenSignalLevelToLow() {
-  	ShadowWifiManager.setSignalLevelInPercent(-0.01f);
+    ShadowWifiManager.setSignalLevelInPercent(-0.01f);
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void shouldThrowIllegalArgumentExceptionWhenSignalLevelToHigh() {
-  	ShadowWifiManager.setSignalLevelInPercent(1.01f);
+    ShadowWifiManager.setSignalLevelInPercent(1.01f);
   }
 }

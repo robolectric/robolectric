@@ -75,23 +75,23 @@ public class PowerManagerTest {
 
   @Test
   public void shouldLogLatestWakeLock() throws Exception {
-  	ShadowPowerManager.reset();
+    ShadowPowerManager.reset();
     assertThat(shadowPowerManager.getLatestWakeLock()).isNull();
 
-  	PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
-  	lock.acquire();
+    PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
+    lock.acquire();
 
     assertThat(shadowPowerManager.getLatestWakeLock()).isNotNull();
     assertThat(shadowPowerManager.getLatestWakeLock()).isSameAs(lock);
     assertThat(lock.isHeld()).isTrue();
 
-  	lock.release();
+    lock.release();
 
     assertThat(shadowPowerManager.getLatestWakeLock()).isNotNull();
     assertThat(shadowPowerManager.getLatestWakeLock()).isSameAs(lock);
     assertThat(lock.isHeld()).isFalse();
 
-  	ShadowPowerManager.reset();
+    ShadowPowerManager.reset();
     assertThat(shadowPowerManager.getLatestWakeLock()).isNull();
   }
 }

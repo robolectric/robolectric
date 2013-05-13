@@ -7,13 +7,13 @@ import org.robolectric.annotation.RealObject;
 
 @Implements(ActivityInfo.class)
 public class ShadowActivityInfo {
-	
-	@RealObject
-	private ActivityInfo realInfo;
-	
-	@Implementation
-	public String toString() {
-		return realInfo.name;
-	}
+
+  @RealObject
+  private ActivityInfo realInfo;
+
+  @Implementation
+  public String toString() {
+    return realInfo.name;
+  }
 
 }

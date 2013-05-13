@@ -24,36 +24,36 @@ public class ShadowAsyncTask<Params, Progress, Result> {
   private final BackgroundWorker worker;
   private AsyncTask.Status status = AsyncTask.Status.PENDING;
 
-	public ShadowAsyncTask() {
-		worker = new BackgroundWorker();
-		future = new FutureTask<Result>(worker) {
-    	@Override
-    	protected void done() {
+  public ShadowAsyncTask() {
+    worker = new BackgroundWorker();
+    future = new FutureTask<Result>(worker) {
+      @Override
+      protected void done() {
         status = AsyncTask.Status.FINISHED;
-				try {
-					final Result result = get();
-					Robolectric.getUiThreadScheduler().post(new Runnable() {
-						@Override public void run() {
-							getBridge().onPostExecute(result);
-						}
-					});
-				} catch (CancellationException e) {
-					Robolectric.getUiThreadScheduler().post(new Runnable() {
-						@Override public void run() {
-							getBridge().onCancelled();
-						}
-					});
-				} catch (InterruptedException e) {
-					// Ignore.
-				} catch (Throwable t) {
-					throw new RuntimeException("An error occured while executing doInBackground()",
-							t.getCause());
-				}
-    	}
+        try {
+          final Result result = get();
+          Robolectric.getUiThreadScheduler().post(new Runnable() {
+            @Override public void run() {
+              getBridge().onPostExecute(result);
+            }
+          });
+        } catch (CancellationException e) {
+          Robolectric.getUiThreadScheduler().post(new Runnable() {
+            @Override public void run() {
+              getBridge().onCancelled();
+            }
+          });
+        } catch (InterruptedException e) {
+          // Ignore.
+        } catch (Throwable t) {
+          throw new RuntimeException("An error occured while executing doInBackground()",
+              t.getCause());
+        }
+      }
     };
-	}
+  }
 
-	@Implementation
+  @Implementation
   public boolean isCancelled() {
     return future.isCancelled();
   }
@@ -82,7 +82,7 @@ public class ShadowAsyncTask<Params, Progress, Result> {
 
     Robolectric.getBackgroundScheduler().post(new Runnable() {
       @Override public void run() {
-      	future.run();
+        future.run();
       }
     });
 
@@ -91,7 +91,7 @@ public class ShadowAsyncTask<Params, Progress, Result> {
 
   @Implementation
   public AsyncTask<Params, Progress, Result> executeOnExecutor(Executor exec, Params... params){
-  	return execute(params);
+    return execute(params);
   }
 
   @Implementation
@@ -120,10 +120,10 @@ public class ShadowAsyncTask<Params, Progress, Result> {
   }
 
   private final class BackgroundWorker implements Callable<Result> {
-  	Params[] params;
-		@Override
-		public Result call() throws Exception {
-			return getBridge().doInBackground(params);
-		}
-	}
+    Params[] params;
+    @Override
+    public Result call() throws Exception {
+      return getBridge().doInBackground(params);
+    }
+  }
 }

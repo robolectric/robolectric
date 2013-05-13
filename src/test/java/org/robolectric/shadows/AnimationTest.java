@@ -15,85 +15,85 @@ import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class AnimationTest {
-	
-	private TestAnimation animation;
-	private ShadowAnimation shadow;
-	private TestAnimationListener listener;
 
-	@Before
-	public void setUp() throws Exception {
-		animation = new TestAnimation();
-		shadow = shadowOf(animation);
-		listener = new TestAnimationListener();
-		animation.setAnimationListener(listener);
-	}
+  private TestAnimation animation;
+  private ShadowAnimation shadow;
+  private TestAnimationListener listener;
 
-	@Test
-	public void startShouldInvokeStartCallback() throws Exception {
+  @Before
+  public void setUp() throws Exception {
+    animation = new TestAnimation();
+    shadow = shadowOf(animation);
+    listener = new TestAnimationListener();
+    animation.setAnimationListener(listener);
+  }
+
+  @Test
+  public void startShouldInvokeStartCallback() throws Exception {
     assertThat(listener.wasStartCalled).isFalse();
-		animation.start();
+    animation.start();
     assertThat(listener.wasStartCalled).isTrue();
     assertThat(listener.wasEndCalled).isFalse();
     assertThat(listener.wasRepeatCalled).isFalse();
-	}
-	
-	@Test
-	public void cancelShouldInvokeEndCallback() throws Exception {
+  }
+
+  @Test
+  public void cancelShouldInvokeEndCallback() throws Exception {
     assertThat(listener.wasEndCalled).isFalse();
-		animation.cancel();
+    animation.cancel();
     assertThat(listener.wasStartCalled).isFalse();
     assertThat(listener.wasEndCalled).isTrue();
     assertThat(listener.wasRepeatCalled).isFalse();
-	}
-	
-	@Test
-	public void invokeRepeatShouldInvokeRepeatCallback() throws Exception {
+  }
+
+  @Test
+  public void invokeRepeatShouldInvokeRepeatCallback() throws Exception {
     assertThat(listener.wasRepeatCalled).isFalse();
-		shadow.invokeRepeat();
+    shadow.invokeRepeat();
     assertThat(listener.wasStartCalled).isFalse();
     assertThat(listener.wasEndCalled).isFalse();
     assertThat(listener.wasRepeatCalled).isTrue();
-	}
-	
-	@Test
-	public void invokeEndShouldInvokeEndCallback() throws Exception {
+  }
+
+  @Test
+  public void invokeEndShouldInvokeEndCallback() throws Exception {
     assertThat(listener.wasEndCalled).isFalse();
-		shadow.invokeEnd();
+    shadow.invokeEnd();
     assertThat(listener.wasStartCalled).isFalse();
     assertThat(listener.wasEndCalled).isTrue();
     assertThat(listener.wasRepeatCalled).isFalse();
-	}
+  }
 
   @Test
-	public void simulateAnimationEndShouldInvokeApplyTransformationWith1() throws Exception {
+  public void simulateAnimationEndShouldInvokeApplyTransformationWith1() throws Exception {
     assertThat(animation.interpolatedTime).isEqualTo(0f);
-		shadow.invokeEnd();
+    shadow.invokeEnd();
     assertThat(animation.interpolatedTime).isEqualTo(1f);
-	}
+  }
 
-	@Test
-	public void testHasStarted() throws Exception {
+  @Test
+  public void testHasStarted() throws Exception {
     assertThat(animation.hasStarted()).isFalse();
-		animation.start();
+    animation.start();
     assertThat(animation.hasStarted()).isTrue();
-		animation.cancel();
+    animation.cancel();
     assertThat(animation.hasStarted()).isFalse();
-	}
-	
-	@Test
-	public void testDuration() throws Exception {
+  }
+
+  @Test
+  public void testDuration() throws Exception {
     assertThat(animation.getDuration()).isNotEqualTo(1000l);
     animation.setDuration(1000);
     assertThat(animation.getDuration()).isEqualTo(1000l);
   }
-	
-	@Test
-	public void testInterpolation() throws Exception {
+
+  @Test
+  public void testInterpolation() throws Exception {
     assertThat(animation.getInterpolator()).isNull();
-		LinearInterpolator i = new LinearInterpolator();
-		animation.setInterpolator(i);
+    LinearInterpolator i = new LinearInterpolator();
+    animation.setInterpolator(i);
     assertThat((LinearInterpolator) animation.getInterpolator()).isSameAs(i);
-	}
+  }
 
   @Test
   public void testRepeatCount() throws Exception {
@@ -127,7 +127,7 @@ public class AnimationTest {
     assertThat(shadow.getLoadedFromResourceId()).isEqualTo(R.anim.fade_in);
   }
 
-	private class TestAnimation extends Animation {
+  private class TestAnimation extends Animation {
     float interpolatedTime;
     Transformation t;
 

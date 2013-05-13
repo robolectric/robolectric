@@ -134,11 +134,11 @@ public class ShadowBitmapFactory {
 
     Point p = new Point(widthAndHeight);
     if (options != null && options.inSampleSize > 1) {
-    	p.x = p.x / options.inSampleSize;
-    	p.y = p.y / options.inSampleSize;
+      p.x = p.x / options.inSampleSize;
+      p.y = p.y / options.inSampleSize;
 
-    	p.x = p.x == 0 ? 1 : p.x;
-    	p.y = p.y == 0 ? 1 : p.y;
+      p.x = p.x == 0 ? 1 : p.x;
+      p.y = p.y == 0 ? 1 : p.y;
     }
 
     shadowBitmap.setWidth(p.x);

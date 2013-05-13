@@ -146,7 +146,7 @@ public class ShadowConfiguration {
   }
 
   public void setLocale( Locale l ) {
-  	realConfiguration.locale = l;
+    realConfiguration.locale = l;
   }
 
   public void overrideQualifiers(String qualifiers) {

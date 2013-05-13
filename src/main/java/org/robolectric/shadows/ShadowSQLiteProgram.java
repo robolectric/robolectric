@@ -14,38 +14,38 @@ import java.sql.Statement;
 
 @Implements(value = SQLiteProgram.class, inheritImplementationMethods = true)
 public abstract class ShadowSQLiteProgram extends ShadowSQLiteClosable {
-	@RealObject	SQLiteProgram realSQLiteProgram;
-	protected SQLiteDatabase mDatabase;
-	Connection connection;
-	PreparedStatement actualDBstatement;
-	public void init(SQLiteDatabase db, String sql) {
-	 mDatabase = db;
-	 connection = Robolectric.shadowOf(db).getConnection();
+  @RealObject  SQLiteProgram realSQLiteProgram;
+  protected SQLiteDatabase mDatabase;
+  Connection connection;
+  PreparedStatement actualDBstatement;
+  public void init(SQLiteDatabase db, String sql) {
+   mDatabase = db;
+   connection = Robolectric.shadowOf(db).getConnection();
 
-	 try {
-			actualDBstatement = connection.prepareStatement(sql,
-					Statement.RETURN_GENERATED_KEYS);
-		} catch (SQLException e) {
-			throw new RuntimeException(e);
-		}
-	}
-	
+   try {
+      actualDBstatement = connection.prepareStatement(sql,
+          Statement.RETURN_GENERATED_KEYS);
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   /**
    * Bind a NULL value to this statement. The value remains bound until
    * {@link #clearBindings} is called.
    *
    * @param index The 1-based index to the parameter to bind null to
    */
-	@Implementation
+  @Implementation
   public void bindNull(int index) {
-		checkDatabaseIsOpen();
-		try {
-			// SQLite ignores typecode
-			// typecode is also ignored in H2 when using the two parameter setNUll()
-			actualDBstatement.setNull(index,java.sql.Types.NULL); 
-		} catch (SQLException e) {
-			throw new RuntimeException(e);
-		}
+    checkDatabaseIsOpen();
+    try {
+      // SQLite ignores typecode
+      // typecode is also ignored in H2 when using the two parameter setNUll()
+      actualDBstatement.setNull(index,java.sql.Types.NULL);
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   /**
@@ -57,23 +57,23 @@ public abstract class ShadowSQLiteProgram extends ShadowSQLiteClosable {
    */
   @Implementation
   public void bindLong(int index, long value) {
-  	checkDatabaseIsOpen();
+    checkDatabaseIsOpen();
 
-  	try {
-			actualDBstatement.setLong(index,value);
-		} catch (SQLException e) {
-			throw new RuntimeException(e);
-		}
+    try {
+      actualDBstatement.setLong(index,value);
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   private void checkDatabaseIsOpen() {
-  	if (!mDatabase.isOpen()) {
+    if (!mDatabase.isOpen()) {
       throw new IllegalStateException("database " + mDatabase.getPath() + " already closed");
     }
   }
 
   public PreparedStatement getStatement() {
-  	return actualDBstatement;
+    return actualDBstatement;
   }
 
   /**
@@ -85,12 +85,12 @@ public abstract class ShadowSQLiteProgram extends ShadowSQLiteClosable {
    */
   @Implementation
   public void bindDouble(int index, double value) {
-  	checkDatabaseIsOpen();
-  	try {
-			actualDBstatement.setDouble(index,value);
-		} catch (SQLException e) {
-			throw new RuntimeException(e);
-		}
+    checkDatabaseIsOpen();
+    try {
+      actualDBstatement.setDouble(index,value);
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   /**
@@ -107,10 +107,10 @@ public abstract class ShadowSQLiteProgram extends ShadowSQLiteClosable {
     }
     checkDatabaseIsOpen();
     try {
-			actualDBstatement.setString(index,value);
-		} catch (SQLException e) {
-			throw new RuntimeException(e);
-		}
+      actualDBstatement.setString(index,value);
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   /**
@@ -127,10 +127,10 @@ public abstract class ShadowSQLiteProgram extends ShadowSQLiteClosable {
     }
     checkDatabaseIsOpen();
     try {
-			actualDBstatement.setBytes(index,value);
-		} catch (SQLException e) {
-			throw new RuntimeException(e);
-		}
+      actualDBstatement.setBytes(index,value);
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
 
   }
 
@@ -139,12 +139,12 @@ public abstract class ShadowSQLiteProgram extends ShadowSQLiteClosable {
    */
   @Implementation
   public void clearBindings() {
-  	checkDatabaseIsOpen();
+    checkDatabaseIsOpen();
 
-  	try {
-			actualDBstatement.clearParameters();
-		} catch (SQLException e) {
-			throw new RuntimeException(e);
-		}
+    try {
+      actualDBstatement.clearParameters();
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
   }
 }

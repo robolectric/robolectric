@@ -22,17 +22,17 @@ public class MotionEventTest {
   }
 
   @Test
-	public void addingSecondPointerSetsCount() {
+  public void addingSecondPointerSetsCount() {
     assertThat(event.getX(0)).isEqualTo(5.0f);
     assertThat(event.getY(0)).isEqualTo(10.0f);
     assertThat(event.getPointerCount()).isEqualTo(1);
-		
-		shadowOf(event).setPointer2( 20.0f, 30.0f );
+
+    shadowOf(event).setPointer2( 20.0f, 30.0f );
 
     assertThat(event.getX(1)).isEqualTo(20.0f);
     assertThat(event.getY(1)).isEqualTo(30.0f);
     assertThat(event.getPointerCount()).isEqualTo(2);
-	}
+  }
 
   @Test
   public void canSetPointerIdsByIndex() {

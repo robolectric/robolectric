@@ -33,12 +33,12 @@ public class ShadowDatabaseUtils {
 
   @Implementation
   public static String sqlEscapeString( String value ) {
-		StringBuilder builder = new StringBuilder();	
-		
-		// SQLite quoting conventions are used.
-		value = value.replaceAll( "'", "''" );  
-		builder.append( "'" ).append( value ).append( "'" );	
-		
-		return builder.toString();
-	}
+    StringBuilder builder = new StringBuilder();
+
+    // SQLite quoting conventions are used.
+    value = value.replaceAll( "'", "''" );
+    builder.append( "'" ).append( value ).append( "'" );
+
+    return builder.toString();
+  }
 }

@@ -67,7 +67,7 @@ public class ShadowNetworkInfo {
 
   @Implementation
   public int getType(){
-  	return connectionType;
+    return connectionType;
   }
 
   @Implementation
@@ -107,7 +107,7 @@ public class ShadowNetworkInfo {
    * @param connectionType the value that {@link #getType()} will return.
    */
   public void setConnectionType(int connectionType){
-  	this.connectionType = connectionType;
+    this.connectionType = connectionType;
   }
 
   public void setSubType(int subType) {

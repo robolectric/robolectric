@@ -11,22 +11,22 @@ import org.robolectric.annotation.Implements;
 @Implements(PowerManager.class)
 public class ShadowPowerManager {
 
-	private boolean isScreenOn = true;
+  private boolean isScreenOn = true;
 
   @Implementation
   public PowerManager.WakeLock newWakeLock(int flags, String tag) {
-  	PowerManager.WakeLock wl = Robolectric.newInstanceOf(PowerManager.WakeLock.class);
-  	Robolectric.getShadowApplication().addWakeLock(wl);
+    PowerManager.WakeLock wl = Robolectric.newInstanceOf(PowerManager.WakeLock.class);
+    Robolectric.getShadowApplication().addWakeLock(wl);
     return wl;
   }
 
   @Implementation
   public boolean isScreenOn() {
-  	return isScreenOn;
+    return isScreenOn;
   }
 
   public void setIsScreenOn(boolean screenOn) {
-  	isScreenOn = screenOn;
+    isScreenOn = screenOn;
   }
 
   /**
@@ -46,7 +46,7 @@ public class ShadowPowerManager {
    * @return
    */
   public PowerManager.WakeLock getLatestWakeLock() {
-  	return Robolectric.getShadowApplication().getLatestWakeLock();
+    return Robolectric.getShadowApplication().getLatestWakeLock();
   }
 
   @Implements(PowerManager.WakeLock.class)

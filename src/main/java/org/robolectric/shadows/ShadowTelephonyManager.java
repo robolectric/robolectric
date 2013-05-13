@@ -7,9 +7,9 @@ import org.robolectric.annotation.Implements;
 
 @Implements(TelephonyManager.class)
 public class ShadowTelephonyManager {
-	
-	private PhoneStateListener listener;
-	private int eventFlags;
+
+  private PhoneStateListener listener;
+  private int eventFlags;
   private String deviceId;
   private String networkOperatorName;
   private String networkCountryIso;
@@ -21,29 +21,29 @@ public class ShadowTelephonyManager {
   private int simState = TelephonyManager.SIM_STATE_READY;
 
   @Implementation
-	public void listen(PhoneStateListener listener, int events) {
-		this.listener = listener;
-		this.eventFlags = events;
-	}
-	
-	/**
-	 * Non-Android accessor.  Returns the most recent listener
-	 * passed to #listen().
-	 * 
-	 * @return
-	 */
-	public PhoneStateListener getListener() {
-		return listener;
-	}
+  public void listen(PhoneStateListener listener, int events) {
+    this.listener = listener;
+    this.eventFlags = events;
+  }
 
-	/**
-	 * Non-Android accessor.  Returns the most recent flags
-	 * passed to #listen().
-	 * @return
-	 */
-	public int getEventFlags() {
-		return eventFlags;
-	}
+  /**
+   * Non-Android accessor.  Returns the most recent listener
+   * passed to #listen().
+   *
+   * @return
+   */
+  public PhoneStateListener getListener() {
+    return listener;
+  }
+
+  /**
+   * Non-Android accessor.  Returns the most recent flags
+   * passed to #listen().
+   * @return
+   */
+  public int getEventFlags() {
+    return eventFlags;
+  }
 
   @Implementation
   public String getDeviceId() {
@@ -121,10 +121,10 @@ public class ShadowTelephonyManager {
 
   @Implementation
   public int getPhoneType() {
-  	return phoneType;
+    return phoneType;
   }
 
   public void setPhoneType(int phoneType) {
-  	this.phoneType = phoneType;
+    this.phoneType = phoneType;
   }
 }

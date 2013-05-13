@@ -103,10 +103,10 @@ public class ShadowLog {
     List<LogItem> itemList = null;
 
     if (!logsByTag.containsKey(tag)) {
-    	itemList = new ArrayList<LogItem>();
-    	logsByTag.put(tag, itemList);
+      itemList = new ArrayList<LogItem>();
+      logsByTag.put(tag, itemList);
     } else {
-    	itemList = logsByTag.get(tag);
+      itemList = logsByTag.get(tag);
     }
 
     itemList.add(item);
@@ -135,7 +135,7 @@ public class ShadowLog {
    * @return
    */
   public static List<LogItem> getLogs() {
-  	return logs;
+    return logs;
   }
 
   /**
@@ -145,7 +145,7 @@ public class ShadowLog {
    * @return
    */
   public static List<LogItem> getLogsForTag( String tag ) {
-  	return logsByTag.get(tag);
+    return logsByTag.get(tag);
   }
 
   public static void reset() {

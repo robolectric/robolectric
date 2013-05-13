@@ -30,7 +30,7 @@ public class CameraTest {
 
   @After
   public void tearDown() throws Exception {
-  	ShadowCamera.clearCameraInfo();
+    ShadowCamera.clearCameraInfo();
   }
 
   @Test
@@ -101,12 +101,12 @@ public class CameraTest {
 
   @Test
   public void testSetPreviewCallbacks() throws Exception {
-  	TestPreviewCallback callback = new TestPreviewCallback();
+    TestPreviewCallback callback = new TestPreviewCallback();
     assertThat(callback.camera).isNull();
     assertThat(callback.data).isNull();
 
-  	camera.setPreviewCallback(callback);
-  	shadowCamera.invokePreviewCallback("foobar".getBytes());
+    camera.setPreviewCallback(callback);
+    shadowCamera.invokePreviewCallback("foobar".getBytes());
 
     assertThat(callback.camera).isSameAs(camera);
     assertThat(callback.data).isEqualTo("foobar".getBytes());
@@ -114,12 +114,12 @@ public class CameraTest {
 
   @Test
   public void testSetOneShotPreviewCallbacks() throws Exception {
-  	TestPreviewCallback callback = new TestPreviewCallback();
+    TestPreviewCallback callback = new TestPreviewCallback();
     assertThat(callback.camera).isNull();
     assertThat(callback.data).isNull();
 
-  	camera.setOneShotPreviewCallback(callback);
-  	shadowCamera.invokePreviewCallback("foobar".getBytes());
+    camera.setOneShotPreviewCallback(callback);
+    shadowCamera.invokePreviewCallback("foobar".getBytes());
 
     assertThat(callback.camera).isSameAs(camera);
     assertThat(callback.data).isEqualTo("foobar".getBytes());
@@ -127,12 +127,12 @@ public class CameraTest {
 
   @Test
   public void testPreviewCallbacksWithBuffers() throws Exception {
-  	TestPreviewCallback callback = new TestPreviewCallback();
+    TestPreviewCallback callback = new TestPreviewCallback();
     assertThat(callback.camera).isNull();
     assertThat(callback.data).isNull();
 
-  	camera.setPreviewCallbackWithBuffer(callback);
-  	shadowCamera.invokePreviewCallback("foobar".getBytes());
+    camera.setPreviewCallbackWithBuffer(callback);
+    shadowCamera.invokePreviewCallback("foobar".getBytes());
 
     assertThat(callback.camera).isSameAs(camera);
     assertThat(callback.data).isEqualTo("foobar".getBytes());
@@ -140,28 +140,28 @@ public class CameraTest {
 
   @Test
   public void testClearPreviewCallback() throws Exception {
-  	TestPreviewCallback callback = new TestPreviewCallback();
+    TestPreviewCallback callback = new TestPreviewCallback();
     assertThat(callback.camera).isNull();
     assertThat(callback.data).isNull();
 
-  	camera.setPreviewCallback(callback);
-  	camera.setPreviewCallback(null);
+    camera.setPreviewCallback(callback);
+    camera.setPreviewCallback(null);
 
-  	shadowCamera.invokePreviewCallback("foobar".getBytes());
+    shadowCamera.invokePreviewCallback("foobar".getBytes());
     assertThat(callback.camera).isNull();
     assertThat(callback.data).isNull();
 
-  	camera.setOneShotPreviewCallback(callback);
-  	camera.setOneShotPreviewCallback(null);
+    camera.setOneShotPreviewCallback(callback);
+    camera.setOneShotPreviewCallback(null);
 
-  	shadowCamera.invokePreviewCallback("foobar".getBytes());
+    shadowCamera.invokePreviewCallback("foobar".getBytes());
     assertThat(callback.camera).isNull();
     assertThat(callback.data).isNull();
 
-  	camera.setPreviewCallbackWithBuffer(callback);
-  	camera.setPreviewCallbackWithBuffer(null);
+    camera.setPreviewCallbackWithBuffer(callback);
+    camera.setPreviewCallbackWithBuffer(null);
 
-  	shadowCamera.invokePreviewCallback("foobar".getBytes());
+    shadowCamera.invokePreviewCallback("foobar".getBytes());
     assertThat(callback.camera).isNull();
     assertThat(callback.data).isNull();
   }
@@ -173,10 +173,10 @@ public class CameraTest {
 
   @Test
   public void testCameraInfoBackOnly() throws Exception {
-  	Camera.CameraInfo cameraQuery = new Camera.CameraInfo();
+    Camera.CameraInfo cameraQuery = new Camera.CameraInfo();
 
-		addBackCamera();
-  	Camera.getCameraInfo(0, cameraQuery);
+    addBackCamera();
+    Camera.getCameraInfo(0, cameraQuery);
 
     assertThat(Camera.getNumberOfCameras()).isEqualTo(1);
     assertThat(cameraQuery.facing).isEqualTo(Camera.CameraInfo.CAMERA_FACING_BACK);
@@ -185,42 +185,42 @@ public class CameraTest {
 
   @Test
   public void testCameraInfoBackAndFront() throws Exception {
-  	Camera.CameraInfo cameraQuery = new Camera.CameraInfo();
-		addBackCamera();
-  	addFrontCamera();
+    Camera.CameraInfo cameraQuery = new Camera.CameraInfo();
+    addBackCamera();
+    addFrontCamera();
 
     assertThat(Camera.getNumberOfCameras()).isEqualTo(2);
-  	Camera.getCameraInfo(0, cameraQuery);
+    Camera.getCameraInfo(0, cameraQuery);
     assertThat(cameraQuery.facing).isEqualTo(Camera.CameraInfo.CAMERA_FACING_BACK);
     assertThat(cameraQuery.orientation).isEqualTo(0);
-  	Camera.getCameraInfo(1, cameraQuery);
+    Camera.getCameraInfo(1, cameraQuery);
     assertThat(cameraQuery.facing).isEqualTo(Camera.CameraInfo.CAMERA_FACING_FRONT);
     assertThat(cameraQuery.orientation).isEqualTo(90);
   }
 
-	private void addBackCamera() {
-		Camera.CameraInfo frontCamera = new Camera.CameraInfo();
-		frontCamera.facing = Camera.CameraInfo.CAMERA_FACING_BACK;
-		frontCamera.orientation = 0;
-		ShadowCamera.addCameraInfo(0, frontCamera);
-	}
+  private void addBackCamera() {
+    Camera.CameraInfo frontCamera = new Camera.CameraInfo();
+    frontCamera.facing = Camera.CameraInfo.CAMERA_FACING_BACK;
+    frontCamera.orientation = 0;
+    ShadowCamera.addCameraInfo(0, frontCamera);
+  }
 
-	private void addFrontCamera() {
-		Camera.CameraInfo backCamera = new Camera.CameraInfo();
-		backCamera.facing = Camera.CameraInfo.CAMERA_FACING_FRONT;
-		backCamera.orientation = 90;
-		ShadowCamera.addCameraInfo(1, backCamera);
-	}
+  private void addFrontCamera() {
+    Camera.CameraInfo backCamera = new Camera.CameraInfo();
+    backCamera.facing = Camera.CameraInfo.CAMERA_FACING_FRONT;
+    backCamera.orientation = 90;
+    ShadowCamera.addCameraInfo(1, backCamera);
+  }
 
   private class TestPreviewCallback implements Camera.PreviewCallback {
-  	public Camera camera = null;
-  	public byte[] data = null;
+    public Camera camera = null;
+    public byte[] data = null;
 
-		@Override
-		public void onPreviewFrame(byte[] data, Camera camera) {
-			this.data = data;
-			this.camera = camera;
-		}
+    @Override
+    public void onPreviewFrame(byte[] data, Camera camera) {
+      this.data = data;
+      this.camera = camera;
+    }
   }
 
   private class TestSurfaceHolder implements SurfaceHolder {

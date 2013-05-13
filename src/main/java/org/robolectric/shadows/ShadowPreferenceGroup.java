@@ -18,51 +18,51 @@ public class ShadowPreferenceGroup extends ShadowPreference {
   @RealObject private PreferenceGroup realPreferenceGroup;
 
   private ArrayList<Preference> preferenceList = new ArrayList<Preference>();
-	
-	@Implementation
-	public void addItemFromInflater(Preference preference) {
-		addPreference(preference);
-	}
-	
-	@Implementation
-	public boolean addPreference(Preference preference) {
-		if (preferenceList.contains(preference)) {
+
+  @Implementation
+  public void addItemFromInflater(Preference preference) {
+    addPreference(preference);
+  }
+
+  @Implementation
+  public boolean addPreference(Preference preference) {
+    if (preferenceList.contains(preference)) {
       return true;
     }
-		
-		// TODO currently punting on ordering logic
-		preferenceList.add(preference);
 
-		return true;
-	}
-	
-	@Implementation
-	public Preference getPreference(int index) {
-		return preferenceList.get(index);
-	}
-	
-	@Implementation
-	public int getPreferenceCount() {
-		return preferenceList.size();
-	}
-	
-	@Implementation
-	public boolean removePreference(Preference preference) {
-		return preferenceList.remove(preference);
-	}
-	
-	@Implementation
-	public void removeAll() {
-		preferenceList.clear();
-	}
-	
-	/**
-	 * Note: copied wholesale from Android source
-	 * @param key
-	 * @return
-	 */
-	@Implementation
-	public Preference findPreference(CharSequence key) {
+    // TODO currently punting on ordering logic
+    preferenceList.add(preference);
+
+    return true;
+  }
+
+  @Implementation
+  public Preference getPreference(int index) {
+    return preferenceList.get(index);
+  }
+
+  @Implementation
+  public int getPreferenceCount() {
+    return preferenceList.size();
+  }
+
+  @Implementation
+  public boolean removePreference(Preference preference) {
+    return preferenceList.remove(preference);
+  }
+
+  @Implementation
+  public void removeAll() {
+    preferenceList.clear();
+  }
+
+  /**
+   * Note: copied wholesale from Android source
+   * @param key
+   * @return
+   */
+  @Implementation
+  public Preference findPreference(CharSequence key) {
     if (TextUtils.equals(getKey(), key)) {
       return realPreferenceGroup;
     }
@@ -86,17 +86,17 @@ public class ShadowPreferenceGroup extends ShadowPreference {
 
     return null;
   }
-	
-	/**
-	 * Note: copied wholesale from Android source
-	 */
-	@Implementation
-	public void setEnabled(boolean enabled) {
-		super.setEnabled(enabled);
-		
-		final int preferenceCount = getPreferenceCount();
+
+  /**
+   * Note: copied wholesale from Android source
+   */
+  @Implementation
+  public void setEnabled(boolean enabled) {
+    super.setEnabled(enabled);
+
+    final int preferenceCount = getPreferenceCount();
     for (int i = 0; i < preferenceCount; i++) {
       getPreference(i).setEnabled(enabled);
     }
-	}
+  }
 }

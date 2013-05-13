@@ -102,14 +102,14 @@ public class ShadowCamera {
 
   @Implementation
   public static void getCameraInfo(int cameraId, Camera.CameraInfo cameraInfo ) {
-  	Camera.CameraInfo foundCam = cameras.get( cameraId );
-  	cameraInfo.facing = foundCam.facing;
-  	cameraInfo.orientation = foundCam.orientation;
+    Camera.CameraInfo foundCam = cameras.get( cameraId );
+    cameraInfo.facing = foundCam.facing;
+    cameraInfo.orientation = foundCam.orientation;
   }
 
   @Implementation
   public static int getNumberOfCameras() {
-  	return cameras.size();
+    return cameras.size();
   }
 
   /**
@@ -148,11 +148,11 @@ public class ShadowCamera {
    * @param camInfo
    */
   public static void addCameraInfo(int id, Camera.CameraInfo camInfo) {
-  	cameras.put(id, camInfo);
+    cameras.put(id, camInfo);
   }
 
   public static void clearCameraInfo() {
-  	cameras.clear();
+    cameras.clear();
   }
 
   /**

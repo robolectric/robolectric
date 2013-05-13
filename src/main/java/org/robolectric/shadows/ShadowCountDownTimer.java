@@ -51,10 +51,10 @@ public class ShadowCountDownTimer {
   }
 
   public long getCountDownInterval() {
-  	return countDownInterval;
+    return countDownInterval;
   }
 
   public long getMillisInFuture() {
-  	return millisInFuture;
+    return millisInFuture;
   }
 }

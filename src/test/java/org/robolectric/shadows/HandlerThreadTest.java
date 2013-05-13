@@ -13,17 +13,17 @@ import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class HandlerThreadTest {
-	
-	private HandlerThread handlerThread;
-	
-	@After
-	public void tearDown() throws Exception {
-		// Try to ensure we've exited the thread at the end of each test
-		if ( handlerThread != null ) {
-			handlerThread.quit();
-			handlerThread.join();
-		}
-	}
+
+  private HandlerThread handlerThread;
+
+  @After
+  public void tearDown() throws Exception {
+    // Try to ensure we've exited the thread at the end of each test
+    if ( handlerThread != null ) {
+      handlerThread.quit();
+      handlerThread.join();
+    }
+  }
 
   @Test
   public void shouldReturnLooper() throws Exception {

@@ -34,37 +34,37 @@ public class MediaPlayerTest {
 
   @Test
   public void testErrorListenerCalled() {
-		MediaPlayer.OnErrorListener err = Mockito.mock(MediaPlayer.OnErrorListener.class);
-		shadowMediaPlayer.setOnErrorListener(err);
-		shadowMediaPlayer.invokeErrorListener(0,0);
-		Mockito.verify(err).onError(mediaPlayer,0,0);
+    MediaPlayer.OnErrorListener err = Mockito.mock(MediaPlayer.OnErrorListener.class);
+    shadowMediaPlayer.setOnErrorListener(err);
+    shadowMediaPlayer.invokeErrorListener(0,0);
+    Mockito.verify(err).onError(mediaPlayer,0,0);
   }
 
   @Test
   public void testErrorListenerCalledNoOnCompleteCalledWhenReturnTrue() {
-		MediaPlayer.OnErrorListener err = Mockito.mock(MediaPlayer.OnErrorListener.class);
-		MediaPlayer.OnCompletionListener complete =  Mockito.mock(MediaPlayer.OnCompletionListener.class);
-		Mockito.when(err.onError(mediaPlayer,0,0)).thenReturn(true);
-		shadowMediaPlayer.setOnErrorListener(err);
-		shadowMediaPlayer.setOnCompletionListener(complete);
-		
-		shadowMediaPlayer.invokeErrorListener(0, 0);
-		
-		Mockito.verify(err).onError(mediaPlayer,0,0);
-		Mockito.verifyZeroInteractions(complete);
+    MediaPlayer.OnErrorListener err = Mockito.mock(MediaPlayer.OnErrorListener.class);
+    MediaPlayer.OnCompletionListener complete =  Mockito.mock(MediaPlayer.OnCompletionListener.class);
+    Mockito.when(err.onError(mediaPlayer,0,0)).thenReturn(true);
+    shadowMediaPlayer.setOnErrorListener(err);
+    shadowMediaPlayer.setOnCompletionListener(complete);
+
+    shadowMediaPlayer.invokeErrorListener(0, 0);
+
+    Mockito.verify(err).onError(mediaPlayer,0,0);
+    Mockito.verifyZeroInteractions(complete);
   }
 
   @Test
   public void testErrorListenerCalledOnCompleteCalledWhenReturnFalse() {
-		MediaPlayer.OnErrorListener err = Mockito.mock(MediaPlayer.OnErrorListener.class);
-		MediaPlayer.OnCompletionListener complete =  Mockito.mock(MediaPlayer.OnCompletionListener.class);
-		Mockito.when(err.onError(mediaPlayer,0,0)).thenReturn(false);
-		shadowMediaPlayer.setOnErrorListener(err);
-		shadowMediaPlayer.setOnCompletionListener(complete);
-		
-		shadowMediaPlayer.invokeErrorListener(0, 0);
-		
-		Mockito.verify(err).onError(mediaPlayer,0,0);
-		Mockito.verify(complete).onCompletion(mediaPlayer);
+    MediaPlayer.OnErrorListener err = Mockito.mock(MediaPlayer.OnErrorListener.class);
+    MediaPlayer.OnCompletionListener complete =  Mockito.mock(MediaPlayer.OnCompletionListener.class);
+    Mockito.when(err.onError(mediaPlayer,0,0)).thenReturn(false);
+    shadowMediaPlayer.setOnErrorListener(err);
+    shadowMediaPlayer.setOnCompletionListener(complete);
+
+    shadowMediaPlayer.invokeErrorListener(0, 0);
+
+    Mockito.verify(err).onError(mediaPlayer,0,0);
+    Mockito.verify(complete).onCompletion(mediaPlayer);
   }
 }

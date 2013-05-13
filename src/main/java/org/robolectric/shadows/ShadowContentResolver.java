@@ -177,11 +177,11 @@ public class ShadowContentResolver {
     // TODO does not support multiple observers for a URI
     ContentObserver obs = contentObservers.get(uri);
     if ( obs != null && obs != observer  ) {
-    	obs.dispatchChange( false, uri );
+      obs.dispatchChange( false, uri );
     }
-  	if ( observer != null && observer.deliverSelfNotifications() ) {
-  		observer.dispatchChange( true, uri );
-  	}
+    if ( observer != null && observer.deliverSelfNotifications() ) {
+      observer.dispatchChange( true, uri );
+    }
   }
 
   @Implementation
@@ -363,21 +363,21 @@ public class ShadowContentResolver {
   @Implementation
   public void registerContentObserver( Uri uri, boolean notifyForDescendents, ContentObserver observer) {
     // TODO does not support multiple observers for a URI
-  	contentObservers.put( uri, observer );
+    contentObservers.put( uri, observer );
   }
 
   @Implementation
   public void unregisterContentObserver( ContentObserver observer ) {
-  	if ( observer != null && contentObservers.containsValue( observer ) ) {
-  		Set<Entry<Uri,ContentObserver>> entries = contentObservers.entrySet();
-  		for ( Entry<Uri,ContentObserver> e : entries ) {
-  			ContentObserver other = e.getValue();
-  			if ( observer == other || observer.equals(other) ) {
-  	        	contentObservers.remove( e.getKey() );
-  	        	return;
-  			}
-  		}
-  	}
+    if ( observer != null && contentObservers.containsValue( observer ) ) {
+      Set<Entry<Uri,ContentObserver>> entries = contentObservers.entrySet();
+      for ( Entry<Uri,ContentObserver> e : entries ) {
+        ContentObserver other = e.getValue();
+        if ( observer == other || observer.equals(other) ) {
+              contentObservers.remove( e.getKey() );
+              return;
+        }
+      }
+    }
   }
 
   /**
@@ -385,7 +385,7 @@ public class ShadowContentResolver {
    * Commonly used in test case setup.
    */
   public void clearContentObservers() {
-  	contentObservers.clear();
+    contentObservers.clear();
   }
 
   /**
@@ -395,7 +395,7 @@ public class ShadowContentResolver {
    * @return
    */
   public ContentObserver getContentObserver( Uri uri ) {
-  	return contentObservers.get(uri);
+    return contentObservers.get(uri);
   }
 
   private TestCursor getCursor(Uri uri) {

@@ -102,16 +102,16 @@ public class TabHostTest {
 
   @Test
   public void shouldRetrieveTheCurrentViewFromTabContentFactory() {
-  	TabHost tabHost = new TabHost(Robolectric.application);
+    TabHost tabHost = new TabHost(Robolectric.application);
 
     TabHost.TabSpec foo = tabHost.newTabSpec("Foo").setContent(
-		new TabContentFactory() {
-			public View createTabContent(String tag) {
-				TextView tv = new TextView(Robolectric.application);
-				tv.setText("The Text of " + tag);
-				return tv;
-			}
-		});
+    new TabContentFactory() {
+      public View createTabContent(String tag) {
+        TextView tv = new TextView(Robolectric.application);
+        tv.setText("The Text of " + tag);
+        return tv;
+      }
+    });
 
     tabHost.addTab(foo);
     tabHost.setCurrentTabByTag("Foo");
@@ -121,13 +121,13 @@ public class TabHostTest {
   }
   @Test
   public void shouldRetrieveTheCurrentViewFromViewId() {
-  	Activity a = new Activity();
-  	a.setContentView(org.robolectric.R.layout.main);
-  	TabHost tabHost = new TabHost(a);
-  	TabHost.TabSpec foo = tabHost.newTabSpec("Foo")
-  	.setContent(org.robolectric.R.id.title);
+    Activity a = new Activity();
+    a.setContentView(org.robolectric.R.layout.main);
+    TabHost tabHost = new TabHost(a);
+    TabHost.TabSpec foo = tabHost.newTabSpec("Foo")
+    .setContent(org.robolectric.R.id.title);
 
-  	 tabHost.addTab(foo);
+     tabHost.addTab(foo);
      tabHost.setCurrentTabByTag("Foo");
      TextView textView = (TextView) tabHost.getCurrentView();
 

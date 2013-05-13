@@ -9,9 +9,9 @@ import org.robolectric.annotation.Implements;
 @Implements(ContentProvider.class)
 public class ShadowContentProvider {
 
-	@Implementation
-	public final Context getContext() {
-		return Robolectric.application;
-	}
+  @Implementation
+  public final Context getContext() {
+    return Robolectric.application;
+  }
 
 }

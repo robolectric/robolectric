@@ -334,12 +334,12 @@ public class ParcelTest {
 
   @Test
   public void testCreateStringArray() {
-  	String[] strs = {
-  			"a1",
-  			"b2"
-  	};
-  	parcel.writeStringArray(strs);
-  	String[] newStrs = parcel.createStringArray();
-  	assertTrue(Arrays.equals(strs, newStrs));
+    String[] strs = {
+        "a1",
+        "b2"
+    };
+    parcel.writeStringArray(strs);
+    String[] newStrs = parcel.createStringArray();
+    assertTrue(Arrays.equals(strs, newStrs));
   }
 }

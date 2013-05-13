@@ -14,26 +14,26 @@ import static org.robolectric.Robolectric.*;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class TelephonyManagerTest {
-	
-	private TelephonyManager manager;
-	private ShadowTelephonyManager shadowManager;
-	private MyPhoneStateListener listener;
 
-	@Before
-	public void setUp() throws Exception {
-		manager = newInstanceOf(TelephonyManager.class);
-		shadowManager = shadowOf(manager);
+  private TelephonyManager manager;
+  private ShadowTelephonyManager shadowManager;
+  private MyPhoneStateListener listener;
 
-		listener = new MyPhoneStateListener(); 
-	}
+  @Before
+  public void setUp() throws Exception {
+    manager = newInstanceOf(TelephonyManager.class);
+    shadowManager = shadowOf(manager);
 
-	@Test
-	public void testListen() {
-		manager.listen(listener, PhoneStateListener.LISTEN_CALL_STATE);
+    listener = new MyPhoneStateListener();
+  }
+
+  @Test
+  public void testListen() {
+    manager.listen(listener, PhoneStateListener.LISTEN_CALL_STATE);
     assertThat(shadowManager.getListener()).isNotNull();
     assertThat((MyPhoneStateListener) shadowManager.getListener()).isSameAs(listener);
     assertThat(shadowManager.getEventFlags()).isEqualTo(PhoneStateListener.LISTEN_CALL_STATE);
-	}
+  }
 
   @Test
   public void shouldGiveDeviceId() {
@@ -83,7 +83,7 @@ public class TelephonyManagerTest {
     assertEquals(TelephonyManager.PHONE_TYPE_GSM, telephonyManager.getPhoneType());
   }
 
-	private class MyPhoneStateListener extends PhoneStateListener {
-		
-	}
+  private class MyPhoneStateListener extends PhoneStateListener {
+
+  }
 }

@@ -136,7 +136,7 @@ public class AsyncTaskTest {
     }
 
     @Override protected void onCancelled() {
-    	transcript.add("onCancelled");
+      transcript.add("onCancelled");
     }
   }
 }

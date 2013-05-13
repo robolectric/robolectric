@@ -18,56 +18,56 @@ import static org.robolectric.Robolectric.shadowOf;
 @RunWith(TestRunners.WithDefaults.class)
 public class SensorManagerTest {
 
-	private SensorManager sensorManager;
-	private ShadowSensorManager shadow;
-	
-	@Before
-	public void setup() {
-		sensorManager = (SensorManager) Robolectric.application.getSystemService(Context.SENSOR_SERVICE);
-		shadow = shadowOf(sensorManager);
-	}
-	
-	@After
-	public void tearDown() {
-		sensorManager = null;
-		shadow = null;
-	}
-	
-	@Test
-	public void shouldReturnHasListenerAfterRegisteringListener() {
-		SensorEventListener listener = registerListener();
+  private SensorManager sensorManager;
+  private ShadowSensorManager shadow;
 
-		assertThat(shadow.hasListener(listener)).isTrue();
-	}
-	
-	private SensorEventListener registerListener() {
-		SensorEventListener listener = new TestSensorEventListener();
-		Sensor sensor = sensorManager.getDefaultSensor(SensorManager.SENSOR_ACCELEROMETER);
-		sensorManager.registerListener(listener, sensor, SensorManager.SENSOR_DELAY_NORMAL);
-		
-		return listener;
-	}
-	
-	@Test
-	public void shouldReturnHasNoListenerAfterUnregisterListener() {
-		SensorEventListener listener = registerListener();
-		sensorManager.unregisterListener(listener, sensorManager.getDefaultSensor(SensorManager.SENSOR_ACCELEROMETER));
-		
-		assertThat(shadow.hasListener(listener)).isFalse();
-	}
-	
-	@Test
-	public void shouldReturnHasNoListenerByDefault() {
-		SensorEventListener listener = new TestSensorEventListener();
-		
-		assertThat(shadow.hasListener(listener)).isFalse();
-	}
-	
-	@Test 
-	public void shouldCreateSensorEvent() {
-		assertThat(shadow.createSensorEvent() instanceof SensorEvent).isTrue();
-	}
-	
+  @Before
+  public void setup() {
+    sensorManager = (SensorManager) Robolectric.application.getSystemService(Context.SENSOR_SERVICE);
+    shadow = shadowOf(sensorManager);
+  }
+
+  @After
+  public void tearDown() {
+    sensorManager = null;
+    shadow = null;
+  }
+
+  @Test
+  public void shouldReturnHasListenerAfterRegisteringListener() {
+    SensorEventListener listener = registerListener();
+
+    assertThat(shadow.hasListener(listener)).isTrue();
+  }
+
+  private SensorEventListener registerListener() {
+    SensorEventListener listener = new TestSensorEventListener();
+    Sensor sensor = sensorManager.getDefaultSensor(SensorManager.SENSOR_ACCELEROMETER);
+    sensorManager.registerListener(listener, sensor, SensorManager.SENSOR_DELAY_NORMAL);
+
+    return listener;
+  }
+
+  @Test
+  public void shouldReturnHasNoListenerAfterUnregisterListener() {
+    SensorEventListener listener = registerListener();
+    sensorManager.unregisterListener(listener, sensorManager.getDefaultSensor(SensorManager.SENSOR_ACCELEROMETER));
+
+    assertThat(shadow.hasListener(listener)).isFalse();
+  }
+
+  @Test
+  public void shouldReturnHasNoListenerByDefault() {
+    SensorEventListener listener = new TestSensorEventListener();
+
+    assertThat(shadow.hasListener(listener)).isFalse();
+  }
+
+  @Test
+  public void shouldCreateSensorEvent() {
+    assertThat(shadow.createSensorEvent() instanceof SensorEvent).isTrue();
+  }
+
   @Test
   public void getSensor_shouldBeConfigurable() {
     Sensor sensor = Robolectric.newInstanceOf(Sensor.class);
@@ -80,15 +80,15 @@ public class SensorManagerTest {
     assertThat(sensorManager.getSensorList(0)).isNotNull();
   }
 
-	private class TestSensorEventListener implements SensorEventListener {
+  private class TestSensorEventListener implements SensorEventListener {
 
-		@Override
-		public void onAccuracyChanged(Sensor sensor, int accuracy) {
-		}
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+    }
 
-		@Override
-		public void onSensorChanged(SensorEvent event) {
-		}
-		
-	}
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+    }
+
+  }
 }

@@ -37,8 +37,8 @@ public class ShadowAnimator {
 
   @Implementation
   public void start () {
-  	notifyStart();
-  	notifyEnd();
+    notifyStart();
+    notifyEnd();
   }
 
   // Tested via ObjectAnimatorTest for now

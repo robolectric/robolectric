@@ -52,7 +52,7 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
 
   };
 
-  @RealObject	SQLiteDatabase realSQLiteDatabase;
+  @RealObject  SQLiteDatabase realSQLiteDatabase;
   private final ReentrantLock mLock = new ReentrantLock(true);
   private boolean mLockingEnabled = true;
   private WeakHashMap<SQLiteClosable, Object> mPrograms;

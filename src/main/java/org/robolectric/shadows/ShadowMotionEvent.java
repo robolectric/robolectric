@@ -91,7 +91,7 @@ public class ShadowMotionEvent {
 
   @Implementation
   public final int getPointerCount() {
-  	return pointerCount;
+    return pointerCount;
   }
 
   @Implementation

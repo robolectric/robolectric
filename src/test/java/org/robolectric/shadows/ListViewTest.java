@@ -431,7 +431,7 @@ public class ListViewTest {
 
     assertThat(listView.getCheckedItemCount()).isEqualTo(checkedItemPositions.size());
     for (int i = 0; i < checkedItemPositions.size(); i++) {
-    	assertThat(listView.getCheckedItemPositions().get(i)).isTrue();
+      assertThat(listView.getCheckedItemPositions().get(i)).isTrue();
     }
   }
 
