@@ -323,7 +323,7 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
 
         resultSet = Robolectric.shadowOf(stmt).getStatement().executeQuery();
       } catch (SQLException e) {
-        throw new RuntimeException("SQL exception in query", e);
+        throw new RuntimeException("SQL exception in rawQueryWithFactory", e);
       }
       //TODO: assert rawquery with args returns actual values
 
@@ -387,7 +387,7 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
         }
           getConnection().setAutoCommit(true);
       } catch (SQLException e) {
-        throw new RuntimeException("SQL exception in beginTransaction", e);
+        throw new RuntimeException("SQL exception in endTransaction", e);
       }
       transaction = null;
     }
