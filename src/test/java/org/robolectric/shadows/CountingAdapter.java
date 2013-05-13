@@ -7,36 +7,36 @@ import android.widget.TextView;
 import org.robolectric.Robolectric;
 
 class CountingAdapter extends BaseAdapter {
-    private int itemCount;
+  private int itemCount;
 
-    public CountingAdapter(int itemCount) {
-        this.itemCount = itemCount;
-    }
+  public CountingAdapter(int itemCount) {
+    this.itemCount = itemCount;
+  }
 
-    public void setCount(int itemCount) {
-        this.itemCount = itemCount;
-        notifyDataSetChanged();
-    }
+  public void setCount(int itemCount) {
+    this.itemCount = itemCount;
+    notifyDataSetChanged();
+  }
 
-    @Override
-    public int getCount() {
-        return itemCount;
-    }
+  @Override
+  public int getCount() {
+    return itemCount;
+  }
 
-    @Override
-    public Object getItem(int position) {
-        return null;
-    }
+  @Override
+  public Object getItem(int position) {
+    return null;
+  }
 
-    @Override
-    public long getItemId(int position) {
-        return 0;
-    }
+  @Override
+  public long getItemId(int position) {
+    return 0;
+  }
 
-    @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        TextView textView = new TextView(Robolectric.application);
-        textView.setText("Item " + position);
-        return textView;
-    }
+  @Override
+  public View getView(int position, View convertView, ViewGroup parent) {
+    TextView textView = new TextView(Robolectric.application);
+    textView.setText("Item " + position);
+    return textView;
+  }
 }

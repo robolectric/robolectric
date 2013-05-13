@@ -28,27 +28,27 @@ import java.net.HttpURLConnection;
  */
 public interface ExtendedResponseCache {
 
-    /*
-     * This hidden interface is defined in a non-hidden package (java.net) so
-     * its @hide tag will be parsed by Doclava. This hides this interface from
-     * implementing classes' documentation.
-     */
+  /*
+   * This hidden interface is defined in a non-hidden package (java.net) so
+   * its @hide tag will be parsed by Doclava. This hides this interface from
+   * implementing classes' documentation.
+   */
 
-    /**
-     * Track an HTTP response being satisfied by {@code source}.
-     * @hide
-     */
-    void trackResponse(ResponseSource source);
+  /**
+   * Track an HTTP response being satisfied by {@code source}.
+   * @hide
+   */
+  void trackResponse(ResponseSource source);
 
-    /**
-     * Track an conditional GET that was satisfied by this cache.
-     * @hide
-     */
-    void trackConditionalCacheHit();
+  /**
+   * Track an conditional GET that was satisfied by this cache.
+   * @hide
+   */
+  void trackConditionalCacheHit();
 
-    /**
-     * Updates stored HTTP headers using a hit on a conditional GET.
-     * @hide
-     */
-    void update(CacheResponse conditionalCacheHit, HttpURLConnection httpConnection);
+  /**
+   * Updates stored HTTP headers using a hit on a conditional GET.
+   * @hide
+   */
+  void update(CacheResponse conditionalCacheHit, HttpURLConnection httpConnection);
 }

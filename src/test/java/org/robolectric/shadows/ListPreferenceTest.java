@@ -21,49 +21,49 @@ public class ListPreferenceTest {
 	public void setUp() throws Exception {
 		listPreference = new ListPreference(new Activity());
 		shadow = Robolectric.shadowOf(listPreference);
-    }
-    
+  }
+
 	@Test
 	public void shouldInheritFromDialogPreference() {
-        assertThat(shadow).isInstanceOf(ShadowDialogPreference.class);
+    assertThat(shadow).isInstanceOf(ShadowDialogPreference.class);
 	}	
 	
 	@Test
 	public void shouldHaveEntries() {
 		CharSequence[] entries = { "this", "is", "only", "a", "test" };
 
-        assertThat(listPreference.getEntries()).isNull();
+    assertThat(listPreference.getEntries()).isNull();
 		listPreference.setEntries(entries);
-        assertThat(listPreference.getEntries()).isSameAs(entries);
+    assertThat(listPreference.getEntries()).isSameAs(entries);
 	}
 	
 	@Test
 	public void shouldSetEntriesByResourceId() {
-        assertThat(listPreference.getEntries()).isNull();
+    assertThat(listPreference.getEntries()).isNull();
 		listPreference.setEntries(R.array.greetings);
-        assertThat(listPreference.getEntries()).isNotNull();
+    assertThat(listPreference.getEntries()).isNotNull();
 	}
 	
 	@Test
 	public void shouldHaveEntryValues() {
 		CharSequence[] entryValues = { "this", "is", "only", "a", "test" };
 
-        assertThat(listPreference.getEntryValues()).isNull();
+    assertThat(listPreference.getEntryValues()).isNull();
 		listPreference.setEntryValues(entryValues);
-        assertThat(listPreference.getEntryValues()).isSameAs(entryValues);
+    assertThat(listPreference.getEntryValues()).isSameAs(entryValues);
 	}
 	
 	@Test
 	public void shouldSetEntryValuesByResourceId() {
-        assertThat(listPreference.getEntryValues()).isNull();
+    assertThat(listPreference.getEntryValues()).isNull();
 		listPreference.setEntryValues(R.array.greetings);
-        assertThat(listPreference.getEntryValues()).isNotNull();
+    assertThat(listPreference.getEntryValues()).isNotNull();
 	}
 	
 	@Test
 	public void shouldSetValue() {
-        assertThat(listPreference.getValue()).isNull();
+    assertThat(listPreference.getValue()).isNull();
 		listPreference.setValue("testing");
-        assertThat(listPreference.getValue()).isEqualTo("testing");
+    assertThat(listPreference.getValue()).isEqualTo("testing");
 	}
 }

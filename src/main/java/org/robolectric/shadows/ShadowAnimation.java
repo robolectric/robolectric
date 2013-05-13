@@ -15,142 +15,142 @@ import org.robolectric.annotation.RealObject;
 @Implements(Animation.class)
 public class ShadowAnimation {
 
-    private Animation.AnimationListener listener;
-    private Interpolator interpolator;
-    private boolean startFlag = false;
-    private long durationMillis = 0;
-    private int repeatCount;
-    private int repeatMode;
-    private long startOffset;
-    private int loadedFromResourceId = -1;
-    private boolean fillAfter;
+  private Animation.AnimationListener listener;
+  private Interpolator interpolator;
+  private boolean startFlag = false;
+  private long durationMillis = 0;
+  private int repeatCount;
+  private int repeatMode;
+  private long startOffset;
+  private int loadedFromResourceId = -1;
+  private boolean fillAfter;
 
-    @RealObject
-    private Animation realAnimation;
+  @RealObject
+  private Animation realAnimation;
 
-    @Implementation
-    public void setAnimationListener(Animation.AnimationListener l) {
-        listener = l;
-    }
+  @Implementation
+  public void setAnimationListener(Animation.AnimationListener l) {
+    listener = l;
+  }
 
-    @Implementation
-    public void start() {
-        startFlag = true;
-        if (listener != null) {
-            listener.onAnimationStart(realAnimation);
-        }
+  @Implementation
+  public void start() {
+    startFlag = true;
+    if (listener != null) {
+      listener.onAnimationStart(realAnimation);
     }
+  }
 
-    @Implementation
-    public void cancel() {
-        startFlag = false;
-        if (listener != null) {
-            listener.onAnimationEnd(realAnimation);
-        }
+  @Implementation
+  public void cancel() {
+    startFlag = false;
+    if (listener != null) {
+      listener.onAnimationEnd(realAnimation);
     }
+  }
 
-    @Implementation
-    public boolean hasStarted() {
-        return startFlag;
-    }
+  @Implementation
+  public boolean hasStarted() {
+    return startFlag;
+  }
 
-    @Implementation
-    public void setDuration(long durationMillis) {
-        this.durationMillis = durationMillis;
-    }
+  @Implementation
+  public void setDuration(long durationMillis) {
+    this.durationMillis = durationMillis;
+  }
 
-    @Implementation
-    public long getDuration() {
-        return durationMillis;
-    }
+  @Implementation
+  public long getDuration() {
+    return durationMillis;
+  }
 
-    @Implementation
-    public void setInterpolator(Interpolator interpolator) {
-        this.interpolator = interpolator;
-    }
+  @Implementation
+  public void setInterpolator(Interpolator interpolator) {
+    this.interpolator = interpolator;
+  }
 
-    @Implementation
-    public Interpolator getInterpolator() {
-        return interpolator;
-    }
-    
-    @Implementation
-    public void setRepeatCount(int repeatCount) {
-        this.repeatCount = repeatCount;
-    }
+  @Implementation
+  public Interpolator getInterpolator() {
+    return interpolator;
+  }
 
-    @Implementation
-    public int getRepeatCount() {
-        return repeatCount;
-    }
+  @Implementation
+  public void setRepeatCount(int repeatCount) {
+    this.repeatCount = repeatCount;
+  }
 
-    @Implementation
-    public void setRepeatMode(int repeatMode) {
-        this.repeatMode = repeatMode;
-    }
+  @Implementation
+  public int getRepeatCount() {
+    return repeatCount;
+  }
 
-    @Implementation
-    public int getRepeatMode() {
-        return repeatMode;
-    }
+  @Implementation
+  public void setRepeatMode(int repeatMode) {
+    this.repeatMode = repeatMode;
+  }
 
-    @Implementation
-    public void setStartOffset(long startOffset) {
-        this.startOffset = startOffset;
-    }
+  @Implementation
+  public int getRepeatMode() {
+    return repeatMode;
+  }
 
-    @Implementation
-    public long getStartOffset() {
-        return startOffset;
-    }
+  @Implementation
+  public void setStartOffset(long startOffset) {
+    this.startOffset = startOffset;
+  }
 
-    @Implementation
-    public void setFillAfter(boolean fillAfter) {
-        this.fillAfter = fillAfter;
-    }
+  @Implementation
+  public long getStartOffset() {
+    return startOffset;
+  }
 
-    @Implementation
-    public boolean getFillAfter() {
-        return fillAfter;
-    }
+  @Implementation
+  public void setFillAfter(boolean fillAfter) {
+    this.fillAfter = fillAfter;
+  }
 
-    /**
-     * Non-Android accessor.  Returns most recently set animation listener.
-     *
-     * @return
-     */
-    public Animation.AnimationListener getAnimationListener() {
-        return listener;
-    }
+  @Implementation
+  public boolean getFillAfter() {
+    return fillAfter;
+  }
 
-    /**
-     * Non-Android accessor.  Use to simulate repeat loops of animation.
-     */
-    public void invokeRepeat() {
-        if (listener != null) {
-            listener.onAnimationRepeat(realAnimation);
-        }
-    }
+  /**
+   * Non-Android accessor.  Returns most recently set animation listener.
+   *
+   * @return
+   */
+  public Animation.AnimationListener getAnimationListener() {
+    return listener;
+  }
 
-    /**
-     * Non-Android accessor.  Use to simulate end of animation.
-     */
-    public void invokeEnd() {
-        if (listener != null) {
-            listener.onAnimationEnd(realAnimation);
-        }
-        new ShadowAnimationBridge(realAnimation).applyTransformation(1.0f, new Transformation());
+  /**
+   * Non-Android accessor.  Use to simulate repeat loops of animation.
+   */
+  public void invokeRepeat() {
+    if (listener != null) {
+      listener.onAnimationRepeat(realAnimation);
     }
+  }
 
-    public void setLoadedFromResourceId(int loadedFromResourceId) {
-        this.loadedFromResourceId = loadedFromResourceId;
+  /**
+   * Non-Android accessor.  Use to simulate end of animation.
+   */
+  public void invokeEnd() {
+    if (listener != null) {
+      listener.onAnimationEnd(realAnimation);
     }
+    new ShadowAnimationBridge(realAnimation).applyTransformation(1.0f, new Transformation());
+  }
 
-    public int getLoadedFromResourceId() {
-        if (loadedFromResourceId == -1) {
-            throw new IllegalStateException("not loaded from a resource");
-        }
-        return loadedFromResourceId;
+  public void setLoadedFromResourceId(int loadedFromResourceId) {
+    this.loadedFromResourceId = loadedFromResourceId;
+  }
+
+  public int getLoadedFromResourceId() {
+    if (loadedFromResourceId == -1) {
+      throw new IllegalStateException("not loaded from a resource");
     }
+    return loadedFromResourceId;
+  }
 
 }

@@ -28,100 +28,100 @@ import static org.robolectric.util.TestUtil.*;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class DrawableResourceLoaderTest {
-    protected DrawableResourceLoader drawableResourceLoader;
-    private DrawableBuilder drawableBuilder;
-    private ResBundle<DrawableNode> drawableNodes;
-    private ResourceIndex resourceIndex;
-    private Resources resources;
+  protected DrawableResourceLoader drawableResourceLoader;
+  private DrawableBuilder drawableBuilder;
+  private ResBundle<DrawableNode> drawableNodes;
+  private ResourceIndex resourceIndex;
+  private Resources resources;
 
-    @Before
-    public void setup() throws Exception {
-        drawableNodes = new ResBundle<DrawableNode>();
-        drawableResourceLoader = new DrawableResourceLoader(drawableNodes);
-        new DocumentLoader(testResources()).load("drawable", drawableResourceLoader);
-        new DocumentLoader(testResources()).load("anim", drawableResourceLoader);
-        new DocumentLoader(systemResources()).load("drawable", drawableResourceLoader);
+  @Before
+  public void setup() throws Exception {
+    drawableNodes = new ResBundle<DrawableNode>();
+    drawableResourceLoader = new DrawableResourceLoader(drawableNodes);
+    new DocumentLoader(testResources()).load("drawable", drawableResourceLoader);
+    new DocumentLoader(testResources()).load("anim", drawableResourceLoader);
+    new DocumentLoader(systemResources()).load("drawable", drawableResourceLoader);
 
-        resourceIndex = new MergedResourceIndex(
-                new ResourceExtractor(testResources()),
-                new ResourceExtractor(getClass().getClassLoader()));
-        drawableBuilder = new DrawableBuilder(resourceIndex);
-        drawableResourceLoader.findDrawableResources(testResources());
-        drawableResourceLoader.findDrawableResources(systemResources());
-        resources = Robolectric.application.getResources();
-    }
+    resourceIndex = new MergedResourceIndex(
+        new ResourceExtractor(testResources()),
+        new ResourceExtractor(getClass().getClassLoader()));
+    drawableBuilder = new DrawableBuilder(resourceIndex);
+    drawableResourceLoader.findDrawableResources(testResources());
+    drawableResourceLoader.findDrawableResources(systemResources());
+    resources = Robolectric.application.getResources();
+  }
 
-    @Test
-    public void testProcessResourceXml() throws Exception {
-        drawableNodes = new ResBundle<DrawableNode>();
-        drawableResourceLoader = new DrawableResourceLoader(drawableNodes);
+  @Test
+  public void testProcessResourceXml() throws Exception {
+    drawableNodes = new ResBundle<DrawableNode>();
+    drawableResourceLoader = new DrawableResourceLoader(drawableNodes);
 
-        new DocumentLoader(testResources()).load("drawable", drawableResourceLoader);
-        drawableResourceLoader.findDrawableResources(testResources());
+    new DocumentLoader(testResources()).load("drawable", drawableResourceLoader);
+    drawableResourceLoader.findDrawableResources(testResources());
 
-        assertNotNull(drawableNodes.get(new ResName(TEST_PACKAGE, "drawable", "rainbow"), ""));
-        assertEquals(27, drawableNodes.size());
-    }
+    assertNotNull(drawableNodes.get(new ResName(TEST_PACKAGE, "drawable", "rainbow"), ""));
+    assertEquals(27, drawableNodes.size());
+  }
 
-    @Test
-    public void testGetDrawable_rainbow() throws Exception {
-        assertNotNull(Robolectric.getShadowApplication().getResources().getDrawable(R.drawable.rainbow));
-    }
+  @Test
+  public void testGetDrawable_rainbow() throws Exception {
+    assertNotNull(Robolectric.getShadowApplication().getResources().getDrawable(R.drawable.rainbow));
+  }
 
-    @Test
-    public void testGetDrawable_shouldWorkWithSystem() throws Exception {
-        assertNotNull(resources.getDrawable(android.R.drawable.ic_popup_sync));
-    }
+  @Test
+  public void testGetDrawable_shouldWorkWithSystem() throws Exception {
+    assertNotNull(resources.getDrawable(android.R.drawable.ic_popup_sync));
+  }
 
-    @Test
-    public void testGetDrawable_red() throws Exception {
-        assertNotNull(Resources.getSystem().getDrawable(android.R.drawable.ic_menu_help));
-    }
+  @Test
+  public void testGetDrawable_red() throws Exception {
+    assertNotNull(Resources.getSystem().getDrawable(android.R.drawable.ic_menu_help));
+  }
 
-    @Test
-    public void testDrawableTypes() {
-        assertThat(resources.getDrawable(R.drawable.l7_white)).isInstanceOf(BitmapDrawable.class);
-        assertThat(resources.getDrawable(R.drawable.l0_red)).isInstanceOf(BitmapDrawable.class);
-        assertThat(resources.getDrawable(R.drawable.nine_patch_drawable)).isInstanceOf(NinePatchDrawable.class);
-        assertThat(resources.getDrawable(R.drawable.rainbow)).isInstanceOf(LayerDrawable.class);
-    }
+  @Test
+  public void testDrawableTypes() {
+    assertThat(resources.getDrawable(R.drawable.l7_white)).isInstanceOf(BitmapDrawable.class);
+    assertThat(resources.getDrawable(R.drawable.l0_red)).isInstanceOf(BitmapDrawable.class);
+    assertThat(resources.getDrawable(R.drawable.nine_patch_drawable)).isInstanceOf(NinePatchDrawable.class);
+    assertThat(resources.getDrawable(R.drawable.rainbow)).isInstanceOf(LayerDrawable.class);
+  }
 
-    @Test
-    public void testLayerDrawable() {
-        Resources resources = Robolectric.getShadowApplication().getResources();
-        Drawable drawable = resources.getDrawable(R.drawable.rainbow);
-        assertThat(drawable).isInstanceOf(LayerDrawable.class);
-        assertEquals(8, ((LayerDrawable) drawable).getNumberOfLayers());
+  @Test
+  public void testLayerDrawable() {
+    Resources resources = Robolectric.getShadowApplication().getResources();
+    Drawable drawable = resources.getDrawable(R.drawable.rainbow);
+    assertThat(drawable).isInstanceOf(LayerDrawable.class);
+    assertEquals(8, ((LayerDrawable) drawable).getNumberOfLayers());
 
-        Configuration configuration = new Configuration();
-        shadowOf(configuration).overrideQualifiers("xlarge");
-        resources.updateConfiguration(configuration, new DisplayMetrics());
+    Configuration configuration = new Configuration();
+    shadowOf(configuration).overrideQualifiers("xlarge");
+    resources.updateConfiguration(configuration, new DisplayMetrics());
 
-        assertEquals(6, ((LayerDrawable) resources.getDrawable(R.drawable.rainbow)).getNumberOfLayers());
-    }
+    assertEquals(6, ((LayerDrawable) resources.getDrawable(R.drawable.rainbow)).getNumberOfLayers());
+  }
 
-    @Ignore("badly broken right now") @Test
-    public void testStateListDrawable() {
-        Drawable drawable = resources.getDrawable(R.drawable.state_drawable);
-        assertThat(drawable).isInstanceOf(StateListDrawable.class);
-        ShadowStateListDrawable shDrawable = shadowOf((StateListDrawable) drawable);
-        assertThat(shDrawable.getResourceIdForState(android.R.attr.state_selected)).isEqualTo(R.drawable.l0_red);
-        assertThat(shDrawable.getResourceIdForState(android.R.attr.state_pressed)).isEqualTo(R.drawable.l1_orange);
-        assertThat(shDrawable.getResourceIdForState(android.R.attr.state_focused)).isEqualTo(R.drawable.l2_yellow);
-        assertThat(shDrawable.getResourceIdForState(android.R.attr.state_checkable)).isEqualTo(R.drawable.l3_green);
-        assertThat(shDrawable.getResourceIdForState(android.R.attr.state_checked)).isEqualTo(R.drawable.l4_blue);
-        assertThat(shDrawable.getResourceIdForState(android.R.attr.state_enabled)).isEqualTo(R.drawable.l5_indigo);
-        assertThat(shDrawable.getResourceIdForState(android.R.attr.state_window_focused)).isEqualTo(R.drawable.l6_violet);
-        assertThat(shDrawable.getResourceIdForState(android.R.attr.state_active)).isEqualTo(R.drawable.l7_white);
-    }
+  @Ignore("badly broken right now") @Test
+  public void testStateListDrawable() {
+    Drawable drawable = resources.getDrawable(R.drawable.state_drawable);
+    assertThat(drawable).isInstanceOf(StateListDrawable.class);
+    ShadowStateListDrawable shDrawable = shadowOf((StateListDrawable) drawable);
+    assertThat(shDrawable.getResourceIdForState(android.R.attr.state_selected)).isEqualTo(R.drawable.l0_red);
+    assertThat(shDrawable.getResourceIdForState(android.R.attr.state_pressed)).isEqualTo(R.drawable.l1_orange);
+    assertThat(shDrawable.getResourceIdForState(android.R.attr.state_focused)).isEqualTo(R.drawable.l2_yellow);
+    assertThat(shDrawable.getResourceIdForState(android.R.attr.state_checkable)).isEqualTo(R.drawable.l3_green);
+    assertThat(shDrawable.getResourceIdForState(android.R.attr.state_checked)).isEqualTo(R.drawable.l4_blue);
+    assertThat(shDrawable.getResourceIdForState(android.R.attr.state_enabled)).isEqualTo(R.drawable.l5_indigo);
+    assertThat(shDrawable.getResourceIdForState(android.R.attr.state_window_focused)).isEqualTo(R.drawable.l6_violet);
+    assertThat(shDrawable.getResourceIdForState(android.R.attr.state_active)).isEqualTo(R.drawable.l7_white);
+  }
 
-    @Test
-    public void shouldCreateAnims() throws Exception {
-        assertInstanceOf(AnimationDrawable.class, resources.getDrawable(R.anim.test_anim_1));
-    }
+  @Test
+  public void shouldCreateAnims() throws Exception {
+    assertInstanceOf(AnimationDrawable.class, resources.getDrawable(R.anim.test_anim_1));
+  }
 
-    @Test
-    public void shouldCreateAnimsAndColors() throws Exception {
-        assertInstanceOf(ColorDrawable.class, resources.getDrawable(R.color.grey42));
-    }
+  @Test
+  public void shouldCreateAnimsAndColors() throws Exception {
+    assertInstanceOf(ColorDrawable.class, resources.getDrawable(R.color.grey42));
+  }
 }

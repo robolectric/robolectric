@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <integer name="meaning_of_life">42</integer>
-    <integer name="loneliest_number">1</integer>
-    <integer name="there_can_be_only">@integer/loneliest_number</integer>
-    <integer name="hex_int">0xFFFF0000</integer>
-    <integer name="reference_to_meaning_of_life">@meaning_of_life</integer>
+  <integer name="meaning_of_life">42</integer>
+  <integer name="loneliest_number">1</integer>
+  <integer name="there_can_be_only">@integer/loneliest_number</integer>
+  <integer name="hex_int">0xFFFF0000</integer>
+  <integer name="reference_to_meaning_of_life">@meaning_of_life</integer>
 </resources>

@@ -23,90 +23,90 @@ import static org.fest.assertions.api.Assertions.assertThat;
 @RunWith(TestRunners.WithDefaults.class)
 public class EditTextTest {
 
-    @Ignore("maybe not a valid test in the 2.0 world?") // todo 2.0-cleanup
-    @Test
-    public void shouldBeFocusableByDefault() throws Exception {
-        assertThat(new EditText(Robolectric.application).isFocusable()).isTrue();
-        assertThat(new EditText(Robolectric.application).isFocusableInTouchMode()).isFalse();
-    }
+  @Ignore("maybe not a valid test in the 2.0 world?") // todo 2.0-cleanup
+  @Test
+  public void shouldBeFocusableByDefault() throws Exception {
+    assertThat(new EditText(Robolectric.application).isFocusable()).isTrue();
+    assertThat(new EditText(Robolectric.application).isFocusableInTouchMode()).isFalse();
+  }
 
-    @Test
-    public void givenInitializingWithAttributeSet_whenMaxLengthDefined_thenRestrictTextLengthToMaxLength() {
-        int maxLength = anyInteger();
-        AttributeSet attrs = attributeSetWithMaxLength(maxLength);
-        EditText editText = new EditText(Robolectric.application, attrs);
-        String excessiveInput = stringOfLength(maxLength * 2);
+  @Test
+  public void givenInitializingWithAttributeSet_whenMaxLengthDefined_thenRestrictTextLengthToMaxLength() {
+    int maxLength = anyInteger();
+    AttributeSet attrs = attributeSetWithMaxLength(maxLength);
+    EditText editText = new EditText(Robolectric.application, attrs);
+    String excessiveInput = stringOfLength(maxLength * 2);
 
-        editText.setText(excessiveInput);
+    editText.setText(excessiveInput);
 
-        assertThat((CharSequence) editText.getText().toString()).isEqualTo(excessiveInput.subSequence(0, maxLength));
-    }
+    assertThat((CharSequence) editText.getText().toString()).isEqualTo(excessiveInput.subSequence(0, maxLength));
+  }
 
-    @Test
-    public void givenInitializingWithAttributeSet_whenMaxLengthNotDefined_thenTextLengthShouldHaveNoRestrictions() {
-        AttributeSet attrs = attributeSetWithoutMaxLength();
-        EditText editText = new EditText(Robolectric.application, attrs);
-        String input = anyString();
+  @Test
+  public void givenInitializingWithAttributeSet_whenMaxLengthNotDefined_thenTextLengthShouldHaveNoRestrictions() {
+    AttributeSet attrs = attributeSetWithoutMaxLength();
+    EditText editText = new EditText(Robolectric.application, attrs);
+    String input = anyString();
 
-        editText.setText(input);
+    editText.setText(input);
 
-        assertThat(editText.getText().toString()).isEqualTo(input);
-    }
+    assertThat(editText.getText().toString()).isEqualTo(input);
+  }
 
-    @Test
-    public void whenInitializingWithoutAttributeSet_thenTextLengthShouldHaveNoRestrictions() {
-        EditText editText = new EditText(Robolectric.application);
-        String input = anyString();
+  @Test
+  public void whenInitializingWithoutAttributeSet_thenTextLengthShouldHaveNoRestrictions() {
+    EditText editText = new EditText(Robolectric.application);
+    String input = anyString();
 
-        editText.setText(input);
+    editText.setText(input);
 
-        assertThat(editText.getText().toString()).isEqualTo(input);
-    }
+    assertThat(editText.getText().toString()).isEqualTo(input);
+  }
 
-    @Test
-    public void testSelectAll() {
-        EditText editText = new EditText(Robolectric.application);
-        editText.setText("foo");
+  @Test
+  public void testSelectAll() {
+    EditText editText = new EditText(Robolectric.application);
+    editText.setText("foo");
 
-        editText.selectAll();
+    editText.selectAll();
 
-        assertThat(editText.getSelectionStart()).isEqualTo(0);
-        assertThat(editText.getSelectionEnd()).isEqualTo(3);
-    }
+    assertThat(editText.getSelectionStart()).isEqualTo(0);
+    assertThat(editText.getSelectionEnd()).isEqualTo(3);
+  }
 
-    private String anyString() {
-        return stringOfLength(anyInteger());
-    }
+  private String anyString() {
+    return stringOfLength(anyInteger());
+  }
 
-    private String stringOfLength(int length) {
-        StringBuilder stringBuilder = new StringBuilder();
+  private String stringOfLength(int length) {
+    StringBuilder stringBuilder = new StringBuilder();
 
-        for (int i = 0; i < length; i++)
-            stringBuilder.append('x');
+    for (int i = 0; i < length; i++)
+      stringBuilder.append('x');
 
-        return stringBuilder.toString();
-    }
+    return stringBuilder.toString();
+  }
 
-    private int anyInteger() {
-        return new Random().nextInt(1000) + 1;
-    }
+  private int anyInteger() {
+    return new Random().nextInt(1000) + 1;
+  }
 
-    private AttributeSet attributeSetWithMaxLength(int maxLength) {
-        return new RoboAttributeSet(
-                asList(new Attribute(new ResName("android", "attr", "maxLength"), maxLength + "", "android")),
-                Robolectric.application.getResources(), null);
-    }
+  private AttributeSet attributeSetWithMaxLength(int maxLength) {
+    return new RoboAttributeSet(
+        asList(new Attribute(new ResName("android", "attr", "maxLength"), maxLength + "", "android")),
+        Robolectric.application.getResources(), null);
+  }
 
-    private AttributeSet attributeSetWithoutMaxLength() {
-        return new RoboAttributeSet(Arrays.<Attribute>asList(),
-                Robolectric.application.getResources(), null);
-    }
+  private AttributeSet attributeSetWithoutMaxLength() {
+    return new RoboAttributeSet(Arrays.<Attribute>asList(),
+        Robolectric.application.getResources(), null);
+  }
 
-    @Test
-    public void shouldGetHintFromXml() {
-        Context context = new Activity();
-        LayoutInflater inflater = LayoutInflater.from(context);
-        EditText editText = (EditText) inflater.inflate(R.layout.edit_text, null);
-        assertThat(editText.getHint().toString()).isEqualTo("Hello, Hint");
-    }
+  @Test
+  public void shouldGetHintFromXml() {
+    Context context = new Activity();
+    LayoutInflater inflater = LayoutInflater.from(context);
+    EditText editText = (EditText) inflater.inflate(R.layout.edit_text, null);
+    assertThat(editText.getHint().toString()).isEqualTo("Hello, Hint");
+  }
 }

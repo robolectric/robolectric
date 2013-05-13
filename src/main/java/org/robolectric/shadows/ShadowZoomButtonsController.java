@@ -12,21 +12,21 @@ import org.robolectric.annotation.Implements;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ZoomButtonsController.class)
 public class ShadowZoomButtonsController {
-    private ZoomButtonsController.OnZoomListener listener;
+  private ZoomButtonsController.OnZoomListener listener;
 
-    public void __constructor__(View ownerView) {
-    }
+  public void __constructor__(View ownerView) {
+  }
 
-    @Implementation
-    public void setOnZoomListener(ZoomButtonsController.OnZoomListener listener) {
-        this.listener = listener;
-    }
+  @Implementation
+  public void setOnZoomListener(ZoomButtonsController.OnZoomListener listener) {
+    this.listener = listener;
+  }
 
-    public void simulateZoomInButtonClick() {
-        listener.onZoom(true);
-    }
+  public void simulateZoomInButtonClick() {
+    listener.onZoom(true);
+  }
 
-    public void simulateZoomOutButtonClick() {
-        listener.onZoom(false);
-    }
+  public void simulateZoomOutButtonClick() {
+    listener.onZoom(false);
+  }
 }

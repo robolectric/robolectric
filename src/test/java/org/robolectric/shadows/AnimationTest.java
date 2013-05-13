@@ -30,110 +30,110 @@ public class AnimationTest {
 
 	@Test
 	public void startShouldInvokeStartCallback() throws Exception {
-        assertThat(listener.wasStartCalled).isFalse();
+    assertThat(listener.wasStartCalled).isFalse();
 		animation.start();
-        assertThat(listener.wasStartCalled).isTrue();
-        assertThat(listener.wasEndCalled).isFalse();
-        assertThat(listener.wasRepeatCalled).isFalse();
+    assertThat(listener.wasStartCalled).isTrue();
+    assertThat(listener.wasEndCalled).isFalse();
+    assertThat(listener.wasRepeatCalled).isFalse();
 	}
 	
 	@Test
 	public void cancelShouldInvokeEndCallback() throws Exception {
-        assertThat(listener.wasEndCalled).isFalse();
+    assertThat(listener.wasEndCalled).isFalse();
 		animation.cancel();
-        assertThat(listener.wasStartCalled).isFalse();
-        assertThat(listener.wasEndCalled).isTrue();
-        assertThat(listener.wasRepeatCalled).isFalse();
+    assertThat(listener.wasStartCalled).isFalse();
+    assertThat(listener.wasEndCalled).isTrue();
+    assertThat(listener.wasRepeatCalled).isFalse();
 	}
 	
 	@Test
 	public void invokeRepeatShouldInvokeRepeatCallback() throws Exception {
-        assertThat(listener.wasRepeatCalled).isFalse();
+    assertThat(listener.wasRepeatCalled).isFalse();
 		shadow.invokeRepeat();
-        assertThat(listener.wasStartCalled).isFalse();
-        assertThat(listener.wasEndCalled).isFalse();
-        assertThat(listener.wasRepeatCalled).isTrue();
+    assertThat(listener.wasStartCalled).isFalse();
+    assertThat(listener.wasEndCalled).isFalse();
+    assertThat(listener.wasRepeatCalled).isTrue();
 	}
 	
 	@Test
 	public void invokeEndShouldInvokeEndCallback() throws Exception {
-        assertThat(listener.wasEndCalled).isFalse();
+    assertThat(listener.wasEndCalled).isFalse();
 		shadow.invokeEnd();
-        assertThat(listener.wasStartCalled).isFalse();
-        assertThat(listener.wasEndCalled).isTrue();
-        assertThat(listener.wasRepeatCalled).isFalse();
+    assertThat(listener.wasStartCalled).isFalse();
+    assertThat(listener.wasEndCalled).isTrue();
+    assertThat(listener.wasRepeatCalled).isFalse();
 	}
 
-    @Test
+  @Test
 	public void simulateAnimationEndShouldInvokeApplyTransformationWith1() throws Exception {
-        assertThat(animation.interpolatedTime).isEqualTo(0f);
+    assertThat(animation.interpolatedTime).isEqualTo(0f);
 		shadow.invokeEnd();
-        assertThat(animation.interpolatedTime).isEqualTo(1f);
+    assertThat(animation.interpolatedTime).isEqualTo(1f);
 	}
 
 	@Test
 	public void testHasStarted() throws Exception {
-        assertThat(animation.hasStarted()).isFalse();
+    assertThat(animation.hasStarted()).isFalse();
 		animation.start();
-        assertThat(animation.hasStarted()).isTrue();
+    assertThat(animation.hasStarted()).isTrue();
 		animation.cancel();
-        assertThat(animation.hasStarted()).isFalse();
+    assertThat(animation.hasStarted()).isFalse();
 	}
 	
 	@Test
 	public void testDuration() throws Exception {
-        assertThat(animation.getDuration()).isNotEqualTo(1000l);
-        animation.setDuration(1000);
-        assertThat(animation.getDuration()).isEqualTo(1000l);
-    }
+    assertThat(animation.getDuration()).isNotEqualTo(1000l);
+    animation.setDuration(1000);
+    assertThat(animation.getDuration()).isEqualTo(1000l);
+  }
 	
 	@Test
 	public void testInterpolation() throws Exception {
-        assertThat(animation.getInterpolator()).isNull();
+    assertThat(animation.getInterpolator()).isNull();
 		LinearInterpolator i = new LinearInterpolator();
 		animation.setInterpolator(i);
-        assertThat((LinearInterpolator) animation.getInterpolator()).isSameAs(i);
+    assertThat((LinearInterpolator) animation.getInterpolator()).isSameAs(i);
 	}
 
-    @Test
-    public void testRepeatCount() throws Exception {
-        assertThat(animation.getRepeatCount()).isNotEqualTo(5);
-        animation.setRepeatCount(5);
-        assertThat(animation.getRepeatCount()).isEqualTo(5);
-    }
+  @Test
+  public void testRepeatCount() throws Exception {
+    assertThat(animation.getRepeatCount()).isNotEqualTo(5);
+    animation.setRepeatCount(5);
+    assertThat(animation.getRepeatCount()).isEqualTo(5);
+  }
 
-    @Test
-    public void testRepeatMode() throws Exception {
-        assertThat(animation.getRepeatMode()).isNotEqualTo(Animation.REVERSE);
-        animation.setRepeatMode(Animation.REVERSE);
-        assertThat(animation.getRepeatMode()).isEqualTo(Animation.REVERSE);
-    }
+  @Test
+  public void testRepeatMode() throws Exception {
+    assertThat(animation.getRepeatMode()).isNotEqualTo(Animation.REVERSE);
+    animation.setRepeatMode(Animation.REVERSE);
+    assertThat(animation.getRepeatMode()).isEqualTo(Animation.REVERSE);
+  }
 
-    @Test
-    public void testStartOffset() throws Exception {
-        assertThat(animation.getStartOffset()).isNotEqualTo(500l);
-        animation.setStartOffset(500l);
-        assertThat(animation.getStartOffset()).isEqualTo(500l);
-    }
-    
-    @Test(expected=IllegalStateException.class)
-    public void testNotLoadedFromResourceId() throws Exception {
-        shadow.getLoadedFromResourceId();
-    }
+  @Test
+  public void testStartOffset() throws Exception {
+    assertThat(animation.getStartOffset()).isNotEqualTo(500l);
+    animation.setStartOffset(500l);
+    assertThat(animation.getStartOffset()).isEqualTo(500l);
+  }
 
-    @Test
-    public void testLoadedFromResourceId() throws Exception {
-        shadow.setLoadedFromResourceId(R.anim.fade_in);
-        assertThat(shadow.getLoadedFromResourceId()).isEqualTo(R.anim.fade_in);
-    }
-    
+  @Test(expected=IllegalStateException.class)
+  public void testNotLoadedFromResourceId() throws Exception {
+    shadow.getLoadedFromResourceId();
+  }
+
+  @Test
+  public void testLoadedFromResourceId() throws Exception {
+    shadow.setLoadedFromResourceId(R.anim.fade_in);
+    assertThat(shadow.getLoadedFromResourceId()).isEqualTo(R.anim.fade_in);
+  }
+
 	private class TestAnimation extends Animation {
-        float interpolatedTime;
-        Transformation t;
+    float interpolatedTime;
+    Transformation t;
 
-        @Override protected void applyTransformation(float interpolatedTime, Transformation t) {
-            this.interpolatedTime = interpolatedTime;
-            this.t = t;
-        }
+    @Override protected void applyTransformation(float interpolatedTime, Transformation t) {
+      this.interpolatedTime = interpolatedTime;
+      this.t = t;
     }
+  }
 }

@@ -8,8 +8,8 @@ import org.robolectric.annotation.Implements;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(LinkMovementMethod.class)
 public class ShadowLinkMovementMethod {
-    @Implementation
-    public static MovementMethod getInstance() {
-        return new LinkMovementMethod();
-    }
+  @Implementation
+  public static MovementMethod getInstance() {
+    return new LinkMovementMethod();
+  }
 }

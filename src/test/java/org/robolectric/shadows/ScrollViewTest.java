@@ -10,12 +10,12 @@ import static junit.framework.Assert.assertEquals;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ScrollViewTest {
-    @Test
-    public void shouldSmoothScrollTo() throws Exception {
-        ScrollView scrollView = new ScrollView(Robolectric.application);
-        scrollView.smoothScrollTo(7, 6);
+  @Test
+  public void shouldSmoothScrollTo() throws Exception {
+    ScrollView scrollView = new ScrollView(Robolectric.application);
+    scrollView.smoothScrollTo(7, 6);
 
-        assertEquals(7, scrollView.getScrollX());
-        assertEquals(6, scrollView.getScrollY());
-    }
+    assertEquals(7, scrollView.getScrollX());
+    assertEquals(6, scrollView.getScrollY());
+  }
 }

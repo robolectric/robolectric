@@ -6,8 +6,8 @@ import org.robolectric.annotation.Implements;
 
 @Implements(NinePatch.class)
 public class ShadowNinePatch {
-    @Implementation
-    public static boolean isNinePatchChunk(byte[] chunk) {
-        return chunk != null;
-    }
+  @Implementation
+  public static boolean isNinePatchChunk(byte[] chunk) {
+    return chunk != null;
+  }
 }

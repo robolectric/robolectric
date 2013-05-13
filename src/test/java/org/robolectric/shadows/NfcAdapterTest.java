@@ -9,8 +9,8 @@ import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class NfcAdapterTest {
-    @Test
-    public void getDefaultAdapter_shouldReturnAnAdapter() throws Exception {
-        assertThat(NfcAdapter.getDefaultAdapter(null)).isInstanceOf(NfcAdapter.class);
-    }
+  @Test
+  public void getDefaultAdapter_shouldReturnAnAdapter() throws Exception {
+    assertThat(NfcAdapter.getDefaultAdapter(null)).isInstanceOf(NfcAdapter.class);
+  }
 }

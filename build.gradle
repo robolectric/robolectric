@@ -4,35 +4,35 @@ apply plugin: 'eclipse'
 defaultTasks 'test'
 
 repositories {
-    mavenCentral()
-    maven {
-        url new File(System.properties['user.home'], '.m2/repository').toURI().toURL()
-    }
+  mavenCentral()
+  maven {
+    url new File(System.properties['user.home'], '.m2/repository').toURI().toURL()
+  }
 }
 
 dependencies {
-    compile group: 'junit', name: 'junit-dep', version: '4.8.2'
-    compile group: 'org.objenesis', name: 'objenesis', version: '1.3'
-    compile group: 'org.xerial', name: 'sqlite-jdbc', version: '3.7.2'
-    compile group: 'com.h2database', name: 'h2', version: '1.2.147'
-    compile group: 'org.ow2.asm', name: 'asm', version: '4.1'
-    compile group: 'org.ow2.asm', name: 'asm-commons', version: '4.1'
-    compile group: 'org.ow2.asm', name: 'asm-util', version: '4.1'
-    compile group: 'org.ow2.asm', name: 'asm-analysis', version: '4.1'
-    compile group: 'commons-logging', name: 'commons-logging', version: '1.1.1'
-    compile group: 'commons-codec', name: 'commons-codec', version: '1.3'
-    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.0.3'
-    compile group: 'com.google.android', name: 'android', version: '4.1.1.4'
-    compile group: 'com.google.android.maps', name: 'maps', version: '16_r3'
-    compile group: 'com.google.android', name: 'support-v4', version: 'r7'
-    compile group: 'org.easytesting', name: 'fest-reflect', version: '1.4.1', {
-        exclude module : 'fest-util'
-    }
-    compile group: 'com.googlecode.catch-exception', name: 'catch-exception', version: '1.0.4'
-    compile group: 'com.intellij', name: 'annotations', version: '12.0'
-    compile group: 'org.apache.maven', name: 'maven-ant-tasks', version: '2.1.3'
-    
-    testCompile group: 'org.easytesting', name: 'fest-assert-core', version: '2.0M10'
-    testCompile group: 'org.mockito', name: 'mockito-core', version: '1.8.5'
+  compile group: 'junit', name: 'junit-dep', version: '4.8.2'
+  compile group: 'org.objenesis', name: 'objenesis', version: '1.3'
+  compile group: 'org.xerial', name: 'sqlite-jdbc', version: '3.7.2'
+  compile group: 'com.h2database', name: 'h2', version: '1.2.147'
+  compile group: 'org.ow2.asm', name: 'asm', version: '4.1'
+  compile group: 'org.ow2.asm', name: 'asm-commons', version: '4.1'
+  compile group: 'org.ow2.asm', name: 'asm-util', version: '4.1'
+  compile group: 'org.ow2.asm', name: 'asm-analysis', version: '4.1'
+  compile group: 'commons-logging', name: 'commons-logging', version: '1.1.1'
+  compile group: 'commons-codec', name: 'commons-codec', version: '1.3'
+  compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.0.3'
+  compile group: 'com.google.android', name: 'android', version: '4.1.1.4'
+  compile group: 'com.google.android.maps', name: 'maps', version: '16_r3'
+  compile group: 'com.google.android', name: 'support-v4', version: 'r7'
+  compile group: 'org.easytesting', name: 'fest-reflect', version: '1.4.1', {
+    exclude module : 'fest-util'
+  }
+  compile group: 'com.googlecode.catch-exception', name: 'catch-exception', version: '1.0.4'
+  compile group: 'com.intellij', name: 'annotations', version: '12.0'
+  compile group: 'org.apache.maven', name: 'maven-ant-tasks', version: '2.1.3'
+
+  testCompile group: 'org.easytesting', name: 'fest-assert-core', version: '2.0M10'
+  testCompile group: 'org.mockito', name: 'mockito-core', version: '1.8.5'
 
 }

@@ -1,31 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.Robolectric" parent="@android:style/Theme">
-        <item name="android:buttonStyle">@style/Widget.Robolectric.Button</item>
-    </style>
+  <style name="Theme.Robolectric" parent="@android:style/Theme">
+    <item name="android:buttonStyle">@style/Widget.Robolectric.Button</item>
+  </style>
 
-    <style name="Theme.AnotherTheme" parent="@style/Theme.Robolectric">
-        <item name="android:buttonStyle">@style/Widget.AnotherTheme.Button</item>
-        <item name="logoWidth">?attr/averageSheepWidth</item>
-        <item name="logoHeight">?android:attr/listItemPreferredHeight</item>
-        <item name="averageSheepWidth">42px</item>
-    </style>
+  <style name="Theme.AnotherTheme" parent="@style/Theme.Robolectric">
+    <item name="android:buttonStyle">@style/Widget.AnotherTheme.Button</item>
+    <item name="logoWidth">?attr/averageSheepWidth</item>
+    <item name="logoHeight">?android:attr/listItemPreferredHeight</item>
+    <item name="averageSheepWidth">42px</item>
+  </style>
 
 
 
-    <style name="Widget.Robolectric.Button" parent="@android:style/Widget.Button">
-        <item name="android:background">#ff00ff00</item>
-    </style>
+  <style name="Widget.Robolectric.Button" parent="@android:style/Widget.Button">
+    <item name="android:background">#ff00ff00</item>
+  </style>
 
-    <style name="Widget.AnotherTheme.Button" parent="@android:style/Widget.Button">
-        <item name="android:background">#ffff0000</item>
-        <item name="android:minWidth">?attr/logoWidth</item>
-        <item name="android:minWeight">?attr/logoHeight</item>
-    </style>
+  <style name="Widget.AnotherTheme.Button" parent="@android:style/Widget.Button">
+    <item name="android:background">#ffff0000</item>
+    <item name="android:minWidth">?attr/logoWidth</item>
+    <item name="android:minWeight">?attr/logoHeight</item>
+  </style>
 
-    <style name="Widget.AnotherTheme.Button.Blarf"/>
+  <style name="Widget.AnotherTheme.Button.Blarf"/>
 
-    <style name="MyCustomView">
-        <item name="aspectRatioEnabled">true</item>
-    </style>
+  <style name="MyCustomView">
+    <item name="aspectRatioEnabled">true</item>
+  </style>
 </resources>

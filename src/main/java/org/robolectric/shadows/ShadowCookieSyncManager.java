@@ -12,21 +12,21 @@ import org.robolectric.annotation.Implements;
 @Implements(CookieSyncManager.class)
 public class ShadowCookieSyncManager extends ShadowWebSyncManager {
 
-    private static CookieSyncManager sRef;
+  private static CookieSyncManager sRef;
 
-    @Implementation
-    public static synchronized CookieSyncManager createInstance(Context ctx) {
-        if (sRef == null) {
-            sRef = Robolectric.newInstanceOf(CookieSyncManager.class);
-        }
-        return sRef;
+  @Implementation
+  public static synchronized CookieSyncManager createInstance(Context ctx) {
+    if (sRef == null) {
+      sRef = Robolectric.newInstanceOf(CookieSyncManager.class);
     }
+    return sRef;
+  }
 
-    @Implementation
-    public static CookieSyncManager getInstance() {
-        if (sRef == null) {
-            throw new IllegalStateException("createInstance must be called first");
-        }
-        return sRef;
+  @Implementation
+  public static CookieSyncManager getInstance() {
+    if (sRef == null) {
+      throw new IllegalStateException("createInstance must be called first");
     }
+    return sRef;
+  }
 }

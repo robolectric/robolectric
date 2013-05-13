@@ -24,13 +24,13 @@ public class ShadowSmsManager {
 	@Implementation
 	public void sendTextMessage(
 			String destinationAddress, String scAddress, String text,
-            PendingIntent sentIntent, PendingIntent deliveryIntent) {
+      PendingIntent sentIntent, PendingIntent deliveryIntent) {
 
 		if (TextUtils.isEmpty(destinationAddress))
-            throw new IllegalArgumentException("Invalid destinationAddress");
+      throw new IllegalArgumentException("Invalid destinationAddress");
 
-        if (TextUtils.isEmpty(text))
-            throw new IllegalArgumentException("Invalid message body");
+    if (TextUtils.isEmpty(text))
+      throw new IllegalArgumentException("Invalid message body");
 		
 		lastTextSmsParams = new TextSmsParams(
 			destinationAddress,
@@ -44,9 +44,9 @@ public class ShadowSmsManager {
 		return lastTextSmsParams;
 	}
 
-    public void clearLastSentTextMessageParams() {
-        lastTextSmsParams = null;
-    }
+  public void clearLastSentTextMessageParams() {
+    lastTextSmsParams = null;
+  }
 	
 	public class TextSmsParams {
 		private String destinationAddress;
@@ -57,7 +57,7 @@ public class ShadowSmsManager {
 		
 		public TextSmsParams(
 			String destinationAddress, String scAddress, String text,
-            PendingIntent sentIntent, PendingIntent deliveryIntent) {
+      PendingIntent sentIntent, PendingIntent deliveryIntent) {
 			this.destinationAddress = destinationAddress;
 			this.scAddress = scAddress;
 			this.text = text;

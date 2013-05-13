@@ -11,11 +11,11 @@ import static org.junit.Assert.assertSame;
 @RunWith(TestRunners.WithDefaults.class)
 public class NdefMessageTest {
 
-    @Test
-    public void getRecords() throws Exception {
-        NdefRecord[] ndefRecords = {new NdefRecord("mumble".getBytes())};
-        NdefMessage ndefMessage = new NdefMessage(ndefRecords);
+  @Test
+  public void getRecords() throws Exception {
+    NdefRecord[] ndefRecords = {new NdefRecord("mumble".getBytes())};
+    NdefMessage ndefMessage = new NdefMessage(ndefRecords);
 
-        assertSame(ndefMessage.getRecords(), ndefRecords);
-    }
+    assertSame(ndefMessage.getRecords(), ndefRecords);
+  }
 }

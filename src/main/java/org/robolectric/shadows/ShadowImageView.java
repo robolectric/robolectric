@@ -11,85 +11,85 @@ import org.robolectric.annotation.Implements;
 
 @Implements(value = ImageView.class)
 public class ShadowImageView extends ShadowView {
-    private Drawable imageDrawable;
-    private Bitmap imageBitmap;
-    private ImageView.ScaleType scaleType;
-    private Matrix matrix;
-    private int imageLevel;
+  private Drawable imageDrawable;
+  private Bitmap imageBitmap;
+  private ImageView.ScaleType scaleType;
+  private Matrix matrix;
+  private int imageLevel;
 
-    @Implementation
-    public void setImageBitmap(Bitmap imageBitmap) {
-        setImageDrawable(new BitmapDrawable(imageBitmap));
-        this.imageBitmap = imageBitmap;
-    }
+  @Implementation
+  public void setImageBitmap(Bitmap imageBitmap) {
+    setImageDrawable(new BitmapDrawable(imageBitmap));
+    this.imageBitmap = imageBitmap;
+  }
 
-    @Deprecated
-    public Bitmap getImageBitmap() {
-        return imageBitmap;
-    }
+  @Deprecated
+  public Bitmap getImageBitmap() {
+    return imageBitmap;
+  }
 
-    @Implementation
-    public void setImageDrawable(Drawable drawable) {
-        this.imageDrawable = drawable;
-    }
+  @Implementation
+  public void setImageDrawable(Drawable drawable) {
+    this.imageDrawable = drawable;
+  }
 
-    @Implementation
-    public void setImageResource(int resId) {
-        setImageDrawable(buildDrawable(resId));
-    }
+  @Implementation
+  public void setImageResource(int resId) {
+    setImageDrawable(buildDrawable(resId));
+  }
 
-    @Implementation
-    public ImageView.ScaleType getScaleType() {
-        return scaleType;
-    }
+  @Implementation
+  public ImageView.ScaleType getScaleType() {
+    return scaleType;
+  }
 
-    @Implementation
-    public void setScaleType(ImageView.ScaleType scaleType) {
-        this.scaleType = scaleType;
-    }
+  @Implementation
+  public void setScaleType(ImageView.ScaleType scaleType) {
+    this.scaleType = scaleType;
+  }
 
-    @Implementation
-    public Drawable getDrawable() {
-        return imageDrawable;
-    }
+  @Implementation
+  public Drawable getDrawable() {
+    return imageDrawable;
+  }
 
-    @Implementation
-    public void setImageMatrix(Matrix matrix) {
-        this.matrix = new Matrix(matrix);
-    }
+  @Implementation
+  public void setImageMatrix(Matrix matrix) {
+    this.matrix = new Matrix(matrix);
+  }
 
-    @Implementation
-    public Matrix getImageMatrix() {
-        return matrix;
-    }
+  @Implementation
+  public Matrix getImageMatrix() {
+    return matrix;
+  }
 
-    @Implementation
-    public void draw(Canvas canvas) {
-        if (imageDrawable != null) {
-            imageDrawable.draw(canvas);
-        }
+  @Implementation
+  public void draw(Canvas canvas) {
+    if (imageDrawable != null) {
+      imageDrawable.draw(canvas);
     }
+  }
 
-    private void applyImageAttribute() {
-        String source = attributeSet.getAttributeValue(ANDROID_NS, "src");
-        if (source != null) {
-            if (source.startsWith("@drawable/")) {
-                setImageResource(attributeSet.getAttributeResourceValue(ANDROID_NS, "src", 0));
-            }
-        }
+  private void applyImageAttribute() {
+    String source = attributeSet.getAttributeValue(ANDROID_NS, "src");
+    if (source != null) {
+      if (source.startsWith("@drawable/")) {
+        setImageResource(attributeSet.getAttributeResourceValue(ANDROID_NS, "src", 0));
+      }
     }
+  }
 
-    @Implementation
-    public void setImageLevel(int imageLevel) {
-        this.imageLevel = imageLevel;
-    }
+  @Implementation
+  public void setImageLevel(int imageLevel) {
+    this.imageLevel = imageLevel;
+  }
 
-    /**
-     * Non-Android accessor.
-     *
-     * @return the imageLevel set in {@code setImageLevel(int)}
-     */
-    public int getImageLevel() {
-        return imageLevel;
-    }
+  /**
+   * Non-Android accessor.
+   *
+   * @return the imageLevel set in {@code setImageLevel(int)}
+   */
+  public int getImageLevel() {
+    return imageLevel;
+  }
 }

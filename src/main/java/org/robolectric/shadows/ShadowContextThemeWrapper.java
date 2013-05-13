@@ -9,9 +9,9 @@ import static org.fest.reflect.core.Reflection.method;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(value = ContextThemeWrapper.class)
 public class ShadowContextThemeWrapper extends ShadowContextWrapper {
-    @RealObject private ContextThemeWrapper realContextThemeWrapper;
+  @RealObject private ContextThemeWrapper realContextThemeWrapper;
 
-    public Integer callGetThemeResId() {
-        return method("getThemeResId").withReturnType(int.class).in(realContextThemeWrapper).invoke();
-    }
+  public Integer callGetThemeResId() {
+    return method("getThemeResId").withReturnType(int.class).in(realContextThemeWrapper).invoke();
+  }
 }

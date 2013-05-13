@@ -33,140 +33,140 @@ import static org.robolectric.Robolectric.shadowOf;
 @RunWith(TestRunners.WithDefaults.class)
 public class RobolectricTest {
 
-    private PrintStream originalSystemOut;
-    private ByteArrayOutputStream buff;
-    private String defaultLineSeparator;
+  private PrintStream originalSystemOut;
+  private ByteArrayOutputStream buff;
+  private String defaultLineSeparator;
 
-    @Before
-    public void setUp() {
-        originalSystemOut = System.out;
-        defaultLineSeparator = System.getProperty("line.separator");
+  @Before
+  public void setUp() {
+    originalSystemOut = System.out;
+    defaultLineSeparator = System.getProperty("line.separator");
 
-        System.setProperty("line.separator", "\n");
-        buff = new ByteArrayOutputStream();
-        PrintStream testOut = new PrintStream(buff);
-        System.setOut(testOut);
+    System.setProperty("line.separator", "\n");
+    buff = new ByteArrayOutputStream();
+    PrintStream testOut = new PrintStream(buff);
+    System.setOut(testOut);
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    System.setProperty("line.separator", defaultLineSeparator);
+    System.setOut(originalSystemOut);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void clickOn_shouldThrowIfViewIsDisabled() throws Exception {
+    View view = new View(Robolectric.application);
+    view.setEnabled(false);
+    Robolectric.clickOn(view);
+  }
+
+  @Test
+  public void shouldResetBackgroundSchedulerBeforeTests() throws Exception {
+    assertThat(Robolectric.getBackgroundScheduler().isPaused()).isFalse();
+    Robolectric.getBackgroundScheduler().pause();
+  }
+
+  @Test
+  public void shouldResetBackgroundSchedulerAfterTests() throws Exception {
+    assertThat(Robolectric.getBackgroundScheduler().isPaused()).isFalse();
+    Robolectric.getBackgroundScheduler().pause();
+  }
+
+  @Test
+  public void httpRequestWasSent_ReturnsTrueIfRequestWasSent() throws IOException, HttpException {
+    makeRequest("http://example.com");
+
+    assertTrue(Robolectric.httpRequestWasMade());
+  }
+
+  @Test
+  public void httpRequestWasMade_ReturnsFalseIfNoRequestWasMade() {
+    assertFalse(Robolectric.httpRequestWasMade());
+  }
+
+  @Test
+  public void httpRequestWasMade_returnsTrueIfRequestMatchingGivenRuleWasMade() throws IOException, HttpException {
+    makeRequest("http://example.com");
+    assertTrue(Robolectric.httpRequestWasMade("http://example.com"));
+  }
+
+  @Test
+  public void httpRequestWasMade_returnsFalseIfNoRequestMatchingGivenRuleWasMAde() throws IOException, HttpException {
+    makeRequest("http://example.com");
+    assertFalse(Robolectric.httpRequestWasMade("http://example.org"));
+  }
+
+  @Test
+  public void idleMainLooper_executesScheduledTasks() {
+    final boolean[] wasRun = new boolean[]{false};
+    new Handler().postDelayed(new Runnable() {
+      @Override
+      public void run() {
+        wasRun[0] = true;
+      }
+    }, 2000);
+
+    assertFalse(wasRun[0]);
+    Robolectric.idleMainLooper(1999);
+    assertFalse(wasRun[0]);
+    Robolectric.idleMainLooper(1);
+    assertTrue(wasRun[0]);
+  }
+
+  @Test
+  public void shouldUseSetDensityForContexts() throws Exception {
+    assertThat(new Activity().getResources().getDisplayMetrics().density).isEqualTo(1.0f);
+    Robolectric.setDisplayMetricsDensity(1.5f);
+    assertThat(new Activity().getResources().getDisplayMetrics().density).isEqualTo(1.5f);
+  }
+
+  @Test
+  public void shouldUseSetDisplayForContexts() throws Exception {
+    assertThat(new Activity().getResources().getDisplayMetrics().widthPixels).isEqualTo(480);
+    assertThat(new Activity().getResources().getDisplayMetrics().heightPixels).isEqualTo(800);
+
+    Display display = Robolectric.newInstanceOf(Display.class);
+    ShadowDisplay shadowDisplay = shadowOf(display);
+    shadowDisplay.setWidth(100);
+    shadowDisplay.setHeight(200);
+    Robolectric.setDefaultDisplay(display);
+
+    assertThat(new Activity().getResources().getDisplayMetrics().widthPixels).isEqualTo(100);
+    assertThat(new Activity().getResources().getDisplayMetrics().heightPixels).isEqualTo(200);
+  }
+
+  @Test
+  public void clickOn_shouldCallClickListener() throws Exception {
+    View view = new View(Robolectric.application);
+    shadowOf(view).setMyParent(new StubViewRoot());
+    TestOnClickListener testOnClickListener = new TestOnClickListener();
+    view.setOnClickListener(testOnClickListener);
+    Robolectric.clickOn(view);
+    assertTrue(testOnClickListener.clicked);
+  }
+
+  @Implements(View.class)
+  public static class TestShadowView {
+    @SuppressWarnings({"UnusedDeclaration"})
+    @Implementation
+    public Context getContext() {
+      return null;
     }
+  }
 
-    @After
-    public void tearDown() throws Exception {
-        System.setProperty("line.separator", defaultLineSeparator);
-        System.setOut(originalSystemOut);
-    }
+  private void makeRequest(String uri) throws HttpException, IOException {
+    Robolectric.addPendingHttpResponse(200, "a happy response body");
 
-    @Test(expected = RuntimeException.class)
-    public void clickOn_shouldThrowIfViewIsDisabled() throws Exception {
-        View view = new View(Robolectric.application);
-        view.setEnabled(false);
-        Robolectric.clickOn(view);
-    }
+    ConnectionKeepAliveStrategy connectionKeepAliveStrategy = new ConnectionKeepAliveStrategy() {
+      @Override
+      public long getKeepAliveDuration(HttpResponse httpResponse, HttpContext httpContext) {
+        return 0;
+      }
 
-    @Test
-    public void shouldResetBackgroundSchedulerBeforeTests() throws Exception {
-        assertThat(Robolectric.getBackgroundScheduler().isPaused()).isFalse();
-        Robolectric.getBackgroundScheduler().pause();
-    }
+    };
+    DefaultRequestDirector requestDirector = new DefaultRequestDirector(null, null, null, connectionKeepAliveStrategy, null, null, null, null, null, null, null, null);
 
-    @Test
-    public void shouldResetBackgroundSchedulerAfterTests() throws Exception {
-        assertThat(Robolectric.getBackgroundScheduler().isPaused()).isFalse();
-        Robolectric.getBackgroundScheduler().pause();
-    }
-
-    @Test
-    public void httpRequestWasSent_ReturnsTrueIfRequestWasSent() throws IOException, HttpException {
-        makeRequest("http://example.com");
-
-        assertTrue(Robolectric.httpRequestWasMade());
-    }
-
-    @Test
-    public void httpRequestWasMade_ReturnsFalseIfNoRequestWasMade() {
-        assertFalse(Robolectric.httpRequestWasMade());
-    }
-
-    @Test
-    public void httpRequestWasMade_returnsTrueIfRequestMatchingGivenRuleWasMade() throws IOException, HttpException {
-        makeRequest("http://example.com");
-        assertTrue(Robolectric.httpRequestWasMade("http://example.com"));
-    }
-
-    @Test
-    public void httpRequestWasMade_returnsFalseIfNoRequestMatchingGivenRuleWasMAde() throws IOException, HttpException {
-        makeRequest("http://example.com");
-        assertFalse(Robolectric.httpRequestWasMade("http://example.org"));
-    }
-
-    @Test
-    public void idleMainLooper_executesScheduledTasks() {
-        final boolean[] wasRun = new boolean[]{false};
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                wasRun[0] = true;
-            }
-        }, 2000);
-
-        assertFalse(wasRun[0]);
-        Robolectric.idleMainLooper(1999);
-        assertFalse(wasRun[0]);
-        Robolectric.idleMainLooper(1);
-        assertTrue(wasRun[0]);
-    }
-
-    @Test
-    public void shouldUseSetDensityForContexts() throws Exception {
-        assertThat(new Activity().getResources().getDisplayMetrics().density).isEqualTo(1.0f);
-        Robolectric.setDisplayMetricsDensity(1.5f);
-        assertThat(new Activity().getResources().getDisplayMetrics().density).isEqualTo(1.5f);
-    }
-
-    @Test
-    public void shouldUseSetDisplayForContexts() throws Exception {
-        assertThat(new Activity().getResources().getDisplayMetrics().widthPixels).isEqualTo(480);
-        assertThat(new Activity().getResources().getDisplayMetrics().heightPixels).isEqualTo(800);
-
-        Display display = Robolectric.newInstanceOf(Display.class);
-        ShadowDisplay shadowDisplay = shadowOf(display);
-        shadowDisplay.setWidth(100);
-        shadowDisplay.setHeight(200);
-        Robolectric.setDefaultDisplay(display);
-
-        assertThat(new Activity().getResources().getDisplayMetrics().widthPixels).isEqualTo(100);
-        assertThat(new Activity().getResources().getDisplayMetrics().heightPixels).isEqualTo(200);
-    }
-
-    @Test
-    public void clickOn_shouldCallClickListener() throws Exception {
-        View view = new View(Robolectric.application);
-        shadowOf(view).setMyParent(new StubViewRoot());
-        TestOnClickListener testOnClickListener = new TestOnClickListener();
-        view.setOnClickListener(testOnClickListener);
-        Robolectric.clickOn(view);
-        assertTrue(testOnClickListener.clicked);
-    }
-
-    @Implements(View.class)
-    public static class TestShadowView {
-        @SuppressWarnings({"UnusedDeclaration"})
-        @Implementation
-        public Context getContext() {
-            return null;
-        }
-    }
-
-    private void makeRequest(String uri) throws HttpException, IOException {
-        Robolectric.addPendingHttpResponse(200, "a happy response body");
-
-        ConnectionKeepAliveStrategy connectionKeepAliveStrategy = new ConnectionKeepAliveStrategy() {
-            @Override
-            public long getKeepAliveDuration(HttpResponse httpResponse, HttpContext httpContext) {
-                return 0;
-            }
-
-        };
-        DefaultRequestDirector requestDirector = new DefaultRequestDirector(null, null, null, connectionKeepAliveStrategy, null, null, null, null, null, null, null, null);
-
-        requestDirector.execute(null, new HttpGet(uri), null);
-    }
+    requestDirector.execute(null, new HttpGet(uri), null);
+  }
 }

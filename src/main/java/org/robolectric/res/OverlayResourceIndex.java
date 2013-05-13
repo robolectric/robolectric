@@ -6,60 +6,60 @@ import java.util.List;
 import java.util.Map;
 
 class OverlayResourceIndex extends ResourceIndex {
-    private final String packageName;
+  private final String packageName;
 
-    public OverlayResourceIndex(String packageName, List<PackageResourceLoader> subResourceLoaders) {
-        this(packageName, map(subResourceLoaders));
+  public OverlayResourceIndex(String packageName, List<PackageResourceLoader> subResourceLoaders) {
+    this(packageName, map(subResourceLoaders));
+  }
+
+  private static ResourceIndex[] map(List<PackageResourceLoader> subResourceLoaders) {
+    ResourceIndex[] resourceIndexes = new ResourceIndex[subResourceLoaders.size()];
+    for (int i = 0; i < subResourceLoaders.size(); i++) {
+      resourceIndexes[i] = subResourceLoaders.get(i).getResourceIndex();
     }
+    return resourceIndexes;
+  }
 
-    private static ResourceIndex[] map(List<PackageResourceLoader> subResourceLoaders) {
-        ResourceIndex[] resourceIndexes = new ResourceIndex[subResourceLoaders.size()];
-        for (int i = 0; i < subResourceLoaders.size(); i++) {
-            resourceIndexes[i] = subResourceLoaders.get(i).getResourceIndex();
-        }
-        return resourceIndexes;
+  public OverlayResourceIndex(String packageName, ResourceIndex... subResourceIndexes) {
+    this.packageName = packageName;
+
+    final ResEntries resEntries = new ResEntries();
+    for (ResourceIndex subResourceIndex : subResourceIndexes) {
+      for (Map.Entry<ResName, Integer> entry : subResourceIndex.resourceNameToId.entrySet()) {
+        ResName resName = entry.getKey();
+        int value = entry.getValue();
+        ResName localResName = resName.withPackageName(packageName);
+        if (OverlayResourceLoader.DEBUG) resEntries.add(localResName, resName, value);
+        resourceNameToId.put(localResName, value);
+        resourceIdToResName.put(value, localResName);
+      }
     }
-
-    public OverlayResourceIndex(String packageName, ResourceIndex... subResourceIndexes) {
-        this.packageName = packageName;
-
-        final ResEntries resEntries = new ResEntries();
-        for (ResourceIndex subResourceIndex : subResourceIndexes) {
-            for (Map.Entry<ResName, Integer> entry : subResourceIndex.resourceNameToId.entrySet()) {
-                ResName resName = entry.getKey();
-                int value = entry.getValue();
-                ResName localResName = resName.withPackageName(packageName);
-                if (OverlayResourceLoader.DEBUG) resEntries.add(localResName, resName, value);
-                resourceNameToId.put(localResName, value);
-                resourceIdToResName.put(value, localResName);
-            }
-        }
 
 //        if (OverlayResourceLoader.DEBUG) resEntries.check(subResourceIndexes);
+  }
+
+  @Override
+  public Integer getResourceId(ResName resName) {
+    return resourceNameToId.get(resName.withPackageName(packageName));
+  }
+
+  @Override
+  public ResName getResName(int resourceId) {
+    ResName resName = resourceIdToResName.get(resourceId);
+    return resName == null ? null : resName.withPackageName(packageName);
+  }
+
+  class ResEntries {
+    private final Map<ResName, List<ResEntry>> resEntries = new HashMap<ResName, List<ResEntry>>();
+
+    public void add(ResName localResName, ResName resName, int value) {
+      List<ResEntry> resEntryList = resEntries.get(localResName);
+      if (resEntryList == null) {
+        resEntryList = new ArrayList<ResEntry>();
+        resEntries.put(localResName, resEntryList);
+      }
+      resEntryList.add(new ResEntry(resName, value));
     }
-
-    @Override
-    public Integer getResourceId(ResName resName) {
-        return resourceNameToId.get(resName.withPackageName(packageName));
-    }
-
-    @Override
-    public ResName getResName(int resourceId) {
-        ResName resName = resourceIdToResName.get(resourceId);
-        return resName == null ? null : resName.withPackageName(packageName);
-    }
-
-    class ResEntries {
-        private final Map<ResName, List<ResEntry>> resEntries = new HashMap<ResName, List<ResEntry>>();
-
-        public void add(ResName localResName, ResName resName, int value) {
-            List<ResEntry> resEntryList = resEntries.get(localResName);
-            if (resEntryList == null) {
-                resEntryList = new ArrayList<ResEntry>();
-                resEntries.put(localResName, resEntryList);
-            }
-            resEntryList.add(new ResEntry(resName, value));
-        }
 
 //        public void check(ResourceIndex... subResourceIndex) {
 //            for (Map.Entry<ResName, List<ResEntry>> entries : resEntries.entrySet()) {
@@ -107,21 +107,21 @@ class OverlayResourceIndex extends ResourceIndex {
 //            }
 //            throw new RuntimeException("couldn't find " + rClass.getName() + "." + name);
 //        }
-    }
+  }
 
-    class ResEntry {
-        private final ResName resName;
-        private final int value;
+  class ResEntry {
+    private final ResName resName;
+    private final int value;
 
-        public ResEntry(ResName resName, int value) {
-            this.resName = resName;
-            this.value = value;
-        }
+    public ResEntry(ResName resName, int value) {
+      this.resName = resName;
+      this.value = value;
     }
+  }
 
-    @Override public String toString() {
-        return "OverlayResourceIndex{" +
-                "package='" + packageName + '\'' +
-                '}';
-    }
+  @Override public String toString() {
+    return "OverlayResourceIndex{" +
+        "package='" + packageName + '\'' +
+        '}';
+  }
 }

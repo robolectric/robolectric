@@ -16,37 +16,37 @@ import org.robolectric.annotation.Implements;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(value = MapActivity.class)
 public class ShadowMapActivity extends ShadowActivity {
-    private ConnectivityBroadcastReceiver connectivityBroadcastReceiver = new ConnectivityBroadcastReceiver();
+  private ConnectivityBroadcastReceiver connectivityBroadcastReceiver = new ConnectivityBroadcastReceiver();
 
-    public void __constructor__() {
-    }
+  public void __constructor__() {
+  }
 
-    @Implementation
-    public void onCreate(android.os.Bundle bundle) {
-        // todo: this should call Activity#onCreate(), but also invoke any shadows.
-    }
+  @Implementation
+  public void onCreate(android.os.Bundle bundle) {
+    // todo: this should call Activity#onCreate(), but also invoke any shadows.
+  }
 
-    @Implementation
-    public void onResume() {
-        registerReceiver(connectivityBroadcastReceiver, new IntentFilter());
-    }
+  @Implementation
+  public void onResume() {
+    registerReceiver(connectivityBroadcastReceiver, new IntentFilter());
+  }
 
-    @Implementation
-    public void onPause() {
-        unregisterReceiver(connectivityBroadcastReceiver);
-    }
+  @Implementation
+  public void onPause() {
+    unregisterReceiver(connectivityBroadcastReceiver);
+  }
 
-    @Implementation
-    public void onDestroy() {
-    }
+  @Implementation
+  public void onDestroy() {
+  }
 
-    @Implementation
-    public boolean isRouteDisplayed() {
-        return false;
-    }
+  @Implementation
+  public boolean isRouteDisplayed() {
+    return false;
+  }
 
-    private static class ConnectivityBroadcastReceiver extends BroadcastReceiver {
-        @Override public void onReceive(Context context, Intent intent) {
-        }
+  private static class ConnectivityBroadcastReceiver extends BroadcastReceiver {
+    @Override public void onReceive(Context context, Intent intent) {
     }
+  }
 }

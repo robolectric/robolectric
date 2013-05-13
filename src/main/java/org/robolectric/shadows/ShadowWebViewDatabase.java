@@ -8,8 +8,8 @@ import org.robolectric.annotation.Implements;
 
 @Implements(value = WebViewDatabase.class, callThroughByDefault = false)
 public class ShadowWebViewDatabase {
-    @Implementation
-    public static WebViewDatabase getInstance(Context ignored) {
-        return Robolectric.newInstanceOf(WebViewDatabase.class);
-    }
+  @Implementation
+  public static WebViewDatabase getInstance(Context ignored) {
+    return Robolectric.newInstanceOf(WebViewDatabase.class);
+  }
 }

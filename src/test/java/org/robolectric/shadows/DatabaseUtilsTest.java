@@ -11,7 +11,7 @@ public class DatabaseUtilsTest {
 
 	@Test
 	public void testQuote() {
-        assertThat(ShadowDatabaseUtils.sqlEscapeString("foobar")).isEqualTo("'foobar'");
-        assertThat(ShadowDatabaseUtils.sqlEscapeString("Rich's")).isEqualTo("'Rich''s'");
+    assertThat(ShadowDatabaseUtils.sqlEscapeString("foobar")).isEqualTo("'foobar'");
+    assertThat(ShadowDatabaseUtils.sqlEscapeString("Rich's")).isEqualTo("'Rich''s'");
 	}
 }

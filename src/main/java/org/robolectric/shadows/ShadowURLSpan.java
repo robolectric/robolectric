@@ -7,14 +7,14 @@ import org.robolectric.annotation.Implements;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(URLSpan.class)
 public class ShadowURLSpan {
-    private String url;
+  private String url;
 
-    public void __constructor__(String url) {
-        this.url = url;
-    }
+  public void __constructor__(String url) {
+    this.url = url;
+  }
 
-    @Implementation
-    public String getURL() {
-        return url;
-    }
+  @Implementation
+  public String getURL() {
+    return url;
+  }
 }

@@ -12,33 +12,33 @@ import static org.robolectric.Robolectric.newInstanceOf;
 @SuppressWarnings({"UnusedDeclaration"})
 public class RoboWindowManager implements WindowManager {
 
-    private Display display;
-    private List<View> views = new ArrayList<View>();
+  private Display display;
+  private List<View> views = new ArrayList<View>();
 
-    @Override
-    public void addView(View view, android.view.ViewGroup.LayoutParams layoutParams) {
-        views.add(view);
-    }
+  @Override
+  public void addView(View view, android.view.ViewGroup.LayoutParams layoutParams) {
+    views.add(view);
+  }
 
-    @Override
-    public void removeView(View view) {
-        views.remove(view);
-    }
+  @Override
+  public void removeView(View view) {
+    views.remove(view);
+  }
 
-    @Override
-    public void updateViewLayout(View arg0, android.view.ViewGroup.LayoutParams arg1) {
-    }
+  @Override
+  public void updateViewLayout(View arg0, android.view.ViewGroup.LayoutParams arg1) {
+  }
 
-    @Override
-    public Display getDefaultDisplay() {
-        return display == null ? display = newInstanceOf(Display.class) : display;
-    }
+  @Override
+  public Display getDefaultDisplay() {
+    return display == null ? display = newInstanceOf(Display.class) : display;
+  }
 
-    @Override
-    public void removeViewImmediate(View arg0) {
-    }
+  @Override
+  public void removeViewImmediate(View arg0) {
+  }
 
-    public List<View> getViews() {
-        return views;
-    }
+  public List<View> getViews() {
+    return views;
+  }
 }

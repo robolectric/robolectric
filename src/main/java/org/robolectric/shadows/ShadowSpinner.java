@@ -8,15 +8,15 @@ import org.robolectric.annotation.Implements;
 @Implements(value = Spinner.class)
 public class ShadowSpinner extends ShadowAbsSpinner {
 
-    private CharSequence prompt;
+  private CharSequence prompt;
 
-    @Implementation
-    public void setPrompt(CharSequence prompt) {
-        this.prompt = prompt;
-    }
+  @Implementation
+  public void setPrompt(CharSequence prompt) {
+    this.prompt = prompt;
+  }
 
-    @Implementation
-    public CharSequence getPrompt() {
-        return prompt;
-    }
+  @Implementation
+  public CharSequence getPrompt() {
+    return prompt;
+  }
 }

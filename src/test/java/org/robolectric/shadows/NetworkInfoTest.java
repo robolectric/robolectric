@@ -12,10 +12,10 @@ import static org.robolectric.Robolectric.shadowOf;
 @RunWith(TestRunners.WithDefaults.class)
 public class NetworkInfoTest {
 
-    @Test
-    public void getDetailedState_shouldReturnTheAssignedState() throws Exception {
-        NetworkInfo networkInfo = Robolectric.newInstanceOf(NetworkInfo.class);
-        shadowOf(networkInfo).setDetailedState(NetworkInfo.DetailedState.SCANNING);
-        assertThat(networkInfo.getDetailedState()).isEqualTo(NetworkInfo.DetailedState.SCANNING);
-    }
+  @Test
+  public void getDetailedState_shouldReturnTheAssignedState() throws Exception {
+    NetworkInfo networkInfo = Robolectric.newInstanceOf(NetworkInfo.class);
+    shadowOf(networkInfo).setDetailedState(NetworkInfo.DetailedState.SCANNING);
+    assertThat(networkInfo.getDetailedState()).isEqualTo(NetworkInfo.DetailedState.SCANNING);
+  }
 }

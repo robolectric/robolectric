@@ -16,42 +16,42 @@ import static org.robolectric.Robolectric.directlyOn;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(value = CompoundButton.class)
 public class ShadowCompoundButton extends ShadowTextView implements Checkable {
-    @RealObject CompoundButton realCompoundButton;
-    private boolean checked;
-    private CompoundButton.OnCheckedChangeListener onCheckedChangeListener;
+  @RealObject CompoundButton realCompoundButton;
+  private boolean checked;
+  private CompoundButton.OnCheckedChangeListener onCheckedChangeListener;
 
-    @Implementation
-    @Override public void toggle() {
-        setChecked(!checked);
-    }
+  @Implementation
+  @Override public void toggle() {
+    setChecked(!checked);
+  }
 
-    @Implementation
-    public boolean performClick() {
-        toggle();
-        return (Boolean) directlyOn(realCompoundButton, CompoundButton.class, "performClick").invoke();
-    }
+  @Implementation
+  public boolean performClick() {
+    toggle();
+    return (Boolean) directlyOn(realCompoundButton, CompoundButton.class, "performClick").invoke();
+  }
 
-    @Implementation
-    @Override public boolean isChecked() {
-        return checked;
-    }
+  @Implementation
+  @Override public boolean isChecked() {
+    return checked;
+  }
 
-    @Implementation
-    @Override public void setChecked(boolean checked) {
-        if (this.checked != checked) {
-            this.checked = checked;
-            if (onCheckedChangeListener != null) {
-                onCheckedChangeListener.onCheckedChanged((CompoundButton) realView, this.checked);
-            }
-        }
+  @Implementation
+  @Override public void setChecked(boolean checked) {
+    if (this.checked != checked) {
+      this.checked = checked;
+      if (onCheckedChangeListener != null) {
+        onCheckedChangeListener.onCheckedChanged((CompoundButton) realView, this.checked);
+      }
     }
+  }
 
-    @Implementation
-    public void setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener listener) {
-        onCheckedChangeListener = listener;
-    }
-    
-    public CompoundButton.OnCheckedChangeListener getOnCheckedChangeListener() {
-    	return onCheckedChangeListener;
-    }
+  @Implementation
+  public void setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener listener) {
+    onCheckedChangeListener = listener;
+  }
+
+  public CompoundButton.OnCheckedChangeListener getOnCheckedChangeListener() {
+  	return onCheckedChangeListener;
+  }
 }

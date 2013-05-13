@@ -12,37 +12,37 @@ import org.robolectric.annotation.Implements;
 @Implements(value = InputMethodManager.class, callThroughByDefault = false)
 public class ShadowInputMethodManager {
 
-    private boolean softInputVisible;
+  private boolean softInputVisible;
 
-    @HiddenApi @Implementation
-    static public InputMethodManager peekInstance() {
-        return Robolectric.newInstanceOf(InputMethodManager.class);
-    }
+  @HiddenApi @Implementation
+  static public InputMethodManager peekInstance() {
+    return Robolectric.newInstanceOf(InputMethodManager.class);
+  }
 
-    @Implementation
-    public boolean showSoftInput(View view, int flags) {
-        return showSoftInput(view, flags, null);
-    }
+  @Implementation
+  public boolean showSoftInput(View view, int flags) {
+    return showSoftInput(view, flags, null);
+  }
 
-    @Implementation
-    public boolean showSoftInput(View view, int flags, ResultReceiver resultReceiver) {
-        softInputVisible = true;
-        return true;
-    }
+  @Implementation
+  public boolean showSoftInput(View view, int flags, ResultReceiver resultReceiver) {
+    softInputVisible = true;
+    return true;
+  }
 
-    @Implementation
-    public boolean hideSoftInputFromWindow(IBinder windowToken, int flags) {
-        return hideSoftInputFromWindow(windowToken, flags, null);
-    }
+  @Implementation
+  public boolean hideSoftInputFromWindow(IBinder windowToken, int flags) {
+    return hideSoftInputFromWindow(windowToken, flags, null);
+  }
 
-    @Implementation
-    public boolean hideSoftInputFromWindow(IBinder windowToken, int flags,
-                                           ResultReceiver resultReceiver) {
-        softInputVisible = false;
-        return true;
-    }
+  @Implementation
+  public boolean hideSoftInputFromWindow(IBinder windowToken, int flags,
+                       ResultReceiver resultReceiver) {
+    softInputVisible = false;
+    return true;
+  }
 
-    public boolean isSoftInputVisible() {
-        return softInputVisible;
-    }
+  public boolean isSoftInputVisible() {
+    return softInputVisible;
+  }
 }

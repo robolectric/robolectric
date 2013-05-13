@@ -6,12 +6,12 @@ import java.util.List;
 
 public class TestSensorManager extends SensorManager {
 
-    @Override
-    public List<Sensor> getSensorList(int type) {
-        return new ArrayList<Sensor>();
-    }
+  @Override
+  public List<Sensor> getSensorList(int type) {
+    return new ArrayList<Sensor>();
+  }
 
-    public TestSensorManager() {
+  public TestSensorManager() {
 		
 	}
 

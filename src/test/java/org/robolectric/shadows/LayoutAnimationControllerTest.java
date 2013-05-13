@@ -24,7 +24,7 @@ public class LayoutAnimationControllerTest {
 	public void testResourceId() {
 		int id = 1;
 		shadow.setLoadedFromResourceId(1);
-        assertThat(shadow.getLoadedFromResourceId()).isEqualTo(id);
+    assertThat(shadow.getLoadedFromResourceId()).isEqualTo(id);
 	}
 
 }

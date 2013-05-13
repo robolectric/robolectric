@@ -9,20 +9,20 @@ import static org.robolectric.Robolectric.shadowOf;
 
 @Implements(InputDevice.class)
 public class ShadowInputDevice {
-    private String deviceName;
+  private String deviceName;
 
-    public static InputDevice makeInputDeviceNamed(String deviceName) {
-        InputDevice inputDevice = Robolectric.newInstanceOf(InputDevice.class);
-        shadowOf(inputDevice).setDeviceName(deviceName);
-        return inputDevice;
-    }
+  public static InputDevice makeInputDeviceNamed(String deviceName) {
+    InputDevice inputDevice = Robolectric.newInstanceOf(InputDevice.class);
+    shadowOf(inputDevice).setDeviceName(deviceName);
+    return inputDevice;
+  }
 
-    @Implementation
-    public String getName() {
-        return deviceName;
-    }
+  @Implementation
+  public String getName() {
+    return deviceName;
+  }
 
-    public void setDeviceName(String deviceName) {
-        this.deviceName = deviceName;
-    }
+  public void setDeviceName(String deviceName) {
+    this.deviceName = deviceName;
+  }
 }

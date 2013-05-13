@@ -10,20 +10,20 @@ import static org.robolectric.Robolectric.directlyOn;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(value = BaseAdapter.class, callThroughByDefault = true)
 public class ShadowBaseAdapter {
-    @RealObject private BaseAdapter realBaseAdapter;
-    private boolean wasNotifyDataSetChangedCalled;
+  @RealObject private BaseAdapter realBaseAdapter;
+  private boolean wasNotifyDataSetChangedCalled;
 
-    @Implementation
-    public void notifyDataSetChanged() {
-        wasNotifyDataSetChangedCalled = true;
-        directlyOn(realBaseAdapter, BaseAdapter.class, "notifyDataSetChanged").invoke();
-    }
+  @Implementation
+  public void notifyDataSetChanged() {
+    wasNotifyDataSetChangedCalled = true;
+    directlyOn(realBaseAdapter, BaseAdapter.class, "notifyDataSetChanged").invoke();
+  }
 
-    public void clearWasDataSetChangedCalledFlag() {
-        wasNotifyDataSetChangedCalled = false;
-    }
+  public void clearWasDataSetChangedCalledFlag() {
+    wasNotifyDataSetChangedCalled = false;
+  }
 
-    public boolean wasNotifyDataSetChangedCalled() {
-        return wasNotifyDataSetChangedCalled;
-    }
+  public boolean wasNotifyDataSetChangedCalled() {
+    return wasNotifyDataSetChangedCalled;
+  }
 }

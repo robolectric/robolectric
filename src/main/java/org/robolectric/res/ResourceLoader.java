@@ -6,27 +6,27 @@ import org.w3c.dom.Document;
 import java.io.InputStream;
 
 public interface ResourceLoader {
-    String ANDROID_NS = Attribute.ANDROID_RES_NS_PREFIX + "android";
+  String ANDROID_NS = Attribute.ANDROID_RES_NS_PREFIX + "android";
 
-    String getNameForId(int id);
+  String getNameForId(int id);
 
-    TypedResource getValue(@NotNull ResName resName, String qualifiers);
+  TypedResource getValue(@NotNull ResName resName, String qualifiers);
 
-    Plural getPlural(ResName resName, int quantity, String qualifiers);
+  Plural getPlural(ResName resName, int quantity, String qualifiers);
 
-    Document getXml(ResName resName, String qualifiers);
+  Document getXml(ResName resName, String qualifiers);
 
-    DrawableNode getDrawableNode(ResName resName, String qualifiers);
+  DrawableNode getDrawableNode(ResName resName, String qualifiers);
 
-    InputStream getRawValue(ResName resName);
+  InputStream getRawValue(ResName resName);
 
-    PreferenceNode getPreferenceNode(ResName resName, String qualifiers);
+  PreferenceNode getPreferenceNode(ResName resName, String qualifiers);
 
-    ResourceIndex getResourceIndex();
+  ResourceIndex getResourceIndex();
 
-    ViewNode getLayoutViewNode(ResName resName, String qualifiers);
+  ViewNode getLayoutViewNode(ResName resName, String qualifiers);
 
-    MenuNode getMenuNode(ResName resName, String qualifiers);
+  MenuNode getMenuNode(ResName resName, String qualifiers);
 
-    boolean providesFor(String namespace);
+  boolean providesFor(String namespace);
 }

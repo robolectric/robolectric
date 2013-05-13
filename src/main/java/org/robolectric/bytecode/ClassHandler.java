@@ -1,17 +1,17 @@
 package org.robolectric.bytecode;
 
 public interface ClassHandler {
-    void classInitializing(Class clazz);
+  void classInitializing(Class clazz);
 
-    Object initializing(Object instance);
+  Object initializing(Object instance);
 
-    Plan methodInvoked(String signature, boolean isStatic, Class<?> theClass);
+  Plan methodInvoked(String signature, boolean isStatic, Class<?> theClass);
 
-    Object intercept(String signature, Object instance, Object[] params, Class theClass) throws Throwable;
+  Object intercept(String signature, Object instance, Object[] params, Class theClass) throws Throwable;
 
-    <T extends Throwable> T stripStackTrace(T throwable);
+  <T extends Throwable> T stripStackTrace(T throwable);
 
-    public interface Plan {
-        Object run(Object instance, Object roboData, Object[] params) throws Throwable;
-    }
+  public interface Plan {
+    Object run(Object instance, Object roboData, Object[] params) throws Throwable;
+  }
 }

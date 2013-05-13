@@ -10,11 +10,11 @@ import org.robolectric.annotation.RealObject;
 
 @Implements(android.os.Binder.class)
 public class ShadowBinder {
-    @RealObject
-    Binder realObject;
+  @RealObject
+  Binder realObject;
 
-    @Implementation
-    public boolean transact(int code, Parcel data, Parcel reply, int flags) throws RemoteException {
-        return new ShadowBinderBridge(realObject).onTransact(code, data, reply, flags);
-    }
+  @Implementation
+  public boolean transact(int code, Parcel data, Parcel reply, int flags) throws RemoteException {
+    return new ShadowBinderBridge(realObject).onTransact(code, data, reply, flags);
+  }
 }

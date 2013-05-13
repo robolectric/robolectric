@@ -11,22 +11,22 @@ import static org.junit.Assert.assertEquals;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ViewFlipperTest {
-    protected ViewFlipper flipper;
+  protected ViewFlipper flipper;
 
-    @Before
-    public void setUp() {
-        flipper = new ViewFlipper(new Activity());
-    }
+  @Before
+  public void setUp() {
+    flipper = new ViewFlipper(new Activity());
+  }
 
-    @Test
-    public void testStartFlipping() {
-        flipper.startFlipping();
-        assertEquals("flipping", true, flipper.isFlipping());
-    }
+  @Test
+  public void testStartFlipping() {
+    flipper.startFlipping();
+    assertEquals("flipping", true, flipper.isFlipping());
+  }
 
-    @Test
-    public void testStopFlipping() {
-        flipper.stopFlipping();
-        assertEquals("flipping", false, flipper.isFlipping());
-    }
+  @Test
+  public void testStopFlipping() {
+    flipper.stopFlipping();
+    assertEquals("flipping", false, flipper.isFlipping());
+  }
 }

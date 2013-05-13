@@ -37,10 +37,10 @@ public class AnimationSetTest {
 		set.addAnimation(rotate);
 		
 		List<Animation> list = shadow.getAnimations();
-        assertThat(list.size()).isEqualTo(3);
-        assertThat(list.get(0)).isSameAs(alpha);
-        assertThat(list.get(1)).isSameAs(translate);
-        assertThat(list.get(2)).isSameAs(rotate);
+    assertThat(list.size()).isEqualTo(3);
+    assertThat(list.get(0)).isSameAs(alpha);
+    assertThat(list.get(1)).isSameAs(translate);
+    assertThat(list.get(2)).isSameAs(rotate);
 	}
 
 }

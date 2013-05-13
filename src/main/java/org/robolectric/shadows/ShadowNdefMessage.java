@@ -8,17 +8,17 @@ import org.robolectric.annotation.RealObject;
 
 @Implements(NdefMessage.class)
 public class ShadowNdefMessage {
-    @RealObject
-    private NdefMessage realNdefMessage;
+  @RealObject
+  private NdefMessage realNdefMessage;
 
-    private NdefRecord[] ndefRecords;
+  private NdefRecord[] ndefRecords;
 
-    public void __constructor__(NdefRecord[] ndefRecords) {
-        this.ndefRecords = ndefRecords;
-    }
+  public void __constructor__(NdefRecord[] ndefRecords) {
+    this.ndefRecords = ndefRecords;
+  }
 
-    @Implementation
-    public NdefRecord[] getRecords() {
-        return ndefRecords;
-    }
+  @Implementation
+  public NdefRecord[] getRecords() {
+    return ndefRecords;
+  }
 }

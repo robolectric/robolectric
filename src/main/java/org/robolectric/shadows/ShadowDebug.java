@@ -6,8 +6,8 @@ import org.robolectric.annotation.Implements;
 
 @Implements(Debug.class)
 public class ShadowDebug {
-    @Implementation
-    public static long getNativeHeapAllocatedSize() {
-        return Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-    }
+  @Implementation
+  public static long getNativeHeapAllocatedSize() {
+    return Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+  }
 }

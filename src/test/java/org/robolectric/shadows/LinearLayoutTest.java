@@ -15,34 +15,34 @@ import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class LinearLayoutTest {
-    private LinearLayout linearLayout;
+  private LinearLayout linearLayout;
 
-    @Before
-    public void setup() throws Exception {
-        linearLayout = new LinearLayout(Robolectric.application);
-    }
+  @Before
+  public void setup() throws Exception {
+    linearLayout = new LinearLayout(Robolectric.application);
+  }
 
-    @Test
-    public void getLayoutParams_shouldReturnTheSameLinearLayoutParamsFromTheSetter() throws Exception {
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(1, 2);
-        linearLayout.setLayoutParams(params);
+  @Test
+  public void getLayoutParams_shouldReturnTheSameLinearLayoutParamsFromTheSetter() throws Exception {
+    LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(1, 2);
+    linearLayout.setLayoutParams(params);
 
-        assertSame(params, linearLayout.getLayoutParams());
-    }
+    assertSame(params, linearLayout.getLayoutParams());
+  }
 
-    @Test
-    public void canAnswerOrientation() throws Exception {
-        assertThat(linearLayout.getOrientation()).isEqualTo(LinearLayout.HORIZONTAL);
-        linearLayout.setOrientation(LinearLayout.VERTICAL);
-        assertThat(linearLayout.getOrientation()).isEqualTo(LinearLayout.VERTICAL);
-        linearLayout.setOrientation(LinearLayout.HORIZONTAL);
-        assertThat(linearLayout.getOrientation()).isEqualTo(LinearLayout.HORIZONTAL);
-    }
+  @Test
+  public void canAnswerOrientation() throws Exception {
+    assertThat(linearLayout.getOrientation()).isEqualTo(LinearLayout.HORIZONTAL);
+    linearLayout.setOrientation(LinearLayout.VERTICAL);
+    assertThat(linearLayout.getOrientation()).isEqualTo(LinearLayout.VERTICAL);
+    linearLayout.setOrientation(LinearLayout.HORIZONTAL);
+    assertThat(linearLayout.getOrientation()).isEqualTo(LinearLayout.HORIZONTAL);
+  }
 
-    @Test
-    public void canAnswerGravity() throws Exception {
-        assertThat(shadowOf(linearLayout).getGravity()).isEqualTo(Gravity.TOP | Gravity.START);
-        linearLayout.setGravity(Gravity.CENTER_VERTICAL);
-        assertThat(shadowOf(linearLayout).getGravity()).isEqualTo(Gravity.CENTER_VERTICAL);
-    }
+  @Test
+  public void canAnswerGravity() throws Exception {
+    assertThat(shadowOf(linearLayout).getGravity()).isEqualTo(Gravity.TOP | Gravity.START);
+    linearLayout.setGravity(Gravity.CENTER_VERTICAL);
+    assertThat(shadowOf(linearLayout).getGravity()).isEqualTo(Gravity.CENTER_VERTICAL);
+  }
 }

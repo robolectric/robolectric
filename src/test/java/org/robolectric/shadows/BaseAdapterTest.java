@@ -13,40 +13,40 @@ import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class BaseAdapterTest {
-    @Test
-    public void shouldRecordNotifyDataSetChanged() throws Exception {
-        BaseAdapter adapter = new TestBaseAdapter();
-        adapter.notifyDataSetChanged();
-        assertTrue(shadowOf(adapter).wasNotifyDataSetChangedCalled());
+  @Test
+  public void shouldRecordNotifyDataSetChanged() throws Exception {
+    BaseAdapter adapter = new TestBaseAdapter();
+    adapter.notifyDataSetChanged();
+    assertTrue(shadowOf(adapter).wasNotifyDataSetChangedCalled());
+  }
+
+  @Test
+  public void canResetNotifyDataSetChangedFlag() throws Exception {
+    BaseAdapter adapter = new TestBaseAdapter();
+    adapter.notifyDataSetChanged();
+    shadowOf(adapter).clearWasDataSetChangedCalledFlag();
+    assertFalse(shadowOf(adapter).wasNotifyDataSetChangedCalled());
+  }
+
+  private static class TestBaseAdapter extends BaseAdapter {
+    @Override
+    public int getCount() {
+      return 0;
     }
 
-    @Test
-    public void canResetNotifyDataSetChangedFlag() throws Exception {
-        BaseAdapter adapter = new TestBaseAdapter();
-        adapter.notifyDataSetChanged();
-        shadowOf(adapter).clearWasDataSetChangedCalledFlag();
-        assertFalse(shadowOf(adapter).wasNotifyDataSetChangedCalled());
+    @Override
+    public Object getItem(int position) {
+      return null;
     }
 
-    private static class TestBaseAdapter extends BaseAdapter {
-        @Override
-        public int getCount() {
-            return 0;
-        }
-
-        @Override
-        public Object getItem(int position) {
-            return null;
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return 0;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            return null;
-        }
+    @Override
+    public long getItemId(int position) {
+      return 0;
     }
+
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+      return null;
+    }
+  }
 }

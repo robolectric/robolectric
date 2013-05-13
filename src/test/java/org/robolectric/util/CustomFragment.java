@@ -12,12 +12,12 @@ import android.widget.TextView;
  */
 public class CustomFragment extends Fragment {
 
-    private TextView textView;
+  private TextView textView;
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        textView = new TextView(inflater.getContext());
-        textView.setText("CustomFragment text view");
-        return textView;
-    }
+  @Override
+  public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    textView = new TextView(inflater.getContext());
+    textView.setText("CustomFragment text view");
+    return textView;
+  }
 }

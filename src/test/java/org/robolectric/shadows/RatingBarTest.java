@@ -15,52 +15,52 @@ import static org.fest.assertions.api.Assertions.assertThat;
 @RunWith(TestRunners.WithDefaults.class)
 public class RatingBarTest {
 
-    private RatingBar ratingBar;
-    private ShadowRatingBar shadow;
-    private RatingBar.OnRatingBarChangeListener listener;
-    private Transcript transcript;
-    
-    @Before
-    public void setup() {
-        ratingBar = new RatingBar(new Activity());
-        shadow = Robolectric.shadowOf(ratingBar);
-        listener = new TestRatingBarChangedListener();
-        transcript = new Transcript();
-        ratingBar.setOnRatingBarChangeListener(listener); 
-    }
-    
-    @Test
-    public void testOnSeekBarChangedListener() {
-        assertThat(ratingBar.getOnRatingBarChangeListener()).isSameAs(listener);
-        ratingBar.setOnRatingBarChangeListener(null);
-        assertThat(ratingBar.getOnRatingBarChangeListener()).isNull();
-    }
-    
-    @Test
-    public void testOnChangeNotification() {
-        ratingBar.setRating(5.0f);
-        transcript.assertEventsSoFar("onRatingChanged() - 5.0");
-    }
-    
-    private class TestRatingBarChangedListener implements RatingBar.OnRatingBarChangeListener {
+  private RatingBar ratingBar;
+  private ShadowRatingBar shadow;
+  private RatingBar.OnRatingBarChangeListener listener;
+  private Transcript transcript;
 
-        @Override
-        public void onRatingChanged(RatingBar ratingBar, float rating, boolean fromUser) {
-            transcript.add("onRatingChanged() - " + rating);
-        }
+  @Before
+  public void setup() {
+    ratingBar = new RatingBar(new Activity());
+    shadow = Robolectric.shadowOf(ratingBar);
+    listener = new TestRatingBarChangedListener();
+    transcript = new Transcript();
+    ratingBar.setOnRatingBarChangeListener(listener);
+  }
+
+  @Test
+  public void testOnSeekBarChangedListener() {
+    assertThat(ratingBar.getOnRatingBarChangeListener()).isSameAs(listener);
+    ratingBar.setOnRatingBarChangeListener(null);
+    assertThat(ratingBar.getOnRatingBarChangeListener()).isNull();
+  }
+
+  @Test
+  public void testOnChangeNotification() {
+    ratingBar.setRating(5.0f);
+    transcript.assertEventsSoFar("onRatingChanged() - 5.0");
+  }
+
+  private class TestRatingBarChangedListener implements RatingBar.OnRatingBarChangeListener {
+
+    @Override
+    public void onRatingChanged(RatingBar ratingBar, float rating, boolean fromUser) {
+      transcript.add("onRatingChanged() - " + rating);
     }
-    
-    @Test
-    public void testInheritance() {
-        TestRatingBar ratingBar = new TestRatingBar(new Activity());
-        ShadowRatingBar shadow = Robolectric.shadowOf(ratingBar);
-        assertThat(shadow).isInstanceOf(ShadowAbsSeekBar.class);
+  }
+
+  @Test
+  public void testInheritance() {
+    TestRatingBar ratingBar = new TestRatingBar(new Activity());
+    ShadowRatingBar shadow = Robolectric.shadowOf(ratingBar);
+    assertThat(shadow).isInstanceOf(ShadowAbsSeekBar.class);
+  }
+
+  private static class TestRatingBar extends RatingBar {
+
+    public TestRatingBar(Context context) {
+      super(context);
     }
-    
-    private static class TestRatingBar extends RatingBar {
-        
-        public TestRatingBar(Context context) {
-            super(context);
-        }
-    }
+  }
 }

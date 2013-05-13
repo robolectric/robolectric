@@ -7,7 +7,7 @@ import org.robolectric.annotation.Implements;
 @Implements(JsPromptResult.class)
 public class ShadowJsPromptResult extends ShadowJsResult{
 
-    public static JsPromptResult newInstance() {
-        return Robolectric.newInstanceOf(JsPromptResult.class);
-    }
+  public static JsPromptResult newInstance() {
+    return Robolectric.newInstanceOf(JsPromptResult.class);
+  }
 }

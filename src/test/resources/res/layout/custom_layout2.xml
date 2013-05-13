@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <org.robolectric.util.CustomView2 message="@string/hello">
-    <org.robolectric.util.CustomView2>
-        <TextView/>
-        <TextView/>
-        <TextView/>
-    </org.robolectric.util.CustomView2>
+  <org.robolectric.util.CustomView2>
+    <TextView/>
+    <TextView/>
+    <TextView/>
+  </org.robolectric.util.CustomView2>
 </org.robolectric.util.CustomView2>

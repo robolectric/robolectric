@@ -16,14 +16,14 @@ public class PreferenceCategoryTest {
 	private PreferenceCategory category;
 	private ShadowPreferenceCategory shadow;
 
-    @Before
-    public void setUp() throws Exception {
-    	category = new PreferenceCategory(new Activity());
-    	shadow = Robolectric.shadowOf(category);
-    }
-    
+  @Before
+  public void setUp() throws Exception {
+  	category = new PreferenceCategory(new Activity());
+  	shadow = Robolectric.shadowOf(category);
+  }
+
 	@Test
 	public void shouldInheritFromPreferenceGroup() {
-        assertThat(shadow).isInstanceOf(ShadowPreferenceGroup.class);
+    assertThat(shadow).isInstanceOf(ShadowPreferenceGroup.class);
 	}	
 }

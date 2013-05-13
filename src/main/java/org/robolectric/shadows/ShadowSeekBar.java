@@ -9,18 +9,18 @@ import org.robolectric.annotation.RealObject;
 @Implements(value = SeekBar.class)
 public class ShadowSeekBar extends ShadowAbsSeekBar {
 
-    @RealObject
-    private SeekBar realSeekBar;
+  @RealObject
+  private SeekBar realSeekBar;
 
-    private SeekBar.OnSeekBarChangeListener listener;
+  private SeekBar.OnSeekBarChangeListener listener;
 
-    @Implementation
-    public void setOnSeekBarChangeListener(SeekBar.OnSeekBarChangeListener listener) {
-        this.listener = listener;
-        Robolectric.directlyOn(realSeekBar, SeekBar.class).setOnSeekBarChangeListener(listener);
-    }
+  @Implementation
+  public void setOnSeekBarChangeListener(SeekBar.OnSeekBarChangeListener listener) {
+    this.listener = listener;
+    Robolectric.directlyOn(realSeekBar, SeekBar.class).setOnSeekBarChangeListener(listener);
+  }
 
-    public SeekBar.OnSeekBarChangeListener getOnSeekBarChangeListener() {
-        return this.listener;
-    }
+  public SeekBar.OnSeekBarChangeListener getOnSeekBarChangeListener() {
+    return this.listener;
+  }
 }

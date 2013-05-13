@@ -14,60 +14,60 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SdkEnvironment {
-    private final SdkConfig sdkConfig;
-    private final ClassLoader robolectricClassLoader;
-    public final Map<ShadowMap, ShadowWrangler> classHandlersByShadowMap = new HashMap<ShadowMap, ShadowWrangler>();
-    private ClassHandler currentClassHandler;
-    private ResourceLoader systemResourceLoader;
+  private final SdkConfig sdkConfig;
+  private final ClassLoader robolectricClassLoader;
+  public final Map<ShadowMap, ShadowWrangler> classHandlersByShadowMap = new HashMap<ShadowMap, ShadowWrangler>();
+  private ClassHandler currentClassHandler;
+  private ResourceLoader systemResourceLoader;
 
-    public SdkEnvironment(SdkConfig sdkConfig, ClassLoader robolectricClassLoader) {
-        this.sdkConfig = sdkConfig;
-        this.robolectricClassLoader = robolectricClassLoader;
-    }
+  public SdkEnvironment(SdkConfig sdkConfig, ClassLoader robolectricClassLoader) {
+    this.sdkConfig = sdkConfig;
+    this.robolectricClassLoader = robolectricClassLoader;
+  }
 
-    public PackageResourceLoader createSystemResourceLoader(MavenCentral mavenCentral, RobolectricTestRunner robolectricTestRunner) {
-        URL url = mavenCentral.getLocalArtifactUrl(robolectricTestRunner, sdkConfig.getSystemResourceDependency());
-        Fs systemResFs = Fs.fromJar(url);
-        ResourceExtractor resourceIndex = new ResourceExtractor(getRobolectricClassLoader());
-        ResourcePath resourcePath = new ResourcePath(resourceIndex.getProcessedRFile(), systemResFs.join("res"), systemResFs.join("assets"));
-        return new PackageResourceLoader(resourcePath, resourceIndex);
-    }
+  public PackageResourceLoader createSystemResourceLoader(MavenCentral mavenCentral, RobolectricTestRunner robolectricTestRunner) {
+    URL url = mavenCentral.getLocalArtifactUrl(robolectricTestRunner, sdkConfig.getSystemResourceDependency());
+    Fs systemResFs = Fs.fromJar(url);
+    ResourceExtractor resourceIndex = new ResourceExtractor(getRobolectricClassLoader());
+    ResourcePath resourcePath = new ResourcePath(resourceIndex.getProcessedRFile(), systemResFs.join("res"), systemResFs.join("assets"));
+    return new PackageResourceLoader(resourcePath, resourceIndex);
+  }
 
-    public synchronized ResourceLoader getSystemResourceLoader(MavenCentral mavenCentral, RobolectricTestRunner robolectricTestRunner) {
-        if (systemResourceLoader == null) {
-            systemResourceLoader = createSystemResourceLoader(mavenCentral, robolectricTestRunner);
-        }
-        return systemResourceLoader;
+  public synchronized ResourceLoader getSystemResourceLoader(MavenCentral mavenCentral, RobolectricTestRunner robolectricTestRunner) {
+    if (systemResourceLoader == null) {
+      systemResourceLoader = createSystemResourceLoader(mavenCentral, robolectricTestRunner);
     }
+    return systemResourceLoader;
+  }
 
-    public Class<?> bootstrappedClass(Class<?> testClass) {
-        try {
-            return robolectricClassLoader.loadClass(testClass.getName());
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
+  public Class<?> bootstrappedClass(Class<?> testClass) {
+    try {
+      return robolectricClassLoader.loadClass(testClass.getName());
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(e);
     }
+  }
 
-    public ClassLoader getRobolectricClassLoader() {
-        return robolectricClassLoader;
-    }
+  public ClassLoader getRobolectricClassLoader() {
+    return robolectricClassLoader;
+  }
 
-    /**
-     * @deprecated use {@link org.robolectric.Robolectric.Reflection#setFinalStaticField(Class, String, Object)}
-     */
-    public static void setStaticValue(Class<?> clazz, String fieldName, Object value) {
-        Robolectric.Reflection.setFinalStaticField(clazz, fieldName, value);
-    }
+  /**
+   * @deprecated use {@link org.robolectric.Robolectric.Reflection#setFinalStaticField(Class, String, Object)}
+   */
+  public static void setStaticValue(Class<?> clazz, String fieldName, Object value) {
+    Robolectric.Reflection.setFinalStaticField(clazz, fieldName, value);
+  }
 
-    public ClassHandler getCurrentClassHandler() {
-        return currentClassHandler;
-    }
+  public ClassHandler getCurrentClassHandler() {
+    return currentClassHandler;
+  }
 
-    public void setCurrentClassHandler(ClassHandler currentClassHandler) {
-        this.currentClassHandler = currentClassHandler;
-    }
+  public void setCurrentClassHandler(ClassHandler currentClassHandler) {
+    this.currentClassHandler = currentClassHandler;
+  }
 
-    public interface Factory {
-        public SdkEnvironment create();
-    }
+  public interface Factory {
+    public SdkEnvironment create();
+  }
 }

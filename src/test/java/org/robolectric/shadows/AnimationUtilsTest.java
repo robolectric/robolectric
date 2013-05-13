@@ -17,23 +17,23 @@ public class AnimationUtilsTest {
 	
 	@Test
 	public void testLoadAnimation() {
-        assertThat(AnimationUtils.loadAnimation(new Activity(), 1)).isNotNull();
+    assertThat(AnimationUtils.loadAnimation(new Activity(), 1)).isNotNull();
 	}
 
 	@Test
 	public void testLoadAnimationResourceId() {
 		Animation anim = AnimationUtils.loadAnimation(new Activity(), R.anim.fade_in);
-        assertThat(Robolectric.shadowOf(anim).getLoadedFromResourceId()).isEqualTo(R.anim.fade_in);
+    assertThat(Robolectric.shadowOf(anim).getLoadedFromResourceId()).isEqualTo(R.anim.fade_in);
 	}
 	
 	@Test
 	public void testLoadLayoutAnimation() {
-        assertThat(AnimationUtils.loadLayoutAnimation(new Activity(), 1)).isNotNull();
+    assertThat(AnimationUtils.loadLayoutAnimation(new Activity(), 1)).isNotNull();
 	}
 	
 	@Test
 	public void testLoadLayoutAnimationControllerResourceId() {
 		LayoutAnimationController layoutAnim = AnimationUtils.loadLayoutAnimation(new Activity(), R.anim.fade_in);
-        assertThat(Robolectric.shadowOf(layoutAnim).getLoadedFromResourceId()).isEqualTo(R.anim.fade_in);
+    assertThat(Robolectric.shadowOf(layoutAnim).getLoadedFromResourceId()).isEqualTo(R.anim.fade_in);
 	}
 }

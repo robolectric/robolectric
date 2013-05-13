@@ -16,10 +16,10 @@ import static org.robolectric.Robolectric.shadowOf;
 @Implements(PreferenceManager.class)
 public class ShadowPreferenceManager {
 
-    @Implementation
-    public static SharedPreferences getDefaultSharedPreferences(Context context) {
-        ShadowApplication shadowApplication = shadowOf((Application) context.getApplicationContext());
-        return new TestSharedPreferences(shadowApplication.getSharedPreferenceMap(), "__default__", Context.MODE_PRIVATE);
-    }
+  @Implementation
+  public static SharedPreferences getDefaultSharedPreferences(Context context) {
+    ShadowApplication shadowApplication = shadowOf((Application) context.getApplicationContext());
+    return new TestSharedPreferences(shadowApplication.getSharedPreferenceMap(), "__default__", Context.MODE_PRIVATE);
+  }
 
 }

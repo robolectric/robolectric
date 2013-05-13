@@ -13,20 +13,20 @@ import static org.robolectric.Robolectric.shadowOf;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(TypedArray.class)
 public class ShadowTypedArray {
-    @RealObject private TypedArray realTypedArray;
-    private CharSequence[] stringData;
+  @RealObject private TypedArray realTypedArray;
+  private CharSequence[] stringData;
 
-    public static TypedArray create(Resources realResources, int[] attrs, int[] data, int[] indices, int len, CharSequence[] stringData) {
-        TypedArray typedArray = constructor()
-                .withParameterTypes(Resources.class, int[].class, int[].class, int.class)
-                .in(TypedArray.class)
-                .newInstance(realResources, data, indices, len);
-        shadowOf(typedArray).stringData = stringData;
-        return typedArray;
-    }
+  public static TypedArray create(Resources realResources, int[] attrs, int[] data, int[] indices, int len, CharSequence[] stringData) {
+    TypedArray typedArray = constructor()
+        .withParameterTypes(Resources.class, int[].class, int[].class, int.class)
+        .in(TypedArray.class)
+        .newInstance(realResources, data, indices, len);
+    shadowOf(typedArray).stringData = stringData;
+    return typedArray;
+  }
 
-    @HiddenApi @Implementation
-    public CharSequence loadStringValueAt(int index) {
-        return stringData[index / ShadowAssetManager.STYLE_NUM_ENTRIES];
-    }
+  @HiddenApi @Implementation
+  public CharSequence loadStringValueAt(int index) {
+    return stringData[index / ShadowAssetManager.STYLE_NUM_ENTRIES];
+  }
 }

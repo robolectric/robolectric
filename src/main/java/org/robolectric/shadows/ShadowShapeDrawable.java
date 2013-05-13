@@ -7,11 +7,11 @@ import org.robolectric.annotation.Implements;
 
 @Implements(ShapeDrawable.class)
 public class ShadowShapeDrawable extends ShadowDrawable {
-    
-    private Paint paint = new Paint();
 
-    @Implementation
-    public android.graphics.Paint getPaint() {
-        return paint;
-    }
+  private Paint paint = new Paint();
+
+  @Implementation
+  public android.graphics.Paint getPaint() {
+    return paint;
+  }
 }

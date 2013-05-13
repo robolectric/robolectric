@@ -15,9 +15,9 @@ import java.util.ArrayList;
 @Implements(PreferenceGroup.class)
 public class ShadowPreferenceGroup extends ShadowPreference {
 
-    @RealObject private PreferenceGroup realPreferenceGroup;
+  @RealObject private PreferenceGroup realPreferenceGroup;
 
-    private ArrayList<Preference> preferenceList = new ArrayList<Preference>();
+  private ArrayList<Preference> preferenceList = new ArrayList<Preference>();
 	
 	@Implementation
 	public void addItemFromInflater(Preference preference) {
@@ -27,8 +27,8 @@ public class ShadowPreferenceGroup extends ShadowPreference {
 	@Implementation
 	public boolean addPreference(Preference preference) {
 		if (preferenceList.contains(preference)) {
-            return true;
-        }
+      return true;
+    }
 		
 		// TODO currently punting on ordering logic
 		preferenceList.add(preference);
@@ -63,29 +63,29 @@ public class ShadowPreferenceGroup extends ShadowPreference {
 	 */
 	@Implementation
 	public Preference findPreference(CharSequence key) {
-        if (TextUtils.equals(getKey(), key)) {
-            return realPreferenceGroup;
-        }
-        final int preferenceCount = getPreferenceCount();
-        for (int i = 0; i < preferenceCount; i++) {
-            final Preference preference = getPreference(i);
-            final String curKey = preference.getKey();
-
-            if (curKey != null && curKey.equals(key)) {
-                return preference;
-            }
-            
-            if (preference instanceof PreferenceGroup) {
-                final Preference returnedPreference = ((PreferenceGroup)preference)
-                        .findPreference(key);
-                if (returnedPreference != null) {
-                    return returnedPreference;
-                }
-            }
-        }
-
-        return null;
+    if (TextUtils.equals(getKey(), key)) {
+      return realPreferenceGroup;
     }
+    final int preferenceCount = getPreferenceCount();
+    for (int i = 0; i < preferenceCount; i++) {
+      final Preference preference = getPreference(i);
+      final String curKey = preference.getKey();
+
+      if (curKey != null && curKey.equals(key)) {
+        return preference;
+      }
+
+      if (preference instanceof PreferenceGroup) {
+        final Preference returnedPreference = ((PreferenceGroup)preference)
+            .findPreference(key);
+        if (returnedPreference != null) {
+          return returnedPreference;
+        }
+      }
+    }
+
+    return null;
+  }
 	
 	/**
 	 * Note: copied wholesale from Android source
@@ -95,8 +95,8 @@ public class ShadowPreferenceGroup extends ShadowPreference {
 		super.setEnabled(enabled);
 		
 		final int preferenceCount = getPreferenceCount();
-        for (int i = 0; i < preferenceCount; i++) {
-            getPreference(i).setEnabled(enabled);
-        }
+    for (int i = 0; i < preferenceCount; i++) {
+      getPreference(i).setEnabled(enabled);
+    }
 	}
 }

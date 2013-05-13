@@ -10,13 +10,13 @@ import static org.robolectric.Robolectric.shadowOf;
 
 @Implements(value = LocalBroadcastManager.class, callThroughByDefault = true)
 public class ShadowLocalBroadcastManager {
-    @Implementation
-    public static LocalBroadcastManager getInstance(final Context context) {
-        return shadowOf(context).getShadowApplication().getSingleton(LocalBroadcastManager.class, new Provider<LocalBroadcastManager>() {
-            @Override
-            public LocalBroadcastManager get() {
-                return Robolectric.newInstance(LocalBroadcastManager.class, new Class[] {Context.class}, new Object[] {context});
-            }
-        });
-    }
+  @Implementation
+  public static LocalBroadcastManager getInstance(final Context context) {
+    return shadowOf(context).getShadowApplication().getSingleton(LocalBroadcastManager.class, new Provider<LocalBroadcastManager>() {
+      @Override
+      public LocalBroadcastManager get() {
+        return Robolectric.newInstance(LocalBroadcastManager.class, new Class[] {Context.class}, new Object[] {context});
+      }
+    });
+  }
 }

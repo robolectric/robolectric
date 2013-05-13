@@ -27,27 +27,27 @@ import org.robolectric.res.FileFsFile;
  * </pre>
  */
 public class TemporaryAsset extends ExternalResource {
-    List<File> assetsToDelete = new ArrayList<File>();
+  List<File> assetsToDelete = new ArrayList<File>();
 
-    @Override protected void after() {
-        for (File file : assetsToDelete) {
-            file.delete();
-        }
+  @Override protected void after() {
+    for (File file : assetsToDelete) {
+      file.delete();
+    }
+  }
+
+  public File createFile(AndroidManifest manifest, String fileName, String contents) throws Exception {
+    File assetBase = ((FileFsFile) manifest.getAssetsDirectory()).getFile();
+    File file = new File(assetBase, fileName);
+    file.getParentFile().mkdirs();
+
+    FileWriter fileWriter = new FileWriter(file);
+    try {
+       fileWriter.write(contents);
+    } finally {
+      fileWriter.close();
     }
 
-    public File createFile(AndroidManifest manifest, String fileName, String contents) throws Exception {
-        File assetBase = ((FileFsFile) manifest.getAssetsDirectory()).getFile();
-        File file = new File(assetBase, fileName);
-        file.getParentFile().mkdirs();
-
-        FileWriter fileWriter = new FileWriter(file);
-        try {
-           fileWriter.write(contents);
-        } finally {
-            fileWriter.close();
-        }
-
-        assetsToDelete.add(file);
-        return file;
-    }
+    assetsToDelete.add(file);
+    return file;
+  }
 }

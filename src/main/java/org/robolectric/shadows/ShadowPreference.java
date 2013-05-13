@@ -12,9 +12,9 @@ import org.robolectric.res.ResourceLoader;
 @Implements(Preference.class)
 public class ShadowPreference {
 
-    @RealObject private Preference realPreference;
+  @RealObject private Preference realPreference;
 
-    protected Context context;
+  protected Context context;
 	protected AttributeSet attrs;
 	protected int defStyle;	
 
@@ -48,21 +48,21 @@ public class ShadowPreference {
 		
 		if (attributeSet != null) {
 			key = attributeSet.getAttributeValue(ResourceLoader.ANDROID_NS, "key");
-        }
+    }
 	}
 
 	@Implementation
 	public Context getContext() {
-    	return context;
-    }
-    
-    public AttributeSet getAttrs() {
-    	return attrs;
-    }
-    
-    public int getDefStyle() {
-    	return defStyle;
-    }	
+  	return context;
+  }
+
+  public AttributeSet getAttrs() {
+  	return attrs;
+  }
+
+  public int getDefStyle() {
+  	return defStyle;
+  }
    
 	@Implementation
 	public void setEnabled(boolean enabled) {
@@ -73,7 +73,7 @@ public class ShadowPreference {
 	public boolean isEnabled() {
 		return enabled;
 	}
-    
+
 	@Implementation
 	public boolean shouldPersist() {
 		return persistent;

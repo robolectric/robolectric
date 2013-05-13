@@ -41,10 +41,10 @@ public class ShadowResolveInfo {
 			
 		ResolveInfo resInfo = new ResolveInfo();
 		ActivityInfo actInfo = new ActivityInfo();
-        actInfo.applicationInfo = new ApplicationInfo();
+    actInfo.applicationInfo = new ApplicationInfo();
 		actInfo.packageName = packageName;
-        actInfo.applicationInfo.packageName = packageName;
-        actInfo.name = activityName;
+    actInfo.applicationInfo.packageName = packageName;
+    actInfo.name = activityName;
 		resInfo.activityInfo = actInfo;
 		
 		ShadowResolveInfo shResolve = Robolectric.shadowOf(resInfo );

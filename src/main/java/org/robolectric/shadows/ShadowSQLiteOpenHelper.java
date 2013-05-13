@@ -16,54 +16,54 @@ import java.util.HashMap;
  */
 @Implements(SQLiteOpenHelper.class)
 public class ShadowSQLiteOpenHelper {
-    @RealObject private SQLiteOpenHelper realHelper;
-    private String name;
-    private static HashMap<String, SQLiteDatabase> dbMap = new HashMap<String, SQLiteDatabase>();
+  @RealObject private SQLiteOpenHelper realHelper;
+  private String name;
+  private static HashMap<String, SQLiteDatabase> dbMap = new HashMap<String, SQLiteDatabase>();
 
-    private SQLiteDatabase getOrCreateDb(boolean shouldCreate) {
-        SQLiteDatabase db = dbMap.get(name);
-        if (shouldCreate && db == null) {
-            db = SQLiteDatabase.openDatabase(name, null, 0);
-            dbMap.put(name, db);
-            realHelper.onCreate(db);
-        }
-        return db;
+  private SQLiteDatabase getOrCreateDb(boolean shouldCreate) {
+    SQLiteDatabase db = dbMap.get(name);
+    if (shouldCreate && db == null) {
+      db = SQLiteDatabase.openDatabase(name, null, 0);
+      dbMap.put(name, db);
+      realHelper.onCreate(db);
     }
+    return db;
+  }
 
-    public void __constructor__(Context context, String name, CursorFactory factory, int version) {
-        this.name = name;
-        this.close();
-    }
+  public void __constructor__(Context context, String name, CursorFactory factory, int version) {
+    this.name = name;
+    this.close();
+  }
 
-    public static void reset() {
-        dbMap = new HashMap<String, SQLiteDatabase>();
-    }
+  public static void reset() {
+    dbMap = new HashMap<String, SQLiteDatabase>();
+  }
 
-    @Implementation
-    public synchronized void close() {
-        SQLiteDatabase database = getOrCreateDb(false);
-        if (database != null) {
-            database.close();
-            dbMap.remove(name);
-        }
+  @Implementation
+  public synchronized void close() {
+    SQLiteDatabase database = getOrCreateDb(false);
+    if (database != null) {
+      database.close();
+      dbMap.remove(name);
     }
+  }
 
-    @Implementation
-    public synchronized SQLiteDatabase getReadableDatabase() {
-        SQLiteDatabase database = getOrCreateDb(true);
-        realHelper.onOpen(database);
-        return database;
-    }
+  @Implementation
+  public synchronized SQLiteDatabase getReadableDatabase() {
+    SQLiteDatabase database = getOrCreateDb(true);
+    realHelper.onOpen(database);
+    return database;
+  }
 
-    @Implementation
-    public synchronized SQLiteDatabase getWritableDatabase() {
-        SQLiteDatabase database = getOrCreateDb(true);
-        realHelper.onOpen(database);
-        return database;
-    }
+  @Implementation
+  public synchronized SQLiteDatabase getWritableDatabase() {
+    SQLiteDatabase database = getOrCreateDb(true);
+    realHelper.onOpen(database);
+    return database;
+  }
 
-    @Implementation
-    public String getDatabaseName() {
-        return name;
-    }
+  @Implementation
+  public String getDatabaseName() {
+    return name;
+  }
 }

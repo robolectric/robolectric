@@ -7,23 +7,23 @@ import org.robolectric.annotation.RealObject;
 
 @Implements(value = ViewFlipper.class)
 public class ShadowViewFlipper extends ShadowViewAnimator {
-    @RealObject
-    protected ViewFlipper realObject;
+  @RealObject
+  protected ViewFlipper realObject;
 
-    protected boolean isFlipping;
+  protected boolean isFlipping;
 
-    @Implementation
-    public void startFlipping() {
-        this.isFlipping = true;
-    }
+  @Implementation
+  public void startFlipping() {
+    this.isFlipping = true;
+  }
 
-    @Implementation
-    public void stopFlipping() {
-        this.isFlipping = false;
-    }
+  @Implementation
+  public void stopFlipping() {
+    this.isFlipping = false;
+  }
 
-    @Implementation
-    public boolean isFlipping() {
-        return isFlipping;
-    }
+  @Implementation
+  public boolean isFlipping() {
+    return isFlipping;
+  }
 }

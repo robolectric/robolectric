@@ -17,23 +17,23 @@ public class PreferenceScreenTest {
 	private PreferenceScreen screen;
 	private ShadowPreferenceScreen shadow;
 
-    @Before
-    public void setUp() throws Exception {
-    	screen = Robolectric.newInstanceOf(PreferenceScreen.class);
-    	shadow = Robolectric.shadowOf(screen);
-    }
-    
+  @Before
+  public void setUp() throws Exception {
+  	screen = Robolectric.newInstanceOf(PreferenceScreen.class);
+  	shadow = Robolectric.shadowOf(screen);
+  }
+
 	@Test
 	public void shouldInheritFromPreferenceGroup() {
-        assertThat(shadow).isInstanceOf(ShadowPreferenceGroup.class);
+    assertThat(shadow).isInstanceOf(ShadowPreferenceGroup.class);
 	}
 	
 	@Test
 	public void shouldSetDialog() {
 		Dialog dialog = new Dialog(new Activity());
 
-        assertThat(screen.getDialog()).isNull();
+    assertThat(screen.getDialog()).isNull();
 		shadow.setDialog(dialog);
-        assertThat(screen.getDialog()).isSameAs(dialog);
+    assertThat(screen.getDialog()).isSameAs(dialog);
 	}
 }

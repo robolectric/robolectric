@@ -7,23 +7,23 @@ import android.content.ServiceConnection;
 import android.os.IBinder;
 
 class TestService extends Service implements ServiceConnection {
-    ComponentName name;
-    IBinder service;
-    ComponentName nameUnbound;
+  ComponentName name;
+  IBinder service;
+  ComponentName nameUnbound;
 
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
-    }
+  @Override
+  public IBinder onBind(Intent intent) {
+    return null;
+  }
 
-    @Override
-    public void onServiceConnected(ComponentName name, IBinder service) {
-        this.name = name;
-        this.service = service;
-    }
+  @Override
+  public void onServiceConnected(ComponentName name, IBinder service) {
+    this.name = name;
+    this.service = service;
+  }
 
-    @Override
-    public void onServiceDisconnected(ComponentName name) {
-        nameUnbound = name;
-    }
+  @Override
+  public void onServiceDisconnected(ComponentName name) {
+    nameUnbound = name;
+  }
 }

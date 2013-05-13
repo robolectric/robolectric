@@ -6,39 +6,39 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public interface FsFile {
-    boolean exists();
+  boolean exists();
 
-    boolean isDirectory();
+  boolean isDirectory();
 
-    boolean isFile();
+  boolean isFile();
 
-    FsFile[] listFiles();
+  FsFile[] listFiles();
 
-    FsFile[] listFiles(Filter filter);
+  FsFile[] listFiles(Filter filter);
 
-    String[] listFileNames();
+  String[] listFileNames();
 
-    FsFile getParent();
+  FsFile getParent();
 
-    String getName();
+  String getName();
 
-    InputStream getInputStream() throws IOException;
+  InputStream getInputStream() throws IOException;
 
-    byte[] getBytes() throws IOException;
+  byte[] getBytes() throws IOException;
 
-    FsFile join(String... pathParts);
+  FsFile join(String... pathParts);
 
-    @Override String toString();
+  @Override String toString();
 
-    @Override boolean equals(Object o);
+  @Override boolean equals(Object o);
 
-    @Override int hashCode();
+  @Override int hashCode();
 
-    String getBaseName();
+  String getBaseName();
 
-    String getPath();
+  String getPath();
 
-    public interface Filter {
-        boolean accept(@NotNull FsFile fsFile);
-    }
+  public interface Filter {
+    boolean accept(@NotNull FsFile fsFile);
+  }
 }

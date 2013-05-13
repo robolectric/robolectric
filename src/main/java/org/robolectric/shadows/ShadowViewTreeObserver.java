@@ -11,25 +11,25 @@ import java.util.List;
 @Implements(ViewTreeObserver.class)
 public class ShadowViewTreeObserver {
 
-    private ArrayList<ViewTreeObserver.OnGlobalLayoutListener> globalLayoutListeners = new ArrayList<ViewTreeObserver.OnGlobalLayoutListener>();
+  private ArrayList<ViewTreeObserver.OnGlobalLayoutListener> globalLayoutListeners = new ArrayList<ViewTreeObserver.OnGlobalLayoutListener>();
 
-    @Implementation
-    public void addOnGlobalLayoutListener(ViewTreeObserver.OnGlobalLayoutListener listener) {
-        this.globalLayoutListeners.add(listener);
-    }
+  @Implementation
+  public void addOnGlobalLayoutListener(ViewTreeObserver.OnGlobalLayoutListener listener) {
+    this.globalLayoutListeners.add(listener);
+  }
 
-    @Implementation
-    public void removeGlobalOnLayoutListener(ViewTreeObserver.OnGlobalLayoutListener listener) {
-        this.globalLayoutListeners.remove(listener);
-    }
+  @Implementation
+  public void removeGlobalOnLayoutListener(ViewTreeObserver.OnGlobalLayoutListener listener) {
+    this.globalLayoutListeners.remove(listener);
+  }
 
-    public void fireOnGlobalLayoutListeners() {
-        for (ViewTreeObserver.OnGlobalLayoutListener listener : new ArrayList<ViewTreeObserver.OnGlobalLayoutListener>(globalLayoutListeners)) {
-            listener.onGlobalLayout();
-        }
+  public void fireOnGlobalLayoutListeners() {
+    for (ViewTreeObserver.OnGlobalLayoutListener listener : new ArrayList<ViewTreeObserver.OnGlobalLayoutListener>(globalLayoutListeners)) {
+      listener.onGlobalLayout();
     }
+  }
 
-    public List<ViewTreeObserver.OnGlobalLayoutListener> getOnGlobalLayoutListeners() {
-        return globalLayoutListeners;
-    }
+  public List<ViewTreeObserver.OnGlobalLayoutListener> getOnGlobalLayoutListeners() {
+    return globalLayoutListeners;
+  }
 }

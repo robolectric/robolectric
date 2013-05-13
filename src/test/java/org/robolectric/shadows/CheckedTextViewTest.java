@@ -14,37 +14,37 @@ import static org.junit.Assert.assertTrue;
 @RunWith(TestRunners.WithDefaults.class)
 public class CheckedTextViewTest {
 
-    private CheckedTextView checkedTextView;
+  private CheckedTextView checkedTextView;
 
-    @Before
-    public void beforeTests() {
-        checkedTextView = new CheckedTextView(new Activity());
-    }
+  @Before
+  public void beforeTests() {
+    checkedTextView = new CheckedTextView(new Activity());
+  }
 
-    @Test
-    public void testToggle() {
-        assertFalse(checkedTextView.isChecked());
+  @Test
+  public void testToggle() {
+    assertFalse(checkedTextView.isChecked());
 
-        checkedTextView.toggle();
+    checkedTextView.toggle();
 
-        assertTrue(checkedTextView.isChecked());
-    }
+    assertTrue(checkedTextView.isChecked());
+  }
 
-    @Test
-    public void testSetChecked() {
-        assertFalse(checkedTextView.isChecked());
+  @Test
+  public void testSetChecked() {
+    assertFalse(checkedTextView.isChecked());
 
-        checkedTextView.setChecked(true);
+    checkedTextView.setChecked(true);
 
-        assertTrue(checkedTextView.isChecked());
-    }
+    assertTrue(checkedTextView.isChecked());
+  }
 
-    @Test public void toggle_shouldChangeCheckedness() throws Exception {
-        CheckedTextView view = new CheckedTextView(Robolectric.application);
-        assertFalse(view.isChecked());
-        view.toggle();
-        assertTrue(view.isChecked());
-        view.toggle();  // Used to support performClick(), but Android doesn't. Sigh.
-        assertFalse(view.isChecked());
-    }
+  @Test public void toggle_shouldChangeCheckedness() throws Exception {
+    CheckedTextView view = new CheckedTextView(Robolectric.application);
+    assertFalse(view.isChecked());
+    view.toggle();
+    assertTrue(view.isChecked());
+    view.toggle();  // Used to support performClick(), but Android doesn't. Sigh.
+    assertFalse(view.isChecked());
+  }
 }

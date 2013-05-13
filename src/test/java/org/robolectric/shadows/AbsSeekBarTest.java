@@ -17,7 +17,7 @@ public class AbsSeekBarTest {
 	public void testInheritance() {
 		TestAbsSeekBar seekBar = new TestAbsSeekBar(new Activity());
 		ShadowAbsSeekBar shadow = Robolectric.shadowOf(seekBar);
-        assertThat(shadow).isInstanceOf(ShadowProgressBar.class);
+    assertThat(shadow).isInstanceOf(ShadowProgressBar.class);
 	}
 	
 	private static class TestAbsSeekBar extends AbsSeekBar {

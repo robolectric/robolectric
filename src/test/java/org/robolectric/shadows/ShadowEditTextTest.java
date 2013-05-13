@@ -16,25 +16,25 @@ import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ShadowEditTextTest {
-    private EditText editText;
+  private EditText editText;
 
-    @Before
-    public void setup() {
-        List<Attribute> attributes = new ArrayList<Attribute>();
-        attributes.add(new Attribute("android:attr/maxLength", "5", R.class.getPackage().getName()));
-        RoboAttributeSet attributeSet = new RoboAttributeSet(attributes, Robolectric.application.getResources(), null);
-        editText = new EditText(Robolectric.application, attributeSet);
-    }
+  @Before
+  public void setup() {
+    List<Attribute> attributes = new ArrayList<Attribute>();
+    attributes.add(new Attribute("android:attr/maxLength", "5", R.class.getPackage().getName()));
+    RoboAttributeSet attributeSet = new RoboAttributeSet(attributes, Robolectric.application.getResources(), null);
+    editText = new EditText(Robolectric.application, attributeSet);
+  }
 
-    @Test
-    public void shouldRespectMaxLength() throws Exception {
-        editText.setText("0123456678");
-        assertThat(editText.getText().toString()).isEqualTo("01234");
-    }
-    
-    @Test
-    public void shouldAcceptNullStrings() {
-        editText.setText(null);
-        assertThat(editText.getText().toString()).isEqualTo("");
-    }
+  @Test
+  public void shouldRespectMaxLength() throws Exception {
+    editText.setText("0123456678");
+    assertThat(editText.getText().toString()).isEqualTo("01234");
+  }
+
+  @Test
+  public void shouldAcceptNullStrings() {
+    editText.setText(null);
+    assertThat(editText.getText().toString()).isEqualTo("");
+  }
 }

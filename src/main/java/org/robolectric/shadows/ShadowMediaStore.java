@@ -11,29 +11,29 @@ import org.robolectric.annotation.Implements;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(MediaStore.class)
 public class ShadowMediaStore {
-    
-    @Implements(MediaStore.Images.class)
-    public static class ShadowImages {
-        @Implements(MediaStore.Images.Media.class)
-        public static class ShadowMedia {
-            @Implementation
-            public static Bitmap getBitmap(ContentResolver cr, Uri url) {
-                return ShadowBitmapFactory.create(url.toString());
-            }
-        }
-    }
 
-    public static void reset() {
-        Robolectric.Reflection.setFinalStaticField(MediaStore.Images.Media.class, "EXTERNAL_CONTENT_URI",
-                Uri.parse("content://media/external/images/media"));
-        
-        Robolectric.Reflection.setFinalStaticField(MediaStore.Images.Media.class, "INTERNAL_CONTENT_URI",
-                Uri.parse("content://media/internal/images/media"));
-
-        Robolectric.Reflection.setFinalStaticField(MediaStore.Video.Media.class, "EXTERNAL_CONTENT_URI",
-                Uri.parse("content://media/external/video/media"));
-        
-        Robolectric.Reflection.setFinalStaticField(MediaStore.Video.Media.class, "INTERNAL_CONTENT_URI",
-                Uri.parse("content://media/internal/video/media"));
+  @Implements(MediaStore.Images.class)
+  public static class ShadowImages {
+    @Implements(MediaStore.Images.Media.class)
+    public static class ShadowMedia {
+      @Implementation
+      public static Bitmap getBitmap(ContentResolver cr, Uri url) {
+        return ShadowBitmapFactory.create(url.toString());
+      }
     }
+  }
+
+  public static void reset() {
+    Robolectric.Reflection.setFinalStaticField(MediaStore.Images.Media.class, "EXTERNAL_CONTENT_URI",
+        Uri.parse("content://media/external/images/media"));
+
+    Robolectric.Reflection.setFinalStaticField(MediaStore.Images.Media.class, "INTERNAL_CONTENT_URI",
+        Uri.parse("content://media/internal/images/media"));
+
+    Robolectric.Reflection.setFinalStaticField(MediaStore.Video.Media.class, "EXTERNAL_CONTENT_URI",
+        Uri.parse("content://media/external/video/media"));
+
+    Robolectric.Reflection.setFinalStaticField(MediaStore.Video.Media.class, "INTERNAL_CONTENT_URI",
+        Uri.parse("content://media/internal/video/media"));
+  }
 }

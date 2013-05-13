@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <selector
-    xmlns:android="http://schemas.android.com/apk/res/android">
+  xmlns:android="http://schemas.android.com/apk/res/android">
 
    <item android:state_selected="true" android:drawable="@drawable/l0_red" />
    <item android:state_pressed="true" android:drawable="@drawable/l1_orange" />
@@ -11,5 +11,5 @@
    <item android:state_window_focused="true" android:drawable="@drawable/l6_violet" />
    
    <item android:drawable="@drawable/l7_white" /> 
-    
+
 </selector>

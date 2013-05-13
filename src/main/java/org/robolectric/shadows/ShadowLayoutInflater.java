@@ -20,66 +20,66 @@ import static org.robolectric.Robolectric.shadowOf;
 
 @Implements(LayoutInflater.class)
 public class ShadowLayoutInflater {
-    private static AppSingletonizer<LayoutInflater> instances = new LayoutInflaterAppSingletonizer();
+  private static AppSingletonizer<LayoutInflater> instances = new LayoutInflaterAppSingletonizer();
 
-    private Context context;
+  private Context context;
 
-    private static LayoutInflater bind(LayoutInflater layoutInflater, Context context) {
-        shadowOf(layoutInflater).context = context;
-        return layoutInflater;
+  private static LayoutInflater bind(LayoutInflater layoutInflater, Context context) {
+    shadowOf(layoutInflater).context = context;
+    return layoutInflater;
+  }
+
+  @Implementation
+  public static LayoutInflater from(Context context) {
+    return bind(instances.getInstance(context), context);
+  }
+
+  public void __constructor__(Context context) {
+    this.context = context;
+  }
+
+  @Implementation
+  public Context getContext() {
+    return context;
+  }
+
+  @Implementation
+  public View inflate(int resource, ViewGroup root, boolean attachToRoot) {
+    String qualifiers = shadowOf(context.getResources().getConfiguration()).getQualifiers();
+    ResourceLoader resourceLoader = shadowOf(context.getResources()).getResourceLoader();
+    return new LayoutBuilder(resourceLoader).inflateView(context, resource, attachToRoot ? root : null, qualifiers);
+  }
+
+  @Implementation
+  public View inflate(int resource, ViewGroup root) {
+    return inflate(resource, root, root != null);
+  }
+
+  private static class LayoutInflaterAppSingletonizer extends AppSingletonizer<LayoutInflater> {
+    public LayoutInflaterAppSingletonizer() {
+      super(LayoutInflater.class);
     }
 
-    @Implementation
-    public static LayoutInflater from(Context context) {
-        return bind(instances.getInstance(context), context);
+    @Override protected LayoutInflater get(ShadowApplication shadowApplication) {
+      return shadowApplication.getLayoutInflater();
     }
 
-    public void __constructor__(Context context) {
-        this.context = context;
+    @Override protected void set(ShadowApplication shadowApplication, LayoutInflater instance) {
+      shadowApplication.layoutInflater = instance;
     }
 
-    @Implementation
-    public Context getContext() {
-        return context;
+    @Override protected LayoutInflater createInstance(Application applicationContext) {
+      return new MyLayoutInflater(applicationContext);
     }
 
-    @Implementation
-    public View inflate(int resource, ViewGroup root, boolean attachToRoot) {
-        String qualifiers = shadowOf(context.getResources().getConfiguration()).getQualifiers();
-        ResourceLoader resourceLoader = shadowOf(context.getResources()).getResourceLoader();
-        return new LayoutBuilder(resourceLoader).inflateView(context, resource, attachToRoot ? root : null, qualifiers);
+    private static class MyLayoutInflater extends LayoutInflater {
+      public MyLayoutInflater(Context context) {
+        super(context);
+      }
+
+      @Override public LayoutInflater cloneInContext(Context newContext) {
+        return bind(new MyLayoutInflater(newContext), newContext);
+      }
     }
-
-    @Implementation
-    public View inflate(int resource, ViewGroup root) {
-        return inflate(resource, root, root != null);
-    }
-
-    private static class LayoutInflaterAppSingletonizer extends AppSingletonizer<LayoutInflater> {
-        public LayoutInflaterAppSingletonizer() {
-            super(LayoutInflater.class);
-        }
-
-        @Override protected LayoutInflater get(ShadowApplication shadowApplication) {
-            return shadowApplication.getLayoutInflater();
-        }
-
-        @Override protected void set(ShadowApplication shadowApplication, LayoutInflater instance) {
-            shadowApplication.layoutInflater = instance;
-        }
-
-        @Override protected LayoutInflater createInstance(Application applicationContext) {
-            return new MyLayoutInflater(applicationContext);
-        }
-
-        private static class MyLayoutInflater extends LayoutInflater {
-            public MyLayoutInflater(Context context) {
-                super(context);
-            }
-
-            @Override public LayoutInflater cloneInContext(Context newContext) {
-                return bind(new MyLayoutInflater(newContext), newContext);
-            }
-        }
-    }
+  }
 }

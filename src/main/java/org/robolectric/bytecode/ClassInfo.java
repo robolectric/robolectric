@@ -3,11 +3,11 @@ package org.robolectric.bytecode;
 import java.lang.annotation.Annotation;
 
 public interface ClassInfo {
-    String getName();
+  String getName();
 
-    boolean isInterface();
+  boolean isInterface();
 
-    boolean isAnnotation();
+  boolean isAnnotation();
 
-    boolean hasAnnotation(Class<? extends Annotation> annotationClass);
+  boolean hasAnnotation(Class<? extends Annotation> annotationClass);
 }

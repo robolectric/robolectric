@@ -10,20 +10,20 @@ package org.robolectric.annotation;
 @java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy.RUNTIME)
 @java.lang.annotation.Target({java.lang.annotation.ElementType.TYPE})
 public @interface Implements {
-    /**
-     * The Android class to be shadowed.
-     */
-    Class<?> value();
+  /**
+   * The Android class to be shadowed.
+   */
+  Class<?> value();
 
-    String className() default "";
+  String className() default "";
 
-    /**
-     * If true, Robolectric will invoke the actual Android code for any method that isn't shadowed.
-     */
-    boolean callThroughByDefault() default true;
+  /**
+   * If true, Robolectric will invoke the actual Android code for any method that isn't shadowed.
+   */
+  boolean callThroughByDefault() default true;
 
-    /**
-     * If true, Robolectric will invoke @Implementation methods from superclasses.
-     */
-    boolean inheritImplementationMethods() default false;
+  /**
+   * If true, Robolectric will invoke @Implementation methods from superclasses.
+   */
+  boolean inheritImplementationMethods() default false;
 }

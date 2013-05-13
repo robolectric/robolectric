@@ -6,17 +6,17 @@ import org.robolectric.annotation.Implements;
 
 @Implements(WifiInfo.class)
 public class ShadowWifiInfo {
-    public static void __staticInitializer__() {
-    }
+  public static void __staticInitializer__() {
+  }
 
-    private String macAddress;
+  private String macAddress;
 
-    @Implementation
-    public String getMacAddress() {
-        return macAddress;
-    }
+  @Implementation
+  public String getMacAddress() {
+    return macAddress;
+  }
 
-    public void setMacAddress(String newMacAddress) {
-        macAddress = newMacAddress;
-    }
+  public void setMacAddress(String newMacAddress) {
+    macAddress = newMacAddress;
+  }
 }

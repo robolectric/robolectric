@@ -15,10 +15,10 @@ import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ImageButtonTest {
-    @Test @Ignore("Not how Android behaves as of Jelly Bean.")
-    public void testBackground() throws Exception {
-        RoboAttributeSet attrs = new RoboAttributeSet(new ArrayList<Attribute>(), TestUtil.emptyResources(), null);
-        ImageButton button = new ImageButton(Robolectric.application, attrs);
-        assertThat(button.getBackground()).isNotNull();
-    }
+  @Test @Ignore("Not how Android behaves as of Jelly Bean.")
+  public void testBackground() throws Exception {
+    RoboAttributeSet attrs = new RoboAttributeSet(new ArrayList<Attribute>(), TestUtil.emptyResources(), null);
+    ImageButton button = new ImageButton(Robolectric.application, attrs);
+    assertThat(button.getBackground()).isNotNull();
+  }
 }

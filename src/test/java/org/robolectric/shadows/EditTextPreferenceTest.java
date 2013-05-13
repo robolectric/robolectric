@@ -14,27 +14,27 @@ import static org.fest.assertions.api.Assertions.assertThat;
 @RunWith(TestRunners.WithDefaults.class)
 public class EditTextPreferenceTest {
 
-    private static final String SOME_TEXT = "some text";
-    private EditTextPreference preference;
+  private static final String SOME_TEXT = "some text";
+  private EditTextPreference preference;
 
-    private Context context;
+  private Context context;
 
-    @Before
-    public void setup() {
-        context = new Activity();
-        preference = new EditTextPreference(context);
-    }
+  @Before
+  public void setup() {
+    context = new Activity();
+    preference = new EditTextPreference(context);
+  }
 
-    @Test
-    public void testConstructor() {
-        preference = new EditTextPreference(context);
-        assertNotNull(preference.getEditText());
-    }
+  @Test
+  public void testConstructor() {
+    preference = new EditTextPreference(context);
+    assertNotNull(preference.getEditText());
+  }
 
-    @Test
-    public void testSetText() {
-        preference.setText(SOME_TEXT);
-        assertThat((String) preference.getEditText().getText().toString()).isEqualTo(SOME_TEXT);
-    }
+  @Test
+  public void testSetText() {
+    preference.setText(SOME_TEXT);
+    assertThat((String) preference.getEditText().getText().toString()).isEqualTo(SOME_TEXT);
+  }
 
 }

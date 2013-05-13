@@ -10,19 +10,19 @@ import org.robolectric.shadows.ShadowMapController;
 import org.robolectric.shadows.ShadowMapView;
 
 public class RobolectricForMaps {
-    public static ShadowGeoPoint shadowOf(GeoPoint instance) {
-        return (ShadowGeoPoint) Robolectric.shadowOf_(instance);
-    }
+  public static ShadowGeoPoint shadowOf(GeoPoint instance) {
+    return (ShadowGeoPoint) Robolectric.shadowOf_(instance);
+  }
 
-    public static ShadowMapView shadowOf(MapView instance) {
-        return (ShadowMapView) Robolectric.shadowOf_(instance);
-    }
+  public static ShadowMapView shadowOf(MapView instance) {
+    return (ShadowMapView) Robolectric.shadowOf_(instance);
+  }
 
-    public static ShadowMapController shadowOf(MapController instance) {
-        return (ShadowMapController) Robolectric.shadowOf_(instance);
-    }
+  public static ShadowMapController shadowOf(MapController instance) {
+    return (ShadowMapController) Robolectric.shadowOf_(instance);
+  }
 
-    public static ShadowItemizedOverlay shadowOf(ItemizedOverlay instance) {
-        return (ShadowItemizedOverlay) Robolectric.shadowOf_(instance);
-    }
+  public static ShadowItemizedOverlay shadowOf(ItemizedOverlay instance) {
+    return (ShadowItemizedOverlay) Robolectric.shadowOf_(instance);
+  }
 }

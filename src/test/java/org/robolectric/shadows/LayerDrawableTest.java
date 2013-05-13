@@ -18,80 +18,80 @@ import static org.robolectric.Robolectric.shadowOf;
  */
 @RunWith(TestRunners.WithDefaults.class)
 public class LayerDrawableTest {
-    /**
-     * drawables
-     */
-    protected Drawable drawable1000;
-    protected Drawable drawable2000;
-    protected Drawable drawable3000;
-    protected Drawable drawable4000;
+  /**
+   * drawables
+   */
+  protected Drawable drawable1000;
+  protected Drawable drawable2000;
+  protected Drawable drawable3000;
+  protected Drawable drawable4000;
 
-    /**
-     * drawables
-     */
-    protected Drawable[] drawables;
+  /**
+   * drawables
+   */
+  protected Drawable[] drawables;
 
-    @Before
-    public void setUp() {
-        drawable1000 = new BitmapDrawable(BitmapFactory.decodeResource(
-                Robolectric.application.getResources(), 0x00001000));
-        drawable2000 = new BitmapDrawable(BitmapFactory.decodeResource(
-                Robolectric.application.getResources(), 0x00002000));
-        drawable3000 = new BitmapDrawable(BitmapFactory.decodeResource(
-                Robolectric.application.getResources(), 0x00003000));
-        drawable4000 = new BitmapDrawable(BitmapFactory.decodeResource(
-                Robolectric.application.getResources(), 0x00004000));
+  @Before
+  public void setUp() {
+    drawable1000 = new BitmapDrawable(BitmapFactory.decodeResource(
+        Robolectric.application.getResources(), 0x00001000));
+    drawable2000 = new BitmapDrawable(BitmapFactory.decodeResource(
+        Robolectric.application.getResources(), 0x00002000));
+    drawable3000 = new BitmapDrawable(BitmapFactory.decodeResource(
+        Robolectric.application.getResources(), 0x00003000));
+    drawable4000 = new BitmapDrawable(BitmapFactory.decodeResource(
+        Robolectric.application.getResources(), 0x00004000));
 
-        drawables = new Drawable[]{drawable1000, drawable2000, drawable3000};
-    }
+    drawables = new Drawable[]{drawable1000, drawable2000, drawable3000};
+  }
 
-    @Test
-    public void testGetNumberOfLayers() {
-        LayerDrawable layerDrawable = new LayerDrawable(drawables);
-        assertEquals("count", 3, layerDrawable.getNumberOfLayers());
-    }
+  @Test
+  public void testGetNumberOfLayers() {
+    LayerDrawable layerDrawable = new LayerDrawable(drawables);
+    assertEquals("count", 3, layerDrawable.getNumberOfLayers());
+  }
 
-    @Test
-    public void testSetDrawableByLayerId1() throws Exception {
-        LayerDrawable layerDrawable = new LayerDrawable(drawables);
-        int index = 1;
-        int layerId = 345;
-        layerDrawable.setId(index, layerId);
+  @Test
+  public void testSetDrawableByLayerId1() throws Exception {
+    LayerDrawable layerDrawable = new LayerDrawable(drawables);
+    int index = 1;
+    int layerId = 345;
+    layerDrawable.setId(index, layerId);
 
-        layerDrawable.setDrawableByLayerId(layerId, drawable4000);
+    layerDrawable.setDrawableByLayerId(layerId, drawable4000);
 
-        assertEquals(shadowOf(drawable4000).getCreatedFromResId(),
-                shadowOf(layerDrawable.getDrawable(index)).getCreatedFromResId());
-    }
+    assertEquals(shadowOf(drawable4000).getCreatedFromResId(),
+        shadowOf(layerDrawable.getDrawable(index)).getCreatedFromResId());
+  }
 
-    @Test
-    public void testSetDrawableByLayerId2() throws Exception {
-        LayerDrawable layerDrawable = new LayerDrawable(drawables);
-        int index = 0;
-        int layerId = 345;
-        layerDrawable.setId(index, layerId);
+  @Test
+  public void testSetDrawableByLayerId2() throws Exception {
+    LayerDrawable layerDrawable = new LayerDrawable(drawables);
+    int index = 0;
+    int layerId = 345;
+    layerDrawable.setId(index, layerId);
 
-        layerDrawable.setDrawableByLayerId(layerId, drawable4000);
+    layerDrawable.setDrawableByLayerId(layerId, drawable4000);
 
-        assertEquals(shadowOf(drawable4000).getCreatedFromResId(),
-                shadowOf(layerDrawable.getDrawable(index)).getCreatedFromResId());
-    }
+    assertEquals(shadowOf(drawable4000).getCreatedFromResId(),
+        shadowOf(layerDrawable.getDrawable(index)).getCreatedFromResId());
+  }
 
-    @Test
-    public void setDrawableByLayerId_shouldReturnFalseIfIdNotFound() throws Exception {
-        LayerDrawable layerDrawable = new LayerDrawable(drawables);
-        boolean ret = layerDrawable.setDrawableByLayerId(123, drawable4000);
-        assertFalse(ret);
-    }
+  @Test
+  public void setDrawableByLayerId_shouldReturnFalseIfIdNotFound() throws Exception {
+    LayerDrawable layerDrawable = new LayerDrawable(drawables);
+    boolean ret = layerDrawable.setDrawableByLayerId(123, drawable4000);
+    assertFalse(ret);
+  }
 
-    @Test
-    public void setDrawableByLayerId_shouldReturnTrueIfIdWasFound() throws Exception {
-        LayerDrawable layerDrawable = new LayerDrawable(drawables);
-        int index = 0;
-        int layerId = 345;
-        layerDrawable.setId(index, layerId);
+  @Test
+  public void setDrawableByLayerId_shouldReturnTrueIfIdWasFound() throws Exception {
+    LayerDrawable layerDrawable = new LayerDrawable(drawables);
+    int index = 0;
+    int layerId = 345;
+    layerDrawable.setId(index, layerId);
 
-        boolean ret = layerDrawable.setDrawableByLayerId(layerId, drawable4000);
-        assertTrue(ret);
-    }
+    boolean ret = layerDrawable.setDrawableByLayerId(layerId, drawable4000);
+    assertTrue(ret);
+  }
 }

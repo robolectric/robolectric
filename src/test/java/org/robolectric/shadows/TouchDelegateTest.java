@@ -29,13 +29,13 @@ public class TouchDelegateTest {
 	@Test
 	public void testBounds() {
 		Rect bounds = td.getBounds();
-        assertThat(bounds).isEqualTo(rect);
+    assertThat(bounds).isEqualTo(rect);
 	}
 	
 	@Test
 	public void tetsDelegateView() {
 		View view = td.getDelegateView();
-        assertThat(view).isEqualTo(this.view);
+    assertThat(view).isEqualTo(this.view);
 	}
 	
 }

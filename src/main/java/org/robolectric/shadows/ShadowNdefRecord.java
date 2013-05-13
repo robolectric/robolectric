@@ -7,17 +7,17 @@ import org.robolectric.annotation.RealObject;
 
 @Implements(NdefRecord.class)
 public class ShadowNdefRecord {
-    @RealObject
-    private NdefRecord realNdefRecord;
+  @RealObject
+  private NdefRecord realNdefRecord;
 
-    private byte[] data;
+  private byte[] data;
 
-    public void __constructor__(byte[] data) {
-        this.data = data;
-    }
+  public void __constructor__(byte[] data) {
+    this.data = data;
+  }
 
-    @Implementation
-    public byte[] getPayload() {
-        return data;
-    }
+  @Implementation
+  public byte[] getPayload() {
+    return data;
+  }
 }

@@ -17,26 +17,26 @@ import static org.robolectric.util.FragmentTestUtil.startFragment;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class FragmentTestUtilTest {
-    private LoginFragment fragment;
+  private LoginFragment fragment;
 
-    @Before
-    public void setUp() {
-        fragment = new LoginFragment();
-        startFragment(fragment);
+  @Before
+  public void setUp() {
+    fragment = new LoginFragment();
+    startFragment(fragment);
 
-        assertThat(fragment.getActivity(), notNullValue());
-        assertThat(fragment.getView(), notNullValue());
-    }
+    assertThat(fragment.getActivity(), notNullValue());
+    assertThat(fragment.getView(), notNullValue());
+  }
 
-    @Test
-    public void tacos_should_be_found() {
-        assertThat(fragment.getView().findViewById(R.id.tacos), notNullValue());
-    }
+  @Test
+  public void tacos_should_be_found() {
+    assertThat(fragment.getView().findViewById(R.id.tacos), notNullValue());
+  }
 }
 
 class LoginFragment extends Fragment {
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_contents, container, false);
-    }
+  @Override
+  public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    return inflater.inflate(R.layout.fragment_contents, container, false);
+  }
 }

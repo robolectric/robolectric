@@ -10,18 +10,18 @@ import static org.robolectric.Robolectric.directlyOn;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AbsSpinner.class)
 public class ShadowAbsSpinner extends ShadowAdapterView {
-    @RealObject AbsSpinner realAbsSpinner;
-    private boolean animatedTransition;
+  @RealObject AbsSpinner realAbsSpinner;
+  private boolean animatedTransition;
 
-    @Implementation
-    public void setSelection(int position, boolean animate) {
-        directlyOn(realAbsSpinner, AbsSpinner.class, "setSelection", int.class, boolean.class)
-                .invoke(position, animate);
-        animatedTransition = animate;
-    }
+  @Implementation
+  public void setSelection(int position, boolean animate) {
+    directlyOn(realAbsSpinner, AbsSpinner.class, "setSelection", int.class, boolean.class)
+        .invoke(position, animate);
+    animatedTransition = animate;
+  }
 
-    // Non-implementation helper method
-    public boolean isAnimatedTransition() {
-        return animatedTransition;
-    }
+  // Non-implementation helper method
+  public boolean isAnimatedTransition() {
+    return animatedTransition;
+  }
 }

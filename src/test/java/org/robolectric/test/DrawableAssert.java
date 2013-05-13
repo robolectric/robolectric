@@ -8,14 +8,14 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.robolectric.Robolectric.shadowOf;
 
 public class DrawableAssert<T extends Drawable> extends AbstractAssert<DrawableAssert<T>, T> {
-    public DrawableAssert(T actual) {
-        super(actual, DrawableAssert.class);
-    }
+  public DrawableAssert(T actual) {
+    super(actual, DrawableAssert.class);
+  }
 
-    public void isResource(int resourceId) {
-        Assertions.assertThat(actual).isInstanceOf(BitmapDrawable.class);
-        BitmapDrawable bitmapDrawable = (BitmapDrawable) actual;
-        assertThat(shadowOf(bitmapDrawable.getBitmap()).getCreatedFromResId())
-                .isEqualTo(resourceId);
-    }
+  public void isResource(int resourceId) {
+    Assertions.assertThat(actual).isInstanceOf(BitmapDrawable.class);
+    BitmapDrawable bitmapDrawable = (BitmapDrawable) actual;
+    assertThat(shadowOf(bitmapDrawable.getBitmap()).getCreatedFromResId())
+        .isEqualTo(resourceId);
+  }
 }

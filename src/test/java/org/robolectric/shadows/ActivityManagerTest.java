@@ -13,23 +13,23 @@ import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ActivityManagerTest {
-    @Test
-    public void canGetMemoryInfoForOurProcess() {
-        ActivityManager activityManager = (ActivityManager) Robolectric.application.getSystemService(Context.ACTIVITY_SERVICE);
-        ShadowActivityManager shadowActivityManager = shadowOf(activityManager);
-        ActivityManager.MemoryInfo memoryInfo = new ActivityManager.MemoryInfo();
-        memoryInfo.lowMemory = true;
-        shadowActivityManager.setMemoryInfo(memoryInfo);
-        ActivityManager.MemoryInfo fetchedMemoryInfo = new ActivityManager.MemoryInfo();
-        activityManager.getMemoryInfo(fetchedMemoryInfo);
-        assertTrue(fetchedMemoryInfo.lowMemory);
-    }
-    
-    @Test
-    public void canGetMemoryInfoEvenWhenWeDidNotSetIt() {
-        ActivityManager activityManager = (ActivityManager) Robolectric.application.getSystemService(Context.ACTIVITY_SERVICE);
-        ActivityManager.MemoryInfo fetchedMemoryInfo = new ActivityManager.MemoryInfo();
-        activityManager.getMemoryInfo(fetchedMemoryInfo);
-        assertFalse(fetchedMemoryInfo.lowMemory);
-    }
+  @Test
+  public void canGetMemoryInfoForOurProcess() {
+    ActivityManager activityManager = (ActivityManager) Robolectric.application.getSystemService(Context.ACTIVITY_SERVICE);
+    ShadowActivityManager shadowActivityManager = shadowOf(activityManager);
+    ActivityManager.MemoryInfo memoryInfo = new ActivityManager.MemoryInfo();
+    memoryInfo.lowMemory = true;
+    shadowActivityManager.setMemoryInfo(memoryInfo);
+    ActivityManager.MemoryInfo fetchedMemoryInfo = new ActivityManager.MemoryInfo();
+    activityManager.getMemoryInfo(fetchedMemoryInfo);
+    assertTrue(fetchedMemoryInfo.lowMemory);
+  }
+
+  @Test
+  public void canGetMemoryInfoEvenWhenWeDidNotSetIt() {
+    ActivityManager activityManager = (ActivityManager) Robolectric.application.getSystemService(Context.ACTIVITY_SERVICE);
+    ActivityManager.MemoryInfo fetchedMemoryInfo = new ActivityManager.MemoryInfo();
+    activityManager.getMemoryInfo(fetchedMemoryInfo);
+    assertFalse(fetchedMemoryInfo.lowMemory);
+  }
 }

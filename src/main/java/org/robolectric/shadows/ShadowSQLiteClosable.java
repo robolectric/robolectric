@@ -12,8 +12,8 @@ import org.robolectric.annotation.Implements;
 @Implements(SQLiteClosable.class)
 public class ShadowSQLiteClosable {
 
-    @Implementation
-    public void close() {
-    }
+  @Implementation
+  public void close() {
+  }
 
 }

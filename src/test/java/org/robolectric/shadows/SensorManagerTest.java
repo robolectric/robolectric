@@ -68,17 +68,17 @@ public class SensorManagerTest {
 		assertThat(shadow.createSensorEvent() instanceof SensorEvent).isTrue();
 	}
 	
-    @Test
-    public void getSensor_shouldBeConfigurable() {
-        Sensor sensor = Robolectric.newInstanceOf(Sensor.class);
-        shadowOf(sensorManager).addSensor(Sensor.TYPE_ACCELEROMETER, sensor);
-        assertThat(sensor).isSameAs(sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER));
-    }
+  @Test
+  public void getSensor_shouldBeConfigurable() {
+    Sensor sensor = Robolectric.newInstanceOf(Sensor.class);
+    shadowOf(sensorManager).addSensor(Sensor.TYPE_ACCELEROMETER, sensor);
+    assertThat(sensor).isSameAs(sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER));
+  }
 
-    @Test
-    public void shouldReturnASensorList() throws Exception {
-        assertThat(sensorManager.getSensorList(0)).isNotNull();
-    }
+  @Test
+  public void shouldReturnASensorList() throws Exception {
+    assertThat(sensorManager.getSensorList(0)).isNotNull();
+  }
 
 	private class TestSensorEventListener implements SensorEventListener {
 

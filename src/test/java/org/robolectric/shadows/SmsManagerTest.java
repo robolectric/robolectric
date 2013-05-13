@@ -48,12 +48,12 @@ public class SmsManagerTest {
 		Assert.assertEquals(testText, lastParams.getText());
 	}
 
-    @Test
-    public void shouldClearLastSentTestMessageParameters() {
-        smsManager.sendTextMessage(testDestinationAddress, testScAddress, testText, null, null);
-        shadowSmsManager.clearLastSentTextMessageParams();
-        Assert.assertNull(shadowSmsManager.getLastSentTextMessageParams());
-    }
+  @Test
+  public void shouldClearLastSentTestMessageParameters() {
+    smsManager.sendTextMessage(testDestinationAddress, testScAddress, testText, null, null);
+    shadowSmsManager.clearLastSentTextMessageParams();
+    Assert.assertNull(shadowSmsManager.getLastSentTextMessageParams());
+  }
 	
 	@Test(expected=IllegalArgumentException.class)
 	public void sendTextMessage_shouldThrowExceptionWithEmptyDestination() {

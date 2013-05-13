@@ -12,17 +12,17 @@ import static org.fest.assertions.api.Assertions.assertThat;
 @RunWith(TestRunners.WithDefaults.class)
 public class SpinnerTest {
 
-    private Spinner spinner;
+  private Spinner spinner;
 
-    @Before
-    public void beforeTests() {
-        spinner = new Spinner(new Activity());
-    }
+  @Before
+  public void beforeTests() {
+    spinner = new Spinner(new Activity());
+  }
 
-    @Test
-    public void testPrompt() {
-        spinner.setPrompt("foo");
+  @Test
+  public void testPrompt() {
+    spinner.setPrompt("foo");
 
-        assertThat(spinner.getPrompt().toString()).isEqualTo("foo");
-    }
+    assertThat(spinner.getPrompt().toString()).isEqualTo("foo");
+  }
 }

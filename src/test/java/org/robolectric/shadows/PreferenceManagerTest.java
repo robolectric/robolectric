@@ -17,19 +17,19 @@ import static org.junit.Assert.assertNotNull;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class PreferenceManagerTest {
-    @Test
-    public void shouldProvideDefaultSharedPreferences() throws Exception {
-        Map<String, Map<String, Object>> content = Robolectric.getShadowApplication().getSharedPreferenceMap();
+  @Test
+  public void shouldProvideDefaultSharedPreferences() throws Exception {
+    Map<String, Map<String, Object>> content = Robolectric.getShadowApplication().getSharedPreferenceMap();
 
-        TestSharedPreferences testPrefs = new TestSharedPreferences(content, "__default__", Context.MODE_PRIVATE);
-        Editor editor = testPrefs.edit();
-        editor.putInt("foobar", 13);
-        editor.commit();
+    TestSharedPreferences testPrefs = new TestSharedPreferences(content, "__default__", Context.MODE_PRIVATE);
+    Editor editor = testPrefs.edit();
+    editor.putInt("foobar", 13);
+    editor.commit();
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(Robolectric.application);
+    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(Robolectric.application);
 
-        assertNotNull(prefs);
-        assertEquals(13, prefs.getInt("foobar", 0));
-    }
+    assertNotNull(prefs);
+    assertEquals(13, prefs.getInt("foobar", 0));
+  }
 
 }

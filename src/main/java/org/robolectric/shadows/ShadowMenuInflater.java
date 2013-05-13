@@ -20,53 +20,53 @@ import static org.robolectric.res.ResourceLoader.ANDROID_NS;
 
 @Implements(MenuInflater.class)
 public class ShadowMenuInflater {
-    private Context context;
-    private ResourceLoader resourceLoader;
-    private boolean strictI18n;
+  private Context context;
+  private ResourceLoader resourceLoader;
+  private boolean strictI18n;
 
-    public void __constructor__(Context context) {
-        this.context = context;
-        resourceLoader = shadowOf(context).getResourceLoader();
-        strictI18n = shadowOf(context).isStrictI18n();
+  public void __constructor__(Context context) {
+    this.context = context;
+    resourceLoader = shadowOf(context).getResourceLoader();
+    strictI18n = shadowOf(context).isStrictI18n();
+  }
+
+  @Implementation
+  public void inflate(int resource, Menu root) {
+    String qualifiers = shadowOf(context.getResources().getConfiguration()).getQualifiers();
+    MenuNode menuNode = resourceLoader.getMenuNode(resourceLoader.getResourceIndex().getResName(resource), qualifiers);
+
+    try {
+      addChildrenInGroup(menuNode, 0, root);
+    } catch (I18nException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new RuntimeException("error inflating " + shadowOf(context).getResName(resource), e);
     }
+  }
 
-    @Implementation
-    public void inflate(int resource, Menu root) {
-        String qualifiers = shadowOf(context.getResources().getConfiguration()).getQualifiers();
-        MenuNode menuNode = resourceLoader.getMenuNode(resourceLoader.getResourceIndex().getResName(resource), qualifiers);
-
-        try {
-            addChildrenInGroup(menuNode, 0, root);
-        } catch (I18nException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new RuntimeException("error inflating " + shadowOf(context).getResName(resource), e);
+  private void addChildrenInGroup(MenuNode source, int groupId, Menu root) {
+    for (MenuNode child : source.getChildren()) {
+      String name = child.getName();
+      RoboAttributeSet attributes = shadowOf(context).createAttributeSet(child.getAttributes(), null);
+      if (strictI18n) {
+        attributes.validateStrictI18n();
+      }
+      if (name.equals("item")) {
+        if (child.isSubMenuItem()) {
+          SubMenu sub = root.addSubMenu(groupId,
+              attributes.getAttributeResourceValue(ANDROID_NS, "id", 0),
+              0, attributes.getAttributeValue(ANDROID_NS, "title"));
+          MenuNode subMenuNode = child.getChildren().get(0);
+          addChildrenInGroup(subMenuNode, groupId, sub);
+        } else {
+          root.add(groupId,
+              attributes.getAttributeResourceValue(ANDROID_NS, "id", 0),
+              0, attributes.getAttributeValue(ANDROID_NS, "title"));
         }
+      } else if (name.equals("group")) {
+        int newGroupId = attributes.getAttributeResourceValue(ANDROID_NS, "id", 0);
+        addChildrenInGroup(child, newGroupId, root);
+      }
     }
-
-    private void addChildrenInGroup(MenuNode source, int groupId, Menu root) {
-        for (MenuNode child : source.getChildren()) {
-            String name = child.getName();
-            RoboAttributeSet attributes = shadowOf(context).createAttributeSet(child.getAttributes(), null);
-            if (strictI18n) {
-                attributes.validateStrictI18n();
-            }
-            if (name.equals("item")) {
-                if (child.isSubMenuItem()) {
-                    SubMenu sub = root.addSubMenu(groupId,
-                            attributes.getAttributeResourceValue(ANDROID_NS, "id", 0),
-                            0, attributes.getAttributeValue(ANDROID_NS, "title"));
-                    MenuNode subMenuNode = child.getChildren().get(0);
-                    addChildrenInGroup(subMenuNode, groupId, sub);
-                } else {
-                    root.add(groupId,
-                            attributes.getAttributeResourceValue(ANDROID_NS, "id", 0),
-                            0, attributes.getAttributeValue(ANDROID_NS, "title"));
-                }
-            } else if (name.equals("group")) {
-                int newGroupId = attributes.getAttributeResourceValue(ANDROID_NS, "id", 0);
-                addChildrenInGroup(child, newGroupId, root);
-            }
-        }
-    }
+  }
 }

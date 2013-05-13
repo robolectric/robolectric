@@ -14,10 +14,10 @@ import static org.robolectric.Robolectric.shadowOf;
  */
 @Implements(MediaPlayer.class)
 public class ShadowMediaPlayer {
-    @SuppressWarnings("UnusedDeclaration")
-    public static void __staticInitializer__() {
-        // don't bind the JNI library
-    }
+  @SuppressWarnings("UnusedDeclaration")
+  public static void __staticInitializer__() {
+    // don't bind the JNI library
+  }
 
 	@RealObject private MediaPlayer player;
 
@@ -126,79 +126,79 @@ public class ShadowMediaPlayer {
 	}
 	
 	@Implementation
-    public int getCurrentPosition() {
-        return currentPosition;
-    }
+  public int getCurrentPosition() {
+    return currentPosition;
+  }
 
-    public void setCurrentPosition(int position) {
-        currentPosition = position;
-    }
-    
-    /**
-     * Non-Android accessor.  Use for assertions.
-     * @return
-     */
-    public Uri getSourceUri() {
-    	return sourceUri;
-    }
-    
-    /**
-     * Non-Android accessor.  Use for assertions.
-     * @return
-     */
-    public int getSourceResId() {
-    	return sourceResId;
-    }
-    
-    /**
-     * Non-Android accessor.  Use for assertions.
-     * @return
-     */
-    public boolean isPrepared() {
-    	return prepared;
-    }
-    
-    /**
-     * Non-Android accessor.  Use for assertions.
-     * @return
-     */
-    public MediaPlayer.OnCompletionListener getOnCompletionListener() {
-    	return completionListener;
-    }
+  public void setCurrentPosition(int position) {
+    currentPosition = position;
+  }
 
-    /**
-     * Non-Android accessor.  Use for assertions.
-     * @return
-     */
-    public MediaPlayer.OnPreparedListener getOnPreparedListener() {
-    	return preparedListener;
-    }
-    
-    /**
-     * Allows test cases to simulate 'prepared' state by invoking callback.
-     */
-    public void invokePreparedListener() {
-    	if (preparedListener == null) return;
-    	preparedListener.onPrepared( player );
-    }
-    
-    /**
-     * Allows test cases to simulate 'completed' state by invoking callback.
-     */
-    public void invokeCompletionListener() {
-    	if (completionListener == null) return;
-    	completionListener.onCompletion( player );
-    }
-    
-    
-    public void invokeErrorListener(int what,int extra){
+  /**
+   * Non-Android accessor.  Use for assertions.
+   * @return
+   */
+  public Uri getSourceUri() {
+  	return sourceUri;
+  }
+
+  /**
+   * Non-Android accessor.  Use for assertions.
+   * @return
+   */
+  public int getSourceResId() {
+  	return sourceResId;
+  }
+
+  /**
+   * Non-Android accessor.  Use for assertions.
+   * @return
+   */
+  public boolean isPrepared() {
+  	return prepared;
+  }
+
+  /**
+   * Non-Android accessor.  Use for assertions.
+   * @return
+   */
+  public MediaPlayer.OnCompletionListener getOnCompletionListener() {
+  	return completionListener;
+  }
+
+  /**
+   * Non-Android accessor.  Use for assertions.
+   * @return
+   */
+  public MediaPlayer.OnPreparedListener getOnPreparedListener() {
+  	return preparedListener;
+  }
+
+  /**
+   * Allows test cases to simulate 'prepared' state by invoking callback.
+   */
+  public void invokePreparedListener() {
+  	if (preparedListener == null) return;
+  	preparedListener.onPrepared( player );
+  }
+
+  /**
+   * Allows test cases to simulate 'completed' state by invoking callback.
+   */
+  public void invokeCompletionListener() {
+  	if (completionListener == null) return;
+  	completionListener.onCompletion( player );
+  }
+
+
+  public void invokeErrorListener(int what,int extra){
 		playing = false;
 		prepared = false;
-    	if (errorListener == null) return;
-    	boolean handled = errorListener.onError(player,what,extra);
-    	if (!handled){
-    		invokeCompletionListener();
-    	}
-    		    
-    }
+  	if (errorListener == null) return;
+  	boolean handled = errorListener.onError(player,what,extra);
+  	if (!handled){
+  		invokeCompletionListener();
+  	}
+
+  }
 }

@@ -7,13 +7,13 @@ import org.robolectric.annotation.Implements;
 @Implements(CornerPathEffect.class)
 
 public class ShadowCornerPathEffect {
-    private float radius;
+  private float radius;
 
-    public void __constructor__(float radius) {
-        this.radius = radius;
-     }
+  public void __constructor__(float radius) {
+    this.radius = radius;
+   }
 
-    public float getRadius() {
-        return radius;
-    }
+  public float getRadius() {
+    return radius;
+  }
 }

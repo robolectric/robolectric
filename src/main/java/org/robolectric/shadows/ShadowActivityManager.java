@@ -22,10 +22,10 @@ public class ShadowActivityManager {
 		new ArrayList<ActivityManager.RunningAppProcessInfo>();
 	
 	private String backgroundPackage;
-    private ActivityManager.MemoryInfo memoryInfo;
-    private int memoryClass = 16;
+  private ActivityManager.MemoryInfo memoryInfo;
+  private int memoryClass = 16;
 
-    @Implementation
+  @Implementation
 	public List<ActivityManager.RunningTaskInfo> getRunningTasks(int maxNum) {
 		return tasks;
 	}
@@ -40,12 +40,12 @@ public class ShadowActivityManager {
 		backgroundPackage = packageName;
 	}
 
-    @Implementation
-    public void getMemoryInfo(ActivityManager.MemoryInfo outInfo) {
-        if (memoryInfo != null) {
-            outInfo.lowMemory = memoryInfo.lowMemory;
-        }
+  @Implementation
+  public void getMemoryInfo(ActivityManager.MemoryInfo outInfo) {
+    if (memoryInfo != null) {
+      outInfo.lowMemory = memoryInfo.lowMemory;
     }
+  }
 
 	/**
 	 * Non-Android accessor to set the list of running tasks.
@@ -70,30 +70,30 @@ public class ShadowActivityManager {
 		return backgroundPackage;
 	}
 
-    public void setMemoryInfo(ActivityManager.MemoryInfo memoryInfo) {
-        this.memoryInfo = memoryInfo;
-    }
+  public void setMemoryInfo(ActivityManager.MemoryInfo memoryInfo) {
+    this.memoryInfo = memoryInfo;
+  }
 
-    @Implementation
-    public int getMemoryClass() {
-        return memoryClass;
-    }
+  @Implementation
+  public int getMemoryClass() {
+    return memoryClass;
+  }
 
-    public void setMemoryClass(int memoryClass) {
-        this.memoryClass = memoryClass;
-    }
+  public void setMemoryClass(int memoryClass) {
+    this.memoryClass = memoryClass;
+  }
 
-    @Implements(ActivityManager.MemoryInfo.class)
-    public static class ShadowMemoryInfo {
-        public boolean lowMemory;
+  @Implements(ActivityManager.MemoryInfo.class)
+  public static class ShadowMemoryInfo {
+    public boolean lowMemory;
 
-        public void setLowMemory(boolean lowMemory) {
-            this.lowMemory = lowMemory;
-        }
+    public void setLowMemory(boolean lowMemory) {
+      this.lowMemory = lowMemory;
     }
+  }
 
-    @Implementation
-    public android.content.pm.ConfigurationInfo getDeviceConfigurationInfo() {
-        return new ConfigurationInfo();
-    }
+  @Implementation
+  public android.content.pm.ConfigurationInfo getDeviceConfigurationInfo() {
+    return new ConfigurationInfo();
+  }
 }

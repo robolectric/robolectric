@@ -6,8 +6,8 @@ import org.robolectric.annotation.Implements;
 
 @Implements(value = ScrollView.class)
 public class ShadowScrollView extends ShadowFrameLayout {
-    @Implementation
-    public void smoothScrollTo(int x, int y) {
-        scrollTo(x, y);
-    }
+  @Implementation
+  public void smoothScrollTo(int x, int y) {
+    scrollTo(x, y);
+  }
 }

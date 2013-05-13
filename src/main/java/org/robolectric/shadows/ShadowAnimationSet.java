@@ -13,14 +13,14 @@ import java.util.List;
 public class ShadowAnimationSet extends ShadowAnimation {
 	private ArrayList<Animation> animationList = new ArrayList<Animation>();
 	
-    @RealObject
-    private AnimationSet realAnimationSet;
+  @RealObject
+  private AnimationSet realAnimationSet;
 
 
 	@Implementation
-    public void addAnimation(Animation anim) {
-    	animationList.add(anim);
-    }
+  public void addAnimation(Animation anim) {
+  	animationList.add(anim);
+  }
 	
 	@Implementation
 	public List<Animation> getAnimations() {

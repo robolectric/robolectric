@@ -16,20 +16,20 @@ public class InputMethodManagerTest {
 	private InputMethodManager manager;
 	private ShadowInputMethodManager shadow;
 	
-    @Before
-    public void setUp() throws Exception {
-    	manager = (InputMethodManager) Robolectric.application.getSystemService(Activity.INPUT_METHOD_SERVICE);
-    	shadow = Robolectric.shadowOf(manager);
-    }
-    
-    @Test
-    public void shouldRecordSoftInputVisibility() {
-        assertThat(shadow.isSoftInputVisible()).isFalse();
-    	
-    	manager.showSoftInput(null, 0);
-        assertThat(shadow.isSoftInputVisible()).isTrue();
-    	
-    	manager.hideSoftInputFromWindow(null, 0);
-        assertThat(shadow.isSoftInputVisible()).isFalse();
-    }   
+  @Before
+  public void setUp() throws Exception {
+  	manager = (InputMethodManager) Robolectric.application.getSystemService(Activity.INPUT_METHOD_SERVICE);
+  	shadow = Robolectric.shadowOf(manager);
+  }
+
+  @Test
+  public void shouldRecordSoftInputVisibility() {
+    assertThat(shadow.isSoftInputVisible()).isFalse();
+
+  	manager.showSoftInput(null, 0);
+    assertThat(shadow.isSoftInputVisible()).isTrue();
+
+  	manager.hideSoftInputFromWindow(null, 0);
+    assertThat(shadow.isSoftInputVisible()).isFalse();
+  }
 }

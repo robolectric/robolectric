@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="greeting">@string/howdy</string>
-    <string name="howdy">Howdy</string>
-    <string name="hello">Hello</string>
-    <string name="some_html"><b>Hello, <i>world</i></b></string>
-    <string-array name="items">
-        <item>foo</item>
-        <item>bar</item>
-    </string-array>
-    <string name="copy">Local Copy</string>
-    <string name="only_in_main">from main</string>
-    <string name="in_all_libs">from main</string>
-    <string name="in_main_and_lib1">from main</string>
-    <string name="ok">@string/ok2</string>
-    <string name="ok2">ok yup!</string>
-    <string name="interpolate">Here's a %s!</string>
+  <string name="greeting">@string/howdy</string>
+  <string name="howdy">Howdy</string>
+  <string name="hello">Hello</string>
+  <string name="some_html"><b>Hello, <i>world</i></b></string>
+  <string-array name="items">
+    <item>foo</item>
+    <item>bar</item>
+  </string-array>
+  <string name="copy">Local Copy</string>
+  <string name="only_in_main">from main</string>
+  <string name="in_all_libs">from main</string>
+  <string name="in_main_and_lib1">from main</string>
+  <string name="ok">@string/ok2</string>
+  <string name="ok2">ok yup!</string>
+  <string name="interpolate">Here's a %s!</string>
 </resources>
