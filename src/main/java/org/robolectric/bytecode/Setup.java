@@ -105,6 +105,11 @@ public class Setup {
 
         if (name.matches("com\\.android\\.internal\\.R(\\$.*)?")) return true;
 
+        // Android SDK code almost universally refers to com.android.internal.R, except
+        // when refering to android.R.stylable, as in HorizontalScrollView. arghgh.
+        // See https://github.com/robolectric/robolectric/issues/521
+        if (name.equals("android.R$styleable")) return true;
+
         return !(
                 name.matches(".*\\.R(|\\$[a-z]+)$")
                         || CLASSES_TO_ALWAYS_DELEGATE.contains(name)

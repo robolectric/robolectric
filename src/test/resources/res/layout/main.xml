@@ -69,4 +69,6 @@
             android:onClick="onButtonClick"
             />
 
+    <!-- see https://github.com/robolectric/robolectric/issues/521 -->
+    <HorizontalScrollView/>
 </LinearLayout>
