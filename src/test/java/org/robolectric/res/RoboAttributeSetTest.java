@@ -182,6 +182,22 @@ public class RoboAttributeSetTest {
     }
 
     @Test
+    public void getAttributeIntValue_whenTypeAllowsIntOrEnum_withInt_shouldReturnInt() throws Exception {
+        roboAttributeSet = new RoboAttributeSet(asList(
+                new Attribute(TEST_PACKAGE + ":attr/numColumns", "3", TEST_PACKAGE)
+        ), resources, CustomView.class);
+        assertThat(roboAttributeSet.getAttributeIntValue(TEST_PACKAGE_NS, "numColumns", 0)).isEqualTo(3);
+    }
+
+    @Test
+    public void getAttributeIntValue_whenTypeAllowsIntOrEnum_withEnum_shouldReturnInt() throws Exception {
+        roboAttributeSet = new RoboAttributeSet(asList(
+                new Attribute(TEST_PACKAGE + ":attr/numColumns", "auto_fit", TEST_PACKAGE)
+        ), resources, CustomView.class);
+        assertThat(roboAttributeSet.getAttributeIntValue(TEST_PACKAGE_NS, "numColumns", 0)).isEqualTo(-1);
+    }
+
+    @Test
     public void getAttributeValue_shouldReturnAttributeAssociatedWithResourceId() throws Exception {
         createTestAttributeSet(new Attribute("ns:attr/textStyle2", "expected value", TEST_PACKAGE));
         assertThat(roboAttributeSet.getAttributeValue(0)).isEqualTo("expected value");

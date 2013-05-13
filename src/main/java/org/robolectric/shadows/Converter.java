@@ -118,6 +118,16 @@ public class Converter<T> {
             return;
         }
 
+        // Special case for attrs that can be integers or enums, like numColumns.
+        // todo: generalize this!
+        if (format.equals("integer|enum") || format.equals("dimension|enum")) {
+            if (attribute.value.matches("^\\d.*")) {
+                types = new String[] { types[0] };
+            } else {
+                types = new String[] { "enum" };
+            }
+        }
+
         for (String type : types) {
             if ("reference".equals(type)) continue; // already handled above
 
@@ -126,9 +136,9 @@ public class Converter<T> {
                     : null;
 
             if (converter == null) {
-                if (format.equals("enum")) {
+                if (type.equals("enum")) {
                     converter = new EnumConverter(attrData);
-                } else if (format.equals("flag")) {
+                } else if (type.equals("flag")) {
                     converter = new FlagConverter(attrData);
                 }
             }

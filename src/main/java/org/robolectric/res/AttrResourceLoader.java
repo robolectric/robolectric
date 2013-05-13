@@ -16,19 +16,25 @@ public class AttrResourceLoader extends XpathResourceXmlLoader {
     protected void processNode(String name, XmlNode xmlNode, XmlContext xmlContext)
             throws XPathExpressionException {
         String format = xmlNode.getAttrValue("format");
+        String childFormat = null;
         List<AttrData.Pair> pairs = null;
 
-        if (format == null) {
-            XmlNode firstChild = xmlNode.getFirstChild();
-            format = firstChild == null ? null : firstChild.getElementName();
+        XmlNode firstChild = xmlNode.getFirstChild();
+        if (firstChild != null) {
+            childFormat = firstChild.getElementName();
+            if (format == null) {
+                format = childFormat;
+            } else {
+                format = format + "|" + childFormat;
+            }
         }
 
-        if ("enum".equals(format)) {
+        if ("enum".equals(childFormat)) {
             pairs = new ArrayList<AttrData.Pair>();
             for (XmlNode enumNode : xmlNode.selectElements("enum")) {
                 pairs.add(new AttrData.Pair(enumNode.getAttrValue("name"), enumNode.getAttrValue("value")));
             }
-        } else if ("flag".equals(format)) {
+        } else if ("flag".equals(childFormat)) {
             pairs = new ArrayList<AttrData.Pair>();
             for (XmlNode flagNode : xmlNode.selectElements("flag")) {
                 pairs.add(new AttrData.Pair(flagNode.getAttrValue("name"), flagNode.getAttrValue("value")));
