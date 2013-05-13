@@ -344,6 +344,11 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
     }
 
     @Implementation
+    public boolean isReadOnly() {
+        return false;
+    }
+
+    @Implementation
     public void beginTransaction() {
         try {
             getConnection().setAutoCommit(false);
