@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.robolectric.bytecode;
+package org.robolectric.impl;
 
 /**
  * Where the HTTP client should look for a response.

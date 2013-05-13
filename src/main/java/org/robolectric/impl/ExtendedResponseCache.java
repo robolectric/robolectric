@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.robolectric.bytecode;
+package org.robolectric.impl;
 
 import java.net.CacheResponse;
 import java.net.HttpURLConnection;

@@ -9,6 +9,8 @@ import org.robolectric.TestLifecycle;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.DisableStrictI18n;
 import org.robolectric.annotation.EnableStrictI18n;
+import org.robolectric.impl.ExtendedResponseCache;
+import org.robolectric.impl.ResponseSource;
 import org.robolectric.internal.DoNotInstrument;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
