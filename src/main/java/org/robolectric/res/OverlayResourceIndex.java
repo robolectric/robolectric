@@ -61,52 +61,52 @@ class OverlayResourceIndex extends ResourceIndex {
       resEntryList.add(new ResEntry(resName, value));
     }
 
-//        public void check(ResourceIndex... subResourceIndex) {
-//            for (Map.Entry<ResName, List<ResEntry>> entries : resEntries.entrySet()) {
-//                List<ResEntry> value = entries.getValue();
-//                int first = value.get(0).value;
-//                for (int i = 1, valueSize = value.size(); i < valueSize; i++) {
-//                    ResEntry resEntry = value.get(i);
-//                    if (resEntry.value != first) {
-//                        Class<?> rClass = subResourceIndex[i].resourcePath.rClass;
-//                        setField(rClass, resEntry.resName, first);
+//    public void check(ResourceIndex... subResourceIndex) {
+//      for (Map.Entry<ResName, List<ResEntry>> entries : resEntries.entrySet()) {
+//        List<ResEntry> value = entries.getValue();
+//        int first = value.get(0).value;
+//        for (int i = 1, valueSize = value.size(); i < valueSize; i++) {
+//          ResEntry resEntry = value.get(i);
+//          if (resEntry.value != first) {
+//            Class<?> rClass = subResourceIndex[i].resourcePath.rClass;
+//            setField(rClass, resEntry.resName, first);
 //
-//                        System.err.println("*** WARNING!!! resource mismatch!");
-//                        for (ResEntry entry : value) {
-//                            System.err.println("* " + entry.resName + " -> 0x" + Integer.toHexString(entry.value));
-//                        }
-//                        break;
-//                    }
-//                }
+//            System.err.println("*** WARNING!!! resource mismatch!");
+//            for (ResEntry entry : value) {
+//              System.err.println("* " + entry.resName + " -> 0x" + Integer.toHexString(entry.value));
 //            }
+//            break;
+//          }
 //        }
+//      }
+//    }
 //
-//        private void setField(Class<?> rClass, ResName resName, int value) {
-//            Class<?> innerClass = getInnerClass(rClass, resName.type);
-//            try {
-//                Field field = innerClass.getDeclaredField(resName.name);
-//                if (Modifier.isFinal(field.getModifiers())) {
-//                    System.err.println("*** WARNING!!! " + field + " is final!");
-//                    Robolectric.Reflection.setFinalStaticField(innerClass, resName.name, value);
-//                } else {
-//                    field.set(null, value);
-//                }
-//            } catch (NoSuchFieldException e) {
-//                throw new RuntimeException(e);
-//            } catch (IllegalAccessException e) {
-//                throw new RuntimeException(e);
-//            }
-//
+//    private void setField(Class<?> rClass, ResName resName, int value) {
+//      Class<?> innerClass = getInnerClass(rClass, resName.type);
+//      try {
+//        Field field = innerClass.getDeclaredField(resName.name);
+//        if (Modifier.isFinal(field.getModifiers())) {
+//          System.err.println("*** WARNING!!! " + field + " is final!");
+//          Robolectric.Reflection.setFinalStaticField(innerClass, resName.name, value);
+//        } else {
+//          field.set(null, value);
 //        }
+//      } catch (NoSuchFieldException e) {
+//        throw new RuntimeException(e);
+//      } catch (IllegalAccessException e) {
+//        throw new RuntimeException(e);
+//      }
 //
-//        private Class<?> getInnerClass(Class<?> rClass, String name) {
-//            for (Class<?> aClass : rClass.getClasses()) {
-//                if (aClass.getSimpleName().equals(name)) {
-//                    return aClass;
-//                }
-//            }
-//            throw new RuntimeException("couldn't find " + rClass.getName() + "." + name);
+//    }
+//
+//    private Class<?> getInnerClass(Class<?> rClass, String name) {
+//      for (Class<?> aClass : rClass.getClasses()) {
+//        if (aClass.getSimpleName().equals(name)) {
+//          return aClass;
 //        }
+//      }
+//      throw new RuntimeException("couldn't find " + rClass.getName() + "." + name);
+//    }
   }
 
   class ResEntry {

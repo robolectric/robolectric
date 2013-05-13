@@ -18,17 +18,17 @@ class ValueResourceLoader extends XpathResourceXmlLoader {
   protected void processResourceXml(FsFile xmlFile, XmlNode xmlNode, XmlContext xmlContext) throws Exception {
     super.processResourceXml(xmlFile, xmlNode, xmlContext);
 
-//        if (arraysToo) {
-//            for (XmlNode arrayNode : xmlNode.selectByXpath("/resources/" + attrType + "-array")) {
-//                String name = arrayNode.getAttrValue("name");
+//    if (arraysToo) {
+//      for (XmlNode arrayNode : xmlNode.selectByXpath("/resources/" + attrType + "-array")) {
+//        String name = arrayNode.getAttrValue("name");
 //
-//                List<String> itemStrings = new ArrayList<String>();
-//                for (XmlNode itemNode : arrayNode.selectByXpath(".//item")) {
-//                    itemStrings.add(itemNode.getTextContent());
-//                }
-//                resBunch.putArray(attrType + "-array", name, itemStrings, xmlContext);
-//            }
+//        List<String> itemStrings = new ArrayList<String>();
+//        for (XmlNode itemNode : arrayNode.selectByXpath(".//item")) {
+//          itemStrings.add(itemNode.getTextContent());
 //        }
+//        resBunch.putArray(attrType + "-array", name, itemStrings, xmlContext);
+//      }
+//    }
   }
 
   @Override

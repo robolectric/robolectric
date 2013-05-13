@@ -212,75 +212,75 @@ public class ShadowCursorAdapter extends ShadowBaseAdapter {
     return true;
   }
 
-//    /**
-//     * @see android.widget.ListAdapter#getView(int, View, ViewGroup)
-//     */
-//    @Implementation
-//    public View getView(int position, View convertView, ViewGroup parent) {
-//        if (!mDataValid) {
-//            throw new IllegalStateException("this should only be called when the cursor is valid");
-//        }
-//        if (!mCursor.moveToPosition(position)) {
-//            throw new IllegalStateException("couldn't move cursor to position " + position);
-//        }
-//        View v;
-//        if (convertView == null) {
-//            v = newView(mContext, mCursor, parent);
-//        } else {
-//            v = convertView;
-//        }
-//        bindView(v, mContext, mCursor);
-//        return v;
+//  /**
+//   * @see android.widget.ListAdapter#getView(int, View, ViewGroup)
+//   */
+//  @Implementation
+//  public View getView(int position, View convertView, ViewGroup parent) {
+//    if (!mDataValid) {
+//      throw new IllegalStateException("this should only be called when the cursor is valid");
 //    }
+//    if (!mCursor.moveToPosition(position)) {
+//      throw new IllegalStateException("couldn't move cursor to position " + position);
+//    }
+//    View v;
+//    if (convertView == null) {
+//      v = newView(mContext, mCursor, parent);
+//    } else {
+//      v = convertView;
+//    }
+//    bindView(v, mContext, mCursor);
+//    return v;
+//  }
 //
-//    @Implementation
-//    public View getDropDownView(int position, View convertView, ViewGroup parent) {
-//        if (mDataValid) {
-//            mCursor.moveToPosition(position);
-//            View v;
-//            if (convertView == null) {
-//                v = newDropDownView(mContext, mCursor, parent);
-//            } else {
-//                v = convertView;
-//            }
-//            bindView(v, mContext, mCursor);
-//            return v;
-//        } else {
-//            return null;
-//        }
+//  @Implementation
+//  public View getDropDownView(int position, View convertView, ViewGroup parent) {
+//    if (mDataValid) {
+//      mCursor.moveToPosition(position);
+//      View v;
+//      if (convertView == null) {
+//        v = newDropDownView(mContext, mCursor, parent);
+//      } else {
+//        v = convertView;
+//      }
+//      bindView(v, mContext, mCursor);
+//      return v;
+//    } else {
+//      return null;
 //    }
-
-//    /**
-//     * Makes a new view to hold the data pointed to by cursor.
-//     * @param context Interface to application's global information
-//     * @param cursor The cursor from which to get the data. The cursor is already
-//     * moved to the correct position.
-//     * @param parent The parent to which the new view is attached to
-//     * @return the newly created view.
-//     */
-//    public abstract View newView(Context context, Cursor cursor, ViewGroup parent);
-
-//    /**
-//     * Makes a new drop down view to hold the data pointed to by cursor.
-//     * @param context Interface to application's global information
-//     * @param cursor The cursor from which to get the data. The cursor is already
-//     * moved to the correct position.
-//     * @param parent The parent to which the new view is attached to
-//     * @return the newly created view.
-//     */
-//    @Implementation
-//    public View newDropDownView(Context context, Cursor cursor, ViewGroup parent) {
-//        return newView(context, cursor, parent);
-//    }
-
-//    /**
-//     * Bind an existing view to the data pointed to by cursor
-//     * @param view Existing view, returned earlier by newView
-//     * @param context Interface to application's global information
-//     * @param cursor The cursor from which to get the data. The cursor is already
-//     * moved to the correct position.
-//     */
-//    public abstract void bindView(View view, Context context, Cursor cursor);
+//  }
+//
+//  /**
+//   * Makes a new view to hold the data pointed to by cursor.
+//   * @param context Interface to application's global information
+//   * @param cursor The cursor from which to get the data. The cursor is already
+//   * moved to the correct position.
+//   * @param parent The parent to which the new view is attached to
+//   * @return the newly created view.
+//   */
+//  public abstract View newView(Context context, Cursor cursor, ViewGroup parent);
+//
+//  /**
+//   * Makes a new drop down view to hold the data pointed to by cursor.
+//   * @param context Interface to application's global information
+//   * @param cursor The cursor from which to get the data. The cursor is already
+//   * moved to the correct position.
+//   * @param parent The parent to which the new view is attached to
+//   * @return the newly created view.
+//   */
+//  @Implementation
+//  public View newDropDownView(Context context, Cursor cursor, ViewGroup parent) {
+//    return newView(context, cursor, parent);
+//  }
+//
+//  /**
+//   * Bind an existing view to the data pointed to by cursor
+//   * @param view Existing view, returned earlier by newView
+//   * @param context Interface to application's global information
+//   * @param cursor The cursor from which to get the data. The cursor is already
+//   * moved to the correct position.
+//   */
+//  public abstract void bindView(View view, Context context, Cursor cursor);
 
   /**
    * Change the underlying cursor to a new cursor. If there is an existing cursor it will be

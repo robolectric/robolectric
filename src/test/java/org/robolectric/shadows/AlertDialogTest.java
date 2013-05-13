@@ -239,19 +239,19 @@ public class AlertDialogTest {
   }
 
 
-//    @Test
-//    public void testBuilderWithItemArrayCanPerformClickOnItem() throws Exception {
-//        TestDialogOnClickListener listener = new TestDialogOnClickListener();
-//        AlertDialog alert = new AlertDialog.Builder(new ContextWrapper(Robolectric.application))
-//                .setItems(R.array.alertDialogTestItems, listener)
-//                .create();
+//  @Test
+//  public void testBuilderWithItemArrayCanPerformClickOnItem() throws Exception {
+//    TestDialogOnClickListener listener = new TestDialogOnClickListener();
+//    AlertDialog alert = new AlertDialog.Builder(new ContextWrapper(Robolectric.application))
+//        .setItems(R.array.alertDialogTestItems, listener)
+//        .create();
 //
-//        alert.show();
-//        ShadowAlertDialog shadowAlertDialog = shadowOf(alert);
-//        shadowAlertDialog.clickOnItem(1);
+//    alert.show();
+//    ShadowAlertDialog shadowAlertDialog = shadowOf(alert);
+//    shadowAlertDialog.clickOnItem(1);
 //
 //
-//    }
+//  }
 
   @Test
   public void testBuilderWithAdapter() throws Exception {

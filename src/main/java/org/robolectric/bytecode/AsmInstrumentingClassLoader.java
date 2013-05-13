@@ -661,14 +661,14 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
         Type type = argumentTypes[i];
         int argWidth = type.getSize();
 
-        if (argWidth == 1) {                         // A B C []
+        if (argWidth == 1) {                       // A B C []
           instructions.add(new InsnNode(DUP_X1));  // A B [] C []
           instructions.add(new InsnNode(SWAP));    // A B [] [] C
           instructions.add(new LdcInsnNode(i));    // A B [] [] C 2
           instructions.add(new InsnNode(SWAP));    // A B [] [] 2 C
           box(type, instructions);                 // A B [] [] 2 (C)
           instructions.add(new InsnNode(AASTORE)); // A B [(C)]
-        } else if (argWidth == 2) {                  // A B _C_ []
+        } else if (argWidth == 2) {                // A B _C_ []
           instructions.add(new InsnNode(DUP_X2));  // A B [] _C_ []
           instructions.add(new InsnNode(DUP_X2));  // A B [] [] _C_ []
           instructions.add(new InsnNode(POP));     // A B [] [] _C_
@@ -768,7 +768,7 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
         m.loadThis();                                         // this
         m.getField(classType, CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);  // contents of __robo_data__
         m.instanceOf(classType);                              // __robo_data__, is instance of same class?
-        m.visitJumpInsn(IFEQ, notInstanceOfThis); // jump if no (is not instance)
+        m.visitJumpInsn(IFEQ, notInstanceOfThis);             // jump if no (is not instance)
 
         TryCatch tryCatchForProxyCall = m.tryStart(THROWABLE_TYPE);
         m.loadThis();                                         // this

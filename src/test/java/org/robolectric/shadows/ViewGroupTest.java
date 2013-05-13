@@ -262,26 +262,26 @@ public class ViewGroupTest {
     assertSame(layoutParams2, child2.getLayoutParams());
   }
 
-//    todo: re-enable this
-//    @Test @Config(minSdk = FROYO)
-//    public void getChildAt_shouldThrowIndexOutOfBoundsForInvalidIndices() { // 'cause that's what Android does
-//        assertThat(root.getChildCount()).isEqualTo(3);
-//        assertThrowsExceptionForBadIndex(13);
-//        assertThrowsExceptionForBadIndex(3);
-//        assertThrowsExceptionForBadIndex(-1);
-//    }
+//  todo: re-enable this
+//  @Test @Config(minSdk = FROYO)
+//  public void getChildAt_shouldThrowIndexOutOfBoundsForInvalidIndices() { // 'cause that's what Android does
+//    assertThat(root.getChildCount()).isEqualTo(3);
+//    assertThrowsExceptionForBadIndex(13);
+//    assertThrowsExceptionForBadIndex(3);
+//    assertThrowsExceptionForBadIndex(-1);
+//  }
 //
-//    private void assertThrowsExceptionForBadIndex(int index) {
-//        try {
-//            assertThat(root.getChildAt(index)).isNull();
-//            fail("no exception");
-//        } catch (IndexOutOfBoundsException ex) {
-//            //noinspection UnnecessaryReturnStatement
-//            return;
-//        } catch (Exception ex) {
-//            fail("wrong exception type");
-//        }
+//  private void assertThrowsExceptionForBadIndex(int index) {
+//    try {
+//      assertThat(root.getChildAt(index)).isNull();
+//      fail("no exception");
+//    } catch (IndexOutOfBoundsException ex) {
+//      //noinspection UnnecessaryReturnStatement
+//      return;
+//    } catch (Exception ex) {
+//      fail("wrong exception type");
 //    }
+//  }
 
   @Test
   public void layoutParams_shouldBeViewGroupLayoutParams() {
