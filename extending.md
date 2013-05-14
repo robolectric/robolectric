@@ -4,7 +4,7 @@ title: User Guide
 ---
 
 ## Extending Robolectric
-Robolectric is a work-in-progress, and we welcome contributions from the community. We encourage developers to [use the standard GitHub workflow](http://help.github.com/fork-a-repo/ "Help.GitHub - Fork A Repo") to fork, enhance, and submit pull requests to us.
+Robolectric is a work in progress, and we welcome contributions from the community. We encourage developers to [use the standard GitHub workflow](http://help.github.com/fork-a-repo/ "Help.GitHub - Fork A Repo") to fork, enhance, and submit pull requests to us.
 
 ### Shadow Classes
 Robolectric defines many shadow classes, which modify or extend the behavior of classes in the Android OS. When an Android class is instantiated, Robolectric looks for a corresponding shadow class, and if it finds one it creates a shadow object to associate with it. Every time a method is invoked on an Android class, Robolectric ensures that the shadow class' corresponding method is invoked first (if there is one), so it has a chance to work its magic. This applies to all methods, even static and final methods, because Robolectric is extra tricky!
@@ -15,21 +15,7 @@ Why "Shadow?" Shadow objects are not quite [Proxies](http://en.wikipedia.org/wik
 ### Adding Functionality
 If the shadow classes provided with Robolectric don't do what you want, it's possible to change their behavior for a single test, a group of tests, or for your whole suite. Simply declare a class (let's say <code>ShadowFoo</code>) and annotate it <code>@Implements(Foo.class)</code>. Your shadow class may extend one of the stock Robolectric shadows if you like. To let Robolectric know about your shadow, annotate your test method or class with the <code>@Config(shadows=ShadowFoo.class)</code>, or create a file called <code>org.robolectric.Config.properties</code> containing the line <code>shadows=my.package.ShadowFoo</code>.
 
-From Robolectric 2.0 on, the number of shadow classes needed is greatly reduced, because real Android OS code is present.
-
-The library of Shadow classes supplied with Robolectric does not cover the entire Android API. Even if it did, some projects will require behavior that differs from what is in the library. When these situations are encountered it will be necessary to extend existing or add new Shadow classes. Creating new Shadow classes or adding methods to exiting Shadows is easy. Here is an outline of the process, details about each step will follow:
-
-- **Clone the [Robolectric project on GitHub](https://github.com/robolectric/robolectric/):**
-We very often make Robolectric a [`git submodule`](http://book.git-scm.com/5_submodules.html "Git Book - Submodules") of the project that we are working on in order to make it easier to add Robolectric functionality as we need it, but you could also create dependencies between projects or build and copy `.jar` files depending on your needs. See [GitHub - Fork A Repo](http://help.github.com/fork-a-repo/ "Help.GitHub - Fork A Repo").
-
-- **Add tests for your Shadow class:**
-They live in the `org.robolectric.shadows` package under the `code/tests` folder
-
-- **Develop the implementation:**
-Put it in the same package under `code/src`. There are lots of Shadow classes that are already implemented there that can be used as examples. The most important aspects of writing a Shadow class are described below.
-
-- **Register your new class with the Robolectric framework:**
-Add it to the list returned by `Robolectric.getDefaultShadowClasses()` and also add an implementation of `Robolectric.shadowOf()`. Just duplicate the examples that are already in the Robolectric class.
+From Robolectric 2.0 on, the number of shadow classes needed is greatly reduced, because real Android OS code is present. Methods on your shadow class are able to call through to the Android OS code if you like, using <code>Robolectric.directlyOn()</code>.
 
 #### Shadow Classes
 Shadow classes always need a public no-arg constructor so that the Robolectric framework can instantiate them. They are associated to the class that they Shadow with an `@Implements` annotation on the class declaration. In general, they should be implemented as if from scratch, the facilities of the classes they Shadow have almost always been removed and their data members are difficult to access. The methods on a Shadow class usually either Shadow the methods on the original class or facilitate testing by setting up return values or providing access to internal state or logged method calls.
@@ -106,6 +92,6 @@ public class ShadowPoint {
 }
 {% endhighlight %}
 
-Robolectric will set realPoint to the actual instance of  `Point` before invoking any other methods.
+Robolectric will set realPoint to the actual instance of `Point` before invoking any other methods.
 
 It is important to note that methods called on the real object will still be intercepted and redirected by Robolectric. This does not often matter in test code, but it has important implications for Shadow class implementors. Since the Shadow class inheritance hierarchy does not always mirror that of their associated Android classes, it is sometimes necessary to make calls through these real objects so that the Robolectric runtime will have the opportunity to route them to the correct Shadow class based on the actual class of the object. Otherwise methods on Shadows of base classes would be unable to access methods on the Shadows of their subclasses.
