@@ -11,6 +11,8 @@
     <item name="averageSheepWidth">42px</item>
   </style>
 
+  <style name="Theme.MyTheme" parent=""/>
+
 
 
   <style name="Widget.Robolectric.Button" parent="@android:style/Widget.Button">

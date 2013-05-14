@@ -63,6 +63,14 @@ public class ThemeTest {
         .isEqualTo("#ffff0000");
   }
 
+  @Test public void whenAThemeHasExplicitlyEmptyParentAttr_shouldHaveNoParent() throws Exception {
+    TestActivity activity = Robolectric.buildActivity(TestActivityWithAnotherTheme.class).create().get();
+    ResourceLoader resourceLoader = Robolectric.shadowOf(activity.getResources()).getResourceLoader();
+    Style style = ShadowAssetManager.resolveStyle(resourceLoader,
+        new ResName(TestUtil.TEST_PACKAGE, "style", "Theme.MyTheme"), "");
+    assertThat(style.getAttrValue(new ResName("android", "attr", "background"))).isNull();
+  }
+
   public static class TestActivity extends Activity {
     @Override protected void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);

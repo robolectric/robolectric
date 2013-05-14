@@ -332,7 +332,7 @@ public final class ShadowAssetManager {
     private StyleData getParent(StyleData currentStyle) {
       String parent = currentStyle.getParent();
 
-      if (parent == null) return null;
+      if (parent == null || parent.isEmpty()) return null;
 
       if (parent.startsWith("@")) parent = parent.substring(1);
 
