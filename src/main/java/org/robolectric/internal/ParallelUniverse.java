@@ -98,6 +98,10 @@ public class ParallelUniverse implements ParallelUniverseInterface {
           .invoke(applicationInfo, null, getClass().getClassLoader(), false, true);
 
       shadowOf(application).bind(appManifest, resourceLoader);
+      if (appManifest == null) {
+        // todo: make this cleaner...
+        shadowOf(application).setPackageName(applicationInfo.packageName);
+      }
       Resources appResources = application.getResources();
       field("mResources").ofType(Resources.class).in(loadedApk).set(appResources);
 

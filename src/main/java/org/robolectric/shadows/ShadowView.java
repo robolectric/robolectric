@@ -20,10 +20,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import org.robolectric.Robolectric;
-import org.robolectric.internal.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.internal.HiddenApi;
 
 import static org.robolectric.Robolectric.directlyOn;
 import static org.robolectric.Robolectric.shadowOf;
@@ -125,6 +125,12 @@ public class ShadowView {
 
   @HiddenApi @Implementation
   public void computeOpaqueFlags() {
+  }
+
+  @Implementation
+  public void setOnFocusChangeListener(View.OnFocusChangeListener l) {
+    onFocusChangeListener = l;
+    directly().setOnFocusChangeListener(l);
   }
 
   @Implementation
