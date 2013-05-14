@@ -4,22 +4,26 @@ title: User Guide
 ---
 
 ## Extending Robolectric
-Robolectric is a work in progress and everyone in the community relies on everyone else to add functionality. We encourage developers to [use the standard GitHub workflow](http://help.github.com/fork-a-repo/ "Help.GitHub - Fork A Repo") to fork, enhance, and submit pull requests back to us.
+Robolectric is a work-in-progress, and we welcome contributions from the community. We encourage developers to [use the standard GitHub workflow](http://help.github.com/fork-a-repo/ "Help.GitHub - Fork A Repo") to fork, enhance, and submit pull requests to us.
 
-### Shadow Objects
-Robolectric defines many "Shadow Objects" that give behavior to the stripped classes in the SDK jar. When an Android class's constructor is invoked, a Shadow object is created if a Shadow class has been registered. (See  `Robolectric.getDefaultShadowClasses()` for the complete list of Shadows Robolectric provides.)
+### Shadow Classes
+Robolectric defines many shadow classes, which modify or extend the behavior of classes in the Android OS. When an Android class is instantiated, Robolectric looks for a corresponding shadow class, and if it finds one it creates a shadow object to associate with it. Every time a method is invoked on an Android class, Robolectric ensures that the shadow class' corresponding method is invoked first (if there is one), so it has a chance to work its magic. This applies to all methods, even static and final methods, because Robolectric is extra tricky!
 
 #### What's in a Name?
-Why "Shadow?" Shadow objects are note quite [Proxies](http://en.wikipedia.org/wiki/Proxy_pattern "Proxy pattern - Wikipedia, the free encyclopedia"), not quite [Fakes](http://c2.com/cgi/wiki?FakeObject "Fake Object"), not quite [Mocks or Stubs](http://martinfowler.com/articles/mocksArentStubs.html#TheDifferenceBetweenMocksAndStubs "Mocks Aren't Stubs"). Shadows are sometimes hidden, sometimes seen, and can lead you to the real object. At least we didn't call them "sheep."
+Why "Shadow?" Shadow objects are not quite [Proxies](http://en.wikipedia.org/wiki/Proxy_pattern "Proxy pattern - Wikipedia, the free encyclopedia"), not quite [Fakes](http://c2.com/cgi/wiki?FakeObject "Fake Object"), not quite [Mocks or Stubs](http://martinfowler.com/articles/mocksArentStubs.html#TheDifferenceBetweenMocksAndStubs "Mocks Aren't Stubs"). Shadows are sometimes hidden, sometimes seen, and can lead you to the real object. At least we didn't call them "sheep", which we were considering.
 
 ### Adding Functionality
+If the shadow classes provided with Robolectric don't do what you want, it's possible to change their behavior for a single test, a group of tests, or for your whole suite. Simply declare a class (let's say <code>ShadowFoo</code>) and annotate it <code>@Implements(Foo.class)</code>. Your shadow class may extend one of the stock Robolectric shadows if you like. To let Robolectric know about your shadow, annotate your test method or class with the <code>@Config(shadows=ShadowFoo.class)</code>, or create a file called <code>org.robolectric.Config.properties</code> containing the line <code>shadows=my.package.ShadowFoo</code>.
+
+From Robolectric 2.0 on, the number of shadow classes needed is greatly reduced, because real Android OS code is present.
+
 The library of Shadow classes supplied with Robolectric does not cover the entire Android API. Even if it did, some projects will require behavior that differs from what is in the library. When these situations are encountered it will be necessary to extend existing or add new Shadow classes. Creating new Shadow classes or adding methods to exiting Shadows is easy. Here is an outline of the process, details about each step will follow:
 
 - **Clone the [Robolectric project on GitHub](https://github.com/robolectric/robolectric/):**
 We very often make Robolectric a [`git submodule`](http://book.git-scm.com/5_submodules.html "Git Book - Submodules") of the project that we are working on in order to make it easier to add Robolectric functionality as we need it, but you could also create dependencies between projects or build and copy `.jar` files depending on your needs. See [GitHub - Fork A Repo](http://help.github.com/fork-a-repo/ "Help.GitHub - Fork A Repo").
 
 - **Add tests for your Shadow class:**
-They live in the `com.extremelabs.robolectric.shadows` package under the `code/tests` folder
+They live in the `org.robolectric.shadows` package under the `code/tests` folder
 
 - **Develop the implementation:**
 Put it in the same package under `code/src`. There are lots of Shadow classes that are already implemented there that can be used as examples. The most important aspects of writing a Shadow class are described below.
