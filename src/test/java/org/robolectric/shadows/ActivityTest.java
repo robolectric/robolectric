@@ -722,6 +722,15 @@ public class ActivityTest {
     assertEquals(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE, parentActivity.getRequestedOrientation());
   }
 
+  @Test public void getAndSetIntent() throws Exception {
+    Activity activity = new Activity() {
+    };
+    assertThat(activity.getIntent()).isNull();
+    Intent intent = new Intent();
+    shadowOf(activity).setIntent(intent);
+    assertThat(activity.getIntent()).isSameAs(intent);
+  }
+
   /////////////////////////////
 
   public AndroidManifest newConfigWith(String contents) throws IOException {

@@ -45,7 +45,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   @RealObject
   protected Activity realActivity;
 
-  private Intent intent;
   private int resultCode;
   private Intent resultIntent;
   private Activity parent;
@@ -199,12 +198,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
   @Implementation
   public void setIntent(Intent intent) {
-    this.intent = intent;
-  }
-
-  @Implementation
-  public Intent getIntent() {
-    return intent;
+    field("mIntent").ofType(Intent.class).in(realActivity).set(intent);
   }
 
   @Implementation

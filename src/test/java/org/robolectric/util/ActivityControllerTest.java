@@ -1,8 +1,10 @@
 package org.robolectric.util;
 
 import android.app.Activity;
+import android.content.ComponentName;
 import android.os.Bundle;
 import android.os.Looper;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -15,9 +17,19 @@ import static org.robolectric.Robolectric.shadowOf;
 public class ActivityControllerTest {
   private static Transcript transcript;
 
-  @Test public void whenLooperIsNotPaused_shouldCreateTestsWithMainLooperPaused() throws Exception {
+  @Before
+  public void setUp() throws Exception {
     transcript = new Transcript();
+  }
 
+  @Test public void shouldSetIntent() throws Exception {
+    MyActivity myActivity = Robolectric.buildActivity(MyActivity.class).create().get();
+    assertThat(myActivity.getIntent()).isNotNull();
+    assertThat(myActivity.getIntent().getComponent())
+        .isEqualTo(new ComponentName("org.robolectric", MyActivity.class.getName()));
+  }
+
+  @Test public void whenLooperIsNotPaused_shouldCreateTestsWithMainLooperPaused() throws Exception {
     Robolectric.unPauseMainLooper();
     Robolectric.buildActivity(MyActivity.class).create();
     assertThat(shadowOf(Looper.getMainLooper()).isPaused()).isFalse();
@@ -26,8 +38,6 @@ public class ActivityControllerTest {
   }
 
   @Test public void whenLooperIsAlreadyPaused_shouldCreateTestsWithMainLooperPaused() throws Exception {
-    transcript = new Transcript();
-
     Robolectric.pauseMainLooper();
     Robolectric.buildActivity(MyActivity.class).create();
     assertThat(shadowOf(Looper.getMainLooper()).isPaused()).isTrue();
