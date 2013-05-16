@@ -77,6 +77,12 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
         mLock.unlock();
     }
 
+    @Implementation
+    public boolean isDbLockedByCurrentThread(){
+        if(!mLockingEnabled) return true;
+        return mLock.isHeldByCurrentThread();
+    }
+
     public void setThrowOnInsert(boolean throwOnInsert) {
         this.throwOnInsert = throwOnInsert;
     }
