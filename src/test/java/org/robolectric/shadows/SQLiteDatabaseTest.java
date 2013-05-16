@@ -122,4 +122,27 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
         Statement statement = shadowOf(database).getConnection().createStatement();
         return statement.executeQuery(query);
     }
+
+    @Test
+    public void shouldLockWhenEnabled() throws Exception{
+        ShadowSQLiteDatabase shadowDB = shadowOf(database);
+
+        // Test disabled locking
+        shadowDB.setLockingEnabled(false);
+
+        assertThat(database.isDbLockedByCurrentThread()).isTrue();
+        shadowDB.lock();
+        assertThat(database.isDbLockedByCurrentThread()).isTrue();
+        shadowDB.unlock();
+        assertThat(database.isDbLockedByCurrentThread()).isTrue();
+
+        // Test enabled locking
+        shadowDB.setLockingEnabled(true);
+        assertThat(database.isDbLockedByCurrentThread()).isFalse();
+        shadowDB.lock();
+        assertThat(database.isDbLockedByCurrentThread()).isTrue();
+        shadowDB.unlock();
+        assertThat(database.isDbLockedByCurrentThread()).isFalse();
+
+    }
 }
