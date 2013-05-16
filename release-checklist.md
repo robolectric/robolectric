@@ -20,3 +20,7 @@ mv $ROBO_SRC/target/apidocs/* javadocs/
 git commit -am "Update javadocs."
 git push
 ```
+
+* Post to [blog](http://robolectric.blogspot.com/)
+* Post to [twitter](http://twitter.com/Robolectric)
+* Email to [google group](http://groups.google.com/group/robolectric)
