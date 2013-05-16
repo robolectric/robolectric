@@ -9,6 +9,14 @@ title: Release Notes
 ## 2.x Branch
 
 -----
+## [Release 2.0](http://repo1.maven.org/maven2/org/robolectric/robolectric/2.0/) - May 14, 2013
+-----
+
+This is the official release of Robolectric 2.0. It contains changes, improvements, and fixes since 1.2, too numerous to enumerate.
+
+See notes below for changes on the 2.0 branch.
+
+-----
 ## [Release 2.0-rc2](http://repo1.maven.org/maven2/org/robolectric/robolectric/2.0-rc2/) - May 13, 2013
 -----
 
