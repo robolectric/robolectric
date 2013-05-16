@@ -24,3 +24,4 @@ git push
 * Post to [blog](http://robolectric.blogspot.com/)
 * Post to [twitter](http://twitter.com/Robolectric)
 * Email to [google group](http://groups.google.com/group/robolectric)
+* Update [RobolectricSample](https://github.com/robolectric/RobolectricSample)
