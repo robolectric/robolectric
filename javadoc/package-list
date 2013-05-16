@@ -1,6 +1,5 @@
 android.content
 android.hardware
-android.net
 android.os
 android.view.animation
 android.webkit
@@ -9,6 +8,7 @@ com.google.android.maps
 org.robolectric
 org.robolectric.annotation
 org.robolectric.bytecode
+org.robolectric.impl
 org.robolectric.internal
 org.robolectric.res
 org.robolectric.res.builder
