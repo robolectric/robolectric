@@ -197,11 +197,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   @Implementation
-  public void setIntent(Intent intent) {
-    field("mIntent").ofType(Intent.class).in(realActivity).set(intent);
-  }
-
-  @Implementation
   public ComponentName getCallingActivity() {
     return null;
   }
