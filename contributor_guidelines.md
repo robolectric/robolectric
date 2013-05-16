@@ -3,7 +3,7 @@ layout: default
 title: Contributor Guidelines
 ---
 
-#Coding Guidelines
+# Coding Guidelines
 
 ## Functionality should have appropriate unit tests
 
@@ -15,8 +15,8 @@ Robolectric is a unit testing framework and it is important that Robolectric its
 
 ## Follow the code formatting standard
 
-This is essentially the IntelliJ default Java style.
-* Spaces, not tab.
-* Indenting: http://en.wikipedia.org/wiki/Indent_style#Variant:_1TBS with four spaces, not two.
+This is essentially the IntelliJ default Java style, but with two-space indents.
+* Spaces, not tabs.
+* Indenting: http://en.wikipedia.org/wiki/Indent_style#Variant:_1TBS but with two spaces, not four.
 * Curly braces for everything: if, else, etc.
 * One line of white space between methods
