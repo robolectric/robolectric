@@ -10,7 +10,8 @@ ROBO_DOCS=~/Development/robolectric-docs
 * Update release notes at `$ROBO_DOCS/release-notes.md`.
 * `cd $ROBO_SRC && mvn clean release:clean release:prepare` (by xian)
 * `cd $ROBO_SRC && mvn release:perform` (by xian)
-* Update javadocs. In gh_pages branch,
+* Update javadocs
+
 ```bash
 cd $ROBO_SRC
 git st # make sure there are no changes...
