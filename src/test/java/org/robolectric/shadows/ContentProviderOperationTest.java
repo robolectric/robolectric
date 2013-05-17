@@ -56,7 +56,6 @@ public class ContentProviderOperationTest {
     shadow = Robolectric.shadowOf(op);
     assertThat(shadow.getType()).isEqualTo(ShadowContentProviderOperation.TYPE_DELETE);
     assertThat(shadow.getExpectedCount()).isEqualTo(1);
-
   }
 
 }

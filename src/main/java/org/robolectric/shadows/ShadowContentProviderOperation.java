@@ -22,34 +22,34 @@ public class ShadowContentProviderOperation {
   public final static int TYPE_ASSERT = 4;
 
   @RealObject
-  private ContentProviderOperation realApplication;
+  private ContentProviderOperation realOperation;
 
   public int getType() {
-    return field("mType").ofType(int.class).in(realApplication).get();
+    return field("mType").ofType(int.class).in(realOperation).get();
   }
 
   public String getSelection() {
-    return field("mSelection").ofType(String.class).in(realApplication).get();
+    return field("mSelection").ofType(String.class).in(realOperation).get();
   }
   public String[] getSelectionArgs() {
-    return field("mSelectionArgs").ofType(String[].class).in(realApplication).get();
+    return field("mSelectionArgs").ofType(String[].class).in(realOperation).get();
   }
 
   public ContentValues getContentValues() {
-    return field("mValues").ofType(ContentValues.class).in(realApplication).get();
+    return field("mValues").ofType(ContentValues.class).in(realOperation).get();
   }
 
   public Integer getExpectedCount() {
-    return field("mExpectedCount").ofType(Integer.class).in(realApplication).get();
+    return field("mExpectedCount").ofType(Integer.class).in(realOperation).get();
   }
 
   public ContentValues getValuesBackReferences() {
-    return field("mValuesBackReferences").ofType(ContentValues.class).in(realApplication).get();
+    return field("mValuesBackReferences").ofType(ContentValues.class).in(realOperation).get();
   }
 
   @SuppressWarnings("unchecked")
   public Map<Integer, Integer> getSelectionArgsBackReferences() {
-    return field("mSelectionArgsBackReferences").ofType(Map.class).in(realApplication).get();
+    return field("mSelectionArgsBackReferences").ofType(Map.class).in(realOperation).get();
   }
 
 }
