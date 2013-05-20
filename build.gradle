@@ -37,5 +37,5 @@ dependencies {
   compile group: 'org.apache.maven', name: 'maven-ant-tasks', version: '2.1.3'
 
   testCompile group: 'org.easytesting', name: 'fest-assert-core', version: '2.0M10'
-  testCompile group: 'org.mockito', name: 'mockito-core', version: '1.8.5'
+  testCompile group: 'org.mockito', name: 'mockito-core', version: '1.9.5'
 }
