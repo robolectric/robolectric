@@ -17,6 +17,7 @@ import java.util.List;
 
 import static android.content.pm.ApplicationInfo.*;
 import static java.util.Arrays.asList;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.util.TestUtil.*;
@@ -87,6 +88,14 @@ public class AndroidManifestTest {
         joinPath(".", "src", "test", "resources", "lib1", "..", "lib3", "res"),
         joinPath(".", "src", "test", "resources", "lib2", "res")),
         resourcePaths);
+  }
+
+  @Test
+  public void shouldTolerateMissingRFile() throws Exception {
+    AndroidManifest appManifest = new AndroidManifest(resourceFile("TestAndroidManifestWithNoRFile.xml"), resourceFile("res"));
+    assertEquals(appManifest.getPackageName(), "org.no.resources.for.me");
+    assertNull(appManifest.getRClass());
+    assertEquals(appManifest.getResourcePath().getPackageName(), "org.no.resources.for.me");
   }
 
   /////////////////////////////

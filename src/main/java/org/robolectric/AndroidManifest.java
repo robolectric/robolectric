@@ -99,7 +99,7 @@ public class AndroidManifest {
       String rClassName = getRClassName();
       return Class.forName(rClassName);
     } catch (Exception e) {
-      throw new RuntimeException(e);
+        return null;
     }
   }
 
@@ -272,7 +272,7 @@ public class AndroidManifest {
 
   public ResourcePath getResourcePath() {
     validate();
-    return new ResourcePath(getRClass(), resDirectory, assetsDirectory);
+    return new ResourcePath(getRClass(), getPackageName(), resDirectory, assetsDirectory);
   }
 
   public List<ResourcePath> getIncludedResourcePaths() {

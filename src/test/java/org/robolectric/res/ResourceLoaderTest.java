@@ -25,7 +25,7 @@ public class ResourceLoaderTest {
 
   @Before
   public void setUp() throws Exception {
-    resourcePath = new ResourcePath(R.class, resourceFile("res"), resourceFile("assets"));
+    resourcePath = new ResourcePath(R.class, R.class.getPackage().getName(), resourceFile("res"), resourceFile("assets"));
   }
 
   @Test(expected = I18nException.class)

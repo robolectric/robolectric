@@ -9,10 +9,12 @@ public class ResourceExtractor extends ResourceIndex {
   private static final boolean REMAP_RESOURCES = false;
 
   private final Class<?> processedRFile;
+  private final String packageName;
   private Integer maxUsedInt = null;
 
   public ResourceExtractor() {
     processedRFile = null;
+    packageName = "";
   }
 
   /**
@@ -25,29 +27,34 @@ public class ResourceExtractor extends ResourceIndex {
       androidRClass = classLoader.loadClass("android.R");
       Class<?> androidInternalRClass = classLoader.loadClass("com.android.internal.R");
 
-      process(androidRClass, "android", true);
-      process(androidInternalRClass, "android", false);
+      gatherResourceIdsAndNames(androidRClass, "android", true);
+      gatherResourceIdsAndNames(androidInternalRClass, "android", false);
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);
     }
     processedRFile = androidRClass;
+    packageName = processedRFile.getPackage().getName();
   }
 
   public ResourceExtractor(ResourcePath resourcePath) {
+    packageName = resourcePath.getPackageName();
+    if (resourcePath.rClass == null) {
+      processedRFile = null;
+      return;
+    }
     if (REMAP_RESOURCES) RESOURCE_REMAPPER.remapRClass(resourcePath.rClass);
     processedRFile = resourcePath.rClass;
-    String packageName = packageNameFor(resourcePath.rClass);
-    process(resourcePath.rClass, packageName, true);
+    gatherResourceIdsAndNames(resourcePath.rClass, packageName, true);
   }
 
-  private void process(Class<?> rClass, String packageName, boolean checkForCollisions) {
+  private void gatherResourceIdsAndNames(Class<?> rClass, String packageName, boolean checkForCollisions) {
     for (Class innerClass : rClass.getClasses()) {
       for (Field field : innerClass.getDeclaredFields()) {
         if (field.getType().equals(Integer.TYPE) && Modifier.isStatic(field.getModifiers())) {
           String section = innerClass.getSimpleName();
-          int value;
+          int id;
           try {
-            value = field.getInt(null);
+            id = field.getInt(null);
           } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
           }
@@ -56,12 +63,12 @@ public class ResourceExtractor extends ResourceIndex {
             String fieldName = field.getName();
             ResName resName = new ResName(packageName, section, fieldName);
 
-            resourceNameToId.put(resName, value);
+            resourceNameToId.put(resName, id);
 
-            if (checkForCollisions && resourceIdToResName.containsKey(value)) {
+            if (checkForCollisions && resourceIdToResName.containsKey(id)) {
               String message =
-                  value + " is already defined with name: " + resourceIdToResName.get(
-                      value) + " can't also call it: " + resName;
+                  id + " is already defined with name: " + resourceIdToResName.get(id)
+                      + " can't also call it: " + resName;
               if (REMAP_RESOURCES) {
                 throw new RuntimeException(message);
               } else {
@@ -69,21 +76,11 @@ public class ResourceExtractor extends ResourceIndex {
               }
             }
 
-            resourceIdToResName.put(value, resName);
+            resourceIdToResName.put(id, resName);
           }
         }
       }
     }
-  }
-
-  private String packageNameFor(Class<?> rClass) {
-    String name = rClass.getCanonicalName();
-    if (name == null) {
-      throw new RuntimeException("weirdly-named class " + rClass);
-    }
-    int lastDot = name.lastIndexOf(".");
-    if (lastDot < 0) throw new RuntimeException("weirdly-named class " + rClass);
-    return name.substring(0, lastDot);
   }
 
   @Override
@@ -114,5 +111,9 @@ public class ResourceExtractor extends ResourceIndex {
     return "ResourceExtractor{" +
         "package=" + processedRFile +
         '}';
+  }
+
+  public String getPackageName() {
+      return packageName;
   }
 }
