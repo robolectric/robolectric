@@ -405,13 +405,6 @@ public class ShadowWrangler implements ClassHandler {
       throw new NullPointerException("can't get a shadow for null");
     }
     return method(AsmInstrumentingClassLoader.GET_ROBO_DATA_METHOD_NAME).withReturnType(Object.class).in(instance).invoke();
-//
-//        Field field = RobolectricInternals.getShadowField(instance);
-//        Object shadow = readField(instance, field);
-//        if (shadow == null) {
-//            shadow = shadowFor(instance);
-//        }
-//        return shadow;
   }
 
   private void writeField(Object target, Object value, Field realObjectField) {
@@ -450,7 +443,6 @@ public class ShadowWrangler implements ClassHandler {
       //noinspection UnnecessaryLocalVariable
       Object shadow = roboData;
       try {
-//                System.out.println("invoke " + shadowMethod);
         return shadowMethod.invoke(shadow, params);
       } catch (IllegalArgumentException e) {
         throw new IllegalArgumentException("attempted to invoke " + shadowMethod
