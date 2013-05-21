@@ -26,6 +26,7 @@ public class TestWebSettings extends WebSettings {
   private boolean supportMultipleWindows = false;
   private boolean supportZoom = true;
   private String userAgentString = "Mozilla/5.0 (Linux; U; Android 4.0.3; ko-kr; LG-L160L Build/IML74K) AppleWebkit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30";
+  private boolean useWideViewPort = false;
   private int cacheMode;
 
   public TestWebSettings() {
@@ -202,5 +203,15 @@ public class TestWebSettings extends WebSettings {
   @Implementation
   public int getCacheMode() {
     return cacheMode;
+  }
+
+  @Implementation
+  public boolean getUseWideViewPort() {
+    return useWideViewPort;
+  }
+
+  @Implementation
+  public void setUseWideViewPort(boolean useWideViewPort) {
+    this.useWideViewPort = useWideViewPort;
   }
 }

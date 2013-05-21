@@ -181,4 +181,12 @@ public class TestWebSettingsTest {
     webSettings.setCacheMode(7);
     assertThat(webSettings.getCacheMode()).isEqualTo(7);
   }
+
+  @Test
+  public void testSetUseWideViewPort() throws Exception {
+    for (boolean value : trueAndFalse) {
+      webSettings.setUseWideViewPort(value);
+      assertThat(webSettings.getUseWideViewPort()).isEqualTo(value);
+    }
+  }
 }
