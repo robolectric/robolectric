@@ -8,6 +8,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.Looper;
 import android.view.InputQueue;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -24,6 +25,7 @@ import static org.fest.reflect.core.Reflection.constructor;
 import static org.fest.reflect.core.Reflection.field;
 import static org.fest.reflect.core.Reflection.method;
 import static org.fest.reflect.core.Reflection.type;
+import static org.robolectric.Robolectric.shadowOf;
 
 public class RoboWindow extends Window {
   private static boolean debug = false;
@@ -215,40 +217,66 @@ public class RoboWindow extends Window {
 
   @Override public ViewGroup getDecorView() {
     if (decorView == null) {
-      decorView = new FrameLayout(getContext()) {
-        @Override public void requestLayout() {
-          if (debug) System.out.println("[DEBUG] RoboWindow: request window layout!");
-          super.requestLayout();
+      shadowOf(Looper.getMainLooper()).runPaused(new Runnable() {
+        @Override public void run() {
+          createDecorView();
         }
-      };
-      // On a typical Android device you can call:
-      //   myWindow.getDecorView().findViewById(android.R.content)
-      decorView.setId(R.id.content);
-
-      viewRootImpl = createViewRootImpl(getContext());
-      WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
-      layoutParams.width = 800;
-      layoutParams.height = 1280;
-
-
-      field("inputFeatures").ofType(int.class).in(layoutParams)
-          .set(field("INPUT_FEATURE_NO_INPUT_CHANNEL").ofType(int.class)
-            .in(WindowManager.LayoutParams.class)
-            .get());
-      method("setView").withParameterTypes(View.class, WindowManager.LayoutParams.class, View.class)
-          .in(viewRootImpl).invoke(decorView, layoutParams, null);
-
-      method("dispatchResized")
-        .withParameterTypes(int.class, int.class, Rect.class, Rect.class, boolean.class, Configuration.class)
-        .in(viewRootImpl)
-        .invoke(layoutParams.width, layoutParams.height, new Rect(), new Rect(), false, new Configuration());
+      });
     }
     return decorView;
   }
 
+  private void createDecorView() {
+    decorView = new FrameLayout(getContext()) {
+      @Override public void requestLayout() {
+        if (debug) System.out.println("[DEBUG] RoboWindow: request window layout!");
+        super.requestLayout();
+      }
+    };
+    // On a typical Android device you can call:
+    //   myWindow.getDecorView().findViewById(android.R.content)
+    decorView.setId(R.id.content);
+
+    viewRootImpl = createViewRootImpl(getContext());
+    WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
+    layoutParams.width = 800;
+    layoutParams.height = 1280;
+
+    field("inputFeatures").ofType(int.class).in(layoutParams)
+        .set(field("INPUT_FEATURE_NO_INPUT_CHANNEL").ofType(int.class)
+            .in(WindowManager.LayoutParams.class)
+            .get());
+    method("setView").withParameterTypes(View.class, WindowManager.LayoutParams.class, View.class)
+        .in(viewRootImpl).invoke(decorView, layoutParams, null);
+
+    method("dispatchResized")
+      .withParameterTypes(int.class, int.class, Rect.class, Rect.class, boolean.class,
+          Configuration.class)
+      .in(viewRootImpl)
+      .invoke(layoutParams.width, layoutParams.height, new Rect(), new Rect(), false,
+          new Configuration());
+  }
+
   private ViewParent createViewRootImpl(Context context) {
-    Class<? extends ViewParent> viewRootImplClass = type("android.view.ViewRootImpl").withClassLoader(View.class.getClassLoader()).loadAs(ViewParent.class);
-    return constructor().withParameterTypes(Context.class).in(viewRootImplClass).newInstance(context);
+    ClassLoader classLoader = View.class.getClassLoader();
+    Class<? extends ViewParent> viewRootImplClass = type("android.view.ViewRootImpl")
+        .withClassLoader(classLoader)
+        .loadAs(ViewParent.class);
+    ViewParent viewRootImpl = constructor()
+            .withParameterTypes(Context.class)
+        .in(viewRootImplClass)
+        .newInstance(context);
+
+    // ick; ViewRootImpl wants a CompatibilityInfoHolder assigned from outside...
+    Class compatibilityInfoHolderClass = type("android.view.CompatibilityInfoHolder")
+        .withClassLoader(classLoader).load();
+    Object compatibilityInfoHolder = constructor().in(compatibilityInfoHolderClass).newInstance();
+    field("mCompatibilityInfo")
+        .ofType(compatibilityInfoHolderClass)
+        .in(viewRootImpl)
+        .set(compatibilityInfoHolder);
+
+    return viewRootImpl;
   }
 
   @Override

@@ -294,10 +294,12 @@ public class ShadowView {
   }
 
   public void applyFocus() {
-    if (noParentHasFocus(realView)) {
-      Boolean focusRequested = attributeSet.getAttributeBooleanValue(ANDROID_NS, "focus", false);
+    if (attributeSet != null) {
+      boolean focusRequested = attributeSet.getAttributeBooleanValue(ANDROID_NS, "focus", false);
       if (focusRequested || realView.isFocusableInTouchMode()) {
-        realView.requestFocus();
+        if (noParentHasFocus(realView)) {
+          realView.requestFocus();
+        }
       }
     }
   }

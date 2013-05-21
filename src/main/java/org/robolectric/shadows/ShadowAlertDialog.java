@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.os.Looper;
 import android.view.View;
 import android.widget.Adapter;
 import android.widget.FrameLayout;
@@ -12,7 +13,10 @@ import org.robolectric.annotation.RealObject;
 
 import static org.fest.reflect.core.Reflection.field;
 import static org.fest.reflect.core.Reflection.type;
-import static org.robolectric.Robolectric.*;
+import static org.robolectric.Robolectric.directlyOn;
+import static org.robolectric.Robolectric.getShadowApplication;
+import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Robolectric.shadowOf_;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AlertDialog.class)
@@ -95,8 +99,12 @@ public class ShadowAlertDialog extends ShadowDialog {
 
   @Implementation
   public void show() {
-    directlyOn(realAlertDialog, AlertDialog.class).show();
-    super.show();
+    shadowOf(Looper.getMainLooper()).runPaused(new Runnable() {
+      @Override public void run() {
+        directlyOn(realAlertDialog, AlertDialog.class).show();
+        ShadowAlertDialog.super.show();
+      }
+    });
     getShadowApplication().setLatestAlertDialog(this);
   }
 

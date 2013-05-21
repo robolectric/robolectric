@@ -299,7 +299,11 @@ public class ShadowResources {
 
   @Implementation
   public void updateConfiguration(Configuration config, DisplayMetrics metrics) {
-    shadowOf(realResources.getAssets()).setQualifiers(shadowOf(config).getQualifiers());
+    if (config != null) {
+      String qualifiers = shadowOf(config).getQualifiers();
+      shadowOf(realResources.getAssets()).setQualifiers(qualifiers);
+    }
+
     directlyOn(realResources, Resources.class).updateConfiguration(config, metrics);
   }
 
@@ -364,7 +368,8 @@ public class ShadowResources {
     Plural plural = resourceLoader.getPlural(resName, quantity, getQualifiers());
     String string = plural.getString();
     ShadowAssetManager shadowAssetManager = shadowOf(realResources.getAssets());
-    TypedResource typedResource = shadowAssetManager.resolve(new TypedResource(string, ResType.CHAR_SEQUENCE), getQualifiers(),
+    TypedResource typedResource = shadowAssetManager.resolve(
+        new TypedResource(string, ResType.CHAR_SEQUENCE), getQualifiers(),
         new ResName(resName.packageName, "string", resName.name));
     return typedResource == null ? null : typedResource.asString();
   }
@@ -418,10 +423,6 @@ public class ShadowResources {
 
   public ResourceLoader getResourceLoader() {
     return resourceLoader;
-  }
-
-  private String notFound(int id) {
-    return "couldn't find resource " + getResName(id).getFullyQualifiedName();
   }
 
   @Implements(Resources.Theme.class)

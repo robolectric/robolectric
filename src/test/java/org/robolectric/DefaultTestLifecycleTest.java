@@ -53,15 +53,6 @@ public class DefaultTestLifecycleTest {
   }
 
   @Test
-  public void shouldAssignTheApplicationNameFromTheManifest() throws Exception {
-    AndroidManifest appManifest = newConfigWith("<application android:name=\"org.robolectric.TestApplication\"/>");
-    Application application = defaultTestLifecycle.createApplication(null, appManifest);
-    shadowOf(application).bind(appManifest, null);
-
-    assertThat(application.getApplicationInfo().name).isEqualTo("org.robolectric.TestApplication");
-  }
-
-  @Test
   public void shouldRegisterReceiversFromTheManifest() throws Exception {
     AndroidManifest appManifest = newConfig("TestAndroidManifestWithReceivers.xml");
     Application application = defaultTestLifecycle.createApplication(null, appManifest);

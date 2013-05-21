@@ -249,4 +249,13 @@ public class ShadowLooper {
   public Scheduler getScheduler() {
     return scheduler;
   }
+
+  public void runPaused(Runnable r) {
+    boolean wasPaused = setPaused(true);
+    try {
+      r.run();
+    } finally {
+      if (!wasPaused) unPause();
+    }
+  }
 }
