@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Dialog;
 import android.appwidget.AppWidgetProvider;
@@ -20,11 +21,7 @@ import android.widget.FrameLayout;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.AndroidManifest;
-import org.robolectric.DefaultTestLifecycle;
-import org.robolectric.R;
-import org.robolectric.Robolectric;
-import org.robolectric.TestRunners;
+import org.robolectric.*;
 import org.robolectric.res.Fs;
 import org.robolectric.shadows.testing.OnMethodTestActivity;
 import org.robolectric.test.TemporaryFolder;
@@ -720,6 +717,12 @@ public class ActivityTest {
     assertEquals(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT, activity.getRequestedOrientation());
     activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
     assertEquals(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE, parentActivity.getRequestedOrientation());
+  }
+
+  @Test
+  public void getActionBar_shouldGetANonNullActionBar() throws Exception {
+    Activity activity = new Activity();
+    assertThat(activity.getActionBar()).isInstanceOfAny(ActionBar.class);
   }
 
   /////////////////////////////
