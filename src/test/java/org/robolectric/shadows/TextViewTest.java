@@ -437,6 +437,13 @@ public class TextViewTest {
     assertThat(textView.getLineCount()).isEqualTo(4);
   }
 
+  @Test
+  public void getPaintFlagsAndSetPaintFlags_shouldWork() {
+    assertThat(textView.getPaintFlags()).isEqualTo(0);
+    textView.setPaintFlags(100);
+    assertThat(textView.getPaintFlags()).isEqualTo(100);
+  }
+
   private List<MockTextWatcher> anyNumberOfTextWatchers() {
     List<MockTextWatcher> mockTextWatchers = new ArrayList<MockTextWatcher>();
     int numberBetweenOneAndTen = new Random().nextInt(10) + 1;
