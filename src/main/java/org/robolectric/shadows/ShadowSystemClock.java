@@ -8,6 +8,8 @@ import org.robolectric.annotation.Implements;
 @Implements(value = SystemClock.class, callThroughByDefault = true)
 public class ShadowSystemClock {
   private static long bootedAt = now();
+  private static long fakeTime;
+  private static boolean timeFaked;
 
   private static long now() {
     return System.currentTimeMillis();
@@ -20,7 +22,11 @@ public class ShadowSystemClock {
 
   @Implementation
   public static long uptimeMillis() {
-    return now() - bootedAt;
+    if (timeFaked) {
+      return fakeTime;
+    } else {
+      return now() - bootedAt;
+    }
   }
 
   @Implementation
@@ -41,5 +47,14 @@ public class ShadowSystemClock {
   @HiddenApi @Implementation
   public static long currentTimeMicro() {
     return now() * 1000;
+  }
+
+  public static void setFakeUptimeMillis(long millis) {
+    fakeTime = millis;
+    timeFaked = true;
+  }
+
+  public static void unfakeUptimeMillis() {
+    timeFaked = false;
   }
 }
