@@ -18,6 +18,7 @@ public class TestMenuItem implements MenuItem {
   public int iconRes;
   private Intent intent;
   private SubMenu subMenu;
+  private ActionProvider actionProvider;
 
   public TestMenuItem() {
     super();
@@ -225,12 +226,13 @@ public class TestMenuItem implements MenuItem {
 
   @Override
   public MenuItem setActionProvider(ActionProvider actionProvider) {
-    return null;
+    this.actionProvider = actionProvider;
+    return this;
   }
 
   @Override
   public ActionProvider getActionProvider() {
-    return null;
+    return actionProvider;
   }
 
   @Override
