@@ -59,6 +59,7 @@ public class ShadowTextView extends ShadowView {
   private List<Integer> previousKeyCodes = new ArrayList<Integer>();
   private List<KeyEvent> previousKeyEvents = new ArrayList<KeyEvent>();
   private Layout layout;
+  private int paintFlags;
 
 
   @Implementation
@@ -139,5 +140,15 @@ public class ShadowTextView extends ShadowView {
     if (text != null && text.length() > 0) {
       dumpAttribute(out, "text", text.toString());
     }
+  }
+
+  @Implementation
+  public int getPaintFlags() {
+    return paintFlags;
+  }
+
+  @Implementation
+  public void setPaintFlags(int paintFlags) {
+    this.paintFlags = paintFlags;
   }
 }
