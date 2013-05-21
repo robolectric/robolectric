@@ -84,7 +84,6 @@ import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
-import android.os.Message;
 import android.os.Parcel;
 import android.os.PowerManager;
 import android.os.ResultReceiver;
@@ -273,7 +272,6 @@ import org.robolectric.shadows.ShadowMediaRecorder;
 import org.robolectric.shadows.ShadowMediaStore;
 import org.robolectric.shadows.ShadowMenuInflater;
 import org.robolectric.shadows.ShadowMergeCursor;
-import org.robolectric.shadows.ShadowMessage;
 import org.robolectric.shadows.ShadowMimeTypeMap;
 import org.robolectric.shadows.ShadowMotionEvent;
 import org.robolectric.shadows.ShadowNetworkInfo;
@@ -797,10 +795,6 @@ public class Robolectric {
 
   public static ShadowMergeCursor shadowOf(MergeCursor instance) {
     return (ShadowMergeCursor) shadowOf_(instance);
-  }
-
-  public static ShadowMessage shadowOf(Message instance) {
-    return (ShadowMessage) shadowOf_(instance);
   }
 
   public static ShadowMimeTypeMap shadowOf(MimeTypeMap instance) {

@@ -1,9 +1,9 @@
 package org.robolectric.tester.android.view;
 
 import android.R;
+import android.app.ActionBar;
 import android.content.Context;
 import android.content.res.Configuration;
-import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -227,7 +227,8 @@ public class RoboWindow extends Window {
   }
 
   private void createDecorView() {
-    decorView = new FrameLayout(getContext()) {
+    final Context context = getContext();
+    decorView = new FrameLayout(context) {
       @Override public void requestLayout() {
         if (debug) System.out.println("[DEBUG] RoboWindow: request window layout!");
         super.requestLayout();
@@ -237,24 +238,26 @@ public class RoboWindow extends Window {
     //   myWindow.getDecorView().findViewById(android.R.content)
     decorView.setId(R.id.content);
 
-    viewRootImpl = createViewRootImpl(getContext());
+    viewRootImpl = createViewRootImpl(context);
     WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
-    layoutParams.width = 800;
-    layoutParams.height = 1280;
+    layoutParams.width = ActionBar.LayoutParams.MATCH_PARENT;
+    layoutParams.height = ActionBar.LayoutParams.WRAP_CONTENT;
 
-    field("inputFeatures").ofType(int.class).in(layoutParams)
-        .set(field("INPUT_FEATURE_NO_INPUT_CHANNEL").ofType(int.class)
+    final int INPUT_FEATURE_NO_INPUT_CHANNEL =
+        field("INPUT_FEATURE_NO_INPUT_CHANNEL").ofType(int.class)
             .in(WindowManager.LayoutParams.class)
-            .get());
+            .get();
+    field("inputFeatures").ofType(int.class).in(layoutParams)
+        .set(INPUT_FEATURE_NO_INPUT_CHANNEL);
     method("setView").withParameterTypes(View.class, WindowManager.LayoutParams.class, View.class)
         .in(viewRootImpl).invoke(decorView, layoutParams, null);
 
-    method("dispatchResized")
-      .withParameterTypes(int.class, int.class, Rect.class, Rect.class, boolean.class,
-          Configuration.class)
-      .in(viewRootImpl)
-      .invoke(layoutParams.width, layoutParams.height, new Rect(), new Rect(), false,
-          new Configuration());
+    //method("dispatchResized")
+    //  .withParameterTypes(int.class, int.class, Rect.class, Rect.class, boolean.class,
+    //      Configuration.class)
+    //  .in(viewRootImpl)
+    //  .invoke(layoutParams.width, layoutParams.height, new Rect(), new Rect(), false,
+    //      new Configuration());
   }
 
   private ViewParent createViewRootImpl(Context context) {

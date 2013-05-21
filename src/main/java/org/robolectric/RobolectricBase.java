@@ -148,7 +148,6 @@ import org.robolectric.shadows.ShadowMediaScannerConnection;
 import org.robolectric.shadows.ShadowMediaStore;
 import org.robolectric.shadows.ShadowMenuInflater;
 import org.robolectric.shadows.ShadowMergeCursor;
-import org.robolectric.shadows.ShadowMessage;
 import org.robolectric.shadows.ShadowMessenger;
 import org.robolectric.shadows.ShadowMimeTypeMap;
 import org.robolectric.shadows.ShadowMockPackageManager;
@@ -414,7 +413,6 @@ public class RobolectricBase {
       ShadowMediaStore.ShadowImages.ShadowMedia.class,
       ShadowMenuInflater.class,
       ShadowMergeCursor.class,
-      ShadowMessage.class,
       ShadowMessenger.class,
       ShadowMimeTypeMap.class,
       ShadowMockPackageManager.class,
