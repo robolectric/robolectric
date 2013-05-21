@@ -3,11 +3,11 @@ package org.robolectric.tester.android.view;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.SubMenu;
+import android.view.*;
+import org.robolectric.Robolectric;
+import org.robolectric.shadows.RoboAttributeSet;
 
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -188,5 +188,27 @@ public class TestMenu implements Menu {
       }
     }
     return null;
+  }
+
+  public MenuItem add(RoboAttributeSet attributes) {
+    TestMenuItem menuItem = new TestMenuItem();
+    menuItems.add(menuItem);
+    menuItem.setItemId(attributes.getAttributeResourceValue("android", "id", 0));
+    menuItem.setTitle(attributes.getAttributeValue("android", "title"));
+    createActionProviderInstance(menuItem, attributes.getAttributeValue("android", "actionProviderClass"));
+    return menuItem;
+  }
+
+  private void createActionProviderInstance(TestMenuItem menuItem, String actionProviderClass) {
+    if (actionProviderClass != null) {
+      try {
+        Class<ActionProvider> apc = (Class<ActionProvider>) Class.forName(actionProviderClass);
+        Constructor constructor = apc.getConstructor(Context.class);
+        ActionProvider actionProvider = (ActionProvider) constructor.newInstance(Robolectric.application);
+        menuItem.setActionProvider(actionProvider);
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    }
   }
 }

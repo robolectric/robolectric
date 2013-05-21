@@ -1,0 +1,5 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+  <item android:id="@id/test_menu_1"
+        android:title="Test menu item 1"
+        android:actionProviderClass="org.robolectric.shadows.testing.FakeActionProvider"/>
+</menu>
