@@ -295,7 +295,7 @@ public class ShadowView {
   }
 
   public void applyFocus() {
-    if (noParentHasFocus(realView)) {
+    if (noParentHasFocus(realView) && attributeSet != null) {
       Boolean focusRequested = attributeSet.getAttributeBooleanValue(ANDROID_NS, "focus", false);
       if (focusRequested || realView.isFocusableInTouchMode()) {
         realView.requestFocus();
