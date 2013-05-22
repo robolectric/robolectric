@@ -42,7 +42,8 @@ public class ShadowMap {
       }
       ShadowConfig shadowConfig = createShadowConfig(shadowClass.getName(),
           implementsAnnotation.callThroughByDefault(),
-          implementsAnnotation.inheritImplementationMethods());
+          implementsAnnotation.inheritImplementationMethods(),
+          implementsAnnotation.looseSignatures());
       return new ShadowInfo(className, shadowConfig);
     } catch (TypeNotPresentException typeLoadingException) {
       String unloadableClassName = shadowClass.getSimpleName();
@@ -59,8 +60,9 @@ public class ShadowMap {
     return null;
   }
 
-  private static ShadowConfig createShadowConfig(String shadowClassName, boolean callThroughByDefault, boolean inheritImplementationMethods) {
-    return new ShadowConfig(shadowClassName, callThroughByDefault, inheritImplementationMethods);
+  private static ShadowConfig createShadowConfig(String shadowClassName,
+      boolean callThroughByDefault, boolean inheritImplementationMethods, boolean looseSignatures) {
+    return new ShadowConfig(shadowClassName, callThroughByDefault, inheritImplementationMethods, looseSignatures);
   }
 
   private static boolean isIgnorableClassLoadingException(Throwable typeLoadingException) {
@@ -155,18 +157,18 @@ public class ShadowMap {
       return this;
     }
 
-    public Builder addShadowClass(String realClassName, Class<?> shadowClass, boolean callThroughByDefault, boolean inheritImplementationMethods) {
-      addShadowClass(realClassName, shadowClass.getName(), callThroughByDefault, inheritImplementationMethods);
+    public Builder addShadowClass(String realClassName, Class<?> shadowClass, boolean callThroughByDefault, boolean inheritImplementationMethods, boolean looseSignatures) {
+      addShadowClass(realClassName, shadowClass.getName(), callThroughByDefault, inheritImplementationMethods, looseSignatures);
       return this;
     }
 
-    public Builder addShadowClass(Class<?> realClass, Class<?> shadowClass, boolean callThroughByDefault, boolean inheritImplementationMethods) {
-      addShadowClass(realClass.getName(), shadowClass.getName(), callThroughByDefault, inheritImplementationMethods);
+    public Builder addShadowClass(Class<?> realClass, Class<?> shadowClass, boolean callThroughByDefault, boolean inheritImplementationMethods, boolean looseSignatures) {
+      addShadowClass(realClass.getName(), shadowClass.getName(), callThroughByDefault, inheritImplementationMethods, looseSignatures);
       return this;
     }
 
-    public Builder addShadowClass(String realClassName, String shadowClassName, boolean callThroughByDefault, boolean inheritImplementationMethods) {
-      addShadowConfig(realClassName, createShadowConfig(shadowClassName, callThroughByDefault, inheritImplementationMethods));
+    public Builder addShadowClass(String realClassName, String shadowClassName, boolean callThroughByDefault, boolean inheritImplementationMethods, boolean looseSignatures) {
+      addShadowConfig(realClassName, createShadowConfig(shadowClassName, callThroughByDefault, inheritImplementationMethods, looseSignatures));
       return this;
     }
 

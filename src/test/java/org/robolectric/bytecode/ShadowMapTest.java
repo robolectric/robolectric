@@ -18,8 +18,8 @@ public class ShadowMapTest {
   }
 
   @Test public void equalsHashCode() throws Exception {
-    ShadowMap a = new ShadowMap.Builder().addShadowClass("a", "b", true, false).build();
-    ShadowMap b = new ShadowMap.Builder().addShadowClass("a", "b", true, false).build();
+    ShadowMap a = new ShadowMap.Builder().addShadowClass("a", "b", true, false, false).build();
+    ShadowMap b = new ShadowMap.Builder().addShadowClass("a", "b", true, false, false).build();
     assertThat(a).isEqualTo(b);
     assertThat(a.hashCode()).isEqualTo(b.hashCode());
 
@@ -27,7 +27,7 @@ public class ShadowMapTest {
     assertThat(c).isEqualTo(b);
     assertThat(c.hashCode()).isEqualTo(b.hashCode());
 
-    ShadowMap d = new ShadowMap.Builder().addShadowClass("a", "x", true, false).build();
+    ShadowMap d = new ShadowMap.Builder().addShadowClass("a", "x", true, false, false).build();
     assertThat(d).isNotEqualTo(a);
     assertThat(d.hashCode()).isNotEqualTo(b.hashCode());
   }
