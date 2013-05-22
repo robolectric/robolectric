@@ -46,29 +46,50 @@
   <TextView
       android:id="@+id/subtitle"
       android:layout_width="138dip"
-      android:gravity="center_horizontal"
       android:layout_height="wrap_content"
+      android:gravity="center_horizontal"
       android:text="@string/hello"
       android:maxHeight="36dip"
       android:textSize="14dip"
       android:textColor="#fff"
       />
 
-  <CheckBox android:id="@+id/true_checkbox" android:checked="true"/>
-  <CheckBox android:id="@+id/false_checkbox" android:checked="false"/>
-  <CheckBox android:id="@+id/default_checkbox"/>
+  <CheckBox
+      android:id="@+id/true_checkbox"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:checked="true"
+      />
+  <CheckBox
+      android:id="@+id/false_checkbox"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:checked="false"
+      />
+  <CheckBox
+      android:id="@+id/default_checkbox"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      />
 
   <ImageView
       android:id="@+id/image"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
       android:src="@drawable/an_image"
       android:background="@drawable/image_background"
       />
 
   <Button
       android:id="@+id/button"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
       android:onClick="onButtonClick"
       />
 
   <!-- see https://github.com/robolectric/robolectric/issues/521 -->
-  <HorizontalScrollView/>
+  <HorizontalScrollView
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      />
 </LinearLayout>

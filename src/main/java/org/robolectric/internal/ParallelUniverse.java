@@ -1,12 +1,14 @@
 package org.robolectric.internal;
 
 import android.app.Application;
+import android.app.Instrumentation;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import org.robolectric.AndroidManifest;
+import org.robolectric.RoboInstrumentation;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.TestLifecycle;
@@ -60,6 +62,17 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     Object activityThread = constructor()
         .in(activityThreadClass)
         .newInstance();
+    Robolectric.activityThread = activityThread;
+
+    field("mInstrumentation")
+        .ofType(Instrumentation.class)
+        .in(activityThread)
+        .set(new RoboInstrumentation());
+
+    field("mCompatConfiguration")
+        .ofType(Configuration.class)
+        .in(activityThread)
+        .set(configuration);
 
     ResourceLoader resourceLoader;
     if (appManifest != null) {
@@ -110,6 +123,11 @@ public class ParallelUniverse implements ParallelUniverseInterface {
           .withParameterTypes(String.class, int.class) // packageName, flags
           .in(systemContextImpl)
           .invoke(applicationInfo.packageName, Context.CONTEXT_INCLUDE_CODE);
+
+      field("mInitialApplication")
+          .ofType(Application.class)
+          .in(activityThread)
+          .set(application);
 
       method("attach")
           .withParameterTypes(Context.class)

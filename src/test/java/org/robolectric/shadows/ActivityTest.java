@@ -28,6 +28,7 @@ import org.robolectric.TestRunners;
 import org.robolectric.res.Fs;
 import org.robolectric.shadows.testing.OnMethodTestActivity;
 import org.robolectric.test.TemporaryFolder;
+import org.robolectric.util.ActivityController;
 import org.robolectric.util.TestRunnable;
 import org.robolectric.util.Transcript;
 
@@ -43,36 +44,37 @@ import static org.robolectric.Robolectric.shadowOf;
 @RunWith(TestRunners.WithDefaults.class)
 public class ActivityTest {
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
+  private Activity activity;
 
   @Test(expected = IllegalStateException.class)
   public void shouldComplainIfActivityIsDestroyedWithRegisteredBroadcastReceivers() throws Exception {
-    DialogLifeCycleActivity activity = new DialogLifeCycleActivity();
+    activity = create(DialogLifeCycleActivity.class);
     activity.registerReceiver(new AppWidgetProvider(), new IntentFilter());
-    activity.onDestroy();
+    destroy(activity);
   }
 
   @Test
   public void shouldNotComplainIfActivityIsDestroyedWhileAnotherActivityHasRegisteredBroadcastReceivers() throws Exception {
-    DialogLifeCycleActivity activity = new DialogLifeCycleActivity();
+    activity = create(DialogLifeCycleActivity.class);
 
     DialogLifeCycleActivity activity2 = new DialogLifeCycleActivity();
     activity2.registerReceiver(new AppWidgetProvider(), new IntentFilter());
 
-    activity.onDestroy(); // should not throw exception
+    destroy(activity); // should not throw exception
   }
 
   @Test
   public void shouldNotRegisterNullBroadcastReceiver() {
-    DialogLifeCycleActivity activity = new DialogLifeCycleActivity();
+    activity = create(DialogLifeCycleActivity.class);
     activity.registerReceiver(null, new IntentFilter());
 
-    activity.onDestroy();
+    destroy(activity);
   }
 
   @Test
   public void shouldReportDestroyedStatus() {
-    DialogLifeCycleActivity activity = new DialogLifeCycleActivity();
-    activity.onDestroy();
+    activity = create(DialogLifeCycleActivity.class);
+    destroy(activity);
     assertThat(shadowOf(activity).isDestroyed()).isTrue();
   }
 
@@ -131,7 +133,7 @@ public class ActivityTest {
 
   @Test
   public void shouldSupportStartActivityForResult() throws Exception {
-    DialogLifeCycleActivity activity = new DialogLifeCycleActivity();
+    activity = create(DialogLifeCycleActivity.class);
     ShadowActivity shadowActivity = Robolectric.shadowOf(activity);
     Intent intent = new Intent().setClass(activity, DialogLifeCycleActivity.class);
     assertThat(shadowActivity.getNextStartedActivity()).isNull();
@@ -145,7 +147,7 @@ public class ActivityTest {
 
   @Test
   public void shouldSupportGetStartedActitivitesForResult() throws Exception {
-    DialogLifeCycleActivity activity = new DialogLifeCycleActivity();
+    activity = create(DialogLifeCycleActivity.class);
     ShadowActivity shadowActivity = Robolectric.shadowOf(activity);
     Intent intent = new Intent().setClass(activity, DialogLifeCycleActivity.class);
 
@@ -161,7 +163,7 @@ public class ActivityTest {
 
   @Test
   public void shouldSupportPeekStartedActitivitesForResult() throws Exception {
-    DialogLifeCycleActivity activity = new DialogLifeCycleActivity();
+    activity = create(DialogLifeCycleActivity.class);
     ShadowActivity shadowActivity = Robolectric.shadowOf(activity);
     Intent intent = new Intent().setClass(activity, DialogLifeCycleActivity.class);
 
@@ -200,7 +202,7 @@ public class ActivityTest {
   @Test
   public void shouldRunUiTasksImmediatelyByDefault() throws Exception {
     TestRunnable runnable = new TestRunnable();
-    DialogLifeCycleActivity activity = new DialogLifeCycleActivity();
+    activity = create(DialogLifeCycleActivity.class);
     activity.runOnUiThread(runnable);
     assertTrue(runnable.wasRun);
   }
@@ -209,7 +211,7 @@ public class ActivityTest {
   public void shouldQueueUiTasksWhenUiThreadIsPaused() throws Exception {
     Robolectric.pauseMainLooper();
 
-    DialogLifeCycleActivity activity = new DialogLifeCycleActivity();
+    activity = create(DialogLifeCycleActivity.class);
     TestRunnable runnable = new TestRunnable();
     activity.runOnUiThread(runnable);
     assertFalse(runnable.wasRun);
@@ -220,7 +222,7 @@ public class ActivityTest {
 
   @Test
   public void showDialog_shouldCreatePrepareAndShowDialog() {
-    final DialogLifeCycleActivity activity = new DialogLifeCycleActivity();
+    final DialogLifeCycleActivity activity = create(DialogLifeCycleActivity.class);
     final AtomicBoolean dialogWasShown = new AtomicBoolean(false);
 
     new Dialog(activity) {
@@ -243,7 +245,7 @@ public class ActivityTest {
 
   @Test
   public void showDialog_shouldCreatePrepareAndShowDialogWithBundle() {
-    final DialogLifeCycleActivity activity = new DialogLifeCycleActivity();
+    final DialogLifeCycleActivity activity = create(DialogLifeCycleActivity.class);
     final AtomicBoolean dialogWasShown = new AtomicBoolean(false);
 
     new Dialog(activity) {
@@ -266,22 +268,18 @@ public class ActivityTest {
 
   @Test
   public void showDialog_shouldReuseDialogs() {
-    final DialogCreatingActivity activity = new DialogCreatingActivity();
-
+    final DialogCreatingActivity activity = create(DialogCreatingActivity.class);
     activity.showDialog(1);
-
     Dialog firstDialog = ShadowDialog.getLatestDialog();
-
     activity.showDialog(1);
 
-    final Dialog secondDialog = ShadowDialog.getLatestDialog();
-
+    Dialog secondDialog = ShadowDialog.getLatestDialog();
     assertSame("dialogs should be the same instance", firstDialog, secondDialog);
   }
 
   @Test
   public void showDialog_shouldShowDialog() throws Exception {
-    final DialogCreatingActivity activity = new DialogCreatingActivity();
+    final DialogCreatingActivity activity = create(DialogCreatingActivity.class);
     activity.showDialog(1);
     Dialog dialog = ShadowDialog.getLatestDialog();
     assertTrue(dialog.isShowing());
@@ -289,7 +287,7 @@ public class ActivityTest {
 
   @Test
   public void dismissDialog_shouldDismissPreviouslyShownDialog() throws Exception {
-    final DialogCreatingActivity activity = new DialogCreatingActivity();
+    final DialogCreatingActivity activity = create(DialogCreatingActivity.class);
     activity.showDialog(1);
     activity.dismissDialog(1);
     Dialog dialog = ShadowDialog.getLatestDialog();
@@ -298,14 +296,13 @@ public class ActivityTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void dismissDialog_shouldThrowExceptionIfDialogWasNotPreviouslyShown() throws Exception {
-    final DialogCreatingActivity activity = new DialogCreatingActivity();
+    final DialogCreatingActivity activity = create(DialogCreatingActivity.class);
     activity.dismissDialog(1);
   }
 
   @Test
   public void removeDialog_shouldCreateDialogAgain() {
-    final DialogCreatingActivity activity = new DialogCreatingActivity();
-
+    final DialogCreatingActivity activity = create(DialogCreatingActivity.class);
     activity.showDialog(1);
     Dialog firstDialog = ShadowDialog.getLatestDialog();
 
@@ -320,7 +317,7 @@ public class ActivityTest {
 
   @Test
   public void shouldCallOnCreateDialogFromShowDialog() {
-    ActivityWithOnCreateDialog activity = new ActivityWithOnCreateDialog();
+    ActivityWithOnCreateDialog activity = create(ActivityWithOnCreateDialog.class);
     activity.showDialog(123);
     assertTrue(activity.onCreateDialogWasCalled);
     assertThat(ShadowDialog.getLatestDialog()).isNotNull();
@@ -337,7 +334,7 @@ public class ActivityTest {
 
   @Test
   public void shouldSupportCurrentFocus() {
-    DialogLifeCycleActivity activity = new DialogLifeCycleActivity();
+    activity = create(DialogLifeCycleActivity.class);
     ShadowActivity shadow = shadowOf(activity);
 
     assertNull(shadow.getCurrentFocus());
@@ -348,7 +345,7 @@ public class ActivityTest {
 
   @Test
   public void shouldSetOrientation() {
-    DialogLifeCycleActivity activity = new DialogLifeCycleActivity();
+    activity = create(DialogLifeCycleActivity.class);
     activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
     assertThat(activity.getRequestedOrientation()).isEqualTo(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
   }
@@ -723,6 +720,14 @@ public class ActivityTest {
   }
 
   /////////////////////////////
+
+  private void destroy(Activity activity) {
+    new ActivityController(activity).destroy();
+  }
+
+  private <T extends Activity> T create(Class<T> activityClass) {
+    return Robolectric.buildActivity(activityClass).create().get();
+  }
 
   public AndroidManifest newConfigWith(String contents) throws IOException {
     return newConfigWith("org.robolectric", contents);

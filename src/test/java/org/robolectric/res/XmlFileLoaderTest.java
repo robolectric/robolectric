@@ -5,8 +5,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.robolectric.R;
 import org.robolectric.res.builder.XmlFileBuilder;
 import org.robolectric.res.builder.XmlFileBuilder.XmlResourceParserImpl;
+import org.robolectric.util.TestUtil;
 import org.w3c.dom.Document;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -49,6 +51,7 @@ public class XmlFileLoaderTest {
   private XmlFileBuilder xmlFileBuilder;
   private XmlResourceParserImpl parser;
   private ResBundle<Document> resBundle;
+  private ResourceIndex resourceIndex;
 
   @Before
   public void setUp() throws Exception {
@@ -59,7 +62,8 @@ public class XmlFileLoaderTest {
 
     ResName resName = new ResName(TEST_PACKAGE, "xml", "preferences");
     Document document = resBundle.get(resName, "");
-    parser = (XmlResourceParserImpl) xmlFileBuilder.getXml(document, resName.getFullyQualifiedName(), "packageName", null);
+    resourceIndex = new MergedResourceIndex(new ResourceExtractor(testResources()), new ResourceExtractor());
+    parser = (XmlResourceParserImpl) xmlFileBuilder.getXml(document, resName.getFullyQualifiedName(), "packageName", resourceIndex);
   }
 
   @After
@@ -95,7 +99,7 @@ public class XmlFileLoaderTest {
       Document document = documentBuilder.parse(
           new ByteArrayInputStream(xmlValue.getBytes()));
 
-      parser = new XmlResourceParserImpl(document, "file", "some-package-name", null);
+      parser = new XmlResourceParserImpl(document, "file", TestUtil.testResources().getPackageName(), resourceIndex);
       // Navigate to the root element
       parseUntilNext(XmlResourceParser.START_TAG);
     } catch (Exception parsingException) {
@@ -388,7 +392,8 @@ public class XmlFileLoaderTest {
     assertThat(parser.isEmptyElementTag()).isEqualTo(false).as("Not empty tag should return false.");
 
     forgeAndOpenDocument("<foo/>");
-    assertThat(parser.isEmptyElementTag()).isEqualTo(false).as("In the Android implementation this method always return false.");
+    assertThat(parser.isEmptyElementTag()).isEqualTo(false).as(
+        "In the Android implementation this method always return false.");
   }
 
   @Test
@@ -578,15 +583,18 @@ public class XmlFileLoaderTest {
   }
 
   @Test
-  @Ignore("Not yet implemented")
-  public void testGetAttributeResourceValueStringStringInt() {
-    fail("Not yet implemented");
+  public void testGetAttributeResourceValueIntInt()
+      throws XmlPullParserException {
+    forgeAndOpenDocument("<foo xmlns:bar=\"@layout/main\"/>");
+    assertThat(parser.getAttributeResourceValue(0, 42)).isEqualTo(R.layout.main);
   }
 
   @Test
-  @Ignore("Not yet implemented")
-  public void testGetAttributeResourceValueIntInt() {
-    fail("Not yet implemented");
+  public void testGetAttributeResourceValueStringStringInt()
+      throws XmlPullParserException {
+    forgeAndOpenDocument("<foo xmlns:bar=\"@layout/main\"/>");
+    assertThat(parser.getAttributeResourceValue(XMLNS_NS, "bar", 42)).isEqualTo(R.layout.main);
+    assertThat(parser.getAttributeResourceValue(XMLNS_NS, "foo", 42)).isEqualTo(42);
   }
 
   @Test

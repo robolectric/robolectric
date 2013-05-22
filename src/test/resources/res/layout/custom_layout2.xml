@@ -1,9 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<org.robolectric.util.CustomView2 message="@string/hello">
-  <org.robolectric.util.CustomView2>
-    <TextView/>
-    <TextView/>
-    <TextView/>
+<org.robolectric.util.CustomView2
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    message="@string/hello">
+  <org.robolectric.util.CustomView2
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      >
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        />
   </org.robolectric.util.CustomView2>
 </org.robolectric.util.CustomView2>

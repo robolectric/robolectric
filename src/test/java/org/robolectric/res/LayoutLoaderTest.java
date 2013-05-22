@@ -10,6 +10,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.util.AttributeSet;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
@@ -29,18 +30,19 @@ import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
-import org.robolectric.res.builder.LayoutBuilder;
 import org.robolectric.shadows.ShadowImageView;
 import org.robolectric.shadows.StubViewRoot;
 import org.robolectric.util.CustomView;
 import org.robolectric.util.CustomView2;
-import org.robolectric.util.I18nException;
 import org.robolectric.util.TestUtil;
 
-import java.util.ArrayList;
-
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 import static org.robolectric.Robolectric.shadowOf;
 import static org.robolectric.test.Assertions.assertThat;
 import static org.robolectric.util.TestUtil.TEST_PACKAGE;
@@ -179,12 +181,9 @@ public class LayoutLoaderTest {
   public void focusRequest_shouldNotExplodeOnViewRootImpl() throws Exception {
     LinearLayout parent = new LinearLayout(context);
     shadowOf(parent).setMyParent(new StubViewRoot());
-    ViewGroup viewGroup = (ViewGroup) inflate(context, TEST_PACKAGE, "request_focus", parent, "");
-    ViewGroup frameLayout = (ViewGroup) viewGroup.getChildAt(1);
-    assertEquals(0, frameLayout.getChildCount());
+    inflate(context, TEST_PACKAGE, "request_focus", parent, "");
   }
 
-  @Ignore("maybe not a valid test in the 2.0 world?") // todo  2.0-cleanup
   @Test
   public void shouldGiveFocusToElementContainingRequestFocusElement() throws Exception {
     ViewGroup viewGroup = (ViewGroup) inflate("request_focus");
@@ -192,6 +191,7 @@ public class LayoutLoaderTest {
     assertFalse(editText.isFocused());
   }
 
+  @Ignore("what's supposed to happen here?") // todo 2.0-cleanup
   @Test
   public void shouldGiveFocusToFirstFocusableElement_butThisMightBeTheWrongBehavior() throws Exception {
     ViewGroup viewGroup = (ViewGroup) inflate("request_focus_with_two_edit_texts");
@@ -273,8 +273,9 @@ public class LayoutLoaderTest {
 
   @Test
   public void shouldInflateMergeLayoutIntoParent() throws Exception {
-    View innerMerge = new LayoutBuilder(resourceLoader).inflateView(context, R.layout.inner_merge, new LinearLayout(Robolectric.application), "");
-    assertNotNull(innerMerge);
+    LinearLayout linearLayout = new LinearLayout(context);
+    View innerMerge = inflate(context, TEST_PACKAGE, "inner_merge", linearLayout, "");
+    assertThat(linearLayout.getChildAt(0)).isInstanceOf(TextView.class);
   }
 
   @Test
@@ -283,8 +284,7 @@ public class LayoutLoaderTest {
     assertThat(mainView.findViewById(R.id.map_view)).isInstanceOf(MapView.class);
   }
 
-  @Test
-  @Ignore
+  @Test @Ignore("should this work?")
   public void testFragment() throws Exception {
     FragmentActivity fragmentActivity = new FragmentActivity();
     context = fragmentActivity;
@@ -344,7 +344,7 @@ public class LayoutLoaderTest {
   public void testViewBackgroundIdIsSet() throws Exception {
     View mediaView = inflate("main");
     ImageView imageView = (ImageView) mediaView.findViewById(R.id.image);
-    ShadowImageView shadowImageView = Robolectric.shadowOf(imageView);
+    ShadowImageView shadowImageView = shadowOf(imageView);
 
     assertThat(imageView.getBackground()).isResource(R.drawable.image_background);
     assertThat(shadowImageView.getBackgroundResourceId()).isEqualTo(R.drawable.image_background);
@@ -410,20 +410,19 @@ public class LayoutLoaderTest {
     assertEquals(1, parentView.getChildCount());
   }
 
-  @Test(expected=I18nException.class)
-  public void shouldThrowI18nExceptionOnLayoutWithBareStrings() throws Exception {
-    Robolectric.getShadowApplication().setStrictI18n(true);
-    inflate("text_views");
-  }
+  /////////////////////////
 
   private View inflate(String packageName, String layoutName, String qualifiers) {
     return inflate(context, packageName, layoutName, null, qualifiers);
   }
 
   public View inflate(Context context, String packageName, String key, ViewGroup parent, String qualifiers) {
+    ResName resName = new ResName(packageName + ":layout/" + key);
+    shadowOf(context.getAssets()).setQualifiers(qualifiers);
     ResourceLoader resourceLoader = shadowOf(context.getResources()).getResourceLoader();
-    return new LayoutBuilder(resourceLoader).inflateView(context, new ResName(packageName + ":layout/" + key),
-        new ArrayList<Attribute>(), parent, qualifiers);
+    Integer layoutResId = resourceLoader.getResourceIndex().getResourceId(resName);
+    if (layoutResId == null) throw new AssertionError("no such resource " + resName);
+    return LayoutInflater.from(context).inflate(layoutResId, parent);
   }
 
   private View inflate(String layoutName) {

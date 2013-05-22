@@ -13,7 +13,10 @@ import android.os.IBinder;
 import android.os.IInterface;
 import android.os.Parcel;
 import android.os.RemoteException;
-import org.junit.Before;
+import java.io.File;
+import java.io.FileDescriptor;
+import java.io.IOException;
+import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,25 +36,19 @@ import org.robolectric.res.TypedResource;
 import org.robolectric.test.TemporaryFolder;
 import org.robolectric.util.TestBroadcastReceiver;
 
-import java.io.File;
-import java.io.FileDescriptor;
-import java.io.IOException;
-import java.util.List;
-
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ApplicationTest {
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
-
-  @Before
-  public void setUp() throws Exception {
-    Robolectric.application = new Application();
-  }
 
   @Test
   public void shouldBeAContext() throws Exception {
@@ -91,7 +88,6 @@ public class ApplicationTest {
 
   @Test
   public void shouldProvideServices() throws Exception {
-    checkSystemService(Context.LAYOUT_INFLATER_SERVICE, android.view.LayoutInflater.class);
     checkSystemService(Context.ACTIVITY_SERVICE, android.app.ActivityManager.class);
     checkSystemService(Context.POWER_SERVICE, android.os.PowerManager.class);
     checkSystemService(Context.ALARM_SERVICE, android.app.AlarmManager.class);
@@ -109,6 +105,11 @@ public class ApplicationTest {
     checkSystemService(Context.INPUT_METHOD_SERVICE, android.view.inputmethod.InputMethodManager.class);
     checkSystemService(Context.UI_MODE_SERVICE, android.app.UiModeManager.class);
     checkSystemService(Context.DOWNLOAD_SERVICE, android.app.DownloadManager.class);
+  }
+
+  @Test public void shouldProvideLayoutInflater() throws Exception {
+    Object systemService = Robolectric.application.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+    assertThat(systemService).isInstanceOf(RoboLayoutInflater.class);
   }
 
   private void checkSystemService(String name, Class expectedClass) {

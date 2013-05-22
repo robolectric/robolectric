@@ -32,4 +32,9 @@ public class ShadowActivityThread {
       }
     });
   }
+
+  @Implementation
+  public static Object currentActivityThread() {
+    return Robolectric.activityThread;
+  }
 }

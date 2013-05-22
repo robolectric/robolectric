@@ -39,8 +39,8 @@
   <TextView
       android:id="@+id/subtitle"
       android:layout_width="138dip"
-      android:gravity="center_horizontal"
       android:layout_height="wrap_content"
+      android:gravity="center_horizontal"
       android:maxHeight="36dip"
       android:textSize="14dip"
       android:textColor="#fff"

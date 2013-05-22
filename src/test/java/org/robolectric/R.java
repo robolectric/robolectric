@@ -169,22 +169,37 @@ public final class R {
   }
 
   public static final class layout {
-    public static final int main = 0x10600;
-    public static final int media = 0x10601;
-    public static final int inner_merge = 0x10602;
-    public static final int included_linear_layout = 0x10603;
-    public static final int edit_text = 0x10604;
-    public static final int with_invalid_onclick = 0x10605;
-    public static final int text_views = 0x10606;
-    public static final int text_views_hints = 0x10607;
-    public static final int toplevel_merge = 0x10608;
-    public static final int tab_activity = 0x10609;
-    public static final int different_screen_sizes = 0x1060a;
-    public static final int fragment_activity = 0x1060b;
-    public static final int fragment_contents = 0x1060c;
-    public static final int lam_outer = 0x1060d;
-    public static final int lam_inner = 0x1060e;
-    public static final int styles_button_layout = 0x1060f;
+    public static final int activity_list_item = 0x10600;
+    public static final int custom_layout = 0x10601;
+    public static final int custom_layout2 = 0x10602;
+    public static final int custom_layout3 = 0x10603;
+    public static final int custom_layout4 = 0x10604;
+    public static final int different_screen_sizes = 0x10605;
+    public static final int edit_text = 0x10606;
+    public static final int fragment = 0x10607;
+    public static final int fragment_activity = 0x10608;
+    public static final int fragment_contents = 0x10609;
+    public static final int included_layout_parent = 0x1060a;
+    public static final int included_linear_layout = 0x1060b;
+    public static final int inner_merge = 0x1060c;
+    public static final int lam_inner = 0x1060d;
+    public static final int lam_outer = 0x1060e;
+    public static final int main = 0x1060f;
+    public static final int mapview = 0x10610;
+    public static final int media = 0x10611;
+    public static final int multi_orientation = 0x10612;
+    public static final int outer = 0x10613;
+    public static final int override_include = 0x10614;
+    public static final int request_focus = 0x10615;
+    public static final int request_focus_with_two_edit_texts = 0x10616;
+    public static final int snippet = 0x10617;
+    public static final int styles_button_layout = 0x10618;
+    public static final int tab_activity = 0x10619;
+    public static final int text_views = 0x1061a;
+    public static final int text_views_hints = 0x1061b;
+    public static final int toplevel_merge = 0x1061c;
+    public static final int webview_holder = 0x1061d;
+    public static final int with_invalid_onclick = 0x1061e;
   }
 
   public static final class anim {
@@ -208,8 +223,8 @@ public final class R {
     public static final int aspectRatioEnabled = 0x10906;
     public static final int items = 0x10907;
     public static final int logoHeight = 0x10908;
-    public static final int quitKeyCombo = 0x1090a;
-    public static final int responses = 0x1090b;
+    public static final int quitKeyCombo = 0x10909;
+    public static final int responses = 0x1090a;
   }
 
   public static final class menu {

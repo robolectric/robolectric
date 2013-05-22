@@ -117,7 +117,7 @@ public class RoboAttributeSet implements AttributeSet {
 
   @Override
   public String getPositionDescription() {
-    throw new UnsupportedOperationException();
+    return "position description from RoboAttributeSet -- implement me!";
   }
 
   @Override

@@ -190,11 +190,11 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     return getApplication();
   }
 
-  @Override
-  @Implementation
-  public Object getSystemService(String name) {
-    return getApplicationContext().getSystemService(name);
-  }
+  //@Override
+  //@Implementation
+  //public Object getSystemService(String name) {
+  //  return getApplicationContext().getSystemService(name);
+  //}
 
   @Implementation
   public ComponentName getCallingActivity() {

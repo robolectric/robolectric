@@ -190,7 +190,9 @@ public class ShadowResources {
       }
     }
 
-    return this.createTypedArray(attributes, attrs);
+    TypedArray typedArray = this.createTypedArray(attributes, attrs);
+    shadowOf(typedArray).positionDescription = set.getPositionDescription();
+    return typedArray;
   }
 
   public TypedArray createTypedArray(List<Attribute> set, int[] attrs) {
@@ -389,7 +391,7 @@ public class ShadowResources {
     if (document == null) {
       throw new Resources.NotFoundException();
     }
-    return new XmlFileBuilder().getXml(document, resName.getFullyQualifiedName(), resName.packageName, realResources);
+    return new XmlFileBuilder().getXml(document, resName.getFullyQualifiedName(), resName.packageName, resourceLoader.getResourceIndex());
   }
 
   @HiddenApi @Implementation
@@ -400,7 +402,7 @@ public class ShadowResources {
       throw new Resources.NotFoundException(notFound(id));
     }
     String packageName = getResName(id).packageName;
-    return new XmlFileBuilder().getXml(document, fsFile.getPath(), packageName, realResources);
+    return XmlFileBuilder.getXmlResourceParser(file, packageName, resourceLoader.getResourceIndex());
   }
 
   public ResourceLoader getResourceLoader() {
