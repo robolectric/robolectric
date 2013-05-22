@@ -161,7 +161,7 @@ public class XmlFileBuilder {
     }
 
     public String getPositionDescription() {
-      return "Binary XML file " + fileName + " line #" + getLineNumber();
+      return "XML file " + fileName + " line #" + getLineNumber() + " (sorry, not yet implemented)";
     }
 
     public String getNamespaceUri(int pos)
@@ -724,11 +724,7 @@ public class XmlFileBuilder {
       if (attr == null) {
         return 0;
       }
-      try {
-        return Integer.parseInt(attr);
-      } catch (NumberFormatException ex) {
-        return 0;
-      }
+      return getResourceId(attr, packageName, "style");
     }
 
     public void close() {
@@ -740,6 +736,9 @@ public class XmlFileBuilder {
     }
 
     private int getResourceId(String possiblyQualifiedResourceName, String defaultPackageName, String defaultType) {
+      if (possiblyQualifiedResourceName.startsWith("@")) {
+        possiblyQualifiedResourceName = possiblyQualifiedResourceName.substring(1);
+      }
       ResName resName = ResName.qualifyResName(possiblyQualifiedResourceName, defaultPackageName, defaultType);
       Integer resourceId = resourceIndex.getResourceId(resName);
       return resourceId == null ? 0 : resourceId;

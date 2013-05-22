@@ -123,7 +123,14 @@ public class ShadowResources {
     }
     Style defStyleFromAttr = null;
     Style defStyleFromRes = null;
+    Style styleAttrStyle = null;
     Style theme = null;
+
+    int styleAttrResId = set.getStyleAttribute();
+    if (styleAttrResId != 0) {
+      ResName styleAttributeResName = getResName(styleAttrResId);
+      styleAttrStyle = ShadowAssetManager.resolveStyle(resourceLoader, styleAttributeResName, shadowAssetManager.getQualifiers());
+    }
 
     if (themeResourceId != 0) {
       // Load the style for the theme we represent. E.g. "@style/Theme.Robolectric"
@@ -161,7 +168,7 @@ public class ShadowResources {
     if (defStyleRes != 0) {
       ResName resName = getResName(defStyleRes);
       if (resName.type.equals("attr")) {
-        Attribute attributeValue = findAttributeValue(getResName(defStyleRes), set, defStyleFromAttr, defStyleFromAttr, theme);
+        Attribute attributeValue = findAttributeValue(getResName(defStyleRes), set, styleAttrStyle, defStyleFromAttr, defStyleFromAttr, theme);
         if (attributeValue != null && attributeValue.isStyleReference()) {
           resName = theme.getAttrValue(attributeValue.getStyleReference()).getResourceReference();
         }
@@ -175,7 +182,7 @@ public class ShadowResources {
       ResName attrName = tryResName(attr); // todo probably getResName instead here?
       if (attrName == null) continue;
 
-      Attribute attribute = findAttributeValue(attrName, set, defStyleFromAttr, defStyleFromRes, theme);
+      Attribute attribute = findAttributeValue(attrName, set, styleAttrStyle, defStyleFromAttr, defStyleFromRes, theme);
       while (attribute != null && attribute.isStyleReference()) {
         ResName otherAttrName = attribute.getStyleReference();
         if (theme == null) throw new RuntimeException("no theme, but trying to look up " + otherAttrName);
@@ -238,14 +245,20 @@ public class ShadowResources {
     return ShadowTypedArray.create(realResources, attrs, data, indices, nextIndex, stringData);
   }
 
-  private Attribute findAttributeValue(ResName attrName, AttributeSet attributeSet, Style defStyleFromAttr, Style defStyleFromRes, Style theme) {
+  private Attribute findAttributeValue(ResName attrName, AttributeSet attributeSet, Style styleAttrStyle, Style defStyleFromAttr, Style defStyleFromRes, Style theme) {
     String attrValue = attributeSet.getAttributeValue(attrName.getNamespaceUri(), attrName.name);
     if (attrValue != null) {
       if (DEBUG) System.out.println("Got " + attrName + " from attr: " + attrValue);
       return new Attribute(attrName, attrValue, "fixme!!!");
     }
 
-    // todo: check for style attribute...
+    if (styleAttrStyle != null) {
+      Attribute attribute = styleAttrStyle.getAttrValue(attrName);
+      if (attribute != null) {
+        if (DEBUG) System.out.println("Got " + attrName + " from styleAttrStyle: " + attribute);
+        return attribute;
+      }
+    }
 
     // else if attr in defStyleFromAttr, use its value
     if (defStyleFromAttr != null) {

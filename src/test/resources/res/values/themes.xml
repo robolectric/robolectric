@@ -30,4 +30,9 @@
   <style name="MyCustomView">
     <item name="aspectRatioEnabled">true</item>
   </style>
+
+  <style name="Sized">
+    <item name="android:layout_width">42px</item>
+    <item name="android:layout_height">42px</item>
+  </style>
 </resources>

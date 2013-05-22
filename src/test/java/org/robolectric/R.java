@@ -200,6 +200,7 @@ public final class R {
     public static final int toplevel_merge = 0x1061c;
     public static final int webview_holder = 0x1061d;
     public static final int with_invalid_onclick = 0x1061e;
+    public static final int styles_button_with_style_layout = 0x1061f;
   }
 
   public static final class anim {
@@ -296,5 +297,6 @@ public final class R {
     public static final int MyCustomView = 0x10f03;
     public static final int Widget_Robolectric_Button = 0x10f04;
     public static final int Widget_AnotherTheme_Button = 0x10f05;
+    public static final int Sized = 0x10f06;
   }
 }
