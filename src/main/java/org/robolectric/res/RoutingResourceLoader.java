@@ -62,11 +62,6 @@ public class RoutingResourceLoader implements ResourceLoader {
   }
 
   @Override
-  public ViewNode getLayoutViewNode(ResName resName, String qualifiers) {
-    return pickFor(resName).getLayoutViewNode(resName, qualifiers);
-  }
-
-  @Override
   public MenuNode getMenuNode(ResName resName, String qualifiers) {
     return pickFor(resName).getMenuNode(resName, qualifiers);
   }

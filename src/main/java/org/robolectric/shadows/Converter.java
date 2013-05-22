@@ -165,7 +165,7 @@ public class Converter<T> {
       case COLOR:
         return new FromColor();
       case COLOR_STATE_LIST:
-        return new FromColorStateList();
+        return new FromFilePath();
       case DIMEN:
         return new FromDimen();
       case FILE:
@@ -174,6 +174,8 @@ public class Converter<T> {
         return new FromFloat();
       case INTEGER:
         return new FromInt();
+      case LAYOUT:
+        return new FromFilePath();
 
       case CHAR_SEQUENCE_ARRAY:
       case INTEGER_ARRAY:
@@ -240,12 +242,12 @@ public class Converter<T> {
     }
   }
 
-  private static class FromColorStateList extends Converter<String> {
+  private static class FromFilePath extends Converter<String> {
     @Override public void fillTypedValue(String data, TypedValue typedValue) {
       typedValue.type = TypedValue.TYPE_STRING;
       typedValue.data = 0;
-      typedValue.assetCookie = getNextStringCookie();
       typedValue.string = data;
+      typedValue.assetCookie = getNextStringCookie();
     }
   }
 

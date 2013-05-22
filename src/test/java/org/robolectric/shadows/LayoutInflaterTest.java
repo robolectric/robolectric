@@ -1,4 +1,4 @@
-package org.robolectric.res;
+package org.robolectric.shadows;
 
 import android.app.Activity;
 import android.content.Context;
@@ -27,11 +27,10 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
-import org.robolectric.shadows.ShadowImageView;
-import org.robolectric.shadows.StubViewRoot;
+import org.robolectric.res.ResName;
+import org.robolectric.res.ResourceLoader;
 import org.robolectric.util.CustomView;
 import org.robolectric.util.CustomView2;
 import org.robolectric.util.TestUtil;
@@ -49,13 +48,11 @@ import static org.robolectric.util.TestUtil.TEST_PACKAGE;
 import static org.robolectric.util.TestUtil.assertInstanceOf;
 
 @RunWith(TestRunners.WithDefaults.class)
-public class LayoutLoaderTest {
+public class LayoutInflaterTest {
   private Activity context;
-  private ResourceLoader resourceLoader;
 
   @Before
   public void setUp() throws Exception {
-    resourceLoader = Robolectric.getShadowApplication().getResourceLoader();
     context = new Activity() {};
   }
 

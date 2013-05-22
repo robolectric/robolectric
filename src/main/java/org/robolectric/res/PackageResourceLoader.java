@@ -41,7 +41,7 @@ public class PackageResourceLoader extends XResourceLoader {
         new StyleResourceLoader(data)
     );
 
-    documentLoader.load("layout", new LayoutLoader(layoutData));
+    documentLoader.load("layout", new OpaqueFileLoader(data, "layout"));
     documentLoader.load("menu", new MenuLoader(menuData));
     DrawableResourceLoader drawableResourceLoader = new DrawableResourceLoader(drawableData);
     drawableResourceLoader.findDrawableResources(resourcePath);

@@ -24,8 +24,6 @@ public interface ResourceLoader {
 
   ResourceIndex getResourceIndex();
 
-  ViewNode getLayoutViewNode(ResName resName, String qualifiers);
-
   MenuNode getMenuNode(ResName resName, String qualifiers);
 
   boolean providesFor(String namespace);
