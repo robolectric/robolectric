@@ -54,7 +54,6 @@ public class ShadowView {
   protected AttributeSet attributeSet;
   public Point scrollToCoordinates = new Point();
   private boolean didRequestLayout;
-  private Animation animation;
   private MotionEvent lastTouchEvent;
   private TouchDelegate touchDelegate;
   private boolean attachedToWindow;
@@ -359,30 +358,6 @@ public class ShadowView {
         realView.invalidate();
       }
     }, delayMilliseconds);
-  }
-
-  @Implementation
-  public Animation getAnimation() {
-    return animation;
-  }
-
-  @Implementation
-  public void setAnimation(Animation anim) {
-    animation = anim;
-  }
-
-  @Implementation
-  public void startAnimation(Animation anim) {
-    setAnimation(anim);
-    animation.start();
-  }
-
-  @Implementation
-  public void clearAnimation() {
-    if (animation != null) {
-      animation.cancel();
-      animation = null;
-    }
   }
 
   @Implementation
