@@ -92,4 +92,10 @@ public class AssetManagerTest {
         assertEquals("afdasdf", ShadowAssetManager.getLatestFileOpenedForDescriptor());
         assertSame(AssetFileDescriptor.class, afd.getClass());
     }
+
+    @Test
+    public void open_providesPathViaToString() throws Exception {
+        InputStream inputStream = assetManager.open("assetsHome.txt");
+        assertEquals("stream for assetsHome.txt", inputStream.toString());
+    }
 }

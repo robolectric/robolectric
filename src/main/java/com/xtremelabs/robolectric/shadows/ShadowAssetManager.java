@@ -37,8 +37,13 @@ public final class ShadowAssetManager {
     }
 
     @Implementation
-    public final InputStream open(String fileName) throws IOException {
-        return new FileInputStream(new File(resourceLoader.getAssetsBase(), fileName));
+    public final InputStream open(final String fileName) throws IOException {
+        return new FileInputStream(new File(resourceLoader.getAssetsBase(), fileName)) {
+            @Override
+            public String toString() {
+                return "stream for " + fileName;
+            }
+        };
     }
 
     @Implementation
