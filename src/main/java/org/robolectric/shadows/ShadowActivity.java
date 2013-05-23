@@ -20,21 +20,23 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import org.robolectric.AndroidManifest;
-import org.robolectric.Robolectric;
-import org.robolectric.bytecode.RobolectricInternals;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
-import org.robolectric.res.ResName;
-import org.robolectric.tester.android.view.RoboWindow;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import org.robolectric.AndroidManifest;
+import org.robolectric.Robolectric;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.bytecode.RobolectricInternals;
+import org.robolectric.res.ResName;
+import org.robolectric.tester.android.view.RoboWindow;
+import org.robolectric.tester.android.view.RoboWindowManager;
 
 import static org.fest.reflect.core.Reflection.field;
 import static org.robolectric.Robolectric.directlyOn;
@@ -42,6 +44,8 @@ import static org.robolectric.Robolectric.shadowOf;
 
 @Implements(Activity.class)
 public class ShadowActivity extends ShadowContextThemeWrapper {
+  private static final Set<String> ALREADY_WARNED_ABOUT = new HashSet<String>();
+
   @RealObject
   protected Activity realActivity;
 
@@ -73,12 +77,26 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     RobolectricInternals.getConstructor(Activity.class, realActivity, new Class[0]).invoke();
 
     if (!RobolectricInternals.inActivityControllerBlock) {
-      field("mApplication").ofType(Application.class).in(realActivity).set(Robolectric.application);
+      String name = realActivity.getClass().getName();
+      if (ALREADY_WARNED_ABOUT.add(name)) {
+        System.out.println("[WARN] You're instantiating an activity (" + name + ") directly; consider using Robolectric.buildActivity() instead.");
+      }
+
+      setApplication(Robolectric.application);
+      setWindowManager(new RoboWindowManager());
       callAttachBaseContext(Robolectric.application);
       if (!setThemeFromManifest()) {
         // todo: should we set a default theme?
       }
     }
+  }
+
+  public void setApplication(Application application) {
+    field("mApplication").ofType(Application.class).in(realActivity).set(application);
+  }
+
+  private void setWindowManager(WindowManager windowManager) {
+    field("mWindowManager").ofType(WindowManager.class).in(realActivity).set(windowManager);
   }
 
   public boolean setThemeFromManifest() {
