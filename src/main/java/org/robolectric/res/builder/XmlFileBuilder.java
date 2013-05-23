@@ -81,6 +81,8 @@ public class XmlFileBuilder {
   public static class XmlResourceParserImpl
       implements XmlResourceParser {
 
+    private static final ResName FAKE_RES_NAME = new ResName("_robolectric_", "attr", "_fake_");
+
     private final Document document;
     private final String fileName;
     private final String packageName;
@@ -309,8 +311,14 @@ public class XmlFileBuilder {
     }
 
     private String qualify(String value) {
+      Attribute attribute = asAttribute(value);
+      if (attribute == null) return null;
+      return attribute.qualifiedValue();
+    }
+
+    private Attribute asAttribute(String value) {
       if (value == null) return null;
-      return new Attribute(new ResName("_robolectric_", "attr", "_fake_"), value, packageName).qualifiedValue();
+      return new Attribute(FAKE_RES_NAME, value, packageName);
     }
 
     public String getAttributeType(int index) {
@@ -736,6 +744,19 @@ public class XmlFileBuilder {
     }
 
     private int getResourceId(String possiblyQualifiedResourceName, String defaultPackageName, String defaultType) {
+      Attribute attribute = asAttribute(possiblyQualifiedResourceName);
+
+      if (attribute.isNull()) return 0;
+
+      if (attribute.isStyleReference()) {
+        Integer resourceId = resourceIndex.getResourceId(attribute.getStyleReference());
+        return resourceId == null ? 0 : resourceId;
+      }
+
+      if (attribute.isResourceReference()) {
+        Integer resourceId = resourceIndex.getResourceId(attribute.getResourceReference());
+        return resourceId == null ? 0 : resourceId;
+      }
       if (possiblyQualifiedResourceName.startsWith("@")) {
         possiblyQualifiedResourceName = possiblyQualifiedResourceName.substring(1);
       }
