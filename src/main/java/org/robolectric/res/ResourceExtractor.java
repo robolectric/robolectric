@@ -2,7 +2,10 @@ package org.robolectric.res;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 public class ResourceExtractor extends ResourceIndex {
   private static final ResourceRemapper RESOURCE_REMAPPER = new ResourceRemapper();
@@ -10,11 +13,13 @@ public class ResourceExtractor extends ResourceIndex {
 
   private final Class<?> processedRFile;
   private final String packageName;
+  private final List<String> packageNames;
   private Integer maxUsedInt = null;
 
   public ResourceExtractor() {
     processedRFile = null;
     packageName = "";
+    packageNames = Arrays.asList();
   }
 
   /**
@@ -34,10 +39,12 @@ public class ResourceExtractor extends ResourceIndex {
     }
     processedRFile = androidRClass;
     packageName = processedRFile.getPackage().getName();
+    packageNames = Arrays.asList(packageName);
   }
 
   public ResourceExtractor(ResourcePath resourcePath) {
     packageName = resourcePath.getPackageName();
+    packageNames = Arrays.asList(packageName);
     if (resourcePath.rClass == null) {
       processedRFile = null;
       return;
@@ -101,6 +108,10 @@ public class ResourceExtractor extends ResourceIndex {
   @Override
   public synchronized ResName getResName(int resourceId) {
     return resourceIdToResName.get(resourceId);
+  }
+
+  @Override public Collection<String> getPackages() {
+    return packageNames;
   }
 
   public Class<?> getProcessedRFile() {

@@ -1,5 +1,6 @@
 package org.robolectric.res;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,4 +16,6 @@ public abstract class ResourceIndex {
   }
 
   public abstract ResName getResName(int resourceId);
+
+  public abstract Collection<String> getPackages();
 }
