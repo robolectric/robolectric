@@ -26,4 +26,10 @@ public @interface Implements {
    * If true, Robolectric will invoke @Implementation methods from superclasses.
    */
   boolean inheritImplementationMethods() default false;
+
+  /**
+   * If true, when an exact method signature match isn't found, Robolectric will look for a method
+   * with the same name but with all argument types replaced with java.lang.Object.
+   */
+  boolean looseSignatures() default false;
 }

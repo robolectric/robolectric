@@ -25,7 +25,6 @@ public class OverlayResourceLoader extends XResourceLoader {
 
       pluralsData.mergeLibraryStyle(subResourceLoader.pluralsData, packageName);
       stringData.mergeLibraryStyle(subResourceLoader.stringData, packageName);
-      layoutData.mergeLibraryStyle(subResourceLoader.layoutData, packageName);
       menuData.mergeLibraryStyle(subResourceLoader.menuData, packageName);
       drawableData.mergeLibraryStyle(subResourceLoader.drawableData, packageName);
       preferenceData.mergeLibraryStyle(subResourceLoader.preferenceData, packageName);
@@ -37,10 +36,6 @@ public class OverlayResourceLoader extends XResourceLoader {
 
   @Override public DrawableNode getDrawableNode(ResName resName, String qualifiers) {
     return super.getDrawableNode(resName.withPackageName(packageName), qualifiers);
-  }
-
-  @Override public ViewNode getLayoutViewNode(ResName resName, String qualifiers) {
-    return super.getLayoutViewNode(resName.withPackageName(packageName), qualifiers);
   }
 
   @Override public MenuNode getMenuNode(ResName resName, String qualifiers) {

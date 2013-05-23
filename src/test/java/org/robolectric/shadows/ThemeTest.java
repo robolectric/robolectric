@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.res.TypedArray;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -82,6 +83,19 @@ public class ThemeTest {
     @Override protected void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
       setContentView(R.layout.styles_button_layout);
+    }
+  }
+
+  @Test public void shouldApplyFromStyleAttribute() throws Exception {
+    TestWithStyleAttrActivity activity = Robolectric.buildActivity(TestWithStyleAttrActivity.class).create().get();
+    View button = activity.findViewById(R.id.button);
+    assertThat(button.getLayoutParams().width).isEqualTo(42); // comes via style attr
+  }
+
+  public static class TestWithStyleAttrActivity extends Activity {
+    @Override protected void onCreate(Bundle savedInstanceState) {
+      super.onCreate(savedInstanceState);
+      setContentView(R.layout.styles_button_with_style_layout);
     }
   }
 }

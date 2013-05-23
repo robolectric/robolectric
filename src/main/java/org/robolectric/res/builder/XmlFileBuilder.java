@@ -2,19 +2,22 @@ package org.robolectric.res.builder;
 
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
-import org.robolectric.res.Attribute;
-import org.robolectric.res.ResName;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.xmlpull.v1.XmlPullParserException;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.util.Arrays;
 import java.util.List;
+import org.robolectric.res.Attribute;
+import org.robolectric.res.Fs;
+import org.robolectric.res.FsFile;
+import org.robolectric.res.ResName;
+import org.robolectric.res.ResourceIndex;
+import org.robolectric.res.XmlFileLoader;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.xmlpull.v1.XmlPullParserException;
 
 public class XmlFileBuilder {
   /**
@@ -48,9 +51,17 @@ public class XmlFileBuilder {
     return false;
   }
 
+  public static XmlResourceParser getXmlResourceParser(String file, String packageName, ResourceIndex resourceIndex) {
+   FsFile fsFile = Fs.fileFromPath(file);
+   Document document = new XmlFileLoader(null).parse(fsFile);
+   if (document == null) {
+     throw new Resources.NotFoundException("couldn't find resource " + fsFile.getPath());
+   }
+   return new XmlFileBuilder().getXml(document, fsFile.getPath(), packageName, resourceIndex);
+ }
 
-  public XmlResourceParser getXml(Document document, String fileName, String packageName, Resources resources) {
-    return new XmlResourceParserImpl(document, fileName, packageName, resources);
+  public XmlResourceParser getXml(Document document, String fileName, String packageName, ResourceIndex resourceIndex) {
+    return new XmlResourceParserImpl(document, fileName, packageName, resourceIndex);
   }
 
   /**
@@ -70,10 +81,12 @@ public class XmlFileBuilder {
   public static class XmlResourceParserImpl
       implements XmlResourceParser {
 
+    private static final ResName FAKE_RES_NAME = new ResName("_robolectric_", "attr", "_fake_");
+
     private final Document document;
     private final String fileName;
     private final String packageName;
-    private final Resources resources;
+    private final ResourceIndex resourceIndex;
 
     private Node currentNode;
 
@@ -82,11 +95,11 @@ public class XmlFileBuilder {
     private int mDepth = 0;
     private int mEventType = START_DOCUMENT;
 
-    public XmlResourceParserImpl(Document document, String fileName, String packageName, Resources resources) {
+    public XmlResourceParserImpl(Document document, String fileName, String packageName, ResourceIndex resourceIndex) {
       this.document = document;
       this.fileName = fileName;
       this.packageName = packageName;
-      this.resources = resources;
+      this.resourceIndex = resourceIndex;
     }
 
     public void setFeature(String name, boolean state)
@@ -150,7 +163,7 @@ public class XmlFileBuilder {
     }
 
     public String getPositionDescription() {
-      return "Binary XML file line #" + getLineNumber();
+      return "XML file " + fileName + " line #" + getLineNumber() + " (sorry, not yet implemented)";
     }
 
     public String getNamespaceUri(int pos)
@@ -298,8 +311,14 @@ public class XmlFileBuilder {
     }
 
     private String qualify(String value) {
+      Attribute attribute = asAttribute(value);
+      if (attribute == null) return null;
+      return attribute.qualifiedValue();
+    }
+
+    private Attribute asAttribute(String value) {
       if (value == null) return null;
-      return new Attribute(new ResName("_robolectric_", "attr", "_fake_"), value, packageName).qualifiedValue();
+      return new Attribute(FAKE_RES_NAME, value, packageName);
     }
 
     public String getAttributeType(int index) {
@@ -555,7 +574,7 @@ public class XmlFileBuilder {
     }
 
     public int getAttributeNameResource(int index) {
-      return resources.getIdentifier(getAttributeName(index), "attr", packageName);
+      return getResourceId(getAttributeName(index), packageName, "attr");
     }
 
     public int getAttributeListValue(String namespace, String attribute,
@@ -582,7 +601,14 @@ public class XmlFileBuilder {
     }
 
     public int getAttributeResourceValue(String namespace, String attribute, int defaultValue) {
-      throw new RuntimeException("Not implemented yet");
+      String attr = getAttribute(namespace, attribute);
+      if (attr == null) {
+        return defaultValue;
+      }
+      if (attr.startsWith("@")) {
+        return getResourceId(attr.substring(1), packageName, null);
+      }
+      throw new RuntimeException("huh?");
     }
 
     public int getAttributeIntValue(String namespace, String attribute, int defaultValue) {
@@ -645,7 +671,10 @@ public class XmlFileBuilder {
     public int getAttributeResourceValue(int idx, int defaultValue) {
       String attributeValue = getAttributeValue(idx);
       if (attributeValue != null && attributeValue.startsWith("@")) {
-        return resources.getIdentifier(attributeValue.substring(1), null, packageName);
+        int resourceId = getResourceId(attributeValue.substring(1), packageName, null);
+        if (resourceId != 0) {
+          return resourceId;
+        }
       }
       return defaultValue;
     }
@@ -703,11 +732,7 @@ public class XmlFileBuilder {
       if (attr == null) {
         return 0;
       }
-      try {
-        return Integer.parseInt(attr);
-      } catch (NumberFormatException ex) {
-        return 0;
-      }
+      return getResourceId(attr, packageName, "style");
     }
 
     public void close() {
@@ -716,6 +741,28 @@ public class XmlFileBuilder {
 
     protected void finalize() throws Throwable {
       close();
+    }
+
+    private int getResourceId(String possiblyQualifiedResourceName, String defaultPackageName, String defaultType) {
+      Attribute attribute = asAttribute(possiblyQualifiedResourceName);
+
+      if (attribute.isNull()) return 0;
+
+      if (attribute.isStyleReference()) {
+        Integer resourceId = resourceIndex.getResourceId(attribute.getStyleReference());
+        return resourceId == null ? 0 : resourceId;
+      }
+
+      if (attribute.isResourceReference()) {
+        Integer resourceId = resourceIndex.getResourceId(attribute.getResourceReference());
+        return resourceId == null ? 0 : resourceId;
+      }
+      if (possiblyQualifiedResourceName.startsWith("@")) {
+        possiblyQualifiedResourceName = possiblyQualifiedResourceName.substring(1);
+      }
+      ResName resName = ResName.qualifyResName(possiblyQualifiedResourceName, defaultPackageName, defaultType);
+      Integer resourceId = resourceIndex.getResourceId(resName);
+      return resourceId == null ? 0 : resourceId;
     }
   }
 }

@@ -133,7 +133,7 @@ public class Attribute {
     return value.startsWith("@") && !isNull();
   }
 
-  public ResName getResourceReference() {
+  public @NotNull ResName getResourceReference() {
     if (!isResourceReference()) throw new RuntimeException("not a resource reference: " + this);
     return ResName.qualifyResName(value.substring(1).replace("+", ""), contextPackageName, "attr");
   }

@@ -3,42 +3,43 @@ package org.robolectric.res.builder;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.ResolveInfo;
 import android.graphics.drawable.Drawable;
 import android.util.Pair;
-import org.robolectric.AndroidManifest;
-import org.robolectric.shadows.ShadowContext;
-import org.robolectric.tester.android.content.pm.StubPackageManager;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.robolectric.AndroidManifest;
+import org.robolectric.Robolectric;
+import org.robolectric.res.ActivityData;
+import org.robolectric.res.ResName;
+import org.robolectric.res.ResourceIndex;
+import org.robolectric.shadows.ShadowContext;
+import org.robolectric.tester.android.content.pm.StubPackageManager;
 
 public class RobolectricPackageManager extends StubPackageManager {
 
-  private final Map<String, AndroidManifest> manifests = new LinkedHashMap<String, AndroidManifest>();
-  private final Map<String, PackageInfo> packageList = new LinkedHashMap<String, PackageInfo>();
-  private Map<Intent, List<ResolveInfo>> resolveInfoForIntent = new HashMap<Intent, List<ResolveInfo>>();
-  private Map<ComponentName, ComponentState> componentList = new HashMap<ComponentName, ComponentState>();
-  private Map<ComponentName, Drawable> drawableList = new HashMap<ComponentName, Drawable>();
-  private Map<String, Boolean> systemFeatureList = new HashMap<String, Boolean>();
-  private Map<IntentFilter, ComponentName> preferredActivities = new HashMap<IntentFilter, ComponentName>();
-  private Map<Pair<String, Integer>, Drawable> drawables = new HashMap<Pair<String, Integer>, Drawable>();
-
-  private ApplicationInfo applicationInfo;
+  private final Map<String, AndroidManifest> androidManifests = new LinkedHashMap<String, AndroidManifest>();
+  private final Map<String, PackageInfo> packageInfos = new LinkedHashMap<String, PackageInfo>();
+  private Map<Intent, List<ResolveInfo>> resolveInfoForIntent = new LinkedHashMap<Intent, List<ResolveInfo>>();
+  private Map<ComponentName, ComponentState> componentList = new LinkedHashMap<ComponentName, ComponentState>();
+  private Map<ComponentName, Drawable> drawableList = new LinkedHashMap<ComponentName, Drawable>();
+  private Map<String, Boolean> systemFeatureList = new LinkedHashMap<String, Boolean>();
+  private Map<IntentFilter, ComponentName> preferredActivities = new LinkedHashMap<IntentFilter, ComponentName>();
+  private Map<Pair<String, Integer>, Drawable> drawables = new LinkedHashMap<Pair<String, Integer>, Drawable>();
 
   @Override
   public PackageInfo getPackageInfo(String packageName, int flags) throws NameNotFoundException {
-    if (packageList.containsKey(packageName)) {
-      return packageList.get(packageName);
+    if (packageInfos.containsKey(packageName)) {
+      return packageInfos.get(packageName);
     }
 
     throw new NameNotFoundException();
@@ -46,35 +47,33 @@ public class RobolectricPackageManager extends StubPackageManager {
 
   @Override
   public ApplicationInfo getApplicationInfo(String packageName, int flags) throws NameNotFoundException {
-    AndroidManifest androidManifest = manifests.get(packageName);
-
-    if (androidManifest != null) {
-      if (applicationInfo == null) {
-        applicationInfo = new ApplicationInfo();
-        applicationInfo.flags = androidManifest.getApplicationFlags();
-        applicationInfo.targetSdkVersion = androidManifest.getTargetSdkVersion();
-        applicationInfo.packageName = androidManifest.getPackageName();
-        applicationInfo.processName = androidManifest.getProcessName();
-        applicationInfo.name = androidManifest.getApplicationName();
-        applicationInfo.sourceDir = new File(".").getAbsolutePath();
-        applicationInfo.dataDir = ShadowContext.FILES_DIR.getAbsolutePath();
-      }
-      return applicationInfo;
-    }
-
-    PackageInfo info;
-    if ((info = packageList.get(packageName)) != null) {
+    PackageInfo info = packageInfos.get(packageName);
+    if (info != null) {
       return info.applicationInfo;
+    } else {
+      throw new NameNotFoundException();
     }
-
-    throw new NameNotFoundException();
   }
 
-
+  @Override public ActivityInfo getActivityInfo(ComponentName className, int flags) throws NameNotFoundException {
+    String packageName = className.getPackageName();
+    AndroidManifest androidManifest = androidManifests.get(packageName);
+    String activityName = className.getClassName();
+    ActivityData activityData = androidManifest.getActivityData(activityName);
+    ActivityInfo activityInfo = new ActivityInfo();
+    activityInfo.packageName = packageName;
+    activityInfo.name = activityName;
+    if (activityData != null) {
+      ResourceIndex resourceIndex = Robolectric.getShadowApplication().getResourceLoader().getResourceIndex();
+      activityInfo.theme = resourceIndex.getResourceId(new ResName(activityData.getThemeRef()));
+    }
+    activityInfo.applicationInfo = getApplicationInfo(packageName, flags);
+    return activityInfo;
+  }
 
   @Override
   public List<PackageInfo> getInstalledPackages(int flags) {
-    return new ArrayList<PackageInfo>(packageList.values());
+    return new ArrayList<PackageInfo>(packageInfos.values());
   }
 
   @Override
@@ -205,7 +204,7 @@ public class RobolectricPackageManager extends StubPackageManager {
    * @param componentName
    * @return
    */
-  public RobolectricPackageManager.ComponentState getComponentState(ComponentName componentName) {
+  public ComponentState getComponentState(ComponentName componentName) {
     return componentList.get(componentName);
   }
 
@@ -216,17 +215,50 @@ public class RobolectricPackageManager extends StubPackageManager {
    * @param packageInfo
    */
   public void addPackage(PackageInfo packageInfo) {
-    packageList.put(packageInfo.packageName, packageInfo);
-  }
-
-  public void removePackage(String packageName) {
-    packageList.remove(packageName);
+    packageInfos.put(packageInfo.packageName, packageInfo);
   }
 
   public void addPackage(String packageName) {
-    PackageInfo info = new PackageInfo();
-    info.packageName = packageName;
-    addPackage(info);
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = packageName;
+
+    ApplicationInfo applicationInfo = new ApplicationInfo();
+    applicationInfo.packageName = packageName;
+    initApplicationInfo(applicationInfo);
+
+    packageInfo.applicationInfo = applicationInfo;
+
+    addPackage(packageInfo);
+  }
+
+  public void addManifest(AndroidManifest androidManifest) {
+    androidManifests.put(androidManifest.getPackageName(), androidManifest);
+
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = androidManifest.getPackageName();
+    packageInfo.versionName = androidManifest.getVersionName();
+    packageInfo.versionCode = androidManifest.getVersionCode();
+
+    ApplicationInfo applicationInfo = new ApplicationInfo();
+    applicationInfo.flags = androidManifest.getApplicationFlags();
+    applicationInfo.targetSdkVersion = androidManifest.getTargetSdkVersion();
+    applicationInfo.packageName = androidManifest.getPackageName();
+    applicationInfo.processName = androidManifest.getProcessName();
+    applicationInfo.name = androidManifest.getApplicationName();
+    initApplicationInfo(applicationInfo);
+
+    packageInfo.applicationInfo = applicationInfo;
+
+    addPackage(packageInfo);
+  }
+
+  private void initApplicationInfo(ApplicationInfo applicationInfo) {
+    applicationInfo.sourceDir = new File(".").getAbsolutePath();
+    applicationInfo.dataDir = ShadowContext.FILES_DIR.getAbsolutePath();
+  }
+
+  public void removePackage(String packageName) {
+    packageInfos.remove(packageName);
   }
 
   @Override
@@ -243,16 +275,6 @@ public class RobolectricPackageManager extends StubPackageManager {
    */
   public void setSystemFeature(String name, boolean supported) {
     systemFeatureList.put(name, supported);
-  }
-
-  public void addManifest(AndroidManifest androidManifest) {
-    manifests.put(androidManifest.getPackageName(), androidManifest);
-
-    PackageInfo packageInfo = new PackageInfo();
-    packageInfo.packageName = androidManifest.getPackageName();
-    packageInfo.versionName = androidManifest.getVersionName();
-    packageInfo.versionCode = androidManifest.getVersionCode();
-    addPackage(packageInfo);
   }
 
   public void addDrawableResolution(String packageName, int resourceId, Drawable drawable) {

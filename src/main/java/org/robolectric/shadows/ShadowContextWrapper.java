@@ -135,10 +135,10 @@ public class ShadowContextWrapper extends ShadowContext {
     return getApplicationContext().getContentResolver();
   }
 
-  @Implementation
-  public Object getSystemService(String name) {
-    return getApplicationContext().getSystemService(name);
-  }
+  //@Implementation
+  //public Object getSystemService(String name) {
+  //  return getApplicationContext().getSystemService(name);
+  //}
 
   @Implementation
   public void sendBroadcast(Intent intent) {

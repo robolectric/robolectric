@@ -15,6 +15,7 @@ import static org.robolectric.Robolectric.shadowOf;
 public class ShadowTypedArray {
   @RealObject private TypedArray realTypedArray;
   private CharSequence[] stringData;
+  public String positionDescription;
 
   public static TypedArray create(Resources realResources, int[] attrs, int[] data, int[] indices, int len, CharSequence[] stringData) {
     TypedArray typedArray = constructor()
@@ -28,5 +29,10 @@ public class ShadowTypedArray {
   @HiddenApi @Implementation
   public CharSequence loadStringValueAt(int index) {
     return stringData[index / ShadowAssetManager.STYLE_NUM_ENTRIES];
+  }
+
+  @Implementation
+  public String getPositionDescription() {
+    return positionDescription;
   }
 }

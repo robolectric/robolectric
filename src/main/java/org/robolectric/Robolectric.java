@@ -106,7 +106,6 @@ import android.view.Display;
 import android.view.GestureDetector;
 import android.view.InputDevice;
 import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -163,6 +162,9 @@ import android.widget.VideoView;
 import android.widget.ViewAnimator;
 import android.widget.ViewFlipper;
 import android.widget.ZoomButtonsController;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.List;
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
@@ -256,7 +258,6 @@ import org.robolectric.shadows.ShadowKeyEvent;
 import org.robolectric.shadows.ShadowKeyguardManager;
 import org.robolectric.shadows.ShadowLayerDrawable;
 import org.robolectric.shadows.ShadowLayoutAnimationController;
-import org.robolectric.shadows.ShadowLayoutInflater;
 import org.robolectric.shadows.ShadowLinearGradient;
 import org.robolectric.shadows.ShadowLinearLayout;
 import org.robolectric.shadows.ShadowListActivity;
@@ -348,10 +349,6 @@ import org.robolectric.tester.org.apache.http.RequestMatcher;
 import org.robolectric.util.ActivityController;
 import org.robolectric.util.Scheduler;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.List;
-
 import static org.fest.reflect.core.Reflection.method;
 
 public class Robolectric {
@@ -359,6 +356,7 @@ public class Robolectric {
 
   public static Application application;
   public static RobolectricPackageManager packageManager;
+  public static Object activityThread;
 
   public static <T> T newInstanceOf(Class<T> clazz) {
     return RobolectricInternals.newInstanceOf(clazz);
@@ -394,7 +392,8 @@ public class Robolectric {
 
   public static <T> Invoker directlyOn(T shadowedObject, Class<T> clazz, String methodName, Class<?>... paramTypes) {
     String directMethodName = RobolectricInternals.directMethodName(clazz.getName(), methodName);
-    return method(directMethodName).withReturnType(Object.class).withParameterTypes(paramTypes).in(shadowedObject);
+    return method(directMethodName).withReturnType(Object.class).withParameterTypes(paramTypes).in(
+        shadowedObject);
   }
 
   public static <T> Invoker directlyOn(Class<T> clazz, String methodName, Class<?>... paramTypes) {
@@ -750,10 +749,6 @@ public class Robolectric {
 
   public static ShadowLayerDrawable shadowOf(LayerDrawable instance) {
     return (ShadowLayerDrawable) shadowOf_(instance);
-  }
-
-  public static ShadowLayoutInflater shadowOf(LayoutInflater instance) {
-    return (ShadowLayoutInflater) shadowOf_(instance);
   }
 
   public static ShadowLinearLayout shadowOf(LinearLayout instance) {
@@ -1400,6 +1395,8 @@ public class Robolectric {
 
   public static void reset() {
     Robolectric.application = null;
+    Robolectric.packageManager = null;
+    Robolectric.activityThread = null;
     ShadowAccountManager.reset();
     ShadowResources.reset();
     ShadowBitmapFactory.reset();

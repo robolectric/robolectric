@@ -305,4 +305,24 @@ public class ShadowWranglerTest {
   @Implements(AClassWithDefaultConstructor.class)
   public static class ShadowForAClassWithDefaultConstructor_HavingNoConstructorDelegate {
   }
+
+  @Config(shadows = ShadowAClassWithDifficultArgs.class)
+  @Test public void shouldAllowLooseSignatureMatches() throws Exception {
+    assertThat(new AClassWithDifficultArgs().aMethod("bc")).isEqualTo("abc");
+  }
+
+  @Implements(value = AClassWithDifficultArgs.class, looseSignatures = true)
+  public static class ShadowAClassWithDifficultArgs {
+    @Implementation
+    public Object aMethod(Object s) {
+      return "a" + s;
+    }
+  }
+
+  @Instrument
+  public static class AClassWithDifficultArgs {
+    public CharSequence aMethod(CharSequence s) {
+      return s;
+    }
+  }
 }

@@ -13,16 +13,19 @@ import android.util.DisplayMetrics;
 import android.util.LongSparseArray;
 import android.util.TypedValue;
 import android.view.Display;
+import java.io.InputStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 import org.jetbrains.annotations.NotNull;
 import org.robolectric.Robolectric;
-import org.robolectric.internal.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.internal.HiddenApi;
 import org.robolectric.res.Attribute;
-import org.robolectric.res.DrawableNode;
-import org.robolectric.res.Fs;
-import org.robolectric.res.FsFile;
 import org.robolectric.res.Plural;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResType;
@@ -30,18 +33,9 @@ import org.robolectric.res.ResourceIndex;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.Style;
 import org.robolectric.res.TypedResource;
-import org.robolectric.res.XmlFileLoader;
-import org.robolectric.res.builder.DrawableBuilder;
 import org.robolectric.res.builder.XmlFileBuilder;
 import org.robolectric.util.Util;
 import org.w3c.dom.Document;
-
-import java.io.InputStream;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
 
 import static org.fest.reflect.core.Reflection.field;
 import static org.robolectric.Robolectric.directlyOn;
@@ -123,6 +117,7 @@ public class ShadowResources {
     }
     Style defStyleFromAttr = null;
     Style defStyleFromRes = null;
+    Style styleAttrStyle = null;
     Style theme = null;
 
     if (themeResourceId != 0) {
@@ -158,10 +153,25 @@ public class ShadowResources {
       }
     }
 
+    int styleAttrResId = set.getStyleAttribute();
+    if (styleAttrResId != 0) {
+      ResName styleAttributeResName = getResName(styleAttrResId);
+      while (styleAttributeResName.type.equals("attr")) {
+        Attribute attrValue = theme.getAttrValue(styleAttributeResName);
+        if (attrValue.isResourceReference()) {
+          styleAttributeResName = attrValue.getResourceReference();
+        } else if (attrValue.isStyleReference()) {
+          styleAttributeResName = attrValue.getStyleReference();
+        }
+      }
+      styleAttrStyle = ShadowAssetManager.resolveStyle(resourceLoader, styleAttributeResName, shadowAssetManager.getQualifiers());
+    }
+
+
     if (defStyleRes != 0) {
       ResName resName = getResName(defStyleRes);
       if (resName.type.equals("attr")) {
-        Attribute attributeValue = findAttributeValue(getResName(defStyleRes), set, defStyleFromAttr, defStyleFromAttr, theme);
+        Attribute attributeValue = findAttributeValue(getResName(defStyleRes), set, styleAttrStyle, defStyleFromAttr, defStyleFromAttr, theme);
         if (attributeValue != null && attributeValue.isStyleReference()) {
           resName = theme.getAttrValue(attributeValue.getStyleReference()).getResourceReference();
         }
@@ -175,7 +185,7 @@ public class ShadowResources {
       ResName attrName = tryResName(attr); // todo probably getResName instead here?
       if (attrName == null) continue;
 
-      Attribute attribute = findAttributeValue(attrName, set, defStyleFromAttr, defStyleFromRes, theme);
+      Attribute attribute = findAttributeValue(attrName, set, styleAttrStyle, defStyleFromAttr, defStyleFromRes, theme);
       while (attribute != null && attribute.isStyleReference()) {
         ResName otherAttrName = attribute.getStyleReference();
         if (theme == null) throw new RuntimeException("no theme, but trying to look up " + otherAttrName);
@@ -190,7 +200,9 @@ public class ShadowResources {
       }
     }
 
-    return this.createTypedArray(attributes, attrs);
+    TypedArray typedArray = createTypedArray(attributes, attrs);
+    shadowOf(typedArray).positionDescription = set.getPositionDescription();
+    return typedArray;
   }
 
   public TypedArray createTypedArray(List<Attribute> set, int[] attrs) {
@@ -236,14 +248,20 @@ public class ShadowResources {
     return ShadowTypedArray.create(realResources, attrs, data, indices, nextIndex, stringData);
   }
 
-  private Attribute findAttributeValue(ResName attrName, AttributeSet attributeSet, Style defStyleFromAttr, Style defStyleFromRes, Style theme) {
+  private Attribute findAttributeValue(ResName attrName, AttributeSet attributeSet, Style styleAttrStyle, Style defStyleFromAttr, Style defStyleFromRes, Style theme) {
     String attrValue = attributeSet.getAttributeValue(attrName.getNamespaceUri(), attrName.name);
     if (attrValue != null) {
       if (DEBUG) System.out.println("Got " + attrName + " from attr: " + attrValue);
       return new Attribute(attrName, attrValue, "fixme!!!");
     }
 
-    // todo: check for style attribute...
+    if (styleAttrStyle != null) {
+      Attribute attribute = styleAttrStyle.getAttrValue(attrName);
+      if (attribute != null) {
+        if (DEBUG) System.out.println("Got " + attrName + " from styleAttrStyle: " + attribute);
+        return attribute;
+      }
+    }
 
     // else if attr in defStyleFromAttr, use its value
     if (defStyleFromAttr != null) {
@@ -389,18 +407,13 @@ public class ShadowResources {
     if (document == null) {
       throw new Resources.NotFoundException();
     }
-    return new XmlFileBuilder().getXml(document, resName.getFullyQualifiedName(), resName.packageName, realResources);
+    return new XmlFileBuilder().getXml(document, resName.getFullyQualifiedName(), resName.packageName, resourceLoader.getResourceIndex());
   }
 
   @HiddenApi @Implementation
   public XmlResourceParser loadXmlResourceParser(String file, int id, int assetCookie, String type) throws Resources.NotFoundException {
-    FsFile fsFile = Fs.fileFromPath(file);
-    Document document = new XmlFileLoader(null).parse(fsFile);
-    if (document == null) {
-      throw new Resources.NotFoundException(notFound(id));
-    }
     String packageName = getResName(id).packageName;
-    return new XmlFileBuilder().getXml(document, fsFile.getPath(), packageName, realResources);
+    return XmlFileBuilder.getXmlResourceParser(file, packageName, resourceLoader.getResourceIndex());
   }
 
   public ResourceLoader getResourceLoader() {
@@ -463,14 +476,6 @@ public class ShadowResources {
   @HiddenApi @Implementation
   public Drawable loadDrawable(TypedValue value, int id) {
     ResName resName = tryResName(id);
-    if (resName != null && resName.type.equals("anim")) {
-      DrawableNode drawableNode = resourceLoader.getDrawableNode(resName, getQualifiers());
-      Drawable drawable = new DrawableBuilder(resourceLoader.getResourceIndex())
-          .getXmlDrawable(realResources, (DrawableNode.Xml) drawableNode, resName);
-      shadowOf(drawable).setCreatedFromResId(id);
-      return drawable;
-    }
-
     Drawable drawable = (Drawable) directlyOn(realResources, Resources.class, "loadDrawable", TypedValue.class, int.class).invoke(value, id);
     // todo: this kinda sucks, find some better way...
     if (drawable != null) {

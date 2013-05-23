@@ -10,18 +10,22 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.AndroidManifest;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.shadows.ShadowDrawable;
-
-import java.io.ByteArrayInputStream;
-import java.util.ArrayList;
-import java.util.List;
+import org.robolectric.test.TemporaryFolder;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
@@ -31,6 +35,7 @@ public class RobolectricPackageManagerTest {
   private static final String TEST_PACKAGE_NAME = "com.some.other.package";
   private static final String TEST_PACKAGE_LABEL = "My Little App";
 
+  @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
   RobolectricPackageManager rpm;
 
   @Before
@@ -234,5 +239,29 @@ public class RobolectricPackageManagerTest {
     rpm.addDrawableResolution("com.example.foo", 4334, drawable);
     Drawable actual = rpm.getDrawable("com.example.foo", 4334, null);
     assertThat(actual).isSameAs(drawable);
+  }
+
+  @Test
+  public void shouldAssignTheApplicationNameFromTheManifest() throws Exception {
+    AndroidManifest appManifest = newConfigWith("<application android:name=\"org.robolectric.TestApplication\"/>");
+    rpm.addManifest(appManifest);
+    ApplicationInfo applicationInfo = rpm.getApplicationInfo("org.robolectric", 0);
+    assertThat(applicationInfo.name).isEqualTo("org.robolectric.TestApplication");
+  }
+
+  /////////////////////////////
+
+  public AndroidManifest newConfigWith(String contents) throws IOException {
+    return newConfigWith("org.robolectric", contents);
+  }
+
+  private AndroidManifest newConfigWith(String packageName, String contents) throws IOException {
+    File f = temporaryFolder.newFile("whatever.xml",
+        "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+            "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
+            "          package=\"" + packageName + "\">\n" +
+            "    " + contents + "\n" +
+            "</manifest>\n");
+    return new AndroidManifest(Fs.newFile(f), null, null);
   }
 }

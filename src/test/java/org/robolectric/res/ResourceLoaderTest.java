@@ -1,41 +1,23 @@
 package org.robolectric.res;
 
 import android.preference.PreferenceActivity;
-import android.view.ViewGroup;
-import android.widget.FrameLayout;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.TextView;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
-import org.robolectric.res.builder.LayoutBuilder;
 import org.robolectric.util.I18nException;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.fest.reflect.core.Reflection.field;
 import static org.robolectric.Robolectric.shadowOf;
-import static org.robolectric.util.TestUtil.resourceFile;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ResourceLoaderTest {
-  private ResourcePath resourcePath;
-
-  @Before
-  public void setUp() throws Exception {
-    resourcePath = new ResourcePath(R.class, R.class.getPackage().getName(), resourceFile("res"), resourceFile("assets"));
-  }
-
-  @Test(expected = I18nException.class)
-  public void shouldThrowExceptionOnI18nStrictModeInflateView() throws Exception {
-    shadowOf(Robolectric.application).setStrictI18n(true);
-    ResourceLoader resourceLoader = shadowOf(Robolectric.application).getResourceLoader();
-    ViewGroup vg = new FrameLayout(Robolectric.application);
-    new LayoutBuilder(resourceLoader).inflateView(Robolectric.application, R.layout.text_views, vg, "");
-  }
-
   @Test(expected = I18nException.class)
   public void shouldThrowExceptionOnI18nStrictModeInflatePreferences() throws Exception {
     shadowOf(Robolectric.application).setStrictI18n(true);
@@ -47,9 +29,7 @@ public class ResourceLoaderTest {
   @Test
   @Config(qualifiers = "doesnotexist-land-xlarge")
   public void testChoosesLayoutBasedOnSearchPath_respectsOrderOfPath() throws Exception {
-    ResourceLoader resourceLoader = Robolectric.getShadowApplication().getResourceLoader();
-    ViewGroup viewGroup = new FrameLayout(Robolectric.application);
-    ViewGroup view = (ViewGroup) new LayoutBuilder(resourceLoader).inflateView(Robolectric.application, R.layout.different_screen_sizes, viewGroup, "doesnotexist-land-xlarge");
+    View view = LayoutInflater.from(Robolectric.application).inflate(R.layout.different_screen_sizes, null);
     TextView textView = (TextView) view.findViewById(android.R.id.text1);
     assertThat(textView.getText().toString()).isEqualTo("land");
   }
@@ -65,9 +45,7 @@ public class ResourceLoaderTest {
   }
 
   private void checkForPollutionHelper() {
-    ResourceLoader resourceLoader = Robolectric.getShadowApplication().getResourceLoader();
-    ViewGroup viewGroup = new FrameLayout(Robolectric.application);
-    ViewGroup view = (ViewGroup) new LayoutBuilder(resourceLoader).inflateView(Robolectric.application, R.layout.different_screen_sizes, viewGroup, "");
+    View view = LayoutInflater.from(Robolectric.application).inflate(R.layout.different_screen_sizes, null);
     TextView textView = (TextView) view.findViewById(android.R.id.text1);
     assertThat(textView.getText().toString()).isEqualTo("default");
     Robolectric.shadowOf(Robolectric.getShadowApplication().getResources().getConfiguration()).overrideQualifiers("land"); // testing if this pollutes the other test

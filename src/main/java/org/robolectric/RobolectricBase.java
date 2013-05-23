@@ -1,5 +1,8 @@
 package org.robolectric;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import org.robolectric.shadows.ShadowAbsListView;
 import org.robolectric.shadows.ShadowAbsSeekBar;
 import org.robolectric.shadows.ShadowAbsSpinner;
@@ -121,7 +124,6 @@ import org.robolectric.shadows.ShadowKeyEvent;
 import org.robolectric.shadows.ShadowKeyguardManager;
 import org.robolectric.shadows.ShadowLayerDrawable;
 import org.robolectric.shadows.ShadowLayoutAnimationController;
-import org.robolectric.shadows.ShadowLayoutInflater;
 import org.robolectric.shadows.ShadowLinearGradient;
 import org.robolectric.shadows.ShadowLinearLayout;
 import org.robolectric.shadows.ShadowLinkMovementMethod;
@@ -255,10 +257,6 @@ import org.robolectric.shadows.ShadowWifiManager;
 import org.robolectric.shadows.ShadowWindow;
 import org.robolectric.shadows.ShadowZoomButtonsController;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
 public class RobolectricBase {
   static final List<Class<?>> DEFAULT_SHADOW_CLASSES = Collections.unmodifiableList(Arrays.asList(
       ShadowAbsListView.class,
@@ -332,6 +330,7 @@ public class RobolectricBase {
       ShadowContentValues.class,
       ShadowContext.class,
       ShadowContextImpl.class,
+      ShadowContextImpl.ShadowServiceFetcher.class,
       ShadowContextWrapper.class,
       ShadowContextThemeWrapper.class,
       ShadowCookieManager.class,
@@ -390,7 +389,6 @@ public class RobolectricBase {
       ShadowKeyguardManager.class,
       ShadowKeyguardManager.ShadowKeyguardLock.class,
       ShadowLayerDrawable.class,
-      ShadowLayoutInflater.class,
       ShadowViewGroup.ShadowLayoutParams.class,
       ShadowLinearGradient.class,
       ShadowLinearLayout.class,

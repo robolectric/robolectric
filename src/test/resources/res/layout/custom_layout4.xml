@@ -1,17 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <LinearLayout
-  xmlns:android="http://schemas.android.com/apk/res/android"
-  xmlns:robolectric="http://schemas.android.com/apk/res/org.robolectric"
-  xmlns:fakens="http://example.com/fakens"
-  >
-  <org.robolectric.util.CustomView
-    android:gravity="center"
-    android:id="@+id/custom_view"
-    robolectric:message="@string/hello"
-    robolectric:itemType="string"
-    fakens:message="@layout/text_views"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:robolectric="http://schemas.android.com/apk/res/org.robolectric"
+    xmlns:fakens="http://example.com/fakens"
     >
-  <View> </View>
+  <org.robolectric.util.CustomView
+      android:id="@+id/custom_view"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:gravity="center"
+      robolectric:message="@string/hello"
+      robolectric:itemType="string"
+      fakens:message="@layout/text_views"
+      >
+    <View
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        />
   </org.robolectric.util.CustomView>
 </LinearLayout>

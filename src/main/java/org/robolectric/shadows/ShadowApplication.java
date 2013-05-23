@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import android.app.Application;
-import android.app.SearchManager;
 import android.appwidget.AppWidgetManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -13,13 +12,18 @@ import android.content.ServiceConnection;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
-import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.PowerManager;
-import android.os.storage.StorageManager;
 import android.view.LayoutInflater;
 import android.widget.Toast;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.robolectric.AndroidManifest;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
@@ -29,11 +33,8 @@ import org.robolectric.res.ResourceLoader;
 import org.robolectric.tester.org.apache.http.FakeHttpLayer;
 import org.robolectric.util.Scheduler;
 
-import java.util.*;
-
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-import static org.fest.reflect.core.Reflection.constructor;
 import static org.robolectric.Robolectric.newInstanceOf;
 import static org.robolectric.Robolectric.shadowOf;
 
@@ -43,42 +44,11 @@ import static org.robolectric.Robolectric.shadowOf;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Application.class)
 public class ShadowApplication extends ShadowContextWrapper {
-  private static final Map<String, String> SYSTEM_SERVICE_MAP = new HashMap<String, String>();
-
-  static {
-    // note that these are different!
-    // They specify concrete classes within Robolectric for interfaces or abstract classes defined by Android
-    SYSTEM_SERVICE_MAP.put(Context.WINDOW_SERVICE, "org.robolectric.tester.android.view.RoboWindowManager");
-    SYSTEM_SERVICE_MAP.put(Context.CLIPBOARD_SERVICE, "android.content.ClipboardManager");
-    SYSTEM_SERVICE_MAP.put(Context.SENSOR_SERVICE, "android.hardware.TestSensorManager");
-    SYSTEM_SERVICE_MAP.put(Context.VIBRATOR_SERVICE, "android.os.RoboVibrator");
-
-    // the rest are as mapped in docs...
-    SYSTEM_SERVICE_MAP.put(Context.LAYOUT_INFLATER_SERVICE, "android.view.LayoutInflater");
-    SYSTEM_SERVICE_MAP.put(Context.ACTIVITY_SERVICE, "android.app.ActivityManager");
-    SYSTEM_SERVICE_MAP.put(Context.POWER_SERVICE, "android.os.PowerManager");
-    SYSTEM_SERVICE_MAP.put(Context.ALARM_SERVICE, "android.app.AlarmManager");
-    SYSTEM_SERVICE_MAP.put(Context.NOTIFICATION_SERVICE, "android.app.NotificationManager");
-    SYSTEM_SERVICE_MAP.put(Context.KEYGUARD_SERVICE, "android.app.KeyguardManager");
-    SYSTEM_SERVICE_MAP.put(Context.LOCATION_SERVICE, "android.location.LocationManager");
-    SYSTEM_SERVICE_MAP.put(Context.SEARCH_SERVICE, "android.app.SearchManager");
-    SYSTEM_SERVICE_MAP.put(Context.STORAGE_SERVICE, "android.os.storage.StorageManager");
-    SYSTEM_SERVICE_MAP.put(Context.CONNECTIVITY_SERVICE, "android.net.ConnectivityManager");
-    SYSTEM_SERVICE_MAP.put(Context.WIFI_SERVICE, "android.net.wifi.WifiManager");
-    SYSTEM_SERVICE_MAP.put(Context.AUDIO_SERVICE, "android.media.AudioManager");
-    SYSTEM_SERVICE_MAP.put(Context.TELEPHONY_SERVICE, "android.telephony.TelephonyManager");
-    SYSTEM_SERVICE_MAP.put(Context.INPUT_METHOD_SERVICE, "android.view.inputmethod.InputMethodManager");
-    SYSTEM_SERVICE_MAP.put(Context.UI_MODE_SERVICE, "android.app.UiModeManager");
-    SYSTEM_SERVICE_MAP.put(Context.DOWNLOAD_SERVICE, "android.app.DownloadManager");
-    SYSTEM_SERVICE_MAP.put(Context.TEXT_SERVICES_MANAGER_SERVICE, "android.view.textservice.TextServicesManager");
-  }
-
   @RealObject private Application realApplication;
 
   private AndroidManifest appManifest;
   private ResourceLoader resourceLoader;
   private ContentResolver contentResolver;
-  private Map<String, Object> systemServices = new HashMap<String, Object>();
   private List<Intent> startedActivities = new ArrayList<Intent>();
   private List<Intent> startedServices = new ArrayList<Intent>();
   private List<Intent> stoppedServies = new ArrayList<Intent>();
@@ -199,39 +169,6 @@ public class ShadowApplication extends ShadowContextWrapper {
       };
     }
     return contentResolver;
-  }
-
-  @Implementation
-  @Override
-  public Object getSystemService(String name) {
-    if (name.equals(Context.LAYOUT_INFLATER_SERVICE)) {
-      return LayoutInflater.from(realApplication);
-    }
-
-    Object service = systemServices.get(name);
-    if (service == null) {
-      String serviceClassName = SYSTEM_SERVICE_MAP.get(name);
-      if (serviceClassName == null) {
-        System.err.println("WARNING: unknown service " + name);
-        return null;
-      }
-
-      if (serviceClassName.equals(SearchManager.class.getName())) {
-        service = constructor().withParameterTypes(Context.class, Handler.class).in(SearchManager.class)
-            .newInstance(realApplication, null);
-      } else if (serviceClassName.equals(StorageManager.class.getName())) {
-        service = constructor().withParameterTypes(Looper.class).in(StorageManager.class)
-            .newInstance((Object) null);
-      } else {
-        try {
-          service = newInstanceOf(Class.forName(serviceClassName));
-        } catch (ClassNotFoundException e) {
-          throw new RuntimeException(e);
-        }
-      }
-      systemServices.put(name, service);
-    }
-    return service;
   }
 
   @Implementation
@@ -585,8 +522,9 @@ public class ShadowApplication extends ShadowContextWrapper {
     unbindableActions.add(action);
   }
 
+  @Deprecated
   public void setSystemService(String key, Object service) {
-    systemServices.put(key, service);
+    ((ShadowContextImpl) shadowOf(realApplication.getBaseContext())).setSystemService(key, service);
   }
 
   public PowerManager.WakeLock getLatestWakeLock() {

@@ -13,6 +13,7 @@ public enum ResType {
   FILE,
   FLOAT,
   INTEGER,
+  LAYOUT,
   STYLE {
     @Override public TypedResource getValueWithType(XpathResourceXmlLoader.XmlNode xmlNode) {
       throw new UnsupportedOperationException();
