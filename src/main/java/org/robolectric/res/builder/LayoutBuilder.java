@@ -2,6 +2,7 @@ package org.robolectric.res.builder;
 
 import android.content.Context;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentBuilder;
 import android.support.v4.app.FragmentActivity;
 import android.util.AttributeSet;
 import android.view.View;
@@ -114,30 +115,15 @@ public class LayoutBuilder {
   }
 
   private FrameLayout constructFragment(ViewNode viewNode, Context context) {
-    List<Attribute> attributes = viewNode.getAttributes();
-    AttributeSet attributeSet = shadowOf(context).createAttributeSet(attributes, View.class);
-
-    Class<? extends Fragment> clazz = loadFragmentClass(Attribute.find(attributes, "android:attr/name").value);
-    Fragment fragment;
-    try {
-      fragment = ((Constructor<? extends Fragment>) clazz.getConstructor()).newInstance();
-    } catch (InstantiationException e) {
-      throw new RuntimeException(e);
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    } catch (InvocationTargetException e) {
-      throw new RuntimeException(e);
-    } catch (NoSuchMethodException e) {
-      throw new RuntimeException(e);
-    }
     if (!(context instanceof FragmentActivity)) {
       throw new RuntimeException("Cannot inflate a fragment unless the activity is a FragmentActivity");
     }
-
+    
     FragmentActivity activity = (FragmentActivity) context;
-
-    String tag = attributeSet.getAttributeValue(ANDROID_NS, "tag");
-    int id = attributeSet.getAttributeResourceValue(ANDROID_NS, "id", 0);
+    Fragment fragment = FragmentBuilder.create(viewNode, activity);
+    
+    String tag = fragment.getTag();
+    int id = fragment.getId();
     // TODO: this should probably be changed to call TestFragmentManager.addFragment so that the
     // inflated fragments don't get started twice (once in the commit, and once in ShadowFragmentActivity's
     // onStart()
