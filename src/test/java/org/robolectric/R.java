@@ -201,6 +201,7 @@ public final class R {
     public static final int webview_holder = 0x1061d;
     public static final int with_invalid_onclick = 0x1061e;
     public static final int styles_button_with_style_layout = 0x1061f;
+    public static final int activity_fragment = 0x10620;
   }
 
   public static final class anim {
