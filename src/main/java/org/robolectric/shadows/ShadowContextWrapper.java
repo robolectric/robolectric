@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import android.app.Application;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentResolver;
@@ -10,25 +9,22 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Looper;
-import org.robolectric.AndroidManifest;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.util.List;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.tester.android.content.TestSharedPreferences;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.util.List;
 
 import static android.database.sqlite.SQLiteDatabase.CursorFactory;
 import static org.robolectric.Robolectric.shadowOf;
@@ -172,19 +168,6 @@ public class ShadowContextWrapper extends ShadowContext {
   @Implementation
   public String getPackageName() {
     return realContextWrapper == getApplicationContext() ? packageName : getApplicationContext().getPackageName();
-  }
-
-  @Implementation
-  public ApplicationInfo getApplicationInfo() {
-    ApplicationInfo appInfo = new ApplicationInfo();
-    appInfo.name = appName;
-    appInfo.packageName = packageName;
-    appInfo.processName = packageName;
-    AndroidManifest appManifest = shadowOf((Application) getApplicationContext()).getAppManifest();
-    if (appManifest != null) {
-      appInfo.targetSdkVersion = appManifest.getTargetSdkVersion();
-    }
-    return appInfo;
   }
 
   /**

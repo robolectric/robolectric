@@ -698,8 +698,10 @@ public class ViewTest {
 
     parent.addView(new MyView("child", transcript));
     parent.addView(new MyView("another child", transcript));
+    Robolectric.runUiThreadTasks();
     transcript.clear();
     parent.removeAllViews();
+    Robolectric.runUiThreadTasks();
     transcript.assertEventsSoFar("another child detached", "child detached");
   }
 

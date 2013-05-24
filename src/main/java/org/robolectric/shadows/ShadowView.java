@@ -14,7 +14,6 @@ import android.view.TouchDelegate;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
-import android.view.animation.Animation;
 import java.io.PrintStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -294,10 +293,12 @@ public class ShadowView {
   }
 
   public void applyFocus() {
-    if (noParentHasFocus(realView)) {
-      Boolean focusRequested = attributeSet.getAttributeBooleanValue(ANDROID_NS, "focus", false);
+    if (attributeSet != null) {
+      boolean focusRequested = attributeSet.getAttributeBooleanValue(ANDROID_NS, "focus", false);
       if (focusRequested || realView.isFocusableInTouchMode()) {
-        realView.requestFocus();
+        if (noParentHasFocus(realView)) {
+          realView.requestFocus();
+        }
       }
     }
   }

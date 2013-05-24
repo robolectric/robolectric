@@ -243,6 +243,19 @@ public class HandlerTest {
   }
 
   @Test
+  public void sendMessageAtTime_sendsMessageAtCorrectTime() {
+    Robolectric.pauseMainLooper();
+    Handler handler = new Handler();
+    Message message = handler.obtainMessage(123);
+    handler.sendMessageAtTime(message, 500);
+    assertThat(handler.hasMessages(123)).isTrue();
+    Robolectric.idleMainLooper(100);
+    assertThat(handler.hasMessages(123)).isTrue();
+    Robolectric.idleMainLooper(400);
+    assertThat(handler.hasMessages(123)).isFalse();
+  }
+
+  @Test
   public void removeMessages_takesMessageOutOfQueue() {
     Robolectric.pauseMainLooper();
     Handler handler = new Handler();

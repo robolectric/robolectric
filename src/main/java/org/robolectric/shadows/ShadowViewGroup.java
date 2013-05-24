@@ -1,16 +1,17 @@
 package org.robolectric.shadows;
 
+import android.os.Looper;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.LayoutAnimationController;
+import java.io.PrintStream;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
-import java.io.PrintStream;
-
+import static org.robolectric.Robolectric.directlyOn;
 import static org.robolectric.Robolectric.shadowOf;
 
 /**
@@ -25,6 +26,16 @@ public class ShadowViewGroup extends ShadowView {
   private LayoutAnimationController layoutAnim;
   private boolean disallowInterceptTouchEvent = false;
   private MotionEvent interceptedTouchEvent;
+
+  @Implementation
+  public void addView(final View child, final int index, final ViewGroup.LayoutParams params) {
+    shadowOf(Looper.getMainLooper()).runPaused(new Runnable() {
+      @Override public void run() {
+        directlyOn(realViewGroup, ViewGroup.class, "addView", View.class, int.class, ViewGroup.LayoutParams.class)
+            .invoke(child, index, params);
+      }
+    });
+  }
 
   /**
    * Returns a string representation of this {@code ViewGroup} by concatenating all of the strings contained in all
@@ -113,6 +124,7 @@ public class ShadowViewGroup extends ShadowView {
     return false;
   }
 
+  // todo: remove?
   @SuppressWarnings({"UnusedDeclaration"})
   @Implements(ViewGroup.LayoutParams.class)
   public static class ShadowLayoutParams {
@@ -128,6 +140,7 @@ public class ShadowViewGroup extends ShadowView {
     }
   }
 
+  // todo: remove?
   /**
    * Shadow for {@link android.view.ViewGroup.MarginLayoutParams} that simulates its implementation.
    */

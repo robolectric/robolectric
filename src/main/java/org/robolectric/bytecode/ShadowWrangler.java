@@ -1,11 +1,6 @@
 package org.robolectric.bytecode;
 
 import android.view.ContextThemeWrapper;
-import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
-import org.robolectric.shadows.ShadowWindow;
-import org.robolectric.util.Function;
-
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -17,6 +12,10 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.shadows.ShadowWindow;
+import org.robolectric.util.Function;
 
 import static org.fest.reflect.core.Reflection.method;
 import static org.fest.reflect.core.Reflection.type;
@@ -240,6 +239,16 @@ public class ShadowWrangler implements ClassHandler {
               .invoke(context);
         }
       };
+    } else if (methodSignature.matches("java.lang.System", "nanoTime")) {
+      return new Function<Object, Object>() {
+        @Override public Object call(Class<?> theClass, Object value, Object[] params) {
+          ClassLoader cl = theClass.getClassLoader();
+          Class<?> shadowSystemClockClass = type("org.robolectric.shadows.ShadowSystemClock").withClassLoader(cl).load();
+          return method("nanoTime")
+              .in(shadowSystemClockClass)
+              .invoke();
+        }
+      };
     }
 
     return ShadowWrangler.DO_NOTHING_HANDLER;
@@ -405,13 +414,6 @@ public class ShadowWrangler implements ClassHandler {
       throw new NullPointerException("can't get a shadow for null");
     }
     return method(AsmInstrumentingClassLoader.GET_ROBO_DATA_METHOD_NAME).withReturnType(Object.class).in(instance).invoke();
-//
-//        Field field = RobolectricInternals.getShadowField(instance);
-//        Object shadow = readField(instance, field);
-//        if (shadow == null) {
-//            shadow = shadowFor(instance);
-//        }
-//        return shadow;
   }
 
   private void writeField(Object target, Object value, Field realObjectField) {
@@ -450,7 +452,6 @@ public class ShadowWrangler implements ClassHandler {
       //noinspection UnnecessaryLocalVariable
       Object shadow = roboData;
       try {
-//                System.out.println("invoke " + shadowMethod);
         return shadowMethod.invoke(shadow, params);
       } catch (IllegalArgumentException e) {
         throw new IllegalArgumentException("attempted to invoke " + shadowMethod

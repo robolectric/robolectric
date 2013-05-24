@@ -32,6 +32,14 @@ public class ActivityController<T extends Activity> {
 
   private boolean attached;
 
+  public static <T extends Activity> ActivityController<T> of(Class<T> activityClass) {
+    return new ActivityController<T>(activityClass);
+  }
+
+  public static <T extends Activity> ActivityController<T> of(T activity) {
+    return new ActivityController<T>(activity);
+  }
+
   public ActivityController(Class<T> activityClass) {
     boolean priorValue = RobolectricInternals.inActivityControllerBlock;
     RobolectricInternals.inActivityControllerBlock = true;
@@ -103,7 +111,7 @@ public class ActivityController<T extends Activity> {
   }
 
   public ActivityController<T> create(final Bundle bundle) {
-    return runPaused(new Runnable() {
+    shadowMainLooper.runPaused(new Runnable() {
       @Override
       public void run() {
         if (!attached) attach();
@@ -111,6 +119,7 @@ public class ActivityController<T extends Activity> {
         method("performCreate").withParameterTypes(Bundle.class).in(activity).invoke(bundle);
       }
     });
+    return this;
   }
 
   public ActivityController<T> create() {
@@ -123,7 +132,7 @@ public class ActivityController<T extends Activity> {
   }
 
   public ActivityController<T> postCreate(final Bundle bundle) {
-    runPaused(new Runnable() {
+    shadowMainLooper.runPaused(new Runnable() {
       @Override public void run() {
         shadowActivity.callOnPostCreate(bundle);
       }
@@ -147,7 +156,7 @@ public class ActivityController<T extends Activity> {
   }
 
   public ActivityController<T> postResume() {
-    runPaused(new Runnable() {
+    shadowMainLooper.runPaused(new Runnable() {
       @Override public void run() {
         shadowActivity.callOnPostResume();
       }
@@ -156,7 +165,7 @@ public class ActivityController<T extends Activity> {
   }
 
   public ActivityController<T> newIntent(final android.content.Intent intent) {
-    runPaused(new Runnable() {
+    shadowMainLooper.runPaused(new Runnable() {
       @Override public void run() {
         shadowActivity.callOnNewIntent(intent);
       }
@@ -189,21 +198,12 @@ public class ActivityController<T extends Activity> {
     return this;
   }
 
-  private ActivityController<T> runPaused(Runnable r) {
-    boolean wasPaused = shadowMainLooper.setPaused(true);
-    try {
-      r.run();
-    } finally {
-      if (!wasPaused) shadowMainLooper.unPause();
-    }
-    return this;
-  }
-
   private ActivityController<T> invokeWhilePaused(final String performStart) {
-    return runPaused(new Runnable() {
+    shadowMainLooper.runPaused(new Runnable() {
       @Override public void run() {
         method(performStart).in(activity).invoke();
       }
     });
+    return this;
   }
 }

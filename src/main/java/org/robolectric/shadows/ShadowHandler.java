@@ -3,15 +3,15 @@ package org.robolectric.shadows;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
+import static org.fest.reflect.core.Reflection.field;
 import static org.robolectric.Robolectric.shadowOf;
 
 /**
@@ -99,7 +99,8 @@ public class ShadowHandler {
 
   @Implementation
   public final boolean sendMessageDelayed(final Message msg, long delayMillis) {
-    Robolectric.shadowOf(msg).setWhen(Robolectric.shadowOf(looper).getScheduler().getCurrentTime()+delayMillis);
+    long when = getCurrentUptimeMillis() + delayMillis;
+    setMessageWhen(msg, when);
     messages.add(msg);
     postDelayed(new Runnable() {
       @Override
@@ -111,6 +112,10 @@ public class ShadowHandler {
       }
     }, delayMillis);
     return true;
+  }
+
+  private void setMessageWhen(Message msg, long when) {
+    field("when").ofType(long.class).in(msg).set(when);
   }
 
   private void routeMessage(Message msg) {
@@ -135,7 +140,7 @@ public class ShadowHandler {
 
   @Implementation
   public final boolean sendMessageAtFrontOfQueue(final Message msg) {
-    Robolectric.shadowOf(msg).setWhen(Robolectric.shadowOf(looper).getScheduler().getCurrentTime());
+    setMessageWhen(msg, getCurrentUptimeMillis());
     messages.add(0, msg);
     postAtFrontOfQueue(new Runnable() {
       @Override
@@ -151,7 +156,7 @@ public class ShadowHandler {
 
   @Implementation
   public boolean sendMessageAtTime(Message msg, long uptimeMillis) {
-    long delay = uptimeMillis - System.currentTimeMillis();
+    long delay = uptimeMillis - getCurrentUptimeMillis();
     sendMessageDelayed(msg, delay);
     return true;
   }
@@ -238,5 +243,9 @@ public class ShadowHandler {
    */
   public static void runMainLooperToNextTask() {
     shadowOf(Looper.myLooper()).runToNextTask();
+  }
+
+  private long getCurrentUptimeMillis() {
+    return Robolectric.shadowOf(looper).getScheduler().getCurrentTime();
   }
 }

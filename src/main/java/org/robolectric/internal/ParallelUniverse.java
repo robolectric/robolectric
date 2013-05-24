@@ -7,6 +7,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import java.lang.reflect.Method;
 import org.robolectric.AndroidManifest;
 import org.robolectric.RoboInstrumentation;
 import org.robolectric.Robolectric;
@@ -15,18 +16,18 @@ import org.robolectric.TestLifecycle;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.shadows.ShadowActivityThread;
-import org.robolectric.shadows.ShadowContext;
 import org.robolectric.shadows.ShadowContextImpl;
 import org.robolectric.shadows.ShadowResources;
 import org.robolectric.util.DatabaseConfig;
 
-import java.io.File;
-import java.lang.reflect.Method;
-
-import static org.fest.reflect.core.Reflection.*;
+import static org.fest.reflect.core.Reflection.constructor;
+import static org.fest.reflect.core.Reflection.field;
+import static org.fest.reflect.core.Reflection.method;
+import static org.fest.reflect.core.Reflection.type;
 import static org.robolectric.Robolectric.shadowOf;
 
 public class ParallelUniverse implements ParallelUniverseInterface {
+  private static final String DEFAULT_PACKAGE_NAME = "org.robolectric.default";
   private Class<?> contextImplClass;
 
   public void resetStaticState() {
@@ -40,6 +41,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   @Override public void setUpApplicationState(Method method, TestLifecycle testLifecycle, boolean strictI18n, ResourceLoader systemResourceLoader, AndroidManifest appManifest) {
     Robolectric.application = null;
     Robolectric.packageManager = new RobolectricPackageManager();
+    Robolectric.packageManager.addPackage(DEFAULT_PACKAGE_NAME);
     if (appManifest != null) {
       Robolectric.packageManager.addManifest(appManifest);
     }
@@ -89,19 +91,14 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
     final Application application = (Application) testLifecycle.createApplication(method, appManifest);
     if (application != null) {
+      String packageName = appManifest != null ? appManifest.getPackageName() : null;
+      if (packageName == null) packageName = DEFAULT_PACKAGE_NAME;
+
       ApplicationInfo applicationInfo;
-      if (appManifest == null) {
-        applicationInfo = new ApplicationInfo();
-        applicationInfo.packageName = "some.package.name";
-        applicationInfo.sourceDir = new File(".").getAbsolutePath();
-        // todo: this should be deleted after each test... 2.0-cleanup
-        applicationInfo.dataDir = ShadowContext.FILES_DIR.getAbsolutePath();
-      } else {
-        try {
-          applicationInfo = Robolectric.packageManager.getApplicationInfo(appManifest.getPackageName(), 0);
-        } catch (PackageManager.NameNotFoundException e) {
-          throw new RuntimeException(e);
-        }
+      try {
+        applicationInfo = Robolectric.packageManager.getApplicationInfo(packageName, 0);
+      } catch (PackageManager.NameNotFoundException e) {
+        throw new RuntimeException(e);
       }
 
       Class<?> compatibilityInfoClass = type("android.content.res.CompatibilityInfo").load();

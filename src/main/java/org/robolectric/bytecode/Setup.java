@@ -144,10 +144,9 @@ public class Setup {
         new MethodRef("java.lang.AutoCloseable", "*"),
         new MethodRef("android.util.LocaleUtil", "getLayoutDirectionFromLocale"),
         new MethodRef("com.android.internal.policy.PolicyManager", "*"),
-        new MethodRef("android.view.CompatibilityInfoHolder", "*"),
-        new MethodRef("android.content.res.CompatibilityInfo", "*"),
         new MethodRef("android.view.FallbackEventHandler", "*"),
-        new MethodRef("android.view.IWindowSession", "*")
+        new MethodRef("android.view.IWindowSession", "*"),
+        new MethodRef("java.lang.System", "nanoTime")
     )));
   }
 

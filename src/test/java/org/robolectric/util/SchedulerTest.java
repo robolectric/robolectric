@@ -16,6 +16,11 @@ public class SchedulerTest {
     transcript = new Transcript();
   }
 
+  @Test public void shouldAdvanceTimeEvenIfThereIsNoWork() throws Exception {
+    scheduler.advanceTo(1000);
+    assertThat(scheduler.getCurrentTime()).isEqualTo(1000);
+  }
+
   @Test
   public void testTick_ReturnsTrueIffSomeJobWasRun() throws Exception {
     scheduler.postDelayed(new AddToTranscript("one"), 0);

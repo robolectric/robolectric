@@ -42,7 +42,7 @@ public class RobolectricInternals {
       declaredConstructor.setAccessible(true);
       return declaredConstructor.newInstance(params);
     } catch (InstantiationException e) {
-      throw new RuntimeException(e);
+      throw new RuntimeException("error instantiating " + clazz.getName(), e);
     } catch (IllegalAccessException e) {
       throw new RuntimeException(e);
     } catch (NoSuchMethodException e) {

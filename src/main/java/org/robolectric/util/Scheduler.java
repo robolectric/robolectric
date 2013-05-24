@@ -83,6 +83,7 @@ public class Scheduler {
 
   public synchronized boolean advanceTo(long endingTime) {
     if (endingTime - currentTime < 0 || enqueuedTaskCount() < 1) {
+      currentTime = endingTime;
       return false;
     }
 

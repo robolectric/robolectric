@@ -1,18 +1,18 @@
 package org.robolectric.shadows;
 
 import android.os.SystemClock;
-import org.robolectric.internal.HiddenApi;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.internal.HiddenApi;
 
 @Implements(value = SystemClock.class, callThroughByDefault = true)
 public class ShadowSystemClock {
   private static long bootedAt = now();
-  private static long fakeTime;
-  private static boolean timeFaked;
+  private static long nanoTime = 0;
 
   private static long now() {
-    return System.currentTimeMillis();
+    return Robolectric.getUiThreadScheduler().getCurrentTime();
   }
 
   @Implementation
@@ -22,11 +22,7 @@ public class ShadowSystemClock {
 
   @Implementation
   public static long uptimeMillis() {
-    if (timeFaked) {
-      return fakeTime;
-    } else {
-      return now() - bootedAt;
-    }
+    return now() - bootedAt;
   }
 
   @Implementation
@@ -49,12 +45,13 @@ public class ShadowSystemClock {
     return now() * 1000;
   }
 
-  public static void setFakeUptimeMillis(long millis) {
-    fakeTime = millis;
-    timeFaked = true;
+  // used by ShadowWranger for System.nanoTime() calls...
+  @SuppressWarnings("UnusedDeclaration")
+  public static long nanoTime() {
+    return nanoTime++;
   }
 
-  public static void unfakeUptimeMillis() {
-    timeFaked = false;
+  public static void setNanoTime(long nanoTime) {
+    ShadowSystemClock.nanoTime = nanoTime;
   }
 }
