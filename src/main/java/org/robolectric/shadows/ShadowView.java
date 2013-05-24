@@ -35,7 +35,6 @@ import static org.robolectric.bytecode.RobolectricInternals.getConstructor;
  * Supports listeners, focusability (but not focus order), resource loading,
  * visibility, onclick, tags, and tracks the size and shape of the view.
  */
-@SuppressWarnings({"UnusedDeclaration"})
 @Implements(value = View.class, callThroughByDefault = true)
 public class ShadowView {
   public static final String ANDROID_NS = "http://schemas.android.com/apk/res/android";
@@ -290,29 +289,6 @@ public class ShadowView {
     }
 
     return realView.performClick();
-  }
-
-  public void applyFocus() {
-    if (attributeSet != null) {
-      boolean focusRequested = attributeSet.getAttributeBooleanValue(ANDROID_NS, "focus", false);
-      if (focusRequested || realView.isFocusableInTouchMode()) {
-        if (noParentHasFocus(realView)) {
-          realView.requestFocus();
-        }
-      }
-    }
-  }
-
-  private boolean noParentHasFocus(View view) {
-    while (view != null) {
-      if (view.hasFocus()) return false;
-      ViewParent parent = view.getParent();
-      if (!(parent instanceof View)) {
-        parent = null;
-      }
-      view = (View) parent;
-    }
-    return true;
   }
 
   /**
