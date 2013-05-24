@@ -2,17 +2,18 @@ package org.robolectric.shadows;
 
 import android.content.res.AssetManager;
 import android.graphics.Typeface;
-import org.robolectric.AndroidManifest;
-import org.robolectric.Robolectric;
-import org.robolectric.internal.HiddenApi;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.robolectric.AndroidManifest;
+import org.robolectric.Robolectric;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.bytecode.RobolectricInternals;
+import org.robolectric.internal.HiddenApi;
 
 import static org.robolectric.Robolectric.shadowOf;
 
@@ -20,11 +21,14 @@ import static org.robolectric.Robolectric.shadowOf;
 public class ShadowTypeface {
   private static Map<FontDesc, Integer> fonts = new HashMap<FontDesc, Integer>();
   private static int nextFontId = 1;
+
+  @RealObject private Typeface realTypeface;
   private FontDesc fontDesc;
 
   @HiddenApi
   public void __constructor__(int fontId) {
     fontDesc = findById(fontId);
+    RobolectricInternals.getConstructor(Typeface.class, realTypeface, int.class).invoke(fontId);
   }
 
   public String getAssetPath() {
@@ -44,6 +48,12 @@ public class ShadowTypeface {
       fonts.put(fontDesc, fontId);
     }
     return fontId;
+  }
+
+  @HiddenApi @Implementation
+  public static int nativeCreateFromTypeface(int native_instance, int style) {
+    FontDesc fontDesc = findById(native_instance);
+    return nativeCreate(fontDesc.familyName, style);
   }
 
   @HiddenApi @Implementation

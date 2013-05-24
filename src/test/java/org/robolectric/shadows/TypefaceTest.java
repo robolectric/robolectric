@@ -18,7 +18,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
-public class ShadowTypefaceTest {
+public class TypefaceTest {
   @Rule public TemporaryAsset temporaryAsset = new TemporaryAsset();
   private File fontFile;
   private File libraryFontFile;
@@ -49,5 +49,13 @@ public class ShadowTypefaceTest {
   @Test(expected = RuntimeException.class)
   public void createFromAsset_throwsExceptionWhenFontNotFound() throws Exception {
     Typeface.createFromAsset(Robolectric.application.getAssets(), "nonexistent.ttf");
+  }
+
+  @Test public void createFromTypeface() throws Exception {
+    AssetManager assetManager = Robolectric.application.getAssets();
+    Typeface typeface = Typeface.createFromAsset(assetManager, "myFont.ttf");
+    Typeface derivativeTypeface = Typeface.create(typeface, Typeface.BOLD_ITALIC);
+    assertThat(derivativeTypeface.getStyle()).isEqualTo(Typeface.BOLD_ITALIC);
+    assertThat(shadowOf(derivativeTypeface).getAssetPath()).isEqualTo(fontFile.getPath());
   }
 }
