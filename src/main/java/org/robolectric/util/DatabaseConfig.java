@@ -1,5 +1,6 @@
 package org.robolectric.util;
 
+import java.io.File;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
@@ -64,9 +65,20 @@ public class DatabaseConfig {
    * @return Connection to In Memory Database.
    */
   public static Connection getMemoryConnection() {
+    if (isMapNull()) throw new NullDatabaseMapException("No database map set!");
+    return getConnection(dbMap.getMemoryConnectionString());
+  }
+
+  public static Connection getFileConnection(File file) {
+    if (isMapNull()) throw new NullDatabaseMapException("No database map set!");
+    return getConnection(dbMap.getConnectionString(file));
+  }
+
+  private static Connection getConnection(String connection) {
+    if (isMapNull()) throw new NullDatabaseMapException("No database map set!");
     if (!isMapLoaded()) LoadSQLiteDriver();
     try {
-      return DriverManager.getConnection(dbMap.getConnectionString());
+      return DriverManager.getConnection(connection);
     } catch (SQLException e) {
       throw new CannotLoadDatabaseMapDriverException("Error in DatabaseConfig, could not retrieve connection to in memory database.", e);
     }
@@ -85,7 +97,9 @@ public class DatabaseConfig {
   public interface DatabaseMap {
     String getDriverClassName();
 
-    String getConnectionString();
+    String getMemoryConnectionString();
+
+    String getConnectionString(File file);
 
     String getSelectLastInsertIdentity();
 

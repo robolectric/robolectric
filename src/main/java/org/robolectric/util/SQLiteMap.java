@@ -1,5 +1,6 @@
 package org.robolectric.util;
 
+import java.io.File;
 import java.sql.ResultSet;
 
 public class SQLiteMap implements DatabaseConfig.DatabaseMap {
@@ -8,11 +9,15 @@ public class SQLiteMap implements DatabaseConfig.DatabaseMap {
     return "org.sqlite.JDBC";
   }
 
-  public String getConnectionString() {
+  public String getConnectionString(File file) {
+    return "jdbc:sqlite:"+file.getAbsolutePath();
+  }
+
+  public String getMemoryConnectionString() {
     return "jdbc:sqlite::memory:";
   }
 
-    public String getSelectLastInsertIdentity() {
+  public String getSelectLastInsertIdentity() {
     return "SELECT last_insert_rowid() AS id";
   }
 

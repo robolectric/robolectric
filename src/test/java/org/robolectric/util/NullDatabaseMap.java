@@ -2,6 +2,7 @@ package org.robolectric.util;
 
 import org.robolectric.util.DatabaseConfig.DatabaseMap;
 
+import java.io.File;
 import java.sql.ResultSet;
 
 public class NullDatabaseMap implements DatabaseMap {
@@ -12,7 +13,12 @@ public class NullDatabaseMap implements DatabaseMap {
   }
 
   @Override
-  public String getConnectionString() {
+  public String getMemoryConnectionString() {
+    return null;
+  }
+
+  @Override
+  public String getConnectionString(File file) {
     return null;
   }
 
