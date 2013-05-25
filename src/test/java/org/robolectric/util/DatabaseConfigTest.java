@@ -4,7 +4,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
-import org.robolectric.util.DatabaseConfig.DatabaseMap;
 import org.robolectric.util.DatabaseConfig.NullDatabaseMapException;
 
 import java.sql.ResultSet;
@@ -16,24 +15,15 @@ public class DatabaseConfigTest {
 
   @Before
   public void setup() {
-    DatabaseConfig.setDatabaseMap(new H2Map());
+    DatabaseConfig.setDatabaseMap(new SQLiteMap());
   }
 
   @Test
   public void testSettingDatabaseMapLoadsCorrectly() throws Exception {
-    assertThat(DatabaseConfig.getDatabaseMap().getClass().getName()).isEqualTo(H2Map.class.getName());
+    assertThat(DatabaseConfig.getDatabaseMap().getClass().getName()).isEqualTo(SQLiteMap.class.getName());
     assertThat(DatabaseConfig.isMapLoaded()).isFalse();
     DatabaseConfig.getMemoryConnection(); //load map
     assertThat(DatabaseConfig.isMapLoaded()).isTrue();
-    assertThat(DatabaseConfig.getResultSetType()).isEqualTo(ResultSet.TYPE_SCROLL_INSENSITIVE);
-
-    H2Map_TypeForwardOnly ForwardOnlyMap = new H2Map_TypeForwardOnly();
-    DatabaseConfig.setDatabaseMap(ForwardOnlyMap);
-    assertThat(DatabaseConfig.isMapLoaded()).isFalse();
-    assertThat(DatabaseConfig.getDatabaseMap()).isEqualTo((DatabaseMap) ForwardOnlyMap);
-    DatabaseConfig.getMemoryConnection(); //load map
-    assertThat(DatabaseConfig.isMapLoaded()).isTrue();
-    assertThat(DatabaseConfig.getDatabaseMap().getClass().getName()).isEqualTo(H2Map_TypeForwardOnly.class.getName());
     assertThat(DatabaseConfig.getResultSetType()).isEqualTo(ResultSet.TYPE_FORWARD_ONLY);
   }
 

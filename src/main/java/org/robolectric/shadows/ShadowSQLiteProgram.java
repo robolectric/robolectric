@@ -41,7 +41,6 @@ public abstract class ShadowSQLiteProgram extends ShadowSQLiteClosable {
     checkDatabaseIsOpen();
     try {
       // SQLite ignores typecode
-      // typecode is also ignored in H2 when using the two parameter setNUll()
       actualDBstatement.setNull(index,java.sql.Types.NULL);
     } catch (SQLException e) {
       throw new RuntimeException(e);
