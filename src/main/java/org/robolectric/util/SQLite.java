@@ -40,8 +40,7 @@ public class SQLite {
     sb.append(columnsValueClause.sql);
     sb.append(";");
 
-    String sql = DatabaseConfig.getScrubSQL(sb.toString());
-    return new SQLStringAndBindings(sql, columnsValueClause.columnValues);
+    return new SQLStringAndBindings(sb.toString(), columnsValueClause.columnValues);
   }
 
   /**

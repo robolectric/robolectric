@@ -72,17 +72,6 @@ public class DatabaseConfig {
     }
   }
 
-  /**
-   * Makes any edits necessary in the SQL string for it to be compatible with the database in use.
-   *
-   * @return
-   * @throws SQLException
-   */
-  public static String getScrubSQL(String sql) throws SQLException {
-    if (isMapNull()) throw new NullDatabaseMapException("No database map set!");
-    return dbMap.getScrubSQL(sql);
-  }
-
   public static String getSelectLastInsertIdentity() {
     if (isMapNull()) throw new NullDatabaseMapException("No database map set!");
     return dbMap.getSelectLastInsertIdentity();
@@ -97,8 +86,6 @@ public class DatabaseConfig {
     String getDriverClassName();
 
     String getConnectionString();
-
-    String getScrubSQL(String sql) throws SQLException;
 
     String getSelectLastInsertIdentity();
 

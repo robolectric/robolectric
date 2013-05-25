@@ -12,11 +12,7 @@ public class SQLiteMap implements DatabaseConfig.DatabaseMap {
     return "jdbc:sqlite::memory:";
   }
 
-  public String getScrubSQL(String sql) {
-    return sql;
-  }
-
-  public String getSelectLastInsertIdentity() {
+    public String getSelectLastInsertIdentity() {
     return "SELECT last_insert_rowid() AS id";
   }
 

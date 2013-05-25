@@ -258,8 +258,7 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
     }
 
     try {
-      String scrubbedSql = DatabaseConfig.getScrubSQL(sql);
-      getConnection().createStatement().execute(scrubbedSql);
+      getConnection().createStatement().execute(sql);
     } catch (java.sql.SQLException e) {
       android.database.SQLException ase = new android.database.SQLException();
       ase.initCause(e);
@@ -272,12 +271,10 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
     if (bindArgs == null) {
       throw new IllegalArgumentException("Empty bindArgs");
     }
-    String scrubbedSql = DatabaseConfig.getScrubSQL(sql);
-
 
     SQLiteStatement statement = null;
       try {
-        statement = compileStatement(scrubbedSql);
+        statement = compileStatement(sql);
       if (bindArgs != null) {
         int numArgs = bindArgs.length;
         for (int i = 0; i < numArgs; i++) {
@@ -409,10 +406,9 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
   @Implementation
   public SQLiteStatement compileStatement(String sql) throws SQLException {
     lock();
-    String scrubbedSql = DatabaseConfig.getScrubSQL(sql);
     try {
       SQLiteStatement stmt = Robolectric.newInstanceOf(SQLiteStatement.class);
-      Robolectric.shadowOf(stmt).init(realSQLiteDatabase, scrubbedSql);
+      Robolectric.shadowOf(stmt).init(realSQLiteDatabase, sql);
       return stmt;
     } catch (Exception e){
       throw new RuntimeException(e);

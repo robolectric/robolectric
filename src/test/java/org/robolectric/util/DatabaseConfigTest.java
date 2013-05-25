@@ -45,12 +45,6 @@ public class DatabaseConfigTest {
   }
 
   @Test(expected = NullDatabaseMapException.class)
-  public void testGetScrubSQLThrowsExceptionWithNullMap() throws Exception {
-    setDatabaseMapNull();
-    DatabaseConfig.getScrubSQL("");
-  }
-
-  @Test(expected = NullDatabaseMapException.class)
   public void testGetSelectLastInsertIdentityThrowsExceptionWithNullMap() throws Exception {
     setDatabaseMapNull();
     DatabaseConfig.getSelectLastInsertIdentity();
@@ -60,11 +54,6 @@ public class DatabaseConfigTest {
   public void testGetResultSetTypeThrowsExceptionWithNullMap() throws Exception {
     setDatabaseMapNull();
     DatabaseConfig.getResultSetType();
-  }
-
-  @Test
-  public void testGetScrubSQL() throws Exception {
-    assertThat(DatabaseConfig.getScrubSQL("autoincrement")).isEqualTo(DatabaseConfig.getDatabaseMap().getScrubSQL("autoincrement"));
   }
 
   @Test
