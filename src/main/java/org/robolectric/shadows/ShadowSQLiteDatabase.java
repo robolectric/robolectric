@@ -79,6 +79,12 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
     if (!mLockingEnabled) return;
     mLock.lock();
   }
+  
+  @Implementation
+  public boolean isDbLockedByCurrentThread(){
+    if(!mLockingEnabled) return true;
+    return mLock.isHeldByCurrentThread();
+  }
 
   public void unlock() {
     if (!mLockingEnabled) return;
