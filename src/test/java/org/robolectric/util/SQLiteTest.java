@@ -2,6 +2,7 @@ package org.robolectric.util;
 
 import android.content.ContentValues;
 import android.database.sqlite.SQLiteDatabase;
+import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -11,8 +12,9 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.robolectric.util.SQLite.*;
 
 @RunWith(TestRunners.WithDefaults.class)
-public class SQLite_Test {
+public class SQLiteTest {
   ContentValues values;
+
   @Before
   public void setUp() throws Exception {
     String byteString = "byte_string";
@@ -28,15 +30,15 @@ public class SQLite_Test {
   @Test
   public void testBuildInsertString() throws Exception {
     SQLite.SQLStringAndBindings insertString = buildInsertString("table_name", values, SQLiteDatabase.CONFLICT_NONE);
-    assertThat(insertString.sql).isEqualTo("INSERT INTO table_name (float_value, byte_data, name, int_value) VALUES (?, ?, ?, ?);");
-    SQLiteTestHelper.verifyColumnValues(insertString.columnValues);
+    assertThat(insertString.sql).isEqualTo("INSERT INTO table_name (byte_data, float_value, int_value, name) VALUES (?, ?, ?, ?);");
+    verifyColumnValues(insertString.columnValues);
   }
 
   @Test
   public void testBuildUpdateString() {
     SQLite.SQLStringAndBindings insertString = buildUpdateString("table_name", values, "id=?", new String[]{"1234"});
-    assertThat(insertString.sql).isEqualTo("UPDATE table_name SET float_value=?, byte_data=?, name=?, int_value=? WHERE id='1234';");
-    SQLiteTestHelper.verifyColumnValues(insertString.columnValues);
+    assertThat(insertString.sql).isEqualTo("UPDATE table_name SET byte_data=?, float_value=?, int_value=?, name=? WHERE id='1234';");
+    verifyColumnValues(insertString.columnValues);
   }
 
   @Test
@@ -55,15 +57,22 @@ public class SQLite_Test {
   public void testBuildColumnValuesClause() {
     SQLStringAndBindings columnValuesClause = buildColumnValuesClause(values);
 
-    assertThat(columnValuesClause.sql).isEqualTo("(float_value, byte_data, name, int_value) VALUES (?, ?, ?, ?)");
-    SQLiteTestHelper.verifyColumnValues(columnValuesClause.columnValues);
+    assertThat(columnValuesClause.sql).isEqualTo("(byte_data, float_value, int_value, name) VALUES (?, ?, ?, ?)");
+    verifyColumnValues(columnValuesClause.columnValues);
   }
 
   @Test
   public void testBuildColumnAssignmentsClause() {
     SQLStringAndBindings columnAssignmentsClause = buildColumnAssignmentsClause(values);
 
-    assertThat(columnAssignmentsClause.sql).isEqualTo("float_value=?, byte_data=?, name=?, int_value=?");
-    SQLiteTestHelper.verifyColumnValues(columnAssignmentsClause.columnValues);
+    assertThat(columnAssignmentsClause.sql).isEqualTo("byte_data=?, float_value=?, int_value=?, name=?");
+    verifyColumnValues(columnAssignmentsClause.columnValues);
+  }
+
+  void verifyColumnValues(List<Object> colValues) {
+    assertThat(colValues.get(0)).isInstanceOf(byte[].class);
+    assertThat(colValues.get(1)).isInstanceOf(Float.class);
+    assertThat(colValues.get(2)).isInstanceOf(Integer.class);
+    assertThat(colValues.get(3)).isInstanceOf(String.class);
   }
 }

@@ -2,13 +2,15 @@ package org.robolectric.util;
 
 import android.content.ContentValues;
 import android.database.sqlite.SQLiteException;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * SQL utility methods to support the database-related shadows, such as
@@ -146,7 +148,7 @@ public class SQLite {
     StringBuilder clause = new StringBuilder("(");
     List<Object> columnValues = new ArrayList<Object>(values.size());
 
-    Iterator<Entry<String, Object>> itemEntries = values.valueSet().iterator();
+    Iterator<Entry<String, Object>> itemEntries = sort(values.valueSet()).iterator();
     while (itemEntries.hasNext()) {
       Entry<String, Object> entry = itemEntries.next();
       clause.append(entry.getKey());
@@ -175,7 +177,7 @@ public class SQLite {
     StringBuilder clause = new StringBuilder();
     List<Object> columnValues = new ArrayList<Object>(values.size());
 
-    Iterator<Entry<String, Object>> itemsEntries = values.valueSet().iterator();
+    Iterator<Entry<String, Object>> itemsEntries = sort(values.valueSet()).iterator();
     while (itemsEntries.hasNext()) {
       Entry<String, Object> entry = itemsEntries.next();
       clause.append(entry.getKey());
@@ -218,4 +220,14 @@ public class SQLite {
     }
   }
 
+  private static TreeSet<Entry<String, Object>> sort(Set<Entry<String, Object>> set) {
+    TreeSet<Entry<String, Object>> entries =
+        new TreeSet<Entry<String, Object>>(new Comparator<Entry<String, Object>>() {
+          @Override public int compare(Entry<String, Object> entry1, Entry<String, Object> entry2) {
+            return entry1.getKey().compareTo(entry2.getKey());
+          }
+        });
+    entries.addAll(set);
+    return entries;
+  }
 }
