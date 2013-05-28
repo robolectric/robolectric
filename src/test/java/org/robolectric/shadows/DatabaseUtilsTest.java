@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import android.database.DatabaseUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
@@ -13,5 +14,16 @@ public class DatabaseUtilsTest {
   public void testQuote() {
     assertThat(ShadowDatabaseUtils.sqlEscapeString("foobar")).isEqualTo("'foobar'");
     assertThat(ShadowDatabaseUtils.sqlEscapeString("Rich's")).isEqualTo("'Rich''s'");
+  }
+
+  @Test
+  public void testQuoteWithBuilder() {
+    StringBuilder builder = new StringBuilder();
+    DatabaseUtils.appendEscapedSQLString(builder, "foobar");
+    assertThat(builder.toString()).isEqualTo("'foobar'");
+
+    builder = new StringBuilder();
+    DatabaseUtils.appendEscapedSQLString(builder, "Blundell's");
+    assertThat(builder.toString()).isEqualTo("'Blundell''s'");
   }
 }
