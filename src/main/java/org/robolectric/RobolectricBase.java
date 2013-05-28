@@ -67,7 +67,6 @@ import org.robolectric.shadows.ShadowContentProviderOperation;
 import org.robolectric.shadows.ShadowContentProviderResult;
 import org.robolectric.shadows.ShadowContentResolver;
 import org.robolectric.shadows.ShadowContentUris;
-import org.robolectric.shadows.ShadowContentValues;
 import org.robolectric.shadows.ShadowContext;
 import org.robolectric.shadows.ShadowContextImpl;
 import org.robolectric.shadows.ShadowContextThemeWrapper;
@@ -326,7 +325,6 @@ public class RobolectricBase {
       ShadowContentProviderResult.class,
       ShadowContentResolver.class,
       ShadowContentUris.class,
-      ShadowContentValues.class,
       ShadowContext.class,
       ShadowContextImpl.class,
       ShadowContextImpl.ShadowServiceFetcher.class,

@@ -220,7 +220,6 @@ import org.robolectric.shadows.ShadowContentObserver;
 import org.robolectric.shadows.ShadowContentProviderOperation;
 import org.robolectric.shadows.ShadowContentProviderResult;
 import org.robolectric.shadows.ShadowContentResolver;
-import org.robolectric.shadows.ShadowContentValues;
 import org.robolectric.shadows.ShadowContext;
 import org.robolectric.shadows.ShadowContextWrapper;
 import org.robolectric.shadows.ShadowCookieManager;
@@ -607,10 +606,6 @@ public class Robolectric {
 
   public static ShadowContext shadowOf(Context instance) {
     return (ShadowContext) shadowOf_(instance);
-  }
-
-  public static ShadowContentValues shadowOf(ContentValues other) {
-    return (ShadowContentValues) Robolectric.shadowOf_(other);
   }
 
   public static ShadowContextWrapper shadowOf(ContextWrapper instance) {
