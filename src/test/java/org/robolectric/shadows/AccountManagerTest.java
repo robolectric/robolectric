@@ -15,7 +15,6 @@ import static org.junit.Assert.assertSame;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class AccountManagerTest {
-
   Application app;
 
   @Before
@@ -82,4 +81,25 @@ public class AccountManagerTest {
     assertThat(accounts[1]).isSameAs(a3);
   }
 
+  @Test
+  public void addAuthToken() {
+    AccountManager am = AccountManager.get(app);
+    Account account = new Account("name", "type");
+    Robolectric.shadowOf(am).addAccount(account);
+
+    am.setAuthToken(account, "token_type_1", "token1");
+    am.setAuthToken(account, "token_type_2", "token2");
+
+    assertThat(am.peekAuthToken(account, "token_type_1")).isEqualTo("token1");
+    assertThat(am.peekAuthToken(account, "token_type_2")).isEqualTo("token2");
+  }
+
+  @Test
+  public void setAuthToken_shouldNotAddTokenIfAccountNotPresent() {
+    AccountManager am = AccountManager.get(app);
+    Account account = new Account("name", "type");
+    am.setAuthToken(account, "token_type_1", "token1");
+
+    assertThat(am.peekAuthToken(account, "token_type_1")).isNull();
+  }
 }
