@@ -1,6 +1,8 @@
 package org.robolectric.shadows;
 
 import android.util.Log;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
@@ -151,6 +153,34 @@ public class ShadowLog {
   public static void reset() {
     logs.clear();
     logsByTag.clear();
+  }
+
+  public static void setupLogging() {
+    String logging = System.getProperty("robolectric.logging");
+    if (logging != null && stream == null) {
+      PrintStream stream = null;
+      if ("stdout".equalsIgnoreCase(logging)) {
+        stream = System.out;
+      } else if ("stderr".equalsIgnoreCase(logging)) {
+        stream = System.err;
+      } else {
+        try {
+          final PrintStream file = new PrintStream(new FileOutputStream(logging), true);
+          stream = file;
+          Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override public void run() {
+              try {
+                file.close();
+              } catch (Exception ignored) {
+              }
+            }
+          });
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+      }
+      ShadowLog.stream = stream;
+    }
   }
 
   public static class LogItem {

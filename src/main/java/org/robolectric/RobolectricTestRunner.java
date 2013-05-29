@@ -2,6 +2,18 @@ package org.robolectric;
 
 import android.app.Application;
 import android.os.Build;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import org.apache.maven.artifact.ant.DependenciesTask;
 import org.jetbrains.annotations.TestOnly;
 import org.junit.runner.notification.RunNotifier;
@@ -30,26 +42,10 @@ import org.robolectric.res.PackageResourceLoader;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.res.RoutingResourceLoader;
-import org.robolectric.shadows.ShadowLog;
 import org.robolectric.util.AnnotationUtil;
 import org.robolectric.util.DatabaseConfig.DatabaseMap;
 import org.robolectric.util.DatabaseConfig.UsingDatabaseMap;
 import org.robolectric.util.SQLiteMap;
-
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.net.URL;
-import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 
 import static org.fest.reflect.core.Reflection.staticField;
 
@@ -213,7 +209,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
         }
 
         configureShadows(sdkEnvironment, config);
-        setupLogging();
 
         ParallelUniverseInterface parallelUniverseInterface = getHooksInterface(sdkEnvironment);
         try {
@@ -632,35 +627,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       //        .addShadowClasses(RobolectricBase.DEFAULT_SHADOW_CLASSES)
       //        .build();
       return mainShadowMap;
-    }
-  }
-
-
-  private void setupLogging() {
-    String logging = System.getProperty("robolectric.logging");
-    if (logging != null && ShadowLog.stream == null) {
-      PrintStream stream = null;
-      if ("stdout".equalsIgnoreCase(logging)) {
-        stream = System.out;
-      } else if ("stderr".equalsIgnoreCase(logging)) {
-        stream = System.err;
-      } else {
-        try {
-          final PrintStream file = new PrintStream(new FileOutputStream(logging));
-          stream = file;
-          Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override public void run() {
-              try {
-                file.close();
-              } catch (Exception ignored) {
-              }
-            }
-          });
-        } catch (IOException e) {
-          e.printStackTrace();
-        }
-      }
-      ShadowLog.stream = stream;
     }
   }
 

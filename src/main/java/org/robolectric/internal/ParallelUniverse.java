@@ -17,6 +17,7 @@ import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.shadows.ShadowActivityThread;
 import org.robolectric.shadows.ShadowContextImpl;
+import org.robolectric.shadows.ShadowLog;
 import org.robolectric.shadows.ShadowResources;
 import org.robolectric.util.DatabaseConfig;
 
@@ -29,9 +30,15 @@ import static org.robolectric.Robolectric.shadowOf;
 public class ParallelUniverse implements ParallelUniverseInterface {
   private static final String DEFAULT_PACKAGE_NAME = "org.robolectric.default";
   private Class<?> contextImplClass;
+  private boolean loggingInitialized = false;
 
   public void resetStaticState() {
     Robolectric.reset();
+
+    if (!loggingInitialized) {
+      ShadowLog.setupLogging();
+      loggingInitialized = true;
+    }
   }
 
   @Override public void setDatabaseMap(DatabaseConfig.DatabaseMap databaseMap) {
