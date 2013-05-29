@@ -6,15 +6,13 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
-import org.robolectric.TestRunners;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Set;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.TestRunners;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNull;
@@ -23,7 +21,6 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
-import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class IntentTest {
@@ -146,7 +143,7 @@ public class IntentTest {
   public void testLongExtra() throws Exception {
     Intent intent = new Intent();
     assertSame(intent, intent.putExtra("foo", 2L));
-    assertEquals(2L, shadowOf(intent).getExtras().get("foo"));
+    assertEquals(2L, intent.getExtras().get("foo"));
     assertEquals(2L, intent.getLongExtra("foo", -1));
     assertEquals(-1L, intent.getLongExtra("bar", -1));
   }
@@ -210,8 +207,7 @@ public class IntentTest {
     Intent output = intent.setClass(new Activity(), thisClass);
 
     assertSame(output, intent);
-    ShadowIntent si = shadowOf(intent);
-    assertSame(si.getIntentClass(), thisClass);
+    assertThat(intent.getComponent().getClassName()).isEqualTo(thisClass.getName());
   }
 
   @Test
@@ -221,14 +217,13 @@ public class IntentTest {
     intent.setClassName("package.name", thisClass.getName());
     assertSame(thisClass.getName(), intent.getComponent().getClassName());
     assertEquals("package.name", intent.getComponent().getPackageName());
-    ShadowIntent si = shadowOf(intent);
-    assertSame(si.getIntentClass(), thisClass);
+    assertSame(intent.getComponent().getClassName(), thisClass.getName());
   }
 
   @Test
   public void testSetClassThroughConstructor() throws Exception {
     Intent intent = new Intent(new Activity(), getClass());
-    assertEquals(shadowOf(intent).getIntentClass(), getClass());
+    assertThat(intent.getComponent().getClassName()).isEqualTo(getClass().getName());
   }
 
   @Test
@@ -377,7 +372,7 @@ public class IntentTest {
   @Test
   public void setUri_setsUri() throws Exception {
     Intent intent = new Intent();
-    shadowOf(intent).setURI("http://foo");
+    intent.setData(Uri.parse("http://foo"));
     assertThat(intent.toURI()).isEqualTo("http://foo");
   }
 

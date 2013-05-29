@@ -6,13 +6,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
-import org.robolectric.Robolectric;
-import org.robolectric.bytecode.RobolectricInternals;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
-import org.robolectric.util.Join;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -23,8 +16,18 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import org.robolectric.Robolectric;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.bytecode.RobolectricInternals;
+import org.robolectric.util.Join;
 
-import static android.content.Intent.*;
+import static android.content.Intent.FILL_IN_ACTION;
+import static android.content.Intent.FILL_IN_CATEGORIES;
+import static android.content.Intent.FILL_IN_COMPONENT;
+import static android.content.Intent.FILL_IN_DATA;
+import static android.content.Intent.FILL_IN_PACKAGE;
 import static org.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -41,7 +44,6 @@ public class ShadowIntent {
   private Class<?> intentClass;
   private String packageName;
   private final Set<String> categories = new HashSet<String>();
-  private String uri;
 
   public void __constructor__(Context packageContext, Class cls) {
     componentName = new ComponentName(packageContext, cls);
@@ -71,7 +73,6 @@ public class ShadowIntent {
     intentClass = other.intentClass;
     packageName = other.packageName;
     categories.addAll(other.categories);
-    uri = other.uri;
     RobolectricInternals.getConstructor(Intent.class, realIntent, Intent.class).invoke(intent);
   }
 
@@ -154,6 +155,7 @@ public class ShadowIntent {
 
   @Implementation
   public Intent setClass(Context packageContext, Class<?> cls) {
+    componentName = new ComponentName(packageContext, cls);
     this.intentClass = cls;
     return realIntent;
   }
@@ -437,7 +439,7 @@ public class ShadowIntent {
 
   @Implementation
   public String toURI() {
-    return uri;
+    return data.toString();
   }
 
   @Implementation
@@ -641,7 +643,10 @@ public class ShadowIntent {
     return name + "=" + o;
   }
 
+  /**
+   * @deprecated Use {@link ShadowIntent#setData(android.net.Uri).}
+   */
   public void setURI(String uri) {
-    this.uri = uri;
+    this.data = Uri.parse(uri);
   }
 }
