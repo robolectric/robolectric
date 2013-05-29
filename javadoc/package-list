@@ -5,6 +5,7 @@ android.view.animation
 android.webkit
 com.foo
 com.google.android.maps
+libcore.internal
 org.robolectric
 org.robolectric.annotation
 org.robolectric.bytecode
