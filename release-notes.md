@@ -6,7 +6,22 @@ title: Release Notes
 # Release Notes
 
 -----
-## 2.x Branch
+## [Release 2.1](http://repo1.maven.org/maven2/org/robolectric/robolectric/2.1/) - May 29, 2013
+-----
+
+#### Features
+- Layout inflation is now handled by real Android OS code.
+- Improved support for "style" attribute and theme queries in layout attributes.
+- Implemented AssetManager.openXmlResourceParser().
+- Support for using disk-based SQLite databases.
+
+#### Bug Fixes
+- ActionBarSherlock should work, pretty much.
+- Fixed bugs in Handler.sendMessageAtTime(), and various timing issues.
+- Numerous other fixes and improvements from the Robolectric community! Thank you contributors!
+
+#### Known Issues
+- Animations aren't well-supported.
 
 -----
 ## [Release 2.0](http://repo1.maven.org/maven2/org/robolectric/robolectric/2.0/) - May 14, 2013
