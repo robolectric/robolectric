@@ -7,6 +7,7 @@ import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -76,6 +77,9 @@ public class ShadowSpannableStringBuilder implements CharSequence {
 
     @Implementation
     public void setSpan(Object what, int start, int end, int flags) {
+        if (spans.size() < builder.length()) {
+            spans.addAll(Arrays.asList(new Object[builder.length()]));
+        }
         for (int i = start; i <= end; i++) {
             spans.add(i, what);
         }

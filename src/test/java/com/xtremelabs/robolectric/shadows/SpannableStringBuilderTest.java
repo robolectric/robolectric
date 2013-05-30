@@ -64,6 +64,17 @@ public class SpannableStringBuilderTest {
     }
 
     @Test
+    public void setSpan_canHandleNonContiguousSpans() throws Exception {
+        SpannableStringBuilder builder = new SpannableStringBuilder("abcd");
+        ShadowSpannableStringBuilder shadowBuilder = shadowOf(builder);
+        TypefaceSpan typeface1 = new TypefaceSpan("foo");
+        TypefaceSpan typeface2 = new TypefaceSpan("foo");
+        builder.setSpan(typeface1, 1, 2, 0);
+        builder.setSpan(typeface2, 3, 3, 0);
+        assertNull(shadowBuilder.getSpanAt(0));
+    }
+
+    @Test
     public void getSpanAt_returnsNullIfNoSpanAssigned() throws Exception {
         SpannableStringBuilder builder = new SpannableStringBuilder("abcd");
         assertNull(shadowOf(builder).getSpanAt(4));
