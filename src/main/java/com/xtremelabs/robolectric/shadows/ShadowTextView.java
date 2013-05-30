@@ -78,7 +78,7 @@ public class ShadowTextView extends ShadowView {
         sendBeforeTextChanged(text);
 
         CharSequence oldValue = this.text;
-        this.text = text;
+        ((TextView) realView).setText(text, BufferType.NORMAL);
 
         sendOnTextChanged(oldValue);
         sendAfterTextChanged();
@@ -111,7 +111,7 @@ public class ShadowTextView extends ShadowView {
         sendBeforeTextChanged(text);
 
         CharSequence oldValue = this.text;
-        this.text = getResources().getText(textResourceId);
+        ((TextView) realView).setText(getResources().getText(textResourceId), BufferType.NORMAL);
 
         sendOnTextChanged(oldValue);
         sendAfterTextChanged();
@@ -119,7 +119,7 @@ public class ShadowTextView extends ShadowView {
 
     @Implementation
     public void setText(CharSequence text, BufferType bufferType) {
-        setText(text);
+        this.text = text;
         this.bufferType = bufferType;
     }
 
