@@ -418,6 +418,14 @@ public class TextViewTest {
         assertThat(textView.getLineCount(), equalTo(4));
     }
 
+    @Test
+    public void setText_setsBufferType() throws Exception {
+        assertThat(shadowOf(textView).getBufferType(), equalTo(TextView.BufferType.NORMAL));
+        textView.setText("abc", TextView.BufferType.SPANNABLE);
+        assertThat(textView.getText().toString(), equalTo("abc"));
+        assertThat(shadowOf(textView).getBufferType(), equalTo(TextView.BufferType.SPANNABLE));
+    }
+
     private List<MockTextWatcher> anyNumberOfTextWatchers() {
         List<MockTextWatcher> mockTextWatchers = new ArrayList<MockTextWatcher>();
         int numberBetweenOneAndTen = new Random().nextInt(10) + 1;
