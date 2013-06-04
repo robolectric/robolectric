@@ -12,6 +12,7 @@ import org.robolectric.AndroidManifest;
 import org.robolectric.DefaultTestLifecycle;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.TestLifecycle;
 import org.robolectric.res.ResourceLoader;
@@ -127,8 +128,8 @@ public class CustomRobolectricTestRunnerTest {
     }
 
     @Override
-    protected void setUpApplicationState(Method method, ParallelUniverseInterface parallelUniverseInterface, boolean strictI18n, ResourceLoader systemResourceLoader, AndroidManifest appManifest) {
-      super.setUpApplicationState(method, parallelUniverseInterface, strictI18n, systemResourceLoader, appManifest);
+    protected void setUpApplicationState(Method method, ParallelUniverseInterface parallelUniverseInterface, boolean strictI18n, ResourceLoader systemResourceLoader, AndroidManifest appManifest, Config config) {
+      super.setUpApplicationState(method, parallelUniverseInterface, strictI18n, systemResourceLoader, appManifest, config);
       this.application = parallelUniverseInterface.getCurrentApplication();
     }
 
