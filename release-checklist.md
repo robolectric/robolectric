@@ -13,10 +13,12 @@ ROBO_DOCS=~/Development/robolectric-docs
 * Update javadocs
 
 ```bash
-cd $ROBO_SRC
+cd $ROBO_DOCS
+git fetch
 git st # make sure there are no changes...
-rm -rf javadocs/*
-mv $ROBO_SRC/target/apidocs/* javadocs/
+rm -rf javadoc/*
+mv $ROBO_SRC/target/apidocs/* javadoc/
+grm
 git commit -am "Update javadocs."
 git push
 ```
