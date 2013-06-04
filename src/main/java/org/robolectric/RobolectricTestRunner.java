@@ -224,7 +224,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
           staticField("SDK_INT").ofType(int.class).in(versionClass).set(sdkVersion);
 
           ResourceLoader systemResourceLoader = sdkEnvironment.getSystemResourceLoader(MAVEN_CENTRAL, RobolectricTestRunner.this);
-          setUpApplicationState(bootstrappedMethod, parallelUniverseInterface, strictI18n, systemResourceLoader, appManifest);
+          setUpApplicationState(bootstrappedMethod, parallelUniverseInterface, strictI18n, systemResourceLoader, appManifest, config);
           testLifecycle.beforeTest(bootstrappedMethod);
         } catch (Exception e) {
           e.printStackTrace();
@@ -383,8 +383,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     return classHandler;
   }
 
-  protected void setUpApplicationState(Method method, ParallelUniverseInterface parallelUniverseInterface, boolean strictI18n, ResourceLoader systemResourceLoader, AndroidManifest appManifest) {
-    parallelUniverseInterface.setUpApplicationState(method, testLifecycle, strictI18n, systemResourceLoader, appManifest);
+  protected void setUpApplicationState(Method method, ParallelUniverseInterface parallelUniverseInterface, boolean strictI18n, ResourceLoader systemResourceLoader, AndroidManifest appManifest, Config config) {
+    parallelUniverseInterface.setUpApplicationState(method, testLifecycle, strictI18n, systemResourceLoader, appManifest, config);
   }
 
   private int getTargetSdkVersion(AndroidManifest appManifest) {
@@ -436,15 +436,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   @Override
   public Object createTest() throws Exception {
     throw new UnsupportedOperationException("this should always be invoked on the HelperTestRunner!");
-  }
-
-  public static String determineResourceQualifiers(Method method) {
-    String qualifiers = "";
-    Config config = method.getAnnotation(Config.class);
-    if (config != null) {
-      qualifiers = config.qualifiers();
-    }
-    return qualifiers;
   }
 
   /**

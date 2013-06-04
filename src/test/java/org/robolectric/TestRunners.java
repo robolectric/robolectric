@@ -59,7 +59,7 @@ public class TestRunners {
     }
 
     @Override
-    protected void setUpApplicationState(Method method, ParallelUniverseInterface parallelUniverseInterface, boolean strictI18n, ResourceLoader systemResourceLoader, AndroidManifest appManifest) {
+    protected void setUpApplicationState(Method method, ParallelUniverseInterface parallelUniverseInterface, boolean strictI18n, ResourceLoader systemResourceLoader, AndroidManifest appManifest, Config config) {
       // Don't do any resource loading or app init, because that's what we're trying to test here.
     }
   }
@@ -101,7 +101,9 @@ public class TestRunners {
     }
 
     @Override
-    protected void setUpApplicationState(Method method, ParallelUniverseInterface parallelUniverseInterface, boolean strictI18n, ResourceLoader systemResourceLoader, AndroidManifest appManifest) {
+    protected void setUpApplicationState(Method method,
+        ParallelUniverseInterface parallelUniverseInterface, boolean strictI18n,
+        ResourceLoader systemResourceLoader, AndroidManifest appManifest, Config config) {
       // Don't do any resource loading or app init, because that's what we're trying to test here.
     }
   }
