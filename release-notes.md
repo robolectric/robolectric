@@ -6,6 +6,13 @@ title: Release Notes
 # Release Notes
 
 -----
+## [Release 2.1.1](http://repo1.maven.org/maven2/org/robolectric/robolectric/2.1.1/) - June 4, 2013
+-----
+
+#### Bug Fixes
+- Qualifiers given in a `@Config` annotation on test classes weren't honored; fixed.
+
+-----
 ## [Release 2.1](http://repo1.maven.org/maven2/org/robolectric/robolectric/2.1/) - May 29, 2013
 -----
 
