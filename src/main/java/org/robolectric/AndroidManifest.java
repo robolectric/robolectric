@@ -301,7 +301,7 @@ public class AndroidManifest {
 
     Properties properties = getProperties(baseDir.join("project.properties"));
     // get the project.properties overrides and apply them (if any)
-    Properties overrideProperties = getProperties(baseDir.join("robo-project.properties"));
+    Properties overrideProperties = getProperties(baseDir.join("test-project.properties"));
     if (overrideProperties!=null) properties.putAll(overrideProperties);
     if (properties != null) {
       int libRef = 1;
