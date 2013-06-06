@@ -181,6 +181,9 @@ public class ShadowApplication extends ShadowContextWrapper {
   @Override
   public ComponentName startService(Intent intent) {
     startedServices.add(intent);
+    if (intent.getComponent() != null) {
+      return intent.getComponent();
+    }
     return new ComponentName("some.service.package", "SomeServiceName-FIXME");
   }
 
