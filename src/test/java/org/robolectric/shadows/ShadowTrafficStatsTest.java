@@ -14,27 +14,27 @@ public class ShadowTrafficStatsTest {
     public void allQueriesAreStubbed() throws Exception {
         int anything = -2;
 
-        assertEquals(-1, TrafficStats.getThreadStatsTag());
-        assertEquals(-1, TrafficStats.getMobileTxPackets());
-        assertEquals(-1, TrafficStats.getMobileRxPackets());
-        assertEquals(-1, TrafficStats.getMobileTxBytes());
-        assertEquals(-1, TrafficStats.getMobileRxBytes());
-        assertEquals(-1, TrafficStats.getTotalTxPackets());
-        assertEquals(-1, TrafficStats.getTotalRxPackets());
-        assertEquals(-1, TrafficStats.getTotalTxBytes());
-        assertEquals(-1, TrafficStats.getTotalRxBytes());
-        assertEquals(-1, TrafficStats.getUidTxBytes(anything));
-        assertEquals(-1, TrafficStats.getUidRxBytes(anything));
-        assertEquals(-1, TrafficStats.getUidTxPackets(anything));
-        assertEquals(-1, TrafficStats.getUidRxPackets(anything));
-        assertEquals(-1, TrafficStats.getUidTcpTxBytes(anything));
-        assertEquals(-1, TrafficStats.getUidTcpRxBytes(anything));
-        assertEquals(-1, TrafficStats.getUidUdpTxBytes(anything));
-        assertEquals(-1, TrafficStats.getUidUdpRxBytes(anything));
-        assertEquals(-1, TrafficStats.getUidTcpTxSegments(anything));
-        assertEquals(-1, TrafficStats.getUidTcpRxSegments(anything));
-        assertEquals(-1, TrafficStats.getUidUdpTxPackets(anything));
-        assertEquals(-1, TrafficStats.getUidUdpRxPackets(anything));
+        assertEquals(TrafficStats.UNSUPPORTED, TrafficStats.getThreadStatsTag());
+        assertEquals(TrafficStats.UNSUPPORTED, TrafficStats.getMobileTxPackets());
+        assertEquals(TrafficStats.UNSUPPORTED, TrafficStats.getMobileRxPackets());
+        assertEquals(TrafficStats.UNSUPPORTED, TrafficStats.getMobileTxBytes());
+        assertEquals(TrafficStats.UNSUPPORTED, TrafficStats.getMobileRxBytes());
+        assertEquals(TrafficStats.UNSUPPORTED, TrafficStats.getTotalTxPackets());
+        assertEquals(TrafficStats.UNSUPPORTED, TrafficStats.getTotalRxPackets());
+        assertEquals(TrafficStats.UNSUPPORTED, TrafficStats.getTotalTxBytes());
+        assertEquals(TrafficStats.UNSUPPORTED, TrafficStats.getTotalRxBytes());
+        assertEquals(TrafficStats.UNSUPPORTED, TrafficStats.getUidTxBytes(anything));
+        assertEquals(TrafficStats.UNSUPPORTED, TrafficStats.getUidRxBytes(anything));
+        assertEquals(TrafficStats.UNSUPPORTED, TrafficStats.getUidTxPackets(anything));
+        assertEquals(TrafficStats.UNSUPPORTED, TrafficStats.getUidRxPackets(anything));
+        assertEquals(TrafficStats.UNSUPPORTED, TrafficStats.getUidTcpTxBytes(anything));
+        assertEquals(TrafficStats.UNSUPPORTED, TrafficStats.getUidTcpRxBytes(anything));
+        assertEquals(TrafficStats.UNSUPPORTED, TrafficStats.getUidUdpTxBytes(anything));
+        assertEquals(TrafficStats.UNSUPPORTED, TrafficStats.getUidUdpRxBytes(anything));
+        assertEquals(TrafficStats.UNSUPPORTED, TrafficStats.getUidTcpTxSegments(anything));
+        assertEquals(TrafficStats.UNSUPPORTED, TrafficStats.getUidTcpRxSegments(anything));
+        assertEquals(TrafficStats.UNSUPPORTED, TrafficStats.getUidUdpTxPackets(anything));
+        assertEquals(TrafficStats.UNSUPPORTED, TrafficStats.getUidUdpRxPackets(anything));
     }
 
 }
