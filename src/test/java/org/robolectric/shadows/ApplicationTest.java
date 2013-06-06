@@ -230,6 +230,26 @@ public class ApplicationTest {
   }
 
   @Test
+  public void shouldHaveStoppedServiceByStartedComponent() {
+    ShadowApplication shadowApplication = shadowOf(Robolectric.application);
+
+    Activity activity = new Activity();
+
+    ComponentName componentName = new ComponentName("package.test", "package.test.TestClass");
+    Intent startServiceIntent = new Intent().setComponent(componentName);
+
+    ComponentName startedComponent = activity.startService(startServiceIntent);
+    assertThat(startedComponent.getPackageName()).isEqualTo("package.test");
+    assertThat(startedComponent.getClassName()).isEqualTo("package.test.TestClass");
+
+    Intent stopServiceIntent = new Intent().setComponent(startedComponent);
+    boolean wasRunning = activity.stopService(stopServiceIntent);
+
+    assertTrue(wasRunning);
+    assertThat(shadowApplication.getNextStoppedService()).isEqualTo(startServiceIntent);
+  }
+
+  @Test
   public void shouldClearStartedServiceIntents() {
     ShadowApplication shadowApplication = shadowOf(Robolectric.application);
     shadowApplication.startService(getSomeActionIntent("some.action"));
@@ -339,7 +359,8 @@ public class ApplicationTest {
 
   @Test
   public void shouldBeAbleToResetResources() throws Exception {
-    Application application = new DefaultTestLifecycle().createApplication(null, newConfigWith("com.wacka.wa", ""));
+    Application application = new DefaultTestLifecycle().createApplication(null,
+        newConfigWith("com.wacka.wa", ""));
     Resources res = application.getResources();
     shadowOf(application).resetResources();
     assertFalse(res == application.getResources());
@@ -347,7 +368,8 @@ public class ApplicationTest {
 
   @Test
   public void checkPermission_shouldTrackGrantedAndDeniedPermissions() throws Exception {
-    Application application = new DefaultTestLifecycle().createApplication(null, newConfigWith("com.wacka.wa", ""));
+    Application application = new DefaultTestLifecycle().createApplication(null,
+        newConfigWith("com.wacka.wa", ""));
     shadowOf(application).grantPermissions("foo", "bar");
     shadowOf(application).denyPermissions("foo", "qux");
     assertThat(application.checkPermission("foo", -1, -1)).isEqualTo(PERMISSION_DENIED);
