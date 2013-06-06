@@ -8,15 +8,13 @@ import org.robolectric.annotation.Implements;
 @Implements(TrafficStats.class)
 public class ShadowTrafficStats {
 
-    public static final int UNSUPPORTED = -1;
-
     private ShadowTrafficStats() { }
 
     @Implementation
     public static void setThreadStatsTag(int tag) { }
 
     @Implementation
-    public static int getThreadStatsTag() { return -1; }
+    public static int getThreadStatsTag() { return TrafficStats.UNSUPPORTED; }
 
     @Implementation
     public static void clearThreadStatsTag() { }
@@ -34,63 +32,63 @@ public class ShadowTrafficStats {
     public static void incrementOperationCount(int tag, int operationCount) { }
 
     @Implementation
-    public static long getMobileTxPackets() { return -1; }
+    public static long getMobileTxPackets() { return TrafficStats.UNSUPPORTED; }
 
     @Implementation
-    public static long getMobileRxPackets() { return -1; }
+    public static long getMobileRxPackets() { return TrafficStats.UNSUPPORTED; }
 
     @Implementation
-    public static long getMobileTxBytes() { return -1; }
+    public static long getMobileTxBytes() { return TrafficStats.UNSUPPORTED; }
 
     @Implementation
-    public static long getMobileRxBytes() { return -1; }
+    public static long getMobileRxBytes() { return TrafficStats.UNSUPPORTED; }
 
     @Implementation
-    public static long getTotalTxPackets() { return -1; }
+    public static long getTotalTxPackets() { return TrafficStats.UNSUPPORTED; }
 
     @Implementation
-    public static long getTotalRxPackets() { return -1; }
+    public static long getTotalRxPackets() { return TrafficStats.UNSUPPORTED; }
 
     @Implementation
-    public static long getTotalTxBytes() { return -1; }
+    public static long getTotalTxBytes() { return TrafficStats.UNSUPPORTED; }
 
     @Implementation
-    public static long getTotalRxBytes() { return -1; }
+    public static long getTotalRxBytes() { return TrafficStats.UNSUPPORTED; }
 
     @Implementation
-    public static long getUidTxBytes(int i) { return -1; }
+    public static long getUidTxBytes(int i) { return TrafficStats.UNSUPPORTED; }
 
     @Implementation
-    public static long getUidRxBytes(int i) { return -1; }
+    public static long getUidRxBytes(int i) { return TrafficStats.UNSUPPORTED; }
 
     @Implementation
-    public static long getUidTxPackets(int i) { return -1; }
+    public static long getUidTxPackets(int i) { return TrafficStats.UNSUPPORTED; }
 
     @Implementation
-    public static long getUidRxPackets(int i) { return -1; }
+    public static long getUidRxPackets(int i) { return TrafficStats.UNSUPPORTED; }
 
     @Implementation
-    public static long getUidTcpTxBytes(int i) { return -1; }
+    public static long getUidTcpTxBytes(int i) { return TrafficStats.UNSUPPORTED; }
 
     @Implementation
-    public static long getUidTcpRxBytes(int i) { return -1; }
+    public static long getUidTcpRxBytes(int i) { return TrafficStats.UNSUPPORTED; }
 
     @Implementation
-    public static long getUidUdpTxBytes(int i) { return -1; }
+    public static long getUidUdpTxBytes(int i) { return TrafficStats.UNSUPPORTED; }
 
     @Implementation
-    public static long getUidUdpRxBytes(int i) { return -1; }
+    public static long getUidUdpRxBytes(int i) { return TrafficStats.UNSUPPORTED; }
 
     @Implementation
-    public static long getUidTcpTxSegments(int i) { return -1; }
+    public static long getUidTcpTxSegments(int i) { return TrafficStats.UNSUPPORTED; }
 
     @Implementation
-    public static long getUidTcpRxSegments(int i) { return -1; }
+    public static long getUidTcpRxSegments(int i) { return TrafficStats.UNSUPPORTED; }
 
     @Implementation
-    public static long getUidUdpTxPackets(int i) { return -1; }
+    public static long getUidUdpTxPackets(int i) { return TrafficStats.UNSUPPORTED; }
 
     @Implementation
-    public static long getUidUdpRxPackets(int i) { return -1; }
+    public static long getUidUdpRxPackets(int i) { return TrafficStats.UNSUPPORTED; }
 }
 
