@@ -48,6 +48,10 @@ public class CustomTestRunner extends RobolectricTestRunner {
 }
 {% endhighlight %}
 
+### Overriding `project.properties`
+During test initialization, roboletric will attempt to locate all `android.library.reference` listed in the `project.properties` file. Unfortunately the locations are set by the ADT plugin and depending on the build environment may not point to the correct location – for example when performing a maven release. To counter the fixed location set in the `project.proerties`, roboletric provides an override mechanism. Simply placing a `test-project.properties` in the same directory as the `project.properties` will cause roboletric to override any `android.library.reference`s with those from the `test-project.properties` file. 
+
+
 ### Test setup and tear-down
 Robolectric resets some internal state automatically before every test, including:
 * stored SharedPreferences
