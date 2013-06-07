@@ -81,6 +81,7 @@ drive the development of Android applications.
 * [Aaron VonderHaar](https://github.com/avh4), Pivotal Labs
 * [Christian Williams](http://github.com/Xian), Square
 * [Jan Berkel](https://github.com/jberkel), SoundCloud
+* [Jake Wharton](https://github.com/JakeWharton), Square
 * [Michael Portuesi](https://github.com/mportuesisf), Zoodles
 * [Phil Goodwin](https://github.com/pgoodwin), Pivotal Labs
 * [Rick Kawala](https://github.com/rkawala), Pivotal Labs
