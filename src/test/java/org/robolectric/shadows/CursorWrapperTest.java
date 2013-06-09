@@ -74,6 +74,7 @@ public class CursorWrapperTest {
     v.verifyForward("getPosition");
     v.verifyForward("getShort", 7);
     v.verifyForward("getString", 8);
+    v.verifyForward("getType", 9);
     v.verifyForward("getWantsAllOnMoveCalls");
     v.verifyForward("isAfterLast");
     v.verifyForward("isBeforeFirst");
