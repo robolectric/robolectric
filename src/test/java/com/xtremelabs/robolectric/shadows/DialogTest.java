@@ -11,12 +11,14 @@ import com.xtremelabs.robolectric.util.Transcript;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static com.xtremelabs.robolectric.util.TestUtil.assertInstanceOf;
 import static junit.framework.Assert.*;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -56,7 +58,7 @@ public class DialogTest {
     @Test
     public void shouldSetCancelable() {
         Dialog dialog = new Dialog(null);
-        ShadowDialog shadow = Robolectric.shadowOf(dialog);
+        ShadowDialog shadow = shadowOf(dialog);
 
         dialog.setCancelable(false);
         assertThat(shadow.isCancelable(), equalTo(false));
@@ -72,7 +74,7 @@ public class DialogTest {
     @Test
     public void shouldDefaultCancelableToTrueAsTheSDKDoes() throws Exception {
         Dialog dialog = new Dialog(null);
-        ShadowDialog shadow = Robolectric.shadowOf(dialog);
+        ShadowDialog shadow = shadowOf(dialog);
 
         assertThat(shadow.isCancelable(), equalTo(true));
     }
@@ -155,7 +157,19 @@ public class DialogTest {
         dialog.setContentView(dialog.getLayoutInflater().inflate(R.layout.main, null));
         assertInstanceOf(TextView.class, dialog.findViewById(R.id.title));
     }
-    
+
+    @Test
+    public void canReturnOnDismissListener() throws Exception {
+        Dialog dialog = new Dialog(Robolectric.application);
+        DialogInterface.OnDismissListener onDismissListener = new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+            }
+        };
+        dialog.setOnDismissListener(onDismissListener);
+        assertSame(onDismissListener, shadowOf(dialog).getOnDismissListener());
+    }
+
     private static class TestDialog extends Dialog {
         boolean onStartCalled = false;
         boolean wasDismissed =  false;
