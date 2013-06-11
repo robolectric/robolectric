@@ -7,8 +7,6 @@ import java.io.InputStream;
 import java.util.List;
 
 public class OverlayResourceLoader extends XResourceLoader {
-  public static final boolean DEBUG = true;
-
   private final String packageName;
   private final List<PackageResourceLoader> subResourceLoaders;
 

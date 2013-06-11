@@ -24,6 +24,16 @@ public class OverlayResourceIndexTest {
     assertThat(overlayResourceIndex.getResourceId(new ResName("other.package", "type", "name-b"))).isEqualTo(null);
   }
 
+  @Test public void shouldPreferEarlierValuesWhenResNamesCollide() throws Exception {
+    OverlayResourceIndex overlayResourceIndex = new OverlayResourceIndex("merged.package",
+        new DummyResourceIndex("package.a", new ResName("package.a", "id", "item"), 123),
+        new DummyResourceIndex("package.b", new ResName("package.b", "id", "item"), 456)
+    );
+
+    assertThat(overlayResourceIndex.getResourceId(new ResName("merged.package", "id", "item"))).isEqualTo(123);
+    assertThat(overlayResourceIndex.getResName(456)).isNull();
+  }
+
   private static class DummyResourceIndex extends ResourceIndex {
     private final String packageName;
 

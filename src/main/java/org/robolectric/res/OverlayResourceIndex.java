@@ -28,7 +28,6 @@ class OverlayResourceIndex extends ResourceIndex {
     this.packageName = packageName;
     actualPackageNames.add(packageName);
 
-    final ResEntries resEntries = new ResEntries();
     for (ResourceIndex subResourceIndex : subResourceIndexes) {
       actualPackageNames.addAll(subResourceIndex.getPackages());
 
@@ -36,9 +35,10 @@ class OverlayResourceIndex extends ResourceIndex {
         ResName resName = entry.getKey();
         int value = entry.getValue();
         ResName localResName = resName.withPackageName(packageName);
-        if (OverlayResourceLoader.DEBUG) resEntries.add(localResName, resName, value);
-        resourceNameToId.put(localResName, value);
-        resourceIdToResName.put(value, localResName);
+        if (!resourceNameToId.containsKey(localResName)) {
+          resourceNameToId.put(localResName, value);
+          resourceIdToResName.put(value, localResName);
+        }
       }
     }
 
