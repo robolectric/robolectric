@@ -9,7 +9,7 @@ IntelliJ can import the pom.xml file and will automatically generate their proje
 For more information about how to use Robolectric on your project, extend its functionality, and join the community of
 contributors, please see: [http://pivotal.github.com/robolectric/index.html](http://pivotal.github.com/robolectric/index.html)
 
-[![Build Status](https://secure.travis-ci.org/pivotal/robolectric.png?branch=master)](http://travis-ci.org/pivotal/robolectric)
+[![Build Status](https://secure.travis-ci.org/robolectric/robolectric.png?branch=master)](http://travis-ci.org/robolectric/robolectric)
 
 http://ci.robolectric.org
 

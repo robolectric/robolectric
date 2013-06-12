@@ -11,11 +11,11 @@ import static org.junit.Assert.assertNotNull;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ShapeDrawableTest {
-    @Test
-    public void getPaint_ShouldReturnTheSamePaint() throws Exception {
-        ShapeDrawable shapeDrawable = new ShapeDrawable();
-        Paint paint = shapeDrawable.getPaint();
-        assertNotNull(paint);
-        assertThat(shapeDrawable.getPaint()).isSameAs(paint);
-    }
+  @Test
+  public void getPaint_ShouldReturnTheSamePaint() throws Exception {
+    ShapeDrawable shapeDrawable = new ShapeDrawable();
+    Paint paint = shapeDrawable.getPaint();
+    assertNotNull(paint);
+    assertThat(shapeDrawable.getPaint()).isSameAs(paint);
+  }
 }

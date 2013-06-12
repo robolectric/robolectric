@@ -5,12 +5,12 @@ import android.content.Context;
 import android.content.Intent;
 
 public class TestBroadcastReceiver extends BroadcastReceiver {
-    public Context context;
-    public Intent intent;
+  public Context context;
+  public Intent intent;
 
-    @Override
-    public void onReceive(Context context, Intent intent) {
-        this.context = context;
-        this.intent = intent;
-    }
+  @Override
+  public void onReceive(Context context, Intent intent) {
+    this.context = context;
+    this.intent = intent;
+  }
 }

@@ -13,15 +13,15 @@ import static org.junit.Assert.assertNotNull;
 @RunWith(TestRunners.WithDefaults.class)
 public class PeriodicSyncTest {
 
-    @Test
-    public void shouldHaveConstructor() throws Exception {
-        Account a = new Account("a", "b");
-        PeriodicSync sync = new PeriodicSync(a, "auth",
-                new Bundle(), 120l);
+  @Test
+  public void shouldHaveConstructor() throws Exception {
+    Account a = new Account("a", "b");
+    PeriodicSync sync = new PeriodicSync(a, "auth",
+        new Bundle(), 120l);
 
-        assertThat(sync.account).isSameAs(a);
-        assertThat(sync.authority).isEqualTo("auth");
-        assertThat(sync.period).isEqualTo(120l);
-        assertNotNull(sync.extras);
-    }
+    assertThat(sync.account).isSameAs(a);
+    assertThat(sync.authority).isEqualTo("auth");
+    assertThat(sync.period).isEqualTo(120l);
+    assertNotNull(sync.extras);
+  }
 }

@@ -9,6 +9,6 @@ import org.robolectric.bytecode.AsmInstrumentingClassLoader;
  */
 public class DummyClass {
 
-    // nothing here
-    
+  // nothing here
+
 }

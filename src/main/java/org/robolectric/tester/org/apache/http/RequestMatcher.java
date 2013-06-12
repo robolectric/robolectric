@@ -3,5 +3,5 @@ package org.robolectric.tester.org.apache.http;
 import org.apache.http.HttpRequest;
 
 public interface RequestMatcher {
-    public boolean matches(HttpRequest request);
+  public boolean matches(HttpRequest request);
 }

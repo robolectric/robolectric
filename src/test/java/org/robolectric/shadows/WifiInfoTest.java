@@ -14,14 +14,14 @@ import static org.robolectric.Robolectric.shadowOf;
 @RunWith(TestRunners.WithDefaults.class)
 public class WifiInfoTest {
 
-    @Test
-    public void shouldReturnMacAddress() {
-        WifiManager wifiManager = (WifiManager) application.getSystemService(WIFI_SERVICE);
-        WifiInfo wifiInfo = wifiManager.getConnectionInfo();
-        shadowOf(wifiInfo).setMacAddress("mac address");
+  @Test
+  public void shouldReturnMacAddress() {
+    WifiManager wifiManager = (WifiManager) application.getSystemService(WIFI_SERVICE);
+    WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+    shadowOf(wifiInfo).setMacAddress("mac address");
 
-        wifiManager = (WifiManager) application.getSystemService(WIFI_SERVICE);
-        wifiInfo = wifiManager.getConnectionInfo();
-        assertThat(wifiInfo.getMacAddress()).isEqualTo("mac address");
-    }
+    wifiManager = (WifiManager) application.getSystemService(WIFI_SERVICE);
+    wifiInfo = wifiManager.getConnectionInfo();
+    assertThat(wifiInfo.getMacAddress()).isEqualTo("mac address");
+  }
 }

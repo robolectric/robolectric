@@ -16,14 +16,14 @@ import org.w3c.dom.Document;
  * @see Resources#getXml(int)
  */
 public class XmlFileLoader extends XmlLoader {
-    private final ResBundle<Document> resBundle;
+  private final ResBundle<Document> resBundle;
 
-    public XmlFileLoader(ResBundle<Document> resBundle) {
-        this.resBundle = resBundle;
-    }
+  public XmlFileLoader(ResBundle<Document> resBundle) {
+    this.resBundle = resBundle;
+  }
 
-    @Override
-    protected void processResourceXml(FsFile xmlFile, XpathResourceXmlLoader.XmlNode xmlNode, XmlContext xmlContext) throws Exception {
-        resBundle.put("xml", xmlFile.getName().replace(".xml", ""), parse(xmlFile), xmlContext);
-    }
+  @Override
+  protected void processResourceXml(FsFile xmlFile, XpathResourceXmlLoader.XmlNode xmlNode, XmlContext xmlContext) throws Exception {
+    resBundle.put("xml", xmlFile.getName().replace(".xml", ""), parse(xmlFile), xmlContext);
+  }
 }

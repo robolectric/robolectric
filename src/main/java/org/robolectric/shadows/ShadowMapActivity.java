@@ -5,8 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import com.google.android.maps.MapActivity;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 /**
  * Shadow {@code MapActivity} that registers and unregisters a {@code BroadcastReceiver} when {@link #onResume()} and
@@ -14,27 +14,39 @@ import org.robolectric.internal.Implements;
  */
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(value = MapActivity.class, inheritImplementationMethods = true)
+@Implements(value = MapActivity.class)
 public class ShadowMapActivity extends ShadowActivity {
-    private ConnectivityBroadcastReceiver connectivityBroadcastReceiver = new ConnectivityBroadcastReceiver();
+  private ConnectivityBroadcastReceiver connectivityBroadcastReceiver = new ConnectivityBroadcastReceiver();
 
-    @Implementation
-    public void onResume() {
-        registerReceiver(connectivityBroadcastReceiver, new IntentFilter());
-    }
+  public void __constructor__() {
+  }
 
-    @Implementation
-    public void onPause() {
-        unregisterReceiver(connectivityBroadcastReceiver);
-    }
+  @Implementation
+  public void onCreate(android.os.Bundle bundle) {
+    // todo: this should call Activity#onCreate(), but also invoke any shadows.
+  }
 
-    @Implementation
-    public boolean isRouteDisplayed() {
-        return false;
-    }
+  @Implementation
+  public void onResume() {
+    registerReceiver(connectivityBroadcastReceiver, new IntentFilter());
+  }
 
-    private static class ConnectivityBroadcastReceiver extends BroadcastReceiver {
-        @Override public void onReceive(Context context, Intent intent) {
-        }
+  @Implementation
+  public void onPause() {
+    unregisterReceiver(connectivityBroadcastReceiver);
+  }
+
+  @Implementation
+  public void onDestroy() {
+  }
+
+  @Implementation
+  public boolean isRouteDisplayed() {
+    return false;
+  }
+
+  private static class ConnectivityBroadcastReceiver extends BroadcastReceiver {
+    @Override public void onReceive(Context context, Intent intent) {
     }
+  }
 }

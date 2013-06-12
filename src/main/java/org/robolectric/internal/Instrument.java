@@ -1,7 +1,7 @@
 package org.robolectric.internal;
 
 /**
- * Indicates that a class should always be instrumented by AndroidTranslator regardless of its package.
+ * Indicates that a class should always be instrumented regardless of its package.
  */
 @java.lang.annotation.Documented
 @java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy.RUNTIME)

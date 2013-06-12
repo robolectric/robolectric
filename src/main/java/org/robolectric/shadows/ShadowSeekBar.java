@@ -1,33 +1,26 @@
 package org.robolectric.shadows;
 
 import android.widget.SeekBar;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
-import org.robolectric.internal.RealObject;
+import org.robolectric.Robolectric;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 
-@Implements(value = SeekBar.class, inheritImplementationMethods = true)
+@Implements(value = SeekBar.class)
 public class ShadowSeekBar extends ShadowAbsSeekBar {
 
-    @RealObject
-    private SeekBar realSeekBar;
+  @RealObject
+  private SeekBar realSeekBar;
 
-    private SeekBar.OnSeekBarChangeListener listener;
+  private SeekBar.OnSeekBarChangeListener listener;
 
-    @Implementation
-    public void setOnSeekBarChangeListener(SeekBar.OnSeekBarChangeListener listener) {
-        this.listener = listener;
-    }
+  @Implementation
+  public void setOnSeekBarChangeListener(SeekBar.OnSeekBarChangeListener listener) {
+    this.listener = listener;
+    Robolectric.directlyOn(realSeekBar, SeekBar.class).setOnSeekBarChangeListener(listener);
+  }
 
-    @Override
-    @Implementation
-    public void setProgress(int progress) {
-        super.setProgress(progress);
-        if (listener != null) {
-            listener.onProgressChanged(realSeekBar, progress, true);
-        }
-    }
-
-    public SeekBar.OnSeekBarChangeListener getOnSeekBarChangeListener() {
-        return this.listener;
-    }
+  public SeekBar.OnSeekBarChangeListener getOnSeekBarChangeListener() {
+    return this.listener;
+  }
 }

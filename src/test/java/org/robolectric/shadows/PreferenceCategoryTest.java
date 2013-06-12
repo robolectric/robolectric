@@ -13,17 +13,17 @@ import static org.fest.assertions.api.Assertions.assertThat;
 @RunWith(TestRunners.WithDefaults.class)
 public class PreferenceCategoryTest {
 
-	private PreferenceCategory category;
-	private ShadowPreferenceCategory shadow;
+  private PreferenceCategory category;
+  private ShadowPreferenceCategory shadow;
 
-    @Before
-    public void setUp() throws Exception {
-    	category = new PreferenceCategory(new Activity());
-    	shadow = Robolectric.shadowOf(category);
-    }
-    
-	@Test
-	public void shouldInheritFromPreferenceGroup() {
-        assertThat(shadow).isInstanceOf(ShadowPreferenceGroup.class);
-	}	
+  @Before
+  public void setUp() throws Exception {
+    category = new PreferenceCategory(new Activity());
+    shadow = Robolectric.shadowOf(category);
+  }
+
+  @Test
+  public void shouldInheritFromPreferenceGroup() {
+    assertThat(shadow).isInstanceOf(ShadowPreferenceGroup.class);
+  }
 }

@@ -1,291 +1,291 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="robolectric" default="test">
 
-    <!-- The build.properties file can be created by you and is never touched
-         by the 'android' tool. This is the place to change some of the default property values
-         used by the Ant rules.
-         Here are some properties you may want to change/update:
+  <!-- The build.properties file can be created by you and is never touched
+     by the 'android' tool. This is the place to change some of the default property values
+     used by the Ant rules.
+     Here are some properties you may want to change/update:
 
-         application.package
-             the name of your application package as defined in the manifest. Used by the
-             'uninstall' rule.
-         source.dir
-             the name of the source directory. Default is 'src'.
-         out.dir
-             the name of the output directory. Default is 'bin'.
+     application.package
+       the name of your application package as defined in the manifest. Used by the
+       'uninstall' rule.
+     source.dir
+       the name of the source directory. Default is 'src'.
+     out.dir
+       the name of the output directory. Default is 'bin'.
 
-         Properties related to the SDK location or the project target should be updated
-          using the 'android' tool with the 'update' action.
+     Properties related to the SDK location or the project target should be updated
+      using the 'android' tool with the 'update' action.
 
-         This file is an integral part of the build system for your application and
-         should be checked in in Version Control Systems.
+     This file is an integral part of the build system for your application and
+     should be checked in in Version Control Systems.
 
-         -->
-    <!-- this should match whatever is defined in Robolectic.DEFAULT_SDK_VERSION -->
-    <property name="default.sdk.version" value="16"/>
-    <property name="default.sdk.revision" value="16_r3"/>
+     -->
+  <!-- this should match whatever is defined in Robolectic.DEFAULT_SDK_VERSION -->
+  <property name="default.sdk.version" value="16"/>
+  <property name="default.sdk.revision" value="16_r3"/>
 
-    <property file="build.properties"/>
-    <!-- The default.properties file is created and updated by the 'android' tool, as well
-         as ADT.
-         This file is an integral part of the build system for your application and
-         should be checked in in Version Control Systems. -->
-    <property file="default.properties"/>
+  <property file="build.properties"/>
+  <!-- The default.properties file is created and updated by the 'android' tool, as well
+     as ADT.
+     This file is an integral part of the build system for your application and
+     should be checked in in Version Control Systems. -->
+  <property file="default.properties"/>
 
-    <condition property="isWindows"> <os family="windows" /> </condition>
+  <condition property="isWindows"> <os family="windows" /> </condition>
 
-	<target name="findMavenWindows" if="isWindows">
-		<property name="maven" value="mvn.bat"/>
-    </target>
-    <target name="findMavenUnix" unless="isWindows">
-		<property name="maven" value="mvn"/>
-    </target>
+  <target name="findMavenWindows" if="isWindows">
+    <property name="maven" value="mvn.bat"/>
+  </target>
+  <target name="findMavenUnix" unless="isWindows">
+    <property name="maven" value="mvn"/>
+  </target>
 
-    <target name="findAndroidWindows" if="isWindows">
-        <echo message="Finding the Android version in windows"/>
-        <!--<exec executable="./find-android.bat"/>-->
-		<property name="sdk.dir" value="${env.ANDROID_HOME}"/>
-    </target>
-    <target name="findAndroidUnix" unless="isWindows">
-        <echo message="Finding the Android version in *nix"/>
-        <exec executable="./find-android.sh"/>
-    </target>
+  <target name="findAndroidWindows" if="isWindows">
+    <echo message="Finding the Android version in windows"/>
+    <!--<exec executable="./find-android.bat"/>-->
+    <property name="sdk.dir" value="${env.ANDROID_HOME}"/>
+  </target>
+  <target name="findAndroidUnix" unless="isWindows">
+    <echo message="Finding the Android version in *nix"/>
+    <exec executable="./find-android.sh"/>
+  </target>
 
-    <property file="local.properties"/>
+  <property file="local.properties"/>
 
-    <!-- Custom Android task to deal with the project target, and import the proper rules.
-         This requires ant 1.6.0 or above. -->
-    <path id="android.antlibs">
-        <pathelement path="${sdk.dir}/tools/lib/anttasks.jar"/>
-        <pathelement path="${sdk.dir}/tools/lib/sdklib.jar"/>
-        <pathelement path="${sdk.dir}/tools/lib/androidprefs.jar"/>
-        <pathelement path="${sdk.dir}/tools/lib/apkbuilder.jar"/>
-        <pathelement path="${sdk.dir}/tools/lib/jarutils.jar"/>
-    </path>
+  <!-- Custom Android task to deal with the project target, and import the proper rules.
+     This requires ant 1.6.0 or above. -->
+  <path id="android.antlibs">
+    <pathelement path="${sdk.dir}/tools/lib/anttasks.jar"/>
+    <pathelement path="${sdk.dir}/tools/lib/sdklib.jar"/>
+    <pathelement path="${sdk.dir}/tools/lib/androidprefs.jar"/>
+    <pathelement path="${sdk.dir}/tools/lib/apkbuilder.jar"/>
+    <pathelement path="${sdk.dir}/tools/lib/jarutils.jar"/>
+  </path>
 
-    <path id="android.target.classpath">
-        <pathelement path="${sdk.dir}/platforms/android-${default.sdk.version}/android.jar"/>
-        <pathelement path="${sdk.dir}/add-ons/addon_google_apis_google_inc_${default.sdk.version}/libs/maps.jar"/>
-        <pathelement path="${sdk.dir}/add-ons/addon-google_apis-google_inc_-${default.sdk.version}/libs/maps.jar"/>
-        <pathelement path="${sdk.dir}/add-ons/addon-google_apis-google-${default.sdk.version}/libs/maps.jar"/>
-        <pathelement path="${sdk.dir}/extras/android/support/v4/android-support-v4.jar"/>
-        <pathelement path="${sdk.dir}/android-compatibility/v4/android-support-v4.jar"/>
-    </path>
+  <path id="android.target.classpath">
+    <pathelement path="${sdk.dir}/platforms/android-${default.sdk.version}/android.jar"/>
+    <pathelement path="${sdk.dir}/add-ons/addon_google_apis_google_inc_${default.sdk.version}/libs/maps.jar"/>
+    <pathelement path="${sdk.dir}/add-ons/addon-google_apis-google_inc_-${default.sdk.version}/libs/maps.jar"/>
+    <pathelement path="${sdk.dir}/add-ons/addon-google_apis-google-${default.sdk.version}/libs/maps.jar"/>
+    <pathelement path="${sdk.dir}/extras/android/support/v4/android-support-v4.jar"/>
+    <pathelement path="${sdk.dir}/android-compatibility/v4/android-support-v4.jar"/>
+  </path>
 
-    <property name="main.absolute.dir" location="${main.dir}"/>
-    <property name="out.main.dir" value="${out.absolute.dir}/mainClasses"/>
-    <property name="out.main.absolute.dir" value="${out.main.dir}"/>
-    <property name="main.external.libs.dir" value="lib/main"/>
-    <property name="main.external.libs.absolute.dir" location="${main.external.libs.dir}"/>
+  <property name="main.absolute.dir" location="${main.dir}"/>
+  <property name="out.main.dir" value="${out.absolute.dir}/mainClasses"/>
+  <property name="out.main.absolute.dir" value="${out.main.dir}"/>
+  <property name="main.external.libs.dir" value="lib/main"/>
+  <property name="main.external.libs.absolute.dir" location="${main.external.libs.dir}"/>
 
-    <property name="test.absolute.dir" location="${test.dir}"/>
-    <property name="out.test.dir" value="${out.absolute.dir}/testClasses"/>
-    <property name="out.test.absolute.dir" value="${out.test.dir}"/>
-    <property name="test.external.libs.dir" value="lib/test"/>
-    <property name="test.external.libs.absolute.dir" location="${test.external.libs.dir}"/>
+  <property name="test.absolute.dir" location="${test.dir}"/>
+  <property name="out.test.dir" value="${out.absolute.dir}/testClasses"/>
+  <property name="out.test.absolute.dir" value="${out.test.dir}"/>
+  <property name="test.external.libs.dir" value="lib/test"/>
+  <property name="test.external.libs.absolute.dir" location="${test.external.libs.dir}"/>
 
-    <property name="publish.dir" location="${out.absolute.dir}/publish"/>
+  <property name="publish.dir" location="${out.absolute.dir}/publish"/>
 
-    <property name="pages.dir" value="pages"/>
-    <property name="downloads.dir" value="${pages.dir}/downloads"/>
-    <property name="javadoc.out.dir" value="${pages.dir}/javadoc"/>
+  <property name="pages.dir" value="pages"/>
+  <property name="downloads.dir" value="${pages.dir}/downloads"/>
+  <property name="javadoc.out.dir" value="${pages.dir}/javadoc"/>
 
-    <property name="base.package" value="org.robolectric"/>
+  <property name="base.package" value="org.robolectric"/>
 
-    <property environment="env"/>
-    <condition property="build.number" value="${env.BUILD_NUMBER}" else="unknown">
-        <isset property="env.BUILD_NUMBER"/>
+  <property environment="env"/>
+  <condition property="build.number" value="${env.BUILD_NUMBER}" else="unknown">
+    <isset property="env.BUILD_NUMBER"/>
+  </condition>
+
+  <target name="compile"
+      description="compile module source"
+      depends="findAndroidUnix, findAndroidWindows">
+    <mkdir dir="${out.main.absolute.dir}"/>
+
+    <javac encoding="ascii" source="1.6" target="1.6" debug="true" extdirs=""
+        destdir="${out.main.absolute.dir}"
+        verbose="${verbose}"
+        classpath="${extensible.classpath}"
+        includeantruntime="false">
+      <src path="${main.absolute.dir}"/>
+      <classpath>
+        <pathelement path="${out.main.absolute.dir}"/>
+        <path refid="android.target.classpath"/>
+        <fileset dir="${main.external.libs.absolute.dir}" includes="*.jar"/>
+      </classpath>
+    </javac>
+  </target>
+
+  <target name="jar" description="create the robolectric jar" depends="compile">
+    <mkdir dir="${target.dir}"/>
+    <jar destfile="${target.dir}/robolectric.jar">
+      <fileset dir="${out.main.absolute.dir}" includes="**/*.class"/>
+    </jar>
+  </target>
+
+  <target name="jar-all" description="create the robolectric jar including all dependencies" depends="jar">
+    <mkdir dir="${target.dir}/staging"/>
+    <unjar dest="${target.dir}/staging" >
+      <fileset dir="${main.external.libs.absolute.dir}" >
+        <exclude name="*src.jar" />
+        <exclude name="junit*.jar" />
+        <exclude name="hamcrest*.jar" />
+      </fileset>
+    </unjar>
+    <unjar dest="${target.dir}/staging" src="${target.dir}/robolectric.jar"/>
+    <jar destfile="${target.dir}/robolectric-all.jar" basedir="${target.dir}/staging"/>
+    <delete dir="${target.dir}/staging"/>
+  </target>
+
+  <target name="source-jar" description="create a jar file that includes all of the source code">
+    <mkdir dir="${target.dir}"/>
+    <jar destfile="${target.dir}/robolectric-src.jar" basedir="${main.absolute.dir}"/>
+  </target>
+
+  <target name="compile.tests" depends="compile"
+      description="compile module source; test classes" unless="skip.tests">
+    <mkdir dir="${out.test.absolute.dir}"/>
+
+    <javac encoding="ascii" source="1.6" target="1.6" debug="true" extdirs=""
+        destdir="${out.test.absolute.dir}"
+        verbose="${verbose}"
+        classpath="${extensible.classpath}"
+        includeantruntime="false">
+      <src path="${test.absolute.dir}"/>
+      <classpath>
+        <pathelement path="${out.main.absolute.dir}"/>
+        <pathelement path="${out.test.absolute.dir}"/>
+        <path refid="android.target.classpath"/>
+        <fileset dir="${main.external.libs.absolute.dir}" includes="*.jar"/>
+        <fileset dir="${test.external.libs.absolute.dir}" includes="*.jar"/>
+      </classpath>
+    </javac>
+  </target>
+
+  <target name="clean" description="cleanup module">
+    <delete dir="${out.absolute.dir}"/>
+    <delete dir="${out.test.absolute.dir}"/>
+    <delete dir="${target.dir}"/>
+  </target>
+
+  <target name="test" depends="compile.tests" description="test all">
+    <mkdir dir="${basedir}/out/reports/tests"/>
+    <mkdir dir="tmp"/>
+    <junit showoutput="true" failureproperty="junit.failure" fork="true" forkmode="once">
+      <formatter type="plain" usefile="false" if="junit.console.out"/>
+      <formatter type="plain"/>
+      <formatter type="xml"/>
+      <batchtest todir="${basedir}/out/reports/tests">
+        <fileset dir="${test.absolute.dir}">
+          <include name="**/*Test.java"/>
+        </fileset>
+      </batchtest>
+      <classpath>
+        <pathelement path="${out.main.absolute.dir}"/>
+        <pathelement path="${out.test.absolute.dir}"/>
+        <fileset dir="${main.external.libs.dir}" includes="*.jar"/>
+        <fileset dir="${test.external.libs.dir}" includes="*.jar"/>
+        <path refid="android.target.classpath"/>
+      </classpath>
+    </junit>
+    <fail if="junit.failure" message="Unit test(s) failed.  See reports!"/>
+  </target>
+
+  <target name="check-for-pages-dir-setup">
+    <condition property="pages.dir.exists">
+      <available file="${pages.dir}" type="dir"/>
     </condition>
+  </target>
 
-    <target name="compile"
-            description="compile module source"
-            depends="findAndroidUnix, findAndroidWindows">
-        <mkdir dir="${out.main.absolute.dir}"/>
+  <target name="check-for-pages-dir" depends="check-for-pages-dir-setup" unless="pages.dir.exists">
+    <echo message="do you need a 'pages' symlink?"/>
+  </target>
 
-        <javac encoding="ascii" source="1.6" target="1.6" debug="true" extdirs=""
-               destdir="${out.main.absolute.dir}"
-               verbose="${verbose}"
-               classpath="${extensible.classpath}"
-               includeantruntime="false">
-            <src path="${main.absolute.dir}"/>
-            <classpath>
-                <pathelement path="${out.main.absolute.dir}"/>
-                <path refid="android.target.classpath"/>
-                <fileset dir="${main.external.libs.absolute.dir}" includes="*.jar"/>
-            </classpath>
-        </javac>
-    </target>
+  <target name="snapshot" description="update most recent version of robolectric as jars" depends="clean, test, jar-all, source-jar, check-for-pages-dir" if="pages.dir.exists">
+    <copy todir="${downloads.dir}">
+      <fileset dir="${target.dir}" includes="robolectric*.jar"/>
+    </copy>
+    <exec executable="./update-downloads.rb"/>
+  </target>
 
-    <target name="jar" description="create the robolectric jar" depends="compile">
-        <mkdir dir="${target.dir}"/>
-        <jar destfile="${target.dir}/robolectric.jar">
-            <fileset dir="${out.main.absolute.dir}" includes="**/*.class"/>
-        </jar>
-    </target>
+  <target name="gen-javadoc" description="generate javadoc for the public API" depends="check-for-pages-dir" if="pages.dir.exists">
+    <mkdir dir="${javadoc.out.dir}" />
+    <javadoc
+        packagenames="${base.package}.*"
+        access="protected"
+        defaultexcludes="yes"
+        windowtitle="Robolectric API"
+        sourcepath="${main.absolute.dir}"
+        overview="${main.absolute.dir}/overview.html"
+        destdir="${javadoc.out.dir}">
+      <classpath>
+        <pathelement path="${out.main.absolute.dir}"/>
+        <path refid="android.target.classpath"/>
+        <fileset dir="${main.external.libs.absolute.dir}" includes="*.jar"/>
+      </classpath>
+      <doctitle><![CDATA[<h1>Robolectric<br/>API Documentation</h1>]]></doctitle>
+    </javadoc>
+  </target>
 
-    <target name="jar-all" description="create the robolectric jar including all dependencies" depends="jar">
-        <mkdir dir="${target.dir}/staging"/>
-        <unjar dest="${target.dir}/staging" >
-            <fileset dir="${main.external.libs.absolute.dir}" >
-                <exclude name="*src.jar" />
-                <exclude name="junit*.jar" />
-                <exclude name="hamcrest*.jar" />
-            </fileset>
-        </unjar>
-        <unjar dest="${target.dir}/staging" src="${target.dir}/robolectric.jar"/>
-        <jar destfile="${target.dir}/robolectric-all.jar" basedir="${target.dir}/staging"/>
-        <delete dir="${target.dir}/staging"/>
-    </target>
+  <target name="maven-install-jars"
+      depends="findMavenUnix, findMavenWindows, findAndroidUnix, findAndroidWindows"
+      description="Install the jar files that Maven can't find for itself">
+    <exec executable="${maven}">
+      <arg line="install:install-file -DgroupId=com.google.android.maps -DartifactId=maps -Dversion=${default.sdk.revision} -Dpackaging=jar -Dfile=${sdk.dir}/add-ons/addon_google_apis_google_inc_${default.sdk.version}/libs/maps.jar" />
+    </exec>
+    <exec executable="${maven}">
+      <arg line="install:install-file -DgroupId=com.google.android.maps -DartifactId=maps -Dversion=${default.sdk.revision} -Dpackaging=jar -Dfile=${sdk.dir}/add-ons/addon-google_apis-google_inc_-${default.sdk.version}/libs/maps.jar" />
+    </exec>
+    <exec executable="${maven}">
+      <arg line="install:install-file -DgroupId=com.google.android.maps -DartifactId=maps -Dversion=${default.sdk.revision} -Dpackaging=jar -Dfile=${sdk.dir}/add-ons/addon-google_apis-google-${default.sdk.version}/libs/maps.jar" />
+    </exec>
+  </target>
 
-    <target name="source-jar" description="create a jar file that includes all of the source code">
-        <mkdir dir="${target.dir}"/>
-        <jar destfile="${target.dir}/robolectric-src.jar" basedir="${main.absolute.dir}"/>
-    </target>
+  <target name="install-real-android-jars"
+      depends="findMavenUnix, findMavenWindows">
+    <mkdir dir="tmp"/>
+    <get src="https://s3.amazonaws.com/robolectric/android-base-4.1.2_r1_rc-real.jar" dest="tmp" skipexisting="true"/>
+    <get src="https://s3.amazonaws.com/robolectric/android-kxml2-4.1.2_r1_rc-real.jar" dest="tmp" skipexisting="true"/>
+    <get src="https://s3.amazonaws.com/robolectric/android-luni-4.1.2_r1_rc-real.jar" dest="tmp" skipexisting="true"/>
+    <exec executable="${maven}">
+      <arg line="install:install-file -DgroupId=org.robolectric -DartifactId=android-base -Dversion=4.1.2_r1_rc -Dclassifier=real -Dpackaging=jar -Dfile=tmp/android-base-4.1.2_r1_rc-real.jar"/>
+    </exec>
+    <exec executable="${maven}">
+      <arg line="install:install-file -DgroupId=org.robolectric -DartifactId=android-kxml2 -Dversion=4.1.2_r1_rc -Dclassifier=real -Dpackaging=jar -Dfile=tmp/android-kxml2-4.1.2_r1_rc-real.jar"/>
+    </exec>
+    <exec executable="${maven}">
+      <arg line="install:install-file -DgroupId=org.robolectric -DartifactId=android-luni -Dversion=4.1.2_r1_rc -Dclassifier=real -Dpackaging=jar -Dfile=tmp/android-luni-4.1.2_r1_rc-real.jar"/>
+    </exec>
+  </target>
 
-    <target name="compile.tests" depends="compile"
-            description="compile module source; test classes" unless="skip.tests">
-        <mkdir dir="${out.test.absolute.dir}"/>
+  <!-- used by travis-ci -->
+  <target name="prepare-travis-ci"
+      depends="findMavenUnix, findMavenWindows"
+      description="Prepare for travis ci build">
+    <mkdir dir="tmp"/>
+    <get src="http://dl.google.com/android/android-sdk_r21.0.1-linux.tgz" dest="tmp" skipexisting="true"/>
+    <untar src="tmp/android-sdk_r21.0.1-linux.tgz" compression="gzip" dest="tmp/sdk"/>
+    <echo file="tmp/install-sdk">#!/bin/sh -e
+      ANDROID="tmp/sdk/android-sdk-linux/tools/android"
+      chmod +x $ANDROID
+      SDKS=$($ANDROID list sdk --all | awk \
+      '/SDK Platform.* API ${default.sdk.version}/ || /Google APIs, Android API ${default.sdk.version}, revision/ \
+      { s=s "," int($1) } \
+      END { print substr(s, 2, length(s)) }' \
+      )
+      $ANDROID update sdk --no-ui --all --filter $SDKS
 
-        <javac encoding="ascii" source="1.6" target="1.6" debug="true" extdirs=""
-               destdir="${out.test.absolute.dir}"
-               verbose="${verbose}"
-               classpath="${extensible.classpath}"
-               includeantruntime="false">
-            <src path="${test.absolute.dir}"/>
-            <classpath>
-                <pathelement path="${out.main.absolute.dir}"/>
-                <pathelement path="${out.test.absolute.dir}"/>
-                <path refid="android.target.classpath"/>
-                <fileset dir="${main.external.libs.absolute.dir}" includes="*.jar"/>
-                <fileset dir="${test.external.libs.absolute.dir}" includes="*.jar"/>
-            </classpath>
-        </javac>
-    </target>
+      cat /home/travis/.m2/settings.xml
+    </echo>
+    <chmod file="tmp/install-sdk" perm="u+x"/>
+    <exec executable="tmp/install-sdk"/>
+    <propertyfile file="local.properties">
+      <entry key="sdk.dir" value="${basedir}/tmp/sdk/android-sdk-linux/"/>
+    </propertyfile>
+    <exec executable="${maven}">
+      <arg line="install:install-file -DgroupId=com.google.android.maps -DartifactId=maps -Dversion=${default.sdk.revision} -Dpackaging=jar -Dfile=tmp/sdk/android-sdk-linux/add-ons/addon-google_apis-google-${default.sdk.version}/libs/maps.jar"/>
+    </exec>
 
-    <target name="clean" description="cleanup module">
-        <delete dir="${out.absolute.dir}"/>
-        <delete dir="${out.test.absolute.dir}"/>
-        <delete dir="${target.dir}"/>
-    </target>
-
-    <target name="test" depends="compile.tests" description="test all">
-        <mkdir dir="${basedir}/out/reports/tests"/>
-        <mkdir dir="tmp"/>
-        <junit showoutput="true" failureproperty="junit.failure" fork="true" forkmode="once">
-            <formatter type="plain" usefile="false" if="junit.console.out"/>
-            <formatter type="plain"/>
-            <formatter type="xml"/>
-            <batchtest todir="${basedir}/out/reports/tests">
-                <fileset dir="${test.absolute.dir}">
-                    <include name="**/*Test.java"/>
-                </fileset>
-            </batchtest>
-            <classpath>
-                <pathelement path="${out.main.absolute.dir}"/>
-                <pathelement path="${out.test.absolute.dir}"/>
-                <fileset dir="${main.external.libs.dir}" includes="*.jar"/>
-                <fileset dir="${test.external.libs.dir}" includes="*.jar"/>
-                <path refid="android.target.classpath"/>
-            </classpath>
-        </junit>
-        <fail if="junit.failure" message="Unit test(s) failed.  See reports!"/>
-    </target>
-
-    <target name="check-for-pages-dir-setup">
-        <condition property="pages.dir.exists">
-            <available file="${pages.dir}" type="dir"/>
-        </condition>
-    </target>
-
-    <target name="check-for-pages-dir" depends="check-for-pages-dir-setup" unless="pages.dir.exists">
-        <echo message="do you need a 'pages' symlink?"/>
-    </target>
-
-    <target name="snapshot" description="update most recent version of robolectric as jars" depends="clean, test, jar-all, source-jar, check-for-pages-dir" if="pages.dir.exists">
-        <copy todir="${downloads.dir}">
-            <fileset dir="${target.dir}" includes="robolectric*.jar"/>
-        </copy>
-        <exec executable="./update-downloads.rb"/>
-    </target>
-
-    <target name="gen-javadoc" description="generate javadoc for the public API" depends="check-for-pages-dir" if="pages.dir.exists">
-        <mkdir dir="${javadoc.out.dir}" />
-        <javadoc
-                packagenames="${base.package}.*"
-                access="protected"
-                defaultexcludes="yes"
-                windowtitle="Robolectric API"
-                sourcepath="${main.absolute.dir}"
-                overview="${main.absolute.dir}/overview.html"
-                destdir="${javadoc.out.dir}">
-            <classpath>
-                <pathelement path="${out.main.absolute.dir}"/>
-                <path refid="android.target.classpath"/>
-                <fileset dir="${main.external.libs.absolute.dir}" includes="*.jar"/>
-            </classpath>
-            <doctitle><![CDATA[<h1>Robolectric<br/>API Documentation</h1>]]></doctitle>
-        </javadoc>
-    </target>
-
-    <target name="maven-install-jars"
-			depends="findMavenUnix, findMavenWindows, findAndroidUnix, findAndroidWindows"
-			description="Install the jar files that Maven can't find for itself">
-        <exec executable="${maven}">
-            <arg line="install:install-file -DgroupId=com.google.android.maps -DartifactId=maps -Dversion=${default.sdk.revision} -Dpackaging=jar -Dfile=${sdk.dir}/add-ons/addon_google_apis_google_inc_${default.sdk.version}/libs/maps.jar" />
-        </exec>
-        <exec executable="${maven}">
-            <arg line="install:install-file -DgroupId=com.google.android.maps -DartifactId=maps -Dversion=${default.sdk.revision} -Dpackaging=jar -Dfile=${sdk.dir}/add-ons/addon-google_apis-google_inc_-${default.sdk.version}/libs/maps.jar" />
-        </exec>
-        <exec executable="${maven}">
-            <arg line="install:install-file -DgroupId=com.google.android.maps -DartifactId=maps -Dversion=${default.sdk.revision} -Dpackaging=jar -Dfile=${sdk.dir}/add-ons/addon-google_apis-google-${default.sdk.version}/libs/maps.jar" />
-        </exec>
-    </target>
-
-    <target name="install-real-android-jars"
-			depends="findMavenUnix, findMavenWindows">
-        <mkdir dir="tmp"/>
-        <get src="https://s3.amazonaws.com/robolectric/android-base-4.1.2_r1_rc-real.jar" dest="tmp" skipexisting="true"/>
-        <get src="https://s3.amazonaws.com/robolectric/android-kxml2-4.1.2_r1_rc-real.jar" dest="tmp" skipexisting="true"/>
-        <get src="https://s3.amazonaws.com/robolectric/android-luni-4.1.2_r1_rc-real.jar" dest="tmp" skipexisting="true"/>
-        <exec executable="${maven}">
-            <arg line="install:install-file -DgroupId=org.robolectric -DartifactId=android-base -Dversion=4.1.2_r1_rc -Dclassifier=real -Dpackaging=jar -Dfile=tmp/android-base-4.1.2_r1_rc-real.jar"/>
-        </exec>
-        <exec executable="${maven}">
-            <arg line="install:install-file -DgroupId=org.robolectric -DartifactId=android-kxml2 -Dversion=4.1.2_r1_rc -Dclassifier=real -Dpackaging=jar -Dfile=tmp/android-kxml2-4.1.2_r1_rc-real.jar"/>
-        </exec>
-        <exec executable="${maven}">
-            <arg line="install:install-file -DgroupId=org.robolectric -DartifactId=android-luni -Dversion=4.1.2_r1_rc -Dclassifier=real -Dpackaging=jar -Dfile=tmp/android-luni-4.1.2_r1_rc-real.jar"/>
-        </exec>
-    </target>
-
-    <!-- used by travis-ci -->
-    <target name="prepare-travis-ci"
-			depends="findMavenUnix, findMavenWindows"
-			description="Prepare for travis ci build">
-        <mkdir dir="tmp"/>
-        <get src="http://dl.google.com/android/android-sdk_r21.0.1-linux.tgz" dest="tmp" skipexisting="true"/>
-        <untar src="tmp/android-sdk_r21.0.1-linux.tgz" compression="gzip" dest="tmp/sdk"/>
-        <echo file="tmp/install-sdk">#!/bin/sh -e
-            ANDROID="tmp/sdk/android-sdk-linux/tools/android"
-            chmod +x $ANDROID
-            SDKS=$($ANDROID list sdk --all | awk \
-            '/SDK Platform.* API ${default.sdk.version}/ || /Google APIs, Android API ${default.sdk.version}, revision/ \
-            { s=s "," int($1) } \
-            END { print substr(s, 2, length(s)) }' \
-            )
-            $ANDROID update sdk --no-ui --all --filter $SDKS
-
-            cat /home/travis/.m2/settings.xml
-        </echo>
-        <chmod file="tmp/install-sdk" perm="u+x"/>
-        <exec executable="tmp/install-sdk"/>
-        <propertyfile file="local.properties">
-            <entry key="sdk.dir" value="${basedir}/tmp/sdk/android-sdk-linux/"/>
-        </propertyfile>
-        <exec executable="${maven}">
-            <arg line="install:install-file -DgroupId=com.google.android.maps -DartifactId=maps -Dversion=${default.sdk.revision} -Dpackaging=jar -Dfile=tmp/sdk/android-sdk-linux/add-ons/addon-google_apis-google-${default.sdk.version}/libs/maps.jar"/>
-        </exec>
-
-        <antcall target="install-real-android-jars"/>
-    </target>
+    <antcall target="install-real-android-jars"/>
+  </target>
 </project>

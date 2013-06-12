@@ -2,8 +2,8 @@ package org.robolectric.shadows;
 
 import android.view.View;
 import android.widget.ZoomButtonsController;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 /**
  * Shadow of {@code ZoomButtonsController} that allows simulated clicking of the zoom button controls to trigger
@@ -12,21 +12,21 @@ import org.robolectric.internal.Implements;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ZoomButtonsController.class)
 public class ShadowZoomButtonsController {
-    private ZoomButtonsController.OnZoomListener listener;
+  private ZoomButtonsController.OnZoomListener listener;
 
-    public void __constructor__(View ownerView) {
-    }
+  public void __constructor__(View ownerView) {
+  }
 
-    @Implementation
-    public void setOnZoomListener(ZoomButtonsController.OnZoomListener listener) {
-        this.listener = listener;
-    }
+  @Implementation
+  public void setOnZoomListener(ZoomButtonsController.OnZoomListener listener) {
+    this.listener = listener;
+  }
 
-    public void simulateZoomInButtonClick() {
-        listener.onZoom(true);
-    }
+  public void simulateZoomInButtonClick() {
+    listener.onZoom(true);
+  }
 
-    public void simulateZoomOutButtonClick() {
-        listener.onZoom(false);
-    }
+  public void simulateZoomOutButtonClick() {
+    listener.onZoom(false);
+  }
 }

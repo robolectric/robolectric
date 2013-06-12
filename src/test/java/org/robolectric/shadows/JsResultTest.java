@@ -13,15 +13,15 @@ import static org.robolectric.Robolectric.shadowOf;
 @RunWith(TestRunners.WithDefaults.class)
 public class JsResultTest {
 
-    @Test
-    public void shouldRecordCanceled() throws Exception {
-        JsResult jsResult = Robolectric.newInstanceOf(JsResult.class);
+  @Test
+  public void shouldRecordCanceled() throws Exception {
+    JsResult jsResult = Robolectric.newInstanceOf(JsResult.class);
 
-        assertFalse(shadowOf(jsResult).wasCancelled());
+    assertFalse(shadowOf(jsResult).wasCancelled());
 
-        jsResult.cancel();
-        assertTrue(shadowOf(jsResult).wasCancelled());
+    jsResult.cancel();
+    assertTrue(shadowOf(jsResult).wasCancelled());
 
-    }
+  }
 
 }

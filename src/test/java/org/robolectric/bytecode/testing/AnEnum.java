@@ -4,5 +4,5 @@ import org.robolectric.internal.Instrument;
 
 @Instrument
 public enum AnEnum {
-    ONE, TWO, MANY
+  ONE, TWO, MANY
 }

@@ -10,9 +10,9 @@ import static org.fest.assertions.api.Assertions.assertThat;
 @RunWith(TestRunners.WithDefaults.class)
 public class LinkMovementMethodTest {
 
-    @Test
-    public void getInstance_shouldReturnAnInstanceOf_LinkedMovementMethod() throws Exception {
-        assertThat(LinkMovementMethod.getInstance()).isInstanceOf(LinkMovementMethod.class);
-    }
+  @Test
+  public void getInstance_shouldReturnAnInstanceOf_LinkedMovementMethod() throws Exception {
+    assertThat(LinkMovementMethod.getInstance()).isInstanceOf(LinkMovementMethod.class);
+  }
 
 }

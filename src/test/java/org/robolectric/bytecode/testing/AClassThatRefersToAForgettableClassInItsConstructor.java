@@ -5,9 +5,9 @@ import org.robolectric.internal.Instrument;
 @SuppressWarnings("UnusedDeclaration")
 @Instrument
 public class AClassThatRefersToAForgettableClassInItsConstructor {
-    public final AClassToForget aClassToForget;
+  public final AClassToForget aClassToForget;
 
-    public AClassThatRefersToAForgettableClassInItsConstructor() {
-        aClassToForget = null;
-    }
+  public AClassThatRefersToAForgettableClassInItsConstructor() {
+    aClassToForget = null;
+  }
 }

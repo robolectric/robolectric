@@ -1,9 +1,9 @@
 package org.robolectric.util;
 
 public class TestRunnable implements Runnable {
-    public boolean wasRun = false;
+  public boolean wasRun = false;
 
-    @Override public void run() {
-        wasRun = true;
-    }
+  @Override public void run() {
+    wasRun = true;
+  }
 }

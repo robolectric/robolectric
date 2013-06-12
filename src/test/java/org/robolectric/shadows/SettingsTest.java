@@ -14,89 +14,89 @@ import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class SettingsTest {
-    private Activity activity;
-    private ContentResolver contentResolver;
+  private Activity activity;
+  private ContentResolver contentResolver;
 
-    @Before
-    public void setUp() throws Exception {
-        activity = new Activity();
-        contentResolver = activity.getContentResolver();
-    }
+  @Before
+  public void setUp() throws Exception {
+    activity = new Activity();
+    contentResolver = activity.getContentResolver();
+  }
 
-    @Test
-    public void whileApplicationStaysSame_shouldRememberOldSettings() throws Exception {
-        Settings.System.putInt(contentResolver, "property", 1);
-        assertThat(Settings.System.getInt(contentResolver, "property", 0)).isEqualTo(1);
+  @Test
+  public void whileApplicationStaysSame_shouldRememberOldSettings() throws Exception {
+    Settings.System.putInt(contentResolver, "property", 1);
+    assertThat(Settings.System.getInt(contentResolver, "property", 0)).isEqualTo(1);
 
-        activity = new Activity();
-        contentResolver = activity.getContentResolver();
-        assertThat(Settings.System.getInt(contentResolver, "property", 0)).isEqualTo(1);
-    }
+    activity = new Activity();
+    contentResolver = activity.getContentResolver();
+    assertThat(Settings.System.getInt(contentResolver, "property", 0)).isEqualTo(1);
+  }
 
-    @Test
-    public void whenApplicationChanges_shouldStartWithNewSettings() throws Exception {
-        Settings.System.putInt(contentResolver, "property", 1);
-        assertThat(Settings.System.getInt(contentResolver, "property", 0)).isEqualTo(1);
+  @Test
+  public void whenApplicationChanges_shouldStartWithNewSettings() throws Exception {
+    Settings.System.putInt(contentResolver, "property", 1);
+    assertThat(Settings.System.getInt(contentResolver, "property", 0)).isEqualTo(1);
 
-        Robolectric.application = new Application();
-        activity = new Activity();
-        contentResolver = activity.getContentResolver();
-        assertThat(Settings.System.getInt(contentResolver, "property", 0)).isEqualTo(0);
-    }
+    Robolectric.application = new Application();
+    activity = new Activity();
+    contentResolver = activity.getContentResolver();
+    assertThat(Settings.System.getInt(contentResolver, "property", 0)).isEqualTo(0);
+  }
 
-    @Test
-    public void testSystemGetInt() throws Exception {
-        assertThat(Settings.System.getInt(contentResolver, "property", 0)).isEqualTo(0);
-        assertThat(Settings.System.getInt(contentResolver, "property", 2)).isEqualTo(2);
+  @Test
+  public void testSystemGetInt() throws Exception {
+    assertThat(Settings.System.getInt(contentResolver, "property", 0)).isEqualTo(0);
+    assertThat(Settings.System.getInt(contentResolver, "property", 2)).isEqualTo(2);
 
-        Settings.System.putInt(contentResolver, "property", 1);
-        assertThat(Settings.System.getInt(contentResolver, "property", 0)).isEqualTo(1);
-    }
+    Settings.System.putInt(contentResolver, "property", 1);
+    assertThat(Settings.System.getInt(contentResolver, "property", 0)).isEqualTo(1);
+  }
 
-    @Test
-    public void testSecureGetInt() throws Exception {
-        assertThat(Settings.Secure.getInt(contentResolver, "property", 0)).isEqualTo(0);
-        assertThat(Settings.Secure.getInt(contentResolver, "property", 2)).isEqualTo(2);
+  @Test
+  public void testSecureGetInt() throws Exception {
+    assertThat(Settings.Secure.getInt(contentResolver, "property", 0)).isEqualTo(0);
+    assertThat(Settings.Secure.getInt(contentResolver, "property", 2)).isEqualTo(2);
 
-        Settings.Secure.putInt(contentResolver, "property", 1);
-        assertThat(Settings.Secure.getInt(contentResolver, "property", 0)).isEqualTo(1);
-    }
+    Settings.Secure.putInt(contentResolver, "property", 1);
+    assertThat(Settings.Secure.getInt(contentResolver, "property", 0)).isEqualTo(1);
+  }
 
-    @Test
-    public void testSystemGetString() throws Exception {
-        assertThat(Settings.System.getString(contentResolver, "property")).isNull();
+  @Test
+  public void testSystemGetString() throws Exception {
+    assertThat(Settings.System.getString(contentResolver, "property")).isNull();
 
-        Settings.System.putString(contentResolver, "property", "value");
-        assertThat(Settings.System.getString(contentResolver, "property")).isEqualTo("value");
-    }
+    Settings.System.putString(contentResolver, "property", "value");
+    assertThat(Settings.System.getString(contentResolver, "property")).isEqualTo("value");
+  }
 
-    @Test
-    public void testSystemGetLong() throws Exception {
-        assertThat(Settings.System.getLong(contentResolver, "property", 10L)).isEqualTo(10L);
-        Settings.System.putLong(contentResolver, "property", 42L);
-        assertThat(Settings.System.getLong(contentResolver, "property")).isEqualTo(42L);
-        assertThat(Settings.System.getLong(contentResolver, "property", 10L)).isEqualTo(42L);
-    }
+  @Test
+  public void testSystemGetLong() throws Exception {
+    assertThat(Settings.System.getLong(contentResolver, "property", 10L)).isEqualTo(10L);
+    Settings.System.putLong(contentResolver, "property", 42L);
+    assertThat(Settings.System.getLong(contentResolver, "property")).isEqualTo(42L);
+    assertThat(Settings.System.getLong(contentResolver, "property", 10L)).isEqualTo(42L);
+  }
 
-    @Test
-    public void testSystemGetFloat() throws Exception {
-        assertThat(Settings.System.getFloat(contentResolver, "property", 23.23f)).isEqualTo(23.23f);
-        Settings.System.putFloat(contentResolver, "property", 42.42f);
-        assertThat(Settings.System.getFloat(contentResolver, "property", 10L)).isEqualTo(42.42f);
-    }
+  @Test
+  public void testSystemGetFloat() throws Exception {
+    assertThat(Settings.System.getFloat(contentResolver, "property", 23.23f)).isEqualTo(23.23f);
+    Settings.System.putFloat(contentResolver, "property", 42.42f);
+    assertThat(Settings.System.getFloat(contentResolver, "property", 10L)).isEqualTo(42.42f);
+  }
 
-    @Test(expected = Settings.SettingNotFoundException.class)
-    public void testSystemGetLong_exception() throws Exception {
-        Settings.System.getLong(contentResolver, "property");
-    }
+  @Test(expected = Settings.SettingNotFoundException.class)
+  public void testSystemGetLong_exception() throws Exception {
+    Settings.System.getLong(contentResolver, "property");
+  }
 
-    @Test(expected = Settings.SettingNotFoundException.class)
-    public void testSystemGetInt_exception() throws Exception {
-        Settings.System.getInt(contentResolver, "property");
-    }
+  @Test(expected = Settings.SettingNotFoundException.class)
+  public void testSystemGetInt_exception() throws Exception {
+    Settings.System.getInt(contentResolver, "property");
+  }
 
-    @Test(expected = Settings.SettingNotFoundException.class)
-    public void testSystemGetFloat_exception() throws Exception {
-        Settings.System.getFloat(contentResolver, "property");
-    }
+  @Test(expected = Settings.SettingNotFoundException.class)
+  public void testSystemGetFloat_exception() throws Exception {
+    Settings.System.getFloat(contentResolver, "property");
+  }
 }

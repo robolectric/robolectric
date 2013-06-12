@@ -12,19 +12,19 @@ import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class LayoutAnimationControllerTest {
-	private ShadowLayoutAnimationController shadow;
-	
-	@Before
-	public void setup() {
-		LayoutAnimationController controller = new LayoutAnimationController(new Activity(), null);
-		shadow = Robolectric.shadowOf(controller);
-	}
-	
-	@Test
-	public void testResourceId() {
-		int id = 1;
-		shadow.setLoadedFromResourceId(1);
-        assertThat(shadow.getLoadedFromResourceId()).isEqualTo(id);
-	}
+  private ShadowLayoutAnimationController shadow;
+
+  @Before
+  public void setup() {
+    LayoutAnimationController controller = new LayoutAnimationController(new Activity(), null);
+    shadow = Robolectric.shadowOf(controller);
+  }
+
+  @Test
+  public void testResourceId() {
+    int id = 1;
+    shadow.setLoadedFromResourceId(1);
+    assertThat(shadow.getLoadedFromResourceId()).isEqualTo(id);
+  }
 
 }

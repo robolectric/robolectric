@@ -1,20 +1,20 @@
 package org.robolectric.shadows;
 
 import android.bluetooth.BluetoothDevice;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 @Implements(BluetoothDevice.class)
 public class ShadowBluetoothDevice {
 
-    private String name;
+  private String name;
 
-    public void setName(String name) {
-        this.name = name;
-    }
+  public void setName(String name) {
+    this.name = name;
+  }
 
-    @Implementation
-    public String getName() {
-        return name;
-    }
+  @Implementation
+  public String getName() {
+    return name;
+  }
 }

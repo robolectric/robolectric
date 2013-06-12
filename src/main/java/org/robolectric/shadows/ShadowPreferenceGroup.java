@@ -3,9 +3,9 @@ package org.robolectric.shadows;
 import android.preference.Preference;
 import android.preference.PreferenceGroup;
 import android.text.TextUtils;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
-import org.robolectric.internal.RealObject;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 
 import java.util.ArrayList;
 
@@ -15,88 +15,88 @@ import java.util.ArrayList;
 @Implements(PreferenceGroup.class)
 public class ShadowPreferenceGroup extends ShadowPreference {
 
-    @RealObject private PreferenceGroup realPreferenceGroup;
+  @RealObject private PreferenceGroup realPreferenceGroup;
 
-    private ArrayList<Preference> preferenceList = new ArrayList<Preference>();
-	
-	@Implementation
-	public void addItemFromInflater(Preference preference) {
-		addPreference(preference);
-	}
-	
-	@Implementation
-	public boolean addPreference(Preference preference) {
-		if (preferenceList.contains(preference)) {
-            return true;
-        }
-		
-		// TODO currently punting on ordering logic
-		preferenceList.add(preference);
+  private ArrayList<Preference> preferenceList = new ArrayList<Preference>();
 
-		return true;
-	}
-	
-	@Implementation
-	public Preference getPreference(int index) {
-		return preferenceList.get(index);
-	}
-	
-	@Implementation
-	public int getPreferenceCount() {
-		return preferenceList.size();
-	}
-	
-	@Implementation
-	public boolean removePreference(Preference preference) {
-		return preferenceList.remove(preference);
-	}
-	
-	@Implementation
-	public void removeAll() {
-		preferenceList.clear();
-	}
-	
-	/**
-	 * Note: copied wholesale from Android source
-	 * @param key
-	 * @return
-	 */
-	@Implementation
-	public Preference findPreference(CharSequence key) {
-        if (TextUtils.equals(getKey(), key)) {
-            return realPreferenceGroup;
-        }
-        final int preferenceCount = getPreferenceCount();
-        for (int i = 0; i < preferenceCount; i++) {
-            final Preference preference = getPreference(i);
-            final String curKey = preference.getKey();
+  @Implementation
+  public void addItemFromInflater(Preference preference) {
+    addPreference(preference);
+  }
 
-            if (curKey != null && curKey.equals(key)) {
-                return preference;
-            }
-            
-            if (preference instanceof PreferenceGroup) {
-                final Preference returnedPreference = ((PreferenceGroup)preference)
-                        .findPreference(key);
-                if (returnedPreference != null) {
-                    return returnedPreference;
-                }
-            }
-        }
-
-        return null;
+  @Implementation
+  public boolean addPreference(Preference preference) {
+    if (preferenceList.contains(preference)) {
+      return true;
     }
-	
-	/**
-	 * Note: copied wholesale from Android source
-	 */
-	@Implementation
-	public void setEnabled(boolean enabled) {
-		super.setEnabled(enabled);
-		
-		final int preferenceCount = getPreferenceCount();
-        for (int i = 0; i < preferenceCount; i++) {
-            getPreference(i).setEnabled(enabled);
+
+    // TODO currently punting on ordering logic
+    preferenceList.add(preference);
+
+    return true;
+  }
+
+  @Implementation
+  public Preference getPreference(int index) {
+    return preferenceList.get(index);
+  }
+
+  @Implementation
+  public int getPreferenceCount() {
+    return preferenceList.size();
+  }
+
+  @Implementation
+  public boolean removePreference(Preference preference) {
+    return preferenceList.remove(preference);
+  }
+
+  @Implementation
+  public void removeAll() {
+    preferenceList.clear();
+  }
+
+  /**
+   * Note: copied wholesale from Android source
+   * @param key
+   * @return
+   */
+  @Implementation
+  public Preference findPreference(CharSequence key) {
+    if (TextUtils.equals(getKey(), key)) {
+      return realPreferenceGroup;
+    }
+    final int preferenceCount = getPreferenceCount();
+    for (int i = 0; i < preferenceCount; i++) {
+      final Preference preference = getPreference(i);
+      final String curKey = preference.getKey();
+
+      if (curKey != null && curKey.equals(key)) {
+        return preference;
+      }
+
+      if (preference instanceof PreferenceGroup) {
+        final Preference returnedPreference = ((PreferenceGroup)preference)
+            .findPreference(key);
+        if (returnedPreference != null) {
+          return returnedPreference;
         }
-	}
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Note: copied wholesale from Android source
+   */
+  @Implementation
+  public void setEnabled(boolean enabled) {
+    super.setEnabled(enabled);
+
+    final int preferenceCount = getPreferenceCount();
+    for (int i = 0; i < preferenceCount; i++) {
+      getPreference(i).setEnabled(enabled);
+    }
+  }
 }

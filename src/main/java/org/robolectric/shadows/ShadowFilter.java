@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
 import android.widget.Filter;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implements;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Filter.class)

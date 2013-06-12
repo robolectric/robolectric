@@ -22,50 +22,50 @@ import static org.robolectric.util.TestUtil.testResources;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class PreferenceLoaderTest {
-    private PreferenceLoader prefLoader;
-    private ResBundle<PreferenceNode> resBundle;
-    private PreferenceBuilder preferenceBuilder;
+  private PreferenceLoader prefLoader;
+  private ResBundle<PreferenceNode> resBundle;
+  private PreferenceBuilder preferenceBuilder;
 
-    @Before
-    public void setUp() throws Exception {
-        resBundle = new ResBundle<PreferenceNode>();
-        prefLoader = new PreferenceLoader(resBundle);
-        new DocumentLoader(testResources()).load("xml", prefLoader);
+  @Before
+  public void setUp() throws Exception {
+    resBundle = new ResBundle<PreferenceNode>();
+    prefLoader = new PreferenceLoader(resBundle);
+    new DocumentLoader(testResources()).load("xml", prefLoader);
 
-        preferenceBuilder = new PreferenceBuilder();
-    }
+    preferenceBuilder = new PreferenceBuilder();
+  }
 
-    @Test
-    public void shouldCreateCorrectClasses() {
-        PreferenceNode preferenceNode = resBundle.get(new ResName(TEST_PACKAGE + ":xml/preferences"), "");
-        PreferenceScreen screen = (PreferenceScreen) preferenceBuilder.inflate(preferenceNode, new Activity(), null);
-        assertThatScreenMatchesExpected(screen);
-    }
+  @Test
+  public void shouldCreateCorrectClasses() {
+    PreferenceNode preferenceNode = resBundle.get(new ResName(TEST_PACKAGE + ":xml/preferences"), "");
+    PreferenceScreen screen = (PreferenceScreen) preferenceBuilder.inflate(preferenceNode, new Activity(), null);
+    assertThatScreenMatchesExpected(screen);
+  }
 
-    @Test(expected = I18nException.class)
-    public void shouldThrowI18nExceptionOnPrefsWithBareStrings() throws Exception {
-        Robolectric.getShadowApplication().setStrictI18n(true);
-        PreferenceNode preferenceNode = resBundle.get(new ResName(TEST_PACKAGE + ":xml/preferences"), "");
-        preferenceBuilder.inflate(preferenceNode, Robolectric.application, null);
-    }
+  @Test(expected = I18nException.class)
+  public void shouldThrowI18nExceptionOnPrefsWithBareStrings() throws Exception {
+    Robolectric.getShadowApplication().setStrictI18n(true);
+    PreferenceNode preferenceNode = resBundle.get(new ResName(TEST_PACKAGE + ":xml/preferences"), "");
+    preferenceBuilder.inflate(preferenceNode, Robolectric.application, null);
+  }
 
-    protected void assertThatScreenMatchesExpected(PreferenceScreen screen) {
-        assertThat(screen.getPreferenceCount()).isEqualTo(7);
+  protected void assertThatScreenMatchesExpected(PreferenceScreen screen) {
+    assertThat(screen.getPreferenceCount()).isEqualTo(7);
 
-        assertThat(screen.getPreference(0)).isInstanceOf(PreferenceCategory.class);
-        assertThat(((PreferenceCategory) screen.getPreference(0)).getPreference(0)).isInstanceOf(Preference.class);
+    assertThat(screen.getPreference(0)).isInstanceOf(PreferenceCategory.class);
+    assertThat(((PreferenceCategory) screen.getPreference(0)).getPreference(0)).isInstanceOf(Preference.class);
 
-        PreferenceScreen innerScreen = (PreferenceScreen) screen.getPreference(1);
-        assertThat(innerScreen).isInstanceOf(PreferenceScreen.class);
-        assertThat(innerScreen.getKey().toString()).isEqualTo("screen");
-        assertThat(innerScreen.getTitle().toString()).isEqualTo("Screen Test");
-        assertThat(innerScreen.getSummary()).isNull();
-        assertThat(innerScreen.getPreference(0)).isInstanceOf(Preference.class);
+    PreferenceScreen innerScreen = (PreferenceScreen) screen.getPreference(1);
+    assertThat(innerScreen).isInstanceOf(PreferenceScreen.class);
+    assertThat(innerScreen.getKey().toString()).isEqualTo("screen");
+    assertThat(innerScreen.getTitle().toString()).isEqualTo("Screen Test");
+    assertThat(innerScreen.getSummary()).isNull();
+    assertThat(innerScreen.getPreference(0)).isInstanceOf(Preference.class);
 
-        assertThat(screen.getPreference(2)).isInstanceOf(CheckBoxPreference.class);
-        assertThat(screen.getPreference(3)).isInstanceOf(EditTextPreference.class);
-        assertThat(screen.getPreference(4)).isInstanceOf(ListPreference.class);
-        assertThat(screen.getPreference(5)).isInstanceOf(Preference.class);
-        assertThat(screen.getPreference(6)).isInstanceOf(RingtonePreference.class);
-    }
+    assertThat(screen.getPreference(2)).isInstanceOf(CheckBoxPreference.class);
+    assertThat(screen.getPreference(3)).isInstanceOf(EditTextPreference.class);
+    assertThat(screen.getPreference(4)).isInstanceOf(ListPreference.class);
+    assertThat(screen.getPreference(5)).isInstanceOf(Preference.class);
+    assertThat(screen.getPreference(6)).isInstanceOf(RingtonePreference.class);
+  }
 }

@@ -6,9 +6,9 @@ import android.content.Intent;
 
 public class RobolectricConfigs {
 
-    public static class ConfigTestReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-        }
+  public static class ConfigTestReceiver extends BroadcastReceiver {
+    @Override
+    public void onReceive(Context context, Intent intent) {
     }
+  }
 }

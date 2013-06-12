@@ -43,21 +43,21 @@ import java.net.URI;
 @NotThreadSafe
 class HttpRedirect extends HttpRequestBase {
 
-    private String method;
+  private String method;
 
-    public HttpRedirect(final String method, final URI uri) {
-        super();
-        if (method.equalsIgnoreCase(HttpHead.METHOD_NAME)) {
-            this.method = HttpHead.METHOD_NAME;
-        } else {
-            this.method = HttpGet.METHOD_NAME;
-        }
-        setURI(uri);
+  public HttpRedirect(final String method, final URI uri) {
+    super();
+    if (method.equalsIgnoreCase(HttpHead.METHOD_NAME)) {
+      this.method = HttpHead.METHOD_NAME;
+    } else {
+      this.method = HttpGet.METHOD_NAME;
     }
+    setURI(uri);
+  }
 
-    @Override
-    public String getMethod() {
-        return this.method;
-    }
+  @Override
+  public String getMethod() {
+    return this.method;
+  }
 
 }

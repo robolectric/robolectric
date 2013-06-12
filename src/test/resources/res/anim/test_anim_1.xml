@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+   android:interpolator="@[package:]anim/interpolator_resource"
+   android:shareInterpolator="true">
+  <alpha
+      android:fromAlpha="float"
+      android:toAlpha="float"/>
+  <scale
+      android:fromXScale="float"
+      android:toXScale="float"
+      android:fromYScale="float"
+      android:toYScale="float"
+      android:pivotX="float"
+      android:pivotY="float"/>
+  <translate
+      android:fromXDelta="float"
+      android:toXDelta="float"
+      android:fromYDelta="float"
+      android:toYDelta="float"/>
+  <rotate
+      android:fromDegrees="float"
+      android:toDegrees="float"
+      android:pivotX="float"
+      android:pivotY="float"/>
+
+  <animation-list xmlns:android="http://schemas.android.com/apk/res/android" android:oneshot="true">
+    <item android:drawable="@drawable/rocket_thrust1" android:duration="200" />
+    <item android:drawable="@drawable/rocket_thrust2" android:duration="200" />
+    <item android:drawable="@drawable/rocket_thrust3" android:duration="200" />
+  </animation-list>
+</set>

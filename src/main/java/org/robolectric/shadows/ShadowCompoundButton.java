@@ -2,8 +2,11 @@ package org.robolectric.shadows;
 
 import android.widget.Checkable;
 import android.widget.CompoundButton;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+
+import static org.robolectric.Robolectric.directlyOn;
 
 /**
  * Shadows the {@code android.widget.CompoundButton} class.
@@ -11,48 +14,44 @@ import org.robolectric.internal.Implements;
  * Keeps track of whether or not its "checked" state is set and deals with listeners in an appropriate way.
  */
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(value = CompoundButton.class, inheritImplementationMethods = true)
+@Implements(value = CompoundButton.class)
 public class ShadowCompoundButton extends ShadowTextView implements Checkable {
-    private boolean checked;
-    private CompoundButton.OnCheckedChangeListener onCheckedChangeListener;
+  @RealObject CompoundButton realCompoundButton;
+  private boolean checked;
+  private CompoundButton.OnCheckedChangeListener onCheckedChangeListener;
 
-    @Override public void applyAttributes() {
-        super.applyAttributes();
-        setChecked(this.attributeSet.getAttributeBooleanValue("android", "checked", false));
-    }
+  @Implementation
+  @Override public void toggle() {
+    setChecked(!checked);
+  }
 
-    @Implementation
-    @Override public void toggle() {
-        setChecked(!checked);
-    }
+  @Implementation
+  public boolean performClick() {
+    toggle();
+    return (Boolean) directlyOn(realCompoundButton, CompoundButton.class, "performClick").invoke();
+  }
 
-    @Implementation
-    @Override public boolean performClick() {
-        toggle();
-        return super.performClick();
-    }
+  @Implementation
+  @Override public boolean isChecked() {
+    return checked;
+  }
 
-    @Implementation
-    @Override public boolean isChecked() {
-        return checked;
+  @Implementation
+  @Override public void setChecked(boolean checked) {
+    if (this.checked != checked) {
+      this.checked = checked;
+      if (onCheckedChangeListener != null) {
+        onCheckedChangeListener.onCheckedChanged((CompoundButton) realView, this.checked);
+      }
     }
+  }
 
-    @Implementation
-    @Override public void setChecked(boolean checked) {
-        if (this.checked != checked) {
-            this.checked = checked;
-            if (onCheckedChangeListener != null) {
-                onCheckedChangeListener.onCheckedChanged((CompoundButton) realView, this.checked);
-            }
-        }
-    }
+  @Implementation
+  public void setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener listener) {
+    onCheckedChangeListener = listener;
+  }
 
-    @Implementation
-    public void setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener listener) {
-        onCheckedChangeListener = listener;
-    }
-    
-    public CompoundButton.OnCheckedChangeListener getOnCheckedChangeListener() {
-    	return onCheckedChangeListener;
-    }
+  public CompoundButton.OnCheckedChangeListener getOnCheckedChangeListener() {
+    return onCheckedChangeListener;
+  }
 }

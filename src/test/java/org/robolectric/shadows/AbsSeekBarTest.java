@@ -12,18 +12,18 @@ import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class AbsSeekBarTest {
-	
-	@Test
-	public void testInheritance() {
-		TestAbsSeekBar seekBar = new TestAbsSeekBar(new Activity());
-		ShadowAbsSeekBar shadow = Robolectric.shadowOf(seekBar);
-        assertThat(shadow).isInstanceOf(ShadowProgressBar.class);
-	}
-	
-	private static class TestAbsSeekBar extends AbsSeekBar {
-		
-		public TestAbsSeekBar(Context context) {
-			super(context);
-		}
-	}
+
+  @Test
+  public void testInheritance() {
+    TestAbsSeekBar seekBar = new TestAbsSeekBar(new Activity());
+    ShadowAbsSeekBar shadow = Robolectric.shadowOf(seekBar);
+    assertThat(shadow).isInstanceOf(ShadowProgressBar.class);
+  }
+
+  private static class TestAbsSeekBar extends AbsSeekBar {
+
+    public TestAbsSeekBar(Context context) {
+      super(context);
+    }
+  }
 }

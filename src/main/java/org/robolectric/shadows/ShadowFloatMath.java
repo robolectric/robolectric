@@ -17,34 +17,34 @@
 package org.robolectric.shadows;
 
 import android.util.FloatMath;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(FloatMath.class)
 public class ShadowFloatMath {
-    @Implementation
-    public static float floor(float value) {
-        return (float) Math.floor(value);
-    }
+  @Implementation
+  public static float floor(float value) {
+    return (float) Math.floor(value);
+  }
 
-    @Implementation
-    public static float ceil(float value) {
-        return (float) Math.ceil(value);
-    }
+  @Implementation
+  public static float ceil(float value) {
+    return (float) Math.ceil(value);
+  }
 
-    @Implementation
-    public static float sin(float angle) {
-        return (float) Math.sin(angle);
-    }
+  @Implementation
+  public static float sin(float angle) {
+    return (float) Math.sin(angle);
+  }
 
-    @Implementation
-    public static float cos(float angle) {
-        return (float) Math.cos(angle);
-    }
+  @Implementation
+  public static float cos(float angle) {
+    return (float) Math.cos(angle);
+  }
 
-    @Implementation
-    public static float sqrt(float value) {
-        return (float) Math.sqrt(value);
-    }
+  @Implementation
+  public static float sqrt(float value) {
+    return (float) Math.sqrt(value);
+  }
 }

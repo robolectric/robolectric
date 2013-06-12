@@ -14,26 +14,26 @@ import static org.fest.assertions.api.Assertions.assertThat;
 @RunWith(TestRunners.WithDefaults.class)
 public class PreferenceScreenTest {
 
-	private PreferenceScreen screen;
-	private ShadowPreferenceScreen shadow;
+  private PreferenceScreen screen;
+  private ShadowPreferenceScreen shadow;
 
-    @Before
-    public void setUp() throws Exception {
-    	screen = Robolectric.newInstanceOf(PreferenceScreen.class);
-    	shadow = Robolectric.shadowOf(screen);
-    }
-    
-	@Test
-	public void shouldInheritFromPreferenceGroup() {
-        assertThat(shadow).isInstanceOf(ShadowPreferenceGroup.class);
-	}
-	
-	@Test
-	public void shouldSetDialog() {
-		Dialog dialog = new Dialog(new Activity());
+  @Before
+  public void setUp() throws Exception {
+    screen = Robolectric.newInstanceOf(PreferenceScreen.class);
+    shadow = Robolectric.shadowOf(screen);
+  }
 
-        assertThat(screen.getDialog()).isNull();
-		shadow.setDialog(dialog);
-        assertThat(screen.getDialog()).isSameAs(dialog);
-	}
+  @Test
+  public void shouldInheritFromPreferenceGroup() {
+    assertThat(shadow).isInstanceOf(ShadowPreferenceGroup.class);
+  }
+
+  @Test
+  public void shouldSetDialog() {
+    Dialog dialog = new Dialog(new Activity());
+
+    assertThat(screen.getDialog()).isNull();
+    shadow.setDialog(dialog);
+    assertThat(screen.getDialog()).isSameAs(dialog);
+  }
 }

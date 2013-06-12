@@ -1,29 +1,29 @@
 package org.robolectric.shadows;
 
 import android.widget.ViewFlipper;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
-import org.robolectric.internal.RealObject;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 
-@Implements(value = ViewFlipper.class, inheritImplementationMethods = true)
+@Implements(value = ViewFlipper.class)
 public class ShadowViewFlipper extends ShadowViewAnimator {
-    @RealObject
-    protected ViewFlipper realObject;
+  @RealObject
+  protected ViewFlipper realObject;
 
-    protected boolean isFlipping;
+  protected boolean isFlipping;
 
-    @Implementation
-    public void startFlipping() {
-        this.isFlipping = true;
-    }
+  @Implementation
+  public void startFlipping() {
+    this.isFlipping = true;
+  }
 
-    @Implementation
-    public void stopFlipping() {
-        this.isFlipping = false;
-    }
+  @Implementation
+  public void stopFlipping() {
+    this.isFlipping = false;
+  }
 
-    @Implementation
-    public boolean isFlipping() {
-        return isFlipping;
-    }
+  @Implementation
+  public boolean isFlipping() {
+    return isFlipping;
+  }
 }

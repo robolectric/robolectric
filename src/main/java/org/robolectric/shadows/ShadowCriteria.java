@@ -1,53 +1,53 @@
 package org.robolectric.shadows;
 
 import android.location.Criteria;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 @Implements(Criteria.class)
 public class ShadowCriteria {
-    private int accuracy = Criteria.NO_REQUIREMENT;
+  private int accuracy = Criteria.NO_REQUIREMENT;
 //    private int bearingAccuracy;
 //    private int horizontalAccuracy;
 //    private int verticalAccuracy;
 //    private int speedAccuracy;
-    private int powerRequirement = Criteria.NO_REQUIREMENT;
+  private int powerRequirement = Criteria.NO_REQUIREMENT;
 
-    public void __constructor__(Criteria criteria) {
-        accuracy = criteria.getAccuracy();
-        powerRequirement = criteria.getPowerRequirement();
-    }
+  public void __constructor__(Criteria criteria) {
+    accuracy = criteria.getAccuracy();
+    powerRequirement = criteria.getPowerRequirement();
+  }
 
-    @Implementation
-    public int getAccuracy() {
-        return accuracy;
-    }
+  @Implementation
+  public int getAccuracy() {
+    return accuracy;
+  }
 
-    @Implementation
-    public void setAccuracy(int accuracy) {
-        this.accuracy = accuracy;
-    }
+  @Implementation
+  public void setAccuracy(int accuracy) {
+    this.accuracy = accuracy;
+  }
 
-    @Implementation
-    public int getPowerRequirement() {
-        return powerRequirement;
-    }
+  @Implementation
+  public int getPowerRequirement() {
+    return powerRequirement;
+  }
 
-    @Implementation
-    public void setPowerRequirement(int powerRequirement) {
-        this.powerRequirement = powerRequirement;
-    }
+  @Implementation
+  public void setPowerRequirement(int powerRequirement) {
+    this.powerRequirement = powerRequirement;
+  }
 
-    @Implementation
-    @Override
-    public boolean equals(Object obj) {
-        if (!(obj instanceof Criteria)) {
-            return false;
-        }
-        Criteria criteria = (Criteria) obj;
-        if (criteria.getAccuracy() == accuracy && criteria.getPowerRequirement() == powerRequirement) {
-            return true;
-        }
-        return false;
+  @Implementation
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof Criteria)) {
+      return false;
     }
+    Criteria criteria = (Criteria) obj;
+    if (criteria.getAccuracy() == accuracy && criteria.getPowerRequirement() == powerRequirement) {
+      return true;
+    }
+    return false;
+  }
 }

@@ -9,7 +9,7 @@ import org.robolectric.TestRunners;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class AbsSpinnerAdapterViewBehaviorTest extends AdapterViewBehavior {
-    @Override public AdapterView createAdapterView() {
-        return new Gallery(Robolectric.application);
-    }
+  @Override public AdapterView createAdapterView() {
+    return new Gallery(Robolectric.application);
+  }
 }

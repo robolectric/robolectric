@@ -12,22 +12,22 @@ import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class RemoteCallbackListTest {
-    @Test
-    public void testBasicWiring() throws Exception {
-        RemoteCallbackList<Foo> fooRemoteCallbackList = new RemoteCallbackList<Foo>();
-        Foo callback = new Foo();
-        fooRemoteCallbackList.register(callback);
+  @Test
+  public void testBasicWiring() throws Exception {
+    RemoteCallbackList<Foo> fooRemoteCallbackList = new RemoteCallbackList<Foo>();
+    Foo callback = new Foo();
+    fooRemoteCallbackList.register(callback);
 
-        fooRemoteCallbackList.beginBroadcast();
+    fooRemoteCallbackList.beginBroadcast();
 
-        assertThat(fooRemoteCallbackList.getBroadcastItem(0)).isSameAs(callback);
+    assertThat(fooRemoteCallbackList.getBroadcastItem(0)).isSameAs(callback);
+  }
+
+  public static class Foo implements IInterface {
+
+    @Override
+    public IBinder asBinder() {
+      return new Binder();
     }
-
-    public static class Foo implements IInterface {
-
-        @Override
-        public IBinder asBinder() {
-            return new Binder();
-        }
-    }
+  }
 }

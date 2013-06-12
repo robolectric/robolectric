@@ -2,129 +2,129 @@ package org.robolectric.shadows;
 
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 @Implements(TelephonyManager.class)
 public class ShadowTelephonyManager {
-	
-	private PhoneStateListener listener;
-	private int eventFlags;
-    private String deviceId;
-    private String networkOperatorName;
-    private String networkCountryIso;
-    private String networkOperator;
-    private String simOperator;
-    private boolean readPhoneStatePermission = true;
-    private int phoneType = TelephonyManager.PHONE_TYPE_GSM;
-    private String simCountryIso;
-    private int simState = TelephonyManager.SIM_STATE_READY;
 
-    @Implementation
-	public void listen(PhoneStateListener listener, int events) {
-		this.listener = listener;
-		this.eventFlags = events;
-	}
-	
-	/**
-	 * Non-Android accessor.  Returns the most recent listener
-	 * passed to #listen().
-	 * 
-	 * @return
-	 */
-	public PhoneStateListener getListener() {
-		return listener;
-	}
+  private PhoneStateListener listener;
+  private int eventFlags;
+  private String deviceId;
+  private String networkOperatorName;
+  private String networkCountryIso;
+  private String networkOperator;
+  private String simOperator;
+  private boolean readPhoneStatePermission = true;
+  private int phoneType = TelephonyManager.PHONE_TYPE_GSM;
+  private String simCountryIso;
+  private int simState = TelephonyManager.SIM_STATE_READY;
 
-	/**
-	 * Non-Android accessor.  Returns the most recent flags
-	 * passed to #listen().
-	 * @return
-	 */
-	public int getEventFlags() {
-		return eventFlags;
-	}
+  @Implementation
+  public void listen(PhoneStateListener listener, int events) {
+    this.listener = listener;
+    this.eventFlags = events;
+  }
 
-    @Implementation
-    public String getDeviceId() {
-        checkReadPhoneStatePermission();
-        return deviceId;
-    }
+  /**
+   * Non-Android accessor.  Returns the most recent listener
+   * passed to #listen().
+   *
+   * @return
+   */
+  public PhoneStateListener getListener() {
+    return listener;
+  }
 
-    public void setDeviceId(String newDeviceId) {
-        deviceId = newDeviceId;
-    }
+  /**
+   * Non-Android accessor.  Returns the most recent flags
+   * passed to #listen().
+   * @return
+   */
+  public int getEventFlags() {
+    return eventFlags;
+  }
 
-    public void setNetworkOperatorName(String networkOperatorName) {
-        this.networkOperatorName = networkOperatorName;
-    }
+  @Implementation
+  public String getDeviceId() {
+    checkReadPhoneStatePermission();
+    return deviceId;
+  }
 
-    @Implementation
-    public String getNetworkOperatorName() {
-        return networkOperatorName;
-    }
+  public void setDeviceId(String newDeviceId) {
+    deviceId = newDeviceId;
+  }
 
-    public void setNetworkCountryIso(String networkCountryIso) {
-        this.networkCountryIso = networkCountryIso;
-    }
+  public void setNetworkOperatorName(String networkOperatorName) {
+    this.networkOperatorName = networkOperatorName;
+  }
 
-    @Implementation
-    public String getNetworkCountryIso() {
-        return networkCountryIso;
-    }
+  @Implementation
+  public String getNetworkOperatorName() {
+    return networkOperatorName;
+  }
 
-    public void setNetworkOperator(String networkOperator) {
-        this.networkOperator = networkOperator;
-    }
+  public void setNetworkCountryIso(String networkCountryIso) {
+    this.networkCountryIso = networkCountryIso;
+  }
 
-    @Implementation
-    public String getNetworkOperator() {
-        return networkOperator;
-    }
+  @Implementation
+  public String getNetworkCountryIso() {
+    return networkCountryIso;
+  }
 
-    @Implementation
-    public String getSimOperator() {
-        return simOperator;
-    }
+  public void setNetworkOperator(String networkOperator) {
+    this.networkOperator = networkOperator;
+  }
 
-    public void setSimOperator(String simOperator) {
-        this.simOperator = simOperator;
-    }
+  @Implementation
+  public String getNetworkOperator() {
+    return networkOperator;
+  }
 
-    @Implementation
-    public String getSimCountryIso() {
-        return simCountryIso;
-    }
+  @Implementation
+  public String getSimOperator() {
+    return simOperator;
+  }
 
-    public void setSimCountryIso(String simCountryIso) {
-        this.simCountryIso = simCountryIso;
-    }
+  public void setSimOperator(String simOperator) {
+    this.simOperator = simOperator;
+  }
 
-    @Implementation
-    public int getSimState() {
-        return simState;
-    }
+  @Implementation
+  public String getSimCountryIso() {
+    return simCountryIso;
+  }
 
-    public void setSimState(int simState) {
-        this.simState = simState;
-    }
+  public void setSimCountryIso(String simCountryIso) {
+    this.simCountryIso = simCountryIso;
+  }
 
-    public void setReadPhoneStatePermission(boolean readPhoneStatePermission) {
-        this.readPhoneStatePermission = readPhoneStatePermission;
-    }
+  @Implementation
+  public int getSimState() {
+    return simState;
+  }
 
-    private void checkReadPhoneStatePermission() {
-        if (!readPhoneStatePermission) {
-            throw new SecurityException();
-        }
+  public void setSimState(int simState) {
+    this.simState = simState;
+  }
+
+  public void setReadPhoneStatePermission(boolean readPhoneStatePermission) {
+    this.readPhoneStatePermission = readPhoneStatePermission;
+  }
+
+  private void checkReadPhoneStatePermission() {
+    if (!readPhoneStatePermission) {
+      throw new SecurityException();
     }
-    
-    @Implementation
-    public int getPhoneType() {
-    	return phoneType;
-    }
-    
-    public void setPhoneType(int phoneType) {
-    	this.phoneType = phoneType;
-    }
+  }
+
+  @Implementation
+  public int getPhoneType() {
+    return phoneType;
+  }
+
+  public void setPhoneType(int phoneType) {
+    this.phoneType = phoneType;
+  }
 }

@@ -1,20 +1,17 @@
 package org.robolectric.shadows;
 
-import android.content.Context;
-import android.content.res.Resources;
 import android.view.ContextThemeWrapper;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+
+import static org.fest.reflect.core.Reflection.method;
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(value = ContextThemeWrapper.class, inheritImplementationMethods = true)
+@Implements(value = ContextThemeWrapper.class)
 public class ShadowContextThemeWrapper extends ShadowContextWrapper {
-    public void __constructor__(Context baseContext, int themesres) {
-        super.__constructor__(baseContext);
-    }
+  @RealObject private ContextThemeWrapper realContextThemeWrapper;
 
-    @Implementation
-    @Override public Resources.Theme getTheme() {
-        return super.getTheme();
-    }
+  public Integer callGetThemeResId() {
+    return method("getThemeResId").withReturnType(int.class).in(realContextThemeWrapper).invoke();
+  }
 }

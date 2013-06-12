@@ -10,10 +10,10 @@ import static junit.framework.Assert.assertEquals;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class TextPaintTest {
-    
-    @Test
-    public void measureText_returnsStringLengthAsMeasurement() throws Exception {
-        TextPaint paint = new TextPaint();
-        assertEquals(4f, paint.measureText("1234"));
-    }
+
+  @Test
+  public void measureText_returnsStringLengthAsMeasurement() throws Exception {
+    TextPaint paint = new TextPaint();
+    assertEquals(4f, paint.measureText("1234"));
+  }
 }

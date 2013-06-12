@@ -1,19 +1,19 @@
 package org.robolectric.shadows;
 
 import android.graphics.CornerPathEffect;
-import org.robolectric.internal.Implements;
+import org.robolectric.annotation.Implements;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(CornerPathEffect.class)
 
 public class ShadowCornerPathEffect {
-    private float radius;
+  private float radius;
 
-    public void __constructor__(float radius) {
-        this.radius = radius;
-     }
+  public void __constructor__(float radius) {
+    this.radius = radius;
+   }
 
-    public float getRadius() {
-        return radius;
-    }
+  public float getRadius() {
+    return radius;
+  }
 }

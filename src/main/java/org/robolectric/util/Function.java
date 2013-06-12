@@ -3,6 +3,6 @@ package org.robolectric.util;
 /**
  *
  */
-public interface Function<R, V> {
-    public R call(V value);
+public interface Function<R, T> {
+  public R call(Class<?> theClass, T value, Object[] params);
 }

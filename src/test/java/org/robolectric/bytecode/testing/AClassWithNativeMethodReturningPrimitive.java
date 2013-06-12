@@ -5,5 +5,5 @@ import org.robolectric.internal.Instrument;
 @SuppressWarnings("UnusedDeclaration")
 @Instrument
 public class AClassWithNativeMethodReturningPrimitive {
-    public native int nativeMethod();
+  public native int nativeMethod();
 }
