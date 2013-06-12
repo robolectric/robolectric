@@ -32,16 +32,6 @@ public class ShadowSQLiteOpenHelper {
     }
   }
 
-  private SQLiteDatabase getDatabase() {
-    if (database == null) {
-      database = SQLiteDatabase.openDatabase(name, factory, 0);
-      if (database.getVersion() == 0) {
-        realHelper.onCreate(database);
-      }
-    }
-    return database;
-  }
-
   @Implementation
   public synchronized SQLiteDatabase getReadableDatabase() {
     return getWritableDatabase();
@@ -57,5 +47,15 @@ public class ShadowSQLiteOpenHelper {
   @Implementation
   public String getDatabaseName() {
     return name;
+  }
+
+  private SQLiteDatabase getDatabase() {
+    if (database == null) {
+      database = SQLiteDatabase.openDatabase(name, factory, SQLiteDatabase.OPEN_READWRITE);
+      if (database.getVersion() == 0) {
+        realHelper.onCreate(database);
+      }
+    }
+    return database;
   }
 }

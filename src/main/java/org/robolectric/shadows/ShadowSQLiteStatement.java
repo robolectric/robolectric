@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDoneException;
+import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteStatement;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -27,7 +28,7 @@ public class ShadowSQLiteStatement extends ShadowSQLiteProgram {
     try {
       actualDBstatement.execute();
     } catch (SQLException e) {
-      throw new RuntimeException(e);
+      throw new SQLiteException(e.getMessage(), e);
     }
   }
 
@@ -37,7 +38,7 @@ public class ShadowSQLiteStatement extends ShadowSQLiteProgram {
       actualDBstatement.executeUpdate();
       return SQLite.fetchGeneratedKey(actualDBstatement.getGeneratedKeys());
     } catch (SQLException e) {
-      throw new RuntimeException(e);
+      throw new SQLiteException(e.getMessage(), e);
     }
   }
 
@@ -46,7 +47,7 @@ public class ShadowSQLiteStatement extends ShadowSQLiteProgram {
     try {
       return actualDBstatement.executeUpdate();
     } catch (SQLException e) {
-      throw new RuntimeException(e);
+      throw new SQLiteException(e.getMessage(), e);
     }
   }
 
@@ -59,7 +60,7 @@ public class ShadowSQLiteStatement extends ShadowSQLiteProgram {
       return rs.getLong(1);
     } catch (SQLException e) {
        handleException(e);
-       throw new RuntimeException(e);
+       throw new SQLiteException(e.getMessage(), e);
     }
   }
 
@@ -72,7 +73,16 @@ public class ShadowSQLiteStatement extends ShadowSQLiteProgram {
       return rs.getString(1);
     } catch (SQLException e) {
       handleException(e);
-      throw new RuntimeException(e);
+      throw new SQLiteException(e.getMessage(), e);
+    }
+  }
+
+  @Implementation
+  public void close() {
+    try {
+      actualDBstatement.close();
+    } catch (SQLException e) {
+      throw new SQLiteException(e.getMessage(), e);
     }
   }
 

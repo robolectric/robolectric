@@ -202,6 +202,13 @@ public class SQLiteOpenHelperTest {
     verifyData(db2, TABLE_NAME2, 3);
   }
 
+  @Test
+  public void testCreateAndDropTable() throws Exception {
+    SQLiteDatabase database = helper.getWritableDatabase();
+    database.execSQL("CREATE TABLE foo(id INTEGER PRIMARY KEY AUTOINCREMENT, data TEXT);");
+    database.execSQL("DROP TABLE IF EXISTS foo;");
+  }
+
   private void assertInitialDB(SQLiteDatabase database) {
     assertDatabaseOpened(database);
     assertThat(helper.onCreateCalled).isTrue();

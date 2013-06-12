@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteCursorDriver;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabaseCorruptException;
+import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteQuery;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.database.sqlite.SQLiteStatement;
@@ -223,7 +224,7 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
       Statement statement = getConnection().createStatement(DatabaseConfig.getResultSetType(), ResultSet.CONCUR_READ_ONLY);
       resultSet = statement.executeQuery(sql);
     } catch (SQLException e) {
-      throw new RuntimeException("SQL exception in query", e);
+      throw new SQLiteException("SQL exception in query", e);
     }
 
     SQLiteCursor cursor = new SQLiteCursor(null, null, null, null);

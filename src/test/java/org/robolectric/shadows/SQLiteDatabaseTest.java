@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import org.fest.assertions.api.Assertions;
 import org.junit.After;
 import org.junit.Before;
@@ -761,6 +762,21 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
     assertThat(c.getCount()).isEqualTo(1);
     assertThat(c.moveToNext()).isTrue();
     assertThat(c.getString(c.getColumnIndex("data"))).isEqualTo("d2");
+  }
+
+  @Test(expected = SQLiteException.class)
+  public void testQueryThrowsSQLiteException() throws Exception {
+    SQLiteDatabase db1 = SQLiteDatabase.openDatabase("db1", null, 0);
+    db1.query("FOO", null, null, null, null, null, null);
+  }
+
+  @Test
+  public void testCreateAndDropTable() throws Exception {
+    SQLiteDatabase db = SQLiteDatabase.openDatabase("db1", null, 0);
+    db.execSQL("CREATE TABLE foo(id INTEGER PRIMARY KEY AUTOINCREMENT, data TEXT);");
+    Cursor c = db.query("FOO", null, null, null, null, null, null);
+    assertThat(c).isNotNull();
+    db.execSQL("DROP TABLE IF EXISTS foo;");
   }
 
   private Cursor executeQuery(String query) {

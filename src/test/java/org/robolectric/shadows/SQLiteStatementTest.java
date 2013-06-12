@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDoneException;
+import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteStatement;
 import org.junit.After;
 import org.junit.Before;
@@ -67,9 +68,6 @@ public class SQLiteStatementTest {
 
   @Test
   public void testExecuteInsertShouldCloseGeneratedKeysResultSet() throws Exception {
-
-
-    //
     // NOTE:
     // As a side-effect we will get "database locked" exception
     // on rollback if generatedKeys wasn't closed
@@ -77,8 +75,6 @@ public class SQLiteStatementTest {
     // Don't know how suitable to use Mockito here, but
     // it will be a little bit simpler to test ShadowSQLiteStatement
     // if actualDBStatement will be mocked
-    //
-
     database.beginTransaction();
     try {
       SQLiteStatement insertStatement = database.compileStatement("INSERT INTO `routine` " +
@@ -99,6 +95,7 @@ public class SQLiteStatementTest {
     SQLiteStatement insertStatement = database.compileStatement("INSERT INTO `routine` (`name`) VALUES (?)");
     insertStatement.bindString(1, "Hand Press");
     long pkeyOne = insertStatement.executeInsert();
+    assertThat(pkeyOne).isEqualTo(1);
 
     SQLiteStatement updateStatement = database.compileStatement("UPDATE `routine` SET `name`=? WHERE `id`=?");
     updateStatement.bindString(1, "Head Press");
@@ -143,7 +140,14 @@ public class SQLiteStatementTest {
   public void simpleQueryForLongThrowsSQLiteDoneExceptionTest() throws Exception {
     //throw SQLiteDOneException if no rows returned.
     SQLiteStatement stmt = database.compileStatement("SELECT * FROM `countme` where `name`= 'cessationoftime'");
-    assertThat(stmt.simpleQueryForLong()).isEqualTo(0L);
+    stmt.simpleQueryForLong();
+  }
 
+  @Test(expected = SQLiteException.class)
+  public void testCloseShouldCloseUnderlyingPreparedStatement() throws Exception {
+    SQLiteStatement insertStatement = database.compileStatement("INSERT INTO `routine` (`name`) VALUES (?)");
+    insertStatement.bindString(1, "Hand Press");
+    insertStatement.close();
+    insertStatement.executeInsert();
   }
 }
