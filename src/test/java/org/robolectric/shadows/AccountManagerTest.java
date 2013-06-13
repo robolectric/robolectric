@@ -2,6 +2,8 @@ package org.robolectric.shadows;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.accounts.AuthenticatorException;
+import android.accounts.OperationCanceledException;
 import android.app.Activity;
 import android.app.Application;
 import org.junit.Before;
@@ -10,7 +12,10 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
+import java.io.IOException;
+
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.fail;
 import static org.junit.Assert.assertSame;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -101,5 +106,57 @@ public class AccountManagerTest {
     am.setAuthToken(account, "token_type_1", "token1");
 
     assertThat(am.peekAuthToken(account, "token_type_1")).isNull();
+  }
+
+  @Test
+  public void testAddAccountExplicitly() {
+    AccountManager am = AccountManager.get(app);
+    Account account = new Account("name", "type");
+    am.addAccountExplicitly(account, null, null);
+
+    assertThat(am.getAccountsByType("type").length).isEqualTo(1);
+    assertThat(am.getAccountsByType("type")[0].name).isEqualTo("name");
+
+    boolean accountAddedTwice = am.addAccountExplicitly(account, null, null);
+    assertThat(accountAddedTwice).isFalse();
+
+//    boolean nullAccountAdded = am.addAccountExplicitly(null, null, null);
+//    assertThat(nullAccountAdded).isFalse();
+
+    try {
+      am.addAccountExplicitly(null, null, null);
+      fail("An illegal argument exception should have been thrown when trying to add a null account");
+    } catch (IllegalArgumentException iae) {
+      // NOP
+    }
+  }
+
+  @Test
+  public void testBlockingGetAuthToken() throws AuthenticatorException, OperationCanceledException, IOException {
+    AccountManager am = AccountManager.get(app);
+    Account account = new Account("name", "type");
+    Robolectric.shadowOf(am).addAccount(account);
+
+    am.setAuthToken(account, "token_type_1", "token1");
+    am.setAuthToken(account, "token_type_2", "token2");
+
+    assertThat(am.blockingGetAuthToken(account, "token_type_1", false)).isEqualTo("token1");
+    assertThat(am.blockingGetAuthToken(account, "token_type_2", false)).isEqualTo("token2");
+
+    try {
+      am.blockingGetAuthToken(null, "token_type_1", false);
+      fail("blockingGetAuthToken() should throw an illegal argument exception if the account is null");
+    } catch (IllegalArgumentException iae) {
+      // NOP
+    }
+    try {
+      am.blockingGetAuthToken(account, null, false);
+      fail("blockingGetAuthToken() should throw an illegal argument exception if the auth token type is null");
+    } catch (IllegalArgumentException iae) {
+      // NOP
+    }
+
+    Account account1 = new Account("unknown", "type");
+    assertThat(am.blockingGetAuthToken(account1, "token_type_1", false)).isNull();
   }
 }

@@ -3,6 +3,9 @@ package org.robolectric.shadows;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.Context;
+import android.content.pm.PermissionGroupInfo;
+import android.os.Bundle;
+
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -75,6 +78,36 @@ public class ShadowAccountManager {
       return tokenMap.get(tokenType);
     }
     return null;
+  }
+
+  @Implementation
+  public boolean addAccountExplicitly(Account account, String password, Bundle userdata) {
+    if (account == null) {
+      throw new IllegalArgumentException("account is null");
+    }
+    for (Account a: getAccountsByType(account.type)) {
+      if (a.name.equals(account.name)) {
+        return false;
+      }
+    }
+    return accounts.add(account);
+  }
+
+  @Implementation
+  public String blockingGetAuthToken(Account account, String authTokenType,
+                                     boolean notifyAuthFailure) {
+    if (account == null) {
+      throw new IllegalArgumentException("account is null");
+    }
+    if (authTokenType == null) {
+      throw new IllegalArgumentException("authTokenType is null");
+    }
+
+    Map<String, String> tokensForAccount = authTokens.get(account);
+    if (tokensForAccount == null) {
+      return null;
+    }
+    return tokensForAccount.get(authTokenType);
   }
 
   /**
