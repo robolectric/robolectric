@@ -211,7 +211,7 @@ public class ShadowCursorWrapper implements Cursor {
 
   @Implementation
   public int getType(int columnIndex) {
-    return 0;
+    return wrappedCursor.getType(columnIndex);
   }
 
   @Implementation
