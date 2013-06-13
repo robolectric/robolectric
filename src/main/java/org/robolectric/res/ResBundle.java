@@ -28,10 +28,9 @@ public class ResBundle<T> {
     return (values != null) ? pick(values, qualifiers) : null;
   }
 
-  public static <T> Value<T> pick(Values<T> values, String qualifiers) {
-    final int count = values.size();
-    if (count >= Long.SIZE) throw new RuntimeException("really, more than " + Long.SIZE + " qualifiers?!?");
-    if (count == 0) return null;
+    public static <T> Value<T> pick(Values<T> values, String qualifiers) {
+        final int count = values.size();
+        if (count == 0) return null;
 
     long possibles = 0;
     for (int i = 0; i < count; i++) possibles |= 1 << i;
