@@ -1,10 +1,12 @@
 package org.robolectric.res;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 public class ResBundle<T> {
   private final ResMap<T> valuesMap = new ResMap<T>();
@@ -30,34 +32,34 @@ public class ResBundle<T> {
 
   public static <T> Value<T> pick(Values<T> values, String qualifiers) {
     final int count = values.size();
-    if (count >= Long.SIZE) throw new RuntimeException("really, more than " + Long.SIZE + " qualifiers?!?");
     if (count == 0) return null;
 
-    long possibles = 0;
-    for (int i = 0; i < count; i++) possibles |= 1 << i;
+    BigInteger possibles = BigInteger.ZERO;
+    for (int i = 0; i < count; i++) possibles = possibles.setBit(i);
 
-    String[] qualifierList = qualifiers.split("-");
-    for (String qualifier : qualifierList) {
+    StringTokenizer st = new StringTokenizer(qualifiers, "-");
+    while (st.hasMoreTokens()) {
+      String qualifier = st.nextToken();
       String paddedQualifier = "-" + qualifier + "-";
-      long matches = 0;
+      BigInteger matches = BigInteger.ZERO;
 
       for (int i = 0; i < count; i++) {
-        if ((possibles & (1 << i)) == 0) continue;
+        if (!possibles.testBit(i)) continue;
 
         if (values.get(i).qualifiers.contains(paddedQualifier)) {
-          matches |= 1 << i;
+          matches = matches.setBit(i);
         }
       }
 
-      if (matches != 0) {
-        possibles &= matches; // eliminate any that didn't match this qualifier
+      if (!matches.equals(BigInteger.ZERO)) {
+        possibles = possibles.and(matches); // eliminate any that didn't match this qualifier
       }
 
-      if (Long.bitCount(matches) == 1) break;
+      if (matches.bitCount() == 1) break;
     }
 
     for (int i = 0; i < count; i++) {
-      if ((possibles & (1 << i)) != 0) return values.get(i);
+      if (possibles.testBit(i)) return values.get(i);
     }
     throw new IllegalStateException("couldn't handle qualifiers \"" + qualifiers + "\"");
   }
