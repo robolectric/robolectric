@@ -112,8 +112,9 @@ public class AccountManagerTest {
   public void testAddAccountExplicitly() {
     AccountManager am = AccountManager.get(app);
     Account account = new Account("name", "type");
-    am.addAccountExplicitly(account, null, null);
+    boolean aaccountAdded = am.addAccountExplicitly(account, null, null);
 
+    assertThat(aaccountAdded).isTrue();
     assertThat(am.getAccountsByType("type").length).isEqualTo(1);
     assertThat(am.getAccountsByType("type")[0].name).isEqualTo("name");
 
@@ -121,7 +122,8 @@ public class AccountManagerTest {
     assertThat(accountAddedTwice).isFalse();
 
     account = new Account("another_name", "type");
-    am.addAccountExplicitly(account, null, null);
+    aaccountAdded = am.addAccountExplicitly(account, null, null);
+    assertThat(aaccountAdded).isTrue();
     assertThat(am.getAccountsByType("type").length).isEqualTo(2);
     assertThat(am.getAccountsByType("type")[0].name).isEqualTo("name");
     assertThat(am.getAccountsByType("type")[1].name).isEqualTo("another_name");
