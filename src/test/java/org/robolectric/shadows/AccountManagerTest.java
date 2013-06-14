@@ -31,11 +31,12 @@ public class AccountManagerTest {
   public void testGet() {
     AccountManager appAM = AccountManager.get(app);
     assertThat(appAM).isNotNull();
-    assertSame(AccountManager.get(app), appAM);
+    assertThat(appAM).isSameAs(AccountManager.get(app));
 
     Activity a = new Activity();
-    assertThat(AccountManager.get(a)).isNotNull();
-    assertThat(AccountManager.get(a)).isNotSameAs(appAM);
+    AccountManager activityAM = AccountManager.get(a);
+    assertThat(activityAM).isNotNull();
+    assertThat(activityAM).isSameAs(appAM);
   }
 
   @Test

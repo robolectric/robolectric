@@ -20,24 +20,26 @@ import java.util.Map;
  */
 @Implements(AccountManager.class)
 public class ShadowAccountManager {
-  private static final HashMap<Context, AccountManager> instances = new HashMap<Context, AccountManager>();
+  private static final Object lock = new Object();
+
+  private static AccountManager instance;
 
   private List<Account> accounts = new ArrayList<Account>();
   private Map<Account, Map<String, String>> authTokens = new HashMap<Account, Map<String,String>>();
 
   public static void reset() {
-    synchronized (instances) {
-      instances.clear();
+    synchronized (lock) {
+      instance = null;
     }
   }
 
   @Implementation
   public static AccountManager get(Context context) {
-    synchronized (instances) {
-      if (!instances.containsKey(context)) {
-        instances.put(context, Robolectric.newInstanceOf(AccountManager.class));
+    synchronized (lock) {
+      if (instance == null) {
+        instance = Robolectric.newInstanceOf(AccountManager.class);
       }
-      return instances.get(context);
+      return instance;
     }
   }
 
