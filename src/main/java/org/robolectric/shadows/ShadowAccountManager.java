@@ -3,6 +3,9 @@ package org.robolectric.shadows;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.Context;
+import android.content.pm.PermissionGroupInfo;
+import android.os.Bundle;
+
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -17,24 +20,26 @@ import java.util.Map;
  */
 @Implements(AccountManager.class)
 public class ShadowAccountManager {
-  private static final HashMap<Context, AccountManager> instances = new HashMap<Context, AccountManager>();
+  private static final Object lock = new Object();
+
+  private static AccountManager instance;
 
   private List<Account> accounts = new ArrayList<Account>();
   private Map<Account, Map<String, String>> authTokens = new HashMap<Account, Map<String,String>>();
 
   public static void reset() {
-    synchronized (instances) {
-      instances.clear();
+    synchronized (lock) {
+      instance = null;
     }
   }
 
   @Implementation
   public static AccountManager get(Context context) {
-    synchronized (instances) {
-      if (!instances.containsKey(context)) {
-        instances.put(context, Robolectric.newInstanceOf(AccountManager.class));
+    synchronized (lock) {
+      if (instance == null) {
+        instance = Robolectric.newInstanceOf(AccountManager.class);
       }
-      return instances.get(context);
+      return instance;
     }
   }
 
@@ -75,6 +80,36 @@ public class ShadowAccountManager {
       return tokenMap.get(tokenType);
     }
     return null;
+  }
+
+  @Implementation
+  public boolean addAccountExplicitly(Account account, String password, Bundle userdata) {
+    if (account == null) {
+      throw new IllegalArgumentException("account is null");
+    }
+    for (Account a: getAccountsByType(account.type)) {
+      if (a.name.equals(account.name)) {
+        return false;
+      }
+    }
+    return accounts.add(account);
+  }
+
+  @Implementation
+  public String blockingGetAuthToken(Account account, String authTokenType,
+                                     boolean notifyAuthFailure) {
+    if (account == null) {
+      throw new IllegalArgumentException("account is null");
+    }
+    if (authTokenType == null) {
+      throw new IllegalArgumentException("authTokenType is null");
+    }
+
+    Map<String, String> tokensForAccount = authTokens.get(account);
+    if (tokensForAccount == null) {
+      return null;
+    }
+    return tokensForAccount.get(authTokenType);
   }
 
   /**
