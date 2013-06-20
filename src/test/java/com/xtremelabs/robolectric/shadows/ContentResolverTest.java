@@ -11,6 +11,7 @@ import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.*;
 
 import java.io.ByteArrayInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -406,7 +407,17 @@ public class ContentResolverTest {
     	contentResolver.notifyChange(EXTERNAL_CONTENT_URI, null);
     	assertThat( co.changed, equalTo(false));  
     }
-    
+
+    @Test
+    public void openInputStream_throwsFileNotFoundExceptionUponRequest() throws Exception {
+        shadowContentResolver.registerInputStreamForFileNotFoundException(uri21);
+        try {
+            contentResolver.openInputStream(uri21);
+        } catch (FileNotFoundException e) {
+            return;
+        }
+        fail();
+    }
    
     static class QueryParamTrackingTestCursor extends TestCursor {
         public Uri uri;

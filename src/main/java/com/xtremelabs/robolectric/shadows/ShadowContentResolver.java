@@ -10,6 +10,7 @@ import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.tester.android.database.TestCursor;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -37,6 +38,7 @@ public class ShadowContentResolver {
     private static final Map<String, ContentProvider> providers = new HashMap<String, ContentProvider>();
     private static boolean masterSyncAutomatically;
     private Map<Uri, InputStream> inputStreams = new HashMap<Uri, InputStream>();
+    private Set<Uri> fileNotFoundInputStreams = new HashSet<Uri>();
 
     public static void reset() {
         syncableAccounts.clear();
@@ -65,10 +67,12 @@ public class ShadowContentResolver {
     }
 
     @Implementation
-    public final InputStream openInputStream(final Uri uri) {
+    public final InputStream openInputStream(final Uri uri) throws FileNotFoundException {
         InputStream inputStream = inputStreams.get(uri);
         if (inputStream != null) {
             return inputStream;
+        } else if (fileNotFoundInputStreams.contains(uri)) {
+            throw new FileNotFoundException();
         }
         return new InputStream() {
             @Override
@@ -85,6 +89,10 @@ public class ShadowContentResolver {
 
     public void registerInputStream(Uri uri, InputStream inputStream) {
         inputStreams.put(uri, inputStream);
+    }
+
+    public void registerInputStreamForFileNotFoundException(Uri uri) {
+        fileNotFoundInputStreams.add(uri);
     }
 
     @Implementation
