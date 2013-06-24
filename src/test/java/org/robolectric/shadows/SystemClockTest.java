@@ -12,8 +12,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 public class SystemClockTest {
   @Test
   public void shouldAllowForFakingOfTime() throws Exception {
-    Robolectric.getUiThreadScheduler().advanceTo(500);
-    assertThat(SystemClock.uptimeMillis()).isEqualTo(500);
+    assertThat(SystemClock.uptimeMillis()).isEqualTo(0);
     Robolectric.getUiThreadScheduler().advanceTo(1000);
     assertThat(SystemClock.uptimeMillis()).isEqualTo(1000);
   }
