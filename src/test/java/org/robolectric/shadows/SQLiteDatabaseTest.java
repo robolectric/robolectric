@@ -4,7 +4,6 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
-import org.fest.assertions.api.Assertions;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,8 +16,6 @@ import org.robolectric.util.SQLiteMap;
 import java.io.File;
 import java.util.List;
 
-import static com.googlecode.catchexception.CatchException.catchException;
-import static com.googlecode.catchexception.CatchException.caughtException;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -691,14 +688,7 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
 
   @Test
   public void shouldCreateDefaultCursorFactoryWhenNullFactoryPassed() throws Exception {
-    //given
-    SQLiteDatabase.CursorFactory nullCursorFactory = null;
-
-    //when
-    catchException(database).rawQueryWithFactory(nullCursorFactory, ANY_VALID_SQL, null, null);
-
-    //then
-    Assertions.assertThat(caughtException()).as("Null cursor factory should be overridden by default implementation").isNull();
+    database.rawQueryWithFactory(null, ANY_VALID_SQL, null, null);
   }
 
   @Test
