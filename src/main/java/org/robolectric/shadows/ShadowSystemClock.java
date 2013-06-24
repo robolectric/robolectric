@@ -8,7 +8,7 @@ import org.robolectric.internal.HiddenApi;
 
 @Implements(value = SystemClock.class, callThroughByDefault = true)
 public class ShadowSystemClock {
-  private static long bootedAt = now();
+  private static long bootedAt = 0;
   private static long nanoTime = 0;
 
   private static long now() {
