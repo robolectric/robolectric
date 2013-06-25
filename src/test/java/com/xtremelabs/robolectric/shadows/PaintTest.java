@@ -41,4 +41,11 @@ public class PaintTest {
 		shadowPaint.__constructor__( Paint.ANTI_ALIAS_FLAG );
 		assertTrue(paint.isAntiAlias());		
 	}
+
+    @Test
+    public void getTextAlign_returnsSetAlignment() throws Exception {
+        Paint paint = new Paint();
+        paint.setTextAlign(Paint.Align.CENTER);
+        assertEquals(Paint.Align.CENTER, paint.getTextAlign());
+    }
 }

@@ -33,6 +33,7 @@ public class ShadowPaint {
     @RealObject Paint paint;
     private Typeface typeface;
     private float textSize;
+    private Paint.Align textAlign;
 
     public void __constructor__(int flags) {
     	this.flags = flags;
@@ -248,5 +249,15 @@ public class ShadowPaint {
     public PathEffect setPathEffect(PathEffect effect) {
         this.pathEffect = effect;
         return effect;
+    }
+
+    @Implementation
+    public Paint.Align getTextAlign() {
+        return textAlign;
+    }
+
+    @Implementation
+    public void setTextAlign(Paint.Align textAlign) {
+        this.textAlign = textAlign;
     }
 }
