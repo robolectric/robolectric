@@ -1,5 +1,6 @@
 package org.robolectric.res.builder;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -113,7 +114,7 @@ public class PreferenceBuilder {
 
     Intent intent = new Intent();
     if (targetClass != null && targetPackage != null) {
-      intent.setClassName(targetPackage, targetClass);
+      intent.setComponent(new ComponentName(targetPackage, targetClass));
     }
     if (mimeType != null) {
       intent.setDataAndType(data != null ? Uri.parse(data) : null, mimeType);
