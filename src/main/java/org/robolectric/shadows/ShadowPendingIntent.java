@@ -21,20 +21,21 @@ public class ShadowPendingIntent {
   private boolean isBroadcastIntent;
   private boolean isServiceIntent;
   private int requestCode;
+  private int flags;
 
   @Implementation
   public static PendingIntent getActivity(Context context, int requestCode, Intent intent, int flags) {
-    return create(context, intent, true, false, false, requestCode);
+    return create(context, intent, true, false, false, requestCode, flags);
   }
 
   @Implementation
   public static PendingIntent getBroadcast(Context context, int requestCode, Intent intent, int flags) {
-    return create(context, intent, false, true, false, requestCode);
+    return create(context, intent, false, true, false, requestCode, flags);
   }
 
   @Implementation
   public static PendingIntent getService(Context context, int requestCode, Intent intent, int flags) {
-    return create(context, intent, false, false, true, requestCode);
+    return create(context, intent, false, false, true, requestCode, flags);
   }
 
   @Implementation
@@ -85,6 +86,10 @@ public class ShadowPendingIntent {
     return requestCode;
   }
 
+  public int getFlags() {
+    return flags;
+  }
+
   // no idea if these are right....
   @Override
   @Implementation
@@ -117,15 +122,16 @@ public class ShadowPendingIntent {
     return result;
   }
 
-  private static PendingIntent create(Context context, Intent intent, boolean isActivity, boolean isBroadcast, boolean isService, int requestCode) {
+  private static PendingIntent create(Context context, Intent intent, boolean isActivity, boolean isBroadcast, boolean isService, int requestCode, int flags) {
     PendingIntent pendingIntent = Robolectric.newInstanceOf(PendingIntent.class);
-    ShadowPendingIntent shadowPendingIntent = (ShadowPendingIntent) Robolectric.shadowOf(pendingIntent);
+    ShadowPendingIntent shadowPendingIntent = Robolectric.shadowOf(pendingIntent);
     shadowPendingIntent.savedIntent = intent;
     shadowPendingIntent.isActivityIntent = isActivity;
     shadowPendingIntent.isBroadcastIntent = isBroadcast;
     shadowPendingIntent.isServiceIntent = isService;
     shadowPendingIntent.savedContext = context;
     shadowPendingIntent.requestCode = requestCode;
+    shadowPendingIntent.flags = flags;
     return pendingIntent;
   }
 }

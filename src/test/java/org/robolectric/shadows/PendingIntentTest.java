@@ -35,6 +35,8 @@ public class PendingIntentTest {
     assertThat(shadow.isServiceIntent()).isFalse();
     assertThat(intent).isEqualTo(shadow.getSavedIntent());
     assertThat((Context) Robolectric.application).isEqualTo(shadow.getSavedContext());
+    assertThat(shadow.getRequestCode()).isEqualTo(99);
+    assertThat(shadow.getFlags()).isEqualTo(100);
   }
 
   @Test
@@ -47,6 +49,8 @@ public class PendingIntentTest {
     assertThat(shadow.isServiceIntent()).isFalse();
     assertThat(intent).isEqualTo(shadow.getSavedIntent());
     assertThat((Context) Robolectric.application).isEqualTo(shadow.getSavedContext());
+    assertThat(shadow.getRequestCode()).isEqualTo(99);
+    assertThat(shadow.getFlags()).isEqualTo(100);
   }
 
   @Test
@@ -59,6 +63,8 @@ public class PendingIntentTest {
     assertThat(shadow.isServiceIntent()).isTrue();
     assertThat(intent).isEqualTo(shadow.getSavedIntent());
     assertThat((Context) Robolectric.application).isEqualTo(shadow.getSavedContext());
+    assertThat(shadow.getRequestCode()).isEqualTo(99);
+    assertThat(shadow.getFlags()).isEqualTo(100);
   }
 
   @Test
