@@ -1,6 +1,8 @@
 package org.robolectric.res.builder;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.preference.Preference;
 import android.preference.PreferenceGroup;
 import android.preference.PreferenceScreen;
@@ -8,6 +10,7 @@ import android.util.AttributeSet;
 import org.robolectric.Robolectric;
 import org.robolectric.res.Attribute;
 import org.robolectric.res.PreferenceNode;
+import org.robolectric.res.ResName;
 import org.robolectric.shadows.RoboAttributeSet;
 
 import java.lang.reflect.Constructor;
@@ -28,6 +31,11 @@ public class PreferenceBuilder {
 
 
   public Preference inflate(PreferenceNode preferenceNode, Context context, Preference parent) {
+    if ("intent".equals(preferenceNode.getName())) {
+      shadowOf(parent).setIntent(createIntent(preferenceNode));
+      return null;
+    }
+
     Preference preference = create(preferenceNode, context, (PreferenceGroup) parent);
 
     for (PreferenceNode child : preferenceNode.getChildren()) {
@@ -94,5 +102,28 @@ public class PreferenceBuilder {
       throw new RuntimeException("couldn't find preference class " + name);
     }
     return clazz;
+  }
+
+  private Intent createIntent(PreferenceNode preferenceNode) {
+    String targetPackage = getAttribute(preferenceNode, "targetPackage");
+    String targetClass =  getAttribute(preferenceNode, "targetClass");
+    String mimeType = getAttribute(preferenceNode, "mimeType");
+    String data = getAttribute(preferenceNode, "data");
+    String action = getAttribute(preferenceNode, "action");
+
+    Intent intent = new Intent();
+    if (targetClass != null && targetPackage != null) {
+      intent.setClassName(targetPackage, targetClass);
+    }
+    if (mimeType != null) {
+      intent.setDataAndType(data != null ? Uri.parse(data) : null, mimeType);
+    }
+    intent.setAction(action);
+    return intent;
+  }
+
+  private static String getAttribute(PreferenceNode node, String name) {
+    Attribute attr = Attribute.find(node.getAttributes(), new ResName("android", "attr", name));
+    return attr != null ? attr.value : null;
   }
 }

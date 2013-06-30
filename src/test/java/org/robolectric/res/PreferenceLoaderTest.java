@@ -1,6 +1,8 @@
 package org.robolectric.res;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
 import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
 import android.preference.ListPreference;
@@ -47,6 +49,22 @@ public class PreferenceLoaderTest {
     Robolectric.getShadowApplication().setStrictI18n(true);
     PreferenceNode preferenceNode = resBundle.get(new ResName(TEST_PACKAGE + ":xml/preferences"), "");
     preferenceBuilder.inflate(preferenceNode, Robolectric.application, null);
+  }
+
+  @Test
+  public void shouldParseIntentContainedInPreference() throws Exception {
+    PreferenceNode preferenceNode = resBundle.get(new ResName(TEST_PACKAGE + ":xml/intent_preference"), "");
+    PreferenceScreen screen = (PreferenceScreen) preferenceBuilder.inflate(preferenceNode, Robolectric.application, null);
+
+    assertThat(screen.getPreferenceCount()).isEqualTo(1);
+    Preference intentPreference = screen.getPreference(0);
+    Intent intent = intentPreference.getIntent();
+    assertThat(intent).isNotNull();
+    assertThat(intent.getAction()).isEqualTo("action");
+    assertThat(intent.getData()).isEqualTo(Uri.parse("tel://1235"));
+    assertThat(intent.getType()).isEqualTo("application/text");
+    assertThat(intent.getComponent().getClassName()).isEqualTo("org.robolectric.test.Intent");
+    assertThat(intent.getComponent().getPackageName()).isEqualTo("org.robolectric");
   }
 
   protected void assertThatScreenMatchesExpected(PreferenceScreen screen) {

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+        xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <Preference
+            android:key="intent"
+            android:title="Intent test"
+            android:summary="">
+        <intent
+                android:targetPackage="org.robolectric"
+                android:targetClass="org.robolectric.test.Intent"
+                android:mimeType="application/text"
+                android:action="action"
+                android:data="tel://1235"
+                />
+    </Preference>
+
+</PreferenceScreen>
