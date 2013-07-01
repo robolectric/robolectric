@@ -30,6 +30,11 @@ public class ShadowAlarmManager {
 		internalSet(type, triggerAtTime, interval, operation);
 	}
 
+    @Implementation
+    public void setInexactRepeating(int type, long triggerAtMillis, long intervalMillis, PendingIntent operation) {
+        internalSet(type, triggerAtMillis, intervalMillis, operation);
+    }
+
 	private void internalSet(int type, long triggerAtTime, long interval, PendingIntent operation) {
 		Intent intent = shadowOf(operation).getSavedIntent();
 		for (ScheduledAlarm scheduledAlarm : scheduledAlarms) {
