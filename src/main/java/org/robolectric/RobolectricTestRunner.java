@@ -193,12 +193,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
         Thread.currentThread().setContextClassLoader(sdkEnvironment.getRobolectricClassLoader());
 
         Class bootstrappedTestClass = sdkEnvironment.bootstrappedClass(getTestClass().getJavaClass());
-        HelperTestRunner helperTestRunner;
-        try {
-          helperTestRunner = new HelperTestRunner(bootstrappedTestClass);
-        } catch (InitializationError initializationError) {
-          throw new RuntimeException(initializationError);
-        }
+        HelperTestRunner helperTestRunner = getHelperTestRunner(bootstrappedTestClass);
 
         final Method bootstrappedMethod;
         try {
@@ -261,6 +256,14 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
         }
       }
     };
+  }
+
+  protected HelperTestRunner getHelperTestRunner(Class bootstrappedTestClass) {
+    try {
+      return new HelperTestRunner(bootstrappedTestClass);
+    } catch (InitializationError initializationError) {
+      throw new RuntimeException(initializationError);
+    }
   }
 
   private SdkEnvironment getEnvironment(final AndroidManifest appManifest, final Config config) {
