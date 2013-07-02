@@ -719,6 +719,15 @@ public class ActivityTest {
     assertEquals(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE, parentActivity.getRequestedOrientation());
   }
 
+  @Test
+  public void shouldSupportIsTaskRoot() throws Exception {
+    Activity activity = new Activity();
+    assertTrue(activity.isTaskRoot()); // as implemented, Activities are considered task roots by default
+
+    shadowOf(activity).setIsTaskRoot(false);
+    assertFalse(activity.isTaskRoot());
+  }
+
   /////////////////////////////
 
   private void destroy(Activity activity) {
