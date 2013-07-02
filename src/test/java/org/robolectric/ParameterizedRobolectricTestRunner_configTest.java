@@ -21,52 +21,52 @@ import static org.fest.assertions.api.Assertions.assertThat;
 @RunWith(ParameterizedRobolectricTestRunner.class)
 public final class ParameterizedRobolectricTestRunner_configTest {
 
-    private final int expectedType;
+  private final int expectedType;
 
-    public ParameterizedRobolectricTestRunner_configTest(int expectedType) {
-        this.expectedType = expectedType;
+  public ParameterizedRobolectricTestRunner_configTest(int expectedType) {
+    this.expectedType = expectedType;
+  }
+
+  @Test
+  @Config(manifest = Config.NONE, shadows = ShadowCursorWrapper1.class)
+  public void getType1() {
+    assertThat(new CursorWrapper(null).getType(0)).isEqualTo(1);
+  }
+
+  @Test
+  @Config(manifest = Config.NONE, shadows = ShadowCursorWrapperEcho.class)
+  public void getTypeEcho() {
+    assertThat(new CursorWrapper(null).getType(expectedType)).isEqualTo(expectedType);
+  }
+
+  @ParameterizedRobolectricTestRunner.Parameters(name = "ConfigTest: {0}")
+  public static Collection getTestData() {
+    Object[][] data = {
+        { 1 },
+        { 2 },
+        { 3 },
+        { 4 }
+    };
+    return Arrays.asList(data);
+  }
+
+  @Implements(CursorWrapper.class)
+  public static class ShadowCursorWrapper1 extends ShadowCursorWrapper {
+
+    @Implementation
+    @Override
+    public int getType(int columnIndex) {
+      return 1;
     }
+  }
 
-    @Test
-    @Config(manifest = Config.NONE, shadows = ShadowCursorWrapper1.class)
-    public void getType1() {
-        assertThat(new CursorWrapper(null).getType(0)).isEqualTo(1);
+  @Implements(CursorWrapper.class)
+  public static class ShadowCursorWrapperEcho extends ShadowCursorWrapper {
+
+    @Implementation
+    @Override
+    public int getType(int columnIndex) {
+      return columnIndex;
     }
-
-    @Test
-    @Config(manifest = Config.NONE, shadows = ShadowCursorWrapperEcho.class)
-    public void getTypeEcho() {
-        assertThat(new CursorWrapper(null).getType(expectedType)).isEqualTo(expectedType);
-    }
-
-    @ParameterizedRobolectricTestRunner.Parameters(name = "ConfigTest: {0}")
-    public static Collection getTestData() {
-        Object[][] data = {
-                { 1 },
-                { 2 },
-                { 3 },
-                { 4 }
-        };
-        return Arrays.asList(data);
-    }
-
-    @Implements(CursorWrapper.class)
-    public static class ShadowCursorWrapper1 extends ShadowCursorWrapper {
-
-        @Implementation
-        @Override
-        public int getType(int columnIndex) {
-            return 1;
-        }
-    }
-
-    @Implements(CursorWrapper.class)
-    public static class ShadowCursorWrapperEcho extends ShadowCursorWrapper {
-
-        @Implementation
-        @Override
-        public int getType(int columnIndex) {
-            return columnIndex;
-        }
-    }
+  }
 }
