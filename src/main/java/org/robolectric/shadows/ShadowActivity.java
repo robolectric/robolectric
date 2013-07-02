@@ -72,7 +72,8 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   private SpannableStringBuilder mDefaultKeySsb = null;
   private boolean destroyed = false;
   private int streamType = -1;
-
+  private boolean mIsTaskRoot = true;
+  
   public void __constructor__() {
     RobolectricInternals.getConstructor(Activity.class, realActivity, new Class[0]).invoke();
 
@@ -620,6 +621,15 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     dialog.show();
 
     return true;
+  }
+
+  public void setIsTaskRoot(boolean isRoot) {
+    mIsTaskRoot = isRoot;
+  }
+
+  @Implementation
+  public final boolean isTaskRoot() {
+    return mIsTaskRoot;
   }
 
   /**
