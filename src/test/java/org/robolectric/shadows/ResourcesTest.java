@@ -63,8 +63,8 @@ public class ResourcesTest {
   @Test
   public void getText_withLayoutId() throws Exception {
     // todo: this needs to change...
-    assertThat(resources.getText(R.layout.different_screen_sizes, "value")).isEqualTo("./src/test/resources/res/layout/different_screen_sizes.xml");
-  }
+    assertThat(resources.getText(R.layout.different_screen_sizes, "value").toString().replace("\\", "/")).isEqualTo("./src/test/resources/res/layout/different_screen_sizes.xml");
+   }
 
   @Test
   public void getStringArray() throws Exception {
