@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Dialog;
 import android.appwidget.AppWidgetProvider;
@@ -23,6 +24,7 @@ import com.xtremelabs.robolectric.shadows.testing.OnMethodTestActivity;
 import com.xtremelabs.robolectric.util.TestRunnable;
 import com.xtremelabs.robolectric.util.Transcript;
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.core.Is;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -623,6 +625,16 @@ public class ActivityTest {
 
         shadowActivity.callOnDestroy();
         transcript.assertEventsSoFar("onDestroy was called");
+    }
+
+    @Test
+    public void getActionBarReturnsActionBar() throws Exception {
+        Activity activity = new Activity();
+        ActionBar actionBar = activity.getActionBar();
+        assertInstanceOf(ActionBar.class, actionBar);
+        assertSame(actionBar, activity.getActionBar());
+        assertEquals(ActionBar.DISPLAY_SHOW_HOME, actionBar.DISPLAY_SHOW_HOME);
+        assertSame(activity, actionBar.getThemedContext());
     }
 
     @Test

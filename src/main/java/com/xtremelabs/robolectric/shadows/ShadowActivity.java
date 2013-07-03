@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Application;
 import android.app.Dialog;
@@ -61,6 +62,7 @@ public class ShadowActivity extends ShadowContextWrapper {
 
     private int mDefaultKeyMode = Activity.DEFAULT_KEYS_DISABLE;
     private SpannableStringBuilder mDefaultKeySsb = null;
+    private ActionBarImpl actionBar;
 
     public void callOnCreate(Bundle bundle) {
         invokeReflectively("onCreate", Bundle.class, bundle);
@@ -619,7 +621,15 @@ public class ShadowActivity extends ShadowContextWrapper {
     public void stopManagingCursor(Cursor c) {
     	managedCusors.remove(c);
     }
-    
+
+    @Implementation
+    public ActionBar getActionBar() {
+        if (actionBar == null) {
+            actionBar = new ActionBarImpl(realActivity);
+        }
+        return actionBar;
+    }
+
     public List<Cursor> getManagedCursors() {
     	return managedCusors;
     }
