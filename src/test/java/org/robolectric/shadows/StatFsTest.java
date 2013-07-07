@@ -24,8 +24,9 @@ public class StatFsTest {
 
   @Test
   public void shouldRegisterStatsWithFile() throws Exception {
-    ShadowStatFs.registerStats(new File("/tmp"), 100, 20, 10);
-    StatFs statsFs = new StatFs("/tmp");
+    File file = new File("/tmp");
+    ShadowStatFs.registerStats(file, 100, 20, 10);
+    StatFs statsFs = new StatFs(file.getAbsolutePath());
 
     assertThat(statsFs.getBlockCount()).isEqualTo(100);
     assertThat(statsFs.getFreeBlocks()).isEqualTo(20);

@@ -5,11 +5,7 @@ import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
-import android.graphics.drawable.AnimationDrawable;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.NinePatchDrawable;
+import android.graphics.drawable.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,6 +16,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.util.TestUtil;
 import org.xmlpull.v1.XmlPullParser;
 
+import java.io.File;
 import java.io.InputStream;
 
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -63,7 +60,9 @@ public class ResourcesTest {
   @Test
   public void getText_withLayoutId() throws Exception {
     // todo: this needs to change...
-    assertThat(resources.getText(R.layout.different_screen_sizes, "value")).isEqualTo("./src/test/resources/res/layout/different_screen_sizes.xml");
+    char separator = File.separatorChar;
+    String expectedValue = String.format(".%ssrc%stest%sresources%sres%slayout%sdifferent_screen_sizes.xml", separator, separator, separator, separator, separator, separator);
+    assertThat(resources.getText(R.layout.different_screen_sizes, "value")).isEqualTo(expectedValue);
   }
 
   @Test
