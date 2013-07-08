@@ -1139,6 +1139,17 @@ public class ShadowView {
         return true;
     }
 
+    @Implementation
+    public int[] onCreateDrawableState(int extraSpace) {
+        return new int[extraSpace];
+    }
+
+    @Implementation
+    public static int[] mergeDrawableStates(int[] baseState, int[] additionalState) {
+        System.arraycopy(additionalState, 0, baseState, 0, additionalState.length);
+        return baseState;
+    }
+
     public int lastHapticFeedbackPerformed() {
         return hapticFeedbackPerformed;
     }

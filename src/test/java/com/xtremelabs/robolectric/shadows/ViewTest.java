@@ -14,6 +14,7 @@ import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.util.*;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -500,6 +501,23 @@ public class ViewTest {
         assertThat(testView.oldt, equalTo(150));
     }
 
+    //TODO More-complete implementation of onCreateDrawableState and mergeDrawableStates
+    @Test
+    public void onCreateDrawableState_returnsNewIntArrayEveryTime() throws Exception {
+        TestView2 testView = new TestView2(new Activity());
+        int[] drawableState = testView.onCreateDrawableState(1);
+        assertThat(drawableState.length, equalTo(1));
+        assertThat(drawableState[0], equalTo(0));
+    }
+
+    @Test
+    public void mergeDrawableStates_returnsWhatWePassIt() throws Exception {
+        TestView2 testView = new TestView2(new Activity());
+        int[] states = testView.mergeDrawableStates(new int[1], new int[] { 123 });
+        assertThat(states.length, equalTo(1));
+        assertThat(states[0], equalTo(123));
+    }
+
     private static class TestAnimation extends Animation {
     }
 
@@ -556,6 +574,15 @@ public class ViewTest {
         @Override
         protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
             super.onMeasure(800, 400);
+        }
+
+        @Override
+        public int[] onCreateDrawableState(int extraSpace) {
+            return super.onCreateDrawableState(extraSpace);
+        }
+
+        public static int[] mergeDrawableStates(int[] baseState, int[] additionalState) {
+            return View.mergeDrawableStates(baseState, additionalState);
         }
     }
 }
