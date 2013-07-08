@@ -323,6 +323,7 @@ public class Robolectric {
                 ShadowScanResult.class,
                 ShadowScrollView.class,
                 ShadowScroller.class,
+                ShadowSearchView.class,
                 ShadowSeekBar.class,
                 ShadowSensorManager.class,
                 ShadowService.class,
