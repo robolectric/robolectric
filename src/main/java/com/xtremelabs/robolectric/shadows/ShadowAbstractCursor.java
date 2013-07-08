@@ -108,13 +108,14 @@ public class ShadowAbstractCursor {
 
     @Implementation
     public String getColumnName(int column) {
-        return getColumnNames()[column];
+        return realAbstractCursor.getColumnNames()[column];
     }
 
     @Implementation
     public int getColumnIndex(String columnName) {
-        for (int i=0; i<getColumnNames().length; i++) {
-            if (columnName.equals(getColumnNames()[i])) return i;
+        String[] columnNames = realAbstractCursor.getColumnNames();
+        for (int i=0; i< columnNames.length; i++) {
+            if (columnName.equals(columnNames[i])) return i;
         }
         return -1;
     }
