@@ -9,6 +9,7 @@ import com.xtremelabs.robolectric.internal.Implements;
 public class ShadowSearchView extends ShadowLinearLayout {
     private CursorAdapter suggestionsAdapter;
     private SearchView.OnQueryTextListener onQueryTextListener;
+    private SearchView.OnSuggestionListener onSuggestionListener;
 
     @Implementation
     public CursorAdapter getSuggestionsAdapter() {
@@ -27,5 +28,14 @@ public class ShadowSearchView extends ShadowLinearLayout {
     @Implementation
     public void setOnQueryTextListener(SearchView.OnQueryTextListener onQueryTextListener) {
         this.onQueryTextListener = onQueryTextListener;
+    }
+
+    public SearchView.OnSuggestionListener getOnSuggestionListener() {
+        return onSuggestionListener;
+    }
+
+    @Implementation
+    public void setOnSuggestionListener(SearchView.OnSuggestionListener onSuggestionListener) {
+        this.onSuggestionListener = onSuggestionListener;
     }
 }

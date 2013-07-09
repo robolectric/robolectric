@@ -51,4 +51,11 @@ public class SearchViewTest {
         searchView.setOnQueryTextListener(queryTextListener);
         assertThat(shadowOf(searchView).getOnQueryTextListener(), sameInstance(queryTextListener));
     }
+
+    @Test
+    public void canSetSuggestionListener() throws Exception {
+        SearchView.OnSuggestionListener suggestionListener = mock(SearchView.OnSuggestionListener.class);
+        searchView.setOnSuggestionListener(suggestionListener);
+        assertThat(shadowOf(searchView).getOnSuggestionListener(), sameInstance(suggestionListener));
+    }
 }
