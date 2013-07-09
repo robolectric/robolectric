@@ -1,6 +1,7 @@
 package org.robolectric;
 
 import android.app.Activity;
+
 import org.robolectric.res.ActivityData;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
@@ -17,6 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +44,7 @@ public class AndroidManifest {
   private int applicationFlags;
   private final List<ReceiverAndIntentFilter> receivers = new ArrayList<ReceiverAndIntentFilter>();
   private final Map<String, ActivityData> activityDatas = new LinkedHashMap<String, ActivityData>();
+  private final Map<String, String> applicationMetaData = new HashMap<String, String>();
   private List<AndroidManifest> libraryManifests;
 
   /**
@@ -137,6 +140,7 @@ public class AndroidManifest {
       parseApplicationFlags(manifestDocument);
       parseReceivers(manifestDocument);
       parseActivities(manifestDocument);
+      parseApplicationMetaData(manifestDocument);
     } catch (Exception ignored) {
       ignored.printStackTrace();
     }
@@ -169,8 +173,8 @@ public class AndroidManifest {
     Node application = manifestDocument.getElementsByTagName("application").item(0);
     if (application == null) return;
 
-    for (Node receiverNode : getChildrenTags(application, "activity")) {
-      NamedNodeMap attributes = receiverNode.getAttributes();
+    for (Node activityNode : getChildrenTags(application, "activity")) {
+      NamedNodeMap attributes = activityNode.getAttributes();
       Node nameAttr = attributes.getNamedItem("android:name");
       Node themeAttr = attributes.getNamedItem("android:theme");
       if (nameAttr == null) continue;
@@ -182,6 +186,20 @@ public class AndroidManifest {
     }
   }
 
+  private void parseApplicationMetaData(final Document manifestDocument) {
+    Node application = manifestDocument.getElementsByTagName("application").item(0);
+    if (application == null) return;
+    
+    for (Node metaNode : getChildrenTags(application, "meta-data")) {
+      NamedNodeMap attributes = metaNode.getAttributes();
+      Node nameAttr = attributes.getNamedItem("android:name");
+      Node valueAttr = attributes.getNamedItem("android:value");
+      // TODO: support android:resource attribute
+      if (valueAttr == null) { continue; }
+      applicationMetaData.put(nameAttr.getNodeValue(), valueAttr.getNodeValue());
+    }
+  }
+  
   private String resolveClassRef(String maybePartialClassName) {
     return (maybePartialClassName.startsWith(".")) ? packageName + maybePartialClassName : maybePartialClassName;
   }
@@ -270,6 +288,11 @@ public class AndroidManifest {
     return processName;
   }
 
+  public Map<String, String> getApplicationMetaData() {
+    parseAndroidManifest();
+    return applicationMetaData;
+  }
+  
   public ResourcePath getResourcePath() {
     validate();
     return new ResourcePath(getRClass(), getPackageName(), resDirectory, assetsDirectory);
