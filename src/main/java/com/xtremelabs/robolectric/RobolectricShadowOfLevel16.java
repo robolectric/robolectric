@@ -3,8 +3,10 @@ package com.xtremelabs.robolectric;
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
+import android.widget.SearchView;
 import com.xtremelabs.robolectric.shadows.ShadowAnimator;
 import com.xtremelabs.robolectric.shadows.ShadowObjectAnimator;
+import com.xtremelabs.robolectric.shadows.ShadowSearchView;
 import com.xtremelabs.robolectric.shadows.ShadowValueAnimator;
 
 public class RobolectricShadowOfLevel16 {
@@ -15,6 +17,10 @@ public class RobolectricShadowOfLevel16 {
 
     public static ShadowObjectAnimator shadowOf(ObjectAnimator instance) {
         return (ShadowObjectAnimator) Robolectric.shadowOf_(instance);
+    }
+
+    public static ShadowSearchView shadowOf(SearchView instance) {
+        return (ShadowSearchView) Robolectric.shadowOf_(instance);
     }
 
     public static ShadowValueAnimator shadowOf(ValueAnimator instance) {
