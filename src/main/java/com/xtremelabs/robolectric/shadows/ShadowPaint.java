@@ -23,7 +23,7 @@ public class ShadowPaint {
     private float shadowDy;
     private int shadowColor;
     private Shader shader;
-    private int alpha;
+    private int alpha = 0xff;
     private ColorFilter filter;
     private boolean antiAlias;
     private boolean dither;

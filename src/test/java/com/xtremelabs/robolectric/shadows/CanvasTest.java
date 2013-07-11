@@ -9,6 +9,7 @@ import org.junit.runner.RunWith;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static com.xtremelabs.robolectric.shadows.ShadowPath.Point.Type.LINE_TO;
+import static junit.framework.Assert.assertSame;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -182,5 +183,22 @@ public class CanvasTest {
 
         assertEquals("hello", shadowCanvas.getDrawnTextEvent(0).text);
         assertEquals("hello 2", shadowCanvas.getDrawnTextEvent(1).text);
+    }
+
+    @Test
+    public void shouldRecordAlphaIfNot100Percent() throws Exception {
+        Canvas canvas = new Canvas();
+        ShadowCanvas shadowCanvas = shadowOf(canvas);
+        Paint paint = new Paint();
+        Paint paintWithHalfAlpha = new Paint();
+
+        paintWithHalfAlpha.setAlpha(127);
+        canvas.drawBitmap(imageBitmap, new Rect(), new Rect(), paint);
+        canvas.drawBitmap(targetBitmap, new Rect(), new Rect(), paintWithHalfAlpha);
+        assertEquals(2, shadowCanvas.getDrawnBitmapCount());
+        assertSame(imageBitmap, shadowCanvas.getDrawnBitmapEvent(0).bitmap);
+        assertSame(paint, shadowCanvas.getDrawnBitmapEvent(0).paint);
+        assertSame(targetBitmap, shadowCanvas.getDrawnBitmapEvent(1).bitmap);
+        assertSame(paintWithHalfAlpha, shadowCanvas.getDrawnBitmapEvent(1).paint);
     }
 }

@@ -48,4 +48,10 @@ public class PaintTest {
         paint.setTextAlign(Paint.Align.CENTER);
         assertEquals(Paint.Align.CENTER, paint.getTextAlign());
     }
+
+    @Test
+    public void getAlpha_returns255ByDefault() throws Exception {
+        Paint paint = new Paint();
+        assertEquals(255, paint.getAlpha());
+    }
 }

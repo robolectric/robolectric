@@ -23,6 +23,7 @@ public class ShadowCanvas {
     private List<PathPaintHistoryEvent> pathPaintEvents = new ArrayList<PathPaintHistoryEvent>();
     private List<CirclePaintHistoryEvent> circlePaintEvents = new ArrayList<CirclePaintHistoryEvent>();
     private List<TextHistoryEvent> drawnTextEventHistory = new ArrayList<TextHistoryEvent>();
+    private List<DrawnBitmapEvent> drawnBitmapEventHistory = new ArrayList<DrawnBitmapEvent>();
     private Paint drawnPaint;
     private Bitmap targetBitmap = newInstanceOf(Bitmap.class);
     private float translateX;
@@ -101,6 +102,7 @@ public class ShadowCanvas {
                 ") with height=" + dst.height() +
                 " and width=" + dst.width() +
                 " taken from " + src.toString());
+        drawnBitmapEventHistory.add(new DrawnBitmapEvent(bitmap, paint));
     }
 
     @Implementation
@@ -202,6 +204,14 @@ public class ShadowCanvas {
         return drawnTextEventHistory.size();
     }
 
+    public int getDrawnBitmapCount() {
+        return drawnBitmapEventHistory.size();
+    }
+
+    public DrawnBitmapEvent getDrawnBitmapEvent(int index) {
+        return drawnBitmapEventHistory.get(index);
+    }
+
     private static class PathPaintHistoryEvent {
         private Path drawnPath;
         private Paint pathPaint;
@@ -237,6 +247,16 @@ public class ShadowCanvas {
             this.y = y;
             this.paint = paint;
             this.text = text;
+        }
+    }
+
+    public static class DrawnBitmapEvent {
+        public Paint paint;
+        public Bitmap bitmap;
+
+        public DrawnBitmapEvent(Bitmap bitmap, Paint paint) {
+            this.bitmap = bitmap;
+            this.paint = paint;
         }
     }
 }
