@@ -344,6 +344,31 @@ public class HandlerTest {
   }
 
   @Test
+  public void shouldRemoveSingleMessage() throws Exception {
+    final List<Object> objects = new ArrayList<Object>();
+    Robolectric.pauseMainLooper();
+
+    Handler handler = new Handler() {
+      @Override
+      public void handleMessage(Message msg) {
+        objects.add(msg.obj);
+      }
+    };
+
+    Object firstObj = new Object();
+    handler.sendMessage(handler.obtainMessage(0, firstObj));
+
+    Object secondObj = new Object();
+    handler.sendMessage(handler.obtainMessage(0, secondObj));
+
+    handler.removeCallbacksAndMessages(secondObj);
+    Robolectric.unPauseMainLooper();
+
+    assertThat(objects.contains(firstObj)).isTrue();
+    assertThat(objects.contains(secondObj)).isFalse();
+  }
+
+  @Test
   public void shouldObtainMessage() throws Exception {
     Message m0 = new Handler().obtainMessage();
     assertThat(m0.what).isEqualTo(0);
