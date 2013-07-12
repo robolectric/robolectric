@@ -207,7 +207,15 @@ public class ShadowHandler {
     }
   }
 
-
+  @Implementation
+  public final void removeCallbacksAndMessages(Object object) {
+    for (Iterator<Message> iterator = messages.iterator(); iterator.hasNext(); ) {
+      Message message = iterator.next();
+      if (object == null || object.equals(message.obj)) {
+        iterator.remove();
+      }
+    }
+  }
 
   /**
    * @deprecated use {@link #idleMainLooper()} instead
