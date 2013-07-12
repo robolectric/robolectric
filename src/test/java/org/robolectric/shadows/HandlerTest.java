@@ -328,6 +328,22 @@ public class HandlerTest {
   }
 
   @Test
+  public void shouldRemoveAllMessages() throws Exception {
+    final boolean[] wasRun = new boolean[1];
+    Robolectric.pauseMainLooper();
+    Handler handler = new Handler() {
+      @Override
+      public void handleMessage(Message msg) {
+        wasRun[0] = true;
+      }
+    };
+    handler.sendEmptyMessage(0);
+    handler.removeCallbacksAndMessages(null);
+    Robolectric.unPauseMainLooper();
+    assertThat(wasRun[0]).isFalse();
+  }
+
+  @Test
   public void shouldObtainMessage() throws Exception {
     Message m0 = new Handler().obtainMessage();
     assertThat(m0.what).isEqualTo(0);
