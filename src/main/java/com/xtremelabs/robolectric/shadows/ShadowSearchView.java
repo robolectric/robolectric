@@ -10,6 +10,8 @@ public class ShadowSearchView extends ShadowLinearLayout {
     private CursorAdapter suggestionsAdapter;
     private SearchView.OnQueryTextListener onQueryTextListener;
     private SearchView.OnSuggestionListener onSuggestionListener;
+    private CharSequence queryString;
+    private boolean iconified = true;
 
     @Implementation
     public CursorAdapter getSuggestionsAdapter() {
@@ -37,5 +39,23 @@ public class ShadowSearchView extends ShadowLinearLayout {
     @Implementation
     public void setOnSuggestionListener(SearchView.OnSuggestionListener onSuggestionListener) {
         this.onSuggestionListener = onSuggestionListener;
+    }
+
+    @Implementation
+    public CharSequence getQuery() {
+        return queryString;
+    }
+
+    @Implementation
+    public void setQuery(CharSequence queryString, boolean submit) {
+        this.queryString = queryString;
+    }
+
+    public boolean isIconified() {
+        return iconified;
+    }
+
+    public void setIconified(boolean iconified) {
+        this.iconified = iconified;
     }
 }

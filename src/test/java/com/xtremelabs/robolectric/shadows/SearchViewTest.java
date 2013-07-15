@@ -14,6 +14,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static com.xtremelabs.robolectric.RobolectricShadowOfLevel16.shadowOf;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
@@ -57,5 +58,20 @@ public class SearchViewTest {
         SearchView.OnSuggestionListener suggestionListener = mock(SearchView.OnSuggestionListener.class);
         searchView.setOnSuggestionListener(suggestionListener);
         assertThat(shadowOf(searchView).getOnSuggestionListener(), sameInstance(suggestionListener));
+    }
+
+    @Test
+    public void canGetAndSetQuery() throws Exception {
+        searchView.setQuery("foo", false);
+        assertThat(searchView.getQuery().toString(), equalTo("foo"));
+    }
+
+    @Test
+    public void canGetAndSetIconified() throws Exception {
+        assertThat(searchView.isIconified(), equalTo(true));
+        searchView.setIconified(false);
+        assertThat(searchView.isIconified(), equalTo(false));
+        searchView.setIconified(true);
+        assertThat(searchView.isIconified(), equalTo(true));
     }
 }
