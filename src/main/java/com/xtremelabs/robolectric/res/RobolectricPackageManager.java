@@ -18,6 +18,7 @@ public class RobolectricPackageManager extends StubPackageManager {
 
     private Map<String, PackageInfo> packageList;
     private Map<Intent, List<ResolveInfo>> resolveInfoForIntent = new HashMap<Intent, List<ResolveInfo>>();
+    private Map<String, List<ResolveInfo>> resolveInfoForScheme = new HashMap<String, List<ResolveInfo>>();
     private Map<ComponentName, ComponentState> componentList = new HashMap<ComponentName, ComponentState>();
     private Map<ComponentName, Drawable> drawableList = new HashMap<ComponentName, Drawable>();
     private Map<String, Boolean> systemFeatureList = new HashMap<String, Boolean>();
@@ -74,7 +75,12 @@ public class RobolectricPackageManager extends StubPackageManager {
     @Override
     public List<ResolveInfo> queryIntentActivities(Intent intent, int flags) {
         List<ResolveInfo> result = resolveInfoForIntent.get(intent);
-        return (result == null) ? new ArrayList<ResolveInfo>() : result;
+        if (result == null) {
+            if (intent.getData() != null) {
+                result = resolveInfoForScheme.get(intent.getData().getScheme());
+            }
+        }
+        return result == null ? new ArrayList<ResolveInfo>() : result;
     }
 
     @Override
@@ -90,6 +96,10 @@ public class RobolectricPackageManager extends StubPackageManager {
 
     public void addResolveInfoForIntent(Intent intent, List<ResolveInfo> info) {
         resolveInfoForIntent.put(intent, info);
+    }
+
+    public void addResolveInfoForScheme(String scheme, List<ResolveInfo> resolveInfo) {
+        resolveInfoForScheme.put(scheme, resolveInfo);
     }
 
     public void addResolveInfoForIntent(Intent intent, ResolveInfo info) {

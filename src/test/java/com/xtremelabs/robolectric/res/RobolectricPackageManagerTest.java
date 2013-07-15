@@ -6,6 +6,7 @@ import android.content.IntentFilter;
 import android.content.pm.*;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.shadows.ShadowDrawable;
@@ -18,6 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import static android.content.pm.PackageManager.MATCH_DEFAULT_ONLY;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 
@@ -97,6 +99,18 @@ public class RobolectricPackageManagerTest {
         assertThat(activities, notNullValue());
         assertThat(activities.size(), equalTo(1));
         assertThat(activities.get(0).nonLocalizedLabel.toString(), equalTo(TEST_PACKAGE_LABEL));
+    }
+
+    @Test
+    public void queryIntentActivities_MatchByScheme() throws Exception {
+        ResolveInfo resolveInfo = new ResolveInfo();
+        List<ResolveInfo> resolveInfos = new ArrayList<ResolveInfo>();
+        resolveInfos.add(resolveInfo);
+        rpm.addResolveInfoForScheme("http", resolveInfos);
+        Intent intent = new Intent(Intent.ACTION_VIEW).setData(Uri.parse("http://www.theonion.com"));
+        List<ResolveInfo> actual = rpm.queryIntentActivities(intent, MATCH_DEFAULT_ONLY);
+        assertThat(actual.size(), equalTo(1));
+        assertThat(actual.get(0), sameInstance(resolveInfo));
     }
 
     @Test
