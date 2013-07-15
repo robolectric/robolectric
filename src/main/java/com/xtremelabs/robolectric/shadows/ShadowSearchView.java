@@ -51,10 +51,12 @@ public class ShadowSearchView extends ShadowLinearLayout {
         this.queryString = queryString;
     }
 
+    @Implementation
     public boolean isIconified() {
         return iconified;
     }
 
+    @Implementation
     public void setIconified(boolean iconified) {
         this.iconified = iconified;
     }
