@@ -189,6 +189,16 @@ public class IntentTest {
     }
 
     @Test
+    public void testGetDataString() throws Exception {
+        Intent intent = new Intent();
+        String uriString = "content://this/and/that";
+        Uri uri = Uri.parse(uriString);
+        assertNull(intent.getDataString());
+        intent.setData(uri);
+        assertSame(uriString, intent.getDataString());
+    }
+
+    @Test
     public void testSetType() throws Exception {
         Intent intent = new Intent();
         intent.setData(Uri.parse("content://this/and/that"));

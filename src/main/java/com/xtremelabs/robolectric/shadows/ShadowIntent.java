@@ -140,6 +140,11 @@ public class ShadowIntent {
     }
 
     @Implementation
+    public String getDataString() {
+        return data == null ? null : data.toString();
+    }
+
+    @Implementation
     public Intent setClass(Context packageContext, Class<?> cls) {
         this.intentClass = cls;
         return realIntent;
