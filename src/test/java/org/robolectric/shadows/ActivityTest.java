@@ -728,6 +728,20 @@ public class ActivityTest {
     assertFalse(activity.isTaskRoot());
   }
 
+  @Test
+  public void getPendingTransitionEnterAnimationResourceId_should() throws Exception {
+    Activity activity = new Activity();
+    activity.overridePendingTransition(15, 2);
+    assertThat(shadowOf(activity).getPendingTransitionEnterAnimationResourceId()).isEqualTo(15);
+  }
+
+  @Test
+  public void getPendingTransitionExitAnimationResourceId_should() throws Exception {
+    Activity activity = new Activity();
+    activity.overridePendingTransition(15, 2);
+    assertThat(shadowOf(activity).getPendingTransitionExitAnimationResourceId()).isEqualTo(2);
+  }
+
   /////////////////////////////
 
   private void destroy(Activity activity) {
