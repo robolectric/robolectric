@@ -78,17 +78,22 @@ public class RobolectricPackageManager extends StubPackageManager {
     String packageName = className.getPackageName();
     AndroidManifest androidManifest = androidManifests.get(packageName);
     String classString = className.getClassName();
-    classString = (classString.startsWith(".")) ? packageName + classString : classString;
+    int index = classString.indexOf('.');
+    if (index == -1) {
+      classString = packageName + "." + classString;
+    } else if (index == 0) {
+      classString = packageName + classString;
+    }
 
     ActivityInfo activityInfo = new ActivityInfo();
     activityInfo.packageName = packageName;
     activityInfo.name = classString;
-    if((flags & GET_META_DATA) != 0){
-      for(int i = 0; i < androidManifest.getReceiverCount(); ++i){
-        if(androidManifest.getReceiverClassName(i).equals(classString)){
+    if ((flags & GET_META_DATA) != 0) {
+      for (int i = 0; i < androidManifest.getReceiverCount(); ++i) {
+        if (androidManifest.getReceiverClassName(i).equals(classString)) {
           Bundle metaData = new Bundle();
           Map<String, String> meta = androidManifest.getReceiverMetaData(i);
-          for(String key : meta.keySet()){
+          for (String key : meta.keySet()) {
             metaData.putString(key, meta.get(key));
           }
           activityInfo.metaData = metaData;
@@ -274,7 +279,7 @@ public class RobolectricPackageManager extends StubPackageManager {
     applicationInfo.processName = androidManifest.getProcessName();
     applicationInfo.name = androidManifest.getApplicationName();
     ResourceIndex resourceIndex = loader.getResourceIndex();
-    if(androidManifest.getLabelRef() != null && resourceIndex != null){
+    if (androidManifest.getLabelRef() != null && resourceIndex != null) {
       Integer id = ResName.getResourceId(resourceIndex, androidManifest.getLabelRef(), androidManifest.getPackageName());
       applicationInfo.labelRes = id != null ? id : 0;
     }

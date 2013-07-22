@@ -157,7 +157,7 @@ public class AndroidManifest {
 
       Map<String, String> metaDataMap = null;
       for (Node metaDataNode : getChildrenTags(receiverNode, "meta-data")) {
-        if(metaDataMap == null){
+        if(metaDataMap == null) {
           metaDataMap = new LinkedHashMap<String, String>();
         }
 
@@ -264,7 +264,7 @@ public class AndroidManifest {
     return versionName;
   }
 
-  public String getLabelRef(){
+  public String getLabelRef() {
     return labelRef;
   }
 
@@ -392,7 +392,7 @@ public class AndroidManifest {
     return receivers.get(receiverIndex).getIntentFilterActions();
   }
 
-  public Map<String,String> getReceiverMetaData(final int receiverIndex) {
+  public Map<String, String> getReceiverMetaData(final int receiverIndex) {
     parseAndroidManifest();
     return receivers.get(receiverIndex).getMetaData();
   }
@@ -444,7 +444,7 @@ public class AndroidManifest {
   private static class ReceiverAndIntentFilter {
     private final List<String> intentFilterActions;
     private final String broadcastReceiverClassName;
-    private final Map<String,String> metaData;
+    private final Map<String, String> metaData;
 
     public ReceiverAndIntentFilter(final String broadcastReceiverClassName, final List<String> intentFilterActions, final Map<String, String> metadata) {
       this.broadcastReceiverClassName = broadcastReceiverClassName;
@@ -460,7 +460,7 @@ public class AndroidManifest {
       return intentFilterActions;
     }
 
-    public Map<String,String> getMetaData(){
+    public Map<String, String> getMetaData() {
       return metaData;
     }
   }
