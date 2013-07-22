@@ -8,6 +8,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.ResolveInfo;
 import android.graphics.drawable.Drawable;
+import android.os.Bundle;
 import android.util.Pair;
 import java.io.File;
 import java.util.ArrayList;
@@ -22,6 +23,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.res.ActivityData;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceIndex;
+import org.robolectric.res.ResourceLoader;
 import org.robolectric.shadows.ShadowContext;
 import org.robolectric.tester.android.content.pm.StubPackageManager;
 
@@ -68,6 +70,32 @@ public class RobolectricPackageManager extends StubPackageManager {
       activityInfo.theme = resourceIndex.getResourceId(new ResName(activityData.getThemeRef()));
     }
     activityInfo.applicationInfo = getApplicationInfo(packageName, flags);
+    return activityInfo;
+  }
+
+  @Override
+  public ActivityInfo getReceiverInfo(ComponentName className, int flags) throws NameNotFoundException {
+    String packageName = className.getPackageName();
+    AndroidManifest androidManifest = androidManifests.get(packageName);
+    String classString = className.getClassName();
+    classString = (classString.startsWith(".")) ? packageName + classString : classString;
+
+    ActivityInfo activityInfo = new ActivityInfo();
+    activityInfo.packageName = packageName;
+    activityInfo.name = classString;
+    if((flags & GET_META_DATA) != 0){
+      for(int i = 0; i < androidManifest.getReceiverCount(); ++i){
+        if(androidManifest.getReceiverClassName(i).equals(classString)){
+          Bundle metaData = new Bundle();
+          Map<String, String> meta = androidManifest.getReceiverMetaData(i);
+          for(String key : meta.keySet()){
+            metaData.putString(key, meta.get(key));
+          }
+          activityInfo.metaData = metaData;
+          break;
+        }
+      }
+    }
     return activityInfo;
   }
 
@@ -231,7 +259,7 @@ public class RobolectricPackageManager extends StubPackageManager {
     addPackage(packageInfo);
   }
 
-  public void addManifest(AndroidManifest androidManifest) {
+  public void addManifest(AndroidManifest androidManifest, ResourceLoader loader) {
     androidManifests.put(androidManifest.getPackageName(), androidManifest);
 
     PackageInfo packageInfo = new PackageInfo();
@@ -245,6 +273,11 @@ public class RobolectricPackageManager extends StubPackageManager {
     applicationInfo.packageName = androidManifest.getPackageName();
     applicationInfo.processName = androidManifest.getProcessName();
     applicationInfo.name = androidManifest.getApplicationName();
+    ResourceIndex resourceIndex = loader.getResourceIndex();
+    if(androidManifest.getLabelRef() != null && resourceIndex != null){
+      Integer id = ResName.getResourceId(resourceIndex, androidManifest.getLabelRef(), androidManifest.getPackageName());
+      applicationInfo.labelRes = id != null ? id : 0;
+    }
     initApplicationInfo(applicationInfo);
 
     packageInfo.applicationInfo = applicationInfo;

@@ -34,6 +34,8 @@
       <intent-filter>
         <action android:name="org.robolectric.ACTION_DOT_SUBPACKAGE"/>
       </intent-filter>
+      <meta-data android:name="forward.ToTest"
+                 android:value="org.robolectric.Robolectric" />
     </receiver>
     <receiver android:name="com.foo.Receiver">
       <intent-filter>

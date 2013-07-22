@@ -15,4 +15,6 @@
   <string name="ok">@string/ok2</string>
   <string name="ok2">ok yup!</string>
   <string name="interpolate">Here's a %s!</string>
+  <string name="appName">TheAppName</string>
+
 </resources>
