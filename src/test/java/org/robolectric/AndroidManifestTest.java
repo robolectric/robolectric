@@ -9,6 +9,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.res.Fs;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.test.TemporaryFolder;
+import org.robolectric.util.TestUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -52,6 +53,16 @@ public class AndroidManifestTest {
 
     assertEquals("com.foo.Receiver", config.getReceiverClassName(6));
     assertEquals("org.robolectric.ACTION_DIFFERENT_PACKAGE", config.getReceiverIntentFilterActions(6).get(0));
+  }
+
+  @Test
+  public void testBroadcastReceiversWithMetaData() throws Exception {
+    AndroidManifest config = newConfig("TestAndroidManifestWithReceivers.xml");
+
+    assertEquals("org.robolectric.test.ConfigTestReceiver", config.getReceiverClassName(5));
+    assertEquals("org.robolectric.ACTION_DOT_SUBPACKAGE", config.getReceiverIntentFilterActions(5).get(0));
+    assertTrue(config.getReceiverMetaData(5).containsKey("forward.ToTest"));
+    assertTrue(config.getReceiverMetaData(5).containsValue("org.robolectric.Robolectric"));
   }
 
   @Test
