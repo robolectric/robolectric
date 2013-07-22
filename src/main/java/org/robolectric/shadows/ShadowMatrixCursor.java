@@ -27,6 +27,18 @@ public class ShadowMatrixCursor extends ShadowAbstractCursor {
   }
 
   @Implementation
+  public void addRow(Iterable<?> columnValues) {
+    rowCount++;
+
+    List<Object> data = new ArrayList<Object>();
+    for (Object columnValue : columnValues) {
+        data.add(columnValue);
+    }
+
+    this.data.add(data.toArray());
+  }
+
+  @Implementation
   public String getString(int column) {
     Object columnValue = get(column);
     return columnValue == null ? null : columnValue.toString();
