@@ -54,8 +54,12 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     Robolectric.application = null;
     Robolectric.packageManager = new RobolectricPackageManager();
     Robolectric.packageManager.addPackage(DEFAULT_PACKAGE_NAME);
+    ResourceLoader resourceLoader;
     if (appManifest != null) {
-      Robolectric.packageManager.addManifest(appManifest);
+      resourceLoader = robolectricTestRunner.getAppResourceLoader(sdkConfig, systemResourceLoader, appManifest);
+      Robolectric.packageManager.addManifest(appManifest, resourceLoader);
+    } else {
+      resourceLoader = systemResourceLoader;
     }
 
     ShadowResources.setSystemResources(systemResourceLoader);
@@ -87,13 +91,6 @@ public class ParallelUniverse implements ParallelUniverseInterface {
         .ofType(Configuration.class)
         .in(activityThread)
         .set(configuration);
-
-    ResourceLoader resourceLoader;
-    if (appManifest != null) {
-      resourceLoader = robolectricTestRunner.getAppResourceLoader(sdkConfig, systemResourceLoader, appManifest);
-    } else {
-      resourceLoader = systemResourceLoader;
-    }
 
     Context systemContextImpl = (Context) method("createSystemContext")
         .withReturnType(contextImplClass)

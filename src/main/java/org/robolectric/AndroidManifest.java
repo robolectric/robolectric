@@ -51,6 +51,7 @@ public class AndroidManifest {
   private String packageName;
   private String processName;
   private String themeRef;
+  private String labelRef;
   private Integer targetSdkVersion;
   private Integer minSdkVersion;
   private int versionCode;
@@ -154,6 +155,7 @@ public class AndroidManifest {
       }
 
       themeRef = getTagAttributeText(manifestDocument, "application", "android:theme");
+      labelRef = getTagAttributeText(manifestDocument, "application", "android:label");
 
       parseApplicationFlags(manifestDocument);
       parseReceivers(manifestDocument);
@@ -188,6 +190,18 @@ public class AndroidManifest {
       if (namedItem == null) continue;
 
       String receiverName = resolveClassRef(namedItem.getTextContent());
+
+      Map<String, String> metaDataMap = null;
+      for (Node metaDataNode : getChildrenTags(receiverNode, "meta-data")) {
+        if(metaDataMap == null) {
+          metaDataMap = new LinkedHashMap<String, String>();
+        }
+
+        Node namedData = metaDataNode.getAttributes().getNamedItem("android:name");
+        Node namedValue = metaDataNode.getAttributes().getNamedItem("android:value");
+        metaDataMap.put(resolveClassRef(namedData.getTextContent()), resolveClassRef(namedValue.getTextContent()));
+      }
+
       for (Node intentFilterNode : getChildrenTags(receiverNode, "intent-filter")) {
         List<String> actions = new ArrayList<String>();
         for (Node actionNode : getChildrenTags(intentFilterNode, "action")) {
@@ -196,7 +210,7 @@ public class AndroidManifest {
             actions.add(nameNode.getTextContent());
           }
         }
-        receivers.add(new ReceiverAndIntentFilter(receiverName, actions));
+        receivers.add(new ReceiverAndIntentFilter(receiverName, actions, metaDataMap));
       }
     }
   }
@@ -311,6 +325,10 @@ public class AndroidManifest {
 
   public String getVersionName() {
     return versionName;
+  }
+
+  public String getLabelRef() {
+    return labelRef;
   }
 
   public int getMinSdkVersion() {
@@ -450,6 +468,11 @@ public class AndroidManifest {
     return receivers.get(receiverIndex).getIntentFilterActions();
   }
 
+  public Map<String, String> getReceiverMetaData(final int receiverIndex) {
+    parseAndroidManifest();
+    return receivers.get(receiverIndex).getMetaData();
+  }
+
   private static String getTagAttributeText(final Document doc, final String tag, final String attribute) {
     NodeList elementsByTagName = doc.getElementsByTagName(tag);
     for (int i = 0; i < elementsByTagName.getLength(); ++i) {
@@ -501,10 +524,12 @@ public class AndroidManifest {
   private static class ReceiverAndIntentFilter {
     private final List<String> intentFilterActions;
     private final String broadcastReceiverClassName;
+    private final Map<String, String> metaData;
 
-    public ReceiverAndIntentFilter(final String broadcastReceiverClassName, final List<String> intentFilterActions) {
+    public ReceiverAndIntentFilter(final String broadcastReceiverClassName, final List<String> intentFilterActions, final Map<String, String> metadata) {
       this.broadcastReceiverClassName = broadcastReceiverClassName;
       this.intentFilterActions = intentFilterActions;
+      this.metaData = metadata;
     }
 
     public String getBroadcastReceiverClassName() {
@@ -513,6 +538,10 @@ public class AndroidManifest {
 
     public List<String> getIntentFilterActions() {
       return intentFilterActions;
+    }
+
+    public Map<String, String> getMetaData() {
+      return metaData;
     }
   }
 }
