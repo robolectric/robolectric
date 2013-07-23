@@ -138,12 +138,6 @@
     </dependency>
 
     <dependency>
-      <groupId>com.googlecode.catch-exception</groupId>
-      <artifactId>catch-exception</artifactId>
-      <version>1.0.4</version>
-    </dependency>
-
-    <dependency>
       <groupId>com.intellij</groupId>
       <artifactId>annotations</artifactId>
       <version>12.0</version>
