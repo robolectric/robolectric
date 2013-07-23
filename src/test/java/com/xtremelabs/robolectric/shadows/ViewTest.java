@@ -518,6 +518,15 @@ public class ViewTest {
         assertThat(states[0], equalTo(123));
     }
 
+    @Test
+    public void canAssertPostInvalidation() throws Exception {
+        assertThat(shadowOf(view).wasPostInvalidated(), equalTo(false));
+        view.postInvalidate();
+        assertThat(shadowOf(view).wasPostInvalidated(), equalTo(true));
+        shadowOf(view).clearPostInvalidate();
+        assertThat(shadowOf(view).wasPostInvalidated(), equalTo(false));
+    }
+
     private static class TestAnimation extends Animation {
     }
 

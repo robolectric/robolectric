@@ -89,6 +89,7 @@ public class ShadowView {
     private float scaleY = 1.0f;
     private int hapticFeedbackPerformed = -1;
     private boolean onLayoutWasCalled;
+    private boolean wasPostInvalidated;
 
     public void __constructor__(Context context) {
         __constructor__(context, null);
@@ -1152,5 +1153,18 @@ public class ShadowView {
 
     public int lastHapticFeedbackPerformed() {
         return hapticFeedbackPerformed;
+    }
+
+    @Implementation
+    public void postInvalidate() {
+        wasPostInvalidated = true;
+    }
+
+    public void clearPostInvalidate() {
+        wasPostInvalidated = false;
+    }
+
+    public boolean wasPostInvalidated() {
+        return wasPostInvalidated;
     }
 }
