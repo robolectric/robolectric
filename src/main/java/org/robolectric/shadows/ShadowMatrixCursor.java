@@ -32,7 +32,7 @@ public class ShadowMatrixCursor extends ShadowAbstractCursor {
 
     List<Object> data = new ArrayList<Object>();
     for (Object columnValue : columnValues) {
-        data.add(columnValue);
+      data.add(columnValue);
     }
 
     this.data.add(data.toArray());
