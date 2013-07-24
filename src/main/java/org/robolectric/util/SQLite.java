@@ -145,24 +145,29 @@ public class SQLite {
    * @return SQLStringAndBindings
    */
   public static SQLStringAndBindings buildColumnValuesClause(ContentValues values) {
-    StringBuilder clause = new StringBuilder("(");
+    StringBuilder clause = new StringBuilder();
     List<Object> columnValues = new ArrayList<Object>(values.size());
 
-    Iterator<Entry<String, Object>> itemEntries = sort(values.valueSet()).iterator();
-    while (itemEntries.hasNext()) {
-      Entry<String, Object> entry = itemEntries.next();
-      clause.append(entry.getKey());
-      if (itemEntries.hasNext()) {
-        clause.append(", ");
+    if (values.size() > 0) {
+      clause.append("(");
+      Iterator<Entry<String, Object>> itemEntries = sort(values.valueSet()).iterator();
+      while (itemEntries.hasNext()) {
+        Entry<String, Object> entry = itemEntries.next();
+        clause.append(entry.getKey());
+        if (itemEntries.hasNext()) {
+          clause.append(", ");
+        }
+        columnValues.add(entry.getValue());
       }
-      columnValues.add(entry.getValue());
-    }
 
-    clause.append(") VALUES (");
-    for (int i = 0; i < values.size() - 1; i++) {
-      clause.append("?, ");
+      clause.append(") VALUES (");
+      for (int i = 0; i < values.size() - 1; i++) {
+        clause.append("?, ");
+      }
+      clause.append("?)");
+    } else {
+      clause.append("DEFAULT VALUES");
     }
-    clause.append("?)");
 
     return new SQLStringAndBindings(clause.toString(), columnValues);
   }
