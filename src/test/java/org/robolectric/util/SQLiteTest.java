@@ -35,6 +35,13 @@ public class SQLiteTest {
   }
 
   @Test
+  public void testBuildInsertStringWithoutColumnValues() throws Exception {
+    SQLite.SQLStringAndBindings insertString = buildInsertString("table_name", new ContentValues(), SQLiteDatabase.CONFLICT_NONE);
+    assertThat(insertString.sql).isEqualTo("INSERT INTO table_name DEFAULT VALUES;");
+    assertThat(insertString.columnValues).isEmpty();
+  }
+
+  @Test
   public void testBuildUpdateString() {
     SQLite.SQLStringAndBindings insertString = buildUpdateString("table_name", values, "id=?", new String[]{"1234"});
     assertThat(insertString.sql).isEqualTo("UPDATE table_name SET byte_data=?, float_value=?, int_value=?, name=? WHERE id='1234';");
