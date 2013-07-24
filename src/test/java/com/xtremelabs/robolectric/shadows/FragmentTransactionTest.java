@@ -130,7 +130,7 @@ public class FragmentTransactionTest {
         // because for some reason that's not what Android does in real life
         StartActivityTrackingActivity trackingActivity = new StartActivityTrackingActivity();
         shadowOf(fragment).setActivity(trackingActivity);
-        fragment.startActivity(null);
+        fragment.startActivity(new Intent());
         assertFalse(trackingActivity.startActivityWasCalled);
     }
 

@@ -26,6 +26,7 @@ import org.junit.runner.RunWith;
 import java.io.FileDescriptor;
 import java.util.List;
 
+import static com.xtremelabs.robolectric.Robolectric.application;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static com.xtremelabs.robolectric.util.TestUtil.newConfig;
 import static junit.framework.Assert.assertEquals;
@@ -263,6 +264,11 @@ public class ApplicationTest {
         List<Intent> broadcastIntents = shadowOf(Robolectric.application).getBroadcastIntents();
         assertTrue(broadcastIntents.size() == 1);
         assertEquals(broadcastIntent, broadcastIntents.get(0));
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void startingNullIntent_throwsException() throws Exception {
+        application.startActivity(null);
     }
 
     private static class NullBinder implements IBinder {

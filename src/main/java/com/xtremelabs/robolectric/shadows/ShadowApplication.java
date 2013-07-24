@@ -172,6 +172,9 @@ public class ShadowApplication extends ShadowContextWrapper {
     @Implementation
     @Override
     public void startActivity(Intent intent) {
+        if (intent == null) {
+            throw new RuntimeException("Cannot pass null to startActivity");
+        }
         startedActivities.add(intent);
     }
 
