@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import android.util.SparseBooleanArray;
 import android.view.View;
 import android.widget.AbsListView;
-import android.widget.ListView;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -17,8 +16,6 @@ public class ShadowAbsListView extends ShadowAdapterView {
   private int smoothScrolledPosition;
   private int lastSmoothScrollByDistance;
   private int lastSmoothScrollByDuration;
-  private int choiceMode;
-  private SparseBooleanArray checkedItemPositions = new SparseBooleanArray();
 
   @Implementation
   public void setOnScrollListener(AbsListView.OnScrollListener l) {
@@ -38,70 +35,42 @@ public class ShadowAbsListView extends ShadowAdapterView {
 
   @Implementation
   public boolean performItemClick(View view, int position, long id) {
-    boolean handled = false;
-    if (choiceMode != ListView.CHOICE_MODE_NONE) {
-      handled = true;
-
-      if (choiceMode == ListView.CHOICE_MODE_MULTIPLE) {
-        boolean newValue = !checkedItemPositions.get(position, false);
-        checkedItemPositions.put(position, newValue);
-      } else {
-        boolean newValue = !checkedItemPositions.get(position, false);
-        if (newValue) {
-          checkedItemPositions.clear();
-          checkedItemPositions.put(position, true);
-        }
-      }
-    }
-
-    handled |= ((Boolean)
-        directlyOn(realAbsListView, AbsListView.class, "performItemClick", View.class, int.class, long.class)
-            .invoke(view, position, id));
-    return handled;
+    return ((Boolean) directlyOn(realAbsListView, AbsListView.class, "performItemClick", View.class, int.class, long.class).invoke(view, position, id));
   }
 
   @Implementation
   public int getCheckedItemPosition() {
-    if (choiceMode != ListView.CHOICE_MODE_SINGLE || checkedItemPositions.size() != 1)
-      return ListView.INVALID_POSITION;
-
-    return checkedItemPositions.keyAt(0);
+    return ((Integer) directlyOn(realAbsListView, AbsListView.class, "getCheckedItemPosition").invoke());
   }
 
   @Implementation
   public int getCheckedItemCount() {
-    SparseBooleanArray checkedItemPositions = getCheckedItemPositions();
-    return checkedItemPositions == null ? 0 : checkedItemPositions.size();
+    return ((Integer) directlyOn(realAbsListView, AbsListView.class, "getCheckedItemCount").invoke());
   }
 
   @Implementation
   public void setItemChecked(int position, boolean value) {
-    if (choiceMode == ListView.CHOICE_MODE_SINGLE) {
-      checkedItemPositions.clear();
-      checkedItemPositions.put(position, value);
-    } else if (choiceMode == ListView.CHOICE_MODE_MULTIPLE) {
-      checkedItemPositions.put(position, value);
-    }
+    directlyOn(realAbsListView, AbsListView.class, "setItemChecked", int.class, boolean.class).invoke(position, value);
   }
-
 
   @Implementation
   public int getChoiceMode() {
-    return choiceMode;
+    return (Integer) directlyOn(realAbsListView, AbsListView.class, "getChoiceMode").invoke();
   }
 
   @Implementation
   public void setChoiceMode(int choiceMode) {
-    this.choiceMode = choiceMode;
+    directlyOn(realAbsListView, AbsListView.class, "setChoiceMode", int.class).invoke(choiceMode);
   }
-
 
   @Implementation
   public SparseBooleanArray getCheckedItemPositions() {
-    if (choiceMode == ListView.CHOICE_MODE_NONE)
-      return null;
+    return (SparseBooleanArray) directlyOn(realAbsListView, AbsListView.class, "getCheckedItemPositions").invoke();
+  }
 
-    return checkedItemPositions;
+  @Implementation
+  public long[] getCheckedItemIds() {
+    return (long[]) directlyOn(realAbsListView, AbsListView.class, "getCheckedItemIds").invoke();
   }
 
   /**
