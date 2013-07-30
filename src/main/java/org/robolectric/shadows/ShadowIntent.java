@@ -565,6 +565,8 @@ public class ShadowIntent {
     if (o == null || getClass() != o.getClass()) return false;
 
     if (action != null ? !action.equals(o.action) : o.action != null) return false;
+    if (packageName != null ? !packageName.equals(o.packageName) : o.packageName != null)
+        return false;
     if (componentName != null ? !componentName.equals(o.componentName) : o.componentName != null)
       return false;
     if (data != null ? !data.equals(o.data) : o.data != null) return false;
@@ -580,9 +582,11 @@ public class ShadowIntent {
   public int hashCode() {
     int result = extras != null ? extras.hashCode() : 0;
     result = 31 * result + (action != null ? action.hashCode() : 0);
+    result = 31 * result + (packageName != null ? packageName.hashCode() : 0);
     result = 31 * result + (componentName != null ? componentName.hashCode() : 0);
     result = 31 * result + (data != null ? data.hashCode() : 0);
     result = 31 * result + (type != null ? type.hashCode() : 0);
+    result = 31 * result + (categories != null ? categories.hashCode() : 0);
     result = 31 * result + flags;
     return result;
   }
