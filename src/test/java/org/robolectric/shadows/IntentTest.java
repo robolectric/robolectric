@@ -474,11 +474,6 @@ public class IntentTest {
     assertThat(intent.getExtras().getIntegerArrayList("KEY")).isEqualTo(integers);
   }
 
-  public void testHashCode() {
-    //Intent intentA = new Intent();
-    //intentA.
-  }
-
   private static class TestSerializable implements Serializable {
     private String someValue;
 
