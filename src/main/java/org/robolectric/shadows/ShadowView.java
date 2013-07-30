@@ -53,7 +53,6 @@ public class ShadowView {
   public Point scrollToCoordinates = new Point();
   private boolean didRequestLayout;
   private MotionEvent lastTouchEvent;
-  private TouchDelegate touchDelegate;
   private boolean attachedToWindow;
   private float scaleX = 1.0f;
   private float scaleY = 1.0f;
@@ -404,16 +403,6 @@ public class ShadowView {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-  }
-
-  @Implementation
-  public void setTouchDelegate(TouchDelegate delegate) {
-    this.touchDelegate = delegate;
-  }
-
-  @Implementation
-  public TouchDelegate getTouchDelegate() {
-    return touchDelegate;
   }
 
   public boolean isAttachedToWindow() {
