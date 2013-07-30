@@ -6,10 +6,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class ResourceExtractor extends ResourceIndex {
   private static final ResourceRemapper RESOURCE_REMAPPER = new ResourceRemapper();
   private static final boolean REMAP_RESOURCES = false;
+  private static final Logger LOGGER = Logger.getLogger(ResourceExtractor.class.getName());
 
   private final Class<?> processedRFile;
   private final String packageName;
@@ -79,7 +81,7 @@ public class ResourceExtractor extends ResourceIndex {
               if (REMAP_RESOURCES) {
                 throw new RuntimeException(message);
               } else {
-                System.err.println(message);
+                LOGGER.severe(message);
               }
             }
 
@@ -100,7 +102,7 @@ public class ResourceExtractor extends ResourceIndex {
       id = ++maxUsedInt;
       resourceNameToId.put(resName, id);
       resourceIdToResName.put(id, resName);
-      System.out.println("INFO: no id mapping found for " + resName.getFullyQualifiedName() + "; assigning ID #0x" + Integer.toHexString(id));
+      LOGGER.info("no id mapping found for " + resName.getFullyQualifiedName() + "; assigning ID #0x" + Integer.toHexString(id));
     }
     return id;
   }
