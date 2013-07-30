@@ -141,13 +141,13 @@ public class RobolectricPackageManager extends StubPackageManager {
     intentToResolve.setPackage(packageName);
     List<ResolveInfo> ris = queryIntentActivities(intentToResolve, 0);
 
-    if (ris == null || ris.size() <= 0) {
+    if (ris == null || ris.isEmpty()) {
       intentToResolve.removeCategory(Intent.CATEGORY_INFO);
       intentToResolve.addCategory(Intent.CATEGORY_LAUNCHER);
       intentToResolve.setPackage(packageName);
       ris = queryIntentActivities(intentToResolve, 0);
     }
-    if (ris == null || ris.size() <= 0) {
+    if (ris == null || ris.isEmpty()) {
       return null;
     }
     Intent intent = new Intent(intentToResolve);
