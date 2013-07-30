@@ -26,6 +26,7 @@ public class TestFragmentManager extends FragmentManager {
     private FragmentActivity activity;
     private List<TestFragmentTransaction> transactions = new ArrayList<TestFragmentTransaction>();
     private List<Runnable> transactionsToRunLater = new ArrayList<Runnable>();
+    private FragmentTransaction lastBegunTransaction;
 
     public TestFragmentManager(FragmentActivity activity) {
         this.activity = activity;
@@ -37,7 +38,8 @@ public class TestFragmentManager extends FragmentManager {
 
     @Override
     public FragmentTransaction beginTransaction() {
-        return new TestFragmentTransaction(this);
+        lastBegunTransaction = new TestFragmentTransaction(this);
+        return lastBegunTransaction;
     }
 
     @Override
@@ -214,5 +216,9 @@ public class TestFragmentManager extends FragmentManager {
         };
         transactionsToRunLater.add(transactionCommit);
         new Handler().post(transactionCommit);
+    }
+
+    public FragmentTransaction getLastBegunTransaction() {
+        return lastBegunTransaction;
     }
 }

@@ -236,6 +236,12 @@ public class FragmentManagerTest {
         assertEquals(1, manager.getCommittedTransactions().size());
     }
 
+    @Test
+    public void canAnswerLastTransaction() throws Exception {
+        FragmentTransaction expected = manager.beginTransaction();
+        assertSame(expected, manager.getLastBegunTransaction());
+    }
+
     private static class TestFragmentActivity extends FragmentActivity {
         @Override
         public void onCreate(Bundle savedInstanceState) {
