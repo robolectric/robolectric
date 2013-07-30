@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.graphics.Picture;
+import android.view.ViewGroup.LayoutParams;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -194,4 +195,13 @@ public class WebViewTest {
     webView.onResume();
     assertThat(shadowWebView.wasOnResumeCalled()).isTrue();
   }
+  
+  @Test
+  public void shouldReturnPreviouslySetLayoutParams() {
+    assertThat(webView.getLayoutParams()).isNull();
+    LayoutParams params = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+    webView.setLayoutParams(params);
+    assertThat(webView.getLayoutParams()).isSameAs(params);
+  }
+  
 }
