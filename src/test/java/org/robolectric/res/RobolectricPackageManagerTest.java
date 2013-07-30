@@ -179,7 +179,8 @@ public class RobolectricPackageManagerTest {
 
   @Test
   public void queryActivityIcons__Match() throws Exception {
-    Intent i = rpm.getLaunchIntentForPackage(TEST_PACKAGE_NAME);
+    Intent i = new Intent();
+    i.setComponent(new ComponentName(TEST_PACKAGE_NAME, ""));
     Drawable d = new BitmapDrawable();
 
     rpm.addActivityIcon(i, d);
@@ -247,6 +248,24 @@ public class RobolectricPackageManagerTest {
     rpm.addManifest(appManifest);
     ApplicationInfo applicationInfo = rpm.getApplicationInfo("org.robolectric", 0);
     assertThat(applicationInfo.name).isEqualTo("org.robolectric.TestApplication");
+  }
+
+  @Test
+  public void testLaunchIntentForPackage() {
+    Intent intent = rpm.getLaunchIntentForPackage(TEST_PACKAGE_LABEL);
+    assertThat(intent).isNull();
+
+    Intent launchIntent = new Intent(Intent.ACTION_MAIN);
+    launchIntent.setPackage(TEST_PACKAGE_LABEL);
+    launchIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+    ResolveInfo resolveInfo = new ResolveInfo();
+    resolveInfo.activityInfo = new ActivityInfo();
+    resolveInfo.activityInfo.packageName = TEST_PACKAGE_LABEL;
+    resolveInfo.activityInfo.name = "LauncherActivity";
+    Robolectric.packageManager.addResolveInfoForIntent(launchIntent, resolveInfo);
+
+    intent = rpm.getLaunchIntentForPackage(TEST_PACKAGE_LABEL);
+    assertThat(intent).isNotNull();
   }
 
   /////////////////////////////
