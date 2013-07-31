@@ -539,6 +539,14 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     shadowOf(getWindow()).performLayout();
   }
 
+  public int getPendingTransitionEnterAnimationResourceId() {
+    return pendingTransitionEnterAnimResId;
+  }
+
+  public int getPendingTransitionExitAnimationResourceId() {
+    return pendingTransitionExitAnimResId;
+  }
+
   /**
    * Container object to hold an Intent, together with the requestCode used
    * in a call to {@code Activity#startActivityForResult(Intent, int)}

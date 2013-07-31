@@ -355,6 +355,84 @@ public class IntentTest {
   }
 
   @Test
+  public void equals_shouldTestPackageName() throws Exception {
+    Intent intentA = new Intent()
+        .setAction("action")
+        .setPackage("package");
+
+    Intent intentB = new Intent()
+        .setAction("action")
+        .setPackage("package");
+
+    assertThat(intentA).isEqualTo(intentB);
+
+    intentB.setPackage("other package");
+    assertThat(intentA).isNotEqualTo(intentB);
+  }
+
+  @Test
+  public void hashCode_shouldTestActionComponentNameDataAndExtras() throws Exception {
+    Intent intentA = new Intent()
+        .setAction("action")
+        .setData(Uri.parse("content:1"))
+        .setComponent(new ComponentName("pkg", "cls"))
+        .putExtra("extra", "blah")
+        .setType("image/*")
+        .addCategory("category.name");
+
+    Intent intentB = new Intent()
+        .setAction("action")
+        .setData(Uri.parse("content:1"))
+        .setComponent(new ComponentName("pkg", "cls"))
+        .putExtra("extra", "blah")
+        .setType("image/*")
+        .addCategory("category.name");
+
+    assertThat(intentA.hashCode()).isEqualTo(intentB.hashCode());
+
+    intentB.setAction("other action");
+    assertThat(intentA.hashCode()).isNotEqualTo(intentB.hashCode());
+
+    intentB.setAction("action");
+    intentB.setData(Uri.parse("content:other"));
+    assertThat(intentA.hashCode()).isNotEqualTo(intentB.hashCode());
+
+    intentB.setData(Uri.parse("content:1"));
+    intentB.setComponent(new ComponentName("other-pkg", "other-cls"));
+    assertThat(intentA.hashCode()).isNotEqualTo(intentB.hashCode());
+
+    intentB.setComponent(new ComponentName("pkg", "cls"));
+    intentB.putExtra("extra", "foo");
+    assertThat(intentA.hashCode()).isNotEqualTo(intentB.hashCode());
+
+    intentB.putExtra("extra", "blah");
+    intentB.setType("other/*");
+    assertThat(intentA.hashCode()).isNotEqualTo(intentB.hashCode());
+
+    intentB.setType("image/*");
+    assertThat(intentA.hashCode()).isEqualTo(intentB.hashCode());
+
+    intentB.removeCategory("category.name");
+    assertThat(intentA.hashCode()).isNotEqualTo(intentB.hashCode());
+  }
+
+  @Test
+  public void hashCode_shouldTestPackageName() throws Exception {
+    Intent intentA = new Intent()
+        .setAction("action")
+        .setPackage("package");
+
+    Intent intentB = new Intent()
+        .setAction("action")
+        .setPackage("package");
+
+    assertThat(intentA.hashCode()).isEqualTo(intentB.hashCode());
+
+    intentB.setPackage("other package");
+    assertThat(intentA.hashCode()).isNotEqualTo(intentB.hashCode());
+  }
+
+  @Test
   public void equals_whenOtherObjectIsNotAnIntent_shouldReturnFalse() throws Exception {
     assertThat((Object) new Intent()).isNotEqualTo(new Object());
   }
