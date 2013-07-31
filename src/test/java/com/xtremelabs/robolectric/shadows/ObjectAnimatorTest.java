@@ -7,6 +7,7 @@ import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static com.xtremelabs.robolectric.RobolectricShadowOfLevel16.shadowOf;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -20,6 +21,8 @@ public class ObjectAnimatorTest {
         assertThat(animator, notNullValue());
         assertThat(animator.getTarget(), equalTo(expectedTarget));
         assertThat(animator.getPropertyName(), equalTo(propertyName));
+        assertThat(shadowOf(animator).getFloatValues()[0], equalTo(0.5f));
+        assertThat(shadowOf(animator).getFloatValues()[1], equalTo(0.4f));
     }
 
     @Test

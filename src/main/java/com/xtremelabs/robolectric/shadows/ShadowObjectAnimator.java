@@ -91,6 +91,10 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
         return propertyName;
     }
 
+    public float[] getFloatValues() {
+        return floatValues;
+    }
+
     @Implementation
     public void setFloatValues(float... values) {
         this.floatValues = values;
