@@ -67,6 +67,10 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
         return result;
     }
 
+    public static void clearAnimatorsHistory() {
+        mapsForAnimationTargets.clear();
+    }
+
     private void setAnimationType(Class<?> type) {
         animationType = type;
     }

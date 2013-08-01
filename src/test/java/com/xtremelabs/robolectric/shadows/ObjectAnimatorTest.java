@@ -88,6 +88,15 @@ public class ObjectAnimatorTest {
     }
 
     @Test
+    public void canClearAnimatorsHistory() throws Exception {
+        View target = new View(null);
+        ObjectAnimator.ofFloat(target, "translationX", 0f, 1f);
+        assertThat(ShadowObjectAnimator.getAnimatorsFor(target).size(), equalTo(1));
+        ShadowObjectAnimator.clearAnimatorsHistory();
+        assertThat(ShadowObjectAnimator.getAnimatorsFor(target).size(), equalTo(0));
+    }
+
+    @Test
     public void testIsRunning() throws Exception {
         View target = new View(null);
         ObjectAnimator expectedAnimator = ObjectAnimator.ofFloat(target, "translationX", 0f, 1f);
