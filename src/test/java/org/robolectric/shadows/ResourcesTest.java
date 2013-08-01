@@ -10,6 +10,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.NinePatchDrawable;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -316,22 +317,39 @@ public class ResourcesTest {
 
   @Test
   public void testGetXml() throws Exception {
-    int resId = R.xml.preferences;
-    XmlResourceParser parser = Robolectric.application.getResources().getXml(resId);
-    // Assert that a resource file is returned
+    XmlResourceParser parser = resources.getXml(R.xml.preferences);
     assertThat(parser).isNotNull();
+    assertThat(findRootTag(parser)).isEqualTo("PreferenceScreen");
 
-    // Assert that the resource file is the preference screen
-    int event;
-    do {
-      event = parser.next();
-    } while (event != XmlPullParser.START_TAG);
-    assertThat(parser.getName()).isEqualTo("PreferenceScreen");
+    parser = resources.getXml(R.layout.custom_layout);
+    assertThat(parser).isNotNull();
+    assertThat(findRootTag(parser)).isEqualTo("org.robolectric.util.CustomView");
+
+    parser = resources.getXml(R.menu.test);
+    assertThat(parser).isNotNull();
+    assertThat(findRootTag(parser)).isEqualTo("menu");
+
+    parser = resources.getXml(R.drawable.rainbow);
+    assertThat(parser).isNotNull();
+    assertThat(findRootTag(parser)).isEqualTo("layer-list");
+
+    parser = resources.getXml(R.anim.test_anim_1);
+    assertThat(parser).isNotNull();
+    assertThat(findRootTag(parser)).isEqualTo("set");
+
+    parser = resources.getXml(R.color.color_state_list);
+    assertThat(parser).isNotNull();
+    assertThat(findRootTag(parser)).isEqualTo("selector");
   }
 
   @Test(expected = Resources.NotFoundException.class)
   public void testGetXml_nonexistentResource() {
     resources.getXml(0);
+  }
+
+  @Test(expected = Resources.NotFoundException.class)
+  public void testGetXml_nonxmlfile() {
+    resources.getXml(R.drawable.an_image);
   }
 
   @Test
@@ -346,5 +364,15 @@ public class ResourcesTest {
     InputStream resourceStream = resources.openRawResource(R.raw.lib_raw_resource);
     assertThat(resourceStream).isNotNull();
     assertThat(TestUtil.readString(resourceStream)).isEqualTo("from lib3");
+  }
+
+  /////////////////////////////
+
+  private static String findRootTag(XmlResourceParser parser) throws Exception {
+    int event;
+    do {
+      event = parser.next();
+    } while (event != XmlPullParser.START_TAG);
+    return parser.getName();
   }
 }
