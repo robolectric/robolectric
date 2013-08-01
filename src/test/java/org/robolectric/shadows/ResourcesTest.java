@@ -10,6 +10,9 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.NinePatchDrawable;
+import android.util.AttributeSet;
+import android.util.Xml;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -316,8 +319,7 @@ public class ResourcesTest {
 
   @Test
   public void testGetXml() throws Exception {
-    int resId = R.xml.preferences;
-    XmlResourceParser parser = Robolectric.application.getResources().getXml(resId);
+    XmlResourceParser parser = resources.getXml(R.xml.preferences);
     // Assert that a resource file is returned
     assertThat(parser).isNotNull();
 
@@ -327,11 +329,31 @@ public class ResourcesTest {
       event = parser.next();
     } while (event != XmlPullParser.START_TAG);
     assertThat(parser.getName()).isEqualTo("PreferenceScreen");
+    
+    parser = resources.getXml(R.layout.custom_layout);
+    assertThat(parser).isNotNull();
+
+    parser = resources.getXml(R.menu.test);
+    assertThat(parser).isNotNull();
+
+    parser = resources.getXml(R.drawable.rainbow);
+    assertThat(parser).isNotNull();
+
+    parser = resources.getXml(R.anim.test_anim_1);
+    assertThat(parser).isNotNull();
+
+    parser = resources.getXml(R.color.color_state_list);
+    assertThat(parser).isNotNull();
   }
 
   @Test(expected = Resources.NotFoundException.class)
   public void testGetXml_nonexistentResource() {
     resources.getXml(0);
+  }
+
+  @Test(expected = Resources.NotFoundException.class)
+  public void testGetXml_nonxmlfile() {
+      resources.getXml(R.drawable.an_image);
   }
 
   @Test
