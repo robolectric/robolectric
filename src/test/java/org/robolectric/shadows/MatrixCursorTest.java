@@ -7,6 +7,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
 
+import java.util.Arrays;
+
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -24,10 +26,32 @@ public class MatrixCursorTest {
   }
 
   @Test
-  public void shouldAddRows() throws Exception {
+  public void shouldAddObjectArraysAsRows() throws Exception {
     MatrixCursor cursor = new MatrixCursor(new String[]{"a", "b", "c"});
     cursor.addRow(new Object[]{"foo", 10L, 0.1f});
     cursor.addRow(new Object[]{"baz", 20L, null});
+    assertThat(cursor.getCount()).isEqualTo(2);
+
+    assertTrue(cursor.moveToFirst());
+
+    assertThat(cursor.getString(0)).isEqualTo("foo");
+    assertThat(cursor.getLong(1)).isEqualTo(10L);
+    assertThat(cursor.getFloat(2)).isEqualTo(0.1f);
+
+    assertTrue(cursor.moveToNext());
+
+    assertThat(cursor.getString(0)).isEqualTo("baz");
+    assertThat(cursor.getLong(1)).isEqualTo(20L);
+    assertTrue(cursor.isNull(2));
+
+    assertFalse(cursor.moveToNext());
+  }
+
+  @Test
+  public void shouldAddIterablesAsRows() throws Exception {
+    MatrixCursor cursor = new MatrixCursor(new String[]{"a", "b", "c"});
+    cursor.addRow(Arrays.asList(new Object[]{"foo", 10L, 0.1f}));
+    cursor.addRow(Arrays.asList(new Object[]{"baz", 20L, null}));
     assertThat(cursor.getCount()).isEqualTo(2);
 
     assertTrue(cursor.moveToFirst());
