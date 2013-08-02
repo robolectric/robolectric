@@ -9,6 +9,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
+import org.robolectric.shadows.testing.FakeActionProvider;
 import org.robolectric.tester.android.view.TestMenu;
 import org.robolectric.tester.android.view.TestMenuItem;
 import org.robolectric.util.I18nException;
@@ -63,5 +64,13 @@ public class MenuInflaterTest {
   public void shouldThrowExceptionOnI18nStrictModeInflateMenu() throws Exception {
     shadowOf(context).setStrictI18n(true);
     new MenuInflater(context).inflate(R.menu.test, new TestMenu());
+  }
+  
+  @Test
+  public void shouldParseActionProvider() throws Exception {
+    TestMenu menu = new TestMenu();
+    new MenuInflater(context).inflate(R.menu.test_with_action_provider, menu);
+    MenuItem item = menu.findItem(R.id.test_menu_1);
+    assertThat(item.getActionProvider()).isInstanceOfAny(FakeActionProvider.class);
   }
 }
