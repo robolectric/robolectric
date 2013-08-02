@@ -127,9 +127,24 @@ mvn org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file \
   -Dfile=$OUT/android-luni-$ANDROID_VERSION.jar
 
 
+echo "building jar for libcore kxml2..."
+
+mkdir $OUT/kxml2
+( cd $ANDROID_SOURCES_BASE/libcore/xml/src/main/java && javac -cp $OUT -d $OUT/kxml2 \
+org/kxml2/io/KXmlParser.java \
+org/kxml2/io/KXmlSerializer.java \
+org/xmlpull/v1/XmlPullParser.java \
+org/xmlpull/v1/XmlPullParserException.java \
+org/xmlpull/v1/XmlPullParserFactory.java \
+org/xmlpull/v1/XmlSerializer.java \
+org/xmlpull/v1/sax2/Driver.java \
+../../../../luni/src/main/java/libcore/internal/StringPool.java )
+
+( cd $OUT/kxml2 && jar cf $OUT/android-kxml2-$ANDROID_VERSION.jar . )
+
 # install android-kxml2
 mvn install:install-file \
-  -Dfile=$ANDROID_SOURCES_BASE/prebuilt/common/kxml2/kxml2-2.3.0.jar \
+  -Dfile=$OUT/android-kxml2-$ANDROID_VERSION.jar \
   -DgroupId=org.robolectric \
   -DartifactId=android-kxml2 \
   -Dversion=$ANDROID_VERSION \
@@ -144,7 +159,7 @@ mvn org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file \
   -Dclassifier=real \
   -Durl=http://data01.mtv.squareup.com/nexus/content/repositories/releases \
   -DrepositoryId=square-nexus \
-  -Dfile=$ANDROID_SOURCES_BASE/prebuilt/common/kxml2/kxml2-2.3.0.jar
+  -Dfile=$OUT/android-kxml2-$ANDROID_VERSION.jar
 
 
 
