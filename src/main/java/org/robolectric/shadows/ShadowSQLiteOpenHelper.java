@@ -51,7 +51,12 @@ public class ShadowSQLiteOpenHelper {
 
   private SQLiteDatabase getDatabase() {
     if (database == null) {
-      database = SQLiteDatabase.openDatabase(name, factory, SQLiteDatabase.OPEN_READWRITE);
+      if (name == null) {
+        database = SQLiteDatabase.create(factory);
+      } else {
+        database = SQLiteDatabase.openDatabase(name, factory, SQLiteDatabase.OPEN_READWRITE);
+      }
+
       if (database.getVersion() == 0) {
         realHelper.onCreate(database);
       }

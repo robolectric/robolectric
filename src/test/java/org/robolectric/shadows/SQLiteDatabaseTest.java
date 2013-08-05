@@ -705,6 +705,12 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
   }
 
   @Test
+  public void shouldUseInMemoryDatabaseWhenCallingCreate() throws Exception {
+    SQLiteDatabase db = SQLiteDatabase.create(null);
+    assertThat(db.isOpen()).isTrue();
+  }
+
+  @Test
   public void shouldSetAndGetVersion() throws Exception {
     assertThat(database.getVersion()).isEqualTo(0);
     database.setVersion(20);
