@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.TimeInterpolator;
@@ -8,13 +9,16 @@ import android.view.View;
 import android.view.animation.LinearInterpolator;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static com.xtremelabs.robolectric.RobolectricShadowOfLevel16.shadowOf;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.mockito.Mockito.mock;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class AnimatorSetTest {
@@ -66,5 +70,38 @@ public class AnimatorSetTest {
         subject.setInterpolator(expectedInterpolator);
 
         assertThat(childAnimator.getInterpolator(), sameInstance(expectedInterpolator));
+    }
+
+    @Test
+    public void doesNothingWhenNoAnimatorsAddedToSet() throws Exception {
+        AnimatorSet subject = new AnimatorSet();
+        subject.start();
+        // does not crash
+    }
+
+    @Test
+    public void canAnswerLastStartedSet() throws Exception {
+        AnimatorSet set1 = new AnimatorSet();
+        AnimatorSet set2 = new AnimatorSet();
+        set1.start();
+        set2.start();
+        assertThat(ShadowAnimatorSet.getLastStartedSet(), sameInstance(set2));
+    }
+
+    @Test
+    public void size_returnsNumberOfAnimatorsInSet() throws Exception {
+        AnimatorSet subject = new AnimatorSet();
+        subject.playTogether(new ObjectAnimator(), new ObjectAnimator());
+        assertThat(shadowOf(subject).size(), equalTo(2));
+    }
+
+    @Test
+    public void get_fetchesAnimatorAtPosition() throws Exception {
+        AnimatorSet subject = new AnimatorSet();
+        Animator animator0 = new ObjectAnimator();
+        Animator animator1 = new ObjectAnimator();
+        subject.playTogether(animator0, animator1);
+        assertThat(shadowOf(subject).get(0), sameInstance(animator0));
+        assertThat(shadowOf(subject).get(1), sameInstance(animator1));
     }
 }

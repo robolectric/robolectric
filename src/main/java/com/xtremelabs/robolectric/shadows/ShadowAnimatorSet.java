@@ -9,9 +9,10 @@ import com.xtremelabs.robolectric.internal.RealObject;
 
 @Implements(AnimatorSet.class)
 public class ShadowAnimatorSet extends ShadowAnimator {
+    private static AnimatorSet lastStartedSet;
     @RealObject
     private AnimatorSet realObject;
-    private Animator[] childAnimators;
+    private Animator[] childAnimators = new Animator[0];
 
     @Implementation
     public void playTogether(Animator... items) {
@@ -24,6 +25,7 @@ public class ShadowAnimatorSet extends ShadowAnimator {
             childAnimator.setDuration(duration);
             childAnimator.start();
         }
+        lastStartedSet = realObject;
     }
 
     @Implementation
@@ -39,4 +41,15 @@ public class ShadowAnimatorSet extends ShadowAnimator {
         }
     }
 
+    public int size() {
+        return childAnimators.length;
+    }
+
+    public static AnimatorSet getLastStartedSet() {
+        return lastStartedSet;
+    }
+
+    public Animator get(int pos) {
+        return childAnimators[pos];
+    }
 }
