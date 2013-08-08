@@ -24,9 +24,17 @@ public class SQLiteOpenHelperTest {
   }
 
   @Test
+  public void testConstructorWithNullPathShouldCreateInMemoryDatabase() throws Exception {
+    TestOpenHelper helper = new TestOpenHelper(null, null, null, 1);
+    SQLiteDatabase database = helper.getReadableDatabase();
+    assertDatabaseOpened(database, helper);
+    assertInitialDB(database, helper);
+  }
+
+  @Test
   public void testInitialGetReadableDatabase() throws Exception {
     SQLiteDatabase database = helper.getReadableDatabase();
-    assertInitialDB(database);
+    assertInitialDB(database, helper);
   }
 
   @Test
@@ -35,7 +43,7 @@ public class SQLiteOpenHelperTest {
     helper.reset();
     database = helper.getReadableDatabase();
 
-    assertSubsequentDB(database);
+    assertSubsequentDB(database, helper);
   }
 
   @Test
@@ -49,7 +57,7 @@ public class SQLiteOpenHelperTest {
   @Test
   public void testInitialGetWritableDatabase() throws Exception {
     SQLiteDatabase database = helper.getWritableDatabase();
-    assertInitialDB(database);
+    assertInitialDB(database, helper);
   }
 
   @Test
@@ -57,7 +65,7 @@ public class SQLiteOpenHelperTest {
     helper.getWritableDatabase();
     helper.reset();
 
-    assertSubsequentDB(helper.getWritableDatabase());
+    assertSubsequentDB(helper.getWritableDatabase(), helper);
   }
 
   @Test
@@ -209,15 +217,15 @@ public class SQLiteOpenHelperTest {
     database.execSQL("DROP TABLE IF EXISTS foo;");
   }
 
-  private void assertInitialDB(SQLiteDatabase database) {
-    assertDatabaseOpened(database);
+  private static void assertInitialDB(SQLiteDatabase database, TestOpenHelper helper) {
+    assertDatabaseOpened(database, helper);
     assertThat(helper.onCreateCalled).isTrue();
   }
-  private void assertSubsequentDB(SQLiteDatabase database) {
-    assertDatabaseOpened(database);
+  private static void assertSubsequentDB(SQLiteDatabase database, TestOpenHelper helper) {
+    assertDatabaseOpened(database, helper);
     assertThat(helper.onCreateCalled).isFalse();
   }
-  private void assertDatabaseOpened(SQLiteDatabase database) {
+  private static void assertDatabaseOpened(SQLiteDatabase database, TestOpenHelper helper) {
     assertThat(database).isNotNull();
     assertThat(database.isOpen()).isTrue();
     assertThat(helper.onOpenCalled).isTrue();
@@ -227,11 +235,12 @@ public class SQLiteOpenHelperTest {
     public boolean onCreateCalled;
     public boolean onUpgradeCalled;
     public boolean onOpenCalled;
-    public TestOpenHelper(Context context, String name,
-        CursorFactory factory, int version) {
+
+    public TestOpenHelper(Context context, String name, CursorFactory factory, int version) {
       super(context, name, factory, version);
       reset();
     }
+
     @Override
       public void onCreate(SQLiteDatabase database) {
         onCreateCalled = true;
