@@ -49,6 +49,10 @@ public class ShadowAnimatorSet extends ShadowAnimator {
         return lastStartedSet;
     }
 
+    public static void clearLastStartedSet() {
+        lastStartedSet = null;
+    }
+
     public Animator get(int pos) {
         return childAnimators[pos];
     }

@@ -1,14 +1,13 @@
 package com.xtremelabs.robolectric.shadows;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import android.animation.Animator;
 import android.animation.Animator.AnimatorListener;
-
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Animator.class)
@@ -17,6 +16,7 @@ public class ShadowAnimator {
     private Animator realObject;
     protected long duration;
     private final List<AnimatorListener> listeners = new ArrayList<AnimatorListener>();
+    private boolean wasStarted;
 
     protected void notifyStart() {
         for (AnimatorListener listener : listeners) {
@@ -36,14 +36,19 @@ public class ShadowAnimator {
     }
     
     @Implementation
-    public void start () {
+    public void start() {
     	notifyStart();
     	notifyEnd();
+        wasStarted = true;
     }
 
     // Tested via ObjectAnimatorTest for now
     @Implementation
     public long getDuration() {
         return duration;
+    }
+
+    public boolean wasStarted() {
+        return wasStarted;
     }
 }
