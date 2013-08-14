@@ -30,11 +30,6 @@ public class PreferenceActivityTest {
   }
 
   @Test
-  public void shouldInheritFromListActivity() {
-    assertThat(shadow).isInstanceOf(ShadowListActivity.class);
-  }
-
-  @Test
   public void shouldNotInitializePreferenceScreen() {
     assertThat(activity.getPreferenceScreen()).isNull();
   }
