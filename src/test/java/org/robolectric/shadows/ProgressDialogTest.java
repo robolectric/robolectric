@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.view.View;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -36,13 +37,15 @@ public class ProgressDialogTest {
     assertThat(shadow).isInstanceOf(ShadowAlertDialog.class);
   }
 
-  @Ignore("ProgressDialog is kinda busted") @Test // todo  2.0-cleanup
-  public void shouldSetMessage() {
-    CharSequence message = "This is only a test";
+  @Test
+  public void shouldPutTheMessageIntoTheView() {
+    String message = "This is only a test";
+    shadow.callOnCreate(null);
 
-    assertThat(shadow.getMessage()).isEqualTo("");
+    View dialogView = shadow.getView();
+    assertThat(shadowOf(dialogView).innerText()).doesNotContain(message);
     dialog.setMessage(message);
-    assertThat(shadow.getMessage()).isEqualTo(message);
+    assertThat(shadowOf(shadow.getView()).innerText()).contains(message);
   }
 
   @Test
