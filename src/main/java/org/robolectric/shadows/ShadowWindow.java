@@ -1,23 +1,30 @@
 package org.robolectric.shadows;
 
-import android.view.ContextThemeWrapper;
+import android.content.Context;
 import android.view.Window;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.tester.android.view.RoboWindow;
 
+import java.lang.reflect.Constructor;
+
+import static org.fest.reflect.core.Reflection.type;
 import static org.robolectric.Robolectric.directlyOn;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(value = Window.class)
 public class ShadowWindow {
-  @RealObject private Window realWindow;
+  @RealObject
+  private Window realWindow;
 
   private int flags;
 
-  public static Window create(ContextThemeWrapper activity) {
-    return new RoboWindow(activity);
+  public static Window create(Context context) throws Exception {
+    Class<?> phoneWindowClass = type("com.android.internal.policy.impl.PhoneWindow").load();
+    Constructor<?> constructor = phoneWindowClass.getConstructor(Context.class);
+    Object phoneWindow = constructor.newInstance(context);
+    return (Window) phoneWindow;
   }
 
   @Implementation

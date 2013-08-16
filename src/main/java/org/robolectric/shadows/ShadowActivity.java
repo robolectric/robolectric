@@ -27,7 +27,16 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.bytecode.RobolectricInternals;
 import org.robolectric.res.ResName;
-import org.robolectric.tester.android.view.RoboWindow;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -39,6 +48,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.fest.reflect.core.Reflection.field;
+import static org.fest.reflect.core.Reflection.type;
 import static org.robolectric.Robolectric.directlyOn;
 import static org.robolectric.Robolectric.shadowOf;
 
@@ -338,11 +348,23 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
    * @return the window associated with this Activity
    */
   @Implementation
-  public Window getWindow() {
+  public Window getWindow()  {
     Window window = directlyOn(realActivity, Activity.class).getWindow();
+
     if (window == null) {
-      setWindow(window = new RoboWindow(realActivity));
+      // TODO: DRY this up with code in ShadowWindow that does the same thing
+      Class<?> phoneWindowClass = type("com.android.internal.policy.impl.PhoneWindow").load();
+      Constructor<?> constructor = null;
+      try {
+        constructor = phoneWindowClass.getConstructor(Context.class);
+        Object phoneWindow = constructor.newInstance(realActivity);
+        setWindow(window = (Window) phoneWindow);
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+
     }
+
     return window;
   }
 

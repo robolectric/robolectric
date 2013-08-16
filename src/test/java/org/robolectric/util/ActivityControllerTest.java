@@ -1,9 +1,11 @@
 package org.robolectric.util;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.os.Bundle;
 import android.os.Looper;
+import android.view.Window;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,6 +37,13 @@ public class ActivityControllerTest {
     assertThat(shadowOf(Looper.getMainLooper()).isPaused()).isFalse();
 
     transcript.assertEventsSoFar("finished creating", "looper call");
+  }
+
+  @Test public void createsAnActivityThatHasAnActionBar() throws Exception {
+    MyActivity myActivity = Robolectric.buildActivity(MyActivity.class).create().get();
+    myActivity.getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
+    ActionBar actionBar = myActivity.getActionBar();
+    assertThat(actionBar).isNotNull();
   }
 
   @Test public void whenLooperIsAlreadyPaused_shouldCreateTestsWithMainLooperPaused() throws Exception {
