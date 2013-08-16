@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.drawable.BitmapDrawable;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.widget.PopupWindow;
 import org.junit.Before;
@@ -13,11 +14,12 @@ import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
-import org.robolectric.tester.android.view.RoboWindowManager;
 
 import static android.view.MotionEvent.ACTION_DOWN;
 import static android.view.MotionEvent.obtain;
-import static junit.framework.Assert.*;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertSame;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -123,23 +125,26 @@ public class PopupWindowTest {
   @RunWith(TestRunners.WithDefaults.class)
   public static class WithContentView {
 
-    private RoboWindowManager windowManager;
+    private WindowManager windowManager;
     private View contentView;
     private View anchor;
+    private ShadowWindowManagerImpl shadowWindowManager;
 
     @Before
     public void setUp() throws Exception {
-      windowManager = (RoboWindowManager) Robolectric.application.getSystemService(Context.WINDOW_SERVICE);
+      windowManager = (WindowManager) Robolectric.application.getSystemService(Context.WINDOW_SERVICE);
       contentView = new View(Robolectric.application);
       contentView.setId(R.id.content_view);
       anchor = new View(Robolectric.application);
+
+      shadowWindowManager = (ShadowWindowManagerImpl) shadowOf(windowManager);
     }
 
     @Test
     public void showAsDropDown_sticksWindowIntoWindowManager() throws Exception {
       PopupWindow popupWindow = new PopupWindow(contentView, 0, 0, true);
       popupWindow.showAsDropDown(anchor);
-      assertNotNull(windowManager.getViews().get(0).findViewById(R.id.content_view));
+      assertNotNull(shadowWindowManager.getViews().get(0).findViewById(R.id.content_view));
     }
 
     @Test
@@ -154,7 +159,7 @@ public class PopupWindowTest {
     public void supportsViewConstructor() throws Exception {
       PopupWindow popupWindow = new PopupWindow(contentView);
       popupWindow.showAsDropDown(anchor);
-      assertNotNull(windowManager.getViews().get(0).findViewById(R.id.content_view));
+      assertNotNull(shadowWindowManager.getViews().get(0).findViewById(R.id.content_view));
     }
 
     @Test
@@ -163,7 +168,7 @@ public class PopupWindowTest {
       BitmapDrawable background = new BitmapDrawable();
       popupWindow.setBackgroundDrawable(background);
       popupWindow.showAsDropDown(anchor);
-      assertSame(background, windowManager.getViews().get(0).getBackground());
+      assertSame(background, shadowWindowManager.getViews().get(0).getBackground());
     }
 
     @Test
@@ -171,7 +176,7 @@ public class PopupWindowTest {
       PopupWindow popupWindow = new PopupWindow(contentView);
       popupWindow.showAsDropDown(anchor);
       popupWindow.dismiss();
-      assertEquals(0, windowManager.getViews().size());
+      assertEquals(0, shadowWindowManager.getViews().size());
     }
   }
 }

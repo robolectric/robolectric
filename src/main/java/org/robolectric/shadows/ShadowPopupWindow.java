@@ -147,7 +147,7 @@ public class ShadowPopupWindow {
     containerView = new LinearLayout(context);
     containerView.addView(contentView);
     containerView.setBackgroundDrawable(background);
-    getWindowManager().addView(containerView, null);
+    getWindowManager().addView(containerView, new WindowManager.LayoutParams());
   }
 
   @Implementation
