@@ -4,10 +4,9 @@
 
 ## Usage
 
-Here's an example of a simple Activity test using Robolectric:
+Here's an example of a simple test written using Robolectric:
 
 ```java
-// Test class for MyActivity
 @RunWith(RobolectricTestRunner.class)
 public class MyActivityTest {
 
