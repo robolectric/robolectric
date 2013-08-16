@@ -1,12 +1,6 @@
 # Robolectric
 
-**Android Unit Testing Framework**
-
-![robolectric](http://robolectric.org/images/robolectric.png)
-
-[![Build Status](https://secure.travis-ci.org/robolectric/robolectric.png?branch=master)](http://travis-ci.org/robolectric/robolectric) 
-
-http://ci.robolectric.org
+[![Build Status](https://secure.travis-ci.org/robolectric/robolectric.png?branch=master)](http://travis-ci.org/robolectric/robolectric)
 
 ## Usage
 
