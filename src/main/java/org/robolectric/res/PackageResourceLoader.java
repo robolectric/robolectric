@@ -41,12 +41,12 @@ public class PackageResourceLoader extends XResourceLoader {
         new StyleResourceLoader(data)
     );
 
-    documentLoader.load("layout", new OpaqueFileLoader(data, "layout"), new XmlFileLoader(xmlDocuments, "layout"));
-    documentLoader.load("menu", new MenuLoader(menuData), new XmlFileLoader(xmlDocuments, "menu"));
-    documentLoader.load("drawable", new OpaqueFileLoader(data, "drawable"), new XmlFileLoader(xmlDocuments, "drawable"));
-    documentLoader.load("anim", new OpaqueFileLoader(data, "anim"), new XmlFileLoader(xmlDocuments, "anim"));
-    documentLoader.load("color", new ColorResourceLoader(data), new XmlFileLoader(xmlDocuments, "color"));
-    documentLoader.load("xml", new PreferenceLoader(preferenceData), new XmlFileLoader(xmlDocuments, "xml"));
+    documentLoader.load("res/layout", new OpaqueFileLoader(data, "layout"), new XmlFileLoader(xmlDocuments, "layout"));
+    documentLoader.load("res/menu", new MenuLoader(menuData), new XmlFileLoader(xmlDocuments, "menu"));
+    documentLoader.load("res/drawable", new OpaqueFileLoader(data, "drawable"), new XmlFileLoader(xmlDocuments, "drawable"));
+    documentLoader.load("res/anim", new OpaqueFileLoader(data, "anim"), new XmlFileLoader(xmlDocuments, "anim"));
+    documentLoader.load("res/color", new ColorResourceLoader(data), new XmlFileLoader(xmlDocuments, "color"));
+    documentLoader.load("res/xml", new PreferenceLoader(preferenceData), new XmlFileLoader(xmlDocuments, "xml"));
     new DrawableResourceLoader(drawableData).findDrawableResources(resourcePath);
     new RawResourceLoader(resourcePath).loadTo(rawResources);
 
