@@ -2,6 +2,8 @@
 
 [![Build Status](https://secure.travis-ci.org/robolectric/robolectric.png?branch=master)](http://travis-ci.org/robolectric/robolectric)
 
+Robolectric is a unit test framework that de-fangs the Android SDK so you can test-drive the development of your Android app.
+
 ## Usage
 
 Here's an example of a simple test written using Robolectric:
