@@ -39,6 +39,7 @@ public class SdkConfig {
         realAndroidDependency("android-base"),
         realAndroidDependency("android-kxml2"),
         realAndroidDependency("android-luni"),
+        realAndroidDependency("android-policy"),
         createDependency("org.json", "json", "20080701", "jar", null),
         createDependency("org.ccil.cowan.tagsoup", "tagsoup", "1.2", "jar", null)
     };
