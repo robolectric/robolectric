@@ -1,6 +1,8 @@
 package org.robolectric.shadows;
 
 import android.graphics.PixelFormat;
+import android.graphics.Point;
+import android.graphics.Rect;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.Surface;
@@ -69,6 +71,22 @@ public class ShadowDisplay {
   @Implementation
   public int getPixelFormat() {
     return pixelFormat;
+  }
+
+  @Implementation
+  public void getCurrentSizeRange(Point outSmallestSize, Point outLargestSize) {
+    outSmallestSize.set(width, height);
+    outLargestSize.set(width, height);
+  }
+
+  @Implementation
+  public void getSize(Point outSize) {
+    outSize.set(width, height);
+  }
+
+  @Implementation
+  public void getRectSize(Rect outSize) {
+    outSize.set(0, 0, width, height);
   }
 
   public float getDensity() {
