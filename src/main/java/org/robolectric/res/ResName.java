@@ -46,8 +46,8 @@ public class ResName {
   public static @NotNull ResName qualifyResName(@NotNull String possiblyQualifiedResourceName, String defaultPackageName, String defaultType) {
     int indexOfColon = possiblyQualifiedResourceName.indexOf(':');
     int indexOfSlash = possiblyQualifiedResourceName.indexOf('/');
-    String packageName = indexOfColon == -1 ? null : possiblyQualifiedResourceName.substring(0, indexOfColon);
-    String type = indexOfSlash == -1 ? null : possiblyQualifiedResourceName.substring(indexOfColon == -1 ? 0 : indexOfColon + 1, indexOfSlash);
+    String packageName = indexOfColon < 0 ? null : possiblyQualifiedResourceName.substring(0, indexOfColon); 
+    String type = indexOfSlash < 0 ? null : possiblyQualifiedResourceName.substring(indexOfColon < 0 ? 0 : indexOfColon + 1, indexOfSlash);
     int indexBeforeName = indexOfColon > indexOfSlash ? indexOfColon : indexOfSlash;
 
     return new ResName(packageName == null ? defaultPackageName : packageName,

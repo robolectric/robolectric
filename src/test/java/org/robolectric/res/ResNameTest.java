@@ -11,5 +11,6 @@ public class ResNameTest {
     assertThat(ResName.qualifyResourceName("some.package:name", "default.package", "deftype")).isEqualTo("some.package:deftype/name");
     assertThat(ResName.qualifyResourceName("type/name", "default.package", "deftype")).isEqualTo("default.package:type/name");
     assertThat(ResName.qualifyResourceName("name", "default.package", "deftype")).isEqualTo("default.package:deftype/name");
+    assertThat(ResName.qualifyResourceName("", "", "")).isEqualTo(":/");
   }
 }
