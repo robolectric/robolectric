@@ -5,7 +5,6 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -63,11 +62,7 @@ public class ShadowDialog {
   public void show() {
     setLatestDialog(this);
     shownDialogs.add(realDialog);
-    shadowOf(Looper.getMainLooper()).runPaused(new Runnable() {
-      @Override public void run() {
-        directlyOn(realDialog, Dialog.class).show();
-      }
-    });
+    directlyOn(realDialog, Dialog.class).show();
   }
 
   @Implementation

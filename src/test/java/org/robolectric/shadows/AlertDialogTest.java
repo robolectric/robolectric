@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.ContextWrapper;
 import android.content.DialogInterface;
 import android.view.View;
@@ -394,6 +395,32 @@ public class AlertDialogTest {
     assertThat(dialog.findViewById(android.R.id.custom)).isInstanceOf(FrameLayout.class);
     assertThat(dialog.findViewById(android.R.id.custom)).isSameAs(dialog.findViewById(android.R.id.custom));
 
+  }
+
+  @Test
+  public void shouldNotExplodeWhenNestingAlerts() throws Exception {
+    final Activity activity = Robolectric.buildActivity(Activity.class).create().get();
+    final AlertDialog nestedDialog = new AlertDialog.Builder(activity)
+        .setTitle("Dialog 2")
+        .setMessage("Another dialog")
+        .setPositiveButton("OK", null)
+        .create();
+
+    final AlertDialog dialog = new AlertDialog.Builder(activity)
+        .setTitle("Dialog 1")
+        .setMessage("A dialog")
+        .setPositiveButton("Button 1", new DialogInterface.OnClickListener() {
+          @Override
+          public void onClick(DialogInterface dialog, int which) {
+            nestedDialog.show();
+          }
+        }).create();
+
+    dialog.show();
+    assertThat(ShadowDialog.getLatestDialog()).isEqualTo(dialog);
+
+    dialog.getButton(Dialog.BUTTON_POSITIVE).performClick();
+    assertThat(ShadowDialog.getLatestDialog()).isEqualTo(nestedDialog);
   }
 
 
