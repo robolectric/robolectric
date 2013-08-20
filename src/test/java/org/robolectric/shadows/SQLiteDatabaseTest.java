@@ -777,6 +777,27 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
     db.execSQL("DROP TABLE IF EXISTS foo;");
   }
 
+  @Test
+  public void testDataPersistency() throws Exception {
+    SQLiteDatabase db1 = SQLiteDatabase.openDatabase(Robolectric.application.getDatabasePath("db1").getPath(), null, 0);
+
+    db1.execSQL("CREATE TABLE foo(id INTEGER PRIMARY KEY AUTOINCREMENT, data TEXT);");
+
+    ContentValues d1 = new ContentValues();
+    d1.put("data", "d1");
+
+    db1.insert("foo", null, d1);
+    
+    db1.close();
+    db1 = SQLiteDatabase.openDatabase(Robolectric.application.getDatabasePath("db1").getPath(), null, 0);
+
+    Cursor c = db1.rawQuery("select * from foo", null);
+    assertThat(c).isNotNull();
+    assertThat(c.getCount()).isEqualTo(1);
+    assertThat(c.moveToNext()).isTrue();
+    assertThat(c.getString(c.getColumnIndex("data"))).isEqualTo("d1");
+  }
+
   private Cursor executeQuery(String query) {
     return database.rawQuery(query, null);
   }
