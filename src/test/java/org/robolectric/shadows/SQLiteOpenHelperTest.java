@@ -224,6 +224,18 @@ public class SQLiteOpenHelperTest {
     database.execSQL("DROP TABLE IF EXISTS foo;");
   }
 
+  @Test
+  public void testCloseThenOpen() throws Exception {
+    final String TABLE_NAME1 = "fart";
+    SQLiteDatabase db1 = helper.getWritableDatabase();
+    setupTable(db1, TABLE_NAME1);
+    insertData(db1, TABLE_NAME1, new int[]{1, 2});
+    verifyData(db1, TABLE_NAME1, 2);
+    db1.close();
+    db1 = helper.getWritableDatabase();
+    assertThat(db1.isOpen()).isTrue();
+  }
+
   private static void assertInitialDB(SQLiteDatabase database, TestOpenHelper helper) {
     assertDatabaseOpened(database, helper);
     assertThat(helper.onCreateCalled).isTrue();
