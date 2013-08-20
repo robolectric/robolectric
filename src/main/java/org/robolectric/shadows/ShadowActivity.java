@@ -352,17 +352,12 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     Window window = directlyOn(realActivity, Activity.class).getWindow();
 
     if (window == null) {
-      // TODO: DRY this up with code in ShadowWindow that does the same thing
-      Class<?> phoneWindowClass = type("com.android.internal.policy.impl.PhoneWindow").load();
-      Constructor<?> constructor = null;
       try {
-        constructor = phoneWindowClass.getConstructor(Context.class);
-        Object phoneWindow = constructor.newInstance(realActivity);
-        setWindow(window = (Window) phoneWindow);
+        window = ShadowWindow.create(realActivity);
+        setWindow(window);
       } catch (Exception e) {
-        throw new RuntimeException(e);
+        throw new RuntimeException("Window creation failed!", e);
       }
-
     }
 
     return window;
