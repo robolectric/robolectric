@@ -17,12 +17,16 @@ import org.robolectric.annotation.RealObject;
 public class ShadowSQLiteOpenHelper {
   @RealObject private SQLiteOpenHelper realHelper;
   private String name;
+  private Context context;
   private SQLiteDatabase database;
   private CursorFactory factory;
+  private int version;
 
   public void __constructor__(Context context, String name, CursorFactory factory, int version) {
+    this.context = context;
     this.name = name;
     this.factory = factory;
+    this.version = version;
   }
 
   @Implementation
@@ -50,17 +54,16 @@ public class ShadowSQLiteOpenHelper {
   }
 
   private SQLiteDatabase getDatabase() {
-    if (database == null) {
-      if (name == null) {
-        database = SQLiteDatabase.create(factory);
-      } else {
-        database = SQLiteDatabase.openDatabase(name, factory, SQLiteDatabase.OPEN_READWRITE);
-      }
-
-      if (database.getVersion() == 0) {
-        realHelper.onCreate(database);
-      }
+    if (name == null) {
+      database = SQLiteDatabase.create(factory);
+    } else {
+      database = SQLiteDatabase.openDatabase(context.getDatabasePath(name).getPath(), factory, SQLiteDatabase.OPEN_READWRITE);
     }
+
+    if (database.getVersion() == 0) {
+      realHelper.onCreate(database);
+    }
+    database.setVersion(version);
     return database;
   }
 }

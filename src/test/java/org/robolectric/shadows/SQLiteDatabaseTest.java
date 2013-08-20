@@ -31,7 +31,7 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
 
   @Before
   public void setUp() throws Exception {
-    database = SQLiteDatabase.openDatabase("path", null, 0);
+    database = SQLiteDatabase.openDatabase(Robolectric.application.getDatabasePath("path").getPath(), null, 0);
     shDatabase = Robolectric.shadowOf(database);
     database.execSQL("CREATE TABLE table_name (\n" +
             "  id INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
@@ -719,21 +719,23 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
 
   @Test
   public void testGetPath() throws Exception {
-    assertThat(database.getPath()).isEqualTo("path");
+    assertThat(database.getPath()).isEqualTo(Robolectric.application.getDatabasePath("path").getPath());
   }
 
   @Test
   public void testShouldReturnTheSameDatabaseIfAlreadyOpened() throws Exception {
-    SQLiteDatabase db1 = SQLiteDatabase.openDatabase("db1", null, 0);
-    SQLiteDatabase db2 = SQLiteDatabase.openDatabase("db2", null, 0);
-    assertThat(SQLiteDatabase.openDatabase("db1", null, 0)).isSameAs(db1);
-    assertThat(SQLiteDatabase.openDatabase("db2", null, 0)).isSameAs(db2);
+    String path1 = Robolectric.application.getDatabasePath("db1").getPath();
+    String path2 = Robolectric.application.getDatabasePath("db2").getPath();
+    SQLiteDatabase db1 = SQLiteDatabase.openDatabase(path1, null, 0);
+    SQLiteDatabase db2 = SQLiteDatabase.openDatabase(path2, null, 0);
+    assertThat(SQLiteDatabase.openDatabase(path1, null, 0)).isSameAs(db1);
+    assertThat(SQLiteDatabase.openDatabase(path2, null, 0)).isSameAs(db2);
   }
 
   @Test
   public void testTwoConcurrentDbConnections() throws Exception {
-    SQLiteDatabase db1 = SQLiteDatabase.openDatabase("db1", null, 0);
-    SQLiteDatabase db2 = SQLiteDatabase.openDatabase("db2", null, 0);
+    SQLiteDatabase db1 = SQLiteDatabase.openDatabase(Robolectric.application.getDatabasePath("db1").getPath(), null, 0);
+    SQLiteDatabase db2 = SQLiteDatabase.openDatabase(Robolectric.application.getDatabasePath("db2").getPath(), null, 0);
 
     db1.execSQL("CREATE TABLE foo(id INTEGER PRIMARY KEY AUTOINCREMENT, data TEXT);");
     db2.execSQL("CREATE TABLE bar(id INTEGER PRIMARY KEY AUTOINCREMENT, data TEXT);");
@@ -762,13 +764,13 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
 
   @Test(expected = SQLiteException.class)
   public void testQueryThrowsSQLiteException() throws Exception {
-    SQLiteDatabase db1 = SQLiteDatabase.openDatabase("db1", null, 0);
+    SQLiteDatabase db1 = SQLiteDatabase.openDatabase(Robolectric.application.getDatabasePath("db1").getPath(), null, 0);
     db1.query("FOO", null, null, null, null, null, null);
   }
 
   @Test
   public void testCreateAndDropTable() throws Exception {
-    SQLiteDatabase db = SQLiteDatabase.openDatabase("db1", null, 0);
+    SQLiteDatabase db = SQLiteDatabase.openDatabase(Robolectric.application.getDatabasePath("db1").getPath(), null, 0);
     db.execSQL("CREATE TABLE foo(id INTEGER PRIMARY KEY AUTOINCREMENT, data TEXT);");
     Cursor c = db.query("FOO", null, null, null, null, null, null);
     assertThat(c).isNotNull();
