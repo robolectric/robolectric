@@ -56,8 +56,8 @@ public class DisplayTest {
 
     display.getCurrentSizeRange(outSmallestSize, outLargestSize);
     assertEquals(400, outSmallestSize.x);
-    assertEquals(600, outSmallestSize.y);
-    assertEquals(400, outLargestSize.x);
+    assertEquals(400, outSmallestSize.y);
+    assertEquals(600, outLargestSize.x);
     assertEquals(600, outLargestSize.y);
 
     display.getSize(outSize);

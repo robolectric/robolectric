@@ -75,8 +75,10 @@ public class ShadowDisplay {
 
   @Implementation
   public void getCurrentSizeRange(Point outSmallestSize, Point outLargestSize) {
-    outSmallestSize.set(width, height);
-    outLargestSize.set(width, height);
+    int minimum = Math.min(width, height);
+    int maximum = Math.max(width, height);
+    outSmallestSize.set(minimum, minimum);
+    outLargestSize.set(maximum, maximum);
   }
 
   @Implementation
