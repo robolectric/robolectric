@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.content.Context;
 import android.content.ContentValues;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -20,7 +21,7 @@ public class SQLiteOpenHelperTest {
 
   @Before
   public void setUp() throws Exception {
-    helper = new TestOpenHelper(null, "path", null, 1);
+    helper = new TestOpenHelper(Robolectric.application, "path", null, 1);
   }
 
   @Test
@@ -100,17 +101,17 @@ public class SQLiteOpenHelperTest {
   public void testGetPath() throws Exception {
     String path1 = "pather", path2 = "path_test";
 
-    TestOpenHelper helper1 = new TestOpenHelper(null, path1, null, 1);
-    assertThat(helper1.getReadableDatabase().getPath()).isEqualTo(path1);
+    TestOpenHelper helper1 = new TestOpenHelper(Robolectric.application, path1, null, 1);
+    assertThat(helper1.getReadableDatabase().getPath()).isEqualTo(Robolectric.application.getDatabasePath(path1).getPath());
 
-    TestOpenHelper helper2 = new TestOpenHelper(null, path2, null, 1);
-    assertThat(helper2.getReadableDatabase().getPath()).isEqualTo(path2);
-    assertThat(helper1.getReadableDatabase().getPath()).isEqualTo(path1);
+    TestOpenHelper helper2 = new TestOpenHelper(Robolectric.application, path2, null, 1);
+    assertThat(helper2.getReadableDatabase().getPath()).isEqualTo(Robolectric.application.getDatabasePath(path2).getPath());
+    assertThat(helper1.getReadableDatabase().getPath()).isEqualTo(Robolectric.application.getDatabasePath(path1).getPath());
   }
 
   @Test
   public void testCloseMultipleDbs() throws Exception {
-    TestOpenHelper helper2 = new TestOpenHelper(null, "path2", null, 1);
+    TestOpenHelper helper2 = new TestOpenHelper(Robolectric.application, "path2", null, 1);
     SQLiteDatabase database1 = helper.getWritableDatabase();
     SQLiteDatabase database2 = helper2.getWritableDatabase();
     assertThat(database1.isOpen()).isTrue();
@@ -124,7 +125,7 @@ public class SQLiteOpenHelperTest {
 
   @Test
   public void testOpenMultipleDbsOnCreate() throws Exception {
-    TestOpenHelper helper2 = new TestOpenHelper(null, "path2", null, 1);
+    TestOpenHelper helper2 = new TestOpenHelper(Robolectric.application, "path2", null, 1);
     assertThat(helper.onCreateCalled).isFalse();
     assertThat(helper2.onCreateCalled).isFalse();
     helper.getWritableDatabase();
@@ -162,7 +163,7 @@ public class SQLiteOpenHelperTest {
     SQLiteDatabase db1 = helper.getWritableDatabase();
     setupTable(db1, TABLE_NAME1);
     insertData(db1, TABLE_NAME1, new int[]{1, 2});
-    TestOpenHelper helper2 = new TestOpenHelper(null, "path2", null, 1);
+    TestOpenHelper helper2 = new TestOpenHelper(Robolectric.application, "path2", null, 1);
     SQLiteDatabase db2 = helper2.getWritableDatabase();
     setupTable(db2, TABLE_NAME2);
     insertData(db2, TABLE_NAME2, new int[]{4, 5, 6});
@@ -170,31 +171,37 @@ public class SQLiteOpenHelperTest {
     verifyData(db2, TABLE_NAME2, 3);
   }
 
-  @Test
-  public void testResetDbs() throws Exception {
-    final String TABLE_NAME1 = "fart", TABLE_NAME2 = "fart2";
-    TestOpenHelper helper2 = new TestOpenHelper(null, "path2", null, 1);
+  @Test(expected=SQLException.class)
+  public void testResetDiskSpaceDb() throws Exception {
+    final String TABLE_NAME1 = "fart";
     SQLiteDatabase db1 = helper.getWritableDatabase();
-    SQLiteDatabase db2 = helper2.getWritableDatabase();
     setupTable(db1, TABLE_NAME1);
-    setupTable(db2, TABLE_NAME2);
     insertData(db1, TABLE_NAME1, new int[]{1, 2});
-    insertData(db2, TABLE_NAME2, new int[]{4, 5, 6});
     verifyData(db1, TABLE_NAME1, 2);
-    verifyData(db2, TABLE_NAME2, 3);
     ShadowSQLiteDatabase.reset();
     db1 = helper.getWritableDatabase();
-    db2 = helper2.getWritableDatabase();
-    // shouldn't throw exceptions bc the table
-    // doesn't exist
+    // should throw exceptions because ShadowSQLiteDatabase.reset() does not remove disk space DB.
     setupTable(db1, TABLE_NAME1);
-    setupTable(db2, TABLE_NAME2);
+  }
+
+  @Test
+  public void testResetDbInMemory() throws Exception {
+    final String TABLE_NAME = "fart";
+    TestOpenHelper helper2 = new TestOpenHelper(Robolectric.application, null, null, 1);
+    SQLiteDatabase db2 = helper2.getWritableDatabase();
+    setupTable(db2, TABLE_NAME);
+    insertData(db2, TABLE_NAME, new int[]{4, 5, 6});
+    verifyData(db2, TABLE_NAME, 3);
+    ShadowSQLiteDatabase.reset();
+    db2 = helper2.getWritableDatabase();
+    // shouldn't throw exceptions because ShadowSQLiteDatabase.reset() clears in memory DB.
+    setupTable(db2, TABLE_NAME);
   }
 
   @Test
   public void testCloseOneDbKeepsDataForOther() throws Exception {
     final String TABLE_NAME1 = "fart", TABLE_NAME2 = "fart2";
-    TestOpenHelper helper2 = new TestOpenHelper(null, "path2", null, 1);
+    TestOpenHelper helper2 = new TestOpenHelper(Robolectric.application, "path2", null, 1);
     SQLiteDatabase db1 = helper.getWritableDatabase();
     SQLiteDatabase db2 = helper2.getWritableDatabase();
     setupTable(db1, TABLE_NAME1);
@@ -215,6 +222,18 @@ public class SQLiteOpenHelperTest {
     SQLiteDatabase database = helper.getWritableDatabase();
     database.execSQL("CREATE TABLE foo(id INTEGER PRIMARY KEY AUTOINCREMENT, data TEXT);");
     database.execSQL("DROP TABLE IF EXISTS foo;");
+  }
+
+  @Test
+  public void testCloseThenOpen() throws Exception {
+    final String TABLE_NAME1 = "fart";
+    SQLiteDatabase db1 = helper.getWritableDatabase();
+    setupTable(db1, TABLE_NAME1);
+    insertData(db1, TABLE_NAME1, new int[]{1, 2});
+    verifyData(db1, TABLE_NAME1, 2);
+    db1.close();
+    db1 = helper.getWritableDatabase();
+    assertThat(db1.isOpen()).isTrue();
   }
 
   private static void assertInitialDB(SQLiteDatabase database, TestOpenHelper helper) {

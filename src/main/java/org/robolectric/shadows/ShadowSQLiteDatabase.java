@@ -147,7 +147,7 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
   public Connection getConnection() {
     synchronized (connectionLock) {
       if (connection == null) {
-        if (path != null && new File(path).isFile()) {
+        if (path != null) {
           connection = DatabaseConfig.getFileConnection(new File(path));
           isFileConnection = true;
         } else {
