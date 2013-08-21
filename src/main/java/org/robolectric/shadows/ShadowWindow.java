@@ -21,10 +21,10 @@ public class ShadowWindow {
   private int flags;
 
   public static Window create(Context context) throws Exception {
-    Class<?> phoneWindowClass = type("com.android.internal.policy.impl.PhoneWindow").load();
-    Constructor<?> constructor = phoneWindowClass.getConstructor(Context.class);
-    Object phoneWindow = constructor.newInstance(context);
-    return (Window) phoneWindow;
+      Class<?> phoneWindowClass = type("com.android.internal.policy.impl.PhoneWindow").load();
+      Constructor<?> constructor = phoneWindowClass.getConstructor(Context.class);
+      Window phoneWindow = (Window) constructor.newInstance(context);
+      return phoneWindow;
   }
 
   @Implementation
