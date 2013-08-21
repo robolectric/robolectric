@@ -25,7 +25,6 @@ import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.res.Attribute;
-import org.robolectric.tester.android.view.RoboWindow;
 import org.robolectric.util.TestAnimationListener;
 import org.robolectric.util.TestOnClickListener;
 import org.robolectric.util.TestOnLongClickListener;
@@ -462,7 +461,7 @@ public class ViewTest {
     assertThat(view2.getMeasuredHeight()).isEqualTo(0);
 
     view2.measure(MeasureSpec.makeMeasureSpec(200, MeasureSpec.AT_MOST),
-        MeasureSpec.makeMeasureSpec(50, MeasureSpec.AT_MOST));
+    MeasureSpec.makeMeasureSpec(50, MeasureSpec.AT_MOST));
 
     assertThat(view2.getWidth()).isEqualTo(0);
     assertThat(view2.getHeight()).isEqualTo(0);
@@ -667,8 +666,8 @@ public class ViewTest {
     parent.addView(new MyView("child", transcript));
     transcript.assertNoEventsSoFar();
 
-    RoboWindow window = new RoboWindow(application);
-    window.setContentView(parent);
+    Activity activity = Robolectric.buildActivity(Activity.class).create().get();
+    activity.setContentView(parent);
     transcript.assertEventsSoFar("parent attached", "child attached");
 
     parent.addView(new MyView("another child", transcript));
@@ -682,15 +681,13 @@ public class ViewTest {
     parent.removeView(temporaryChild);
     transcript.assertEventsSoFar("temporary child detached");
     assertFalse(shadowOf(temporaryChild).isAttachedToWindow());
-
-    window.setContentView(null);
-    transcript.assertEventsSoFar("child detached", "another child detached", "parent detached");
   }
 
   // todo looks like this is flaky...
   @Test public void removeAllViews_shouldCallOnAttachedToAndDetachedFromWindow() throws Exception {
     MyView parent = new MyView("parent", transcript);
-    new RoboWindow(application).setContentView(parent);
+    Activity activity = Robolectric.buildActivity(Activity.class).create().get();
+    activity.setContentView(parent);
 
     parent.addView(new MyView("child", transcript));
     parent.addView(new MyView("another child", transcript));

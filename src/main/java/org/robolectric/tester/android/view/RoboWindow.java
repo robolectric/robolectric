@@ -1,6 +1,7 @@
 package org.robolectric.tester.android.view;
 
 import android.R;
+import android.app.ActionBar;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
@@ -239,8 +240,8 @@ public class RoboWindow extends Window {
 
     viewRootImpl = createViewRootImpl(context);
     WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
-    layoutParams.width = WindowManager.LayoutParams.MATCH_PARENT;
-    layoutParams.height = WindowManager.LayoutParams.MATCH_PARENT;
+    layoutParams.width = ActionBar.LayoutParams.MATCH_PARENT;
+    layoutParams.height = ActionBar.LayoutParams.WRAP_CONTENT;
 
     final int INPUT_FEATURE_NO_INPUT_CHANNEL =
         field("INPUT_FEATURE_NO_INPUT_CHANNEL").ofType(int.class)

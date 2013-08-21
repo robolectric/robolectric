@@ -114,9 +114,9 @@ public class ActivityController<T extends Activity> {
         if (!attached) attach();
 
         activity.getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
-        method("performCreate").withParameterTypes(Bundle.class).in(activity).invoke(bundle);
         field("mDecor").ofType(View.class).in(activity).set(activity.getWindow().getDecorView());
         method("makeVisible").in(activity).invoke();
+        method("performCreate").withParameterTypes(Bundle.class).in(activity).invoke(bundle);
       }
     });
     return this;

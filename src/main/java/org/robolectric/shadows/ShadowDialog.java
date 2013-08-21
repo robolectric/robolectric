@@ -13,7 +13,6 @@ import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.tester.android.view.RoboWindow;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -98,7 +97,7 @@ public class ShadowDialog {
   }
 
   public CharSequence getTitle() {
-    return ((RoboWindow) realDialog.getWindow()).getTitle();
+    return shadowOf(realDialog.getWindow()).getTitle();
   }
 
   public void clickOnText(int textId) {

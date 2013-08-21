@@ -28,7 +28,6 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.bytecode.RobolectricInternals;
 import org.robolectric.res.ResName;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -48,7 +47,6 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.fest.reflect.core.Reflection.field;
-import static org.fest.reflect.core.Reflection.type;
 import static org.robolectric.Robolectric.directlyOn;
 import static org.robolectric.Robolectric.shadowOf;
 
@@ -342,7 +340,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   /**
-   * Constructs a new Window (a {@link org.robolectric.tester.android.view.RoboWindow}) if no window has previously been
+   * Constructs a new Window (a {@link com.android.internal.policy.impl.PhoneWindow}) if no window has previously been
    * set.
    *
    * @return the window associated with this Activity

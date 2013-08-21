@@ -5,7 +5,6 @@ import android.view.Window;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.tester.android.view.RoboWindow;
 
 import java.lang.reflect.Constructor;
 
@@ -16,12 +15,12 @@ import static org.robolectric.Robolectric.directlyOn;
 @Implements(value = Window.class)
 public class ShadowWindow {
   @RealObject
-  private Window realWindow;
+  Window realWindow;
 
   private int flags;
 
   public static Window create(Context context) throws Exception {
-      Class<?> phoneWindowClass = type("com.android.internal.policy.impl.PhoneWindow").load();
+      Class<?> phoneWindowClass = type(ShadowPhoneWindow.PHONE_WINDOW_CLASS_NAME).load();
       Constructor<?> constructor = phoneWindowClass.getConstructor(Context.class);
       Window phoneWindow = (Window) constructor.newInstance(context);
       return phoneWindow;
@@ -38,6 +37,10 @@ public class ShadowWindow {
   }
 
   public void performLayout() {
-    ((RoboWindow) realWindow).performLayout();
+    //((Window) realWindow).performLayout();
+  }
+
+  public CharSequence getTitle() {
+    return "";
   }
 }
