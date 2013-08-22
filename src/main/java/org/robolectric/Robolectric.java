@@ -12,7 +12,6 @@ import android.app.AlertDialog;
 import android.app.Application;
 import android.app.Dialog;
 import android.app.KeyguardManager;
-import android.app.ListActivity;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -26,7 +25,6 @@ import android.bluetooth.BluetoothDevice;
 import android.content.ContentProviderOperation;
 import android.content.ContentProviderResult;
 import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
@@ -161,9 +159,6 @@ import android.widget.VideoView;
 import android.widget.ViewAnimator;
 import android.widget.ViewFlipper;
 import android.widget.ZoomButtonsController;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.List;
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
@@ -258,7 +253,6 @@ import org.robolectric.shadows.ShadowLayerDrawable;
 import org.robolectric.shadows.ShadowLayoutAnimationController;
 import org.robolectric.shadows.ShadowLinearGradient;
 import org.robolectric.shadows.ShadowLinearLayout;
-import org.robolectric.shadows.ShadowListActivity;
 import org.robolectric.shadows.ShadowListPreference;
 import org.robolectric.shadows.ShadowListView;
 import org.robolectric.shadows.ShadowLocation;
@@ -345,6 +339,10 @@ import org.robolectric.tester.org.apache.http.HttpRequestInfo;
 import org.robolectric.tester.org.apache.http.RequestMatcher;
 import org.robolectric.util.ActivityController;
 import org.robolectric.util.Scheduler;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.List;
 
 import static org.fest.reflect.core.Reflection.method;
 
@@ -750,10 +748,6 @@ public class Robolectric {
 
   public static ShadowLinearGradient shadowOf(LinearGradient instance) {
     return (ShadowLinearGradient) shadowOf_(instance);
-  }
-
-  public static ShadowListActivity shadowOf(ListActivity instance) {
-    return (ShadowListActivity) shadowOf_(instance);
   }
 
   public static ShadowListPreference shadowOf(ListPreference instance) {
