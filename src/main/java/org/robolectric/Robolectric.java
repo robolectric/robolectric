@@ -94,6 +94,7 @@ import android.preference.PreferenceCategory;
 import android.preference.PreferenceGroup;
 import android.preference.PreferenceScreen;
 import android.support.v4.content.CursorLoader;
+import android.support.v4.widget.DrawerLayout;
 import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
 import android.text.ClipboardManager;
@@ -230,6 +231,7 @@ import org.robolectric.shadows.ShadowDialog;
 import org.robolectric.shadows.ShadowDialogPreference;
 import org.robolectric.shadows.ShadowDisplay;
 import org.robolectric.shadows.ShadowDrawable;
+import org.robolectric.shadows.ShadowDrawerLayout;
 import org.robolectric.shadows.ShadowEditTextPreference;
 import org.robolectric.shadows.ShadowExpandableListView;
 import org.robolectric.shadows.ShadowFilter;
@@ -652,6 +654,10 @@ public class Robolectric {
 
   public static ShadowDrawable shadowOf(Drawable instance) {
     return (ShadowDrawable) shadowOf_(instance);
+  }
+
+  public static ShadowDrawerLayout shadowOf(DrawerLayout instance) {
+    return (ShadowDrawerLayout) shadowOf_(instance);
   }
 
   public static ShadowDisplay shadowOf(Display instance) {

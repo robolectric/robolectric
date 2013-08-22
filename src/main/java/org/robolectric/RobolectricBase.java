@@ -87,6 +87,7 @@ import org.robolectric.shadows.ShadowDialogPreference;
 import org.robolectric.shadows.ShadowDisplay;
 import org.robolectric.shadows.ShadowDownloadManager;
 import org.robolectric.shadows.ShadowDrawable;
+import org.robolectric.shadows.ShadowDrawerLayout;
 import org.robolectric.shadows.ShadowEdgeEffect;
 import org.robolectric.shadows.ShadowEditText;
 import org.robolectric.shadows.ShadowEditTextPreference;
@@ -346,6 +347,7 @@ public class RobolectricBase {
       ShadowDefaultRequestDirector.class,
       ShadowDisplay.class,
       ShadowDrawable.class,
+      ShadowDrawerLayout.class,
       ShadowDialog.class,
       ShadowDialogPreference.class,
       ShadowDownloadManager.class,

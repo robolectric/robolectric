@@ -456,4 +456,13 @@ public class ShadowView {
   private View directly() {
     return directlyOn(realView, View.class);
   }
+
+  @Implementation
+  public boolean isInEditMode() {
+    if(this instanceof ShadowDrawerLayout) {
+      return true;
+    }
+    return false;
+  }
+
 }
