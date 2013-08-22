@@ -241,7 +241,7 @@ public class RoboWindow extends Window {
     viewRootImpl = createViewRootImpl(context);
     WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
     layoutParams.width = ActionBar.LayoutParams.MATCH_PARENT;
-    layoutParams.height = ActionBar.LayoutParams.WRAP_CONTENT;
+    layoutParams.height = ActionBar.LayoutParams.MATCH_PARENT;
 
     final int INPUT_FEATURE_NO_INPUT_CHANNEL =
         field("INPUT_FEATURE_NO_INPUT_CHANNEL").ofType(int.class)
