@@ -2,6 +2,7 @@ package org.robolectric.tester.android.view;
 
 import android.view.View;
 import android.view.ViewGroup;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -12,7 +13,7 @@ import org.robolectric.TestRunners;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
-public class TestWindowTest {
+public class RoboWindowTest {
 
   @Test
   public void windowManager__shouldNotBeNull() throws Exception {
@@ -41,4 +42,22 @@ public class TestWindowTest {
     ViewGroup contentWrapper = (ViewGroup) window.findViewById(android.R.id.content);
     assertThat(contentWrapper.getChildCount()).isEqualTo(1).as("child count");
   }
+
+  @Test
+  public void contentViewShouldBeMeasuredWithSpecExactly() {
+    RoboWindow window = new RoboWindow(Robolectric.application);
+    final int[] measureModes = {0, 0};
+    View contentView = new View(Robolectric.application) {
+      @Override
+      protected void onMeasure(final int widthMeasureSpec, final int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        measureModes[0] = MeasureSpec.getMode(widthMeasureSpec);
+        measureModes[1] = MeasureSpec.getMode(heightMeasureSpec);
+      }
+    };
+    window.setContentView(contentView);
+    contentView.requestLayout();
+    assertThat(measureModes).isEqualTo(new int[] {View.MeasureSpec.EXACTLY, View.MeasureSpec.EXACTLY});
+  }
+
 }
