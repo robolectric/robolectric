@@ -13,7 +13,7 @@ import org.robolectric.TestRunners;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
-public class WindowTest {
+public class RoboWindowTest {
 
   @Test
   public void windowManager__shouldNotBeNull() throws Exception {
