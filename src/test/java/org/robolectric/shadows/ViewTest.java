@@ -7,6 +7,7 @@ import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Bundle;
 import android.view.HapticFeedbackConstants;
 import android.view.MotionEvent;
 import android.view.View;
@@ -15,7 +16,9 @@ import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.view.WindowManager;
 import android.view.animation.Animation;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -666,8 +669,8 @@ public class ViewTest {
     parent.addView(new MyView("child", transcript));
     transcript.assertNoEventsSoFar();
 
-    Activity activity = Robolectric.buildActivity(Activity.class).create().get();
-    activity.setContentView(parent);
+    Activity activity = Robolectric.buildActivity(ContentViewActivity.class).create().get();
+    activity.getWindowManager().addView(parent, new WindowManager.LayoutParams(100, 100));
     transcript.assertEventsSoFar("parent attached", "child attached");
 
     parent.addView(new MyView("another child", transcript));
@@ -686,8 +689,8 @@ public class ViewTest {
   // todo looks like this is flaky...
   @Test public void removeAllViews_shouldCallOnAttachedToAndDetachedFromWindow() throws Exception {
     MyView parent = new MyView("parent", transcript);
-    Activity activity = Robolectric.buildActivity(Activity.class).create().get();
-    activity.setContentView(parent);
+    Activity activity = Robolectric.buildActivity(ContentViewActivity.class).create().get();
+    activity.getWindowManager().addView(parent, new WindowManager.LayoutParams(100, 100));
 
     parent.addView(new MyView("child", transcript));
     parent.addView(new MyView("another child", transcript));
@@ -725,6 +728,14 @@ public class ViewTest {
     @Override protected void onDetachedFromWindow() {
       transcript.add(name + " detached");
       super.onDetachedFromWindow();
+    }
+  }
+
+  private static class ContentViewActivity extends Activity {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+      super.onCreate(savedInstanceState);
+      setContentView(new FrameLayout(this));
     }
   }
 }
