@@ -232,6 +232,7 @@ public final class R {
   public static final class menu {
     public static final int test = 0x10a00;
     public static final int test_withchilds = 0x10a01;
+    public static final int action_menu = 0x10a02;
   }
 
   public static final class xml {
