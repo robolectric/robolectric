@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.content.Context;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
 import org.robolectric.annotation.Implementation;
@@ -47,8 +48,6 @@ public class ShadowMenuInflater {
   }
 
   private void addChildrenInGroup(MenuNode source, int groupId, Menu root) {
-    int i = 0;
-
     for (MenuNode child : source.getChildren()) {
       String name = child.getName();
       RoboAttributeSet attributes = shadowOf(context).createAttributeSet(child.getAttributes(), null);
@@ -63,27 +62,25 @@ public class ShadowMenuInflater {
           MenuNode subMenuNode = child.getChildren().get(0);
           addChildrenInGroup(subMenuNode, groupId, sub);
         } else {
-          root.add(groupId,
+          MenuItem item = root.add(groupId,
               attributes.getAttributeResourceValue(ANDROID_NS, "id", 0),
               0, attributes.getAttributeValue(ANDROID_NS, "title"));
 
-          addActionViewToItem(root, i, attributes);
+          addActionViewToItem(item, attributes);
         }
       } else if (name.equals("group")) {
         int newGroupId = attributes.getAttributeResourceValue(ANDROID_NS, "id", 0);
         addChildrenInGroup(child, newGroupId, root);
       }
-
-      i++;
     }
   }
 
-  private void addActionViewToItem(Menu root, int i, RoboAttributeSet attributes) {
+  private void addActionViewToItem(MenuItem item, RoboAttributeSet attributes) {
     String actionViewClassName = attributes.getAttributeValue(ANDROID_NS, "actionViewClass");
     if (actionViewClassName != null) {
       try {
         View actionView = (View) type(actionViewClassName).load().getConstructor(Context.class).newInstance(context);
-        root.getItem(i).setActionView(actionView);
+        item.setActionView(actionView);
       } catch (Exception e) {
         throw new RuntimeException("Action View class not found!", e);
       }
