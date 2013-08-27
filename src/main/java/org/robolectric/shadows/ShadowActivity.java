@@ -82,10 +82,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     field("mApplication").ofType(Application.class).in(realActivity).set(application);
   }
 
-  private void setWindowManager(WindowManager windowManager) {
-    field("mWindowManager").ofType(WindowManager.class).in(realActivity).set(windowManager);
-  }
-
   public boolean setThemeFromManifest() {
     ShadowApplication shadowApplication = shadowOf(realActivity.getApplication());
     AndroidManifest appManifest = shadowApplication.getAppManifest();
