@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -14,7 +13,9 @@ import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.util.Transcript;
 
-import static junit.framework.Assert.*;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNull;
+import static junit.framework.Assert.assertTrue;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
@@ -44,7 +45,7 @@ public class DialogTest {
   @Test
   public void setContentViewWithViewAllowsFindById() throws Exception {
     final int viewId = 1234;
-    Activity context = new Activity();
+    Context context = Robolectric.application;
     final Dialog dialog = new Dialog(context);
     final View view = new View(context);
     view.setId(viewId);

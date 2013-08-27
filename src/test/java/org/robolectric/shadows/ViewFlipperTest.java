@@ -1,10 +1,10 @@
 package org.robolectric.shadows;
 
-import android.app.Activity;
 import android.widget.ViewFlipper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
 import static org.junit.Assert.assertEquals;
@@ -15,7 +15,7 @@ public class ViewFlipperTest {
 
   @Before
   public void setUp() {
-    flipper = new ViewFlipper(new Activity());
+    flipper = new ViewFlipper(Robolectric.application);
   }
 
   @Test

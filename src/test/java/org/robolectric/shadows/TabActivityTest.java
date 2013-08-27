@@ -6,6 +6,7 @@ import android.widget.TabWidget;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
+import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -15,7 +16,7 @@ public class TabActivityTest {
 
   @Test
   public void tabActivityShouldNotMakeNewTabHostEveryGet() throws Exception {
-    TabActivity activity = new TabActivity();
+    TabActivity activity = Robolectric.buildActivity(TabActivity.class).create().get();
     TabHost tabHost1 = activity.getTabHost();
     TabHost tabHost2 = activity.getTabHost();
 
@@ -24,7 +25,7 @@ public class TabActivityTest {
 
   @Test
   public void shouldGetTabWidget() throws Exception {
-    TabActivity activity = new TabActivity();
+    TabActivity activity = Robolectric.buildActivity(TabActivity.class).create().get();
     activity.setContentView(R.layout.tab_activity);
     assertThat(activity.getTabWidget()).isInstanceOf(TabWidget.class);
   }

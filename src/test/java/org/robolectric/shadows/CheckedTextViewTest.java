@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import android.app.Activity;
 import android.widget.CheckedTextView;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,7 +17,7 @@ public class CheckedTextViewTest {
 
   @Before
   public void beforeTests() {
-    checkedTextView = new CheckedTextView(new Activity());
+    checkedTextView = new CheckedTextView(Robolectric.application);
   }
 
   @Test

@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import android.app.Activity;
 import android.app.Dialog;
 import android.preference.PreferenceScreen;
 import org.junit.Before;
@@ -30,7 +29,7 @@ public class PreferenceScreenTest {
 
   @Test
   public void shouldSetDialog() {
-    Dialog dialog = new Dialog(new Activity());
+    Dialog dialog = new Dialog(Robolectric.application);
 
     assertThat(screen.getDialog()).isNull();
     shadow.setDialog(dialog);

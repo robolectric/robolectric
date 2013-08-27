@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import android.app.Activity;
 import android.preference.PreferenceCategory;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,7 +17,7 @@ public class PreferenceCategoryTest {
 
   @Before
   public void setUp() throws Exception {
-    category = new PreferenceCategory(new Activity());
+    category = new PreferenceCategory(Robolectric.application);
     shadow = Robolectric.shadowOf(category);
   }
 
