@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContextWrapper;
 import android.content.DialogInterface;
@@ -24,7 +23,9 @@ import java.util.List;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNull;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.robolectric.Robolectric.application;
 import static org.robolectric.Robolectric.shadowOf;
 
@@ -104,7 +105,7 @@ public class AlertDialogTest {
 
   @Test
   public void shouldSetMessageFromResourceId() throws Exception {
-    AlertDialog.Builder builder = new AlertDialog.Builder(new Activity());
+    AlertDialog.Builder builder = new AlertDialog.Builder(application);
     builder.setTitle("title").setMessage(R.string.hello);
 
     AlertDialog alert = builder.create();

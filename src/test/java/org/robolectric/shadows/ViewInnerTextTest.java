@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import android.app.Activity;
 import android.content.Context;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -8,6 +7,7 @@ import android.widget.TextView;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
 import static org.junit.Assert.assertEquals;
@@ -15,21 +15,21 @@ import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ViewInnerTextTest {
-  private Context activity;
+  private Context context;
 
   @Before
   public void setUp() throws Exception {
-    activity = new Activity();
+    context = Robolectric.application;
   }
 
   @Test
   public void testInnerText() throws Exception {
-    LinearLayout top = new LinearLayout(activity);
+    LinearLayout top = new LinearLayout(context);
     top.addView(textView("blah"));
-    top.addView(new View(activity));
+    top.addView(new View(context));
     top.addView(textView("a b c"));
 
-    LinearLayout innerLayout = new LinearLayout(activity);
+    LinearLayout innerLayout = new LinearLayout(context);
     top.addView(innerLayout);
 
     innerLayout.addView(textView("d e f"));
@@ -45,7 +45,7 @@ public class ViewInnerTextTest {
 
   @Test
   public void shouldOnlyIncludeViewTextViewsText() throws Exception {
-    LinearLayout top = new LinearLayout(activity);
+    LinearLayout top = new LinearLayout(context);
     top.addView(textView("blah", View.VISIBLE));
     top.addView(textView("blarg", View.GONE));
     top.addView(textView("arrg", View.INVISIBLE));
@@ -55,7 +55,7 @@ public class ViewInnerTextTest {
 
   @Test
   public void shouldNotPrefixBogusSpaces() throws Exception {
-    LinearLayout top = new LinearLayout(activity);
+    LinearLayout top = new LinearLayout(context);
     top.addView(textView("blarg", View.GONE));
     top.addView(textView("arrg", View.INVISIBLE));
     top.addView(textView("blah", View.VISIBLE));
@@ -68,7 +68,7 @@ public class ViewInnerTextTest {
   }
 
   private TextView textView(String text, int visibility) {
-    TextView textView = new TextView(activity);
+    TextView textView = new TextView(context);
     textView.setText(text);
     textView.setVisibility(visibility);
     return textView;

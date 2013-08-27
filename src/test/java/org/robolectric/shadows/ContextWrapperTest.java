@@ -22,6 +22,7 @@ import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static junit.framework.Assert.assertEquals;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -166,10 +167,10 @@ public class ContextWrapperTest {
   }
 
   private void assertSameInstanceEveryTime(String serviceName) {
-    Activity activity = new Activity();
-    assertThat(activity.getSystemService(serviceName)).isSameAs(activity.getSystemService(serviceName));
-
-    assertThat(activity.getSystemService(serviceName)).isSameAs(new Activity().getSystemService(serviceName));
+    Activity activity1 = buildActivity(Activity.class).create().get();
+    Activity activity2 = buildActivity(Activity.class).create().get();
+    assertThat(activity1.getSystemService(serviceName)).isSameAs(activity1.getSystemService(serviceName));
+    assertThat(activity1.getSystemService(serviceName)).isSameAs(activity2.getSystemService(serviceName));
   }
 
   @Test

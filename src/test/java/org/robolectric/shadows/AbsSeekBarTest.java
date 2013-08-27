@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import android.app.Activity;
 import android.content.Context;
 import android.widget.AbsSeekBar;
 import org.junit.Test;
@@ -15,7 +14,8 @@ public class AbsSeekBarTest {
 
   @Test
   public void testInheritance() {
-    TestAbsSeekBar seekBar = new TestAbsSeekBar(new Activity());
+    // TODO: this seems to test static typing - compiler enforces this ;)
+    TestAbsSeekBar seekBar = new TestAbsSeekBar(Robolectric.application);
     ShadowAbsSeekBar shadow = Robolectric.shadowOf(seekBar);
     assertThat(shadow).isInstanceOf(ShadowProgressBar.class);
   }

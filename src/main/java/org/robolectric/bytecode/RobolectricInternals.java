@@ -14,8 +14,6 @@ public class RobolectricInternals {
   @SuppressWarnings({"UnusedDeclaration"})
   private static ClassHandler classHandler; // initialized via magic by SdkEnvironment
 
-  public static boolean inActivityControllerBlock = false;
-
   public static ClassHandler getClassHandler() {
     return classHandler;
   }
