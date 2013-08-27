@@ -29,14 +29,15 @@ public class FragmentTestUtilTest {
   }
 
   @Test
-  public void tacos_should_be_found() {
+  public void tacosShouldBeFound() {
     assertThat(fragment.getView().findViewById(R.id.tacos), notNullValue());
+  }
+
+  static class LoginFragment extends Fragment {
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+      return inflater.inflate(R.layout.fragment_contents, container, false);
+    }
   }
 }
 
-class LoginFragment extends Fragment {
-  @Override
-  public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-    return inflater.inflate(R.layout.fragment_contents, container, false);
-  }
-}
