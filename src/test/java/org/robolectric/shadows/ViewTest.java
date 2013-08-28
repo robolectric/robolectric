@@ -17,8 +17,6 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
 import android.widget.LinearLayout;
-import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -34,6 +32,9 @@ import org.robolectric.util.TestOnLongClickListener;
 import org.robolectric.util.TestRunnable;
 import org.robolectric.util.Transcript;
 
+import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import static junit.framework.Assert.assertEquals;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
@@ -41,6 +42,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Robolectric.application;
+import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Robolectric.shadowOf;
 import static org.robolectric.Robolectric.visualize;
 
@@ -162,7 +164,7 @@ public class ViewTest {
   @Test
   public void shouldInflateMergeRootedLayoutAndNotCreateReferentialLoops() throws Exception {
     LinearLayout root = new LinearLayout(Robolectric.application);
-    LinearLayout.inflate(new Activity(), R.layout.inner_merge, root);
+    LinearLayout.inflate(Robolectric.application, R.layout.inner_merge, root);
     for (int i = 0; i < root.getChildCount(); i++) {
       View child = root.getChildAt(i);
       assertNotSame(root, child);
@@ -312,28 +314,22 @@ public class ViewTest {
 
   @Test
   public void shouldCallOnClickWithAttribute() throws Exception {
-    final AtomicBoolean called = new AtomicBoolean(false);
-    Activity context = new MyActivity(called);
+    MyActivity myActivity = buildActivity(MyActivity.class).create().get();
     RoboAttributeSet attrs = new RoboAttributeSet(new ArrayList<Attribute>(), Robolectric.application.getResources(), null);
     attrs.put("android:attr/onClick", "clickMe", R.class.getPackage().getName());
 
-    view = new View(context, attrs);
+    view = new View(myActivity, attrs);
     view.performClick();
-    assertTrue("Should have been called", called.get());
+    assertTrue("Should have been called", myActivity.called);
   }
 
   @Test(expected = RuntimeException.class)
   public void shouldThrowExceptionWithBadMethodName() throws Exception {
-    final AtomicBoolean called = new AtomicBoolean(false);
-    Activity context = new Activity() {
-      public void clickMe(View view) {
-        called.set(true);
-      }
-    };
+    MyActivity myActivity = buildActivity(MyActivity.class).create().get();
     RoboAttributeSet attrs = new RoboAttributeSet(new ArrayList<Attribute>(), Robolectric.application.getResources(), null);
     attrs.put("android:onClick", "clickYou", R.class.getPackage().getName());
 
-    view = new View(context, attrs);
+    view = new View(myActivity, attrs);
     view.performClick();
   }
 
@@ -706,15 +702,11 @@ public class ViewTest {
   }
 
   public static class MyActivity extends Activity {
-    private final AtomicBoolean called;
-
-    public MyActivity(AtomicBoolean called) {
-      this.called = called;
-    }
+    public boolean called;
 
     @SuppressWarnings("UnusedDeclaration")
     public void clickMe(View view) {
-      called.set(true);
+      called = true;
     }
   }
 

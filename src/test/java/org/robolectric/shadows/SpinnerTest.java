@@ -1,10 +1,10 @@
 package org.robolectric.shadows;
 
-import android.app.Activity;
 import android.widget.Spinner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -16,7 +16,7 @@ public class SpinnerTest {
 
   @Before
   public void beforeTests() {
-    spinner = new Spinner(new Activity());
+    spinner = new Spinner(Robolectric.application);
   }
 
   @Test

@@ -1,11 +1,11 @@
 package org.robolectric.shadows;
 
-import android.app.Activity;
 import android.content.Context;
 import android.preference.EditTextPreference;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
 import static junit.framework.Assert.assertNotNull;
@@ -21,7 +21,7 @@ public class EditTextPreferenceTest {
 
   @Before
   public void setup() {
-    context = new Activity();
+    context = Robolectric.application;
     preference = new EditTextPreference(context);
   }
 

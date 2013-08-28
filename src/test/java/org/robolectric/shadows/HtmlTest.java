@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 
-import android.app.Activity;
 import android.content.Context;
 import android.text.Html;
 import android.text.Spanned;
@@ -10,6 +9,7 @@ import android.widget.TextView;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -20,7 +20,7 @@ public class HtmlTest {
 
   @Before
   public void setUp() throws Exception {
-    context = new Activity();
+    context = Robolectric.application;
   }
 
   @Test

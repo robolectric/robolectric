@@ -37,8 +37,16 @@ import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.robolectric.Robolectric.application;
+import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -180,12 +188,8 @@ public class ActivityTest {
   @Test
   public void onContentChangedShouldBeCalledAfterContentViewIsSet() throws RuntimeException {
     final Transcript transcript = new Transcript();
-    Activity customActivity = new Activity() {
-      @Override
-      public void onContentChanged() {
-        transcript.add("onContentChanged was called; title is \"" + shadowOf(findViewById(R.id.title)).innerText() + "\"");
-      }
-    };
+    ActivityWithContentChangedTranscript customActivity = buildActivity(ActivityWithContentChangedTranscript.class).create().get();
+    customActivity.setTranscript(transcript);
     customActivity.setContentView(R.layout.main);
     transcript.assertEventsSoFar("onContentChanged was called; title is \"Main Layout\"");
   }
@@ -393,7 +397,7 @@ public class ActivityTest {
 
   @Test // unclear what the correct behavior should be here...
   public void shouldPopulateWindowDecorViewWithMergeLayoutContents() throws Exception {
-    Activity activity = new Activity();
+    Activity activity = Robolectric.buildActivity(Activity.class).create().get();
     activity.setContentView(R.layout.toplevel_merge);
 
     View contentView = activity.findViewById(android.R.id.content);
@@ -406,7 +410,7 @@ public class ActivityTest {
     View view2 = new View(application);
     view2.setId(R.id.button);
 
-    Activity activity = new Activity();
+    Activity activity = buildActivity(Activity.class).create().get();
     activity.setContentView(view1);
     assertSame(view1, activity.findViewById(R.id.burritos));
 
@@ -448,7 +452,7 @@ public class ActivityTest {
 
   @Test
   public void shouldFindContentViewContainerWithChild() throws Exception {
-    Activity activity = new Activity();
+    Activity activity = buildActivity(Activity.class).create().get();
     View contentView = new View(activity);
     activity.setContentView(contentView);
 
@@ -458,7 +462,7 @@ public class ActivityTest {
 
   @Test
   public void shouldFindContentViewContainerWithoutChild() throws Exception {
-    Activity activity = new Activity();
+    Activity activity = buildActivity(Activity.class).create().get();
 
     FrameLayout contentViewContainer = (FrameLayout) activity.findViewById(android.R.id.content);
     assertThat(contentViewContainer.getId()).isEqualTo(android.R.id.content);
@@ -808,6 +812,19 @@ public class ActivityTest {
     protected Dialog onCreateDialog(int id) {
       onCreateDialogWasCalled = true;
       return new Dialog(this);
+    }
+  }
+
+  private static class ActivityWithContentChangedTranscript extends Activity {
+    private Transcript transcript;
+
+    @Override
+    public void onContentChanged() {
+      transcript.add("onContentChanged was called; title is \"" + shadowOf(findViewById(R.id.title)).innerText() + "\"");
+    }
+
+    private void setTranscript(Transcript transcript) {
+      this.transcript = transcript;
     }
   }
 }

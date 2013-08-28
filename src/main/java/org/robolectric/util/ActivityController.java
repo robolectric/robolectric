@@ -12,12 +12,13 @@ import android.os.IBinder;
 import android.os.Looper;
 import org.robolectric.RoboInstrumentation;
 import org.robolectric.Robolectric;
-import org.robolectric.bytecode.RobolectricInternals;
 import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.shadows.ShadowActivityThread;
 import org.robolectric.shadows.ShadowLooper;
 
-import static org.fest.reflect.core.Reflection.*;
+import static org.fest.reflect.core.Reflection.constructor;
+import static org.fest.reflect.core.Reflection.method;
+import static org.fest.reflect.core.Reflection.type;
 import static org.robolectric.Robolectric.shadowOf_;
 
 @SuppressWarnings("UnusedDeclaration")
@@ -41,13 +42,7 @@ public class ActivityController<T extends Activity> {
   }
 
   public ActivityController(Class<T> activityClass) {
-    boolean priorValue = RobolectricInternals.inActivityControllerBlock;
-    RobolectricInternals.inActivityControllerBlock = true;
-    try {
-      this.activity = constructor().in(activityClass).newInstance();
-    } finally {
-      RobolectricInternals.inActivityControllerBlock = priorValue;
-    }
+    this.activity = constructor().in(activityClass).newInstance();
     shadowActivity = shadowOf_(activity);
     shadowMainLooper = shadowOf_(Looper.getMainLooper());
   }
@@ -133,7 +128,8 @@ public class ActivityController<T extends Activity> {
 
   public ActivityController<T> postCreate(final Bundle bundle) {
     shadowMainLooper.runPaused(new Runnable() {
-      @Override public void run() {
+      @Override
+      public void run() {
         shadowActivity.callOnPostCreate(bundle);
       }
     });
@@ -157,7 +153,8 @@ public class ActivityController<T extends Activity> {
 
   public ActivityController<T> postResume() {
     shadowMainLooper.runPaused(new Runnable() {
-      @Override public void run() {
+      @Override
+      public void run() {
         shadowActivity.callOnPostResume();
       }
     });
@@ -166,7 +163,8 @@ public class ActivityController<T extends Activity> {
 
   public ActivityController<T> newIntent(final android.content.Intent intent) {
     shadowMainLooper.runPaused(new Runnable() {
-      @Override public void run() {
+      @Override
+      public void run() {
         shadowActivity.callOnNewIntent(intent);
       }
     });

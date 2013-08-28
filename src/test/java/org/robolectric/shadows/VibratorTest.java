@@ -1,12 +1,12 @@
 package org.robolectric.shadows;
 
-import android.app.Activity;
 import android.content.Context;
+import android.os.RoboVibrator;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
-import android.os.RoboVibrator;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
@@ -16,7 +16,7 @@ public class VibratorTest {
 
   @Before
   public void before() {
-    vibrator = (RoboVibrator) new Activity().getSystemService(Context.VIBRATOR_SERVICE);
+    vibrator = (RoboVibrator) Robolectric.application.getSystemService(Context.VIBRATOR_SERVICE);
   }
 
   @Test

@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import android.app.Activity;
 import android.widget.SeekBar;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,7 +20,7 @@ public class SeekBarTest {
 
   @Before
   public void setup() {
-      seekBar = new SeekBar(new Activity());
+    seekBar = new SeekBar(Robolectric.application);
     shadow = Robolectric.shadowOf(seekBar);
     listener = new TestSeekBarChangedListener();
     transcript = new Transcript();

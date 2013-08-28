@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import android.app.Activity;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
@@ -104,7 +103,7 @@ public class EditTextTest {
 
   @Test
   public void shouldGetHintFromXml() {
-    Context context = new Activity();
+    Context context = Robolectric.application;
     LayoutInflater inflater = LayoutInflater.from(context);
     EditText editText = (EditText) inflater.inflate(R.layout.edit_text, null);
     assertThat(editText.getHint().toString()).isEqualTo("Hello, Hint");
