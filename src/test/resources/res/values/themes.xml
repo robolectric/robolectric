@@ -9,11 +9,15 @@
     <item name="logoWidth">?attr/averageSheepWidth</item>
     <item name="logoHeight">?android:attr/listItemPreferredHeight</item>
     <item name="averageSheepWidth">42px</item>
+    <item name="animalStyle">@style/Gastropod</item>
+  </style>
+
+  <style name="Theme.ThirdTheme" parent="@style/Theme.Robolectric">
+    <item name="snail">@style/Gastropod</item>
+    <item name="animalStyle">?attr/snail</item>
   </style>
 
   <style name="Theme.MyTheme" parent=""/>
-
-
 
   <style name="Widget.Robolectric.Button" parent="@android:style/Widget.Button">
     <item name="android:background">#ff00ff00</item>
@@ -34,5 +38,9 @@
   <style name="Sized">
     <item name="android:layout_width">42px</item>
     <item name="android:layout_height">42px</item>
+  </style>
+
+  <style name="Gastropod">
+      <item name="aspectRatio">1.69</item>
   </style>
 </resources>
