@@ -469,21 +469,6 @@ public class ActivityTest {
   }
 
   @Test
-  public void createGoesThroughFullLifeCycle() throws Exception {
-    TestActivity activity = new TestActivity();
-
-    shadowOf(activity).create();
-
-    activity.transcript.assertEventsSoFar(
-        "onCreate",
-        "onStart",
-        "onPostCreate",
-        "onResume"
-    );
-  }
-
-
-  @Test
   public void recreateGoesThroughFullLifeCycle() throws Exception {
     TestActivity activity = new TestActivity();
 
