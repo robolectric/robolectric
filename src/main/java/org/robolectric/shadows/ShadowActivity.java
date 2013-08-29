@@ -37,15 +37,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import static org.fest.reflect.core.Reflection.field;
 import static org.robolectric.Robolectric.directlyOn;
 import static org.robolectric.Robolectric.shadowOf;
@@ -249,25 +240,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   @Implementation
   public CharSequence getTitle() {
     return title;
-  }
-
-  /**
-   * Sets the {@code contentView} for this {@code Activity} by invoking the
-   * {@link android.view.LayoutInflater}
-   *
-   * @param layoutResID ID of the layout to inflate
-   * @see #getContentView()
-   */
-  @Implementation
-  public void setContentView(int layoutResID) {
-    getWindow().setContentView(layoutResID);
-    realActivity.onContentChanged();
-  }
-
-  @Implementation
-  public void setContentView(View view) {
-    getWindow().setContentView(view);
-    realActivity.onContentChanged();
   }
 
   @Implementation
