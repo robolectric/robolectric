@@ -646,16 +646,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     return dialogForId.get(dialogId);
   }
 
-  public void create() {
-    final ActivityInvoker invoker = new ActivityInvoker();
-
-    final Bundle noInstanceState = null;
-    invoker.call("onCreate", Bundle.class).with(noInstanceState);
-    invoker.call("onStart").withNothing();
-    invoker.call("onPostCreate", Bundle.class).with(noInstanceState);
-    invoker.call("onResume").withNothing();
-  }
-
   @Implementation
   public void recreate() {
     Bundle outState = new Bundle();
