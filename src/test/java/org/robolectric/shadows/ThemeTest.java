@@ -54,6 +54,22 @@ public class ThemeTest {
     assertThat(enabled).isTrue();
   }
 
+  @Test public void shouldApplyStylesFromResourceReference() throws Exception {
+    TestActivity activity = buildActivity(TestActivityWithAnotherTheme.class).create().get();
+    TypedArray a = activity.obtainStyledAttributes(null, R.styleable.CustomView, 0, R.attr.animalStyle);
+    int animalStyleId = a.getResourceId(R.styleable.CustomView_animalStyle, 0);
+    assertThat(animalStyleId).isEqualTo(R.style.Gastropod);
+    assertThat(a.getFloat(R.styleable.CustomView_aspectRatio, 0.2f)).isEqualTo(1.69f);
+  }
+
+  @Test public void shouldApplyStylesFromAttributeReference() throws Exception {
+    TestActivity activity = buildActivity(TestActivityWithAThirdTheme.class).create().get();
+    TypedArray a = activity.obtainStyledAttributes(null, R.styleable.CustomView, 0, R.attr.animalStyle);
+    int animalStyleId = a.getResourceId(R.styleable.CustomView_animalStyle, 0);
+    assertThat(animalStyleId).isEqualTo(R.style.Gastropod);
+    assertThat(a.getFloat(R.styleable.CustomView_aspectRatio, 0.2f)).isEqualTo(1.69f);
+  }
+
   @Test public void shouldInheritThemeValuesFromImplicitParents() throws Exception {
     TestActivity activity = buildActivity(TestActivityWithAnotherTheme.class).create().get();
     ResourceLoader resourceLoader = Robolectric.shadowOf(activity.getResources()).getResourceLoader();
@@ -79,6 +95,13 @@ public class ThemeTest {
   }
 
   public static class TestActivityWithAnotherTheme extends TestActivity {
+    @Override protected void onCreate(Bundle savedInstanceState) {
+      super.onCreate(savedInstanceState);
+      setContentView(R.layout.styles_button_layout);
+    }
+  }
+
+  public static class TestActivityWithAThirdTheme extends TestActivity {
     @Override protected void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
       setContentView(R.layout.styles_button_layout);

@@ -13,12 +13,6 @@ import android.util.DisplayMetrics;
 import android.util.LongSparseArray;
 import android.util.TypedValue;
 import android.view.Display;
-import java.io.InputStream;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
 import org.jetbrains.annotations.NotNull;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
@@ -36,6 +30,13 @@ import org.robolectric.res.TypedResource;
 import org.robolectric.res.builder.XmlFileBuilder;
 import org.robolectric.util.Util;
 import org.w3c.dom.Document;
+
+import java.io.InputStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 import static org.fest.reflect.core.Reflection.field;
 import static org.robolectric.Robolectric.directlyOn;
@@ -172,8 +173,12 @@ public class ShadowResources {
       ResName resName = getResName(defStyleRes);
       if (resName.type.equals("attr")) {
         Attribute attributeValue = findAttributeValue(getResName(defStyleRes), set, styleAttrStyle, defStyleFromAttr, defStyleFromAttr, theme);
-        if (attributeValue != null && attributeValue.isStyleReference()) {
-          resName = theme.getAttrValue(attributeValue.getStyleReference()).getResourceReference();
+        if (attributeValue != null) {
+          if (attributeValue.isStyleReference()) {
+            resName = theme.getAttrValue(attributeValue.getStyleReference()).getResourceReference();
+          } else if (attributeValue.isResourceReference()) {
+            resName = attributeValue.getResourceReference();
+          }
         }
       }
       defStyleFromRes = ShadowAssetManager.resolveStyle(resourceLoader, resName, shadowAssetManager.getQualifiers());

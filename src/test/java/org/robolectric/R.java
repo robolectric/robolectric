@@ -227,6 +227,7 @@ public final class R {
     public static final int logoHeight = 0x10908;
     public static final int quitKeyCombo = 0x10909;
     public static final int responses = 0x1090a;
+    public static final int animalStyle = 0x1090b;
   }
 
   public static final class menu {
@@ -247,6 +248,7 @@ public final class R {
         attr.aspectRatio,
         attr.aspectRatioEnabled,
         attr.quitKeyCombo,
+        attr.animalStyle
     };
 
     public static final int CustomView_itemType = 0;
@@ -255,6 +257,7 @@ public final class R {
     public static final int CustomView_aspectRatio = 3;
     public static final int CustomView_aspectRatioEnabled = 4;
     public static final int CustomView_quitKeyCombo = 5;
+    public static final int CustomView_animalStyle = 6;
 
     public static final int[] HeaderBar = {id.textStyle2, id.textStyle3};
     public static final int HeaderBar_textStyle2 = 0;
@@ -300,5 +303,7 @@ public final class R {
     public static final int Widget_Robolectric_Button = 0x10f04;
     public static final int Widget_AnotherTheme_Button = 0x10f05;
     public static final int Sized = 0x10f06;
+    public static final int Gastropod = 0x10f07;
+    public static final int Theme_ThirdTheme = 0x10f08;
   }
 }
