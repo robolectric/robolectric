@@ -419,6 +419,7 @@ public class RobolectricBase {
       ShadowNdefMessage.class,
       ShadowNdefRecord.class,
       ShadowNfcAdapter.class,
+      ShadowNotification.ShadowBuilder.class,
       ShadowNotificationManager.class,
       ShadowNetworkInfo.class,
       ShadowNinePatch.class,
