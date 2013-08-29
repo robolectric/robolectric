@@ -3,13 +3,20 @@ package org.robolectric.shadows;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.view.View;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
+import static org.robolectric.Robolectric.directlyOn;
+import static org.robolectric.Robolectric.shadowOf;
+
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Notification.class)
 public class ShadowNotification {
+  private CharSequence contentTitle;
+  private CharSequence contentText;
+  private int smallIcon;
 
   public Notification getRealNotification() {
     return realNotification;
@@ -24,6 +31,30 @@ public class ShadowNotification {
     realNotification.icon = icon;
     realNotification.tickerText = tickerText;
     realNotification.when = when;
+  }
+
+  public CharSequence getContentTitle() {
+    return contentTitle;
+  }
+
+  public CharSequence getContentText() {
+    return contentText;
+  }
+
+  public int getSmallIcon() {
+    return smallIcon;
+  }
+
+  public void setContentTitle(CharSequence contentTitle) {
+    this.contentTitle = contentTitle;
+  }
+
+  public void setContentText(CharSequence contentText) {
+    this.contentText = contentText;
+  }
+
+  public void setSmallIcon(int icon) {
+    this.smallIcon = icon;
   }
 
   @Implementation
@@ -58,6 +89,49 @@ public class ShadowNotification {
 
     public PendingIntent getContentIntent() {
       return contentIntent;
+    }
+  }
+
+  @Implements(Notification.Builder.class)
+  public static class ShadowBuilder {
+
+    @RealObject private Notification.Builder realBuilder;
+    private String contentTitle;
+    private String contentText;
+    private int icon;
+
+    @Implementation
+    public Notification build() {
+      Notification result = (Notification)directlyOn(realBuilder, Notification.Builder.class, "build").invoke();
+      ShadowNotification shadowResult = shadowOf(result);
+      shadowResult.setContentTitle(contentTitle);
+      shadowResult.setContentText(contentText);
+      shadowResult.setSmallIcon(icon);
+      return result;
+    }
+
+    @Implementation
+    public Notification.Builder setContentTitle(CharSequence title) {
+      contentTitle = title.toString();
+      directlyOn(realBuilder, Notification.Builder.class, "setContentTitle", CharSequence.class).invoke(title);
+
+      return realBuilder;
+    }
+
+    @Implementation
+    public Notification.Builder setContentText(CharSequence text) {
+      contentText = text.toString();
+      directlyOn(realBuilder, Notification.Builder.class, "setContentText", CharSequence.class).invoke(text);
+
+      return realBuilder;
+    }
+
+    @Implementation
+    public Notification.Builder setSmallIcon(int smallIcon) {
+      this.icon = smallIcon;
+      directlyOn(realBuilder, Notification.Builder.class, "setSmallIcon", int.class).invoke(smallIcon);
+
+      return realBuilder;
     }
   }
 }
