@@ -1,7 +1,6 @@
 package org.robolectric;
 
 import android.database.CursorWrapper;
-import edu.emory.mathcs.backport.java.util.Arrays;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
@@ -9,6 +8,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadows.ShadowCursorWrapper;
 
+import java.util.Arrays;
 import java.util.Collection;
 
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -19,18 +19,18 @@ import static org.fest.assertions.api.Assertions.assertThat;
  * @author John Ferlisi
  */
 @RunWith(ParameterizedRobolectricTestRunner.class)
-public final class ParameterizedRobolectricTestRunner_configTest {
+public final class ParameterizedRobolectricTestRunnerConfigTest {
 
   private final int expectedType;
 
-  public ParameterizedRobolectricTestRunner_configTest(int expectedType) {
+  public ParameterizedRobolectricTestRunnerConfigTest(int expectedType) {
     this.expectedType = expectedType;
   }
 
   @Test
   @Config(manifest = Config.NONE, shadows = ShadowCursorWrapper1.class)
   public void getType1() {
-    assertThat(new CursorWrapper(null).getType(0)).isEqualTo(1);
+    assertThat(new CursorWrapper(null).getType(expectedType)).isEqualTo(1);
   }
 
   @Test

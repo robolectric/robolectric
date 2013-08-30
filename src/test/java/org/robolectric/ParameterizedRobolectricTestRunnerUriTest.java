@@ -1,10 +1,10 @@
 package org.robolectric;
 
 import android.net.Uri;
-import edu.emory.mathcs.backport.java.util.Arrays;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.Arrays;
 import java.util.Collection;
 
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -15,15 +15,15 @@ import static org.fest.assertions.api.Assertions.assertThat;
  * @author John Ferlisi
  */
 @RunWith(ParameterizedRobolectricTestRunner.class)
-public final class ParameterizedRobolectricTestRunner_uriTest {
+public final class ParameterizedRobolectricTestRunnerUriTest {
 
   private final String basePath;
   private final String resourcePath;
   private final Uri expectedUri;
 
-  public ParameterizedRobolectricTestRunner_uriTest(String basePath,
-                                                    String resourcePath,
-                                                    String expectedUri) {
+  public ParameterizedRobolectricTestRunnerUriTest(String basePath,
+                                                   String resourcePath,
+                                                   String expectedUri) {
     this.basePath = basePath;
     this.resourcePath = resourcePath;
     this.expectedUri = Uri.parse(expectedUri);

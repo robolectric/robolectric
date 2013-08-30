@@ -1,9 +1,9 @@
 package org.robolectric;
 
-import edu.emory.mathcs.backport.java.util.Arrays;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.Arrays;
 import java.util.Collection;
 
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -14,7 +14,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
  * @author John Ferlisi
  */
 @RunWith(ParameterizedRobolectricTestRunner.class)
-public final class ParameterizedRobolectricTestRunner_normalTest {
+public final class ParameterizedRobolectricTestRunnerNormalTest {
 
   private final int first;
   private final int second;
@@ -23,12 +23,12 @@ public final class ParameterizedRobolectricTestRunner_normalTest {
   private final int expectedProduct;
   private final int expectedQuotient;
 
-  public ParameterizedRobolectricTestRunner_normalTest(int first,
-                                                       int second,
-                                                       int expectedSum,
-                                                       int expectedDifference,
-                                                       int expectedProduct,
-                                                       int expectedQuotient) {
+  public ParameterizedRobolectricTestRunnerNormalTest(int first,
+                                                      int second,
+                                                      int expectedSum,
+                                                      int expectedDifference,
+                                                      int expectedProduct,
+                                                      int expectedQuotient) {
     this.first = first;
     this.second = second;
     this.expectedSum = expectedSum;
