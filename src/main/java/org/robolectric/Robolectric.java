@@ -112,6 +112,7 @@ import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.Window;
+import android.view.WindowManager;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
@@ -333,6 +334,7 @@ import org.robolectric.shadows.ShadowWifiConfiguration;
 import org.robolectric.shadows.ShadowWifiInfo;
 import org.robolectric.shadows.ShadowWifiManager;
 import org.robolectric.shadows.ShadowWindow;
+import org.robolectric.shadows.ShadowWindowManager;
 import org.robolectric.shadows.ShadowZoomButtonsController;
 import org.robolectric.tester.org.apache.http.FakeHttpLayer;
 import org.robolectric.tester.org.apache.http.HttpRequestInfo;
@@ -1064,6 +1066,10 @@ public class Robolectric {
 
   public static ShadowZoomButtonsController shadowOf(ZoomButtonsController instance) {
     return (ShadowZoomButtonsController) shadowOf_(instance);
+  }
+
+  public static ShadowWindowManager shadowOf(WindowManager instance) {
+    return (ShadowWindowManager) shadowOf_(instance);
   }
 
   @SuppressWarnings({"unchecked"})

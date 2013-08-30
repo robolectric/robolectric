@@ -162,6 +162,7 @@ import org.robolectric.shadows.ShadowParcel;
 import org.robolectric.shadows.ShadowPath;
 import org.robolectric.shadows.ShadowPendingIntent;
 import org.robolectric.shadows.ShadowPeriodicSync;
+import org.robolectric.shadows.ShadowPhoneWindow;
 import org.robolectric.shadows.ShadowPopupWindow;
 import org.robolectric.shadows.ShadowPorterDuffXfermode;
 import org.robolectric.shadows.ShadowPowerManager;
@@ -249,6 +250,8 @@ import org.robolectric.shadows.ShadowWifiConfiguration;
 import org.robolectric.shadows.ShadowWifiInfo;
 import org.robolectric.shadows.ShadowWifiManager;
 import org.robolectric.shadows.ShadowWindow;
+import org.robolectric.shadows.ShadowWindowManager;
+import org.robolectric.shadows.ShadowWindowManagerImpl;
 import org.robolectric.shadows.ShadowZoomButtonsController;
 
 import java.util.Arrays;
@@ -431,6 +434,7 @@ public class RobolectricBase {
       ShadowPath.class,
       ShadowPendingIntent.class,
       ShadowPeriodicSync.class,
+      ShadowPhoneWindow.class,
       ShadowPopupWindow.class,
       ShadowPorterDuffXfermode.class,
       ShadowPowerManager.class,
@@ -526,6 +530,8 @@ public class RobolectricBase {
       ShadowWifiManager.class,
       ShadowWifiManager.ShadowWifiLock.class,
       ShadowWindow.class,
+      ShadowWindowManager.class,
+      ShadowWindowManagerImpl.class,
       ShadowZoomButtonsController.class
   ));
 }
