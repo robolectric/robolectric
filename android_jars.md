@@ -30,7 +30,7 @@ See [Downloading and Building](http://source.android.com/source/building.html) i
 
 This takes a long, long time to download the entire AOSP source tree.
 
-## Packaging Uploading The Android Artifacts
+## Packaging and Uploading The Android Artifacts
 
 Currently, each android artifact ('android-base', 'android-kxml2', 'android-luni', 'android-policy') needs four components bundled together. Currently only the `XYZ-real.jar` component is useful - this is where the actual compiled code lives. The `XYZ.jar`, `XYZ-javadoc.jar`, `XYZ-sources.jar` are all empty. If you need to create these empty jars, just create and empty directory and use
 
