@@ -23,7 +23,6 @@ public class NotificationBuilderTest {
   @Test
   public void build_setsContentTitleOnNotification() throws Exception {
     builder.setContentTitle("Hello");
-    builder.build();
     Notification notification = builder.build();
     assertEquals("Hello", shadowOf(notification).getContentTitle());
   }
@@ -31,7 +30,6 @@ public class NotificationBuilderTest {
   @Test
   public void build_setsContentTextOnNotification() throws Exception {
     builder.setContentText("Hello Text");
-    builder.build();
     Notification notification = builder.build();
     assertEquals("Hello Text", shadowOf(notification).getContentText());
   }
@@ -39,8 +37,14 @@ public class NotificationBuilderTest {
   @Test
   public void build_setsIconOnNotification() throws Exception {
     builder.setSmallIcon(9001);
-    builder.build();
     Notification notification = builder.build();;
     assertEquals(9001, shadowOf(notification).getSmallIcon());
+  }
+
+  @Test
+  public void build_setsWhenOnNotification() throws Exception {
+    builder.setWhen(11L);
+    Notification notification = builder.build();
+    assertEquals(11L, shadowOf(notification).getWhen());
   }
 }
