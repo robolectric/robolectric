@@ -769,6 +769,12 @@ public class ActivityTest {
     public Dialog dialog = null;
 
     @Override
+    protected void onCreate(Bundle savedInstanceState) {
+      super.onCreate(savedInstanceState);
+      setContentView(new FrameLayout(this));
+    }
+
+    @Override
     protected void onDestroy() {
       super.onDestroy();
     }

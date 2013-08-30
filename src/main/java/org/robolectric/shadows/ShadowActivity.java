@@ -27,7 +27,6 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.bytecode.RobolectricInternals;
 import org.robolectric.res.ResName;
-import org.robolectric.tester.android.view.RoboWindow;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -243,25 +242,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     return title;
   }
 
-  /**
-   * Sets the {@code contentView} for this {@code Activity} by invoking the
-   * {@link android.view.LayoutInflater}
-   *
-   * @param layoutResID ID of the layout to inflate
-   * @see #getContentView()
-   */
-  @Implementation
-  public void setContentView(int layoutResID) {
-    getWindow().setContentView(layoutResID);
-    realActivity.onContentChanged();
-  }
-
-  @Implementation
-  public void setContentView(View view) {
-    getWindow().setContentView(view);
-    realActivity.onContentChanged();
-  }
-
   @Implementation
   public final void setResult(int resultCode) {
     this.resultCode = resultCode;
@@ -332,17 +312,24 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   /**
-   * Constructs a new Window (a {@link org.robolectric.tester.android.view.RoboWindow}) if no window has previously been
+   * Constructs a new Window (a {@link com.android.internal.policy.impl.PhoneWindow}) if no window has previously been
    * set.
    *
    * @return the window associated with this Activity
    */
   @Implementation
-  public Window getWindow() {
+  public Window getWindow()  {
     Window window = directlyOn(realActivity, Activity.class).getWindow();
+
     if (window == null) {
-      setWindow(window = new RoboWindow(realActivity));
+      try {
+        window = ShadowWindow.create(realActivity);
+        setWindow(window);
+      } catch (Exception e) {
+        throw new RuntimeException("Window creation failed!", e);
+      }
     }
+
     return window;
   }
 

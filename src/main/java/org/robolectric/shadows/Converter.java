@@ -80,6 +80,8 @@ public class Converter<T> {
           return;
         } else if (resName.type.equals("layout")) {
           return; // resourceId is good enough, right?
+        } else if (resName.type.equals("dimen")) {
+          return;
         } else if (DrawableResourceLoader.isStillHandledHere(resName)) {
           // wtf. color and drawable references reference are all kinds of stupid.
           DrawableNode drawableNode = resourceLoader.getDrawableNode(resName, qualifiers);

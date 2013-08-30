@@ -5,7 +5,6 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,7 +13,6 @@ import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.tester.android.view.RoboWindow;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,11 +61,7 @@ public class ShadowDialog {
   public void show() {
     setLatestDialog(this);
     shownDialogs.add(realDialog);
-    shadowOf(Looper.getMainLooper()).runPaused(new Runnable() {
-      @Override public void run() {
-        directlyOn(realDialog, Dialog.class).show();
-      }
-    });
+    directlyOn(realDialog, Dialog.class).show();
   }
 
   @Implementation
@@ -103,7 +97,7 @@ public class ShadowDialog {
   }
 
   public CharSequence getTitle() {
-    return ((RoboWindow) realDialog.getWindow()).getTitle();
+    return shadowOf(realDialog.getWindow()).getTitle();
   }
 
   public void clickOnText(int textId) {
