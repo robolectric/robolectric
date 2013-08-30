@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
-import android.view.View;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -17,6 +16,7 @@ public class ShadowNotification {
   private CharSequence contentTitle;
   private CharSequence contentText;
   private int smallIcon;
+  private long when;
 
   public Notification getRealNotification() {
     return realNotification;
@@ -45,6 +45,10 @@ public class ShadowNotification {
     return smallIcon;
   }
 
+  public long getWhen() {
+    return when;
+  }
+
   public void setContentTitle(CharSequence contentTitle) {
     this.contentTitle = contentTitle;
   }
@@ -55,6 +59,10 @@ public class ShadowNotification {
 
   public void setSmallIcon(int icon) {
     this.smallIcon = icon;
+  }
+
+  public void setWhen(long when) {
+    this.when = when;
   }
 
   @Implementation
@@ -99,14 +107,16 @@ public class ShadowNotification {
     private String contentTitle;
     private String contentText;
     private int icon;
+    private long when;
 
     @Implementation
     public Notification build() {
-      Notification result = (Notification)directlyOn(realBuilder, Notification.Builder.class, "build").invoke();
+      Notification result = (Notification) directlyOn(realBuilder, Notification.Builder.class, "build").invoke();
       ShadowNotification shadowResult = shadowOf(result);
       shadowResult.setContentTitle(contentTitle);
       shadowResult.setContentText(contentText);
       shadowResult.setSmallIcon(icon);
+      shadowResult.setWhen(when);
       return result;
     }
 
@@ -130,6 +140,14 @@ public class ShadowNotification {
     public Notification.Builder setSmallIcon(int smallIcon) {
       this.icon = smallIcon;
       directlyOn(realBuilder, Notification.Builder.class, "setSmallIcon", int.class).invoke(smallIcon);
+
+      return realBuilder;
+    }
+
+    @Implementation
+    public Notification.Builder setWhen(long when) {
+      this.when = when;
+      directlyOn(realBuilder, Notification.Builder.class, "setWhen", long.class).invoke(when);
 
       return realBuilder;
     }
