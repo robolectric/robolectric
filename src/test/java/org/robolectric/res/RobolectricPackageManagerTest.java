@@ -268,6 +268,18 @@ public class RobolectricPackageManagerTest {
     assertThat(intent).isNotNull();
   }
 
+  @Test
+  public void shouldAssignTheAppMetaDataFromTheManifest() throws Exception {
+    AndroidManifest appManifest = newConfigWith(
+          "<application android:name=\"org.robolectric.TestApplication\">"
+        + "  <meta-data android:name=\"key\" android:value=\"value\"/>"
+        + "</application>"
+    );
+    rpm.addManifest(appManifest);
+    ApplicationInfo applicationInfo = rpm.getApplicationInfo("org.robolectric", 0);
+    assertThat(applicationInfo.metaData.getString("key")).isEqualTo("value");
+  }
+
   /////////////////////////////
 
   public AndroidManifest newConfigWith(String contents) throws IOException {

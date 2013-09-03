@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.robolectric">
+  <application android:name="org.robolectric.TestApplication">
+    <meta-data android:name="org.robolectric.metaName1" android:value="metaValue1" />
+    <meta-data android:name="org.robolectric.metaName2" android:value="metaValue2" />
+  </application>
+</manifest>
