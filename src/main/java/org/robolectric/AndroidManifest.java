@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,7 +43,7 @@ public class AndroidManifest {
   private int applicationFlags;
   private final List<ReceiverAndIntentFilter> receivers = new ArrayList<ReceiverAndIntentFilter>();
   private final Map<String, ActivityData> activityDatas = new LinkedHashMap<String, ActivityData>();
-  private final Map<String, String> applicationMetaData = new HashMap<String, String>();
+  private final Map<String, String> applicationMetaData = new LinkedHashMap<String, String>();
   private List<AndroidManifest> libraryManifests;
 
   /**
