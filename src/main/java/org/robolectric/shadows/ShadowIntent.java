@@ -45,6 +45,12 @@ public class ShadowIntent {
   private String packageName;
   private final Set<String> categories = new HashSet<String>();
 
+  public void __constructor__(String action, Uri uri, Context packageContext, Class cls) {
+    componentName = new ComponentName(packageContext, cls);
+    intentClass = cls;
+    RobolectricInternals.getConstructor(Intent.class, realIntent, String.class, Uri.class, Context.class, Class.class).invoke(action, uri, packageContext, cls);
+  }
+
   public void __constructor__(Context packageContext, Class cls) {
     componentName = new ComponentName(packageContext, cls);
     intentClass = cls;

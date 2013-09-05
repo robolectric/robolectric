@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.Set;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
 import static junit.framework.Assert.assertEquals;
@@ -21,6 +22,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
+import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class IntentTest {
@@ -472,6 +474,13 @@ public class IntentTest {
     intent.putIntegerArrayListExtra("KEY", integers);
     assertThat(intent.getIntegerArrayListExtra("KEY")).isEqualTo(integers);
     assertThat(intent.getExtras().getIntegerArrayList("KEY")).isEqualTo(integers);
+  }
+
+  @Test
+  public void constructor_shouldSetComponentAndAction() {
+    Intent intent = new Intent("roboaction", null, Robolectric.application, Activity.class);
+    assertThat(shadowOf(intent).getComponent()).isEqualTo(new ComponentName("org.robolectric", "android.app.Activity"));
+    assertThat(shadowOf(intent).getAction()).isEqualTo("roboaction");
   }
 
   private static class TestSerializable implements Serializable {
