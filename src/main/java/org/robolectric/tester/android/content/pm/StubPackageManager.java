@@ -90,6 +90,11 @@ public class StubPackageManager extends PackageManager {
     return null;
   }
 
+  @Override
+  public List<PackageInfo> getPackagesHoldingPermissions(String[] permissions, int flags) {
+    return null;  //To change body of implemented methods use File | Settings | File Templates.
+  }
+
   @Override public int checkPermission(String permName, String pkgName) {
     return 0;
   }
@@ -291,6 +296,11 @@ public class StubPackageManager extends PackageManager {
   }
 
   @Override public void verifyPendingInstall(int id, int verificationCode) {
+  }
+
+  @Override
+  public void extendVerificationTimeout(int id, int verificationCodeAtTimeout, long millisecondsToDelay) {
+    //To change body of implemented methods use File | Settings | File Templates.
   }
 
   @Override public void setInstallerPackageName(String targetPackage, String installerPackageName) {
