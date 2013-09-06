@@ -1,27 +1,33 @@
 package org.robolectric.shadows;
 
-import android.webkit.TestWebSettings;
-import android.webkit.WebChromeClient;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
-import org.fest.reflect.field.Invoker;
-import org.robolectric.internal.HiddenApi;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
+import static org.fest.reflect.core.Reflection.field;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.HashMap;
 
-import static org.fest.reflect.core.Reflection.field;
+import org.fest.reflect.field.Invoker;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.internal.HiddenApi;
+
+import android.view.ViewGroup.LayoutParams;
+import android.webkit.TestWebSettings;
+import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(value = WebView.class, inheritImplementationMethods = true)
 public class ShadowWebView extends ShadowAbsoluteLayout {
   public static boolean DEBUG = false;
 
+  @RealObject
+  private WebView realWebView;
+  
   private String lastUrl;
   private HashMap<String, Object> javascriptInterfaces = new HashMap<String, Object>();
   private WebSettings webSettings = new TestWebSettings();
@@ -70,6 +76,11 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
       });
       mProviderField.set(provider);
     }
+  }
+
+  @Implementation
+  public void setLayoutParams(LayoutParams params) {
+    field("mLayoutParams").ofType(LayoutParams.class).in(realWebView).set(params);
   }
 
   private Object nullish(Method method) {

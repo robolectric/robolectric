@@ -1,8 +1,5 @@
 package org.robolectric;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import org.robolectric.shadows.ShadowAbsListView;
 import org.robolectric.shadows.ShadowAbsSeekBar;
 import org.robolectric.shadows.ShadowAbsSpinner;
@@ -126,7 +123,6 @@ import org.robolectric.shadows.ShadowLayoutAnimationController;
 import org.robolectric.shadows.ShadowLinearGradient;
 import org.robolectric.shadows.ShadowLinearLayout;
 import org.robolectric.shadows.ShadowLinkMovementMethod;
-import org.robolectric.shadows.ShadowListActivity;
 import org.robolectric.shadows.ShadowListPreference;
 import org.robolectric.shadows.ShadowListView;
 import org.robolectric.shadows.ShadowLocalActivityManager;
@@ -166,6 +162,7 @@ import org.robolectric.shadows.ShadowParcel;
 import org.robolectric.shadows.ShadowPath;
 import org.robolectric.shadows.ShadowPendingIntent;
 import org.robolectric.shadows.ShadowPeriodicSync;
+import org.robolectric.shadows.ShadowPhoneWindow;
 import org.robolectric.shadows.ShadowPopupWindow;
 import org.robolectric.shadows.ShadowPorterDuffXfermode;
 import org.robolectric.shadows.ShadowPowerManager;
@@ -253,7 +250,13 @@ import org.robolectric.shadows.ShadowWifiConfiguration;
 import org.robolectric.shadows.ShadowWifiInfo;
 import org.robolectric.shadows.ShadowWifiManager;
 import org.robolectric.shadows.ShadowWindow;
+import org.robolectric.shadows.ShadowWindowManager;
+import org.robolectric.shadows.ShadowWindowManagerImpl;
 import org.robolectric.shadows.ShadowZoomButtonsController;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public class RobolectricBase {
   static final List<Class<?>> DEFAULT_SHADOW_CLASSES = Collections.unmodifiableList(Arrays.asList(
@@ -390,7 +393,6 @@ public class RobolectricBase {
       ShadowLinearGradient.class,
       ShadowLinearLayout.class,
       ShadowLinkMovementMethod.class,
-      ShadowListActivity.class,
       ShadowListPreference.class,
       ShadowListView.class,
       ShadowLocalActivityManager.class,
@@ -420,6 +422,7 @@ public class RobolectricBase {
       ShadowNdefMessage.class,
       ShadowNdefRecord.class,
       ShadowNfcAdapter.class,
+      ShadowNotification.ShadowBuilder.class,
       ShadowNotificationManager.class,
       ShadowNetworkInfo.class,
       ShadowNinePatch.class,
@@ -431,6 +434,7 @@ public class RobolectricBase {
       ShadowPath.class,
       ShadowPendingIntent.class,
       ShadowPeriodicSync.class,
+      ShadowPhoneWindow.class,
       ShadowPopupWindow.class,
       ShadowPorterDuffXfermode.class,
       ShadowPowerManager.class,
@@ -526,6 +530,8 @@ public class RobolectricBase {
       ShadowWifiManager.class,
       ShadowWifiManager.ShadowWifiLock.class,
       ShadowWindow.class,
+      ShadowWindowManager.class,
+      ShadowWindowManagerImpl.class,
       ShadowZoomButtonsController.class
   ));
 }

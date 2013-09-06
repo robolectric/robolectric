@@ -9,10 +9,11 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.view.View;
 import android.widget.RemoteViews;
-import org.robolectric.internal.AppSingletonizer;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.internal.AppSingletonizer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -216,7 +217,8 @@ public class ShadowAppWidgetManager {
   }
 
   private View createWidgetView(int widgetLayoutId) {
-    return new Activity().getLayoutInflater().inflate(widgetLayoutId, null);
+    Activity activity = Robolectric.buildActivity(Activity.class).create().get();
+    return activity.getLayoutInflater().inflate(widgetLayoutId, null);
   }
 
   /**

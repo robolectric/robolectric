@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import android.app.Activity;
 import android.view.animation.LayoutAnimationController;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,7 +15,7 @@ public class LayoutAnimationControllerTest {
 
   @Before
   public void setup() {
-    LayoutAnimationController controller = new LayoutAnimationController(new Activity(), null);
+    LayoutAnimationController controller = new LayoutAnimationController(Robolectric.application, null);
     shadow = Robolectric.shadowOf(controller);
   }
 

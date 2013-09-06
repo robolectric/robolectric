@@ -1,6 +1,5 @@
 package org.robolectric.res;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.preference.CheckBoxPreference;
@@ -40,7 +39,7 @@ public class PreferenceLoaderTest {
   @Test
   public void shouldCreateCorrectClasses() {
     PreferenceNode preferenceNode = resBundle.get(new ResName(TEST_PACKAGE + ":xml/preferences"), "");
-    PreferenceScreen screen = (PreferenceScreen) preferenceBuilder.inflate(preferenceNode, new Activity(), null);
+    PreferenceScreen screen = (PreferenceScreen) preferenceBuilder.inflate(preferenceNode, Robolectric.application, null);
     assertThatScreenMatchesExpected(screen);
   }
 

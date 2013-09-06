@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.ContextWrapper;
 import android.content.DialogInterface;
 import android.view.View;
@@ -24,7 +25,9 @@ import java.util.List;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNull;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.robolectric.Robolectric.application;
 import static org.robolectric.Robolectric.shadowOf;
 
@@ -104,7 +107,7 @@ public class AlertDialogTest {
 
   @Test
   public void shouldSetMessageFromResourceId() throws Exception {
-    AlertDialog.Builder builder = new AlertDialog.Builder(new Activity());
+    AlertDialog.Builder builder = new AlertDialog.Builder(application);
     builder.setTitle("title").setMessage(R.string.hello);
 
     AlertDialog alert = builder.create();
@@ -393,6 +396,32 @@ public class AlertDialogTest {
     assertThat(dialog.findViewById(android.R.id.custom)).isInstanceOf(FrameLayout.class);
     assertThat(dialog.findViewById(android.R.id.custom)).isSameAs(dialog.findViewById(android.R.id.custom));
 
+  }
+
+  @Test
+  public void shouldNotExplodeWhenNestingAlerts() throws Exception {
+    final Activity activity = Robolectric.buildActivity(Activity.class).create().get();
+    final AlertDialog nestedDialog = new AlertDialog.Builder(activity)
+        .setTitle("Dialog 2")
+        .setMessage("Another dialog")
+        .setPositiveButton("OK", null)
+        .create();
+
+    final AlertDialog dialog = new AlertDialog.Builder(activity)
+        .setTitle("Dialog 1")
+        .setMessage("A dialog")
+        .setPositiveButton("Button 1", new DialogInterface.OnClickListener() {
+          @Override
+          public void onClick(DialogInterface dialog, int which) {
+            nestedDialog.show();
+          }
+        }).create();
+
+    dialog.show();
+    assertThat(ShadowDialog.getLatestDialog()).isEqualTo(dialog);
+
+    dialog.getButton(Dialog.BUTTON_POSITIVE).performClick();
+    assertThat(ShadowDialog.getLatestDialog()).isEqualTo(nestedDialog);
   }
 
 

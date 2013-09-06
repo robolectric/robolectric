@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
@@ -9,6 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
+import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.res.Attribute;
 import org.robolectric.res.PackageResourceLoader;
@@ -24,7 +24,10 @@ import java.io.IOException;
 
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.robolectric.util.TestUtil.TEST_PACKAGE;
 import static org.robolectric.util.TestUtil.TEST_RESOURCE_PATH;
 
@@ -34,7 +37,7 @@ public class ContextTest {
 
   @Before
   public void setUp() throws Exception {
-    context = new Activity();
+    context = Robolectric.application;
     deleteDir(context.getFilesDir());
     deleteDir(context.getCacheDir());
     deleteDir(ShadowContext.DATABASE_DIR);

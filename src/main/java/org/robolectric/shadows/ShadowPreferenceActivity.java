@@ -14,13 +14,13 @@ import org.robolectric.util.I18nException;
 import static org.robolectric.Robolectric.shadowOf;
 
 @Implements(PreferenceActivity.class)
-public class ShadowPreferenceActivity extends ShadowListActivity {
+public class ShadowPreferenceActivity extends ShadowActivity {
   private int preferencesResId = -1;
   private PreferenceScreen preferenceScreen;
 
   @Implementation
   public void onCreate(Bundle savedInstanceState) {
-    setContentView(android.R.layout.list_content);
+    realActivity.setContentView(android.R.layout.list_content);
   }
 
   @Implementation

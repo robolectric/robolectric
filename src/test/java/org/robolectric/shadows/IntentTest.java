@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.Set;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
 import static junit.framework.Assert.assertEquals;
@@ -21,6 +22,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
+import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class IntentTest {
@@ -355,6 +357,84 @@ public class IntentTest {
   }
 
   @Test
+  public void equals_shouldTestPackageName() throws Exception {
+    Intent intentA = new Intent()
+        .setAction("action")
+        .setPackage("package");
+
+    Intent intentB = new Intent()
+        .setAction("action")
+        .setPackage("package");
+
+    assertThat(intentA).isEqualTo(intentB);
+
+    intentB.setPackage("other package");
+    assertThat(intentA).isNotEqualTo(intentB);
+  }
+
+  @Test
+  public void hashCode_shouldTestActionComponentNameDataAndExtras() throws Exception {
+    Intent intentA = new Intent()
+        .setAction("action")
+        .setData(Uri.parse("content:1"))
+        .setComponent(new ComponentName("pkg", "cls"))
+        .putExtra("extra", "blah")
+        .setType("image/*")
+        .addCategory("category.name");
+
+    Intent intentB = new Intent()
+        .setAction("action")
+        .setData(Uri.parse("content:1"))
+        .setComponent(new ComponentName("pkg", "cls"))
+        .putExtra("extra", "blah")
+        .setType("image/*")
+        .addCategory("category.name");
+
+    assertThat(intentA.hashCode()).isEqualTo(intentB.hashCode());
+
+    intentB.setAction("other action");
+    assertThat(intentA.hashCode()).isNotEqualTo(intentB.hashCode());
+
+    intentB.setAction("action");
+    intentB.setData(Uri.parse("content:other"));
+    assertThat(intentA.hashCode()).isNotEqualTo(intentB.hashCode());
+
+    intentB.setData(Uri.parse("content:1"));
+    intentB.setComponent(new ComponentName("other-pkg", "other-cls"));
+    assertThat(intentA.hashCode()).isNotEqualTo(intentB.hashCode());
+
+    intentB.setComponent(new ComponentName("pkg", "cls"));
+    intentB.putExtra("extra", "foo");
+    assertThat(intentA.hashCode()).isNotEqualTo(intentB.hashCode());
+
+    intentB.putExtra("extra", "blah");
+    intentB.setType("other/*");
+    assertThat(intentA.hashCode()).isNotEqualTo(intentB.hashCode());
+
+    intentB.setType("image/*");
+    assertThat(intentA.hashCode()).isEqualTo(intentB.hashCode());
+
+    intentB.removeCategory("category.name");
+    assertThat(intentA.hashCode()).isNotEqualTo(intentB.hashCode());
+  }
+
+  @Test
+  public void hashCode_shouldTestPackageName() throws Exception {
+    Intent intentA = new Intent()
+        .setAction("action")
+        .setPackage("package");
+
+    Intent intentB = new Intent()
+        .setAction("action")
+        .setPackage("package");
+
+    assertThat(intentA.hashCode()).isEqualTo(intentB.hashCode());
+
+    intentB.setPackage("other package");
+    assertThat(intentA.hashCode()).isNotEqualTo(intentB.hashCode());
+  }
+
+  @Test
   public void equals_whenOtherObjectIsNotAnIntent_shouldReturnFalse() throws Exception {
     assertThat((Object) new Intent()).isNotEqualTo(new Object());
   }
@@ -394,6 +474,13 @@ public class IntentTest {
     intent.putIntegerArrayListExtra("KEY", integers);
     assertThat(intent.getIntegerArrayListExtra("KEY")).isEqualTo(integers);
     assertThat(intent.getExtras().getIntegerArrayList("KEY")).isEqualTo(integers);
+  }
+
+  @Test
+  public void constructor_shouldSetComponentAndAction() {
+    Intent intent = new Intent("roboaction", null, Robolectric.application, Activity.class);
+    assertThat(shadowOf(intent).getComponent()).isEqualTo(new ComponentName("org.robolectric", "android.app.Activity"));
+    assertThat(shadowOf(intent).getAction()).isEqualTo("roboaction");
   }
 
   private static class TestSerializable implements Serializable {

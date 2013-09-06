@@ -3,6 +3,7 @@ package org.robolectric.util;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
+import org.robolectric.Robolectric;
 
 import static org.robolectric.Robolectric.shadowOf;
 
@@ -17,14 +18,8 @@ public class FragmentTestUtil {
   }
 
   private static FragmentActivity createActivity() {
-    FragmentActivity activity = new FragmentActivity();
-    initActivity(activity);
-    return activity;
-  }
-
-  private static void initActivity(FragmentActivity activity) {
-    shadowOf(activity).callOnCreate(null);
-    shadowOf(activity).callOnStart();
-    shadowOf(activity).callOnResume();
+    ActivityController<FragmentActivity> controller = Robolectric.buildActivity(FragmentActivity.class);
+    controller.create().start().resume();
+    return controller.get();
   }
 }

@@ -56,7 +56,7 @@ public class XmlFileLoaderTest {
   @Before
   public void setUp() throws Exception {
     resBundle = new ResBundle<Document>();
-    xmlFileLoader = new XmlFileLoader(resBundle);
+    xmlFileLoader = new XmlFileLoader(resBundle, "xml");
     new DocumentLoader(testResources()).load("xml", xmlFileLoader);
     xmlFileBuilder = new XmlFileBuilder();
 

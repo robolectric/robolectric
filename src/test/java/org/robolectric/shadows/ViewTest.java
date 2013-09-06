@@ -7,6 +7,7 @@ import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Bundle;
 import android.view.HapticFeedbackConstants;
 import android.view.MotionEvent;
 import android.view.View;
@@ -15,10 +16,10 @@ import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.view.WindowManager;
 import android.view.animation.Animation;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -27,12 +28,14 @@ import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.res.Attribute;
-import org.robolectric.tester.android.view.RoboWindow;
 import org.robolectric.util.TestAnimationListener;
 import org.robolectric.util.TestOnClickListener;
 import org.robolectric.util.TestOnLongClickListener;
 import org.robolectric.util.TestRunnable;
 import org.robolectric.util.Transcript;
+
+import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static junit.framework.Assert.assertEquals;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -41,6 +44,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Robolectric.application;
+import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Robolectric.shadowOf;
 import static org.robolectric.Robolectric.visualize;
 
@@ -162,7 +166,7 @@ public class ViewTest {
   @Test
   public void shouldInflateMergeRootedLayoutAndNotCreateReferentialLoops() throws Exception {
     LinearLayout root = new LinearLayout(Robolectric.application);
-    LinearLayout.inflate(new Activity(), R.layout.inner_merge, root);
+    LinearLayout.inflate(Robolectric.application, R.layout.inner_merge, root);
     for (int i = 0; i < root.getChildCount(); i++) {
       View child = root.getChildAt(i);
       assertNotSame(root, child);
@@ -312,28 +316,22 @@ public class ViewTest {
 
   @Test
   public void shouldCallOnClickWithAttribute() throws Exception {
-    final AtomicBoolean called = new AtomicBoolean(false);
-    Activity context = new MyActivity(called);
+    MyActivity myActivity = buildActivity(MyActivity.class).create().get();
     RoboAttributeSet attrs = new RoboAttributeSet(new ArrayList<Attribute>(), Robolectric.application.getResources(), null);
     attrs.put("android:attr/onClick", "clickMe", R.class.getPackage().getName());
 
-    view = new View(context, attrs);
+    view = new View(myActivity, attrs);
     view.performClick();
-    assertTrue("Should have been called", called.get());
+    assertTrue("Should have been called", myActivity.called);
   }
 
   @Test(expected = RuntimeException.class)
   public void shouldThrowExceptionWithBadMethodName() throws Exception {
-    final AtomicBoolean called = new AtomicBoolean(false);
-    Activity context = new Activity() {
-      public void clickMe(View view) {
-        called.set(true);
-      }
-    };
+    MyActivity myActivity = buildActivity(MyActivity.class).create().get();
     RoboAttributeSet attrs = new RoboAttributeSet(new ArrayList<Attribute>(), Robolectric.application.getResources(), null);
     attrs.put("android:onClick", "clickYou", R.class.getPackage().getName());
 
-    view = new View(context, attrs);
+    view = new View(myActivity, attrs);
     view.performClick();
   }
 
@@ -466,7 +464,7 @@ public class ViewTest {
     assertThat(view2.getMeasuredHeight()).isEqualTo(0);
 
     view2.measure(MeasureSpec.makeMeasureSpec(200, MeasureSpec.AT_MOST),
-        MeasureSpec.makeMeasureSpec(50, MeasureSpec.AT_MOST));
+    MeasureSpec.makeMeasureSpec(50, MeasureSpec.AT_MOST));
 
     assertThat(view2.getWidth()).isEqualTo(0);
     assertThat(view2.getHeight()).isEqualTo(0);
@@ -671,8 +669,8 @@ public class ViewTest {
     parent.addView(new MyView("child", transcript));
     transcript.assertNoEventsSoFar();
 
-    RoboWindow window = new RoboWindow(application);
-    window.setContentView(parent);
+    Activity activity = Robolectric.buildActivity(ContentViewActivity.class).create().get();
+    activity.getWindowManager().addView(parent, new WindowManager.LayoutParams(100, 100));
     transcript.assertEventsSoFar("parent attached", "child attached");
 
     parent.addView(new MyView("another child", transcript));
@@ -686,15 +684,13 @@ public class ViewTest {
     parent.removeView(temporaryChild);
     transcript.assertEventsSoFar("temporary child detached");
     assertFalse(shadowOf(temporaryChild).isAttachedToWindow());
-
-    window.setContentView(null);
-    transcript.assertEventsSoFar("child detached", "another child detached", "parent detached");
   }
 
   // todo looks like this is flaky...
   @Test public void removeAllViews_shouldCallOnAttachedToAndDetachedFromWindow() throws Exception {
     MyView parent = new MyView("parent", transcript);
-    new RoboWindow(application).setContentView(parent);
+    Activity activity = Robolectric.buildActivity(ContentViewActivity.class).create().get();
+    activity.getWindowManager().addView(parent, new WindowManager.LayoutParams(100, 100));
 
     parent.addView(new MyView("child", transcript));
     parent.addView(new MyView("another child", transcript));
@@ -706,15 +702,11 @@ public class ViewTest {
   }
 
   public static class MyActivity extends Activity {
-    private final AtomicBoolean called;
-
-    public MyActivity(AtomicBoolean called) {
-      this.called = called;
-    }
+    public boolean called;
 
     @SuppressWarnings("UnusedDeclaration")
     public void clickMe(View view) {
-      called.set(true);
+      called = true;
     }
   }
 
@@ -736,6 +728,14 @@ public class ViewTest {
     @Override protected void onDetachedFromWindow() {
       transcript.add(name + " detached");
       super.onDetachedFromWindow();
+    }
+  }
+
+  private static class ContentViewActivity extends Activity {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+      super.onCreate(savedInstanceState);
+      setContentView(new FrameLayout(this));
     }
   }
 }

@@ -114,6 +114,13 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
     return db;
   }
 
+  @Implementation
+  public static SQLiteDatabase create(SQLiteDatabase.CursorFactory factory) {
+    SQLiteDatabase db = newInstanceOf(SQLiteDatabase.class);
+    shadowOf(db).init(null);
+    return db;
+  }
+
   public static void reset() {
     try {
       synchronized (connectionLock) {
@@ -140,7 +147,7 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
   public Connection getConnection() {
     synchronized (connectionLock) {
       if (connection == null) {
-        if (new File(path).isFile()) {
+        if (path != null) {
           connection = DatabaseConfig.getFileConnection(new File(path));
           isFileConnection = true;
         } else {

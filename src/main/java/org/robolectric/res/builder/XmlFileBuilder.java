@@ -53,7 +53,7 @@ public class XmlFileBuilder {
 
   public static XmlResourceParser getXmlResourceParser(String file, String packageName, ResourceIndex resourceIndex) {
    FsFile fsFile = Fs.fileFromPath(file);
-   Document document = new XmlFileLoader(null).parse(fsFile);
+   Document document = new XmlFileLoader(null, "xml").parse(fsFile);
    if (document == null) {
      throw new Resources.NotFoundException("couldn't find resource " + fsFile.getPath());
    }

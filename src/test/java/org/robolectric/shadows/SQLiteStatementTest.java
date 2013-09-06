@@ -1,20 +1,22 @@
 package org.robolectric.shadows;
 
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteDoneException;
-import android.database.sqlite.SQLiteException;
-import android.database.sqlite.SQLiteStatement;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.robolectric.Robolectric.shadowOf;
 
 import java.sql.ResultSet;
 import java.sql.Statement;
 
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.robolectric.Robolectric.shadowOf;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
+
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteDoneException;
+import android.database.sqlite.SQLiteException;
+import android.database.sqlite.SQLiteStatement;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class SQLiteStatementTest {
@@ -22,7 +24,7 @@ public class SQLiteStatementTest {
 
   @Before
   public void setUp() throws Exception {
-    database = SQLiteDatabase.openDatabase("path", null, 0);
+    database = SQLiteDatabase.openDatabase(Robolectric.application.getDatabasePath("path").getPath(), null, 0);
     SQLiteStatement createStatement = database.compileStatement("CREATE TABLE `routine` (`id` INTEGER PRIMARY KEY AUTOINCREMENT , `name` VARCHAR , `lastUsed` INTEGER DEFAULT 0 ,  UNIQUE (`name`)) ;");
     createStatement.execute();
 

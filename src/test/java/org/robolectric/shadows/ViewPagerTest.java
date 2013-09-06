@@ -1,15 +1,19 @@
 package org.robolectric.shadows;
 
-import android.app.Activity;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.View;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
-import static junit.framework.Assert.*;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertNull;
+import static junit.framework.Assert.assertSame;
+import static junit.framework.Assert.assertTrue;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ViewPagerTest {
@@ -19,7 +23,7 @@ public class ViewPagerTest {
 
   @Before
   public void setUp() throws Exception {
-    pager = new ViewPager(new Activity());
+    pager = new ViewPager(Robolectric.application);
     adapter = new TestPagerAdapter();
   }
 

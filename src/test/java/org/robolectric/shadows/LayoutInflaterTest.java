@@ -42,6 +42,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Robolectric.shadowOf;
 import static org.robolectric.test.Assertions.assertThat;
 import static org.robolectric.util.TestUtil.TEST_PACKAGE;
@@ -53,7 +54,7 @@ public class LayoutInflaterTest {
 
   @Before
   public void setUp() throws Exception {
-    context = new Activity() {};
+    context = buildActivity(Activity.class).create().get();
   }
 
   @Test
@@ -294,10 +295,7 @@ public class LayoutInflaterTest {
 
   @Test
   public void testMultiOrientation() throws Exception {
-    context = new FragmentActivity();
-    shadowOf(context).callOnCreate(null);
-    shadowOf(context).callOnStart();
-    shadowOf(context).callOnResume();
+    context = buildActivity(FragmentActivity.class).create().start().resume().get();
 
     // Default screen orientation should be portrait.
     ViewGroup view = (ViewGroup) inflate("multi_orientation");
@@ -349,8 +347,7 @@ public class LayoutInflaterTest {
 
   @Test
   public void testOnClickAttribute() throws Exception {
-    ClickActivity activity = new ClickActivity();
-    activity.onCreate(null);
+    ClickActivity activity = buildActivity(ClickActivity.class).create().get();
 
     assertThat(activity.clicked).isFalse();
 
@@ -362,7 +359,7 @@ public class LayoutInflaterTest {
 
   @Test
   public void testInvalidOnClickAttribute() throws Exception {
-    Activity activity = new Activity();
+    Activity activity = buildActivity(Activity.class).create().get();
     activity.setContentView(R.layout.with_invalid_onclick);
 
     Button button =

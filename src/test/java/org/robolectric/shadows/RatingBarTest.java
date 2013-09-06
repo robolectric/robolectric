@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import android.app.Activity;
 import android.content.Context;
 import android.widget.RatingBar;
 import org.junit.Before;
@@ -22,7 +21,7 @@ public class RatingBarTest {
 
   @Before
   public void setup() {
-    ratingBar = new RatingBar(new Activity());
+    ratingBar = new RatingBar(Robolectric.application);
     shadow = Robolectric.shadowOf(ratingBar);
     listener = new TestRatingBarChangedListener();
     transcript = new Transcript();
@@ -52,7 +51,8 @@ public class RatingBarTest {
 
   @Test
   public void testInheritance() {
-    TestRatingBar ratingBar = new TestRatingBar(new Activity());
+    // TODO: this seems to test static typing - compiler enforces this ;)
+    TestRatingBar ratingBar = new TestRatingBar(Robolectric.application);
     ShadowRatingBar shadow = Robolectric.shadowOf(ratingBar);
     assertThat(shadow).isInstanceOf(ShadowAbsSeekBar.class);
   }

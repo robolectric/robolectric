@@ -9,16 +9,16 @@ import org.robolectric.TestLifecycle;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.DisableStrictI18n;
 import org.robolectric.annotation.EnableStrictI18n;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 import org.robolectric.impl.ExtendedResponseCache;
 import org.robolectric.impl.FakeCharsets;
 import org.robolectric.impl.ResponseSource;
 import org.robolectric.impl.UriCodec;
 import org.robolectric.internal.DoNotInstrument;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
 import org.robolectric.internal.Instrument;
 import org.robolectric.internal.ParallelUniverseInterface;
-import org.robolectric.annotation.RealObject;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.util.DatabaseConfig;
@@ -95,7 +95,7 @@ public class Setup {
     return className.startsWith("android.")
         || className.startsWith("libcore.")
         || className.startsWith("com.android.internal.")
-        || className.startsWith("com.google.android.maps.")
+        || className.startsWith("com.google.android.")
         || className.startsWith("org.apache.http.impl.client.DefaultRequestDirector");
   }
 
@@ -139,7 +139,7 @@ public class Setup {
         new MethodRef("android.os.StrictMode", "incrementExpectedActivityCount"),
         new MethodRef("com.android.i18n.phonenumbers.Phonenumber$PhoneNumber", "*"),
         new MethodRef("com.android.i18n.phonenumbers.PhoneNumberUtil", "*"),
-        new MethodRef("dalvik.system.CloseGuard", "get"),
+        new MethodRef("dalvik.system.CloseGuard", "*"),
         new MethodRef("dalvik.system.BlockGuard", "*"),
         new MethodRef("java.lang.AutoCloseable", "*"),
         new MethodRef("android.util.LocaleUtil", "getLayoutDirectionFromLocale"),

@@ -30,4 +30,13 @@ public class IntentFilterTest {
     assertThat(intentFilter.getDataAuthority(1).getHost()).isEqualTo("example.com");
     assertThat(intentFilter.getDataAuthority(1).getPort()).isEqualTo(42);
   }
+
+  @Test
+  public void hasAction() {
+    IntentFilter intentFilter = new IntentFilter();
+    assertThat(intentFilter.hasAction("test")).isFalse();
+    intentFilter.addAction("test");
+
+    assertThat(intentFilter.hasAction("test")).isTrue();
+  }
 }

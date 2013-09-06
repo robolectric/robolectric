@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static android.content.pm.ApplicationInfo.*;
 import static java.util.Arrays.asList;
@@ -77,6 +78,13 @@ public class AndroidManifestTest {
     assertEquals("org.robolectric", newConfig("TestAndroidManifestWithNoProcess.xml").getProcessName());
   }
 
+  @Test
+  public void shouldReturnApplicationMetaData() {
+    Map<String, String> meta = newConfig("TestAndroidManifestWithAppMetaData.xml").getApplicationMetaData();
+    assertEquals("metaValue1", meta.get("org.robolectric.metaName1"));
+    assertEquals("metaValue2", meta.get("org.robolectric.metaName2"));
+  }
+  
   @Test public void shouldLoadAllResourcesForLibraries() {
     AndroidManifest appManifest = new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"));
 

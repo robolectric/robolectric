@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.app.Application;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.SearchView;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,7 +15,9 @@ import org.robolectric.tester.android.view.TestMenuItem;
 import org.robolectric.util.I18nException;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -63,5 +66,14 @@ public class MenuInflaterTest {
   public void shouldThrowExceptionOnI18nStrictModeInflateMenu() throws Exception {
     shadowOf(context).setStrictI18n(true);
     new MenuInflater(context).inflate(R.menu.test, new TestMenu());
+  }
+
+  @Test
+  public void shouldCreateActionViews() throws Exception {
+    TestMenu testMenu = new TestMenu();
+    new MenuInflater(context).inflate(R.menu.action_menu, testMenu);
+
+    MenuItem item = testMenu.getItem(0);
+    assertEquals(item.getActionView().getClass(), SearchView.class);
   }
 }

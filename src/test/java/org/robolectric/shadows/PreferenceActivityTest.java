@@ -19,23 +19,18 @@ public class PreferenceActivityTest {
 
   @Before
   public void setUp() throws Exception {
-    activity = new TestPreferenceActivity();
+    activity = Robolectric.buildActivity(TestPreferenceActivity.class).create().get();
     shadow = Robolectric.shadowOf(activity);
   }
 
   @Test
   public void shouldInitializeListViewInOnCreate() {
-    shadow.callOnCreate(null);
     assertThat(activity.getListView()).isNotNull();
   }
 
   @Test
-  public void shouldInheritFromListActivity() {
-    assertThat(shadow).isInstanceOf(ShadowListActivity.class);
-  }
-
-  @Test
   public void shouldNotInitializePreferenceScreen() {
+    TestPreferenceActivity activity = Robolectric.buildActivity(TestPreferenceActivity.class).get();
     assertThat(activity.getPreferenceScreen()).isNull();
   }
 

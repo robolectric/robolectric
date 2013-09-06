@@ -48,6 +48,11 @@ public class ShadowIntentFilter {
   public String getAction(int index) {
     return actions.get(index);
   }
+  
+  @Implementation
+  public boolean hasAction(String action) {
+    return actions.contains(action);
+  }
 
   @Implementation
   public int countActions() {

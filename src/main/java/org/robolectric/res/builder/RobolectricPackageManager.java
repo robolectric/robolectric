@@ -8,6 +8,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.ResolveInfo;
 import android.graphics.drawable.Drawable;
+import android.os.Bundle;
 import android.util.Pair;
 import java.io.File;
 import java.util.ArrayList;
@@ -16,6 +17,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import org.robolectric.AndroidManifest;
 import org.robolectric.Robolectric;
@@ -136,9 +138,24 @@ public class RobolectricPackageManager extends StubPackageManager {
 
   @Override
   public Intent getLaunchIntentForPackage(String packageName) {
-    Intent i = new Intent();
-    i.setComponent( new ComponentName(packageName, "") );
-    return i;
+    Intent intentToResolve = new Intent(Intent.ACTION_MAIN);
+    intentToResolve.addCategory(Intent.CATEGORY_INFO);
+    intentToResolve.setPackage(packageName);
+    List<ResolveInfo> ris = queryIntentActivities(intentToResolve, 0);
+
+    if (ris == null || ris.isEmpty()) {
+      intentToResolve.removeCategory(Intent.CATEGORY_INFO);
+      intentToResolve.addCategory(Intent.CATEGORY_LAUNCHER);
+      intentToResolve.setPackage(packageName);
+      ris = queryIntentActivities(intentToResolve, 0);
+    }
+    if (ris == null || ris.isEmpty()) {
+      return null;
+    }
+    Intent intent = new Intent(intentToResolve);
+    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+    intent.setClassName(ris.get(0).activityInfo.packageName, ris.get(0).activityInfo.name);
+    return intent;
   }
 
   @Override
@@ -246,6 +263,7 @@ public class RobolectricPackageManager extends StubPackageManager {
     applicationInfo.processName = androidManifest.getProcessName();
     applicationInfo.name = androidManifest.getApplicationName();
     initApplicationInfo(applicationInfo);
+    initApplicationMetaData(applicationInfo, androidManifest);
 
     packageInfo.applicationInfo = applicationInfo;
 
@@ -257,6 +275,15 @@ public class RobolectricPackageManager extends StubPackageManager {
     applicationInfo.dataDir = ShadowContext.FILES_DIR.getAbsolutePath();
   }
 
+  private void initApplicationMetaData(ApplicationInfo applicationInfo, AndroidManifest androidManifest) {
+    Map<String, String> meta = androidManifest.getApplicationMetaData();
+    if (meta.isEmpty()) { return; }
+    applicationInfo.metaData = new Bundle();
+    for (Entry<String, String> metaEntry : meta.entrySet()) {
+      applicationInfo.metaData.putString(metaEntry.getKey(), metaEntry.getValue());
+    }
+  }
+  
   public void removePackage(String packageName) {
     packageInfos.remove(packageName);
   }
