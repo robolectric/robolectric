@@ -145,6 +145,7 @@ public class ShadowConfiguration {
         Configuration.SCREENLAYOUT_SIZE_NORMAL;
   }
 
+  @Implementation
   public void setLocale( Locale l ) {
     realConfiguration.locale = l;
   }

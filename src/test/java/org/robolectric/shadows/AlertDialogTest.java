@@ -17,6 +17,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
 import org.robolectric.util.Transcript;
 
 import java.util.ArrayList;
@@ -34,7 +35,7 @@ import static org.robolectric.Robolectric.shadowOf;
 @RunWith(TestRunners.WithDefaults.class)
 public class AlertDialogTest {
 
-  @Test
+  @Test @Config(emulateSdk = 16)
   public void testBuilder() throws Exception {
     AlertDialog.Builder builder = new AlertDialog.Builder(application);
     builder.setTitle("title").setMessage("message");
@@ -240,7 +241,6 @@ public class AlertDialogTest {
     assertThat(shadowOf(ShadowAlertDialog.getLatestAlertDialog())).isSameAs(shadowAlertDialog);
     assertThat(ShadowAlertDialog.getLatestAlertDialog()).isSameAs(alert);
   }
-
 
 //  @Test
 //  public void testBuilderWithItemArrayCanPerformClickOnItem() throws Exception {

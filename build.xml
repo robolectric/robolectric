@@ -22,8 +22,9 @@
 
      -->
   <!-- this should match whatever is defined in Robolectic.DEFAULT_SDK_VERSION -->
-  <property name="default.sdk.version" value="16"/>
-  <property name="default.sdk.revision" value="16_r3"/>
+  <property name="default.sdk.version" value="18"/>
+  <property name="default.sdk.revision" value="18_r2"/>
+  <property name="default.maps.revision" value="18_r3"/>
 
   <property file="build.properties"/>
   <!-- The default.properties file is created and updated by the 'android' tool, as well
@@ -231,13 +232,13 @@
       depends="findMavenUnix, findMavenWindows, findAndroidUnix, findAndroidWindows"
       description="Install the jar files that Maven can't find for itself">
     <exec executable="${maven}">
-      <arg line="install:install-file -DgroupId=com.google.android.maps -DartifactId=maps -Dversion=${default.sdk.revision} -Dpackaging=jar -Dfile=${sdk.dir}/add-ons/addon_google_apis_google_inc_${default.sdk.version}/libs/maps.jar" />
+      <arg line="install:install-file -DgroupId=com.google.android.maps -DartifactId=maps -Dversion=${default.maps.revision} -Dpackaging=jar -Dfile=${sdk.dir}/add-ons/addon_google_apis_google_inc_${default.sdk.version}/libs/maps.jar" />
     </exec>
     <exec executable="${maven}">
-      <arg line="install:install-file -DgroupId=com.google.android.maps -DartifactId=maps -Dversion=${default.sdk.revision} -Dpackaging=jar -Dfile=${sdk.dir}/add-ons/addon-google_apis-google_inc_-${default.sdk.version}/libs/maps.jar" />
+      <arg line="install:install-file -DgroupId=com.google.android.maps -DartifactId=maps -Dversion=${default.maps.revision} -Dpackaging=jar -Dfile=${sdk.dir}/add-ons/addon-google_apis-google_inc_-${default.sdk.version}/libs/maps.jar" />
     </exec>
     <exec executable="${maven}">
-      <arg line="install:install-file -DgroupId=com.google.android.maps -DartifactId=maps -Dversion=${default.sdk.revision} -Dpackaging=jar -Dfile=${sdk.dir}/add-ons/addon-google_apis-google-${default.sdk.version}/libs/maps.jar" />
+      <arg line="install:install-file -DgroupId=com.google.android.maps -DartifactId=maps -Dversion=${default.maps.revision} -Dpackaging=jar -Dfile=${sdk.dir}/add-ons/addon-google_apis-google-${default.sdk.version}/libs/maps.jar" />
     </exec>
   </target>
 
@@ -263,8 +264,8 @@
       depends="findMavenUnix, findMavenWindows"
       description="Prepare for travis ci build">
     <mkdir dir="tmp"/>
-    <get src="http://dl.google.com/android/android-sdk_r21.0.1-linux.tgz" dest="tmp" skipexisting="true"/>
-    <untar src="tmp/android-sdk_r21.0.1-linux.tgz" compression="gzip" dest="tmp/sdk"/>
+    <get src="http://dl.google.com/android/android-sdk_r22.2.1-linux.tgz" dest="tmp" skipexisting="true"/>
+    <untar src="tmp/android-sdk_r22.2.1-linux.tgz" compression="gzip" dest="tmp/sdk"/>
     <echo file="tmp/install-sdk">#!/bin/sh -e
       ANDROID="tmp/sdk/android-sdk-linux/tools/android"
       chmod +x $ANDROID
@@ -273,7 +274,7 @@
       { s=s "," int($1) } \
       END { print substr(s, 2, length(s)) }' \
       )
-      $ANDROID update sdk --no-ui --all --filter $SDKS
+      echo y | $ANDROID update sdk --no-ui --all --filter $SDKS
 
       cat /home/travis/.m2/settings.xml
     </echo>
@@ -283,7 +284,7 @@
       <entry key="sdk.dir" value="${basedir}/tmp/sdk/android-sdk-linux/"/>
     </propertyfile>
     <exec executable="${maven}">
-      <arg line="install:install-file -DgroupId=com.google.android.maps -DartifactId=maps -Dversion=${default.sdk.revision} -Dpackaging=jar -Dfile=tmp/sdk/android-sdk-linux/add-ons/addon-google_apis-google-${default.sdk.version}/libs/maps.jar"/>
+      <arg line="install:install-file -DgroupId=com.google.android.maps -DartifactId=maps -Dversion=${default.maps.revision} -Dpackaging=jar -Dfile=tmp/sdk/android-sdk-linux/add-ons/addon-google_apis-google-${default.sdk.version}/libs/maps.jar"/>
     </exec>
 
     <antcall target="install-real-android-jars"/>

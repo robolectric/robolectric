@@ -12,6 +12,7 @@ import org.robolectric.AndroidManifest;
 import org.robolectric.RoboInstrumentation;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.SdkConfig;
 import org.robolectric.TestLifecycle;
 import org.robolectric.annotation.Config;
 import org.robolectric.res.ResourceLoader;
@@ -32,7 +33,9 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   private static final String DEFAULT_PACKAGE_NAME = "org.robolectric.default";
   private Class<?> contextImplClass;
   private boolean loggingInitialized = false;
+  private SdkConfig sdkConfig;
 
+  @Override
   public void resetStaticState() {
     Robolectric.reset();
 
@@ -86,7 +89,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
     ResourceLoader resourceLoader;
     if (appManifest != null) {
-      resourceLoader = RobolectricTestRunner.getAppResourceLoader(systemResourceLoader, appManifest);
+      resourceLoader = RobolectricTestRunner.getAppResourceLoader(sdkConfig, systemResourceLoader, appManifest);
     } else {
       resourceLoader = systemResourceLoader;
     }
@@ -155,5 +158,10 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
   @Override public Object getCurrentApplication() {
     return Robolectric.application;
+  }
+
+  @Override
+  public void setSdkConfig(SdkConfig sdkConfig) {
+    this.sdkConfig = sdkConfig;
   }
 }

@@ -79,10 +79,65 @@ public class StubViewRoot implements ViewParent {
     return false;
   }
 
+  @Override
+  public void childHasTransientStateChanged(View child, boolean hasTransientState) {
+
+  }
+
   @Override public void requestFitSystemWindows() {
   }
 
   @Override public ViewParent getParentForAccessibility() {
     return null;
+  }
+
+  @Override
+  public void childAccessibilityStateChanged(View child) {
+
+  }
+
+  @Override
+  public boolean canResolveLayoutDirection() {
+    return false;
+  }
+
+  @Override
+  public boolean isLayoutDirectionResolved() {
+    return false;
+  }
+
+  @Override
+  public int getLayoutDirection() {
+    return 0;
+  }
+
+  @Override
+  public boolean canResolveTextDirection() {
+    return false;
+  }
+
+  @Override
+  public boolean isTextDirectionResolved() {
+    return false;
+  }
+
+  @Override
+  public int getTextDirection() {
+    return 0;
+  }
+
+  @Override
+  public boolean canResolveTextAlignment() {
+    return false;
+  }
+
+  @Override
+  public boolean isTextAlignmentResolved() {
+    return false;
+  }
+
+  @Override
+  public int getTextAlignment() {
+    return 0;
   }
 }

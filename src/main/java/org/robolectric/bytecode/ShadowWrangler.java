@@ -1,6 +1,7 @@
 package org.robolectric.bytecode;
 
 import android.content.Context;
+import org.robolectric.SdkConfig;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadows.ShadowWindow;
@@ -46,9 +47,11 @@ public class ShadowWrangler implements ClassHandler {
     }
   };
   private final Map<Class, ShadowConfig> shadowConfigCache = new HashMap<Class, ShadowConfig>();
+  private final SdkConfig sdkConfig;
 
-  public ShadowWrangler(ShadowMap shadowMap) {
+  public ShadowWrangler(ShadowMap shadowMap, SdkConfig sdkConfig) {
     this.shadowMap = shadowMap;
+    this.sdkConfig = sdkConfig;
   }
 
   @Override
@@ -341,9 +344,12 @@ public class ShadowWrangler implements ClassHandler {
       System.out.println("creating new " + shadowClassName + " as shadow for " + instance.getClass().getName());
     try {
       Class<?> shadowClass = loadClass(shadowClassName, instance.getClass().getClassLoader());
-      Constructor<?> constructor = findConstructor(instance, shadowClass);
-      if (constructor != null) {
-        shadow = constructor.newInstance(instance);
+      Constructor<?> instanceConstructor = findInstanceConstructor(instance, shadowClass);
+      Constructor<?> sdkConfigConstructor = findSdkConfigConstructor(shadowClass);
+      if (instanceConstructor != null) {
+        shadow = instanceConstructor.newInstance(instance);
+      } else if (sdkConfigConstructor != null) {
+        shadow = sdkConfigConstructor.newInstance(sdkConfig);
       } else {
         shadow = shadowClass.newInstance();
       }
@@ -396,7 +402,7 @@ public class ShadowWrangler implements ClassHandler {
     return loadClass(shadowConfig.shadowClassName, originalClass.getClassLoader());
   }
 
-  private Constructor<?> findConstructor(Object instance, Class<?> shadowClass) {
+  private Constructor<?> findInstanceConstructor(Object instance, Class<?> shadowClass) {
     Class clazz = instance.getClass();
 
     Constructor constructor;
@@ -406,6 +412,17 @@ public class ShadowWrangler implements ClassHandler {
       } catch (NoSuchMethodException e) {
         // expected
       }
+    }
+    return constructor;
+  }
+
+  private Constructor<?> findSdkConfigConstructor(Class<?> shadowClass) {
+
+    Constructor constructor = null;
+    try {
+      constructor = shadowClass.getConstructor(SdkConfig.class);
+    } catch (NoSuchMethodException e) {
+      // expected
     }
     return constructor;
   }

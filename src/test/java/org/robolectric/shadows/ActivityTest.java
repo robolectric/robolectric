@@ -13,15 +13,16 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteCursor;
 import android.media.AudioManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.KeyEvent;
+import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,6 +31,7 @@ import org.robolectric.DefaultTestLifecycle;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
 import org.robolectric.res.Fs;
 import org.robolectric.shadows.testing.OnMethodTestActivity;
 import org.robolectric.test.TemporaryFolder;
@@ -758,6 +760,14 @@ public class ActivityTest {
     assertThat(activity.customTitleText.getText().toString()).isEqualTo(activity.getString(R.string.hello));
   }
 
+  @Test @Config(emulateSdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
+  public void canGetOptionsMenu() throws Exception {
+    Activity activity = buildActivity(OptionsMenuActivity.class).create().visible().get();
+    Menu optionsMenu = shadowOf(activity).getOptionsMenu();
+    assertThat(optionsMenu).isNotNull();
+    assertThat(optionsMenu.getItem(0).getTitle()).isEqualTo("Algebraic!");
+  }
+
   /////////////////////////////
 
   private void destroy(Activity activity) {
@@ -786,6 +796,24 @@ public class ActivityTest {
     @Override
     protected Dialog onCreateDialog(int id) {
       return new Dialog(this);
+    }
+  }
+
+  private static class OptionsMenuActivity extends Activity {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+      super.onCreate(savedInstanceState);
+      // Requesting the action bar causes it to be properly initialized when the Activity becomes visible
+      getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
+      setContentView(new FrameLayout(this));
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+      super.onCreateOptionsMenu(menu);
+      menu.add("Algebraic!");
+      return true;
     }
   }
 

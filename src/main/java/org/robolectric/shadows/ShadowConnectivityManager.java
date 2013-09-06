@@ -4,6 +4,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.internal.HiddenApi;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -60,6 +61,7 @@ public class ShadowConnectivityManager {
     networkTypeToNetworkInfo.put(networkType, networkInfo);
   }
 
+  @HiddenApi @Implementation
   public void setBackgroundDataSetting(boolean b) {
     backgroundDataSetting = b;
   }

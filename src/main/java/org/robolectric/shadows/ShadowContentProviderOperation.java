@@ -1,14 +1,15 @@
 package org.robolectric.shadows;
 
-import static org.fest.reflect.core.Reflection.field;
+import android.content.ContentProviderOperation;
+import android.content.ContentValues;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.internal.HiddenApi;
 
 import java.util.Map;
 
-import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
-
-import android.content.ContentProviderOperation;
-import android.content.ContentValues;
+import static org.fest.reflect.core.Reflection.field;
 
 /**
  * Shadow for {@link ContentProviderOperation}. Gives access to operation internal properties.
@@ -24,6 +25,7 @@ public class ShadowContentProviderOperation {
   @RealObject
   private ContentProviderOperation realOperation;
 
+  @HiddenApi @Implementation
   public int getType() {
     return field("mType").ofType(int.class).in(realOperation).get();
   }

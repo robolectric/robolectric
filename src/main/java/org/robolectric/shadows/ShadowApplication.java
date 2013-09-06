@@ -7,6 +7,7 @@ import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.IContentProvider;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
@@ -171,6 +172,30 @@ public class ShadowApplication extends ShadowContextWrapper {
   public ContentResolver getContentResolver() {
     if (contentResolver == null) {
       contentResolver = new ContentResolver(realApplication) {
+        @Override
+        protected IContentProvider acquireProvider(Context c, String name) {
+          return null;
+        }
+
+        @Override
+        public boolean releaseProvider(IContentProvider icp) {
+          return false;
+        }
+
+        @Override
+        protected IContentProvider acquireUnstableProvider(Context c, String name) {
+          return null;
+        }
+
+        @Override
+        public boolean releaseUnstableProvider(IContentProvider icp) {
+          return false;
+        }
+
+        @Override
+        public void unstableProviderDied(IContentProvider icp) {
+
+        }
       };
     }
     return contentResolver;

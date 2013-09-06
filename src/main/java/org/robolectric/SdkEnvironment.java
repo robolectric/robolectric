@@ -67,6 +67,10 @@ public class SdkEnvironment {
     this.currentClassHandler = currentClassHandler;
   }
 
+  public SdkConfig getSdkConfig() {
+    return sdkConfig;
+  }
+
   public interface Factory {
     public SdkEnvironment create();
   }

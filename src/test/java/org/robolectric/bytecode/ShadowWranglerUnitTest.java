@@ -2,6 +2,7 @@ package org.robolectric.bytecode;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.robolectric.SdkConfig;
 import org.robolectric.util.Function;
 
 import java.util.LinkedHashMap;
@@ -14,7 +15,7 @@ public class ShadowWranglerUnitTest {
 
   @Before
   public void setup() throws Exception {
-    shadowWrangler = new ShadowWrangler(ShadowMap.EMPTY);
+    shadowWrangler = new ShadowWrangler(ShadowMap.EMPTY, SdkConfig.getDefaultSdk());
   }
 
   @Test

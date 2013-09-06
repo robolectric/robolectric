@@ -1,13 +1,11 @@
 package org.robolectric.shadows;
 
 import android.app.Activity;
-import android.app.Application;
 import android.content.ContentResolver;
 import android.provider.Settings;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -21,27 +19,6 @@ public class SettingsTest {
   public void setUp() throws Exception {
     activity = new Activity();
     contentResolver = activity.getContentResolver();
-  }
-
-  @Test
-  public void whileApplicationStaysSame_shouldRememberOldSettings() throws Exception {
-    Settings.System.putInt(contentResolver, "property", 1);
-    assertThat(Settings.System.getInt(contentResolver, "property", 0)).isEqualTo(1);
-
-    activity = new Activity();
-    contentResolver = activity.getContentResolver();
-    assertThat(Settings.System.getInt(contentResolver, "property", 0)).isEqualTo(1);
-  }
-
-  @Test
-  public void whenApplicationChanges_shouldStartWithNewSettings() throws Exception {
-    Settings.System.putInt(contentResolver, "property", 1);
-    assertThat(Settings.System.getInt(contentResolver, "property", 0)).isEqualTo(1);
-
-    Robolectric.application = new Application();
-    activity = new Activity();
-    contentResolver = activity.getContentResolver();
-    assertThat(Settings.System.getInt(contentResolver, "property", 0)).isEqualTo(0);
   }
 
   @Test
