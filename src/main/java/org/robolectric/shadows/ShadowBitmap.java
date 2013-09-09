@@ -221,6 +221,11 @@ public class ShadowBitmap {
   }
 
   @Implementation
+  public static Bitmap createBitmap(int[] ignored, int width, int height, Bitmap.Config config) {
+    return Bitmap.createBitmap(width, height, config);
+  }
+
+  @Implementation
   public int getRowBytes() {
     return getBytesPerPixel(config) * getWidth();
   }
