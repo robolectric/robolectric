@@ -39,7 +39,17 @@ public class BitmapTest {
   @Test
   public void shouldCreateBitmapWithCorrectConfig() throws Exception {
     Bitmap bitmap = Bitmap.createBitmap(100, 200, Config.ARGB_8888);
-    assertEquals(bitmap.getConfig(), Config.ARGB_8888);
+    assertThat(bitmap.getWidth()).isEqualTo(100);
+    assertThat(bitmap.getHeight()).isEqualTo(200);
+    assertThat(bitmap.getConfig()).isEqualTo(Config.ARGB_8888);
+  }
+
+  @Test
+  public void shouldCreateBitmapWithCorrectConfig_factoryWithColorArg() throws Exception {
+    Bitmap bitmap = Bitmap.createBitmap(new int[] {1, 2, 3}, 100, 200, Config.ARGB_8888);
+    assertThat(bitmap.getWidth()).isEqualTo(100);
+    assertThat(bitmap.getHeight()).isEqualTo(200);
+    assertThat(bitmap.getConfig()).isEqualTo(Config.ARGB_8888);
   }
 
   @Test
