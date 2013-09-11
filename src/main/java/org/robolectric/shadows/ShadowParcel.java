@@ -31,9 +31,6 @@ public class ShadowParcel {
 
   @Implementation
   public void writeString(String str) {
-    if (str == null) {
-      return;
-    }
     parcelData.add(str);
   }
 
@@ -335,6 +332,26 @@ public class ShadowParcel {
         writeInt(0);
       }
       i++;
+    }
+  }
+
+  @Implementation
+  public void writeByteArray(byte[] val) {
+    writeInt(val.length);
+    for (byte b : val) writeByte(b);
+  }
+
+  @Implementation
+  public byte[] createByteArray() {
+    int n = readInt();
+    if (n >= 0) {
+      byte[] val = new byte[n];
+      for (int i = 0; i < n; i++) {
+        val[i] = readByte();
+      }
+      return val;
+    } else {
+      return null;
     }
   }
 

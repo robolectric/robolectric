@@ -69,8 +69,8 @@ public class ParcelTest {
   public void testWriteNullString() {
     parcel.writeString(null);
     assertThat(parcel.readString()).isNull();
-    assertThat(shadowParcel.getIndex()).isEqualTo(0);
-    assertThat(shadowParcel.getParcelData().size()).isEqualTo(0);
+    assertThat(shadowParcel.getIndex()).isEqualTo(1);
+    assertThat(shadowParcel.getParcelData().size()).isEqualTo(1);
   }
 
   @Test
@@ -142,6 +142,22 @@ public class ParcelTest {
     final String[] strings2 = new String[strings.length];
     parcel.readStringArray(strings2);
     assertTrue(Arrays.equals(strings, strings2));
+  }
+
+  @Test
+  public void testWriteAndCreateByteArray() {
+    byte[] bytes = new byte[] { -1, 2, 3, 127 };
+    parcel.writeByteArray(bytes);
+    byte[] actualBytes = parcel.createByteArray();
+    assertTrue(Arrays.equals(bytes, actualBytes));
+  }
+
+  @Test
+  public void testWriteAndCreateByteArray_lengthZero() {
+    byte[] bytes = new byte[] { };
+    parcel.writeByteArray(bytes);
+    byte[] actualBytes = parcel.createByteArray();
+    assertTrue(Arrays.equals(bytes, actualBytes));
   }
 
   @Test
