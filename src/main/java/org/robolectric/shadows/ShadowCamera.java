@@ -19,12 +19,17 @@ import java.util.Map;
 @Implements(Camera.class)
 public class ShadowCamera {
 
+  private static int lastOpenedCameraId;
+
+  private int id;
   private boolean locked;
   private boolean previewing;
   private boolean released;
   private Camera.Parameters parameters;
   private Camera.PreviewCallback previewCallback;
   private SurfaceHolder surfaceHolder;
+  private int displayOrientation;
+  private Camera.AutoFocusCallback autoFocusCallback;
 
   private static Map<Integer, Camera.CameraInfo> cameras = new HashMap<Integer,Camera.CameraInfo>();
 
@@ -39,7 +44,22 @@ public class ShadowCamera {
 
   @Implementation
   public static Camera open() {
-    return Robolectric.newInstanceOf(Camera.class);
+    lastOpenedCameraId = 0;
+    Camera camera = Robolectric.newInstanceOf(Camera.class);
+    Robolectric.shadowOf(camera).id = 0;
+    return camera;
+  }
+
+  @Implementation
+  public static Camera open(int cameraId) {
+    lastOpenedCameraId = cameraId;
+    Camera camera = Robolectric.newInstanceOf(Camera.class);
+    Robolectric.shadowOf(camera).id = cameraId;
+    return camera;
+  }
+
+  public static int getLastOpenedCameraId() {
+    return lastOpenedCameraId;
   }
 
   @Implementation
@@ -98,6 +118,35 @@ public class ShadowCamera {
   @Implementation
   public void setPreviewCallbackWithBuffer(Camera.PreviewCallback cb) {
     previewCallback = cb;
+  }
+
+  @Implementation
+  public void setDisplayOrientation(int degrees) {
+    displayOrientation = degrees;
+    if (cameras.containsKey(id)) {
+      cameras.get(id).orientation = degrees;
+    }
+  }
+
+  public int getDisplayOrientation() {
+    return displayOrientation;
+  }
+
+  @Implementation
+  public void autoFocus(Camera.AutoFocusCallback callback) {
+    autoFocusCallback = callback;
+  }
+
+  public boolean hasRequestedAutoFocus() {
+    return autoFocusCallback != null;
+  }
+
+  public void invokeAutoFocusCallback(boolean success, Camera camera) {
+    if (autoFocusCallback == null) {
+      throw new IllegalStateException(
+          "cannot invoke AutoFocusCallback before autoFocus has been called.");
+    }
+    autoFocusCallback.onAutoFocus(success, camera);
   }
 
   @Implementation
