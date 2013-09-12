@@ -94,6 +94,13 @@ public class ImageViewTest {
   }
 
   @Test
+  public void testSetImageResourceWithIdZeroDoesNothing() {
+    Drawable drawable = imageView.getDrawable();
+    imageView.setImageResource(0);
+    assertThat(imageView.getDrawable()).isSameAs(drawable);
+  }
+
+  @Test
   public void testSetImageLevel() throws Exception {
     imageView.setImageLevel(2);
     assertThat(shadowOf(imageView).getImageLevel()).isEqualTo(2);
