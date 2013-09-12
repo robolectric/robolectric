@@ -16,6 +16,11 @@ public class ShadowSystemClock {
   }
 
   @Implementation
+  public static void sleep(long ms) {
+    Robolectric.getUiThreadScheduler().advanceBy(ms);
+  }
+
+  @Implementation
   public static boolean setCurrentTimeMillis(long millis) {
     return false;
   }
