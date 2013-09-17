@@ -26,6 +26,9 @@
     <attr name="aspectRatio" format="float" />
     <attr name="aspectRatioEnabled" format="boolean" />
     <attr name="animalStyle" format="reference" />
+
+    <!-- Test the same attr name as android namespace with different format -->
+    <attr name="typeface" format="string" />
   </declare-styleable>
 
   <attr name="gravity">

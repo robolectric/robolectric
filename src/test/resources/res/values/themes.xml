@@ -10,6 +10,7 @@
     <item name="logoHeight">?android:attr/listItemPreferredHeight</item>
     <item name="averageSheepWidth">42px</item>
     <item name="animalStyle">@style/Gastropod</item>
+    <item name="typeface">custom_font</item>
   </style>
 
   <style name="Theme.ThirdTheme" parent="@style/Theme.Robolectric">
