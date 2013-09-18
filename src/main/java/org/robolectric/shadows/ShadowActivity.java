@@ -342,10 +342,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     Robolectric.getUiThreadScheduler().post(action);
   }
 
-  @Implementation
-  public void onCreate(Bundle savedInstanceState) {
-  }
-
   /**
    * Checks to see if {@code BroadcastListener}s are still registered.
    *
