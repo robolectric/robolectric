@@ -470,10 +470,8 @@ public class ActivityTest {
 
   @Test
   public void recreateGoesThroughFullLifeCycle() throws Exception {
-    TestActivity activity = new TestActivity();
-
-    ShadowActivity shadow = shadowOf(activity);
-    shadow.recreate();
+    TestActivity activity = buildActivity(TestActivity.class).attach().get();
+    activity.recreate();
 
     activity.transcript.assertEventsSoFar(
         "onSaveInstanceState",
