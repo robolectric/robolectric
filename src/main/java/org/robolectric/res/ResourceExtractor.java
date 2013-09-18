@@ -102,7 +102,7 @@ public class ResourceExtractor extends ResourceIndex {
       id = ++maxUsedInt;
       resourceNameToId.put(resName, id);
       resourceIdToResName.put(id, resName);
-      LOGGER.info("no id mapping found for " + resName.getFullyQualifiedName() + "; assigning ID #0x" + Integer.toHexString(id));
+      LOGGER.fine("no id mapping found for " + resName.getFullyQualifiedName() + "; assigning ID #0x" + Integer.toHexString(id));
     }
     return id;
   }
