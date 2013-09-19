@@ -29,12 +29,12 @@ public class SurfaceViewTest {
 
     surfaceHolder.addCallback(callback1);
 
-    assertThat(fakeSurfaceHolder.getCallbacks().get(0)).isEqualTo(callback1);
+    assertThat(fakeSurfaceHolder.getCallbacks()).contains(callback1);
 
     surfaceHolder.addCallback(callback2);
 
-    assertThat(fakeSurfaceHolder.getCallbacks().get(0)).isEqualTo(callback1);
-    assertThat(fakeSurfaceHolder.getCallbacks().get(1)).isEqualTo(callback2);
+    assertThat(fakeSurfaceHolder.getCallbacks()).contains(callback1);
+    assertThat(fakeSurfaceHolder.getCallbacks()).contains(callback2);
   }
 
   @Test
@@ -46,8 +46,8 @@ public class SurfaceViewTest {
 
     surfaceHolder.removeCallback(callback1);
 
-    assertThat(fakeSurfaceHolder.getCallbacks().size()).isEqualTo(1);
-    assertThat(fakeSurfaceHolder.getCallbacks().get(0)).isSameAs(callback2);
+    assertThat(fakeSurfaceHolder.getCallbacks()).doesNotContain(callback1);
+    assertThat(fakeSurfaceHolder.getCallbacks()).contains(callback2);
   }
 
   private static class TestCallback implements SurfaceHolder.Callback {

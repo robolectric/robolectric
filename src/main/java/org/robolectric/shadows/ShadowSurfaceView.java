@@ -8,8 +8,8 @@ import android.view.SurfaceView;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Implements(value = SurfaceView.class)
 @SuppressWarnings({"UnusedDeclaration"})
@@ -32,13 +32,13 @@ public class ShadowSurfaceView extends ShadowView {
    */
   public static class FakeSurfaceHolder implements SurfaceHolder {
 
-    private List<Callback> callbacks = new ArrayList<Callback>();
+    final private Set<Callback> callbacks = new HashSet<Callback>();
 
     @Override public void addCallback(Callback callback) {
       callbacks.add(callback);
     }
 
-    public List<Callback> getCallbacks() {
+    public Set<Callback> getCallbacks() {
       return callbacks;
     }
 
