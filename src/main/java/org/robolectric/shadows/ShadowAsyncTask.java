@@ -101,17 +101,18 @@ public class ShadowAsyncTask<Params, Progress, Result> {
 
   @Implementation
   public AsyncTask<Params, Progress, Result> executeOnExecutor(Executor executor, Params... params) {
-      status = AsyncTask.Status.RUNNING;
-      getBridge().onPreExecute();
+    status = AsyncTask.Status.RUNNING;
+    getBridge().onPreExecute();
 
-      worker.params = params;
-      executor.execute(new Runnable() {
-          @Override public void run() {
-              future.run();
-          }
-      });
+    worker.params = params;
+    executor.execute(new Runnable() {
+      @Override
+      public void run() {
+        future.run();
+      }
+    });
 
-      return realAsyncTask;
+    return realAsyncTask;
   }
 
   @Implementation
