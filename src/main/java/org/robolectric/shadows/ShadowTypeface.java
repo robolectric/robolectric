@@ -36,7 +36,8 @@ public class ShadowTypeface {
   }
 
   synchronized public static void reset() {
-    fonts.clear();
+    // Don't need to reset cache, because native Typeface itself has a cache of font instance,
+    // so this class should be consistent with it. 
   }
 
   @HiddenApi @Implementation
