@@ -1,10 +1,15 @@
 // Not in master, can maybe be deleted
 package org.robolectric.shadows;
 
-import android.content.res.AssetManager;
-import android.graphics.Typeface;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.assertThat;
+import static org.robolectric.Robolectric.shadowOf;
+
 import java.io.File;
 import java.util.List;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -14,8 +19,8 @@ import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.test.TemporaryAsset;
 
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.robolectric.Robolectric.shadowOf;
+import android.content.res.AssetManager;
+import android.graphics.Typeface;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class TypefaceTest {
@@ -57,5 +62,17 @@ public class TypefaceTest {
     Typeface derivativeTypeface = Typeface.create(typeface, Typeface.BOLD_ITALIC);
     assertThat(derivativeTypeface.getStyle()).isEqualTo(Typeface.BOLD_ITALIC);
     assertThat(shadowOf(derivativeTypeface).getAssetPath()).isEqualTo(fontFile.getPath());
+  }
+
+  @Test
+  public void createFontWithStyle() {
+    Typeface font;
+    font = Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL);
+    assertThat(font, notNullValue());
+    assertThat(font.getStyle(), is(Typeface.NORMAL));
+    Robolectric.reset();
+    font = Typeface.create(Typeface.SANS_SERIF, Typeface.ITALIC);
+    assertThat(font, notNullValue());
+    assertThat(font.getStyle(), is(Typeface.ITALIC));
   }
 }
