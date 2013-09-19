@@ -2,9 +2,6 @@
 package org.robolectric.shadows;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
 import static org.robolectric.Robolectric.shadowOf;
 
 import java.io.File;
@@ -66,13 +63,13 @@ public class TypefaceTest {
 
   @Test
   public void createFontWithStyle() {
-    Typeface font;
-    font = Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL);
-    assertThat(font, notNullValue());
-    assertThat(font.getStyle(), is(Typeface.NORMAL));
+    Typeface typeface;
+    typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL);
+    assertThat(typeface).isNotNull();
+    assertThat(typeface.getStyle()).isEqualTo((Typeface.NORMAL));
     Robolectric.reset();
-    font = Typeface.create(Typeface.SANS_SERIF, Typeface.ITALIC);
-    assertThat(font, notNullValue());
-    assertThat(font.getStyle(), is(Typeface.ITALIC));
+    typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.ITALIC);
+    assertThat(typeface).isNotNull();
+    assertThat(typeface.getStyle()).isEqualTo((Typeface.ITALIC));
   }
 }
