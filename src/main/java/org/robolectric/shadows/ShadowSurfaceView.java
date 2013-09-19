@@ -8,55 +8,80 @@ import android.view.SurfaceView;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Implements(value = SurfaceView.class)
 @SuppressWarnings({"UnusedDeclaration"})
 public class ShadowSurfaceView extends ShadowView {
+
+  private FakeSurfaceHolder fakeSurfaceHolder = new FakeSurfaceHolder();
+
   @Implementation
   public SurfaceHolder getHolder() {
-    return new SurfaceHolder() {
-      @Override public void addCallback(Callback callback) {
-      }
+    return fakeSurfaceHolder;
+  }
 
-      @Override public void removeCallback(Callback callback) {
-      }
+  public FakeSurfaceHolder getFakeSurfaceHolder() {
+    return fakeSurfaceHolder;
+  }
 
-      @Override public boolean isCreating() {
-        return false;
-      }
+  /**
+   * Fake version of {@link SurfaceHolder} that gives access to the stored callbacks,
+   * so they can be called by tests.
+   */
+  public static class FakeSurfaceHolder implements SurfaceHolder {
 
-      @Override public void setType(int i) {
-      }
+    final private Set<Callback> callbacks = new HashSet<Callback>();
 
-      @Override public void setFixedSize(int i, int i1) {
-      }
+    @Override public void addCallback(Callback callback) {
+      callbacks.add(callback);
+    }
 
-      @Override public void setSizeFromLayout() {
-      }
+    public Set<Callback> getCallbacks() {
+      return callbacks;
+    }
 
-      @Override public void setFormat(int i) {
-      }
+    @Override public void removeCallback(Callback callback) {
+      callbacks.remove(callback);
+    }
 
-      @Override public void setKeepScreenOn(boolean b) {
-      }
+    @Override public boolean isCreating() {
+      return false;
+    }
 
-      @Override public Canvas lockCanvas() {
-        return null;
-      }
+    @Override public void setType(int i) {
+    }
 
-      @Override public Canvas lockCanvas(Rect rect) {
-        return null;
-      }
+    @Override public void setFixedSize(int i, int i1) {
+    }
 
-      @Override public void unlockCanvasAndPost(Canvas canvas) {
-      }
+    @Override public void setSizeFromLayout() {
+    }
 
-      @Override public Rect getSurfaceFrame() {
-        return null;
-      }
+    @Override public void setFormat(int i) {
+    }
 
-      @Override public Surface getSurface() {
-        return null;
-      }
-    };
+    @Override public void setKeepScreenOn(boolean b) {
+    }
+
+    @Override public Canvas lockCanvas() {
+      return null;
+    }
+
+    @Override public Canvas lockCanvas(Rect rect) {
+      return null;
+    }
+
+    @Override public void unlockCanvasAndPost(Canvas canvas) {
+    }
+
+    @Override public Rect getSurfaceFrame() {
+      return null;
+    }
+
+    @Override public Surface getSurface() {
+      return null;
+    }
   }
 }
