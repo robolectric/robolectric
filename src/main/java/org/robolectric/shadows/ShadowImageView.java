@@ -35,9 +35,7 @@ public class ShadowImageView extends ShadowView {
 
   @Implementation
   public void setImageResource(int resId) {
-    if (resId != 0) {
-      setImageDrawable(buildDrawable(resId));
-    }
+    setImageDrawable(resId != 0 ? buildDrawable(resId) : null);
   }
 
   @Implementation

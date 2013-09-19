@@ -95,9 +95,8 @@ public class ImageViewTest {
 
   @Test
   public void testSetImageResourceWithIdZeroDoesNothing() {
-    Drawable drawable = imageView.getDrawable();
     imageView.setImageResource(0);
-    assertThat(imageView.getDrawable()).isSameAs(drawable);
+    assertThat(imageView.getDrawable()).isNull();
   }
 
   @Test
