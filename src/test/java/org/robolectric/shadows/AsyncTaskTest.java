@@ -12,7 +12,9 @@ import org.robolectric.util.Transcript;
 import java.util.concurrent.TimeUnit;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class AsyncTaskTest {
@@ -115,6 +117,26 @@ public class AsyncTaskTest {
     assertThat(asyncTask.getStatus()).isEqualTo(AsyncTask.Status.RUNNING);
     Robolectric.getBackgroundScheduler().unPause();
     assertThat(asyncTask.getStatus()).isEqualTo(AsyncTask.Status.FINISHED);
+  }
+
+  @Test(expected=RuntimeException.class)
+  public void onPostExecute_doesNotSwallowExceptions() throws Exception {
+    Robolectric.getBackgroundScheduler().unPause();
+    Robolectric.getUiThreadScheduler().unPause();
+
+    AsyncTask<Void, Void, Void> asyncTask = new AsyncTask<Void, Void, Void>() {
+      @Override
+      protected Void doInBackground(Void... params) {
+        return null;
+      }
+
+      @Override
+      protected void onPostExecute(Void aVoid) {
+        throw new RuntimeException("Don't swallow me!");
+      }
+    };
+
+    asyncTask.execute();
   }
 
   private class MyAsyncTask extends AsyncTask<String, String, String> {
