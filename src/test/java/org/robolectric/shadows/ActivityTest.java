@@ -16,7 +16,10 @@ import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.FrameLayout;
+import android.widget.TextView;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -729,6 +732,13 @@ public class ActivityTest {
     assertThat(shadowOf(activity).getPendingTransitionExitAnimationResourceId()).isEqualTo(2);
   }
 
+  @Test
+  public void shouldSetCustomTitle() {
+    CustomTitleActivity activity = create(CustomTitleActivity.class);
+    assertThat(activity.customTitleText).isNotNull();
+    assertThat(activity.customTitleText.getText().toString()).isEqualTo(activity.getString(R.string.hello));
+  }
+
   /////////////////////////////
 
   private void destroy(Activity activity) {
@@ -814,6 +824,21 @@ public class ActivityTest {
 
     private void setTranscript(Transcript transcript) {
       this.transcript = transcript;
+    }
+  }
+
+  private static class CustomTitleActivity extends Activity {
+    public TextView customTitleText;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+      super.onCreate(savedInstanceState);
+
+      requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
+      setContentView(R.layout.main);
+      getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.custom_title);
+
+      customTitleText = (TextView) findViewById(R.id.custom_title_text);
     }
   }
 }

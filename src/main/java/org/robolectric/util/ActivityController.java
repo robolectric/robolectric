@@ -113,7 +113,6 @@ public class ActivityController<T extends Activity> {
       public void run() {
         if (!attached) attach();
 
-        activity.getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
         method("performCreate").withParameterTypes(Bundle.class).in(activity).invoke(bundle);
       }
     });
