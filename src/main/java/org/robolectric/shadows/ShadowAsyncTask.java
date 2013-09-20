@@ -35,16 +35,18 @@ public class ShadowAsyncTask<Params, Progress, Result> {
 
           try {
             Robolectric.getUiThreadScheduler().post(new Runnable() {
-              @Override public void run() {
+              @Override
+              public void run() {
                 getBridge().onPostExecute(result);
               }
             });
           } catch (Throwable t) {
-              throw new OnPostExecuteException(t);
+            throw new OnPostExecuteException(t);
           }
         } catch (CancellationException e) {
           Robolectric.getUiThreadScheduler().post(new Runnable() {
-            @Override public void run() {
+            @Override
+            public void run() {
               getBridge().onCancelled();
             }
           });
@@ -88,7 +90,8 @@ public class ShadowAsyncTask<Params, Progress, Result> {
     worker.params = params;
 
     Robolectric.getBackgroundScheduler().post(new Runnable() {
-      @Override public void run() {
+      @Override
+      public void run() {
         future.run();
       }
     });
@@ -97,7 +100,7 @@ public class ShadowAsyncTask<Params, Progress, Result> {
   }
 
   @Implementation
-  public AsyncTask<Params, Progress, Result> executeOnExecutor(Executor exec, Params... params){
+  public AsyncTask<Params, Progress, Result> executeOnExecutor(Executor exec, Params... params) {
     return execute(params);
   }
 
@@ -116,7 +119,8 @@ public class ShadowAsyncTask<Params, Progress, Result> {
   @Implementation
   public void publishProgress(final Progress... values) {
     Robolectric.getUiThreadScheduler().post(new Runnable() {
-      @Override public void run() {
+      @Override
+      public void run() {
         getBridge().onProgressUpdate(values);
       }
     });
@@ -128,6 +132,7 @@ public class ShadowAsyncTask<Params, Progress, Result> {
 
   private final class BackgroundWorker implements Callable<Result> {
     Params[] params;
+
     @Override
     public Result call() throws Exception {
       return getBridge().doInBackground(params);
