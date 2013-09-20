@@ -32,11 +32,16 @@ public class ShadowAsyncTask<Params, Progress, Result> {
         status = AsyncTask.Status.FINISHED;
         try {
           final Result result = get();
-          Robolectric.getUiThreadScheduler().post(new Runnable() {
-            @Override public void run() {
-              getBridge().onPostExecute(result);
-            }
-          });
+
+          try {
+            Robolectric.getUiThreadScheduler().post(new Runnable() {
+              @Override public void run() {
+                getBridge().onPostExecute(result);
+              }
+            });
+          } catch (Throwable t) {
+              throw new OnPostExecuteException(t);
+          }
         } catch (CancellationException e) {
           Robolectric.getUiThreadScheduler().post(new Runnable() {
             @Override public void run() {
@@ -45,6 +50,8 @@ public class ShadowAsyncTask<Params, Progress, Result> {
           });
         } catch (InterruptedException e) {
           // Ignore.
+        } catch (OnPostExecuteException e) {
+          throw new RuntimeException(e.getCause());
         } catch (Throwable t) {
           throw new RuntimeException("An error occured while executing doInBackground()",
               t.getCause());
@@ -124,6 +131,12 @@ public class ShadowAsyncTask<Params, Progress, Result> {
     @Override
     public Result call() throws Exception {
       return getBridge().doInBackground(params);
+    }
+  }
+
+  private static class OnPostExecuteException extends Exception {
+    public OnPostExecuteException(Throwable throwable) {
+      super(throwable);
     }
   }
 }

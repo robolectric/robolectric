@@ -12,6 +12,7 @@ import org.robolectric.util.Transcript;
 import java.util.concurrent.TimeUnit;
 
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.fail;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -119,7 +120,7 @@ public class AsyncTaskTest {
     assertThat(asyncTask.getStatus()).isEqualTo(AsyncTask.Status.FINISHED);
   }
 
-  @Test(expected=RuntimeException.class)
+  @Test
   public void onPostExecute_doesNotSwallowExceptions() throws Exception {
     Robolectric.getBackgroundScheduler().unPause();
     Robolectric.getUiThreadScheduler().unPause();
@@ -136,7 +137,12 @@ public class AsyncTaskTest {
       }
     };
 
-    asyncTask.execute();
+    try {
+      asyncTask.execute();
+      fail("Task swallowed onPostExecute() exception!");
+    } catch (RuntimeException e) {
+      assertThat(e.getCause().getMessage()).isEqualTo("java.lang.RuntimeException: Don't swallow me!");
+    }
   }
 
   private class MyAsyncTask extends AsyncTask<String, String, String> {
