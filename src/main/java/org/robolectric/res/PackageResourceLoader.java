@@ -2,6 +2,8 @@ package org.robolectric.res;
 
 import org.robolectric.util.I18nException;
 
+import java.io.File;
+
 public class PackageResourceLoader extends XResourceLoader {
   ResourcePath resourcePath;
 
@@ -41,12 +43,12 @@ public class PackageResourceLoader extends XResourceLoader {
         new StyleResourceLoader(data)
     );
 
-    documentLoader.load("res/layout", new OpaqueFileLoader(data, "layout"), new XmlFileLoader(xmlDocuments, "layout"));
-    documentLoader.load("res/menu", new MenuLoader(menuData), new XmlFileLoader(xmlDocuments, "menu"));
-    documentLoader.load("res/drawable", new OpaqueFileLoader(data, "drawable"), new XmlFileLoader(xmlDocuments, "drawable"));
-    documentLoader.load("res/anim", new OpaqueFileLoader(data, "anim"), new XmlFileLoader(xmlDocuments, "anim"));
-    documentLoader.load("res/color", new ColorResourceLoader(data), new XmlFileLoader(xmlDocuments, "color"));
-    documentLoader.load("res/xml", new PreferenceLoader(preferenceData), new XmlFileLoader(xmlDocuments, "xml"));
+    documentLoader.load("res" + File.separator + "layout", new OpaqueFileLoader(data, "layout"), new XmlFileLoader(xmlDocuments, "layout"));
+    documentLoader.load("res" + File.separator + "menu", new MenuLoader(menuData), new XmlFileLoader(xmlDocuments, "menu"));
+    documentLoader.load("res" + File.separator + "drawable", new OpaqueFileLoader(data, "drawable"), new XmlFileLoader(xmlDocuments, "drawable"));
+    documentLoader.load("res" + File.separator + "anim", new OpaqueFileLoader(data, "anim"), new XmlFileLoader(xmlDocuments, "anim"));
+    documentLoader.load("res" + File.separator + "color", new ColorResourceLoader(data), new XmlFileLoader(xmlDocuments, "color"));
+    documentLoader.load("res" + File.separator + "xml", new PreferenceLoader(preferenceData), new XmlFileLoader(xmlDocuments, "xml"));
     new DrawableResourceLoader(drawableData).findDrawableResources(resourcePath);
     new RawResourceLoader(resourcePath).loadTo(rawResources);
 
