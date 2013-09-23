@@ -72,8 +72,7 @@ public class RobolectricPackageManager extends StubPackageManager {
       // Based on ShadowActivity
       if (activityData.getThemeRef() != null) {
         themeRef = activityData.getThemeRef();
-      }
-      else {
+      } else {
         themeRef = androidManifest.getThemeRef();
       }
       if (themeRef != null) {
