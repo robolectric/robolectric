@@ -385,7 +385,6 @@ public class ApplicationTest {
   public void startActivity_whenActivityCheckingEnabled_checksPackageManagerResolveInfo() throws Exception {
     Application application = new DefaultTestLifecycle().createApplication(null,
         newConfigWith("com.wacka.wa", ""));
-
     shadowOf(application).checkActivities(true);
 
     String action = "com.does.not.exist.android.app.v2.mobile";

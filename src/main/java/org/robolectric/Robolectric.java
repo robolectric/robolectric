@@ -1409,6 +1409,10 @@ public class Robolectric {
     return new ActivityController<T>(activityClass);
   }
 
+  public static void checkActivities(boolean checkActivities) {
+    shadowOf(application).checkActivities(checkActivities);
+  }
+
   /**
    * Reflection helper methods.
    */
