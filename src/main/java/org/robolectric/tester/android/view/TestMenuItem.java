@@ -21,6 +21,7 @@ public class TestMenuItem implements MenuItem {
   public int iconRes;
   private Intent intent;
   private SubMenu subMenu;
+  private View actionView;
 
   public TestMenuItem() {
     super();
@@ -216,7 +217,8 @@ public class TestMenuItem implements MenuItem {
 
   @Override
   public MenuItem setActionView(View view) {
-    return null;
+    this.actionView = view;
+    return this;
   }
 
   @Override
@@ -226,7 +228,7 @@ public class TestMenuItem implements MenuItem {
 
   @Override
   public View getActionView() {
-    return null;
+    return actionView;
   }
 
   @Override
