@@ -27,6 +27,16 @@ public class SetupTest {
   }
 
   @Test
+  public void shouldInstrumentGooglePlayServicesClasses() throws Exception {
+    assertTrue(setup.shouldInstrument(wrap("com.google.android.gms.auth.GoogleAuthUtil")));
+  }
+
+  @Test
+  public void shouldNotInstrumentAndroidAppClasses() throws Exception {
+    assertFalse(setup.shouldInstrument(wrap("com.google.android.apps.Foo")));
+  }
+
+  @Test
   public void shouldNotInstrumentCoreJdkClasses() throws Exception {
     assertFalse(setup.shouldInstrument(wrap("java.lang.Object")));
     assertFalse(setup.shouldInstrument(wrap("java.lang.String")));
