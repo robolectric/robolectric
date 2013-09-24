@@ -1,10 +1,14 @@
 package com.xtremelabs.robolectric.util;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+
+import java.util.Timer;
+import java.util.TimerTask;
+
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 public class SchedulerTest {
     private Transcript transcript;
@@ -148,6 +152,22 @@ public class SchedulerTest {
         assertThat(runnable1.wasRun, equalTo(false));
         assertThat(runnable2.wasRun, equalTo(true));
     }
+
+	@Test
+	public void testWaitOnPostFromBackgroundThread() throws Exception {
+		final TestRunnable runnable = new TestRunnable();
+		new Timer().schedule(new TimerTask() {
+
+			@Override
+			public void run() {
+				scheduler.post(runnable);
+			}
+		}, 100);
+
+		scheduler.runOneTask(3000);
+
+		assertThat(runnable.wasRun, is(equalTo(true)));
+	}
 
     private class AddToTranscript implements Runnable {
         private String event;

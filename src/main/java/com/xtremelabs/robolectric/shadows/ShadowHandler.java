@@ -1,5 +1,11 @@
 package com.xtremelabs.robolectric.shadows;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -8,12 +14,6 @@ import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 /**
  * Shadow for Handler that puts posted {@link Runnable}s into a queue instead of sending them to be handled on a
@@ -196,7 +196,8 @@ public class ShadowHandler {
     /**
      * @deprecated use {@link #idleMainLooper()} instead
      */
-    public static void flush() {
+    @Deprecated
+	public static void flush() {
         idleMainLooper();
     }
 
@@ -220,6 +221,14 @@ public class ShadowHandler {
      */
     public static void runMainLooperOneTask() {
         shadowOf(Looper.myLooper()).runOneTask();
+    }
+    
+    /**
+     * @see ShadowLooper#runOneTask() ()
+     * @param timeoutMs time in milliseconds to wait for task to become available
+     */
+    public static void runMainLooperOneTask(long timeoutMs) {
+    	shadowOf(Looper.myLooper()).runOneTask();
     }
 
     /**

@@ -1,57 +1,73 @@
 package com.xtremelabs.robolectric.util;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.ListIterator;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.TimeUnit;
 
 public class Scheduler {
-    private List<PostedRunnable> postedRunnables = new ArrayList<PostedRunnable>();
+	private static final long DEFAULT_TIMEOUT_MS = 1000; // 1sec
+    private LinkedBlockingDeque<PostedRunnable> postedRunnables = new LinkedBlockingDeque<PostedRunnable>();
     private long currentTime = 0;
     private boolean paused = false;
     private Thread associatedThread = Thread.currentThread();
     private boolean isConstantlyIdling = false;
 
-    public synchronized long getCurrentTime() {
+	public long getCurrentTime() {
         return currentTime;
     }
 
-    public synchronized void pause() {
+	public void pause() {
         paused = true;
     }
 
-    public synchronized void unPause() {
+	public void unPause() {
         paused = false;
-        advanceToLastPostedRunnable();
+        advanceToLastPostedRunnable(DEFAULT_TIMEOUT_MS);
     }
 
-    public synchronized boolean isPaused() {
+	public boolean isPaused() {
         return paused;
     }
 
-    public synchronized void postDelayed(Runnable runnable, long delayMillis) {
+	public void postDelayed(Runnable runnable, long delayMillis) {
         if ((!isConstantlyIdling && (paused || delayMillis > 0)) || Thread.currentThread() != associatedThread) {
-	        postedRunnables.add(new PostedRunnable(runnable, currentTime + delayMillis));
-	        Collections.sort(postedRunnables);
+        	postedRunnables.add(new PostedRunnable(runnable, currentTime + delayMillis));
+        	sortQueue();
         } else {
             runnable.run();
         }
     }
+	
+	private synchronized void sortQueue(){
+		PostedRunnable[] tmp = new PostedRunnable[postedRunnables.size()];
+    	tmp = postedRunnables.toArray(tmp);
+    	Arrays.sort(tmp);
 
-    public synchronized void post(Runnable runnable) {
+    	postedRunnables.clear();
+
+    	for(PostedRunnable postedRunnable: tmp){
+    		postedRunnables.add(postedRunnable);
+    	}
+	}
+
+	public void post(Runnable runnable) {
         postDelayed(runnable, 0);
     }
 
-    public synchronized void postAtFrontOfQueue(Runnable runnable) {
+
+	public void postAtFrontOfQueue(Runnable runnable) {
         if (paused || Thread.currentThread() != associatedThread) {
-        	postedRunnables.add(0, new PostedRunnable(runnable, currentTime));
+        	synchronized(this){
+        		postedRunnables.addFirst(new PostedRunnable(runnable, currentTime));
+        	}
         } else {
             runnable.run();
         }
     }
 
-    public synchronized void remove(Runnable runnable) {
-        ListIterator<PostedRunnable> iterator = postedRunnables.listIterator();
+	public void remove(Runnable runnable) {
+        Iterator<PostedRunnable> iterator = postedRunnables.iterator();
         while (iterator.hasNext()) {
             PostedRunnable next = iterator.next();
             if (next.runnable == runnable) {
@@ -60,35 +76,49 @@ public class Scheduler {
         }
     }
 
-    public synchronized boolean advanceToLastPostedRunnable() {
-        if (enqueuedTaskCount() < 1) {
-            return false;
-        }
-
-        return advanceTo(postedRunnables.get(postedRunnables.size() - 1).scheduledTime);
+	public boolean advanceToLastPostedRunnable() {
+    	return advanceToLastPostedRunnable(DEFAULT_TIMEOUT_MS);
     }
 
-    public synchronized boolean advanceToNextPostedRunnable() {
-        if (enqueuedTaskCount() < 1) {
-            return false;
-        }
-
-        return advanceTo(postedRunnables.get(0).scheduledTime);
+	public boolean advanceToLastPostedRunnable(long timeoutMs) {
+        int size = postedRunnables.size();
+        return runTasks(size, timeoutMs);
     }
 
-    public synchronized boolean advanceBy(long intervalMs) {
+	public boolean advanceToNextPostedRunnable() {
+    	return advanceToNextPostedRunnable(DEFAULT_TIMEOUT_MS);
+    }
+
+	public boolean advanceToNextPostedRunnable(long timeoutMs) {
+    	long scheduledTime = getScheduledTimeOfFirstTask(timeoutMs);
+    	if(scheduledTime == -1){
+    		return false;
+    	}
+    	
+		return advanceTo(scheduledTime, timeoutMs);
+    }
+
+	public boolean advanceBy(long intervalMs) {
+    	return advanceBy(intervalMs, DEFAULT_TIMEOUT_MS);
+    }
+
+	public boolean advanceBy(long intervalMs, long timeoutMs) {
         long endingTime = currentTime + intervalMs;
-        return advanceTo(endingTime);
+        return advanceTo(endingTime, timeoutMs);
     }
 
-    public synchronized boolean advanceTo(long endingTime) {
-        if (endingTime - currentTime < 0 || enqueuedTaskCount() < 1) {
+	public boolean advanceTo(long endingTime) {
+    	return advanceTo(endingTime, DEFAULT_TIMEOUT_MS);
+    }
+
+	public boolean advanceTo(long endingTime, long timeoutMs) {
+		if (endingTime - currentTime < 0) {
             return false;
         }
 
         int runCount = 0;
-        while (nextTaskIsScheduledBefore(endingTime)) {
-            runOneTask();
+		while (nextTaskIsScheduledBefore(endingTime, timeoutMs)) {
+            runOneTask(timeoutMs);
             ++runCount;
         }
         currentTime = endingTime;
@@ -96,46 +126,58 @@ public class Scheduler {
         return runCount > 0;
     }
 
-    public synchronized boolean runOneTask() {
-        if (enqueuedTaskCount() < 1) {
-            return false;
-        }
-
-        PostedRunnable postedRunnable = postedRunnables.remove(0);
-        currentTime = postedRunnable.scheduledTime;
-        postedRunnable.run();
-        return true;
+	/**
+	 * Same as {@link #runOneTask(long)}, only with a default timeout of {@value #DEFAULT_TIMEOUT_MS} milliseconds.
+	 * @return <code>true</code> when task runs
+	 */
+	public boolean runOneTask() {
+    	return runOneTask(DEFAULT_TIMEOUT_MS);
     }
 
-    public synchronized boolean runTasks(int howMany) {
-        if (enqueuedTaskCount() < howMany) {
-            return false;
-        }
-
-        while (howMany > 0) {
-            PostedRunnable postedRunnable = postedRunnables.remove(0);
-            currentTime = postedRunnable.scheduledTime;
-            postedRunnable.run();
-            howMany--;
-        }
-        return true;
+	/**
+	 * Runs one task that is (or will be) posted in the queue, waiting up to the specified
+	 * wait time for the task to become available. 
+	 * @param timeoutMs the time to wait
+	 * @return <code>true</code> when task runs
+	 */
+	public boolean runOneTask(long timeoutMs) {
+        return runTasks(1, timeoutMs);
     }
 
-    public synchronized int enqueuedTaskCount() {
+	public boolean runTasks(int howMany, long timeoutMs) {
+		synchronized(this){
+	        try {
+				while (howMany > 0) {
+				    PostedRunnable postedRunnable = postedRunnables.poll(timeoutMs, TimeUnit.MILLISECONDS);
+					if (postedRunnable == null) {
+						return false;
+					}
+				    currentTime = postedRunnable.scheduledTime;
+				    postedRunnable.run();
+				    howMany--;
+				}
+			} catch (InterruptedException e) {
+				return false;
+			}
+	        return true;
+		}
+    }
+
+	public int enqueuedTaskCount() {
         return postedRunnables.size();
     }
 
-    public synchronized boolean areAnyRunnable() {
-        return nextTaskIsScheduledBefore(currentTime);
+	public boolean areAnyRunnable() {
+		return nextTaskIsScheduledBefore(currentTime, DEFAULT_TIMEOUT_MS);
     }
 
-    public synchronized void reset() {
+	public void reset() {
         postedRunnables.clear();
         paused = false;
         isConstantlyIdling = false;
     }
 
-    public synchronized int size() {
+	public int size() {
         return postedRunnables.size();
     }
 
@@ -162,7 +204,24 @@ public class Scheduler {
         }
     }
 
-    private boolean nextTaskIsScheduledBefore(long endingTime) {
-        return enqueuedTaskCount() > 0 && postedRunnables.get(0).scheduledTime <= endingTime;
+	private boolean nextTaskIsScheduledBefore(long endingTime, long timeoutMs) {
+		long scheduledTime = getScheduledTimeOfFirstTask(timeoutMs);
+		if(scheduledTime == -1){
+			return false;
+		}
+		return scheduledTime <= endingTime;
     }
+	
+	private synchronized long getScheduledTimeOfFirstTask(long timeoutMs) {
+		PostedRunnable postedRunnable = null;
+		try {
+			postedRunnable = postedRunnables.poll(timeoutMs, TimeUnit.MILLISECONDS);
+		} catch (InterruptedException e) {
+		}
+		if(postedRunnable == null){
+			return -1;
+		}
+		postedRunnables.addFirst(postedRunnable);
+		return postedRunnable.scheduledTime;
+	}
 }
