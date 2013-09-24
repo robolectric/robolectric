@@ -95,7 +95,8 @@ public class Setup {
     return className.startsWith("android.")
         || className.startsWith("libcore.")
         || className.startsWith("com.android.internal.")
-        || className.startsWith("com.google.android.")
+        || className.startsWith("com.google.android.maps.")
+        || className.startsWith("com.google.android.gms.")
         || className.startsWith("org.apache.http.impl.client.DefaultRequestDirector");
   }
 
