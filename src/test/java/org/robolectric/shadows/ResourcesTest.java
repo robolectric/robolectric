@@ -21,6 +21,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.util.TestUtil;
 import org.xmlpull.v1.XmlPullParser;
 
+import java.io.File;
 import java.io.InputStream;
 
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -64,7 +65,7 @@ public class ResourcesTest {
   @Test
   public void getText_withLayoutId() throws Exception {
     // todo: this needs to change...
-    assertThat(resources.getText(R.layout.different_screen_sizes, "value")).isEqualTo("./src/test/resources/res/layout/different_screen_sizes.xml");
+    assertThat(resources.getText(R.layout.different_screen_sizes, "value")).isEqualTo("." + File.separator + "src" + File.separator + "test" + File.separator + "resources" + File.separator + "res" + File.separator + "layout" + File.separator + "different_screen_sizes.xml");
   }
 
   @Test
