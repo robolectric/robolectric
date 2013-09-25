@@ -21,7 +21,7 @@ public class CheckBoxTest {
     checkBox.toggle();
     assertThat(checkBox.isChecked()).isFalse();
 
-    checkBox.performClick();  // Used to support performClick(), but Android doesn't. Sigh.
-//        assertThat(checkBox.isChecked()).isFalse();
+    checkBox.performClick();
+    assertThat(checkBox.isChecked()).isTrue();
   }
 }
