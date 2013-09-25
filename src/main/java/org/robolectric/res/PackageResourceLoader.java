@@ -14,6 +14,11 @@ public class PackageResourceLoader extends XResourceLoader {
   public PackageResourceLoader(ResourcePath resourcePath, ResourceIndex resourceIndex) {
     super(resourceIndex);
     this.resourcePath = resourcePath;
+    String separator = resourcePath.packageName.equals("android") ? "/" : File.separator;
+    if (!resourcePath.resourceBase.toString().endsWith(separator + "res"))
+    {
+      throw new IllegalArgumentException("Resource path must end in \"" + separator + "res\"");
+    }
   }
 
   void doInitialize() {
