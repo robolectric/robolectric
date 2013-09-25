@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(value = ListView.class, callThroughByDefault = true)
+@Implements(ListView.class)
 public class ShadowListView extends ShadowAbsListView {
   @RealObject private ListView realListView;
 

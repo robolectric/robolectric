@@ -7,7 +7,7 @@ import org.robolectric.annotation.Implements;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 
-@Implements(value = Uri.class, callThroughByDefault = true)
+@Implements(Uri.class)
 public class ShadowUri {
   /**
    * Avoid a reference to Android's custom java.nio.charset.Charsets.

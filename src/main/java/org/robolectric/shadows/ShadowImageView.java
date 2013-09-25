@@ -9,7 +9,7 @@ import android.widget.ImageView;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-@Implements(value = ImageView.class)
+@Implements(ImageView.class)
 public class ShadowImageView extends ShadowView {
   private Drawable imageDrawable;
   private Bitmap imageBitmap;

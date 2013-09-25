@@ -6,7 +6,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
-@Implements(value = SeekBar.class)
+@Implements(SeekBar.class)
 public class ShadowSeekBar extends ShadowAbsSeekBar {
 
   @RealObject

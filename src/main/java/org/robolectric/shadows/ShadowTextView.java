@@ -25,7 +25,7 @@ import java.util.Locale;
 import static org.robolectric.Robolectric.directlyOn;
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(value = TextView.class)
+@Implements(TextView.class)
 public class ShadowTextView extends ShadowView {
   @RealObject TextView realTextView;
 
