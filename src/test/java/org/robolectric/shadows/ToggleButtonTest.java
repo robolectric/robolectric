@@ -10,7 +10,6 @@ import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ToggleButtonTest {
-
   @Test
   public void clickingToggles() {
     ToggleButton toggleButton = new ToggleButton(Robolectric.application);

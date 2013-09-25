@@ -10,7 +10,6 @@ import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class SwitchTest {
-
   @Test
   public void clickingToggles() {
     Switch theSwitch = new Switch(Robolectric.application);

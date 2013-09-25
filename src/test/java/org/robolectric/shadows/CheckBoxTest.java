@@ -23,5 +23,8 @@ public class CheckBoxTest {
 
     checkBox.performClick();
     assertThat(checkBox.isChecked()).isTrue();
+
+    checkBox.performClick();
+    assertThat(checkBox.isChecked()).isFalse();
   }
 }
