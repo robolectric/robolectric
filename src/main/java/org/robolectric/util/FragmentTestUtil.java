@@ -1,25 +1,29 @@
 package org.robolectric.util;
 
-import android.support.v4.app.Fragment;
+import android.app.Activity;
+import android.app.Fragment;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
+import android.app.FragmentManager;
 import org.robolectric.Robolectric;
 
-import static org.robolectric.Robolectric.shadowOf;
-
-public class FragmentTestUtil {
+public final class FragmentTestUtil {
+  
   public static void startFragment(Fragment fragment) {
-    FragmentActivity activity = createActivity();
+    Activity activity = createActivity(Activity.class);
+    FragmentManager fragmentManager = activity.getFragmentManager();
+    fragmentManager.beginTransaction().add(fragment, null).commit();
+  }
+  
+  public static void startFragment(android.support.v4.app.Fragment fragment) {
+    FragmentActivity activity = createActivity(FragmentActivity.class);
 
-    FragmentManager fragmentManager = activity.getSupportFragmentManager();
-    fragmentManager.beginTransaction()
-        .add(fragment, null)
-        .commit();
+    android.support.v4.app.FragmentManager fragmentManager = activity.getSupportFragmentManager();
+    fragmentManager.beginTransaction().add(fragment, null).commit();
   }
 
-  private static FragmentActivity createActivity() {
-    ActivityController<FragmentActivity> controller = Robolectric.buildActivity(FragmentActivity.class);
+  private static <T extends Activity> T createActivity(Class<T> klass) {
+    ActivityController<T> controller = Robolectric.buildActivity(klass);
     controller.create().start().resume();
-    return controller.get();
+    return controller.get();  
   }
 }
