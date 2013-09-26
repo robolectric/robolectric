@@ -177,6 +177,15 @@ public class BitmapTest {
     assertThat(b3).isSameAs(b);
   }
 
+  @Test
+  public void equalsSizeTransformReturnsOriginal() {
+    Bitmap b1 = Bitmap.createBitmap(10, 10, Config.ARGB_8888);
+    Bitmap b2 = Bitmap.createBitmap(b1, 0, 0, 10, 10, null, false);
+    assertThat(b1).isSameAs(b2);
+    Bitmap b3 = Bitmap.createBitmap(b1, 0, 0, 10, 10, null, true);
+    assertThat(b1).isSameAs(b3);
+  }
+
   private static Bitmap create(String name) {
     Bitmap bitmap = Robolectric.newInstanceOf(Bitmap.class);
     shadowOf(bitmap).appendDescription(name);

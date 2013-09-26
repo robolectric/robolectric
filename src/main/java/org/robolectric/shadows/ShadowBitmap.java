@@ -191,7 +191,7 @@ public class ShadowBitmap {
 
   @Implementation
   public static Bitmap createBitmap(Bitmap src, int x, int y, int width, int height, Matrix matrix, boolean filter) {
-    if (x == 0 && y == 0 && width == src.getWidth() && height == src.getHeight() && (matrix == null || matrix.isIdentity()) && !filter) {
+    if (x == 0 && y == 0 && width == src.getWidth() && height == src.getHeight() && (matrix == null || matrix.isIdentity())) {
       return src; // Return the original.
     }
 
@@ -205,7 +205,7 @@ public class ShadowBitmap {
       shadowBitmap.appendDescription(" using matrix " + matrix);
     }
     if (filter) {
-      shadowBitmap.appendDescription(" with filter " + filter);
+      shadowBitmap.appendDescription(" with filter");
     }
 
     shadowBitmap.createdFromBitmap = src;
