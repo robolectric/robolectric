@@ -65,6 +65,12 @@ public class AnimationTest {
   }
 
   @Test
+  public void invokeEnd_endsTheAnimation() throws Exception {
+    shadow.invokeEnd();
+    assertThat(animation.hasEnded()).isTrue();
+  }
+
+  @Test
   public void simulateAnimationEndShouldInvokeApplyTransformationWith1() throws Exception {
     assertThat(animation.interpolatedTime).isEqualTo(0f);
     shadow.invokeEnd();

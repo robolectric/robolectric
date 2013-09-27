@@ -18,13 +18,14 @@ public class ShadowAnimation {
   private Animation.AnimationListener listener;
   private Interpolator interpolator;
   private boolean startFlag = false;
+  private boolean endFlag = false;
   private long durationMillis = 0;
   private int repeatCount;
   private int repeatMode;
   private long startOffset;
   private int loadedFromResourceId = -1;
-  private boolean fillAfter;
 
+  private boolean fillAfter;
   @RealObject
   private Animation realAnimation;
 
@@ -52,6 +53,11 @@ public class ShadowAnimation {
   @Implementation
   public boolean hasStarted() {
     return startFlag;
+  }
+
+  @Implementation
+  public boolean hasEnded() {
+    return endFlag;
   }
 
   @Implementation
@@ -140,6 +146,8 @@ public class ShadowAnimation {
       listener.onAnimationEnd(realAnimation);
     }
     new ShadowAnimationBridge(realAnimation).applyTransformation(1.0f, new Transformation());
+
+    endFlag = true;
   }
 
   public void setLoadedFromResourceId(int loadedFromResourceId) {
