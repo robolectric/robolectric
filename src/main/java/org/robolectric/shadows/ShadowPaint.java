@@ -37,6 +37,7 @@ public class ShadowPaint {
   @RealObject Paint paint;
   private Typeface typeface;
   private float textSize;
+  private Paint.Align textAlign = Paint.Align.LEFT;
 
   public void __constructor__(int flags) {
     this.flags = flags;
@@ -147,6 +148,16 @@ public class ShadowPaint {
   @Implementation
   public void setTextSize(float textSize) {
     this.textSize = textSize;
+  }
+
+  @Implementation
+  public void setTextAlign(Paint.Align align) {
+    textAlign = align;
+  }
+
+  @Implementation
+  public Paint.Align getTextAlign() {
+    return textAlign;
   }
 
   /**
