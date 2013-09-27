@@ -18,13 +18,14 @@ public class ShadowAnimation {
   private Animation.AnimationListener listener;
   private Interpolator interpolator;
   private boolean startFlag = false;
+  private boolean endFlag = false;
   private long durationMillis = 0;
   private int repeatCount;
   private int repeatMode;
   private long startOffset;
   private int loadedFromResourceId = -1;
-  private boolean fillAfter;
 
+  private boolean fillAfter;
   @RealObject
   private Animation realAnimation;
 
@@ -44,14 +45,17 @@ public class ShadowAnimation {
   @Implementation
   public void cancel() {
     startFlag = false;
-    if (listener != null) {
-      listener.onAnimationEnd(realAnimation);
-    }
+    endAnimation();
   }
 
   @Implementation
   public boolean hasStarted() {
     return startFlag;
+  }
+
+  @Implementation
+  public boolean hasEnded() {
+    return endFlag;
   }
 
   @Implementation
@@ -136,9 +140,7 @@ public class ShadowAnimation {
    * Non-Android accessor.  Use to simulate end of animation.
    */
   public void invokeEnd() {
-    if (listener != null) {
-      listener.onAnimationEnd(realAnimation);
-    }
+    endAnimation();
     new ShadowAnimationBridge(realAnimation).applyTransformation(1.0f, new Transformation());
   }
 
@@ -151,6 +153,14 @@ public class ShadowAnimation {
       throw new IllegalStateException("not loaded from a resource");
     }
     return loadedFromResourceId;
+  }
+
+  private void endAnimation() {
+    if (listener != null) {
+      listener.onAnimationEnd(realAnimation);
+    }
+
+    endFlag = true;
   }
 
 }
