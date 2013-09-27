@@ -6,6 +6,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Robolectric.shadowOf;
@@ -39,5 +40,13 @@ public class PaintTest {
     ShadowPaint shadowPaint = shadowOf(paint);
     shadowPaint.__constructor__( Paint.ANTI_ALIAS_FLAG );
     assertTrue(paint.isAntiAlias());
+  }
+
+  @Test
+  public void shouldGetAndSetTextAlignment() throws Exception {
+    Paint paint = Robolectric.newInstanceOf(Paint.class);
+    assertThat(paint.getTextAlign()).isEqualTo(Paint.Align.LEFT);
+    paint.setTextAlign(Paint.Align.CENTER);
+    assertThat(paint.getTextAlign()).isEqualTo(Paint.Align.CENTER);
   }
 }
