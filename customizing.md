@@ -31,23 +31,6 @@ public class CustomTestRunner extends RobolectricTestRunner {
 }
 {% endhighlight %}
 
-### Application class
-By default, Robolectric will create a new instance of the application class specified in AndroidManifest.xml for each test.
-
-You may override this behavior in your custom test runner by overriding the <code>createApplication</code> method:
-
-{% highlight java %}
-public class CustomTestRunner extends RobolectricTestRunner {
-    public CustomTestRunner(Class testClass) throws InitializationError {
-        super(testClass);
-    }
-
-    @Override protected Application createApplication() {
-        return new CustomApplication();
-    }
-}
-{% endhighlight %}
-
 ### Overriding `project.properties`
 During test initialization, roboletric will attempt to locate all `android.library.reference` listed in the `project.properties` file. Unfortunately the locations are set by the ADT plugin and depending on the build environment may not point to the correct location – for example when performing a maven release. To counter the fixed location set in the `project.proerties`, roboletric provides an override mechanism. Simply placing a `test-project.properties` in the same directory as the `project.properties` will cause roboletric to override any `android.library.reference`s with those from the `test-project.properties` file. 
 
@@ -75,26 +58,6 @@ public class CustomTestRunner extends RobolectricTestRunner {
     }
 
     @Override public void afterTest(Method method) {
-    }
-}
-{% endhighlight %}
-
-## Custom Shadows
-
-Robolectric provides shadow implementations of many Android classes, but you may find that you want to add your own,
-or change the way a shadow works. You can do this by registering your shadow classes in the
-<code>beforeTest(Method method)</code> method.
-
-{% highlight java %}
-public class CustomTestRunner extends RobolectricTestRunner {
-    public CustomTestRunner(Class testClass) throws InitializationError {
-        super(testClass);
-    }
-
-    @Override public void beforeTest(Method method) {
-        Robolectric.bindShadowClass(ShadowBitmapFactory.class);
-        Robolectric.bindShadowClass(ShadowDrawable.class);
-        Robolectric.bindShadowClass(ShadowGeocoder.class);
     }
 }
 {% endhighlight %}
