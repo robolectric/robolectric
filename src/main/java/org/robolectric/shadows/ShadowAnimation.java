@@ -45,9 +45,7 @@ public class ShadowAnimation {
   @Implementation
   public void cancel() {
     startFlag = false;
-    if (listener != null) {
-      listener.onAnimationEnd(realAnimation);
-    }
+    endAnimation();
   }
 
   @Implementation
@@ -142,12 +140,8 @@ public class ShadowAnimation {
    * Non-Android accessor.  Use to simulate end of animation.
    */
   public void invokeEnd() {
-    if (listener != null) {
-      listener.onAnimationEnd(realAnimation);
-    }
+    endAnimation();
     new ShadowAnimationBridge(realAnimation).applyTransformation(1.0f, new Transformation());
-
-    endFlag = true;
   }
 
   public void setLoadedFromResourceId(int loadedFromResourceId) {
@@ -159,6 +153,14 @@ public class ShadowAnimation {
       throw new IllegalStateException("not loaded from a resource");
     }
     return loadedFromResourceId;
+  }
+
+  private void endAnimation() {
+    if (listener != null) {
+      listener.onAnimationEnd(realAnimation);
+    }
+
+    endFlag = true;
   }
 
 }
