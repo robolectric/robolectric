@@ -105,15 +105,6 @@ public class ShadowPopupWindow {
     return outSideTouchable;
   }
 
-  /**
-   * non-android setter for testing
-   *
-   * @param showing true if popup window is showing
-   */
-  public void setShowing(boolean showing) {
-    this.showing = showing;
-  }
-
   @Implementation
   public boolean isShowing() {
     return showing;
@@ -148,6 +139,7 @@ public class ShadowPopupWindow {
     containerView.addView(contentView);
     containerView.setBackgroundDrawable(background);
     getWindowManager().addView(containerView, new WindowManager.LayoutParams());
+    showing = true;
   }
 
   @Implementation
