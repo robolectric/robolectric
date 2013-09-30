@@ -2,18 +2,25 @@ package org.robolectric.shadows;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.accounts.AccountManagerCallback;
+import android.accounts.AccountManagerFuture;
+import android.accounts.AuthenticatorException;
+import android.accounts.OperationCanceledException;
 import android.content.Context;
 import android.content.pm.PermissionGroupInfo;
 import android.os.Bundle;
+import android.os.Handler;
 
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Shadow implementation for the Android {@code AccountManager } class.
@@ -110,6 +117,45 @@ public class ShadowAccountManager {
       return null;
     }
     return tokensForAccount.get(authTokenType);
+  }
+
+  @Implementation
+  public AccountManagerFuture<Boolean> removeAccount (final Account account,
+                                                      AccountManagerCallback<Boolean> callback,
+                                                      Handler handler) {
+
+    if (account == null) throw new IllegalArgumentException("account is null");
+
+    final boolean accountRemoved = accounts.remove(account);
+
+    return new AccountManagerFuture<Boolean>() {
+      @Override
+      public boolean cancel(boolean mayInterruptIfRunning) {
+        return false;
+      }
+
+      @Override
+      public boolean isCancelled() {
+        return false;
+      }
+
+      @Override
+      public boolean isDone() {
+        return false;
+      }
+
+      @Override
+      public Boolean getResult() throws OperationCanceledException, IOException,
+              AuthenticatorException {
+        return accountRemoved;
+      }
+
+      @Override
+      public Boolean getResult(long timeout, TimeUnit unit) throws OperationCanceledException,
+              IOException, AuthenticatorException {
+        return accountRemoved;
+      }
+    };
   }
 
   /**

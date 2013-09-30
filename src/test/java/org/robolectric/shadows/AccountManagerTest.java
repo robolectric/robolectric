@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.accounts.AccountManagerFuture;
 import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
 import android.app.Activity;
@@ -153,16 +154,36 @@ public class AccountManagerTest {
       am.blockingGetAuthToken(null, "token_type_1", false);
       fail("blockingGetAuthToken() should throw an illegal argument exception if the account is null");
     } catch (IllegalArgumentException iae) {
-      // NOP
+      // Expected
     }
     try {
       am.blockingGetAuthToken(account, null, false);
       fail("blockingGetAuthToken() should throw an illegal argument exception if the auth token type is null");
     } catch (IllegalArgumentException iae) {
-      // NOP
+      // Expected
     }
 
     Account account1 = new Account("unknown", "type");
     assertThat(am.blockingGetAuthToken(account1, "token_type_1", false)).isNull();
+  }
+
+  @Test
+  public void testRemoveAccount() {
+    AccountManager am = AccountManager.get(app);
+    Account account = new Account("name", "type");
+    Robolectric.shadowOf(am).addAccount(account);
+
+    try {
+      am.removeAccount(null, null, null);
+    } catch (IllegalArgumentException iae) {
+      // Expected
+    }
+
+    Account wrongAccount = new Account("wrong_name", "type");
+    am.removeAccount(wrongAccount, null, null);
+    assertThat(am.getAccountsByType("type")).isNotEmpty();
+
+    am.removeAccount(account, null, null);
+    assertThat(am.getAccountsByType("type")).isEmpty();
   }
 }
