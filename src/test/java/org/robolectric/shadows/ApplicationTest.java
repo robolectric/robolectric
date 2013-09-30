@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.app.Activity;
 import android.app.Application;
+import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -13,10 +14,6 @@ import android.os.IBinder;
 import android.os.IInterface;
 import android.os.Parcel;
 import android.os.RemoteException;
-import java.io.File;
-import java.io.FileDescriptor;
-import java.io.IOException;
-import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,9 +33,15 @@ import org.robolectric.res.TypedResource;
 import org.robolectric.test.TemporaryFolder;
 import org.robolectric.util.TestBroadcastReceiver;
 
+import java.io.File;
+import java.io.FileDescriptor;
+import java.io.IOException;
+import java.util.List;
+
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.fail;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -378,6 +381,22 @@ public class ApplicationTest {
     assertThat(application.checkPermission("qux", -1, -1)).isEqualTo(PERMISSION_DENIED);
   }
 
+  @Test
+  public void startActivity_whenActivityCheckingEnabled_checksPackageManagerResolveInfo() throws Exception {
+    Application application = new DefaultTestLifecycle().createApplication(null,
+        newConfigWith("com.wacka.wa", ""));
+    shadowOf(application).checkActivities(true);
+
+    String action = "com.does.not.exist.android.app.v2.mobile";
+
+    try {
+      application.startActivity(new Intent(action));
+      fail("Expected startActivity to throw ActivityNotFoundException!");
+    } catch (ActivityNotFoundException e) {
+      assertThat(e.getMessage()).contains(action);
+      assertThat(shadowOf(application).getNextStartedActivity()).isNull();
+    }
+  }
   /////////////////////////////
 
   public AndroidManifest newConfigWith(String contents) throws IOException {

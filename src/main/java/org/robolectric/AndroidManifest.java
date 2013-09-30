@@ -456,6 +456,10 @@ public class AndroidManifest {
     return themeRef;
   }
 
+  public Map<String, ActivityData> getActivityDatas() {
+    return activityDatas;
+  }
+
   private static class ReceiverAndIntentFilter {
     private final List<String> intentFilterActions;
     private final String broadcastReceiverClassName;

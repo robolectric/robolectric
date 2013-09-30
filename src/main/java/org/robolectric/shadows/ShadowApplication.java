@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.app.Application;
 import android.appwidget.AppWidgetManager;
+import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentResolver;
@@ -17,13 +18,6 @@ import android.os.Looper;
 import android.os.PowerManager;
 import android.view.LayoutInflater;
 import android.widget.Toast;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import org.robolectric.AndroidManifest;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
@@ -32,6 +26,14 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.tester.org.apache.http.FakeHttpLayer;
 import org.robolectric.util.Scheduler;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
@@ -78,6 +80,7 @@ public class ShadowApplication extends ShadowContextWrapper {
   private List<String> unbindableActions = new ArrayList<String>();
 
   private boolean strictI18n = false;
+  private boolean checkActivities;
 
   /**
    * Associates a {@code ResourceLoader} with an {@code Application} instance
@@ -174,7 +177,11 @@ public class ShadowApplication extends ShadowContextWrapper {
   @Implementation
   @Override
   public void startActivity(Intent intent) {
-    startedActivities.add(intent);
+    if (checkActivities && getPackageManager().resolveActivity(intent, -1) == null) {
+      throw new ActivityNotFoundException(intent.getAction());
+    } else {
+      startedActivities.add(intent);
+    }
   }
 
   @Implementation
@@ -565,6 +572,10 @@ public class ShadowApplication extends ShadowContextWrapper {
       }
       return item;
     }
+  }
+
+  public void checkActivities(boolean checkActivities) {
+    this.checkActivities = checkActivities;
   }
 
   public class Wrapper {

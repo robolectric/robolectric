@@ -1,7 +1,9 @@
 package org.robolectric;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Handler;
 import android.view.Display;
 import android.view.View;
@@ -144,6 +146,12 @@ public class RobolectricTest {
     view.setOnClickListener(testOnClickListener);
     Robolectric.clickOn(view);
     assertTrue(testOnClickListener.clicked);
+  }
+
+  @Test(expected=ActivityNotFoundException.class)
+  public void checkActivities_shouldSetValueOnShadowApplication() throws Exception {
+    Robolectric.checkActivities(true);
+    Robolectric.application.startActivity(new Intent("i.dont.exist.activity"));
   }
 
   @Implements(View.class)
