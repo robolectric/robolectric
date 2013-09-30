@@ -17,7 +17,6 @@ import java.io.IOException;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.fest.assertions.api.Assertions.fail;
-import static org.junit.Assert.assertSame;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class AccountManagerTest {
@@ -168,22 +167,39 @@ public class AccountManagerTest {
   }
 
   @Test
-  public void testRemoveAccount() {
+  public void removeAccount_throwsIllegalArgumentException_whenPassedNullAccount() {
     AccountManager am = AccountManager.get(app);
     Account account = new Account("name", "type");
     Robolectric.shadowOf(am).addAccount(account);
 
     try {
       am.removeAccount(null, null, null);
+      fail("removeAccount() should throw an illegal argument exception if the account is null");
     } catch (IllegalArgumentException iae) {
       // Expected
     }
+  }
+
+  @Test
+  public void removeAccount_doesNotRemoveAccountOfDifferentName() throws Exception {
+    AccountManager am = AccountManager.get(app);
+    Account account = new Account("name", "type");
+    Robolectric.shadowOf(am).addAccount(account);
 
     Account wrongAccount = new Account("wrong_name", "type");
-    am.removeAccount(wrongAccount, null, null);
+    AccountManagerFuture<Boolean> future = am.removeAccount(wrongAccount, null, null);
+    assertThat(future.getResult()).isFalse();
     assertThat(am.getAccountsByType("type")).isNotEmpty();
+  }
 
-    am.removeAccount(account, null, null);
+  @Test
+  public void removeAccount_does() throws Exception {
+    AccountManager am = AccountManager.get(app);
+    Account account = new Account("name", "type");
+    Robolectric.shadowOf(am).addAccount(account);
+
+    AccountManagerFuture<Boolean> future = am.removeAccount(account, null, null);
+    assertThat(future.getResult()).isTrue();
     assertThat(am.getAccountsByType("type")).isEmpty();
   }
 }
