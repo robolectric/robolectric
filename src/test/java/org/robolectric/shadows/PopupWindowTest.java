@@ -82,24 +82,6 @@ public class PopupWindowTest {
       assertTrue(popupWindow.isOutsideTouchable());
     }
 
-    @Test
-    public void testShowing() {
-      shadowOf(popupWindow).setShowing(true);
-
-      assertTrue(popupWindow.isShowing());
-    }
-
-    @Test
-    public void testDismiss() {
-      shadowOf(popupWindow).setShowing(true);
-
-      assertTrue(popupWindow.isShowing());
-
-      popupWindow.dismiss();
-
-      assertFalse(popupWindow.isShowing());
-    }
-
     @SuppressWarnings("RedundantCast") //For some reason this is needed because of a compile error without it
     @Test
     public void testBackgroundDrawable() {
@@ -138,6 +120,26 @@ public class PopupWindowTest {
       anchor = new View(Robolectric.application);
 
       shadowWindowManager = (ShadowWindowManagerImpl) shadowOf(windowManager);
+    }
+
+    @Test
+    public void testShowing() {
+      PopupWindow popupWindow = new PopupWindow(contentView, 0, 0, true);
+      popupWindow.showAsDropDown(anchor);
+
+      assertTrue(popupWindow.isShowing());
+    }
+
+    @Test
+    public void testDismiss() {
+      PopupWindow popupWindow = new PopupWindow(contentView, 0, 0, true);
+      popupWindow.showAsDropDown(anchor);
+
+      assertTrue(popupWindow.isShowing());
+
+      popupWindow.dismiss();
+
+      assertFalse(popupWindow.isShowing());
     }
 
     @Test
