@@ -49,7 +49,7 @@ public class HomeActivityTest {
 }
 {% endhighlight %}
 
-See the javadocs for [org.robolectric.annotation.Config](/javadoc/org/robolectric/annotation/Config.html) for details.
+See the javadocs for [org.robolectric.annotation.Config](/robolectric/javadoc/org/robolectric/annotation/Config.html) for details.
 
 ##  `Robolectric.shadowOf()`
 Sometimes Android classes don't provide methods to access the state of the Android objects under test. The
