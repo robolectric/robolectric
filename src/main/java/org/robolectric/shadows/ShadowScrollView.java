@@ -4,7 +4,7 @@ import android.widget.ScrollView;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-@Implements(value = ScrollView.class)
+@Implements(ScrollView.class)
 public class ShadowScrollView extends ShadowFrameLayout {
   @Implementation
   public void smoothScrollTo(int x, int y) {

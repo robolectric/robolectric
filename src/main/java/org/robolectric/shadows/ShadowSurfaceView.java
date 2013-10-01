@@ -11,7 +11,7 @@ import org.robolectric.annotation.Implements;
 import java.util.HashSet;
 import java.util.Set;
 
-@Implements(value = SurfaceView.class)
+@Implements(SurfaceView.class)
 @SuppressWarnings({"UnusedDeclaration"})
 public class ShadowSurfaceView extends ShadowView {
 

@@ -12,7 +12,7 @@ import static org.fest.reflect.core.Reflection.type;
 import static org.robolectric.Robolectric.directlyOn;
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(value = Window.class)
+@Implements(Window.class)
 public class ShadowWindow {
   @RealObject
   Window realWindow;
@@ -20,10 +20,9 @@ public class ShadowWindow {
   private int flags;
 
   public static Window create(Context context) throws Exception {
-      Class<?> phoneWindowClass = type(ShadowPhoneWindow.PHONE_WINDOW_CLASS_NAME).load();
-      Constructor<?> constructor = phoneWindowClass.getConstructor(Context.class);
-      Window phoneWindow = (Window) constructor.newInstance(context);
-      return phoneWindow;
+    Class<?> phoneWindowClass = type(ShadowPhoneWindow.PHONE_WINDOW_CLASS_NAME).load();
+    Constructor<?> constructor = phoneWindowClass.getConstructor(Context.class);
+    return (Window) constructor.newInstance(context);
   }
 
   @Implementation
@@ -34,10 +33,6 @@ public class ShadowWindow {
 
   public boolean getFlag(int flag) {
     return (flags & flag) == flag;
-  }
-
-  public void performLayout() {
-    //((Window) realWindow).performLayout();
   }
 
   public CharSequence getTitle() {

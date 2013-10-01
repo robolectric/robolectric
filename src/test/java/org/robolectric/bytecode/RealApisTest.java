@@ -18,7 +18,7 @@ public class RealApisTest {
     assertEquals("Off I saunter to the salon!", new Pony("abc").saunter("the salon"));
   }
 
-  @Implements(value = Pony.class, callThroughByDefault = true)
+  @Implements(Pony.class)
   public static class ShimmeryShadowPony extends Pony.ShadowPony {
   }
 
@@ -38,7 +38,7 @@ public class RealApisTest {
     }
   }
 
-  @Implements(value = ClassWithSomeConstructors.class, callThroughByDefault = true)
+  @Implements(ClassWithSomeConstructors.class)
   public static class ShadowOfClassWithSomeConstructors {
   }
 }

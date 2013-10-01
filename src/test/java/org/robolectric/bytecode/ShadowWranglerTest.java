@@ -144,7 +144,7 @@ public class ShadowWranglerTest {
     }
   }
 
-  @Implements(value = ThrowInShadowMethod.class, callThroughByDefault = true)
+  @Implements(ThrowInShadowMethod.class)
   public static class ShadowThrowInShadowMethod {
     public void method() throws IOException {
       throw new IOException("fake exception");
@@ -185,7 +185,7 @@ public class ShadowWranglerTest {
     }
   }
 
-  @Implements(value = ThrowInRealMethod.class, callThroughByDefault = true)
+  @Implements(ThrowInRealMethod.class)
   public static class ShadowThrowInRealMethod {
   }
 

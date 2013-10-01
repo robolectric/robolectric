@@ -10,20 +10,18 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
-import static android.graphics.Shader.TileMode;
+import static org.robolectric.Robolectric.directlyOn;
 import static org.robolectric.Robolectric.newInstance;
 import static org.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(value = BitmapDrawable.class)
+@Implements(BitmapDrawable.class)
 public class ShadowBitmapDrawable extends ShadowDrawable {
   private ColorFilter colorFilter;
-  private String drawableCreateFromStreamSource;
-  private String drawableCreateFromPath;
+  String drawableCreateFromStreamSource;
+  String drawableCreateFromPath;
 
   @RealObject private BitmapDrawable realBitmapDrawable;
-  private TileMode tileModeX;
-  private TileMode tileModeY;
 
   /**
    * Draws the contained bitmap onto the canvas at 0,0 with a default {@code Paint}
@@ -48,8 +46,9 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
   }
 
   @Implementation
-  public void setColorFilter(android.graphics.ColorFilter colorFilter) {
+  public void setColorFilter(ColorFilter colorFilter) {
     this.colorFilter = colorFilter;
+    directlyOn(realBitmapDrawable, BitmapDrawable.class).setColorFilter(colorFilter);
   }
 
   /**
@@ -64,48 +63,12 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
     return shadowOf(realBitmapDrawable.getBitmap()).getCreatedFromResId();
   }
 
-  // Used by ShadowDrawable.createFromStream()
-  public void setSource(String drawableCreateFromStreamSource) {
-    this.drawableCreateFromStreamSource = drawableCreateFromStreamSource;
-  }
-
   public String getSource() {
     return drawableCreateFromStreamSource;
   }
 
-  //Used by ShadowDrawable.createFromPath()
-  public void setPath(String drawableCreateFromPath) {
-    this.drawableCreateFromPath = drawableCreateFromPath;
-  }
-
   public String getPath() {
     return drawableCreateFromPath;
-  }
-
-  @Implementation
-  public void setTileModeX(TileMode mode) {
-    tileModeX = mode;
-  }
-
-  @Implementation
-  public TileMode getTileModeX() {
-    return tileModeX;
-  }
-
-  @Implementation
-  public void setTileModeY(TileMode mode) {
-    tileModeY = mode;
-  }
-
-  @Implementation
-  public TileMode getTileModeY() {
-    return tileModeY;
-  }
-
-  @Implementation
-  public void setTileModeXY(TileMode modeX, TileMode modeY) {
-    setTileModeX(modeX);
-    setTileModeY(modeY);
   }
 
   @Override

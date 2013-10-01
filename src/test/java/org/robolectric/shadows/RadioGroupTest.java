@@ -45,9 +45,8 @@ public class RadioGroupTest {
     radioGroup.setOnCheckedChangeListener(listener);
     radioGroup.clearCheck();
 
-    assertEquals(Arrays.asList(BUTTON_ID, -1), listener.onCheckedChangedCheckedIds);
-    assertEquals(Arrays.asList(radioGroup, radioGroup), listener.onCheckedChangedGroups);
-
+    assertEquals(Arrays.asList(-1), listener.onCheckedChangedCheckedIds);
+    assertEquals(Arrays.asList(radioGroup), listener.onCheckedChangedGroups);
   }
 
   private static class TestOnCheckedChangeListener implements RadioGroup.OnCheckedChangeListener {
