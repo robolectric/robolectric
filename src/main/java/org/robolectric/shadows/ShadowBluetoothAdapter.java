@@ -59,9 +59,18 @@ public class ShadowBluetoothAdapter {
     return enabled;
   }
 
-  public void setEnabled(boolean enabled) {
-    this.enabled = enabled;
+  @Implementation
+  public boolean enable() {
+    enabled = true;
+    return true;
   }
+
+  @Implementation
+  public boolean disable() {
+    enabled = false;
+    return true;
+  }
+
   @Implementation
   public String getAddress() {
     return this.address;
@@ -112,5 +121,9 @@ public class ShadowBluetoothAdapter {
 
   public void setState(int state) {
     this.state = state;
+  }
+
+  public void setEnabled(boolean enabled) {
+    this.enabled = enabled;
   }
 }
