@@ -97,7 +97,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
         .in(contextImplClass)
         .invoke(activityThread);
 
-    final Application application = (Application) testLifecycle.createApplication(method, appManifest);
+    final Application application = (Application) testLifecycle.createApplication(appManifest);
     if (application != null) {
       String packageName = appManifest != null ? appManifest.getPackageName() : null;
       if (packageName == null) packageName = DEFAULT_PACKAGE_NAME;

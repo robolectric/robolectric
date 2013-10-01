@@ -27,19 +27,19 @@ public class DefaultTestLifecycleTest {
 
   @Test(expected = RuntimeException.class)
   public void shouldThrowWhenManifestContainsBadApplicationClassName() throws Exception {
-    defaultTestLifecycle.createApplication(null,
+    defaultTestLifecycle.createApplication(
         newConfigWith("<application android:name=\"org.robolectric.BogusTestApplication\"/>)"));
   }
 
   @Test
   public void shouldReturnDefaultAndroidApplicationWhenManifestDeclaresNoAppName() throws Exception {
-    assertThat(defaultTestLifecycle.createApplication(null, newConfigWith("")))
+    assertThat(defaultTestLifecycle.createApplication(newConfigWith("")))
         .isExactlyInstanceOf(Application.class);
   }
 
   @Test
   public void shouldReturnSpecifiedApplicationWhenManifestDeclaresAppName() throws Exception {
-    assertThat(defaultTestLifecycle.createApplication(null,
+    assertThat(defaultTestLifecycle.createApplication(
         newConfigWith("<application android:name=\"org.robolectric.TestApplication\"/>")))
         .isExactlyInstanceOf(TestApplication.class);
   }
@@ -47,7 +47,7 @@ public class DefaultTestLifecycleTest {
   @Test
   public void shouldAssignThePackageNameFromTheManifest() throws Exception {
     AndroidManifest appManifest = newConfigWith("com.wacka.wa", "");
-    Application application = defaultTestLifecycle.createApplication(null, appManifest);
+    Application application = defaultTestLifecycle.createApplication(appManifest);
     shadowOf(application).bind(appManifest, null);
 
     assertThat(application.getPackageName()).isEqualTo("com.wacka.wa");
@@ -57,7 +57,7 @@ public class DefaultTestLifecycleTest {
   @Test
   public void shouldRegisterReceiversFromTheManifest() throws Exception {
     AndroidManifest appManifest = newConfig("TestAndroidManifestWithReceivers.xml");
-    Application application = defaultTestLifecycle.createApplication(null, appManifest);
+    Application application = defaultTestLifecycle.createApplication(appManifest);
     shadowOf(application).bind(appManifest, null);
 
     List<ShadowApplication.Wrapper> receivers = shadowOf(application).getRegisteredReceivers();
@@ -68,7 +68,7 @@ public class DefaultTestLifecycleTest {
   @Test
   public void shouldRegisterActivitiesFromManifestInPackageManager() throws Exception {
     AndroidManifest appManifest = newConfig("TestAndroidManifestForActivities.xml");
-    Application application = defaultTestLifecycle.createApplication(null, appManifest);
+    Application application = defaultTestLifecycle.createApplication(appManifest);
 
     PackageManager packageManager = application.getPackageManager();
     assertThat(packageManager.resolveActivity(new Intent("org.robolectric.shadows.TestActivity"), -1)).isNotNull();
@@ -83,13 +83,13 @@ public class DefaultTestLifecycleTest {
   }
 
   @Test public void shouldLoadTestApplicationIfClassIsPresent() throws Exception {
-    Application application = defaultTestLifecycle.createApplication(null,
+    Application application = defaultTestLifecycle.createApplication(
         newConfigWith("<application android:name=\"" + FakeApp.class.getName() + "\"/>"));
     assertThat(application).isExactlyInstanceOf(TestFakeApp.class);
   }
 
   @Test public void whenNoAppManifestPresent_shouldCreateGenericApplication() throws Exception {
-    assertThat(defaultTestLifecycle.createApplication(null, null)).isExactlyInstanceOf(Application.class);
+    assertThat(defaultTestLifecycle.createApplication(null)).isExactlyInstanceOf(Application.class);
   }
 
   /////////////////////////////

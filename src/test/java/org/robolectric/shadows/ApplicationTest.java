@@ -356,13 +356,13 @@ public class ApplicationTest {
 
   @Test
   public void shouldRememberResourcesAfterLazilyLoading() throws Exception {
-    Application application = new DefaultTestLifecycle().createApplication(null, newConfigWith("com.wacka.wa", ""));
+    Application application = new DefaultTestLifecycle().createApplication(newConfigWith("com.wacka.wa", ""));
     assertSame(application.getResources(), application.getResources());
   }
 
   @Test
   public void shouldBeAbleToResetResources() throws Exception {
-    Application application = new DefaultTestLifecycle().createApplication(null,
+    Application application = new DefaultTestLifecycle().createApplication(
         newConfigWith("com.wacka.wa", ""));
     Resources res = application.getResources();
     shadowOf(application).resetResources();
@@ -371,7 +371,7 @@ public class ApplicationTest {
 
   @Test
   public void checkPermission_shouldTrackGrantedAndDeniedPermissions() throws Exception {
-    Application application = new DefaultTestLifecycle().createApplication(null,
+    Application application = new DefaultTestLifecycle().createApplication(
         newConfigWith("com.wacka.wa", ""));
     shadowOf(application).grantPermissions("foo", "bar");
     shadowOf(application).denyPermissions("foo", "qux");
@@ -383,7 +383,7 @@ public class ApplicationTest {
 
   @Test
   public void startActivity_whenActivityCheckingEnabled_checksPackageManagerResolveInfo() throws Exception {
-    Application application = new DefaultTestLifecycle().createApplication(null,
+    Application application = new DefaultTestLifecycle().createApplication(
         newConfigWith("com.wacka.wa", ""));
     shadowOf(application).checkActivities(true);
 
