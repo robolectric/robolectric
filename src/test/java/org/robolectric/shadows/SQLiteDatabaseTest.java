@@ -687,8 +687,13 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
   }
 
   @Test
-  public void shouldCreateDefaultCursorFactoryWhenNullFactoryPassed() throws Exception {
+  public void shouldCreateDefaultCursorFactoryWhenNullFactoryPassedToRawQuery() throws Exception {
     database.rawQueryWithFactory(null, ANY_VALID_SQL, null, null);
+  }
+
+  @Test
+  public void shouldCreateDefaultCursorFactoryWhenNullFactoryPassedToQuery() throws Exception {
+    database.queryWithFactory(null, false, "table_name", null, null, null, null, null, null, null);
   }
 
   @Test
