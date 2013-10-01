@@ -8,7 +8,7 @@ import org.robolectric.annotation.RealObject;
 import static org.robolectric.Robolectric.directlyOn;
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(value = BaseAdapter.class, callThroughByDefault = true)
+@Implements(BaseAdapter.class)
 public class ShadowBaseAdapter {
   @RealObject private BaseAdapter realBaseAdapter;
   private boolean wasNotifyDataSetChangedCalled;

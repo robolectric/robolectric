@@ -5,7 +5,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(value = AbsoluteLayout.class)
+@Implements(AbsoluteLayout.class)
 public class ShadowAbsoluteLayout extends ShadowViewGroup {
   @Implements(AbsoluteLayout.LayoutParams.class)
   public static class ShadowLayoutParams extends ShadowViewGroup.ShadowLayoutParams {

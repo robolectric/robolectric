@@ -6,7 +6,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.internal.HiddenApi;
 
-@Implements(value = SystemClock.class, callThroughByDefault = true)
+@Implements(SystemClock.class)
 public class ShadowSystemClock {
   private static long bootedAt = 0;
   private static long nanoTime = 0;

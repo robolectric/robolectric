@@ -9,7 +9,7 @@ import org.robolectric.annotation.Implements;
 /**
  * Shadow of {@link android.widget.ViewAnimator}
  */
-@Implements(value = ViewAnimator.class, callThroughByDefault = true)
+@Implements(ViewAnimator.class)
 public class ShadowViewAnimator extends ShadowFrameLayout {
 
   private int currentChild = 0;
