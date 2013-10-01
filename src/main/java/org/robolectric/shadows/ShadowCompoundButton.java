@@ -27,7 +27,6 @@ public class ShadowCompoundButton extends ShadowTextView implements Checkable {
 
   @Implementation
   public boolean performClick() {
-    toggle();
     return (Boolean) directlyOn(realCompoundButton, CompoundButton.class, "performClick").invoke();
   }
 
