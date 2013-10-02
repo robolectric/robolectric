@@ -21,7 +21,9 @@ public class TestWebSettings extends WebSettings {
   private boolean lightTouchEnabled = false;
   private boolean loadWithOverviewMode = false;
   private boolean needInitialFocus = false;
+  private RenderPriority renderPriority = RenderPriority.NORMAL;
   private boolean pluginsEnabled = false;
+  private String databasePath = "database";
   private WebSettings.PluginState pluginState = WebSettings.PluginState.OFF;
   private boolean supportMultipleWindows = false;
   private boolean supportZoom = true;
@@ -147,6 +149,15 @@ public class TestWebSettings extends WebSettings {
     needInitialFocus = flag;
   }
 
+  @Override
+  public synchronized void setRenderPriority(RenderPriority priority) {
+    renderPriority = priority;
+  }
+
+  public RenderPriority getRenderPriority() {
+    return renderPriority;
+  }
+
   @Implementation
   public synchronized boolean getPluginsEnabled() {
     return pluginsEnabled;
@@ -172,6 +183,16 @@ public class TestWebSettings extends WebSettings {
   }
 
   @Implementation
+  public synchronized void setDatabasePath(String path) {
+    databasePath = path;
+  }
+
+  @Implementation
+  public synchronized String getDatabasePath() {
+    return databasePath;
+  }
+
+    @Implementation
   public synchronized void setSupportMultipleWindows(boolean support) {
     supportMultipleWindows = support;
   }
