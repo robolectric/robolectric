@@ -189,4 +189,10 @@ public class TestWebSettingsTest {
       assertThat(webSettings.getUseWideViewPort()).isEqualTo(value);
     }
   }
+
+  @Test
+  public void testSetDatabasePath() throws Exception {
+    webSettings.setDatabasePath("new_path");
+    assertThat(webSettings.getDatabasePath()).isEqualTo("new_path");
+  }
 }
