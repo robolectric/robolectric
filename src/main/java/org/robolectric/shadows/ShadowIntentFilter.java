@@ -91,7 +91,7 @@ public class ShadowIntentFilter {
 
   @Implementation
   public boolean hasDataScheme(String scheme) {
-	return schemes.contains(scheme);
+    return schemes.contains(scheme);
   }
   
   @Implementation

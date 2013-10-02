@@ -42,10 +42,10 @@ public class IntentFilterTest {
   
   @Test
   public void hasDataScheme() {
-	IntentFilter intentFilter = new IntentFilter();
-	assertThat(intentFilter.hasDataScheme("test")).isFalse();
-	intentFilter.addDataScheme("test");
-	  
-	assertThat(intentFilter.hasDataScheme("test")).isTrue();
+    IntentFilter intentFilter = new IntentFilter();
+    assertThat(intentFilter.hasDataScheme("test")).isFalse();
+    intentFilter.addDataScheme("test");
+  
+    assertThat(intentFilter.hasDataScheme("test")).isTrue();
   }
 }
