@@ -195,4 +195,10 @@ public class TestWebSettingsTest {
     webSettings.setDatabasePath("new_path");
     assertThat(webSettings.getDatabasePath()).isEqualTo("new_path");
   }
+
+  @Test
+  public void testSetRenderPriority() throws Exception {
+    webSettings.setRenderPriority(WebSettings.RenderPriority.HIGH);
+    assertThat(webSettings.getRenderPriority()).isEqualTo(WebSettings.RenderPriority.HIGH);
+  }
 }

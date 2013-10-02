@@ -21,6 +21,7 @@ public class TestWebSettings extends WebSettings {
   private boolean lightTouchEnabled = false;
   private boolean loadWithOverviewMode = false;
   private boolean needInitialFocus = false;
+  private RenderPriority renderPriority = RenderPriority.NORMAL;
   private boolean pluginsEnabled = false;
   private String databasePath = "database";
   private WebSettings.PluginState pluginState = WebSettings.PluginState.OFF;
@@ -146,6 +147,15 @@ public class TestWebSettings extends WebSettings {
   @Implementation
   public void setNeedInitialFocus(boolean flag) {
     needInitialFocus = flag;
+  }
+
+  @Override
+  public synchronized void setRenderPriority(RenderPriority priority) {
+    renderPriority = priority;
+  }
+
+  public RenderPriority getRenderPriority() {
+    return renderPriority;
   }
 
   @Implementation
