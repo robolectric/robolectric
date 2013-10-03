@@ -22,7 +22,7 @@ public class TestRunners {
     }
 
     @Override
-    protected AndroidManifest createAppManifest(FsFile manifestFile) {
+    protected AndroidManifest createAppManifest(FsFile manifestFile, FsFile resDir, FsFile assetsDir) {
       return new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"), resourceFile("assets"));
     }
 
@@ -54,7 +54,7 @@ public class TestRunners {
           .build();
     }
 
-    @Override protected AndroidManifest createAppManifest(FsFile manifestFile) {
+    @Override protected AndroidManifest createAppManifest(FsFile manifestFile, FsFile resDir, FsFile assetsDir) {
       return null;
     }
 
@@ -80,7 +80,7 @@ public class TestRunners {
     }
 
     @Override
-    protected AndroidManifest createAppManifest(FsFile manifestFile) {
+    protected AndroidManifest createAppManifest(FsFile manifestFile, FsFile resDir, FsFile assetsDir) {
       return new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"), resourceFile("assets"));
     }
   }
