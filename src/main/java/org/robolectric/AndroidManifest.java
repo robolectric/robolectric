@@ -1,17 +1,6 @@
 package org.robolectric;
 
 import android.app.Activity;
-import org.robolectric.res.ActivityData;
-import org.robolectric.res.Fs;
-import org.robolectric.res.FsFile;
-import org.robolectric.res.ResourcePath;
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,6 +10,16 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import org.robolectric.res.ActivityData;
+import org.robolectric.res.Fs;
+import org.robolectric.res.FsFile;
+import org.robolectric.res.ResourcePath;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import static android.content.pm.ApplicationInfo.FLAG_ALLOW_BACKUP;
 import static android.content.pm.ApplicationInfo.FLAG_ALLOW_CLEAR_USER_DATA;
@@ -191,10 +190,19 @@ public class AndroidManifest {
       Node themeAttr = attributes.getNamedItem("android:theme");
       if (nameAttr == null) continue;
       String activityName = nameAttr.getNodeValue();
-      activityDatas.put(activityName,
-          new ActivityData(activityName,
-              themeAttr == null ? null : resolveClassRef(themeAttr.getNodeValue())
-          ));
+      ActivityData activityData = new ActivityData(activityName,
+          themeAttr == null ? null : resolveClassRef(themeAttr.getNodeValue()));
+
+      List<String> intentFilters = activityData.getIntentFilterActions();
+      for (Node intentFilterNode : getChildrenTags(activityNode, "intent-filter")) {
+        for (Node action : getChildrenTags(intentFilterNode, "action")) {
+          Node actionNameNode = action.getAttributes().getNamedItem("android:name");
+          if (actionNameNode == null) continue;
+          intentFilters.add(actionNameNode.getNodeValue());
+        }
+      }
+
+      activityDatas.put(activityName, activityData);
     }
   }
 
