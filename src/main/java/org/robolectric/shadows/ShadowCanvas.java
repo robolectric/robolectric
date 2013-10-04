@@ -134,6 +134,11 @@ public class ShadowCanvas {
     appendDescription("Path " + shadowOf(path).getPoints().toString());
   }
 
+  @Implementation
+  public void drawCircle(float cx, float cy, float radius, Paint paint) {
+    circlePaintEvents.add(new CirclePaintHistoryEvent(cx, cy, radius, paint));
+  }
+
   private void describeBitmap(Bitmap bitmap, Paint paint) {
     separateLines();
 
@@ -229,16 +234,16 @@ public class ShadowCanvas {
   }
 
   public static class CirclePaintHistoryEvent {
-    public Paint paint;
     public float centerX;
     public float centerY;
     public float radius;
+    public Paint paint;
 
     private CirclePaintHistoryEvent(float centerX, float centerY, float radius, Paint paint) {
-      this.paint = paint;
       this.centerX = centerX;
       this.centerY = centerY;
       this.radius = radius;
+      this.paint = paint;
     }
   }
 
