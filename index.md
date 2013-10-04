@@ -3,19 +3,21 @@ layout: default
 title: "Robolectric: Unit Test your Android Application"
 ---
 
-# Robolectric: Test-Drive Your Android Code
+# Robolectric
+
+## Test-Drive Your Android Code
 
 Running tests on an Android emulator or device is slow! Building, deploying, and launching the app often takes a minute
 or more. That's no way to do TDD. There must be a better way.
 
 Wouldn't it be nice to run your Android tests directly from inside your IDE? Perhaps you've tried, and been thwarted by
-the dreaded <code>'java.lang.RuntimeException: Stub!'</code>?
+the dreaded `java.lang.RuntimeException: Stub!`?
 
 [Robolectric](http://robolectric.org/) is a unit test framework that de-fangs the Android SDK jar so you
 can test-drive the development of your Android app.  Tests run inside the JVM on your workstation in seconds. With
 Robolectric you can write tests like this:
 
-{% highlight java %}
+```java
 // Test class for MyActivity
 @RunWith(RobolectricTestRunner.class)
 public class MyActivityTest {
@@ -32,25 +34,25 @@ public class MyActivityTest {
     assertThat(resultsText, equalTo("Testing Android Rocks!"));
   }
 }
-{% endhighlight %}
+```
 
 Robolectric makes this possible by rewriting Android SDK classes as they're being loaded and making it possible for them
 to run on a regular JVM.
 
-#### SDK, Resources, & Native Method Emulation
+### SDK, Resources, & Native Method Emulation
 
 Robolectric handles inflation of views, resource loading, and lots of other stuff that's implemented in native C code on
 Android devices. This allows tests to do most things you could do on a real device. It's easy to provide our own
 implementation for specific SDK methods too, so you could simulate error conditions or real-world sensor behavior, for
 example.
 
-#### Run Tests Outside of the Emulator
+### Run Tests Outside of the Emulator
 
 Robolectric lets you run your tests on your workstation, or on your Continuous Integration environment in a regular JVM,
 without an emulator. Because of this, the dexing, packaging, and installing-on-the emulator steps aren't necessary,
 reducing test cycles from minutes to seconds so you can iterate quickly and refactor your code with confidence.
 
-#### No Mocking Frameworks Required
+### No Mocking Frameworks Required
 
 An alternate approach to Robolectric is to use mock frameworks such as [Mockito](http://code.google.com/p/mockito/) or
 [Android Mock](http://code.google.com/p/android-mock/) to mock out the Android SDK. While this is a valid approach, it
@@ -62,15 +64,14 @@ use a mocking framework along with Robolectric if you like.
 
 ## Contributing
 
-We welcome contributions. Please [fork](http://github.com/robolectric/robolectric) and submit pull requests. Don't forget to
-include tests!
+We welcome contributions. Please [fork](http://github.com/robolectric/robolectric) and submit pull requests. Don't forget to include tests!
 
 ## Sample Project
 
 Look at the [sample project](https://github.com/robolectric/robolectricsample) to see how fast and easy it can be to test
 drive the development of Android applications.
 
-#### Robolectric's current maintainers are:
+## Robolectric's current maintainers:
 
 * [Aaron VonderHaar](https://github.com/avh4), Pivotal Labs
 * [Christian Williams](http://github.com/Xian), Square
