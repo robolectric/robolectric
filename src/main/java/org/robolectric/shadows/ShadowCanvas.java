@@ -134,6 +134,11 @@ public class ShadowCanvas {
     appendDescription("Path " + shadowOf(path).getPoints().toString());
   }
 
+  @Implementation
+  public void drawCircle(float cx, float cy, float radius, Paint paint) {
+    circlePaintEvents.add(new CirclePaintHistoryEvent(cx, cy, radius, paint));
+  }
+
   private void describeBitmap(Bitmap bitmap, Paint paint) {
     separateLines();
 
@@ -219,8 +224,8 @@ public class ShadowCanvas {
   }
 
   private static class PathPaintHistoryEvent {
-    private Path drawnPath;
-    private Paint pathPaint;
+    final private Path drawnPath;
+    final private Paint pathPaint;
 
     PathPaintHistoryEvent(Path drawnPath, Paint pathPaint) {
       this.drawnPath = drawnPath;
@@ -229,24 +234,24 @@ public class ShadowCanvas {
   }
 
   public static class CirclePaintHistoryEvent {
-    public Paint paint;
-    public float centerX;
-    public float centerY;
-    public float radius;
+    final public float centerX;
+    final public float centerY;
+    final public float radius;
+    final public Paint paint;
 
     private CirclePaintHistoryEvent(float centerX, float centerY, float radius, Paint paint) {
-      this.paint = paint;
       this.centerX = centerX;
       this.centerY = centerY;
       this.radius = radius;
+      this.paint = paint;
     }
   }
 
   public static class TextHistoryEvent {
-    public float x;
-    public float y;
-    public Paint paint;
-    public String text;
+    final public float x;
+    final public float y;
+    final public Paint paint;
+    final public String text;
 
     private TextHistoryEvent(float x, float y, Paint paint, String text) {
       this.x = x;
