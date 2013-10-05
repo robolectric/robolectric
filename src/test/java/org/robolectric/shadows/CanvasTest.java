@@ -8,6 +8,7 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -208,5 +209,38 @@ public class CanvasTest {
     assertThat(shadowCanvas.getDrawnCircle(1).centerY).isEqualTo(5);
     assertThat(shadowCanvas.getDrawnCircle(1).radius).isEqualTo(6);
     assertThat(shadowCanvas.getDrawnCircle(1).paint).isSameAs(paint1);
+  }
+
+  @Test
+  public void drawArc_shouldRecordArcHistoryEvents() throws Exception {
+    Canvas canvas = new Canvas();
+    RectF oval0 = new RectF();
+    RectF oval1 = new RectF();
+    Paint paint0 = new Paint();
+    Paint paint1 = new Paint();
+    canvas.drawArc(oval0, 1f, 2f, true, paint0);
+    canvas.drawArc(oval1, 3f, 4f, false, paint1);
+    ShadowCanvas shadowCanvas = shadowOf(canvas);
+
+    assertThat(shadowCanvas.getDrawnArc(0).oval).isEqualTo(oval0);
+    assertThat(shadowCanvas.getDrawnArc(0).startAngle).isEqualTo(1f);
+    assertThat(shadowCanvas.getDrawnArc(0).sweepAngle).isEqualTo(2f);
+    assertThat(shadowCanvas.getDrawnArc(0).useCenter).isTrue();
+    assertThat(shadowCanvas.getDrawnArc(0).paint).isSameAs(paint0);
+
+    assertThat(shadowCanvas.getDrawnArc(1).oval).isEqualTo(oval1);
+    assertThat(shadowCanvas.getDrawnArc(1).startAngle).isEqualTo(3f);
+    assertThat(shadowCanvas.getDrawnArc(1).sweepAngle).isEqualTo(4f);
+    assertThat(shadowCanvas.getDrawnArc(1).useCenter).isFalse();
+    assertThat(shadowCanvas.getDrawnArc(1).paint).isSameAs(paint1);
+  }
+
+  @Test
+  public void getArcHistoryCount_shouldReturnTotalNumberOfDrawArcEvents() throws Exception {
+    Canvas canvas = new Canvas();
+    canvas.drawArc(new RectF(), 0f, 0f, true, new Paint());
+    canvas.drawArc(new RectF(), 0f, 0f, true, new Paint());
+    ShadowCanvas shadowCanvas = shadowOf(canvas);
+    assertThat(shadowCanvas.getArcPaintHistoryCount()).isEqualTo(2);
   }
 }
