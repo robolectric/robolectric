@@ -1,4 +1,5 @@
 # jekyll configuration
+markdown: redcarpet
 
 # miscellaneous configuration
 title: "Robolectric"
