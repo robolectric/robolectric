@@ -224,8 +224,8 @@ public class ShadowCanvas {
   }
 
   private static class PathPaintHistoryEvent {
-    final private Path drawnPath;
-    final private Paint pathPaint;
+    private final Path drawnPath;
+    private final Paint pathPaint;
 
     PathPaintHistoryEvent(Path drawnPath, Paint pathPaint) {
       this.drawnPath = drawnPath;
@@ -234,10 +234,10 @@ public class ShadowCanvas {
   }
 
   public static class CirclePaintHistoryEvent {
-    final public float centerX;
-    final public float centerY;
-    final public float radius;
-    final public Paint paint;
+    public final float centerX;
+    public final float centerY;
+    public final float radius;
+    public final Paint paint;
 
     private CirclePaintHistoryEvent(float centerX, float centerY, float radius, Paint paint) {
       this.centerX = centerX;
@@ -248,10 +248,10 @@ public class ShadowCanvas {
   }
 
   public static class TextHistoryEvent {
-    final public float x;
-    final public float y;
-    final public Paint paint;
-    final public String text;
+    public final float x;
+    public final float y;
+    public final Paint paint;
+    public final String text;
 
     private TextHistoryEvent(float x, float y, Paint paint, String text) {
       this.x = x;
