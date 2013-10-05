@@ -189,4 +189,24 @@ public class CanvasTest {
     assertEquals("hello", shadowCanvas.getDrawnTextEvent(0).text);
     assertEquals("hello 2", shadowCanvas.getDrawnTextEvent(1).text);
   }
+
+  @Test
+  public void drawCircle_shouldRecordCirclePaintHistoryEvents() throws Exception {
+    Canvas canvas = new Canvas();
+    Paint paint0 = new Paint();
+    Paint paint1 = new Paint();
+    canvas.drawCircle(1, 2, 3, paint0);
+    canvas.drawCircle(4, 5, 6, paint1);
+    ShadowCanvas shadowCanvas = shadowOf(canvas);
+
+    assertThat(shadowCanvas.getDrawnCircle(0).centerX).isEqualTo(1);
+    assertThat(shadowCanvas.getDrawnCircle(0).centerY).isEqualTo(2);
+    assertThat(shadowCanvas.getDrawnCircle(0).radius).isEqualTo(3);
+    assertThat(shadowCanvas.getDrawnCircle(0).paint).isSameAs(paint0);
+
+    assertThat(shadowCanvas.getDrawnCircle(1).centerX).isEqualTo(4);
+    assertThat(shadowCanvas.getDrawnCircle(1).centerY).isEqualTo(5);
+    assertThat(shadowCanvas.getDrawnCircle(1).radius).isEqualTo(6);
+    assertThat(shadowCanvas.getDrawnCircle(1).paint).isSameAs(paint1);
+  }
 }
