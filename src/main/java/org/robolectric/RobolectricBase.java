@@ -103,6 +103,7 @@ import org.robolectric.shadows.ShadowInputMethodManager;
 import org.robolectric.shadows.ShadowIntent;
 import org.robolectric.shadows.ShadowIntentFilter;
 import org.robolectric.shadows.ShadowIntentSender;
+import org.robolectric.shadows.ShadowIntentService;
 import org.robolectric.shadows.ShadowItemizedOverlay;
 import org.robolectric.shadows.ShadowJsPromptResult;
 import org.robolectric.shadows.ShadowJsResult;
@@ -342,6 +343,7 @@ public class RobolectricBase {
       ShadowInputDevice.class,
       ShadowInputEvent.class,
       ShadowIntent.class,
+      ShadowIntentService.class,
       ShadowIntentFilter.class,
       ShadowIntentFilter.ShadowAuthorityEntry.class,
       ShadowIntentSender.class,
