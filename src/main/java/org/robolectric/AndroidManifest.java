@@ -335,10 +335,15 @@ public class AndroidManifest {
     List<FsFile> libraryBaseDirs = new ArrayList<FsFile>();
 
     Properties properties = getProperties(baseDir.join("project.properties"));
-    // get the project.properties overrides and apply them (if any)
-    Properties overrideProperties = getProperties(baseDir.join("test-project.properties"));
-    if (overrideProperties!=null) properties.putAll(overrideProperties);
-    if (properties != null) {
+    if (properties != null) { 
+      // old project structure
+      
+      // get the project.properties overrides and apply them (if any)
+      Properties overrideProperties = getProperties(baseDir.join("test-project.properties"));
+      if (overrideProperties != null) {
+        properties.putAll(overrideProperties);
+      }
+
       int libRef = 1;
       String lib;
       while ((lib = properties.getProperty("android.library.reference." + libRef)) != null) {
@@ -349,6 +354,9 @@ public class AndroidManifest {
 
         libRef++;
       }
+    } else { 
+      // check for gradle build being used
+      locateLibrariesInGradleOut(libraryBaseDirs);
     }
     return libraryBaseDirs;
   }
@@ -357,6 +365,37 @@ public class AndroidManifest {
     return getResDirectory().getParent();
   }
 
+  protected void locateLibrariesInGradleOut(List<FsFile> libraryBaseDirs) {
+    FsFile baseDir = findGradleExplodedBundlesDir();
+    if (baseDir == null) {
+      return;
+    }
+    for (FsFile bundleDir : baseDir.listFiles()) {
+      libraryBaseDirs.add(bundleDir);
+    }
+  }
+  
+  protected FsFile findGradleExplodedBundlesDir() {
+    final String explodedBundledDirName = "exploded-bundles";
+    FsFile dir = getBaseDir();
+    if (explodedBundledDirName.equals(dir.getParent().getName())) {
+      // skip for libraries
+      return null;
+    }
+    
+    final int maxUpTo = 4;
+    for (int level = maxUpTo; level > 0 && dir != null; level--) {
+      if (dir.join("build.gradle").exists()) {
+        FsFile result = dir.join("build", explodedBundledDirName);
+        if (result.exists()) {
+          return result;
+        }
+      }
+      dir = dir.getParent();
+    }
+    return null;
+  }
+  
   protected AndroidManifest createLibraryAndroidManifest(FsFile libraryBaseDir) {
     return new AndroidManifest(libraryBaseDir);
   }
