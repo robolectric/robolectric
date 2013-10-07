@@ -10,6 +10,7 @@ import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.Application;
 import android.app.Dialog;
+import android.app.IntentService;
 import android.app.KeyguardManager;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -231,6 +232,7 @@ import org.robolectric.shadows.ShadowImageView;
 import org.robolectric.shadows.ShadowInputDevice;
 import org.robolectric.shadows.ShadowInputMethodManager;
 import org.robolectric.shadows.ShadowIntent;
+import org.robolectric.shadows.ShadowIntentService;
 import org.robolectric.shadows.ShadowJsPromptResult;
 import org.robolectric.shadows.ShadowJsResult;
 import org.robolectric.shadows.ShadowKeyEvent;
@@ -667,6 +669,10 @@ public class Robolectric {
 
   public static ShadowIntent shadowOf(Intent instance) {
     return (ShadowIntent) shadowOf_(instance);
+  }
+
+  public static ShadowIntentService shadowOf(IntentService instance) {
+    return (ShadowIntentService) shadowOf_(instance);
   }
 
   public static ShadowJsPromptResult shadowOf(JsPromptResult instance) {
