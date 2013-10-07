@@ -305,7 +305,9 @@ public class AndroidManifest {
       
       // get the project.properties overrides and apply them (if any)
       Properties overrideProperties = getProperties(baseDir.join("test-project.properties"));
-      if (overrideProperties!=null) { properties.putAll(overrideProperties); }
+      if (overrideProperties != null) {
+        properties.putAll(overrideProperties);
+      }
       
       int libRef = 1;
       String lib;
@@ -327,7 +329,9 @@ public class AndroidManifest {
 
   protected void locateLibrariesInGradleOut(List<FsFile> libraryBaseDirs) {
     FsFile baseDir = findGradleExplodedBundlesDir();
-    if (baseDir == null) { return; }
+    if (baseDir == null) {
+      return;
+    }
     for (FsFile bundleDir : baseDir.listFiles()) {
       libraryBaseDirs.add(bundleDir);
     }
@@ -336,17 +340,20 @@ public class AndroidManifest {
   protected FsFile findGradleExplodedBundlesDir() {
     final String explodedBundledDirName = "exploded-bundles";
     FsFile dir = getBaseDir();
-    if (explodedBundledDirName.equals(dir.getParent().getName())) { return null; } // skip for libraries
+    if (explodedBundledDirName.equals(dir.getParent().getName())) {
+      // skip for libraries
+      return null;
+    }
     
     final int maxUpTo = 4;
-    int level = maxUpTo;
-    while (level > 0) {
+    for (int level = maxUpTo; level > 0 && dir != null; level--) {
       if (dir.join("build.gradle").exists()) {
         FsFile result = dir.join("build", explodedBundledDirName);
-        if (result.exists()) { return result; }
+        if (result.exists()) {
+          return result;
+        }
       }
       dir = dir.getParent();
-      level--;
     }
     return null;
   }
