@@ -11,12 +11,12 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.res.Attribute;
-import org.robolectric.res.EmptyResourceLoader;
 import org.robolectric.util.TestUtil;
 
 import java.util.ArrayList;
 
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.robolectric.Robolectric.buildActivity;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class PreferenceGroupTest {
@@ -29,7 +29,7 @@ public class PreferenceGroupTest {
 
   @Before
   public void setUp() throws Exception {
-    context = new Activity();
+    context = buildActivity(Activity.class).create().get();
     attrs = new RoboAttributeSet(new ArrayList<Attribute>(), TestUtil.emptyResources(), null);
 
     group = new TestPreferenceGroup(context, attrs);

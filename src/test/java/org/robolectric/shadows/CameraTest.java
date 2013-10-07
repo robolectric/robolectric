@@ -15,6 +15,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Fail.fail;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class CameraTest {
@@ -36,6 +37,14 @@ public class CameraTest {
   @Test
   public void testOpen() throws Exception {
     assertThat(camera).isNotNull();
+    assertThat(ShadowCamera.getLastOpenedCameraId()).isEqualTo(0);
+  }
+
+  @Test
+  public void testOpenWithId() throws Exception {
+    camera = Camera.open(12);
+    assertThat(camera).isNotNull();
+    assertThat(ShadowCamera.getLastOpenedCameraId()).isEqualTo(12);
   }
 
   @Test
@@ -167,6 +176,48 @@ public class CameraTest {
   }
 
   @Test
+  public void testDisplayOrientation() {
+    camera.setDisplayOrientation(180);
+    assertThat(shadowCamera.getDisplayOrientation()).isEqualTo(180);
+  }
+
+  @Test
+  public void testSetDisplayOrientationUpdatesCameraInfos() {
+    addBackCamera();
+    addFrontCamera();
+
+    camera = Camera.open(1);
+    camera.setDisplayOrientation(180);
+
+    Camera.CameraInfo cameraQuery = new Camera.CameraInfo();
+    Camera.getCameraInfo(ShadowCamera.getLastOpenedCameraId(), cameraQuery);
+    assertThat(cameraQuery.orientation).isEqualTo(180);
+  }
+
+  @Test
+  public void testAutoFocus() {
+    assertThat(shadowCamera.hasRequestedAutoFocus()).isEqualTo(false);
+    TestAutoFocusCallback callback = new TestAutoFocusCallback();
+
+    camera.autoFocus(callback);
+
+    assertThat(shadowCamera.hasRequestedAutoFocus()).isEqualTo(true);
+    shadowCamera.invokeAutoFocusCallback(true, camera);
+    assertThat(callback.success).isEqualTo(true);
+    assertThat(callback.camera).isEqualTo(camera);
+  }
+
+  @Test
+  public void testInvokeAutoFocusCallbackMissing() {
+    try {
+      shadowCamera.invokeAutoFocusCallback(true, camera);
+      fail("expected an IllegalStateException");
+    } catch (IllegalStateException e) {
+      // expected
+    }
+  }
+
+  @Test
   public void testCameraInfoNoCameras() throws Exception {
     assertThat(Camera.getNumberOfCameras()).isEqualTo(0);
   }
@@ -212,7 +263,7 @@ public class CameraTest {
     ShadowCamera.addCameraInfo(1, backCamera);
   }
 
-  private class TestPreviewCallback implements Camera.PreviewCallback {
+  private static class TestPreviewCallback implements Camera.PreviewCallback {
     public Camera camera = null;
     public byte[] data = null;
 
@@ -223,7 +274,17 @@ public class CameraTest {
     }
   }
 
-  private class TestSurfaceHolder implements SurfaceHolder {
+  private static class TestAutoFocusCallback implements Camera.AutoFocusCallback {
+    public boolean success;
+    public Camera camera;
+
+    public void onAutoFocus(boolean success, Camera camera) {
+      this.success = success;
+      this.camera = camera;
+    }
+  }
+
+  private static class TestSurfaceHolder implements SurfaceHolder {
 
     @Override
     public void addCallback(Callback callback) {

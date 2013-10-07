@@ -121,9 +121,9 @@ public class TabHostTest {
   }
   @Test
   public void shouldRetrieveTheCurrentViewFromViewId() {
-    Activity a = new Activity();
-    a.setContentView(org.robolectric.R.layout.main);
-    TabHost tabHost = new TabHost(a);
+    Activity activity = Robolectric.buildActivity(Activity.class).create().get();
+    activity.setContentView(org.robolectric.R.layout.main);
+    TabHost tabHost = new TabHost(activity);
     TabHost.TabSpec foo = tabHost.newTabSpec("Foo")
     .setContent(org.robolectric.R.id.title);
 
@@ -196,7 +196,7 @@ public class TabHostTest {
 
   @Test
   public void shouldGetTabWidget() throws Exception {
-    TabActivity activity = new TabActivity();
+    TabActivity activity = Robolectric.buildActivity(TabActivity.class).create().get();
     activity.setContentView(R.layout.tab_activity);
     TabHost host = new TabHost(activity);
     assertThat(host.getTabWidget()).isInstanceOf(TabWidget.class);

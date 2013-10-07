@@ -22,7 +22,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import static android.content.pm.ApplicationInfo.*;
+import static android.content.pm.ApplicationInfo.FLAG_ALLOW_BACKUP;
+import static android.content.pm.ApplicationInfo.FLAG_ALLOW_CLEAR_USER_DATA;
+import static android.content.pm.ApplicationInfo.FLAG_ALLOW_TASK_REPARENTING;
+import static android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE;
+import static android.content.pm.ApplicationInfo.FLAG_HAS_CODE;
+import static android.content.pm.ApplicationInfo.FLAG_KILL_AFTER_RESTORE;
+import static android.content.pm.ApplicationInfo.FLAG_PERSISTENT;
+import static android.content.pm.ApplicationInfo.FLAG_RESIZEABLE_FOR_SCREENS;
+import static android.content.pm.ApplicationInfo.FLAG_RESTORE_ANY_VERSION;
+import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_LARGE_SCREENS;
+import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_NORMAL_SCREENS;
+import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_SCREEN_DENSITIES;
+import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_SMALL_SCREENS;
+import static android.content.pm.ApplicationInfo.FLAG_TEST_ONLY;
+import static android.content.pm.ApplicationInfo.FLAG_VM_SAFE_MODE;
 
 public class AndroidManifest {
   private final FsFile androidManifestFile;
@@ -42,6 +56,7 @@ public class AndroidManifest {
   private int applicationFlags;
   private final List<ReceiverAndIntentFilter> receivers = new ArrayList<ReceiverAndIntentFilter>();
   private final Map<String, ActivityData> activityDatas = new LinkedHashMap<String, ActivityData>();
+  private final Map<String, String> applicationMetaData = new LinkedHashMap<String, String>();
   private List<AndroidManifest> libraryManifests;
 
   /**
@@ -137,6 +152,7 @@ public class AndroidManifest {
       parseApplicationFlags(manifestDocument);
       parseReceivers(manifestDocument);
       parseActivities(manifestDocument);
+      parseApplicationMetaData(manifestDocument);
     } catch (Exception ignored) {
       ignored.printStackTrace();
     }
@@ -169,8 +185,8 @@ public class AndroidManifest {
     Node application = manifestDocument.getElementsByTagName("application").item(0);
     if (application == null) return;
 
-    for (Node receiverNode : getChildrenTags(application, "activity")) {
-      NamedNodeMap attributes = receiverNode.getAttributes();
+    for (Node activityNode : getChildrenTags(application, "activity")) {
+      NamedNodeMap attributes = activityNode.getAttributes();
       Node nameAttr = attributes.getNamedItem("android:name");
       Node themeAttr = attributes.getNamedItem("android:theme");
       if (nameAttr == null) continue;
@@ -182,6 +198,20 @@ public class AndroidManifest {
     }
   }
 
+  private void parseApplicationMetaData(final Document manifestDocument) {
+    Node application = manifestDocument.getElementsByTagName("application").item(0);
+    if (application == null) return;
+    
+    for (Node metaNode : getChildrenTags(application, "meta-data")) {
+      NamedNodeMap attributes = metaNode.getAttributes();
+      Node nameAttr = attributes.getNamedItem("android:name");
+      Node valueAttr = attributes.getNamedItem("android:value");
+      // TODO: support android:resource attribute
+      if (valueAttr == null) { continue; }
+      applicationMetaData.put(nameAttr.getNodeValue(), valueAttr.getNodeValue());
+    }
+  }
+  
   private String resolveClassRef(String maybePartialClassName) {
     return (maybePartialClassName.startsWith(".")) ? packageName + maybePartialClassName : maybePartialClassName;
   }
@@ -270,6 +300,11 @@ public class AndroidManifest {
     return processName;
   }
 
+  public Map<String, String> getApplicationMetaData() {
+    parseAndroidManifest();
+    return applicationMetaData;
+  }
+  
   public ResourcePath getResourcePath() {
     validate();
     return new ResourcePath(getRClass(), getPackageName(), resDirectory, assetsDirectory);
@@ -311,7 +346,10 @@ public class AndroidManifest {
       String lib;
       while ((lib = properties.getProperty("android.library.reference." + libRef)) != null) {
         FsFile libraryBaseDir = baseDir.join(lib);
-        libraryBaseDirs.add(libraryBaseDir);
+        if (libraryBaseDir.exists()) {
+          libraryBaseDirs.add(libraryBaseDir);
+        }
+
         libRef++;
       }
     } else { 
@@ -448,6 +486,10 @@ public class AndroidManifest {
 
   public String getThemeRef() {
     return themeRef;
+  }
+
+  public Map<String, ActivityData> getActivityDatas() {
+    return activityDatas;
   }
 
   private static class ReceiverAndIntentFilter {

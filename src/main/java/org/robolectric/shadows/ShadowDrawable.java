@@ -10,13 +10,13 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.NinePatchDrawable;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-
-import java.io.InputStream;
-import java.util.ArrayList;
 
 import static org.fest.reflect.core.Reflection.method;
 import static org.robolectric.Robolectric.directlyOn;
@@ -27,17 +27,16 @@ import static org.robolectric.Robolectric.shadowOf;
 public class ShadowDrawable {
   private static int defaultIntrinsicWidth = -1;
   private static int defaultIntrinsicHeight = -1;
-  static ArrayList<String> corruptStreamSources = new ArrayList<String>();
+  static final List<String> corruptStreamSources = new ArrayList<String>();
 
   @RealObject Drawable realDrawable;
 
-  private Rect bounds = new Rect(0, 0, 0, 0);
+  int createdFromResId = -1;
+  InputStream createdFromInputStream;
+
   private int intrinsicWidth = defaultIntrinsicWidth;
   private int intrinsicHeight = defaultIntrinsicHeight;
   private int alpha;
-  private InputStream inputStream;
-  private int level;
-  private int createdFromResId = -1;
   private boolean wasInvalidated;
 
   @Implementation
@@ -46,8 +45,8 @@ public class ShadowDrawable {
       return null;
     }
     BitmapDrawable drawable = new BitmapDrawable(Robolectric.newInstanceOf(Bitmap.class));
-    shadowOf(drawable).setSource(srcName);
-    shadowOf(drawable).setInputStream(is);
+    shadowOf(drawable).createdFromInputStream = is;
+    shadowOf(drawable).drawableCreateFromStreamSource = srcName;
     shadowOf(drawable).validate(); // start off not invalidated
     return drawable;
   }
@@ -93,7 +92,7 @@ public class ShadowDrawable {
   @Implementation
   public static Drawable createFromPath(String pathName) {
     BitmapDrawable drawable = new BitmapDrawable(Robolectric.newInstanceOf(Bitmap.class));
-    shadowOf(drawable).setPath(pathName);
+    shadowOf(drawable).drawableCreateFromPath = pathName;
     shadowOf(drawable).validate(); // start off not invalidated
     return drawable;
   }
@@ -103,35 +102,8 @@ public class ShadowDrawable {
     shadowOf(bitmap).createdFromResId = resourceId;
     BitmapDrawable drawable = new BitmapDrawable(bitmap);
     shadowOf(drawable).validate(); // start off not invalidated
-    shadowOf(drawable).setCreatedFromResId(resourceId);
+    shadowOf(drawable).createdFromResId = resourceId;
     return drawable;
-  }
-
-  @Implementation
-  public final Rect getBounds() {
-    return bounds;
-  }
-
-  @Implementation
-  public void setBounds(Rect rect) {
-    this.bounds = rect;
-  }
-
-  @Implementation
-  public void setBounds(int left, int top, int right, int bottom) {
-    bounds = new Rect(left, top, right, bottom);
-  }
-
-  @Implementation
-  public Rect copyBounds() {
-    Rect bounds = new Rect();
-    copyBounds(bounds);
-    return bounds;
-  }
-
-  @Implementation
-  public void copyBounds(Rect bounds) {
-    bounds.set(getBounds());
   }
 
   @Implementation
@@ -146,6 +118,10 @@ public class ShadowDrawable {
 
   public static void addCorruptStreamSource(String src) {
     corruptStreamSources.add(src);
+  }
+
+  public static void clearCorruptStreamSources() {
+    corruptStreamSources.clear();
   }
 
   public static void setDefaultIntrinsicWidth(int defaultIntrinsicWidth) {
@@ -165,25 +141,7 @@ public class ShadowDrawable {
   }
 
   public InputStream getInputStream() {
-    return inputStream;
-  }
-
-  public void setInputStream(InputStream inputStream) {
-    this.inputStream = inputStream;
-  }
-
-  @Implementation
-  public int getLevel() {
-    return level;
-  }
-
-  @Implementation
-  public boolean setLevel(int level) {
-    this.level = level;
-    // This should return true if the new level causes a layout change.
-    // Doing this in robolectric would require parsing level sets which
-    // is not currently supported.
-    return false;
+    return createdFromInputStream;
   }
 
   @Override @Implementation
@@ -195,13 +153,16 @@ public class ShadowDrawable {
 
     if (intrinsicHeight != that.intrinsicHeight) return false;
     if (intrinsicWidth != that.intrinsicWidth) return false;
-    if (bounds != null ? !bounds.equals(that.bounds) : that.bounds != null) return false;
+    Rect bounds = realDrawable.getBounds();
+    Rect thatBounds = that.realDrawable.getBounds();
+    if (bounds != null ? !bounds.equals(thatBounds) : thatBounds != null) return false;
 
     return true;
   }
 
   @Override @Implementation
   public int hashCode() {
+    Rect bounds = realDrawable.getBounds();
     int result = bounds != null ? bounds.hashCode() : 0;
     result = 31 * result + intrinsicWidth;
     result = 31 * result + intrinsicHeight;
@@ -211,7 +172,7 @@ public class ShadowDrawable {
   @Implementation
   public void setAlpha(int alpha) {
     this.alpha = alpha;
-    // todo: directlyOn(realDrawable, Drawable.class).invalidateSelf();
+    directlyOn(realDrawable, Drawable.class).setAlpha(alpha);
   }
 
   @Implementation
@@ -224,23 +185,14 @@ public class ShadowDrawable {
     return alpha;
   }
 
+  /** @deprecated Use {@link #clearCorruptStreamSources()}. */
+  @Deprecated
   public static void reset() {
-    corruptStreamSources.clear();
-  }
-
-  /**
-   * @deprecated Use {@link org.robolectric.shadows.ShadowDrawable#getCreatedFromResId()} instead.
-   */
-  public int getLoadedFromResourceId() {
-    return getCreatedFromResId();
+    clearCorruptStreamSources();
   }
 
   public int getCreatedFromResId() {
     return createdFromResId;
-  }
-
-  public void setCreatedFromResId(int resourceId) {
-    createdFromResId = resourceId;
   }
 
   public boolean wasInvalidated() {

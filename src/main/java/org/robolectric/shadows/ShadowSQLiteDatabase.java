@@ -12,6 +12,8 @@ import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteQuery;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.database.sqlite.SQLiteStatement;
+import android.text.TextUtils;
+
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -360,6 +362,35 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
     shadowOf(cursor).setResultSet(resultSet, sqlBody);
     cursors.add(cursor);
     return cursor;
+  }
+
+  @Implementation
+  public Cursor queryWithFactory(SQLiteDatabase.CursorFactory cursorFactory,
+            boolean distinct, String table, String[] columns,
+            String selection, String[] selectionArgs, String groupBy,
+            String having, String orderBy, String limit) {
+    String sql = SQLiteQueryBuilder.buildQueryString(
+        distinct, table, columns, selection, groupBy, having, orderBy, limit);
+
+    return rawQueryWithFactory(cursorFactory, sql, selectionArgs, findEditTable(table));
+  }
+
+  @Implementation
+  public static String findEditTable(String tables) {
+    if (!TextUtils.isEmpty(tables)) {
+      // find the first word terminated by either a space or a comma
+      int spacepos = tables.indexOf(' ');
+      int commapos = tables.indexOf(',');
+
+      if (spacepos > 0 && (spacepos < commapos || commapos < 0)) {
+        return tables.substring(0, spacepos);
+      } else if (commapos > 0 && (commapos < spacepos || spacepos < 0)) {
+        return tables.substring(0, commapos);
+      }
+      return tables;
+    } else {
+      throw new IllegalStateException("Invalid tables");
+    }
   }
 
   @Implementation

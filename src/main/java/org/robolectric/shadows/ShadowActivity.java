@@ -20,6 +20,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import org.robolectric.AndroidManifest;
+import org.robolectric.Robolectric;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.bytecode.RobolectricInternals;
+import org.robolectric.res.ResName;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -28,15 +36,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.robolectric.AndroidManifest;
-import org.robolectric.Robolectric;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
-import org.robolectric.bytecode.RobolectricInternals;
-import org.robolectric.res.ResName;
-import org.robolectric.tester.android.view.RoboWindow;
-import org.robolectric.tester.android.view.RoboWindowManager;
 
 import static org.fest.reflect.core.Reflection.field;
 import static org.robolectric.Robolectric.directlyOn;
@@ -73,31 +72,13 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   private boolean destroyed = false;
   private int streamType = -1;
   private boolean mIsTaskRoot = true;
-  
+
   public void __constructor__() {
     RobolectricInternals.getConstructor(Activity.class, realActivity, new Class[0]).invoke();
-
-    if (!RobolectricInternals.inActivityControllerBlock) {
-      String name = realActivity.getClass().getName();
-      if (ALREADY_WARNED_ABOUT.add(name)) {
-        System.out.println("[WARN] You're instantiating an activity (" + name + ") directly; consider using Robolectric.buildActivity() instead.");
-      }
-
-      setApplication(Robolectric.application);
-      setWindowManager(new RoboWindowManager());
-      callAttachBaseContext(Robolectric.application);
-      if (!setThemeFromManifest()) {
-        // todo: should we set a default theme?
-      }
-    }
   }
 
   public void setApplication(Application application) {
     field("mApplication").ofType(Application.class).in(realActivity).set(application);
-  }
-
-  private void setWindowManager(WindowManager windowManager) {
-    field("mWindowManager").ofType(WindowManager.class).in(realActivity).set(windowManager);
   }
 
   public boolean setThemeFromManifest() {
@@ -261,25 +242,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     return title;
   }
 
-  /**
-   * Sets the {@code contentView} for this {@code Activity} by invoking the
-   * {@link android.view.LayoutInflater}
-   *
-   * @param layoutResID ID of the layout to inflate
-   * @see #getContentView()
-   */
-  @Implementation
-  public void setContentView(int layoutResID) {
-    getWindow().setContentView(layoutResID);
-    realActivity.onContentChanged();
-  }
-
-  @Implementation
-  public void setContentView(View view) {
-    getWindow().setContentView(view);
-    realActivity.onContentChanged();
-  }
-
   @Implementation
   public final void setResult(int resultCode) {
     this.resultCode = resultCode;
@@ -350,17 +312,24 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   /**
-   * Constructs a new Window (a {@link org.robolectric.tester.android.view.RoboWindow}) if no window has previously been
+   * Constructs a new Window (a {@link com.android.internal.policy.impl.PhoneWindow}) if no window has previously been
    * set.
    *
    * @return the window associated with this Activity
    */
   @Implementation
-  public Window getWindow() {
+  public Window getWindow()  {
     Window window = directlyOn(realActivity, Activity.class).getWindow();
+
     if (window == null) {
-      setWindow(window = new RoboWindow(realActivity));
+      try {
+        window = ShadowWindow.create(realActivity);
+        setWindow(window);
+      } catch (Exception e) {
+        throw new RuntimeException("Window creation failed!", e);
+      }
     }
+
     return window;
   }
 
@@ -371,10 +340,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   @Implementation
   public void runOnUiThread(Runnable action) {
     Robolectric.getUiThreadScheduler().post(action);
-  }
-
-  @Implementation
-  public void onCreate(Bundle savedInstanceState) {
   }
 
   /**
@@ -535,10 +500,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     onKeyUpWasCalled = false;
   }
 
-  public void performLayout() {
-    shadowOf(getWindow()).performLayout();
-  }
-
   public int getPendingTransitionEnterAnimationResourceId() {
     return pendingTransitionEnterAnimResId;
   }
@@ -662,16 +623,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
   public Dialog getDialogById(int dialogId) {
     return dialogForId.get(dialogId);
-  }
-
-  public void create() {
-    final ActivityInvoker invoker = new ActivityInvoker();
-
-    final Bundle noInstanceState = null;
-    invoker.call("onCreate", Bundle.class).with(noInstanceState);
-    invoker.call("onStart").withNothing();
-    invoker.call("onPostCreate", Bundle.class).with(noInstanceState);
-    invoker.call("onResume").withNothing();
   }
 
   @Implementation

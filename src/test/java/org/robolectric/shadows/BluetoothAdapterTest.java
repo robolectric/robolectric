@@ -8,7 +8,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
-import static org.junit.Assert.*;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -24,19 +24,32 @@ public class BluetoothAdapterTest {
 
   @Test
   public void testAdapterDefaultsDisabled() {
-    assertFalse(bluetoothAdapter.isEnabled());
+    assertThat(bluetoothAdapter.isEnabled()).isFalse();
   }
 
   @Test
-  public void testAdapterCanBeEnabled() {
+  public void testAdapterCanBeEnabled_forTesting() {
     shadowBluetoothAdapter.setEnabled(true);
-    assertTrue(bluetoothAdapter.isEnabled());
+    assertThat(bluetoothAdapter.isEnabled()).isTrue();
   }
 
   @Test
   public void canGetAndSetAddress() throws Exception {
     BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
     shadowOf(adapter).setAddress("expected");
-    assertEquals("expected", adapter.getAddress());
+    assertThat(adapter.getAddress()).isEqualTo("expected");
+  }
+
+  @Test
+  public void canEnable_withAndroidApi() throws Exception {
+    bluetoothAdapter.enable();
+    assertThat(bluetoothAdapter.isEnabled()).isTrue();
+  }
+
+  @Test
+  public void canDisable_withAndroidApi() throws Exception {
+    shadowBluetoothAdapter.setEnabled(true);
+    bluetoothAdapter.disable();
+    assertThat(bluetoothAdapter.isEnabled()).isFalse();
   }
 }

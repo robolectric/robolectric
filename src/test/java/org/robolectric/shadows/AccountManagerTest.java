@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.accounts.AccountManagerFuture;
 import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
 import android.app.Activity;
@@ -16,7 +17,6 @@ import java.io.IOException;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.fest.assertions.api.Assertions.fail;
-import static org.junit.Assert.assertSame;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class AccountManagerTest {
@@ -153,16 +153,53 @@ public class AccountManagerTest {
       am.blockingGetAuthToken(null, "token_type_1", false);
       fail("blockingGetAuthToken() should throw an illegal argument exception if the account is null");
     } catch (IllegalArgumentException iae) {
-      // NOP
+      // Expected
     }
     try {
       am.blockingGetAuthToken(account, null, false);
       fail("blockingGetAuthToken() should throw an illegal argument exception if the auth token type is null");
     } catch (IllegalArgumentException iae) {
-      // NOP
+      // Expected
     }
 
     Account account1 = new Account("unknown", "type");
     assertThat(am.blockingGetAuthToken(account1, "token_type_1", false)).isNull();
+  }
+
+  @Test
+  public void removeAccount_throwsIllegalArgumentException_whenPassedNullAccount() {
+    AccountManager am = AccountManager.get(app);
+    Account account = new Account("name", "type");
+    Robolectric.shadowOf(am).addAccount(account);
+
+    try {
+      am.removeAccount(null, null, null);
+      fail("removeAccount() should throw an illegal argument exception if the account is null");
+    } catch (IllegalArgumentException iae) {
+      // Expected
+    }
+  }
+
+  @Test
+  public void removeAccount_doesNotRemoveAccountOfDifferentName() throws Exception {
+    AccountManager am = AccountManager.get(app);
+    Account account = new Account("name", "type");
+    Robolectric.shadowOf(am).addAccount(account);
+
+    Account wrongAccount = new Account("wrong_name", "type");
+    AccountManagerFuture<Boolean> future = am.removeAccount(wrongAccount, null, null);
+    assertThat(future.getResult()).isFalse();
+    assertThat(am.getAccountsByType("type")).isNotEmpty();
+  }
+
+  @Test
+  public void removeAccount_does() throws Exception {
+    AccountManager am = AccountManager.get(app);
+    Account account = new Account("name", "type");
+    Robolectric.shadowOf(am).addAccount(account);
+
+    AccountManagerFuture<Boolean> future = am.removeAccount(account, null, null);
+    assertThat(future.getResult()).isTrue();
+    assertThat(am.getAccountsByType("type")).isEmpty();
   }
 }

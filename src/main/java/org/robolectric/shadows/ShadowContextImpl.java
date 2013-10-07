@@ -5,12 +5,13 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.storage.StorageManager;
-import java.util.HashMap;
-import java.util.Map;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.fest.reflect.core.Reflection.constructor;
 import static org.robolectric.Robolectric.newInstanceOf;
@@ -24,7 +25,7 @@ public class ShadowContextImpl extends ShadowContext {
   static {
     // note that these are different!
     // They specify concrete classes within Robolectric for interfaces or abstract classes defined by Android
-    SYSTEM_SERVICE_MAP.put(Context.WINDOW_SERVICE, "org.robolectric.tester.android.view.RoboWindowManager");
+    SYSTEM_SERVICE_MAP.put(Context.WINDOW_SERVICE, "android.view.WindowManagerImpl");
     SYSTEM_SERVICE_MAP.put(Context.CLIPBOARD_SERVICE, "android.content.ClipboardManager");
     SYSTEM_SERVICE_MAP.put(Context.SENSOR_SERVICE, "android.hardware.TestSensorManager");
     SYSTEM_SERVICE_MAP.put(Context.VIBRATOR_SERVICE, "android.os.RoboVibrator");

@@ -1,6 +1,8 @@
 package org.robolectric;
 
 import android.app.Application;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -61,6 +63,17 @@ public class DefaultTestLifecycleTest {
     List<ShadowApplication.Wrapper> receivers = shadowOf(application).getRegisteredReceivers();
     assertThat(receivers.size()).isEqualTo(6);
     assertTrue(receivers.get(0).intentFilter.matchAction("org.robolectric.ACTION1"));
+  }
+
+  @Test
+  public void shouldRegisterActivitiesFromManifestInPackageManager() throws Exception {
+    AndroidManifest appManifest = newConfig("TestAndroidManifestForActivities.xml");
+    Application application = defaultTestLifecycle.createApplication(null, appManifest);
+
+    PackageManager packageManager = application.getPackageManager();
+    assertThat(packageManager.resolveActivity(new Intent("org.robolectric.shadows.TestActivity"), -1)).isNotNull();
+    assertThat(packageManager.resolveActivity(new Intent("org.robolectric.shadows.TestActivity2"), -1)).isNotNull();
+
   }
 
   @Test public void shouldDoTestApplicationNameTransform() throws Exception {

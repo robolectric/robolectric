@@ -39,7 +39,17 @@ public class BitmapTest {
   @Test
   public void shouldCreateBitmapWithCorrectConfig() throws Exception {
     Bitmap bitmap = Bitmap.createBitmap(100, 200, Config.ARGB_8888);
-    assertEquals(bitmap.getConfig(), Config.ARGB_8888);
+    assertThat(bitmap.getWidth()).isEqualTo(100);
+    assertThat(bitmap.getHeight()).isEqualTo(200);
+    assertThat(bitmap.getConfig()).isEqualTo(Config.ARGB_8888);
+  }
+
+  @Test
+  public void shouldCreateBitmapWithCorrectConfig_factoryWithColorArg() throws Exception {
+    Bitmap bitmap = Bitmap.createBitmap(new int[] {1, 2, 3}, 100, 200, Config.ARGB_8888);
+    assertThat(bitmap.getWidth()).isEqualTo(100);
+    assertThat(bitmap.getHeight()).isEqualTo(200);
+    assertThat(bitmap.getConfig()).isEqualTo(Config.ARGB_8888);
   }
 
   @Test
@@ -165,6 +175,15 @@ public class BitmapTest {
     assertThat(b2).isSameAs(b);
     Bitmap b3 = Bitmap.createScaledBitmap(b, 10, 10, false);
     assertThat(b3).isSameAs(b);
+  }
+
+  @Test
+  public void equalsSizeTransformReturnsOriginal() {
+    Bitmap b1 = Bitmap.createBitmap(10, 10, Config.ARGB_8888);
+    Bitmap b2 = Bitmap.createBitmap(b1, 0, 0, 10, 10, null, false);
+    assertThat(b1).isSameAs(b2);
+    Bitmap b3 = Bitmap.createBitmap(b1, 0, 0, 10, 10, null, true);
+    assertThat(b1).isSameAs(b3);
   }
 
   private static Bitmap create(String name) {

@@ -20,7 +20,7 @@ public class ShadowPreferenceActivity extends ShadowActivity {
 
   @Implementation
   public void onCreate(Bundle savedInstanceState) {
-    setContentView(android.R.layout.list_content);
+    realActivity.setContentView(android.R.layout.list_content);
   }
 
   @Implementation

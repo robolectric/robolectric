@@ -11,6 +11,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -46,6 +47,13 @@ public class ActivityControllerTest {
 
     Robolectric.unPauseMainLooper();
     transcript.assertEventsSoFar("looper call");
+  }
+
+  @Test public void visible_addsTheDecorViewToTheWindowManager() {
+    ActivityController controller = Robolectric.buildActivity(MyActivity.class).create();
+    controller.visible();
+
+    assertEquals(controller.get().getWindow().getDecorView().getParent().getClass().getName(), "android.view.ViewRootImpl");
   }
 
   public static class MyActivity extends Activity {

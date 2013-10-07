@@ -20,7 +20,7 @@ import java.util.List;
 import static org.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(value = TabHost.class)
+@Implements(TabHost.class)
 public class ShadowTabHost extends ShadowFrameLayout {
   private List<TabHost.TabSpec> tabSpecs = new ArrayList<TabHost.TabSpec>();
   private TabHost.OnTabChangeListener listener;

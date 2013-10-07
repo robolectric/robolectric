@@ -1,15 +1,14 @@
 package org.robolectric.shadows;
 
-import static org.fest.reflect.core.Reflection.field;
-
 import android.os.Bundle;
+import java.util.Map;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
-import java.util.Map;
+import static org.fest.reflect.core.Reflection.field;
 
-@Implements(value = Bundle.class, callThroughByDefault = true)
+@Implements(Bundle.class)
 public class ShadowBundle {
 
   @RealObject

@@ -28,7 +28,7 @@ public class AlarmManagerTest {
   @Before
   public void setUp() throws Exception {
     activity = new MyActivity();
-    alarmManager = (AlarmManager) activity.getSystemService(Context.ALARM_SERVICE);
+    alarmManager = (AlarmManager) Robolectric.application.getSystemService(Context.ALARM_SERVICE);
     shadowAlarmManager = Robolectric.shadowOf(alarmManager);
   }
 
@@ -151,11 +151,6 @@ public class AlarmManagerTest {
     assertThat(scheduledAlarm.interval).isEqualTo(interval);
   }
 
-  private static class MyActivity extends Activity {
-    @Override
-    protected void onDestroy() {
-      super.onDestroy();
-    }
-  }
+  private static class MyActivity extends Activity { }
 
 }

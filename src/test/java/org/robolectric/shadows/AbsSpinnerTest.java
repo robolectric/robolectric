@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 
-import android.app.Activity;
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +12,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -28,7 +28,7 @@ public class AbsSpinnerTest {
 
   @Before
   public void setUp() throws Exception {
-    context = new Activity();
+    context = Robolectric.application;
     adapterView = new Gallery(context);
     spinner = new Spinner(context);
     shadowSpinner = (ShadowAbsSpinner) shadowOf(spinner);

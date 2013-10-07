@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import android.app.Activity;
 import android.content.Context;
 import android.preference.DialogPreference;
 import android.util.AttributeSet;
@@ -33,7 +32,7 @@ public class DialogPreferenceTest {
   public void setup() {
     List<Attribute> attributes = new ArrayList<Attribute>();
     attributes.add(new Attribute("android:attr/dialogMessage", TEST_DIALOG_MESSAGE, R.class.getPackage().getName()));
-    context = new Activity();
+    context = Robolectric.application;
     attrs = new RoboAttributeSet(attributes, TestUtil.emptyResources(), null);
     preference = new TestDialogPreference(context, attrs);
     shadow = Robolectric.shadowOf(preference);

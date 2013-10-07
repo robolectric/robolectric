@@ -97,6 +97,8 @@ public final class R {
     public static final int ungulate = 0x10032;
 
     public static final int custom_view = 0x10033;
+
+    public static final int custom_title_text = 0x10034;
   }
 
   public static final class string {
@@ -202,6 +204,7 @@ public final class R {
     public static final int with_invalid_onclick = 0x1061e;
     public static final int styles_button_with_style_layout = 0x1061f;
     public static final int activity_fragment = 0x10620;
+    public static final int custom_title = 0x10621;
   }
 
   public static final class anim {
@@ -227,11 +230,13 @@ public final class R {
     public static final int logoHeight = 0x10908;
     public static final int quitKeyCombo = 0x10909;
     public static final int responses = 0x1090a;
+    public static final int animalStyle = 0x1090b;
   }
 
   public static final class menu {
     public static final int test = 0x10a00;
     public static final int test_withchilds = 0x10a01;
+    public static final int action_menu = 0x10a02;
   }
 
   public static final class xml {
@@ -246,6 +251,7 @@ public final class R {
         attr.aspectRatio,
         attr.aspectRatioEnabled,
         attr.quitKeyCombo,
+        attr.animalStyle
     };
 
     public static final int CustomView_itemType = 0;
@@ -254,6 +260,7 @@ public final class R {
     public static final int CustomView_aspectRatio = 3;
     public static final int CustomView_aspectRatioEnabled = 4;
     public static final int CustomView_quitKeyCombo = 5;
+    public static final int CustomView_animalStyle = 6;
 
     public static final int[] HeaderBar = {id.textStyle2, id.textStyle3};
     public static final int HeaderBar_textStyle2 = 0;
@@ -299,5 +306,7 @@ public final class R {
     public static final int Widget_Robolectric_Button = 0x10f04;
     public static final int Widget_AnotherTheme_Button = 0x10f05;
     public static final int Sized = 0x10f06;
+    public static final int Gastropod = 0x10f07;
+    public static final int Theme_ThirdTheme = 0x10f08;
   }
 }

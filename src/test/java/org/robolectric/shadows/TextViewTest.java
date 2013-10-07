@@ -35,9 +35,15 @@ import java.util.Random;
 
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -49,7 +55,7 @@ public class TextViewTest {
 
   @Before
   public void setUp() throws Exception {
-    textView = new TextView(new Activity());
+    textView = new TextView(buildActivity(Activity.class).create().get());
   }
 
   @Test
@@ -112,7 +118,7 @@ public class TextViewTest {
 
   @Test
   public void shouldSetTextAndTextColorWhileInflatingXmlLayout() throws Exception {
-    Activity activity = new Activity();
+    Activity activity = buildActivity(Activity.class).create().get();
     activity.setContentView(R.layout.text_views);
 
     TextView black = (TextView) activity.findViewById(R.id.black_text_view);
@@ -130,7 +136,7 @@ public class TextViewTest {
 
   @Test
   public void shouldSetHintAndHintColorWhileInflatingXmlLayout() throws Exception {
-    Activity activity = new Activity();
+    Activity activity = buildActivity(Activity.class).create().get();
     activity.setContentView(R.layout.text_views_hints);
 
     TextView black = (TextView) activity.findViewById(R.id.black_text_view_hint);

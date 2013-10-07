@@ -121,16 +121,14 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     return new ShadowWrangler(shadowMap);
   }
 
-  protected AndroidManifest createAppManifest(FsFile manifestFile) {
+  protected AndroidManifest createAppManifest(FsFile manifestFile, FsFile resDir, FsFile assetsDir) {
     if (!manifestFile.exists()) {
       System.out.print("WARNING: No manifest file found at " + manifestFile.getPath() + ".");
       System.out.println("Falling back to the Android OS resources only.");
       System.out.println("To remove this warning, annotate your test class with @Config(manifest=Config.NONE).");
       return null;
     }
-
-    FsFile appBaseDir = manifestFile.getParent();
-    return new AndroidManifest(manifestFile, appBaseDir.join("res"), appBaseDir.join("assets"));
+    return new AndroidManifest(manifestFile, resDir, assetsDir);
   }
 
   public Setup createSetup() {
@@ -193,12 +191,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
         Thread.currentThread().setContextClassLoader(sdkEnvironment.getRobolectricClassLoader());
 
         Class bootstrappedTestClass = sdkEnvironment.bootstrappedClass(getTestClass().getJavaClass());
-        HelperTestRunner helperTestRunner;
-        try {
-          helperTestRunner = new HelperTestRunner(bootstrappedTestClass);
-        } catch (InitializationError initializationError) {
-          throw new RuntimeException(initializationError);
-        }
+        HelperTestRunner helperTestRunner = getHelperTestRunner(bootstrappedTestClass);
 
         final Method bootstrappedMethod;
         try {
@@ -263,6 +256,14 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     };
   }
 
+  protected HelperTestRunner getHelperTestRunner(Class bootstrappedTestClass) {
+    try {
+      return new HelperTestRunner(bootstrappedTestClass);
+    } catch (InitializationError initializationError) {
+      throw new RuntimeException(initializationError);
+    }
+  }
+
   private SdkEnvironment getEnvironment(final AndroidManifest appManifest, final Config config) {
     final SdkConfig sdkConfig = pickSdkVersion(appManifest, config);
 
@@ -302,20 +303,36 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       return null;
     }
 
+    String manifestProperty = System.getProperty("android.manifest");
+    String resourcesProperty = System.getProperty("android.resources");
+    String assetsProperty = System.getProperty("android.assets");
+
     FsFile fsFile = Fs.currentDirectory();
-    boolean defaultManifestConfig = config.manifest().equals(Config.DEFAULT); 
-    String manifestStr = defaultManifestConfig ? "AndroidManifest.xml" : config.manifest();
-    if (!fsFile.join(manifestStr).exists() && defaultManifestConfig) {
-      manifestStr = "src/main/" + manifestStr;
+    FsFile manifestFile;
+    FsFile resDir;
+    FsFile assetsDir;
+
+    boolean defaultManifest = config.manifest().equals(Config.DEFAULT);
+    if (defaultManifest && manifestProperty != null) {
+      manifestFile = Fs.fileFromPath(manifestProperty);
+      resDir = Fs.fileFromPath(resourcesProperty);
+      assetsDir = Fs.fileFromPath(assetsProperty);
+    } else {
+      String manifestStr = defaultManifest ? "AndroidManifest.xml" : config.manifest();
+      if (!fsFile.join(manifestStr).exists() && defaultManifest) {
+        manifestStr = "src/main/" + manifestStr;
+      }
+      manifestFile = fsFile.join(manifestStr);
+      resDir = manifestFile.getParent().join("res");
+      assetsDir = manifestFile.getParent().join("assets");
     }
-    FsFile manifestFile = fsFile.join(manifestStr);
+
     synchronized (envHolder) {
       AndroidManifest appManifest;
       appManifest = envHolder.appManifestsByFile.get(manifestFile);
       if (appManifest == null) {
-
         long startTime = System.currentTimeMillis();
-        appManifest = createAppManifest(manifestFile);
+        appManifest = createAppManifest(manifestFile, resDir, assetsDir);
         if (DocumentLoader.DEBUG_PERF)
           System.out.println(String.format("%4dms spent in %s", System.currentTimeMillis() - startTime, manifestFile));
 

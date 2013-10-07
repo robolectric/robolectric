@@ -2,6 +2,8 @@ package org.robolectric.res;
 
 import org.robolectric.util.I18nException;
 
+import java.io.File;
+
 public class PackageResourceLoader extends XResourceLoader {
   ResourcePath resourcePath;
 
@@ -12,6 +14,11 @@ public class PackageResourceLoader extends XResourceLoader {
   public PackageResourceLoader(ResourcePath resourcePath, ResourceIndex resourceIndex) {
     super(resourceIndex);
     this.resourcePath = resourcePath;
+    String separator = resourcePath.packageName.equals("android") ? "/" : File.separator;
+    if (!resourcePath.resourceBase.toString().endsWith(separator + "res"))
+    {
+      throw new IllegalArgumentException("Resource path must end in \"" + separator + "res\"");
+    }
   }
 
   void doInitialize() {
@@ -28,7 +35,11 @@ public class PackageResourceLoader extends XResourceLoader {
     System.out.println("DEBUG: Loading resources for " + resourcePath.getPackageName() + " from " + resourcePath.resourceBase + "...");
 
     DocumentLoader documentLoader = new DocumentLoader(resourcePath);
-    documentLoader.load("values",
+    //android package is loaded from jar. jars always have "/" separator
+    //should probably check if the resourcePath is referencing a jar instead, but not sure how to
+    String separator = resourcePath.packageName.equals("android") ? "/" : File.separator;
+
+    documentLoader.load("res" + separator + "values",
         new ValueResourceLoader(data, "/resources/bool", "bool", ResType.BOOLEAN),
         new ValueResourceLoader(data, "/resources/color", "color", ResType.COLOR),
         new ValueResourceLoader(data, "/resources/dimen", "dimen", ResType.DIMEN),
@@ -40,13 +51,12 @@ public class PackageResourceLoader extends XResourceLoader {
         new AttrResourceLoader(data),
         new StyleResourceLoader(data)
     );
-
-    documentLoader.load("res/layout", new OpaqueFileLoader(data, "layout"), new XmlFileLoader(xmlDocuments, "layout"));
-    documentLoader.load("res/menu", new MenuLoader(menuData), new XmlFileLoader(xmlDocuments, "menu"));
-    documentLoader.load("res/drawable", new OpaqueFileLoader(data, "drawable"), new XmlFileLoader(xmlDocuments, "drawable"));
-    documentLoader.load("res/anim", new OpaqueFileLoader(data, "anim"), new XmlFileLoader(xmlDocuments, "anim"));
-    documentLoader.load("res/color", new ColorResourceLoader(data), new XmlFileLoader(xmlDocuments, "color"));
-    documentLoader.load("res/xml", new PreferenceLoader(preferenceData), new XmlFileLoader(xmlDocuments, "xml"));
+    documentLoader.load("res" + separator + "layout", new OpaqueFileLoader(data, "layout"), new XmlFileLoader(xmlDocuments, "layout"));
+    documentLoader.load("res" + separator + "menu", new MenuLoader(menuData), new XmlFileLoader(xmlDocuments, "menu"));
+    documentLoader.load("res" + separator + "drawable", new OpaqueFileLoader(data, "drawable"), new XmlFileLoader(xmlDocuments, "drawable"));
+    documentLoader.load("res" + separator + "anim", new OpaqueFileLoader(data, "anim"), new XmlFileLoader(xmlDocuments, "anim"));
+    documentLoader.load("res" + separator + "color", new ColorResourceLoader(data), new XmlFileLoader(xmlDocuments, "color"));
+    documentLoader.load("res" + separator + "xml", new PreferenceLoader(preferenceData), new XmlFileLoader(xmlDocuments, "xml"));
     new DrawableResourceLoader(drawableData).findDrawableResources(resourcePath);
     new RawResourceLoader(resourcePath).loadTo(rawResources);
 

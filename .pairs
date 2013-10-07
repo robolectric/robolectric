@@ -30,6 +30,9 @@ pairs:
   gm: Gavin Morgan; gmorgan
   at: Amrit Thakur
   cs: Callum Stott; callum
+  cd: Corey Downing; cdowning
+  ms: Mike Stallard; mstallard
+  ca: Chris Adams; cadams
 email:
   prefix: pair
   domain: pivotallabs.com

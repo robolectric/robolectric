@@ -687,13 +687,18 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
   }
 
   @Test
-  public void shouldCreateDefaultCursorFactoryWhenNullFactoryPassed() throws Exception {
+  public void shouldCreateDefaultCursorFactoryWhenNullFactoryPassedToRawQuery() throws Exception {
     database.rawQueryWithFactory(null, ANY_VALID_SQL, null, null);
   }
 
   @Test
+  public void shouldCreateDefaultCursorFactoryWhenNullFactoryPassedToQuery() throws Exception {
+    database.queryWithFactory(null, false, "table_name", null, null, null, null, null, null, null);
+  }
+
+  @Test
   public void shouldOpenExistingDatabaseFromFileSystemIfFileExists() throws Exception {
-      File testDb = new File(getClass().getResource("/test.sql").getFile());
+      File testDb = new File(getClass().getResource("/test with spaces.sql").toURI().getPath());
       assertThat(testDb.exists()).isTrue();
       SQLiteDatabase db = SQLiteDatabase.openDatabase(testDb.getAbsolutePath(), null, 0);
 
