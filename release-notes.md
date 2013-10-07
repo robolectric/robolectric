@@ -6,6 +6,24 @@ title: Release Notes
 # Release Notes
 
 -----
+## [Release 2.2](http://repo1.maven.org/maven2/org/robolectric/robolectric/2.2) - October 7, 2013
+-----
+
+#### Features
+- Robolectric now does not have a fake implementation of `Window` (`RoboWindow`). It has been removed and we now use the internal `PhoneWindow` class. This allows the `getActionBar()` method in Activity to return a real `ActionBar` implementation in tests.
+- To create and manage Activity instances, you must now use the ActivityController interface (see `Robolectric.buildActivity()`)
+- Added `visible()` method to `ActivityController`. `visible()` must be called on an activity in order for `View.isShown()` to report back anything but false, since it hooks up the `Activity`'s view hierarchy to the `WindowManager`.
+- Some shadows were removed (`ShadowListActivity`)
+
+#### Bug Fixes
+- `Animation.hasEnded()` works as expected
+- `AsyncTask`s no longer swallow exceptions that are thrown during `onPostExecute()`
+- `Context.startActivity()` calls can now optionally check if the specified `Activity` is in the `PackageManager` using `Robolectric.checkActivities(true)`
+- Many many issues fixed
+- Better support for Windows development environments
+- Documentation updates!
+
+-----
 ## [Release 2.1.1](http://repo1.maven.org/maven2/org/robolectric/robolectric/2.1.1/) - June 4, 2013
 -----
 
