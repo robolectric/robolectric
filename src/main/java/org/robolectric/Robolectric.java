@@ -791,6 +791,10 @@ public class Robolectric {
     return (ShadowPowerManager) shadowOf_(instance);
   }
 
+  public static ShadowPowerManager.ShadowWakeLock shadowOf(PowerManager.WakeLock instance) {
+    return (ShadowPowerManager.ShadowWakeLock) shadowOf_(instance);
+  }
+
   public static ShadowPreference shadowOf(Preference instance) {
     return (ShadowPreference) shadowOf_(instance);
   }
