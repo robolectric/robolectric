@@ -87,4 +87,18 @@ public class DocumentLoader {
 
     return vtdGen.getNav();
   }
+
+  private static class DirectoryMatchingFilter implements FsFile.Filter {
+    private final String folderBaseName;
+
+    public DirectoryMatchingFilter(String folderBaseName) {
+      this.folderBaseName = folderBaseName;
+    }
+
+    @Override
+    public boolean accept(FsFile file) {
+      return file.getName().startsWith(folderBaseName);
+    }
+  }
+
 }

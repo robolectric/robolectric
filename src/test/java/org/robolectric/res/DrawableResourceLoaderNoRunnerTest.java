@@ -52,6 +52,7 @@ public class DrawableResourceLoaderNoRunnerTest {
 
     Fs.JarFs.JarFsFile mockTestDir = mock(Fs.JarFs.JarFsFile.class);
     when(mockTestDir.toString()).thenReturn(JAR_PATH_ON_UNIX);
+    when(mockTestDir.getName()).thenReturn(DRAWABLE_DIR);
     when(mockTestDir.listFiles()).thenReturn(new FsFile[]{mockTestFile});
     when(mockTestDir.isDirectory()).thenReturn(true);
     FsFile mockTestBaseDir = mock(FsFile.class);
@@ -76,6 +77,7 @@ public class DrawableResourceLoaderNoRunnerTest {
 
     FileFsFile mockTestDir = mock(FileFsFile.class);
     when(mockTestDir.toString()).thenReturn(FILE_PATH_ON_UNIX);
+    when(mockTestDir.getName()).thenReturn(DRAWABLE_DIR);
     when(mockTestDir.listFiles()).thenReturn(new FsFile[]{mockTestFile});
     when(mockTestDir.isDirectory()).thenReturn(true);
     FsFile mockTestBaseDir = mock(FsFile.class);
@@ -100,6 +102,7 @@ public class DrawableResourceLoaderNoRunnerTest {
 
     Fs.JarFs.JarFsFile mockTestDir = mock(Fs.JarFs.JarFsFile.class);
     when(mockTestDir.toString()).thenReturn(JAR_PATH_ON_WINDOWS);
+    when(mockTestDir.getName()).thenReturn(DRAWABLE_DIR);
     when(mockTestDir.listFiles()).thenReturn(new FsFile[]{mockTestFile});
     when(mockTestDir.isDirectory()).thenReturn(true);
     FsFile mockTestBaseDir = mock(FsFile.class);
@@ -124,6 +127,7 @@ public class DrawableResourceLoaderNoRunnerTest {
 
     FileFsFile mockTestDir = mock(FileFsFile.class);
     when(mockTestDir.toString()).thenReturn(FILE_PATH_ON_WINDOWS);
+    when(mockTestDir.getName()).thenReturn(DRAWABLE_DIR);
     when(mockTestDir.listFiles()).thenReturn(new FsFile[]{mockTestFile});
     when(mockTestDir.isDirectory()).thenReturn(true);
     FsFile mockTestBaseDir = mock(FsFile.class);
