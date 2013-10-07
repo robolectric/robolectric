@@ -2,14 +2,18 @@ package org.robolectric.shadows;
 
 import android.content.Context;
 import android.os.PowerManager;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
-import static junit.framework.Assert.*;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertTrue;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class PowerManagerTest {
@@ -20,7 +24,7 @@ public class PowerManagerTest {
   @Before
   public void before() {
     powerManager = (PowerManager) Robolectric.application.getSystemService(Context.POWER_SERVICE);
-    shadowPowerManager = Robolectric.shadowOf(powerManager);
+    shadowPowerManager = shadowOf(powerManager);
   }
 
   @Test
@@ -93,5 +97,16 @@ public class PowerManagerTest {
 
     ShadowPowerManager.reset();
     assertThat(shadowPowerManager.getLatestWakeLock()).isNull();
+  }
+
+  @Test
+  public void shouldGetReferenceCounted() throws Exception {
+    PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
+    ShadowPowerManager.ShadowWakeLock shadowLock = shadowOf(lock);
+    assertThat(shadowLock.isReferenceCounted()).isTrue();
+    lock.setReferenceCounted(false);
+    assertThat(shadowLock.isReferenceCounted()).isFalse();
+    lock.setReferenceCounted(true);
+    assertThat(shadowLock.isReferenceCounted()).isTrue();
   }
 }
