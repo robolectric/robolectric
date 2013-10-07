@@ -288,7 +288,7 @@
   <scm>
     <url>git@github.com:robolectric/robolectric.git</url>
     <connection>scm:git:git://github.com/robolectric/robolectric.git</connection>
-    <developerConnection>scm:git:git@github.com:robolectric/robolectric.git</developerConnection>
+    <developerConnection>scm:git:https://github.com/robolectric/robolectric.git</developerConnection>
   </scm>
 
   <ciManagement>
