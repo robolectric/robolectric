@@ -20,3 +20,13 @@ This is essentially the IntelliJ default Java style, but with two-space indents.
 * Indenting: http://en.wikipedia.org/wiki/Indent_style#Variant:_1TBS but with two spaces, not four.
 * Curly braces for everything: if, else, etc.
 * One line of white space between methods
+
+# Git Submodules
+
+If you are building an Android project that frequently needs changes to Robolectric, you probably want to maintain a fork of Robolectric from which you
+can submit pull requests. One way to set things up is to use a git submodule to this fork from your main project.
+
+[Android IntelliJ Starter](https://github.com/pivotal/AndroidIntelliJStarter)
+is an Android project generator which configures Robolectric as a [git submodule](http://kernel.org/pub/software/scm/git/docs/git-submodule.html "git-submodule(1)").
+
+
