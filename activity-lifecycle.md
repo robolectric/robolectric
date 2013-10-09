@@ -64,7 +64,7 @@ Activity activityWithIntent = Robolectric.buildActivity(MyAwesomeActivity.class)
 	.get();
 ```
 
-Check out the [`ActivityController` Java Docs](/javadoc/index.html?overview-summary.html) to see more public methods available for your testing needs.
+Check out the [`ActivityController` Java Docs](/javadoc/org/robolectric/util/ActivityController.html) to see more public methods available for your testing needs.
 
 
 # Wait, What's This `visible()` Nonsense?
