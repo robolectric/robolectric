@@ -150,9 +150,6 @@ import android.widget.Toast;
 import android.widget.VideoView;
 import android.widget.ViewAnimator;
 import android.widget.ZoomButtonsController;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.List;
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
@@ -324,6 +321,10 @@ import org.robolectric.tester.org.apache.http.HttpRequestInfo;
 import org.robolectric.tester.org.apache.http.RequestMatcher;
 import org.robolectric.util.ActivityController;
 import org.robolectric.util.Scheduler;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.List;
 
 import static org.fest.reflect.core.Reflection.method;
 
@@ -1352,6 +1353,16 @@ public class Robolectric {
     return new ActivityController<T>(activityClass);
   }
 
+  /**
+   * Set to true if you'd like Robolectric to strictly simulate the real Android behavior when
+   * calling {@link Context#startActivity(android.content.Intent)}. Real Android throws a
+   * {@link android.content.ActivityNotFoundException} if given
+   * an {@link Intent} that is not known to the {@link android.content.pm.PackageManager}
+   *
+   * By default, this behavior is off (false).
+   *
+   * @param checkActivities
+   */
   public static void checkActivities(boolean checkActivities) {
     shadowOf(application).checkActivities(checkActivities);
   }
