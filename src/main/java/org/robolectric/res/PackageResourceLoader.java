@@ -55,6 +55,7 @@ public class PackageResourceLoader extends XResourceLoader {
     documentLoader.load("res" + separator + "menu", new MenuLoader(menuData), new XmlFileLoader(xmlDocuments, "menu"));
     documentLoader.load("res" + separator + "drawable", new OpaqueFileLoader(data, "drawable"), new XmlFileLoader(xmlDocuments, "drawable"));
     documentLoader.load("res" + separator + "anim", new OpaqueFileLoader(data, "anim"), new XmlFileLoader(xmlDocuments, "anim"));
+    documentLoader.load("res" + separator + "animator", new OpaqueFileLoader(data, "animator"), new XmlFileLoader(xmlDocuments, "animator"));
     documentLoader.load("res" + separator + "color", new ColorResourceLoader(data), new XmlFileLoader(xmlDocuments, "color"));
     documentLoader.load("res" + separator + "xml", new PreferenceLoader(preferenceData), new XmlFileLoader(xmlDocuments, "xml"));
     new DrawableResourceLoader(drawableData).findDrawableResources(resourcePath);
