@@ -212,6 +212,10 @@ public final class R {
     public static final int animation_list = 0x10701;
   }
 
+  public static final class animator {
+    public static final int spinning = 0x10710;
+  }
+
   public static final class raw {
     public static final int raw_resource = 0x10800;
     public static final int raw_no_ext = 0x10801;
