@@ -63,7 +63,7 @@ public class DrawableResourceLoaderTest {
     drawableResourceLoader.findDrawableResources(testResources());
 
     assertNotNull(drawableNodes.get(new ResName(TEST_PACKAGE, "drawable", "rainbow"), ""));
-    assertEquals(28 , drawableNodes.size());
+    assertEquals(28, drawableNodes.size());
   }
 
   @Test
