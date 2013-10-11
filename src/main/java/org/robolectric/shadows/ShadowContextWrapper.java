@@ -13,6 +13,7 @@ import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Handler;
 import android.os.Looper;
 import java.io.File;
 import java.io.FileInputStream;
@@ -141,6 +142,11 @@ public class ShadowContextWrapper extends ShadowContext {
     getApplicationContext().sendBroadcast(intent);
   }
 
+  @Implementation
+  public void sendBroadcast(Intent intent, String receiverPermission) {
+    getApplicationContext().sendBroadcast(intent, receiverPermission);
+  }
+
   public List<Intent> getBroadcastIntents() {
     return ((ShadowApplication) shadowOf(getApplicationContext())).getBroadcastIntents();
   }
@@ -152,7 +158,12 @@ public class ShadowContextWrapper extends ShadowContext {
 
   @Implementation
   public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
-    return ((ShadowApplication) shadowOf(getApplicationContext())).registerReceiverWithContext(receiver, filter, realContextWrapper);
+    return ((ShadowApplication) shadowOf(getApplicationContext())).registerReceiverWithContext(receiver, filter, null, null, realContextWrapper);
+  }
+
+  @Implementation
+  public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter, String broadcastPermission, Handler scheduler) {
+    return ((ShadowApplication) shadowOf(getApplicationContext())).registerReceiverWithContext(receiver, filter, broadcastPermission, scheduler, realContextWrapper);
   }
 
   @Implementation
