@@ -14,6 +14,10 @@ import android.os.IBinder;
 import android.os.IInterface;
 import android.os.Parcel;
 import android.os.RemoteException;
+import java.io.File;
+import java.io.FileDescriptor;
+import java.io.IOException;
+import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,11 +36,6 @@ import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.TypedResource;
 import org.robolectric.test.TemporaryFolder;
 import org.robolectric.util.TestBroadcastReceiver;
-
-import java.io.File;
-import java.io.FileDescriptor;
-import java.io.IOException;
-import java.util.List;
 
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
@@ -138,7 +137,8 @@ public class ApplicationTest {
     Robolectric.pauseMainLooper();
     ComponentName expectedComponentName = new ComponentName("", "");
     NullBinder expectedBinder = new NullBinder();
-    Robolectric.shadowOf(Robolectric.application).setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
+    Robolectric.shadowOf(Robolectric.application).setComponentNameAndServiceForBindService(
+        expectedComponentName, expectedBinder);
 
     TestService service = new TestService();
     assertTrue(Robolectric.application.bindService(new Intent(""), service, Context.BIND_AUTO_CREATE));
@@ -157,7 +157,8 @@ public class ApplicationTest {
     TestService service = new TestService();
     ComponentName expectedComponentName = new ComponentName("", "");
     NullBinder expectedBinder = new NullBinder();
-    Robolectric.shadowOf(Robolectric.application).setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
+    Robolectric.shadowOf(Robolectric.application).setComponentNameAndServiceForBindService(
+        expectedComponentName, expectedBinder);
     Robolectric.application.bindService(new Intent(""), service, Context.BIND_AUTO_CREATE);
     Robolectric.pauseMainLooper();
 
@@ -189,7 +190,8 @@ public class ApplicationTest {
     final ShadowApplication shadowApplication = Robolectric.shadowOf(Robolectric.application);
     shadowApplication.setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
     shadowApplication.declareActionUnbindable("refuseToBind");
-    assertFalse(Robolectric.application.bindService(new Intent("refuseToBind"), service, Context.BIND_AUTO_CREATE));
+    assertFalse(Robolectric.application.bindService(new Intent("refuseToBind"), service,
+        Context.BIND_AUTO_CREATE));
     Robolectric.unPauseMainLooper();
     assertNull(service.name);
     assertNull(service.service);
@@ -397,6 +399,29 @@ public class ApplicationTest {
       assertThat(shadowOf(application).getNextStartedActivity()).isNull();
     }
   }
+
+  @Test public void intentResolution() throws Exception {
+    Application application = new DefaultTestLifecycle().createApplication(null,
+        newConfigWith("com.wacka.wa",
+            "<application android:name=\"org.robolectric.TestApplication\">\n"
+                + "  <activity android:name=\"org.robolectric.shadows.ApplicationTest$TestActivity1\">\n"
+                + "    <intent-filter>\n"
+                + "      <action android:name=\"com.wacka.wa.View\"/>\n"
+                + "    </intent-filter>\n"
+                + "  </activity>\n"
+                + "  <activity android:name=\"org.robolectric.shadows.ApplicationTest$TestActivity2\">\n"
+                + "    <intent-filter>\n"
+                + "      <action android:name=\"com.wacka.wa.Edit\"/>\n"
+                + "    </intent-filter>\n"
+                + "  </activity>\n"
+                + "</application>"));
+
+    application.startActivity(new Intent("com.wacka.wa.View"));
+    ComponentName componentName = shadowOf(application).peekNextStartedActivity()
+        .resolveActivity(application.getPackageManager());
+    assertThat(componentName.getClassName()).isEqualTo(TestActivity1.class.getName());
+  }
+
   /////////////////////////////
 
   public AndroidManifest newConfigWith(String contents) throws IOException {
@@ -418,5 +443,11 @@ public class ApplicationTest {
     public ResName getResName(int resourceId) {
       return new ResName("", "", "");
     }
+  }
+
+  public static class TestActivity1 extends Activity {
+  }
+
+  public static class TestActivity2 extends Activity {
   }
 }

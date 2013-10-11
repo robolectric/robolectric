@@ -2,13 +2,14 @@ package org.robolectric;
 
 import android.app.Application;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.ResolveInfo;
+import java.lang.reflect.Method;
+import java.util.Map;
 import org.robolectric.internal.ClassNameResolver;
 import org.robolectric.res.ActivityData;
 import org.robolectric.res.builder.RobolectricPackageManager;
-
-import java.lang.reflect.Method;
-import java.util.Map;
 
 public class DefaultTestLifecycle implements TestLifecycle {
   /**
@@ -67,7 +68,17 @@ public class DefaultTestLifecycle implements TestLifecycle {
       for (ActivityData data : activityDatas.values()) {
         String name = data.getName();
         String activityName = name.startsWith(".") ? appManifest.getPackageName() + name : name;
-        packageManager.addResolveInfoForIntent(new Intent(activityName), new ResolveInfo());
+        ResolveInfo resolveInfo = new ResolveInfo();
+        resolveInfo.activityInfo = new ActivityInfo();
+        resolveInfo.activityInfo.name = activityName;
+        resolveInfo.activityInfo.packageName = appManifest.getPackageName();
+        resolveInfo.activityInfo.applicationInfo = new ApplicationInfo();
+        resolveInfo.activityInfo.applicationInfo.packageName = appManifest.getPackageName();
+        packageManager.addResolveInfoForIntent(new Intent(activityName), resolveInfo);
+
+        for (String intentFilterAction : data.getIntentFilterActions()) {
+          packageManager.addResolveInfoForIntent(new Intent(intentFilterAction), resolveInfo);
+        }
       }
     }
   }
