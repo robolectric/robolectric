@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.content.Context;
+import android.view.ViewGroup;
 import android.view.Window;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -8,6 +9,7 @@ import org.robolectric.annotation.RealObject;
 
 import java.lang.reflect.Constructor;
 
+import static org.fest.reflect.core.Reflection.field;
 import static org.fest.reflect.core.Reflection.type;
 import static org.robolectric.Robolectric.directlyOn;
 
@@ -37,5 +39,13 @@ public class ShadowWindow {
 
   public CharSequence getTitle() {
     return "";
+  }
+
+  public ViewGroup getActionBarView() {
+    try {
+      return (ViewGroup) field("mActionBar").ofType(Class.forName("com.android.internal.widget.ActionBarView")).in(realWindow).get();
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException("could not resolve ActionBarView");
+    }
   }
 }
