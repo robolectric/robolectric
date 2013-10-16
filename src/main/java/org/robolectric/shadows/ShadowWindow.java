@@ -16,7 +16,6 @@ import java.lang.reflect.Constructor;
 import static org.fest.reflect.core.Reflection.field;
 import static org.fest.reflect.core.Reflection.type;
 import static org.robolectric.Robolectric.directlyOn;
-import static org.robolectric.bytecode.ShadowWrangler.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Window.class)
@@ -46,19 +45,16 @@ public class ShadowWindow {
     return "";
   }
 
-  public ViewGroup getActionBarView() {
+  public ImageView getHomeIcon() {
+    ResourceLoader resourceLoader = Robolectric.getShadowApplication().getResourceLoader();
+    ResName internalResource = new ResName("android", "id", "home");
+    Integer resId = resourceLoader.getResourceIndex().getResourceId(internalResource);
     try {
-      return (ViewGroup) field("mActionBar").ofType(Class.forName("com.android.internal.widget.ActionBarView")).in(realWindow).get();
+      Class<?> actionBarViewClass = Class.forName("com.android.internal.widget.ActionBarView");
+      ViewGroup actionBarView = (ViewGroup) field("mActionBar").ofType(actionBarViewClass).in(realWindow).get();
+      return (ImageView) actionBarView.findViewById(resId);
     } catch (ClassNotFoundException e) {
       throw new RuntimeException("could not resolve ActionBarView");
     }
-  }
-
-  public ImageView getHomeIcon() {
-        ResourceLoader resourceLoader = Robolectric.getShadowApplication().getResourceLoader();
-        ResName internalResource = new ResName("android", "id", "home");
-        Integer resId = resourceLoader.getResourceIndex().getResourceId(internalResource);
-        ViewGroup actionBarView = getActionBarView();
-    return (ImageView) actionBarView.findViewById(resId);
   }
 }

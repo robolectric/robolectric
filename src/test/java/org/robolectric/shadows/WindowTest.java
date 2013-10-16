@@ -3,12 +3,10 @@ package org.robolectric.shadows;
 import android.R;
 import android.app.Activity;
 import android.os.Bundle;
-import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -19,7 +17,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Robolectric.shadowOf;
-import static org.robolectric.util.TestUtil.assertInstanceOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class WindowTest {
@@ -43,17 +40,6 @@ public class WindowTest {
     Window window = activity.getWindow();
     window.setTitle("My Window Title");
     assertEquals("My Window Title", shadowOf(window).getTitle());
-  }
-
-  @Test
-  public void getActionBarView_shouldReturnAValidObject() throws Exception {
-    TestActivity activity = Robolectric.buildActivity(TestActivity.class).create().get();
-    Window window = activity.getWindow();
-    ShadowWindow shadowWindow = shadowOf(window);
-    ViewGroup actionBarView = shadowWindow.getActionBarView();
-
-    assertThat(actionBarView).isInstanceOf(Class.forName("com.android.internal.widget.ActionBarView"));
-    assertThat(actionBarView.getChildCount()).isGreaterThan(0);
   }
 
   @Test
