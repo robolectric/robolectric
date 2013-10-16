@@ -76,15 +76,6 @@ public class ShadowImageView extends ShadowView {
     }
   }
 
-  private void applyImageAttribute() {
-    String source = attributeSet.getAttributeValue(ANDROID_NS, "src");
-    if (source != null) {
-      if (source.startsWith("@drawable/")) {
-        setImageResource(attributeSet.getAttributeResourceValue(ANDROID_NS, "src", 0));
-      }
-    }
-  }
-
   @Implementation
   public void setImageLevel(int imageLevel) {
     this.imageLevel = imageLevel;
