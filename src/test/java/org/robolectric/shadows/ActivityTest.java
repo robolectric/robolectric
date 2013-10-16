@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Dialog;
 import android.appwidget.AppWidgetProvider;
@@ -18,6 +19,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.junit.Rule;
@@ -730,6 +732,23 @@ public class ActivityTest {
     Activity activity = new Activity();
     activity.overridePendingTransition(15, 2);
     assertThat(shadowOf(activity).getPendingTransitionExitAnimationResourceId()).isEqualTo(2);
+  }
+
+  @Test
+  public void getActionBar_shouldWorkIfActivityHasAnAppropriateTheme() throws Exception {
+    ActionBarThemedActivity myActivity = Robolectric.buildActivity(ActionBarThemedActivity.class).create().get();
+    ActionBar actionBar = myActivity.getActionBar();
+    assertThat(actionBar).isNotNull();
+  }
+
+  public static class ActionBarThemedActivity extends Activity {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+      super.onCreate(savedInstanceState);
+      setTheme(android.R.style.Theme_Holo_Light);
+      setContentView(new LinearLayout(this));
+    }
   }
 
   @Test
