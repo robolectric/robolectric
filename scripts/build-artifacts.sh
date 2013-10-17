@@ -5,8 +5,12 @@
 # more information on building AOSP.
 #
 # Usage:
-#   build-android-artifacts.sh 4.1.2_r1
-#   build-android-artifacts.sh 4.3_r2
+#   build-android-artifacts.sh <android version> <robolectric version>
+#
+# Supported Versions:
+#   4.1.2_r1    - Jelly Bean
+#   4.2.2_r1.2  - Jelly Bean MR1
+#   4.3_r2      - Jelly Bean MR2
 #
 # Assumptions:
 #  1. You've got the full AOSP checked out on a case-sensitive file system at /Volumes/android/android-build
@@ -48,6 +52,8 @@ ANDROID_BUNDLE=android-all-${ROBOLECTRIC_VERSION}-bundle.jar
 build_platform() {
     if [[ "${ANDROID_VERSION}" == "4.1.2_r1" ]]; then
         ARTIFACTS=("core" "services" "framework" "android.policy" "ext")
+    elif [[ "${ANDROID_VERSION}" == "4.2.2_r1.2" ]]; then
+        ARTIFACTS=("core" "services" "telephony-common" "framework" "android.policy" "ext")
     elif [[ "${ANDROID_VERSION}" == "4.3_r2" ]]; then
         ARTIFACTS=("core" "services" "telephony-common" "framework" "android.policy" "ext")
     else

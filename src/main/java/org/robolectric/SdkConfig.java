@@ -4,24 +4,28 @@ import android.os.Build;
 import org.apache.maven.model.Dependency;
 import org.robolectric.annotation.Config;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class SdkConfig {
+  private final int apiLevel;
   private final String artifactVersionString;
-  private String androidVersion;
-  private int apiLevel;
+  private static final Map<Integer, SdkVersion> SUPPORTED_APIS;
+
+  static {
+    SUPPORTED_APIS = new HashMap<Integer, SdkVersion>();
+    SUPPORTED_APIS.put(Build.VERSION_CODES.JELLY_BEAN, new SdkVersion("4.1.2_r1", "0"));
+    SUPPORTED_APIS.put(Build.VERSION_CODES.JELLY_BEAN_MR1, new SdkVersion("4.2.2_r1.2", "0"));
+    SUPPORTED_APIS.put(Build.VERSION_CODES.JELLY_BEAN_MR2, new SdkVersion("4.3_r2", "0"));
+  }
 
   public SdkConfig(int apiLevel) {
     this.apiLevel = apiLevel;
-    int robolectricSubVersion;
-    if (apiLevel == Build.VERSION_CODES.JELLY_BEAN) {
-      this.androidVersion = "4.1.2_r1";
-      robolectricSubVersion = 0;
-    } else if (apiLevel == Build.VERSION_CODES.JELLY_BEAN_MR2) {
-      this.androidVersion = "4.3_r2";
-      robolectricSubVersion = 0;
-    } else {
+    SdkVersion version = SUPPORTED_APIS.get(apiLevel);
+    if (version == null) {
       throw new UnsupportedOperationException("Robolectric does not support API level " + apiLevel + ", sorry!");
     }
-    this.artifactVersionString = androidVersion + "-robolectric-" + robolectricSubVersion;
+    this.artifactVersionString = version.toString();
   }
 
   public String getArtifactVersionString() {
@@ -42,7 +46,7 @@ public class SdkConfig {
 
   @Override
   public String toString() {
-    return androidVersion + " (API Level " + apiLevel + ")";
+    return "API Level " + apiLevel;
   }
 
   @Override
@@ -61,7 +65,6 @@ public class SdkConfig {
         createDependency("org.ccil.cowan.tagsoup", "tagsoup", "1.2", "jar", null)
     };
   }
-
 
   public Dependency realAndroidDependency(String artifactId) {
     return createDependency("org.robolectric", artifactId, getArtifactVersionString(), "jar", null);
@@ -83,5 +86,20 @@ public class SdkConfig {
 
   public int getApiLevel() {
     return apiLevel;
+  }
+
+  private static class SdkVersion {
+    private final String androidVersion;
+    private final String robolectricVersion;
+
+    public SdkVersion(String androidVersion, String robolectricVersion) {
+      this.androidVersion = androidVersion;
+      this.robolectricVersion = robolectricVersion;
+    }
+
+    @Override
+    public String toString() {
+      return androidVersion + "-robolectric-" + robolectricVersion;
+    }
   }
 }

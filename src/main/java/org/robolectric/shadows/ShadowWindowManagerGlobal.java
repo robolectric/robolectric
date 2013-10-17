@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-
+import android.os.Looper;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -12,6 +12,11 @@ public class ShadowWindowManagerGlobal {
 
   @Implementation
   public static Object getWindowSession() {
+    return null;
+  }
+
+  @Implementation
+  public static Object getWindowSession(Looper looper) {
     return null;
   }
 }

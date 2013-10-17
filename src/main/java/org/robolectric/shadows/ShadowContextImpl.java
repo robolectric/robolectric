@@ -89,7 +89,7 @@ public class ShadowContextImpl extends ShadowContext {
           service = constructor().withParameterTypes(Context.class, Handler.class).in(SearchManager.class).newInstance(realContextImpl, null);
         } else if (serviceClassName.equals("android.os.storage.StorageManager")) {
           service = constructor().in(StorageManager.class).newInstance();
-        } else if ((sdkConfig.getApiLevel() >= Build.VERSION_CODES.JELLY_BEAN_MR2) && (serviceClassName.equals("android.view.WindowManagerImpl"))) {
+        } else if ((sdkConfig.getApiLevel() >= Build.VERSION_CODES.JELLY_BEAN_MR1) && (serviceClassName.equals("android.view.WindowManagerImpl"))) {
           Display display = newInstanceOf(Display.class);
           service = constructor().withParameterTypes(Display.class).in(Class.forName("android.view.WindowManagerImpl")).newInstance(display);
         } else {

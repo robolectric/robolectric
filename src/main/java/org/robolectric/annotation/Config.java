@@ -1,5 +1,6 @@
 package org.robolectric.annotation;
 
+import android.os.Build;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.annotation.Annotation;
@@ -22,7 +23,7 @@ public @interface Config {
   @SuppressWarnings("UnusedDeclaration")
   public static final String NONE = "--none";
   public static final String DEFAULT = "--default";
-  public static final int DEFAULT_SDK_LEVEL = 16;
+  public static final int DEFAULT_SDK_LEVEL = Build.VERSION_CODES.JELLY_BEAN;
 
   /**
    * The Android SDK level to emulate. If not specified, Robolectric defaults to API 16.
