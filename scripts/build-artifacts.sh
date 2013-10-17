@@ -57,7 +57,7 @@ build_platform() {
 
     echo "Robolectric: Building artifacts: ${ARTIFACTS[@]}"
     cd ${ANDROID_SOURCES_BASE}
-    make clean; make -j8 ${ARTIFACTS[@]} > ${OUT}/build-output.txt 2>&1
+    make clean; make -j8 ${ARTIFACTS[@]}
 }
 
 build_android_res() {
