@@ -7,7 +7,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -17,20 +17,16 @@ import org.robolectric.annotation.RealObject;
 
 import android.os.Parcel;
 import android.util.Pair;
+import org.robolectric.internal.HiddenApi;
 
 @Implements(Parcel.class)
 @SuppressWarnings("unchecked")
 public class ShadowParcel {
-
-  @RealObject
-  private Parcel realObject;
-
-  private static final Map<Integer, ByteBuffer> nativePtrToParcel = 
-      new HashMap<Integer, ByteBuffer>();
+  @RealObject private Parcel realObject;
+  private static final Map<Integer, ByteBuffer> NATIVE_PTR_TO_PARCEL = new LinkedHashMap<Integer, ByteBuffer>();
 
   // Unfortunately method must be shadowed since the implementation in API 16
-  // calls
-  // Arrays.checkOffsetAndCount which is not preset in most JDK implementations.
+  // calls Arrays.checkOffsetAndCount which is not preset in most JDK implementations.
   @Implementation
   public void writeByteArray(byte[] b, int offset, int len) {
     if (b == null) {
@@ -40,137 +36,136 @@ public class ShadowParcel {
     nativeWriteByteArray((Integer) getPrivateField(realObject, "mNativePtr"), b, offset, len);
   }
 
-  @Implementation
+  @Implementation @HiddenApi
   public static int nativeDataSize(int nativePtr) {
-    return nativePtrToParcel.get(nativePtr).dataSize();
+    return NATIVE_PTR_TO_PARCEL.get(nativePtr).dataSize();
   }
 
-  @Implementation
+  @Implementation @HiddenApi
   public static int nativeDataAvail(int nativePtr) {
-    return nativePtrToParcel.get(nativePtr).dataAvailable();
+    return NATIVE_PTR_TO_PARCEL.get(nativePtr).dataAvailable();
   }
 
-  @Implementation
+  @Implementation @HiddenApi
   public static int nativeDataPosition(int nativePtr) {
-    return nativePtrToParcel.get(nativePtr).dataPosition();
+    return NATIVE_PTR_TO_PARCEL.get(nativePtr).dataPosition();
   }
 
-  @Implementation
+  @Implementation @HiddenApi
   public static int nativeDataCapacity(int nativePtr) {
-    return nativePtrToParcel.get(nativePtr).dataCapacity();
+    return NATIVE_PTR_TO_PARCEL.get(nativePtr).dataCapacity();
   }
 
-  @Implementation
+  @Implementation @HiddenApi
   public static void nativeSetDataSize(int nativePtr, int size) {
-    nativePtrToParcel.get(nativePtr).setDataSize(size);
+    NATIVE_PTR_TO_PARCEL.get(nativePtr).setDataSize(size);
   }
 
-  @Implementation
+  @Implementation @HiddenApi
   public static void nativeSetDataPosition(int nativePtr, int pos) {
-    nativePtrToParcel.get(nativePtr).setDataPosition(pos);
+    NATIVE_PTR_TO_PARCEL.get(nativePtr).setDataPosition(pos);
   }
 
-  @Implementation
+  @Implementation @HiddenApi
   public static void nativeSetDataCapacity(int nativePtr, int size) {
-    nativePtrToParcel.get(nativePtr).setDataCapacity(size);
+    NATIVE_PTR_TO_PARCEL.get(nativePtr).setDataCapacity(size);
   }
 
-  @Implementation
+  @Implementation @HiddenApi
   public static void nativeWriteByteArray(int nativePtr, byte[] b, int offset, int len) {
-    nativePtrToParcel.get(nativePtr).writeByteArray(b, offset, len);
+    NATIVE_PTR_TO_PARCEL.get(nativePtr).writeByteArray(b, offset, len);
   }
 
-  @Implementation
+  @Implementation @HiddenApi
   public static void nativeWriteInt(int nativePtr, int val) {
-    nativePtrToParcel.get(nativePtr).writeInt(val);
+    NATIVE_PTR_TO_PARCEL.get(nativePtr).writeInt(val);
   }
 
-  @Implementation
+  @Implementation @HiddenApi
   public static void nativeWriteLong(int nativePtr, long val) {
-    nativePtrToParcel.get(nativePtr).writeLong(val);
+    NATIVE_PTR_TO_PARCEL.get(nativePtr).writeLong(val);
   }
 
-  @Implementation
+  @Implementation @HiddenApi
   public static void nativeWriteFloat(int nativePtr, float val) {
-    nativePtrToParcel.get(nativePtr).writeFloat(val);
+    NATIVE_PTR_TO_PARCEL.get(nativePtr).writeFloat(val);
   }
 
-  @Implementation
+  @Implementation @HiddenApi
   public static void nativeWriteDouble(int nativePtr, double val) {
-    nativePtrToParcel.get(nativePtr).writeDouble(val);
+    NATIVE_PTR_TO_PARCEL.get(nativePtr).writeDouble(val);
   }
 
-  @Implementation
+  @Implementation @HiddenApi
   public static void nativeWriteString(int nativePtr, String val) {
-    nativePtrToParcel.get(nativePtr).writeString(val);
+    NATIVE_PTR_TO_PARCEL.get(nativePtr).writeString(val);
   }
 
-  @Implementation
+  @Implementation @HiddenApi
   public static byte[] nativeCreateByteArray(int nativePtr) {
-    return nativePtrToParcel.get(nativePtr).readByteArray();
+    return NATIVE_PTR_TO_PARCEL.get(nativePtr).readByteArray();
   }
 
-  @Implementation
+  @Implementation @HiddenApi
   public static int nativeReadInt(int nativePtr) {
-    return nativePtrToParcel.get(nativePtr).readInt();
+    return NATIVE_PTR_TO_PARCEL.get(nativePtr).readInt();
   }
 
-  @Implementation
+  @Implementation @HiddenApi
   public static long nativeReadLong(int nativePtr) {
-    return nativePtrToParcel.get(nativePtr).readLong();
+    return NATIVE_PTR_TO_PARCEL.get(nativePtr).readLong();
   }
 
-  @Implementation
+  @Implementation @HiddenApi
   public static float nativeReadFloat(int nativePtr) {
-    return nativePtrToParcel.get(nativePtr).readFloat();
+    return NATIVE_PTR_TO_PARCEL.get(nativePtr).readFloat();
   }
 
-  @Implementation
+  @Implementation @HiddenApi
   public static double nativeReadDouble(int nativePtr) {
-    return nativePtrToParcel.get(nativePtr).readDouble();
+    return NATIVE_PTR_TO_PARCEL.get(nativePtr).readDouble();
   }
 
-  @Implementation
+  @Implementation @HiddenApi
   public static String nativeReadString(int nativePtr) {
-    return nativePtrToParcel.get(nativePtr).readString();
+    return NATIVE_PTR_TO_PARCEL.get(nativePtr).readString();
   }
 
-  @Implementation
+  @Implementation @HiddenApi
   public static int nativeCreate() {
     // Pick a native ptr that hasn't been used.
     int nativePtrUsed = 0;
-    while (nativePtrToParcel.containsKey(nativePtrUsed)) {
+    while (NATIVE_PTR_TO_PARCEL.containsKey(nativePtrUsed)) {
       nativePtrUsed++;
     }
-    nativePtrToParcel.put(nativePtrUsed, new ByteBuffer());
+    NATIVE_PTR_TO_PARCEL.put(nativePtrUsed, new ByteBuffer());
     return nativePtrUsed;
   }
 
-  @Implementation
+  @Implementation @HiddenApi
   public static void nativeFreeBuffer(int nativePtr) {
-    nativePtrToParcel.get(nativePtr).clear();
+    NATIVE_PTR_TO_PARCEL.get(nativePtr).clear();
   }
 
-  @Implementation
+  @Implementation @HiddenApi
   public static void nativeDestroy(int nativePtr) {
-    nativePtrToParcel.clear();
+    NATIVE_PTR_TO_PARCEL.clear();
   }
 
-  @Implementation
+  @Implementation @HiddenApi
   public static byte[] nativeMarshall(int nativePtr) {
-    return nativePtrToParcel.get(nativePtr).toByteArray();
+    return NATIVE_PTR_TO_PARCEL.get(nativePtr).toByteArray();
   }
 
-  @Implementation
+  @Implementation @HiddenApi
   public static void nativeUnmarshall(int nativePtr, byte[] data, int offset, int length) {
-    nativePtrToParcel.put(nativePtr, ByteBuffer.fromByteArray(data, offset, length));
+    NATIVE_PTR_TO_PARCEL.put(nativePtr, ByteBuffer.fromByteArray(data, offset, length));
   }
 
-  @Implementation
-  public static void nativeAppendFrom(int thisNativePtr, int otherNativePtr,
-      int offset, int length) {
-    ByteBuffer thisByteBuffer = nativePtrToParcel.get(thisNativePtr);
-    ByteBuffer otherByteBuffer = nativePtrToParcel.get(otherNativePtr);
+  @Implementation @HiddenApi
+  public static void nativeAppendFrom(int thisNativePtr, int otherNativePtr, int offset, int length) {
+    ByteBuffer thisByteBuffer = NATIVE_PTR_TO_PARCEL.get(thisNativePtr);
+    ByteBuffer otherByteBuffer = NATIVE_PTR_TO_PARCEL.get(otherNativePtr);
     thisByteBuffer.appendFrom(otherByteBuffer, offset, length);
   }
 
@@ -218,7 +213,7 @@ public class ShadowParcel {
     }
 
     /**
-     * Writes a byte array starting at offset for length bytes to the byte buffer at the current 
+     * Writes a byte array starting at offset for length bytes to the byte buffer at the current
      * data position
      */
     public void writeByteArray(byte[] b, int offset, int length) {
@@ -309,7 +304,7 @@ public class ShadowParcel {
     /**
      * Appends the contents of the other byte buffer to this byte buffer
      * starting at offset and ending at length.
-     * 
+     *
      * @param other ByteBuffer to append to this one
      * @param offset number of bytes from beginning of byte buffer to start copy from
      * @param length number of bytes to copy
@@ -326,7 +321,7 @@ public class ShadowParcel {
 
     /**
      * Creates a Byte buffer from a raw byte array.
-     * 
+     *
      * @param array byte array to read from
      * @param offset starting position in bytes to start reading array at
      * @param length number of bytes to read from array
@@ -402,7 +397,7 @@ public class ShadowParcel {
 
     /**
      * Sets the current data position.
-     * 
+     *
      * @param pos
      *          Desired position in bytes
      */
