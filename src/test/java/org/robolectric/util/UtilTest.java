@@ -13,6 +13,8 @@ import static org.fest.assertions.api.Assertions.assertThat;
 public class UtilTest {
   @Test
   public void urlShouldReturnCorrectURL() throws Exception {
+    final String uncPath = "\\\\hostname\\path\\to\\file.jar";
+    assertThat(Util.url(uncPath)).isEqualTo(new URL("file:////hostname/path/to/file.jar"));
 
     final String windowsPath = "E:\\Test\\Path With Spaces\\MyFile.jar";
     assertThat(Util.url(windowsPath)).isEqualTo(new URL("file:/" + windowsPath));

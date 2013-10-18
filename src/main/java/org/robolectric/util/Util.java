@@ -51,6 +51,10 @@ public class Util {
   }
 
   public static URL url(String path) throws MalformedURLException {
+    //Starts with double backslash, is likely a UNC path
+    if(path.startsWith("\\\\")) {
+      path = path.replace("\\", "/");
+    }
     return new URL("file:/" + (path.startsWith("/") ? "/" + path : path));
   }
 
