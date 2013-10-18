@@ -11,10 +11,12 @@ import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
-
+import android.view.LayoutInflater;
+import android.view.View;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.util.Transcript;
@@ -167,6 +169,13 @@ public class ContextWrapperTest {
     assertThat(activity.getApplicationContext()).isSameAs(activity.getApplicationContext());
 
     assertThat(activity.getApplicationContext()).isSameAs(new Activity().getApplicationContext());
+  }
+
+  @Test
+  public void shouldReturnApplicationContext_forViewContextInflatedWithApplicationContext() throws Exception {
+    View view = LayoutInflater.from(Robolectric.application).inflate(R.layout.custom_layout, null);
+    Context viewContext = new ContextWrapper(view.getContext());
+    assertThat(viewContext.getApplicationContext()).isEqualTo(Robolectric.application);
   }
 
   @Test
