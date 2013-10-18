@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
@@ -11,7 +10,6 @@ import static org.robolectric.Robolectric.shadowOf;
 /**
  * Shadow of {@code NetworkInfo} which is used by ShadowConnectivityManager.
  */
-
 @Implements(NetworkInfo.class)
 public class ShadowNetworkInfo {
   private boolean isAvailable;
@@ -23,17 +21,7 @@ public class ShadowNetworkInfo {
   public static void __staticInitializer__() {
   }
 
-  public static NetworkInfo newInstance() {
-    return newInstance(null);
-  }
-
-  public static NetworkInfo newInstance(NetworkInfo.DetailedState detailedState) {
-    return newInstance(detailedState, ConnectivityManager.TYPE_MOBILE, 0, true, true);
-  }
-
-  public static NetworkInfo newInstance(NetworkInfo.DetailedState detailedState, int type, int subType,
-                      boolean isAvailable,
-                      boolean isConnected) {
+  public static NetworkInfo newInstance(NetworkInfo.DetailedState detailedState, int type, int subType, boolean isAvailable, boolean isConnected) {
     NetworkInfo networkInfo = Robolectric.newInstanceOf(NetworkInfo.class);
     final ShadowNetworkInfo info = shadowOf(networkInfo);
     info.setConnectionType(type);
