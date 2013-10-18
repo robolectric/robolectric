@@ -21,13 +21,13 @@ public class AccountTest {
 
   @Test
   public void shouldHaveParcelConstructor() throws Exception {
+    Account expected = new Account("name", "type");
     Parcel p = Parcel.obtain();
-    p.writeString("name");
-    p.writeString("type");
+    expected.writeToParcel(p, 0);
+    p.setDataPosition(0);
 
-    Account account = new Account(p);
-    assertThat(account.name).isEqualTo("name");
-    assertThat(account.type).isEqualTo("type");
+    Account actual = new Account(p);
+    assertThat(expected).isEqualTo(actual);
   }
 
   @Test
@@ -35,6 +35,7 @@ public class AccountTest {
     Account expected = new Account("name", "type");
     Parcel p = Parcel.obtain();
     expected.writeToParcel(p, 0);
+    p.setDataPosition(0);
     Account actual = Account.CREATOR.createFromParcel(p);
     assertThat(expected).isEqualTo(actual);
   }
