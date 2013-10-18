@@ -1,5 +1,12 @@
 package org.robolectric.shadows;
 
+import android.os.Parcel;
+import android.util.Pair;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.internal.HiddenApi;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -10,14 +17,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
-
-import android.os.Parcel;
-import android.util.Pair;
-import org.robolectric.internal.HiddenApi;
 
 @Implements(Parcel.class)
 @SuppressWarnings("unchecked")
@@ -149,7 +148,7 @@ public class ShadowParcel {
 
   @Implementation @HiddenApi
   public static void nativeDestroy(int nativePtr) {
-    NATIVE_PTR_TO_PARCEL.clear();
+    NATIVE_PTR_TO_PARCEL.remove(nativePtr);
   }
 
   @Implementation @HiddenApi

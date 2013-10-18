@@ -6,7 +6,6 @@ import android.appwidget.AppWidgetProviderInfo;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.ContextWrapper;
-import android.os.Parcel;
 import android.view.View;
 import android.widget.RemoteViews;
 import android.widget.TextView;
@@ -19,7 +18,12 @@ import org.robolectric.TestRunners;
 
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -99,7 +103,7 @@ public class AppWidgetManagerTest {
 
   @Test
   public void getAppWidgetInfo_shouldReturnSpecifiedAppWidgetInfo() throws Exception {
-    AppWidgetProviderInfo expectedWidgetInfo = new AppWidgetProviderInfo(Parcel.obtain());
+    AppWidgetProviderInfo expectedWidgetInfo = new AppWidgetProviderInfo();
     shadowAppWidgetManager.addBoundWidget(26, expectedWidgetInfo);
 
     assertEquals(expectedWidgetInfo, appWidgetManager.getAppWidgetInfo(26));
