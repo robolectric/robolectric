@@ -8,22 +8,22 @@ import org.robolectric.annotation.Implements;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Shadow of {@code ConnectivityManager} that provides for the simulation of
- * the active connection status.
- */
-
 @Implements(ConnectivityManager.class)
 public class ShadowConnectivityManager {
 
   private NetworkInfo activeNetwork;
   private boolean backgroundDataSetting;
   private int networkPreference = ConnectivityManager.DEFAULT_NETWORK_PREFERENCE;
-
-  private Map<Integer, NetworkInfo> networkTypeToNetworkInfo = new HashMap<Integer, NetworkInfo>();
+  private final Map<Integer, NetworkInfo> networkTypeToNetworkInfo = new HashMap<Integer, NetworkInfo>();
 
   public ShadowConnectivityManager() {
-    setActiveNetworkInfo(ShadowNetworkInfo.newInstance());
+    NetworkInfo wifi = ShadowNetworkInfo.newInstance(NetworkInfo.DetailedState.DISCONNECTED, ConnectivityManager.TYPE_WIFI, 0, true, false);
+    networkTypeToNetworkInfo.put(ConnectivityManager.TYPE_WIFI, wifi);
+
+    NetworkInfo mobile = ShadowNetworkInfo.newInstance(NetworkInfo.DetailedState.CONNECTED, ConnectivityManager.TYPE_MOBILE, ConnectivityManager.TYPE_MOBILE_MMS, true, true);
+    networkTypeToNetworkInfo.put(ConnectivityManager.TYPE_MOBILE, mobile);
+
+    this.activeNetwork = mobile;
   }
 
   @Implementation
@@ -68,7 +68,7 @@ public class ShadowConnectivityManager {
     activeNetwork = info;
     if (info != null) {
       networkTypeToNetworkInfo.put(info.getType(), info);
-    }  else {
+    } else {
       networkTypeToNetworkInfo.clear();
     }
   }
