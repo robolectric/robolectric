@@ -23,15 +23,18 @@ public class TestWebSettingsTest {
   @Test
   public void testDefaults() {
     assertThat(webSettings.getAllowFileAccess()).isTrue();
+    assertThat(webSettings.getAppCacheEnabled()).isFalse();
     assertThat(webSettings.getBlockNetworkImage()).isFalse();
     assertThat(webSettings.getBlockNetworkLoads()).isFalse();
     assertThat(webSettings.getBuiltInZoomControls()).isTrue();
     assertThat(webSettings.getDatabaseEnabled()).isFalse();
     assertThat(webSettings.getDomStorageEnabled()).isFalse();
+    assertThat(webSettings.getGeolocationEnabled()).isFalse();
     assertThat(webSettings.getJavaScriptEnabled()).isFalse();
     assertThat(webSettings.getLightTouchEnabled()).isFalse();
     assertThat(webSettings.getLoadWithOverviewMode()).isFalse();
     assertThat(webSettings.getPluginState()).isEqualTo(WebSettings.PluginState.OFF);
+    assertThat(webSettings.getSaveFormData()).isFalse();
 
     // deprecated methods
     assertThat(webSettings.getPluginsEnabled()).isFalse();
@@ -191,6 +194,30 @@ public class TestWebSettingsTest {
   }
 
   @Test
+  public void testSetAppCacheEnabled() throws Exception {
+    for (boolean value : trueAndFalse) {
+      webSettings.setAppCacheEnabled(value);
+      assertThat(webSettings.getAppCacheEnabled()).isEqualTo(value);
+    }
+  }
+
+  @Test
+  public void testSetGeolocationEnabled() throws Exception {
+    for (boolean value : trueAndFalse) {
+      webSettings.setGeolocationEnabled(value);
+      assertThat(webSettings.getGeolocationEnabled()).isEqualTo(value);
+    }
+  }
+
+  @Test
+  public void testSetSaveFormData() throws Exception {
+    for (boolean value : trueAndFalse) {
+      webSettings.setSaveFormData(value);
+      assertThat(webSettings.getSaveFormData()).isEqualTo(value);
+    }
+  }
+
+  @Test
   public void testSetDatabasePath() throws Exception {
     webSettings.setDatabasePath("new_path");
     assertThat(webSettings.getDatabasePath()).isEqualTo("new_path");
@@ -200,5 +227,17 @@ public class TestWebSettingsTest {
   public void testSetRenderPriority() throws Exception {
     webSettings.setRenderPriority(WebSettings.RenderPriority.HIGH);
     assertThat(webSettings.getRenderPriority()).isEqualTo(WebSettings.RenderPriority.HIGH);
+  }
+
+  @Test
+  public void testSetAppCachePath() throws Exception {
+    webSettings.setAppCachePath("new_path");
+    assertThat(webSettings.getAppCachePath()).isEqualTo("new_path");
+  }
+
+  @Test
+  public void testSetGeolocationDatabasePath() throws Exception {
+    webSettings.setGeolocationDatabasePath("new_path");
+    assertThat(webSettings.getGeolocationDatabasePath()).isEqualTo("new_path");
   }
 }
