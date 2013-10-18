@@ -6,9 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,7 +50,7 @@ public class Util {
     return f;
   }
 
-  public static URL url(String path) throws MalformedURLException, URISyntaxException {
+  public static URL url(String path) throws MalformedURLException {
     //Starts with double backslash, is likely a UNC path
     if(path.startsWith("\\\\"))
     {
