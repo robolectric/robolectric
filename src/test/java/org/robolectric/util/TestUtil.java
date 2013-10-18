@@ -112,6 +112,10 @@ public abstract class TestUtil {
     return SYSTEM_RESOURCE_PATH;
   }
 
+  public static ResourcePath gradleAppResources() {
+    return new ResourcePath(org.robolectric.gradleapp.R.class, "org.robolectric.gradleapp", resourceFile("gradle/res/layoutFlavor/menuBuildType"), resourceFile("gradle/assets/layoutFlavor/menuBuildType"));
+  }
+
   public static AndroidManifest newConfig(String androidManifestFile) {
     return new AndroidManifest(resourceFile(androidManifestFile), null, null);
   }
