@@ -94,6 +94,7 @@ public class Setup {
     String className = classInfo.getName();
     return className.startsWith("android.")
         || className.startsWith("libcore.")
+        || className.startsWith("dalvik.")
         || className.startsWith("com.android.internal.")
         || className.startsWith("com.google.android.maps.")
         || className.startsWith("com.google.android.gms.")
