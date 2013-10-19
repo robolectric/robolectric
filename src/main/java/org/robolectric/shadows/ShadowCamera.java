@@ -218,6 +218,7 @@ public class ShadowCamera {
     private int previewFpsMin = 10;
     private int previewFpsMax = 30;
     private int previewFps = 30;
+    private int exposureCompensation = 0;
 
     @Implementation
     public Camera.Size getPictureSize() {
@@ -327,6 +328,31 @@ public class ShadowCamera {
     public void setPreviewSize(int width, int height) {
       previewWidth = width;
       previewHeight = height;
+    }
+
+    @Implementation
+    public int getMinExposureCompensation() {
+      return -6;
+    }
+
+    @Implementation
+    public int getMaxExposureCompensation() {
+      return 6;
+    }
+
+    @Implementation
+    public float getExposureCompensationStep() {
+      return 0.5f;
+    }
+
+    @Implementation
+    public int getExposureCompensation() {
+      return exposureCompensation;
+    }
+
+    @Implementation
+    public void setExposureCompensation(int compensation) {
+      exposureCompensation = compensation;
     }
 
     public int getPreviewWidth() {
