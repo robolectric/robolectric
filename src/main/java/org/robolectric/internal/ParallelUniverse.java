@@ -31,9 +31,15 @@ import static org.robolectric.Robolectric.shadowOf;
 
 public class ParallelUniverse implements ParallelUniverseInterface {
   private static final String DEFAULT_PACKAGE_NAME = "org.robolectric.default";
+  private final RobolectricTestRunner robolectricTestRunner;
+
   private Class<?> contextImplClass;
   private boolean loggingInitialized = false;
   private SdkConfig sdkConfig;
+
+  public ParallelUniverse(RobolectricTestRunner robolectricTestRunner) {
+    this.robolectricTestRunner = robolectricTestRunner;
+  }
 
   @Override
   public void resetStaticState() {
@@ -89,7 +95,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
     ResourceLoader resourceLoader;
     if (appManifest != null) {
-      resourceLoader = RobolectricTestRunner.getAppResourceLoader(sdkConfig, systemResourceLoader, appManifest);
+      resourceLoader = robolectricTestRunner.getAppResourceLoader(sdkConfig, systemResourceLoader, appManifest);
     } else {
       resourceLoader = systemResourceLoader;
     }
