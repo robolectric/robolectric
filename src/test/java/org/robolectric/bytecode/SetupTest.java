@@ -37,6 +37,11 @@ public class SetupTest {
   }
 
   @Test
+  public void shouldInstrumentDalvikClasses() {
+    assertTrue(setup.shouldInstrument(wrap("dalvik.system.DexFile")));
+  }
+
+  @Test
   public void shouldNotInstrumentCoreJdkClasses() throws Exception {
     assertFalse(setup.shouldInstrument(wrap("java.lang.Object")));
     assertFalse(setup.shouldInstrument(wrap("java.lang.String")));
