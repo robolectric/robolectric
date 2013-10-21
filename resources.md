@@ -35,11 +35,15 @@ Pivotal Labs developers have given this presentation several times.
 
 ----
 
-### Could not resolve dependencies for project: Could not find artifact com.google.android.maps:maps:jar:16_r3 in central (http://repo1.maven.org/maven2)
+### Could not resolve dependencies for project: Could not find artifact com.google.android.maps:maps:jar:18_r3 in central (http://repo1.maven.org/maven2)
 
 The jerk lawyers at Google won't allow the Google maps add-on library stubs to be uploaded to Maven Central. You need to manually install them yourself.
 
-Make sure you've got Android SDK 16 or later downloaded, then do this:
+Make sure you've got the Android Google SDK listed [here](https://github.com/robolectric/robolectric/blob/master/pom.xml#L95) (look for `com.google.android.maps`; currently it's `18_r3`) downloaded, then do this:
+
+    ./script/install-maps-jar.sh
+
+Or, just make sure you have the latest Google Maps API jar and do this:
 
     cd $ANDROID_HOME
     ls -1d add-ons/addon-google_apis-google-* | sort | tail -1 |
