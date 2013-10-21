@@ -329,7 +329,7 @@ import java.util.List;
 import static org.fest.reflect.core.Reflection.method;
 
 public class Robolectric {
-  public static final int DEFAULT_SDK_VERSION = 16;
+  public static final int DEFAULT_SDK_VERSION = 18;
 
   public static Application application;
   public static RobolectricPackageManager packageManager;

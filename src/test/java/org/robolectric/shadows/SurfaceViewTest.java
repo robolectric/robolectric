@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import android.app.Activity;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.View;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -17,7 +16,7 @@ public class SurfaceViewTest {
   private SurfaceHolder.Callback callback1 = new TestCallback();
   private SurfaceHolder.Callback callback2 = new TestCallback();
 
-  private SurfaceView view = new SurfaceView(Robolectric.buildActivity(Activity.class).get());
+  private SurfaceView view = new SurfaceView(Robolectric.buildActivity(Activity.class).create().get());
   private SurfaceHolder surfaceHolder = view.getHolder();
   private ShadowSurfaceView shadowSurfaceView = (ShadowSurfaceView) Robolectric.shadowOf(view);
   private ShadowSurfaceView.FakeSurfaceHolder fakeSurfaceHolder =

@@ -35,6 +35,8 @@ pairs:
   ca: Chris Adams; cadams
   lm: Lucas Marks; lmarks
   ed: Erich Douglass; erich
+  sf: Serguei Filimonov; sfilimonov
+  ed: Erich Douglass; erich
 email:
   prefix: pair
   domain: pivotallabs.com

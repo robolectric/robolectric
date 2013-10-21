@@ -3,7 +3,7 @@ package org.robolectric.res;
 import org.robolectric.util.I18nException;
 
 public class PackageResourceLoader extends XResourceLoader {
-  ResourcePath resourcePath;
+  private final ResourcePath resourcePath;
 
   public PackageResourceLoader(ResourcePath resourcePath) {
     this(resourcePath, new ResourceExtractor(resourcePath));

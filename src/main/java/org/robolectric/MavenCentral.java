@@ -46,6 +46,6 @@ public class MavenCentral {
 
   public URL getLocalArtifactUrl(RobolectricTestRunner robolectricTestRunner, Dependency dependency) {
     Map<String, URL> map = getLocalArtifactUrls(robolectricTestRunner, dependency);
-    return map.get(dependency.getGroupId() + ":" + dependency.getArtifactId() + ":" + dependency.getType() + ":" + dependency.getClassifier());
+    return map.get(dependency.getGroupId() + ":" + dependency.getArtifactId() + ":" + dependency.getType());
   }
 }

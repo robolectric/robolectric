@@ -14,6 +14,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.internal.AppSingletonizer;
+import org.robolectric.internal.HiddenApi;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -144,7 +145,8 @@ public class ShadowAppWidgetManager {
     return widgetInfo.info;
   }
 
-  private void bindAppWidgetId(int appWidgetId, ComponentName provider) {
+  @HiddenApi @Implementation
+  public void bindAppWidgetId(int appWidgetId, ComponentName provider) {
     WidgetInfo widgetInfo = new WidgetInfo(provider);
     widgetInfos.put(appWidgetId, widgetInfo);
     for (AppWidgetProviderInfo appWidgetProviderInfo : installedProviders) {

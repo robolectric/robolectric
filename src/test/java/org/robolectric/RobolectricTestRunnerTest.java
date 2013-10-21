@@ -29,10 +29,10 @@ public class RobolectricTestRunnerTest {
 
   @Test public void whenClassDoesntHaveConfigAnnotation_getConfig_shouldUseMethodConfig() throws Exception {
     assertConfig(configFor(Test2.class, "withoutAnnotation"),
-        -1, "--default", "", -1, new Class[]{});
+        Config.DEFAULT_SDK_LEVEL, "--default", "", -1, new Class[]{});
 
     assertConfig(configFor(Test2.class, "withDefaultsAnnotation"),
-        -1, "--default", "", -1, new Class[]{});
+        Config.DEFAULT_SDK_LEVEL, "--default", "", -1, new Class[]{});
 
     assertConfig(configFor(Test2.class, "withOverrideAnnotation"),
         9, "furf", "from-method", 8, new Class[]{Test1.class});

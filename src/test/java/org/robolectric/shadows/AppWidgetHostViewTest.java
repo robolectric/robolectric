@@ -8,7 +8,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
-import org.robolectric.shadows.ShadowAppWidgetHostView;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.robolectric.Robolectric.shadowOf;
@@ -44,7 +43,7 @@ public class AppWidgetHostViewTest {
 
   @Test
   public void shouldBeAbleToHaveHostSet() throws Exception {
-    AppWidgetHost host = new AppWidgetHost(null, 0);
+    AppWidgetHost host = new AppWidgetHost(Robolectric.application, 0);
     shadowAppWidgetHostView.setHost(host);
     assertThat(shadowAppWidgetHostView.getHost()).isSameAs(host);
   }

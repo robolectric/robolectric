@@ -4,6 +4,7 @@ import android.database.CursorIndexOutOfBoundsException;
 import android.database.MatrixCursor;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.internal.HiddenApi;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -90,7 +91,8 @@ public class ShadowMatrixCursor extends ShadowAbstractCursor {
     return super.getCount();
   }
 
-  private Object get(int column) {
+  @HiddenApi @Implementation
+  public Object get(int column) {
     if (column < 0 || column >= columnNameArray.length) {
       throw new CursorIndexOutOfBoundsException(null);
     }

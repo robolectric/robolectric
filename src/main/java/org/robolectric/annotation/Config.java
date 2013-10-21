@@ -1,5 +1,6 @@
 package org.robolectric.annotation;
 
+import android.os.Build;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.annotation.Annotation;
@@ -22,13 +23,12 @@ public @interface Config {
   @SuppressWarnings("UnusedDeclaration")
   public static final String NONE = "--none";
   public static final String DEFAULT = "--default";
+  public static final int DEFAULT_SDK_LEVEL = Build.VERSION_CODES.JELLY_BEAN;
 
   /**
-   * The Android SDK level to emulate. If not specified, Robolectric defaults to the targetSdkVersion in your app's manifest.
-   *
-   * Not yet supported as of Robolectric 2.0.
+   * The Android SDK level to emulate. If not specified, Robolectric defaults to API 16.
    */
-  int emulateSdk() default -1;
+  int emulateSdk() default DEFAULT_SDK_LEVEL;
 
   /**
    * The Android manifest file to load; Robolectric will look relative to the current directory.
@@ -100,7 +100,7 @@ public @interface Config {
     }
 
     public Implementation(Config baseConfig, Config overlayConfig) {
-      this.emulateSdk = pick(baseConfig.emulateSdk(), overlayConfig.emulateSdk(), -1);
+      this.emulateSdk = pick(baseConfig.emulateSdk(), overlayConfig.emulateSdk(), DEFAULT_SDK_LEVEL);
       this.manifest = pick(baseConfig.manifest(), overlayConfig.manifest(), DEFAULT);
       this.qualifiers = pick(baseConfig.qualifiers(), overlayConfig.qualifiers(), "");
       this.reportSdk = pick(baseConfig.reportSdk(), overlayConfig.reportSdk(), -1);

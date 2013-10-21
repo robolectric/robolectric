@@ -29,6 +29,16 @@ public class RoboVibrator extends Vibrator {
     this.repeat = repeat;
   }
 
+  @Override
+  public void vibrate(int owningUid, String owningPackage, long milliseconds) {
+
+  }
+
+  @Override
+  public void vibrate(int owningUid, String owningPackage, long[] pattern, int repeat) {
+
+  }
+
   public void cancel() {
     cancelled = true;
     vibrating = false;

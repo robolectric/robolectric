@@ -40,7 +40,10 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
-import static org.objectweb.asm.Type.*;
+import static org.objectweb.asm.Type.ARRAY;
+import static org.objectweb.asm.Type.OBJECT;
+import static org.objectweb.asm.Type.VOID;
+import static org.objectweb.asm.Type.getType;
 import static org.robolectric.util.Util.readBytes;
 
 public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes, InstrumentingClassLoader {
@@ -106,6 +109,15 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
   }
 
   private static class MissingClassMarker {
+  }
+
+  @Override
+  public InputStream getResourceAsStream(String resName) {
+    InputStream fromUrlsClassLoader = urls.getResourceAsStream(resName);
+    if (fromUrlsClassLoader != null)  {
+      return fromUrlsClassLoader;
+    }
+    return super.getResourceAsStream(resName);
   }
 
   @Override
