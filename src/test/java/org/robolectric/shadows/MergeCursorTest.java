@@ -58,7 +58,7 @@ public class MergeCursorTest {
     statement = connection.createStatement(DatabaseConfig.getResultSetType(), ResultSet.CONCUR_READ_ONLY);
     String sql ="SELECT * FROM table_1;";
     ResultSet rs = statement.executeQuery(sql);
-    dbCursor1 = new SQLiteCursor(null, null, null, null);
+    dbCursor1 = new SQLiteCursor(null, null, null);
     Robolectric.shadowOf(dbCursor1).setResultSet(rs, sql);
   }
 
@@ -75,7 +75,7 @@ public class MergeCursorTest {
     statement = connection.createStatement(DatabaseConfig.getResultSetType(), ResultSet.CONCUR_READ_ONLY);
     String sql ="SELECT * FROM table_2;";
     ResultSet rs = statement.executeQuery(sql);
-    dbCursor2 = new SQLiteCursor(null, null, null, null);
+    dbCursor2 = new SQLiteCursor(null, null, null);
     Robolectric.shadowOf(dbCursor2).setResultSet(rs, sql);
   }
 

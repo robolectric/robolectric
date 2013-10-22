@@ -1,8 +1,7 @@
 package org.robolectric.shadows;
 
-import android.content.Context;
 import android.content.ContentValues;
-import android.database.SQLException;
+import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -41,7 +40,7 @@ public class SQLiteOpenHelperTest {
   @Test
   public void testSubsequentGetReadableDatabase() throws Exception {
     SQLiteDatabase database = helper.getReadableDatabase();
-    helper.reset();
+    helper.close();
     database = helper.getReadableDatabase();
 
     assertSubsequentDB(database, helper);
@@ -64,7 +63,7 @@ public class SQLiteOpenHelperTest {
   @Test
   public void testSubsequentGetWritableDatabase() throws Exception {
     helper.getWritableDatabase();
-    helper.reset();
+    helper.close();
 
     assertSubsequentDB(helper.getWritableDatabase(), helper);
   }
@@ -99,14 +98,15 @@ public class SQLiteOpenHelperTest {
 
   @Test
   public void testGetPath() throws Exception {
-    String path1 = "pather", path2 = "path_test";
+    final String path1 = "path1", path2 = "path2";
 
     TestOpenHelper helper1 = new TestOpenHelper(Robolectric.application, path1, null, 1);
-    assertThat(helper1.getReadableDatabase().getPath()).isEqualTo(Robolectric.application.getDatabasePath(path1).getPath());
+    String expectedPath1 = Robolectric.application.getDatabasePath(path1).getAbsolutePath();
+    assertThat(helper1.getReadableDatabase().getPath()).isEqualTo(expectedPath1);
 
     TestOpenHelper helper2 = new TestOpenHelper(Robolectric.application, path2, null, 1);
-    assertThat(helper2.getReadableDatabase().getPath()).isEqualTo(Robolectric.application.getDatabasePath(path2).getPath());
-    assertThat(helper1.getReadableDatabase().getPath()).isEqualTo(Robolectric.application.getDatabasePath(path1).getPath());
+    String expectedPath2 = Robolectric.application.getDatabasePath(path2).getAbsolutePath();
+    assertThat(helper2.getReadableDatabase().getPath()).isEqualTo(expectedPath2);
   }
 
   @Test
@@ -171,19 +171,6 @@ public class SQLiteOpenHelperTest {
     verifyData(db2, TABLE_NAME2, 3);
   }
 
-  @Test(expected=SQLException.class)
-  public void testResetDiskSpaceDb() throws Exception {
-    final String TABLE_NAME1 = "fart";
-    SQLiteDatabase db1 = helper.getWritableDatabase();
-    setupTable(db1, TABLE_NAME1);
-    insertData(db1, TABLE_NAME1, new int[]{1, 2});
-    verifyData(db1, TABLE_NAME1, 2);
-    ShadowSQLiteDatabase.reset();
-    db1 = helper.getWritableDatabase();
-    // should throw exceptions because ShadowSQLiteDatabase.reset() does not remove disk space DB.
-    setupTable(db1, TABLE_NAME1);
-  }
-
   @Test
   public void testResetDbInMemory() throws Exception {
     final String TABLE_NAME = "fart";
@@ -240,16 +227,19 @@ public class SQLiteOpenHelperTest {
     assertDatabaseOpened(database, helper);
     assertThat(helper.onCreateCalled).isTrue();
   }
+
   private static void assertSubsequentDB(SQLiteDatabase database, TestOpenHelper helper) {
     assertDatabaseOpened(database, helper);
     assertThat(helper.onCreateCalled).isFalse();
   }
+
   private static void assertDatabaseOpened(SQLiteDatabase database, TestOpenHelper helper) {
     assertThat(database).isNotNull();
     assertThat(database.isOpen()).isTrue();
     assertThat(helper.onOpenCalled).isTrue();
     assertThat(helper.onUpgradeCalled).isFalse();
   }
+
   private class TestOpenHelper extends SQLiteOpenHelper {
     public boolean onCreateCalled;
     public boolean onUpgradeCalled;
@@ -257,7 +247,6 @@ public class SQLiteOpenHelperTest {
 
     public TestOpenHelper(Context context, String name, CursorFactory factory, int version) {
       super(context, name, factory, version);
-      reset();
     }
 
     @Override
@@ -275,10 +264,13 @@ public class SQLiteOpenHelperTest {
       onOpenCalled = true;
     }
 
-    public void reset() {
+    @Override
+    public synchronized void close() {
       onCreateCalled = false;
       onUpgradeCalled = false;
       onOpenCalled = false;
+
+      super.close();
     }
   }
 }

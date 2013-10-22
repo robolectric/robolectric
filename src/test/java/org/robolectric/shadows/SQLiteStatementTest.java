@@ -24,7 +24,7 @@ public class SQLiteStatementTest {
 
   @Before
   public void setUp() throws Exception {
-    database = SQLiteDatabase.openDatabase(Robolectric.application.getDatabasePath("path").getPath(), null, 0);
+    database = SQLiteDatabase.openOrCreateDatabase(Robolectric.application.getDatabasePath("path").getPath(), null);
     SQLiteStatement createStatement = database.compileStatement("CREATE TABLE `routine` (`id` INTEGER PRIMARY KEY AUTOINCREMENT , `name` VARCHAR , `lastUsed` INTEGER DEFAULT 0 ,  UNIQUE (`name`)) ;");
     createStatement.execute();
 

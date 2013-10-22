@@ -80,7 +80,7 @@ public class DatabaseConfig {
     try {
       return DriverManager.getConnection(connection);
     } catch (SQLException e) {
-      throw new CannotLoadDatabaseMapDriverException("Error in DatabaseConfig, could not retrieve connection to in memory database.", e);
+      throw new CannotLoadDatabaseMapDriverException("could not retrieve connection to database. (map="+dbMap+")", e);
     }
   }
 

@@ -447,7 +447,7 @@ public class SQLiteCursorTest {
     Statement statement = connection.createStatement(DatabaseConfig.getResultSetType(), ResultSet.CONCUR_READ_ONLY);
     String sql ="SELECT * FROM table_name;";
     resultSet = statement.executeQuery("SELECT * FROM table_name;");
-    cursor = new SQLiteCursor(null, null, null, null);
+    cursor = new SQLiteCursor(null, null, null);
     Robolectric.shadowOf(cursor).setResultSet(resultSet, sql);
   }
 

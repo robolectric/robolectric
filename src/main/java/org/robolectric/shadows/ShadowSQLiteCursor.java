@@ -19,7 +19,6 @@ import java.util.Map;
  */
 @Implements(value = SQLiteCursor.class, inheritImplementationMethods = true)
 public class ShadowSQLiteCursor extends ShadowAbstractWindowedCursor {
-
   private ResultSet resultSet;
 
   public void __constructor__(SQLiteCursorDriver driver, String editTable, SQLiteQuery query) {
@@ -130,33 +129,6 @@ public class ShadowSQLiteCursor extends ShadowAbstractWindowedCursor {
     return (resultSet == null);
   }
 
-  /**
-   * Allows test cases access to the underlying JDBC ResultSet, for use in
-   * assertions.
-   *
-   * @return the result set
-   */
-  public ResultSet getResultSet() {
-    return resultSet;
-  }
-
-  /**
-   * Allows test cases access to the underlying JDBC ResultSetMetaData, for use in
-   * assertions. Available even if cl
-   *
-   * @return the result set
-   */
-  public ResultSet getResultSetMetaData() {
-    return resultSet;
-  }
-
-  /**
-   * loads a row's values
-   *
-   * @param rs
-   * @return
-   * @throws SQLException
-   */
   private Map<String, Object> fillRowValues(ResultSet rs) throws SQLException {
     Map<String, Object> row = new HashMap<String, Object>();
     for (String s : getColumnNames()) {

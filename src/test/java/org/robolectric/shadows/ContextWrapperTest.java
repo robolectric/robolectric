@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -294,6 +295,9 @@ public class ContextWrapperTest {
 
   @Test
   public void openOrCreateDatabaseShouldAlwaysReturnSameDatabase() throws Exception {
-    assertThat(contextWrapper.openOrCreateDatabase("db", 0, null)).isNotNull();
+    SQLiteDatabase db = contextWrapper.openOrCreateDatabase("db", 0, null);
+    assertThat(db).isNotNull();
+    assertThat(contextWrapper.openOrCreateDatabase("db", 0, null)).isSameAs(db);
+    assertThat(contextWrapper.openOrCreateDatabase("db", 0, null, null)).isSameAs(db);
   }
 }

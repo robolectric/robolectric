@@ -2,24 +2,22 @@ package org.robolectric.shadows;
 
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.database.DatabaseErrorHandler;
 import android.database.DatabaseUtils;
-import android.database.sqlite.SQLiteClosable;
 import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteCursorDriver;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteDatabaseCorruptException;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteQuery;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.database.sqlite.SQLiteStatement;
 import android.text.TextUtils;
-
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.DatabaseConfig;
-import org.robolectric.util.SQLite.*;
+import org.robolectric.util.SQLite.SQLStringAndBindings;
 
 import java.io.File;
 import java.sql.Connection;
@@ -33,12 +31,16 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static android.database.sqlite.SQLiteDatabase.CursorFactory;
 import static org.robolectric.Robolectric.newInstanceOf;
 import static org.robolectric.Robolectric.shadowOf;
-import static org.robolectric.util.SQLite.*;
+import static org.robolectric.util.SQLite.buildDeleteString;
+import static org.robolectric.util.SQLite.buildInsertString;
+import static org.robolectric.util.SQLite.buildUpdateString;
+import static org.robolectric.util.SQLite.buildWhereClause;
+import static org.robolectric.util.SQLite.fetchGeneratedKey;
 
 /**
  * Shadow for {@code SQLiteDatabase} that simulates the movement of a {@code Cursor} through database tables.
@@ -48,121 +50,64 @@ import static org.robolectric.util.SQLite.*;
 @Implements(value = SQLiteDatabase.class, inheritImplementationMethods = true)
 public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
 
-  public static final android.database.sqlite.SQLiteDatabase.CursorFactory DEFAULT_CURSOR_FACTORY = new SQLiteDatabase.CursorFactory() {
-    @Override
-    public Cursor newCursor(SQLiteDatabase db,
-                SQLiteCursorDriver masterQuery, String editTable, SQLiteQuery query) {
-      return new SQLiteCursor(db, masterQuery, editTable, query);
+  public static final CursorFactory DEFAULT_CURSOR_FACTORY = new CursorFactory() {
+    @Override public Cursor newCursor(SQLiteDatabase db, SQLiteCursorDriver masterQuery, String editTable, SQLiteQuery query) {
+      return new SQLiteCursor(masterQuery, editTable, query);
     }
-
   };
+  private static final Object connectionLock = new Object();
+  private static final HashMap<File, SQLiteDatabase> dbMap = new HashMap<File, SQLiteDatabase>();
 
-  private static HashMap<String, SQLiteDatabase> dbMap = new HashMap<String, SQLiteDatabase>();
-
-  @RealObject  SQLiteDatabase realSQLiteDatabase;
-  private final ReentrantLock mLock = new ReentrantLock(true);
-  private boolean mLockingEnabled = true;
-  private WeakHashMap<SQLiteClosable, Object> mPrograms;
+  private @RealObject SQLiteDatabase realSQLiteDatabase;
+  private final ReentrantLock lock = new ReentrantLock(true);
+  private boolean lockingEnabled = true;
   private Transaction transaction;
   private boolean throwOnInsert;
   private Set<Cursor> cursors = new HashSet<Cursor>();
   private List<String> querySql = new ArrayList<String>();
-
   private boolean isOpen, isFileConnection;
-  private String path;
-  private final static Object connectionLock = new Object();
+  private File path;
   private Connection connection;
 
   @Implementation
-  public void setLockingEnabled(boolean lockingEnabled) {
-    mLockingEnabled = lockingEnabled;
-  }
-
-  public void lock() {
-    if (!mLockingEnabled) return;
-    mLock.lock();
-  }
-  
-  @Implementation
-  public boolean isDbLockedByCurrentThread(){
-    if(!mLockingEnabled) return true;
-    return mLock.isHeldByCurrentThread();
-  }
-
-  public void unlock() {
-    if (!mLockingEnabled) return;
-    mLock.unlock();
-  }
-
-  private void init(String path) {
-    this.path = path;
-    isOpen = true;
-  }
-
-  public void setThrowOnInsert(boolean throwOnInsert) {
-    this.throwOnInsert = throwOnInsert;
-  }
-
-  @Implementation
-  public static SQLiteDatabase openDatabase(String path, SQLiteDatabase.CursorFactory factory, int flags) {
+  public static SQLiteDatabase openDatabase(String path, CursorFactory factory, int flags, DatabaseErrorHandler errorHandler) {
     if (path == null) throw new IllegalArgumentException("path cannot be null");
+    final File file = new File(path);
 
-    SQLiteDatabase db = dbMap.get(path);
+    SQLiteDatabase db = dbMap.get(file);
     if (db == null) {
       db = newInstanceOf(SQLiteDatabase.class);
-      shadowOf(db).init(path);
-      dbMap.put(path, db);
+      dbMap.put(file, db);
     }
+    shadowOf(db).open(file, flags, errorHandler);
     return db;
+  }
+
+  private void open(File path, int flags, DatabaseErrorHandler errorHandler) {
+    this.path = path;
+    final boolean createIfNecessary = (flags & SQLiteDatabase.CREATE_IF_NECESSARY) != 0;
+
+    if (createIfNecessary || path.exists()) {
+      isFileConnection = path.exists();
+      isOpen = true;
+    } else if (!isOpen) {
+      throw new SQLiteException("Could not open " + path);
+    }
   }
 
   @Implementation
-  public static SQLiteDatabase create(SQLiteDatabase.CursorFactory factory) {
-    SQLiteDatabase db = newInstanceOf(SQLiteDatabase.class);
-    shadowOf(db).init(null);
-    return db;
+  public void setLockingEnabled(boolean lockingEnabled) {
+    this.lockingEnabled = lockingEnabled;
   }
 
-  public static void reset() {
-    try {
-      synchronized (connectionLock) {
-        for (SQLiteDatabase db : dbMap.values()) {
-          ShadowSQLiteDatabase shadowDb = shadowOf(db);
-          if (shadowDb.connection != null) {
-              shadowDb.connection.close();
-          }
-          shadowDb.connection = null;
-        }
-        dbMap.clear();
-      }
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  /**
-   * Allows test cases access to the underlying JDBC connection, for use in
-   * setup or assertions.
-   *
-   * @return the connection
-   */
-  public Connection getConnection() {
-    synchronized (connectionLock) {
-      if (connection == null) {
-        if (path != null) {
-          connection = DatabaseConfig.getFileConnection(new File(path));
-          isFileConnection = true;
-        } else {
-          connection = DatabaseConfig.getMemoryConnection();
-        }
-      }
-    }
-    return connection;
+  @Implementation
+  public boolean isDbLockedByCurrentThread(){
+    return !lockingEnabled || lock.isHeldByCurrentThread();
   }
 
   @Implementation
   public String getPath() {
-    return path;
+    return path.getAbsolutePath();
   }
 
   @Implementation
@@ -236,7 +181,7 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
       throw new SQLiteException("SQL exception in query", e);
     }
 
-    SQLiteCursor cursor = new SQLiteCursor(null, null, null, null);
+    SQLiteCursor cursor = new SQLiteCursor(null, null, null);
     shadowOf(cursor).setResultSet(resultSet, sql);
     cursors.add(cursor);
     return cursor;
@@ -309,15 +254,11 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
     SQLiteStatement statement = null;
       try {
         statement = compileStatement(sql);
-      if (bindArgs != null) {
         int numArgs = bindArgs.length;
         for (int i = 0; i < numArgs; i++) {
           DatabaseUtils.bindObjectToProgram(statement, i + 1, bindArgs[i]);
         }
-      }
-      statement.execute();
-    } catch (SQLiteDatabaseCorruptException e) {
-      throw e;
+        statement.execute();
     } finally {
       if (statement != null) {
         statement.close();
@@ -325,20 +266,19 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
     }
   }
 
-
   @Implementation
   public Cursor rawQuery (String sql, String[] selectionArgs) {
-    return rawQueryWithFactory(DEFAULT_CURSOR_FACTORY, sql, selectionArgs, null );
+    return rawQueryWithFactory(null, sql, selectionArgs, null);
   }
 
   @Implementation
-  public Cursor rawQueryWithFactory (SQLiteDatabase.CursorFactory cursorFactory, String sql, String[] selectionArgs, String editTable) {
+  public Cursor rawQueryWithFactory(CursorFactory cursorFactory, String sql, String[] selectionArgs, String editTable) {
     String sqlBody = sql;
     if (sql != null) {
       sqlBody = buildWhereClause(sql, selectionArgs);
     }
 
-    if(cursorFactory == null){
+    if (cursorFactory == null) {
       cursorFactory = DEFAULT_CURSOR_FACTORY;
     }
 
@@ -365,12 +305,12 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
   }
 
   @Implementation
-  public Cursor queryWithFactory(SQLiteDatabase.CursorFactory cursorFactory,
+  public Cursor queryWithFactory(CursorFactory cursorFactory,
             boolean distinct, String table, String[] columns,
             String selection, String[] selectionArgs, String groupBy,
             String having, String orderBy, String limit) {
     String sql = SQLiteQueryBuilder.buildQueryString(
-        distinct, table, columns, selection, groupBy, having, orderBy, limit);
+            distinct, table, columns, selection, groupBy, having, orderBy, limit);
 
     return rawQueryWithFactory(cursorFactory, sql, selectionArgs, findEditTable(table));
   }
@@ -401,9 +341,11 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
   @Implementation
   public void close() {
     isOpen = false;
-    dbMap.remove(path);
+
     // never close in-memory connections bc that deletes the in-memory db
     if (isFileConnection) {
+      dbMap.remove(path);
+
       try {
         connection.close();
       } catch (SQLException ignored) {
@@ -466,14 +408,6 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
     return transaction != null;
   }
 
-  /**
-   * Allows tests cases to query the transaction state
-   * @return
-   */
-  public boolean isTransactionSuccess() {
-    return transaction != null && transaction.success && transaction.descendantsSuccess;
-  }
-
   @Implementation
   public SQLiteStatement compileStatement(String sql) throws SQLException {
     lock();
@@ -488,25 +422,48 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
     }
   }
 
-  /**
-   * @param closable
-   */
-  void addSQLiteClosable(SQLiteClosable closable) {
-    lock();
+  public static void reset() {
     try {
-      mPrograms.put(closable, null);
-    } finally {
-      unlock();
+      synchronized (connectionLock) {
+        for (SQLiteDatabase db : dbMap.values()) {
+          ShadowSQLiteDatabase shadowDb = shadowOf(db);
+          if (shadowDb.connection != null) {
+            shadowDb.connection.close();
+          }
+          shadowDb.connection = null;
+        }
+        dbMap.clear();
+      }
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
     }
   }
 
-  void removeSQLiteClosable(SQLiteClosable closable) {
-    lock();
-    try {
-      mPrograms.remove(closable);
-    } finally {
-      unlock();
+  public void setThrowOnInsert(boolean throwOnInsert) {
+    this.throwOnInsert = throwOnInsert;
+  }
+
+  /**
+   * Allows test cases access to the underlying JDBC connection, for use in
+   * setup or assertions.
+   *
+   * @return the connection
+   */
+  public Connection getConnection() {
+    synchronized (connectionLock) {
+      if (connection == null) {
+        if (isFileConnection) {
+          connection = DatabaseConfig.getFileConnection(path);
+        } else {
+          connection = DatabaseConfig.getMemoryConnection();
+        }
+      }
     }
+    return connection;
+  }
+
+  public boolean isTransactionSuccess() {
+    return transaction != null && transaction.success && transaction.descendantsSuccess;
   }
 
   public boolean hasOpenCursors() {
@@ -522,6 +479,18 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
     return querySql;
   }
 
+  protected void lock() {
+    if (lockingEnabled) {
+      lock.lock();
+    }
+  }
+
+  protected void unlock() {
+    if (lockingEnabled) {
+      lock.unlock();
+    }
+  }
+
   private static class Transaction {
     final Transaction parent;
     boolean success;
@@ -535,5 +504,4 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
       this.parent = null;
     }
   }
-
 }
