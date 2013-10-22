@@ -106,6 +106,13 @@ public class ParcelTest {
   }
 
   @Test
+  public void testWriteAndCreateNullIntArray() throws Exception {
+    parcel.writeIntArray(null);
+    parcel.setDataPosition(0);
+    assertThat(parcel.createIntArray()).isNull();
+  }
+
+  @Test
   public void testReadWriteLongArray() throws Exception {
     final long[] longs = { 1, 2 };
     parcel.writeLongArray(longs);
@@ -113,6 +120,13 @@ public class ParcelTest {
     final long[] longs2 = new long[longs.length];
     parcel.readLongArray(longs2);
     assertTrue(Arrays.equals(longs, longs2));
+  }
+
+  @Test
+  public void testWriteAndCreateNullLongArray() throws Exception {
+    parcel.writeLongArray(null);
+    parcel.setDataPosition(0);
+    assertThat(parcel.createLongArray()).isNull();
   }
 
   @Test
@@ -134,6 +148,13 @@ public class ParcelTest {
   }
 
   @Test
+  public void testWriteAndCreateNullFloatArray() throws Exception {
+    parcel.writeFloatArray(null);
+    parcel.setDataPosition(0);
+    assertThat(parcel.createFloatArray()).isNull();
+  }
+
+  @Test
   public void testReadWriteDoubleArray() throws Exception {
     final double[] doubles = { 1.1f, 2.0f };
     parcel.writeDoubleArray(doubles);
@@ -141,6 +162,13 @@ public class ParcelTest {
     final double[] doubles2 = new double[doubles.length];
     parcel.readDoubleArray(doubles2);
     assertTrue(Arrays.equals(doubles, doubles2));
+  }
+
+  @Test
+  public void testWriteAndCreateNullDoubleArray() throws Exception {
+    parcel.writeDoubleArray(null);
+    parcel.setDataPosition(0);
+    assertThat(parcel.createDoubleArray()).isNull();
   }
 
   @Test
@@ -154,12 +182,26 @@ public class ParcelTest {
   }
 
   @Test
+  public void testWriteAndCreateNullStringArray() throws Exception {
+    parcel.writeStringArray(null);
+    parcel.setDataPosition(0);
+    assertThat(parcel.createStringArray()).isNull();
+  }
+
+  @Test
   public void testWriteAndCreateByteArray() {
     byte[] bytes = new byte[] { -1, 2, 3, 127 };
     parcel.writeByteArray(bytes);
     parcel.setDataPosition(0);
     byte[] actualBytes = parcel.createByteArray();
     assertTrue(Arrays.equals(bytes, actualBytes));
+  }
+
+  @Test
+  public void testWriteAndCreateNullByteArray() throws Exception {
+    parcel.writeByteArray(null);
+    parcel.setDataPosition(0);
+    assertThat(parcel.createByteArray()).isNull();
   }
 
   @Test
