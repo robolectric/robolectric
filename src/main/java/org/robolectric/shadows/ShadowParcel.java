@@ -197,6 +197,9 @@ public class ShadowParcel {
      */
     public byte[] readByteArray() {
       int length = readInt();
+      if (length == -1) {
+        return null;
+      }
       byte[] array = new byte[length];
       for (int i = 0; i < length; i++) {
         array[i] = readByte();
