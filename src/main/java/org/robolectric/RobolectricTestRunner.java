@@ -284,7 +284,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   }
 
   protected SdkConfig pickSdkVersion(AndroidManifest appManifest, Config config) {
-    if (config != null) {
+    if (config != null && config.emulateSdk() > 0) {
       return new SdkConfig(config.emulateSdk());
     } else {
       if (appManifest != null) {

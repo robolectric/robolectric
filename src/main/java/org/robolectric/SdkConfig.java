@@ -2,8 +2,6 @@ package org.robolectric;
 
 import android.os.Build;
 import org.apache.maven.model.Dependency;
-import org.robolectric.annotation.Config;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,12 +34,8 @@ public class SdkConfig {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-
     SdkConfig sdkConfig = (SdkConfig) o;
-
-    if (!artifactVersionString.equals(sdkConfig.artifactVersionString)) return false;
-
-    return true;
+    return artifactVersionString.equals(sdkConfig.artifactVersionString);
   }
 
   @Override
@@ -81,7 +75,7 @@ public class SdkConfig {
   }
 
   public static SdkConfig getDefaultSdk() {
-    return new SdkConfig(Config.DEFAULT_SDK_LEVEL);
+    return new SdkConfig(Build.VERSION_CODES.JELLY_BEAN);
   }
 
   public int getApiLevel() {
