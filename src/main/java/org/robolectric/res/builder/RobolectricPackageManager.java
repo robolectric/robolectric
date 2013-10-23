@@ -100,6 +100,11 @@ public class RobolectricPackageManager extends StubPackageManager {
   }
 
   @Override
+  public List<ResolveInfo> queryBroadcastReceivers(Intent intent, int flags) {
+    return queryIntent(intent, flags);
+  }
+
+  @Override
   public ResolveInfo resolveActivity(Intent intent, int flags) {
     List<ResolveInfo> candidates = queryIntentActivities(intent, flags);
     return candidates.isEmpty() ? null : candidates.get(0);
@@ -294,7 +299,7 @@ public class RobolectricPackageManager extends StubPackageManager {
       applicationInfo.metaData.putString(metaEntry.getKey(), metaEntry.getValue());
     }
   }
-  
+
   public void removePackage(String packageName) {
     packageInfos.remove(packageName);
   }
