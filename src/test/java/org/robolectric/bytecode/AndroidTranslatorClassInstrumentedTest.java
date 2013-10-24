@@ -38,8 +38,7 @@ public class AndroidTranslatorClassInstrumentedTest {
   }
 
   /*
-   * Test "foreign class" getting its methods shadowed whe it's
-   * in the InstrumentingClassLoader CustomClassNames arrayList
+   * Test "android class" getting its methods shadowed
    */
   @Test
   @Config(shadows = {ShadowCustomPaint.class, ShadowPaintForTests.class})
@@ -50,15 +49,14 @@ public class AndroidTranslatorClassInstrumentedTest {
   }
 
   /*
-   * Test "foreign class" not getting its methods shadowed when it's
-   * not in the InstrumentingClassLoader CustomClassNames arrayList
+   * Test "foreign class" getting its methods shadowed
    */
   @Test
   @Config(shadows = {ShadowCustomXmasPaint.class, ShadowPaintForTests.class})
   public void testCustomMethodNotShadowed() throws Exception {
     CustomXmasPaint customXmasPaint = new CustomXmasPaint();
-    assertThat(customXmasPaint.getColor()).isEqualTo(999);
-    assertThat(customXmasPaint.getColorName()).isEqualTo("XMAS");
+    assertThat(customXmasPaint.getColor()).isEqualTo(-999);
+    assertThat(customXmasPaint.getColorName()).isEqualTo("XMAS Color Test");
   }
 
   public static class ClassWithPrivateConstructor {

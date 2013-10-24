@@ -76,6 +76,10 @@ public class ShadowMap {
     return false;
   }
 
+  public boolean containsKey(String className) {
+    return map.containsKey(className);
+  }
+
   public ShadowConfig get(Class<?> clazz) {
     String className = clazz.getName();
     ShadowConfig shadowConfig = map.get(className);

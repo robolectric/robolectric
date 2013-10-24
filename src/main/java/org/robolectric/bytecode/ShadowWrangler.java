@@ -39,7 +39,7 @@ public class ShadowWrangler implements ClassHandler {
   private static final ShadowConfig NO_SHADOW_CONFIG = new ShadowConfig(Object.class.getName(), true, false, false);
   public boolean debug = false;
 
-  private final ShadowMap shadowMap;
+  final ShadowMap shadowMap;
   private final Map<Class, MetaShadow> metaShadowMap = new HashMap<Class, MetaShadow>();
   private final Map<String, Plan> planCache = new LinkedHashMap<String, Plan>() {
     @Override protected boolean removeEldestEntry(Map.Entry<String, Plan> eldest) {
