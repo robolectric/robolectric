@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import android.app.ActivityManager;
 import android.app.SearchManager;
 import android.content.Context;
 import android.os.Build;
@@ -87,6 +88,8 @@ public class ShadowContextImpl extends ShadowContext {
       try {
         if (serviceClassName.equals("android.app.SearchManager")) {
           service = constructor().withParameterTypes(Context.class, Handler.class).in(SearchManager.class).newInstance(realContextImpl, null);
+        } else if (serviceClassName.equals("android.app.ActivityManager")) {
+          service = constructor().withParameterTypes(Context.class, Handler.class).in(ActivityManager.class).newInstance(realContextImpl, null);
         } else if (serviceClassName.equals("android.os.storage.StorageManager")) {
           service = constructor().in(StorageManager.class).newInstance();
         } else if ((sdkConfig.getApiLevel() >= Build.VERSION_CODES.JELLY_BEAN_MR1) && (serviceClassName.equals("android.view.WindowManagerImpl"))) {
