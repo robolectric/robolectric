@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.app.ActivityManager;
 import android.app.SearchManager;
+import android.app.admin.DevicePolicyManager;
 import android.content.Context;
 import android.os.Build;
 import android.os.Handler;
@@ -51,6 +52,7 @@ public class ShadowContextImpl extends ShadowContext {
     SYSTEM_SERVICE_MAP.put(Context.UI_MODE_SERVICE, "android.app.UiModeManager");
     SYSTEM_SERVICE_MAP.put(Context.DOWNLOAD_SERVICE, "android.app.DownloadManager");
     SYSTEM_SERVICE_MAP.put(Context.TEXT_SERVICES_MANAGER_SERVICE, "android.view.textservice.TextServicesManager");
+    SYSTEM_SERVICE_MAP.put(Context.DEVICE_POLICY_SERVICE, "android.app.admin.DevicePolicyManager");
   }
 
   @RealObject private Context realContextImpl;
@@ -90,6 +92,8 @@ public class ShadowContextImpl extends ShadowContext {
           service = constructor().withParameterTypes(Context.class, Handler.class).in(SearchManager.class).newInstance(realContextImpl, null);
         } else if (serviceClassName.equals("android.app.ActivityManager")) {
           service = constructor().withParameterTypes(Context.class, Handler.class).in(ActivityManager.class).newInstance(realContextImpl, null);
+        } else if (serviceClassName.equals("android.app.admin.DevicePolicyManager")) {
+          service = constructor().withParameterTypes(Context.class, Handler.class).in(DevicePolicyManager.class).newInstance(realContextImpl, null);
         } else if (serviceClassName.equals("android.os.storage.StorageManager")) {
           service = constructor().in(StorageManager.class).newInstance();
         } else if ((sdkConfig.getApiLevel() >= Build.VERSION_CODES.JELLY_BEAN_MR1) && (serviceClassName.equals("android.view.WindowManagerImpl"))) {

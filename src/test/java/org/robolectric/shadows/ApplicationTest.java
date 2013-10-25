@@ -108,6 +108,7 @@ public class ApplicationTest {
     checkSystemService(Context.INPUT_METHOD_SERVICE, android.view.inputmethod.InputMethodManager.class);
     checkSystemService(Context.UI_MODE_SERVICE, android.app.UiModeManager.class);
     checkSystemService(Context.DOWNLOAD_SERVICE, android.app.DownloadManager.class);
+    checkSystemService(Context.DEVICE_POLICY_SERVICE, android.app.admin.DevicePolicyManager.class);
   }
 
   @Test public void shouldProvideLayoutInflater() throws Exception {
