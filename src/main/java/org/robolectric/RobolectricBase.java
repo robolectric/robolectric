@@ -7,7 +7,6 @@ import org.robolectric.shadows.ShadowAbsListView;
 import org.robolectric.shadows.ShadowAbsSeekBar;
 import org.robolectric.shadows.ShadowAbsSpinner;
 import org.robolectric.shadows.ShadowAbsoluteLayout;
-import org.robolectric.shadows.ShadowAbstractCursor;
 import org.robolectric.shadows.ShadowAbstractWindowedCursor;
 import org.robolectric.shadows.ShadowAccessibilityManager;
 import org.robolectric.shadows.ShadowAccountManager;
@@ -126,7 +125,6 @@ import org.robolectric.shadows.ShadowMapActivity;
 import org.robolectric.shadows.ShadowMapController;
 import org.robolectric.shadows.ShadowMapView;
 import org.robolectric.shadows.ShadowMatrix;
-import org.robolectric.shadows.ShadowMatrixCursor;
 import org.robolectric.shadows.ShadowMediaPlayer;
 import org.robolectric.shadows.ShadowMediaRecorder;
 import org.robolectric.shadows.ShadowMediaScannerConnection;
@@ -242,7 +240,6 @@ public class RobolectricBase {
       ShadowAbsoluteLayout.ShadowLayoutParams.class,
       ShadowAbsSeekBar.class,
       ShadowAbsSpinner.class,
-      ShadowAbstractCursor.class,
       ShadowAbstractWindowedCursor.class,
       ShadowAccessibilityManager.class,
       ShadowAccountManager.class,
@@ -371,7 +368,6 @@ public class RobolectricBase {
       ShadowMapView.class,
       ShadowViewGroup.ShadowMarginLayoutParams.class,
       ShadowMatrix.class,
-      ShadowMatrixCursor.class,
       ShadowMediaPlayer.class,
       ShadowMediaRecorder.class,
       ShadowMediaScannerConnection.class,

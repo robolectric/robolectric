@@ -137,8 +137,6 @@ public class AbstractCursorTest {
     cursor.theTable.add("Foobar");
     cursor.theTable.add("Bletch");
     assertThat(cursor.moveToFirst()).isTrue();
-    assertThat(cursor.moveToPrevious()).isTrue();
-    assertThat(cursor.getPosition()).isEqualTo(-1);
     assertThat(cursor.moveToPrevious()).isFalse();
     assertThat(cursor.getPosition()).isEqualTo(-1);
   }
@@ -210,7 +208,7 @@ public class AbstractCursorTest {
     Uri uri = Uri.parse("content://foo.com");
     ShadowAbstractCursor shadow = Robolectric.shadowOf_(cursor);
     assertThat(shadow.getNotificationUri_Compatibility()).isNull();
-    cursor.setNotificationUri(null, uri);
+    cursor.setNotificationUri(Robolectric.application.getContentResolver(), uri);
     assertThat(shadow.getNotificationUri_Compatibility()).isEqualTo(uri);
   }
 
