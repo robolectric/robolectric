@@ -36,9 +36,7 @@ import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.database.ContentObserver;
 import android.database.CursorWrapper;
-import android.database.MergeCursor;
 import android.database.sqlite.SQLiteCursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteProgram;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.database.sqlite.SQLiteStatement;
@@ -252,7 +250,6 @@ import org.robolectric.shadows.ShadowMediaPlayer;
 import org.robolectric.shadows.ShadowMediaRecorder;
 import org.robolectric.shadows.ShadowMediaStore;
 import org.robolectric.shadows.ShadowMenuInflater;
-import org.robolectric.shadows.ShadowMergeCursor;
 import org.robolectric.shadows.ShadowMimeTypeMap;
 import org.robolectric.shadows.ShadowMotionEvent;
 import org.robolectric.shadows.ShadowNetworkInfo;
@@ -279,11 +276,6 @@ import org.robolectric.shadows.ShadowResolveInfo;
 import org.robolectric.shadows.ShadowResourceCursorAdapter;
 import org.robolectric.shadows.ShadowResources;
 import org.robolectric.shadows.ShadowResultReceiver;
-import org.robolectric.shadows.ShadowSQLiteCursor;
-import org.robolectric.shadows.ShadowSQLiteDatabase;
-import org.robolectric.shadows.ShadowSQLiteProgram;
-import org.robolectric.shadows.ShadowSQLiteQueryBuilder;
-import org.robolectric.shadows.ShadowSQLiteStatement;
 import org.robolectric.shadows.ShadowScaleGestureDetector;
 import org.robolectric.shadows.ShadowScanResult;
 import org.robolectric.shadows.ShadowScrollView;
@@ -740,10 +732,6 @@ public class Robolectric {
     return (ShadowMenuInflater) shadowOf_(instance);
   }
 
-  public static ShadowMergeCursor shadowOf(MergeCursor instance) {
-    return (ShadowMergeCursor) shadowOf_(instance);
-  }
-
   public static ShadowMimeTypeMap shadowOf(MimeTypeMap instance) {
     return (ShadowMimeTypeMap) shadowOf_(instance);
   }
@@ -882,26 +870,6 @@ public class Robolectric {
 
   public static ShadowSmsManager shadowOf(SmsManager instance) {
     return (ShadowSmsManager) shadowOf_(instance);
-  }
-
-  public static ShadowSQLiteCursor shadowOf(SQLiteCursor other) {
-    return (ShadowSQLiteCursor) Robolectric.shadowOf_(other);
-  }
-
-  public static ShadowSQLiteDatabase shadowOf(SQLiteDatabase other) {
-    return (ShadowSQLiteDatabase) Robolectric.shadowOf_(other);
-  }
-
-  public static ShadowSQLiteProgram shadowOf(SQLiteProgram other) {
-    return (ShadowSQLiteProgram) Robolectric.shadowOf_(other);
-  }
-
-  public static ShadowSQLiteQueryBuilder shadowOf(SQLiteQueryBuilder other) {
-    return (ShadowSQLiteQueryBuilder) Robolectric.shadowOf_(other);
-  }
-
-  public static ShadowSQLiteStatement shadowOf(SQLiteStatement other) {
-    return (ShadowSQLiteStatement) Robolectric.shadowOf_(other);
   }
 
   public static ShadowSslErrorHandler shadowOf(SslErrorHandler instance) {
@@ -1355,7 +1323,6 @@ public class Robolectric {
     ShadowPowerManager.reset();
     ShadowStatFs.reset();
     ShadowTypeface.reset();
-    ShadowSQLiteDatabase.reset();
   }
 
   public static <T extends Activity> ActivityController<T> buildActivity(Class<T> activityClass) {

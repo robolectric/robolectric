@@ -3,35 +3,27 @@ package org.robolectric.shadows;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteCursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
-import org.robolectric.util.DatabaseConfig;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class SQLiteCursorTest {
 
-  private Connection connection;
-  private ResultSet resultSet;
+  private SQLiteDatabase database;
   private SQLiteCursor cursor;
 
   @Before
   public void setUp() throws Exception {
-    connection = DatabaseConfig.getMemoryConnection();
+    database = SQLiteDatabase.create(null);
 
-    Statement statement = connection.createStatement();
-    statement.execute("CREATE TABLE table_name(" +
+    database.execSQL("CREATE TABLE table_name(" +
         "id INTEGER PRIMARY KEY, name VARCHAR(255), long_value BIGINT," +
         "float_value REAL, double_value DOUBLE, blob_value BINARY, clob_value CLOB );");
 
@@ -41,7 +33,7 @@ public class SQLiteCursorTest {
 
   @After
   public void tearDown() throws Exception {
-    connection.close();
+    database.close();
   }
 
   @Test
@@ -181,11 +173,9 @@ public class SQLiteCursorTest {
 
   @Test
   public void testMoveToPreviousPastStart() throws Exception {
-    cursor.moveToFirst();
+    assertThat(cursor.moveToFirst()).isTrue();
 
-    // Possible to move cursor before the first item
-    assertThat(cursor.moveToPrevious()).isTrue();
-    // After that, attempts to move cursor back return false
+    // Impossible to move cursor before the first item
     assertThat(cursor.moveToPrevious()).isFalse();
   }
 
@@ -211,9 +201,7 @@ public class SQLiteCursorTest {
     String sql = "UPDATE table_name set blob_value=? where id=1234";
     byte[] byteData = sql.getBytes();
 
-    PreparedStatement statement = connection.prepareStatement(sql);
-    statement.setObject(1, byteData);
-    statement.executeUpdate();
+    database.execSQL(sql, new Object[]{byteData});
 
     setupCursor();
     cursor.moveToFirst();
@@ -231,9 +219,7 @@ public class SQLiteCursorTest {
     String sql = "UPDATE table_name set clob_value=? where id=1234";
     String s = "Don't CLOBber my data, please. Thank you.";
 
-    PreparedStatement statement = connection.prepareStatement(sql);
-    statement.setObject(1, s);
-    statement.executeUpdate();
+    database.execSQL(sql, new Object[]{s});
 
     setupCursor();
     cursor.moveToFirst();
@@ -287,9 +273,7 @@ public class SQLiteCursorTest {
     String sql = "UPDATE table_name set blob_value=? where id=1234";
     byte[] byteData = sql.getBytes();
 
-    PreparedStatement statement = connection.prepareStatement(sql);
-    statement.setObject(1, byteData);
-    statement.executeUpdate();
+    database.execSQL(sql, new Object[]{byteData});
 
     setupCursor();
     cursor.moveToFirst();
@@ -414,9 +398,7 @@ public class SQLiteCursorTest {
     String sql = "UPDATE table_name set blob_value=? where id=1234";
     byte[] byteData = sql.getBytes();
 
-    PreparedStatement statement = connection.prepareStatement(sql);
-    statement.setObject(1, byteData);
-    statement.executeUpdate();
+    database.execSQL(sql, new Object[]{byteData});
 
     setupCursor();
     cursor.moveToFirst();
@@ -439,22 +421,19 @@ public class SQLiteCursorTest {
     };
 
     for (String insert : inserts) {
-      connection.createStatement().executeUpdate(insert);
+      database.execSQL(insert);
     }
   }
 
   private void setupCursor() throws Exception {
-    Statement statement = connection.createStatement(DatabaseConfig.getResultSetType(), ResultSet.CONCUR_READ_ONLY);
     String sql ="SELECT * FROM table_name;";
-    resultSet = statement.executeQuery("SELECT * FROM table_name;");
-    cursor = new SQLiteCursor(null, null, null);
-    Robolectric.shadowOf(cursor).setResultSet(resultSet, sql);
+    Cursor cursor = database.rawQuery(sql, null);
+    assertThat(cursor).isInstanceOf(SQLiteCursor.class);
+    this.cursor = (SQLiteCursor) cursor;
   }
 
   private void setupEmptyResult() throws Exception {
-    Statement statement = connection.createStatement();
-    statement.executeUpdate("DELETE FROM table_name;");
-
+    database.execSQL("DELETE FROM table_name;");
     setupCursor();
   }
 

@@ -43,10 +43,7 @@ import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.res.RoutingResourceLoader;
 import org.robolectric.util.AnnotationUtil;
-import org.robolectric.util.DatabaseConfig.DatabaseMap;
-import org.robolectric.util.DatabaseConfig.UsingDatabaseMap;
 import org.robolectric.util.Pair;
-import org.robolectric.util.SQLiteMap;
 
 import static org.fest.reflect.core.Reflection.constructor;
 import static org.fest.reflect.core.Reflection.staticField;
@@ -63,7 +60,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   private static Map<Pair<AndroidManifest, SdkConfig>, ResourceLoader> resourceLoadersByManifestAndConfig = new HashMap<Pair<AndroidManifest, SdkConfig>, ResourceLoader>();
   private static ShadowMap mainShadowMap;
   private final EnvHolder envHolder;
-  private DatabaseMap databaseMap;
   private TestLifecycle<Application> testLifecycle;
 
   static {
@@ -94,7 +90,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       }
     }
     this.envHolder = envHolder;
-    databaseMap = setupDatabaseMap(testClass, new SQLiteMap());
   }
 
   private void assureTestLifecycle(SdkEnvironment sdkEnvironment) {
@@ -209,7 +204,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
           assureTestLifecycle(sdkEnvironment);
 
           parallelUniverseInterface.resetStaticState();
-          parallelUniverseInterface.setDatabaseMap(databaseMap); //Set static DatabaseMap in DBConfig
           parallelUniverseInterface.setSdkConfig(sdkEnvironment.getSdkConfig());
 
           boolean strictI18n = determineI18nStrictState(bootstrappedMethod);
@@ -441,12 +435,11 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
   private void afterClass() {
     testLifecycle = null;
-    databaseMap = null;
   }
 
   @TestOnly
   boolean allStateIsCleared() {
-    return testLifecycle == null && databaseMap == null;
+    return testLifecycle == null;
   }
 
   @Override
@@ -603,25 +596,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
   public PackageResourceLoader createResourceLoader(ResourcePath resourcePath) {
     return new PackageResourceLoader(resourcePath);
-  }
-
-  /*
-   * Specifies what database to use for testing (ex: H2 or Sqlite),
-   * this will load H2 by default, the SQLite TestRunner version will override this.
-   */
-  protected DatabaseMap setupDatabaseMap(Class<?> testClass, DatabaseMap map) {
-    DatabaseMap dbMap = map;
-
-    if (testClass.isAnnotationPresent(UsingDatabaseMap.class)) {
-      UsingDatabaseMap usingMap = testClass.getAnnotation(UsingDatabaseMap.class);
-      if (usingMap.value() != null) {
-        dbMap = Robolectric.newInstanceOf(usingMap.value());
-      } else {
-        if (dbMap == null)
-          throw new RuntimeException("UsingDatabaseMap annotation value must provide a class implementing DatabaseMap");
-      }
-    }
-    return dbMap;
   }
 
   protected ShadowMap createShadowMap() {

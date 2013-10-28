@@ -21,7 +21,6 @@ import org.robolectric.shadows.ShadowActivityThread;
 import org.robolectric.shadows.ShadowContextImpl;
 import org.robolectric.shadows.ShadowLog;
 import org.robolectric.shadows.ShadowResources;
-import org.robolectric.util.DatabaseConfig;
 
 import static org.fest.reflect.core.Reflection.constructor;
 import static org.fest.reflect.core.Reflection.field;
@@ -49,10 +48,6 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       ShadowLog.setupLogging();
       loggingInitialized = true;
     }
-  }
-
-  @Override public void setDatabaseMap(DatabaseConfig.DatabaseMap databaseMap) {
-    DatabaseConfig.setDatabaseMap(databaseMap);
   }
 
   @Override public void setUpApplicationState(Method method, TestLifecycle testLifecycle, boolean strictI18n, ResourceLoader systemResourceLoader, AndroidManifest appManifest, Config config) {

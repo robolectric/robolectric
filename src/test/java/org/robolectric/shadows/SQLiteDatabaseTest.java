@@ -10,30 +10,23 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
-import org.robolectric.util.DatabaseConfig;
-import org.robolectric.util.SQLiteMap;
 
 import java.io.File;
-import java.util.List;
 
 import static android.database.sqlite.SQLiteDatabase.OPEN_READWRITE;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import static org.robolectric.Robolectric.shadowOf;
 
-@DatabaseConfig.UsingDatabaseMap(SQLiteMap.class)
 @RunWith(TestRunners.WithDefaults.class)
 public class SQLiteDatabaseTest extends DatabaseTestBase {
   private static final String ANY_VALID_SQL = "SELECT 1";
 
   private SQLiteDatabase database;
-  private ShadowSQLiteDatabase shDatabase;
 
   @Before
   public void setUp() throws Exception {
     database = SQLiteDatabase.openOrCreateDatabase(Robolectric.application.getDatabasePath("path").getPath(), null);
-    shDatabase = Robolectric.shadowOf(database);
     database.execSQL("CREATE TABLE table_name (\n" +
             "  id INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
             "  first_column VARCHAR(255),\n" +
@@ -84,11 +77,6 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
   }
 
   @Test
-  public void shouldUseSQLiteDatabaseMap() throws Exception {
-    assertThat(DatabaseConfig.getDatabaseMap().getClass().getName()).isEqualTo(SQLiteMap.class.getName());
-  }
-
-  @Test
   public void testInsertAndQuery() throws Exception {
     String stringColumnValue = "column_value";
     byte[] byteColumnValue = new byte[]{1, 2, 3};
@@ -136,7 +124,7 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
 
   @Test(expected = android.database.SQLException.class)
   public void testInsertOrThrowWithSimulatedSQLException() {
-    shDatabase.setThrowOnInsert(true);
+    //shDatabase.setThrowOnInsert(true);
     database.insertOrThrow("table_name", null, new ContentValues());
   }
 
@@ -193,56 +181,8 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
     Cursor cursor = database.rawQuery("select second_column, first_column from rawtable", new String[]{});
     assertThat(cursor.getCount()).isEqualTo(2);
   }
-  /*
-   * Reason why testRawQueryCount4() and testRawQueryCount5() expects exceptions even though exceptions are not found in Android.
-   *
-   * The code in Android acts inconsistently under API version 2.1_r1 (and perhaps other APIs)..
-   * What happens is that rawQuery() remembers the selectionArgs of previous queries,
-   * and uses them if no selectionArgs are given in subsequent queries.
-   * If they were never given selectionArgs THEN they return empty cursors.
-   *
-   *
-   * if you run {
-   *     db.rawQuery("select * from exercise WHERE name = ?",null); //this returns an empty cursor
-   *      db.rawQuery("select * from exercise WHERE name = ?",new String[]{}); //this returns an empty cursor
-   * }
-   *
-   * but if you run {
-   *    db.rawQuery("select * from exercise WHERE name = ?",new String[]{"Leg Press"}); //this returns 1 exercise named "Leg Press"
-   *    db.rawQuery("select * from exercise WHERE name = ?",null); //this too returns 1 exercise named "Leg Press"
-   *    db.rawQuery("select * from exercise WHERE name = ?",new String[]{}); //this too returns 1 exercise named "Leg Press"
-   * }
-   *
-   * so SQLite + Android work inconsistently (it maintains state that it should not)
-   * whereas H2 just throws an exception for not supplying the selectionArgs
-   *
-   * So the question is should Robolectric:
-   * 1) throw an exception, the way H2 does.
-   * 2) return an empty Cursor.
-   * 3) mimic Android\SQLite precisely and return inconsistent results based on previous state
-   *
-   * Returning an empty cursor all the time would be bad
-   * because Android doesn't always return an empty cursor.
-   * But just mimicking Android would not be helpful,
-   * since it would be less than obvious where the problem is coming from.
-   * One should just avoid ever calling a statement without selectionArgs (when one has a ? placeholder),
-   * so it is best to throw an Exception to let the programmer know that this isn't going to turn out well if they try to run it under Android.
-   * Because we are running in the context of a test we do not have to mimic Android precisely (if it is more helpful not to!), we just need to help
-   * the testing programmer figure out what is going on.
-   */
-  @Test(expected = Exception.class)
-  public void testRawQueryCount4() throws Exception {
-    //Android and SQLite don't normally throw an exception here. See above explanation as to why Robolectric should.
-    database.rawQuery("select second_column, first_column from rawtable WHERE `id` = ?", null);
-  }
 
-  @Test(expected = Exception.class)
-  public void testRawQueryCount5() throws Exception {
-    //Android and SQLite don't normally throw an exception here. See above explanation as to why Robolectric should.
-    database.rawQuery("select second_column, first_column from rawtable WHERE `id` = ?", new String[]{});
-  }
-
-  @Test(expected = android.database.sqlite.SQLiteException.class)
+  @Test(expected = IllegalArgumentException.class)
   public void testRawQueryCount8() throws Exception {
     database.rawQuery("select second_column, first_column from rawtable", new String[]{"1"});
   }
@@ -403,7 +343,7 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
     assertThat(cursor.getString(cursor.getColumnIndex("name"))).isEqualTo("Bench Press");
   }
 
-  @Test(expected = android.database.SQLException.class)
+  @Test(expected = SQLiteException.class)
   public void testExecSQLException() throws Exception {
     database.execSQL("INSERT INTO table_name;");    // invalid SQL
   }
@@ -418,15 +358,13 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
     database.execSQL("insert into exectable (first_column) values ('sdfsfs');", null);
   }
 
-  @Test(expected = Exception.class)
+  @Test(expected = IllegalArgumentException.class)
   public void testExecSQLException5() throws Exception {
-    //TODO: make this throw android.database.SQLException.class
     database.execSQL("insert into exectable (first_column) values ('kjhk');", new String[]{"xxxx"});
   }
 
-  @Test(expected = Exception.class)
+  @Test(expected = IllegalArgumentException.class)
   public void testExecSQLException6() throws Exception {
-    //TODO: make this throw android.database.SQLException.class
     database.execSQL("insert into exectable (first_column) values ('kdfd');", new String[]{null});
   }
 
@@ -447,23 +385,6 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
     int nameIndex = cursor.getColumnIndex("name");
     assertThat(cursor.getString(nameIndex)).isEqualTo(name);
     assertThat(cursor.getString(firstIndex)).isEqualTo(null);
-
-  }
-
-  @Test(expected = Exception.class)
-  public void testExecSQLInsertNullShouldBeException() throws Exception {
-    //this inserts null in android, but it when it happens it is likely an error.  H2 throws an exception.  So we'll make Robolectric expect an Exception so that the error can be found.
-
-    database.delete("exectable", null, null);
-
-    Cursor cursor = database.rawQuery("select * from exectable", null);
-    cursor.moveToFirst();
-    assertThat(cursor.getCount()).isEqualTo(0);
-
-    database.execSQL("insert into exectable (first_column) values (?);", new String[]{});
-    Cursor cursor2 = database.rawQuery("select * from exectable", new String[]{null});
-    cursor.moveToFirst();
-    assertThat(cursor2.getCount()).isEqualTo(1);
 
   }
 
@@ -505,15 +426,10 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
 
   @Test
   public void testSuccessTransaction() throws Exception {
-    assertThat(shDatabase.isTransactionSuccess()).isFalse();
     database.beginTransaction();
-    assertThat(shDatabase.isTransactionSuccess()).isFalse();
     database.execSQL("INSERT INTO table_name (id, name) VALUES(1234, 'Chuck');");
-    assertThat(shDatabase.isTransactionSuccess()).isFalse();
     database.setTransactionSuccessful();
-    assertThat(shDatabase.isTransactionSuccess()).isTrue();
     database.endTransaction();
-    assertThat(shDatabase.isTransactionSuccess()).isFalse();
 
     Cursor cursor = database.rawQuery("SELECT COUNT(*) FROM table_name", null);
     assertThat(cursor.moveToNext()).isTrue();
@@ -522,9 +438,7 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
 
   @Test
   public void testFailureTransaction() throws Exception {
-    assertThat(shDatabase.isTransactionSuccess()).isFalse();
     database.beginTransaction();
-    assertThat(shDatabase.isTransactionSuccess()).isFalse();
 
     database.execSQL("INSERT INTO table_name (id, name) VALUES(1234, 'Chuck');");
 
@@ -535,33 +449,23 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
     assertThat(cursor.getInt(0)).isEqualTo(1);
     cursor.close();
 
-    assertThat(shDatabase.isTransactionSuccess()).isFalse();
     database.endTransaction();
 
     cursor = database.rawQuery(select, null);
     assertThat(cursor.moveToNext()).isTrue();
     assertThat(cursor.getInt(0)).isEqualTo(0);
-
-    assertThat(shDatabase.isTransactionSuccess()).isFalse();
   }
 
   @Test
   public void testSuccessNestedTransaction() throws Exception {
-    assertThat(shDatabase.isTransactionSuccess()).isFalse();
     database.beginTransaction();
     database.execSQL("INSERT INTO table_name (id, name) VALUES(1234, 'Chuck');");
-    assertThat(shDatabase.isTransactionSuccess()).isFalse();
     database.beginTransaction();
-    assertThat(shDatabase.isTransactionSuccess()).isFalse();
     database.execSQL("INSERT INTO table_name (id, name) VALUES(12345, 'Julie');");
     database.setTransactionSuccessful();
-    assertThat(shDatabase.isTransactionSuccess()).isTrue();
     database.endTransaction();
-    assertThat(shDatabase.isTransactionSuccess()).isFalse();
     database.setTransactionSuccessful();
-    assertThat(shDatabase.isTransactionSuccess()).isTrue();
     database.endTransaction();
-    assertThat(shDatabase.isTransactionSuccess()).isFalse();
 
     Cursor cursor = database.rawQuery("SELECT COUNT(*) FROM table_name", null);
     assertThat(cursor.moveToNext()).isTrue();
@@ -570,19 +474,13 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
 
   @Test
   public void testFailureNestedTransaction() throws Exception {
-    assertThat(shDatabase.isTransactionSuccess()).isFalse();
     database.beginTransaction();
-    assertThat(shDatabase.isTransactionSuccess()).isFalse();
     database.execSQL("INSERT INTO table_name (id, name) VALUES(1234, 'Chuck');");
     database.beginTransaction();
-    assertThat(shDatabase.isTransactionSuccess()).isFalse();
     database.execSQL("INSERT INTO table_name (id, name) VALUES(12345, 'Julie');");
     database.endTransaction();
-    assertThat(shDatabase.isTransactionSuccess()).isFalse();
     database.setTransactionSuccessful();
-    assertThat(shDatabase.isTransactionSuccess()).isFalse();
     database.endTransaction();
-    assertThat(shDatabase.isTransactionSuccess()).isFalse();
 
     Cursor cursor = database.rawQuery("SELECT COUNT(*) FROM table_name", null);
     assertThat(cursor.moveToNext()).isTrue();
@@ -597,7 +495,7 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
       database.setTransactionSuccessful();
       fail("didn't receive the expected IllegalStateException");
     } catch (IllegalStateException e) {
-      assertThat(e.getMessage()).isEqualTo("transaction already successfully");
+      assertThat(e.getMessage()).contains("transaction").contains("successful");
     }
   }
 
@@ -659,33 +557,16 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
     assertThat(secondCursor.getString(0)).isEqualTo(stringValueB);
   }
 
-  @Test
-  public void shouldKeepTrackOfOpenCursors() throws Exception {
-    Cursor cursor = database.query("table_name", new String[]{"second_column", "first_column"}, null, null, null, null, null);
-
-    assertThat(shadowOf(database).hasOpenCursors()).isTrue();
-    cursor.close();
-    assertThat(shadowOf(database).hasOpenCursors()).isFalse();
-
-  }
-
-  @Test
-  public void shouldBeAbleToAnswerQuerySql() throws Exception {
-    try {
-      database.query("table_name_1", new String[]{"first_column"}, null, null, null, null, null);
-    } catch (Exception e) {
-      //ignore
-    }
-    try {
-      database.query("table_name_2", new String[]{"second_column"}, null, null, null, null, null);
-    } catch (Exception e) {
-      //ignore
-    }
-    List<String> queries = shadowOf(database).getQuerySql();
-    assertThat(queries.size()).isEqualTo(2);
-    assertThat(queries.get(0)).isEqualTo("SELECT first_column FROM table_name_1");
-    assertThat(queries.get(1)).isEqualTo("SELECT second_column FROM table_name_2");
-  }
+  // TODO: think about tracking open cursors
+//  @Test
+//  public void shouldKeepTrackOfOpenCursors() throws Exception {
+//    Cursor cursor = database.query("table_name", new String[]{"second_column", "first_column"}, null, null, null, null, null);
+//
+//    assertThat(shadowOf(database).hasOpenCursors()).isTrue();
+//    cursor.close();
+//    assertThat(shadowOf(database).hasOpenCursors()).isFalse();
+//
+//  }
 
   @Test
   public void shouldCreateDefaultCursorFactoryWhenNullFactoryPassedToRawQuery() throws Exception {
@@ -714,13 +595,11 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
     assertThat(reopened.isOpen()).isTrue();
   }
 
-  @Test
-  public void shouldUseInMemoryDatabaseIfFileDoesNotExist() throws Exception {
+  @Test(expected = SQLiteException.class)
+  public void shouldThrowIfFileDoesNotExist() throws Exception {
     File testDb = new File("/i/do/not/exist");
     assertThat(testDb.exists()).isFalse();
-    SQLiteDatabase db = SQLiteDatabase.openOrCreateDatabase(testDb.getAbsolutePath(), null);
-    db.execSQL("select 1");
-    db.close();
+    SQLiteDatabase.openOrCreateDatabase(testDb.getAbsolutePath(), null);
   }
 
   @Test
@@ -739,16 +618,6 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
   @Test
   public void testGetPath() throws Exception {
     assertThat(database.getPath()).isEqualTo(Robolectric.application.getDatabasePath("path").getPath());
-  }
-
-  @Test
-  public void testShouldReturnTheSameDatabaseIfAlreadyOpened() throws Exception {
-    String path1 = Robolectric.application.getDatabasePath("db1").getPath();
-    String path2 = Robolectric.application.getDatabasePath("db2").getPath();
-    SQLiteDatabase db1 = SQLiteDatabase.openOrCreateDatabase(path1, null);
-    SQLiteDatabase db2 = SQLiteDatabase.openOrCreateDatabase(path2, null);
-    assertThat(SQLiteDatabase.openDatabase(path1, null, OPEN_READWRITE)).isSameAs(db1);
-    assertThat(SQLiteDatabase.openDatabase(path2, null, OPEN_READWRITE)).isSameAs(db2);
   }
 
   @Test
@@ -798,6 +667,7 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
     db.execSQL("CREATE TABLE foo(id INTEGER PRIMARY KEY AUTOINCREMENT, data TEXT);");
     Cursor c = db.query("FOO", null, null, null, null, null, null);
     assertThat(c).isNotNull();
+    c.close();
     db.execSQL("DROP TABLE IF EXISTS foo;");
   }
 
@@ -873,32 +743,11 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
   }
 
   @Test
-  public void shouldLockWhenEnabled() throws Exception{
-    ShadowSQLiteDatabase shadowDB = shadowOf(database);
-
-    // Test disabled locking
-    shadowDB.setLockingEnabled(false);
-
-    assertThat(database.isDbLockedByCurrentThread()).isTrue();
-    shadowDB.lock();
-    assertThat(database.isDbLockedByCurrentThread()).isTrue();
-    shadowDB.unlock();
-    assertThat(database.isDbLockedByCurrentThread()).isTrue();
-
-    // Test enabled locking
-    shadowDB.setLockingEnabled(true);
-    assertThat(database.isDbLockedByCurrentThread()).isFalse();
-    shadowDB.lock();
-    assertThat(database.isDbLockedByCurrentThread()).isTrue();
-    shadowDB.unlock();
-    assertThat(database.isDbLockedByCurrentThread()).isFalse();
-  }
-
-  @Test
   public void testRawQueryWithFactoryAndCancellationSignal() throws Exception {
     Cursor cursor = database.rawQueryWithFactory(null, "select * from table_name", null, null, null);
     assertThat(cursor).isNotNull();
     assertThat(cursor.getColumnCount()).isEqualTo(5);
     assertThat(cursor.isClosed()).isFalse();
   }
+
 }
