@@ -63,7 +63,7 @@ public class ShadowDrawable {
 
     Bitmap  bm = BitmapFactory.decodeResourceStream(res, value, is, pad, opts);
     if (bm != null) {
-      boolean isNinePatch = srcName.contains(".9.");
+      boolean isNinePatch = srcName != null && srcName.contains(".9.");
       if (isNinePatch) {
         method("setNinePatchChunk").withParameterTypes(byte[].class).in(bm).invoke(new byte[0]);
       }
