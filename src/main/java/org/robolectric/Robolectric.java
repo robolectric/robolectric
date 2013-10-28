@@ -183,6 +183,7 @@ import org.robolectric.shadows.ShadowAssetManager;
 import org.robolectric.shadows.ShadowAsyncTask;
 import org.robolectric.shadows.ShadowAudioManager;
 import org.robolectric.shadows.ShadowBaseAdapter;
+import org.robolectric.shadows.ShadowBinder;
 import org.robolectric.shadows.ShadowBitmap;
 import org.robolectric.shadows.ShadowBitmapDrawable;
 import org.robolectric.shadows.ShadowBitmapFactory;
@@ -1327,6 +1328,7 @@ public class Robolectric {
     Robolectric.activityThread = null;
     ShadowAccountManager.reset();
     ShadowResources.reset();
+    ShadowBinder.reset();
     ShadowBitmapFactory.reset();
     ShadowDrawable.reset();
     ShadowMediaStore.reset();
