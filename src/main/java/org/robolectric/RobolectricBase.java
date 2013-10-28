@@ -1,13 +1,9 @@
 package org.robolectric;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import org.robolectric.shadows.ShadowAbsListView;
 import org.robolectric.shadows.ShadowAbsSeekBar;
 import org.robolectric.shadows.ShadowAbsSpinner;
 import org.robolectric.shadows.ShadowAbsoluteLayout;
-import org.robolectric.shadows.ShadowAbstractWindowedCursor;
 import org.robolectric.shadows.ShadowAccessibilityManager;
 import org.robolectric.shadows.ShadowAccountManager;
 import org.robolectric.shadows.ShadowActivity;
@@ -69,6 +65,7 @@ import org.robolectric.shadows.ShadowCountDownTimer;
 import org.robolectric.shadows.ShadowCriteria;
 import org.robolectric.shadows.ShadowCursorAdapter;
 import org.robolectric.shadows.ShadowCursorLoader;
+import org.robolectric.shadows.ShadowCursorWindow;
 import org.robolectric.shadows.ShadowCursorWrapper;
 import org.robolectric.shadows.ShadowDashPathEffect;
 import org.robolectric.shadows.ShadowDatabaseUtils;
@@ -130,7 +127,6 @@ import org.robolectric.shadows.ShadowMediaRecorder;
 import org.robolectric.shadows.ShadowMediaScannerConnection;
 import org.robolectric.shadows.ShadowMediaStore;
 import org.robolectric.shadows.ShadowMenuInflater;
-import org.robolectric.shadows.ShadowMergeCursor;
 import org.robolectric.shadows.ShadowMessenger;
 import org.robolectric.shadows.ShadowMimeTypeMap;
 import org.robolectric.shadows.ShadowMockPackageManager;
@@ -170,10 +166,11 @@ import org.robolectric.shadows.ShadowResolveInfo;
 import org.robolectric.shadows.ShadowResourceCursorAdapter;
 import org.robolectric.shadows.ShadowResources;
 import org.robolectric.shadows.ShadowResultReceiver;
-import org.robolectric.shadows.ShadowSQLiteClosable;
+import org.robolectric.shadows.ShadowSQLiteConnection;
 import org.robolectric.shadows.ShadowSQLiteCursor;
 import org.robolectric.shadows.ShadowSQLiteDatabase;
 import org.robolectric.shadows.ShadowSQLiteProgram;
+import org.robolectric.shadows.ShadowSQLiteQuery;
 import org.robolectric.shadows.ShadowSQLiteQueryBuilder;
 import org.robolectric.shadows.ShadowSQLiteStatement;
 import org.robolectric.shadows.ShadowScaleGestureDetector;
@@ -233,6 +230,10 @@ import org.robolectric.shadows.ShadowWindowManager;
 import org.robolectric.shadows.ShadowWindowManagerImpl;
 import org.robolectric.shadows.ShadowZoomButtonsController;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 public class RobolectricBase {
   static final List<Class<?>> DEFAULT_SHADOW_CLASSES = Collections.unmodifiableList(Arrays.asList(
       ShadowAbsListView.class,
@@ -240,7 +241,6 @@ public class RobolectricBase {
       ShadowAbsoluteLayout.ShadowLayoutParams.class,
       ShadowAbsSeekBar.class,
       ShadowAbsSpinner.class,
-      ShadowAbstractWindowedCursor.class,
       ShadowAccessibilityManager.class,
       ShadowAccountManager.class,
       ShadowActivity.class,
@@ -306,6 +306,7 @@ public class RobolectricBase {
       ShadowCriteria.class,
       ShadowCursorAdapter.class,
       ShadowCursorLoader.class,
+      ShadowCursorWindow.class,
       ShadowCursorWrapper.class,
       ShadowDashPathEffect.class,
       ShadowDatabaseUtils.class,
@@ -373,7 +374,6 @@ public class RobolectricBase {
       ShadowMediaScannerConnection.class,
       ShadowMediaStore.ShadowImages.ShadowMedia.class,
       ShadowMenuInflater.class,
-      ShadowMergeCursor.class,
       ShadowMessenger.class,
       ShadowMimeTypeMap.class,
       ShadowMockPackageManager.class,
@@ -436,11 +436,12 @@ public class RobolectricBase {
       ShadowSpellChecker.class,
       ShadowSyncResult.class,
       ShadowSyncStats.class,
+      ShadowSQLiteConnection.class,
       ShadowSQLiteProgram.class,
-      ShadowSQLiteClosable.class,
       ShadowSQLiteDatabase.class,
       ShadowSQLiteCursor.class,
       ShadowSQLiteStatement.class,
+      ShadowSQLiteQuery.class,
       ShadowSQLiteQueryBuilder.class,
       ShadowSslErrorHandler.class,
       ShadowStateListDrawable.class,

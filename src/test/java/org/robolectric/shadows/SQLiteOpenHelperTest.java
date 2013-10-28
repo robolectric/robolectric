@@ -92,7 +92,7 @@ public class SQLiteOpenHelperTest {
     assertThat(shadow.getConnection()).isNotNull();
     db1.close();
     assertThat(shadow.getConnection()).isNotNull();
-    ShadowSQLiteDatabase.reset();
+    //ShadowSQLiteDatabase.reset();
     assertThat(shadow.getConnection()).isNotNull();
   }
 
@@ -179,7 +179,7 @@ public class SQLiteOpenHelperTest {
     setupTable(db2, TABLE_NAME);
     insertData(db2, TABLE_NAME, new int[]{4, 5, 6});
     verifyData(db2, TABLE_NAME, 3);
-    ShadowSQLiteDatabase.reset();
+    //ShadowSQLiteDatabase.reset();
     db2 = helper2.getWritableDatabase();
     // shouldn't throw exceptions because ShadowSQLiteDatabase.reset() clears in memory DB.
     setupTable(db2, TABLE_NAME);

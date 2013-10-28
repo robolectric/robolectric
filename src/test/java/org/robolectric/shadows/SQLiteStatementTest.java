@@ -1,11 +1,9 @@
 package org.robolectric.shadows;
 
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.robolectric.Robolectric.shadowOf;
-
-import java.sql.ResultSet;
-import java.sql.Statement;
-
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteDoneException;
+import android.database.sqlite.SQLiteException;
+import android.database.sqlite.SQLiteStatement;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -13,10 +11,11 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteDoneException;
-import android.database.sqlite.SQLiteException;
-import android.database.sqlite.SQLiteStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
+
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class SQLiteStatementTest {

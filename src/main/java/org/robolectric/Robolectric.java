@@ -36,10 +36,8 @@ import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.database.ContentObserver;
 import android.database.CursorWrapper;
-import android.database.MergeCursor;
 import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteProgram;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.database.sqlite.SQLiteStatement;
@@ -249,7 +247,6 @@ import org.robolectric.shadows.ShadowMediaPlayer;
 import org.robolectric.shadows.ShadowMediaRecorder;
 import org.robolectric.shadows.ShadowMediaStore;
 import org.robolectric.shadows.ShadowMenuInflater;
-import org.robolectric.shadows.ShadowMergeCursor;
 import org.robolectric.shadows.ShadowMimeTypeMap;
 import org.robolectric.shadows.ShadowMotionEvent;
 import org.robolectric.shadows.ShadowNetworkInfo;
@@ -734,10 +731,6 @@ public class Robolectric {
 
   public static ShadowMenuInflater shadowOf(MenuInflater instance) {
     return (ShadowMenuInflater) shadowOf_(instance);
-  }
-
-  public static ShadowMergeCursor shadowOf(MergeCursor instance) {
-    return (ShadowMergeCursor) shadowOf_(instance);
   }
 
   public static ShadowMimeTypeMap shadowOf(MimeTypeMap instance) {
@@ -1343,7 +1336,6 @@ public class Robolectric {
     ShadowPowerManager.reset();
     ShadowStatFs.reset();
     ShadowTypeface.reset();
-    ShadowSQLiteDatabase.reset();
   }
 
   public static <T extends Activity> ActivityController<T> buildActivity(Class<T> activityClass) {
