@@ -40,6 +40,15 @@ public class SettingsTest {
   }
 
   @Test
+  public void testGlobalGetInt() throws Exception {
+    assertThat(Settings.Global.getInt(contentResolver, "property", 0)).isEqualTo(0);
+    assertThat(Settings.Global.getInt(contentResolver, "property", 2)).isEqualTo(2);
+
+    Settings.Global.putInt(contentResolver, "property", 1);
+    assertThat(Settings.Global.getInt(contentResolver, "property", 0)).isEqualTo(1);
+  }
+
+  @Test
   public void testSystemGetString() throws Exception {
     assertThat(Settings.System.getString(contentResolver, "property")).isNull();
 
