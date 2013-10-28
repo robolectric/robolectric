@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
 import android.graphics.Rect;
@@ -25,6 +26,13 @@ public class DrawableTest {
     String corruptedStreamSource = "http://foo.com/image.jpg";
     ShadowDrawable.addCorruptStreamSource(corruptedStreamSource);
     assertNull(ShadowDrawable.createFromStream(new ByteArrayInputStream(new byte[0]), corruptedStreamSource));
+  }
+
+  @Test
+  public void createFromResourceStream_shouldWorkWithoutSourceName() {
+    Drawable drawable = Drawable.createFromResourceStream(Robolectric.application.getResources(),
+        null, new ByteArrayInputStream(new byte[0]), null, new BitmapFactory.Options());
+    assertNotNull(drawable);
   }
 
   @Test
