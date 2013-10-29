@@ -86,16 +86,13 @@ abstract public class ShadowContext {
 
   @Implementation
   public File getDatabasePath(String name) {
-    File dir;
-    if (name.charAt(0) == File.separatorChar) {
-      String dirPath = name.substring(0, name.lastIndexOf(File.separatorChar));
-      dir = new File(dirPath);
-      name = name.substring(name.lastIndexOf(File.separatorChar));
+    File file = new File(name);
+    if (file.isAbsolute()) {
+      return file;
     } else {
       DATABASE_DIR.mkdirs();
-      dir = DATABASE_DIR;
+      return new File(DATABASE_DIR, name);
     }
-    return new File(dir, name);
   }
 
   @Implementation
