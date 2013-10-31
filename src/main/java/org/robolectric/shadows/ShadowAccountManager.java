@@ -37,6 +37,8 @@ public class ShadowAccountManager {
   private Map<Account, Map<String, String>> authTokens = new HashMap<Account, Map<String,String>>();
   private List<AuthenticatorDescription> authenticators = new ArrayList<AuthenticatorDescription>();
   private List<OnAccountsUpdateListener> listeners = new ArrayList<OnAccountsUpdateListener>();
+  private Map<Account, Map<String, String>> userData = new HashMap<Account, Map<String,String>>();
+  private Map<Account, String> passwords = new HashMap<Account, String>();
 
   public static void reset() {
     synchronized (lock) {
@@ -103,7 +105,20 @@ public class ShadowAccountManager {
         return false;
       }
     }
-    return accounts.add(account);
+    
+    if (!accounts.add(account)) {
+    	return false;
+    }
+    
+    setPassword(account, password);
+    
+    if(userdata != null) {
+      for (String key : userdata.keySet()) {
+        setUserData(account, key, userdata.get(key).toString());
+      }
+    }
+    
+    return true;    
   }
 
   @Implementation
@@ -131,6 +146,8 @@ public class ShadowAccountManager {
     if (account == null) throw new IllegalArgumentException("account is null");
 
     final boolean accountRemoved = accounts.remove(account);
+	passwords.remove(account);
+	userData.remove(account);
 
     return new AccountManagerFuture<Boolean>() {
       @Override
@@ -181,6 +198,69 @@ public class ShadowAccountManager {
       listener.onAccountsUpdated(getAccounts());
     }
   }
+  
+  @Implementation
+  public String getUserData(Account account, String key) {
+    if (account == null) {
+      throw new IllegalArgumentException("account is null");
+    }
+
+    if (!userData.containsKey(account)) {
+      return null;
+    }
+    
+    Map<String, String> userDataMap = userData.get(account);
+    if (userDataMap.containsKey(key)) {
+      return userDataMap.get(key);
+    }
+
+	return null;
+  }
+  
+  @Implementation
+  public void setUserData(Account account, String key, String value) {
+    if (account == null) {
+      throw new IllegalArgumentException("account is null");
+    }
+    
+    if (!userData.containsKey(account)) {
+      userData.put(account, new HashMap<String, String>());
+    }
+    
+    Map<String, String> userDataMap = userData.get(account);
+    
+    if (value == null) {
+      userDataMap.remove(key);
+    } else {
+      userDataMap.put(key, value);
+    }
+  }
+  
+  @Implementation
+  public void setPassword (Account account, String password) {
+    if (account == null) {
+      throw new IllegalArgumentException("account is null");
+    }
+    
+    if (password == null) {
+      passwords.remove(account);
+    } else {
+      passwords.put(account, password);
+    }
+  }
+  
+  @Implementation
+  public String getPassword (Account account) {
+    if (account == null) {
+      throw new IllegalArgumentException("account is null");
+    }
+	
+    if (passwords.containsKey(account)) {
+      return passwords.get(account);
+    } else {
+      return null;
+    }
+  }  
 
   private void notifyListeners() {
     Account[] accounts = getAccounts();

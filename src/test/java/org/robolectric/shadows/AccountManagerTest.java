@@ -9,6 +9,8 @@ import android.accounts.OnAccountsUpdateListener;
 import android.accounts.OperationCanceledException;
 import android.app.Activity;
 import android.app.Application;
+import android.os.Bundle;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -107,7 +109,7 @@ public class AccountManagerTest {
   }
 
   @Test
-  public void testAddAccountExplicitly() {
+  public void testAddAccountExplicitly_noPasswordNoExtras() {
     Account account = new Account("name", "type");
     boolean accountAdded = am.addAccountExplicitly(account, null, null);
 
@@ -124,6 +126,7 @@ public class AccountManagerTest {
     assertThat(am.getAccountsByType("type").length).isEqualTo(2);
     assertThat(am.getAccountsByType("type")[0].name).isEqualTo("name");
     assertThat(am.getAccountsByType("type")[1].name).isEqualTo("another_name");
+    assertThat(am.getPassword(account)).isNull();
 
     try {
       am.addAccountExplicitly(null, null, null);
@@ -131,6 +134,102 @@ public class AccountManagerTest {
     } catch (IllegalArgumentException iae) {
       // NOP
     }
+  }
+
+  @Test
+  public void testAddAccountExplicitly_withPassword() {
+    Account account = new Account("name", "type");
+    boolean accountAdded = am.addAccountExplicitly(account, "passwd", null);
+
+    assertThat(accountAdded).isTrue();
+    assertThat(am.getPassword(account)).isEqualTo("passwd");
+  }
+
+  @Test
+  public void testAddAccountExplicitly_withExtras() {
+    Account account = new Account("name", "type");
+    Bundle extras = new Bundle();
+    extras.putString("key123", "value123");
+    boolean accountAdded = am.addAccountExplicitly(account, null, extras);
+
+    assertThat(accountAdded).isTrue();
+    assertThat(am.getUserData(account, "key123")).isEqualTo("value123");
+    assertThat(am.getUserData(account, "key456")).isNull();
+  }
+
+  @Test
+  public void testGetSetUserData_addToInitiallyEmptyExtras() {
+    Account account = new Account("name", "type");
+    boolean accountAdded = am.addAccountExplicitly(account, null, null);
+
+    assertThat(accountAdded).isTrue();
+    
+    am.setUserData(account, "key123", "value123");
+    assertThat(am.getUserData(account, "key123")).isEqualTo("value123");
+  }
+
+  @Test
+  public void testGetSetUserData_overwrite() {
+    Account account = new Account("name", "type");
+    boolean accountAdded = am.addAccountExplicitly(account, null, null);
+
+    assertThat(accountAdded).isTrue();
+    
+    am.setUserData(account, "key123", "value123");
+    assertThat(am.getUserData(account, "key123")).isEqualTo("value123");
+
+    am.setUserData(account, "key123", "value456");
+    assertThat(am.getUserData(account, "key123")).isEqualTo("value456");
+  }
+
+  @Test
+  public void testGetSetUserData_remove() {
+    Account account = new Account("name", "type");
+    boolean accountAdded = am.addAccountExplicitly(account, null, null);
+
+    assertThat(accountAdded).isTrue();
+    
+    am.setUserData(account, "key123", "value123");
+    assertThat(am.getUserData(account, "key123")).isEqualTo("value123");
+
+    am.setUserData(account, "key123", null);
+    assertThat(am.getUserData(account, "key123")).isNull();
+  }
+  
+  @Test
+  public void testGetSetPassword_setInAccountInitiallyWithNoPassword() {
+    Account account = new Account("name", "type");
+    boolean accountAdded = am.addAccountExplicitly(account, null, null);
+
+    assertThat(accountAdded).isTrue();
+    assertThat(am.getPassword(account)).isNull();
+    
+    am.setPassword(account, "passwd");
+    assertThat(am.getPassword(account)).isEqualTo("passwd");	  
+  }
+
+  @Test
+  public void testGetSetPassword_overwrite() {
+    Account account = new Account("name", "type");
+    boolean accountAdded = am.addAccountExplicitly(account, "passwd1", null);
+
+    assertThat(accountAdded).isTrue();
+    assertThat(am.getPassword(account)).isEqualTo("passwd1");	  
+
+    am.setPassword(account, "passwd2");
+    assertThat(am.getPassword(account)).isEqualTo("passwd2");	  
+  }
+
+  @Test
+  public void testGetSetPassword_remove() {
+    Account account = new Account("name", "type");
+    boolean accountAdded = am.addAccountExplicitly(account, "passwd1", null);
+
+    assertThat(accountAdded).isTrue();
+    assertThat(am.getPassword(account)).isEqualTo("passwd1");	  
+
+    am.setPassword(account, null);
+    assertThat(am.getPassword(account)).isNull();	  
   }
 
   @Test
