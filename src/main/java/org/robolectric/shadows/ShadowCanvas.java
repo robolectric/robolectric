@@ -7,6 +7,7 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
@@ -28,6 +29,7 @@ import static org.robolectric.Robolectric.shadowOf;
 public class ShadowCanvas {
   private List<PathPaintHistoryEvent> pathPaintEvents = new ArrayList<PathPaintHistoryEvent>();
   private List<CirclePaintHistoryEvent> circlePaintEvents = new ArrayList<CirclePaintHistoryEvent>();
+  private List<ArcPaintHistoryEvent> arcPaintEvents = new ArrayList<ArcPaintHistoryEvent>();
   private List<TextHistoryEvent> drawnTextEventHistory = new ArrayList<TextHistoryEvent>();
   private Paint drawnPaint;
   private Bitmap targetBitmap = newInstanceOf(Bitmap.class);
@@ -139,6 +141,12 @@ public class ShadowCanvas {
     circlePaintEvents.add(new CirclePaintHistoryEvent(cx, cy, radius, paint));
   }
 
+  @Implementation
+  public void drawArc(RectF oval, float startAngle, float sweepAngle, boolean useCenter,
+                      Paint paint) {
+    arcPaintEvents.add(new ArcPaintHistoryEvent(oval, startAngle, sweepAngle, useCenter, paint));
+  }
+
   private void describeBitmap(Bitmap bitmap, Paint paint) {
     separateLines();
 
@@ -166,6 +174,10 @@ public class ShadowCanvas {
     return circlePaintEvents.size();
   }
 
+  public int getArcPaintHistoryCount() {
+    return arcPaintEvents.size();
+  }
+
   public boolean hasDrawnPath() {
     return getPathPaintHistoryCount() > 0;
   }
@@ -184,6 +196,10 @@ public class ShadowCanvas {
 
   public CirclePaintHistoryEvent getDrawnCircle(int i) {
     return circlePaintEvents.get(i);
+  }
+
+  public ArcPaintHistoryEvent getDrawnArc(int i) {
+    return arcPaintEvents.get(i);
   }
 
   public void resetCanvasHistory() {
@@ -243,6 +259,23 @@ public class ShadowCanvas {
       this.centerX = centerX;
       this.centerY = centerY;
       this.radius = radius;
+      this.paint = paint;
+    }
+  }
+
+  public static class ArcPaintHistoryEvent {
+    public final RectF oval;
+    public final float startAngle;
+    public final float sweepAngle;
+    public final boolean useCenter;
+    public final Paint paint;
+
+    public ArcPaintHistoryEvent(RectF oval, float startAngle, float sweepAngle, boolean useCenter,
+                                Paint paint) {
+      this.oval = oval;
+      this.startAngle = startAngle;
+      this.sweepAngle = sweepAngle;
+      this.useCenter = useCenter;
       this.paint = paint;
     }
   }
