@@ -204,7 +204,7 @@ public class ActivityTest {
   @Test
   public void shouldRetrievePackageNameFromTheManifest() throws Exception {
     AndroidManifest appManifest = newConfigWith("com.wacka.wa", "");
-    Robolectric.application = new DefaultTestLifecycle().createApplication(null, appManifest);
+    Robolectric.application = new DefaultTestLifecycle().createApplication(appManifest);
     shadowOf(application).bind(appManifest, null);
 
     assertThat("com.wacka.wa").isEqualTo(new Activity().getPackageName());

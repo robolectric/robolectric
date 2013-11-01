@@ -16,12 +16,11 @@ public class DefaultTestLifecycle implements TestLifecycle {
    * <p/>
    * This method attempts to instantiate an application instance as specified by the AndroidManifest.xml.
    *
-   * @param method The currently-running test method.
    * @param appManifest The application manifest.
    * @return An instance of the Application class specified by the ApplicationManifest.xml or an instance of
    *         Application if not specified.
    */
-  public Application createApplication(Method method, AndroidManifest appManifest) {
+  public Application createApplication(AndroidManifest appManifest) {
     String applicationName = appManifest == null ? Application.class.getName() : appManifest.getApplicationName();
     Application application;
     if (applicationName != null) {

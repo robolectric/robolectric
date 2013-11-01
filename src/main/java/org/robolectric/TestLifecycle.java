@@ -3,7 +3,7 @@ package org.robolectric;
 import java.lang.reflect.Method;
 
 public interface TestLifecycle<T> {
-  T createApplication(Method method, AndroidManifest appManifest);
+  T createApplication(AndroidManifest appManifest);
 
   void beforeTest(Method method);
 
