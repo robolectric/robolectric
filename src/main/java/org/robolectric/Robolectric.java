@@ -1350,6 +1350,10 @@ public class Robolectric {
     return new ActivityController<T>(activityClass);
   }
 
+  public static <T extends Activity> T setupActivity(Class<T> activityClass) {
+    return new ActivityController<T>(activityClass).create().start().resume().visible().get();
+  }
+
   /**
    * Set to true if you'd like Robolectric to strictly simulate the real Android behavior when
    * calling {@link Context#startActivity(android.content.Intent)}. Real Android throws a

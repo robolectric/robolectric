@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.Handler;
 import android.view.Display;
 import android.view.View;
@@ -154,6 +155,16 @@ public class RobolectricTest {
     Robolectric.application.startActivity(new Intent("i.dont.exist.activity"));
   }
 
+  @Test
+  public void setupActivity_returnsAVisibleActivity() throws Exception {
+    LifeCycleActivity activity = Robolectric.setupActivity(LifeCycleActivity.class);
+
+    assertThat(activity.isCreated()).isTrue();
+    assertThat(activity.isStarted()).isTrue();
+    assertThat(activity.isResumed()).isTrue();
+    assertThat(activity.isVisible()).isTrue();
+  }
+
   @Implements(View.class)
   public static class TestShadowView {
     @SuppressWarnings({"UnusedDeclaration"})
@@ -176,5 +187,34 @@ public class RobolectricTest {
     DefaultRequestDirector requestDirector = new DefaultRequestDirector(null, null, null, connectionKeepAliveStrategy, null, null, null, null, null, null, null, null);
 
     requestDirector.execute(null, new HttpGet(uri), null);
+  }
+
+  private static class LifeCycleActivity extends Activity {
+    private boolean created;
+    private boolean started;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+      super.onCreate(savedInstanceState);
+      created = true;
+    }
+
+    @Override
+    protected void onStart() {
+      super.onStart();
+      started = true;
+    }
+
+    public boolean isStarted() {
+      return started;
+    }
+
+    public boolean isCreated() {
+      return created;
+    }
+
+    public boolean isVisible() {
+      return getWindow().getDecorView().getWindowToken() != null;
+    }
   }
 }
