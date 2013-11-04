@@ -24,19 +24,13 @@ body {
 }
 
 a {
-	color: #55862e;
+  color: #55862e;
   text-decoration: none;
-  border-bottom: solid 1px #3030a2;
-}
-
-a:hover {
-  text-decoration: none;
-  border-bottom: 0;
 }
 
 a:visited {
-  color: #777;
-  border-bottom: solid 1px #ccc;
+  color: #55862e;
+  text-decoration: none;
 }
 
 h1, h2, h3, h4, h5, h6 {
