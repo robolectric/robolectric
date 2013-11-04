@@ -27,7 +27,7 @@ If you're working in an IDE such as IntelliJ and then pushing to a CI that uses 
 the problem of a dependency appearing in different places depending on the environment - the IDE will probably compile
 to a different directory structure than Maven would. To deal with this
 Robolectric will only attempt to load dependencies that exist at run time. This means you can just
-list both possible locations for the dependecy like so:
+list both possible locations for the dependency like so:
 
 ```
 android.library.reference.1=dev-env-dir/my-awesome-dependency
