@@ -22,6 +22,3 @@ for mapsDir in `ls -1d $ANDROID_HOME/add-ons/addon-google_apis-google-*`; do
 done
 
 echo "Done!"
-
-
-

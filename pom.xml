@@ -155,20 +155,6 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-source-plugin</artifactId>
-        <version>2.1.2</version>
-        <configuration/>
-        <executions>
-          <execution>
-            <id>attach-sources</id>
-            <goals>
-              <goal>jar</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>2.3.2</version>
         <configuration>
@@ -176,6 +162,7 @@
           <target>1.6</target>
         </configuration>
       </plugin>
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
@@ -206,6 +193,7 @@
           </execution>
         </executions>
       </plugin>
+
       <!-- required for testing robolectric-sqlite -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -234,57 +222,8 @@
           </filesets>
         </configuration>
       </plugin>
-
     </plugins>
   </build>
-
-  <profiles>
-    <profile>
-      <id>ant-deps</id>
-      <build>
-        <plugins>
-          <plugin>
-            <artifactId>maven-antrun-plugin</artifactId>
-            <version>1.6</version>
-            <executions>
-              <execution>
-                <id>clean-dependencies</id>
-                <phase>package</phase>
-                <goals>
-                  <goal>run</goal>
-                </goals>
-                <configuration>
-                  <target>
-                    <delete dir="${project.basedir}/lib/main"/>
-                    <mkdir dir="${project.basedir}/lib/main"/>
-                  </target>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <artifactId>maven-dependency-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>copy-dependencies</id>
-                <phase>package</phase>
-                <goals>
-                  <goal>copy-dependencies</goal>
-                </goals>
-                <configuration>
-                  <outputDirectory>${project.basedir}/lib/main</outputDirectory>
-                  <overWriteReleases>false</overWriteReleases>
-                  <overWriteSnapshots>false</overWriteSnapshots>
-                  <overWriteIfNewer>true</overWriteIfNewer>
-                  <excludeArtifactIds>android,maps,mockito-core</excludeArtifactIds>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
 
   <scm>
     <url>git@github.com:robolectric/robolectric.git</url>
@@ -293,8 +232,8 @@
   </scm>
 
   <ciManagement>
-    <system>Hudson</system>
-    <url>http://ci.robolectric.org/job/robolectric</url>
+    <system>Travis CI</system>
+    <url>http://travis-ci.org/robolectric/robolectric</url>
   </ciManagement>
 
   <developers>
