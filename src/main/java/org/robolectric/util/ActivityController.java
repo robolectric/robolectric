@@ -80,6 +80,9 @@ public class ActivityController<T extends Activity> {
     Application application = this.application == null ? Robolectric.application : this.application;
     Context baseContext = this.baseContext == null ? application : this.baseContext;
     Intent intent = this.intent == null ? new Intent(application, activity.getClass()) : this.intent;
+    if (intent.getComponent() == null) {
+      intent.setClass(application, activity.getClass());
+    }
     ActivityInfo activityInfo = new ActivityInfo();
 
     ClassLoader cl = baseContext.getClassLoader();

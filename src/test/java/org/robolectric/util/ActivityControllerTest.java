@@ -2,6 +2,7 @@ package org.robolectric.util;
 
 import android.app.Activity;
 import android.content.ComponentName;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Looper;
 import org.junit.Before;
@@ -28,6 +29,15 @@ public class ActivityControllerTest {
     assertThat(myActivity.getIntent()).isNotNull();
     assertThat(myActivity.getIntent().getComponent())
         .isEqualTo(new ComponentName("org.robolectric", MyActivity.class.getName()));
+  }
+
+  @Test public void shouldSetIntentComponentWithCustomIntentWithoutComponentSet() throws Exception {
+    MyActivity myActivity = Robolectric.buildActivity(MyActivity.class)
+        .withIntent(new Intent("some action")).create().get();
+    assertThat(myActivity.getIntent().getComponent())
+        .isEqualTo(new ComponentName("org.robolectric", MyActivity.class.getName()));
+    assertThat(myActivity.getIntent().getAction())
+        .isEqualTo("some action");
   }
 
   @Test public void whenLooperIsNotPaused_shouldCreateTestsWithMainLooperPaused() throws Exception {
