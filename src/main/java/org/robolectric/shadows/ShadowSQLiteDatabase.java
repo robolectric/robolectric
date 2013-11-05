@@ -11,6 +11,7 @@ import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteQuery;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.database.sqlite.SQLiteStatement;
+import android.os.CancellationSignal;
 import android.text.TextUtils;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
@@ -302,6 +303,13 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
     shadowOf(cursor).setResultSet(resultSet, sqlBody);
     cursors.add(cursor);
     return cursor;
+  }
+
+  @Implementation
+  public Cursor rawQueryWithFactory(
+      CursorFactory cursorFactory, String sql, String[] selectionArgs,
+      String editTable, CancellationSignal cancellationSignal) {
+    return rawQueryWithFactory(cursorFactory, sql, selectionArgs, editTable);
   }
 
   @Implementation
