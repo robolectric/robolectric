@@ -226,7 +226,7 @@ public class ShadowWrangler implements ClassHandler {
         @Override
         public Object call(Class<?> theClass, Object value, Object[] params) {
           LinkedHashMap map = (LinkedHashMap) value;
-          return map.entrySet().iterator().next();
+          return map.isEmpty() ? null : map.entrySet().iterator().next();
         }
       };
     } else if (methodSignature.matches("com.android.internal.policy.PolicyManager", "makeNewWindow")) {
