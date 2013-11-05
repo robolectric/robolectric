@@ -52,4 +52,15 @@ public class ShadowWranglerUnitTest {
     assertThat(result.getKey()).isEqualTo(1);
     assertThat(result.getValue()).isEqualTo("one");
   }
+
+  @Test
+  public void intercept_elderOnLinkedHashMapHandler_shouldReturnNullForEmptyMap() throws Throwable {
+    LinkedHashMap<Integer, String> map = new LinkedHashMap<Integer, String>();
+
+    @SuppressWarnings("unchecked")
+    Map.Entry<Integer, String> result = (Map.Entry<Integer, String>)
+        shadowWrangler.intercept("java/util/LinkedHashMap/eldest()Ljava/lang/Object;", map, null, getClass());
+
+    assertThat(result).isNull();
+  }
 }
