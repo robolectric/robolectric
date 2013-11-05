@@ -84,11 +84,6 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
   }
 
   @Test
-  public void shouldUseSQLiteDatabaseMap() throws Exception {
-    assertThat(DatabaseConfig.getDatabaseMap().getClass().getName()).isEqualTo(SQLiteMap.class.getName());
-  }
-
-  @Test
   public void testInsertAndQuery() throws Exception {
     String stringColumnValue = "column_value";
     byte[] byteColumnValue = new byte[]{1, 2, 3};
@@ -193,56 +188,8 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
     Cursor cursor = database.rawQuery("select second_column, first_column from rawtable", new String[]{});
     assertThat(cursor.getCount()).isEqualTo(2);
   }
-  /*
-   * Reason why testRawQueryCount4() and testRawQueryCount5() expects exceptions even though exceptions are not found in Android.
-   *
-   * The code in Android acts inconsistently under API version 2.1_r1 (and perhaps other APIs)..
-   * What happens is that rawQuery() remembers the selectionArgs of previous queries,
-   * and uses them if no selectionArgs are given in subsequent queries.
-   * If they were never given selectionArgs THEN they return empty cursors.
-   *
-   *
-   * if you run {
-   *     db.rawQuery("select * from exercise WHERE name = ?",null); //this returns an empty cursor
-   *      db.rawQuery("select * from exercise WHERE name = ?",new String[]{}); //this returns an empty cursor
-   * }
-   *
-   * but if you run {
-   *    db.rawQuery("select * from exercise WHERE name = ?",new String[]{"Leg Press"}); //this returns 1 exercise named "Leg Press"
-   *    db.rawQuery("select * from exercise WHERE name = ?",null); //this too returns 1 exercise named "Leg Press"
-   *    db.rawQuery("select * from exercise WHERE name = ?",new String[]{}); //this too returns 1 exercise named "Leg Press"
-   * }
-   *
-   * so SQLite + Android work inconsistently (it maintains state that it should not)
-   * whereas H2 just throws an exception for not supplying the selectionArgs
-   *
-   * So the question is should Robolectric:
-   * 1) throw an exception, the way H2 does.
-   * 2) return an empty Cursor.
-   * 3) mimic Android\SQLite precisely and return inconsistent results based on previous state
-   *
-   * Returning an empty cursor all the time would be bad
-   * because Android doesn't always return an empty cursor.
-   * But just mimicking Android would not be helpful,
-   * since it would be less than obvious where the problem is coming from.
-   * One should just avoid ever calling a statement without selectionArgs (when one has a ? placeholder),
-   * so it is best to throw an Exception to let the programmer know that this isn't going to turn out well if they try to run it under Android.
-   * Because we are running in the context of a test we do not have to mimic Android precisely (if it is more helpful not to!), we just need to help
-   * the testing programmer figure out what is going on.
-   */
-  @Test(expected = Exception.class)
-  public void testRawQueryCount4() throws Exception {
-    //Android and SQLite don't normally throw an exception here. See above explanation as to why Robolectric should.
-    database.rawQuery("select second_column, first_column from rawtable WHERE `id` = ?", null);
-  }
 
-  @Test(expected = Exception.class)
-  public void testRawQueryCount5() throws Exception {
-    //Android and SQLite don't normally throw an exception here. See above explanation as to why Robolectric should.
-    database.rawQuery("select second_column, first_column from rawtable WHERE `id` = ?", new String[]{});
-  }
-
-  @Test(expected = android.database.sqlite.SQLiteException.class)
+  @Test(expected = IllegalArgumentException.class)
   public void testRawQueryCount8() throws Exception {
     database.rawQuery("select second_column, first_column from rawtable", new String[]{"1"});
   }
@@ -574,7 +521,7 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
       database.setTransactionSuccessful();
       fail("didn't receive the expected IllegalStateException");
     } catch (IllegalStateException e) {
-      assertThat(e.getMessage()).isEqualTo("transaction already successfully");
+      assertThat(e.getMessage()).contains("transaction").contains("successful");
     }
   }
 
@@ -692,13 +639,11 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
     assertThat(reopened.isOpen()).isTrue();
   }
 
-  @Test
-  public void shouldUseInMemoryDatabaseIfFileDoesNotExist() throws Exception {
+  @Test(expected = SQLiteException.class)
+  public void shouldThrowIfFileDoesNotExist() throws Exception {
     File testDb = new File("/i/do/not/exist");
     assertThat(testDb.exists()).isFalse();
-    SQLiteDatabase db = SQLiteDatabase.openOrCreateDatabase(testDb.getAbsolutePath(), null);
-    db.execSQL("select 1");
-    db.close();
+    SQLiteDatabase.openOrCreateDatabase(testDb.getAbsolutePath(), null);
   }
 
   @Test
@@ -717,16 +662,6 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
   @Test
   public void testGetPath() throws Exception {
     assertThat(database.getPath()).isEqualTo(Robolectric.application.getDatabasePath("path").getPath());
-  }
-
-  @Test
-  public void testShouldReturnTheSameDatabaseIfAlreadyOpened() throws Exception {
-    String path1 = Robolectric.application.getDatabasePath("db1").getPath();
-    String path2 = Robolectric.application.getDatabasePath("db2").getPath();
-    SQLiteDatabase db1 = SQLiteDatabase.openOrCreateDatabase(path1, null);
-    SQLiteDatabase db2 = SQLiteDatabase.openOrCreateDatabase(path2, null);
-    assertThat(SQLiteDatabase.openDatabase(path1, null, OPEN_READWRITE)).isSameAs(db1);
-    assertThat(SQLiteDatabase.openDatabase(path2, null, OPEN_READWRITE)).isSameAs(db2);
   }
 
   @Test
