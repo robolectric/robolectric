@@ -98,14 +98,13 @@ public class SQLiteQueryBuilderTest {
     assertThat(sql).isEqualTo("SELECT person, department, division FROM table_name WHERE (id = 2 AND name = 'Chuck') GROUP BY person");
   }
 
-  @Test
+  @Test(expected = IllegalArgumentException.class)
   public void testEmptyGroupBy() {
-    String sql = SQLiteQueryBuilder.buildQueryString(
+    SQLiteQueryBuilder.buildQueryString(
         false,
         "table_name",
         new String[]{"person", "department", "division"},
         "(id = 2 AND name = 'Chuck')", null, "SUM(hours) < 20", null, null);
-    assertThat(sql).isEqualTo("SELECT person, department, division FROM table_name WHERE (id = 2 AND name = 'Chuck') HAVING SUM(hours) < 20");
   }
 
   @Test
@@ -156,20 +155,6 @@ public class SQLiteQueryBuilderTest {
         new String[]{"person", "department", "division"},
         "(id = 2 AND name = 'Chuck')", "person", "SUM(hours) < 20", "id ASC", "10");
     assertThat(sql).isEqualTo("SELECT person, department, division FROM table_name WHERE (id = 2 AND name = 'Chuck') GROUP BY person HAVING SUM(hours) < 20 ORDER BY id ASC LIMIT 10");
-  }
-
-  @Test
-  public void testNullOnConditionallyAppend(){
-    StringBuilder sb = new StringBuilder("SELECT * FROM table");
-    ShadowSQLiteQueryBuilder.conditionallyAppend(sb, " WHERE ", null);
-    assertThat(sb.toString()).isEqualTo("SELECT * FROM table");
-  }
-
-  @Test
-  public void testEmptyStringConditionallyAppend(){
-    StringBuilder sb = new StringBuilder("SELECT * FROM table");
-    ShadowSQLiteQueryBuilder.conditionallyAppend(sb, " WHERE ", "");
-    assertThat(sb.toString()).isEqualTo("SELECT * FROM table");
   }
 
   @Test

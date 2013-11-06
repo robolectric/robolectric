@@ -18,8 +18,6 @@ import static org.fest.assertions.api.Assertions.assertThat;
 @RunWith(TestRunners.WithDefaults.class)
 public class MergeCursorTest {
 
-  private Connection connection;
-
   private MergeCursor cursor;
   private SQLiteCursor dbCursor1;
   private SQLiteCursor dbCursor2;
@@ -45,37 +43,37 @@ public class MergeCursorTest {
   }
 
   private void setupTable1() throws Exception {
-    Statement statement = connection.createStatement();
+    Statement statement = null; //connection.createStatement();
     statement.execute("CREATE TABLE table_1(" +
         "id INTEGER PRIMARY KEY, name_1 VARCHAR(255), value_1 INTEGER," +
         "float_value_1 REAL, double_value_1 DOUBLE, blob_value_1 BINARY, clob_value_1 CLOB );");
 
     for (String insert : TABLE_1_INSERTS) {
-      connection.createStatement().executeUpdate(insert);
+      //connection.createStatement().executeUpdate(insert);
     }
 
     //statement = connection.createStatement(DatabaseConfig.getResultSetType(), ResultSet.CONCUR_READ_ONLY);
     String sql ="SELECT * FROM table_1;";
     ResultSet rs = statement.executeQuery(sql);
     dbCursor1 = new SQLiteCursor(null, null, null);
-    Robolectric.shadowOf(dbCursor1).setResultSet(rs, sql);
+    //Robolectric.shadowOf(dbCursor1).setResultSet(rs, sql);
   }
 
   private void setupTable2() throws Exception {
-    Statement statement = connection.createStatement();
+    Statement statement = null; //connection.createStatement();
     statement.execute("CREATE TABLE table_2(" +
         "id INTEGER PRIMARY KEY, name_2 VARCHAR(255), value_2 INTEGER," +
         "float_value_2 REAL, double_value_2 DOUBLE, blob_value_2 BINARY, clob_value_2 CLOB );");
 
     for (String insert : TABLE_2_INSERTS) {
-      connection.createStatement().executeUpdate(insert);
+      //connection.createStatement().executeUpdate(insert);
     }
 
     //statement = connection.createStatement(DatabaseConfig.getResultSetType(), ResultSet.CONCUR_READ_ONLY);
     String sql ="SELECT * FROM table_2;";
     ResultSet rs = statement.executeQuery(sql);
     dbCursor2 = new SQLiteCursor(null, null, null);
-    Robolectric.shadowOf(dbCursor2).setResultSet(rs, sql);
+    //Robolectric.shadowOf(dbCursor2).setResultSet(rs, sql);
   }
 
   @Test

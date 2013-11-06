@@ -48,7 +48,7 @@ public class CursorAdapterTest {
     String sql = "SELECT * FROM table_name;";
     ResultSet resultSet = statement.executeQuery(sql);
     curs = new SQLiteCursor(null, null, null);
-    Robolectric.shadowOf((SQLiteCursor) curs).setResultSet(resultSet, sql);
+    //Robolectric.shadowOf((SQLiteCursor) curs).setResultSet(resultSet, sql);
 
     adapter = new TestAdapter(curs);
   }

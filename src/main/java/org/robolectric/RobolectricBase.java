@@ -167,11 +167,6 @@ import org.robolectric.shadows.ShadowResourceCursorAdapter;
 import org.robolectric.shadows.ShadowResources;
 import org.robolectric.shadows.ShadowResultReceiver;
 import org.robolectric.shadows.ShadowSQLiteConnection;
-import org.robolectric.shadows.ShadowSQLiteCursor;
-import org.robolectric.shadows.ShadowSQLiteProgram;
-import org.robolectric.shadows.ShadowSQLiteQuery;
-import org.robolectric.shadows.ShadowSQLiteQueryBuilder;
-import org.robolectric.shadows.ShadowSQLiteStatement;
 import org.robolectric.shadows.ShadowScaleGestureDetector;
 import org.robolectric.shadows.ShadowScanResult;
 import org.robolectric.shadows.ShadowScrollView;
@@ -436,11 +431,6 @@ public class RobolectricBase {
       ShadowSyncResult.class,
       ShadowSyncStats.class,
       ShadowSQLiteConnection.class,
-      ShadowSQLiteProgram.class,
-      ShadowSQLiteCursor.class,
-      ShadowSQLiteStatement.class,
-      ShadowSQLiteQuery.class,
-      ShadowSQLiteQueryBuilder.class,
       ShadowSslErrorHandler.class,
       ShadowStateListDrawable.class,
       ShadowStatFs.class,
