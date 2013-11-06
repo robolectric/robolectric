@@ -1,14 +1,7 @@
 package org.robolectric.shadows;
 
-import android.database.sqlite.SQLiteDoneException;
-import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteStatement;
-import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.util.SQLite;
-
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 @Implements(value = SQLiteStatement.class, inheritImplementationMethods = true)
 public class ShadowSQLiteStatement extends ShadowSQLiteProgram {

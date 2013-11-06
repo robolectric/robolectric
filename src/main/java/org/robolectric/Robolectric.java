@@ -273,7 +273,6 @@ import org.robolectric.shadows.ShadowResourceCursorAdapter;
 import org.robolectric.shadows.ShadowResources;
 import org.robolectric.shadows.ShadowResultReceiver;
 import org.robolectric.shadows.ShadowSQLiteCursor;
-import org.robolectric.shadows.ShadowSQLiteDatabase;
 import org.robolectric.shadows.ShadowSQLiteProgram;
 import org.robolectric.shadows.ShadowSQLiteQueryBuilder;
 import org.robolectric.shadows.ShadowSQLiteStatement;
@@ -875,10 +874,6 @@ public class Robolectric {
 
   public static ShadowSQLiteCursor shadowOf(SQLiteCursor other) {
     return (ShadowSQLiteCursor) Robolectric.shadowOf_(other);
-  }
-
-  public static ShadowSQLiteDatabase shadowOf(SQLiteDatabase other) {
-    return (ShadowSQLiteDatabase) Robolectric.shadowOf_(other);
   }
 
   public static ShadowSQLiteProgram shadowOf(SQLiteProgram other) {

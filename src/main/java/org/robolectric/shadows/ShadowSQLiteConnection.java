@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import android.database.sqlite.SQLiteCustomFunction;
+import android.database.sqlite.SQLiteDoneException;
 import com.almworks.sqlite4java.SQLiteConnection;
 import com.almworks.sqlite4java.SQLiteException;
 import com.almworks.sqlite4java.SQLiteStatement;
@@ -9,12 +9,11 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.util.SQLiteLibraryLoader;
 
 import java.io.File;
-import java.sql.PreparedStatement;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Shadows Android native SQLite connection with JDBC.
+ * Shadows Android native SQLite connection.
  */
 @Implements(android.database.sqlite.SQLiteConnection.class)
 public class ShadowSQLiteConnection {
@@ -50,7 +49,7 @@ public class ShadowSQLiteConnection {
   }
 
   private static void rethrow(final String message, final SQLiteException e) {
-    throw new android.database.sqlite.SQLiteException(message, e);
+    throw new android.database.sqlite.SQLiteException(message + ", base error code: " + e.getBaseErrorCode(), e);
   }
 
   @Implementation
@@ -124,7 +123,9 @@ public class ShadowSQLiteConnection {
   public static long nativeExecuteForLong(int connectionPtr, int statementPtr) {
     SQLiteStatement stmt = stmt(statementPtr);
     try {
-      stmt.step();
+      if (!stmt.step()) {
+        throw new SQLiteDoneException();
+      }
       return stmt.columnLong(0);
     } catch (SQLiteException e) {
       rethrow("Cannot execute for long", e);
@@ -147,7 +148,9 @@ public class ShadowSQLiteConnection {
   public static String nativeExecuteForString(int connectionPtr, int statementPtr) {
     SQLiteStatement stmt = stmt(statementPtr);
     try {
-      stmt.step();
+      if (!stmt.step()) {
+        throw new SQLiteDoneException();
+      }
       return stmt.columnString(0);
     } catch (SQLiteException e) {
       rethrow("Cannot execute for string", e);
@@ -258,7 +261,7 @@ public class ShadowSQLiteConnection {
   public static long nativeExecuteForLastInsertedRowId(int connectionPtr, int statementPtr) {
     SQLiteStatement stmt = stmt(statementPtr);
     try {
-      stmt.step();
+      stmt.stepThrough();
       return connection(connectionPtr).getLastInsertId();
     } catch (SQLiteException e) {
       rethrow("Cannot execute for last inserted row ID", e);
@@ -290,6 +293,9 @@ public class ShadowSQLiteConnection {
     }
   }
 
+  /*
+  TODO
+
   private static native void nativeRegisterCustomFunction(int connectionPtr,
                                                           SQLiteCustomFunction function);
   private static native int nativeExecuteForBlobFileDescriptor(
@@ -297,15 +303,6 @@ public class ShadowSQLiteConnection {
   private static native int nativeGetDbLookaside(int connectionPtr);
   private static native void nativeCancel(int connectionPtr);
   private static native void nativeResetCancel(int connectionPtr, boolean cancelable);
-
-  private static class StmtRecord {
-    final PreparedStatement stmt;
-    final String sql;
-
-    public StmtRecord(final PreparedStatement stmt, final String sql) {
-      this.stmt = stmt;
-      this.sql = sql;
-    }
-  }
+  */
 
 }

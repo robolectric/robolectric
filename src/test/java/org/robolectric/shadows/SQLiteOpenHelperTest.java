@@ -86,17 +86,6 @@ public class SQLiteOpenHelperTest {
   }
 
   @Test
-  public void testGetConnection() throws Exception {
-    SQLiteDatabase db1 = helper.getReadableDatabase();
-    ShadowSQLiteDatabase shadow = Robolectric.shadowOf(db1);
-    assertThat(shadow.getConnection()).isNotNull();
-    db1.close();
-    assertThat(shadow.getConnection()).isNotNull();
-    //ShadowSQLiteDatabase.reset();
-    assertThat(shadow.getConnection()).isNotNull();
-  }
-
-  @Test
   public void testGetPath() throws Exception {
     final String path1 = "path1", path2 = "path2";
 

@@ -10,17 +10,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
-import org.robolectric.util.DatabaseConfig;
-import org.robolectric.util.SQLiteMap;
 
 import java.io.File;
-import java.util.List;
 
 import static android.database.sqlite.SQLiteDatabase.OPEN_READWRITE;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import static org.robolectric.Robolectric.shadowOf;
 
 @DatabaseConfig.UsingDatabaseMap(SQLiteMap.class)
 @RunWith(TestRunners.WithDefaults.class)
@@ -28,12 +24,10 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
   private static final String ANY_VALID_SQL = "SELECT 1";
 
   private SQLiteDatabase database;
-  private ShadowSQLiteDatabase shDatabase;
 
   @Before
   public void setUp() throws Exception {
     database = SQLiteDatabase.openOrCreateDatabase(Robolectric.application.getDatabasePath("path").getPath(), null);
-    shDatabase = Robolectric.shadowOf(database);
     database.execSQL("CREATE TABLE table_name (\n" +
             "  id INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
             "  first_column VARCHAR(255),\n" +
@@ -350,7 +344,7 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
     assertThat(cursor.getString(cursor.getColumnIndex("name"))).isEqualTo("Bench Press");
   }
 
-  @Test(expected = android.database.SQLException.class)
+  @Test(expected = SQLiteException.class)
   public void testExecSQLException() throws Exception {
     database.execSQL("INSERT INTO table_name;");    // invalid SQL
   }
@@ -365,15 +359,13 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
     database.execSQL("insert into exectable (first_column) values ('sdfsfs');", null);
   }
 
-  @Test(expected = Exception.class)
+  @Test(expected = IllegalArgumentException.class)
   public void testExecSQLException5() throws Exception {
-    //TODO: make this throw android.database.SQLException.class
     database.execSQL("insert into exectable (first_column) values ('kjhk');", new String[]{"xxxx"});
   }
 
-  @Test(expected = Exception.class)
+  @Test(expected = IllegalArgumentException.class)
   public void testExecSQLException6() throws Exception {
-    //TODO: make this throw android.database.SQLException.class
     database.execSQL("insert into exectable (first_column) values ('kdfd');", new String[]{null});
   }
 
@@ -394,23 +386,6 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
     int nameIndex = cursor.getColumnIndex("name");
     assertThat(cursor.getString(nameIndex)).isEqualTo(name);
     assertThat(cursor.getString(firstIndex)).isEqualTo(null);
-
-  }
-
-  @Test(expected = Exception.class)
-  public void testExecSQLInsertNullShouldBeException() throws Exception {
-    //this inserts null in android, but it when it happens it is likely an error.  H2 throws an exception.  So we'll make Robolectric expect an Exception so that the error can be found.
-
-    database.delete("exectable", null, null);
-
-    Cursor cursor = database.rawQuery("select * from exectable", null);
-    cursor.moveToFirst();
-    assertThat(cursor.getCount()).isEqualTo(0);
-
-    database.execSQL("insert into exectable (first_column) values (?);", new String[]{});
-    Cursor cursor2 = database.rawQuery("select * from exectable", new String[]{null});
-    cursor.moveToFirst();
-    assertThat(cursor2.getCount()).isEqualTo(1);
 
   }
 
@@ -595,24 +570,6 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
 //  }
 
   @Test
-  public void shouldBeAbleToAnswerQuerySql() throws Exception {
-    try {
-      database.query("table_name_1", new String[]{"first_column"}, null, null, null, null, null);
-    } catch (Exception e) {
-      //ignore
-    }
-    try {
-      database.query("table_name_2", new String[]{"second_column"}, null, null, null, null, null);
-    } catch (Exception e) {
-      //ignore
-    }
-    List<String> queries = shadowOf(database).getQuerySql();
-    assertThat(queries.size()).isEqualTo(2);
-    assertThat(queries.get(0)).isEqualTo("SELECT first_column FROM table_name_1");
-    assertThat(queries.get(1)).isEqualTo("SELECT second_column FROM table_name_2");
-  }
-
-  @Test
   public void shouldCreateDefaultCursorFactoryWhenNullFactoryPassedToRawQuery() throws Exception {
     database.rawQueryWithFactory(null, ANY_VALID_SQL, null, null);
   }
@@ -784,13 +741,6 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
     Cursor cursor = database.query("table_name", new String[]{"id", "name"}, null, null, null, null, null);
     assertThat(cursor.moveToFirst()).isTrue();
     assertThat(cursor.getCount()).isNotEqualTo(0);
-  }
-
-  @Test
-  public void shouldBeAbleToCheckActiveConnections() throws Exception{
-    assertThat(database.isDbLockedByCurrentThread()).isFalse();
-    addPerson(1, "Test");
-    assertThat(database.isDbLockedByCurrentThread()).isTrue();
   }
 
   @Test

@@ -168,7 +168,6 @@ import org.robolectric.shadows.ShadowResources;
 import org.robolectric.shadows.ShadowResultReceiver;
 import org.robolectric.shadows.ShadowSQLiteConnection;
 import org.robolectric.shadows.ShadowSQLiteCursor;
-import org.robolectric.shadows.ShadowSQLiteDatabase;
 import org.robolectric.shadows.ShadowSQLiteProgram;
 import org.robolectric.shadows.ShadowSQLiteQuery;
 import org.robolectric.shadows.ShadowSQLiteQueryBuilder;
@@ -438,7 +437,6 @@ public class RobolectricBase {
       ShadowSyncStats.class,
       ShadowSQLiteConnection.class,
       ShadowSQLiteProgram.class,
-      ShadowSQLiteDatabase.class,
       ShadowSQLiteCursor.class,
       ShadowSQLiteStatement.class,
       ShadowSQLiteQuery.class,
