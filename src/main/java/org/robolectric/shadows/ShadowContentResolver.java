@@ -367,6 +367,11 @@ public class ShadowContentResolver {
   }
 
   @Implementation
+  public void registerContentObserver(Uri uri, boolean notifyForDescendents, ContentObserver observer, int userHandle) {
+    registerContentObserver(uri, notifyForDescendents, observer);
+  }
+
+  @Implementation
   public void unregisterContentObserver( ContentObserver observer ) {
     if ( observer != null && contentObservers.containsValue( observer ) ) {
       Set<Entry<Uri,ContentObserver>> entries = contentObservers.entrySet();
