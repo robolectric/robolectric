@@ -893,4 +893,12 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
     shadowDB.unlock();
     assertThat(database.isDbLockedByCurrentThread()).isFalse();
   }
+
+  @Test
+  public void testRawQueryWithFactoryAndCancellationSignal() throws Exception {
+    Cursor cursor = database.rawQueryWithFactory(null, "select * from table_name", null, null, null);
+    assertThat(cursor).isNotNull();
+    assertThat(cursor.getColumnCount()).isEqualTo(5);
+    assertThat(cursor.isClosed()).isFalse();
+  }
 }
