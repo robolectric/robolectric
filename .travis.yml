@@ -8,7 +8,7 @@ before_install:
     - ./scripts/install-maps-jar.sh
 
 after_success:
-    - mvn --settings scripts/mvn_settings.xml -DskipTests=true sources:jar javadoc:jar deploy
+    - mvn --settings scripts/mvn_settings.xml -DskipTests=true source:jar javadoc:jar deploy
 
 env:
     global:
