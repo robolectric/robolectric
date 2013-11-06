@@ -18,7 +18,6 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-@DatabaseConfig.UsingDatabaseMap(SQLiteMap.class)
 @RunWith(TestRunners.WithDefaults.class)
 public class SQLiteDatabaseTest extends DatabaseTestBase {
   private static final String ANY_VALID_SQL = "SELECT 1";

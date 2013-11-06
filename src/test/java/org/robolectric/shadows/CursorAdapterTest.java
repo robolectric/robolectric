@@ -11,7 +11,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
-import org.robolectric.util.DatabaseConfig;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -29,7 +28,7 @@ public class CursorAdapterTest {
 
   @Before
   public void setUp() throws Exception {
-    Connection connection = DatabaseConfig.getMemoryConnection();
+    Connection connection = null;//DatabaseConfig.getMemoryConnection();
 
     Statement statement = connection.createStatement();
     statement.execute("CREATE TABLE table_name(_id INT PRIMARY KEY, name VARCHAR(255));");
@@ -45,7 +44,7 @@ public class CursorAdapterTest {
       connection.createStatement().executeUpdate(insert);
     }
 
-    statement = connection.createStatement(DatabaseConfig.getResultSetType(), ResultSet.CONCUR_READ_ONLY);
+    //statement = connection.createStatement(DatabaseConfig.getResultSetType(), ResultSet.CONCUR_READ_ONLY);
     String sql = "SELECT * FROM table_name;";
     ResultSet resultSet = statement.executeQuery(sql);
     curs = new SQLiteCursor(null, null, null);

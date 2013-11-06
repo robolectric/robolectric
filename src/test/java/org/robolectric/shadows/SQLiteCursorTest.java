@@ -10,7 +10,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
-import org.robolectric.util.DatabaseConfig;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -28,7 +27,7 @@ public class SQLiteCursorTest {
 
   @Before
   public void setUp() throws Exception {
-    connection = DatabaseConfig.getMemoryConnection();
+    //connection = DatabaseConfig.getMemoryConnection();
 
     Statement statement = connection.createStatement();
     statement.execute("CREATE TABLE table_name(" +
@@ -444,7 +443,7 @@ public class SQLiteCursorTest {
   }
 
   private void setupCursor() throws Exception {
-    Statement statement = connection.createStatement(DatabaseConfig.getResultSetType(), ResultSet.CONCUR_READ_ONLY);
+    Statement statement = null;//connection.createStatement(DatabaseConfig.getResultSetType(), ResultSet.CONCUR_READ_ONLY);
     String sql ="SELECT * FROM table_name;";
     resultSet = statement.executeQuery("SELECT * FROM table_name;");
     cursor = new SQLiteCursor(null, null, null);

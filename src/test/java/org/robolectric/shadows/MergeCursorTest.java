@@ -8,7 +8,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
-import org.robolectric.util.DatabaseConfig;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -39,7 +38,7 @@ public class MergeCursorTest {
 
   @Before
   public void setUp() throws Exception {
-    connection = DatabaseConfig.getMemoryConnection();
+    //connection = DatabaseConfig.getMemoryConnection();
 
     setupTable1();
     setupTable2();
@@ -55,7 +54,7 @@ public class MergeCursorTest {
       connection.createStatement().executeUpdate(insert);
     }
 
-    statement = connection.createStatement(DatabaseConfig.getResultSetType(), ResultSet.CONCUR_READ_ONLY);
+    //statement = connection.createStatement(DatabaseConfig.getResultSetType(), ResultSet.CONCUR_READ_ONLY);
     String sql ="SELECT * FROM table_1;";
     ResultSet rs = statement.executeQuery(sql);
     dbCursor1 = new SQLiteCursor(null, null, null);
@@ -72,7 +71,7 @@ public class MergeCursorTest {
       connection.createStatement().executeUpdate(insert);
     }
 
-    statement = connection.createStatement(DatabaseConfig.getResultSetType(), ResultSet.CONCUR_READ_ONLY);
+    //statement = connection.createStatement(DatabaseConfig.getResultSetType(), ResultSet.CONCUR_READ_ONLY);
     String sql ="SELECT * FROM table_2;";
     ResultSet rs = statement.executeQuery(sql);
     dbCursor2 = new SQLiteCursor(null, null, null);
