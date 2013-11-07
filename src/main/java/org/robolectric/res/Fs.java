@@ -9,7 +9,9 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
 import java.util.TreeMap;
@@ -43,18 +45,25 @@ abstract public class Fs {
 
   static class JarFs extends Fs {
     private final JarFile jarFile;
-    private final NavigableMap<String, JarEntry> jarEntryMap = new TreeMap<String, JarEntry>();
+    private NavigableMap<String, JarEntry> jarEntryMap = new TreeMap<String, JarEntry>();
+    private static final Map<String, NavigableMap<String, JarEntry>> cache =
+            new HashMap<String, NavigableMap<String, JarEntry>>();
 
     public JarFs(File file) {
       try {
         jarFile = new JarFile(file);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+      if (!cache.containsKey(file.getAbsolutePath())) {
         Enumeration<JarEntry> entries = jarFile.entries();
         while (entries.hasMoreElements()) {
           JarEntry jarEntry = entries.nextElement();
           jarEntryMap.put(jarEntry.getName(), jarEntry);
         }
-      } catch (IOException e) {
-        throw new RuntimeException(e);
+        cache.put(file.getAbsolutePath(), jarEntryMap);
+      } else {
+        jarEntryMap = cache.get(file.getAbsolutePath());
       }
     }
 
