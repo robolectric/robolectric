@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.R;
 import android.app.Activity;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.view.Window;
 import android.view.WindowManager;
@@ -20,8 +21,6 @@ import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class WindowTest {
-
-
   @Test
   public void testGetFlag() throws Exception {
     Activity activity = Robolectric.buildActivity(Activity.class).create().get();
@@ -53,6 +52,18 @@ public class WindowTest {
     assertThat(homeIcon.getDrawable()).isNotNull();
     int createdFromResId = shadowOf(homeIcon.getDrawable()).getCreatedFromResId();
     assertThat(createdFromResId).isEqualTo(R.drawable.ic_lock_power_off);
+  }
+
+  @Test
+  public void getBackgroundDrawable_returnsSetDrawable() throws Exception {
+    Activity activity = Robolectric.buildActivity(Activity.class).create().get();
+    Window window = activity.getWindow();
+    ShadowWindow shadowWindow = shadowOf(window);
+
+    assertThat(shadowWindow.getBackgroundDrawable()).isNull();
+
+    window.setBackgroundDrawableResource(R.drawable.btn_star);
+    assertThat(shadowOf(shadowWindow.getBackgroundDrawable()).createdFromResId).isEqualTo(R.drawable.btn_star);
   }
 
   public static class TestActivity extends Activity {

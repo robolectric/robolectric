@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.ImageView;
@@ -56,5 +57,9 @@ public class ShadowWindow {
     } catch (ClassNotFoundException e) {
       throw new RuntimeException("could not resolve ActionBarView");
     }
+  }
+
+  public Drawable getBackgroundDrawable() {
+    return null;
   }
 }
