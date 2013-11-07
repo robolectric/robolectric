@@ -17,6 +17,8 @@ import java.math.BigInteger;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Initializes sqlite native libraries.
@@ -100,6 +102,9 @@ public class SQLiteLibraryLoader {
   }
 
   private static void loadFrom(final File libPath) {
+    // configure less verbose logging
+    Logger.getLogger("com.almworks.sqlite4java").setLevel(Level.WARNING);
+
     SQLite.setLibraryPath(libPath.getAbsolutePath());
     try {
       log("SQLite version: library " + SQLite.getLibraryVersion() + " / core " + SQLite.getSQLiteVersion());
