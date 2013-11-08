@@ -31,6 +31,17 @@ public class ActivityControllerTest {
         .isEqualTo(new ComponentName("org.robolectric", MyActivity.class.getName()));
   }
 
+  @Test public void shouldSetIntentForGivenActivityInstance() throws Exception {
+    Activity activity = new Activity() {
+      @Override
+      public int getTaskId() {
+        return 47;
+      }
+    };
+    ActivityController<Activity> activityController = ActivityController.of(activity).create();
+    assertThat(activityController.get().getIntent()).isNotNull();
+  }
+
   @Test public void shouldSetIntentComponentWithCustomIntentWithoutComponentSet() throws Exception {
     MyActivity myActivity = Robolectric.buildActivity(MyActivity.class)
         .withIntent(new Intent("some action")).create().get();
