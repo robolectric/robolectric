@@ -53,6 +53,9 @@ public @interface Config {
    */
   int reportSdk() default -1;
 
+  int screenWidth() default -1;
+  int screenHeight() default -1;
+  
   /**
    * A list of shadow classes to enable, in addition to those that are already present.
    */
@@ -63,6 +66,8 @@ public @interface Config {
     private final String manifest;
     private final String qualifiers;
     private final int reportSdk;
+    private final int screenWidth;
+    private final int screenHeight;
     private final Class<?>[] shadows;
 
     public static Config fromProperties(Properties configProperties) {
@@ -72,6 +77,8 @@ public @interface Config {
           configProperties.getProperty("manifest", DEFAULT),
           configProperties.getProperty("qualifiers", ""),
           Integer.parseInt(configProperties.getProperty("reportSdk", "-1")),
+          Integer.parseInt(configProperties.getProperty("screenWidth", "-1")),
+          Integer.parseInt(configProperties.getProperty("screenHeight", "-1")),
           parseClasses(configProperties.getProperty("shadows", ""))
       );
     }
@@ -90,11 +97,14 @@ public @interface Config {
       return classes;
     }
 
-    public Implementation(int emulateSdk, String manifest, String qualifiers, int reportSdk, Class<?>[] shadows) {
+    public Implementation(int emulateSdk, String manifest, String qualifiers, int reportSdk, 
+        int screenWidth, int screenHeight, Class<?>[] shadows) {
       this.emulateSdk = emulateSdk;
       this.manifest = manifest;
       this.qualifiers = qualifiers;
       this.reportSdk = reportSdk;
+      this.screenWidth = screenWidth;
+      this.screenHeight = screenHeight;
       this.shadows = shadows;
     }
 
@@ -103,6 +113,8 @@ public @interface Config {
       this.manifest = pick(baseConfig.manifest(), overlayConfig.manifest(), DEFAULT);
       this.qualifiers = pick(baseConfig.qualifiers(), overlayConfig.qualifiers(), "");
       this.reportSdk = pick(baseConfig.reportSdk(), overlayConfig.reportSdk(), -1);
+      this.screenWidth = pick(baseConfig.screenWidth(), overlayConfig.screenWidth(), -1);
+      this.screenHeight = pick(baseConfig.screenHeight(), overlayConfig.screenHeight(), -1);
       ArrayList<Class<?>> shadows = new ArrayList<Class<?>>();
       shadows.addAll(Arrays.asList(baseConfig.shadows()));
       shadows.addAll(Arrays.asList(overlayConfig.shadows()));
@@ -128,7 +140,12 @@ public @interface Config {
     @Override public int reportSdk() {
       return reportSdk;
     }
-
+    @Override public int screenWidth() {
+      return screenWidth;
+    }
+    @Override public int screenHeight() {
+      return screenHeight;
+    }
     @Override public Class<?>[] shadows() {
       return shadows;
     }
@@ -146,6 +163,8 @@ public @interface Config {
 
       if (emulateSdk != other.emulateSdk) return false;
       if (reportSdk != other.reportSdk) return false;
+      if (screenWidth != other.screenWidth) return false;
+      if (screenHeight != other.screenHeight) return false;
       if (!qualifiers.equals(other.qualifiers)) return false;
       if (!Arrays.equals(shadows, other.shadows)) return false;
 
@@ -157,6 +176,8 @@ public @interface Config {
       int result = emulateSdk;
       result = 31 * result + qualifiers.hashCode();
       result = 31 * result + reportSdk;
+      result = 31 * result + screenWidth;
+      result = 31 * result + screenHeight;
       result = 31 * result + Arrays.hashCode(shadows);
       return result;
     }

@@ -15,9 +15,15 @@ import org.robolectric.annotation.Implements;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Display.class)
 public class ShadowDisplay {
+  public static final int DEFAULT_WIDTH = 480;
+  public static final int DEFAULT_HEIGHT = 800;
+  
+  public static int initialWidth = DEFAULT_WIDTH; 
+  public static int initialHeight = DEFAULT_HEIGHT; 
+
   private int displayId;
-  private int width = 480;
-  private int height = 800;
+  private int width = initialWidth;
+  private int height = initialHeight;
   private float density = 1.5f;
   private int densityDpi = DisplayMetrics.DENSITY_HIGH;
   private float xdpi = 240.0f;

@@ -1,12 +1,15 @@
 package org.robolectric.shadows;
 
+import android.app.Activity;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
 
 import static org.junit.Assert.assertEquals;
 import static org.robolectric.Robolectric.newInstanceOf;
@@ -80,5 +83,30 @@ public class DisplayTest {
     shadowOf(display).setRotation(testValue);
     assertEquals(testValue, display.getOrientation());
   }
+  
+  @Test
+  public void defaultDisplaySize() {
+    Display display = newInstanceOf(Display.class);
+    assertEquals(480,display.getWidth());  
+    assertEquals(800,display.getHeight());  
+  }
 
+  @Test
+  @Config(screenWidth=1280,screenHeight=800)
+  public void setDefaultDisplaySizeUsingAnnotations() {
+    Display display = newInstanceOf(Display.class);
+    assertEquals(1280,display.getWidth());  
+    assertEquals(800,display.getHeight());  
+  }
+
+  @Test
+  @Config(screenWidth=1280,screenHeight=800)
+  public void activityGetsAnnotatedDisplaySize() {
+    Activity dummyActivity = Robolectric.buildActivity(Activity.class)
+      .create()
+      .get();
+    Display display = dummyActivity.getWindowManager().getDefaultDisplay();
+    assertEquals(1280,display.getWidth());  
+    assertEquals(800,display.getHeight());  
+  }
 }
