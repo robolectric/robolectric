@@ -24,6 +24,11 @@ public class ShadowAlarmManager {
   public void set(int type, long triggerAtTime, PendingIntent operation) {
     internalSet(type, triggerAtTime, 0L, operation);
   }
+  
+  @Implementation
+  public void setExact(int type, long triggerAtTime, PendingIntent operation) {
+    internalSet(type, triggerAtTime, 0L, operation);
+  }
 
   @Implementation
   public void setRepeating(int type, long triggerAtTime, long interval, PendingIntent operation) {
