@@ -24,12 +24,26 @@ import java.util.logging.Logger;
  * Initializes sqlite native libraries.
  */
 public class SQLiteLibraryLoader {
-
   private static boolean loaded;
 
   private SQLiteLibraryLoader() { }
 
-  public static File getNativeLibraryPath() {
+  public static void load() {
+    if (loaded) { return; }
+
+    final long startTime = System.currentTimeMillis();
+    final File extractedLibrary = getNativeLibraryPath();
+
+    if (isExtractedLibUptodate(extractedLibrary)) {
+      loadFromDirectory(extractedLibrary.getParentFile());
+    } else {
+      extractAndLoad(getLibraryStream(), extractedLibrary);
+    }
+
+    logWithTime("SQLite natives prepared in", startTime);
+  }
+
+  protected static File getNativeLibraryPath() {
     String tempPath = System.getProperty("java.io.tmpdir");
     if (tempPath == null) {
       throw new IllegalStateException("Java temporary directory is not defined (java.io.tmpdir)");
@@ -37,50 +51,48 @@ public class SQLiteLibraryLoader {
     return new File(Fs.fileFromPath(tempPath).join("robolectric-libs", getLibName()).getPath());
   }
 
-  public static void mustReload() {
+  protected static void mustReload() {
     loaded = false;
   }
 
-  public static void load() {
-    if (loaded) { return; }
-
-    long startTime = System.currentTimeMillis();
-
-    String libName = getLibName();
-    String libPath = "/" + libName;
-    InputStream libraryStream = SQLiteNatives.class.getResourceAsStream(libPath);
-    if (libraryStream == null) {
-      throw new RuntimeException("Cannot find '" + libPath + "' in classpath");
-    }
-
-    File extractedLibPath = getNativeLibraryPath();
-
-    if (!extractedLibPath.exists()) {
-      extractAndLoad(libraryStream, extractedLibPath);
-      logWithTime("SQLite natives prepared in", startTime);
-      return;
-    }
-
-    try {
-      String existingMd5 = md5sum(new FileInputStream(extractedLibPath));
-      String actualMd5 = md5sum(libraryStream);
-      if (!existingMd5.equals(actualMd5)) {
-        extractAndLoad(SQLiteNatives.class.getResourceAsStream(libPath), extractedLibPath);
-      } else {
-        loadFrom(extractedLibPath.getParentFile());
-      }
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-    logWithTime("SQLite natives prepared in", startTime);
-  }
-
   private static void logWithTime(final String message, final long startTime) {
-    System.out.println(message + " " + (System.currentTimeMillis() - startTime));
+    log(message + " " + (System.currentTimeMillis() - startTime));
   }
 
   private static void log(final String message) {
     System.out.println(message);
+  }
+
+  private static boolean isExtractedLibUptodate(File extractedLib) {
+    if (extractedLib.exists()) {
+      try {
+        String existingMd5 = md5sum(new FileInputStream(extractedLib));
+        String actualMd5 = md5sum(getLibraryStream());
+        return existingMd5.equals(actualMd5);
+      } catch (IOException e) {
+        return false;
+      }
+    } else {
+      return false;
+    }
+  }
+
+  private static InputStream getLibraryStream() {
+    String classpathResourceName = getLibClasspathResourceName();
+    InputStream libraryStream = SQLiteNatives.class.getResourceAsStream(classpathResourceName);
+    if (libraryStream == null) {
+      throw new RuntimeException("Cannot find '" + classpathResourceName + "' in classpath");
+    }
+    return libraryStream;
+  }
+
+  private static String getLibClasspathResourceName() {
+    String libName = getLibName();
+    if (libName.endsWith("dylib")) {
+      // for some reason the osx version is packaged as .jnilib
+      libName = libName.replace("dylib", "jnilib");
+    }
+    return "/" + libName;
   }
 
   private static void extractAndLoad(final InputStream input, final File output) {
@@ -98,10 +110,10 @@ public class SQLiteLibraryLoader {
       IOUtils.closeQuietly(input);
     }
 
-    loadFrom(libPath);
+    loadFromDirectory(libPath);
   }
 
-  private static void loadFrom(final File libPath) {
+  private static void loadFromDirectory(final File libPath) {
     // configure less verbose logging
     Logger.getLogger("com.almworks.sqlite4java").setLevel(Level.WARNING);
 
@@ -115,11 +127,7 @@ public class SQLiteLibraryLoader {
   }
 
   private static String getLibName() {
-    String name = System.mapLibraryName("sqlite4java");
-    if (name.endsWith("dylib")) {
-      name = name.replace("dylib", "jnilib");
-    }
-    return name;
+    return System.mapLibraryName("sqlite4java");
   }
 
   private static String md5sum(InputStream input) throws IOException {
