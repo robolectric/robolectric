@@ -24,8 +24,13 @@ public class SQLiteCursorTest {
     database = SQLiteDatabase.create(null);
 
     database.execSQL("CREATE TABLE table_name(" +
-        "id INTEGER PRIMARY KEY, name VARCHAR(255), long_value BIGINT," +
-        "float_value REAL, double_value DOUBLE, blob_value BINARY, clob_value CLOB );");
+        "id INTEGER PRIMARY KEY, " +
+        "name VARCHAR(255), " +
+        "long_value BIGINT," +
+        "float_value REAL," +
+        "double_value DOUBLE, " +
+        "blob_value BINARY, " +
+        "clob_value CLOB );");
 
     addPeople();
     setupCursor();
@@ -281,6 +286,19 @@ public class SQLiteCursorTest {
     cursor.getString(5);
   }
 
+  @Test(expected = SQLiteException.class)
+  public void testGetIntWhenBlob() throws Exception {
+    String sql = "UPDATE table_name set blob_value=? where id=1234";
+    byte[] byteData = sql.getBytes();
+
+    database.execSQL(sql, new Object[]{byteData});
+
+    setupCursor();
+    cursor.moveToFirst();
+
+    cursor.getInt(5);
+  }
+
   @Test
   public void testGetStringWhenNull() throws Exception {
     cursor.moveToFirst();
@@ -298,6 +316,26 @@ public class SQLiteCursorTest {
       assertThat(cursor.getInt(0)).isEqualTo(aData);
       cursor.moveToNext();
     }
+  }
+
+  @Test
+  public void testGetNumbersFromStringField() throws Exception {
+    database.execSQL("update table_name set name = '1.2'");
+    cursor.moveToFirst();
+
+    assertThat(cursor.getInt(1)).isEqualTo(1);
+    assertThat(cursor.getDouble(1)).isEqualTo(1.2d);
+    assertThat(cursor.getFloat(1)).isEqualTo(1.2f);
+  }
+
+  @Test
+  public void testGetNumbersFromBlobField() throws Exception {
+    database.execSQL("update table_name set name = '1.2'");
+    cursor.moveToFirst();
+
+    assertThat(cursor.getInt(1)).isEqualTo(1);
+    assertThat(cursor.getDouble(1)).isEqualTo(1.2d);
+    assertThat(cursor.getFloat(1)).isEqualTo(1.2f);
   }
 
   @Test
@@ -413,6 +451,23 @@ public class SQLiteCursorTest {
     assertThat(cursor.getType(5)).isEqualTo(Cursor.FIELD_TYPE_NULL);
   }
 
+  @Test
+  public void testGetNullNumberValues() throws Exception {
+    String sql = "UPDATE table_name set long_value=NULL, float_value=NULL, double_value=NULL";
+    database.execSQL(sql);
+
+    cursor.moveToFirst();
+
+    assertThat(cursor.getType(2)).isEqualTo(Cursor.FIELD_TYPE_NULL);
+    assertThat(cursor.getLong(2)).isEqualTo(0);
+
+    assertThat(cursor.getType(3)).isEqualTo(Cursor.FIELD_TYPE_NULL);
+    assertThat(cursor.getFloat(3)).isEqualTo(0f);
+
+    assertThat(cursor.getType(4)).isEqualTo(Cursor.FIELD_TYPE_NULL);
+    assertThat(cursor.getDouble(4)).isEqualTo(0d);
+  }
+
   private void addPeople() throws Exception {
     String[] inserts = {
         "INSERT INTO table_name (id, name, long_value, float_value, double_value) VALUES(1234, 'Chuck', 3463, 1.5, 3.14159);",
@@ -447,5 +502,4 @@ public class SQLiteCursorTest {
     assertThat(columnNames[5]).isEqualTo("blob_value");
     assertThat(columnNames[6]).isEqualTo("clob_value");
   }
-
 }

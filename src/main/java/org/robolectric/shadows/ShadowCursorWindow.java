@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.database.Cursor;
 import android.database.CursorWindow;
+import com.almworks.sqlite4java.SQLiteConstants;
 import com.almworks.sqlite4java.SQLiteException;
 import com.almworks.sqlite4java.SQLiteStatement;
 import org.robolectric.annotation.Implementation;
@@ -71,18 +72,42 @@ public class ShadowCursorWindow {
 
   @Implementation
   public static long nativeGetLong(int windowPtr, int row, int column) {
-    return ((Number) data(windowPtr).value(row, column).value).longValue();
+    return nativeGetNumber(windowPtr, row, column).longValue();
   }
 
   @Implementation
   public static double nativeGetDouble(int windowPtr, int row, int column) {
-    return ((Number) data(windowPtr).value(row, column).value).doubleValue();
+    return nativeGetNumber(windowPtr, row, column).doubleValue();
   }
 
   @Implementation
   public static int nativeGetType(int windowPtr, int row, int column) {
     Value val = data(windowPtr).value(row, column);
     return val.value == null ? Cursor.FIELD_TYPE_NULL : val.type;
+  }
+
+  // https://github.com/android/platform_frameworks_base/blob/master/core/jni/android_database_CursorWindow.cpp#L364
+  private static Number nativeGetNumber(int windowPtr, int row, int column) {
+    Value value = data(windowPtr).value(row, column);
+    switch (value.type) {
+      case Cursor.FIELD_TYPE_NULL:
+      case SQLiteConstants.SQLITE_NULL:
+        return 0;
+      case Cursor.FIELD_TYPE_INTEGER:
+      case Cursor.FIELD_TYPE_FLOAT:
+        return (Number) value.value;
+      case Cursor.FIELD_TYPE_STRING: {
+        try {
+          return Double.parseDouble((String) value.value);
+        } catch (NumberFormatException e) {
+          return 0;
+        }
+      }
+      case Cursor.FIELD_TYPE_BLOB:
+        throw new android.database.sqlite.SQLiteException("could not convert "+value);
+      default:
+        throw new android.database.sqlite.SQLiteException("unknown type: "+value.type);
+    }
   }
 
   private static class Data {
