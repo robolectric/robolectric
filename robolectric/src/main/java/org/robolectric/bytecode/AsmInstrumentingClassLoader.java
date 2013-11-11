@@ -8,6 +8,7 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
+import org.objectweb.asm.commons.JSRInlinerAdapter;
 import org.objectweb.asm.commons.Method;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.AnnotationNode;
@@ -69,8 +70,6 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
   private final Map<String, Class> classes = new HashMap<String, Class>();
   private final Set<Setup.MethodRef> methodsToIntercept;
   private final Map<String, String> classesToRemap;
-  private int number = 0;
-
 
   public AsmInstrumentingClassLoader(Setup setup, URL... urls) {
     super(AsmInstrumentingClassLoader.class.getClassLoader());
@@ -91,10 +90,8 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
       }
     }
 
-    boolean shouldComeFromThisClassLoader = setup.shouldAcquire(name);
-
     try {
-      if (shouldComeFromThisClassLoader) {
+      if (setup.shouldAcquire(name)) {
         theClass = findClass(name);
       } else {
         theClass = getParent().loadClass(name);
@@ -125,7 +122,6 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
     if (setup.shouldAcquire(className)) {
       byte[] origClassBytes = getByteCode(className);
 
-      final ClassReader classReader = new ClassReader(origClassBytes);
       ClassNode classNode = new ClassNode(Opcodes.ASM4) {
         @Override
         public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
@@ -135,9 +131,12 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
 
         @Override
         public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-          return super.visitMethod(access, name, remapParams(desc), signature, exceptions);
+          MethodVisitor methodVisitor = super.visitMethod(access, name, remapParams(desc), signature, exceptions);
+          return new JSRInlinerAdapter(methodVisitor, access, name, desc, signature, exceptions);
         }
       };
+
+      final ClassReader classReader = new ClassReader(origClassBytes);
       classReader.accept(classNode, 0);
 
       try {
@@ -273,7 +272,6 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
       }
     };
     classNode.accept(classWriter);
-
     byte[] classBytes = classWriter.toByteArray();
 
     if (debug) {

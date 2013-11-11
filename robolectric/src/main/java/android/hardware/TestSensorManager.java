@@ -18,7 +18,12 @@ public class TestSensorManager extends SensorManager {
   }
 
   @Override
-  protected boolean registerListenerImpl(SensorEventListener listener, Sensor sensor, int delay, Handler handler) {
+  protected boolean registerListenerImpl(SensorEventListener listener, Sensor sensor, int delayUs, Handler handler, int maxBatchReportLatencyUs, int reservedFlags) {
+    return false;
+  }
+
+  @Override
+  protected boolean flushImpl(SensorEventListener listener) {
     return false;
   }
 

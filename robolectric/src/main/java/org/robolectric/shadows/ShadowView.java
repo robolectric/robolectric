@@ -422,6 +422,7 @@ public class ShadowView {
     }
   }
 
+  @Implementation
   public boolean isAttachedToWindow() {
     return ReflectionHelpers.getFieldReflectively(realView, "mAttachInfo") != null;
   }

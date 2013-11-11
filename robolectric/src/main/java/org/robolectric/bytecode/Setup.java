@@ -145,15 +145,10 @@ public class Setup {
    */
   public Map<String, String> classNameTranslations() {
     Map<String, String> map = new HashMap<String, String>();
-    map.put("java.lang.AutoCloseable", Object.class.getName());
     map.put("java.net.ExtendedResponseCache", ExtendedResponseCache.class.getName());
     map.put("java.net.ResponseSource", ResponseSource.class.getName());
     map.put("java.nio.charset.Charsets", FakeCharsets.class.getName());
     return map;
-  }
-
-  public static class FakeClass {
-    public static class FakeInnerClass {}
   }
 
   public boolean containsStubs(ClassInfo classInfo) {

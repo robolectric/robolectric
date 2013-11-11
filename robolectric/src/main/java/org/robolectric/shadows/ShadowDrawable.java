@@ -177,6 +177,7 @@ public class ShadowDrawable {
     directlyOn(realDrawable, Drawable.class, "invalidateSelf");
   }
 
+  @Implementation
   public int getAlpha() {
     return alpha;
   }
