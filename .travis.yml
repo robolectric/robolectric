@@ -7,9 +7,6 @@ before_install:
     - echo y | android update sdk --filter platform-tools,android-18,addon-google_apis-google-18 --no-ui --force
     - ./scripts/install-maps-jar.sh
 
-after_success:
-    - mvn --settings scripts/mvn_settings.xml -DskipTests=true source:jar javadoc:jar deploy
-
 env:
     global:
         - secure: "usDTdxYtfTy8YFRaAoUzTiu/Q/ywsUgZIN8WlDg6HH/b1ggJSMVW8NS5fiGlVCTNqa2Q5RP1ZBcqp+MtUIpUgE3+VL1UJasvuv2HVUXa7cHhSpqvZa6wAcCHzCIP09MSeoMnbdMufQYNuVEafC9VcJBSK4YvDcuJ/GgxlbksXlQ="
