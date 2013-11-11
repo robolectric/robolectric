@@ -163,7 +163,7 @@ build_signed_packages() {
     done
 
     echo "Robolectric: Creating bundle for Sonatype upload..."
-    cd ${OUT}; jar cf ${ANDROID_BUNDLE} *
+    cd ${OUT}; jar cf ${ANDROID_BUNDLE} *.jar *.pom
 }
 
 mavenize() {
@@ -196,8 +196,7 @@ mavenize() {
 export JAVA_HOME=$(/usr/libexec/java_home -v 1.6)
 export PATH=$PATH:$JAVA_HOME/bin
 
-#OUT=`mktemp -t mavenize-android -d`
-OUT=/tmp/build-android-all-jar
+OUT=`mktemp -t mavenize-android -d`
 mkdir -p ${OUT}
 
 build_platform
