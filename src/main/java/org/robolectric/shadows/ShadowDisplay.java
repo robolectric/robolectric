@@ -5,6 +5,7 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.util.DisplayMetrics;
 import android.view.Display;
+import android.view.DisplayAdjustments;
 import android.view.Surface;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -89,6 +90,11 @@ public class ShadowDisplay {
   @Implementation
   public void getRectSize(Rect outSize) {
     outSize.set(0, 0, width, height);
+  }
+
+  @Implementation
+  public DisplayAdjustments getDisplayAdjustments() {
+    return new DisplayAdjustments();
   }
 
   public float getDensity() {

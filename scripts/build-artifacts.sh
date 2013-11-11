@@ -7,17 +7,28 @@
 # Usage:
 #   build-android-artifacts.sh <android version> <robolectric version>
 #
+# Signing Artifacts:
+# The end of the script will prompt you to sign the new artifacts.  You will
+# be prompted a total of 4 times (once for each artifact).  To make this
+# easier, run this command beforehand:
+#
+#   gpg-agent --daemon
+#
+# It will spit out a command that you can then run in your shell to remember
+# the password for the current session.
+#
 # Supported Versions:
 #   4.1.2_r1    - Jelly Bean
 #   4.2.2_r1.2  - Jelly Bean MR1
 #   4.3_r2      - Jelly Bean MR2
+#   4.4_r1      - Kit Kat
 #
 # Assumptions:
-#  1. You've got the full AOSP checked out on a case-sensitive file system at /Volumes/android/android-build
-#  2. repo init -u https://android.googlesource.com/platform/manifest -b <android-version>
-#  3. repo sync
-#  4. source build/envsetup.sh
-#  5. lunch aosp_x86-eng (or something like android_x86-eng)
+#   1. You've got the full AOSP checked out on a case-sensitive file system at /Volumes/android/android-build
+#   2. repo init -u https://android.googlesource.com/platform/manifest -b <android-version>
+#   3. repo sync
+#   4. source build/envsetup.sh
+#   5. lunch aosp_x86-eng (or something like android_x86-eng)
 #
 if [[ $# -eq 0 ]]; then
     echo "Usage: ${0} <android-version> <robolectric-sub-version>"
@@ -56,6 +67,8 @@ build_platform() {
         ARTIFACTS=("core" "services" "telephony-common" "framework" "android.policy" "ext")
     elif [[ "${ANDROID_VERSION}" == "4.3_r2" ]]; then
         ARTIFACTS=("core" "services" "telephony-common" "framework" "android.policy" "ext")
+    elif [[ "${ANDROID_VERSION}" == "4.4_r1" ]]; then
+        ARTIFACTS=("core" "services" "telephony-common" "framework" "framework2" "framework-base" "android.policy" "ext")
     else
         echo "Robolectric: No match for version: ${ANDROID_VERSION}"
         exit 1
@@ -98,8 +111,19 @@ build_android_all_jar() {
     cd ${OUT}/android-all-classes; jar xf ${OUT}/${ANDROID_RES}
     cd ${OUT}/android-all-classes; jar xf ${OUT}/${ANDROID_EXT}
     cd ${OUT}/android-all-classes; jar xf ${OUT}/${ANDROID_CLASSES}
+
+    # Remove unused files
+    rm -rf ${OUT}/android-all-classes/Android.mk
+    rm -rf ${OUT}/android-all-classes/AndroidManifest.xml
+    rm -rf ${OUT}/android-all-classes/META-INF
+    rm -rf ${OUT}/android-all-classes/MODULE_LICENSE_APACHE2
+    rm -rf ${OUT}/android-all-classes/MakeJavaSymbols.sed
+    rm -rf ${OUT}/android-all-classes/NOTICE
+    rm -rf ${OUT}/android-all-classes/lint.xml
+    rm -rf ${OUT}/android-all-classes/java/lang
+
+    # Build the new JAR file
     cd ${OUT}/android-all-classes; jar cf ${OUT}/${ANDROID_ALL} .
-    rm -rf ${OUT}/android-all-classes
     rm ${OUT}/${ANDROID_RES} ${OUT}/${ANDROID_EXT} ${OUT}/${ANDROID_CLASSES}
 }
 
@@ -168,7 +192,14 @@ mavenize() {
       -Dclassifier=javadoc
 }
 
-OUT=`mktemp -t mavenize-android -d`
+# Use Java 1.6
+export JAVA_HOME=$(/usr/libexec/java_home -v 1.6)
+export PATH=$PATH:$JAVA_HOME/bin
+
+#OUT=`mktemp -t mavenize-android -d`
+OUT=/tmp/build-android-all-jar
+mkdir -p ${OUT}
+
 build_platform
 build_android_res
 build_android_ext

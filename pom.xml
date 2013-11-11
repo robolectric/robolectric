@@ -88,7 +88,7 @@
     <dependency>
       <groupId>org.robolectric</groupId>
       <artifactId>android-all</artifactId>
-      <version>4.3_r2-robolectric-0</version>
+      <version>4.4_r1-robolectric-0</version>
       <scope>provided</scope>
     </dependency>
 
@@ -158,8 +158,8 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>2.3.2</version>
         <configuration>
-          <source>1.6</source>
-          <target>1.6</target>
+          <source>1.7</source>
+          <target>1.7</target>
         </configuration>
       </plugin>
 
@@ -168,10 +168,7 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>2.13</version>
         <configuration>
-          <excludes>
-            <exclude>**/Test*.java</exclude>
-          </excludes>
-          <argLine>-Xms768m -Xmx768m -XX:MaxPermSize=128m</argLine>
+          <argLine>-Xms768m -Xmx768m -XX:MaxPermSize=128m -XX:-UseSplitVerifier</argLine>
         </configuration>
       </plugin>
 
