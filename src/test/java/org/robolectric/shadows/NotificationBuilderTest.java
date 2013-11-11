@@ -86,6 +86,11 @@ public class NotificationBuilderTest {
   public void build_setsStyleOnNotification() throws Exception {
     Style style = new Style() {
       @Override
+      public Notification buildStyled(Notification notification) {
+        return notification;
+      }
+
+      @Override
       public Notification build() {
         return new Notification();
       }
