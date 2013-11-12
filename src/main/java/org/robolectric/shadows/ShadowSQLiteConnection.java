@@ -22,7 +22,7 @@ public class ShadowSQLiteConnection {
 
   private static final AtomicInteger POINTER_COUNTER = new AtomicInteger(0);
 
-  private static final ConcurrentHashMap<Integer, SQLiteConnection> CONNECTIONS_MAP = new ConcurrentHashMap<Integer, SQLiteConnection>();
+  private static final ConcurrentHashMap<Integer, ConnectionData> CONNECTIONS_MAP = new ConcurrentHashMap<Integer, ConnectionData>();
   private static final ConcurrentHashMap<Integer, SQLiteStatement> STATEMENTS_MAP = new ConcurrentHashMap<Integer, SQLiteStatement>();
 
   static {
@@ -30,14 +30,20 @@ public class ShadowSQLiteConnection {
   }
 
   private static SQLiteConnection connection(final int pointer) {
-    SQLiteConnection sqliteConnection = CONNECTIONS_MAP.get(pointer);
-    if (sqliteConnection == null) {
+    ConnectionData data = CONNECTIONS_MAP.get(pointer);
+    if (data == null) {
       throw new IllegalArgumentException("Illegal SQLite connection pointer: " + pointer + ". Current pointers: " + CONNECTIONS_MAP.keySet());
     }
-    return sqliteConnection;
+    if (Thread.currentThread() != data.user) {
+      throw new IllegalStateException("Connection is created in " + data.user + " but accessed in " + Thread.currentThread());
+    }
+    return data.connection;
   }
 
-  private static SQLiteStatement stmt(final int pointer) {
+  private static SQLiteStatement stmt(final int connectionPtr, final int pointer) {
+    // ensure connection is ok
+    connection(connectionPtr);
+
     SQLiteStatement stmt = STATEMENTS_MAP.get(pointer);
     if (stmt == null) {
       throw new IllegalArgumentException("Invalid prepared statement pointer: " + pointer + ". Current pointers: " + STATEMENTS_MAP.keySet());
@@ -65,7 +71,7 @@ public class ShadowSQLiteConnection {
     }
 
     int pointer = POINTER_COUNTER.incrementAndGet();
-    CONNECTIONS_MAP.put(pointer, sqliteConnection);
+    CONNECTIONS_MAP.put(pointer, new ConnectionData(sqliteConnection, Thread.currentThread()));
     return pointer;
   }
 
@@ -98,7 +104,7 @@ public class ShadowSQLiteConnection {
   @Implementation
   public static int nativeGetParameterCount(int connectionPtr, int statementPtr) {
     if (statementPtr == -2) { return 0; } // TODO
-    SQLiteStatement stmt = stmt(statementPtr);
+    SQLiteStatement stmt = stmt(connectionPtr, statementPtr);
     try {
       return stmt.getBindParameterCount();
     } catch (SQLiteException e) {
@@ -110,7 +116,7 @@ public class ShadowSQLiteConnection {
   @Implementation
   public static boolean nativeIsReadOnly(int connectionPtr, int statementPtr) {
     if (statementPtr == -2) { return true; } // TODO
-    SQLiteStatement stmt = stmt(statementPtr);
+    SQLiteStatement stmt = stmt(connectionPtr, statementPtr);
     try {
       return stmt.isReadOnly();
     } catch (SQLiteException e) {
@@ -121,7 +127,7 @@ public class ShadowSQLiteConnection {
 
   @Implementation
   public static long nativeExecuteForLong(int connectionPtr, int statementPtr) {
-    SQLiteStatement stmt = stmt(statementPtr);
+    SQLiteStatement stmt = stmt(connectionPtr, statementPtr);
     try {
       if (!stmt.step()) {
         throw new SQLiteDoneException();
@@ -136,7 +142,7 @@ public class ShadowSQLiteConnection {
   @Implementation
   public static void nativeExecute(int connectionPtr, int statementPtr) {
     if (statementPtr == -2) { return; }
-    SQLiteStatement stmt = stmt(statementPtr);
+    SQLiteStatement stmt = stmt(connectionPtr, statementPtr);
     try {
       stmt.stepThrough();
     } catch (SQLiteException e) {
@@ -146,7 +152,7 @@ public class ShadowSQLiteConnection {
 
   @Implementation
   public static String nativeExecuteForString(int connectionPtr, int statementPtr) {
-    SQLiteStatement stmt = stmt(statementPtr);
+    SQLiteStatement stmt = stmt(connectionPtr, statementPtr);
     try {
       if (!stmt.step()) {
         throw new SQLiteDoneException();
@@ -161,14 +167,14 @@ public class ShadowSQLiteConnection {
   @Implementation
   public static void nativeFinalizeStatement(int connectionPtr, int statementPtr) {
     if (statementPtr == -2) { return; } // TODO
-    SQLiteStatement stmt = stmt(statementPtr);
+    SQLiteStatement stmt = stmt(connectionPtr, statementPtr);
     STATEMENTS_MAP.remove(statementPtr);
     stmt.dispose();
   }
 
   @Implementation
   public static int nativeGetColumnCount(int connectionPtr, int statementPtr) {
-    SQLiteStatement stmt = stmt(statementPtr);
+    SQLiteStatement stmt = stmt(connectionPtr, statementPtr);
     try {
       return stmt.columnCount();
     } catch (SQLiteException e) {
@@ -179,7 +185,7 @@ public class ShadowSQLiteConnection {
 
   @Implementation
   public static String nativeGetColumnName(int connectionPtr, int statementPtr, int index) {
-    SQLiteStatement stmt = stmt(statementPtr);
+    SQLiteStatement stmt = stmt(connectionPtr, statementPtr);
     try {
       return stmt.getColumnName(index);
     } catch (SQLiteException e) {
@@ -190,7 +196,7 @@ public class ShadowSQLiteConnection {
 
   @Implementation
   public static void nativeBindNull(int connectionPtr, int statementPtr, int index) {
-    SQLiteStatement stmt = stmt(statementPtr);
+    SQLiteStatement stmt = stmt(connectionPtr, statementPtr);
     try {
       stmt.bindNull(index);
     } catch (SQLiteException e) {
@@ -200,7 +206,7 @@ public class ShadowSQLiteConnection {
 
   @Implementation
   public static void nativeBindLong(int connectionPtr, int statementPtr, int index, long value) {
-    SQLiteStatement stmt = stmt(statementPtr);
+    SQLiteStatement stmt = stmt(connectionPtr, statementPtr);
     try {
       stmt.bind(index, value);
     } catch (SQLiteException e) {
@@ -210,7 +216,7 @@ public class ShadowSQLiteConnection {
 
   @Implementation
   public static void nativeBindDouble(int connectionPtr, int statementPtr, int index, double value) {
-    SQLiteStatement stmt = stmt(statementPtr);
+    SQLiteStatement stmt = stmt(connectionPtr, statementPtr);
     try {
       stmt.bind(index, value);
     } catch (SQLiteException e) {
@@ -220,7 +226,7 @@ public class ShadowSQLiteConnection {
 
   @Implementation
   public static void nativeBindString(int connectionPtr, int statementPtr, int index, String value) {
-    SQLiteStatement stmt = stmt(statementPtr);
+    SQLiteStatement stmt = stmt(connectionPtr, statementPtr);
     try {
       stmt.bind(index, value);
     } catch (SQLiteException e) {
@@ -230,7 +236,7 @@ public class ShadowSQLiteConnection {
 
   @Implementation
   public static void nativeBindBlob(int connectionPtr, int statementPtr, int index, byte[] value) {
-    SQLiteStatement stmt = stmt(statementPtr);
+    SQLiteStatement stmt = stmt(connectionPtr, statementPtr);
     try {
       stmt.bind(index, value);
     } catch (SQLiteException e) {
@@ -247,7 +253,7 @@ public class ShadowSQLiteConnection {
 
   @Implementation
   public static int nativeExecuteForChangedRowCount(int connectionPtr, int statementPtr) {
-    SQLiteStatement stmt = stmt(statementPtr);
+    SQLiteStatement stmt = stmt(connectionPtr, statementPtr);
     try {
       stmt.stepThrough();
       return connection(connectionPtr).getChanges();
@@ -259,7 +265,7 @@ public class ShadowSQLiteConnection {
 
   @Implementation
   public static long nativeExecuteForLastInsertedRowId(int connectionPtr, int statementPtr) {
-    SQLiteStatement stmt = stmt(statementPtr);
+    SQLiteStatement stmt = stmt(connectionPtr, statementPtr);
     try {
       stmt.stepThrough();
       return connection(connectionPtr).getLastInsertId();
@@ -273,7 +279,7 @@ public class ShadowSQLiteConnection {
   public static long nativeExecuteForCursorWindow(int connectionPtr, int statementPtr, int windowPtr,
       int startPos, int requiredPos, boolean countAllRows) {
 
-    SQLiteStatement stmt = stmt(statementPtr);
+    SQLiteStatement stmt = stmt(connectionPtr, statementPtr);
     try {
       ShadowCursorWindow.setData(windowPtr, stmt);
       return ShadowCursorWindow.getCount(windowPtr);
@@ -285,7 +291,7 @@ public class ShadowSQLiteConnection {
 
   @Implementation
   public static void nativeResetStatementAndClearBindings(int connectionPtr, int statementPtr) {
-    SQLiteStatement stmt = stmt(statementPtr);
+    SQLiteStatement stmt = stmt(connectionPtr, statementPtr);
     try {
       stmt.reset(true);
     } catch (SQLiteException e) {
@@ -304,5 +310,15 @@ public class ShadowSQLiteConnection {
   private static native void nativeCancel(int connectionPtr);
   private static native void nativeResetCancel(int connectionPtr, boolean cancelable);
   */
+
+  private static class ConnectionData {
+    final SQLiteConnection connection;
+    final Thread user;
+
+    public ConnectionData(SQLiteConnection connection, Thread user) {
+      this.connection = connection;
+      this.user = user;
+    }
+  }
 
 }
