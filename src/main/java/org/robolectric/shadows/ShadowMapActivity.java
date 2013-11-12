@@ -14,7 +14,7 @@ import org.robolectric.annotation.Implements;
  */
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(value = MapActivity.class)
+@Implements(MapActivity.class)
 public class ShadowMapActivity extends ShadowActivity {
   private ConnectivityBroadcastReceiver connectivityBroadcastReceiver = new ConnectivityBroadcastReceiver();
 

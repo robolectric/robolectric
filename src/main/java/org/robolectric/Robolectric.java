@@ -2,7 +2,6 @@ package org.robolectric;
 
 import android.accounts.AccountManager;
 import android.animation.Animator;
-import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.app.ActivityGroup;
@@ -11,6 +10,7 @@ import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.Application;
 import android.app.Dialog;
+import android.app.IntentService;
 import android.app.KeyguardManager;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -53,12 +53,8 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Typeface;
-import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.LayerDrawable;
-import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.StateListDrawable;
 import android.hardware.Camera;
 import android.hardware.SensorManager;
@@ -115,7 +111,6 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
-import android.view.animation.AnimationSet;
 import android.view.animation.AnimationUtils;
 import android.view.animation.LayoutAnimationController;
 import android.view.animation.TranslateAnimation;
@@ -133,20 +128,16 @@ import android.widget.AbsSeekBar;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
-import android.widget.CheckedTextView;
 import android.widget.CursorAdapter;
 import android.widget.ExpandableListView;
 import android.widget.Filter;
 import android.widget.FrameLayout;
-import android.widget.Gallery;
-import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.NumberPicker;
 import android.widget.PopupWindow;
 import android.widget.ProgressBar;
-import android.widget.RatingBar;
 import android.widget.RemoteViews;
 import android.widget.ResourceCursorAdapter;
 import android.widget.ScrollView;
@@ -158,7 +149,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
 import android.widget.ViewAnimator;
-import android.widget.ViewFlipper;
 import android.widget.ZoomButtonsController;
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
@@ -182,11 +172,8 @@ import org.robolectric.shadows.ShadowAlarmManager;
 import org.robolectric.shadows.ShadowAlertDialog;
 import org.robolectric.shadows.ShadowAlphaAnimation;
 import org.robolectric.shadows.ShadowAnimation;
-import org.robolectric.shadows.ShadowAnimationDrawable;
-import org.robolectric.shadows.ShadowAnimationSet;
 import org.robolectric.shadows.ShadowAnimationUtils;
 import org.robolectric.shadows.ShadowAnimator;
-import org.robolectric.shadows.ShadowAnimatorSet;
 import org.robolectric.shadows.ShadowAppWidgetHost;
 import org.robolectric.shadows.ShadowAppWidgetHostView;
 import org.robolectric.shadows.ShadowAppWidgetManager;
@@ -196,6 +183,7 @@ import org.robolectric.shadows.ShadowAssetManager;
 import org.robolectric.shadows.ShadowAsyncTask;
 import org.robolectric.shadows.ShadowAudioManager;
 import org.robolectric.shadows.ShadowBaseAdapter;
+import org.robolectric.shadows.ShadowBinder;
 import org.robolectric.shadows.ShadowBitmap;
 import org.robolectric.shadows.ShadowBitmapDrawable;
 import org.robolectric.shadows.ShadowBitmapFactory;
@@ -204,11 +192,9 @@ import org.robolectric.shadows.ShadowBluetoothDevice;
 import org.robolectric.shadows.ShadowBundle;
 import org.robolectric.shadows.ShadowCamera;
 import org.robolectric.shadows.ShadowCanvas;
-import org.robolectric.shadows.ShadowCheckedTextView;
 import org.robolectric.shadows.ShadowChoreographer;
 import org.robolectric.shadows.ShadowClipboardManager;
 import org.robolectric.shadows.ShadowColor;
-import org.robolectric.shadows.ShadowColorDrawable;
 import org.robolectric.shadows.ShadowColorMatrix;
 import org.robolectric.shadows.ShadowConfiguration;
 import org.robolectric.shadows.ShadowConnectivityManager;
@@ -235,10 +221,8 @@ import org.robolectric.shadows.ShadowEditTextPreference;
 import org.robolectric.shadows.ShadowExpandableListView;
 import org.robolectric.shadows.ShadowFilter;
 import org.robolectric.shadows.ShadowFrameLayout;
-import org.robolectric.shadows.ShadowGallery;
 import org.robolectric.shadows.ShadowGeocoder;
 import org.robolectric.shadows.ShadowGestureDetector;
-import org.robolectric.shadows.ShadowGridView;
 import org.robolectric.shadows.ShadowHandler;
 import org.robolectric.shadows.ShadowHandlerThread;
 import org.robolectric.shadows.ShadowHttpResponseCache;
@@ -246,11 +230,11 @@ import org.robolectric.shadows.ShadowImageView;
 import org.robolectric.shadows.ShadowInputDevice;
 import org.robolectric.shadows.ShadowInputMethodManager;
 import org.robolectric.shadows.ShadowIntent;
+import org.robolectric.shadows.ShadowIntentService;
 import org.robolectric.shadows.ShadowJsPromptResult;
 import org.robolectric.shadows.ShadowJsResult;
 import org.robolectric.shadows.ShadowKeyEvent;
 import org.robolectric.shadows.ShadowKeyguardManager;
-import org.robolectric.shadows.ShadowLayerDrawable;
 import org.robolectric.shadows.ShadowLayoutAnimationController;
 import org.robolectric.shadows.ShadowLinearGradient;
 import org.robolectric.shadows.ShadowLinearLayout;
@@ -286,7 +270,6 @@ import org.robolectric.shadows.ShadowPreferenceGroup;
 import org.robolectric.shadows.ShadowPreferenceScreen;
 import org.robolectric.shadows.ShadowProgressBar;
 import org.robolectric.shadows.ShadowProgressDialog;
-import org.robolectric.shadows.ShadowRatingBar;
 import org.robolectric.shadows.ShadowRemoteViews;
 import org.robolectric.shadows.ShadowResolveInfo;
 import org.robolectric.shadows.ShadowResourceCursorAdapter;
@@ -294,7 +277,6 @@ import org.robolectric.shadows.ShadowResources;
 import org.robolectric.shadows.ShadowResultReceiver;
 import org.robolectric.shadows.ShadowSQLiteCursor;
 import org.robolectric.shadows.ShadowSQLiteDatabase;
-import org.robolectric.shadows.ShadowSQLiteOpenHelper;
 import org.robolectric.shadows.ShadowSQLiteProgram;
 import org.robolectric.shadows.ShadowSQLiteQueryBuilder;
 import org.robolectric.shadows.ShadowSQLiteStatement;
@@ -305,7 +287,6 @@ import org.robolectric.shadows.ShadowScroller;
 import org.robolectric.shadows.ShadowSeekBar;
 import org.robolectric.shadows.ShadowSensorManager;
 import org.robolectric.shadows.ShadowService;
-import org.robolectric.shadows.ShadowShapeDrawable;
 import org.robolectric.shadows.ShadowSimpleCursorAdapter;
 import org.robolectric.shadows.ShadowSmsManager;
 import org.robolectric.shadows.ShadowSslErrorHandler;
@@ -325,7 +306,6 @@ import org.robolectric.shadows.ShadowVideoView;
 import org.robolectric.shadows.ShadowView;
 import org.robolectric.shadows.ShadowViewAnimator;
 import org.robolectric.shadows.ShadowViewConfiguration;
-import org.robolectric.shadows.ShadowViewFlipper;
 import org.robolectric.shadows.ShadowViewGroup;
 import org.robolectric.shadows.ShadowViewTreeObserver;
 import org.robolectric.shadows.ShadowWebView;
@@ -349,7 +329,7 @@ import java.util.List;
 import static org.fest.reflect.core.Reflection.method;
 
 public class Robolectric {
-  public static final int DEFAULT_SDK_VERSION = 16;
+  public static final int DEFAULT_SDK_VERSION = 18;
 
   public static Application application;
   public static RobolectricPackageManager packageManager;
@@ -459,24 +439,12 @@ public class Robolectric {
     return (ShadowLayoutAnimationController) shadowOf_(instance);
   }
 
-  public static ShadowAnimationDrawable shadowOf(AnimationDrawable instance) {
-    return (ShadowAnimationDrawable) shadowOf_(instance);
-  }
-
-  public static ShadowAnimationSet shadowOf(AnimationSet instance) {
-    return (ShadowAnimationSet) shadowOf_(instance);
-  }
-
   public static ShadowAnimationUtils shadowOf(AnimationUtils instance) {
     return (ShadowAnimationUtils) shadowOf_(instance);
   }
 
   public static ShadowAnimator shadowOf(Animator instance) {
     return (ShadowAnimator) shadowOf_(instance);
-  }
-
-  public static ShadowAnimatorSet shadowOf(AnimatorSet instance) {
-    return (ShadowAnimatorSet) shadowOf_(instance);
   }
 
   public static ShadowApplication shadowOf(Application instance) {
@@ -552,20 +520,12 @@ public class Robolectric {
     return (ShadowCanvas) shadowOf_(instance);
   }
 
-  public static ShadowCheckedTextView shadowOf(CheckedTextView instance) {
-    return (ShadowCheckedTextView) shadowOf_(instance);
-  }
-
   public static ShadowClipboardManager shadowOf(ClipboardManager instance) {
     return (ShadowClipboardManager) shadowOf_(instance);
   }
 
   public static ShadowColor shadowOf(Color instance) {
     return (ShadowColor) shadowOf_(instance);
-  }
-
-  public static ShadowColorDrawable shadowOf(ColorDrawable instance) {
-    return (ShadowColorDrawable) shadowOf_(instance);
   }
 
   public static ShadowColorMatrix shadowOf(ColorMatrix instance) {
@@ -676,20 +636,12 @@ public class Robolectric {
     return (ShadowFrameLayout) shadowOf_(instance);
   }
 
-  public static ShadowGallery shadowOf(Gallery instance) {
-    return (ShadowGallery) shadowOf_(instance);
-  }
-
   public static ShadowGeocoder shadowOf(Geocoder instance) {
     return (ShadowGeocoder) shadowOf_(instance);
   }
 
   public static ShadowGestureDetector shadowOf(GestureDetector instance) {
     return (ShadowGestureDetector) shadowOf_(instance);
-  }
-
-  public static ShadowGridView shadowOf(GridView instance) {
-    return (ShadowGridView) shadowOf_(instance);
   }
 
   public static ShadowHandler shadowOf(Handler instance) {
@@ -720,6 +672,10 @@ public class Robolectric {
     return (ShadowIntent) shadowOf_(instance);
   }
 
+  public static ShadowIntentService shadowOf(IntentService instance) {
+    return (ShadowIntentService) shadowOf_(instance);
+  }
+
   public static ShadowJsPromptResult shadowOf(JsPromptResult instance) {
     return (ShadowJsPromptResult) shadowOf_(instance);
   }
@@ -738,10 +694,6 @@ public class Robolectric {
 
   public static ShadowKeyguardManager.ShadowKeyguardLock shadowOf(KeyguardManager.KeyguardLock instance) {
     return (ShadowKeyguardManager.ShadowKeyguardLock) shadowOf_(instance);
-  }
-
-  public static ShadowLayerDrawable shadowOf(LayerDrawable instance) {
-    return (ShadowLayerDrawable) shadowOf_(instance);
   }
 
   public static ShadowLinearLayout shadowOf(LinearLayout instance) {
@@ -840,6 +792,10 @@ public class Robolectric {
     return (ShadowPowerManager) shadowOf_(instance);
   }
 
+  public static ShadowPowerManager.ShadowWakeLock shadowOf(PowerManager.WakeLock instance) {
+    return (ShadowPowerManager.ShadowWakeLock) shadowOf_(instance);
+  }
+
   public static ShadowPreference shadowOf(Preference instance) {
     return (ShadowPreference) shadowOf_(instance);
   }
@@ -866,10 +822,6 @@ public class Robolectric {
 
   public static ShadowProgressDialog shadowOf(ProgressDialog instance) {
     return (ShadowProgressDialog) shadowOf_(instance);
-  }
-
-  public static ShadowRatingBar shadowOf(RatingBar instance) {
-    return (ShadowRatingBar) shadowOf_(instance);
   }
 
   public static ShadowRemoteViews shadowOf(RemoteViews instance) {
@@ -920,10 +872,6 @@ public class Robolectric {
     return (ShadowService) shadowOf_(instance);
   }
 
-  public static ShadowShapeDrawable shadowOf(ShapeDrawable instance) {
-    return (ShadowShapeDrawable) shadowOf_(instance);
-  }
-
   public static ShadowSimpleCursorAdapter shadowOf(SimpleCursorAdapter instance) {
     return (ShadowSimpleCursorAdapter) shadowOf_(instance);
   }
@@ -938,10 +886,6 @@ public class Robolectric {
 
   public static ShadowSQLiteDatabase shadowOf(SQLiteDatabase other) {
     return (ShadowSQLiteDatabase) Robolectric.shadowOf_(other);
-  }
-
-  public static ShadowSQLiteOpenHelper shadowOf(SQLiteOpenHelper other) {
-    return (ShadowSQLiteOpenHelper) Robolectric.shadowOf_(other);
   }
 
   public static ShadowSQLiteProgram shadowOf(SQLiteProgram other) {
@@ -1022,10 +966,6 @@ public class Robolectric {
 
   public static ShadowViewConfiguration shadowOf(ViewConfiguration instance) {
     return (ShadowViewConfiguration) shadowOf_(instance);
-  }
-
-  public static ShadowViewFlipper shadowOf(ViewFlipper instance) {
-    return (ShadowViewFlipper) shadowOf_(instance);
   }
 
   public static ShadowViewTreeObserver shadowOf(ViewTreeObserver instance) {
@@ -1388,6 +1328,7 @@ public class Robolectric {
     Robolectric.activityThread = null;
     ShadowAccountManager.reset();
     ShadowResources.reset();
+    ShadowBinder.reset();
     ShadowBitmapFactory.reset();
     ShadowDrawable.reset();
     ShadowMediaStore.reset();
@@ -1407,6 +1348,24 @@ public class Robolectric {
 
   public static <T extends Activity> ActivityController<T> buildActivity(Class<T> activityClass) {
     return new ActivityController<T>(activityClass);
+  }
+
+  public static <T extends Activity> T setupActivity(Class<T> activityClass) {
+    return new ActivityController<T>(activityClass).create().start().resume().visible().get();
+  }
+
+  /**
+   * Set to true if you'd like Robolectric to strictly simulate the real Android behavior when
+   * calling {@link Context#startActivity(android.content.Intent)}. Real Android throws a
+   * {@link android.content.ActivityNotFoundException} if given
+   * an {@link Intent} that is not known to the {@link android.content.pm.PackageManager}
+   *
+   * By default, this behavior is off (false).
+   *
+   * @param checkActivities
+   */
+  public static void checkActivities(boolean checkActivities) {
+    shadowOf(application).checkActivities(checkActivities);
   }
 
   /**

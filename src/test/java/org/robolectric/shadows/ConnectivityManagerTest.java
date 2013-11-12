@@ -28,89 +28,82 @@ public class ConnectivityManagerTest {
   }
 
   @Test
-  public void getConnectivityManagerShouldNotBeNull() {
-    assertNotNull(connectivityManager);
-    assertNotNull(connectivityManager.getActiveNetworkInfo());
+  public void getActiveNetworkInfo_shouldInitializeItself() {
+    assertThat(connectivityManager.getActiveNetworkInfo()).isNotNull();
   }
 
   @Test
-  public void networkInfoShouldReturnTrueCorrectly() {
+  public void getActiveNetworkInfo_shouldReturnTrueCorrectly() {
     shadowOfActiveNetworkInfo.setConnectionStatus(true);
-
-    assertTrue(connectivityManager.getActiveNetworkInfo().isConnectedOrConnecting());
+    assertThat(connectivityManager.getActiveNetworkInfo().isConnectedOrConnecting()).isTrue();
     assertTrue(connectivityManager.getActiveNetworkInfo().isConnected());
-  }
 
-  @Test
-  public void getNetworkInfoShouldReturnAssignedValue() throws Exception {
-    NetworkInfo networkInfo = ShadowNetworkInfo.newInstance(NetworkInfo.DetailedState.CONNECTING);
-    shadowConnectivityManager.setNetworkInfo(ConnectivityManager.TYPE_WIFI, networkInfo);
-    NetworkInfo actual = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-    assertThat(actual).isSameAs(networkInfo);
-    assertThat(actual.getDetailedState()).isEqualTo(NetworkInfo.DetailedState.CONNECTING);
-  }
-
-  @Test
-  public void networkInfoShouldReturnFalseCorrectly() {
     shadowOfActiveNetworkInfo.setConnectionStatus(false);
-
-    assertFalse(connectivityManager.getActiveNetworkInfo().isConnectedOrConnecting());
-    assertFalse(connectivityManager.getActiveNetworkInfo().isConnected());
+    assertThat(connectivityManager.getActiveNetworkInfo().isConnectedOrConnecting()).isFalse();
+    assertThat(connectivityManager.getActiveNetworkInfo().isConnected()).isFalse();
   }
 
   @Test
-  public void networkInfoShouldReturnTypeCorrectly(){
+  public void getNetworkInfo_shouldReturnDefaultNetworks() throws Exception {
+    NetworkInfo wifi = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+    assertThat(wifi.getDetailedState()).isEqualTo(NetworkInfo.DetailedState.DISCONNECTED);
+
+    NetworkInfo mobile = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+    assertThat(mobile.getDetailedState()).isEqualTo(NetworkInfo.DetailedState.CONNECTED);
+  }
+
+  @Test
+  public void setConnectionType_shouldReturnTypeCorrectly() {
     shadowOfActiveNetworkInfo.setConnectionType(ConnectivityManager.TYPE_MOBILE);
-    assertEquals(ConnectivityManager.TYPE_MOBILE, shadowOfActiveNetworkInfo.getType());
+    assertThat(ConnectivityManager.TYPE_MOBILE).isEqualTo(shadowOfActiveNetworkInfo.getType());
 
     shadowOfActiveNetworkInfo.setConnectionType(ConnectivityManager.TYPE_WIFI);
-    assertEquals(ConnectivityManager.TYPE_WIFI, shadowOfActiveNetworkInfo.getType());
+    assertThat(ConnectivityManager.TYPE_WIFI).isEqualTo(shadowOfActiveNetworkInfo.getType());
   }
 
   @Test
   public void shouldGetAndSetBackgroundDataSetting() throws Exception {
-    assertFalse(connectivityManager.getBackgroundDataSetting());
+    assertThat(connectivityManager.getBackgroundDataSetting()).isFalse();
     shadowConnectivityManager.setBackgroundDataSetting(true);
-    assertTrue(connectivityManager.getBackgroundDataSetting());
+    assertThat(connectivityManager.getBackgroundDataSetting()).isTrue();
   }
 
   @Test
-  public void shouldSetActiveNetworkInfo() throws Exception {
+  public void setActiveNetworkInfo_shouldSetActiveNetworkInfo() throws Exception {
     shadowConnectivityManager.setActiveNetworkInfo(null);
-    assertNull(connectivityManager.getActiveNetworkInfo());
+    assertThat(connectivityManager.getActiveNetworkInfo()).isNull();
     shadowConnectivityManager.setActiveNetworkInfo(ShadowNetworkInfo.newInstance(null,
         ConnectivityManager.TYPE_MOBILE_HIPRI,
         TelephonyManager.NETWORK_TYPE_EDGE, true, false));
 
     NetworkInfo info = connectivityManager.getActiveNetworkInfo();
 
-    assertEquals(ConnectivityManager.TYPE_MOBILE_HIPRI, info.getType());
-    assertEquals(TelephonyManager.NETWORK_TYPE_EDGE, info.getSubtype());
-    assertTrue(info.isAvailable());
-    assertFalse(info.isConnected());
+    assertThat(ConnectivityManager.TYPE_MOBILE_HIPRI).isEqualTo(info.getType());
+    assertThat(TelephonyManager.NETWORK_TYPE_EDGE).isEqualTo(info.getSubtype());
+    assertThat(info.isAvailable()).isTrue();
+    assertThat(info.isConnected()).isFalse();
   }
 
   @Test
-  public void shouldGetAllNetworkInfo() throws Exception {
+  public void getAllNetworkInfo_shouldReturnAllNetworkInterfaces() throws Exception {
     NetworkInfo[] infos = connectivityManager.getAllNetworkInfo();
-    assertNotNull(infos);
-    assertEquals(1, infos.length);
-    assertSame(connectivityManager.getActiveNetworkInfo(), infos[0]);
+    assertThat(infos).hasSize(2);
+    assertThat(connectivityManager.getActiveNetworkInfo()).isSameAs(infos[0]);
 
     shadowConnectivityManager.setActiveNetworkInfo(null);
-    assertEquals(0, connectivityManager.getAllNetworkInfo().length);
+    assertThat(connectivityManager.getAllNetworkInfo()).isEmpty();
   }
 
   @Test
-  public void shouldGetDefaultNetworkPreference() throws Exception {
-    assertEquals(connectivityManager.getNetworkPreference(), ConnectivityManager.DEFAULT_NETWORK_PREFERENCE);
+  public void getNetworkPreference_shouldGetDefaultValue() throws Exception {
+    assertThat(connectivityManager.getNetworkPreference()).isEqualTo(ConnectivityManager.DEFAULT_NETWORK_PREFERENCE);
   }
 
   @Test
-  public void shouldGetSetNetworkPreference() throws Exception {
+  public void setNetworkPreference_shouldSetDefaultValue() throws Exception {
     connectivityManager.setNetworkPreference(ConnectivityManager.TYPE_MOBILE);
-    assertEquals(connectivityManager.getNetworkPreference(), connectivityManager.getNetworkPreference());
+    assertThat(connectivityManager.getNetworkPreference()).isEqualTo(connectivityManager.getNetworkPreference());
     connectivityManager.setNetworkPreference(ConnectivityManager.TYPE_WIFI);
-    assertEquals(connectivityManager.getNetworkPreference(), ConnectivityManager.TYPE_WIFI);
+    assertThat(connectivityManager.getNetworkPreference()).isEqualTo(ConnectivityManager.TYPE_WIFI);
   }
 }

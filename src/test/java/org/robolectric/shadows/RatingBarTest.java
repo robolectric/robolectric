@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import android.content.Context;
 import android.widget.RatingBar;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,14 +14,12 @@ import static org.fest.assertions.api.Assertions.assertThat;
 public class RatingBarTest {
 
   private RatingBar ratingBar;
-  private ShadowRatingBar shadow;
   private RatingBar.OnRatingBarChangeListener listener;
   private Transcript transcript;
 
   @Before
   public void setup() {
     ratingBar = new RatingBar(Robolectric.application);
-    shadow = Robolectric.shadowOf(ratingBar);
     listener = new TestRatingBarChangedListener();
     transcript = new Transcript();
     ratingBar.setOnRatingBarChangeListener(listener);
@@ -46,21 +43,6 @@ public class RatingBarTest {
     @Override
     public void onRatingChanged(RatingBar ratingBar, float rating, boolean fromUser) {
       transcript.add("onRatingChanged() - " + rating);
-    }
-  }
-
-  @Test
-  public void testInheritance() {
-    // TODO: this seems to test static typing - compiler enforces this ;)
-    TestRatingBar ratingBar = new TestRatingBar(Robolectric.application);
-    ShadowRatingBar shadow = Robolectric.shadowOf(ratingBar);
-    assertThat(shadow).isInstanceOf(ShadowAbsSeekBar.class);
-  }
-
-  private static class TestRatingBar extends RatingBar {
-
-    public TestRatingBar(Context context) {
-      super(context);
     }
   }
 }

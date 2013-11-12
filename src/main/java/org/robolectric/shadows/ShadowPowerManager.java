@@ -45,13 +45,13 @@ public class ShadowPowerManager {
    *
    * @return
    */
-  public PowerManager.WakeLock getLatestWakeLock() {
+  public static PowerManager.WakeLock getLatestWakeLock() {
     return Robolectric.getShadowApplication().getLatestWakeLock();
   }
 
   @Implements(PowerManager.WakeLock.class)
   public static class ShadowWakeLock {
-    private boolean refCounted =  true;
+    private boolean refCounted = true;
     private int refCount;
     private boolean locked;
 
@@ -82,6 +82,15 @@ public class ShadowPowerManager {
     @Implementation
     public synchronized boolean isHeld() {
       return refCounted ? refCount > 0 : locked;
+    }
+
+    /**
+     * Non-Android accessor retrieves if the wake lock is reference counted or not
+     *
+     * @return
+     */
+    public boolean isReferenceCounted() {
+      return refCounted;
     }
 
     @Implementation

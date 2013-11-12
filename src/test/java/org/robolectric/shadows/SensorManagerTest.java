@@ -57,6 +57,14 @@ public class SensorManagerTest {
   }
 
   @Test
+  public void shouldReturnHasNoListenerAfterUnregisterListenerWithoutSpecificSensor() {
+    SensorEventListener listener = registerListener();
+    sensorManager.unregisterListener(listener);
+
+    assertThat(shadow.hasListener(listener)).isFalse();
+  }
+
+  @Test
   public void shouldReturnHasNoListenerByDefault() {
     SensorEventListener listener = new TestSensorEventListener();
 

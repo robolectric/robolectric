@@ -5,7 +5,6 @@ import android.app.Activity;
 import android.app.Application;
 import android.app.Dialog;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
@@ -15,17 +14,18 @@ import android.text.Selection;
 import android.text.SpannableStringBuilder;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.view.WindowManager;
 import org.robolectric.AndroidManifest;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.bytecode.RobolectricInternals;
+import org.robolectric.internal.HiddenApi;
 import org.robolectric.res.ResName;
 
 import java.lang.reflect.InvocationTargetException;
@@ -72,7 +72,8 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   private boolean destroyed = false;
   private int streamType = -1;
   private boolean mIsTaskRoot = true;
-  
+  private Menu optionsMenu;
+
   public void __constructor__() {
     RobolectricInternals.getConstructor(Activity.class, realActivity, new Class[0]).invoke();
   }
@@ -285,6 +286,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
    *
    * @param parent Parent fragmentActivity to set on this fragmentActivity
    */
+  @HiddenApi @Implementation
   public void setParent(Activity parent) {
     this.parent = parent;
   }
@@ -354,13 +356,9 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     this.destroyed = true;
   }
 
+  @Implementation
   public boolean isDestroyed() {
     return destroyed;
-  }
-
-  @Implementation
-  public WindowManager getWindowManager() {
-    return (WindowManager) Robolectric.application.getSystemService(Context.WINDOW_SERVICE);
   }
 
   @Implementation
@@ -500,16 +498,22 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     onKeyUpWasCalled = false;
   }
 
-  public void performLayout() {
-    shadowOf(getWindow()).performLayout();
-  }
-
   public int getPendingTransitionEnterAnimationResourceId() {
     return pendingTransitionEnterAnimResId;
   }
 
   public int getPendingTransitionExitAnimationResourceId() {
     return pendingTransitionExitAnimResId;
+  }
+
+  @Implementation
+  public boolean onCreateOptionsMenu(Menu menu) {
+    optionsMenu = menu;
+    return directlyOn(realActivity, Activity.class).onCreateOptionsMenu(menu);
+  }
+
+  public Menu getOptionsMenu() {
+    return optionsMenu;
   }
 
   /**

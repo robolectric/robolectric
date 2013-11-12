@@ -2,18 +2,27 @@ package org.robolectric.shadows;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.accounts.AccountManagerCallback;
+import android.accounts.AccountManagerFuture;
+import android.accounts.AuthenticatorDescription;
+import android.accounts.AuthenticatorException;
+import android.accounts.OnAccountsUpdateListener;
+import android.accounts.OperationCanceledException;
 import android.content.Context;
-import android.content.pm.PermissionGroupInfo;
 import android.os.Bundle;
+import android.os.Handler;
 
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Shadow implementation for the Android {@code AccountManager } class.
@@ -26,6 +35,10 @@ public class ShadowAccountManager {
 
   private List<Account> accounts = new ArrayList<Account>();
   private Map<Account, Map<String, String>> authTokens = new HashMap<Account, Map<String,String>>();
+  private List<AuthenticatorDescription> authenticators = new ArrayList<AuthenticatorDescription>();
+  private List<OnAccountsUpdateListener> listeners = new ArrayList<OnAccountsUpdateListener>();
+  private Map<Account, Map<String, String>> userData = new HashMap<Account, Map<String,String>>();
+  private Map<Account, String> passwords = new HashMap<Account, String>();
 
   public static void reset() {
     synchronized (lock) {
@@ -45,7 +58,7 @@ public class ShadowAccountManager {
 
   @Implementation
   public Account[] getAccounts() {
-    return accounts.toArray(new Account[0]);
+    return accounts.toArray(new Account[accounts.size()]);
   }
 
   @Implementation
@@ -58,7 +71,7 @@ public class ShadowAccountManager {
       }
     }
 
-    return accountsByType.toArray(new Account[0]);
+    return accountsByType.toArray(new Account[accountsByType.size()]);
   }
 
   @Implementation
@@ -92,7 +105,20 @@ public class ShadowAccountManager {
         return false;
       }
     }
-    return accounts.add(account);
+    
+    if (!accounts.add(account)) {
+    	return false;
+    }
+    
+    setPassword(account, password);
+    
+    if(userdata != null) {
+      for (String key : userdata.keySet()) {
+        setUserData(account, key, userdata.get(key).toString());
+      }
+    }
+    
+    return true;    
   }
 
   @Implementation
@@ -112,6 +138,140 @@ public class ShadowAccountManager {
     return tokensForAccount.get(authTokenType);
   }
 
+  @Implementation
+  public AccountManagerFuture<Boolean> removeAccount (final Account account,
+                                                      AccountManagerCallback<Boolean> callback,
+                                                      Handler handler) {
+
+    if (account == null) throw new IllegalArgumentException("account is null");
+
+    final boolean accountRemoved = accounts.remove(account);
+	passwords.remove(account);
+	userData.remove(account);
+
+    return new AccountManagerFuture<Boolean>() {
+      @Override
+      public boolean cancel(boolean mayInterruptIfRunning) {
+        return false;
+      }
+
+      @Override
+      public boolean isCancelled() {
+        return false;
+      }
+
+      @Override
+      public boolean isDone() {
+        return false;
+      }
+
+      @Override
+      public Boolean getResult() throws OperationCanceledException, IOException,
+              AuthenticatorException {
+        return accountRemoved;
+      }
+
+      @Override
+      public Boolean getResult(long timeout, TimeUnit unit) throws OperationCanceledException,
+              IOException, AuthenticatorException {
+        return accountRemoved;
+      }
+    };
+  }
+
+  @Implementation
+  public AuthenticatorDescription[] getAuthenticatorTypes() {
+    return authenticators.toArray(new AuthenticatorDescription[authenticators.size()]);
+  }
+
+  @Implementation
+  public void addOnAccountsUpdatedListener(final OnAccountsUpdateListener listener,
+      Handler handler, boolean updateImmediately) {
+
+    if (listeners.contains(listener)) {
+      return;
+    }
+
+    listeners.add(listener);
+
+    if (updateImmediately) {
+      listener.onAccountsUpdated(getAccounts());
+    }
+  }
+  
+  @Implementation
+  public String getUserData(Account account, String key) {
+    if (account == null) {
+      throw new IllegalArgumentException("account is null");
+    }
+
+    if (!userData.containsKey(account)) {
+      return null;
+    }
+    
+    Map<String, String> userDataMap = userData.get(account);
+    if (userDataMap.containsKey(key)) {
+      return userDataMap.get(key);
+    }
+
+	return null;
+  }
+  
+  @Implementation
+  public void setUserData(Account account, String key, String value) {
+    if (account == null) {
+      throw new IllegalArgumentException("account is null");
+    }
+    
+    if (!userData.containsKey(account)) {
+      userData.put(account, new HashMap<String, String>());
+    }
+    
+    Map<String, String> userDataMap = userData.get(account);
+    
+    if (value == null) {
+      userDataMap.remove(key);
+    } else {
+      userDataMap.put(key, value);
+    }
+  }
+  
+  @Implementation
+  public void setPassword (Account account, String password) {
+    if (account == null) {
+      throw new IllegalArgumentException("account is null");
+    }
+    
+    if (password == null) {
+      passwords.remove(account);
+    } else {
+      passwords.put(account, password);
+    }
+  }
+  
+  @Implementation
+  public String getPassword (Account account) {
+    if (account == null) {
+      throw new IllegalArgumentException("account is null");
+    }
+	
+    if (passwords.containsKey(account)) {
+      return passwords.get(account);
+    } else {
+      return null;
+    }
+  }  
+
+  private void notifyListeners() {
+    Account[] accounts = getAccounts();
+    Iterator<OnAccountsUpdateListener> iter = listeners.iterator();
+    OnAccountsUpdateListener listener;
+    while (iter.hasNext()) {
+      listener = iter.next();
+      listener.onAccountsUpdated(accounts);
+    }
+  }
+
   /**
    * Non-android accessor.  Allows the test case to populate the
    * list of active accounts.
@@ -120,5 +280,23 @@ public class ShadowAccountManager {
    */
   public void addAccount(Account account) {
     accounts.add(account);
+    notifyListeners();
+  }
+
+  /**
+   * Non-android accessor.  Allows the test case to populate the
+   * list of active authenticators.
+   *
+   * @param account
+   */
+  public void addAuthenticator(AuthenticatorDescription authenticator) {
+    authenticators.add(authenticator);
+  }
+
+  /**
+   * @see #addAuthenticator(AuthenticatorDescription)
+   */
+  public void addAuthenticator(String type) {
+    addAuthenticator(AuthenticatorDescription.newKey(type));
   }
 }

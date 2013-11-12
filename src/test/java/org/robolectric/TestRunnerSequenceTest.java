@@ -45,7 +45,7 @@ public class TestRunnerSequenceTest {
   @Test public void whenNoAppManifest_shouldRunThingsInTheRightOrder() throws Exception {
     StateHolder.transcript = new Transcript();
     assertNoFailures(run(new Runner(SimpleTest.class) {
-      @Override protected AndroidManifest createAppManifest(FsFile manifestFile) {
+      @Override protected AndroidManifest createAppManifest(FsFile manifestFile, FsFile resDir, FsFile assetsDir) {
         return null;
       }
     }));
@@ -107,7 +107,7 @@ public class TestRunnerSequenceTest {
     }
 
     @Override
-    protected AndroidManifest createAppManifest(FsFile manifestFile) {
+    protected AndroidManifest createAppManifest(FsFile manifestFile, FsFile resDir, FsFile assetsDir) {
       return new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"), resourceFile("assets"));
     }
 

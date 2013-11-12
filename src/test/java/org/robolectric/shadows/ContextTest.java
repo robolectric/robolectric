@@ -183,6 +183,19 @@ public class ContextTest {
   }
 
   @Test
+  public void getDatabasePath_shouldAllowAbsolutePaths() throws Exception {
+      String testDbName;
+
+      if (System.getProperty("os.name").startsWith("Windows")) {
+        testDbName = "C:\\absolute\\full\\path\\to\\db\\abc.db";
+      } else {
+        testDbName = "/absolute/full/path/to/db/abc.db";
+      }
+      File dbFile = context.getDatabasePath(testDbName);
+      assertEquals(dbFile, new File(testDbName));
+  }
+
+  @Test
   public void openFileInput_shouldReturnAFileInputStream() throws Exception {
     String fileContents = "blah";
 

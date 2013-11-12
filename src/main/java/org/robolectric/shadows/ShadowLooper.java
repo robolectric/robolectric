@@ -2,10 +2,10 @@ package org.robolectric.shadows;
 
 import android.os.Looper;
 import org.robolectric.Robolectric;
-import org.robolectric.internal.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.internal.HiddenApi;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.SoftThreadLocal;
 
@@ -69,6 +69,7 @@ public class ShadowLooper {
     return looperForThread.get();
   }
 
+  @HiddenApi
   public void __constructor__() {
   }
 

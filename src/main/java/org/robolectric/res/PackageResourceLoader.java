@@ -2,10 +2,8 @@ package org.robolectric.res;
 
 import org.robolectric.util.I18nException;
 
-import java.io.File;
-
 public class PackageResourceLoader extends XResourceLoader {
-  ResourcePath resourcePath;
+  private final ResourcePath resourcePath;
 
   public PackageResourceLoader(ResourcePath resourcePath) {
     this(resourcePath, new ResourceExtractor(resourcePath));
@@ -30,6 +28,7 @@ public class PackageResourceLoader extends XResourceLoader {
     System.out.println("DEBUG: Loading resources for " + resourcePath.getPackageName() + " from " + resourcePath.resourceBase + "...");
 
     DocumentLoader documentLoader = new DocumentLoader(resourcePath);
+
     documentLoader.load("values",
         new ValueResourceLoader(data, "/resources/bool", "bool", ResType.BOOLEAN),
         new ValueResourceLoader(data, "/resources/color", "color", ResType.COLOR),
@@ -43,12 +42,14 @@ public class PackageResourceLoader extends XResourceLoader {
         new StyleResourceLoader(data)
     );
 
-    documentLoader.load("res" + File.separator + "layout", new OpaqueFileLoader(data, "layout"), new XmlFileLoader(xmlDocuments, "layout"));
-    documentLoader.load("res" + File.separator + "menu", new MenuLoader(menuData), new XmlFileLoader(xmlDocuments, "menu"));
-    documentLoader.load("res" + File.separator + "drawable", new OpaqueFileLoader(data, "drawable"), new XmlFileLoader(xmlDocuments, "drawable"));
-    documentLoader.load("res" + File.separator + "anim", new OpaqueFileLoader(data, "anim"), new XmlFileLoader(xmlDocuments, "anim"));
-    documentLoader.load("res" + File.separator + "color", new ColorResourceLoader(data), new XmlFileLoader(xmlDocuments, "color"));
-    documentLoader.load("res" + File.separator + "xml", new PreferenceLoader(preferenceData), new XmlFileLoader(xmlDocuments, "xml"));
+    documentLoader.load("layout", new OpaqueFileLoader(data, "layout"), new XmlFileLoader(xmlDocuments, "layout"));
+    documentLoader.load("menu", new MenuLoader(menuData), new XmlFileLoader(xmlDocuments, "menu"));
+    documentLoader.load("drawable", new OpaqueFileLoader(data, "drawable"), new XmlFileLoader(xmlDocuments, "drawable"));
+    documentLoader.load("anim", new OpaqueFileLoader(data, "anim"), new XmlFileLoader(xmlDocuments, "anim"));
+    documentLoader.load("animator", new OpaqueFileLoader(data, "animator"), new XmlFileLoader(xmlDocuments, "animator"));
+    documentLoader.load("color", new ColorResourceLoader(data), new XmlFileLoader(xmlDocuments, "color"));
+    documentLoader.load("xml", new PreferenceLoader(preferenceData), new XmlFileLoader(xmlDocuments, "xml"));
+
     new DrawableResourceLoader(drawableData).findDrawableResources(resourcePath);
     new RawResourceLoader(resourcePath).loadTo(rawResources);
 

@@ -4,6 +4,7 @@ import android.location.Location;
 import android.os.Bundle;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.internal.HiddenApi;
 
 import static org.robolectric.Robolectric.shadowOf_;
 
@@ -240,7 +241,8 @@ public class ShadowLocation {
         '}';
   }
 
-  private static void computeDistanceAndBearing(double lat1, double lon1,
+  @HiddenApi @Implementation
+  public static void computeDistanceAndBearing(double lat1, double lon1,
       double lat2, double lon2, float[] results) {
     // Based on http://www.ngs.noaa.gov/PUBS_LIB/inverse.pdf
     // using the "Inverse Formula" (section 4)

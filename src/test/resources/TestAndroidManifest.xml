@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
       package="org.robolectric">
-  <uses-sdk android:targetSdkVersion="16"/>
+  <uses-sdk android:targetSdkVersion="18"/>
 
   <!-- todo: get @Config(manifest=xxx) working -->
   <application android:name="org.robolectric.TestApplication"

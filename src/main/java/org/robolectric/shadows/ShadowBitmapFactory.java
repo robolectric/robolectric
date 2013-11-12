@@ -39,7 +39,7 @@ public class ShadowBitmapFactory {
         InputStream.class, Rect.class, BitmapFactory.Options.class)
         .invoke(res, value, is, pad, opts);
 
-    if (value.string != null && value.string.toString().contains(".9.")) {
+    if (value != null && value.string != null && value.string.toString().contains(".9.")) {
       // todo: better support for nine-patches
       method("setNinePatchChunk").withParameterTypes(byte[].class).in(bitmap).invoke(new byte[0]);
     }

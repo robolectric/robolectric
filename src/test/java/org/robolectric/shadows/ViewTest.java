@@ -428,7 +428,7 @@ public class ViewTest {
 
   @Test
   public void dispatchOnAnimationEnd() throws Exception {
-    TestView view1 = new TestView(new Activity());
+    TestView view1 = new TestView(buildActivity(Activity.class).create().get());
     assertFalse(view1.onAnimationEndWasCalled);
     shadowOf(view1).finishedAnimation();
     assertTrue(view1.onAnimationEndWasCalled);
@@ -437,7 +437,7 @@ public class ViewTest {
   @Test
   public void test_measuredDimension() {
     // View does not provide its own onMeasure implementation
-    TestView view1 = new TestView(new Activity());
+    TestView view1 = new TestView(buildActivity(Activity.class).create().get());
 
     assertThat(view1.getHeight()).isEqualTo(0);
     assertThat(view1.getWidth()).isEqualTo(0);
@@ -456,7 +456,7 @@ public class ViewTest {
   @Test
   public void test_measuredDimensionCustomView() {
     // View provides its own onMeasure implementation
-    TestView2 view2 = new TestView2(new Activity(), 300, 100);
+    TestView2 view2 = new TestView2(buildActivity(Activity.class).create().get(), 300, 100);
 
     assertThat(view2.getWidth()).isEqualTo(0);
     assertThat(view2.getHeight()).isEqualTo(0);
@@ -474,7 +474,7 @@ public class ViewTest {
 
   @Test
   public void shouldGetAndSetTranslations() throws Exception {
-    view = new TestView(new Activity());
+    view = new TestView(buildActivity(Activity.class).create().get());
     view.setTranslationX(8.9f);
     view.setTranslationY(4.6f);
 
@@ -484,7 +484,7 @@ public class ViewTest {
 
   @Test
   public void shouldGetAndSetAlpha() throws Exception {
-    view = new TestView(new Activity());
+    view = new TestView(buildActivity(Activity.class).create().get());
     view.setAlpha(9.1f);
 
     assertThat(view.getAlpha()).isEqualTo(9.1f);
@@ -573,7 +573,7 @@ public class ViewTest {
 
   @Test
   public void canAssertThatSuperDotOnLayoutWasCalledFromViewSubclasses() throws Exception {
-    TestView2 view = new TestView2(new Activity(), 1111, 1112);
+    TestView2 view = new TestView2(buildActivity(Activity.class).create().get(), 1111, 1112);
     assertThat(shadowOf(view).onLayoutWasCalled()).isFalse();
     view.onLayout(true, 1, 2, 3, 4);
     assertThat(shadowOf(view).onLayoutWasCalled()).isTrue();
@@ -589,7 +589,7 @@ public class ViewTest {
 
   @Test
   public void setScrolls_firesOnScrollChanged() throws Exception {
-    TestView testView = new TestView(new Activity());
+    TestView testView = new TestView(buildActivity(Activity.class).create().get());
     testView.setScrollX(122);
     testView.setScrollY(150);
     testView.setScrollX(453);

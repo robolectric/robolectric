@@ -10,6 +10,7 @@ import org.fest.reflect.field.Invoker;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.internal.HiddenApi;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -19,6 +20,8 @@ import static org.fest.reflect.core.Reflection.method;
 
 @Implements(AccessibilityManager.class)
 public class ShadowAccessibilityManager {
+
+  @HiddenApi @Implementation
   public static AccessibilityManager getInstance(Context context) throws Exception {
     AccessibilityManager accessibilityManager = Robolectric.newInstance(AccessibilityManager.class, new Class[0], new Object[0]);
     Handler handler = new MyHandler(context.getMainLooper(), accessibilityManager);

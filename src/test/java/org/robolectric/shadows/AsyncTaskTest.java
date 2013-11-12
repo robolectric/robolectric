@@ -9,6 +9,7 @@ import org.robolectric.TestRunners;
 import org.robolectric.util.Join;
 import org.robolectric.util.Transcript;
 
+import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -21,7 +22,8 @@ import static org.junit.Assert.assertTrue;
 public class AsyncTaskTest {
   private Transcript transcript;
 
-  @Before public void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
     transcript = new Transcript();
     Robolectric.getBackgroundScheduler().pause();
     Robolectric.getUiThreadScheduler().pause();
@@ -80,7 +82,8 @@ public class AsyncTaskTest {
   @Test
   public void progressUpdatesAreQueuedUntilBackgroundThreadFinishes() throws Exception {
     AsyncTask<String, String, String> asyncTask = new MyAsyncTask() {
-      @Override protected String doInBackground(String... strings) {
+      @Override
+      protected String doInBackground(String... strings) {
         publishProgress("33%");
         publishProgress("66%");
         publishProgress("99%");
@@ -145,26 +148,54 @@ public class AsyncTaskTest {
     }
   }
 
+  @Test
+  public void executeOnExecutor_usesPassedExecutor() throws Exception {
+    AsyncTask<String, String, String> asyncTask = new MyAsyncTask();
+
+    assertThat(asyncTask.getStatus()).isEqualTo(AsyncTask.Status.PENDING);
+
+    asyncTask.executeOnExecutor(new ImmediateExecutor(), "a", "b");
+
+    assertThat(asyncTask.getStatus()).isEqualTo(AsyncTask.Status.FINISHED);
+    transcript.assertEventsSoFar("onPreExecute", "doInBackground a, b");
+    assertEquals("Result should get stored in the AsyncTask", "c", asyncTask.get());
+
+    Robolectric.runUiThreadTasks();
+    transcript.assertEventsSoFar("onPostExecute c");
+  }
+
   private class MyAsyncTask extends AsyncTask<String, String, String> {
-    @Override protected void onPreExecute() {
+    @Override
+    protected void onPreExecute() {
       transcript.add("onPreExecute");
     }
 
-    @Override protected String doInBackground(String... strings) {
+    @Override
+    protected String doInBackground(String... strings) {
       transcript.add("doInBackground " + Join.join(", ", (Object[]) strings));
       return "c";
     }
 
-    @Override protected void onProgressUpdate(String... values) {
+    @Override
+    protected void onProgressUpdate(String... values) {
       transcript.add("onProgressUpdate " + Join.join(", ", (Object[]) values));
     }
 
-    @Override protected void onPostExecute(String s) {
+    @Override
+    protected void onPostExecute(String s) {
       transcript.add("onPostExecute " + s);
     }
 
-    @Override protected void onCancelled() {
+    @Override
+    protected void onCancelled() {
       transcript.add("onCancelled");
+    }
+  }
+
+  public class ImmediateExecutor implements Executor {
+    @Override
+    public void execute(Runnable command) {
+      command.run();
     }
   }
 }

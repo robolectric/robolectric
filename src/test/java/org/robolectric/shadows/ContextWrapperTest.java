@@ -8,9 +8,16 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.sqlite.SQLiteDatabase;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Looper;
+import android.view.LayoutInflater;
+import android.view.View;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.util.Transcript;
@@ -21,6 +28,7 @@ import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static junit.framework.Assert.assertEquals;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Robolectric.shadowOf;
@@ -66,6 +74,48 @@ public class ContextWrapperTest {
 
     contextWrapper.sendBroadcast(new Intent("baz"));
     transcript.assertEventsSoFar("Larry notified of baz");
+  }
+
+  @Test
+  public void sendBroadcast_shouldOnlySendIntentWithMatchingReceiverPermission() {
+    BroadcastReceiver receiver = broadcastReceiver("Larry");
+    contextWrapper.registerReceiver(receiver, intentFilter("foo", "baz"), "validPermission", null);
+
+    contextWrapper.sendBroadcast(new Intent("foo"));
+    transcript.assertNoEventsSoFar();
+
+    contextWrapper.sendBroadcast(new Intent("foo"), null);
+    transcript.assertNoEventsSoFar();
+
+    contextWrapper.sendBroadcast(new Intent("foo"), "wrongPermission");
+    transcript.assertNoEventsSoFar();
+
+    contextWrapper.sendBroadcast(new Intent("foo"), "validPermission");
+    transcript.assertEventsSoFar("Larry notified of foo");
+
+    contextWrapper.sendBroadcast(new Intent("baz"), "validPermission");
+    transcript.assertEventsSoFar("Larry notified of baz");
+  }
+
+  @SuppressWarnings("all") // Couldn't figure out which to use for suppressing nullables or null checks, ("null") didn't work
+  @Test
+  public void sendBroadcast_shouldSendIntentUsingHandlerIfOneIsProvided() {
+    HandlerThread handlerThread = new HandlerThread("test");
+    handlerThread.start();
+
+    Handler handler = new Handler(handlerThread.getLooper());
+    assertNotSame(handler.getLooper(), Looper.getMainLooper());
+
+    BroadcastReceiver receiver = broadcastReceiver("Larry");
+    contextWrapper.registerReceiver(receiver, intentFilter("foo", "baz"), null, handler);
+
+    assertThat(shadowOf(handler.getLooper()).getScheduler().size()).isEqualTo(0);
+    contextWrapper.sendBroadcast(new Intent("foo"));
+    assertThat(shadowOf(handler.getLooper()).getScheduler().size()).isEqualTo(1);
+    shadowOf(handlerThread.getLooper()).idle();
+    assertThat(shadowOf(handler.getLooper()).getScheduler().size()).isEqualTo(0);
+
+    transcript.assertEventsSoFar("Larry notified of foo");
   }
 
   @Test
@@ -120,6 +170,13 @@ public class ContextWrapperTest {
     assertThat(activity.getApplicationContext()).isSameAs(activity.getApplicationContext());
 
     assertThat(activity.getApplicationContext()).isSameAs(new Activity().getApplicationContext());
+  }
+
+  @Test
+  public void shouldReturnApplicationContext_forViewContextInflatedWithApplicationContext() throws Exception {
+    View view = LayoutInflater.from(Robolectric.application).inflate(R.layout.custom_layout, null);
+    Context viewContext = new ContextWrapper(view.getContext());
+    assertThat(viewContext.getApplicationContext()).isEqualTo(Robolectric.application);
   }
 
   @Test
@@ -238,6 +295,9 @@ public class ContextWrapperTest {
 
   @Test
   public void openOrCreateDatabaseShouldAlwaysReturnSameDatabase() throws Exception {
-    assertThat(contextWrapper.openOrCreateDatabase("db", 0, null)).isNotNull();
+    SQLiteDatabase db = contextWrapper.openOrCreateDatabase("db", 0, null);
+    assertThat(db).isNotNull();
+    assertThat(contextWrapper.openOrCreateDatabase("db", 0, null)).isSameAs(db);
+    assertThat(contextWrapper.openOrCreateDatabase("db", 0, null, null)).isSameAs(db);
   }
 }

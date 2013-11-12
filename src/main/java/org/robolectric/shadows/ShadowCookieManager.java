@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Shadows the {@code android.telephony.TelephonyManager} class.
+ * Shadows the {@code android.webkit.CookieManager} class.
  */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(CookieManager.class)

@@ -8,11 +8,8 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.util.AttributeSet;
-import android.view.LayoutInflater;
 import android.view.MotionEvent;
-import android.view.TouchDelegate;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.ViewParent;
 import java.io.PrintStream;
 import java.lang.reflect.Field;
@@ -35,11 +32,9 @@ import static org.robolectric.bytecode.RobolectricInternals.getConstructor;
  * Supports listeners, focusability (but not focus order), resource loading,
  * visibility, onclick, tags, and tracks the size and shape of the view.
  */
-@Implements(value = View.class, callThroughByDefault = true)
+@Implements(View.class)
 public class ShadowView {
   public static final String ANDROID_NS = "http://schemas.android.com/apk/res/android";
-  // This is dumb, we should have a Robolectric-wide way of warning about weird states. todo [xw]
-  public static boolean strict = false;
 
   @RealObject
   protected View realView;
@@ -53,7 +48,6 @@ public class ShadowView {
   public Point scrollToCoordinates = new Point();
   private boolean didRequestLayout;
   private MotionEvent lastTouchEvent;
-  private boolean attachedToWindow;
   private float scaleX = 1.0f;
   private float scaleY = 1.0f;
   private int hapticFeedbackPerformed = -1;
@@ -66,19 +60,6 @@ public class ShadowView {
 
     getConstructor(View.class, realView, Context.class, AttributeSet.class, int.class)
         .invoke(context, attributeSet, defStyle);
-  }
-
-  /**
-   * Simulates the inflating of the requested resource.
-   *
-   * @param context  the context from which to obtain a layout inflater
-   * @param resource the ID of the resource to inflate
-   * @param root     the {@code ViewGroup} to add the inflated {@code View} to
-   * @return the inflated View
-   */
-  @Implementation
-  public static View inflate(Context context, int resource, ViewGroup root) {
-    return LayoutInflater.from(context).inflate(resource, root);
   }
 
   /**
@@ -153,7 +134,8 @@ public class ShadowView {
   @Implementation
   public void onLayout(boolean changed, int left, int top, int right, int bottom) {
     onLayoutWasCalled = true;
-//        directlyOn(realView, View.class).onLayout() // not needed, empty method body (and protected)
+    directlyOn(realView, View.class, "onLayout", boolean.class, int.class, int.class, int.class,
+        int.class).invoke(changed, left, top, right, bottom);
   }
 
   public boolean onLayoutWasCalled() {

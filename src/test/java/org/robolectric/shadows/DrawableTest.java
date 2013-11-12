@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
 import android.graphics.Rect;
@@ -25,6 +26,13 @@ public class DrawableTest {
     String corruptedStreamSource = "http://foo.com/image.jpg";
     ShadowDrawable.addCorruptStreamSource(corruptedStreamSource);
     assertNull(ShadowDrawable.createFromStream(new ByteArrayInputStream(new byte[0]), corruptedStreamSource));
+  }
+
+  @Test
+  public void createFromResourceStream_shouldWorkWithoutSourceName() {
+    Drawable drawable = Drawable.createFromResourceStream(Robolectric.application.getResources(),
+        null, new ByteArrayInputStream(new byte[0]), null, new BitmapFactory.Options());
+    assertNotNull(drawable);
   }
 
   @Test
@@ -87,14 +95,6 @@ public class DrawableTest {
   }
 
   @Test
-  public void testSetLoadedFromResourceId() throws Exception {
-    Drawable drawable = new TestDrawable();
-    ShadowDrawable shadowDrawable = shadowOf(drawable);
-    shadowDrawable.setCreatedFromResId(99);
-    assertThat(shadowDrawable.getCreatedFromResId()).isEqualTo(99);
-  }
-
-  @Test
   public void testCreateFromResourceId_shouldSetTheId() throws Exception {
     Drawable drawable = ShadowDrawable.createFromResourceId(34758);
     ShadowDrawable shadowDrawable = shadowOf(drawable);
@@ -115,7 +115,16 @@ public class DrawableTest {
         .getDrawable(R.drawable.drawable_with_nine_patch)).isNotNull();
   }
 
+  @Test public void settingBoundsShouldInvokeCallback() {
+    TestDrawable drawable = new TestDrawable();
+    assertThat(drawable.boundsChanged).isFalse();
+    drawable.setBounds(0, 0, 10, 10);
+    assertThat(drawable.boundsChanged).isTrue();
+  }
+
   private static class TestDrawable extends Drawable {
+    public boolean boundsChanged;
+
     @Override
     public void draw(Canvas canvas) {
     }
@@ -131,6 +140,11 @@ public class DrawableTest {
     @Override
     public int getOpacity() {
       return 0;
+    }
+
+    @Override protected void onBoundsChange(Rect bounds) {
+      boundsChanged = true;
+      super.onBoundsChange(bounds);
     }
   }
 }

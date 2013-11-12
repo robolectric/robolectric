@@ -53,6 +53,11 @@ public class ShadowSensorManager {
     listeners.remove(listener);
   }
 
+  @Implementation
+  public void unregisterListener(SensorEventListener listener) {
+    listeners.remove(listener);
+  }
+
   public boolean hasListener(SensorEventListener listener) {
     return listeners.contains(listener);
   }

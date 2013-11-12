@@ -15,7 +15,7 @@ import static org.robolectric.Robolectric.shadowOf_;
  * Shadow of {@code IntentFilter} implemented with a {@link java.util.List}
  */
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(value = IntentFilter.class)
+@Implements(IntentFilter.class)
 public class ShadowIntentFilter {
   @Implementation
   public static IntentFilter create(String action, String dataType) {
@@ -48,7 +48,7 @@ public class ShadowIntentFilter {
   public String getAction(int index) {
     return actions.get(index);
   }
-  
+
   @Implementation
   public boolean hasAction(String action) {
     return actions.contains(action);
@@ -89,6 +89,11 @@ public class ShadowIntentFilter {
     return schemes.get(index);
   }
 
+  @Implementation
+  public boolean hasDataScheme(String scheme) {
+    return schemes.contains(scheme);
+  }
+  
   @Implementation
   public void addCategory( String category ) {
     categories.add( category );

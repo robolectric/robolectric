@@ -128,4 +128,17 @@ public class CameraParametersTest {
     assertThat(supportedRates.get(0)).isEqualTo(10);
   }
 
+  @Test
+  public void testExposureCompensationLimits() {
+    assertThat(parameters.getMinExposureCompensation()).isEqualTo(-6);
+    assertThat(parameters.getMaxExposureCompensation()).isEqualTo(6);
+    assertThat(parameters.getExposureCompensationStep()).isEqualTo(0.5f);
+  }
+
+  @Test
+  public void testExposureCompensationSetting() {
+    assertThat(parameters.getExposureCompensation()).isEqualTo(0);
+    parameters.setExposureCompensation(5);
+    assertThat(parameters.getExposureCompensation()).isEqualTo(5);
+  }
 }

@@ -46,13 +46,7 @@ public class DrawableResourceLoader extends XmlLoader {
     FsFile[] files = dir.listFiles();
     if (files != null) {
       for (FsFile f : files) {
-        boolean isFilePathContainsDrawable;
-        if (f instanceof Fs.JarFs.JarFsFile) {
-          isFilePathContainsDrawable = f.toString().contains("/drawable");
-        } else {
-          isFilePathContainsDrawable = f.toString().contains(File.separator + "drawable");
-        }
-        if (f.isDirectory() && isFilePathContainsDrawable) {
+        if (f.isDirectory() && f.getName().startsWith("drawable")) {
           listDrawableResources(resourcePath, f);
         } else {
           String name = f.getName();

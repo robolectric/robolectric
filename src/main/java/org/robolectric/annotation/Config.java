@@ -1,5 +1,6 @@
 package org.robolectric.annotation;
 
+import android.os.Build;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.annotation.Annotation;
@@ -24,9 +25,7 @@ public @interface Config {
   public static final String DEFAULT = "--default";
 
   /**
-   * The Android SDK level to emulate. If not specified, Robolectric defaults to the targetSdkVersion in your app's manifest.
-   *
-   * Not yet supported as of Robolectric 2.0.
+   * The Android SDK level to emulate. If not specified, Robolectric defaults to API 16.
    */
   int emulateSdk() default -1;
 

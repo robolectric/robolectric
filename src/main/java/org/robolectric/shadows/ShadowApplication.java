@@ -2,28 +2,24 @@ package org.robolectric.shadows;
 
 import android.app.Application;
 import android.appwidget.AppWidgetManager;
+import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.IContentProvider;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.PowerManager;
 import android.view.LayoutInflater;
 import android.widget.Toast;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import org.robolectric.AndroidManifest;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
@@ -32,6 +28,14 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.tester.org.apache.http.FakeHttpLayer;
 import org.robolectric.util.Scheduler;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
@@ -58,6 +62,7 @@ public class ShadowApplication extends ShadowContextWrapper {
   private Map<String, Intent> stickyIntents = new HashMap<String, Intent>();
   private FakeHttpLayer fakeHttpLayer = new FakeHttpLayer();
   private Looper mainLooper = ShadowLooper.myLooper();
+  private Handler mainHandler = new Handler(mainLooper);
   private Scheduler backgroundScheduler = new Scheduler();
   private Map<String, Map<String, Object>> sharedPreferenceMap = new HashMap<String, Map<String, Object>>();
   private ArrayList<Toast> shownToasts = new ArrayList<Toast>();
@@ -78,6 +83,7 @@ public class ShadowApplication extends ShadowContextWrapper {
   private List<String> unbindableActions = new ArrayList<String>();
 
   private boolean strictI18n = false;
+  private boolean checkActivities;
 
   /**
    * Associates a {@code ResourceLoader} with an {@code Application} instance
@@ -166,6 +172,30 @@ public class ShadowApplication extends ShadowContextWrapper {
   public ContentResolver getContentResolver() {
     if (contentResolver == null) {
       contentResolver = new ContentResolver(realApplication) {
+        @Override
+        protected IContentProvider acquireProvider(Context c, String name) {
+          return null;
+        }
+
+        @Override
+        public boolean releaseProvider(IContentProvider icp) {
+          return false;
+        }
+
+        @Override
+        protected IContentProvider acquireUnstableProvider(Context c, String name) {
+          return null;
+        }
+
+        @Override
+        public boolean releaseUnstableProvider(IContentProvider icp) {
+          return false;
+        }
+
+        @Override
+        public void unstableProviderDied(IContentProvider icp) {
+
+        }
       };
     }
     return contentResolver;
@@ -174,7 +204,11 @@ public class ShadowApplication extends ShadowContextWrapper {
   @Implementation
   @Override
   public void startActivity(Intent intent) {
-    startedActivities.add(intent);
+    if (checkActivities && getPackageManager().resolveActivity(intent, -1) == null) {
+      throw new ActivityNotFoundException(intent.getAction());
+    } else {
+      startedActivities.add(intent);
+    }
   }
 
   @Implementation
@@ -317,23 +351,43 @@ public class ShadowApplication extends ShadowContextWrapper {
     return resourceLoader;
   }
 
+  @Override
+  @Implementation
+  public void sendBroadcast(Intent intent) {
+    sendBroadcastWithPermission(intent, null);
+  }
+
+  @Override
+  @Implementation
+  public void sendBroadcast(Intent intent, String receiverPermission) {
+    sendBroadcastWithPermission(intent, receiverPermission);
+  }
+
   /**
-   * Broadcasts the {@code Intent} by iterating through the registered receivers, invoking their filters, and calling
-   * {@code onRecieve(Application, Intent)} as appropriate. Does not enqueue the {@code Intent} for later inspection.
+   * Broadcasts the {@code Intent} by iterating through the registered receivers, invoking their filters including
+   * permissions, and calling {@code onReceive(Application, Intent)} as appropriate. Does not enqueue the
+   * {@code Intent} for later inspection.
    *
    * @param intent the {@code Intent} to broadcast
    *               todo: enqueue the Intent for later inspection
    */
-  @Override
-  @Implementation
-  public void sendBroadcast(Intent intent) {
+  private void sendBroadcastWithPermission(Intent intent, String receiverPermission) {
     broadcastIntents.add(intent);
 
     List<Wrapper> copy = new ArrayList<Wrapper>();
     copy.addAll(registeredReceivers);
     for (Wrapper wrapper : copy) {
-      if (wrapper.intentFilter.matchAction(intent.getAction())) {
-        wrapper.broadcastReceiver.onReceive(realApplication, intent);
+      if (hasMatchingPermission(wrapper.broadcastPermission, receiverPermission)
+          && wrapper.intentFilter.matchAction(intent.getAction())) {
+        final Handler scheduler = (wrapper.scheduler != null) ? wrapper.scheduler : this.mainHandler;
+        final BroadcastReceiver receiver = wrapper.broadcastReceiver;
+        final Intent broadcastIntent = intent;
+        scheduler.post(new Runnable() {
+          @Override
+          public void run() {
+            receiver.onReceive(realApplication, broadcastIntent);
+          }
+        });
       }
     }
   }
@@ -356,12 +410,18 @@ public class ShadowApplication extends ShadowContextWrapper {
   @Override
   @Implementation
   public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
-    return registerReceiverWithContext(receiver, filter, realApplication);
+    return registerReceiverWithContext(receiver, filter, null, null, realApplication);
   }
 
-  Intent registerReceiverWithContext(BroadcastReceiver receiver, IntentFilter filter, Context context) {
+  @Override
+  @Implementation
+  public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter, String broadcastPermission, Handler scheduler) {
+    return registerReceiverWithContext(receiver, filter, broadcastPermission, scheduler, realApplication);
+  }
+
+  Intent registerReceiverWithContext(BroadcastReceiver receiver, IntentFilter filter, String broadcastPermission, Handler scheduler, Context context) {
     if (receiver != null) {
-      registeredReceivers.add(new Wrapper(receiver, filter, context));
+      registeredReceivers.add(new Wrapper(receiver, filter, context, broadcastPermission, scheduler));
     }
     return getStickyIntent(filter);
   }
@@ -567,16 +627,24 @@ public class ShadowApplication extends ShadowContextWrapper {
     }
   }
 
+  public void checkActivities(boolean checkActivities) {
+    this.checkActivities = checkActivities;
+  }
+
   public class Wrapper {
     public BroadcastReceiver broadcastReceiver;
     public IntentFilter intentFilter;
     public Context context;
     public Throwable exception;
+    public String broadcastPermission;
+    public Handler scheduler;
 
-    public Wrapper(BroadcastReceiver broadcastReceiver, IntentFilter intentFilter, Context context) {
+    public Wrapper(BroadcastReceiver broadcastReceiver, IntentFilter intentFilter, Context context, String broadcastPermission, Handler scheduler) {
       this.broadcastReceiver = broadcastReceiver;
       this.intentFilter = intentFilter;
       this.context = context;
+      this.broadcastPermission = broadcastPermission;
+      this.scheduler = scheduler;
       exception = new Throwable();
     }
 
@@ -608,5 +676,9 @@ public class ShadowApplication extends ShadowContextWrapper {
     for (String permissionName : permissionNames) {
       grantedPermissions.remove(permissionName);
     }
+  }
+
+  private boolean hasMatchingPermission(String permission1, String permission2) {
+    return permission1 == null ? permission2 == null : permission1.equals(permission2);
   }
 }

@@ -111,4 +111,11 @@ public class ImageViewTest {
     ShadowImageView shadowImageView = Robolectric.shadowOf(imageView);
     assertTrue(shadowImageView.onLayoutWasCalled());
   }
+
+  @Test
+  public void getDrawableResourceId_shouldWorkWhenTheDrawableWasCreatedFromAResource() throws Exception {
+    Drawable drawable = imageView.getResources().getDrawable(R.drawable.an_image);
+    imageView.setImageDrawable(drawable);
+    assertThat(shadowOf(imageView).getImageResourceId()).isEqualTo(R.drawable.an_image);
+  }
 }

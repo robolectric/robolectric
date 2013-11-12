@@ -88,6 +88,15 @@ public class BitmapFactoryTest {
   }
 
   @Test
+  public void decodeResourceStream_canTakeOptions() throws Exception {
+    BitmapFactory.Options options = new BitmapFactory.Options();
+    InputStream inputStream = Robolectric.application.getContentResolver().openInputStream(Uri.parse("content:/path"));
+    options.inSampleSize = 100;
+    Bitmap bitmap = BitmapFactory.decodeResourceStream(Robolectric.application.getResources(), null, inputStream, null, options);
+    assertEquals(true, shadowOf(bitmap).getDescription().contains("inSampleSize=100"));
+  }
+
+  @Test
   public void decodeFile_shouldGetWidthAndHeightFromHints() throws Exception {
     ShadowBitmapFactory.provideWidthAndHeightHints("/some/file.jpg", 123, 456);
 

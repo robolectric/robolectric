@@ -39,4 +39,35 @@ public class ShadowBinderTest {
       return true;
     }
   }
+
+  @Test
+  public void testSetCallingUid() {
+    ShadowBinder.setCallingUid(37);
+    assertThat(Binder.getCallingUid()).isEqualTo(37);
+  }
+
+  @Test
+  public void testSetCallingPid() {
+    ShadowBinder.setCallingPid(25);
+    assertThat(Binder.getCallingPid()).isEqualTo(25);
+  }
+
+  @Test
+  public void testGetCallingUidShouldUseProcessUidByDefault() {
+    assertThat(Binder.getCallingUid()).isEqualTo(android.os.Process.myUid());
+  }
+
+  @Test
+  public void testGetCallingPidShouldUseProcessPidByDefault() {
+    assertThat(Binder.getCallingPid()).isEqualTo(android.os.Process.myPid());
+  }
+
+  @Test
+  public void testResetUpdatesCallingUidAndPid() {
+    ShadowBinder.setCallingPid(48);
+    ShadowBinder.setCallingUid(49);
+    ShadowBinder.reset();
+    assertThat(Binder.getCallingPid()).isEqualTo(android.os.Process.myPid());
+    assertThat(Binder.getCallingUid()).isEqualTo(android.os.Process.myUid());
+  }
 }

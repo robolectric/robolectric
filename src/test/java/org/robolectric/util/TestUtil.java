@@ -105,11 +105,15 @@ public abstract class TestUtil {
 
   public static ResourcePath systemResources() {
     if (SYSTEM_RESOURCE_PATH == null) {
-      URL url = new MavenCentral().getLocalArtifactUrl(null, new SdkConfig("4.1.2_r1_rc").getSystemResourceDependency());
+      URL url = new MavenCentral().getLocalArtifactUrl(null, SdkConfig.getDefaultSdk().getSystemResourceDependency());
       Fs fs = Fs.fromJar(url);
       SYSTEM_RESOURCE_PATH = new ResourcePath(android.R.class, "android", fs.join("res"), fs.join("assets"));
     }
     return SYSTEM_RESOURCE_PATH;
+  }
+
+  public static ResourcePath gradleAppResources() {
+    return new ResourcePath(org.robolectric.gradleapp.R.class, "org.robolectric.gradleapp", resourceFile("gradle/res/layoutFlavor/menuBuildType"), resourceFile("gradle/assets/layoutFlavor/menuBuildType"));
   }
 
   public static AndroidManifest newConfig(String androidManifestFile) {

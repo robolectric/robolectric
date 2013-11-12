@@ -12,16 +12,23 @@ public class TestWebSettings extends WebSettings {
   private boolean allowFileAccess = true;
   private boolean allowFileAccessFromFile = true;
   private boolean allowUniversalAccessFromFile = true;
+  private boolean appCacheEnabled = false;
   private boolean blockNetworkImage = false;
   private boolean blockNetworkLoads = false;
   private boolean builtInZoomControls = true;
   private boolean databaseEnabled = false;
   private boolean domStorageEnabled = false;
+  private boolean geolocationEnabled = false;
   private boolean javaScriptEnabled = false;
   private boolean lightTouchEnabled = false;
   private boolean loadWithOverviewMode = false;
   private boolean needInitialFocus = false;
+  private RenderPriority renderPriority = RenderPriority.NORMAL;
   private boolean pluginsEnabled = false;
+  private boolean saveFormData = false;
+  private String appCachePath = "appcache";
+  private String databasePath = "database";
+  private String geolocationDatabasePath = "geolocation";
   private WebSettings.PluginState pluginState = WebSettings.PluginState.OFF;
   private boolean supportMultipleWindows = false;
   private boolean supportZoom = true;
@@ -147,6 +154,15 @@ public class TestWebSettings extends WebSettings {
     needInitialFocus = flag;
   }
 
+  @Override
+  public synchronized void setRenderPriority(RenderPriority priority) {
+    renderPriority = priority;
+  }
+
+  public RenderPriority getRenderPriority() {
+    return renderPriority;
+  }
+
   @Implementation
   public synchronized boolean getPluginsEnabled() {
     return pluginsEnabled;
@@ -169,6 +185,16 @@ public class TestWebSettings extends WebSettings {
 
   public boolean getSupportMultipleWindows() {
     return supportMultipleWindows;
+  }
+
+  @Implementation
+  public synchronized void setDatabasePath(String path) {
+    databasePath = path;
+  }
+
+  @Implementation
+  public synchronized String getDatabasePath() {
+    return databasePath;
   }
 
   @Implementation
@@ -213,5 +239,55 @@ public class TestWebSettings extends WebSettings {
   @Implementation
   public void setUseWideViewPort(boolean useWideViewPort) {
     this.useWideViewPort = useWideViewPort;
+  }
+
+  @Implementation
+  public String getAppCachePath() {
+    return appCachePath;
+  }
+
+  @Implementation
+  public void setAppCachePath(String appCachePath) {
+    this.appCachePath = appCachePath;
+  }
+
+  @Implementation
+  public boolean getAppCacheEnabled() {
+    return appCacheEnabled;
+  }
+
+  @Implementation
+  public void setAppCacheEnabled(boolean appCacheEnabled) {
+    this.appCacheEnabled = appCacheEnabled;
+  }
+
+  @Implementation
+  public boolean getSaveFormData() {
+    return saveFormData;
+  }
+
+  @Implementation
+  public void setSaveFormData(boolean saveFormData) {
+    this.saveFormData = saveFormData;
+  }
+
+  @Implementation
+  public String getGeolocationDatabasePath() {
+    return geolocationDatabasePath;
+  }
+
+  @Implementation
+  public void setGeolocationDatabasePath(String geolocationDatabasePath) {
+    this.geolocationDatabasePath = geolocationDatabasePath;
+  }
+
+  @Implementation
+  public boolean getGeolocationEnabled() {
+    return geolocationEnabled;
+  }
+
+  @Implementation
+  public void setGeolocationEnabled(boolean geolocationEnabled) {
+    this.geolocationEnabled = geolocationEnabled;
   }
 }

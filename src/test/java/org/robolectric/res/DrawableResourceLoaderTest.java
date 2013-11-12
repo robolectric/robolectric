@@ -1,5 +1,7 @@
 package org.robolectric.res;
 
+import android.animation.Animator;
+import android.animation.AnimatorInflater;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.drawable.AnimationDrawable;
@@ -17,19 +19,21 @@ import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
-import org.robolectric.res.builder.DrawableBuilder;
 import org.robolectric.shadows.ShadowStateListDrawable;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.robolectric.Robolectric.application;
 import static org.robolectric.Robolectric.shadowOf;
-import static org.robolectric.util.TestUtil.*;
+import static org.robolectric.util.TestUtil.TEST_PACKAGE;
+import static org.robolectric.util.TestUtil.assertInstanceOf;
+import static org.robolectric.util.TestUtil.systemResources;
+import static org.robolectric.util.TestUtil.testResources;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class DrawableResourceLoaderTest {
   protected DrawableResourceLoader drawableResourceLoader;
-  private DrawableBuilder drawableBuilder;
   private ResBundle<DrawableNode> drawableNodes;
   private ResourceIndex resourceIndex;
   private Resources resources;
@@ -45,7 +49,6 @@ public class DrawableResourceLoaderTest {
     resourceIndex = new MergedResourceIndex(
         new ResourceExtractor(testResources()),
         new ResourceExtractor(getClass().getClassLoader()));
-    drawableBuilder = new DrawableBuilder(resourceIndex);
     drawableResourceLoader.findDrawableResources(testResources());
     drawableResourceLoader.findDrawableResources(systemResources());
     resources = Robolectric.application.getResources();
@@ -60,7 +63,7 @@ public class DrawableResourceLoaderTest {
     drawableResourceLoader.findDrawableResources(testResources());
 
     assertNotNull(drawableNodes.get(new ResName(TEST_PACKAGE, "drawable", "rainbow"), ""));
-    assertEquals(27, drawableNodes.size());
+    assertEquals(28, drawableNodes.size());
   }
 
   @Test
@@ -118,6 +121,12 @@ public class DrawableResourceLoaderTest {
   @Test @Ignore("this seems to be wrong...")
   public void shouldCreateAnims() throws Exception {
     assertInstanceOf(AnimationDrawable.class, resources.getDrawable(R.anim.test_anim_1));
+  }
+
+  @Test
+  public void shouldCreateAnimators() throws Exception {
+    Animator animator = AnimatorInflater.loadAnimator(application, R.animator.spinning);
+    assertInstanceOf(Animator.class, animator);
   }
 
   @Test

@@ -485,7 +485,7 @@ public class ShadowResources {
     Drawable drawable = (Drawable) directlyOn(realResources, Resources.class, "loadDrawable", TypedValue.class, int.class).invoke(value, id);
     // todo: this kinda sucks, find some better way...
     if (drawable != null) {
-      shadowOf(drawable).setCreatedFromResId(id);
+      shadowOf(drawable).createdFromResId = id;
       if (drawable instanceof BitmapDrawable) {
         Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
         if (bitmap != null) {

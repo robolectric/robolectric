@@ -2,6 +2,7 @@ package org.robolectric.bytecode;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.robolectric.SdkConfig;
 import org.robolectric.util.Function;
 
 import java.util.LinkedHashMap;
@@ -14,7 +15,7 @@ public class ShadowWranglerUnitTest {
 
   @Before
   public void setup() throws Exception {
-    shadowWrangler = new ShadowWrangler(ShadowMap.EMPTY);
+    shadowWrangler = new ShadowWrangler(ShadowMap.EMPTY, SdkConfig.getDefaultSdk());
   }
 
   @Test
@@ -50,5 +51,16 @@ public class ShadowWranglerUnitTest {
     assertThat(result).isEqualTo(eldestMember);
     assertThat(result.getKey()).isEqualTo(1);
     assertThat(result.getValue()).isEqualTo("one");
+  }
+
+  @Test
+  public void intercept_elderOnLinkedHashMapHandler_shouldReturnNullForEmptyMap() throws Throwable {
+    LinkedHashMap<Integer, String> map = new LinkedHashMap<Integer, String>();
+
+    @SuppressWarnings("unchecked")
+    Map.Entry<Integer, String> result = (Map.Entry<Integer, String>)
+        shadowWrangler.intercept("java/util/LinkedHashMap/eldest()Ljava/lang/Object;", map, null, getClass());
+
+    assertThat(result).isNull();
   }
 }

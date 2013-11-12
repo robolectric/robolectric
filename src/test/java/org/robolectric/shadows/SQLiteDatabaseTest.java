@@ -16,6 +16,7 @@ import org.robolectric.util.SQLiteMap;
 import java.io.File;
 import java.util.List;
 
+import static android.database.sqlite.SQLiteDatabase.OPEN_READWRITE;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -31,7 +32,7 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
 
   @Before
   public void setUp() throws Exception {
-    database = SQLiteDatabase.openDatabase(Robolectric.application.getDatabasePath("path").getPath(), null, 0);
+    database = SQLiteDatabase.openOrCreateDatabase(Robolectric.application.getDatabasePath("path").getPath(), null);
     shDatabase = Robolectric.shadowOf(database);
     database.execSQL("CREATE TABLE table_name (\n" +
             "  id INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
@@ -687,21 +688,39 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
   }
 
   @Test
-  public void shouldCreateDefaultCursorFactoryWhenNullFactoryPassed() throws Exception {
+  public void shouldCreateDefaultCursorFactoryWhenNullFactoryPassedToRawQuery() throws Exception {
     database.rawQueryWithFactory(null, ANY_VALID_SQL, null, null);
   }
 
   @Test
-  public void shouldOpenExistingDatabaseFromFileSystemIfFileExists() throws Exception {
-      File testDb = new File(getClass().getResource("/test.sql").getFile());
-      assertThat(testDb.exists()).isTrue();
-      SQLiteDatabase db = SQLiteDatabase.openDatabase(testDb.getAbsolutePath(), null, 0);
+  public void shouldCreateDefaultCursorFactoryWhenNullFactoryPassedToQuery() throws Exception {
+    database.queryWithFactory(null, false, "table_name", null, null, null, null, null, null, null);
+  }
 
-      Cursor c = db.rawQuery("select * from test", null);
-      assertThat(c).isNotNull();
-      assertThat(c.getCount()).isEqualTo(2);
-      assertThat(db.isOpen()).isTrue();
-      db.close();
+  @Test
+  public void shouldOpenExistingDatabaseFromFileSystemIfFileExists() throws Exception {
+    File testDb = new File(getClass().getResource("/test with spaces.sql").toURI().getPath());
+    assertThat(testDb.exists()).isTrue();
+    SQLiteDatabase db = SQLiteDatabase.openDatabase(testDb.getAbsolutePath(), null, OPEN_READWRITE);
+    Cursor c = db.rawQuery("select * from test", null);
+    assertThat(c).isNotNull();
+    assertThat(c.getCount()).isEqualTo(2);
+    assertThat(db.isOpen()).isTrue();
+    db.close();
+    assertThat(db.isOpen()).isFalse();
+
+    SQLiteDatabase reopened = SQLiteDatabase.openDatabase(testDb.getAbsolutePath(), null, OPEN_READWRITE);
+    assertThat(reopened).isNotSameAs(db);
+    assertThat(reopened.isOpen()).isTrue();
+  }
+
+  @Test
+  public void shouldUseInMemoryDatabaseIfFileDoesNotExist() throws Exception {
+    File testDb = new File("/i/do/not/exist");
+    assertThat(testDb.exists()).isFalse();
+    SQLiteDatabase db = SQLiteDatabase.openOrCreateDatabase(testDb.getAbsolutePath(), null);
+    db.execSQL("select 1");
+    db.close();
   }
 
   @Test
@@ -726,16 +745,16 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
   public void testShouldReturnTheSameDatabaseIfAlreadyOpened() throws Exception {
     String path1 = Robolectric.application.getDatabasePath("db1").getPath();
     String path2 = Robolectric.application.getDatabasePath("db2").getPath();
-    SQLiteDatabase db1 = SQLiteDatabase.openDatabase(path1, null, 0);
-    SQLiteDatabase db2 = SQLiteDatabase.openDatabase(path2, null, 0);
-    assertThat(SQLiteDatabase.openDatabase(path1, null, 0)).isSameAs(db1);
-    assertThat(SQLiteDatabase.openDatabase(path2, null, 0)).isSameAs(db2);
+    SQLiteDatabase db1 = SQLiteDatabase.openOrCreateDatabase(path1, null);
+    SQLiteDatabase db2 = SQLiteDatabase.openOrCreateDatabase(path2, null);
+    assertThat(SQLiteDatabase.openDatabase(path1, null, OPEN_READWRITE)).isSameAs(db1);
+    assertThat(SQLiteDatabase.openDatabase(path2, null, OPEN_READWRITE)).isSameAs(db2);
   }
 
   @Test
   public void testTwoConcurrentDbConnections() throws Exception {
-    SQLiteDatabase db1 = SQLiteDatabase.openDatabase(Robolectric.application.getDatabasePath("db1").getPath(), null, 0);
-    SQLiteDatabase db2 = SQLiteDatabase.openDatabase(Robolectric.application.getDatabasePath("db2").getPath(), null, 0);
+    SQLiteDatabase db1 = SQLiteDatabase.openOrCreateDatabase(Robolectric.application.getDatabasePath("db1").getPath(), null);
+    SQLiteDatabase db2 = SQLiteDatabase.openOrCreateDatabase(Robolectric.application.getDatabasePath("db2").getPath(), null);
 
     db1.execSQL("CREATE TABLE foo(id INTEGER PRIMARY KEY AUTOINCREMENT, data TEXT);");
     db2.execSQL("CREATE TABLE bar(id INTEGER PRIMARY KEY AUTOINCREMENT, data TEXT);");
@@ -764,13 +783,18 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
 
   @Test(expected = SQLiteException.class)
   public void testQueryThrowsSQLiteException() throws Exception {
-    SQLiteDatabase db1 = SQLiteDatabase.openDatabase(Robolectric.application.getDatabasePath("db1").getPath(), null, 0);
+    SQLiteDatabase db1 = SQLiteDatabase.openOrCreateDatabase(Robolectric.application.getDatabasePath("db1").getPath(), null);
     db1.query("FOO", null, null, null, null, null, null);
+  }
+
+  @Test(expected = SQLiteException.class)
+  public void testShouldThrowSQLiteExeptionIfOpeningNonexistentDatabase() {
+    SQLiteDatabase.openDatabase("/does/not/exist", null, OPEN_READWRITE);
   }
 
   @Test
   public void testCreateAndDropTable() throws Exception {
-    SQLiteDatabase db = SQLiteDatabase.openDatabase(Robolectric.application.getDatabasePath("db1").getPath(), null, 0);
+    SQLiteDatabase db = SQLiteDatabase.openOrCreateDatabase(Robolectric.application.getDatabasePath("db1").getPath(), null);
     db.execSQL("CREATE TABLE foo(id INTEGER PRIMARY KEY AUTOINCREMENT, data TEXT);");
     Cursor c = db.query("FOO", null, null, null, null, null, null);
     assertThat(c).isNotNull();
@@ -778,20 +802,16 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
   }
 
   @Test
-  public void testDataPersistency() throws Exception {
-    SQLiteDatabase db1 = SQLiteDatabase.openDatabase(Robolectric.application.getDatabasePath("db1").getPath(), null, 0);
-
+  public void testDataInMemoryDatabaseIsPersistentAfterClose() throws Exception {
+    SQLiteDatabase db1 = SQLiteDatabase.openOrCreateDatabase(Robolectric.application.getDatabasePath("db1").getPath(), null);
     db1.execSQL("CREATE TABLE foo(id INTEGER PRIMARY KEY AUTOINCREMENT, data TEXT);");
-
     ContentValues d1 = new ContentValues();
     d1.put("data", "d1");
-
     db1.insert("foo", null, d1);
-    
     db1.close();
-    db1 = SQLiteDatabase.openDatabase(Robolectric.application.getDatabasePath("db1").getPath(), null, 0);
 
-    Cursor c = db1.rawQuery("select * from foo", null);
+    SQLiteDatabase db2 = SQLiteDatabase.openOrCreateDatabase(Robolectric.application.getDatabasePath("db1").getPath(), null);
+    Cursor c = db2.rawQuery("select * from foo", null);
     assertThat(c).isNotNull();
     assertThat(c.getCount()).isEqualTo(1);
     assertThat(c.moveToNext()).isTrue();
@@ -872,5 +892,13 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
     assertThat(database.isDbLockedByCurrentThread()).isTrue();
     shadowDB.unlock();
     assertThat(database.isDbLockedByCurrentThread()).isFalse();
+  }
+
+  @Test
+  public void testRawQueryWithFactoryAndCancellationSignal() throws Exception {
+    Cursor cursor = database.rawQueryWithFactory(null, "select * from table_name", null, null, null);
+    assertThat(cursor).isNotNull();
+    assertThat(cursor.getColumnCount()).isEqualTo(5);
+    assertThat(cursor.isClosed()).isFalse();
   }
 }

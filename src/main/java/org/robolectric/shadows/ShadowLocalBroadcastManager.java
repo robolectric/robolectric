@@ -8,7 +8,7 @@ import org.robolectric.annotation.Implements;
 
 import static org.robolectric.Robolectric.shadowOf;
 
-@Implements(value = LocalBroadcastManager.class, callThroughByDefault = true)
+@Implements(LocalBroadcastManager.class)
 public class ShadowLocalBroadcastManager {
   @Implementation
   public static LocalBroadcastManager getInstance(final Context context) {

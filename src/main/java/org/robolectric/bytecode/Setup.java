@@ -4,6 +4,7 @@ import android.R;
 import org.robolectric.AndroidManifest;
 import org.robolectric.RobolectricBase;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.SdkConfig;
 import org.robolectric.SdkEnvironment;
 import org.robolectric.TestLifecycle;
 import org.robolectric.annotation.Config;
@@ -15,7 +16,6 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.impl.ExtendedResponseCache;
 import org.robolectric.impl.FakeCharsets;
 import org.robolectric.impl.ResponseSource;
-import org.robolectric.impl.UriCodec;
 import org.robolectric.internal.DoNotInstrument;
 import org.robolectric.internal.Instrument;
 import org.robolectric.internal.ParallelUniverseInterface;
@@ -49,6 +49,7 @@ public class Setup {
       org.robolectric.bytecode.InstrumentingClassLoader.class,
       org.robolectric.bytecode.AsmInstrumentingClassLoader.class,
       SdkEnvironment.class,
+      SdkConfig.class,
       RobolectricTestRunner.class,
       RobolectricTestRunner.HelperTestRunner.class,
       ResourcePath.class,
@@ -65,6 +66,7 @@ public class Setup {
       I18nException.class,
       Transcript.class,
       org.robolectric.bytecode.DirectObjectMarker.class,
+      org.apache.maven.model.Dependency.class,
       ParallelUniverseInterface.class
   );
 
@@ -94,9 +96,11 @@ public class Setup {
     String className = classInfo.getName();
     return className.startsWith("android.")
         || className.startsWith("libcore.")
+        || className.startsWith("dalvik.")
         || className.startsWith("com.android.internal.")
         || className.startsWith("com.google.android.maps.")
         || className.startsWith("com.google.android.gms.")
+        || className.startsWith("dalvik.system.")
         || className.startsWith("org.apache.http.impl.client.DefaultRequestDirector");
   }
 
@@ -138,10 +142,6 @@ public class Setup {
         new MethodRef(System.class, "loadLibrary"),
         new MethodRef("android.os.StrictMode", "trackActivity"),
         new MethodRef("android.os.StrictMode", "incrementExpectedActivityCount"),
-        new MethodRef("com.android.i18n.phonenumbers.Phonenumber$PhoneNumber", "*"),
-        new MethodRef("com.android.i18n.phonenumbers.PhoneNumberUtil", "*"),
-        new MethodRef("dalvik.system.CloseGuard", "*"),
-        new MethodRef("dalvik.system.BlockGuard", "*"),
         new MethodRef("java.lang.AutoCloseable", "*"),
         new MethodRef("android.util.LocaleUtil", "getLayoutDirectionFromLocale"),
         new MethodRef("com.android.internal.policy.PolicyManager", "*"),
@@ -158,16 +158,10 @@ public class Setup {
    */
   public Map<String, String> classNameTranslations() {
     Map<String, String> map = new HashMap<String, String>();
-    map.put("com.android.i18n.phonenumbers.NumberParseException", Exception.class.getName());
-    map.put("com.android.i18n.phonenumbers.PhoneNumberUtil", FakeClass.class.getName());
-    map.put("com.android.i18n.phonenumbers.PhoneNumberUtil$PhoneNumberFormat", FakeClass.FakeInnerClass.class.getName());
-    map.put("com.android.i18n.phonenumbers.Phonenumber$PhoneNumber", FakeClass.class.getName());
-    map.put("dalvik.system.CloseGuard", Object.class.getName());
     map.put("java.lang.AutoCloseable", Object.class.getName());
     map.put("java.net.ExtendedResponseCache", ExtendedResponseCache.class.getName());
     map.put("java.net.ResponseSource", ResponseSource.class.getName());
     map.put("java.nio.charset.Charsets", FakeCharsets.class.getName());
-    map.put("libcore.net.UriCodec", UriCodec.class.getName());
     return map;
   }
 

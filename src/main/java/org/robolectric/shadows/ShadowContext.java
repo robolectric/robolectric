@@ -3,6 +3,8 @@ package org.robolectric.shadows;
 import android.app.Application;
 import android.content.Context;
 import android.content.res.Resources;
+import android.database.DatabaseErrorHandler;
+import android.database.sqlite.SQLiteDatabase;
 import android.view.View;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -84,8 +86,13 @@ abstract public class ShadowContext {
 
   @Implementation
   public File getDatabasePath(String name) {
-    DATABASE_DIR.mkdirs();
-    return new File(DATABASE_DIR, name);
+    File file = new File(name);
+    if (file.isAbsolute()) {
+      return file;
+    } else {
+      DATABASE_DIR.mkdirs();
+      return new File(DATABASE_DIR, name);
+    }
   }
 
   @Implementation
@@ -117,6 +124,16 @@ abstract public class ShadowContext {
       throw new IllegalArgumentException("File " + name + " contains a path separator");
     }
     return new File(getFilesDir(), name);
+  }
+
+  @Implementation
+  public SQLiteDatabase openOrCreateDatabase(String name, int mode, SQLiteDatabase.CursorFactory factory) {
+    return openOrCreateDatabase(name, mode, factory, null);
+  }
+
+  @Implementation
+  public SQLiteDatabase openOrCreateDatabase(String name, int mode, SQLiteDatabase.CursorFactory factory, DatabaseErrorHandler databaseErrorHandler) {
+    return SQLiteDatabase.openOrCreateDatabase(getDatabasePath(name).getAbsolutePath(), factory, databaseErrorHandler);
   }
 
   @Implementation

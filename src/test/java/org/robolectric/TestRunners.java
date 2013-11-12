@@ -1,6 +1,8 @@
 package org.robolectric;
 
+import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.InitializationError;
+import org.junit.runners.model.Statement;
 import org.robolectric.annotation.Config;
 import org.robolectric.bytecode.AndroidTranslatorClassInstrumentedTest;
 import org.robolectric.bytecode.ClassInfo;
@@ -12,6 +14,7 @@ import org.robolectric.res.ResourceLoader;
 import org.robolectric.shadows.ShadowSystemProperties;
 
 import java.lang.reflect.Method;
+import java.util.Locale;
 
 import static org.robolectric.util.TestUtil.resourceFile;
 
@@ -22,7 +25,7 @@ public class TestRunners {
     }
 
     @Override
-    protected AndroidManifest createAppManifest(FsFile manifestFile) {
+    protected AndroidManifest createAppManifest(FsFile manifestFile, FsFile resDir, FsFile assetsDir) {
       return new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"), resourceFile("assets"));
     }
 
@@ -54,7 +57,7 @@ public class TestRunners {
           .build();
     }
 
-    @Override protected AndroidManifest createAppManifest(FsFile manifestFile) {
+    @Override protected AndroidManifest createAppManifest(FsFile manifestFile, FsFile resDir, FsFile assetsDir) {
       return null;
     }
 
@@ -67,6 +70,7 @@ public class TestRunners {
   public static class WithDefaults extends RobolectricTestRunner {
     public WithDefaults(Class<?> testClass) throws InitializationError {
       super(testClass);
+      Locale.setDefault(Locale.ENGLISH);
     }
 
     @Override public Setup createSetup() {
@@ -80,7 +84,7 @@ public class TestRunners {
     }
 
     @Override
-    protected AndroidManifest createAppManifest(FsFile manifestFile) {
+    protected AndroidManifest createAppManifest(FsFile manifestFile, FsFile resDir, FsFile assetsDir) {
       return new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"), resourceFile("assets"));
     }
   }

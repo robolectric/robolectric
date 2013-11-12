@@ -45,9 +45,12 @@ import org.robolectric.res.RoutingResourceLoader;
 import org.robolectric.util.AnnotationUtil;
 import org.robolectric.util.DatabaseConfig.DatabaseMap;
 import org.robolectric.util.DatabaseConfig.UsingDatabaseMap;
+import org.robolectric.util.Pair;
 import org.robolectric.util.SQLiteMap;
 
+import static org.fest.reflect.core.Reflection.constructor;
 import static org.fest.reflect.core.Reflection.staticField;
+import static org.fest.reflect.core.Reflection.type;
 
 /**
  * Installs a {@link org.robolectric.bytecode.InstrumentingClassLoader} and
@@ -56,16 +59,9 @@ import static org.fest.reflect.core.Reflection.staticField;
  */
 public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   private static final MavenCentral MAVEN_CENTRAL = new MavenCentral();
-
   private static final Map<Class<? extends RobolectricTestRunner>, EnvHolder> envHoldersByTestRunner = new HashMap<Class<? extends RobolectricTestRunner>, EnvHolder>();
-  private static final Map<AndroidManifest, ResourceLoader> resourceLoadersByAppManifest = new HashMap<AndroidManifest, ResourceLoader>();
-
-  private static Class<? extends RobolectricTestRunner> lastTestRunnerClass;
-  private static SdkConfig lastSdkConfig;
-  private static SdkEnvironment lastSdkEnvironment;
-
+  private static Map<Pair<AndroidManifest, SdkConfig>, ResourceLoader> resourceLoadersByManifestAndConfig = new HashMap<Pair<AndroidManifest, SdkConfig>, ResourceLoader>();
   private static ShadowMap mainShadowMap;
-
   private final EnvHolder envHolder;
   private DatabaseMap databaseMap;
   private TestLifecycle<Application> testLifecycle;
@@ -73,6 +69,10 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   static {
     new SecureRandom(); // this starts up the Poller SunPKCS11-Darwin thread early, outside of any Robolectric classloader
   }
+
+  private Class<? extends RobolectricTestRunner> lastTestRunnerClass;
+  private SdkConfig lastSdkConfig;
+  private SdkEnvironment lastSdkEnvironment;
 
   /**
    * Creates a runner to run {@code testClass}. Looks in your working directory for your AndroidManifest.xml file
@@ -94,7 +94,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       }
     }
     this.envHolder = envHolder;
-
     databaseMap = setupDatabaseMap(testClass, new SQLiteMap());
   }
 
@@ -117,20 +116,18 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     return new SdkEnvironment(sdkConfig, robolectricClassLoader);
   }
 
-  protected ClassHandler createClassHandler(ShadowMap shadowMap) {
-    return new ShadowWrangler(shadowMap);
+  protected ClassHandler createClassHandler(ShadowMap shadowMap, SdkConfig sdkConfig) {
+    return new ShadowWrangler(shadowMap, sdkConfig);
   }
 
-  protected AndroidManifest createAppManifest(FsFile manifestFile) {
+  protected AndroidManifest createAppManifest(FsFile manifestFile, FsFile resDir, FsFile assetsDir) {
     if (!manifestFile.exists()) {
       System.out.print("WARNING: No manifest file found at " + manifestFile.getPath() + ".");
       System.out.println("Falling back to the Android OS resources only.");
       System.out.println("To remove this warning, annotate your test class with @Config(manifest=Config.NONE).");
       return null;
     }
-
-    FsFile appBaseDir = manifestFile.getParent();
-    return new AndroidManifest(manifestFile, appBaseDir.join("res"), appBaseDir.join("assets"));
+    return new AndroidManifest(manifestFile, resDir, assetsDir);
   }
 
   public Setup createSetup() {
@@ -184,12 +181,11 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
   @Override protected Statement methodBlock(final FrameworkMethod method) {
     return new Statement() {
-      @Override public void evaluate() throws Throwable {
+      @Override
+      public void evaluate() throws Throwable {
         final Config config = getConfig(method.getMethod());
         AndroidManifest appManifest = getAppManifest(config);
         SdkEnvironment sdkEnvironment = getEnvironment(appManifest, config);
-
-        // todo: is this really needed?
         Thread.currentThread().setContextClassLoader(sdkEnvironment.getRobolectricClassLoader());
 
         Class bootstrappedTestClass = sdkEnvironment.bootstrappedClass(getTestClass().getJavaClass());
@@ -211,8 +207,9 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
           parallelUniverseInterface.resetStaticState();
           parallelUniverseInterface.setDatabaseMap(databaseMap); //Set static DatabaseMap in DBConfig
+          parallelUniverseInterface.setSdkConfig(sdkEnvironment.getSdkConfig());
 
-          boolean strictI18n = RobolectricTestRunner.determineI18nStrictState(bootstrappedMethod);
+          boolean strictI18n = determineI18nStrictState(bootstrappedMethod);
 
           int sdkVersion = pickReportedSdkVersion(config, appManifest);
           Class<?> versionClass = sdkEnvironment.bootstrappedClass(Build.VERSION.class);
@@ -270,7 +267,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     final SdkConfig sdkConfig = pickSdkVersion(appManifest, config);
 
     // keep the most recently-used SdkEnvironment strongly reachable to prevent thrashing in low-memory situations.
-    if (getClass().equals(lastTestRunnerClass) && sdkConfig.equals(sdkConfig)) {
+    if (getClass().equals(lastTestRunnerClass) && sdkConfig.equals(lastSdkConfig)) {
       return lastSdkEnvironment;
     }
 
@@ -287,17 +284,15 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   }
 
   protected SdkConfig pickSdkVersion(AndroidManifest appManifest, Config config) {
-    if (config != null && config.emulateSdk() != -1) {
-      throw new UnsupportedOperationException("Sorry, emulateSdk is not yet supported... coming soon!");
+    if (config != null && config.emulateSdk() > 0) {
+      return new SdkConfig(config.emulateSdk());
+    } else {
+      if (appManifest != null) {
+        return new SdkConfig(appManifest.getTargetSdkVersion());
+      } else {
+        return SdkConfig.getDefaultSdk();
+      }
     }
-
-    if (appManifest != null) {
-      // todo: something smarter
-      int useSdkVersion = appManifest.getTargetSdkVersion();
-    }
-
-    // right now we only have real jars for Ice Cream Sandwich aka 4.1 aka API 16
-    return new SdkConfig("4.1.2_r1_rc");
   }
 
   protected AndroidManifest getAppManifest(Config config) {
@@ -305,16 +300,32 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       return null;
     }
 
+    String manifestProperty = System.getProperty("android.manifest");
+    String resourcesProperty = System.getProperty("android.resources");
+    String assetsProperty = System.getProperty("android.assets");
+
     FsFile fsFile = Fs.currentDirectory();
-    String manifestStr = config.manifest().equals(Config.DEFAULT) ? "AndroidManifest.xml" : config.manifest();
-    FsFile manifestFile = fsFile.join(manifestStr);
+    FsFile manifestFile;
+    FsFile resDir;
+    FsFile assetsDir;
+
+    boolean defaultManifest = config.manifest().equals(Config.DEFAULT);
+    if (defaultManifest && manifestProperty != null) {
+      manifestFile = Fs.fileFromPath(manifestProperty);
+      resDir = Fs.fileFromPath(resourcesProperty);
+      assetsDir = Fs.fileFromPath(assetsProperty);
+    } else {
+      manifestFile = fsFile.join(defaultManifest ? "AndroidManifest.xml" : config.manifest());
+      resDir = manifestFile.getParent().join("res");
+      assetsDir = manifestFile.getParent().join("assets");
+    }
+
     synchronized (envHolder) {
       AndroidManifest appManifest;
       appManifest = envHolder.appManifestsByFile.get(manifestFile);
       if (appManifest == null) {
-
         long startTime = System.currentTimeMillis();
-        appManifest = createAppManifest(manifestFile);
+        appManifest = createAppManifest(manifestFile, resDir, assetsDir);
         if (DocumentLoader.DEBUG_PERF)
           System.out.println(String.format("%4dms spent in %s", System.currentTimeMillis() - startTime, manifestFile));
 
@@ -379,7 +390,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     synchronized (sdkEnvironment) {
       classHandler = sdkEnvironment.classHandlersByShadowMap.get(shadowMap);
       if (classHandler == null) {
-        classHandler = createClassHandler(shadowMap);
+        classHandler = createClassHandler(shadowMap, sdkEnvironment.getSdkConfig());
       }
       sdkEnvironment.setCurrentClassHandler(classHandler);
     }
@@ -394,7 +405,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     return getTargetVersionWhenAppManifestMightBeNullWhaaa(appManifest);
   }
 
-  public static int getTargetVersionWhenAppManifestMightBeNullWhaaa(AndroidManifest appManifest) {
+  public int getTargetVersionWhenAppManifestMightBeNullWhaaa(AndroidManifest appManifest) {
     return appManifest == null // app manifest would be null for libraries
         ? Build.VERSION_CODES.ICE_CREAM_SANDWICH // todo: how should we be picking this?
         : appManifest.getTargetSdkVersion();
@@ -409,17 +420,16 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   }
 
   private ParallelUniverseInterface getHooksInterface(SdkEnvironment sdkEnvironment) {
-    try {
-      @SuppressWarnings("unchecked")
-      Class<ParallelUniverseInterface> aClass = (Class<ParallelUniverseInterface>) sdkEnvironment.getRobolectricClassLoader().loadClass(ParallelUniverse.class.getName());
-      return aClass.newInstance();
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e);
-    } catch (InstantiationException e) {
-      throw new RuntimeException(e);
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    }
+    ClassLoader robolectricClassLoader = sdkEnvironment.getRobolectricClassLoader();
+    Class<? extends ParallelUniverseInterface> parallelUniverseClass =
+        type(ParallelUniverse.class.getName())
+            .withClassLoader(robolectricClassLoader)
+            .loadAs(ParallelUniverseInterface.class);
+
+    return constructor()
+        .withParameterTypes(RobolectricTestRunner.class)
+        .in(parallelUniverseClass)
+        .newInstance(this);
   }
 
   public void internalAfterTest(final Method method) {
@@ -565,16 +575,17 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     }
   }
 
-  public static ResourceLoader getAppResourceLoader(ResourceLoader systemResourceLoader, final AndroidManifest appManifest) {
-    ResourceLoader resourceLoader = resourceLoadersByAppManifest.get(appManifest);
+  public final ResourceLoader getAppResourceLoader(SdkConfig sdkConfig, ResourceLoader systemResourceLoader, final AndroidManifest appManifest) {
+    Pair<AndroidManifest, SdkConfig> androidManifestSdkConfigPair = new Pair<AndroidManifest, SdkConfig>(appManifest, sdkConfig);
+    ResourceLoader resourceLoader = resourceLoadersByManifestAndConfig.get(androidManifestSdkConfigPair);
     if (resourceLoader == null) {
       resourceLoader = createAppResourceLoader(systemResourceLoader, appManifest);
-      resourceLoadersByAppManifest.put(appManifest, resourceLoader);
+      resourceLoadersByManifestAndConfig.put(androidManifestSdkConfigPair, resourceLoader);
     }
     return resourceLoader;
   }
 
-  protected static ResourceLoader createAppResourceLoader(ResourceLoader systemResourceLoader, AndroidManifest appManifest) {
+  protected ResourceLoader createAppResourceLoader(ResourceLoader systemResourceLoader, AndroidManifest appManifest) {
     List<PackageResourceLoader> appAndLibraryResourceLoaders = new ArrayList<PackageResourceLoader>();
     for (ResourcePath resourcePath : appManifest.getIncludedResourcePaths()) {
       appAndLibraryResourceLoaders.add(createResourceLoader(resourcePath));
@@ -587,8 +598,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     return new RoutingResourceLoader(resourceLoaders);
   }
 
-  public static PackageResourceLoader createResourceLoader(ResourcePath systemResourcePath) {
-    return new PackageResourceLoader(systemResourcePath);
+  public PackageResourceLoader createResourceLoader(ResourcePath resourcePath) {
+    return new PackageResourceLoader(resourcePath);
   }
 
   /*

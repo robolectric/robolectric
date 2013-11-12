@@ -6,10 +6,11 @@ import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.widget.ImageView;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-@Implements(value = ImageView.class)
+@Implements(ImageView.class)
 public class ShadowImageView extends ShadowView {
   private Drawable imageDrawable;
   private Bitmap imageBitmap;
@@ -36,6 +37,11 @@ public class ShadowImageView extends ShadowView {
   @Implementation
   public void setImageResource(int resId) {
     setImageDrawable(resId != 0 ? buildDrawable(resId) : null);
+  }
+
+  public int getImageResourceId() {
+    ShadowDrawable shadow = Robolectric.shadowOf(imageDrawable);
+    return shadow.getCreatedFromResId();
   }
 
   @Implementation
@@ -67,15 +73,6 @@ public class ShadowImageView extends ShadowView {
   public void draw(Canvas canvas) {
     if (imageDrawable != null) {
       imageDrawable.draw(canvas);
-    }
-  }
-
-  private void applyImageAttribute() {
-    String source = attributeSet.getAttributeValue(ANDROID_NS, "src");
-    if (source != null) {
-      if (source.startsWith("@drawable/")) {
-        setImageResource(attributeSet.getAttributeResourceValue(ANDROID_NS, "src", 0));
-      }
     }
   }
 

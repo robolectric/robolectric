@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -10,7 +11,7 @@
 
   <groupId>org.robolectric</groupId>
   <artifactId>robolectric</artifactId>
-  <version>2.2-SNAPSHOT</version>
+  <version>2.3-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>Robolectric</name>
   <description>An alternative Android testing framework.</description>
@@ -85,16 +86,16 @@
     </dependency>
 
     <dependency>
-      <groupId>com.google.android</groupId>
-      <artifactId>android</artifactId>
-      <version>4.1.1.4</version>
+      <groupId>org.robolectric</groupId>
+      <artifactId>android-all</artifactId>
+      <version>4.3_r2-robolectric-0</version>
       <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>com.google.android.maps</groupId>
       <artifactId>maps</artifactId>
-      <version>16_r3</version>
+      <version>18_r3</version>
       <scope>provided</scope>
     </dependency>
 
@@ -154,20 +155,6 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-source-plugin</artifactId>
-        <version>2.1.2</version>
-        <configuration />
-        <executions>
-          <execution>
-            <id>attach-sources</id>
-            <goals>
-              <goal>jar</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>2.3.2</version>
         <configuration>
@@ -175,6 +162,7 @@
           <target>1.6</target>
         </configuration>
       </plugin>
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
@@ -205,6 +193,7 @@
           </execution>
         </executions>
       </plugin>
+
       <!-- required for testing robolectric-sqlite -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -233,67 +222,18 @@
           </filesets>
         </configuration>
       </plugin>
-
     </plugins>
   </build>
-
-  <profiles>
-    <profile>
-      <id>ant-deps</id>
-      <build>
-        <plugins>
-          <plugin>
-            <artifactId>maven-antrun-plugin</artifactId>
-            <version>1.6</version>
-            <executions>
-              <execution>
-                <id>clean-dependencies</id>
-                <phase>package</phase>
-                <goals>
-                  <goal>run</goal>
-                </goals>
-                <configuration>
-                  <target>
-                    <delete dir="${project.basedir}/lib/main" />
-                    <mkdir dir="${project.basedir}/lib/main" />
-                  </target>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <artifactId>maven-dependency-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>copy-dependencies</id>
-                <phase>package</phase>
-                <goals>
-                  <goal>copy-dependencies</goal>
-                </goals>
-                <configuration>
-                  <outputDirectory>${project.basedir}/lib/main</outputDirectory>
-                  <overWriteReleases>false</overWriteReleases>
-                  <overWriteSnapshots>false</overWriteSnapshots>
-                  <overWriteIfNewer>true</overWriteIfNewer>
-                  <excludeArtifactIds>android,maps,mockito-core</excludeArtifactIds>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
 
   <scm>
     <url>git@github.com:robolectric/robolectric.git</url>
     <connection>scm:git:git://github.com/robolectric/robolectric.git</connection>
-    <developerConnection>scm:git:git@github.com:robolectric/robolectric.git</developerConnection>
+    <developerConnection>scm:git:https://github.com/robolectric/robolectric.git</developerConnection>
   </scm>
 
   <ciManagement>
-    <system>Hudson</system>
-    <url>http://ci.robolectric.org/job/robolectric</url>
+    <system>Travis CI</system>
+    <url>http://travis-ci.org/robolectric/robolectric</url>
   </ciManagement>
 
   <developers>
