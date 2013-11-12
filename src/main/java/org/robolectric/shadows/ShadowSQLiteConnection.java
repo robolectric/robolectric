@@ -319,13 +319,13 @@ public class ShadowSQLiteConnection {
    }
 
    @Implementation
-   private static int nativeExecuteForBlobFileDescriptor(int connectionPtr, int statementPtr) {
+   public static int nativeExecuteForBlobFileDescriptor(int connectionPtr, int statementPtr) {
      // impossible to support without native code?
      return -1;
    }
 
    @Implementation
-   private static int nativeGetDbLookaside(int connectionPtr) {
+   public static int nativeGetDbLookaside(int connectionPtr) {
      // not supported by litedb
      return 0;
    }

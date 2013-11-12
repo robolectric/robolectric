@@ -126,12 +126,6 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
   }
 
   @Test(expected = android.database.SQLException.class)
-  public void testInsertOrThrowWithSimulatedSQLException() {
-    //shDatabase.setThrowOnInsert(true);
-    database.insertOrThrow("table_name", null, new ContentValues());
-  }
-
-  @Test(expected = android.database.SQLException.class)
   public void testInsertOrThrowWithSQLException() {
     ContentValues values = new ContentValues();
     values.put("id", 1);
@@ -168,25 +162,25 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
   }
 
   @Test
-  public void testRawQueryCount() throws Exception {
+  public void testRawQueryCountWithOneArgument() throws Exception {
     Cursor cursor = database.rawQuery("select second_column, first_column from rawtable WHERE `id` = ?", new String[]{"1"});
     assertThat(cursor.getCount()).isEqualTo(1);
   }
 
   @Test
-  public void testRawQueryCount2() throws Exception {
+  public void testRawQueryCountWithNullArgs() throws Exception {
     Cursor cursor = database.rawQuery("select second_column, first_column from rawtable", null);
     assertThat(cursor.getCount()).isEqualTo(2);
   }
 
   @Test
-  public void testRawQueryCount3() throws Exception {
+  public void testRawQueryCountWithEmptyArguments() throws Exception {
     Cursor cursor = database.rawQuery("select second_column, first_column from rawtable", new String[]{});
     assertThat(cursor.getCount()).isEqualTo(2);
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void testRawQueryCount8() throws Exception {
+  public void shouldThrowWhenArgumentsDoNotMatchQuery() throws Exception {
     database.rawQuery("select second_column, first_column from rawtable", new String[]{"1"});
   }
 
@@ -347,32 +341,27 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
   }
 
   @Test(expected = SQLiteException.class)
-  public void testExecSQLException() throws Exception {
+  public void execSqlShouldThrowOnBadQuery() throws Exception {
     database.execSQL("INSERT INTO table_name;");    // invalid SQL
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void testExecSQLException2() throws Exception {
+  public void testExecSQLExceptionParametersWithoutArguments() throws Exception {
     database.execSQL("insert into exectable (first_column) values (?);", null);
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void testExecSQLException4() throws Exception {
+  public void testExecSQLWithNullBindArgs() throws Exception {
     database.execSQL("insert into exectable (first_column) values ('sdfsfs');", null);
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void testExecSQLException5() throws Exception {
+  public void testExecSQLTooManyBindArguments() throws Exception {
     database.execSQL("insert into exectable (first_column) values ('kjhk');", new String[]{"xxxx"});
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void testExecSQLException6() throws Exception {
-    database.execSQL("insert into exectable (first_column) values ('kdfd');", new String[]{null});
-  }
-
   @Test
-  public void testExecSQL2() throws Exception {
+  public void testExecSQLWithEmptyBindArgs() throws Exception {
     database.execSQL("insert into exectable (first_column) values ('eff');", new String[]{});
   }
 
@@ -423,7 +412,7 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
   public void shouldStoreGreatBigHonkingIntegersCorrectly() throws Exception {
     database.execSQL("INSERT INTO table_name(big_int) VALUES(1234567890123456789);");
     Cursor cursor = database.query("table_name", new String[]{"big_int"}, null, null, null, null, null);
-    cursor.moveToFirst();
+    assertThat(cursor.moveToFirst()).isTrue();
     assertEquals(1234567890123456789L, cursor.getLong(0));
   }
 
@@ -511,8 +500,6 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
     assertThat(database.inTransaction()).isFalse();
   }
 
-
-
   @Test
   public void testReplace() throws Exception {
     long id = addChuck();
@@ -598,6 +585,7 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
   public void shouldUseInMemoryDatabaseWhenCallingCreate() throws Exception {
     SQLiteDatabase db = SQLiteDatabase.create(null);
     assertThat(db.isOpen()).isTrue();
+    assertThat(db.getPath()).isEqualTo(":memory:");
   }
 
   @Test
@@ -649,7 +637,7 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
   }
 
   @Test(expected = SQLiteException.class)
-  public void testShouldThrowSQLiteExeptionIfOpeningNonexistentDatabase() {
+  public void testShouldThrowSQLiteExceptionIfOpeningNonexistentDatabase() {
     SQLiteDatabase.openDatabase("/does/not/exist", null, OPEN_READWRITE);
   }
 
@@ -678,6 +666,25 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
     assertThat(c.getCount()).isEqualTo(1);
     assertThat(c.moveToNext()).isTrue();
     assertThat(c.getString(c.getColumnIndex("data"))).isEqualTo("d1");
+  }
+
+  @Test
+  public void testRawQueryWithFactoryAndCancellationSignal() throws Exception {
+    CancellationSignal signal = new CancellationSignal();
+
+    Cursor cursor = database.rawQueryWithFactory(null, "select * from table_name", null, null, signal);
+    assertThat(cursor).isNotNull();
+    assertThat(cursor.getColumnCount()).isEqualTo(5);
+    assertThat(cursor.isClosed()).isFalse();
+
+    signal.cancel();
+
+    try {
+      cursor.moveToNext();
+      fail("did not get cancellation signal");
+    } catch (OperationCanceledException e) {
+      // expected
+    }
   }
 
   private Cursor executeQuery(String query) {
@@ -733,24 +740,4 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
     assertThat(cursor.moveToFirst()).isTrue();
     assertThat(cursor.getCount()).isNotEqualTo(0);
   }
-
-  @Test
-  public void testRawQueryWithFactoryAndCancellationSignal() throws Exception {
-    CancellationSignal signal = new CancellationSignal();
-
-    Cursor cursor = database.rawQueryWithFactory(null, "select * from table_name", null, null, signal);
-    assertThat(cursor).isNotNull();
-    assertThat(cursor.getColumnCount()).isEqualTo(5);
-    assertThat(cursor.isClosed()).isFalse();
-
-    signal.cancel();
-
-    try {
-        cursor.moveToNext();
-        fail("did not get cancellation signal");
-    } catch (OperationCanceledException e) {
-        // expected
-    }
-  }
-
 }
