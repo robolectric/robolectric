@@ -195,7 +195,6 @@ import org.robolectric.shadows.ShadowTranslateAnimation;
 import org.robolectric.shadows.ShadowTypedArray;
 import org.robolectric.shadows.ShadowTypeface;
 import org.robolectric.shadows.ShadowUri;
-import org.robolectric.shadows.ShadowUriMatcher;
 import org.robolectric.shadows.ShadowValueAnimator;
 import org.robolectric.shadows.ShadowVideoView;
 import org.robolectric.shadows.ShadowView;
@@ -434,7 +433,6 @@ public class RobolectricBase {
       ShadowTranslateAnimation.class,
       ShadowTypedArray.class,
       ShadowTypeface.class,
-      ShadowUriMatcher.class,
       ShadowUri.class,
       ShadowValueAnimator.class,
       ShadowVideoView.class,
