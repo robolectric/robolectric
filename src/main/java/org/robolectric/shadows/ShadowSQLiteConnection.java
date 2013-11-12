@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import android.database.sqlite.SQLiteCustomFunction;
 import android.database.sqlite.SQLiteDoneException;
 import com.almworks.sqlite4java.SQLiteConnection;
 import com.almworks.sqlite4java.SQLiteException;
@@ -299,17 +300,36 @@ public class ShadowSQLiteConnection {
     }
   }
 
-  /*
-  TODO
+   @Implementation
+   public static void nativeCancel(int connectionPtr) {
+     SQLiteStatement statement = STATEMENTS_MAP.get(POINTER_COUNTER.get());
+     if (statement != null) {
+        statement.cancel();
+     }
+   }
 
-  private static native void nativeRegisterCustomFunction(int connectionPtr,
-                                                          SQLiteCustomFunction function);
-  private static native int nativeExecuteForBlobFileDescriptor(
-      int connectionPtr, int statementPtr);
-  private static native int nativeGetDbLookaside(int connectionPtr);
-  private static native void nativeCancel(int connectionPtr);
-  private static native void nativeResetCancel(int connectionPtr, boolean cancelable);
-  */
+   @Implementation
+   public static void nativeResetCancel(int connectionPtr, boolean cancelable) {
+     // handled in com.almworks.sqlite4java.SQLiteConnection#exec
+   }
+
+   @Implementation
+   public static void nativeRegisterCustomFunction(int connectionPtr, SQLiteCustomFunction function) {
+     // not supported
+   }
+
+   @Implementation
+   private static int nativeExecuteForBlobFileDescriptor(int connectionPtr, int statementPtr) {
+     // impossible to support without native code?
+     return -1;
+   }
+
+   @Implementation
+   private static int nativeGetDbLookaside(int connectionPtr) {
+     // not supported by litedb
+     return 0;
+   }
+
 
   private static class ConnectionData {
     final SQLiteConnection connection;
