@@ -1,9 +1,12 @@
 package org.robolectric.shadows;
 
+import android.os.OperationCanceledException;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
+import android.os.CancellationSignal;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -557,17 +560,6 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
     assertThat(secondCursor.getString(0)).isEqualTo(stringValueB);
   }
 
-  // TODO: think about tracking open cursors
-//  @Test
-//  public void shouldKeepTrackOfOpenCursors() throws Exception {
-//    Cursor cursor = database.query("table_name", new String[]{"second_column", "first_column"}, null, null, null, null, null);
-//
-//    assertThat(shadowOf(database).hasOpenCursors()).isTrue();
-//    cursor.close();
-//    assertThat(shadowOf(database).hasOpenCursors()).isFalse();
-//
-//  }
-
   @Test
   public void shouldCreateDefaultCursorFactoryWhenNullFactoryPassedToRawQuery() throws Exception {
     database.rawQueryWithFactory(null, ANY_VALID_SQL, null, null);
@@ -744,10 +736,21 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
 
   @Test
   public void testRawQueryWithFactoryAndCancellationSignal() throws Exception {
-    Cursor cursor = database.rawQueryWithFactory(null, "select * from table_name", null, null, null);
+    CancellationSignal signal = new CancellationSignal();
+
+    Cursor cursor = database.rawQueryWithFactory(null, "select * from table_name", null, null, signal);
     assertThat(cursor).isNotNull();
     assertThat(cursor.getColumnCount()).isEqualTo(5);
     assertThat(cursor.isClosed()).isFalse();
+
+    signal.cancel();
+
+    try {
+        cursor.moveToNext();
+        fail("did not get cancellation signal");
+    } catch (OperationCanceledException e) {
+        // expected
+    }
   }
 
 }
