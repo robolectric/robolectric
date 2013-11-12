@@ -2,7 +2,6 @@ package org.robolectric.util;
 
 import com.almworks.sqlite4java.SQLite;
 import com.almworks.sqlite4java.SQLiteException;
-import com.github.axet.litedb.SQLiteNatives;
 import org.apache.commons.io.IOUtils;
 import org.robolectric.res.Fs;
 
@@ -79,7 +78,7 @@ public class SQLiteLibraryLoader {
 
   private static InputStream getLibraryStream() {
     String classpathResourceName = getLibClasspathResourceName();
-    InputStream libraryStream = SQLiteNatives.class.getResourceAsStream(classpathResourceName);
+    InputStream libraryStream = SQLiteLibraryLoader.class.getResourceAsStream(classpathResourceName);
     if (libraryStream == null) {
       throw new RuntimeException("Cannot find '" + classpathResourceName + "' in classpath");
     }
