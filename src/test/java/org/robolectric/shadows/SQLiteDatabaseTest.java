@@ -418,7 +418,7 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
   public void shouldStoreGreatBigHonkingIntegersCorrectly() throws Exception {
     database.execSQL("INSERT INTO table_name(big_int) VALUES(1234567890123456789);");
     Cursor cursor = database.query("table_name", new String[]{"big_int"}, null, null, null, null, null);
-    assertThat(cursor.moveToFirst());
+    assertThat(cursor.moveToFirst()).isTrue();
     assertEquals(1234567890123456789L, cursor.getLong(0));
   }
 
