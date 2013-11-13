@@ -126,12 +126,6 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
   }
 
   @Test(expected = android.database.SQLException.class)
-  public void testInsertOrThrowWithSimulatedSQLException() {
-    //shDatabase.setThrowOnInsert(true);
-    database.insertOrThrow("table_name", null, new ContentValues());
-  }
-
-  @Test(expected = android.database.SQLException.class)
   public void testInsertOrThrowWithSQLException() {
     ContentValues values = new ContentValues();
     values.put("id", 1);
@@ -168,25 +162,25 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
   }
 
   @Test
-  public void testRawQueryCount() throws Exception {
+  public void testRawQueryCountWithOneArgument() throws Exception {
     Cursor cursor = database.rawQuery("select second_column, first_column from rawtable WHERE `id` = ?", new String[]{"1"});
     assertThat(cursor.getCount()).isEqualTo(1);
   }
 
   @Test
-  public void testRawQueryCount2() throws Exception {
+  public void testRawQueryCountWithNullArgs() throws Exception {
     Cursor cursor = database.rawQuery("select second_column, first_column from rawtable", null);
     assertThat(cursor.getCount()).isEqualTo(2);
   }
 
   @Test
-  public void testRawQueryCount3() throws Exception {
+  public void testRawQueryCountWithEmptyArguments() throws Exception {
     Cursor cursor = database.rawQuery("select second_column, first_column from rawtable", new String[]{});
     assertThat(cursor.getCount()).isEqualTo(2);
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void testRawQueryCount8() throws Exception {
+  public void shouldThrowWhenArgumentsDoNotMatchQuery() throws Exception {
     database.rawQuery("select second_column, first_column from rawtable", new String[]{"1"});
   }
 
@@ -347,7 +341,7 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
   }
 
   @Test(expected = SQLiteException.class)
-  public void testExecSQLException() throws Exception {
+  public void execSqlShouldThrowOnBadQuery() throws Exception {
     database.execSQL("INSERT INTO table_name;");    // invalid SQL
   }
 
@@ -643,7 +637,7 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
   }
 
   @Test(expected = SQLiteException.class)
-  public void testShouldThrowSQLiteExeptionIfOpeningNonexistentDatabase() {
+  public void testShouldThrowSQLiteExceptionIfOpeningNonexistentDatabase() {
     SQLiteDatabase.openDatabase("/does/not/exist", null, OPEN_READWRITE);
   }
 
