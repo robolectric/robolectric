@@ -1,7 +1,11 @@
 package org.robolectric.shadows;
 
 
+import android.content.ContentValues;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
+import android.provider.BaseColumns;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -12,159 +16,65 @@ import static org.fest.assertions.api.Assertions.assertThat;
 @RunWith(TestRunners.WithDefaults.class)
 public class SQLiteQueryBuilderTest {
 
-  SQLiteQueryBuilder builder;
+  private static final String TABLE_NAME = "sqlBuilderTest";
+  private static final String COL_VALUE = "valueCol";
+  private static final String COL_GROUP = "groupCol";
+  
+  private SQLiteDatabase database;
+  private SQLiteQueryBuilder builder;
+
+  private long firstRecordId;
 
   @Before
   public void setUp() throws Exception {
+    database = SQLiteDatabase.create(null);
+
+    database.execSQL("create table " + TABLE_NAME + " ("
+        + COL_VALUE + " TEXT, "
+        + COL_GROUP + " INTEGER"
+        + ")");
+
+    ContentValues values = new ContentValues();
+    values.put(COL_VALUE, "record1");
+    values.put(COL_GROUP, 1);
+    firstRecordId = database.insert(TABLE_NAME, null, values);
+    assertThat(firstRecordId).isGreaterThan(0);
+
+    values.clear();
+    values.put(COL_VALUE, "record2");
+    values.put(COL_GROUP, 1);
+    long secondRecordId = database.insert(TABLE_NAME, null, values);
+    assertThat(secondRecordId).isGreaterThan(0).isNotEqualTo(firstRecordId);
+
+    values.clear();
+    values.put(COL_VALUE, "won't be selected");
+    values.put(COL_GROUP, 2);
+    database.insert(TABLE_NAME, null, values);
+
     builder = new SQLiteQueryBuilder();
+    builder.setTables(TABLE_NAME);
+    builder.appendWhere(COL_VALUE + " <> ");
+    builder.appendWhereEscapeString("won't be selected");
   }
 
   @Test
-  public void testDistinct() {
-    String sql = SQLiteQueryBuilder.buildQueryString(
-        true,
-        "table_name",
-        new String[]{"id", "name"},
-        null, null, null, null, null);
-    assertThat(sql).isEqualTo("SELECT DISTINCT id, name FROM table_name");
-
+  public void shouldBeAbleToMakeQueries() {
+    Cursor cursor = builder.query(database, new String[] {"rowid"}, null, null, null, null, null);
+    assertThat(cursor.getCount()).isEqualTo(2);
   }
 
   @Test
-  public void testSelectColumn() {
-    String sql = SQLiteQueryBuilder.buildQueryString(
-        false,
-        "table_name",
-        new String[]{"id"},
-        null, null, null, null, null);
-    assertThat(sql).isEqualTo("SELECT id FROM table_name");
+  public void shouldBeAbleToMakeQueriesWithSelection() {
+    Cursor cursor = builder.query(database, new String[] {"rowid"}, COL_VALUE + "=?", new String[] {"record1"}, null, null, null);
+    assertThat(cursor.getCount()).isEqualTo(1);
+    assertThat(cursor.moveToNext()).isTrue();
+    assertThat(cursor.getLong(0)).isEqualTo(firstRecordId);
   }
 
   @Test
-  public void testSelectColumns() {
-    String sql = SQLiteQueryBuilder.buildQueryString(
-        false,
-        "table_name",
-        new String[]{"id", "name"},
-        null, null, null, null, null);
-    assertThat(sql).isEqualTo("SELECT id, name FROM table_name");
-  }
-
-  @Test
-  public void testSelectAllColumns() {
-    String sql = SQLiteQueryBuilder.buildQueryString(
-        false,
-        "table_name",
-        null, null, null, null, null, null);
-    assertThat(sql).isEqualTo("SELECT * FROM table_name");
-  }
-
-  @Test
-  public void testSelectAllColumnsWithEmptyString(){
-    String sql = SQLiteQueryBuilder.buildQueryString(
-        false,
-        "table_name",
-        new String[]{}, null, null, null, null, null);
-    assertThat(sql).isEqualTo("SELECT * FROM table_name");
-  }
-
-  @Test
-  public void testWhereClause() {
-    String sql = SQLiteQueryBuilder.buildQueryString(
-        false,
-        "table_name",
-        new String[]{"person", "department", "division"},
-        "(id = 2 AND name = 'Chuck')", null, null, null, null);
-    assertThat(sql).isEqualTo("SELECT person, department, division FROM table_name WHERE (id = 2 AND name = 'Chuck')");
-  }
-
-  @Test
-  public void testEmptyWhereClause() {
-    String sql = SQLiteQueryBuilder.buildQueryString(
-        false,
-        "table_name",
-        new String[]{"person", "department", "division"},
-        null, "person", null, null, null);
-    assertThat(sql).isEqualTo("SELECT person, department, division FROM table_name GROUP BY person");
-  }
-
-  @Test
-  public void testGroupBy() {
-    String sql = SQLiteQueryBuilder.buildQueryString(
-        false,
-        "table_name",
-        new String[]{"person", "department", "division"},
-        "(id = 2 AND name = 'Chuck')", "person", null, null, null);
-    assertThat(sql).isEqualTo("SELECT person, department, division FROM table_name WHERE (id = 2 AND name = 'Chuck') GROUP BY person");
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void testEmptyGroupBy() {
-    SQLiteQueryBuilder.buildQueryString(
-        false,
-        "table_name",
-        new String[]{"person", "department", "division"},
-        "(id = 2 AND name = 'Chuck')", null, "SUM(hours) < 20", null, null);
-  }
-
-  @Test
-  public void testHaving() {
-    String sql = SQLiteQueryBuilder.buildQueryString(
-        false,
-        "table_name",
-        new String[]{"person", "department", "division"},
-        "(id = 2 AND name = 'Chuck')", "person", "SUM(hours) < 20", null, null);
-    assertThat(sql).isEqualTo("SELECT person, department, division FROM table_name WHERE (id = 2 AND name = 'Chuck') GROUP BY person HAVING SUM(hours) < 20");
-  }
-
-  @Test
-  public void testEmptyHaving() {
-    String sql = SQLiteQueryBuilder.buildQueryString(
-        false,
-        "table_name",
-        new String[]{"person", "department", "division"},
-        "(id = 2 AND name = 'Chuck')", "person", null, "id ASC", null);
-    assertThat(sql).isEqualTo("SELECT person, department, division FROM table_name WHERE (id = 2 AND name = 'Chuck') GROUP BY person ORDER BY id ASC");
-  }
-
-  @Test
-  public void testSortOrder() {
-    String sql = SQLiteQueryBuilder.buildQueryString(
-        false,
-        "table_name",
-        new String[]{"person", "department", "division"},
-        "(id = 2 AND name = 'Chuck')", "person", "SUM(hours) < 20", "id ASC", null);
-    assertThat(sql).isEqualTo("SELECT person, department, division FROM table_name WHERE (id = 2 AND name = 'Chuck') GROUP BY person HAVING SUM(hours) < 20 ORDER BY id ASC");
-  }
-
-  @Test
-  public void testEmptySortOrder() {
-    String sql = SQLiteQueryBuilder.buildQueryString(
-        false,
-        "table_name",
-        new String[]{"person", "department", "division"},
-        "(id = 2 AND name = 'Chuck')", "person", "SUM(hours) < 20", null, "10");
-    assertThat(sql).isEqualTo("SELECT person, department, division FROM table_name WHERE (id = 2 AND name = 'Chuck') GROUP BY person HAVING SUM(hours) < 20 LIMIT 10");
-  }
-
-  @Test
-  public void testLimit() {
-    String sql = SQLiteQueryBuilder.buildQueryString(
-        false,
-        "table_name",
-        new String[]{"person", "department", "division"},
-        "(id = 2 AND name = 'Chuck')", "person", "SUM(hours) < 20", "id ASC", "10");
-    assertThat(sql).isEqualTo("SELECT person, department, division FROM table_name WHERE (id = 2 AND name = 'Chuck') GROUP BY person HAVING SUM(hours) < 20 ORDER BY id ASC LIMIT 10");
-  }
-
-  @Test
-  public void testSelectColumnWithEmptyStrings() {
-    String sql = SQLiteQueryBuilder.buildQueryString(
-        false,
-        "table_name",
-        new String[]{"id"},
-        "", "", "", "", "");
-    assertThat(sql).isEqualTo("SELECT id FROM table_name");
+  public void shouldBeAbleToMakeQueriesWithGrouping() {
+    Cursor cursor = builder.query(database, new String[] {"rowid"}, null, null, COL_GROUP, null, null);
+    assertThat(cursor.getCount()).isEqualTo(1);
   }
 
 }
