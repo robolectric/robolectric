@@ -33,9 +33,13 @@ public class SQLiteLibraryLoaderTest {
     SQLiteLibraryLoader.load();
     File extractedPath = SQLiteLibraryLoader.getNativeLibraryPath();
     assertThat(extractedPath).exists();
-    long time = extractedPath.lastModified();
 
-    Thread.sleep(2);
+    final long resetTime = 1234L;
+    assertThat(extractedPath.setLastModified(resetTime)).describedAs("Cannot reset modification date").isTrue();
+    // actual time may be truncated to seconds
+    long time = extractedPath.lastModified();
+    assertThat(time).isLessThanOrEqualTo(resetTime);
+
     SQLiteLibraryLoader.mustReload();
     SQLiteLibraryLoader.load();
     extractedPath = SQLiteLibraryLoader.getNativeLibraryPath();
