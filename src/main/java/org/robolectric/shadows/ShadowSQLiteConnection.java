@@ -282,8 +282,7 @@ public class ShadowSQLiteConnection {
 
     SQLiteStatement stmt = stmt(connectionPtr, statementPtr);
     try {
-      ShadowCursorWindow.setData(windowPtr, stmt);
-      return ShadowCursorWindow.getCount(windowPtr);
+      return ShadowCursorWindow.setData(windowPtr, stmt);
     } catch (SQLiteException e) {
       rethrow("Cannot execute for cursor window", e);
       return 0;
