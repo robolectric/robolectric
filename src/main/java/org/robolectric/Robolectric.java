@@ -206,6 +206,7 @@ import org.robolectric.shadows.ShadowCornerPathEffect;
 import org.robolectric.shadows.ShadowCountDownTimer;
 import org.robolectric.shadows.ShadowCursorAdapter;
 import org.robolectric.shadows.ShadowCursorLoader;
+import org.robolectric.shadows.ShadowCursorWindow;
 import org.robolectric.shadows.ShadowCursorWrapper;
 import org.robolectric.shadows.ShadowDateFormat;
 import org.robolectric.shadows.ShadowDefaultRequestDirector;
@@ -1314,6 +1315,7 @@ public class Robolectric {
     ShadowPowerManager.reset();
     ShadowStatFs.reset();
     ShadowTypeface.reset();
+    ShadowCursorWindow.reset();
   }
 
   public static <T extends Activity> ActivityController<T> buildActivity(Class<T> activityClass) {
