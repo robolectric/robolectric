@@ -147,16 +147,13 @@ public class ShadowCursorWindow {
   }
 
   private static class Data {
-    private final List<Row> rows = new ArrayList<Row>();
+    private final List<Row> rows;
     private final String name;
     private int numColumns;
 
-    // TODO: are these actually needed ?
-    private String[] columnNameArray;
-    private SQLiteStatement stmt;
-
     public Data(String name, int cursorWindowSize) {
       this.name = name;
+      this.rows = new ArrayList<Row>(cursorWindowSize);
     }
 
     public Value value(int rowN, int colN) {
@@ -176,12 +173,8 @@ public class ShadowCursorWindow {
     }
 
     public void fillWith(SQLiteStatement stmt) throws SQLiteException {
-      this.stmt = stmt;
-      // Stores the column names so they are retrievable after the resultSet has closed
-      this.columnNameArray = cacheColumnNames(stmt);
-
       //Android caches results in the WindowedCursor to allow moveToPrevious() to function.
-      //Robolectric will have to cache the results too. In the rows map.
+      //Robolectric will have to cache the results too. In the rows list.
       while (stmt.step()) {
         rows.add(fillRowValues(stmt));
       }
@@ -194,15 +187,6 @@ public class ShadowCursorWindow {
         row.set(index, new Value(stmt.columnValue(index), stmt.columnType(index)));
       }
       return row;
-    }
-
-    private static String[] cacheColumnNames(SQLiteStatement stmt) throws SQLiteException {
-      int columnCount = stmt.columnCount();
-      String[] columnArray = new String[columnCount];
-      for (int index = 0; index < columnCount; index++) {
-        columnArray[index] = stmt.getColumnName(index).toLowerCase();
-      }
-      return columnArray;
     }
 
     public void clear() {
@@ -225,7 +209,7 @@ public class ShadowCursorWindow {
   }
 
   private static class Row {
-    final private List<Value> values;
+    private final List<Value> values;
 
     public Row(int length) {
       values = new ArrayList<Value>(length);
@@ -287,7 +271,6 @@ public class ShadowCursorWindow {
     }
 
     public void reset() {
-      windowPtrCounter.set(0);
       dataMap.clear();
     }
   }

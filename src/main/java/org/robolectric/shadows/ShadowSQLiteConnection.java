@@ -10,6 +10,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.util.SQLiteLibraryLoader;
 
 import java.io.File;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -21,38 +22,25 @@ public class ShadowSQLiteConnection {
 
   private static final String IN_MEMORY_PATH = ":memory:";
 
-  private static final AtomicInteger POINTER_COUNTER = new AtomicInteger(0);
+  private static final Connections CONNECTIONS = new Connections();
 
-  private static final ConcurrentHashMap<Integer, ConnectionData> CONNECTIONS_MAP = new ConcurrentHashMap<Integer, ConnectionData>();
-  private static final ConcurrentHashMap<Integer, SQLiteStatement> STATEMENTS_MAP = new ConcurrentHashMap<Integer, SQLiteStatement>();
+  // indicates an ignored statement
+  private static final int IGNORED_REINDEX_STMT = -2;
 
   static {
     SQLiteLibraryLoader.load();
   }
 
+  public static void reset() {
+    CONNECTIONS.reset();
+  }
+
   private static SQLiteConnection connection(final int pointer) {
-    ConnectionData data = CONNECTIONS_MAP.get(pointer);
-    if (data == null) {
-      throw new IllegalArgumentException("Illegal SQLite connection pointer: " + pointer + ". Current pointers: " + CONNECTIONS_MAP.keySet());
-    }
-    if (Thread.currentThread() != data.user) {
-      throw new IllegalStateException("Connection is created in " + data.user + " but accessed in " + Thread.currentThread());
-    }
-    return data.connection;
+    return CONNECTIONS.getConnection(pointer);
   }
 
   private static SQLiteStatement stmt(final int connectionPtr, final int pointer) {
-    // ensure connection is ok
-    connection(connectionPtr);
-
-    SQLiteStatement stmt = STATEMENTS_MAP.get(pointer);
-    if (stmt == null) {
-      throw new IllegalArgumentException("Invalid prepared statement pointer: " + pointer + ". Current pointers: " + STATEMENTS_MAP.keySet());
-    }
-    if (stmt.isDisposed()) {
-      throw new IllegalStateException("Statement " + pointer + " " + stmt + " is disposed");
-    }
-    return stmt;
+    return CONNECTIONS.getStatement(connectionPtr, pointer);
   }
 
   private static void rethrow(final String message, final SQLiteException e) {
@@ -61,50 +49,27 @@ public class ShadowSQLiteConnection {
 
   @Implementation
   public static int nativeOpen(String path, int openFlags, String label, boolean enableTrace, boolean enableProfile) {
-    SQLiteConnection sqliteConnection = IN_MEMORY_PATH.equals(path)
-        ? new SQLiteConnection()
-        : new SQLiteConnection(new File(path));
-
-    try {
-      sqliteConnection.open();
-    } catch (SQLiteException e) {
-      rethrow("Cannot open SQLite connection", e);
-    }
-
-    int pointer = POINTER_COUNTER.incrementAndGet();
-    CONNECTIONS_MAP.put(pointer, new ConnectionData(sqliteConnection, Thread.currentThread()));
-    return pointer;
+    return CONNECTIONS.open(path);
   }
 
   @Implementation
   public static int nativePrepareStatement(int connectionPtr, String sql) {
-    // TODO: find a way to create collators
-    if ("REINDEX LOCALIZED".equals(sql)) {
-      return -2;
-    }
-
-    SQLiteConnection connection = connection(connectionPtr);
-    try {
-      SQLiteStatement stmt = connection.prepare(sql);
-      int pointer = POINTER_COUNTER.incrementAndGet();
-      STATEMENTS_MAP.put(pointer, stmt);
-      return pointer;
-    } catch (SQLiteException e) {
-      rethrow("Cannot prepare statement " + sql, e);
-      return 0;
-    }
+    return CONNECTIONS.prepareStatement(connectionPtr, sql);
   }
 
   @Implementation
   public static void nativeClose(int connectionPtr) {
-    SQLiteConnection connection = connection(connectionPtr);
-    CONNECTIONS_MAP.remove(connectionPtr);
-    connection.dispose();
+    CONNECTIONS.close(connectionPtr);
+  }
+
+  @Implementation
+  public static void nativeFinalizeStatement(int connectionPtr, int statementPtr) {
+    CONNECTIONS.finalizeStmt(connectionPtr, statementPtr);
   }
 
   @Implementation
   public static int nativeGetParameterCount(int connectionPtr, int statementPtr) {
-    if (statementPtr == -2) { return 0; } // TODO
+    if (statementPtr == IGNORED_REINDEX_STMT) { return 0; } // TODO
     SQLiteStatement stmt = stmt(connectionPtr, statementPtr);
     try {
       return stmt.getBindParameterCount();
@@ -116,7 +81,7 @@ public class ShadowSQLiteConnection {
 
   @Implementation
   public static boolean nativeIsReadOnly(int connectionPtr, int statementPtr) {
-    if (statementPtr == -2) { return true; } // TODO
+    if (statementPtr == IGNORED_REINDEX_STMT) { return true; } // TODO
     SQLiteStatement stmt = stmt(connectionPtr, statementPtr);
     try {
       return stmt.isReadOnly();
@@ -142,7 +107,7 @@ public class ShadowSQLiteConnection {
 
   @Implementation
   public static void nativeExecute(int connectionPtr, int statementPtr) {
-    if (statementPtr == -2) { return; }
+    if (statementPtr == IGNORED_REINDEX_STMT) { return; }
     SQLiteStatement stmt = stmt(connectionPtr, statementPtr);
     try {
       stmt.stepThrough();
@@ -163,14 +128,6 @@ public class ShadowSQLiteConnection {
       rethrow("Cannot execute for string", e);
       return null;
     }
-  }
-
-  @Implementation
-  public static void nativeFinalizeStatement(int connectionPtr, int statementPtr) {
-    if (statementPtr == -2) { return; } // TODO
-    SQLiteStatement stmt = stmt(connectionPtr, statementPtr);
-    STATEMENTS_MAP.remove(statementPtr);
-    stmt.dispose();
   }
 
   @Implementation
@@ -278,7 +235,7 @@ public class ShadowSQLiteConnection {
 
   @Implementation
   public static long nativeExecuteForCursorWindow(int connectionPtr, int statementPtr, int windowPtr,
-      int startPos, int requiredPos, boolean countAllRows) {
+                                                  int startPos, int requiredPos, boolean countAllRows) {
 
     SQLiteStatement stmt = stmt(connectionPtr, statementPtr);
     try {
@@ -299,45 +256,133 @@ public class ShadowSQLiteConnection {
     }
   }
 
-   @Implementation
-   public static void nativeCancel(int connectionPtr) {
-     SQLiteStatement statement = STATEMENTS_MAP.get(POINTER_COUNTER.get());
-     if (statement != null) {
-        statement.cancel();
-     }
-   }
+  @Implementation
+  public static void nativeCancel(int connectionPtr) {
+    CONNECTIONS.cancel(connectionPtr);
+  }
 
-   @Implementation
-   public static void nativeResetCancel(int connectionPtr, boolean cancelable) {
-     // handled in com.almworks.sqlite4java.SQLiteConnection#exec
-   }
+  @Implementation
+  public static void nativeResetCancel(int connectionPtr, boolean cancelable) {
+    // handled in com.almworks.sqlite4java.SQLiteConnection#exec
+  }
 
-   @Implementation
-   public static void nativeRegisterCustomFunction(int connectionPtr, SQLiteCustomFunction function) {
-     // not supported
-   }
+  @Implementation
+  public static void nativeRegisterCustomFunction(int connectionPtr, SQLiteCustomFunction function) {
+    // not supported
+  }
 
-   @Implementation
-   public static int nativeExecuteForBlobFileDescriptor(int connectionPtr, int statementPtr) {
-     // impossible to support without native code?
-     return -1;
-   }
+  @Implementation
+  public static int nativeExecuteForBlobFileDescriptor(int connectionPtr, int statementPtr) {
+    // impossible to support without native code?
+    return -1;
+  }
 
-   @Implementation
-   public static int nativeGetDbLookaside(int connectionPtr) {
-     // not supported by litedb
-     return 0;
-   }
+  @Implementation
+  public static int nativeGetDbLookaside(int connectionPtr) {
+    // not supported by sqlite4java
+    return 0;
+  }
 
 
-  private static class ConnectionData {
-    final SQLiteConnection connection;
-    final Thread user;
+  private static class Connections {
 
-    public ConnectionData(SQLiteConnection connection, Thread user) {
-      this.connection = connection;
-      this.user = user;
+    private final AtomicInteger pointerCounter = new AtomicInteger(0);
+
+    private final Map<Integer, SQLiteStatement> statementsMap = new ConcurrentHashMap<Integer, SQLiteStatement>();
+    private final Map<Integer, SQLiteConnection> connectionsMap = new ConcurrentHashMap<Integer, SQLiteConnection>();
+
+    public SQLiteConnection getConnection(final int pointer) {
+      SQLiteConnection connection = connectionsMap.get(pointer);
+      if (connection == null) {
+        throw new IllegalStateException("Illegal connection pointer " + pointer
+            + ". Current posinters for thread " + Thread.currentThread() + " " + connectionsMap.keySet());
+      }
+      return connection;
     }
+
+    public SQLiteStatement getStatement(final int connectionPtr, final int pointer) {
+      // ensure connection is ok
+      getConnection(connectionPtr);
+
+      SQLiteStatement stmt = statementsMap.get(pointer);
+      if (stmt == null) {
+        throw new IllegalArgumentException("Invalid prepared statement pointer: " + pointer + ". Current pointers: " + statementsMap.keySet());
+      }
+      if (stmt.isDisposed()) {
+        throw new IllegalStateException("Statement " + pointer + " " + stmt + " is disposed");
+      }
+      return stmt;
+    }
+
+    public int open(String path) {
+      SQLiteConnection dbConnection = IN_MEMORY_PATH.equals(path)
+          ? new SQLiteConnection()
+          : new SQLiteConnection(new File(path));
+
+      try {
+        dbConnection.open();
+      } catch (SQLiteException e) {
+        rethrow("Cannot open SQLite connection", e);
+      }
+
+      int ptr = pointerCounter.incrementAndGet();
+      connectionsMap.put(ptr, dbConnection);
+      return ptr;
+    }
+
+    public int prepareStatement(int connectionPtr, String sql) {
+      // TODO: find a way to create collators
+      if ("REINDEX LOCALIZED".equals(sql)) {
+        return IGNORED_REINDEX_STMT;
+      }
+
+      SQLiteConnection connection = getConnection(connectionPtr);
+      try {
+        SQLiteStatement stmt = connection.prepare(sql);
+        int pointer = pointerCounter.incrementAndGet();
+        statementsMap.put(pointer, stmt);
+        return pointer;
+      } catch (SQLiteException e) {
+        rethrow("Cannot prepare statement " + sql, e);
+        return 0;
+      }
+    }
+
+    public void close(int ptr) {
+      SQLiteConnection connection = getConnection(ptr);
+      connection.dispose();
+    }
+
+    public void finalizeStmt(int connectionPtr, int statementPtr) {
+      if (statementPtr == IGNORED_REINDEX_STMT) {
+        return;
+      }
+      SQLiteStatement stmt = getStatement(connectionPtr, statementPtr);
+      statementsMap.remove(statementPtr);
+      stmt.dispose();
+    }
+
+    public void cancel(int connectionPtr) {
+      getConnection(connectionPtr); // check connection
+
+      SQLiteStatement statement = statementsMap.get(pointerCounter.get());
+      if (statement != null) {
+        statement.cancel();
+      }
+    }
+
+    public void reset() {
+      for (SQLiteStatement stmt : statementsMap.values()) {
+        stmt.dispose();
+      }
+      statementsMap.clear();
+
+      for (SQLiteConnection connection : connectionsMap.values()) {
+        connection.dispose();
+      }
+      connectionsMap.clear();
+    }
+
   }
 
 }
