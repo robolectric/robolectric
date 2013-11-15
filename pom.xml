@@ -171,7 +171,7 @@
           <excludes>
             <exclude>**/Test*.java</exclude>
           </excludes>
-          <argLine>-Xms768m -Xmx768m -XX:MaxPermSize=128m -XX:-UseSplitVerifier</argLine>
+          <argLine>-Xms768m -Xmx768m -XX:MaxPermSize=128m</argLine>
         </configuration>
       </plugin>
 
