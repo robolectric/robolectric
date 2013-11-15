@@ -760,7 +760,7 @@ public class ActivityTest {
     assertThat(activity.customTitleText.getText().toString()).isEqualTo(activity.getString(R.string.hello));
   }
 
-  @Test @Config(emulateSdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
+  @Test @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void canGetOptionsMenu() throws Exception {
     Activity activity = buildActivity(OptionsMenuActivity.class).create().visible().get();
     Menu optionsMenu = shadowOf(activity).getOptionsMenu();

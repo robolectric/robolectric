@@ -1,6 +1,5 @@
 package org.robolectric.annotation;
 
-import android.os.Build;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.annotation.Annotation;
@@ -27,7 +26,7 @@ public @interface Config {
   /**
    * The Android SDK level to emulate. If not specified, Robolectric defaults to API 16.
    */
-  int emulateSdk() default -1;
+  int sdk() default -1;
 
   /**
    * The Android manifest file to load; Robolectric will look relative to the current directory.
@@ -47,13 +46,6 @@ public @interface Config {
   String qualifiers() default "";
 
   /**
-   * The Android SDK level to report in Build.VERSION.SDK_INT.
-   *
-   * @see <a href="http://en.wikipedia.org/wiki/Android_version_history">Android Version History</a>.
-   */
-  int reportSdk() default -1;
-
-  /**
    * A list of shadow classes to enable, in addition to those that are already present.
    */
   Class<?>[] shadows() default {};
@@ -62,13 +54,12 @@ public @interface Config {
     private final int emulateSdk;
     private final String manifest;
     private final String qualifiers;
-    private final int reportSdk;
     private final Class<?>[] shadows;
 
     public static Config fromProperties(Properties configProperties) {
       if (configProperties == null || configProperties.size() == 0) return null;
       return new Implementation(
-          Integer.parseInt(configProperties.getProperty("emulateSdk", "-1")),
+          Integer.parseInt(configProperties.getProperty("sdk", "-1")),
           configProperties.getProperty("manifest", DEFAULT),
           configProperties.getProperty("qualifiers", ""),
           Integer.parseInt(configProperties.getProperty("reportSdk", "-1")),
@@ -94,15 +85,13 @@ public @interface Config {
       this.emulateSdk = emulateSdk;
       this.manifest = manifest;
       this.qualifiers = qualifiers;
-      this.reportSdk = reportSdk;
       this.shadows = shadows;
     }
 
     public Implementation(Config baseConfig, Config overlayConfig) {
-      this.emulateSdk = pick(baseConfig.emulateSdk(), overlayConfig.emulateSdk(), -1);
+      this.emulateSdk = pick(baseConfig.sdk(), overlayConfig.sdk(), -1);
       this.manifest = pick(baseConfig.manifest(), overlayConfig.manifest(), DEFAULT);
       this.qualifiers = pick(baseConfig.qualifiers(), overlayConfig.qualifiers(), "");
-      this.reportSdk = pick(baseConfig.reportSdk(), overlayConfig.reportSdk(), -1);
       ArrayList<Class<?>> shadows = new ArrayList<Class<?>>();
       shadows.addAll(Arrays.asList(baseConfig.shadows()));
       shadows.addAll(Arrays.asList(overlayConfig.shadows()));
@@ -113,7 +102,7 @@ public @interface Config {
       return overlayValue.equals(nullValue) ? baseValue : overlayValue;
     }
 
-    @Override public int emulateSdk() {
+    @Override public int sdk() {
       return emulateSdk;
     }
 
@@ -123,10 +112,6 @@ public @interface Config {
 
     @Override public String qualifiers() {
       return qualifiers;
-    }
-
-    @Override public int reportSdk() {
-      return reportSdk;
     }
 
     @Override public Class<?>[] shadows() {
@@ -145,7 +130,6 @@ public @interface Config {
       Implementation other = (Implementation) o;
 
       if (emulateSdk != other.emulateSdk) return false;
-      if (reportSdk != other.reportSdk) return false;
       if (!qualifiers.equals(other.qualifiers)) return false;
       if (!Arrays.equals(shadows, other.shadows)) return false;
 
@@ -156,7 +140,6 @@ public @interface Config {
     public int hashCode() {
       int result = emulateSdk;
       result = 31 * result + qualifiers.hashCode();
-      result = 31 * result + reportSdk;
       result = 31 * result + Arrays.hashCode(shadows);
       return result;
     }

@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
@@ -172,7 +173,7 @@ public class DialogTest {
     assertInstanceOf(TextView.class, dialog.findViewById(R.id.title));
   }
 
-  @Test @Config(emulateSdk = 19)
+  @Test @Config(sdk = Build.VERSION_CODES.KITKAT)
   public void show_shouldWorkWithAPI19() {
     Dialog dialog = new Dialog(Robolectric.application);
     dialog.show();

@@ -3,6 +3,7 @@ package org.robolectric.util;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
 import android.view.Window;
@@ -69,7 +70,7 @@ public class ActivityControllerTest {
     assertEquals(controller.get().getWindow().getDecorView().getParent().getClass().getName(), "android.view.ViewRootImpl");
   }
 
-  @Test @Config(emulateSdk = 19)
+  @Test @Config(sdk = Build.VERSION_CODES.KITKAT)
   public void attach_shouldWorkWithAPI19() {
     MyActivity activity = Robolectric.buildActivity(MyActivity.class).create().get();
     assertThat(activity).isNotNull();
