@@ -35,7 +35,7 @@ import static org.robolectric.Robolectric.shadowOf;
 @RunWith(TestRunners.WithDefaults.class)
 public class AlertDialogTest {
 
-  @Test @Config(emulateSdk = 16)
+  @Test
   public void testBuilder() throws Exception {
     AlertDialog.Builder builder = new AlertDialog.Builder(application);
     builder.setTitle("title").setMessage("message");

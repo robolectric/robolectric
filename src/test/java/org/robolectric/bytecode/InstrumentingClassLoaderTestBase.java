@@ -630,8 +630,9 @@ abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" 
 
     @Override
     public boolean shouldAcquire(String name) {
-      if (name.equals(AClassToForget.class.getName()))
+      if (name.equals(AClassToForget.class.getName())) {
         throw new RuntimeException(name + " not found (for pretend)!");
+      }
       return super.shouldAcquire(name);
     }
   }
