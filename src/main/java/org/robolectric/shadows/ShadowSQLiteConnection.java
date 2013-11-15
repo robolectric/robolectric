@@ -372,14 +372,7 @@ public class ShadowSQLiteConnection {
     }
 
     public void reset() {
-      for (SQLiteStatement stmt : statementsMap.values()) {
-        stmt.dispose();
-      }
       statementsMap.clear();
-
-      for (SQLiteConnection connection : connectionsMap.values()) {
-        connection.dispose();
-      }
       connectionsMap.clear();
     }
 
