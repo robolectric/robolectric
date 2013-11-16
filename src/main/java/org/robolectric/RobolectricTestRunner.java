@@ -127,7 +127,10 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       System.out.println("To remove this warning, annotate your test class with @Config(manifest=Config.NONE).");
       return null;
     }
-    return new AndroidManifest(manifestFile, resDir, assetsDir);
+    AndroidManifest manifest = new AndroidManifest(manifestFile, resDir, assetsDir);
+    String packageName = System.getProperty("android.package");
+    manifest.setPackageName(packageName);
+    return manifest;
   }
 
   public Setup createSetup() {

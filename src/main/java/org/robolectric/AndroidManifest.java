@@ -42,7 +42,7 @@ public class AndroidManifest {
   private final FsFile androidManifestFile;
   private final FsFile resDirectory;
   private final FsFile assetsDirectory;
-  private boolean manifestIsParsed = false;
+  private boolean manifestIsParsed;
 
   private String applicationName;
   private String rClassName;
@@ -135,7 +135,9 @@ public class AndroidManifest {
       Document manifestDocument = db.parse(inputStream);
       inputStream.close();
 
-      packageName = getTagAttributeText(manifestDocument, "manifest", "package");
+      if (packageName == null) {
+        packageName = getTagAttributeText(manifestDocument, "manifest", "package");
+      }
       versionCode = getTagAttributeIntValue(manifestDocument, "manifest", "android:versionCode", 0);
       versionName = getTagAttributeText(manifestDocument, "manifest", "android:versionName");
       rClassName = packageName + ".R";
@@ -201,7 +203,7 @@ public class AndroidManifest {
   private void parseApplicationMetaData(final Document manifestDocument) {
     Node application = manifestDocument.getElementsByTagName("application").item(0);
     if (application == null) return;
-    
+
     for (Node metaNode : getChildrenTags(application, "meta-data")) {
       NamedNodeMap attributes = metaNode.getAttributes();
       Node nameAttr = attributes.getNamedItem("android:name");
@@ -211,7 +213,7 @@ public class AndroidManifest {
       applicationMetaData.put(nameAttr.getNodeValue(), valueAttr.getNodeValue());
     }
   }
-  
+
   private String resolveClassRef(String maybePartialClassName) {
     return (maybePartialClassName.startsWith(".")) ? packageName + maybePartialClassName : maybePartialClassName;
   }
@@ -267,6 +269,10 @@ public class AndroidManifest {
     return applicationName;
   }
 
+  public void setPackageName(String packageName) {
+    this.packageName = packageName;
+  }
+
   public String getPackageName() {
     parseAndroidManifest();
     return packageName;
@@ -304,7 +310,7 @@ public class AndroidManifest {
     parseAndroidManifest();
     return applicationMetaData;
   }
-  
+
   public ResourcePath getResourcePath() {
     validate();
     return new ResourcePath(getRClass(), getPackageName(), resDirectory, assetsDirectory);
