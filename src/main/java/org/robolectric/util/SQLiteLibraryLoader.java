@@ -16,6 +16,7 @@ import java.math.BigInteger;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -23,6 +24,16 @@ import java.util.logging.Logger;
  * Initializes sqlite native libraries.
  */
 public class SQLiteLibraryLoader {
+
+  private static final String OS_WIN = "win", OS_LINUX = "linux", OS_MAC = "macos";
+
+  static LibraryNameMapper libraryNameMapper = new LibraryNameMapper() {
+    @Override
+    public String mapLibraryName(String name) {
+      return System.mapLibraryName(name);
+    }
+  };
+
   private static boolean loaded;
 
   private SQLiteLibraryLoader() { }
@@ -76,7 +87,7 @@ public class SQLiteLibraryLoader {
     }
   }
 
-  private static InputStream getLibraryStream() {
+  protected static InputStream getLibraryStream() {
     String classpathResourceName = getLibClasspathResourceName();
     InputStream libraryStream = SQLiteLibraryLoader.class.getResourceAsStream(classpathResourceName);
     if (libraryStream == null) {
@@ -91,7 +102,7 @@ public class SQLiteLibraryLoader {
       // for some reason the osx version is packaged as .jnilib
       libName = libName.replace("dylib", "jnilib");
     }
-    return "/" + libName;
+    return "/natives/" + getNativesResourcesPathPart() + "/" + libName;
   }
 
   private static void extractAndLoad(final InputStream input, final File output) {
@@ -126,7 +137,7 @@ public class SQLiteLibraryLoader {
   }
 
   private static String getLibName() {
-    return System.mapLibraryName("sqlite4java");
+    return libraryNameMapper.mapLibraryName("sqlite4java");
   }
 
   private static String md5sum(InputStream input) throws IOException {
@@ -145,6 +156,36 @@ public class SQLiteLibraryLoader {
     finally {
       in.close();
     }
+  }
+
+  private static String getNativesResourcesPathPart() {
+    String osName = getOsFolderName();
+    if (OS_MAC.equals(osName)) {
+      return osName;
+    }
+    return osName + "/" + getArchitectureFolderName();
+  }
+
+  private static String getArchitectureFolderName() {
+    return System.getProperty("os.arch").toLowerCase(Locale.US).replaceAll("\\W", "");
+  }
+
+  private static String getOsFolderName() {
+    String name = System.getProperty("os.name").toLowerCase(Locale.US);
+    if (name.contains("win")) {
+      return OS_WIN;
+    }
+    if (name.contains("linux")) {
+      return OS_LINUX;
+    }
+    if (name.contains("mac")) {
+      return OS_MAC;
+    }
+    throw new UnsupportedOperationException("Architecture '" + name + "' is not supported by SQLite library");
+  }
+
+  protected interface LibraryNameMapper {
+    String mapLibraryName(String name);
   }
 
 }

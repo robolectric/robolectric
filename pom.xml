@@ -32,9 +32,15 @@
     </dependency>
 
     <dependency>
-      <groupId>com.github.axet</groupId>
-      <artifactId>litedb</artifactId>
-      <version>0.2.2</version>
+      <groupId>com.almworks.sqlite4java</groupId>
+      <artifactId>sqlite4java</artifactId>
+      <version>0.282</version>
+    </dependency>
+
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>2.4</version>
     </dependency>
 
     <dependency>
