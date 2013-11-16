@@ -15,7 +15,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 @RunWith(TestRunners.WithDefaults.class)
 public class RelativeLayoutTest {
 
-  @Test @Config(emulateSdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
+  @Test @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void getRules_shouldShowAddRuleData_forApiLevel18() throws Exception {
     ImageView imageView = new ImageView(Robolectric.application);
     RelativeLayout layout = new RelativeLayout(Robolectric.application);
@@ -27,7 +27,7 @@ public class RelativeLayoutTest {
     assertThat(rules).isEqualTo(new int[]{0, 0, 0, 0, 0, 0, 1234, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0});
   }
 
-  @Test @Config(emulateSdk = Build.VERSION_CODES.JELLY_BEAN)
+  @Test @Config(sdk = Build.VERSION_CODES.JELLY_BEAN)
   public void getRules_shouldShowAddRuleData_forApiLevel16() throws Exception {
     ImageView imageView = new ImageView(Robolectric.application);
     RelativeLayout layout = new RelativeLayout(Robolectric.application);

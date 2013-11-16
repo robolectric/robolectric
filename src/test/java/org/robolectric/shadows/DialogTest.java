@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
@@ -11,6 +12,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
 import org.robolectric.util.Transcript;
 
 import static junit.framework.Assert.assertEquals;
@@ -169,6 +171,12 @@ public class DialogTest {
     Dialog dialog = new Dialog(Robolectric.application);
     dialog.setContentView(dialog.getLayoutInflater().inflate(R.layout.main, null));
     assertInstanceOf(TextView.class, dialog.findViewById(R.id.title));
+  }
+
+  @Test @Config(sdk = Build.VERSION_CODES.KITKAT)
+  public void show_shouldWorkWithAPI19() {
+    Dialog dialog = new Dialog(Robolectric.application);
+    dialog.show();
   }
 
   private static class TestDialog extends Dialog {

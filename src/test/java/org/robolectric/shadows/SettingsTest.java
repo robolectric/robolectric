@@ -2,11 +2,13 @@ package org.robolectric.shadows;
 
 import android.app.Activity;
 import android.content.ContentResolver;
+import android.os.Build;
 import android.provider.Settings;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
@@ -39,7 +41,7 @@ public class SettingsTest {
     assertThat(Settings.Secure.getInt(contentResolver, "property", 0)).isEqualTo(1);
   }
 
-  @Test
+  @Test @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR1)
   public void testGlobalGetInt() throws Exception {
     assertThat(Settings.Global.getInt(contentResolver, "property", 0)).isEqualTo(0);
     assertThat(Settings.Global.getInt(contentResolver, "property", 2)).isEqualTo(2);

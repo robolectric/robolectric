@@ -28,6 +28,7 @@ import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.UserHandle;
 
 import java.util.List;
 
@@ -429,6 +430,30 @@ public class StubPackageManager extends PackageManager {
 
   @Override
   public void deletePackage(String packageName, IPackageDeleteObserver observer, int flags) {
+  }
 
+  @Override
+  public boolean setApplicationBlockedSettingAsUser(String packageName, boolean blocked, UserHandle userHandle) {
+    return false;
+  }
+
+  @Override
+  public boolean getApplicationBlockedSettingAsUser(String packageName, UserHandle userHandle) {
+    return false;
+  }
+
+  @Override
+  public ComponentName getHomeActivities(List<ResolveInfo> outActivities) {
+    return null;
+  }
+
+  @Override
+  public List<ResolveInfo> queryIntentContentProvidersAsUser(Intent intent, int flags, int userId) {
+    return null;
+  }
+
+  @Override
+  public List<ResolveInfo> queryIntentContentProviders(Intent intent, int flags) {
+    return null;
   }
 }

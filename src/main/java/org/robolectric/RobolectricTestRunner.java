@@ -214,9 +214,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
           boolean strictI18n = determineI18nStrictState(bootstrappedMethod);
 
-          int sdkVersion = pickReportedSdkVersion(config, appManifest);
           Class<?> versionClass = sdkEnvironment.bootstrappedClass(Build.VERSION.class);
-          staticField("SDK_INT").ofType(int.class).in(versionClass).set(sdkVersion);
+          staticField("SDK_INT").ofType(int.class).in(versionClass).set(pickSdkVersion(appManifest, config).getApiLevel());
 
           ResourceLoader systemResourceLoader = sdkEnvironment.getSystemResourceLoader(MAVEN_CENTRAL, RobolectricTestRunner.this);
           setUpApplicationState(bootstrappedMethod, parallelUniverseInterface, strictI18n, systemResourceLoader, appManifest, config);
@@ -287,8 +286,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   }
 
   protected SdkConfig pickSdkVersion(AndroidManifest appManifest, Config config) {
-    if (config != null && config.emulateSdk() > 0) {
-      return new SdkConfig(config.emulateSdk());
+    if (config != null && config.sdk() > 0) {
+      return new SdkConfig(config.sdk());
     } else {
       if (appManifest != null) {
         return new SdkConfig(appManifest.getTargetSdkVersion());
@@ -412,14 +411,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     return appManifest == null // app manifest would be null for libraries
         ? Build.VERSION_CODES.ICE_CREAM_SANDWICH // todo: how should we be picking this?
         : appManifest.getTargetSdkVersion();
-  }
-
-  protected int pickReportedSdkVersion(Config config, AndroidManifest appManifest) {
-    if (config != null && config.reportSdk() != -1) {
-      return config.reportSdk();
-    } else {
-      return getTargetSdkVersion(appManifest);
-    }
   }
 
   private ParallelUniverseInterface getHooksInterface(SdkEnvironment sdkEnvironment) {

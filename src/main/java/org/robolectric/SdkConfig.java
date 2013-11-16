@@ -15,6 +15,7 @@ public class SdkConfig {
     SUPPORTED_APIS.put(Build.VERSION_CODES.JELLY_BEAN, new SdkVersion("4.1.2_r1", "0"));
     SUPPORTED_APIS.put(Build.VERSION_CODES.JELLY_BEAN_MR1, new SdkVersion("4.2.2_r1.2", "0"));
     SUPPORTED_APIS.put(Build.VERSION_CODES.JELLY_BEAN_MR2, new SdkVersion("4.3_r2", "0"));
+    SUPPORTED_APIS.put(Build.VERSION_CODES.KITKAT, new SdkVersion("4.4_r1", "0"));
   }
 
   public SdkConfig(int apiLevel) {
@@ -56,7 +57,8 @@ public class SdkConfig {
     return new Dependency[] {
         realAndroidDependency("android-all"),
         createDependency("org.json", "json", "20080701", "jar", null),
-        createDependency("org.ccil.cowan.tagsoup", "tagsoup", "1.2", "jar", null)
+        createDependency("org.ccil.cowan.tagsoup", "tagsoup", "1.2", "jar", null),
+        createDependency("com.google.android", "support-v4", "r7", "jar", null)
     };
   }
 
