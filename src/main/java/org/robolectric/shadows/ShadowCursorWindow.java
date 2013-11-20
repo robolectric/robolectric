@@ -114,10 +114,6 @@ public class ShadowCursorWindow {
     return WINDOW_DATA.get(windowPtr).getName();
   }
 
-  public static void reset() {
-    WINDOW_DATA.reset();
-  }
-
   protected static int setData(int windowPtr, SQLiteStatement stmt) throws SQLiteException {
     return WINDOW_DATA.setData(windowPtr, stmt);
   }
@@ -257,7 +253,10 @@ public class ShadowCursorWindow {
     }
 
     public void close(final int ptr) {
-      dataMap.remove(ptr);
+      Data removed = dataMap.remove(ptr);
+      if (removed == null) {
+        throw new IllegalArgumentException("Bad cursor window pointer " + ptr + ". Valid pointers: " + dataMap.keySet());
+      }
     }
 
     public void clear(final int ptr) {
@@ -270,9 +269,6 @@ public class ShadowCursorWindow {
       return ptr;
     }
 
-    public void reset() {
-      dataMap.clear();
-    }
   }
 
   /* TODO:
