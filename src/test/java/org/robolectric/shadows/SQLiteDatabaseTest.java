@@ -15,6 +15,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
 import java.io.File;
+import java.util.concurrent.CountDownLatch;
 
 import static android.database.sqlite.SQLiteDatabase.OPEN_READWRITE;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -686,6 +687,37 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
       // expected
     }
   }
+
+
+  @Test
+  public void shouldBeAbleToBeUsedFromDifferentThread() {
+    final CountDownLatch sync = new CountDownLatch(1);
+    final Throwable[] error = {null};
+
+    new Thread() {
+      @Override
+      public void run() {
+        try {
+          executeQuery("select * from table_name");
+        } catch (Throwable e) {
+          e.printStackTrace();
+          error[0] = e;
+        } finally {
+          sync.countDown();
+        }
+      }
+    }
+    .start();
+
+    try {
+      sync.await();
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
+
+    assertThat(error[0]).isNull();
+  }
+
 
   private Cursor executeQuery(String query) {
     return database.rawQuery(query, null);
