@@ -211,4 +211,12 @@ public class LogTest {
     assertEquals(tag, lastLog.tag);
     assertEquals(throwable, lastLog.throwable);
   }
+
+  @Test
+  public void identicalLogItemInstancesAreEqual() {
+    LogItem item1 = new LogItem(Log.VERBOSE, "Foo", "Bar", null);
+    LogItem item2 = new LogItem(Log.VERBOSE, "Foo", "Bar", null);
+    assertThat(item1).isEqualTo(item2);
+    assertThat(item2).isEqualTo(item1);
+  }
 }
