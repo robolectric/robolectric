@@ -100,9 +100,9 @@
     </dependency>
 
     <dependency>
-      <groupId>android.support</groupId>
-      <artifactId>compatibility-v4</artifactId>
-      <version>19</version>
+      <groupId>com.android.support</groupId>
+      <artifactId>support-v4</artifactId>
+      <version>19.0.0</version>
       <scope>compile</scope>
     </dependency>
 
