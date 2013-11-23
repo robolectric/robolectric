@@ -457,6 +457,19 @@ public class IntentTest {
   }
 
   @Test
+  public void setUri_shouldReturnUriString() throws Exception {
+    Intent intent = new Intent();
+    intent.setData(Uri.parse("http://foo"));
+    assertThat(intent.getDataString()).isEqualTo("http://foo");
+  }
+
+  @Test
+  public void setUri_shouldReturnNullUriString() throws Exception {
+    Intent intent = new Intent();
+    assertThat(intent.getDataString()).isNull();
+  }
+
+  @Test
   public void putStringArrayListExtra_addsListToExtras() {
     Intent intent = new Intent();
     final ArrayList<String> strings = new ArrayList<String>(Arrays.asList("hi", "there"));
