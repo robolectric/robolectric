@@ -160,6 +160,14 @@ public class ShadowIntent {
   }
 
   @Implementation
+  public String getDataString() {
+    if (data != null) {
+      return data.toString();
+    }
+    return null;
+  }
+
+  @Implementation
   public Intent setClass(Context packageContext, Class<?> cls) {
     componentName = new ComponentName(packageContext, cls);
     this.intentClass = cls;
