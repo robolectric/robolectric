@@ -63,7 +63,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   private int pendingTransitionExitAnimResId = -1;
   private Object lastNonConfigurationInstance;
   private Map<Integer, Dialog> dialogForId = new HashMap<Integer, Dialog>();
-  private CharSequence title;
   private boolean onKeyUpWasCalled;
   private ArrayList<Cursor> managedCusors = new ArrayList<Cursor>();
 
@@ -226,21 +225,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
   public int getDefaultKeymode() {
     return mDefaultKeyMode;
-  }
-
-  @Implementation(i18nSafe = false)
-  public void setTitle(CharSequence title) {
-    this.title = title;
-  }
-
-  @Implementation
-  public void setTitle(int titleId) {
-    this.title = this.getResources().getString(titleId);
-  }
-
-  @Implementation
-  public CharSequence getTitle() {
-    return title;
   }
 
   @Implementation
