@@ -45,6 +45,7 @@ public class AndroidManifest {
   private boolean manifestIsParsed;
 
   private String applicationName;
+  private String applicationLabel;
   private String rClassName;
   private String packageName;
   private String processName;
@@ -142,6 +143,7 @@ public class AndroidManifest {
       versionName = getTagAttributeText(manifestDocument, "manifest", "android:versionName");
       rClassName = packageName + ".R";
       applicationName = getTagAttributeText(manifestDocument, "application", "android:name");
+      applicationLabel = getTagAttributeText(manifestDocument, "application", "android:label");
       minSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:minSdkVersion");
       targetSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:targetSdkVersion");
       processName = getTagAttributeText(manifestDocument, "application", "android:process");
@@ -191,10 +193,14 @@ public class AndroidManifest {
       NamedNodeMap attributes = activityNode.getAttributes();
       Node nameAttr = attributes.getNamedItem("android:name");
       Node themeAttr = attributes.getNamedItem("android:theme");
+      Node labelAttr = attributes.getNamedItem("android:label");
       if (nameAttr == null) continue;
       String activityName = nameAttr.getNodeValue();
+      if(activityName.startsWith(".")) activityName = packageName + activityName;
+
       activityDatas.put(activityName,
           new ActivityData(activityName,
+              labelAttr == null ? null : labelAttr.getNodeValue(),
               themeAttr == null ? null : resolveClassRef(themeAttr.getNodeValue())
           ));
     }
@@ -267,6 +273,12 @@ public class AndroidManifest {
   public String getApplicationName() {
     parseAndroidManifest();
     return applicationName;
+  }
+
+  public String getActivityLabel(Class<? extends Activity> activity) {
+    parseAndroidManifest();
+    ActivityData data = getActivityData(activity.getName());
+    return (data != null && data.getLabel() != null) ? data.getLabel() : applicationLabel;
   }
 
   public void setPackageName(String packageName) {
