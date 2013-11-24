@@ -116,24 +116,28 @@ public class ActivityController<T extends Activity> {
 
   private final String getActivityTitle(){
     String title = null;
+
+    /* Get the label attribute for the activity from the manifest */
     ShadowApplication shadowApplication = shadowOf_(activity.getApplication());
     AndroidManifest appManifest = shadowApplication.getAppManifest();
     if (appManifest == null) return null;
-
     String labelRef = appManifest.getActivityLabel(activity.getClass());
 
     if (labelRef != null) {
       if(labelRef.startsWith("@")){
+        /* Label refers to a string value, get the resource identifier */
         ResName style = ResName.qualifyResName(labelRef.replace("@", ""), appManifest.getPackageName(), "string");
         Integer labelRes = shadowApplication.getResourceLoader().getResourceIndex().getResourceId(style);
 
+        /* If we couldn't determine the resource ID, throw it up */
         if (labelRes == null) {
           throw new Resources.NotFoundException("no such label " + style.getFullyQualifiedName());
         }
 
+        /* Get the resource ID, use the activity to look up the actual string */
         title = activity.getString(labelRes);
       } else {
-        title = labelRef;
+        title = labelRef; /* Label isn't an identifier, use it directly as the title */
       }
     }
 
