@@ -7,15 +7,19 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Looper;
 import android.view.View;
 import android.view.Window;
+import org.robolectric.AndroidManifest;
 import org.robolectric.RoboInstrumentation;
 import org.robolectric.Robolectric;
+import org.robolectric.res.ResName;
 import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.shadows.ShadowActivityThread;
+import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowLooper;
 
 import static org.fest.reflect.core.Reflection.constructor;
@@ -84,6 +88,7 @@ public class ActivityController<T extends Activity> {
       intent.setClass(application, activity.getClass());
     }
     ActivityInfo activityInfo = new ActivityInfo();
+    String activityTitle = getActivityTitle();
 
     ClassLoader cl = baseContext.getClassLoader();
     Class<?> activityThreadClass = type(ShadowActivityThread.CLASS_NAME).withClassLoader(cl).load();
@@ -100,15 +105,45 @@ public class ActivityController<T extends Activity> {
     ).in(activity).invoke(baseContext, null /* aThread */,
         new RoboInstrumentation(), null /* token */, 0 /* ident */,
         application, intent /* intent */, activityInfo,
-        "title", null /* parent */, "id",
+        activityTitle, null /* parent */, "id",
         null /* lastNonConfigurationInstances */,
         application.getResources().getConfiguration());
 
     shadowActivity.setThemeFromManifest();
-
     attached = true;
     return this;
   }
+
+  private final String getActivityTitle(){
+    String title = null;
+
+    /* Get the label for the activity from the manifest */
+    ShadowApplication shadowApplication = shadowOf_(activity.getApplication());
+    AndroidManifest appManifest = shadowApplication.getAppManifest();
+    if (appManifest == null) return null;
+    String labelRef = appManifest.getActivityLabel(activity.getClass());
+
+    if (labelRef != null) {
+      if(labelRef.startsWith("@")){
+        /* Label refers to a string value, get the resource identifier */
+        ResName style = ResName.qualifyResName(labelRef.replace("@", ""), appManifest.getPackageName(), "string");
+        Integer labelRes = shadowApplication.getResourceLoader().getResourceIndex().getResourceId(style);
+
+        /* If we couldn't determine the resource ID, throw it up */
+        if (labelRes == null) {
+          throw new Resources.NotFoundException("no such label " + style.getFullyQualifiedName());
+        }
+
+        /* Get the resource ID, use the activity to look up the actual string */
+        title = activity.getString(labelRes);
+      } else {
+        title = labelRef; /* Label isn't an identifier, use it directly as the title */
+      }
+    }
+
+    return title;
+  }
+
 
   public ActivityController<T> create(final Bundle bundle) {
     shadowMainLooper.runPaused(new Runnable() {
