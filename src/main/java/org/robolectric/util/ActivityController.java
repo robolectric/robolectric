@@ -26,7 +26,6 @@ import static org.fest.reflect.core.Reflection.constructor;
 import static org.fest.reflect.core.Reflection.field;
 import static org.fest.reflect.core.Reflection.method;
 import static org.fest.reflect.core.Reflection.type;
-import static org.robolectric.Robolectric.shadowOf;
 import static org.robolectric.Robolectric.shadowOf_;
 
 @SuppressWarnings("UnusedDeclaration")
@@ -117,7 +116,7 @@ public class ActivityController<T extends Activity> {
 
   private final String getActivityTitle(){
     String title = null;
-    ShadowApplication shadowApplication = shadowOf(activity.getApplication());
+    ShadowApplication shadowApplication = shadowOf_(activity.getApplication());
     AndroidManifest appManifest = shadowApplication.getAppManifest();
     if (appManifest == null) return null;
 
