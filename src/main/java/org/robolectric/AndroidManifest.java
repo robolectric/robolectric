@@ -1,7 +1,10 @@
 package org.robolectric;
 
 import android.app.Activity;
-import org.robolectric.res.*;
+import org.robolectric.res.ActivityData;
+import org.robolectric.res.Fs;
+import org.robolectric.res.FsFile;
+import org.robolectric.res.ResourcePath;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
