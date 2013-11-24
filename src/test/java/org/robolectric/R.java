@@ -118,6 +118,8 @@ public final class R {
     public static final int in_lib1_and_lib3 = 0x1010d;
     public static final int in_main_and_lib1 = 0x1010e;
     public static final int interpolate = 0x1010f;
+    public static final int app_name = 0x10110;
+    public static final int activity_name = 0x10111;
   }
 
   public static final class plurals {
