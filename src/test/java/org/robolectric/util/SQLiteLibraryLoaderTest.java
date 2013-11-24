@@ -15,31 +15,40 @@ import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class SQLiteLibraryLoaderTest {
-
   /** Saved system properties. */
   private String savedOs, savedArch;
-
-  /** Saved library name mapper. */
-  private SQLiteLibraryLoader.LibraryNameMapper savedMapper;
+  private SQLiteLibraryLoader loader;
 
   @Before
   public void deleteExtractedLibrary() {
-    SQLiteLibraryLoader.getNativeLibraryPath().delete();
-    SQLiteLibraryLoader.mustReload();
+    loader = new SQLiteLibraryLoader();
+    loader.getNativeLibraryPath().delete();
+  }
+
+  @Before
+  public void saveSystemProperties() {
+    savedOs = System.getProperty("os.name");
+    savedArch = System.getProperty("os.arch");
+  }
+
+  @After
+  public void restoreSystemProperties() {
+    System.setProperty("os.name", savedOs);
+    System.setProperty("os.arch", savedArch);
   }
 
   @Test
   public void shouldExtractNativeLibrary() {
-    File extractedPath = SQLiteLibraryLoader.getNativeLibraryPath();
+    File extractedPath = loader.getNativeLibraryPath();
     assertThat(extractedPath).doesNotExist();
-    SQLiteLibraryLoader.load();
+    loader.doLoad();
     assertThat(extractedPath).exists();
   }
 
   @Test
   public void shouldNotRewriteExistingLibraryIfThereAreNoChanges() throws Exception{
-    SQLiteLibraryLoader.load();
-    File extractedPath = SQLiteLibraryLoader.getNativeLibraryPath();
+    loader.doLoad();
+    File extractedPath = loader.getNativeLibraryPath();
     assertThat(extractedPath).exists();
 
     final long resetTime = 1234L;
@@ -48,82 +57,86 @@ public class SQLiteLibraryLoaderTest {
     long time = extractedPath.lastModified();
     assertThat(time).isLessThanOrEqualTo(resetTime);
 
-    SQLiteLibraryLoader.mustReload();
-    SQLiteLibraryLoader.load();
-    extractedPath = SQLiteLibraryLoader.getNativeLibraryPath();
+    loader.mustReload();
+    loader.doLoad();
+    extractedPath = loader.getNativeLibraryPath();
     assertThat(extractedPath.lastModified()).isEqualTo(time);
   }
 
   @Test
   public void shouldRewriteExistingLibraryIfThereAreChanges() throws Exception {
-    IOUtils.copy(IOUtils.toInputStream("changed"), new FileOutputStream(SQLiteLibraryLoader.getNativeLibraryPath()));
-    long firstSize = SQLiteLibraryLoader.getNativeLibraryPath().length();
+    IOUtils.copy(IOUtils.toInputStream("changed"), new FileOutputStream(loader.getNativeLibraryPath()));
+    long firstSize = loader.getNativeLibraryPath().length();
 
-    SQLiteLibraryLoader.load();
-    File extractedPath = SQLiteLibraryLoader.getNativeLibraryPath();
+    loader.doLoad();
+    File extractedPath = loader.getNativeLibraryPath();
     assertThat(extractedPath).exists();
     assertThat(extractedPath.length()).isGreaterThan(firstSize);
   }
 
-
-  @Before
-  public void saveSystemProperties() {
-    savedOs = System.getProperty("os.name");
-    savedArch = System.getProperty("os.arch");
-    savedMapper = SQLiteLibraryLoader.libraryNameMapper;
-  }
-
-  @After
-  public void restoreSystemProperties() {
-    System.setProperty("os.name", savedOs);
-    System.setProperty("os.arch", savedArch);
-    SQLiteLibraryLoader.libraryNameMapper = savedMapper;
+  @Test
+  public void shouldFindLibraryForWindowsXPX86() throws IOException {
+    assertThat(loadLibrary(new SQLiteLibraryLoader(WINDOWS), "Windows XP", "x86"))
+            .isEqualTo("/windows-x86/sqlite4java.dll");
   }
 
   @Test
-  public void shouldFindLibraryForWindowsX86() throws IOException {
-    SQLiteLibraryLoader.libraryNameMapper = new LibraryMapperTest("", "dll");
-    System.setProperty("os.name", "Windows XP");
-    System.setProperty("os.arch", "x86");
-    SQLiteLibraryLoader.getLibraryStream().close();
-    System.setProperty("os.name", "Windows 7");
-    System.setProperty("os.arch", "x86");
-    SQLiteLibraryLoader.getLibraryStream().close();
+  public void shouldFindLibraryForWindows7X86() throws IOException {
+    assertThat(loadLibrary(new SQLiteLibraryLoader(WINDOWS), "Windows 7", "x86"))
+            .isEqualTo("/windows-x86/sqlite4java.dll");
   }
 
   @Test
-  public void shouldFindLibraryForWindowsAmd64() throws IOException {
-    SQLiteLibraryLoader.libraryNameMapper = new LibraryMapperTest("", "dll");
-    System.setProperty("os.name", "Windows XP");
-    System.setProperty("os.arch", "amd64");
-    SQLiteLibraryLoader.getLibraryStream().close();
-    System.setProperty("os.name", "Windows 7");
-    System.setProperty("os.arch", "amd64");
-    SQLiteLibraryLoader.getLibraryStream().close();
+  public void shouldFindLibraryForWindowsXPAmd64() throws IOException {
+    assertThat(loadLibrary(new SQLiteLibraryLoader(WINDOWS), "Windows XP", "amd64"))
+            .isEqualTo("/windows-x86_64/sqlite4java.dll");
   }
 
   @Test
-  public void shouldFindLibraryForLinuxI386() throws IOException {
-    SQLiteLibraryLoader.libraryNameMapper = new LibraryMapperTest("lib", "so");
-    System.setProperty("os.name", "Some linux version");
-    System.setProperty("os.arch", "i386");
-    SQLiteLibraryLoader.getLibraryStream().close();
+  public void shouldFindLibraryForWindows7Amd64() throws IOException {
+    assertThat(loadLibrary(new SQLiteLibraryLoader(WINDOWS), "Windows 7", "amd64"))
+            .isEqualTo("/windows-x86_64/sqlite4java.dll");
+  }
+
+  @Test
+  public void shouldFindLibraryForLinuxi386() throws IOException {
+    assertThat(loadLibrary(new SQLiteLibraryLoader(LINUX), "Some linux version", "i386"))
+            .isEqualTo("/linux-x86/libsqlite4java.so");
+  }
+
+  @Test
+  public void shouldFindLibraryForLinuxx86() throws IOException {
+    assertThat(loadLibrary(new SQLiteLibraryLoader(LINUX), "Some linux version", "x86"))
+            .isEqualTo("/linux-x86/libsqlite4java.so");
   }
 
   @Test
   public void shouldFindLibraryForLinuxAmd64() throws IOException {
-    SQLiteLibraryLoader.libraryNameMapper = new LibraryMapperTest("lib", "so");
-    System.setProperty("os.name", "Some linux version");
-    System.setProperty("os.arch", "amd64");
-    SQLiteLibraryLoader.getLibraryStream().close();
+    assertThat(loadLibrary(new SQLiteLibraryLoader(LINUX), "Some linux version", "amd64"))
+            .isEqualTo("/linux-x86_64/libsqlite4java.so");
   }
 
   @Test
   public void shouldFindLibraryForMacWithAnyArch() throws IOException {
-    SQLiteLibraryLoader.libraryNameMapper = new LibraryMapperTest("lib", "jnilib");
-    System.setProperty("os.name", "Mac OS X");
-    System.setProperty("os.arch", "any architecture");
-    SQLiteLibraryLoader.getLibraryStream().close();
+    assertThat(loadLibrary(new SQLiteLibraryLoader(MAC), "Mac OS X", "any architecture"))
+            .isEqualTo("/mac-x86_64/libsqlite4java.jnilib");
+  }
+
+  @Test
+  public void shouldFindLibraryForMacWithAnyArchAndDyLibMapping() throws IOException {
+    assertThat(loadLibrary(new SQLiteLibraryLoader(MAC_DYLIB), "Mac OS X", "any architecture"))
+            .isEqualTo("/mac-x86_64/libsqlite4java.jnilib");
+  }
+
+  @Test(expected = UnsupportedOperationException.class)
+  public void shouldThrowExceptionIfUnknownNameAndArch() throws Exception {
+    loadLibrary(new SQLiteLibraryLoader(LINUX), "ACME Electronic", "FooBar2000");
+  }
+
+  private String loadLibrary(SQLiteLibraryLoader loader, String name, String arch) throws IOException {
+    setNameAndArch(name, arch);
+    loader.doLoad();
+    return loader.getLibClasspathResourceName();
   }
 
   private static class LibraryMapperTest implements SQLiteLibraryLoader.LibraryNameMapper {
@@ -141,4 +154,13 @@ public class SQLiteLibraryLoaderTest {
     }
   }
 
+  private static void setNameAndArch(String name, String arch) {
+    System.setProperty("os.name", name);
+    System.setProperty("os.arch", arch);
+  }
+
+  private static final SQLiteLibraryLoader.LibraryNameMapper LINUX = new LibraryMapperTest("lib", "so");
+  private static final SQLiteLibraryLoader.LibraryNameMapper WINDOWS = new LibraryMapperTest("", "dll");
+  private static final SQLiteLibraryLoader.LibraryNameMapper MAC = new LibraryMapperTest("lib", "jnilib");
+  private static final SQLiteLibraryLoader.LibraryNameMapper MAC_DYLIB = new LibraryMapperTest("lib", "dylib");
 }
