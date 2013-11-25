@@ -358,7 +358,7 @@ public class ShadowResources {
   }
 
   private String getQualifiers() {
-    return shadowOf(realResources.getConfiguration()).getQualifiers();
+    return shadowOf(realResources.getAssets()).getQualifiers();
   }
 
   @Implementation
@@ -374,7 +374,7 @@ public class ShadowResources {
     String string = plural.getString();
     ShadowAssetManager shadowAssetManager = shadowOf(realResources.getAssets());
     TypedResource typedResource = shadowAssetManager.resolve(
-        new TypedResource(string, ResType.CHAR_SEQUENCE), getQualifiers(),
+        new TypedResource<String>(string, ResType.CHAR_SEQUENCE), getQualifiers(),
         new ResName(resName.packageName, "string", resName.name));
     return typedResource == null ? null : typedResource.asString();
   }
