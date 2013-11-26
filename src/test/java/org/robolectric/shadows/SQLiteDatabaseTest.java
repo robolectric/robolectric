@@ -688,6 +688,19 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
     }
   }
 
+  @Test
+  public void shouldThrowWhenForeignKeysConstraintIsViolated() {
+    database.execSQL("CREATE TABLE master (master_value INTEGER)");
+    database.execSQL("CREATE TABLE slave (master_value INTEGER REFERENCES master(master_value))");
+    database.execSQL("PRAGMA foreign_keys=ON");
+    try {
+      database.execSQL("INSERT INTO slave(master_value) VALUES (1)");
+      fail("Foreign key constraint is violated but exception is not thrown");
+    } catch (SQLiteException e) {
+      assertThat(e.getCause()).hasMessageContaining("foreign");
+    }
+  }
+
 
   @Test
   public void shouldBeAbleToBeUsedFromDifferentThread() {
