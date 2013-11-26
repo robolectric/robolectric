@@ -35,7 +35,6 @@ import static org.robolectric.util.TestUtil.testResources;
 public class DrawableResourceLoaderTest {
   protected DrawableResourceLoader drawableResourceLoader;
   private ResBundle<DrawableNode> drawableNodes;
-  private ResourceIndex resourceIndex;
   private Resources resources;
 
   @Before
@@ -46,9 +45,6 @@ public class DrawableResourceLoaderTest {
     new DocumentLoader(testResources()).load("anim", drawableResourceLoader);
     new DocumentLoader(systemResources()).load("drawable", drawableResourceLoader);
 
-    resourceIndex = new MergedResourceIndex(
-        new ResourceExtractor(testResources()),
-        new ResourceExtractor(getClass().getClassLoader()));
     drawableResourceLoader.findDrawableResources(testResources());
     drawableResourceLoader.findDrawableResources(systemResources());
     resources = Robolectric.application.getResources();
@@ -63,7 +59,7 @@ public class DrawableResourceLoaderTest {
     drawableResourceLoader.findDrawableResources(testResources());
 
     assertNotNull(drawableNodes.get(new ResName(TEST_PACKAGE, "drawable", "rainbow"), ""));
-    assertEquals(28, drawableNodes.size());
+    assertEquals(29, drawableNodes.size());
   }
 
   @Test

@@ -19,4 +19,9 @@ public class QualifiersTest {
   @Test public void shouldGetFromMethod() throws Exception {
     assertThat(shadowOf(application.getAssets()).getQualifiers()).isEqualTo("fr");
   }
+
+  @Config(qualifiers = "de")
+  @Test public void getQuantityString() throws Exception {
+    assertThat(application.getResources().getQuantityString(R.plurals.minute, 2)).isEqualTo(application.getResources().getString(R.string.minute_plural));
+  }
 }
