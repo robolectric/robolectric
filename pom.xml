@@ -172,7 +172,7 @@
           <excludes>
             <exclude>**/Test*.java</exclude>
           </excludes>
-          <argLine>-Xms768m -Xmx768m -XX:MaxPermSize=128m</argLine>
+          <argLine>-Xms512m -Xmx1024m -XX:MaxPermSize=256m</argLine>
         </configuration>
       </plugin>
 
