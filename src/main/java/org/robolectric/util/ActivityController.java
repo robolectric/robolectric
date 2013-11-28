@@ -12,7 +12,6 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Looper;
 import android.view.View;
-import android.view.Window;
 import org.robolectric.AndroidManifest;
 import org.robolectric.RoboInstrumentation;
 import org.robolectric.Robolectric;
@@ -114,7 +113,7 @@ public class ActivityController<T extends Activity> {
     return this;
   }
 
-  private final String getActivityTitle(){
+  private String getActivityTitle() {
     String title = null;
 
     /* Get the label for the activity from the manifest */
@@ -144,13 +143,11 @@ public class ActivityController<T extends Activity> {
     return title;
   }
 
-
   public ActivityController<T> create(final Bundle bundle) {
     shadowMainLooper.runPaused(new Runnable() {
       @Override
       public void run() {
         if (!attached) attach();
-
         method("performCreate").withParameterTypes(Bundle.class).in(activity).invoke(bundle);
       }
     });
@@ -162,17 +159,12 @@ public class ActivityController<T extends Activity> {
   }
 
   public ActivityController<T> restoreInstanceState(Bundle bundle) {
-    method("performRestoreInstanceState").withParameterTypes(Bundle.class).in(activity).invoke(bundle);
+    invokeWhilePaused("performRestoreInstanceState", bundle);
     return this;
   }
 
-  public ActivityController<T> postCreate(final Bundle bundle) {
-    shadowMainLooper.runPaused(new Runnable() {
-      @Override
-      public void run() {
-        shadowActivity.callOnPostCreate(bundle);
-      }
-    });
+  public ActivityController<T> postCreate(Bundle bundle) {
+    invokeWhilePaused("onPostCreate", bundle);
     return this;
   }
 
@@ -192,27 +184,17 @@ public class ActivityController<T extends Activity> {
   }
 
   public ActivityController<T> postResume() {
-    shadowMainLooper.runPaused(new Runnable() {
-      @Override
-      public void run() {
-        shadowActivity.callOnPostResume();
-      }
-    });
+    invokeWhilePaused("onPostResume");
     return this;
   }
 
-  public ActivityController<T> newIntent(final android.content.Intent intent) {
-    shadowMainLooper.runPaused(new Runnable() {
-      @Override
-      public void run() {
-        shadowActivity.callOnNewIntent(intent);
-      }
-    });
+  public ActivityController<T> newIntent(Intent intent) {
+    invokeWhilePaused("onNewIntent", intent);
     return this;
   }
 
-  public ActivityController<T> saveInstanceState(android.os.Bundle outState) {
-    method("performSaveInstanceState").withParameterTypes(Bundle.class).in(activity).invoke(outState);
+  public ActivityController<T> saveInstanceState(Bundle outState) {
+    invokeWhilePaused("performSaveInstanceState", outState);
     return this;
   }
 
@@ -248,10 +230,10 @@ public class ActivityController<T extends Activity> {
     return this;
   }
 
-  private ActivityController<T> invokeWhilePaused(final String performStart) {
+  private ActivityController<T> invokeWhilePaused(final String methodName, final Object... args) {
     shadowMainLooper.runPaused(new Runnable() {
       @Override public void run() {
-        method(performStart).in(activity).invoke();
+        method(methodName).in(activity).invoke(args);
       }
     });
     return this;
