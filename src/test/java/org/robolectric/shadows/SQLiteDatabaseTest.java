@@ -785,4 +785,35 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
     assertThat(cursor.moveToFirst()).isTrue();
     assertThat(cursor.getCount()).isNotEqualTo(0);
   }
+
+  @Test
+  public void shouldAlwaysReturnCorrectIdFromInsert() throws Exception {
+    database.execSQL("CREATE TABLE table_A (\n" +
+        "  _id INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
+        "  id INTEGER DEFAULT 0\n" +
+        ");");
+
+    database.execSQL("CREATE VIRTUAL TABLE new_search USING fts3 (id);");
+
+    database.execSQL("CREATE TRIGGER t1 AFTER INSERT ON table_A WHEN new.id=0 BEGIN UPDATE table_A SET id=-new._id WHERE _id=new._id AND id=0; END;");
+    database.execSQL("CREATE TRIGGER t2 AFTER INSERT ON table_A BEGIN INSERT INTO new_search (id) VALUES (new._id); END;");
+    database.execSQL("CREATE TRIGGER t3 BEFORE UPDATE ON table_A BEGIN DELETE FROM new_search WHERE id MATCH old._id; END;");
+    database.execSQL("CREATE TRIGGER t4 AFTER UPDATE ON table_A BEGIN INSERT INTO new_search (id) VALUES (new._id); END;");
+
+    long[] returnedIds = new long[] {
+        database.insert("table_A", "id", new ContentValues()),
+        database.insert("table_A", "id", new ContentValues())
+    };
+
+    Cursor c = database.query("table_A", new String[] { "_id" }, null, null, null, null, null);
+    assertThat(c).isNotNull();
+
+    long[] actualIds = new long[c.getCount()];
+    for (c.moveToFirst(); !c.isAfterLast(); c.moveToNext()) {
+      actualIds[c.getPosition()] = c.getLong(c.getColumnIndexOrThrow("_id"));
+    }
+    c.close();
+
+    assertThat(returnedIds).containsOnly(actualIds);
+  }
 }
