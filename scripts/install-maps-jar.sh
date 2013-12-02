@@ -9,7 +9,8 @@
 #  1. You've got one or more Android SDKs installed locally.
 #  2. Your ANDROID_HOME environment variable points to the Android SDK install dir.
 
-for mapsDir in `ls -1d $ANDROID_HOME/add-ons/addon-google_apis-google-*`; do
+cd "$ANDROID_HOME"/add-ons
+for mapsDir in `ls -1d addon-google_apis-google-*`; do
   (
     name=`grep ^name= $mapsDir/manifest.ini | cut -d= -f2`
     api=`grep ^api= $mapsDir/manifest.ini | cut -d= -f2`

@@ -42,9 +42,10 @@ public class AndroidManifest {
   private final FsFile androidManifestFile;
   private final FsFile resDirectory;
   private final FsFile assetsDirectory;
-  private boolean manifestIsParsed = false;
+  private boolean manifestIsParsed;
 
   private String applicationName;
+  private String applicationLabel;
   private String rClassName;
   private String packageName;
   private String processName;
@@ -135,11 +136,14 @@ public class AndroidManifest {
       Document manifestDocument = db.parse(inputStream);
       inputStream.close();
 
-      packageName = getTagAttributeText(manifestDocument, "manifest", "package");
+      if (packageName == null) {
+        packageName = getTagAttributeText(manifestDocument, "manifest", "package");
+      }
       versionCode = getTagAttributeIntValue(manifestDocument, "manifest", "android:versionCode", 0);
       versionName = getTagAttributeText(manifestDocument, "manifest", "android:versionName");
       rClassName = packageName + ".R";
       applicationName = getTagAttributeText(manifestDocument, "application", "android:name");
+      applicationLabel = getTagAttributeText(manifestDocument, "application", "android:label");
       minSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:minSdkVersion");
       targetSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:targetSdkVersion");
       processName = getTagAttributeText(manifestDocument, "application", "android:process");
@@ -189,10 +193,14 @@ public class AndroidManifest {
       NamedNodeMap attributes = activityNode.getAttributes();
       Node nameAttr = attributes.getNamedItem("android:name");
       Node themeAttr = attributes.getNamedItem("android:theme");
+      Node labelAttr = attributes.getNamedItem("android:label");
       if (nameAttr == null) continue;
       String activityName = nameAttr.getNodeValue();
+      if(activityName.startsWith(".")) activityName = packageName + activityName;
+
       activityDatas.put(activityName,
           new ActivityData(activityName,
+              labelAttr == null ? null : labelAttr.getNodeValue(),
               themeAttr == null ? null : resolveClassRef(themeAttr.getNodeValue())
           ));
     }
@@ -201,7 +209,7 @@ public class AndroidManifest {
   private void parseApplicationMetaData(final Document manifestDocument) {
     Node application = manifestDocument.getElementsByTagName("application").item(0);
     if (application == null) return;
-    
+
     for (Node metaNode : getChildrenTags(application, "meta-data")) {
       NamedNodeMap attributes = metaNode.getAttributes();
       Node nameAttr = attributes.getNamedItem("android:name");
@@ -211,7 +219,7 @@ public class AndroidManifest {
       applicationMetaData.put(nameAttr.getNodeValue(), valueAttr.getNodeValue());
     }
   }
-  
+
   private String resolveClassRef(String maybePartialClassName) {
     return (maybePartialClassName.startsWith(".")) ? packageName + maybePartialClassName : maybePartialClassName;
   }
@@ -267,6 +275,16 @@ public class AndroidManifest {
     return applicationName;
   }
 
+  public String getActivityLabel(Class<? extends Activity> activity) {
+    parseAndroidManifest();
+    ActivityData data = getActivityData(activity.getName());
+    return (data != null && data.getLabel() != null) ? data.getLabel() : applicationLabel;
+  }
+
+  public void setPackageName(String packageName) {
+    this.packageName = packageName;
+  }
+
   public String getPackageName() {
     parseAndroidManifest();
     return packageName;
@@ -304,7 +322,7 @@ public class AndroidManifest {
     parseAndroidManifest();
     return applicationMetaData;
   }
-  
+
   public ResourcePath getResourcePath() {
     validate();
     return new ResourcePath(getRClass(), getPackageName(), resDirectory, assetsDirectory);

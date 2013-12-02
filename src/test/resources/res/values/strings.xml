@@ -15,4 +15,8 @@
   <string name="ok">@string/ok2</string>
   <string name="ok2">ok yup!</string>
   <string name="interpolate">Here's a %s!</string>
+  <string name="app_name">Testing App</string>
+  <string name="activity_name">Testing App Activity</string>
+  <string name="minute_singular">minute</string>
+  <string name="minute_plural">minutes</string>
 </resources>
