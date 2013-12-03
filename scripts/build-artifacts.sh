@@ -35,6 +35,11 @@ if [[ $# -eq 0 ]]; then
     exit 1
 fi
 
+if [[ "${SIGNING_PASSWORD}" == "" ]]; then
+  echo "Please enter a signing password as SIGNING_PASSWORD"
+  exit 2
+fi
+
 ANDROID_VERSION=$1
 if [[ -z "$2" ]]; then
     ROBOLECTRIC_SUB_VERSION=0
@@ -68,7 +73,7 @@ build_platform() {
     elif [[ "${ANDROID_VERSION}" == "4.3_r2" ]]; then
         ARTIFACTS=("core" "services" "telephony-common" "framework" "android.policy" "ext")
     elif [[ "${ANDROID_VERSION}" == "4.4_r1" ]]; then
-        ARTIFACTS=("core" "services" "telephony-common" "framework" "framework2" "framework-base" "android.policy" "ext")
+        ARTIFACTS=("core" "services" "telephony-common" "framework" "framework2" "framework-base" "android.policy" "ext" "webviewchromium")
     else
         echo "Robolectric: No match for version: ${ANDROID_VERSION}"
         exit 1
@@ -159,7 +164,7 @@ build_signed_packages() {
 
     echo "Robolectric: Signing files with gpg..."
     for ext in ".jar" "-javadoc.jar" "-sources.jar" ".pom"; do
-        ( cd ${OUT} && gpg -ab --use-agent android-all-${ROBOLECTRIC_VERSION}$ext )
+        ( cd ${OUT} && gpg -ab --use-agent --passphrase ${SIGNING_PASSWORD} android-all-${ROBOLECTRIC_VERSION}$ext )
     done
 
     echo "Robolectric: Creating bundle for Sonatype upload..."
