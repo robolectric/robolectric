@@ -309,6 +309,7 @@ import org.robolectric.shadows.ShadowWifiManager;
 import org.robolectric.shadows.ShadowWindow;
 import org.robolectric.shadows.ShadowWindowManager;
 import org.robolectric.shadows.ShadowZoomButtonsController;
+import org.robolectric.shadows.ShadowProcess;
 import org.robolectric.tester.org.apache.http.FakeHttpLayer;
 import org.robolectric.tester.org.apache.http.HttpRequestInfo;
 import org.robolectric.tester.org.apache.http.RequestMatcher;
@@ -1324,6 +1325,7 @@ public class Robolectric {
     ShadowPowerManager.reset();
     ShadowStatFs.reset();
     ShadowTypeface.reset();
+    ShadowProcess.reset();
   }
 
   public static <T extends Activity> ActivityController<T> buildActivity(Class<T> activityClass) {

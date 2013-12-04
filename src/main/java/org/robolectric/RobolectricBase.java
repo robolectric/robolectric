@@ -212,6 +212,7 @@ import org.robolectric.shadows.ShadowWindow;
 import org.robolectric.shadows.ShadowWindowManager;
 import org.robolectric.shadows.ShadowWindowManagerImpl;
 import org.robolectric.shadows.ShadowZoomButtonsController;
+import org.robolectric.shadows.ShadowProcess;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -450,6 +451,7 @@ public class RobolectricBase {
       ShadowWindow.class,
       ShadowWindowManager.class,
       ShadowWindowManagerImpl.class,
-      ShadowZoomButtonsController.class
+      ShadowZoomButtonsController.class,
+      ShadowProcess.class
   ));
 }
