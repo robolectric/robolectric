@@ -69,6 +69,7 @@ public class ShadowApplication extends ShadowContextWrapper {
   private PowerManager.WakeLock latestWakeLock;
   private ShadowAlertDialog latestAlertDialog;
   private ShadowDialog latestDialog;
+  private ShadowPopupMenu latestPopupMenu;
   private Object bluetoothAdapter = Robolectric.newInstanceOf("android.bluetooth.BluetoothAdapter");
   private Resources resources;
   private AssetManager assetManager;
@@ -629,6 +630,14 @@ public class ShadowApplication extends ShadowContextWrapper {
 
   public void checkActivities(boolean checkActivities) {
     this.checkActivities = checkActivities;
+  }
+
+  public ShadowPopupMenu getLatestPopupMenu() {
+    return latestPopupMenu;
+  }
+
+  public void setLatestPopupMenu(ShadowPopupMenu latestPopupMenu) {
+    this.latestPopupMenu = latestPopupMenu;
   }
 
   public class Wrapper {

@@ -136,6 +136,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.NumberPicker;
+import android.widget.PopupMenu;
 import android.widget.PopupWindow;
 import android.widget.ProgressBar;
 import android.widget.RemoteViews;
@@ -263,6 +264,7 @@ import org.robolectric.shadows.ShadowPaint;
 import org.robolectric.shadows.ShadowParcel;
 import org.robolectric.shadows.ShadowPath;
 import org.robolectric.shadows.ShadowPendingIntent;
+import org.robolectric.shadows.ShadowPopupMenu;
 import org.robolectric.shadows.ShadowPopupWindow;
 import org.robolectric.shadows.ShadowPowerManager;
 import org.robolectric.shadows.ShadowPreference;
@@ -1016,6 +1018,10 @@ public class Robolectric {
 
   public static ShadowDrawerLayout shadowOf(DrawerLayout instance) {
     return (ShadowDrawerLayout) shadowOf_(instance);
+  }
+
+  public static ShadowPopupMenu shadowOf(PopupMenu instance) {
+    return (ShadowPopupMenu) shadowOf_(instance);
   }
 
   @SuppressWarnings({"unchecked"})
