@@ -1,12 +1,12 @@
 package org.robolectric.util;
 
-import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -65,7 +65,7 @@ public class SQLiteLibraryLoaderTest {
 
   @Test
   public void shouldRewriteExistingLibraryIfThereAreChanges() throws Exception {
-    IOUtils.copy(IOUtils.toInputStream("changed"), new FileOutputStream(loader.getNativeLibraryPath()));
+    SQLiteLibraryLoader.copy(new ByteArrayInputStream("changed".getBytes()), new FileOutputStream(loader.getNativeLibraryPath()));
     long firstSize = loader.getNativeLibraryPath().length();
 
     loader.doLoad();

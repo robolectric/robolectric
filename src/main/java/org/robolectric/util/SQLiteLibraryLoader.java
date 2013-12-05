@@ -2,16 +2,17 @@ package org.robolectric.util;
 
 import com.almworks.sqlite4java.SQLite;
 import com.almworks.sqlite4java.SQLiteException;
-import org.apache.commons.io.IOUtils;
 import org.robolectric.res.Fs;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.math.BigInteger;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
@@ -124,12 +125,12 @@ public class SQLiteLibraryLoader {
     FileOutputStream outputStream = null;
     try {
       outputStream = new FileOutputStream(output);
-      IOUtils.copy(input, outputStream);
+      copy(input, outputStream);
     } catch (IOException e) {
       throw new RuntimeException("Cannot extractAndLoad SQLite library into " + output, e);
     } finally {
-      IOUtils.closeQuietly(outputStream);
-      IOUtils.closeQuietly(input);
+      closeQuietly(outputStream);
+      closeQuietly(input);
     }
 
     loadFromDirectory(libPath);
@@ -199,6 +200,24 @@ public class SQLiteLibraryLoader {
     }
     finally {
       in.close();
+    }
+  }
+
+  protected static void copy(final InputStream input, final OutputStream output) throws IOException {
+    byte[] buffer = new byte[4096];
+    int n;
+    while ((n = input.read(buffer)) != -1) {
+      output.write(buffer, 0, n);
+    }
+  }
+
+  private static void closeQuietly(final Closeable closeable) {
+    if (closeable != null) {
+      try {
+        closeable.close();
+      } catch (IOException e) {
+        // ignore
+      }
     }
   }
 
