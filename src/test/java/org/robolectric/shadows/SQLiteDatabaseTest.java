@@ -816,4 +816,39 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
 
     assertThat(returnedIds).containsOnly(actualIds);
   }
+
+  @Test
+  public void shouldCorrectlyReturnNullValues() {
+    database.execSQL("CREATE TABLE null_test (col_int INTEGER, col_text TEXT, col_real REAL, col_blob BLOB)");
+
+    ContentValues data = new ContentValues();
+    data.putNull("col_int");
+    data.putNull("col_text");
+    data.putNull("col_real");
+    data.putNull("col_blob");
+    assertThat(database.insert("null_test", null, data)).isGreaterThan(0);
+
+    Cursor nullValuesCursor = database.query("null_test", null, null, null, null, null, null);
+    nullValuesCursor.moveToFirst();
+    final int colsCount = 4;
+    for (int i = 0; i < colsCount; i++) {
+      assertThat(nullValuesCursor.getType(i)).isEqualTo(Cursor.FIELD_TYPE_NULL);
+      assertThat(nullValuesCursor.getString(i)).isNull();
+    }
+    assertThat(nullValuesCursor.getBlob(3)).isNull();
+  }
+
+  @Test
+  public void shouldGetBlobFromString() {
+    ContentValues values = new ContentValues();
+    values.put("first_column", "this is a string");
+    database.insert("table_name", null, values);
+
+    Cursor data = database.query("table_name", new String[]{"first_column"}, null, null, null, null, null);
+    assertThat(data.getCount()).isEqualTo(1);
+    data.moveToFirst();
+    assertThat(data.getBlob(0)).isEqualTo(values.getAsString("first_column").getBytes());
+  }
+
+
 }

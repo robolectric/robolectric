@@ -31,10 +31,16 @@ public class ShadowCursorWindow {
   @Implementation
   public static byte[] nativeGetBlob(int windowPtr, int row, int column) {
     Value value = WINDOW_DATA.get(windowPtr).value(row, column);
-    if (value.type == Cursor.FIELD_TYPE_BLOB) {
-      return (byte[])value.value;
-    } else {
-      throw new android.database.sqlite.SQLiteException("Getting blob when column is non-blob. Row " + row + ", col " + column);
+
+    switch (value.type) {
+      case Cursor.FIELD_TYPE_NULL:
+        return null;
+      case Cursor.FIELD_TYPE_BLOB:
+        return (byte[])value.value;
+      case Cursor.FIELD_TYPE_STRING:
+        return ((String)value.value).getBytes();
+      default:
+        throw new android.database.sqlite.SQLiteException("Getting blob when column is non-blob. Row " + row + ", col " + column);
     }
   }
 
@@ -60,8 +66,7 @@ public class ShadowCursorWindow {
 
   @Implementation
   public static int nativeGetType(int windowPtr, int row, int column) {
-    Value val = WINDOW_DATA.get(windowPtr).value(row, column);
-    return val.value == null ? Cursor.FIELD_TYPE_NULL : val.type;
+    return WINDOW_DATA.get(windowPtr).value(row, column).type;
   }
 
   @Implementation
@@ -176,11 +181,23 @@ public class ShadowCursorWindow {
       }
     }
 
+    private static int cursorValueType(final int sqliteType) {
+      switch (sqliteType) {
+        case SQLiteConstants.SQLITE_NULL:    return Cursor.FIELD_TYPE_NULL;
+        case SQLiteConstants.SQLITE_INTEGER: return Cursor.FIELD_TYPE_INTEGER;
+        case SQLiteConstants.SQLITE_FLOAT:   return Cursor.FIELD_TYPE_FLOAT;
+        case SQLiteConstants.SQLITE_TEXT:    return Cursor.FIELD_TYPE_STRING;
+        case SQLiteConstants.SQLITE_BLOB:    return Cursor.FIELD_TYPE_BLOB;
+        default:
+          throw new IllegalArgumentException("Bad SQLite type " + sqliteType + ". See possible values in SQLiteConstants.");
+      }
+    }
+
     private static Row fillRowValues(SQLiteStatement stmt) throws SQLiteException {
       final int columnCount = stmt.columnCount();
       Row row = new Row(columnCount);
       for (int index = 0; index < columnCount; index++) {
-        row.set(index, new Value(stmt.columnValue(index), stmt.columnType(index)));
+        row.set(index, new Value(stmt.columnValue(index), cursorValueType(stmt.columnType(index))));
       }
       return row;
     }
