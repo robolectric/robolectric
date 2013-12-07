@@ -50,7 +50,6 @@ import org.robolectric.shadows.ShadowClipboardManager;
 import org.robolectric.shadows.ShadowColor;
 import org.robolectric.shadows.ShadowColorMatrix;
 import org.robolectric.shadows.ShadowColorMatrixColorFilter;
-import org.robolectric.shadows.ShadowColorStateList;
 import org.robolectric.shadows.ShadowConfiguration;
 import org.robolectric.shadows.ShadowConnectivityManager;
 import org.robolectric.shadows.ShadowContentObserver;
@@ -288,7 +287,6 @@ public class RobolectricBase {
       ShadowColor.class,
       ShadowColorMatrix.class,
       ShadowColorMatrixColorFilter.class,
-      ShadowColorStateList.class,
       ShadowConfiguration.class,
       ShadowConnectivityManager.class,
       ShadowContentObserver.class,
