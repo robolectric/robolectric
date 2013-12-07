@@ -151,7 +151,6 @@ import org.robolectric.shadows.ShadowPaint;
 import org.robolectric.shadows.ShadowParcel;
 import org.robolectric.shadows.ShadowPath;
 import org.robolectric.shadows.ShadowPendingIntent;
-import org.robolectric.shadows.ShadowPeriodicSync;
 import org.robolectric.shadows.ShadowPhoneWindow;
 import org.robolectric.shadows.ShadowPopupWindow;
 import org.robolectric.shadows.ShadowPorterDuffXfermode;
@@ -397,7 +396,6 @@ public class RobolectricBase {
       ShadowParcel.class,
       ShadowPath.class,
       ShadowPendingIntent.class,
-      ShadowPeriodicSync.class,
       ShadowPhoneWindow.class,
       ShadowPopupWindow.class,
       ShadowPorterDuffXfermode.class,
