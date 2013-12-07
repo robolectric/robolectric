@@ -305,7 +305,6 @@ import org.robolectric.shadows.ShadowTouchDelegate;
 import org.robolectric.shadows.ShadowTranslateAnimation;
 import org.robolectric.shadows.ShadowTypedArray;
 import org.robolectric.shadows.ShadowTypeface;
-import org.robolectric.shadows.ShadowUriMatcher;
 import org.robolectric.shadows.ShadowVideoView;
 import org.robolectric.shadows.ShadowView;
 import org.robolectric.shadows.ShadowViewAnimator;
@@ -954,10 +953,6 @@ public class Robolectric {
 
   public static ShadowTypeface shadowOf(Typeface instance) {
     return (ShadowTypeface) shadowOf_(instance);
-  }
-
-  public static ShadowUriMatcher shadowOf(UriMatcher instance) {
-    return (ShadowUriMatcher) shadowOf_(instance);
   }
 
   public static ShadowView shadowOf(View instance) {
