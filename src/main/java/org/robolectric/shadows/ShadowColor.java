@@ -9,15 +9,6 @@ import static org.fest.reflect.core.Reflection.method;
 
 @Implements(Color.class)
 public class ShadowColor {
-  @Implementation
-  public static int rgb(int red, int green, int blue) {
-    return argb(0xff, red, green, blue);
-  }
-
-  @Implementation
-  public static int argb(int alpha, int red, int green, int blue) {
-    return (alpha << 24) | (red << 16) | (green << 8) | blue;
-  }
 
   @Implementation
   public static int parseColor(String colorString) {
