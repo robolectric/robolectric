@@ -104,7 +104,6 @@ public class VideoViewTest {
     assertThat(shadowVideoView.getCurrentVideoState()).isEqualTo(ShadowVideoView.RESUME);
   }
 
-
   @Test
   public void shouldPausePlaying() throws Exception {
     view.start();
@@ -129,9 +128,12 @@ public class VideoViewTest {
     assertThat(view.canPause()).isFalse();
   }
 
-  /**
-   * Helper classes
-   */
+  @Test
+  public void shouldSeekToSpecifiedPosition() throws Exception {
+    assertThat(view.getCurrentPosition()).isZero();
+    view.seekTo(10000);
+    assertThat(view.getCurrentPosition()).isEqualTo(10000);
+  }
 
   private class TestPreparedListener implements MediaPlayer.OnPreparedListener {
     @Override

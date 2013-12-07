@@ -25,6 +25,7 @@ public class ShadowVideoView extends ShadowSurfaceView {
 
   private int currentState = -1;
   private int prevState;
+  private int currentPosition;
 
   @Implementation
   public void setOnPreparedListener(MediaPlayer.OnPreparedListener l) {
@@ -93,6 +94,16 @@ public class ShadowVideoView extends ShadowSurfaceView {
         currentState != ShadowVideoView.SUSPEND);
   }
 
+  @Implementation
+  public void seekTo(int msec) {
+    currentPosition = msec;
+  }
+
+  @Implementation
+  public int getCurrentPosition() {
+    return currentPosition;
+  }
+
   /**
    * Non-Android accessor.
    */
@@ -154,5 +165,4 @@ public class ShadowVideoView extends ShadowSurfaceView {
   private void savePrevState() {
     prevState = currentState;
   }
-
 }
