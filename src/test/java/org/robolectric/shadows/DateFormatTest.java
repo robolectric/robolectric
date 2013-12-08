@@ -25,7 +25,7 @@ public class DateFormatTest {
   }
 
   @Test
-  public void getDateFormat_returnsADateFormat() {
+  public void getDateFormat_returnsADateFormat_January() {
     Calendar cal = Calendar.getInstance();
     cal.clear();
     cal.set(Calendar.DATE, 12);
@@ -36,7 +36,18 @@ public class DateFormatTest {
   }
 
   @Test
-  public void getLongDateFormat_returnsADateFormat() {
+  public void getDateFormat_returnsADateFormat_December() {
+    Calendar cal = Calendar.getInstance();
+    cal.clear();
+    cal.set(Calendar.DATE, 31);
+    cal.set(Calendar.MONTH, Calendar.DECEMBER);
+    cal.set(Calendar.YEAR, 1970);
+    Date date = cal.getTime();
+    assertEquals("Dec-31-1970", DateFormat.getDateFormat(null).format(date));
+  }
+
+  @Test
+  public void getLongDateFormat_returnsADateFormat_January() {
     Calendar cal = Calendar.getInstance();
     cal.clear();
     cal.set(Calendar.DATE, 12);
@@ -44,6 +55,17 @@ public class DateFormatTest {
     cal.set(Calendar.YEAR, 1970);
     Date date = cal.getTime();
     assertEquals("January 12, 1970", DateFormat.getLongDateFormat(null).format(date));
+  }
+
+  @Test
+  public void getLongDateFormat_returnsADateFormat_December() {
+    Calendar cal = Calendar.getInstance();
+    cal.clear();
+    cal.set(Calendar.DATE, 31);
+    cal.set(Calendar.MONTH, Calendar.DECEMBER);
+    cal.set(Calendar.YEAR, 1970);
+    Date date = cal.getTime();
+    assertEquals("December 31, 1970", DateFormat.getLongDateFormat(null).format(date));
   }
 
 }
