@@ -36,12 +36,6 @@ import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.database.ContentObserver;
 import android.database.CursorWrapper;
-import android.database.MergeCursor;
-import android.database.sqlite.SQLiteCursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteProgram;
-import android.database.sqlite.SQLiteQueryBuilder;
-import android.database.sqlite.SQLiteStatement;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -212,6 +206,7 @@ import org.robolectric.shadows.ShadowCornerPathEffect;
 import org.robolectric.shadows.ShadowCountDownTimer;
 import org.robolectric.shadows.ShadowCursorAdapter;
 import org.robolectric.shadows.ShadowCursorLoader;
+import org.robolectric.shadows.ShadowCursorWindow;
 import org.robolectric.shadows.ShadowCursorWrapper;
 import org.robolectric.shadows.ShadowDateFormat;
 import org.robolectric.shadows.ShadowDefaultRequestDirector;
@@ -252,7 +247,6 @@ import org.robolectric.shadows.ShadowMediaPlayer;
 import org.robolectric.shadows.ShadowMediaRecorder;
 import org.robolectric.shadows.ShadowMediaStore;
 import org.robolectric.shadows.ShadowMenuInflater;
-import org.robolectric.shadows.ShadowMergeCursor;
 import org.robolectric.shadows.ShadowMimeTypeMap;
 import org.robolectric.shadows.ShadowMotionEvent;
 import org.robolectric.shadows.ShadowNetworkInfo;
@@ -279,11 +273,7 @@ import org.robolectric.shadows.ShadowResolveInfo;
 import org.robolectric.shadows.ShadowResourceCursorAdapter;
 import org.robolectric.shadows.ShadowResources;
 import org.robolectric.shadows.ShadowResultReceiver;
-import org.robolectric.shadows.ShadowSQLiteCursor;
-import org.robolectric.shadows.ShadowSQLiteDatabase;
-import org.robolectric.shadows.ShadowSQLiteProgram;
-import org.robolectric.shadows.ShadowSQLiteQueryBuilder;
-import org.robolectric.shadows.ShadowSQLiteStatement;
+import org.robolectric.shadows.ShadowSQLiteConnection;
 import org.robolectric.shadows.ShadowScaleGestureDetector;
 import org.robolectric.shadows.ShadowScanResult;
 import org.robolectric.shadows.ShadowScrollView;
@@ -305,7 +295,6 @@ import org.robolectric.shadows.ShadowTouchDelegate;
 import org.robolectric.shadows.ShadowTranslateAnimation;
 import org.robolectric.shadows.ShadowTypedArray;
 import org.robolectric.shadows.ShadowTypeface;
-import org.robolectric.shadows.ShadowUriMatcher;
 import org.robolectric.shadows.ShadowVideoView;
 import org.robolectric.shadows.ShadowView;
 import org.robolectric.shadows.ShadowViewAnimator;
@@ -740,10 +729,6 @@ public class Robolectric {
     return (ShadowMenuInflater) shadowOf_(instance);
   }
 
-  public static ShadowMergeCursor shadowOf(MergeCursor instance) {
-    return (ShadowMergeCursor) shadowOf_(instance);
-  }
-
   public static ShadowMimeTypeMap shadowOf(MimeTypeMap instance) {
     return (ShadowMimeTypeMap) shadowOf_(instance);
   }
@@ -884,26 +869,6 @@ public class Robolectric {
     return (ShadowSmsManager) shadowOf_(instance);
   }
 
-  public static ShadowSQLiteCursor shadowOf(SQLiteCursor other) {
-    return (ShadowSQLiteCursor) Robolectric.shadowOf_(other);
-  }
-
-  public static ShadowSQLiteDatabase shadowOf(SQLiteDatabase other) {
-    return (ShadowSQLiteDatabase) Robolectric.shadowOf_(other);
-  }
-
-  public static ShadowSQLiteProgram shadowOf(SQLiteProgram other) {
-    return (ShadowSQLiteProgram) Robolectric.shadowOf_(other);
-  }
-
-  public static ShadowSQLiteQueryBuilder shadowOf(SQLiteQueryBuilder other) {
-    return (ShadowSQLiteQueryBuilder) Robolectric.shadowOf_(other);
-  }
-
-  public static ShadowSQLiteStatement shadowOf(SQLiteStatement other) {
-    return (ShadowSQLiteStatement) Robolectric.shadowOf_(other);
-  }
-
   public static ShadowSslErrorHandler shadowOf(SslErrorHandler instance) {
     return (ShadowSslErrorHandler) shadowOf_(instance);
   }
@@ -954,10 +919,6 @@ public class Robolectric {
 
   public static ShadowTypeface shadowOf(Typeface instance) {
     return (ShadowTypeface) shadowOf_(instance);
-  }
-
-  public static ShadowUriMatcher shadowOf(UriMatcher instance) {
-    return (ShadowUriMatcher) shadowOf_(instance);
   }
 
   public static ShadowView shadowOf(View instance) {
@@ -1355,7 +1316,6 @@ public class Robolectric {
     ShadowPowerManager.reset();
     ShadowStatFs.reset();
     ShadowTypeface.reset();
-    ShadowSQLiteDatabase.reset();
   }
 
   public static <T extends Activity> ActivityController<T> buildActivity(Class<T> activityClass) {

@@ -1,11 +1,9 @@
 package org.robolectric.shadows;
 
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.robolectric.Robolectric.shadowOf;
-
-import java.sql.ResultSet;
-import java.sql.Statement;
-
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteDoneException;
+import android.database.sqlite.SQLiteStatement;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -13,10 +11,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteDoneException;
-import android.database.sqlite.SQLiteException;
-import android.database.sqlite.SQLiteStatement;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class SQLiteStatementTest {
@@ -51,21 +46,21 @@ public class SQLiteStatementTest {
     assertThat(pkeyOne).isEqualTo(1L);
     assertThat(pkeyTwo).isEqualTo(2L);
 
-    Statement statement = shadowOf(database).getConnection().createStatement();
-    ResultSet resultSet = statement.executeQuery("SELECT COUNT(*) FROM `routine`");
-    assertThat(resultSet.next()).isTrue();
-    assertThat(resultSet.getInt(1)).isEqualTo(2);
+    Cursor dataCursor = database.rawQuery("SELECT COUNT(*) FROM `routine`", null);
+    assertThat(dataCursor.moveToFirst()).isTrue();
+    assertThat(dataCursor.getInt(0)).isEqualTo(2);
+    dataCursor.close();
 
-    statement = shadowOf(database).getConnection().createStatement();
-    resultSet = statement.executeQuery("SELECT `id`, `name` ,`lastUsed` FROM `routine`");
-    assertThat(resultSet.next()).isTrue();
-    assertThat(resultSet.getInt(1)).isEqualTo(1);
-    assertThat(resultSet.getString(2)).isEqualTo("Leg Press");
-    assertThat(resultSet.getInt(3)).isEqualTo(0);
-    assertThat(resultSet.next()).isTrue();
-    assertThat(resultSet.getLong(1)).isEqualTo(2L);
-    assertThat(resultSet.getString(2)).isEqualTo("Bench Press");
-    assertThat(resultSet.getInt(3)).isEqualTo(1);
+    dataCursor = database.rawQuery("SELECT `id`, `name` ,`lastUsed` FROM `routine`", null);
+    assertThat(dataCursor.moveToNext()).isTrue();
+    assertThat(dataCursor.getInt(0)).isEqualTo(1);
+    assertThat(dataCursor.getString(1)).isEqualTo("Leg Press");
+    assertThat(dataCursor.getInt(2)).isEqualTo(0);
+    assertThat(dataCursor.moveToNext()).isTrue();
+    assertThat(dataCursor.getLong(0)).isEqualTo(2L);
+    assertThat(dataCursor.getString(1)).isEqualTo("Bench Press");
+    assertThat(dataCursor.getInt(2)).isEqualTo(1);
+    dataCursor.close();
   }
 
   @Test
@@ -104,10 +99,9 @@ public class SQLiteStatementTest {
     updateStatement.bindLong(2, pkeyOne);
     assertThat(updateStatement.executeUpdateDelete()).isEqualTo(1);
 
-    Statement statement = shadowOf(database).getConnection().createStatement();
-    ResultSet resultSet = statement.executeQuery("SELECT `name` FROM `routine`");
-    assertThat(resultSet.next()).isTrue();
-    assertThat(resultSet.getString(1)).isEqualTo("Head Press");
+    Cursor dataCursor = database.rawQuery("SELECT `name` FROM `routine`", null);
+    assertThat(dataCursor.moveToNext()).isTrue();
+    assertThat(dataCursor.getString(0)).isEqualTo("Head Press");
   }
 
   @Test
@@ -145,11 +139,15 @@ public class SQLiteStatementTest {
     stmt.simpleQueryForLong();
   }
 
-  @Test(expected = SQLiteException.class)
+  @Test
   public void testCloseShouldCloseUnderlyingPreparedStatement() throws Exception {
     SQLiteStatement insertStatement = database.compileStatement("INSERT INTO `routine` (`name`) VALUES (?)");
     insertStatement.bindString(1, "Hand Press");
     insertStatement.close();
-    insertStatement.executeInsert();
+    try {
+      insertStatement.executeInsert();
+    } catch (Exception e) {
+      assertThat(e).isInstanceOf(IllegalStateException.class);
+    }
   }
 }

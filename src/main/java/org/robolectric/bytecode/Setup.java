@@ -21,7 +21,6 @@ import org.robolectric.internal.Instrument;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.ResourcePath;
-import org.robolectric.util.DatabaseConfig;
 import org.robolectric.util.I18nException;
 import org.robolectric.util.Transcript;
 
@@ -43,7 +42,6 @@ public class Setup {
       RealObject.class,
       ShadowWrangler.class,
       AndroidManifest.class,
-      DatabaseConfig.DatabaseMap.class,
       R.class,
 
       org.robolectric.bytecode.InstrumentingClassLoader.class,

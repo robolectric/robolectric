@@ -39,9 +39,9 @@ public class SQLiteOpenHelperTest {
 
   @Test
   public void testSubsequentGetReadableDatabase() throws Exception {
-    SQLiteDatabase database = helper.getReadableDatabase();
+    helper.getReadableDatabase();
     helper.close();
-    database = helper.getReadableDatabase();
+    SQLiteDatabase database = helper.getReadableDatabase();
 
     assertSubsequentDB(database, helper);
   }
@@ -83,17 +83,6 @@ public class SQLiteOpenHelperTest {
     assertThat(database.isOpen()).isTrue();
     helper.close();
     assertThat(database.isOpen()).isFalse();
-  }
-
-  @Test
-  public void testGetConnection() throws Exception {
-    SQLiteDatabase db1 = helper.getReadableDatabase();
-    ShadowSQLiteDatabase shadow = Robolectric.shadowOf(db1);
-    assertThat(shadow.getConnection()).isNotNull();
-    db1.close();
-    assertThat(shadow.getConnection()).isNotNull();
-    ShadowSQLiteDatabase.reset();
-    assertThat(shadow.getConnection()).isNotNull();
   }
 
   @Test
@@ -169,20 +158,6 @@ public class SQLiteOpenHelperTest {
     insertData(db2, TABLE_NAME2, new int[]{4, 5, 6});
     verifyData(db1, TABLE_NAME1, 2);
     verifyData(db2, TABLE_NAME2, 3);
-  }
-
-  @Test
-  public void testResetDbInMemory() throws Exception {
-    final String TABLE_NAME = "fart";
-    TestOpenHelper helper2 = new TestOpenHelper(Robolectric.application, null, null, 1);
-    SQLiteDatabase db2 = helper2.getWritableDatabase();
-    setupTable(db2, TABLE_NAME);
-    insertData(db2, TABLE_NAME, new int[]{4, 5, 6});
-    verifyData(db2, TABLE_NAME, 3);
-    ShadowSQLiteDatabase.reset();
-    db2 = helper2.getWritableDatabase();
-    // shouldn't throw exceptions because ShadowSQLiteDatabase.reset() clears in memory DB.
-    setupTable(db2, TABLE_NAME);
   }
 
   @Test

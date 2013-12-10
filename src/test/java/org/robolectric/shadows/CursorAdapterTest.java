@@ -2,7 +2,7 @@ package org.robolectric.shadows;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteCursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CursorAdapter;
@@ -11,11 +11,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
-import org.robolectric.util.DatabaseConfig;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,10 +25,8 @@ public class CursorAdapterTest {
 
   @Before
   public void setUp() throws Exception {
-    Connection connection = DatabaseConfig.getMemoryConnection();
-
-    Statement statement = connection.createStatement();
-    statement.execute("CREATE TABLE table_name(_id INT PRIMARY KEY, name VARCHAR(255));");
+    SQLiteDatabase database = SQLiteDatabase.create(null);
+    database.execSQL("CREATE TABLE table_name(_id INT PRIMARY KEY, name VARCHAR(255));");
     String[] inserts = {
         "INSERT INTO table_name (_id, name) VALUES(1234, 'Chuck');",
         "INSERT INTO table_name (_id, name) VALUES(1235, 'Julie');",
@@ -42,14 +36,11 @@ public class CursorAdapterTest {
     };
 
     for (String insert : inserts) {
-      connection.createStatement().executeUpdate(insert);
+      database.execSQL(insert);
     }
 
-    statement = connection.createStatement(DatabaseConfig.getResultSetType(), ResultSet.CONCUR_READ_ONLY);
     String sql = "SELECT * FROM table_name;";
-    ResultSet resultSet = statement.executeQuery(sql);
-    curs = new SQLiteCursor(null, null, null);
-    Robolectric.shadowOf((SQLiteCursor) curs).setResultSet(resultSet, sql);
+    curs = database.rawQuery(sql, null);
 
     adapter = new TestAdapter(curs);
   }

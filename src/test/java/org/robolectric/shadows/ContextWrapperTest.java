@@ -293,11 +293,4 @@ public class ContextWrapperTest {
     assertThat(contextWrapper.checkCallingOrSelfPermission("qux")).isEqualTo(PERMISSION_DENIED);
   }
 
-  @Test
-  public void openOrCreateDatabaseShouldAlwaysReturnSameDatabase() throws Exception {
-    SQLiteDatabase db = contextWrapper.openOrCreateDatabase("db", 0, null);
-    assertThat(db).isNotNull();
-    assertThat(contextWrapper.openOrCreateDatabase("db", 0, null)).isSameAs(db);
-    assertThat(contextWrapper.openOrCreateDatabase("db", 0, null, null)).isSameAs(db);
-  }
 }
