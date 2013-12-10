@@ -18,6 +18,10 @@ public class ShadowSurfaceView extends ShadowView {
   private FakeSurfaceHolder fakeSurfaceHolder = new FakeSurfaceHolder();
 
   @Implementation
+  public void onAttachedToWindow() {
+  }
+
+  @Implementation
   public SurfaceHolder getHolder() {
     return fakeSurfaceHolder;
   }
