@@ -42,6 +42,7 @@ public class AndroidManifest {
   private final FsFile androidManifestFile;
   private final FsFile resDirectory;
   private final FsFile assetsDirectory;
+  private final FsFile projectPropertiesFile;
   private boolean manifestIsParsed;
 
   private String applicationName;
@@ -73,14 +74,14 @@ public class AndroidManifest {
   }
 
   public AndroidManifest(final FsFile androidManifestFile, final FsFile resDirectory) {
-    this(androidManifestFile, resDirectory, resDirectory.getParent().join("assets"));
+    this(androidManifestFile, resDirectory, resDirectory.getParent().join("assets"), androidManifestFile.getParent().join("project.properties"));
   }
 
   /**
    * @deprecated Use {@link #AndroidManifest(org.robolectric.res.FsFile, org.robolectric.res.FsFile, org.robolectric.res.FsFile)} instead.}
    */
   public AndroidManifest(final FsFile baseDir) {
-    this(baseDir.join("AndroidManifest.xml"), baseDir.join("res"), baseDir.join("assets"));
+    this(baseDir.join("AndroidManifest.xml"), baseDir.join("res"), baseDir.join("assets"), baseDir.join("project.properties"));
   }
 
   /**
@@ -91,9 +92,22 @@ public class AndroidManifest {
    * @param assetsDirectory     location of the assets directory
    */
   public AndroidManifest(FsFile androidManifestFile, FsFile resDirectory, FsFile assetsDirectory) {
+    this(androidManifestFile, resDirectory, assetsDirectory, androidManifestFile.getParent().join("project.properties"));
+  }
+
+  /**
+   * Creates a Robolectric configuration using specified locations.
+   *
+   * @param androidManifestFile   location of the AndroidManifest.xml file
+   * @param resDirectory          location of the res directory
+   * @param assetsDirectory       location of the assets directory
+   * @param projectPropertiesFile location of the project.properties file
+   */
+  public AndroidManifest(FsFile androidManifestFile, FsFile resDirectory, FsFile assetsDirectory, FsFile projectPropertiesFile) {
     this.androidManifestFile = androidManifestFile;
     this.resDirectory = resDirectory;
     this.assetsDirectory = assetsDirectory;
+    this.projectPropertiesFile = projectPropertiesFile;
   }
 
   public String getThemeRef(Class<? extends Activity> activityClass) {
@@ -349,18 +363,19 @@ public class AndroidManifest {
   }
 
   protected List<FsFile> findLibraries() {
-    FsFile baseDir = getBaseDir();
+    FsFile projectProperties = getProjectProperties();
+    FsFile relativeLibsSearchBaseDir = projectProperties.getParent();
     List<FsFile> libraryBaseDirs = new ArrayList<FsFile>();
 
-    Properties properties = getProperties(baseDir.join("project.properties"));
+    Properties properties = getProperties(projectProperties);
     // get the project.properties overrides and apply them (if any)
-    Properties overrideProperties = getProperties(baseDir.join("test-project.properties"));
+    Properties overrideProperties = getProperties(getTestProjectProperties());
     if (overrideProperties!=null) properties.putAll(overrideProperties);
     if (properties != null) {
       int libRef = 1;
       String lib;
       while ((lib = properties.getProperty("android.library.reference." + libRef)) != null) {
-        FsFile libraryBaseDir = baseDir.join(lib);
+        FsFile libraryBaseDir = relativeLibsSearchBaseDir.join(lib);
         if (libraryBaseDir.exists()) {
           libraryBaseDirs.add(libraryBaseDir);
         }
@@ -371,8 +386,13 @@ public class AndroidManifest {
     return libraryBaseDirs;
   }
 
-  protected FsFile getBaseDir() {
-    return getResDirectory().getParent();
+  protected FsFile getProjectProperties() {
+    return projectPropertiesFile;
+  }
+
+  protected FsFile getTestProjectProperties() {
+    FsFile propertiesDir = getProjectProperties().getParent();
+    return propertiesDir.join("test-project.properties");
   }
 
   protected AndroidManifest createLibraryAndroidManifest(FsFile libraryBaseDir) {

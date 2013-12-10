@@ -17,6 +17,8 @@ import java.util.Properties;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.fest.reflect.core.Reflection.method;
+import static org.robolectric.util.TestUtil.resourceFile;
+
 
 public class RobolectricTestRunnerTest {
   @Test public void whenClassHasConfigAnnotation_getConfig_shouldMergeClassAndMethodConfig() throws Exception {

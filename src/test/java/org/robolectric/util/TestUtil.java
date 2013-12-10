@@ -22,7 +22,9 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import static org.junit.Assert.assertTrue;
 
@@ -150,5 +152,13 @@ public abstract class TestUtil {
 
   public static Resources emptyResources() {
     return ShadowResources.createFor(new EmptyResourceLoader());
+  }
+
+  public static List<String> stringify(List<ResourcePath> resourcePaths) {
+    List<String> resourcePathBases = new ArrayList<String>();
+    for (ResourcePath resourcePath : resourcePaths) {
+      resourcePathBases.add(resourcePath.resourceBase.toString());
+    }
+    return resourcePathBases;
   }
 }

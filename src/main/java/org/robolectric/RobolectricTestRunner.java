@@ -120,14 +120,14 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     return new ShadowWrangler(shadowMap, sdkConfig);
   }
 
-  protected AndroidManifest createAppManifest(FsFile manifestFile, FsFile resDir, FsFile assetsDir) {
+  protected AndroidManifest createAppManifest(FsFile manifestFile, FsFile resDir, FsFile assetsDir, FsFile projectPropertiesFile) {
     if (!manifestFile.exists()) {
-      System.out.print("WARNING: No manifest file found at " + manifestFile.getPath() + ".");
+      System.out.print("WARNING: No manifest file found at " + manifestFile.getPath() + ". ");
       System.out.println("Falling back to the Android OS resources only.");
       System.out.println("To remove this warning, annotate your test class with @Config(manifest=Config.NONE).");
       return null;
     }
-    AndroidManifest manifest = new AndroidManifest(manifestFile, resDir, assetsDir);
+    AndroidManifest manifest = new AndroidManifest(manifestFile, resDir, assetsDir, projectPropertiesFile);
     String packageName = System.getProperty("android.package");
     manifest.setPackageName(packageName);
     return manifest;
@@ -311,16 +311,20 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     FsFile manifestFile;
     FsFile resDir;
     FsFile assetsDir;
+    FsFile projectProperties;
 
     boolean defaultManifest = config.manifest().equals(Config.DEFAULT);
     if (defaultManifest && manifestProperty != null) {
       manifestFile = Fs.fileFromPath(manifestProperty);
       resDir = Fs.fileFromPath(resourcesProperty);
       assetsDir = Fs.fileFromPath(assetsProperty);
+      String projectPropertiesProperty = System.getProperty("android.project.properties");
+      projectProperties = projectPropertiesProperty == null ? manifestFile.getParent().join("project.properties") : Fs.fileFromPath(projectPropertiesProperty);
     } else {
       manifestFile = fsFile.join(defaultManifest ? "AndroidManifest.xml" : config.manifest());
       resDir = manifestFile.getParent().join("res");
       assetsDir = manifestFile.getParent().join("assets");
+      projectProperties = manifestFile.getParent().join("project.properties");
     }
 
     synchronized (envHolder) {
@@ -328,7 +332,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       appManifest = envHolder.appManifestsByFile.get(manifestFile);
       if (appManifest == null) {
         long startTime = System.currentTimeMillis();
-        appManifest = createAppManifest(manifestFile, resDir, assetsDir);
+        appManifest = createAppManifest(manifestFile, resDir, assetsDir, projectProperties);
         if (DocumentLoader.DEBUG_PERF)
           System.out.println(String.format("%4dms spent in %s", System.currentTimeMillis() - startTime, manifestFile));
 
