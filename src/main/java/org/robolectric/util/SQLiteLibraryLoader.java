@@ -99,7 +99,7 @@ public class SQLiteLibraryLoader {
   }
 
   private void log(final String message) {
-    System.out.println(message);
+    // System.out.println(message);
   }
 
   private boolean isExtractedLibUptodate(File extractedLib) {
