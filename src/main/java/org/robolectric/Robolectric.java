@@ -10,6 +10,7 @@ import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.Application;
 import android.app.Dialog;
+import android.app.DownloadManager;
 import android.app.IntentService;
 import android.app.KeyguardManager;
 import android.app.Notification;
@@ -213,6 +214,7 @@ import org.robolectric.shadows.ShadowDefaultRequestDirector;
 import org.robolectric.shadows.ShadowDialog;
 import org.robolectric.shadows.ShadowDialogPreference;
 import org.robolectric.shadows.ShadowDisplay;
+import org.robolectric.shadows.ShadowDownloadManager;
 import org.robolectric.shadows.ShadowDrawable;
 import org.robolectric.shadows.ShadowDrawerLayout;
 import org.robolectric.shadows.ShadowEditTextPreference;
@@ -983,6 +985,10 @@ public class Robolectric {
 
   public static ShadowPopupMenu shadowOf(PopupMenu instance) {
     return (ShadowPopupMenu) shadowOf_(instance);
+  }
+
+  public static ShadowDownloadManager.ShadowRequest shadowOf(DownloadManager.Request instance) {
+    return (ShadowDownloadManager.ShadowRequest) shadowOf_(instance);
   }
 
   @SuppressWarnings({"unchecked"})
