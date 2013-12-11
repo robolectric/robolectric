@@ -135,7 +135,6 @@ public class SQLiteLibraryLoaderTest {
 
   private String loadLibrary(SQLiteLibraryLoader loader, String name, String arch) throws IOException {
     setNameAndArch(name, arch);
-    loader.doLoad();
     return loader.getLibClasspathResourceName();
   }
 
