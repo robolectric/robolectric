@@ -48,16 +48,13 @@ public class ActivityController<T extends Activity> {
   }
 
   public ActivityController(Class<T> activityClass) {
-    this.activity = constructor().in(activityClass).newInstance();
-    shadowActivity = shadowOf_(activity);
-    shadowMainLooper = shadowOf_(Looper.getMainLooper());
+    this(constructor().in(activityClass).newInstance());
   }
 
   public ActivityController(T activity) {
     this.activity = activity;
     shadowActivity = shadowOf_(activity);
     shadowMainLooper = shadowOf_(Looper.getMainLooper());
-    attached = true;
   }
 
   public T get() {
