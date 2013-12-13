@@ -3,6 +3,8 @@ package org.robolectric.shadows;
 import android.graphics.ImageFormat;
 import android.hardware.Camera;
 import android.view.SurfaceHolder;
+
+import org.fest.util.Lists;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -219,6 +221,8 @@ public class ShadowCamera {
     private int previewFpsMax = 30;
     private int previewFps = 30;
     private int exposureCompensation = 0;
+    private String focusMode;
+    private List<String> supportedFocusModes = Lists.newArrayList();
 
     @Implementation
     public Camera.Size getPictureSize() {
@@ -300,6 +304,25 @@ public class ShadowCamera {
       addSize(supportedSizes, 320, 240);
       addSize(supportedSizes, 640, 480);
       return supportedSizes;
+    }
+
+    public void setSupportedFocusModes(String... focusModes) {
+      supportedFocusModes = Lists.newArrayList(focusModes);
+    }
+
+    @Implementation
+    public List<String> getSupportedFocusModes() {
+      return supportedFocusModes;
+    }
+
+    @Implementation
+    public String getFocusMode() {
+      return focusMode;
+    }
+
+    @Implementation
+    public void setFocusMode(String focusMode) {
+      this.focusMode = focusMode;
     }
 
     @Implementation
