@@ -990,6 +990,10 @@ public class Robolectric {
     return (ShadowPopupMenu) shadowOf_(instance);
   }
 
+  public static ShadowDownloadManager shadowOf(DownloadManager instance) {
+    return (ShadowDownloadManager) shadowOf_(instance);
+  }
+
   public static ShadowDownloadManager.ShadowRequest shadowOf(DownloadManager.Request instance) {
     return (ShadowDownloadManager.ShadowRequest) shadowOf_(instance);
   }
