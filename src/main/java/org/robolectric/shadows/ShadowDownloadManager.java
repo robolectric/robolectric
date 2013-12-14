@@ -95,6 +95,30 @@ public class ShadowDownloadManager {
     public CharSequence getDescription() {
       return field("mDescription").ofType(CharSequence.class).in(realObject).get();
     }
+
+    public CharSequence getMimeType() {
+      return field("mMimeType").ofType(CharSequence.class).in(realObject).get();
+    }
+
+    public int getNotificationVisibility() {
+      return field("mNotificationVisibility").ofType(int.class).in(realObject).get();
+    }
+
+    public int getAllowedNetworkTypes() {
+      return field("mAllowedNetworkTypes").ofType(int.class).in(realObject).get();
+    }
+
+    public boolean getAllowedOverRoaming() {
+      return field("mRoamingAllowed").ofType(boolean.class).in(realObject).get();
+    }
+
+    public boolean getAllowedOverMetered() {
+      return field("mMeteredAllowed").ofType(boolean.class).in(realObject).get();
+    }
+
+    public boolean getVisibleInDownloadsUi() {
+      return field("mIsVisibleInDownloadsUi").ofType(boolean.class).in(realObject).get();
+    }
   }
 
   @Implements(DownloadManager.Query.class)
