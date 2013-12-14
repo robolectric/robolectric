@@ -23,6 +23,10 @@
 #   4.3_r2      - Jelly Bean MR2
 #   4.4_r1      - Kit Kat
 #
+# Environment Variables:
+#   BUILD_ROOT        - Path to AOSP source directory
+#   SIGNING_PASSWORD  - Passphrase for GPG signing key
+#
 # Assumptions:
 #   1. You've got the full AOSP checked out on a case-sensitive file system at /Volumes/android/android-build
 #   2. repo init -u https://android.googlesource.com/platform/manifest -b <android-version>
@@ -35,6 +39,16 @@ if [[ $# -eq 0 ]]; then
     exit 1
 fi
 
+if [[ -z "${BUILD_ROOT}" ]]; then
+    echo "Please set the AOSP build root path as BUILD_ROOT"
+    exit 1
+fi
+
+if [[ -z "${SIGNING_PASSWORD}" ]]; then
+    echo "Please set the GPG passphrase as SIGNING_PASSWORD"
+    exit 1
+fi
+
 ANDROID_VERSION=$1
 if [[ -z "$2" ]]; then
     ROBOLECTRIC_SUB_VERSION=0
@@ -44,7 +58,7 @@ fi
 
 SCRIPT_DIR=$(cd $(dirname "$0"); pwd)
 
-ANDROID_SOURCES_BASE=/Volumes/android/android-build
+ANDROID_SOURCES_BASE=${BUILD_ROOT}
 FRAMEWORKS_BASE_DIR=${ANDROID_SOURCES_BASE}/frameworks/base
 ROBOLECTRIC_VERSION=${ANDROID_VERSION}-robolectric-${ROBOLECTRIC_SUB_VERSION}
 
@@ -68,7 +82,7 @@ build_platform() {
     elif [[ "${ANDROID_VERSION}" == "4.3_r2" ]]; then
         ARTIFACTS=("core" "services" "telephony-common" "framework" "android.policy" "ext")
     elif [[ "${ANDROID_VERSION}" == "4.4_r1" ]]; then
-        ARTIFACTS=("core" "services" "telephony-common" "framework" "framework2" "framework-base" "android.policy" "ext")
+        ARTIFACTS=("core" "services" "telephony-common" "framework" "framework2" "framework-base" "android.policy" "ext" "webviewchromium")
     else
         echo "Robolectric: No match for version: ${ANDROID_VERSION}"
         exit 1
@@ -159,11 +173,11 @@ build_signed_packages() {
 
     echo "Robolectric: Signing files with gpg..."
     for ext in ".jar" "-javadoc.jar" "-sources.jar" ".pom"; do
-        ( cd ${OUT} && gpg -ab --use-agent android-all-${ROBOLECTRIC_VERSION}$ext )
+        ( cd ${OUT} && gpg -ab --passphrase ${SIGNING_PASSWORD} android-all-${ROBOLECTRIC_VERSION}$ext )
     done
 
     echo "Robolectric: Creating bundle for Sonatype upload..."
-    cd ${OUT}; jar cf ${ANDROID_BUNDLE} *.jar *.pom
+    cd ${OUT}; jar cf ${ANDROID_BUNDLE} *.jar *.pom *.asc
 }
 
 mavenize() {
