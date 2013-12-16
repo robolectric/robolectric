@@ -7,7 +7,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
 
-import static android.app.DownloadManager.COLUMN_URI;
 import static android.app.DownloadManager.Request;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.robolectric.Robolectric.shadowOf;
@@ -17,8 +16,8 @@ import static org.robolectric.shadows.ShadowDownloadManager.ShadowRequest;
 public class DownloadManagerTest {
 
   private final Uri uri = Uri.parse("http://example.com/foo.mp4");
-  private final Uri dest = Uri.parse("file:///storage/foo.mp4");
-  private final Request request = new Request(Uri.parse("http://example.com/foo.mp4"));
+  private final Uri destination = Uri.parse("file:///storage/foo.mp4");
+  private final Request request = new Request(uri);
   private final ShadowRequest shadow = shadowOf(request);
 
   @Test
@@ -45,9 +44,54 @@ public class DownloadManagerTest {
   }
 
   @Test
+  public void request_shouldGetMimeType() throws Exception {
+    request.setMimeType("application/json");
+    assertThat(shadow.getMimeType()).isEqualTo("application/json");
+  }
+
+  @Test
+  public void request_shouldGetNotificationVisibility() throws Exception {
+    request.setNotificationVisibility(Request.VISIBILITY_VISIBLE);
+    assertThat(shadow.getNotificationVisibility()).isEqualTo(Request.VISIBILITY_VISIBLE);
+  }
+
+  @Test
+  public void request_shouldGetAllowedNetworkTypes() throws Exception {
+    request.setAllowedNetworkTypes(Request.NETWORK_BLUETOOTH);
+    assertThat(shadow.getAllowedNetworkTypes()).isEqualTo(Request.NETWORK_BLUETOOTH);
+  }
+
+  @Test
+  public void request_shouldGetAllowedOverRoaming() throws Exception {
+    request.setAllowedOverRoaming(true);
+    assertThat(shadow.getAllowedOverRoaming()).isTrue();
+  }
+
+  @Test
+  public void request_shouldGetAllowedOverMetered() throws Exception {
+    request.setAllowedOverMetered(true);
+    assertThat(shadow.getAllowedOverMetered()).isTrue();
+  }
+
+  @Test
+  public void request_shouldGetVisibleInDownloadsUi() throws Exception {
+    request.setVisibleInDownloadsUi(true);
+    assertThat(shadow.getVisibleInDownloadsUi()).isTrue();
+  }
+
+  @Test
+  public void enqueue_shouldAddRequest() {
+    ShadowDownloadManager manager = new ShadowDownloadManager();
+    long id = manager.enqueue(request);
+
+    assertThat(manager.getRequestCount()).isEqualTo(1);
+    assertThat(manager.getRequest(id)).isEqualTo(request);
+  }
+
+  @Test
   public void query_shouldReturnCursor() throws Exception {
     ShadowDownloadManager manager = new ShadowDownloadManager();
-    long id = manager.enqueue(new Request(uri));
+    long id = manager.enqueue(request);
 
     Cursor cursor = manager.query(new DownloadManager.Query().setFilterById(id));
     assertThat(cursor.getCount()).isEqualTo(1);
@@ -57,7 +101,7 @@ public class DownloadManagerTest {
   @Test
   public void query_shouldReturnColumnIndexes() throws Exception {
     ShadowDownloadManager manager = new ShadowDownloadManager();
-    long id = manager.enqueue(new Request(uri).setDestinationUri(dest));
+    long id = manager.enqueue(request.setDestinationUri(destination));
     Cursor cursor = manager.query(new DownloadManager.Query().setFilterById(id));
 
     assertThat(cursor.getColumnIndex(DownloadManager.COLUMN_URI)).isNotNegative();
@@ -71,11 +115,11 @@ public class DownloadManagerTest {
   @Test
   public void query_shouldReturnColumnValues() throws Exception {
     ShadowDownloadManager manager = new ShadowDownloadManager();
-    long id = manager.enqueue(new Request(uri).setDestinationUri(dest));
+    long id = manager.enqueue(request.setDestinationUri(destination));
     Cursor cursor = manager.query(new DownloadManager.Query().setFilterById(id));
 
     cursor.moveToNext();
     assertThat(cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_URI))).isEqualTo(uri.toString());
-    assertThat(cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI))).isEqualTo(dest.toString());
+    assertThat(cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI))).isEqualTo(destination.toString());
   }
 }
