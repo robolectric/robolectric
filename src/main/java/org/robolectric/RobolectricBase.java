@@ -88,6 +88,7 @@ import org.robolectric.shadows.ShadowFrameLayout;
 import org.robolectric.shadows.ShadowGeoPoint;
 import org.robolectric.shadows.ShadowGeocoder;
 import org.robolectric.shadows.ShadowGestureDetector;
+import org.robolectric.shadows.ShadowGradientDrawable;
 import org.robolectric.shadows.ShadowHandler;
 import org.robolectric.shadows.ShadowHandlerThread;
 import org.robolectric.shadows.ShadowImageView;
@@ -316,6 +317,7 @@ public class RobolectricBase {
       ShadowGeocoder.class,
       ShadowGeoPoint.class,
       ShadowGestureDetector.class,
+      ShadowGradientDrawable.class,
       ShadowHandler.class,
       ShadowHandlerThread.class,
       ShadowImageView.class,
