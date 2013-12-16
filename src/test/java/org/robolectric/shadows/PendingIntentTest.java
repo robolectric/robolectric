@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.TestIntentSender;
+import android.os.Bundle;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -16,6 +17,7 @@ import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class PendingIntentTest {
+
   @Test
   public void shouldGetIntentSender() {
     Intent expectedIntent = new Intent();
@@ -26,7 +28,7 @@ public class PendingIntentTest {
   }
 
   @Test
-  public void getBroadcast__shouldCreateIntentForBroadcast() throws Exception {
+  public void getBroadcast_shouldCreateIntentForBroadcast() throws Exception {
     Intent intent = new Intent();
     PendingIntent pendingIntent = PendingIntent.getBroadcast(Robolectric.application, 99, intent, 100);
     ShadowPendingIntent shadow = shadowOf(pendingIntent);
@@ -40,7 +42,7 @@ public class PendingIntentTest {
   }
 
   @Test
-  public void getActivity__shouldCreateIntentForBroadcast() throws Exception {
+  public void getActivity_shouldCreateIntentForBroadcast() throws Exception {
     Intent intent = new Intent();
     PendingIntent pendingIntent = PendingIntent.getActivity(Robolectric.application, 99, intent, 100);
     ShadowPendingIntent shadow = shadowOf(pendingIntent);
@@ -54,7 +56,35 @@ public class PendingIntentTest {
   }
 
   @Test
-  public void getService__shouldCreateIntentForBroadcast() throws Exception {
+  public void getActivities_shouldCreateIntentForBroadcast() throws Exception {
+    Intent[] intents = new Intent[] {new Intent(Intent.ACTION_VIEW), new Intent(Intent.ACTION_PICK)};
+    PendingIntent pendingIntent = PendingIntent.getActivities(Robolectric.application, 99, intents, 100);
+
+    ShadowPendingIntent shadow = shadowOf(pendingIntent);
+    assertThat(shadow.getSavedIntents()).isEqualTo(intents);
+
+    pendingIntent.send();
+    ShadowApplication application = shadowOf(Robolectric.application);
+    assertThat(application.getNextStartedActivity()).isEqualTo(intents[0]);
+    assertThat(application.getNextStartedActivity()).isEqualTo(intents[1]);
+  }
+
+  @Test
+  public void getActivities_withBundle_shouldCreateIntentForBroadcast() throws Exception {
+    Intent[] intents = new Intent[] {new Intent(Intent.ACTION_VIEW), new Intent(Intent.ACTION_PICK)};
+    PendingIntent pendingIntent = PendingIntent.getActivities(Robolectric.application, 99, intents, 100, new Bundle());
+
+    ShadowPendingIntent shadow = shadowOf(pendingIntent);
+    assertThat(shadow.getSavedIntents()).isEqualTo(intents);
+
+    pendingIntent.send();
+    ShadowApplication application = shadowOf(Robolectric.application);
+    assertThat(application.getNextStartedActivity()).isEqualTo(intents[0]);
+    assertThat(application.getNextStartedActivity()).isEqualTo(intents[1]);
+  }
+
+  @Test
+  public void getService_shouldCreateIntentForBroadcast() throws Exception {
     Intent intent = new Intent();
     PendingIntent pendingIntent = PendingIntent.getService(Robolectric.application, 99, intent, 100);
     ShadowPendingIntent shadow = shadowOf(pendingIntent);
@@ -68,7 +98,7 @@ public class PendingIntentTest {
   }
 
   @Test
-  public void send__shouldFillInIntentData() throws Exception {
+  public void send_shouldFillInIntentData() throws Exception {
     Intent intent = new Intent();
     Activity context = new Activity();
     PendingIntent forActivity = PendingIntent.getActivity(context, 99, intent, 100);
