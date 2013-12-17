@@ -245,6 +245,7 @@ import org.robolectric.shadows.ShadowLocationManager;
 import org.robolectric.shadows.ShadowLog;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowMatrix;
+import org.robolectric.shadows.ShadowMediaMetadataRetriever;
 import org.robolectric.shadows.ShadowMediaPlayer;
 import org.robolectric.shadows.ShadowMediaRecorder;
 import org.robolectric.shadows.ShadowMediaStore;
@@ -1328,6 +1329,7 @@ public class Robolectric {
     ShadowStatFs.reset();
     ShadowTypeface.reset();
     ShadowProcess.reset();
+    ShadowMediaMetadataRetriever.reset();
   }
 
   public static <T extends Activity> ActivityController<T> buildActivity(Class<T> activityClass) {
