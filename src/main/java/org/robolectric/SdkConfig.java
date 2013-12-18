@@ -56,23 +56,23 @@ public class SdkConfig {
   public Dependency[] getSdkClasspathDependencies() {
     return new Dependency[] {
         realAndroidDependency("android-all"),
-        createDependency("org.json", "json", "20080701", "jar", null),
-        createDependency("org.ccil.cowan.tagsoup", "tagsoup", "1.2", "jar", null),
-        createDependency("com.google.android", "support-v4", "r7", "jar", null)
+        createDependency("org.json", "json", "20080701", "jar", false),
+        createDependency("org.ccil.cowan.tagsoup", "tagsoup", "1.2", "jar", false),
+        createDependency("com.android.support", "support-v4", "19.0.0", "jar", true)
     };
   }
 
   public Dependency realAndroidDependency(String artifactId) {
-    return createDependency("org.robolectric", artifactId, getArtifactVersionString(), "jar", null);
+    return createDependency("org.robolectric", artifactId, getArtifactVersionString(), "jar", false);
   }
 
-  public Dependency createDependency(String groupId, String artifactId, String version, String type, String classifier) {
+  public Dependency createDependency(String groupId, String artifactId, String version, String type, boolean optional) {
     Dependency dependency = new Dependency();
     dependency.setGroupId(groupId);
     dependency.setArtifactId(artifactId);
     dependency.setVersion(version);
     dependency.setType(type);
-    dependency.setClassifier(classifier);
+    dependency.setOptional(optional);
     return dependency;
   }
 
