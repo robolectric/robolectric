@@ -97,6 +97,7 @@ import android.view.KeyEvent;
 import android.view.MenuInflater;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
+import android.view.Surface;
 import android.view.TouchDelegate;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -288,6 +289,7 @@ import org.robolectric.shadows.ShadowSmsManager;
 import org.robolectric.shadows.ShadowSslErrorHandler;
 import org.robolectric.shadows.ShadowStatFs;
 import org.robolectric.shadows.ShadowStateListDrawable;
+import org.robolectric.shadows.ShadowSurface;
 import org.robolectric.shadows.ShadowTabHost;
 import org.robolectric.shadows.ShadowTelephonyManager;
 import org.robolectric.shadows.ShadowTextPaint;
@@ -994,6 +996,10 @@ public class Robolectric {
 
   public static ShadowDownloadManager.ShadowRequest shadowOf(DownloadManager.Request instance) {
     return (ShadowDownloadManager.ShadowRequest) shadowOf_(instance);
+  }
+
+  public static ShadowSurface shadowOf(Surface surface) {
+    return (ShadowSurface) shadowOf_(surface);
   }
 
   @SuppressWarnings({"unchecked"})
