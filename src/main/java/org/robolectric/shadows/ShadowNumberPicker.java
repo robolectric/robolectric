@@ -1,8 +1,10 @@
 package org.robolectric.shadows;
 
 import android.widget.NumberPicker;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 
 
 @Implements(NumberPicker.class)
@@ -12,6 +14,9 @@ public class ShadowNumberPicker extends ShadowLinearLayout {
   private int minValue;
   private int maxValue;
   private boolean wrapSelectorWheel;
+
+  @RealObject
+  private NumberPicker realNumberPicker;
 
   @Implementation
   public void setValue(int value) {
@@ -39,11 +44,13 @@ public class ShadowNumberPicker extends ShadowLinearLayout {
   @Implementation
   public void setMinValue(int minValue) {
     this.minValue = minValue;
+    Robolectric.directlyOn(realNumberPicker, NumberPicker.class, "setMinValue", Integer.TYPE).invoke(minValue);
   }
 
   @Implementation
   public void setMaxValue(int maxValue) {
     this.maxValue = maxValue;
+    Robolectric.directlyOn(realNumberPicker, NumberPicker.class, "setMaxValue", Integer.TYPE).invoke(maxValue);
   }
 
   @Implementation
