@@ -34,6 +34,7 @@ public class RobolectricPackageManager extends StubPackageManager {
 
   private static class IntentComparator implements Comparator<Intent> {
 
+    @Override
     public int compare(Intent i1, Intent i2) {
       if (i1 == null && i2 == null) return 0;
       if (i1 == null && i2 != null) return -1;
@@ -77,6 +78,7 @@ public class RobolectricPackageManager extends StubPackageManager {
       return 0;
     }
 
+    @Override
     public boolean equals(Intent i1, Intent i2) {
       return compare(i1,i2) == 0;
     }
