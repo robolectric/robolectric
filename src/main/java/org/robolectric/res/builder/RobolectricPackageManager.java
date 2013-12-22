@@ -77,11 +77,6 @@ public class RobolectricPackageManager extends StubPackageManager {
       }
       return 0;
     }
-
-    @Override
-    public boolean equals(Intent i1, Intent i2) {
-      return compare(i1,i2) == 0;
-    }
   }
 
   private final Map<String, AndroidManifest> androidManifests = new LinkedHashMap<String, AndroidManifest>();
