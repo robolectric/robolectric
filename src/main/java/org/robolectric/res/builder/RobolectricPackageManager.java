@@ -61,6 +61,13 @@ public class RobolectricPackageManager extends StubPackageManager {
           return i1.getComponent().compareTo(i2.getComponent());
         }
       }
+      if (i1.getPackage() == null && i2.getPackage() != null) return -1;
+      if (i1.getPackage() != null && i2.getPackage() == null) return 1;
+      if (i1.getPackage() != null && i2.getPackage() != null) {
+        if (!i1.getPackage().equals(i2.getPackage())) {
+          return i1.getPackage().compareTo(i2.getPackage());
+        }
+      }
       Set<String> categories1 = i1.getCategories();
       Set<String> categories2 = i2.getCategories();
       if (categories1 == null) return categories2 == null ? 0 : -1;
