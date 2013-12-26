@@ -145,8 +145,7 @@ public class ActivityController<T extends Activity> {
 
   public ActivityController<T> create(final Bundle bundle) {
     shadowMainLooper.runPaused(new Runnable() {
-      @Override
-      public void run() {
+      @Override public void run() {
         if (!attached) attach();
         method("performCreate").withParameterTypes(Bundle.class).in(activity).invoke(bundle);
       }
@@ -200,8 +199,7 @@ public class ActivityController<T extends Activity> {
 
   public ActivityController<T> visible() {
     shadowMainLooper.runPaused(new Runnable() {
-      @Override
-      public void run() {
+      @Override public void run() {
         field("mDecor").ofType(View.class).in(activity).set(activity.getWindow().getDecorView());
         method("makeVisible").in(activity).invoke();
       }
@@ -230,10 +228,28 @@ public class ActivityController<T extends Activity> {
     return this;
   }
 
-  private ActivityController<T> invokeWhilePaused(final String methodName, final Object... args) {
+  private ActivityController<T> invokeWhilePaused(final String methodName) {
     shadowMainLooper.runPaused(new Runnable() {
       @Override public void run() {
-        method(methodName).in(activity).invoke(args);
+        method(methodName).in(activity).invoke();
+      }
+    });
+    return this;
+  }
+
+  private ActivityController<T> invokeWhilePaused(final String methodName, final Bundle arg) {
+    shadowMainLooper.runPaused(new Runnable() {
+      @Override public void run() {
+        method(methodName).withParameterTypes(Bundle.class).in(activity).invoke(arg);
+      }
+    });
+    return this;
+  }
+
+  private ActivityController<T> invokeWhilePaused(final String methodName, final Intent arg) {
+    shadowMainLooper.runPaused(new Runnable() {
+      @Override public void run() {
+        method(methodName).withParameterTypes(Intent.class).in(activity).invoke(arg);
       }
     });
     return this;
