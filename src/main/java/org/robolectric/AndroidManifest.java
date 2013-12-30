@@ -2,6 +2,7 @@ package org.robolectric;
 
 import android.app.Activity;
 import org.robolectric.res.ActivityData;
+import org.robolectric.res.ContentProviderData;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
 import org.robolectric.res.ResourcePath;
@@ -55,6 +56,7 @@ public class AndroidManifest {
   private int versionCode;
   private String versionName;
   private int applicationFlags;
+  private final List<ContentProviderData> providers = new ArrayList<ContentProviderData>();
   private final List<ReceiverAndIntentFilter> receivers = new ArrayList<ReceiverAndIntentFilter>();
   private final Map<String, ActivityData> activityDatas = new LinkedHashMap<String, ActivityData>();
   private final Map<String, String> applicationMetaData = new LinkedHashMap<String, String>();
@@ -157,10 +159,24 @@ public class AndroidManifest {
       parseReceivers(manifestDocument);
       parseActivities(manifestDocument);
       parseApplicationMetaData(manifestDocument);
+      parseContentProviders(manifestDocument);
     } catch (Exception ignored) {
       ignored.printStackTrace();
     }
     manifestIsParsed = true;
+  }
+
+  private void parseContentProviders(Document manifestDocument) {
+    Node application = manifestDocument.getElementsByTagName("application").item(0);
+    if (application == null) return;
+
+    for (Node contentProviderNode : getChildrenTags(application, "provider")) {
+      Node nameItem = contentProviderNode.getAttributes().getNamedItem("android:name");
+      Node authorityItem = contentProviderNode.getAttributes().getNamedItem("android:authorities");
+      if (nameItem != null && authorityItem != null) {
+        providers.add(new ContentProviderData(resolveClassRef(nameItem.getTextContent()), authorityItem.getTextContent()));
+      }
+    }
   }
 
   private void parseReceivers(final Document manifestDocument) {
@@ -195,8 +211,7 @@ public class AndroidManifest {
       Node themeAttr = attributes.getNamedItem("android:theme");
       Node labelAttr = attributes.getNamedItem("android:label");
       if (nameAttr == null) continue;
-      String activityName = nameAttr.getNodeValue();
-      if(activityName.startsWith(".")) activityName = packageName + activityName;
+      String activityName = resolveClassRef(nameAttr.getNodeValue());
 
       activityDatas.put(activityName,
           new ActivityData(activityName,
@@ -335,6 +350,11 @@ public class AndroidManifest {
       resourcePaths.addAll(libraryManifest.getIncludedResourcePaths());
     }
     return resourcePaths;
+  }
+
+  public List<ContentProviderData> getContentProviders() {
+    parseAndroidManifest();
+    return providers;
   }
 
   protected void createLibraryManifests() {
