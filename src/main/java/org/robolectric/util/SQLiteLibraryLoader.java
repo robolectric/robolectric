@@ -158,7 +158,7 @@ public class SQLiteLibraryLoader {
   }
 
   private String getNativesResourcesFilePart() {
-    return libraryNameMapper.mapLibraryName(SQLITE4JAVA).replace(".dylib", ".jnilib");
+    return getLibName().replace(".dylib", ".jnilib");
   }
 
   private String getOsPrefix() {
