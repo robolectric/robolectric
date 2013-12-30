@@ -82,7 +82,7 @@ public class SQLiteLibraryLoader {
   }
 
   protected String getLibClasspathResourceName() {
-    return "/" + getNativesResourcesPathPart() + "/" + getLibName();
+    return "/" + getNativesResourcesPathPart() + "/" + getNativesResourcesFilePart();
   }
 
   private InputStream getLibraryStream() {
@@ -150,17 +150,15 @@ public class SQLiteLibraryLoader {
   }
 
   private String getLibName() {
-    final String libName = libraryNameMapper.mapLibraryName(SQLITE4JAVA);
-    if (libName.endsWith(".dylib")) {
-      // for some reason the sqlite4java osx version is packaged as .jnilib
-      return libName.replace(".dylib", ".jnilib");
-    } else {
-      return libName;
-    }
+    return libraryNameMapper.mapLibraryName(SQLITE4JAVA);
   }
 
   private String getNativesResourcesPathPart() {
     return getOsPrefix() + "-" + getArchitectureSuffix();
+  }
+
+  private String getNativesResourcesFilePart() {
+    return getLibName().replace(".dylib", ".jnilib");
   }
 
   private String getOsPrefix() {
