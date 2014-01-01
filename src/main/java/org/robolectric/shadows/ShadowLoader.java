@@ -5,6 +5,9 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Implementation;
 
+/**
+ * Shadow Loader from the support library.
+ */
 @Implements(Loader.class)
 public class ShadowLoader<D> {
   @RealObject private Loader<D> realObject;
