@@ -35,6 +35,7 @@ public class PackageResourceLoader extends XResourceLoader {
         new ValueResourceLoader(data, "/resources/dimen", "dimen", ResType.DIMEN),
         new ValueResourceLoader(data, "/resources/integer", "integer", ResType.INTEGER),
         new ValueResourceLoader(data, "/resources/integer-array", "array", ResType.INTEGER_ARRAY),
+        new ValueResourceLoader(data, "/resources/item", "layout", ResType.LAYOUT),
         new PluralResourceLoader(pluralsData),
         new ValueResourceLoader(data, "/resources/string", "string", ResType.CHAR_SEQUENCE),
         new ValueResourceLoader(data, "/resources/string-array", "array", ResType.CHAR_SEQUENCE_ARRAY),
