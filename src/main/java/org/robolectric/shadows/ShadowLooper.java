@@ -56,7 +56,13 @@ public class ShadowLooper {
 
   @Implementation
   public static Looper getMainLooper() {
-    return Robolectric.getShadowApplication().getMainLooper();
+    Application application = Robolectric.getShadowApplication();
+    if ((application == null) && (Thread.currentThread() == MAIN_THREAD)) {
+      Looper mainLooper = looperForThread.get();
+      return shadowOf(mainLooper);
+    } else {
+      return Robolectric.getShadowApplication().getMainLooper();
+    }
   }
 
   @Implementation
