@@ -21,8 +21,10 @@ import android.os.RemoteException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.AndroidManifest;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
+import org.robolectric.res.ContentProviderData;
 import org.robolectric.tester.android.database.TestCursor;
 
 import java.io.InputStream;
@@ -140,7 +142,7 @@ public class ContentResolverTest {
   }
 
   @Test
-  public void query__shouldReturnSpecificCursorsForSpecificUris() throws Exception {
+  public void query_shouldReturnSpecificCursorsForSpecificUris() throws Exception {
     assertNull(shadowContentResolver.query(uri21, null, null, null, null));
     assertNull(shadowContentResolver.query(uri22, null, null, null, null));
 
@@ -154,7 +156,7 @@ public class ContentResolverTest {
   }
 
   @Test
-  public void query__shouldKnowWhatItsParamsWere() throws Exception {
+  public void query_shouldKnowWhatItsParamsWere() throws Exception {
     String[] projection = {};
     String selection = "select";
     String[] selectionArgs = {};
@@ -442,6 +444,12 @@ public class ContentResolverTest {
     assertThat(co.changed).isFalse();
   }
 
+  @Test
+  public void getProvider_shouldCreateProviderFromManifest() {
+    AndroidManifest manifest = Robolectric.getShadowApplication().getAppManifest();
+    manifest.getContentProviders().add(new ContentProviderData("org.robolectric.shadows.ContentResolverTest$TestContentProvider", AUTHORITY));
+    assertThat(ShadowContentResolver.getProvider(Uri.parse("content://" + AUTHORITY + "/shadows"))).isNotNull();
+  }
 
   static class QueryParamTrackingTestCursor extends TestCursor {
     public Uri uri;
@@ -475,6 +483,38 @@ public class ContentResolverTest {
     @Override
     public void onChange(boolean selfChange, Uri uri) {
       changed = true;
+    }
+  }
+
+  public static class TestContentProvider extends ContentProvider {
+    @Override
+    public int delete(Uri arg0, String arg1, String[] arg2) {
+      return 0;
+    }
+
+    @Override
+    public String getType(Uri arg0) {
+      return null;
+    }
+
+    @Override
+    public Uri insert(Uri arg0, ContentValues arg1) {
+      return null;
+    }
+
+    @Override
+    public boolean onCreate() {
+      return false;
+    }
+
+    @Override
+    public Cursor query(Uri arg0, String[] arg1, String arg2, String[] arg3, String arg4) {
+      return null;
+    }
+
+    @Override
+    public int update(Uri arg0, ContentValues arg1, String arg2, String[] arg3) {
+      return 0;
     }
   }
 }

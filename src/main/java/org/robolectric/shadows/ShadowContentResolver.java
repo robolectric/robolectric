@@ -13,10 +13,12 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 
+import org.robolectric.AndroidManifest;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.internal.NamedStream;
+import org.robolectric.res.ContentProviderData;
 import org.robolectric.tester.android.database.TestCursor;
 
 import java.io.IOException;
@@ -276,15 +278,20 @@ public class ShadowContentResolver {
     return masterSyncAutomatically;
   }
 
-
   public static ContentProvider getProvider(Uri uri) {
-    if (uri == null) {
+    if (uri == null || !ContentResolver.SCHEME_CONTENT.equals(uri.getScheme())) {
       return null;
-    } else if (!ContentResolver.SCHEME_CONTENT.equals(uri.getScheme())) {
-      return null;
-    } else {
-      return providers.get(uri.getAuthority());
     }
+
+    if (!providers.containsKey(uri.getAuthority())) {
+      AndroidManifest manifest = Robolectric.getShadowApplication().getAppManifest();
+      for (ContentProviderData providerData : manifest.getContentProviders()) {
+        if (providerData.getAuthority().equals(uri.getAuthority())) {
+          providers.put(providerData.getAuthority(), createAndInitialize(providerData));
+        }
+      }
+    }
+    return providers.get(uri.getAuthority());
   }
 
   public static void registerProvider(String authority, ContentProvider provider) {
@@ -401,6 +408,20 @@ public class ShadowContentResolver {
    */
   public ContentObserver getContentObserver( Uri uri ) {
     return contentObservers.get(uri);
+  }
+
+  private static ContentProvider createAndInitialize(ContentProviderData providerData) {
+    try {
+      ContentProvider provider = (ContentProvider) Class.forName(providerData.getClassName()).newInstance();
+      provider.onCreate();
+      return provider;
+    } catch (InstantiationException e) {
+      throw new RuntimeException("Error instantiating class " + providerData.getClassName());
+    } catch (IllegalAccessException e) {
+      throw new RuntimeException("Error instantiating class " + providerData.getClassName());
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException("Error instantiating class " + providerData.getClassName());
+    }
   }
 
   private TestCursor getCursor(Uri uri) {

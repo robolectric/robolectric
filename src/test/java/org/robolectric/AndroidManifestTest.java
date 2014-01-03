@@ -32,6 +32,7 @@ import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_SMALL_SCREENS;
 import static android.content.pm.ApplicationInfo.FLAG_TEST_ONLY;
 import static android.content.pm.ApplicationInfo.FLAG_VM_SAFE_MODE;
 import static java.util.Arrays.asList;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -42,6 +43,18 @@ import static org.robolectric.util.TestUtil.resourceFile;
 @RunWith(TestRunners.WithDefaults.class)
 public class AndroidManifestTest {
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+  @Test
+  public void shouldReadContentProviders() throws Exception {
+    AndroidManifest config = newConfig("TestAndroidManifestWithContentProviders.xml");
+    assertThat(config.getContentProviders()).hasSize(2);
+
+    assertThat(config.getContentProviders().get(0).getClassName()).isEqualTo("org.robolectric.tester.FullyQualifiedClassName");
+    assertThat(config.getContentProviders().get(0).getAuthority()).isEqualTo("org.robolectric");
+
+    assertThat(config.getContentProviders().get(1).getClassName()).isEqualTo("org.robolectric.tester.PartiallyQualifiedClassName");
+    assertThat(config.getContentProviders().get(1).getAuthority()).isEqualTo("org.robolectric");
+  }
 
   @Test
   public void shouldReadBroadcastReceivers() throws Exception {
