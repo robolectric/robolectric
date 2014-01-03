@@ -14,6 +14,7 @@ import android.content.ServiceConnection;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -205,11 +206,15 @@ public class ShadowApplication extends ShadowContextWrapper {
   @Implementation
   @Override
   public void startActivity(Intent intent) {
-    if (checkActivities && getPackageManager().resolveActivity(intent, -1) == null) {
-      throw new ActivityNotFoundException(intent.getAction());
-    } else {
-      startedActivities.add(intent);
-    }
+    verifyActivityInManifest(intent);
+    startedActivities.add(intent);
+  }
+
+  @Implementation
+  @Override
+  public void startActivity(Intent intent, Bundle options) {
+    verifyActivityInManifest(intent);
+    startedActivities.add(intent);
   }
 
   @Implementation
@@ -425,6 +430,12 @@ public class ShadowApplication extends ShadowContextWrapper {
       registeredReceivers.add(new Wrapper(receiver, filter, context, broadcastPermission, scheduler));
     }
     return getStickyIntent(filter);
+  }
+
+  private void verifyActivityInManifest(Intent intent) {
+    if (checkActivities && getPackageManager().resolveActivity(intent, -1) == null) {
+      throw new ActivityNotFoundException(intent.getAction());
+    }
   }
 
   private Intent getStickyIntent(IntentFilter filter) {
