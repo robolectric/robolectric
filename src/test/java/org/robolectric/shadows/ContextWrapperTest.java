@@ -8,7 +8,7 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.database.sqlite.SQLiteDatabase;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -31,6 +31,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Robolectric.buildActivity;
+import static org.robolectric.Robolectric.getShadowApplication;
 import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -234,6 +235,26 @@ public class ContextWrapperTest {
   public void bindServiceDelegatesToShadowApplication() {
     contextWrapper.bindService(new Intent("foo"), new TestService(), Context.BIND_AUTO_CREATE);
     assertEquals("foo", shadowOf(Robolectric.application).getNextStartedService().getAction());
+  }
+
+  @Test
+  public void startActivities_shouldStartAllActivities() {
+    final Intent view = new Intent(Intent.ACTION_VIEW);
+    final Intent pick = new Intent(Intent.ACTION_PICK);
+    contextWrapper.startActivities(new Intent[] {view, pick});
+
+    assertThat(getShadowApplication().getNextStartedActivity()).isEqualTo(pick);
+    assertThat(getShadowApplication().getNextStartedActivity()).isEqualTo(view);
+  }
+
+  @Test
+  public void startActivities_withBundle_shouldStartAllActivities() {
+    final Intent view = new Intent(Intent.ACTION_VIEW);
+    final Intent pick = new Intent(Intent.ACTION_PICK);
+    contextWrapper.startActivities(new Intent[] {view, pick}, new Bundle());
+
+    assertThat(getShadowApplication().getNextStartedActivity()).isEqualTo(pick);
+    assertThat(getShadowApplication().getNextStartedActivity()).isEqualTo(view);
   }
 
   private BroadcastReceiver broadcastReceiver(final String name) {

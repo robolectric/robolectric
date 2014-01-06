@@ -14,6 +14,7 @@ import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.database.DatabaseErrorHandler;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import org.robolectric.Robolectric;
@@ -211,6 +212,25 @@ public class ShadowContextWrapper extends ShadowContext {
   @Implementation
   public void startActivity(Intent intent) {
     getApplicationContext().startActivity(intent);
+  }
+
+  @Implementation
+  public void startActivity(Intent intent, Bundle options) {
+    getApplicationContext().startActivity(intent, options);
+  }
+
+  @Implementation
+  public void startActivities(Intent[] intents) {
+    for (int i = intents.length - 1; i >= 0; i--) {
+      startActivity(intents[i]);
+    }
+  }
+
+  @Implementation
+  public void startActivities(Intent[] intents, Bundle options) {
+    for (int i = intents.length - 1; i >= 0; i--) {
+      startActivity(intents[i], options);
+    }
   }
 
   @Implementation
