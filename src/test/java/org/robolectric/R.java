@@ -103,6 +103,9 @@ public final class R {
     public static final int remote_view_1 = 0x10035;
     public static final int remote_view_2 = 0x10036;
     public static final int remote_view_3 = 0x10037;
+
+    public static final int hello = 0x10038;
+    public static final int world = 0x10039;
   }
 
   public static final class string {
@@ -215,6 +218,9 @@ public final class R {
     public static final int activity_fragment = 0x10620;
     public static final int custom_title = 0x10621;
     public static final int remote_views = 0x10622;
+    public static final int main_layout = 0x10623;
+    public static final int activity_main = 0x10624;
+    public static final int activity_main_1 = 0x10625;
   }
 
   public static final class anim {

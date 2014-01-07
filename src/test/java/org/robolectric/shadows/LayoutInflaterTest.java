@@ -318,6 +318,29 @@ public class LayoutInflaterTest {
   }
 
   @Test
+  public void testSetContentViewByItemResource() throws Exception {
+    Activity activity = buildActivity(Activity.class).create().get();
+    activity.setContentView(R.layout.main_layout);
+
+    TextView tv1 = (TextView) activity.findViewById(R.id.hello);
+    TextView tv2 = (TextView) activity.findViewById(R.id.world);
+    assertNotNull(tv1);
+    assertNull(tv2);
+  }
+
+  @Test
+  @Config(qualifiers = "w820dp")
+  public void testSetContentViewByItemResourceWithW820dp() throws Exception {
+    Activity activity = buildActivity(Activity.class).create().get();
+    activity.setContentView(R.layout.main_layout);
+
+    TextView tv1 = (TextView) activity.findViewById(R.id.hello);
+    TextView tv2 = (TextView) activity.findViewById(R.id.world);
+    assertNotNull(tv1);
+    assertNotNull(tv2);
+  }
+
+  @Test
   public void testViewEnabled() throws Exception {
     View mediaView = inflate("main");
     assertThat(mediaView.findViewById(R.id.time).isEnabled()).isFalse();
