@@ -24,6 +24,7 @@ import org.robolectric.res.ResourcePath;
 import org.robolectric.util.I18nException;
 import org.robolectric.util.Transcript;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -86,8 +87,48 @@ public class Setup {
       return false;
     }
 
-    // allow explicit control with @Instrument, mostly for tests
-    return classInfo.hasAnnotation(Instrument.class) || isFromAndroidSdk(classInfo);
+    if (isFromAndroidSdk(classInfo)) {
+      return true;
+    }
+
+    // Avoid infinite loop caused by trying to load the
+    // RobolectricInternals class below.
+    if (classInfo.getName().equals(RobolectricInternals.class.getName())) {
+      return false;
+    }
+
+    // Check the current ShadowMap to see if a custom shadow has been
+    // configured.
+    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+
+    if (classLoader != null) {
+      ShadowWrangler shadowWrangler;
+
+      try {
+        String className = RobolectricInternals.class.getName();
+        Class<?> robolectricInternalsClass = classLoader.loadClass(className);
+        Field field = robolectricInternalsClass.getDeclaredField("classHandler");
+        field.setAccessible(true);
+        shadowWrangler = (ShadowWrangler) field.get(null);
+
+        if ((shadowWrangler != null) &&
+            (shadowWrangler.shadowMap != null) &&
+            shadowWrangler.shadowMap.containsKey(classInfo.getName())) {
+          return true;
+        }
+      } catch (NoSuchFieldException e) {
+          throw new RuntimeException(e);
+      } catch (IllegalAccessException e) {
+          throw new RuntimeException(e);
+      } catch (ClassNotFoundException e) {
+          throw new RuntimeException(e);
+      }
+    }
+
+    // Allow tests with @Instrument to be instrumented.  During normal
+    // conditions, classes being shadowed will never have
+    // @Instrument annotations.
+    return classInfo.hasAnnotation(Instrument.class);
   }
 
   public boolean isFromAndroidSdk(ClassInfo classInfo) {
