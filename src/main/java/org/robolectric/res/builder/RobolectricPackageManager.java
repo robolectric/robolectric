@@ -12,13 +12,16 @@ import android.os.Bundle;
 import android.util.Pair;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 import org.robolectric.AndroidManifest;
 import org.robolectric.Robolectric;
 import org.robolectric.res.ActivityData;
@@ -29,9 +32,63 @@ import org.robolectric.tester.android.content.pm.StubPackageManager;
 
 public class RobolectricPackageManager extends StubPackageManager {
 
+  private static class IntentComparator implements Comparator<Intent> {
+
+    @Override
+    public int compare(Intent i1, Intent i2) {
+      if (i1 == null && i2 == null) return 0;
+      if (i1 == null && i2 != null) return -1;
+      if (i1 != null && i2 == null) return 1;
+      if (i1.equals(i2)) return 0;
+      if (i1.getAction() == null && i2.getAction() != null) return -1;
+      if (i1.getAction() != null && i2.getAction() == null) return 1;
+      if (i1.getAction() != null && i2.getAction() != null) {
+        if (!i1.getAction().equals(i2.getAction())) {
+          return i1.getAction().compareTo(i2.getAction());
+        }
+      }
+      if (i1.getData() == null && i2.getData() != null) return -1;
+      if (i1.getData() != null && i2.getData() == null) return 1;
+      if (i1.getData() != null && i2.getData() != null) {
+        if (!i1.getData().equals(i2.getData())) {
+          return i1.getData().compareTo(i2.getData());
+        }
+      }
+      if (i1.getComponent() == null && i2.getComponent() != null) return -1;
+      if (i1.getComponent() != null && i2.getComponent() == null) return 1;
+      if (i1.getComponent() != null && i2.getComponent() != null) {
+        if (!i1.getComponent().equals(i2.getComponent())) {
+          return i1.getComponent().compareTo(i2.getComponent());
+        }
+      }
+      if (i1.getPackage() == null && i2.getPackage() != null) return -1;
+      if (i1.getPackage() != null && i2.getPackage() == null) return 1;
+      if (i1.getPackage() != null && i2.getPackage() != null) {
+        if (!i1.getPackage().equals(i2.getPackage())) {
+          return i1.getPackage().compareTo(i2.getPackage());
+        }
+      }
+      Set<String> categories1 = i1.getCategories();
+      Set<String> categories2 = i2.getCategories();
+      if (categories1 == null) return categories2 == null ? 0 : -1;
+      if (categories2 == null) return 1;
+      if (categories1.size() > categories2.size()) return 1;
+      if (categories1.size() < categories2.size()) return -1;
+      String[] array1 = categories1.toArray(new String[0]);
+      String[] array2 = categories2.toArray(new String[0]);
+      Arrays.sort(array1);
+      Arrays.sort(array2);
+      for (int i = 0; i < array1.length; ++i) {
+        int val = array1[i].compareTo(array2[i]);
+        if (val != 0) return val;
+      }
+      return 0;
+    }
+  }
+
   private final Map<String, AndroidManifest> androidManifests = new LinkedHashMap<String, AndroidManifest>();
   private final Map<String, PackageInfo> packageInfos = new LinkedHashMap<String, PackageInfo>();
-  private Map<Intent, List<ResolveInfo>> resolveInfoForIntent = new LinkedHashMap<Intent, List<ResolveInfo>>();
+  private Map<Intent, List<ResolveInfo>> resolveInfoForIntent = new TreeMap<Intent, List<ResolveInfo>>(new IntentComparator());
   private Map<ComponentName, ComponentState> componentList = new LinkedHashMap<ComponentName, ComponentState>();
   private Map<ComponentName, Drawable> drawableList = new LinkedHashMap<ComponentName, Drawable>();
   private Map<String, Boolean> systemFeatureList = new LinkedHashMap<String, Boolean>();

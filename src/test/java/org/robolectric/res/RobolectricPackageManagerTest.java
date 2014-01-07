@@ -303,6 +303,68 @@ public class RobolectricPackageManagerTest {
     assertThat(applicationInfo.metaData.getString("key")).isEqualTo("value");
   }
 
+  @Test
+  public void testResolveDifferentIntentObjects() {
+    Intent intent1 = rpm.getLaunchIntentForPackage(TEST_PACKAGE_LABEL);
+    assertThat(intent1).isNull();
+
+    intent1 = new Intent(Intent.ACTION_MAIN);
+    intent1.setPackage(TEST_PACKAGE_LABEL);
+    intent1.addCategory(Intent.CATEGORY_LAUNCHER);
+    ResolveInfo resolveInfo = new ResolveInfo();
+    resolveInfo.activityInfo = new ActivityInfo();
+    resolveInfo.activityInfo.packageName = TEST_PACKAGE_LABEL;
+    resolveInfo.activityInfo.name = "LauncherActivity";
+    Robolectric.packageManager.addResolveInfoForIntent(intent1, resolveInfo);
+    
+    // the original intent object should yield a result
+    ResolveInfo result  = rpm.resolveActivity(intent1, -1);
+    assertThat(result).isNotNull();
+
+    // AND a new, functionally equivalent intent should also yield a result
+    Intent intent2 = new Intent(Intent.ACTION_MAIN);
+    intent2.setPackage(TEST_PACKAGE_LABEL);
+    intent2.addCategory(Intent.CATEGORY_LAUNCHER);
+    result = rpm.resolveActivity(intent2, -1);
+    assertThat(result).isNotNull();
+  }
+
+  @Test
+  public void testResolvePartiallySimilarIntents() {
+    Intent intent1 = rpm.getLaunchIntentForPackage(TEST_PACKAGE_LABEL);
+    assertThat(intent1).isNull();
+
+    intent1 = new Intent(Intent.ACTION_MAIN);
+    intent1.setPackage(TEST_PACKAGE_LABEL);
+    intent1.addCategory(Intent.CATEGORY_LAUNCHER);
+    ResolveInfo resolveInfo = new ResolveInfo();
+    resolveInfo.activityInfo = new ActivityInfo();
+    resolveInfo.activityInfo.packageName = TEST_PACKAGE_LABEL;
+    resolveInfo.activityInfo.name = "LauncherActivity";
+    Robolectric.packageManager.addResolveInfoForIntent(intent1, resolveInfo);
+
+    // the original intent object should yield a result
+    ResolveInfo result  = rpm.resolveActivity(intent1, -1);
+    assertThat(result).isNotNull();
+
+    // an intent with just the same action should not be considered the same
+    Intent intent2 = new Intent(Intent.ACTION_MAIN);
+    result = rpm.resolveActivity(intent2, -1);
+    assertThat(result).isNull();
+
+    // an intent with just the same category should not be considered the same 
+    Intent intent3 = new Intent();
+    intent3.addCategory(Intent.CATEGORY_LAUNCHER);
+    result = rpm.resolveActivity(intent3, -1);
+    assertThat(result).isNull();
+
+    // an intent without the correct package restriction should not be the same
+    Intent intent4 = new Intent(Intent.ACTION_MAIN);
+    intent4.addCategory(Intent.CATEGORY_LAUNCHER);
+    result = rpm.resolveActivity(intent4, -1);
+    assertThat(result).isNull();
+  }
+
   /////////////////////////////
 
   public AndroidManifest newConfigWith(String contents) throws IOException {
