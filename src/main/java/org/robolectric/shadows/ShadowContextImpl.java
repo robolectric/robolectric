@@ -53,6 +53,7 @@ public class ShadowContextImpl extends ShadowContext {
     SYSTEM_SERVICE_MAP.put(Context.DOWNLOAD_SERVICE, "android.app.DownloadManager");
     SYSTEM_SERVICE_MAP.put(Context.TEXT_SERVICES_MANAGER_SERVICE, "android.view.textservice.TextServicesManager");
     SYSTEM_SERVICE_MAP.put(Context.DEVICE_POLICY_SERVICE, "android.app.admin.DevicePolicyManager");
+    SYSTEM_SERVICE_MAP.put(Context.DROPBOX_SERVICE, "android.os.DropBoxManager");
   }
 
   @RealObject private Context realContextImpl;
