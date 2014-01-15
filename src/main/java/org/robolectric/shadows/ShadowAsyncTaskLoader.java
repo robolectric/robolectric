@@ -13,7 +13,7 @@ import java.util.concurrent.Callable;
  * Shadow AsyncTaskLoader from the support library.
  */
 @Implements(AsyncTaskLoader.class)
-public class ShadowAsyncTaskLoader<D> extends ShadowLoader<D> {
+public class ShadowAsyncTaskLoader<D> {
   @RealObject private AsyncTaskLoader<D> realLoader;
   private SimpleFuture<D> future;
 
@@ -36,7 +36,7 @@ public class ShadowAsyncTaskLoader<D> extends ShadowLoader<D> {
   }
 
   @Implementation
-  protected void onForceLoad() {
+  public void onForceLoad() {
     Robolectric.getBackgroundScheduler().post(new Runnable() {
       @Override public void run() {
         future.run();
