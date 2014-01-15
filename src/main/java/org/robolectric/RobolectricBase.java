@@ -28,6 +28,7 @@ import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowArrayAdapter;
 import org.robolectric.shadows.ShadowAssetManager;
 import org.robolectric.shadows.ShadowAsyncTask;
+import org.robolectric.shadows.ShadowAsyncTaskLoader;
 import org.robolectric.shadows.ShadowAudioManager;
 import org.robolectric.shadows.ShadowBaseAdapter;
 import org.robolectric.shadows.ShadowBinder;
@@ -250,6 +251,7 @@ public class RobolectricBase {
       ShadowArrayAdapter.class,
       ShadowAssetManager.class,
       ShadowAsyncTask.class,
+      ShadowAsyncTaskLoader.class,
       ShadowAudioManager.class,
       ShadowBaseAdapter.class,
       ShadowBinder.class,
