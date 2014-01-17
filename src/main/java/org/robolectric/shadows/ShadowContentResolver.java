@@ -285,9 +285,11 @@ public class ShadowContentResolver {
 
     if (!providers.containsKey(uri.getAuthority())) {
       AndroidManifest manifest = Robolectric.getShadowApplication().getAppManifest();
-      for (ContentProviderData providerData : manifest.getContentProviders()) {
-        if (providerData.getAuthority().equals(uri.getAuthority())) {
-          providers.put(providerData.getAuthority(), createAndInitialize(providerData));
+      if (manifest != null) {
+        for (ContentProviderData providerData : manifest.getContentProviders()) {
+          if (providerData.getAuthority().equals(uri.getAuthority())) {
+            providers.put(providerData.getAuthority(), createAndInitialize(providerData));
+          }
         }
       }
     }
