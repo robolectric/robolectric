@@ -24,8 +24,6 @@ public class AudioManagerTest {
   private ShadowAudioManager  shadowAudioManager;
   private AudioManager.OnAudioFocusChangeListener listener;
 
-
-
   private int[] allStreams = {
                        AudioManager.STREAM_ALARM,
                        AudioManager.STREAM_NOTIFICATION,
@@ -178,7 +176,6 @@ public class AudioManagerTest {
     }
 
   }
-
 
   @Test
   public void shouldNotBeBelowZeroVolume() {
