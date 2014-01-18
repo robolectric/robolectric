@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import android.media.AudioManager;
-import org.jetbrains.annotations.NotNull;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import java.util.HashMap;
@@ -12,8 +11,11 @@ import java.util.Map;
 @Implements(AudioManager.class)
 public class ShadowAudioManager {
 
-  /**the default max volume of a stream*/
-  private static final int DEFAULT_MAX_VOLUME = 15;
+  /**the default max volume of the music and dtmf stream*/
+  private static final int MAX_VOLUME_MUSIC_DTMF = 15;
+
+  /**the default max volume of the rest of the stream*/
+  private static final int DEFAULT_MAX_VOLUME = 7;
 
   /**the default current volume of a stream*/
   private static final int DEFAULT_VOLUME     = 7;
@@ -41,10 +43,7 @@ public class ShadowAudioManager {
           AudioManager.STREAM_RING,
           AudioManager.STREAM_SYSTEM,
           AudioManager.STREAM_VOICE_CALL,
-          AudioManager.STREAM_DTMF,
-          AudioManager.STREAM_BLUETOOTH_SCO,
-          AudioManager.STREAM_SYSTEM_ENFORCED,
-          AudioManager.STREAM_TTS
+          AudioManager.STREAM_DTMF
     };
 
     for (int stream : allStreams) {
@@ -53,10 +52,10 @@ public class ShadowAudioManager {
               new AudioStream(DEFAULT_VOLUME, DEFAULT_MAX_VOLUME, FLAG_NO_ACTION)
       );
     }
-
+    /*the music and dtmf streams have a higher max volume*/
+    streamStatus.get(AudioManager.STREAM_MUSIC).setMaxVolume(MAX_VOLUME_MUSIC_DTMF);
+    streamStatus.get(AudioManager.STREAM_DTMF).setMaxVolume(MAX_VOLUME_MUSIC_DTMF);
   }
-
-
 
   @Implementation
   public int getStreamMaxVolume(int streamType) {
@@ -80,8 +79,7 @@ public class ShadowAudioManager {
     AudioStream stream = streamStatus.get(streamType);
 
   /*Note, the flag has no effect*/
-    if (stream != null)
-    {
+    if (stream != null) {
       stream.setCurrentVolume(index);
       stream.setFlag(flags);
     }
@@ -119,19 +117,6 @@ public class ShadowAudioManager {
   public void setStreamVolume(int streamVolume) {
     for (Map.Entry<Integer, AudioStream> entry : streamStatus.entrySet()) {
       entry.getValue().setCurrentVolume(streamVolume);
-    }
-
-  }
-
-  /**
-   * set the flag for all streams
-   *
-   * @param flags the new flag value for all streams
-   */
-
-  public void setFlags(int flags) {
-    for (Map.Entry<Integer, AudioStream> entry : streamStatus.entrySet()) {
-      entry.getValue().setFlag(flags);
     }
 
   }
@@ -174,7 +159,6 @@ public class ShadowAudioManager {
     /**flag for audios stream*/
     private int flag;
 
-
     /**
      * initalise the audio stream
      *
@@ -188,7 +172,6 @@ public class ShadowAudioManager {
       setMaxVolume(maxVol);
       setFlag(flag);
     }
-
 
     /**
      * get the current volume
@@ -208,7 +191,6 @@ public class ShadowAudioManager {
       return maxVolume;
     }
 
-
     /**
      * get the flag
      *
@@ -219,12 +201,22 @@ public class ShadowAudioManager {
     }
 
     /**
-     * set the current volume
+     * set the current volume. Volume will not be less than 0 or greater than
+     * maxVolume.
      *
      * @param vol   the new current volume
      */
     public void setCurrentVolume(int vol) {
+
+      if (vol > maxVolume) {
+        vol = maxVolume;
+      }
+      else if (vol < 0) {
+        vol = 0;
+      }
+
       currentVolume = vol;
+
     }
 
     /**
