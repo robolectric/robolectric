@@ -7,13 +7,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.res.Fs;
-import org.robolectric.res.ResourcePath;
 import org.robolectric.test.TemporaryFolder;
 import org.robolectric.util.TestUtil;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -129,7 +127,7 @@ public class AndroidManifestTest {
     AndroidManifest appManifest = new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"));
 
     // This intentionally loads from the non standard resources/project.properties
-    List<String> resourcePaths = stringify(appManifest.getIncludedResourcePaths());
+    List<String> resourcePaths = TestUtil.stringify(appManifest.getIncludedResourcePaths());
     assertEquals(asList(
         joinPath(".", "src", "test", "resources", "res"),
         joinPath(".", "src", "test", "resources", "lib1", "res"),
@@ -137,6 +135,23 @@ public class AndroidManifestTest {
         joinPath(".", "src", "test", "resources", "lib2", "res")),
         resourcePaths);
   }
+
+    @Test public void shouldLoadAllResourcesForExisingLibrariesWithGivenCustomProjectProperties() {
+      AndroidManifest appManifest = new AndroidManifest(
+          resourceFile("mavenapp/AndroidManifest.xml"),
+          resourceFile("mavenapp/src/main/resources"),
+          resourceFile("mavenapp/src/main/assets"),
+          resourceFile("mavenapp/project.properties")
+      );
+
+      // This intentionally loads from the non standard resources/project.properties
+      List<String> resourcePaths = TestUtil.stringify(appManifest.getIncludedResourcePaths());
+      assertEquals(asList(
+          joinPath("./src/test/resources/mavenapp/src/main/resources"),
+          joinPath("./src/test/resources/mavenapp/../lib1/res"),
+          joinPath("./src/test/resources/mavenapp/../lib1/../lib3/res")),
+          resourcePaths);
+    }
 
   @Test
   public void shouldTolerateMissingRFile() throws Exception {
@@ -156,14 +171,6 @@ public class AndroidManifestTest {
             "    <uses-sdk " + usesSdkAttrs + "/>\n" +
             "</manifest>\n");
     return new AndroidManifest(Fs.newFile(f), null, null);
-  }
-
-  private List<String> stringify(List<ResourcePath> resourcePaths) {
-    List<String> resourcePathBases = new ArrayList<String>();
-    for (ResourcePath resourcePath : resourcePaths) {
-      resourcePathBases.add(resourcePath.resourceBase.toString());
-    }
-    return resourcePathBases;
   }
 
   @Test
