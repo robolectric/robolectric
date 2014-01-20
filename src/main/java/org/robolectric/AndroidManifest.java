@@ -5,6 +5,8 @@ import org.robolectric.res.ActivityData;
 import org.robolectric.res.ContentProviderData;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
+import org.robolectric.res.ResName;
+import org.robolectric.res.ResourceIndex;
 import org.robolectric.res.ResourcePath;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -21,6 +23,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.Properties;
 
 import static android.content.pm.ApplicationInfo.FLAG_ALLOW_BACKUP;
@@ -190,17 +193,7 @@ public class AndroidManifest {
       if (namedItem == null) continue;
 
       String receiverName = resolveClassRef(namedItem.getTextContent());
-
-      Map<String, String> metaDataMap = null;
-      for (Node metaDataNode : getChildrenTags(receiverNode, "meta-data")) {
-        if(metaDataMap == null) {
-          metaDataMap = new LinkedHashMap<String, String>();
-        }
-
-        Node namedData = metaDataNode.getAttributes().getNamedItem("android:name");
-        Node namedValue = metaDataNode.getAttributes().getNamedItem("android:value");
-        metaDataMap.put(resolveClassRef(namedData.getTextContent()), resolveClassRef(namedValue.getTextContent()));
-      }
+      Map<String,String> metaDataMap = parseMetaData(getChildrenTags(receiverNode, "meta-data"));
 
       for (Node intentFilterNode : getChildrenTags(receiverNode, "intent-filter")) {
         List<String> actions = new ArrayList<String>();
@@ -235,18 +228,36 @@ public class AndroidManifest {
     }
   }
 
+  /***
+   * Allows {@link org.robolectric.res.builder.RobolectricPackageManager} to provide
+   * a resource index for initialising the resource attributes in all the metadata elements
+   * @param resIndex used for getting resource IDs from string identifiers
+   */
+  public void initMetaData(ResourceIndex resIndex) {
+    for (Map.Entry<String,String> entry : applicationMetaData.entrySet()) {
+      if (entry.getValue().startsWith("@")) {
+        Integer resId = ResName.getResourceId(resIndex, entry.getValue(), packageName);
+        if (resId != null) {
+            entry.setValue(resId.toString());
+        }
+      }
+    }
+    for (ReceiverAndIntentFilter receiver : receivers) {
+      for (Map.Entry<String,String> entry : receiver.metaData.entrySet()) {
+        if (entry.getValue().startsWith("@")) {
+          Integer resId = ResName.getResourceId(resIndex, entry.getValue(), packageName);
+          if (resId != null) {
+              entry.setValue(resId.toString());
+          }
+        }
+      }
+    }
+  }
+
   private void parseApplicationMetaData(final Document manifestDocument) {
     Node application = manifestDocument.getElementsByTagName("application").item(0);
     if (application == null) return;
-
-    for (Node metaNode : getChildrenTags(application, "meta-data")) {
-      NamedNodeMap attributes = metaNode.getAttributes();
-      Node nameAttr = attributes.getNamedItem("android:name");
-      Node valueAttr = attributes.getNamedItem("android:value");
-      // TODO: support android:resource attribute
-      if (valueAttr == null) { continue; }
-      applicationMetaData.put(nameAttr.getNodeValue(), valueAttr.getNodeValue());
-    }
+    applicationMetaData.putAll(parseMetaData(getChildrenTags(application, "meta-data")));
   }
 
   private String resolveClassRef(String maybePartialClassName) {
@@ -484,6 +495,25 @@ public class AndroidManifest {
     }
     return null;
   }
+
+  private static Map<String, String> parseMetaData(List<Node> nodes) {
+    Map<String, String> metaData = new HashMap<String, String>();
+    for (Node metaNode : nodes) {
+      NamedNodeMap attributes = metaNode.getAttributes();
+      Node nameAttr = attributes.getNamedItem("android:name");
+      Node valueAttr = attributes.getNamedItem("android:value");
+      Node resourceAttr = attributes.getNamedItem("android:resource");
+
+      if (valueAttr != null) {
+        metaData.put(nameAttr.getNodeValue(), valueAttr.getNodeValue());
+      } else if (resourceAttr != null) {
+        metaData.put(nameAttr.getNodeValue(), resourceAttr.getNodeValue());
+      }
+    }
+
+    return metaData;
+  }
+
 
   @Override
   public boolean equals(Object o) {
