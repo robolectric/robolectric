@@ -7,6 +7,7 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.ResolveInfo;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Pair;
@@ -19,7 +20,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import org.robolectric.AndroidManifest;
@@ -160,12 +160,7 @@ public class RobolectricPackageManager extends StubPackageManager {
     if ((flags & GET_META_DATA) != 0) {
       for (int i = 0; i < androidManifest.getReceiverCount(); ++i) {
         if (androidManifest.getReceiverClassName(i).equals(classString)) {
-          Bundle metaData = new Bundle();
-          Map<String, String> meta = androidManifest.getReceiverMetaData(i);
-          for (String key : meta.keySet()) {
-            metaData.putString(key, meta.get(key));
-          }
-          activityInfo.metaData = metaData;
+          activityInfo.metaData = metaDataToBundle(androidManifest.getReceiverMetaData(i));
           break;
         }
       }
@@ -355,6 +350,10 @@ public class RobolectricPackageManager extends StubPackageManager {
 
   public void addManifest(AndroidManifest androidManifest, ResourceLoader loader) {
     androidManifests.put(androidManifest.getPackageName(), androidManifest);
+    ResourceIndex resourceIndex = loader.getResourceIndex();
+
+    // first opportunity to access a resource index for this manifest, use it to init the references
+    androidManifest.initMetaData(resourceIndex);
 
     PackageInfo packageInfo = new PackageInfo();
     packageInfo.packageName = androidManifest.getPackageName();
@@ -367,31 +366,21 @@ public class RobolectricPackageManager extends StubPackageManager {
     applicationInfo.packageName = androidManifest.getPackageName();
     applicationInfo.processName = androidManifest.getProcessName();
     applicationInfo.name = androidManifest.getApplicationName();
-    ResourceIndex resourceIndex = loader.getResourceIndex();
+    applicationInfo.metaData = metaDataToBundle(androidManifest.getApplicationMetaData());
+
     if (androidManifest.getLabelRef() != null && resourceIndex != null) {
       Integer id = ResName.getResourceId(resourceIndex, androidManifest.getLabelRef(), androidManifest.getPackageName());
       applicationInfo.labelRes = id != null ? id : 0;
     }
-    initApplicationInfo(applicationInfo);
-    initApplicationMetaData(applicationInfo, androidManifest);
 
     packageInfo.applicationInfo = applicationInfo;
-
+    initApplicationInfo(applicationInfo);
     addPackage(packageInfo);
   }
 
   private void initApplicationInfo(ApplicationInfo applicationInfo) {
     applicationInfo.sourceDir = new File(".").getAbsolutePath();
     applicationInfo.dataDir = ShadowContext.FILES_DIR.getAbsolutePath();
-  }
-
-  private void initApplicationMetaData(ApplicationInfo applicationInfo, AndroidManifest androidManifest) {
-    Map<String, String> meta = androidManifest.getApplicationMetaData();
-    if (meta.isEmpty()) { return; }
-    applicationInfo.metaData = new Bundle();
-    for (Entry<String, String> metaEntry : meta.entrySet()) {
-      applicationInfo.metaData.putString(metaEntry.getKey(), metaEntry.getValue());
-    }
   }
 
   public void removePackage(String packageName) {
@@ -449,5 +438,65 @@ public class RobolectricPackageManager extends StubPackageManager {
     } else {
       return result;
     }
+  }
+
+  /***
+   * Goes through the meta data and puts each value in to a
+   * bundle as the correct type.
+   *
+   * Note that this will convert resource identifiers specified
+   * via the value attribute as well.
+   * @param meta Meta data to put in to a bundle
+   * @return bundle containing the meta data
+   */
+  private Bundle metaDataToBundle(Map<String, String> meta) {
+    if (meta.size() == 0) {
+        return null;
+    }
+
+    Bundle bundle = new Bundle();
+
+    for (Map.Entry<String,String> entry : meta.entrySet()) {
+      if (entry.getValue() == null) {
+        // skip it
+      } else if ("true".equals(entry.getValue())) {
+        bundle.putBoolean(entry.getKey(), true);
+      } else if ("false".equals(entry.getValue())) {
+        bundle.putBoolean(entry.getKey(), false);
+      } else {
+        if (entry.getValue().contains(".")) {
+          // if it's a float, add it and continue
+          try {
+            bundle.putFloat(entry.getKey(), Float.parseFloat(entry.getValue()));
+          } catch (NumberFormatException ef) {
+            /* Not a float */
+          }
+        }
+
+        if (!bundle.containsKey(entry.getKey()) && !entry.getValue().startsWith("#")) {
+          // if it's an int, add it and continue
+          try {
+            bundle.putInt(entry.getKey(), Integer.parseInt(entry.getValue()));
+          } catch (NumberFormatException ei) {
+            /* Not an int */
+          }
+        }
+
+        if (!bundle.containsKey(entry.getKey())) {
+          // if it's a color, add it and continue
+          try {
+            bundle.putInt(entry.getKey(), Color.parseColor(entry.getValue()));
+          } catch (IllegalArgumentException e) {
+            /* Not a color */
+          }
+        }
+
+        if (!bundle.containsKey(entry.getKey())) {
+          // otherwise it's a string
+          bundle.putString(entry.getKey(), entry.getValue());
+        }
+      }
+    }
+    return bundle;
   }
 }

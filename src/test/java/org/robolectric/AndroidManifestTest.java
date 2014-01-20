@@ -3,13 +3,17 @@ package org.robolectric;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.os.Bundle;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 import org.robolectric.res.Fs;
 import org.robolectric.res.ResourcePath;
+import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.test.TemporaryFolder;
-import org.robolectric.util.TestUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,7 +45,8 @@ import static org.robolectric.util.TestUtil.joinPath;
 import static org.robolectric.util.TestUtil.newConfig;
 import static org.robolectric.util.TestUtil.resourceFile;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(RobolectricTestRunner.class)
+@Config(manifest = Config.NONE)
 public class AndroidManifestTest {
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
@@ -91,8 +96,29 @@ public class AndroidManifestTest {
 
     assertEquals("org.robolectric.test.ConfigTestReceiver", config.getReceiverClassName(5));
     assertEquals("org.robolectric.ACTION_DOT_SUBPACKAGE", config.getReceiverIntentFilterActions(5).get(0));
-    assertTrue(config.getReceiverMetaData(5).containsKey("forward.ToTest"));
-    assertTrue(config.getReceiverMetaData(5).containsValue("org.robolectric.Robolectric"));
+
+    Map<String, String> meta = config.getReceiverMetaData(5);
+    Object metaValue = meta.get("org.robolectric.metaName1");
+    assertEquals("metaValue1", metaValue);
+
+    metaValue = meta.get("org.robolectric.metaName2");
+    assertTrue(String.class.isInstance(metaValue));
+    assertEquals("metaValue2", metaValue);
+
+    metaValue = meta.get("org.robolectric.metaFalse");
+    assertEquals("false", metaValue);
+
+    metaValue = meta.get("org.robolectric.metaTrue");
+    assertEquals("true", metaValue);
+
+    metaValue = meta.get("org.robolectric.metaInt");
+    assertEquals("123", metaValue);
+
+    metaValue = meta.get("org.robolectric.metaFloat");
+    assertEquals("1.23", metaValue);
+
+    metaValue = meta.get("org.robolectric.metaStringRes");
+    assertEquals("@string/app_name", metaValue);
   }
 
   @Test
@@ -119,10 +145,31 @@ public class AndroidManifestTest {
   }
 
   @Test
-  public void shouldReturnApplicationMetaData() {
+  @Config(manifest = "src/test/resources/TestAndroidManifestWithAppMetaData.xml")
+  public void shouldReturnApplicationMetaData() throws PackageManager.NameNotFoundException {
     Map<String, String> meta = newConfig("TestAndroidManifestWithAppMetaData.xml").getApplicationMetaData();
-    assertEquals("metaValue1", meta.get("org.robolectric.metaName1"));
-    assertEquals("metaValue2", meta.get("org.robolectric.metaName2"));
+
+    Object metaValue = meta.get("org.robolectric.metaName1");
+    assertEquals("metaValue1", metaValue);
+
+    metaValue = meta.get("org.robolectric.metaName2");
+    assertTrue(String.class.isInstance(metaValue));
+    assertEquals("metaValue2", metaValue);
+
+    metaValue = meta.get("org.robolectric.metaFalse");
+    assertEquals("false", metaValue);
+
+    metaValue = meta.get("org.robolectric.metaTrue");
+    assertEquals("true", metaValue);
+
+    metaValue = meta.get("org.robolectric.metaInt");
+    assertEquals("123", metaValue);
+
+    metaValue = meta.get("org.robolectric.metaFloat");
+    assertEquals("1.23", metaValue);
+
+    metaValue = meta.get("org.robolectric.metaStringRes");
+    assertEquals("@string/app_name", metaValue);
   }
   
   @Test public void shouldLoadAllResourcesForExistingLibraries() {
