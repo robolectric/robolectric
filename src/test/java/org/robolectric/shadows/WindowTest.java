@@ -66,6 +66,17 @@ public class WindowTest {
     assertThat(shadowOf(shadowWindow.getBackgroundDrawable()).createdFromResId).isEqualTo(R.drawable.btn_star);
   }
 
+  @Test
+  public void getSoftInputMode_returnsSoftInputMode() throws Exception {
+    TestActivity activity = Robolectric.buildActivity(TestActivity.class).create().get();
+    Window window = activity.getWindow();
+    ShadowWindow shadowWindow = shadowOf(window);
+
+    window.setSoftInputMode(7);
+
+    assertThat(shadowWindow.getSoftInputMode()).isEqualTo(7);
+  }
+
   public static class TestActivity extends Activity {
 
     @Override
