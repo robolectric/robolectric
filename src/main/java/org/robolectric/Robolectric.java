@@ -42,6 +42,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.ColorMatrix;
 import android.graphics.CornerPathEffect;
+import android.graphics.drawable.GradientDrawable;
 import android.graphics.LinearGradient;
 import android.graphics.Matrix;
 import android.graphics.Paint;
@@ -224,6 +225,7 @@ import org.robolectric.shadows.ShadowFilter;
 import org.robolectric.shadows.ShadowFrameLayout;
 import org.robolectric.shadows.ShadowGeocoder;
 import org.robolectric.shadows.ShadowGestureDetector;
+import org.robolectric.shadows.ShadowGradientDrawable;
 import org.robolectric.shadows.ShadowHandler;
 import org.robolectric.shadows.ShadowHandlerThread;
 import org.robolectric.shadows.ShadowHttpResponseCache;
@@ -641,6 +643,10 @@ public class Robolectric {
 
   public static ShadowGestureDetector shadowOf(GestureDetector instance) {
     return (ShadowGestureDetector) shadowOf_(instance);
+  }
+
+  public static ShadowGradientDrawable shadowOf(GradientDrawable instance) {
+    return (ShadowGradientDrawable) shadowOf_(instance);
   }
 
   public static ShadowHandler shadowOf(Handler instance) {
