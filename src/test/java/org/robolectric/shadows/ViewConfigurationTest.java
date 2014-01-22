@@ -4,9 +4,11 @@ import android.app.Activity;
 import android.view.ViewConfiguration;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
 import static junit.framework.Assert.assertEquals;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.robolectric.Robolectric.shadowOf;
 
 
@@ -67,4 +69,13 @@ public class ViewConfigurationTest {
     assertEquals(6000, viewConfiguration.getScaledMaximumFlingVelocity());
   }
 
+  @Test
+  public void testHasPermanentMenuKey() throws Exception {
+    ViewConfiguration viewConfiguration = ViewConfiguration.get(Robolectric.application);
+    assertThat(viewConfiguration.hasPermanentMenuKey()).isFalse();
+
+    ShadowViewConfiguration shadowViewConfiguration = shadowOf(viewConfiguration);
+    shadowViewConfiguration.setHasPermanentMenuKey(true);
+    assertThat(viewConfiguration.hasPermanentMenuKey()).isTrue();
+  }
 }
