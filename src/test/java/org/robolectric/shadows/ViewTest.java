@@ -701,6 +701,17 @@ public class ViewTest {
     transcript.assertEventsSoFar("another child detached", "child detached");
   }
 
+  @Test public void capturesOnSystemUiVisibilityChangeListener() throws Exception {
+    TestView testView = new TestView(buildActivity(Activity.class).create().get());
+    View.OnSystemUiVisibilityChangeListener changeListener = new View.OnSystemUiVisibilityChangeListener() {
+      @Override
+      public void onSystemUiVisibilityChange(int i) { }
+    };
+    testView.setOnSystemUiVisibilityChangeListener(changeListener);
+
+    assertThat(changeListener).isEqualTo(shadowOf(testView).getOnSystemUiVisibilityChangeListener());
+  }
+
   public static class MyActivity extends Activity {
     public boolean called;
 

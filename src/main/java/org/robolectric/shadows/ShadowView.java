@@ -42,6 +42,7 @@ public class ShadowView {
   private View.OnClickListener onClickListener;
   private View.OnLongClickListener onLongClickListener;
   private View.OnFocusChangeListener onFocusChangeListener;
+  private View.OnSystemUiVisibilityChangeListener onSystemUiVisibilityChangeListener;
   private boolean wasInvalidated;
   private View.OnTouchListener onTouchListener;
   protected AttributeSet attributeSet;
@@ -120,6 +121,12 @@ public class ShadowView {
   public void setOnLongClickListener(View.OnLongClickListener onLongClickListener) {
     this.onLongClickListener = onLongClickListener;
     directly().setOnLongClickListener(onLongClickListener);
+  }
+
+  @Implementation
+  public void setOnSystemUiVisibilityChangeListener(View.OnSystemUiVisibilityChangeListener onSystemUiVisibilityChangeListener) {
+    this.onSystemUiVisibilityChangeListener = onSystemUiVisibilityChangeListener;
+    directly().setOnSystemUiVisibilityChangeListener(onSystemUiVisibilityChangeListener);
   }
 
   @Implementation
@@ -291,6 +298,13 @@ public class ShadowView {
    */
   public View.OnLongClickListener getOnLongClickListener() {
     return onLongClickListener;
+  }
+
+  /**
+   * Non-android accessor.  Returns long click listener, if set.
+   */
+  public View.OnSystemUiVisibilityChangeListener getOnSystemUiVisibilityChangeListener() {
+    return onSystemUiVisibilityChangeListener;
   }
 
   @Implementation
