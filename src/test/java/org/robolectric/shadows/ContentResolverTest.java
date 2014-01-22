@@ -22,6 +22,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.AndroidManifest;
+import org.robolectric.DefaultTestLifecycle;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.res.ContentProviderData;
@@ -449,6 +450,16 @@ public class ContentResolverTest {
     AndroidManifest manifest = Robolectric.getShadowApplication().getAppManifest();
     manifest.getContentProviders().add(new ContentProviderData("org.robolectric.shadows.ContentResolverTest$TestContentProvider", AUTHORITY));
     assertThat(ShadowContentResolver.getProvider(Uri.parse("content://" + AUTHORITY + "/shadows"))).isNotNull();
+  }
+
+  @Test
+  public void getProvider_shouldNotReturnAnyProviderWhenManifestIsNull() {
+    givenRobolectricApplicationWithNoManifest();
+    assertThat(ShadowContentResolver.getProvider(Uri.parse("content://"))).isNull();
+  }
+
+  private void givenRobolectricApplicationWithNoManifest() {
+    Robolectric.application = new DefaultTestLifecycle().createApplication(null, null);
   }
 
   static class QueryParamTrackingTestCursor extends TestCursor {
