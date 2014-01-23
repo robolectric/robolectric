@@ -1,6 +1,5 @@
 package org.robolectric.annotation;
 
-import android.os.Build;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.annotation.Annotation;
@@ -47,6 +46,13 @@ public @interface Config {
   String qualifiers() default "";
 
   /**
+   * The Directory from which to load resources.  This should be relative from the directory containing the AndroidManifest.
+   *
+   * If not specified, Robolectric defaults to {@code res}.
+   */
+  String resourceDir() default "res";
+
+  /**
    * The Android SDK level to report in Build.VERSION.SDK_INT.
    *
    * @see <a href="http://en.wikipedia.org/wiki/Android_version_history">Android Version History</a>.
@@ -62,6 +68,7 @@ public @interface Config {
     private final int emulateSdk;
     private final String manifest;
     private final String qualifiers;
+    private final String resourceDir;
     private final int reportSdk;
     private final Class<?>[] shadows;
 
@@ -71,6 +78,7 @@ public @interface Config {
           Integer.parseInt(configProperties.getProperty("emulateSdk", "-1")),
           configProperties.getProperty("manifest", DEFAULT),
           configProperties.getProperty("qualifiers", ""),
+          configProperties.getProperty("resourceDir", "res"),
           Integer.parseInt(configProperties.getProperty("reportSdk", "-1")),
           parseClasses(configProperties.getProperty("shadows", ""))
       );
@@ -90,10 +98,11 @@ public @interface Config {
       return classes;
     }
 
-    public Implementation(int emulateSdk, String manifest, String qualifiers, int reportSdk, Class<?>[] shadows) {
+    public Implementation(int emulateSdk, String manifest, String qualifiers, String resourceDir, int reportSdk, Class<?>[] shadows) {
       this.emulateSdk = emulateSdk;
       this.manifest = manifest;
       this.qualifiers = qualifiers;
+      this.resourceDir = resourceDir;
       this.reportSdk = reportSdk;
       this.shadows = shadows;
     }
@@ -102,6 +111,7 @@ public @interface Config {
       this.emulateSdk = pick(baseConfig.emulateSdk(), overlayConfig.emulateSdk(), -1);
       this.manifest = pick(baseConfig.manifest(), overlayConfig.manifest(), DEFAULT);
       this.qualifiers = pick(baseConfig.qualifiers(), overlayConfig.qualifiers(), "");
+      this.resourceDir = pick(baseConfig.resourceDir(), overlayConfig.resourceDir(), "res");
       this.reportSdk = pick(baseConfig.reportSdk(), overlayConfig.reportSdk(), -1);
       ArrayList<Class<?>> shadows = new ArrayList<Class<?>>();
       shadows.addAll(Arrays.asList(baseConfig.shadows()));
@@ -123,6 +133,11 @@ public @interface Config {
 
     @Override public String qualifiers() {
       return qualifiers;
+    }
+
+    @Override
+    public String resourceDir() {
+      return resourceDir;
     }
 
     @Override public int reportSdk() {
