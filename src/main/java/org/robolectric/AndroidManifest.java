@@ -2,6 +2,7 @@ package org.robolectric;
 
 import android.app.Activity;
 import org.robolectric.res.ActivityData;
+import org.robolectric.res.IntentFilterData;
 import org.robolectric.res.ContentProviderData;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
@@ -220,12 +221,42 @@ public class AndroidManifest {
       if (nameAttr == null) continue;
       String activityName = resolveClassRef(nameAttr.getNodeValue());
 
+      List<IntentFilterData> intentFilterData = parseIntentFilters(activityNode);
+
       activityDatas.put(activityName,
           new ActivityData(activityName,
               labelAttr == null ? null : labelAttr.getNodeValue(),
-              themeAttr == null ? null : resolveClassRef(themeAttr.getNodeValue())
+              themeAttr == null ? null : resolveClassRef(themeAttr.getNodeValue()),
+              intentFilterData
           ));
     }
+  }
+
+  private List<IntentFilterData> parseIntentFilters(final Node activityNode) {
+    ArrayList<IntentFilterData> intentFilterDatas = new ArrayList<IntentFilterData>();
+    for (Node n : getChildrenTags(activityNode, "intent-filter")) {
+      ArrayList<String> actionNames = new ArrayList<String>();
+      ArrayList<String> categories = new ArrayList<String>();
+      //should only be one action.
+      for (Node action : getChildrenTags(n, "action")) {
+        NamedNodeMap attributes = action.getAttributes();
+        Node actionNameNode = attributes.getNamedItem("android:name");
+        if (actionNameNode != null) {
+          actionNames.add(actionNameNode.getNodeValue());
+        }
+      }
+      for (Node category : getChildrenTags(n, "category")) {
+        NamedNodeMap attributes = category.getAttributes();
+        Node categoryNameNode = attributes.getNamedItem("android:name");
+        if (categoryNameNode != null) {
+          categories.add(categoryNameNode.getNodeValue());
+        }
+      }
+
+      intentFilterDatas.add(new IntentFilterData(actionNames, categories));
+    }
+
+    return intentFilterDatas;
   }
 
   /***
