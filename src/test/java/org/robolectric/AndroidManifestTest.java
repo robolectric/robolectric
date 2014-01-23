@@ -242,6 +242,16 @@ public class AndroidManifestTest {
     assertThat(data.getCategories().get(2)).isEqualTo(Intent.CATEGORY_SELECTED_ALTERNATIVE);
   }
 
+  @Test
+  public void shouldReadTaskAffinity() {
+    AndroidManifest appManifest = newConfig("TestAndroidManifestForActivitiesWithTaskAffinity.xml");
+    assertThat(appManifest.getTargetSdkVersion()).isEqualTo(16);
+
+    ActivityData activityData = appManifest.getActivityData("org.robolectric.shadows.TestTaskAffinityActivity");
+    assertNotNull(activityData);
+    assertThat(activityData.getTaskAffinity()).isEqualTo("org.robolectric.shadows.TestTaskAffinity");
+  }
+
   /////////////////////////////
 
   public AndroidManifest newConfigWith(String usesSdkAttrs) throws IOException {

@@ -214,21 +214,28 @@ public class AndroidManifest {
     if (application == null) return;
 
     for (Node activityNode : getChildrenTags(application, "activity")) {
-      NamedNodeMap attributes = activityNode.getAttributes();
-      Node nameAttr = attributes.getNamedItem("android:name");
-      Node themeAttr = attributes.getNamedItem("android:theme");
-      Node labelAttr = attributes.getNamedItem("android:label");
-      if (nameAttr == null) continue;
-      String activityName = resolveClassRef(nameAttr.getNodeValue());
+      final NamedNodeMap attributes = activityNode.getAttributes();
+      final int attrCount = attributes.getLength();
+      final List<IntentFilterData> intentFilterData = parseIntentFilters(activityNode);
+      final HashMap<String, String> activityAttrs = new HashMap<String, String>(attrCount);
+      for(int i = 0; i < attrCount; i++) {
+        Node attr = attributes.item(i);
+        String v = attr.getNodeValue();
+        if( v != null) {
+          activityAttrs.put(attr.getNodeName(), v);
+        }
+      }
 
-      List<IntentFilterData> intentFilterData = parseIntentFilters(activityNode);
+      String activityName = resolveClassRef(activityAttrs.get(ActivityData.getNameAttr("android")));
+      if (activityName == null) {
+        continue;
+      }
+
+      activityAttrs.put(ActivityData.getNameAttr("android"), activityName);
+
 
       activityDatas.put(activityName,
-          new ActivityData(activityName,
-              labelAttr == null ? null : labelAttr.getNodeValue(),
-              themeAttr == null ? null : resolveClassRef(themeAttr.getNodeValue()),
-              intentFilterData
-          ));
+          new ActivityData(activityAttrs, intentFilterData));
     }
   }
 
