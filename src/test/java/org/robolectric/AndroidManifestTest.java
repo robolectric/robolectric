@@ -3,16 +3,15 @@ package org.robolectric;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.os.Bundle;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.res.ActivityData;
 import org.robolectric.res.Fs;
+import org.robolectric.res.IntentFilterData;
 import org.robolectric.res.ResourcePath;
-import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.test.TemporaryFolder;
 
 import java.io.File;
@@ -39,7 +38,6 @@ import static android.content.pm.ApplicationInfo.FLAG_VM_SAFE_MODE;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.util.TestUtil.joinPath;
 import static org.robolectric.util.TestUtil.newConfig;
@@ -189,8 +187,63 @@ public class AndroidManifestTest {
   public void shouldTolerateMissingRFile() throws Exception {
     AndroidManifest appManifest = new AndroidManifest(resourceFile("TestAndroidManifestWithNoRFile.xml"), resourceFile("res"));
     assertEquals(appManifest.getPackageName(), "org.no.resources.for.me");
-    assertNull(appManifest.getRClass());
+    assertThat(appManifest.getRClass()).isNull();
     assertEquals(appManifest.getResourcePath().getPackageName(), "org.no.resources.for.me");
+  }
+
+  @Test
+  public void shouldRead1IntentFilter() {
+    AndroidManifest appManifest = newConfig("TestAndroidManifestForActivitiesWithIntentFilter.xml");
+    appManifest.getMinSdkVersion(); // Force parsing
+
+    ActivityData activityData = appManifest.getActivityData("org.robolectric.shadows.TestActivity");
+    final List<IntentFilterData> ifd = activityData.getIntentFilters();
+    assertThat(ifd).isNotNull();
+    assertThat(ifd.size()).isEqualTo(1);
+
+    final IntentFilterData data = ifd.get(0);
+    assertThat(data.getActions().size()).isEqualTo(1);
+    assertThat(data.getActions().get(0)).isEqualTo(Intent.ACTION_MAIN);
+    assertThat(data.getCategories().size()).isEqualTo(1);
+    assertThat(data.getCategories().get(0)).isEqualTo(Intent.CATEGORY_LAUNCHER);
+  }
+
+  @Test
+  public void shouldReadMultipleIntentFilters() {
+    AndroidManifest appManifest = newConfig("TestAndroidManifestForActivitiesWithMultipleIntentFilters.xml");
+    appManifest.getMinSdkVersion(); // Force parsing
+
+    ActivityData activityData = appManifest.getActivityData("org.robolectric.shadows.TestActivity");
+    final List<IntentFilterData> ifd = activityData.getIntentFilters();
+    assertThat(ifd).isNotNull();
+    assertThat(ifd.size()).isEqualTo(2);
+
+    IntentFilterData data = ifd.get(0);
+    assertThat(data.getActions().size()).isEqualTo(1);
+    assertThat(data.getActions().get(0)).isEqualTo(Intent.ACTION_MAIN);
+    assertThat(data.getCategories().size()).isEqualTo(1);
+    assertThat(data.getCategories().get(0)).isEqualTo(Intent.CATEGORY_LAUNCHER);
+
+    data = ifd.get(1);
+    assertThat(data.getActions().size()).isEqualTo(3);
+    assertThat(data.getActions().get(0)).isEqualTo(Intent.ACTION_VIEW);
+    assertThat(data.getActions().get(1)).isEqualTo(Intent.ACTION_EDIT);
+    assertThat(data.getActions().get(2)).isEqualTo(Intent.ACTION_PICK);
+
+    assertThat(data.getCategories().size()).isEqualTo(3);
+    assertThat(data.getCategories().get(0)).isEqualTo(Intent.CATEGORY_DEFAULT);
+    assertThat(data.getCategories().get(1)).isEqualTo(Intent.CATEGORY_ALTERNATIVE);
+    assertThat(data.getCategories().get(2)).isEqualTo(Intent.CATEGORY_SELECTED_ALTERNATIVE);
+  }
+
+  @Test
+  public void shouldReadTaskAffinity() {
+    AndroidManifest appManifest = newConfig("TestAndroidManifestForActivitiesWithTaskAffinity.xml");
+    assertThat(appManifest.getTargetSdkVersion()).isEqualTo(16);
+
+    ActivityData activityData = appManifest.getActivityData("org.robolectric.shadows.TestTaskAffinityActivity");
+    assertThat(activityData).isNotNull();
+    assertThat(activityData.getTaskAffinity()).isEqualTo("org.robolectric.shadows.TestTaskAffinity");
   }
 
   /////////////////////////////
@@ -237,6 +290,7 @@ public class AndroidManifestTest {
     return (flags & flag) != 0;
   }
 
+  @SuppressWarnings("unused")
   public static class ConfigTestReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {

@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-      package="org.robolectric"
-    >
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="org.robolectric">
+  <uses-sdk android:targetSdkVersion="18"/>
 
-    <uses-sdk android:targetSdkVersion="18"/>
   <application>
     <receiver android:name="org.robolectric.AndroidManifestTest.ConfigTestReceiver"
           android:permission="com.ignored.PERM">
@@ -22,16 +20,19 @@
         <action android:name="org.robolectric.ACTION_SUPERSET_PACKAGE"/>
       </intent-filter>
     </receiver>
+
     <receiver android:name="org.robolectric.ConfigTestReceiver">
       <intent-filter>
         <action android:name="org.robolectric.ACTION_SUBSET_PACKAGE"/>
       </intent-filter>
     </receiver>
+
     <receiver android:name=".DotConfigTestReceiver">
       <intent-filter>
         <action android:name="org.robolectric.ACTION_DOT_PACKAGE"/>
       </intent-filter>
     </receiver>
+
     <receiver android:name=".test.ConfigTestReceiver">
       <intent-filter>
         <action android:name="org.robolectric.ACTION_DOT_SUBPACKAGE"/>
@@ -44,11 +45,11 @@
       <meta-data android:name="org.robolectric.metaFloat" android:value="1.23" />
       <meta-data android:name="org.robolectric.metaStringRes" android:resource="@string/app_name" />
     </receiver>
+
     <receiver android:name="com.foo.Receiver">
       <intent-filter>
         <action android:name="org.robolectric.ACTION_DIFFERENT_PACKAGE"/>
       </intent-filter>
     </receiver>
-
   </application>
 </manifest>

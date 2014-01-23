@@ -73,7 +73,6 @@ public class DefaultTestLifecycleTest {
     PackageManager packageManager = application.getPackageManager();
     assertThat(packageManager.resolveActivity(new Intent("org.robolectric.shadows.TestActivity"), -1)).isNotNull();
     assertThat(packageManager.resolveActivity(new Intent("org.robolectric.shadows.TestActivity2"), -1)).isNotNull();
-
   }
 
   @Test public void shouldDoTestApplicationNameTransform() throws Exception {
