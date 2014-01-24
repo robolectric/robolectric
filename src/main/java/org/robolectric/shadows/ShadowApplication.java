@@ -20,6 +20,7 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.PowerManager;
 import android.view.LayoutInflater;
+import android.widget.PopupWindow;
 import android.widget.Toast;
 import org.robolectric.AndroidManifest;
 import org.robolectric.Robolectric;
@@ -86,6 +87,7 @@ public class ShadowApplication extends ShadowContextWrapper {
 
   private boolean strictI18n = false;
   private boolean checkActivities;
+  private PopupWindow latestPopupWindow;
 
   /**
    * Associates a {@code ResourceLoader} with an {@code Application} instance
@@ -649,6 +651,14 @@ public class ShadowApplication extends ShadowContextWrapper {
 
   public void setLatestPopupMenu(ShadowPopupMenu latestPopupMenu) {
     this.latestPopupMenu = latestPopupMenu;
+  }
+
+  public PopupWindow getLatestPopupWindow() {
+    return latestPopupWindow;
+  }
+
+  public void setLatestPopupWindow(PopupWindow latestPopupWindow) {
+    this.latestPopupWindow = latestPopupWindow;
   }
 
   public class Wrapper {

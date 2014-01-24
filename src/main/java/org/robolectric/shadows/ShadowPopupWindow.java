@@ -7,6 +7,8 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
+
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -140,6 +142,7 @@ public class ShadowPopupWindow {
     containerView.setBackgroundDrawable(background);
     getWindowManager().addView(containerView, new WindowManager.LayoutParams());
     showing = true;
+    Robolectric.getShadowApplication().setLatestPopupWindow(realPopupWindow);
   }
 
   @Implementation
@@ -163,5 +166,9 @@ public class ShadowPopupWindow {
 
   public int getYOffset() {
     return yOffset;
+  }
+
+  public static PopupWindow getLatestPopupWindow() {
+    return Robolectric.getShadowApplication().getLatestPopupWindow();
   }
 }
