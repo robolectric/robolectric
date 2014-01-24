@@ -8,39 +8,26 @@ import org.robolectric.bytecode.RobolectricInternals;
 
 @Implements(value = TimePickerDialog.class, inheritImplementationMethods = true)
 public class ShadowTimePickerDialog extends ShadowAlertDialog {
-    @RealObject
-    protected TimePickerDialog realTimePickerDialog;
-    private int initialHourOfDay;
-    private int initialMinute;
+  @RealObject
+  protected TimePickerDialog realTimePickerDialog;
+  private int hourOfDay;
+  private int minute;
 
-    public void __constructor__(Context context, int theme, TimePickerDialog.OnTimeSetListener callBack, int hourOfDay, int minute, boolean is24HourView) {
-        this.initialHourOfDay = hourOfDay;
-        this.initialMinute = minute;
+  public void __constructor__(Context context, int theme, TimePickerDialog.OnTimeSetListener callBack,
+                              int hourOfDay, int minute, boolean is24HourView) {
+    this.hourOfDay = hourOfDay;
+    this.minute = minute;
 
-        RobolectricInternals.getConstructor(
-                TimePickerDialog.class,
-                realTimePickerDialog,
-                Context.class,
-                int.class,
-                TimePickerDialog.OnTimeSetListener.class,
-                int.class,
-                int.class,
-                boolean.class
-        ).invoke(
-                context,
-                theme,
-                callBack,
-                hourOfDay,
-                minute,
-                is24HourView
-        );
-    }
+    RobolectricInternals.getConstructor(TimePickerDialog.class, realTimePickerDialog, Context.class, int.class,
+        TimePickerDialog.OnTimeSetListener.class, int.class, int.class, boolean.class)
+        .invoke(context, theme, callBack, hourOfDay, minute, is24HourView);
+  }
 
-    public int getInitialHourOfDay() {
-        return initialHourOfDay;
-    }
+  public int getHourOfDay() {
+    return hourOfDay;
+  }
 
-    public int getInitialMinute() {
-        return initialMinute;
-    }
+  public int getMinute() {
+    return minute;
+  }
 }
