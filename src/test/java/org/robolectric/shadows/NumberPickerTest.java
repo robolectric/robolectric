@@ -15,6 +15,8 @@ public class NumberPickerTest {
     NumberPicker picker = new NumberPicker(Robolectric.application);
     picker.setMaxValue(2);
 
+    picker.setDisplayedValues(null);
+
     try {
       picker.setDisplayedValues(new String[] {"0", "1"});
       fail("should have complained about being too small");

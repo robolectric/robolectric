@@ -18,6 +18,7 @@ public class DatePickerDialogTest {
 
   @Test
   public void returnsTheInitialYearMonthAndDayPassedIntoTheDatePickerDialog() throws Exception {
+    Locale.setDefault(Locale.US);
     DatePickerDialog datePickerDialog = new DatePickerDialog(Robolectric.application, null, 2012, 6, 7);
     ShadowDatePickerDialog shadow = shadowOf(datePickerDialog);
     assertThat(shadow.getYear()).isEqualTo(2012);
