@@ -1,19 +1,20 @@
 package org.robolectric.shadows;
 
-import android.widget.NumberPicker;
-import org.robolectric.Robolectric;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import android.widget.NumberPicker;
 import org.robolectric.TestRunners;
-
-import static junit.framework.Assert.fail;
+import org.robolectric.Robolectric;
+import static junit.framework.Assert.*;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class NumberPickerTest {
+
   @Test
   public void setDisplayedValues_shouldCheckArraySize() throws Exception {
     NumberPicker picker = new NumberPicker(Robolectric.application);
     picker.setMaxValue(2);
+    picker.setDisplayedValues(null);
 
     try {
       picker.setDisplayedValues(new String[] {"0", "1"});
@@ -23,7 +24,6 @@ public class NumberPickerTest {
     }
 
     picker.setDisplayedValues(new String[] {"0", "1", "2"});
-    // ahhh, just right
 
     try {
       picker.setDisplayedValues(new String[] {"0", "1", "2", "3"});
