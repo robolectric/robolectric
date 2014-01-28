@@ -9,6 +9,7 @@ import android.app.ActivityManager;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.Application;
+import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.DownloadManager;
 import android.app.IntentService;
@@ -213,6 +214,7 @@ import org.robolectric.shadows.ShadowCursorLoader;
 import org.robolectric.shadows.ShadowCursorWindow;
 import org.robolectric.shadows.ShadowCursorWrapper;
 import org.robolectric.shadows.ShadowDateFormat;
+import org.robolectric.shadows.ShadowDatePickerDialog;
 import org.robolectric.shadows.ShadowDefaultRequestDirector;
 import org.robolectric.shadows.ShadowDialog;
 import org.robolectric.shadows.ShadowDialogPreference;
@@ -597,6 +599,10 @@ public class Robolectric {
 
   public static ShadowDateFormat shadowOf(DateFormat instance) {
     return (ShadowDateFormat) shadowOf_(instance);
+  }
+
+  public static ShadowDatePickerDialog shadowOf(DatePickerDialog instance) {
+    return (ShadowDatePickerDialog) shadowOf_(instance);
   }
 
   public static ShadowDefaultRequestDirector shadowOf(DefaultRequestDirector instance) {
