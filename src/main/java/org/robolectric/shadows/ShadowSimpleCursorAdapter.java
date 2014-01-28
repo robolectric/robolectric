@@ -99,6 +99,10 @@ public class ShadowSimpleCursorAdapter extends ShadowResourceCursorAdapter {
     findColumns(from);
   }
 
+  public void __constructor__(Context context, int layout, Cursor c, String[] from, int[] to, int flags) {
+    this.__constructor__(context, layout, c, from, to);
+  }
+
   /**
    * Binds all of the field names passed into the "to" parameter of the
    * constructor with their corresponding cursor columns as specified in the
