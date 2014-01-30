@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -8,6 +9,7 @@ import android.content.res.XmlResourceParser;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.ParcelFileDescriptor;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.LongSparseArray;
@@ -32,6 +34,7 @@ import org.robolectric.util.Util;
 import org.w3c.dom.Document;
 
 import java.io.InputStream;
+import java.io.FileInputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -382,6 +385,16 @@ public class ShadowResources {
   @Implementation
   public InputStream openRawResource(int id) throws Resources.NotFoundException {
     return resourceLoader.getRawValue(getResName(id));
+  }
+
+  @Implementation
+  public AssetFileDescriptor openRawResourceFd(int id) throws Resources.NotFoundException {
+    try {
+      FileInputStream fis = (FileInputStream)openRawResource(id);
+      return new AssetFileDescriptor(ParcelFileDescriptor.dup(fis.getFD()), 0, fis.getChannel().size());
+    } catch (Exception e) {
+      return null;
+    }
   }
 
   public void setDensity(float density) {
