@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Dialog;
+import android.app.Fragment;
 import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.content.Intent;
@@ -735,6 +736,14 @@ public class ActivityTest {
     Menu optionsMenu = shadowOf(activity).getOptionsMenu();
     assertThat(optionsMenu).isNotNull();
     assertThat(optionsMenu.getItem(0).getTitle()).isEqualTo("Algebraic!");
+  }
+
+  @Test
+  public void canStartActivityFromFragment() throws Exception {
+    Activity activity = buildActivity(Activity.class).create().get();
+    Intent intent = new Intent(Intent.ACTION_VIEW);
+    activity.startActivityFromFragment(new Fragment(), intent, 0);
+    assertThat(shadowOf(activity).getNextStartedActivity().getAction()).isEqualTo(Intent.ACTION_VIEW);
   }
 
   /////////////////////////////

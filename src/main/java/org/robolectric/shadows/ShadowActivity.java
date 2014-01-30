@@ -4,6 +4,7 @@ import android.R;
 import android.app.Activity;
 import android.app.Application;
 import android.app.Dialog;
+import android.app.Fragment;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -586,6 +587,11 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   @Implementation
   public final int getVolumeControlStream() {
     return streamType;
+  }
+
+  @Implementation
+  public void startActivityFromFragment(Fragment fragment, Intent intent, int requestCode, Bundle options) {
+    startActivityForResult(intent, requestCode);
   }
 
   private final class ActivityInvoker {
