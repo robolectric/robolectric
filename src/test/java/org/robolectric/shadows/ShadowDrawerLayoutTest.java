@@ -5,14 +5,14 @@ import android.support.v4.widget.DrawerLayout;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
+import org.robolectric.TestRunners;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Robolectric.shadowOf;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class ShadowDrawerLayoutTest {
   @Test
   public void canGetAndSetDrawerListener() throws Exception {
