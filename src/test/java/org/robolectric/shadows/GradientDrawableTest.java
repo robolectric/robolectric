@@ -1,14 +1,14 @@
 package org.robolectric.shadows;
 
-import android.graphics.drawable.GradientDrawable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
+import org.robolectric.TestRunners;
+import android.graphics.drawable.GradientDrawable;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.robolectric.Robolectric.shadowOf;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class GradientDrawableTest {
   @Test
   public void testGetColor_returnsColor() throws Exception {
