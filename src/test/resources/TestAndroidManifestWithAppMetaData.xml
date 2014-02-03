@@ -1,8 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.robolectric">
+
+  <uses-sdk android:targetSdkVersion="18"/>
   <application android:name="org.robolectric.TestApplication">
     <meta-data android:name="org.robolectric.metaName1" android:value="metaValue1" />
     <meta-data android:name="org.robolectric.metaName2" android:value="metaValue2" />
+    <meta-data android:name="org.robolectric.metaTrue" android:value="true" />
+    <meta-data android:name="org.robolectric.metaFalse" android:value="false" />
+    <meta-data android:name="org.robolectric.metaInt" android:value="123" />
+    <meta-data android:name="org.robolectric.metaFloat" android:value="1.23" />
+    <meta-data android:name="org.robolectric.metaStringRes" android:resource="@string/app_name" />
   </application>
 </manifest>
