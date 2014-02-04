@@ -61,7 +61,7 @@ public class ContentResolverTest {
 
   @Test
   public void insert_shouldReturnIncreasingUris() throws Exception {
-    shadowContentResolver.setNextDatabaseIdForInserts(21);
+    shadowContentResolver.setNextDatabaseIdForInserts(20);
 
     assertThat(contentResolver.insert(EXTERNAL_CONTENT_URI, new ContentValues())).isEqualTo(uri21);
     assertThat(contentResolver.insert(EXTERNAL_CONTENT_URI, new ContentValues())).isEqualTo(uri22);
@@ -408,7 +408,7 @@ public class ContentResolverTest {
     assertNull(contentResolver.query(unrelated, null, null, null, null));
     assertNotNull(contentResolver.insert(unrelated, new ContentValues()));
     assertThat(contentResolver.delete(unrelated, null, null)).isEqualTo(1);
-    assertThat(contentResolver.update(unrelated, new ContentValues(), null, null)).isEqualTo(0);
+    assertThat(contentResolver.update(unrelated, new ContentValues(), null, null)).isEqualTo(1);
   }
 
   @Test

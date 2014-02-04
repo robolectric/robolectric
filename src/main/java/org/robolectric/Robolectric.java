@@ -18,6 +18,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.app.Service;
+import android.app.TimePickerDialog;
 import android.appwidget.AppWidgetHost;
 import android.appwidget.AppWidgetHostView;
 import android.appwidget.AppWidgetManager;
@@ -297,6 +298,7 @@ import org.robolectric.shadows.ShadowTabHost;
 import org.robolectric.shadows.ShadowTelephonyManager;
 import org.robolectric.shadows.ShadowTextPaint;
 import org.robolectric.shadows.ShadowTextView;
+import org.robolectric.shadows.ShadowTimePickerDialog;
 import org.robolectric.shadows.ShadowToast;
 import org.robolectric.shadows.ShadowTouchDelegate;
 import org.robolectric.shadows.ShadowTranslateAnimation;
@@ -911,6 +913,10 @@ public class Robolectric {
 
   public static ShadowResources.ShadowTheme shadowOf(Resources.Theme instance) {
     return (ShadowResources.ShadowTheme) shadowOf_(instance);
+  }
+
+  public static ShadowTimePickerDialog shadowOf(TimePickerDialog instance) {
+    return (ShadowTimePickerDialog) shadowOf_(instance);
   }
 
   public static ShadowToast shadowOf(Toast instance) {

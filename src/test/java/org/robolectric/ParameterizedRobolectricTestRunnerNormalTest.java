@@ -2,6 +2,7 @@ package org.robolectric;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -38,21 +39,25 @@ public final class ParameterizedRobolectricTestRunnerNormalTest {
   }
 
   @Test
+  @Config(manifest = Config.NONE)
   public void add() {
     assertThat(first + second).isEqualTo(expectedSum);
   }
 
   @Test
+  @Config(manifest = Config.NONE)
   public void subtract() {
     assertThat(first - second).isEqualTo(expectedDifference);
   }
 
   @Test
+  @Config(manifest = Config.NONE)
   public void multiple() {
     assertThat(first * second).isEqualTo(expectedProduct);
   }
 
   @Test
+  @Config(manifest = Config.NONE)
   public void divide() {
     assertThat(first / second).isEqualTo(expectedQuotient);
   }

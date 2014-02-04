@@ -110,6 +110,8 @@ public class ApplicationTest {
     checkSystemService(Context.DOWNLOAD_SERVICE, android.app.DownloadManager.class);
     checkSystemService(Context.DEVICE_POLICY_SERVICE, android.app.admin.DevicePolicyManager.class);
     checkSystemService(Context.DROPBOX_SERVICE, android.os.DropBoxManager.class);
+    checkSystemService(Context.MEDIA_ROUTER_SERVICE, android.media.MediaRouter.class);
+    checkSystemService(Context.DISPLAY_SERVICE, android.hardware.display.DisplayManager.class);
   }
 
   @Test public void shouldProvideLayoutInflater() throws Exception {

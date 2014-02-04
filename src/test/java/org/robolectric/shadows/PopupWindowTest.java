@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.content.Context;
 import android.graphics.drawable.BitmapDrawable;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -147,6 +148,13 @@ public class PopupWindowTest {
       PopupWindow popupWindow = new PopupWindow(contentView, 0, 0, true);
       popupWindow.showAsDropDown(anchor);
       assertNotNull(shadowWindowManager.getViews().get(0).findViewById(R.id.content_view));
+    }
+
+    @Test
+    public void showAsDropDown_setsLatestPopupWindow() throws Exception {
+      PopupWindow popupWindow = new PopupWindow(contentView, 0, 0, true);
+      popupWindow.showAsDropDown(new View(Robolectric.application));
+      assertThat(ShadowPopupWindow.getLatestPopupWindow()).isSameAs(popupWindow);
     }
 
     @Test

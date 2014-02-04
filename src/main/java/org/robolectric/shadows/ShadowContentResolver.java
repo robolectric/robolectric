@@ -116,7 +116,7 @@ public class ShadowContentResolver {
     } else {
       InsertStatement insertStatement = new InsertStatement(url, new ContentValues(values));
       insertStatements.add(insertStatement);
-      return Uri.parse(url.toString() + "/" + nextDatabaseIdForInserts++);
+      return Uri.parse(url.toString() + "/" + ++nextDatabaseIdForInserts);
     }
   }
 
@@ -128,7 +128,7 @@ public class ShadowContentResolver {
     } else {
       UpdateStatement updateStatement = new UpdateStatement(uri, new ContentValues(values), where, selectionArgs);
       updateStatements.add(updateStatement);
-      return nextDatabaseIdForUpdates++;
+      return ++nextDatabaseIdForUpdates;
     }
   }
 
