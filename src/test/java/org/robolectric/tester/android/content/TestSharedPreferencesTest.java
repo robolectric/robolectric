@@ -160,7 +160,7 @@ public class TestSharedPreferencesTest {
     SharedPreferences.OnSharedPreferenceChangeListener listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
       @Override
       public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-	transcript.add(key + " called");
+        transcript.add(key + " called");
       }
     };
     anotherSharedPreferences.registerOnSharedPreferenceChangeListener(listener);
