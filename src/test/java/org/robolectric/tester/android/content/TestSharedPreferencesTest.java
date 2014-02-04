@@ -5,6 +5,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
+import org.robolectric.util.Transcript;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -146,6 +147,26 @@ public class TestSharedPreferencesTest {
 
     anotherSharedPreferences.unregisterOnSharedPreferenceChangeListener(testListener);
     assertFalse(anotherSharedPreferences.hasListener(testListener));
+  }
+
+  @Test
+  public void shouldTriggerRegisteredListeners() {
+    TestSharedPreferences anotherSharedPreferences = new TestSharedPreferences(content, "bazBang", 3);
+
+    final String testKey = "foo";
+
+    final Transcript transcript = new Transcript();
+
+    SharedPreferences.OnSharedPreferenceChangeListener listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+      @Override
+      public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        transcript.add(key + " called");
+      }
+    };
+    anotherSharedPreferences.registerOnSharedPreferenceChangeListener(listener);
+    anotherSharedPreferences.edit().putString(testKey, "bar").commit();
+
+    transcript.assertEventsSoFar(testKey+ " called");
   }
 
   private SharedPreferences.OnSharedPreferenceChangeListener testListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
