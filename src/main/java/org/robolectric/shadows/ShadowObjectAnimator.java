@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.animation.ObjectAnimator;
 import android.os.Handler;
 import android.os.Looper;
+
 import org.robolectric.RobolectricShadowOfLevel16;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -39,7 +40,6 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
     result.setTarget(target);
     result.setPropertyName(propertyName);
     result.setFloatValues(values);
-    RobolectricShadowOfLevel16.shadowOf(result).setAnimationType(float.class);
 
     getAnimatorMapFor(target).put(propertyName, result);
     return result;
@@ -52,7 +52,6 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
     result.setTarget(target);
     result.setPropertyName(propertyName);
     result.setIntValues(values);
-    RobolectricShadowOfLevel16.shadowOf(result).setAnimationType(int.class);
 
     getAnimatorMapFor(target).put(propertyName, result);
     return result;
@@ -94,11 +93,13 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
   @Implementation
   public void setFloatValues(float... values) {
     this.floatValues = values;
+    RobolectricShadowOfLevel16.shadowOf(realObject).setAnimationType(float.class);
   }
 
   @Implementation
   public void setIntValues(int... values) {
     this.intValues = values;
+    RobolectricShadowOfLevel16.shadowOf(realObject).setAnimationType(int.class);
   }
 
   @Implementation

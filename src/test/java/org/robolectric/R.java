@@ -230,6 +230,7 @@ public final class R {
 
   public static final class animator {
     public static final int spinning = 0x10710;
+    public static final int fade = 0x10711;
   }
 
   public static final class raw {
