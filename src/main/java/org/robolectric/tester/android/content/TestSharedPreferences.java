@@ -106,8 +106,12 @@ public class TestSharedPreferences implements SharedPreferences {
 
     @Override
     public Editor putString(String key, String value) {
-      editsThatNeedCommit.put(key, value);
-      editsThatNeedRemove.remove(key);
+      if (value == null) {
+        editsThatNeedRemove.add(key);
+      } else {
+        editsThatNeedCommit.put(key, value);
+        editsThatNeedRemove.remove(key);
+      }
       return this;
     }
 
@@ -141,8 +145,12 @@ public class TestSharedPreferences implements SharedPreferences {
 
     @Override
     public Editor putStringSet(String key, Set<String> value ){
-      editsThatNeedCommit.put( key, value );
-      editsThatNeedRemove.remove(key);
+      if (value == null) {
+        editsThatNeedRemove.add(key);
+      } else {
+        editsThatNeedCommit.put(key, value);
+        editsThatNeedRemove.remove(key);
+      }
       return this;
     }
 

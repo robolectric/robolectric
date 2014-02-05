@@ -46,7 +46,7 @@ public class TestSharedPreferencesTest {
     editor.putInt("int", 2);
     editor.putLong("long", 3l);
     editor.putString("string", "foobar");
-    editor.putStringSet( "stringSet", stringSet );
+    editor.putStringSet("stringSet", stringSet);
   }
 
   @Test
@@ -112,6 +112,28 @@ public class TestSharedPreferencesTest {
 
     assertThat(anotherSharedPreferences.getString("deleteMe", "awol")).isEqualTo("awol");
     assertThat(anotherSharedPreferences.getString("dontDeleteMe", "oops")).isEqualTo("baz");
+  }
+
+  @Test
+  public void putString_shouldRemovePairIfValueIsNull() throws Exception {
+    content.put(FILENAME, new HashMap<String, Object>());
+    content.get(FILENAME).put("deleteMe", "foo");
+
+    editor.putString("deleteMe", null);
+    editor.commit();
+
+    assertThat(sharedPreferences.getString("deleteMe", null)).isNull();
+  }
+
+  @Test
+  public void putStringSet_shouldRemovePairIfValueIsNull() throws Exception {
+    content.put(FILENAME, new HashMap<String, Object>());
+    content.get(FILENAME).put("deleteMe", stringSet);
+
+    editor.putStringSet("deleteMe", null);
+    editor.commit();
+
+    assertThat(sharedPreferences.getStringSet("deleteMe", null)).isNull();
   }
 
   @Test
