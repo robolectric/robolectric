@@ -42,6 +42,7 @@ import org.robolectric.res.PackageResourceLoader;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.res.RoutingResourceLoader;
+import org.robolectric.shadows.ShadowDisplay;
 import org.robolectric.util.AnnotationUtil;
 import org.robolectric.util.Pair;
 
@@ -213,6 +214,13 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
           staticField("SDK_INT").ofType(int.class).in(versionClass).set(sdkVersion);
 
           ResourceLoader systemResourceLoader = sdkEnvironment.getSystemResourceLoader(MAVEN_CENTRAL, RobolectricTestRunner.this);
+
+          Class<?> displayShadowClass = sdkEnvironment.bootstrappedClass(ShadowDisplay.class);
+          int screenWidth = pickScreenWidth(config);
+          staticField("initialWidth").ofType(int.class).in(displayShadowClass).set(screenWidth);
+          int screenHeight = pickScreenHeight(config);
+          staticField("initialHeight").ofType(int.class).in(displayShadowClass).set(screenHeight);
+
           setUpApplicationState(bootstrappedMethod, parallelUniverseInterface, strictI18n, systemResourceLoader, appManifest, config);
           testLifecycle.beforeTest(bootstrappedMethod);
         } catch (Exception e) {
@@ -292,6 +300,21 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     }
   }
 
+  protected int pickScreenWidth(Config config) {
+    if (config.screenWidth()!=-1) {
+      return config.screenWidth(); 
+    } else {
+      return ShadowDisplay.DEFAULT_WIDTH;
+    }
+  }
+
+  protected int pickScreenHeight(Config config) {
+    if (config.screenHeight()!=-1) {
+      return config.screenHeight(); 
+    } else {
+      return ShadowDisplay.DEFAULT_HEIGHT;
+    }
+  }
   protected AndroidManifest getAppManifest(Config config) {
     if (config.manifest().equals(Config.NONE)) {
       return null;
