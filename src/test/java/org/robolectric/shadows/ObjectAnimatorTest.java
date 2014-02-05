@@ -1,13 +1,17 @@
 package org.robolectric.shadows;
 
 import android.animation.ObjectAnimator;
+import android.animation.AnimatorInflater;
 import android.view.View;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
+import static org.robolectric.Robolectric.application;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.fail;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ObjectAnimatorTest {
@@ -19,6 +23,30 @@ public class ObjectAnimatorTest {
     assertThat(animator).isNotNull();
     assertThat(animator.getTarget()).isEqualTo(expectedTarget);
     assertThat(animator.getPropertyName()).isEqualTo(propertyName);
+  }
+
+  @Test
+  public void shouldCreateForFloatViaInflater() {
+    View expectedTarget = new View(Robolectric.application);
+    // this test applies to any property that takes floats, picked alpha arbitraily
+    String propertyName = "alpha";
+    ObjectAnimator animator = (ObjectAnimator) AnimatorInflater.loadAnimator(application, R.animator.fade);
+    assertThat(animator).isNotNull();
+    assertThat(animator.getPropertyName()).isEqualTo(propertyName);
+
+    animator.setTarget(expectedTarget);
+    assertThat(animator.getTarget()).isEqualTo(expectedTarget);
+
+    try {
+      animator.start();
+    } catch (RuntimeException e) {
+      // can't just catch NoSuchMethodException itself
+      if (e.getMessage() != null && e.getMessage().startsWith("java.lang.NoSuchMethodException:")) {
+        fail("ObjectAnimator probably didn't set the animation type (float.class): " + e.getMessage());
+      }
+
+      throw e;
+    }
   }
 
   @Test
