@@ -32,4 +32,15 @@ public class InputMethodManagerTest {
     manager.hideSoftInputFromWindow(null, 0);
     assertThat(shadow.isSoftInputVisible()).isFalse();
   }
+
+  @Test
+  public void shouldToggleSoftInputVisibility() {
+    assertThat(shadow.isSoftInputVisible()).isFalse();
+
+    manager.toggleSoftInput(0, 0);
+    assertThat(shadow.isSoftInputVisible()).isTrue();
+
+    manager.toggleSoftInput(0, 0);
+    assertThat(shadow.isSoftInputVisible()).isFalse();
+  }
 }
