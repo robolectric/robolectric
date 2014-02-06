@@ -42,6 +42,11 @@ public class ShadowInputMethodManager {
     return true;
   }
 
+  @Implementation
+  public void toggleSoftInput(int showFlags, int hideFlags) {
+    softInputVisible = !softInputVisible;
+  }
+
   public boolean isSoftInputVisible() {
     return softInputVisible;
   }
