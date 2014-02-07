@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Map;
 
 import org.apache.maven.model.Dependency;
@@ -67,7 +66,7 @@ public class CachedMavenCentralTest {
 
     MavenCentral mv = createMavenCentral();
 
-    cache.write(CACHE_NAME, toHashtable(map));
+    cache.write(CACHE_NAME, new HashMap<String, URL>(map));
 
     Map<String, URL> urls = mv.getLocalArtifactUrls(testRunner, dependencies);
 
@@ -102,15 +101,11 @@ public class CachedMavenCentralTest {
   }
 
   private void assertCacheContents(Map<String, URL> urls) {
-    assertEquals(toHashtable(urls), cache.load(CACHE_NAME, Hashtable.class));
+    assertEquals(new HashMap<String, URL>(urls), cache.load(CACHE_NAME, HashMap.class));
   }
 
   private void assertCacheContents(URL url) {
     assertEquals(url, cache.load(CACHE_NAME, URL.class));
-  }
-
-  private Hashtable<String, URL> toHashtable(Map<String, URL> urls) {
-    return new Hashtable<String, URL>(urls);
   }
 
   private MavenCentral createMavenCentral() {

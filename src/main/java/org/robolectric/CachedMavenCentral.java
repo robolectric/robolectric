@@ -11,7 +11,6 @@ import java.io.Serializable;
 import java.net.URL;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Map;
 import java.util.zip.CRC32;
 
@@ -38,15 +37,15 @@ class CachedMavenCentral implements MavenCentral {
 
     String cacheName = cacheNamingStrategy.getName(dependencies);
 
-    Hashtable<String, URL> urlsFromCache = cache.load(cacheName, Hashtable.class);
+    HashMap<String, URL> urlsFromCache = cache.load(cacheName, HashMap.class);
 
     if(urlsFromCache != null) {
-      return new HashMap<String, URL>(urlsFromCache);
+      return urlsFromCache;
     }
 
     Map<String, URL> urls = mavenCentral.getLocalArtifactUrls(robolectricTestRunner, dependencies);
 
-    cache.write(cacheName, new Hashtable<String, URL>(urls));
+    cache.write(cacheName, new HashMap<String, URL>(urls));
 
     return urls;
   }
