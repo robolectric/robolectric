@@ -27,7 +27,7 @@ public class CachedMavenCentralTest {
   private MavenCentral internalMc = mock(MavenCentral.class);
   private CacheNamingStrategy cacheNamingStrategy = new CacheNamingStrategy() {
     @Override
-    public String getName(Dependency... dependencies) {
+    public String getName(String prefix, Dependency... dependencies) {
       return CACHE_NAME;
     }
   };

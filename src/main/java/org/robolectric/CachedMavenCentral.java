@@ -18,6 +18,9 @@ import org.apache.maven.model.Dependency;
 
 class CachedMavenCentral implements MavenCentral {
 
+  private final static String CACHE_PREFIX_1 = "localArtifactUrls";
+  private final static String CACHE_PREFIX_2 = "localArtifactUrl";
+
   private final MavenCentral mavenCentral;
   private final CacheNamingStrategy cacheNamingStrategy;
   private final Cache cache;
@@ -35,7 +38,7 @@ class CachedMavenCentral implements MavenCentral {
   @Override
   public Map<String, URL> getLocalArtifactUrls(RobolectricTestRunner robolectricTestRunner, Dependency... dependencies) {
 
-    String cacheName = cacheNamingStrategy.getName(dependencies);
+    String cacheName = cacheNamingStrategy.getName(CACHE_PREFIX_1, dependencies);
 
     HashMap<String, URL> urlsFromCache = cache.load(cacheName, HashMap.class);
 
@@ -53,7 +56,7 @@ class CachedMavenCentral implements MavenCentral {
   @Override
   public URL getLocalArtifactUrl(RobolectricTestRunner robolectricTestRunner, Dependency dependency) {
 
-    String cacheName = cacheNamingStrategy.getName(dependency);
+    String cacheName = cacheNamingStrategy.getName(CACHE_PREFIX_2, dependency);
 
     URL urlFromCache = cache.load(cacheName, URL.class);
 
@@ -68,12 +71,16 @@ class CachedMavenCentral implements MavenCentral {
   }
 
   interface CacheNamingStrategy {
-    String getName(Dependency... dependencies);
+    String getName(String prefix, Dependency... dependencies);
   }
 
   static class DefaultCacheNamingStrategy implements CacheNamingStrategy {
-    public String getName(Dependency... dependencies) {
+    public String getName(String prefix, Dependency... dependencies) {
       StringBuilder sb = new StringBuilder();
+
+      sb.append(prefix)
+        .append("#");
+
       for(Dependency dependency : dependencies) {
         sb.append(dependency.getGroupId())
           .append(":")
