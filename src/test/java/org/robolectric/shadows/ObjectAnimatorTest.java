@@ -37,16 +37,9 @@ public class ObjectAnimatorTest {
     animator.setTarget(expectedTarget);
     assertThat(animator.getTarget()).isEqualTo(expectedTarget);
 
-    try {
-      animator.start();
-    } catch (RuntimeException e) {
-      // can't just catch NoSuchMethodException itself
-      if (e.getMessage() != null && e.getMessage().startsWith("java.lang.NoSuchMethodException:")) {
-        fail("ObjectAnimator probably didn't set the animation type (float.class): " + e.getMessage());
-      }
-
-      throw e;
-    }
+    // if this throws no exception all is well, other tests verify that start
+    // does real work.
+    animator.start();
   }
 
   @Test
