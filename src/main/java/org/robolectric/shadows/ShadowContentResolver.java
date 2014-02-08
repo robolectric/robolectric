@@ -149,6 +149,16 @@ public class ShadowContentResolver {
       return returnCursor;
     }
   }
+  
+  @Implementation
+  public String getType(Uri uri) {
+    ContentProvider provider = getProvider(uri);
+    if (provider != null) {
+      return provider.getType(uri);
+    } else {
+      return null;
+    }
+  }
 
   @Implementation
   public final int delete(Uri url, String where, String[] selectionArgs) {
