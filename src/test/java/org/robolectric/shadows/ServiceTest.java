@@ -13,6 +13,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.robolectric.Robolectric.newInstanceOf;
 import static org.robolectric.Robolectric.shadowOf;
 
@@ -61,6 +62,25 @@ public class ServiceTest {
     assertThat(shadowService.isForegroundStopped()).isTrue();
     assertThat(shadowService.getNotificationShouldRemoved()).isTrue();
   }
+
+  @Test
+  public void shouldStopSelf(){
+    MyService service = new MyService();
+    service.stopSelf();
+
+    ShadowService shadowService = shadowOf(service);
+    assertTrue(shadowService.isStoppedBySelf());
+  }
+
+  @Test
+  public void shouldStopSelfWithId(){
+    MyService service = new MyService();
+    service.stopSelf(1);
+
+    ShadowService shadowService = shadowOf(service);
+    assertTrue(shadowService.isStoppedBySelf());
+  }
+
 
   private static class MyService extends Service {
     @Override public void onDestroy() {
