@@ -6,12 +6,15 @@ import android.content.ContentProviderOperation;
 import android.content.ContentProviderResult;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.IContentProvider;
 import android.content.OperationApplicationException;
 import android.content.PeriodicSync;
+import android.content.res.AssetFileDescriptor;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.ParcelFileDescriptor;
 
 import org.robolectric.AndroidManifest;
 import org.robolectric.Robolectric;
@@ -21,6 +24,7 @@ import org.robolectric.internal.NamedStream;
 import org.robolectric.res.ContentProviderData;
 import org.robolectric.tester.android.database.TestCursor;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -158,6 +162,15 @@ public class ShadowContentResolver {
     } else {
       return null;
     }
+  }
+
+  @Implementation
+  public final IContentProvider acquireUnstableProvider(Uri uri) {
+    ContentProvider cp = getProvider(uri);
+    if (cp != null) {
+      return cp.getIContentProvider();
+    }
+    return null;
   }
 
   @Implementation
