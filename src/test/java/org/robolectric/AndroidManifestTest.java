@@ -10,7 +10,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.res.ActivityData;
 import org.robolectric.res.Fs;
+import org.robolectric.res.IntentFilterData;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.test.TemporaryFolder;
@@ -40,6 +42,7 @@ import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.util.TestUtil.joinPath;
 import static org.robolectric.util.TestUtil.newConfig;
@@ -191,6 +194,62 @@ public class AndroidManifestTest {
     assertEquals(appManifest.getPackageName(), "org.no.resources.for.me");
     assertNull(appManifest.getRClass());
     assertEquals(appManifest.getResourcePath().getPackageName(), "org.no.resources.for.me");
+  }
+
+  @Test
+  public void shouldRead1IntentFilter() {
+    AndroidManifest appManifest = newConfig("TestAndroidManifestForActivitiesWithIntentFilter.xml");
+    //force parsing
+    appManifest.getMinSdkVersion();
+
+    ActivityData activityData = appManifest.getActivityData("org.robolectric.shadows.TestActivity");
+    final List<IntentFilterData> ifd = activityData.getIntentFilters();
+    assertNotNull(ifd);
+    assertEquals("Unexpected number of intent filters", 1, ifd.size());
+    final IntentFilterData data = ifd.get(0);
+    assertThat(data.getActions().size()).isEqualTo(1);
+    assertThat(data.getActions().get(0)).isEqualTo(Intent.ACTION_MAIN);
+    assertThat(data.getCategories().size()).isEqualTo(1);
+    assertThat(data.getCategories().get(0)).isEqualTo(Intent.CATEGORY_LAUNCHER);
+  }
+
+  @Test
+  public void shouldReadMultipleIntentFilters() {
+    AndroidManifest appManifest = newConfig("TestAndroidManifestForActivitiesWithMultipleIntentFilters.xml");
+    //force parsing
+    appManifest.getMinSdkVersion();
+
+    ActivityData activityData = appManifest.getActivityData("org.robolectric.shadows.TestActivity");
+    final List<IntentFilterData> ifd = activityData.getIntentFilters();
+    assertNotNull(ifd);
+    assertEquals("Unexpected number of intent filters", 2, ifd.size());
+
+    IntentFilterData data = ifd.get(0);
+    assertThat(data.getActions().size()).isEqualTo(1);
+    assertThat(data.getActions().get(0)).isEqualTo(Intent.ACTION_MAIN);
+    assertThat(data.getCategories().size()).isEqualTo(1);
+    assertThat(data.getCategories().get(0)).isEqualTo(Intent.CATEGORY_LAUNCHER);
+
+    data = ifd.get(1);
+    assertThat(data.getActions().size()).isEqualTo(3);
+    assertThat(data.getActions().get(0)).isEqualTo(Intent.ACTION_VIEW);
+    assertThat(data.getActions().get(1)).isEqualTo(Intent.ACTION_EDIT);
+    assertThat(data.getActions().get(2)).isEqualTo(Intent.ACTION_PICK);
+
+    assertThat(data.getCategories().size()).isEqualTo(3);
+    assertThat(data.getCategories().get(0)).isEqualTo(Intent.CATEGORY_DEFAULT);
+    assertThat(data.getCategories().get(1)).isEqualTo(Intent.CATEGORY_ALTERNATIVE);
+    assertThat(data.getCategories().get(2)).isEqualTo(Intent.CATEGORY_SELECTED_ALTERNATIVE);
+  }
+
+  @Test
+  public void shouldReadTaskAffinity() {
+    AndroidManifest appManifest = newConfig("TestAndroidManifestForActivitiesWithTaskAffinity.xml");
+    assertThat(appManifest.getTargetSdkVersion()).isEqualTo(16);
+
+    ActivityData activityData = appManifest.getActivityData("org.robolectric.shadows.TestTaskAffinityActivity");
+    assertNotNull(activityData);
+    assertThat(activityData.getTaskAffinity()).isEqualTo("org.robolectric.shadows.TestTaskAffinity");
   }
 
   /////////////////////////////
