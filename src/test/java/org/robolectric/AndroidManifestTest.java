@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -244,6 +245,14 @@ public class AndroidManifestTest {
     ActivityData activityData = appManifest.getActivityData("org.robolectric.shadows.TestTaskAffinityActivity");
     assertThat(activityData).isNotNull();
     assertThat(activityData.getTaskAffinity()).isEqualTo("org.robolectric.shadows.TestTaskAffinity");
+  }
+
+  @Test
+  public void shouldReadPartiallyQualifiedActivities() throws Exception {
+    AndroidManifest config = newConfig("TestAndroidManifestForActivities.xml");
+    assertThat(config.getActivityDatas()).hasSize(2);
+    assertThat(config.getActivityDatas()).containsKey("org.robolectric.shadows.TestActivity");
+    assertThat(config.getActivityDatas()).containsKey("org.robolectric.shadows.TestActivity2");
   }
 
   /////////////////////////////

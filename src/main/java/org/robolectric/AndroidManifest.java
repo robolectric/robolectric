@@ -582,6 +582,7 @@ public class AndroidManifest {
   }
 
   public Map<String, ActivityData> getActivityDatas() {
+    parseAndroidManifest();
     return activityDatas;
   }
 
