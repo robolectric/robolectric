@@ -11,16 +11,24 @@ import java.net.URL;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Properties;
 import org.apache.maven.artifact.ant.DependenciesTask;
 import org.jetbrains.annotations.TestOnly;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.internal.runners.statements.RunAfters;
+import org.junit.internal.runners.statements.RunBefores;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
+import org.junit.runners.model.TestClass;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.DisableStrictI18n;
 import org.robolectric.annotation.EnableStrictI18n;
@@ -70,6 +78,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   private SdkConfig lastSdkConfig;
   private SdkEnvironment lastSdkEnvironment;
 
+  private final HashSet<Class<?>> mLoadedTestClasses;
+
   /**
    * Creates a runner to run {@code testClass}. Looks in your working directory for your AndroidManifest.xml file
    * and res directory by default. Use the {@link Config} annotation to configure.
@@ -90,6 +100,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       }
     }
     this.envHolder = envHolder;
+    mLoadedTestClasses = new HashSet<Class<?>>();
   }
 
   private void assureTestLifecycle(SdkEnvironment sdkEnvironment) {
@@ -164,17 +175,28 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
   @Override
   protected Statement classBlock(RunNotifier notifier) {
-    final Statement statement = super.classBlock(notifier);
+    final Statement statement = childrenInvoker(notifier);
     return new Statement() {
       @Override
       public void evaluate() throws Throwable {
         try {
           statement.evaluate();
+
+          for (Class<?> testClass : mLoadedTestClasses) {
+            invokeAfterClass(testClass);
+          }
         } finally {
           afterClass();
         }
       }
     };
+  }
+
+  private void invokeAfterClass(final Class<?> clazz) throws Throwable {
+    final TestClass testClass = new TestClass(clazz);     final List<FrameworkMethod> afters = testClass.getAnnotatedMethods(AfterClass.class);
+    for (FrameworkMethod after : afters) {
+      after.invokeExplosively(null);
+    }
   }
 
   @Override protected Statement methodBlock(final FrameworkMethod method) {
@@ -201,6 +223,10 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
         ParallelUniverseInterface parallelUniverseInterface = getHooksInterface(sdkEnvironment);
         try {
+          // Only invoke @BeforeClass once per class
+          if (!mLoadedTestClasses.contains(bootstrappedTestClass)) {
+            invokeBeforeClass(bootstrappedTestClass);
+          }
           assureTestLifecycle(sdkEnvironment);
 
           parallelUniverseInterface.resetStaticState();
@@ -250,6 +276,18 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
         }
       }
     };
+  }
+
+  private void invokeBeforeClass(final Class clazz) throws Throwable {
+    if (!mLoadedTestClasses.contains(clazz)) {
+      mLoadedTestClasses.add(clazz);
+
+      final TestClass testClass = new TestClass(clazz);
+      final List<FrameworkMethod> befores = testClass.getAnnotatedMethods(BeforeClass.class);
+      for (FrameworkMethod before : befores) {
+        before.invokeExplosively(null);
+      }
+    }
   }
 
   protected HelperTestRunner getHelperTestRunner(Class bootstrappedTestClass) {
