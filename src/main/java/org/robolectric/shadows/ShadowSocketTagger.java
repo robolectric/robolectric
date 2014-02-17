@@ -12,5 +12,8 @@ public class ShadowSocketTagger {
   public static final String REAL_CLASS_NAME = "dalvik.system.SocketTagger";
 
   @Implementation
+  public final void tag(Socket socket) throws SocketException { }
+
+  @Implementation
   public final void untag(Socket socket) throws SocketException { }
 }
