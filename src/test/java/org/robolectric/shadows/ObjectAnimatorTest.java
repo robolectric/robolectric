@@ -128,4 +128,21 @@ public class ObjectAnimatorTest {
     ShadowObjectAnimator.unpauseEndNotifications();
     assertThat(endListener.endWasCalled).isTrue();
   }
+
+  @Test
+  public void animatesMultipleKeyFrames() throws Exception {
+    View target = new View(Robolectric.application);
+    ObjectAnimator animator = ObjectAnimator.ofFloat(target, "alpha", 0f, 1f, 0.5f, 1f);
+    animator.setDuration(3000);
+
+    animator.start();
+
+    assertThat(target.getAlpha()).isEqualTo(0f);
+    Robolectric.idleMainLooper(1000);
+    assertThat(target.getAlpha()).isEqualTo(1f);
+    Robolectric.idleMainLooper(1000);
+    assertThat(target.getAlpha()).isEqualTo(0.5f);
+    Robolectric.idleMainLooper(1000);
+    assertThat(target.getAlpha()).isEqualTo(1f);
+  }
 }

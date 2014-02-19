@@ -116,37 +116,38 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
     notifyStart();
     try {
       setter = target.getClass().getMethod(methodName, animationType);
-      if (animationType == float.class) {
-        setter.invoke(target, floatValues[0]);
-      } else if (animationType == int.class) {
-        setter.invoke(target, intValues[0]);
-      }
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
+
+    int keyFrameCount = 0;
+    if (animationType == float.class) {
+      keyFrameCount = floatValues.length;
+    } else if (animationType == int.class) {
+      keyFrameCount = intValues.length;
+    }
+
+    Runnable animationRunnable = new AnimationRunnable(setter);
+    long stepDuration = duration / (keyFrameCount - 1);
+    for (int i = 0; i * stepDuration <= duration; ++i) {
+      new Handler(Looper.getMainLooper()).postDelayed(animationRunnable, stepDuration * i);
+    }
+
     new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
       @Override
       public void run() {
         isRunning = false;
-        try {
-          if (animationType == float.class) {
-            setter.invoke(target, floatValues[floatValues.length - 1]);
-          } else if (animationType == int.class) {
-            setter.invoke(target, intValues[intValues.length - 1]);
-          }
-          if (pausingEndNotifications) {
-            pausedEndNotifications.add(ShadowObjectAnimator.this);
-          } else {
-            notifyEnd();
-          }
-        } catch (Exception e) {
-          throw new RuntimeException(e);
+        if (pausingEndNotifications) {
+          pausedEndNotifications.add(ShadowObjectAnimator.this);
+        } else {
+          notifyEnd();
         }
       }
     }, duration);
   }
 
-  @Override @Implementation
+  @Override
+  @Implementation
   public boolean isRunning() {
     return isRunning;
   }
@@ -177,5 +178,29 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
       pausedEndNotifications.remove(0).notifyEnd();
     }
     pausingEndNotifications = false;
+  }
+
+  private class AnimationRunnable implements Runnable {
+    private final Method setter;
+    public int index;
+
+    public AnimationRunnable(Method setter) {
+      this.setter = setter;
+    }
+
+    @Override
+    public void run() {
+      try {
+        if (animationType == float.class) {
+          setter.invoke(target, floatValues[index]);
+        } else if (animationType == int.class) {
+          setter.invoke(target, intValues[index]);
+        }
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      } finally {
+        ++index;
+      }
+    }
   }
 }
