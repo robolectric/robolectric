@@ -128,9 +128,13 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
     }
 
     Runnable animationRunnable = new AnimationRunnable(setter);
-    long stepDuration = duration / (keyFrameCount - 1);
-    for (int i = 0; i * stepDuration <= duration; ++i) {
-      new Handler(Looper.getMainLooper()).postDelayed(animationRunnable, stepDuration * i);
+    if (keyFrameCount > 1) {
+      long stepDuration = duration / (keyFrameCount - 1);
+      for (int i = 0; i * stepDuration <= duration; ++i) {
+        new Handler(Looper.getMainLooper()).postDelayed(animationRunnable, stepDuration * i);
+      }
+    } else {
+      new Handler(Looper.getMainLooper()).postDelayed(animationRunnable, duration);
     }
 
     new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {

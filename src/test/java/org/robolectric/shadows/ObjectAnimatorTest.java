@@ -145,4 +145,17 @@ public class ObjectAnimatorTest {
     Robolectric.idleMainLooper(1000);
     assertThat(target.getAlpha()).isEqualTo(1f);
   }
+
+  @Test
+  public void animatesSingleKeyFrame() throws Exception {
+    View target = new View(Robolectric.application);
+    ObjectAnimator animator = ObjectAnimator.ofFloat(target, "alpha", 0.4f);
+    animator.setDuration(100);
+
+    animator.start();
+
+    assertThat(target.getAlpha()).isEqualTo(1f);
+    Robolectric.idleMainLooper(100);
+    assertThat(target.getAlpha()).isEqualTo(0.4f);
+  }
 }
