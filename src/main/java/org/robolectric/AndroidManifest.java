@@ -466,8 +466,12 @@ public class AndroidManifest {
       String lib;
       while ((lib = properties.getProperty("android.library.reference." + libRef)) != null) {
         FsFile libraryBaseDir = baseDir.join(lib);
-        if (libraryBaseDir.exists()) {
-          libraryBaseDirs.add(libraryBaseDir);
+        if (libraryBaseDir.isDirectory()) {
+          // Ignore directories without any files
+          FsFile[] libraryBaseDirFiles = libraryBaseDir.listFiles();
+          if (libraryBaseDirFiles != null && libraryBaseDirFiles.length > 0) {
+            libraryBaseDirs.add(libraryBaseDir);
+          }
         }
 
         libRef++;
