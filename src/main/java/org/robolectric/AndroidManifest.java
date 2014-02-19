@@ -466,8 +466,13 @@ public class AndroidManifest {
       String lib;
       while ((lib = properties.getProperty("android.library.reference." + libRef)) != null) {
         FsFile libraryBaseDir = baseDir.join(lib);
-        if (libraryBaseDir.exists()) {
-          libraryBaseDirs.add(libraryBaseDir);
+        // #973: Check if library directory is not empty. This can happen for example with Git submodules.
+        // In that case, we should simply ignore the library.
+        if (libraryBaseDir.isDirectory()) {
+          FsFile[] libraryBaseDirFiles = libraryBaseDir.listFiles();
+          if (libraryBaseDirFiles != null && libraryBaseDirFiles.length > 0) {
+            libraryBaseDirs.add(libraryBaseDir);
+          }
         }
 
         libRef++;
