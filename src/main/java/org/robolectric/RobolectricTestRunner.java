@@ -345,7 +345,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       assetsDir = Fs.fileFromPath(assetsProperty);
     } else {
       manifestFile = fsFile.join(defaultManifest ? "AndroidManifest.xml" : config.manifest());
-      resDir = manifestFile.getParent().join("res");
+      resDir = manifestFile.getParent().join(config.resourceDir());
       assetsDir = manifestFile.getParent().join("assets");
     }
 
