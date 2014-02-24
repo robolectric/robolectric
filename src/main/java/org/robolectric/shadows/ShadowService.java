@@ -50,6 +50,11 @@ public class ShadowService extends ShadowContextWrapper {
     selfStopped = true;
   }
 
+  @Implementation
+  public void stopSelf(int id) {
+    selfStopped = true;
+  }
+
   public void setUnbindServiceShouldThrowIllegalArgument(boolean flag) {
     unbindServiceShouldThrowIllegalArgument = flag;
   }

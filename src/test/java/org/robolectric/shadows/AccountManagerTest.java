@@ -344,4 +344,80 @@ public class AccountManagerTest {
     assertThat(result.length).isEqualTo(1);
     assertThat(result[0].type).isEqualTo("type");
   }
+
+  @Test
+  public void invalidateAuthToken_noAccount() {
+    am.invalidateAuthToken("type1", "token1");
+  }
+
+  @Test
+  public void invalidateAuthToken_noToken() {
+    Account account1 = new Account("name", "type1");
+    Robolectric.shadowOf(am).addAccount(account1);
+    am.invalidateAuthToken("type1", "token1");
+  }
+
+  @Test
+  public void invalidateAuthToken_multipleAccounts() {
+    Account account1 = new Account("name", "type1");
+    Robolectric.shadowOf(am).addAccount(account1);
+
+    Account account2 = new Account("name", "type2");
+    Robolectric.shadowOf(am).addAccount(account2);
+
+    am.setAuthToken(account1, "token_type_1", "token1");
+    am.setAuthToken(account2, "token_type_1", "token1");
+
+    assertThat(am.peekAuthToken(account1, "token_type_1")).isEqualTo("token1");
+    assertThat(am.peekAuthToken(account2, "token_type_1")).isEqualTo("token1");
+
+    // invalidate token for type1 account 
+    am.invalidateAuthToken("type1", "token1");
+    assertThat(am.peekAuthToken(account1, "token_type_1")).isNull();
+    assertThat(am.peekAuthToken(account2, "token_type_1")).isEqualTo("token1");
+
+    // invalidate token for type2 account 
+    am.invalidateAuthToken("type2", "token1");
+    assertThat(am.peekAuthToken(account1, "token_type_1")).isNull();
+    assertThat(am.peekAuthToken(account2, "token_type_1")).isNull();
+  }
+
+  @Test
+  public void invalidateAuthToken_multipleTokens() {
+    Account account = new Account("name", "type1");
+    Robolectric.shadowOf(am).addAccount(account);
+
+    am.setAuthToken(account, "token_type_1", "token1");
+    am.setAuthToken(account, "token_type_2", "token2");
+
+    assertThat(am.peekAuthToken(account, "token_type_1")).isEqualTo("token1");
+    assertThat(am.peekAuthToken(account, "token_type_2")).isEqualTo("token2");
+
+    // invalidate token1
+    am.invalidateAuthToken("type1", "token1");
+    assertThat(am.peekAuthToken(account, "token_type_1")).isNull();
+    assertThat(am.peekAuthToken(account, "token_type_2")).isEqualTo("token2");
+
+    // invalidate token2
+    am.invalidateAuthToken("type1", "token2");
+    assertThat(am.peekAuthToken(account, "token_type_1")).isNull();
+    assertThat(am.peekAuthToken(account, "token_type_2")).isNull();
+  }
+
+  @Test
+  public void invalidateAuthToken_multipleTokenTypesSameToken() {
+    Account account = new Account("name", "type1");
+    Robolectric.shadowOf(am).addAccount(account);
+
+    am.setAuthToken(account, "token_type_1", "token1");
+    am.setAuthToken(account, "token_type_2", "token1");
+
+    assertThat(am.peekAuthToken(account, "token_type_1")).isEqualTo("token1");
+    assertThat(am.peekAuthToken(account, "token_type_2")).isEqualTo("token1");
+
+    // invalidate token1
+    am.invalidateAuthToken("type1", "token1");
+    assertThat(am.peekAuthToken(account, "token_type_1")).isNull();
+    assertThat(am.peekAuthToken(account, "token_type_2")).isNull();
+  }
 }

@@ -2,9 +2,12 @@ package org.robolectric;
 
 import android.app.Activity;
 import org.robolectric.res.ActivityData;
+import org.robolectric.res.IntentFilterData;
 import org.robolectric.res.ContentProviderData;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
+import org.robolectric.res.ResName;
+import org.robolectric.res.ResourceIndex;
 import org.robolectric.res.ResourcePath;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -21,6 +24,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.Properties;
 
 import static android.content.pm.ApplicationInfo.FLAG_ALLOW_BACKUP;
@@ -190,17 +194,7 @@ public class AndroidManifest {
       if (namedItem == null) continue;
 
       String receiverName = resolveClassRef(namedItem.getTextContent());
-
-      Map<String, String> metaDataMap = null;
-      for (Node metaDataNode : getChildrenTags(receiverNode, "meta-data")) {
-        if(metaDataMap == null) {
-          metaDataMap = new LinkedHashMap<String, String>();
-        }
-
-        Node namedData = metaDataNode.getAttributes().getNamedItem("android:name");
-        Node namedValue = metaDataNode.getAttributes().getNamedItem("android:value");
-        metaDataMap.put(resolveClassRef(namedData.getTextContent()), resolveClassRef(namedValue.getTextContent()));
-      }
+      Map<String,String> metaDataMap = parseMetaData(getChildrenTags(receiverNode, "meta-data"));
 
       for (Node intentFilterNode : getChildrenTags(receiverNode, "intent-filter")) {
         List<String> actions = new ArrayList<String>();
@@ -220,33 +214,84 @@ public class AndroidManifest {
     if (application == null) return;
 
     for (Node activityNode : getChildrenTags(application, "activity")) {
-      NamedNodeMap attributes = activityNode.getAttributes();
-      Node nameAttr = attributes.getNamedItem("android:name");
-      Node themeAttr = attributes.getNamedItem("android:theme");
-      Node labelAttr = attributes.getNamedItem("android:label");
-      if (nameAttr == null) continue;
-      String activityName = resolveClassRef(nameAttr.getNodeValue());
+      final NamedNodeMap attributes = activityNode.getAttributes();
+      final int attrCount = attributes.getLength();
+      final List<IntentFilterData> intentFilterData = parseIntentFilters(activityNode);
+      final HashMap<String, String> activityAttrs = new HashMap<String, String>(attrCount);
+      for(int i = 0; i < attrCount; i++) {
+        Node attr = attributes.item(i);
+        String v = attr.getNodeValue();
+        if( v != null) {
+          activityAttrs.put(attr.getNodeName(), v);
+        }
+      }
 
-      activityDatas.put(activityName,
-          new ActivityData(activityName,
-              labelAttr == null ? null : labelAttr.getNodeValue(),
-              themeAttr == null ? null : resolveClassRef(themeAttr.getNodeValue())
-          ));
+      String activityName = resolveClassRef(activityAttrs.get(ActivityData.getNameAttr("android")));
+      if (activityName == null) {
+        continue;
+      }
+      activityAttrs.put(ActivityData.getNameAttr("android"), activityName);
+      activityDatas.put(activityName, new ActivityData(activityAttrs, intentFilterData));
+    }
+  }
+
+  private List<IntentFilterData> parseIntentFilters(final Node activityNode) {
+    ArrayList<IntentFilterData> intentFilterDatas = new ArrayList<IntentFilterData>();
+    for (Node n : getChildrenTags(activityNode, "intent-filter")) {
+      ArrayList<String> actionNames = new ArrayList<String>();
+      ArrayList<String> categories = new ArrayList<String>();
+      //should only be one action.
+      for (Node action : getChildrenTags(n, "action")) {
+        NamedNodeMap attributes = action.getAttributes();
+        Node actionNameNode = attributes.getNamedItem("android:name");
+        if (actionNameNode != null) {
+          actionNames.add(actionNameNode.getNodeValue());
+        }
+      }
+      for (Node category : getChildrenTags(n, "category")) {
+        NamedNodeMap attributes = category.getAttributes();
+        Node categoryNameNode = attributes.getNamedItem("android:name");
+        if (categoryNameNode != null) {
+          categories.add(categoryNameNode.getNodeValue());
+        }
+      }
+
+      intentFilterDatas.add(new IntentFilterData(actionNames, categories));
+    }
+
+    return intentFilterDatas;
+  }
+
+  /***
+   * Allows {@link org.robolectric.res.builder.RobolectricPackageManager} to provide
+   * a resource index for initialising the resource attributes in all the metadata elements
+   * @param resIndex used for getting resource IDs from string identifiers
+   */
+  public void initMetaData(ResourceIndex resIndex) {
+    for (Map.Entry<String,String> entry : applicationMetaData.entrySet()) {
+      if (entry.getValue().startsWith("@")) {
+        Integer resId = ResName.getResourceId(resIndex, entry.getValue(), packageName);
+        if (resId != null) {
+            entry.setValue(resId.toString());
+        }
+      }
+    }
+    for (ReceiverAndIntentFilter receiver : receivers) {
+      for (Map.Entry<String,String> entry : receiver.metaData.entrySet()) {
+        if (entry.getValue().startsWith("@")) {
+          Integer resId = ResName.getResourceId(resIndex, entry.getValue(), packageName);
+          if (resId != null) {
+              entry.setValue(resId.toString());
+          }
+        }
+      }
     }
   }
 
   private void parseApplicationMetaData(final Document manifestDocument) {
     Node application = manifestDocument.getElementsByTagName("application").item(0);
     if (application == null) return;
-
-    for (Node metaNode : getChildrenTags(application, "meta-data")) {
-      NamedNodeMap attributes = metaNode.getAttributes();
-      Node nameAttr = attributes.getNamedItem("android:name");
-      Node valueAttr = attributes.getNamedItem("android:value");
-      // TODO: support android:resource attribute
-      if (valueAttr == null) { continue; }
-      applicationMetaData.put(nameAttr.getNodeValue(), valueAttr.getNodeValue());
-    }
+    applicationMetaData.putAll(parseMetaData(getChildrenTags(application, "meta-data")));
   }
 
   private String resolveClassRef(String maybePartialClassName) {
@@ -485,6 +530,25 @@ public class AndroidManifest {
     return null;
   }
 
+  private static Map<String, String> parseMetaData(List<Node> nodes) {
+    Map<String, String> metaData = new HashMap<String, String>();
+    for (Node metaNode : nodes) {
+      NamedNodeMap attributes = metaNode.getAttributes();
+      Node nameAttr = attributes.getNamedItem("android:name");
+      Node valueAttr = attributes.getNamedItem("android:value");
+      Node resourceAttr = attributes.getNamedItem("android:resource");
+
+      if (valueAttr != null) {
+        metaData.put(nameAttr.getNodeValue(), valueAttr.getNodeValue());
+      } else if (resourceAttr != null) {
+        metaData.put(nameAttr.getNodeValue(), resourceAttr.getNodeValue());
+      }
+    }
+
+    return metaData;
+  }
+
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -518,6 +582,7 @@ public class AndroidManifest {
   }
 
   public Map<String, ActivityData> getActivityDatas() {
+    parseAndroidManifest();
     return activityDatas;
   }
 

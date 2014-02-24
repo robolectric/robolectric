@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -105,8 +106,12 @@ public class TestSharedPreferences implements SharedPreferences {
 
     @Override
     public Editor putString(String key, String value) {
-      editsThatNeedCommit.put(key, value);
-      editsThatNeedRemove.remove(key);
+      if (value == null) {
+        editsThatNeedRemove.add(key);
+      } else {
+        editsThatNeedCommit.put(key, value);
+        editsThatNeedRemove.remove(key);
+      }
       return this;
     }
 
@@ -140,8 +145,12 @@ public class TestSharedPreferences implements SharedPreferences {
 
     @Override
     public Editor putStringSet(String key, Set<String> value ){
-      editsThatNeedCommit.put( key, value );
-      editsThatNeedRemove.remove(key);
+      if (value == null) {
+        editsThatNeedRemove.add(key);
+      } else {
+        editsThatNeedCommit.put(key, value);
+        editsThatNeedRemove.remove(key);
+      }
       return this;
     }
 
@@ -160,19 +169,28 @@ public class TestSharedPreferences implements SharedPreferences {
     @Override
     public boolean commit() {
       Map<String, Object> previousContent = content.get(filename);
+      List<String> keysToPassToListeners = new ArrayList<String>();
+
       if (shouldClearOnCommit) {
         previousContent.clear();
       } else {
-        for (String key : editsThatNeedCommit.keySet()) {
-          previousContent.put(key, editsThatNeedCommit.get(key));
-        }
         for (String key : editsThatNeedRemove) {
           previousContent.remove(key);
+          keysToPassToListeners.add(key);
         }
       }
 
       for (String key : editsThatNeedCommit.keySet()) {
-        previousContent.put(key, editsThatNeedCommit.get(key));
+        if (!editsThatNeedCommit.get(key).equals(previousContent.get(key))) {
+          previousContent.put(key, editsThatNeedCommit.get(key));
+          keysToPassToListeners.add(key);
+        }
+      }
+
+      for (OnSharedPreferenceChangeListener listener : listeners) {
+        for (String key : keysToPassToListeners) {
+          listener.onSharedPreferenceChanged(TestSharedPreferences.this, key);
+        }
       }
 
       return true;

@@ -3,13 +3,17 @@ package org.robolectric;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
+import org.robolectric.res.ActivityData;
 import org.robolectric.res.Fs;
+import org.robolectric.res.IntentFilterData;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.test.TemporaryFolder;
-import org.robolectric.util.TestUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,13 +39,13 @@ import static android.content.pm.ApplicationInfo.FLAG_VM_SAFE_MODE;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.util.TestUtil.joinPath;
 import static org.robolectric.util.TestUtil.newConfig;
 import static org.robolectric.util.TestUtil.resourceFile;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(RobolectricTestRunner.class)
+@Config(manifest = Config.NONE)
 public class AndroidManifestTest {
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
@@ -91,8 +95,29 @@ public class AndroidManifestTest {
 
     assertEquals("org.robolectric.test.ConfigTestReceiver", config.getReceiverClassName(5));
     assertEquals("org.robolectric.ACTION_DOT_SUBPACKAGE", config.getReceiverIntentFilterActions(5).get(0));
-    assertTrue(config.getReceiverMetaData(5).containsKey("forward.ToTest"));
-    assertTrue(config.getReceiverMetaData(5).containsValue("org.robolectric.Robolectric"));
+
+    Map<String, String> meta = config.getReceiverMetaData(5);
+    Object metaValue = meta.get("org.robolectric.metaName1");
+    assertEquals("metaValue1", metaValue);
+
+    metaValue = meta.get("org.robolectric.metaName2");
+    assertTrue(String.class.isInstance(metaValue));
+    assertEquals("metaValue2", metaValue);
+
+    metaValue = meta.get("org.robolectric.metaFalse");
+    assertEquals("false", metaValue);
+
+    metaValue = meta.get("org.robolectric.metaTrue");
+    assertEquals("true", metaValue);
+
+    metaValue = meta.get("org.robolectric.metaInt");
+    assertEquals("123", metaValue);
+
+    metaValue = meta.get("org.robolectric.metaFloat");
+    assertEquals("1.23", metaValue);
+
+    metaValue = meta.get("org.robolectric.metaStringRes");
+    assertEquals("@string/app_name", metaValue);
   }
 
   @Test
@@ -119,10 +144,31 @@ public class AndroidManifestTest {
   }
 
   @Test
-  public void shouldReturnApplicationMetaData() {
+  @Config(manifest = "src/test/resources/TestAndroidManifestWithAppMetaData.xml")
+  public void shouldReturnApplicationMetaData() throws PackageManager.NameNotFoundException {
     Map<String, String> meta = newConfig("TestAndroidManifestWithAppMetaData.xml").getApplicationMetaData();
-    assertEquals("metaValue1", meta.get("org.robolectric.metaName1"));
-    assertEquals("metaValue2", meta.get("org.robolectric.metaName2"));
+
+    Object metaValue = meta.get("org.robolectric.metaName1");
+    assertEquals("metaValue1", metaValue);
+
+    metaValue = meta.get("org.robolectric.metaName2");
+    assertTrue(String.class.isInstance(metaValue));
+    assertEquals("metaValue2", metaValue);
+
+    metaValue = meta.get("org.robolectric.metaFalse");
+    assertEquals("false", metaValue);
+
+    metaValue = meta.get("org.robolectric.metaTrue");
+    assertEquals("true", metaValue);
+
+    metaValue = meta.get("org.robolectric.metaInt");
+    assertEquals("123", metaValue);
+
+    metaValue = meta.get("org.robolectric.metaFloat");
+    assertEquals("1.23", metaValue);
+
+    metaValue = meta.get("org.robolectric.metaStringRes");
+    assertEquals("@string/app_name", metaValue);
   }
   
   @Test public void shouldLoadAllResourcesForExistingLibraries() {
@@ -142,8 +188,71 @@ public class AndroidManifestTest {
   public void shouldTolerateMissingRFile() throws Exception {
     AndroidManifest appManifest = new AndroidManifest(resourceFile("TestAndroidManifestWithNoRFile.xml"), resourceFile("res"));
     assertEquals(appManifest.getPackageName(), "org.no.resources.for.me");
-    assertNull(appManifest.getRClass());
+    assertThat(appManifest.getRClass()).isNull();
     assertEquals(appManifest.getResourcePath().getPackageName(), "org.no.resources.for.me");
+  }
+
+  @Test
+  public void shouldRead1IntentFilter() {
+    AndroidManifest appManifest = newConfig("TestAndroidManifestForActivitiesWithIntentFilter.xml");
+    appManifest.getMinSdkVersion(); // Force parsing
+
+    ActivityData activityData = appManifest.getActivityData("org.robolectric.shadows.TestActivity");
+    final List<IntentFilterData> ifd = activityData.getIntentFilters();
+    assertThat(ifd).isNotNull();
+    assertThat(ifd.size()).isEqualTo(1);
+
+    final IntentFilterData data = ifd.get(0);
+    assertThat(data.getActions().size()).isEqualTo(1);
+    assertThat(data.getActions().get(0)).isEqualTo(Intent.ACTION_MAIN);
+    assertThat(data.getCategories().size()).isEqualTo(1);
+    assertThat(data.getCategories().get(0)).isEqualTo(Intent.CATEGORY_LAUNCHER);
+  }
+
+  @Test
+  public void shouldReadMultipleIntentFilters() {
+    AndroidManifest appManifest = newConfig("TestAndroidManifestForActivitiesWithMultipleIntentFilters.xml");
+    appManifest.getMinSdkVersion(); // Force parsing
+
+    ActivityData activityData = appManifest.getActivityData("org.robolectric.shadows.TestActivity");
+    final List<IntentFilterData> ifd = activityData.getIntentFilters();
+    assertThat(ifd).isNotNull();
+    assertThat(ifd.size()).isEqualTo(2);
+
+    IntentFilterData data = ifd.get(0);
+    assertThat(data.getActions().size()).isEqualTo(1);
+    assertThat(data.getActions().get(0)).isEqualTo(Intent.ACTION_MAIN);
+    assertThat(data.getCategories().size()).isEqualTo(1);
+    assertThat(data.getCategories().get(0)).isEqualTo(Intent.CATEGORY_LAUNCHER);
+
+    data = ifd.get(1);
+    assertThat(data.getActions().size()).isEqualTo(3);
+    assertThat(data.getActions().get(0)).isEqualTo(Intent.ACTION_VIEW);
+    assertThat(data.getActions().get(1)).isEqualTo(Intent.ACTION_EDIT);
+    assertThat(data.getActions().get(2)).isEqualTo(Intent.ACTION_PICK);
+
+    assertThat(data.getCategories().size()).isEqualTo(3);
+    assertThat(data.getCategories().get(0)).isEqualTo(Intent.CATEGORY_DEFAULT);
+    assertThat(data.getCategories().get(1)).isEqualTo(Intent.CATEGORY_ALTERNATIVE);
+    assertThat(data.getCategories().get(2)).isEqualTo(Intent.CATEGORY_SELECTED_ALTERNATIVE);
+  }
+
+  @Test
+  public void shouldReadTaskAffinity() {
+    AndroidManifest appManifest = newConfig("TestAndroidManifestForActivitiesWithTaskAffinity.xml");
+    assertThat(appManifest.getTargetSdkVersion()).isEqualTo(16);
+
+    ActivityData activityData = appManifest.getActivityData("org.robolectric.shadows.TestTaskAffinityActivity");
+    assertThat(activityData).isNotNull();
+    assertThat(activityData.getTaskAffinity()).isEqualTo("org.robolectric.shadows.TestTaskAffinity");
+  }
+
+  @Test
+  public void shouldReadPartiallyQualifiedActivities() throws Exception {
+    AndroidManifest config = newConfig("TestAndroidManifestForActivities.xml");
+    assertThat(config.getActivityDatas()).hasSize(2);
+    assertThat(config.getActivityDatas()).containsKey("org.robolectric.shadows.TestActivity");
+    assertThat(config.getActivityDatas()).containsKey("org.robolectric.shadows.TestActivity2");
   }
 
   /////////////////////////////
@@ -190,6 +299,7 @@ public class AndroidManifestTest {
     return (flags & flag) != 0;
   }
 
+  @SuppressWarnings("unused")
   public static class ConfigTestReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {

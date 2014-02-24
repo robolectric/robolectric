@@ -1,12 +1,15 @@
 package org.robolectric.shadows;
 
 import android.animation.ObjectAnimator;
+import android.animation.AnimatorInflater;
 import android.view.View;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
+import static org.robolectric.Robolectric.application;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -19,6 +22,18 @@ public class ObjectAnimatorTest {
     assertThat(animator).isNotNull();
     assertThat(animator.getTarget()).isEqualTo(expectedTarget);
     assertThat(animator.getPropertyName()).isEqualTo(propertyName);
+  }
+
+  @Test
+  public void shouldCreateForFloatViaInflater() {
+    View expectedTarget = new View(Robolectric.application);
+    ObjectAnimator animator = (ObjectAnimator) AnimatorInflater.loadAnimator(application, R.animator.fade);
+    assertThat(animator).isNotNull();
+    assertThat(animator.getPropertyName()).isEqualTo("alpha");
+
+    animator.setTarget(expectedTarget);
+    assertThat(animator.getTarget()).isEqualTo(expectedTarget);
+    animator.start(); // start should not throw an exception
   }
 
   @Test
@@ -40,7 +55,6 @@ public class ObjectAnimatorTest {
     animator.start();
     assertThat(target.getTranslationX()).isEqualTo(0.5f);
     Robolectric.idleMainLooper(999);
-    // I don't need these values to change gradually. If you do by all means implement that. PBG
     assertThat(target.getTranslationX()).isNotEqualTo(0.4f);
     Robolectric.idleMainLooper(1);
     assertThat(target.getTranslationX()).isEqualTo(0.4f);
@@ -113,5 +127,35 @@ public class ObjectAnimatorTest {
     assertThat(endListener.endWasCalled).isFalse();
     ShadowObjectAnimator.unpauseEndNotifications();
     assertThat(endListener.endWasCalled).isTrue();
+  }
+
+  @Test
+  public void animatesMultipleKeyFrames() throws Exception {
+    View target = new View(Robolectric.application);
+    ObjectAnimator animator = ObjectAnimator.ofFloat(target, "alpha", 0f, 1f, 0.5f, 1f);
+    animator.setDuration(3000);
+
+    animator.start();
+
+    assertThat(target.getAlpha()).isEqualTo(0f);
+    Robolectric.idleMainLooper(1000);
+    assertThat(target.getAlpha()).isEqualTo(1f);
+    Robolectric.idleMainLooper(1000);
+    assertThat(target.getAlpha()).isEqualTo(0.5f);
+    Robolectric.idleMainLooper(1000);
+    assertThat(target.getAlpha()).isEqualTo(1f);
+  }
+
+  @Test
+  public void animatesSingleKeyFrame() throws Exception {
+    View target = new View(Robolectric.application);
+    ObjectAnimator animator = ObjectAnimator.ofFloat(target, "alpha", 0.4f);
+    animator.setDuration(100);
+
+    animator.start();
+
+    assertThat(target.getAlpha()).isEqualTo(1f);
+    Robolectric.idleMainLooper(100);
+    assertThat(target.getAlpha()).isEqualTo(0.4f);
   }
 }

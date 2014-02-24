@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.animation.ObjectAnimator;
 import android.os.Handler;
 import android.os.Looper;
+
 import org.robolectric.RobolectricShadowOfLevel16;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -39,7 +40,6 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
     result.setTarget(target);
     result.setPropertyName(propertyName);
     result.setFloatValues(values);
-    RobolectricShadowOfLevel16.shadowOf(result).setAnimationType(float.class);
 
     getAnimatorMapFor(target).put(propertyName, result);
     return result;
@@ -52,7 +52,6 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
     result.setTarget(target);
     result.setPropertyName(propertyName);
     result.setIntValues(values);
-    RobolectricShadowOfLevel16.shadowOf(result).setAnimationType(int.class);
 
     getAnimatorMapFor(target).put(propertyName, result);
     return result;
@@ -94,11 +93,13 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
   @Implementation
   public void setFloatValues(float... values) {
     this.floatValues = values;
+    RobolectricShadowOfLevel16.shadowOf(realObject).setAnimationType(float.class);
   }
 
   @Implementation
   public void setIntValues(int... values) {
     this.intValues = values;
+    RobolectricShadowOfLevel16.shadowOf(realObject).setAnimationType(int.class);
   }
 
   @Implementation
@@ -115,37 +116,42 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
     notifyStart();
     try {
       setter = target.getClass().getMethod(methodName, animationType);
-      if (animationType == float.class) {
-        setter.invoke(target, floatValues[0]);
-      } else if (animationType == int.class) {
-        setter.invoke(target, intValues[0]);
-      }
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
+
+    int keyFrameCount = 0;
+    if (animationType == float.class) {
+      keyFrameCount = floatValues.length;
+    } else if (animationType == int.class) {
+      keyFrameCount = intValues.length;
+    }
+
+    Runnable animationRunnable = new AnimationRunnable(setter);
+    if (keyFrameCount > 1) {
+      long stepDuration = duration / (keyFrameCount - 1);
+      for (int i = 0; i * stepDuration <= duration; ++i) {
+        new Handler(Looper.getMainLooper()).postDelayed(animationRunnable, stepDuration * i);
+      }
+    } else {
+      new Handler(Looper.getMainLooper()).postDelayed(animationRunnable, duration);
+    }
+
     new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
       @Override
       public void run() {
         isRunning = false;
-        try {
-          if (animationType == float.class) {
-            setter.invoke(target, floatValues[floatValues.length - 1]);
-          } else if (animationType == int.class) {
-            setter.invoke(target, intValues[intValues.length - 1]);
-          }
-          if (pausingEndNotifications) {
-            pausedEndNotifications.add(ShadowObjectAnimator.this);
-          } else {
-            notifyEnd();
-          }
-        } catch (Exception e) {
-          throw new RuntimeException(e);
+        if (pausingEndNotifications) {
+          pausedEndNotifications.add(ShadowObjectAnimator.this);
+        } else {
+          notifyEnd();
         }
       }
     }, duration);
   }
 
-  @Override @Implementation
+  @Override
+  @Implementation
   public boolean isRunning() {
     return isRunning;
   }
@@ -176,5 +182,29 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
       pausedEndNotifications.remove(0).notifyEnd();
     }
     pausingEndNotifications = false;
+  }
+
+  private class AnimationRunnable implements Runnable {
+    private final Method setter;
+    public int index;
+
+    public AnimationRunnable(Method setter) {
+      this.setter = setter;
+    }
+
+    @Override
+    public void run() {
+      try {
+        if (animationType == float.class) {
+          setter.invoke(target, floatValues[index]);
+        } else if (animationType == int.class) {
+          setter.invoke(target, intValues[index]);
+        }
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      } finally {
+        ++index;
+      }
+    }
   }
 }
