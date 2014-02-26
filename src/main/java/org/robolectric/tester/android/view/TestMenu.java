@@ -8,11 +8,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SubMenu;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class TestMenu implements Menu {
-  private List<MenuItem> menuItems = new ArrayList<MenuItem>();
+    private List<MenuItem> menuItems = new ArrayList<MenuItem>();
   private Context context;
 
   public TestMenu() {
@@ -36,8 +35,10 @@ public class TestMenu implements Menu {
   @Override
   public MenuItem add(int groupId, int itemId, int order, CharSequence title) {
     TestMenuItem menuItem = new TestMenuItem();
+    menuItem.setOrder(order);
     menuItems.add(menuItem);
     menuItem.setGroupId(groupId);
+    Collections.sort(menuItems, new CustomMenuItemComparator());
     menuItem.setItemId(itemId);
     menuItem.setTitle(title);
     return menuItem;
@@ -94,7 +95,7 @@ public class TestMenu implements Menu {
 
   @Override
   public int addIntentOptions(int groupId, int itemId, int order, ComponentName caller, Intent[] specifics,
-                Intent intent, int flags, MenuItem[] outSpecificItems) {
+                              Intent intent, int flags, MenuItem[] outSpecificItems) {
     return 0;
   }
 
@@ -191,5 +192,18 @@ public class TestMenu implements Menu {
       }
     }
     return null;
+  }
+
+  private static class CustomMenuItemComparator implements Comparator<MenuItem> {
+    @Override
+    public int compare(MenuItem a, MenuItem b) {
+      if (a.getOrder() == b.getOrder()) {
+        return 0;
+      } else if (a.getOrder() > b.getOrder()) {
+        return 1;
+      } else {
+        return -1;
+      }
+    }
   }
 }

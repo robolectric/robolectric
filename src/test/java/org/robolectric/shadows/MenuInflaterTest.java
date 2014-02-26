@@ -76,4 +76,16 @@ public class MenuInflaterTest {
     MenuItem item = testMenu.getItem(0);
     assertEquals(item.getActionView().getClass(), SearchView.class);
   }
+
+  @Test
+  public void shouldOrderItemsInCategory() {
+    TestMenu menu = new TestMenu();
+    new MenuInflater(context).inflate(R.menu.test_withorder, menu);
+
+    TestMenuItem testMenuItem = (TestMenuItem) menu.getItem(0);
+    assertEquals("Test menu item 1", testMenuItem.getTitle().toString());
+
+    testMenuItem = (TestMenuItem) menu.getItem(1);
+    assertEquals("Test menu item 2", testMenuItem.getTitle().toString());
+  }
 }
