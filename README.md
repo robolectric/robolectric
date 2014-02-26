@@ -59,7 +59,7 @@ mvn install:install-file -DgroupId=com.google.android.maps \
   
 mvn install:install-file -DgroupId=com.android.support \
   -DartifactId=support-v4 \
-  -Dversion=19.0.0 \
+  -Dversion=19.0.1 \
   -Dpackaging=jar \
   -Dfile="$ANDROID_HOME/extras/android/support/v4/android-support-v4.jar"
 ```
