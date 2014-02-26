@@ -1,0 +1,8 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+  <item android:id="@+id/test_menu_2"
+        android:orderInCategory="2"
+        android:title="Test menu item 2"/>
+  <item android:id="@+id/test_menu_1"
+        android:orderInCategory="1"
+        android:title="Test menu item 1"/>
+</menu>

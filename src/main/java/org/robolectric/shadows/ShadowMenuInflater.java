@@ -17,10 +17,9 @@ import static org.robolectric.Robolectric.shadowOf;
 import static org.robolectric.res.ResourceLoader.ANDROID_NS;
 
 /**
- * Shadow of {@code MenuInflater} that actually inflates menus into {@code View}s that are functional enough to
- * support testing.
+ * Shadow of {@code MenuInflater} that actually inflates menus into {@code View}s that are
+ * functional enough to support testing.
  */
-
 @Implements(MenuInflater.class)
 public class ShadowMenuInflater {
   private Context context;
@@ -64,7 +63,8 @@ public class ShadowMenuInflater {
         } else {
           MenuItem item = root.add(groupId,
               attributes.getAttributeResourceValue(ANDROID_NS, "id", 0),
-              0, attributes.getAttributeValue(ANDROID_NS, "title"));
+              attributes.getAttributeIntValue(ANDROID_NS, "orderInCategory", 0),
+              attributes.getAttributeValue(ANDROID_NS, "title"));
 
           addActionViewToItem(item, attributes);
         }

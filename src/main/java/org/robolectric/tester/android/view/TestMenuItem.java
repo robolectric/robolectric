@@ -10,7 +10,6 @@ import android.view.View;
 import org.robolectric.Robolectric;
 
 public class TestMenuItem implements MenuItem {
-
   private int itemId;
   private int groupId;
   private CharSequence title;
@@ -25,6 +24,7 @@ public class TestMenuItem implements MenuItem {
   private SubMenu subMenu;
   private View actionView;
   private OnActionExpandListener actionExpandListener;
+  private int order;
 
   public TestMenuItem() {
     super();
@@ -55,7 +55,11 @@ public class TestMenuItem implements MenuItem {
 
   @Override
   public int getOrder() {
-    return 0;
+    return order;
+  }
+
+  public void setOrder(int order) {
+    this.order = order;
   }
 
   @Override
