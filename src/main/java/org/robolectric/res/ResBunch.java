@@ -9,8 +9,19 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ResBunch {
+
+  // Matches a version qualifier like "v14". Parentheses capture the numeric
+  // part for easy retrieval with Matcher.group(1).
+  private static final String VERSION_QUALIFIER_REGEX = "v([0-9]+)";
+  private static final Pattern VERSION_QUALIFIER_PATTERN_WITH_LINE_END =
+      Pattern.compile(VERSION_QUALIFIER_REGEX + "$");
+  private static final Pattern VERSION_QUALIFIER_PATTERN_WITH_DASHES =
+      Pattern.compile("-" + VERSION_QUALIFIER_REGEX + "-");
+
   private final Map<String, ResMap<TypedResource>> types = new LinkedHashMap<String, ResMap<TypedResource>>();
 
   public void put(String attrType, String name, TypedResource value, XmlLoader.XmlContext xmlContext) {
@@ -41,7 +52,15 @@ public class ResBunch {
     return (values != null) ? pick(values, qualifiers) : null;
   }
 
-  public static <T> Value pick(Values values, String qualifiers) {
+  public static int getVersionQualifierApiLevel(String qualifiers) {
+    Matcher m = VERSION_QUALIFIER_PATTERN_WITH_LINE_END.matcher(qualifiers);
+    if (m.find()) {
+      return Integer.parseInt(m.group(1));
+    }
+    return -1;
+  }
+
+  public static Value pick(Values values, String qualifiers) {
     final int count = values.size();
     if (count == 0) return null;
 
@@ -69,10 +88,60 @@ public class ResBunch {
       if (matches.bitCount() == 1) break;
     }
 
+    /*
+     * If any resources out of the possibles have version qualifiers, return the
+     * closest match that doesn't go over. This is the last step because it's lowest
+     * in the precedence table at:
+     * https://developer.android.com/guide/topics/resources/providing-resources.html#table2
+     */
+    int targetApiLevel = getVersionQualifierApiLevel(qualifiers);
+    if (qualifiers.length() > 0 && targetApiLevel != -1) {
+      Value bestMatch = null;
+      int bestMatchDistance = Integer.MAX_VALUE;
+      for (int i = 0; i < count; i++) {
+        if (!possibles.testBit(i)) {
+          continue;
+        }
+        
+        Value value = values.get(i);
+        int distance = getDistance(value, targetApiLevel);
+        if (distance >= 0 && distance < bestMatchDistance) {
+          bestMatch = value;
+          bestMatchDistance = distance;
+        }
+      }
+      if (bestMatch != null) {
+        return bestMatch;
+      }
+    }
+
     for (int i = 0; i < count; i++) {
       if (possibles.testBit(i)) return values.get(i);
     }
     throw new IllegalStateException("couldn't handle qualifiers \"" + qualifiers + "\"");
+  }
+  
+  /*
+   * Gets the difference between the version qualifier of val and targetApiLevel.
+   *
+   * Return value:
+   * - Lower number is a better match (0 is a perfect match)
+   * - Less than zero: val's version qualifier is greater than targetApiLevel,
+   *   or val has no version qualifier
+   */
+  private static int getDistance(Value val, int targetApiLevel) {
+    int distance = -1;
+    Matcher m = VERSION_QUALIFIER_PATTERN_WITH_DASHES.matcher(val.qualifiers);
+    if (m.find()) {
+      String match = m.group(1);
+      int resApiLevel = Integer.parseInt(match);
+      distance = targetApiLevel - resApiLevel;
+
+      if (m.find()) {
+        throw new IllegalStateException("A resource file was found that had two API level qualifiers: " + val);
+      }
+    }
+    return distance;
   }
 
   public int size() {
@@ -100,7 +169,7 @@ public class ResBunch {
     final TypedResource value;
     final XmlLoader.XmlContext xmlContext;
 
-    Value(String qualifiers, TypedResource value, XmlLoader.XmlContext xmlContext) {
+    public Value(String qualifiers, TypedResource value, XmlLoader.XmlContext xmlContext) {
       if (value == null) {
         throw new NullPointerException();
       }
@@ -122,9 +191,15 @@ public class ResBunch {
     public XmlLoader.XmlContext getXmlContext() {
       return xmlContext;
     }
+    
+    @Override
+    public String toString() {
+      return "Value [qualifiers=" + qualifiers + ", value=" + value + ", xmlContext=" + xmlContext
+          + "]";
+    }
   }
 
-  static class Values extends ArrayList<Value> {
+  protected static class Values extends ArrayList<Value> {
   }
 
   private static class ResMap<T> {
