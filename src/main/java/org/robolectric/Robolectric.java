@@ -85,6 +85,7 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceGroup;
 import android.preference.PreferenceScreen;
+import android.speech.tts.TextToSpeech;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.widget.DrawerLayout;
 import android.telephony.SmsManager;
@@ -297,6 +298,7 @@ import org.robolectric.shadows.ShadowSurface;
 import org.robolectric.shadows.ShadowTabHost;
 import org.robolectric.shadows.ShadowTelephonyManager;
 import org.robolectric.shadows.ShadowTextPaint;
+import org.robolectric.shadows.ShadowTextToSpeech;
 import org.robolectric.shadows.ShadowTextView;
 import org.robolectric.shadows.ShadowTimePickerDialog;
 import org.robolectric.shadows.ShadowToast;
@@ -905,6 +907,10 @@ public class Robolectric {
 
   public static ShadowTextPaint shadowOf(TextPaint instance) {
     return (ShadowTextPaint) shadowOf_(instance);
+  }
+
+  public static ShadowTextToSpeech shadowOf(TextToSpeech instance) {
+    return (ShadowTextToSpeech) shadowOf_(instance);
   }
 
   public static ShadowTextView shadowOf(TextView instance) {
