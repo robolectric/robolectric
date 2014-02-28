@@ -16,7 +16,7 @@ public class PackageResourceLoaderTest {
   }
 
   @Test
-  public void shouldLoadResourcesFromGradleOutputDirectories2() {
+  public void shouldLoadDimenResourcesFromGradleOutputDirectoriesDefinedByDimenTag() {
       PackageResourceLoader loader = new PackageResourceLoader(gradleAppResources());
       TypedResource value = loader.getValue(new ResName("org.robolectric.gradleapp", "dimen", "example_dimen"), "");
       assertThat(value).describedAs("Dimen from gradle output is not loaded").isNotNull();
@@ -24,7 +24,7 @@ public class PackageResourceLoaderTest {
   }
 
   @Test
-  public void shouldLoadResourcesFromGradleOutputDirectories3() {
+  public void shouldLoadDimenResourcesFromGradleOutputDirectoriesDefinedByItemTag() {
       PackageResourceLoader loader = new PackageResourceLoader(gradleAppResources());
       TypedResource value = loader.getValue(new ResName("org.robolectric.gradleapp", "dimen", "example_item_dimen"), "");
       assertThat(value).describedAs("Item dimen from gradle output is not loaded").isNotNull();
