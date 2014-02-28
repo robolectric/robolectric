@@ -15,4 +15,20 @@ public class PackageResourceLoaderTest {
     assertThat(value.asString()).isEqualTo("string example taken from gradle output directory");
   }
 
+  @Test
+  public void shouldLoadResourcesFromGradleOutputDirectories2() {
+      PackageResourceLoader loader = new PackageResourceLoader(gradleAppResources());
+      TypedResource value = loader.getValue(new ResName("org.robolectric.gradleapp", "dimen", "example_dimen"), "");
+      assertThat(value).describedAs("Dimen from gradle output is not loaded").isNotNull();
+      assertThat(value.asString()).isEqualTo("8dp");
+  }
+
+  @Test
+  public void shouldLoadResourcesFromGradleOutputDirectories3() {
+      PackageResourceLoader loader = new PackageResourceLoader(gradleAppResources());
+      TypedResource value = loader.getValue(new ResName("org.robolectric.gradleapp", "dimen", "example_item_dimen"), "");
+      assertThat(value).describedAs("Item dimen from gradle output is not loaded").isNotNull();
+      assertThat(value.asString()).isEqualTo("3.14");
+  }
+
 }

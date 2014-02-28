@@ -6,5 +6,6 @@
   -->
 
   <string name="from_gradle_output">string example taken from gradle output directory</string>
+  <dimen name="pbs">23dp</dimen>
 
 </resources>
