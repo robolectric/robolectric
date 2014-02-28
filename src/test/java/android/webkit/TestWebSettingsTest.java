@@ -240,4 +240,17 @@ public class TestWebSettingsTest {
     webSettings.setGeolocationDatabasePath("new_path");
     assertThat(webSettings.getGeolocationDatabasePath()).isEqualTo("new_path");
   }
+  
+  @Test
+  public void testSetJavascriptCanOpenWindowsAutomaticallyIsTrue() throws Exception {
+	  webSettings.setJavaScriptCanOpenWindowsAutomatically(true);
+	  assertThat(webSettings.getJavaScriptCanOpenWindowsAutomatically()).isTrue();
+  }
+  
+  @Test
+  public void testSetJavascriptCanOpenWindowsAutomaticallyIsFalse() throws Exception {
+    webSettings.setJavaScriptCanOpenWindowsAutomatically(false);
+    assertThat(webSettings.getJavaScriptCanOpenWindowsAutomatically()).isFalse();
+  }
+
 }
