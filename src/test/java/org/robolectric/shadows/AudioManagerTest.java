@@ -141,4 +141,26 @@ public class AudioManagerTest {
       }
     }
   }
+
+  @Test
+  public void getRingerMode_default() {
+    int ringerMode = audioManager.getRingerMode();
+    assertThat(ringerMode).isEqualTo(AudioManager.RINGER_MODE_NORMAL);
+  }
+
+  @Test
+  public void setRingerMode_shouldSetMode() {
+    for (int rm = AudioManager.RINGER_MODE_SILENT; rm <= AudioManager.RINGER_MODE_NORMAL; rm++) {
+      audioManager.setRingerMode(rm);
+      assertThat(audioManager.getRingerMode()).isEqualTo(rm);
+    }
+  }
+
+  @Test
+  public void setRingerMode_shouldNotChangeOnInvalidValue() {
+    audioManager.setRingerMode(AudioManager.RINGER_MODE_VIBRATE);
+    assertThat(audioManager.getRingerMode()).isEqualTo(AudioManager.RINGER_MODE_VIBRATE);
+    audioManager.setRingerMode(AudioManager.RINGER_MODE_NORMAL + 1);
+    assertThat(audioManager.getRingerMode()).isEqualTo(AudioManager.RINGER_MODE_VIBRATE);
+  }
 }
