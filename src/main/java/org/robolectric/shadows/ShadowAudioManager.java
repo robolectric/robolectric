@@ -28,6 +28,7 @@ public class ShadowAudioManager {
   private int nextResponseValue = AudioManager.AUDIOFOCUS_REQUEST_GRANTED;
   private AudioManager.OnAudioFocusChangeListener lastAbandonedAudioFocusListener;
   private HashMap<Integer, AudioStream> streamStatus = new HashMap<Integer, AudioStream>();
+  private int ringerMode = AudioManager.RINGER_MODE_NORMAL;
 
   public ShadowAudioManager() {
     for (int stream : ALL_STREAMS) {
@@ -69,7 +70,20 @@ public class ShadowAudioManager {
     lastAbandonedAudioFocusListener = l;
     return nextResponseValue;
   }
+  
+  @Implementation
+  public int getRingerMode() {
+	  return ringerMode;
+  }
 
+  @Implementation
+  public void setRingerMode(int ringerMode) {
+      if (!AudioManager.isValidRingerMode(ringerMode)) {
+          return;
+      }
+	  this.ringerMode = ringerMode;
+  }
+  
   public void setStreamMaxVolume(int streamMaxVolume) {
     for (Map.Entry<Integer, AudioStream> entry : streamStatus.entrySet()) {
       entry.getValue().setMaxVolume(streamMaxVolume);
