@@ -50,6 +50,11 @@ public class ShadowValueAnimator extends ShadowAnimator {
   }
 
   @Implementation
+  public void cancel() {
+
+  }
+
+  @Implementation
   public void start() {
     realObject.end();
   }

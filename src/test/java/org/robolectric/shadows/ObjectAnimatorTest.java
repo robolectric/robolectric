@@ -184,6 +184,19 @@ public class ObjectAnimatorTest {
     assertThat(target.getAlpha()).isEqualTo(0.4f);
   }
 
+  @Test
+  public void cancel_cancelsAnimation() throws Exception {
+    View target = new View(Robolectric.application);
+    ObjectAnimator animator = ObjectAnimator.ofFloat(target, "alpha", 0.4f);
+    animator.setDuration(100);
+
+    animator.start();
+    assertThat(animator.isRunning()).isTrue();
+
+    animator.cancel();
+    assertThat(animator.isRunning()).isFalse();
+  }
+
   public static class ValueObject {
     private String value;
 

@@ -16,6 +16,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.robolectric.Robolectric.directlyOn;
+
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ObjectAnimator.class)
@@ -189,6 +191,7 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
   @Implementation
   public void cancel() {
     cancelWasCalled = true;
+    isRunning = false;
   }
 
   public boolean cancelWasCalled() {
