@@ -291,6 +291,17 @@ public class ViewTest {
   }
 
   @Test
+  public void shouldRemovePostedCallbacksFromMessageQueue() throws Exception {
+    TestRunnable runnable = new TestRunnable();
+    view.postDelayed(runnable, 1);
+
+    view.removeCallbacks(runnable);
+
+    Robolectric.getUiThreadScheduler().advanceBy(1);
+    assertThat(runnable.wasRun).isFalse();
+  }
+
+  @Test
   public void shouldSupportAllConstructors() throws Exception {
     new View(Robolectric.application);
     new View(Robolectric.application, null);
