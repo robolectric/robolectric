@@ -6,6 +6,7 @@ import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -330,6 +331,11 @@ public class ShadowView {
         realView.invalidate();
       }
     }, delayMilliseconds);
+  }
+
+  @Implementation
+  public void removeCallbacks(Runnable callback) {
+    shadowOf(Looper.getMainLooper()).getScheduler().remove(callback);
   }
 
   @Implementation
