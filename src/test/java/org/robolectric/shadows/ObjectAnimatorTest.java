@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.animation.ObjectAnimator;
 import android.animation.AnimatorInflater;
+import android.animation.TypeEvaluator;
 import android.view.View;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -70,6 +71,30 @@ public class ObjectAnimatorTest {
     assertThat(target.getBottom()).isEqualTo(1);
     Robolectric.idleMainLooper(1000);
     assertThat(target.getBottom()).isEqualTo(4);
+  }
+
+  @Test
+  public void objectAnimator_shouldSetTheStartingAndEndingValues() throws Exception {
+    ValueObject object = new ValueObject();
+    ObjectAnimator animator = ObjectAnimator.ofObject(object, "value", new TypeEvaluator<String>() {
+      @Override
+      public String evaluate(float fraction, String startValue, String endValue) {
+        if (fraction < 0.5) {
+          return startValue;
+        } else {
+          return endValue;
+        }
+      }
+    }, "human", "replicant", "unicorn");
+    animator.setDuration(2000);
+
+    animator.start();
+
+    assertThat(object.getValue()).isEqualTo("human");
+    Robolectric.idleMainLooper(1000);
+    assertThat(object.getValue()).isEqualTo("replicant");
+    Robolectric.idleMainLooper(1000);
+    assertThat(object.getValue()).isEqualTo("unicorn");
   }
 
   @Test
@@ -157,5 +182,30 @@ public class ObjectAnimatorTest {
     assertThat(target.getAlpha()).isEqualTo(1f);
     Robolectric.idleMainLooper(100);
     assertThat(target.getAlpha()).isEqualTo(0.4f);
+  }
+
+  @Test
+  public void cancel_cancelsAnimation() throws Exception {
+    View target = new View(Robolectric.application);
+    ObjectAnimator animator = ObjectAnimator.ofFloat(target, "alpha", 0.4f);
+    animator.setDuration(100);
+
+    animator.start();
+    assertThat(animator.isRunning()).isTrue();
+
+    animator.cancel();
+    assertThat(animator.isRunning()).isFalse();
+  }
+
+  public static class ValueObject {
+    private String value;
+
+    public String getValue() {
+      return value;
+    }
+
+    public void setValue(String value) {
+      this.value = value;
+    }
   }
 }

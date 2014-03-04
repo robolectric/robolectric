@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.animation.ObjectAnimator;
+import android.animation.TypeEvaluator;
 import android.os.Handler;
 import android.os.Looper;
 
@@ -15,6 +16,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.robolectric.Robolectric.directlyOn;
+
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ObjectAnimator.class)
@@ -28,10 +31,12 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
   private String propertyName;
   private float[] floatValues;
   private int[] intValues;
+  private Object[] objectValues;
   private Class<?> animationType;
   private static final Map<Object, Map<String, ObjectAnimator>> mapsForAnimationTargets = new HashMap<Object, Map<String, ObjectAnimator>>();
   private boolean isRunning;
   private boolean cancelWasCalled;
+  private TypeEvaluator typeEvaluator;
 
   @Implementation
   public static ObjectAnimator ofFloat(Object target, String propertyName, float... values) {
@@ -52,6 +57,19 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
     result.setTarget(target);
     result.setPropertyName(propertyName);
     result.setIntValues(values);
+
+    getAnimatorMapFor(target).put(propertyName, result);
+    return result;
+  }
+
+  @Implementation
+  public static ObjectAnimator ofObject(Object target, String propertyName, TypeEvaluator typeEvaluator, Object... values) {
+    ObjectAnimator result = new ObjectAnimator();
+
+    result.setTarget(target);
+    result.setPropertyName(propertyName);
+    result.setObjectValues(values);
+    result.setEvaluator(typeEvaluator);
 
     getAnimatorMapFor(target).put(propertyName, result);
     return result;
@@ -103,6 +121,18 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
   }
 
   @Implementation
+  public void setObjectValues(Object... values) {
+    this.objectValues = values;
+    RobolectricShadowOfLevel16.shadowOf(realObject).setAnimationType(values[0].getClass());
+  }
+
+  @Implementation
+  public void setEvaluator(TypeEvaluator typeEvaluator) {
+    this.typeEvaluator = typeEvaluator;
+    super.setEvaluator(typeEvaluator);
+  }
+
+  @Implementation
   public ObjectAnimator setDuration(long duration) {
     this.duration = duration;
     return realObject;
@@ -125,6 +155,8 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
       keyFrameCount = floatValues.length;
     } else if (animationType == int.class) {
       keyFrameCount = intValues.length;
+    } else {
+      keyFrameCount = objectValues.length;
     }
 
     Runnable animationRunnable = new AnimationRunnable(setter);
@@ -159,6 +191,7 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
   @Implementation
   public void cancel() {
     cancelWasCalled = true;
+    isRunning = false;
   }
 
   public boolean cancelWasCalled() {
@@ -199,6 +232,15 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
           setter.invoke(target, floatValues[index]);
         } else if (animationType == int.class) {
           setter.invoke(target, intValues[index]);
+        } else {
+          Object startValue = objectValues[index];
+          Object endValue;
+          if (index == objectValues.length - 1) {
+            endValue = startValue;
+          } else {
+            endValue = objectValues[index + 1];
+          }
+          setter.invoke(target, typeEvaluator.evaluate((float) index / objectValues.length, startValue, endValue));
         }
       } catch (Exception e) {
         throw new RuntimeException(e);
