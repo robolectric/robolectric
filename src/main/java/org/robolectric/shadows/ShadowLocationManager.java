@@ -412,7 +412,7 @@ public class ShadowLocationManager {
         float distanceChange = distanceBetween(location, listenerReg.lastSeenLocation);
         boolean withinMinDistance = distanceChange < listenerReg.minDistance;
         boolean exceededMinTime = location.getTime() - listenerReg.lastSeenTime > listenerReg.minTime;
-        if (withinMinDistance && !exceededMinTime) continue;
+        if (withinMinDistance || !exceededMinTime) continue;
       }
       listenerReg.lastSeenLocation = copyOf(location);
       listenerReg.lastSeenTime = location == null ? 0 : location.getTime();
