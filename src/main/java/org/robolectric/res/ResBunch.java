@@ -14,10 +14,13 @@ import java.util.regex.Pattern;
 
 public class ResBunch {
 
-  // Matches a version qualifier like "v14". Parentheses capture the numeric part for easy retrieval with Matcher.group(1).
+  // Matches a version qualifier like "v14". Parentheses capture the numeric
+  // part for easy retrieval with Matcher.group(1).
   private static final String VERSION_QUALIFIER_REGEX = "v([0-9]+)";
-  private static final Pattern VERSION_QUALIFIER_PATTERN_WITH_LINE_END = Pattern.compile(VERSION_QUALIFIER_REGEX + "$");
-  private static final Pattern VERSION_QUALIFIER_PATTERN_WITH_DASHES = Pattern.compile("-" + VERSION_QUALIFIER_REGEX + "-");
+  private static final Pattern VERSION_QUALIFIER_PATTERN_WITH_LINE_END =
+      Pattern.compile(VERSION_QUALIFIER_REGEX + "$");
+  private static final Pattern VERSION_QUALIFIER_PATTERN_WITH_DASHES =
+      Pattern.compile("-" + VERSION_QUALIFIER_REGEX + "-");
 
   private final Map<String, ResMap<TypedResource>> types = new LinkedHashMap<String, ResMap<TypedResource>>();
 
@@ -85,8 +88,9 @@ public class ResBunch {
       if (matches.bitCount() == 1) break;
     }
 
-    // If any resources out of the possibles have version qualifiers, return the closest match that doesn't go over. This is the
-    // last step because it's lowest in the precedence table at
+    // If any resources out of the possibles have version qualifiers, return the
+    // closest match that doesn't go over. This is the last step because it's
+    // lowest in the precedence table at
     // https://developer.android.com/guide/topics/resources/providing-resources.html#table2
     int targetApiLevel = getVersionQualifierApiLevel(qualifiers);
     if (qualifiers.length() > 0 && targetApiLevel != -1) {
@@ -99,7 +103,7 @@ public class ResBunch {
         
         Value value = values.get(i);
         int distance = getDistance(value, targetApiLevel);
-        if (distance < bestMatchDistance && distance >= 0) {
+        if (distance >= 0 && distance < bestMatchDistance) {
           bestMatch = value;
           bestMatchDistance = distance;
         }
@@ -160,7 +164,7 @@ public class ResBunch {
     final TypedResource value;
     final XmlLoader.XmlContext xmlContext;
 
-    Value(String qualifiers, TypedResource value, XmlLoader.XmlContext xmlContext) {
+    public Value(String qualifiers, TypedResource value, XmlLoader.XmlContext xmlContext) {
       if (value == null) {
         throw new NullPointerException();
       }
@@ -182,9 +186,15 @@ public class ResBunch {
     public XmlLoader.XmlContext getXmlContext() {
       return xmlContext;
     }
+    
+    @Override
+    public String toString() {
+      return "Value [qualifiers=" + qualifiers + ", value=" + value + ", xmlContext=" + xmlContext
+          + "]";
+    }
   }
 
-  static class Values extends ArrayList<Value> {
+  protected static class Values extends ArrayList<Value> {
   }
 
   private static class ResMap<T> {

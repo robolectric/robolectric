@@ -12,12 +12,14 @@ import static org.robolectric.Robolectric.shadowOf;
 @Config(qualifiers = "en")
 public class QualifiersTest {
   @Test public void shouldGetFromClass() throws Exception {
-    assertThat(shadowOf(application.getAssets()).getQualifiers()).isEqualTo("en");
+    String expectedQualifiers = "en" + TestRunners.WithDefaults.SDK_TARGETED_BY_MANIFEST;
+    assertThat(shadowOf(application.getAssets()).getQualifiers()).isEqualTo(expectedQualifiers);
   }
 
   @Config(qualifiers = "fr")
   @Test public void shouldGetFromMethod() throws Exception {
-    assertThat(shadowOf(application.getAssets()).getQualifiers()).isEqualTo("fr");
+    String expectedQualifiers = "fr" + TestRunners.WithDefaults.SDK_TARGETED_BY_MANIFEST;
+    assertThat(shadowOf(application.getAssets()).getQualifiers()).isEqualTo(expectedQualifiers);
   }
 
   @Config(qualifiers = "de")

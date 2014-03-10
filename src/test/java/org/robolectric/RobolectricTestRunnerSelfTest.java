@@ -60,7 +60,8 @@ public class RobolectricTestRunnerSelfTest {
   @Test
   @Config(qualifiers = "fr")
   public void internalBeforeTest_testValuesResQualifiers() {
-    assertEquals("fr", Robolectric.shadowOf(Robolectric.getShadowApplication().getResources().getAssets()).getQualifiers());
+    String expectedQualifiers = "fr" + TestRunners.WithDefaults.SDK_TARGETED_BY_MANIFEST;
+    assertEquals(expectedQualifiers, Robolectric.shadowOf(Robolectric.getShadowApplication().getResources().getAssets()).getQualifiers());
   }
 
   @Test
