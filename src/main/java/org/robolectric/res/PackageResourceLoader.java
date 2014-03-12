@@ -1,7 +1,5 @@
 package org.robolectric.res;
 
-import org.robolectric.util.I18nException;
-
 public class PackageResourceLoader extends XResourceLoader {
   private final ResourcePath resourcePath;
 
@@ -17,8 +15,6 @@ public class PackageResourceLoader extends XResourceLoader {
   void doInitialize() {
     try {
       loadEverything();
-    } catch (I18nException e) {
-      throw e;
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
