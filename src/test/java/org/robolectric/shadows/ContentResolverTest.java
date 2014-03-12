@@ -28,6 +28,7 @@ import org.robolectric.TestRunners;
 import org.robolectric.res.ContentProviderData;
 import org.robolectric.tester.android.database.TestCursor;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -237,10 +238,25 @@ public class ContentResolverTest {
     final Uri uri = Uri.parse("content://" + AUTHORITY);
     assertThat(contentResolver.acquireUnstableProvider(uri)).isSameAs(cp.getIContentProvider());
   }
-  
+
   @Test
-  public void openInputStream_shouldReturnAnInputStream() throws Exception {
-    assertThat(contentResolver.openInputStream(uri21)).isInstanceOf(InputStream.class);
+  public void openInputStream_shouldReturnAnInputStreamThatExceptionsOnRead() throws Exception {
+    InputStream inputStream = contentResolver.openInputStream(uri21);
+    try {
+      inputStream.read();
+      fail("Expected unregistered input stream to throw UnsupportedOperationException on read");
+    } catch (UnsupportedOperationException expected) {
+      assertThat(expected).hasMessage("You must use ShadowContentResolver.registerInputStream() in order to call read()");
+    }
+  }
+
+  @Test
+  public void openInputStream_returnsPreRegisteredStream() throws Exception {
+    shadowContentResolver.registerInputStream(uri21, new ByteArrayInputStream("ourStream".getBytes()));
+    InputStream inputStream = contentResolver.openInputStream(uri21);
+    byte[] data = new byte[9];
+    inputStream.read(data);
+    assertThat(new String(data)).isEqualTo("ourStream");
   }
 
   @Test
