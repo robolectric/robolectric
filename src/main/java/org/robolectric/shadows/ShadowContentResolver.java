@@ -9,12 +9,10 @@ import android.content.ContentValues;
 import android.content.IContentProvider;
 import android.content.OperationApplicationException;
 import android.content.PeriodicSync;
-import android.content.res.AssetFileDescriptor;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.ParcelFileDescriptor;
 
 import org.robolectric.AndroidManifest;
 import org.robolectric.Robolectric;
@@ -24,7 +22,6 @@ import org.robolectric.internal.NamedStream;
 import org.robolectric.res.ContentProviderData;
 import org.robolectric.tester.android.database.TestCursor;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -45,7 +42,8 @@ public class ShadowContentResolver {
   private final List<UpdateStatement> updateStatements = new ArrayList<UpdateStatement>();
   private final List<DeleteStatement> deleteStatements = new ArrayList<DeleteStatement>();
   private List<NotifiedUri> notifiedUris = new ArrayList<NotifiedUri>();
-  private HashMap<Uri, TestCursor> uriCursorMap = new HashMap<Uri, TestCursor>();
+  private Map<Uri, TestCursor> uriCursorMap = new HashMap<Uri, TestCursor>();
+  private Map<Uri, InputStream> inputStreamMap = new HashMap<Uri, InputStream>();
   private final Map<String, ArrayList<ContentProviderOperation>> contentProviderOperations = new HashMap<String, ArrayList<ContentProviderOperation>>();
   private ContentProviderResult[] contentProviderResults;
 
@@ -63,18 +61,19 @@ public class ShadowContentResolver {
   }
 
   public static class NotifiedUri {
+
     public final Uri uri;
     public final boolean syncToNetwork;
     public final ContentObserver observer;
-
     public NotifiedUri(Uri uri, ContentObserver observer, boolean syncToNetwork) {
       this.uri = uri;
       this.syncToNetwork = syncToNetwork;
       this.observer = observer;
     }
-  }
 
+  }
   public static class Status {
+
     public int syncRequests;
     public int state = -1;
     public boolean syncAutomatically;
@@ -82,19 +81,18 @@ public class ShadowContentResolver {
     public List<PeriodicSync> syncs = new ArrayList<PeriodicSync>();
   }
 
+  public void registerInputStream(Uri uri, InputStream inputStream) {
+    inputStreamMap.put(uri, inputStream);
+  }
+
   @Implementation
   public final InputStream openInputStream(final Uri uri) {
-
-    if (uri != null && ContentResolver.SCHEME_ANDROID_RESOURCE.equals(uri.getScheme())) {
-      String path = uri.getPath();
-      // check that path is a numerical resource id
-      if (path != null && path.matches("/[0-9]+")) {
-        int resourceId = Integer.parseInt(path.substring(1));
-        return Robolectric.application.getResources().openRawResource(resourceId);
-      }
+    InputStream inputStream = inputStreamMap.get(uri);
+    if (inputStream != null) {
+      return inputStream;
+    } else {
+      return new UnregisteredInputStream(uri);
     }
-
-    return new MyInputStream(uri);
   }
 
   @Implementation
@@ -531,16 +529,16 @@ public class ShadowContentResolver {
     }
   }
 
-  private static class MyInputStream extends InputStream implements NamedStream {
+  private static class UnregisteredInputStream extends InputStream implements NamedStream {
     private final Uri uri;
 
-    public MyInputStream(Uri uri) {
+    public UnregisteredInputStream(Uri uri) {
       this.uri = uri;
     }
 
     @Override
     public int read() throws IOException {
-      throw new UnsupportedOperationException();
+      throw new UnsupportedOperationException("You must use ShadowContentResolver.registerInputStream() in order to call read()");
     }
 
     @Override
