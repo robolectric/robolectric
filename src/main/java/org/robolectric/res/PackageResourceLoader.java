@@ -13,19 +13,16 @@ public class PackageResourceLoader extends XResourceLoader {
   }
 
   void doInitialize() {
-    try {
-      loadEverything();
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+    loadEverything();
   }
 
-  private void loadEverything() throws Exception {
+  private void loadEverything() {
     System.out.println("DEBUG: Loading resources for " + resourcePath.getPackageName() + " from " + resourcePath.resourceBase + "...");
 
     DocumentLoader documentLoader = new DocumentLoader(resourcePath);
 
-    documentLoader.load("values",
+    try {
+      documentLoader.load("values",
         new ValueResourceLoader(data, "/resources/bool", "bool", ResType.BOOLEAN),
         new ValueResourceLoader(data, "/resources/color", "color", ResType.COLOR),
         new ValueResourceLoader(data, "/resources/dimen", "dimen", ResType.DIMEN),
@@ -37,15 +34,18 @@ public class PackageResourceLoader extends XResourceLoader {
         new ValueResourceLoader(data, "/resources/string-array", "array", ResType.CHAR_SEQUENCE_ARRAY),
         new AttrResourceLoader(data),
         new StyleResourceLoader(data)
-    );
+      );
 
-    documentLoader.load("layout", new OpaqueFileLoader(data, "layout"), new XmlFileLoader(xmlDocuments, "layout"));
-    documentLoader.load("menu", new MenuLoader(menuData), new XmlFileLoader(xmlDocuments, "menu"));
-    documentLoader.load("drawable", new OpaqueFileLoader(data, "drawable"), new XmlFileLoader(xmlDocuments, "drawable"));
-    documentLoader.load("anim", new OpaqueFileLoader(data, "anim"), new XmlFileLoader(xmlDocuments, "anim"));
-    documentLoader.load("animator", new OpaqueFileLoader(data, "animator"), new XmlFileLoader(xmlDocuments, "animator"));
-    documentLoader.load("color", new ColorResourceLoader(data), new XmlFileLoader(xmlDocuments, "color"));
-    documentLoader.load("xml", new PreferenceLoader(preferenceData), new XmlFileLoader(xmlDocuments, "xml"));
+      documentLoader.load("layout", new OpaqueFileLoader(data, "layout"), new XmlFileLoader(xmlDocuments, "layout"));
+      documentLoader.load("menu", new MenuLoader(menuData), new XmlFileLoader(xmlDocuments, "menu"));
+      documentLoader.load("drawable", new OpaqueFileLoader(data, "drawable"), new XmlFileLoader(xmlDocuments, "drawable"));
+      documentLoader.load("anim", new OpaqueFileLoader(data, "anim"), new XmlFileLoader(xmlDocuments, "anim"));
+      documentLoader.load("animator", new OpaqueFileLoader(data, "animator"), new XmlFileLoader(xmlDocuments, "animator"));
+      documentLoader.load("color", new ColorResourceLoader(data), new XmlFileLoader(xmlDocuments, "color"));
+      documentLoader.load("xml", new PreferenceLoader(preferenceData), new XmlFileLoader(xmlDocuments, "xml"));
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
 
     new DrawableResourceLoader(drawableData).findDrawableResources(resourcePath);
     new RawResourceLoader(resourcePath).loadTo(rawResources);
