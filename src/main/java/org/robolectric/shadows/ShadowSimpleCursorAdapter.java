@@ -327,14 +327,7 @@ public class ShadowSimpleCursorAdapter extends ShadowResourceCursorAdapter {
    */
   private void findColumns(String[] from) {
     if (mCursor != null) {
-      int i;
-      int count = from.length;
-      if (mFrom == null || mFrom.length != count) {
-        mFrom = new int[count];
-      }
-      for (i = 0; i < count; i++) {
-        mFrom[i] = mCursor.getColumnIndexOrThrow(from[i]);
-      }
+      findColumnsFromCursor(mCursor, from);
     } else {
       mFrom = null;
     }
