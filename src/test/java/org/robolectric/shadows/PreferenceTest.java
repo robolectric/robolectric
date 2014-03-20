@@ -34,7 +34,7 @@ public class PreferenceTest {
 
   @Before
   public void setup() {
-    context = new Activity();
+    context = Robolectric.application;
     attrs = new RoboAttributeSet(new ArrayList<Attribute>(), TestUtil.emptyResources(), null);
     preference = new TestPreference(context, attrs);
     shadow = Robolectric.shadowOf(preference);
