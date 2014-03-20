@@ -37,6 +37,9 @@ import java.util.List;
 import static android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -67,7 +70,7 @@ public class ContentResolverTest {
     assertThat(contentResolver.insert(EXTERNAL_CONTENT_URI, new ContentValues())).isEqualTo(uri21);
     assertThat(contentResolver.insert(EXTERNAL_CONTENT_URI, new ContentValues())).isEqualTo(uri22);
   }
-  
+
   @Test
   public void getType_shouldDefaultToNull() throws Exception {
     assertThat(contentResolver.getType(uri21)).isNull();
@@ -79,7 +82,8 @@ public class ContentResolverTest {
       @Override public boolean onCreate() {
         return false;
       }
-      @Override public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+      @Override public Cursor query(Uri uri, String[] projection, String selection,
+          String[] selectionArgs, String sortOrder) {
         return new TestCursor();
       }
       @Override public Uri insert(Uri uri, ContentValues values) {
@@ -88,7 +92,8 @@ public class ContentResolverTest {
       @Override public int delete(Uri uri, String selection, String[] selectionArgs) {
         return -1;
       }
-      @Override public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+      @Override public int update(Uri uri, ContentValues values, String selection,
+          String[] selectionArgs) {
         return -1;
       }
       @Override public String getType(Uri uri) {
@@ -157,7 +162,8 @@ public class ContentResolverTest {
     assertThat(shadowContentResolver.getDeleteStatements().size()).isEqualTo(1);
     assertThat(shadowContentResolver.getDeleteStatements().get(0).getUri()).isEqualTo(uri21);
     assertThat(shadowContentResolver.getDeleteStatements().get(0).getWhere()).isEqualTo("id");
-    assertThat(shadowContentResolver.getDeleteStatements().get(0).getSelectionArgs()[0]).isEqualTo("5");
+    assertThat(shadowContentResolver.getDeleteStatements().get(0).getSelectionArgs()[0]).isEqualTo(
+        "5");
 
     assertThat(contentResolver.delete(uri21, "foo", new String[]{"bar"})).isEqualTo(1);
     assertThat(shadowContentResolver.getDeleteStatements().size()).isEqualTo(2);
@@ -171,7 +177,8 @@ public class ContentResolverTest {
     assertNull(shadowContentResolver.query(null, null, null, null, null));
     TestCursor cursor = new TestCursor();
     shadowContentResolver.setCursor(cursor);
-    assertThat((TestCursor) shadowContentResolver.query(null, null, null, null, null)).isSameAs(cursor);
+    assertThat((TestCursor) shadowContentResolver.query(null, null, null, null, null)).isSameAs(
+        cursor);
   }
 
   @Test
@@ -206,7 +213,7 @@ public class ContentResolverTest {
     assertThat(testCursor.selectionArgs).isEqualTo(selectionArgs);
     assertThat(testCursor.sortOrder).isEqualTo(sortOrder);
   }
-  
+
   @Test
   public void acquireUnstableProvider_shouldDefaultToNull() throws Exception {
     assertThat(contentResolver.acquireUnstableProvider(uri21)).isNull();
@@ -237,6 +244,21 @@ public class ContentResolverTest {
     ShadowContentResolver.registerProvider(AUTHORITY, cp);
     final Uri uri = Uri.parse("content://" + AUTHORITY);
     assertThat(contentResolver.acquireUnstableProvider(uri)).isSameAs(cp.getIContentProvider());
+  }
+
+  @Test
+  public void call_shouldCallProvider() throws Exception {
+    final String METHOD = "method";
+    final String ARG = "arg";
+    final Bundle EXTRAS = new Bundle();
+    final Uri uri = Uri.parse("content://" + AUTHORITY);
+
+    ContentProvider provider = mock(ContentProvider.class);
+    doReturn(null).when(provider).call(METHOD, ARG, EXTRAS);
+    ShadowContentResolver.registerProvider(AUTHORITY, provider);
+
+    contentResolver.call(uri, METHOD, ARG, EXTRAS);
+    verify(provider).call(METHOD, ARG, EXTRAS);
   }
 
   @Test
@@ -289,7 +311,10 @@ public class ContentResolverTest {
     final ArrayList<String> operations = new ArrayList<String>();
     ShadowContentResolver.registerProvider("registeredProvider", new ContentProvider() {
       @Override
-      public boolean onCreate() { return true; }
+      public boolean onCreate() {
+        return true;
+      }
+
       @Override
       public Cursor query(Uri uri, String[] projection, String selection,
           String[] selectionArgs, String sortOrder) {
@@ -523,7 +548,7 @@ public class ContentResolverTest {
     contentResolver.notifyChange(EXTERNAL_CONTENT_URI, null);
     assertThat(co.changed).isFalse();
   }
-  
+
   @Test
   public void getProvider_shouldCreateProviderFromManifest() {
     AndroidManifest manifest = Robolectric.getShadowApplication().getAppManifest();
