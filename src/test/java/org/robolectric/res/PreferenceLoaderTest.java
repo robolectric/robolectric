@@ -67,7 +67,7 @@ public class PreferenceLoaderTest {
   }
 
   protected void assertThatScreenMatchesExpected(PreferenceScreen screen) {
-    assertThat(screen.getPreferenceCount()).isEqualTo(7);
+    assertThat(screen.getPreferenceCount()).isEqualTo(8);
 
     assertThat(screen.getPreference(0)).isInstanceOf(PreferenceCategory.class);
     assertThat(((PreferenceCategory) screen.getPreference(0)).getPreference(0)).isInstanceOf(Preference.class);
@@ -84,5 +84,6 @@ public class PreferenceLoaderTest {
     assertThat(screen.getPreference(4)).isInstanceOf(ListPreference.class);
     assertThat(screen.getPreference(5)).isInstanceOf(Preference.class);
     assertThat(screen.getPreference(6)).isInstanceOf(RingtonePreference.class);
+    assertThat(screen.getPreference(7)).isInstanceOf(Preference.class);
   }
 }

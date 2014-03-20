@@ -14,13 +14,13 @@
   </PreferenceCategory>
 
   <PreferenceScreen
-      android:key="screen"
-      android:title="Screen Test">
+    android:key="screen"
+    android:title="Screen Test">
 
     <Preference
-        android:key="inside_screen"
-        android:title="Inside Screen Test"
-        android:summary=""/>
+      android:key="inside_screen"
+      android:title="Inside Screen Test"
+      android:summary=""/>
 
   </PreferenceScreen>
 
@@ -53,5 +53,10 @@
     android:title="Ringtone Test"
     android:summary=""
     />
+
+  <Preference
+    android:key="@string/preference_resource"
+    android:title="Preference with resource key Test"
+    android:summary=""/>
 
 </PreferenceScreen>

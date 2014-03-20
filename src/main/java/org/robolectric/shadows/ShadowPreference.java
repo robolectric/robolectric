@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.Robolectric.shadowOf;
+
 import android.content.Context;
 import android.content.Intent;
 import android.preference.Preference;
@@ -7,6 +9,7 @@ import android.util.AttributeSet;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceLoader;
 
 @Implements(Preference.class)
@@ -48,6 +51,12 @@ public class ShadowPreference {
 
     if (attributeSet != null) {
       key = attributeSet.getAttributeValue(ResourceLoader.ANDROID_NS, "key");
+
+      if (key != null && key.startsWith("@")) {
+        // Handle key as @string resource
+        final ResourceLoader resourceLoader = shadowOf(context.getResources()).getResourceLoader();
+        key = resourceLoader.getValue(new ResName(key.replace("@", "")), "").asString();
+      }
     }
   }
 
@@ -63,7 +72,7 @@ public class ShadowPreference {
   public int getDefStyle() {
     return defStyle;
   }
-   
+
   @Implementation
   public void setEnabled(boolean enabled) {
     this.enabled = enabled;
