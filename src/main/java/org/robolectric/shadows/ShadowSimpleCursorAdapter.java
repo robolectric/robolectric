@@ -327,24 +327,27 @@ public class ShadowSimpleCursorAdapter extends ShadowResourceCursorAdapter {
    */
   private void findColumns(String[] from) {
     if (mCursor != null) {
-      int i;
-      int count = from.length;
-      if (mFrom == null || mFrom.length != count) {
-        mFrom = new int[count];
-      }
-      for (i = 0; i < count; i++) {
-        mFrom[i] = mCursor.getColumnIndexOrThrow(from[i]);
-      }
+      findColumnsFromCursor(mCursor, from);
     } else {
       mFrom = null;
     }
   }
 
+  private void findColumnsFromCursor(Cursor c, String[] from) {
+    int i;
+    int count = from.length;
+    if (mFrom == null || mFrom.length != count) {
+      mFrom = new int[count];
+    }
+    for (i = 0; i < count; i++) {
+      mFrom[i] = c.getColumnIndexOrThrow(from[i]);
+    }
+  }
+
   @Implementation
   public void changeCursor(Cursor c) {
-    realSimpleCursorAdapter.changeCursor(c);
-    // rescan columns in case cursor layout is different
-    findColumns(mOriginalFrom);
+    findColumnsFromCursor(c, mOriginalFrom);
+    super.changeCursor(c);
   }
 
   /**
