@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.accounts.Account;
 import android.content.ContentProvider;
+import android.content.ContentProviderClient;
 import android.content.ContentProviderOperation;
 import android.content.ContentProviderResult;
 import android.content.ContentResolver;
@@ -18,6 +19,7 @@ import org.robolectric.AndroidManifest;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 import org.robolectric.internal.NamedStream;
 import org.robolectric.res.ContentProviderData;
 import org.robolectric.tester.android.database.TestCursor;
@@ -36,6 +38,8 @@ import java.util.Set;
 public class ShadowContentResolver {
   private int nextDatabaseIdForInserts;
   private int nextDatabaseIdForUpdates;
+
+  @RealObject ContentResolver realContentResolver;
 
   private TestCursor cursor;
   private final List<InsertStatement> insertStatements = new ArrayList<InsertStatement>();
@@ -169,6 +173,62 @@ public class ShadowContentResolver {
     } else {
       return null;
     }
+  }
+
+  @Implementation
+  public final ContentProviderClient acquireContentProviderClient(String name) {
+    ContentProvider provider = getProvider(name);
+    if (provider == null) return null;
+    return getContentProviderClient(provider, true);
+  }
+
+  @Implementation
+  public final ContentProviderClient acquireContentProviderClient(Uri uri) {
+    ContentProvider provider = getProvider(uri);
+    if (provider == null) return null;
+    return getContentProviderClient(provider, true);
+  }
+
+  @Implementation
+  public final ContentProviderClient acquireUnstableContentProviderClient(String name) {
+    ContentProvider provider = getProvider(name);
+    if (provider == null) return null;
+    return getContentProviderClient(provider, false);
+  }
+
+  @Implementation
+  public final ContentProviderClient acquireUnstableContentProviderClient(Uri uri) {
+    ContentProvider provider = getProvider(uri);
+    if (provider == null) return null;
+    return getContentProviderClient(provider, false);
+  }
+
+  private ContentProviderClient getContentProviderClient(ContentProvider provider, boolean stable) {
+    ContentProviderClient client =
+        Robolectric.newInstance(ContentProviderClient.class,
+            new Class[] {ContentResolver.class, IContentProvider.class, boolean.class},
+            new Object[] {realContentResolver, provider.getIContentProvider(), stable});
+    Robolectric.shadowOf(client).setContentProvider(provider);
+    return client;
+  }
+
+  @Implementation
+  public final IContentProvider acquireProvider(String name) {
+    return acquireUnstableProvider(name);
+  }
+
+  @Implementation
+  public final IContentProvider acquireProvider(Uri uri) {
+    return acquireUnstableProvider(uri);
+  }
+
+  @Implementation
+  public final IContentProvider acquireUnstableProvider(String name) {
+    ContentProvider cp = getProvider(name);
+    if (cp != null) {
+      return cp.getIContentProvider();
+    }
+    return null;
   }
 
   @Implementation
@@ -312,18 +372,21 @@ public class ShadowContentResolver {
     if (uri == null || !ContentResolver.SCHEME_CONTENT.equals(uri.getScheme())) {
       return null;
     }
+    return getProvider(uri.getAuthority());
+  }
 
-    if (!providers.containsKey(uri.getAuthority())) {
+  private static ContentProvider getProvider(String authority) {
+    if (!providers.containsKey(authority)) {
       AndroidManifest manifest = Robolectric.getShadowApplication().getAppManifest();
       if (manifest != null) {
         for (ContentProviderData providerData : manifest.getContentProviders()) {
-          if (providerData.getAuthority().equals(uri.getAuthority())) {
+          if (providerData.getAuthority().equals(authority)) {
             providers.put(providerData.getAuthority(), createAndInitialize(providerData));
           }
         }
       }
     }
-    return providers.get(uri.getAuthority());
+    return providers.get(authority);
   }
 
   public static void registerProvider(String authority, ContentProvider provider) {
