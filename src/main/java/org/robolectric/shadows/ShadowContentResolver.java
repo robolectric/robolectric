@@ -150,12 +150,22 @@ public class ShadowContentResolver {
       return returnCursor;
     }
   }
-  
+
   @Implementation
   public String getType(Uri uri) {
     ContentProvider provider = getProvider(uri);
     if (provider != null) {
       return provider.getType(uri);
+    } else {
+      return null;
+    }
+  }
+
+  @Implementation
+  public Bundle call(Uri uri, String method, String arg, Bundle extras) {
+    ContentProvider cp = getProvider(uri);
+    if (cp != null) {
+      return cp.call(method, arg, extras);
     } else {
       return null;
     }
