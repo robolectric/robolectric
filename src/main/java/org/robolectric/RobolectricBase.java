@@ -50,6 +50,7 @@ import org.robolectric.shadows.ShadowConfiguration;
 import org.robolectric.shadows.ShadowConnectivityManager;
 import org.robolectric.shadows.ShadowContentObserver;
 import org.robolectric.shadows.ShadowContentProvider;
+import org.robolectric.shadows.ShadowContentProviderClient;
 import org.robolectric.shadows.ShadowContentProviderOperation;
 import org.robolectric.shadows.ShadowContentProviderResult;
 import org.robolectric.shadows.ShadowContentResolver;
@@ -277,6 +278,7 @@ public class RobolectricBase {
       ShadowConnectivityManager.class,
       ShadowContentObserver.class,
       ShadowContentProvider.class,
+      ShadowContentProviderClient.class,
       ShadowContentProviderOperation.class,
       ShadowContentProviderResult.class,
       ShadowContentResolver.class,
