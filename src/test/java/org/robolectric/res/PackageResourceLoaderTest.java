@@ -30,4 +30,13 @@ public class PackageResourceLoaderTest {
     assertThat(value).describedAs("Item dimen from gradle output is not loaded").isNotNull();
     assertThat(value.asString()).isEqualTo("3.14");
   }
+
+  @Test
+  public void shouldLoadStringResourcesFromGradleOutputDirectoriesDefinedByItemTag() {
+    PackageResourceLoader loader = new PackageResourceLoader(gradleAppResources());
+    TypedResource value = loader.getValue(new ResName("org.robolectric.gradleapp", "string", "item_from_gradle_output"), "");
+    assertThat(value).describedAs("Item string from gradle output is not loaded").isNotNull();
+    assertThat(value.asString()).isEqualTo("3.14");
+  }
+
 }
