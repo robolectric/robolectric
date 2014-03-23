@@ -24,6 +24,7 @@ import android.appwidget.AppWidgetHostView;
 import android.appwidget.AppWidgetManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.ContentProviderClient;
 import android.content.ContentProviderOperation;
 import android.content.ContentProviderResult;
 import android.content.ContentResolver;
@@ -200,6 +201,7 @@ import org.robolectric.shadows.ShadowColorMatrix;
 import org.robolectric.shadows.ShadowConfiguration;
 import org.robolectric.shadows.ShadowConnectivityManager;
 import org.robolectric.shadows.ShadowContentObserver;
+import org.robolectric.shadows.ShadowContentProviderClient;
 import org.robolectric.shadows.ShadowContentProviderOperation;
 import org.robolectric.shadows.ShadowContentProviderResult;
 import org.robolectric.shadows.ShadowContentResolver;
@@ -555,6 +557,10 @@ public class Robolectric {
 
   public static ShadowContentResolver shadowOf(ContentResolver instance) {
     return (ShadowContentResolver) shadowOf_(instance);
+  }
+
+  public static ShadowContentProviderClient shadowOf(ContentProviderClient client) {
+    return (ShadowContentProviderClient) shadowOf_(client);
   }
 
   public static ShadowContentProviderOperation shadowOf(ContentProviderOperation instance) {
