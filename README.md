@@ -71,4 +71,4 @@ You will need to either replace or have `ANDROID_HOME` set to your local Android
 Robolectric can be built using either Maven or Ant. Both Eclipse (with the M2Eclipse plug-in) and
 IntelliJ can import the `pom.xml` file and will automatically generate their project files from it.
 
-Guides on to extending Robolectric can be found [here](http://robolectric.org/extending.html) and the contributor guidlines can be found [here](http://robolectric.org/contributor_guidelines.html).
+Guides on to extending Robolectric can be found [here](http://robolectric.org/extending/) and the contributor guidlines can be found [here](http://robolectric.org/contributor-guidelines/).
