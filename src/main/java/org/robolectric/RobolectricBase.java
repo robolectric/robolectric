@@ -79,7 +79,6 @@ import org.robolectric.shadows.ShadowDisplay;
 import org.robolectric.shadows.ShadowDownloadManager;
 import org.robolectric.shadows.ShadowDrawable;
 import org.robolectric.shadows.ShadowEdgeEffect;
-import org.robolectric.shadows.ShadowEditTextPreference;
 import org.robolectric.shadows.ShadowEmojiFactory;
 import org.robolectric.shadows.ShadowEnvironment;
 import org.robolectric.shadows.ShadowExifInterface;
@@ -310,7 +309,6 @@ public class RobolectricBase {
       ShadowDownloadManager.ShadowRequest.class,
       ShadowDownloadManager.ShadowQuery.class,
       ShadowEdgeEffect.class,
-      ShadowEditTextPreference.class,
       ShadowEmojiFactory.class,
       ShadowEnvironment.class,
       ShadowExifInterface.class,
