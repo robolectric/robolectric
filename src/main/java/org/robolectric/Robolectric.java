@@ -223,7 +223,6 @@ import org.robolectric.shadows.ShadowDisplay;
 import org.robolectric.shadows.ShadowDownloadManager;
 import org.robolectric.shadows.ShadowDrawable;
 import org.robolectric.shadows.ShadowDrawerLayout;
-import org.robolectric.shadows.ShadowEditTextPreference;
 import org.robolectric.shadows.ShadowExpandableListView;
 import org.robolectric.shadows.ShadowFilter;
 import org.robolectric.shadows.ShadowFrameLayout;
@@ -617,10 +616,6 @@ public class Robolectric {
 
   public static ShadowDialogPreference shadowOf(DialogPreference instance) {
     return (ShadowDialogPreference) shadowOf_(instance);
-  }
-
-  public static ShadowEditTextPreference shadowOf(EditTextPreference instance) {
-    return (ShadowEditTextPreference) shadowOf_(instance);
   }
 
   public static ShadowDrawable shadowOf(Drawable instance) {
