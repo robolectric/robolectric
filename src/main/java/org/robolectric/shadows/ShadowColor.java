@@ -31,4 +31,20 @@ public class ShadowColor {
       throw new IllegalArgumentException("Can't parse value from color \"" + colorString + "\"", e);
     }
   }
+
+  /**
+   * This is implemented in native code in the Android SDK.
+   *
+   * <p>Since HSV == HSB then the implementation from {@link java.awt.Color} can be used,
+   * with a small adjustment to the representation of the hue.</p>
+   *
+   * <p>{@link java.awt.Color} represents hue as 0..1 (where 1 == 100% == 360 degrees),
+   * while {@link android.graphics.Color} represents hue as 0..360 degrees. The correct hue can be calculated
+   * by multiplying with 360.</p>
+   */
+  @Implementation
+  public static void RGBToHSV(int red, int green, int blue, float hsv[]) {
+    java.awt.Color.RGBtoHSB(red, green, blue, hsv);
+    hsv[0] = hsv[0] * 360;
+  }
 }
