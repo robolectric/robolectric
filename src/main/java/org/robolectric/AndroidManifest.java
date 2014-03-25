@@ -1,14 +1,8 @@
 package org.robolectric;
 
 import android.app.Activity;
-import org.robolectric.res.ActivityData;
-import org.robolectric.res.IntentFilterData;
-import org.robolectric.res.ContentProviderData;
-import org.robolectric.res.Fs;
-import org.robolectric.res.FsFile;
-import org.robolectric.res.ResName;
-import org.robolectric.res.ResourceIndex;
-import org.robolectric.res.ResourcePath;
+import android.graphics.Color;
+import org.robolectric.res.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -64,7 +58,7 @@ public class AndroidManifest {
   private final List<ContentProviderData> providers = new ArrayList<ContentProviderData>();
   private final List<ReceiverAndIntentFilter> receivers = new ArrayList<ReceiverAndIntentFilter>();
   private final Map<String, ActivityData> activityDatas = new LinkedHashMap<String, ActivityData>();
-  private final Map<String, String> applicationMetaData = new LinkedHashMap<String, String>();
+  private MetaData applicationMetaData;
   private List<AndroidManifest> libraryManifests;
 
   /**
@@ -194,7 +188,7 @@ public class AndroidManifest {
       if (namedItem == null) continue;
 
       String receiverName = resolveClassRef(namedItem.getTextContent());
-      Map<String,String> metaDataMap = parseMetaData(getChildrenTags(receiverNode, "meta-data"));
+      MetaData metaData = new MetaData(getChildrenTags(receiverNode, "meta-data"));
 
       for (Node intentFilterNode : getChildrenTags(receiverNode, "intent-filter")) {
         List<String> actions = new ArrayList<String>();
@@ -204,7 +198,7 @@ public class AndroidManifest {
             actions.add(nameNode.getTextContent());
           }
         }
-        receivers.add(new ReceiverAndIntentFilter(receiverName, actions, metaDataMap));
+        receivers.add(new ReceiverAndIntentFilter(receiverName, actions, metaData));
       }
     }
   }
@@ -263,35 +257,60 @@ public class AndroidManifest {
   }
 
   /***
+   * Attempt to parse a string in to it's appropriate type
+   * @param value Value to parse
+   * @return Parsed result
+   */
+  private static Object parseValue(String value) {
+    if (value == null) {
+      return null;
+    } else if ("true".equals(value)) {
+      return true;
+    } else if ("false".equals(value)) {
+      return false;
+    } else if (value.startsWith("#")) {
+      // if it's a color, add it and continue
+      try {
+        return Color.parseColor(value);
+      } catch (IllegalArgumentException e) {
+            /* Not a color */
+      }
+    } else if (value.contains(".")) {
+      // most likely a float
+      try {
+        return Float.parseFloat(value);
+      } catch (NumberFormatException e) {
+          // Not a float
+      }
+    } else {
+      // if it's an int, add it and continue
+      try {
+        return Integer.parseInt(value);
+      } catch (NumberFormatException ei) {
+          // Not an int
+      }
+    }
+
+    // Not one of the above types, keep as String
+    return value;
+  }
+
+  /***
    * Allows {@link org.robolectric.res.builder.RobolectricPackageManager} to provide
    * a resource index for initialising the resource attributes in all the metadata elements
    * @param resIndex used for getting resource IDs from string identifiers
    */
-  public void initMetaData(ResourceIndex resIndex) {
-    for (Map.Entry<String,String> entry : applicationMetaData.entrySet()) {
-      if (entry.getValue().startsWith("@")) {
-        Integer resId = ResName.getResourceId(resIndex, entry.getValue(), packageName);
-        if (resId != null) {
-            entry.setValue(resId.toString());
-        }
-      }
-    }
+  public void initMetaData(ResourceLoader resLoader) {
+    applicationMetaData.init(resLoader, packageName);
     for (ReceiverAndIntentFilter receiver : receivers) {
-      for (Map.Entry<String,String> entry : receiver.metaData.entrySet()) {
-        if (entry.getValue().startsWith("@")) {
-          Integer resId = ResName.getResourceId(resIndex, entry.getValue(), packageName);
-          if (resId != null) {
-              entry.setValue(resId.toString());
-          }
-        }
-      }
+      receiver.metaData.init(resLoader, packageName);
     }
   }
 
   private void parseApplicationMetaData(final Document manifestDocument) {
     Node application = manifestDocument.getElementsByTagName("application").item(0);
     if (application == null) return;
-    applicationMetaData.putAll(parseMetaData(getChildrenTags(application, "meta-data")));
+    applicationMetaData = new MetaData(getChildrenTags(application, "meta-data"));
   }
 
   private String resolveClassRef(String maybePartialClassName) {
@@ -396,9 +415,9 @@ public class AndroidManifest {
     return processName;
   }
 
-  public Map<String, String> getApplicationMetaData() {
+  public Map<String, Object> getApplicationMetaData() {
     parseAndroidManifest();
-    return applicationMetaData;
+    return applicationMetaData.valueMap;
   }
 
   public ResourcePath getResourcePath() {
@@ -513,9 +532,9 @@ public class AndroidManifest {
     return receivers.get(receiverIndex).getIntentFilterActions();
   }
 
-  public Map<String, String> getReceiverMetaData(final int receiverIndex) {
+  public Map<String, Object> getReceiverMetaData(final int receiverIndex) {
     parseAndroidManifest();
-    return receivers.get(receiverIndex).getMetaData();
+    return receivers.get(receiverIndex).getMetaData().valueMap;
   }
 
   private static String getTagAttributeText(final Document doc, final String tag, final String attribute) {
@@ -529,25 +548,6 @@ public class AndroidManifest {
     }
     return null;
   }
-
-  private static Map<String, String> parseMetaData(List<Node> nodes) {
-    Map<String, String> metaData = new HashMap<String, String>();
-    for (Node metaNode : nodes) {
-      NamedNodeMap attributes = metaNode.getAttributes();
-      Node nameAttr = attributes.getNamedItem("android:name");
-      Node valueAttr = attributes.getNamedItem("android:value");
-      Node resourceAttr = attributes.getNamedItem("android:resource");
-
-      if (valueAttr != null) {
-        metaData.put(nameAttr.getNodeValue(), valueAttr.getNodeValue());
-      } else if (resourceAttr != null) {
-        metaData.put(nameAttr.getNodeValue(), resourceAttr.getNodeValue());
-      }
-    }
-
-    return metaData;
-  }
-
 
   @Override
   public boolean equals(Object o) {
@@ -586,15 +586,80 @@ public class AndroidManifest {
     return activityDatas;
   }
 
+  private static final class MetaData {
+    private final Map<String, Object> valueMap = new LinkedHashMap<String, Object>();
+    private final Map<String, VALUE_TYPE> typeMap = new LinkedHashMap<String, VALUE_TYPE>();
+    private boolean initialised;
+
+    public MetaData(List<Node> nodes) {
+      for (Node metaNode : nodes) {
+        NamedNodeMap attributes = metaNode.getAttributes();
+        Node nameAttr = attributes.getNamedItem("android:name");
+        Node valueAttr = attributes.getNamedItem("android:value");
+        Node resourceAttr = attributes.getNamedItem("android:resource");
+
+        if (valueAttr != null) {
+          valueMap.put(nameAttr.getNodeValue(), valueAttr.getNodeValue());
+          typeMap.put(nameAttr.getNodeValue(), VALUE_TYPE.VALUE);
+        } else if (resourceAttr != null) {
+          valueMap.put(nameAttr.getNodeValue(), resourceAttr.getNodeValue());
+          typeMap.put(nameAttr.getNodeValue(), VALUE_TYPE.RESOURCE);
+        }
+      }
+    }
+
+    public void init(ResourceLoader resLoader, String packageName) {
+      ResourceIndex resIndex = resLoader.getResourceIndex();
+
+      if (!initialised) {
+        for (Map.Entry<String,MetaData.VALUE_TYPE> entry : typeMap.entrySet()) {
+          String value = valueMap.get(entry.getKey()).toString();
+          if (value.startsWith("@")) {
+            ResName resName = ResName.qualifyResName(value.substring(1), packageName, null);
+
+            switch (entry.getValue()) {
+              case RESOURCE:
+                // Was provided by resource attribute, store resource ID
+                valueMap.put(entry.getKey(), resIndex.getResourceId(resName));
+                break;
+              case VALUE:
+                // Was provided by value attribute, need to parse it
+                TypedResource<?> typedRes = resLoader.getValue(resName, "");
+                // The typed resource's data is always a String, so need to parse the value.
+                switch (typedRes.getResType()) {
+                  case BOOLEAN: case COLOR: case INTEGER: case FLOAT:
+                    valueMap.put(entry.getKey(),parseValue(typedRes.getData().toString()));
+                    break;
+                  default:
+                    valueMap.put(entry.getKey(),typedRes.getData());
+                }
+                break;
+            }
+          } else if (entry.getValue() == MetaData.VALUE_TYPE.VALUE) {
+            // Raw value, so parse it in to the appropriate type and store it
+            valueMap.put(entry.getKey(), parseValue(value));
+          }
+        }
+        // Finished parsing, mark as initialised
+        initialised = true;
+      }
+    }
+
+    private enum VALUE_TYPE {
+      RESOURCE,
+      VALUE
+    }
+  }
+
   private static class ReceiverAndIntentFilter {
     private final List<String> intentFilterActions;
     private final String broadcastReceiverClassName;
-    private final Map<String, String> metaData;
+    private final MetaData metaData;
 
-    public ReceiverAndIntentFilter(final String broadcastReceiverClassName, final List<String> intentFilterActions, final Map<String, String> metadata) {
+    public ReceiverAndIntentFilter(final String broadcastReceiverClassName, final List<String> intentFilterActions, final MetaData metaData) {
       this.broadcastReceiverClassName = broadcastReceiverClassName;
       this.intentFilterActions = intentFilterActions;
-      this.metaData = metadata;
+      this.metaData = metaData;
     }
 
     public String getBroadcastReceiverClassName() {
@@ -605,7 +670,7 @@ public class AndroidManifest {
       return intentFilterActions;
     }
 
-    public Map<String, String> getMetaData() {
+    public MetaData getMetaData() {
       return metaData;
     }
   }
