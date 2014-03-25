@@ -129,6 +129,7 @@ public final class R {
     public static final int activity_name = 0x10111;
     public static final int minute_singular = 0x10112;
     public static final int minute_plural = 0x10113;
+    public static final int preference_resource = 0x10114;
   }
 
   public static final class plurals {
