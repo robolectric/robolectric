@@ -134,8 +134,8 @@ public class ShadowLocationManager {
   @Implementation
   public List<String> getProviders(boolean enabledOnly) {
     ArrayList<String> enabledProviders = new ArrayList<String>();
-    for (String provider : providersEnabled.keySet()) {
-      if (!enabledOnly || providersEnabled.get(provider).getKey()) {
+    for (String provider : getAllProviders()) {
+      if (!enabledOnly || providersEnabled.get(provider) != null) {
         enabledProviders.add(provider);
       }
     }
