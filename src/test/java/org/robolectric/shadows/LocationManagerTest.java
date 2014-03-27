@@ -75,11 +75,7 @@ public class LocationManagerTest {
   }
 
   @Test
-  public void shouldReturnEnabledProviders() throws Exception {
-    shadowLocationManager.setProviderEnabled(NETWORK_PROVIDER, false);
-    shadowLocationManager.setProviderEnabled(GPS_PROVIDER, false);
-    shadowLocationManager.setProviderEnabled(LocationManager.PASSIVE_PROVIDER, false);
-
+  public void getProviders_returnsProvidersBasedOnEnabledParameter() throws Exception {
     assertTrue(locationManager.getProviders(true).isEmpty());
     assertThat(locationManager.getProviders(false).size()).isEqualTo(3);
 
@@ -243,12 +239,13 @@ public class LocationManagerTest {
   }
 
   @Test
-  public void shouldReturnNullIfBestProviderNotExplicitlySet() throws Exception {
+  public void getBestProvider_returnsProviderBasedOnCriteriaAndEnabledState() throws Exception {
     Criteria criteria = new Criteria();
-    assertNull(locationManager.getBestProvider(null, false));
-    assertNull(locationManager.getBestProvider(null, true));
-    assertNull(locationManager.getBestProvider(criteria, false));
-    assertNull(locationManager.getBestProvider(criteria, true));
+    criteria.setAccuracy(Criteria.ACCURACY_COARSE);
+    assertThat(locationManager.getBestProvider(null, false)).isEqualTo(LocationManager.GPS_PROVIDER);
+    assertThat(locationManager.getBestProvider(null, true)).isNull();
+    assertThat(locationManager.getBestProvider(criteria, false)).isEqualTo(LocationManager.NETWORK_PROVIDER);
+    assertThat(locationManager.getBestProvider(criteria, true)).isNull();
   }
 
   @Test
@@ -337,13 +334,13 @@ public class LocationManagerTest {
   }
 
   @Test
-  public void shouldReturnBestEnabledProvider() throws Exception {
+  public void getBestProvider_returnsBestProviderBasedOnEnabledState() throws Exception {
     shadowLocationManager.setProviderEnabled("BEST_ENABLED_PROVIDER", true);
 
-    assertTrue(shadowLocationManager.setBestProvider("BEST_ENABLED_PROVIDER", true));
-    assertFalse(shadowLocationManager.setBestProvider("BEST_ENABLED_PROVIDER", false));
-    assertThat("BEST_ENABLED_PROVIDER").isEqualTo(locationManager.getBestProvider(null, true));
-    assertNull(locationManager.getBestProvider(null, false));
+    assertThat(shadowLocationManager.setBestProvider("BEST_ENABLED_PROVIDER", true)).isTrue();
+    assertThat(shadowLocationManager.setBestProvider("BEST_ENABLED_PROVIDER", false)).isFalse();
+    assertThat(locationManager.getBestProvider(null, true)).isEqualTo("BEST_ENABLED_PROVIDER");
+    assertThat(locationManager.getBestProvider(null, false)).isEqualTo(LocationManager.GPS_PROVIDER);
   }
 
   @Test
