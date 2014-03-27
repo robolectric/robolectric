@@ -85,25 +85,25 @@
     <dependency>
       <groupId>org.ow2.asm</groupId>
       <artifactId>asm</artifactId>
-      <version>4.1</version>
+      <version>5.0.1</version>
     </dependency>
 
     <dependency>
       <groupId>org.ow2.asm</groupId>
       <artifactId>asm-commons</artifactId>
-      <version>4.1</version>
+      <version>5.0.1</version>
     </dependency>
 
     <dependency>
       <groupId>org.ow2.asm</groupId>
       <artifactId>asm-util</artifactId>
-      <version>4.1</version>
+      <version>5.0.1</version>
     </dependency>
 
     <dependency>
       <groupId>org.ow2.asm</groupId>
       <artifactId>asm-analysis</artifactId>
-      <version>4.1</version>
+      <version>5.0.1</version>
     </dependency>
 
     <dependency>
