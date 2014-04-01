@@ -117,6 +117,10 @@ public class ShadowBitmapFactory {
   }
 
   public static Bitmap create(String name, BitmapFactory.Options options) {
+    return create(name, options, null);
+  }
+
+  public static Bitmap create(final String name, final BitmapFactory.Options options, final Point widthAndHeight) {
     Bitmap bitmap = Robolectric.newInstanceOf(Bitmap.class);
     ShadowBitmap shadowBitmap = shadowOf(bitmap);
     shadowBitmap.appendDescription(name == null ? "Bitmap" : "Bitmap for " + name);
@@ -127,12 +131,7 @@ public class ShadowBitmapFactory {
       shadowBitmap.appendDescription(optionsString);
     }
 
-    Point widthAndHeight = widthAndHeightMap.get(name);
-    if (widthAndHeight == null) {
-      widthAndHeight = new Point(100, 100);
-    }
-
-    Point p = new Point(widthAndHeight);
+    Point p = new Point(selectWidthAndHeight(name, widthAndHeight));
     if (options != null && options.inSampleSize > 1) {
       p.x = p.x / options.inSampleSize;
       p.y = p.y / options.inSampleSize;
@@ -174,5 +173,19 @@ public class ShadowBitmapFactory {
 
   public static void reset() {
     widthAndHeightMap.clear();
+  }
+
+  private static Point selectWidthAndHeight(final String name, final Point widthAndHeight) {
+    final Point widthAndHeightFromMap = widthAndHeightMap.get(name);
+
+    if (widthAndHeightFromMap != null) {
+      return widthAndHeightFromMap;
+    }
+
+    if (widthAndHeight != null) {
+      return widthAndHeight;
+    }
+
+    return new Point(100, 100);
   }
 }
