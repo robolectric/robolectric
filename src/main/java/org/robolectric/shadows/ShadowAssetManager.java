@@ -161,7 +161,7 @@ public final class ShadowAssetManager {
   public final InputStream openNonAsset(int cookie, String fileName, int accessMode) throws IOException {
     final String packageName = getPackageNameForFile(fileName);
     final ResName resName = ResName.qualifyFromFilePath(packageName, fileName);
-    final DrawableNode drawableNode = resourceLoader.getDrawableNode(resName, ""); // TODO qualifier from file name
+    final DrawableNode drawableNode = resourceLoader.getDrawableNode(resName, getQualifiers());
 
     if (drawableNode == null) {
       throw new IOException("Unable to find resource for " + fileName);

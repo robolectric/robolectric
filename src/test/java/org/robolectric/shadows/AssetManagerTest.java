@@ -119,4 +119,24 @@ public class AssetManagerTest {
 
     assetManager.openNonAsset(0, "./res/drawable/does_not_exist.png", 0);
   }
+
+  @Test
+  public void openNonAssetShouldOpenCorrectAssetBasedOnQualifierMdpi() throws IOException {
+    Robolectric.shadowOf(assetManager).setQualifiers("mdpi");
+
+    InputStream inputStream = assetManager.openNonAsset(0, "./res/drawable/robolectric.png", 0);
+
+    ByteArrayInputStream byteArrayInputStream = (ByteArrayInputStream) inputStream;
+    assertThat(byteArrayInputStream.available()).isEqualTo(8141);
+  }
+
+  @Test
+  public void openNonAssetShouldOpenCorrectAssetBasedOnQualifierHdpi() throws IOException {
+    Robolectric.shadowOf(assetManager).setQualifiers("hdpi");
+
+    InputStream inputStream = assetManager.openNonAsset(0, "./res/drawable/robolectric.png", 0);
+
+    ByteArrayInputStream byteArrayInputStream = (ByteArrayInputStream) inputStream;
+    assertThat(byteArrayInputStream.available()).isEqualTo(23447);
+  }
 }

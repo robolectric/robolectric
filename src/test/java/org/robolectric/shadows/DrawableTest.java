@@ -10,6 +10,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -128,6 +129,24 @@ public class DrawableTest {
 
     assertThat(anImage.getIntrinsicHeight()).isEqualTo(53);
     assertThat(anImage.getIntrinsicWidth()).isEqualTo(64);
+  }
+
+  @Test
+  @Config(qualifiers = "mdpi")
+  public void drawableShouldLoadImageOfCorrectSizeWithMdpiQualifier() {
+    final Drawable anImage = Robolectric.application.getResources().getDrawable(R.drawable.robolectric);
+
+    assertThat(anImage.getIntrinsicHeight()).isEqualTo(167);
+    assertThat(anImage.getIntrinsicWidth()).isEqualTo(198);
+  }
+
+  @Test
+  @Config(qualifiers = "hdpi")
+  public void drawableShouldLoadImageOfCorrectSizeWithHdpiQualifier() {
+    final Drawable anImage = Robolectric.application.getResources().getDrawable(R.drawable.robolectric);
+
+    assertThat(anImage.getIntrinsicHeight()).isEqualTo(251);
+    assertThat(anImage.getIntrinsicWidth()).isEqualTo(297);
   }
 
   private static class TestDrawable extends Drawable {
