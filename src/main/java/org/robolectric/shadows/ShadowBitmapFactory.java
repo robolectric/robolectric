@@ -13,6 +13,9 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.internal.NamedStream;
 import org.robolectric.util.Join;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -82,9 +85,12 @@ public class ShadowBitmapFactory {
 
   @Implementation
   public static Bitmap decodeStream(InputStream is, Rect outPadding, BitmapFactory.Options opts) {
-    Bitmap bitmap = create(is instanceof NamedStream ? is.toString().replace("stream for ", "") : null, opts);
+    String name = is instanceof NamedStream ? is.toString().replace("stream for ", "") : null;
+    Point imageSize = is instanceof NamedStream ? null : getImageSizeFromStream(is);
+    Bitmap bitmap = create(name, opts, imageSize);
     ShadowBitmap shadowBitmap = shadowOf(bitmap);
     shadowBitmap.createdFromStream = is;
+
     return bitmap;
   }
 
@@ -187,5 +193,21 @@ public class ShadowBitmapFactory {
     }
 
     return new Point(100, 100);
+  }
+
+  private static Point getImageSizeFromStream(final InputStream is) {
+    try {
+      final BufferedImage image = ImageIO.read(is);
+
+      if (image != null) {
+        return new Point(image.getWidth(), image.getHeight());
+      } else {
+        return null;
+      }
+    }
+
+    catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 }

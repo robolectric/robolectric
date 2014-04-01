@@ -122,6 +122,14 @@ public class DrawableTest {
     assertThat(drawable.boundsChanged).isTrue();
   }
 
+  @Test
+  public void drawableIntrinsicWidthAndHeightShouldBeCorrect() {
+    final Drawable anImage = Robolectric.application.getResources().getDrawable(R.drawable.an_image);
+
+    assertThat(anImage.getIntrinsicHeight()).isEqualTo(53);
+    assertThat(anImage.getIntrinsicWidth()).isEqualTo(64);
+  }
+
   private static class TestDrawable extends Drawable {
     public boolean boundsChanged;
 

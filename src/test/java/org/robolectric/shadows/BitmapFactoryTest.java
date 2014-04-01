@@ -161,6 +161,15 @@ public class BitmapFactoryTest {
   }
 
   @Test
+  public void decodeStream_shouldGetWidthAndHeightFromActualImage() throws Exception {
+    InputStream inputStream = getClass().getClassLoader().getResourceAsStream("res/drawable/fourth_image.jpg");
+    Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+    assertEquals("Bitmap", shadowOf(bitmap).getDescription());
+    assertEquals(160, bitmap.getWidth());
+    assertEquals(107, bitmap.getHeight());
+  }
+
+  @Test
   public void decodeByteArray_shouldSetDataChecksum() throws Exception {
     byte[] data = {23, -125, 0, 52, 23, 18, 76, 43};
 
