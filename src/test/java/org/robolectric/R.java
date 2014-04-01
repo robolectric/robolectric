@@ -180,6 +180,7 @@ public final class R {
     public static final int state_drawable = 0x1050e;
     public static final int nine_patch_drawable = 0x1050f;
     public static final int drawable_with_nine_patch = 0x10510;
+    public static final int robolectric = 0x10511;
   }
 
   public static final class layout {
