@@ -28,7 +28,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static android.database.sqlite.SQLiteDatabase.CursorFactory;
 import static org.robolectric.Robolectric.shadowOf;
@@ -40,6 +42,9 @@ public class ShadowContextWrapper extends ShadowContext {
 
   private String appName;
   private String packageName;
+
+  private final Map<String, TestSharedPreferences> sharedPreferencesMap =
+      new HashMap<String, TestSharedPreferences>();
 
   @Implementation
   public int checkCallingPermission(String permission) {
@@ -240,7 +245,11 @@ public class ShadowContextWrapper extends ShadowContext {
 
   @Implementation
   public SharedPreferences getSharedPreferences(String name, int mode) {
-    return new TestSharedPreferences(getShadowApplication().getSharedPreferenceMap(), name, mode);
+    if (!sharedPreferencesMap.containsKey(name)) {
+      sharedPreferencesMap.put(name, new TestSharedPreferences(getShadowApplication().getSharedPreferenceMap(), name, mode));
+    }
+
+    return sharedPreferencesMap.get(name);
   }
 
   @Implementation
