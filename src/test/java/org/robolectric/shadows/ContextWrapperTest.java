@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -357,4 +358,19 @@ public class ContextWrapperTest {
     assertThat(contextWrapper.checkCallingOrSelfPermission("qux")).isEqualTo(PERMISSION_DENIED);
   }
 
+  @Test
+  public void getSharedPreferencesShouldReturnSameInstanceWhenSameNameIsSupplied() {
+    final SharedPreferences pref1 = contextWrapper.getSharedPreferences("pref", Context.MODE_PRIVATE);
+    final SharedPreferences pref2 = contextWrapper.getSharedPreferences("pref", Context.MODE_PRIVATE);
+
+    assertThat(pref1).isSameAs(pref2);
+  }
+
+  @Test
+  public void getSharedPreferencesShouldReturnDifferentInstancesWhenDifferentNameIsSupplied() {
+    final SharedPreferences pref1 = contextWrapper.getSharedPreferences("pref1", Context.MODE_PRIVATE);
+    final SharedPreferences pref2 = contextWrapper.getSharedPreferences("pref2", Context.MODE_PRIVATE);
+
+    assertThat(pref1).isNotSameAs(pref2);
+  }
 }

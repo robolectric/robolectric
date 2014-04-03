@@ -103,7 +103,9 @@ public final class R {
     public static final int minute_singular = 0x10112;
     public static final int minute_plural = 0x10113;
     public static final int str_int = 0x10114;
-    public static final int preference_resource = 0x10115;
+    public static final int preference_resource_key = 0x10115;
+    public static final int preference_resource_title = 0x10116;
+    public static final int preference_resource_summary = 0x10117;
   }
 
   public static final class plurals {

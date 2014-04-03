@@ -6,15 +6,12 @@ import android.content.Intent;
 import android.net.Uri;
 import android.preference.Preference;
 import android.preference.PreferenceGroup;
-import android.preference.PreferenceScreen;
 import android.util.AttributeSet;
-import org.robolectric.Robolectric;
 import org.robolectric.res.Attribute;
 import org.robolectric.res.PreferenceNode;
 import org.robolectric.res.ResName;
 import org.robolectric.shadows.RoboAttributeSet;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
@@ -60,26 +57,14 @@ public class PreferenceBuilder {
     List<Attribute> attributes = preferenceNode.getAttributes();
     RoboAttributeSet attributeSet = shadowOf(context).createAttributeSet(attributes, null);
 
-    /**
-     * This block is required because the PreferenceScreen(Context, AttributeSet) constructor is somehow hidden
-     * from reflection. The only way to set keys/titles/summaries on PreferenceScreens is to set them manually.
-     */
-    if (clazz.equals(PreferenceScreen.class)) {
-      PreferenceScreen screen = Robolectric.newInstanceOf(PreferenceScreen.class);
-      screen.setKey(Attribute.findValue(attributes, "android:attr/key"));
-      screen.setTitle(Attribute.findValue(attributes, "android:attr/title"));
-      screen.setSummary(Attribute.findValue(attributes, "android:attr/summary"));
-      return screen;
-    }
-
     try {
       try {
-        return ((Constructor<? extends Preference>) clazz.getConstructor(Context.class, AttributeSet.class)).newInstance(context, attributeSet);
+        return (clazz.getConstructor(Context.class, AttributeSet.class)).newInstance(context, attributeSet);
       } catch (NoSuchMethodException e) {
         try {
-          return ((Constructor<? extends Preference>) clazz.getConstructor(Context.class)).newInstance(context);
+          return (clazz.getConstructor(Context.class)).newInstance(context);
         } catch (NoSuchMethodException e1) {
-          return ((Constructor<? extends Preference>) clazz.getConstructor(Context.class, String.class)).newInstance(context, "");
+          return (clazz.getConstructor(Context.class, String.class)).newInstance(context, "");
         }
       }
     } catch (InstantiationException e) {

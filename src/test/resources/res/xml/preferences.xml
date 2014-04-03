@@ -15,7 +15,8 @@
 
   <PreferenceScreen
       android:key="screen"
-      android:title="Screen Test">
+      android:title="Screen Test"
+      android:summary="Screen summary">
 
     <Preference
         android:key="inside_screen"
@@ -55,8 +56,8 @@
       />
 
   <Preference
-      android:key="@string/preference_resource"
-      android:title="Preference with resource key Test"
-      android:summary=""/>
+      android:key="@string/preference_resource_key"
+      android:title="@string/preference_resource_title"
+      android:summary="@string/preference_resource_summary"/>
 
 </PreferenceScreen>

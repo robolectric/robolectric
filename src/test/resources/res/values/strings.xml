@@ -20,5 +20,7 @@
   <string name="minute_singular">minute</string>
   <string name="minute_plural">minutes</string>
   <string name="str_int">123456</string>
-  <string name="preference_resource">preference_resource_key</string>
+  <string name="preference_resource_key">preference_resource_key_value</string>
+  <string name="preference_resource_title">preference_resource_title_value</string>
+  <string name="preference_resource_summary">preference_resource_summary_value</string>
 </resources>

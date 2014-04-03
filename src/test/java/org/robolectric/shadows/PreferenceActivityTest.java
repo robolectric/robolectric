@@ -62,9 +62,9 @@ public class PreferenceActivityTest {
   }
 
   @Test
-  public void shouldFindPreferencesWithStringResourceKey() {
+  public void shouldFindPreferencesWithStringResourceKeyValue() {
     activity.addPreferencesFromResource(R.xml.preferences);
-    assertNotNull(activity.findPreference("preference_resource_key"));
+    assertNotNull(activity.findPreference("preference_resource_key_value"));
   }
 
   private static class TestPreferenceActivity extends PreferenceActivity {
