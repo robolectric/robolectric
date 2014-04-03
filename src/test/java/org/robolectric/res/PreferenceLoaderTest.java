@@ -23,14 +23,14 @@ import static org.robolectric.util.TestUtil.testResources;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class PreferenceLoaderTest {
-  private PreferenceLoader prefLoader;
+
   private ResBundle<PreferenceNode> resBundle;
   private PreferenceBuilder preferenceBuilder;
 
   @Before
   public void setUp() throws Exception {
     resBundle = new ResBundle<PreferenceNode>();
-    prefLoader = new PreferenceLoader(resBundle);
+    PreferenceLoader prefLoader = new PreferenceLoader(resBundle);
     new DocumentLoader(testResources()).load("xml", prefLoader);
 
     preferenceBuilder = new PreferenceBuilder();
@@ -41,6 +41,17 @@ public class PreferenceLoaderTest {
     PreferenceNode preferenceNode = resBundle.get(new ResName(TEST_PACKAGE + ":xml/preferences"), "");
     PreferenceScreen screen = (PreferenceScreen) preferenceBuilder.inflate(preferenceNode, Robolectric.application, null);
     assertThatScreenMatchesExpected(screen);
+  }
+
+  @Test
+  public void shouldSetContextInScreens() {
+    PreferenceNode preferenceNode = resBundle.get(new ResName(TEST_PACKAGE + ":xml/preferences"), "");
+    PreferenceScreen screen = (PreferenceScreen) preferenceBuilder.inflate(preferenceNode, Robolectric.application, null);
+
+    assertThat(screen.getContext()).isEqualTo(Robolectric.application);
+
+    PreferenceScreen innerScreen = (PreferenceScreen) screen.getPreference(1);
+    assertThat(innerScreen.getContext()).isEqualTo(Robolectric.application);
   }
 
   @Test(expected = I18nException.class)
@@ -74,9 +85,9 @@ public class PreferenceLoaderTest {
 
     PreferenceScreen innerScreen = (PreferenceScreen) screen.getPreference(1);
     assertThat(innerScreen).isInstanceOf(PreferenceScreen.class);
-    assertThat(innerScreen.getKey().toString()).isEqualTo("screen");
+    assertThat(innerScreen.getKey()).isEqualTo("screen");
     assertThat(innerScreen.getTitle().toString()).isEqualTo("Screen Test");
-    assertThat(innerScreen.getSummary()).isNull();
+    assertThat(innerScreen.getSummary()).isEqualTo("Screen summary");
     assertThat(innerScreen.getPreference(0)).isInstanceOf(Preference.class);
 
     assertThat(screen.getPreference(2)).isInstanceOf(CheckBoxPreference.class);

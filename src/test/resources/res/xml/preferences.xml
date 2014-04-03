@@ -15,7 +15,8 @@
 
   <PreferenceScreen
       android:key="screen"
-      android:title="Screen Test">
+      android:title="Screen Test"
+      android:summary="Screen summary">
 
     <Preference
         android:key="inside_screen"
