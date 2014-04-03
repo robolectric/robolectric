@@ -48,7 +48,10 @@ public class ShadowPreference {
 
     if (attributeSet != null) {
       final TypedArray typedArray = context.obtainStyledAttributes(attributeSet, com.android.internal.R.styleable.Preference);
+
       key = typedArray.getString(com.android.internal.R.styleable.Preference_key);
+      title = typedArray.getString(com.android.internal.R.styleable.Preference_title);
+      summary = typedArray.getString(com.android.internal.R.styleable.Preference_summary);
     }
   }
 
