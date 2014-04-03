@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.util.AttributeSet;
@@ -18,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.junit.Assert.assertNotNull;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class PreferenceTest {
@@ -274,6 +276,12 @@ public class PreferenceTest {
     preference.setDependency("TEST_PREF_KEY");
     assertThat(preference.getDependency()).isNotNull();
     assertThat(preference.getDependency()).isEqualTo("TEST_PREF_KEY");
+  }
+
+  @Test
+  public void getSharedPreferencesShouldReturnSharedPreferences() {
+    final SharedPreferences sharedPreferences = preference.getSharedPreferences();
+    assertNotNull(sharedPreferences);
   }
 
   private static class TestPreference extends Preference {

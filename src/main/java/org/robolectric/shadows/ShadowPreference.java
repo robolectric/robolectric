@@ -2,8 +2,10 @@ package org.robolectric.shadows;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.TypedArray;
 import android.preference.Preference;
+import android.preference.PreferenceManager;
 import android.util.AttributeSet;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -216,5 +218,10 @@ public class ShadowPreference {
   @Implementation
   public String getDependency() {
     return this.dependencyKey;
+  }
+
+  @Implementation
+  public SharedPreferences getSharedPreferences() {
+    return PreferenceManager.getDefaultSharedPreferences(context);
   }
 }
