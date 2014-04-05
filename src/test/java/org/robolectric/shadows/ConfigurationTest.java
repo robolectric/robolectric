@@ -25,7 +25,13 @@ public class ConfigurationTest {
   }
 
   @Test
-  public void testSetToDefaults() throws Exception {
+  public void setToDefaultsShouldSetRealDefaults() {
+    configuration.setToDefaults();
+    assertThat(configuration.fontScale).isEqualTo(1);
+  }
+
+  @Test
+  public void setToDefaultsShouldOverrideScreenLayout() {
     configuration.setToDefaults();
     assertThat(configuration.screenLayout).isEqualTo(Configuration.SCREENLAYOUT_LONG_NO | Configuration.SCREENLAYOUT_SIZE_NORMAL);
   }
