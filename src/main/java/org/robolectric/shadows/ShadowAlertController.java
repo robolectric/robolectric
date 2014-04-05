@@ -22,6 +22,7 @@ public class ShadowAlertController {
   private CharSequence message;
   private View view;
   private View customTitleView;
+  private int iconId;
 
   @Implementation
   public void setTitle(CharSequence title) throws InvocationTargetException, IllegalAccessException {
@@ -57,6 +58,16 @@ public class ShadowAlertController {
   public void setView(View view) {
     this.view = view;
     directlyOn(realAlertController, AlertController.class).setView(view);
+  }
+
+  @Implementation
+  public void setIcon(int iconId) {
+    this.iconId = iconId;
+    directlyOn(realAlertController, AlertController.class).setIcon(iconId);
+  }
+
+  public int getIconId() {
+    return iconId;
   }
 
   public View getView() {
