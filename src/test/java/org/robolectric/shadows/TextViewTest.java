@@ -425,6 +425,17 @@ public class TextViewTest {
   }
 
   @Test
+  public void setTextSize_shouldHandleSp() throws Exception {
+    textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 10);
+    assertThat(textView.getTextSize()).isEqualTo(10f);
+
+    shadowOf(Robolectric.application.getResources()).setScaledDensity(1.5f);
+
+    textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 10);
+    assertThat(textView.getTextSize()).isEqualTo(15f);
+  }
+
+  @Test
   public void setTextSize_shouldHandlePixels() throws Exception {
     shadowOf(Robolectric.application.getResources()).setDensity(1.5f);
     textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, 10);
