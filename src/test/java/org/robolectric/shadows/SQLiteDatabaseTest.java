@@ -644,7 +644,7 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
 
   @Test
   public void testCreateAndDropTable() throws Exception {
-	  SQLiteDatabase db = SQLiteDatabase.openOrCreateDatabase(Robolectric.application.getDatabasePath("db1").getPath(), null);
+    SQLiteDatabase db = SQLiteDatabase.openOrCreateDatabase(Robolectric.application.getDatabasePath("db1").getPath(), null);
     db.execSQL("CREATE TABLE foo(id INTEGER PRIMARY KEY AUTOINCREMENT, data TEXT);");
     Cursor c = db.query("FOO", null, null, null, null, null, null);
     assertThat(c).isNotNull();
