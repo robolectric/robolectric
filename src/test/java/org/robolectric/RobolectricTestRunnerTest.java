@@ -21,24 +21,24 @@ import static org.fest.reflect.core.Reflection.method;
 public class RobolectricTestRunnerTest {
   @Test public void whenClassHasConfigAnnotation_getConfig_shouldMergeClassAndMethodConfig() throws Exception {
     assertConfig(configFor(Test1.class, "withoutAnnotation"),
-        1, "foo", "from-test", 2, new Class[]{Test1.class});
+        1, "foo", "from-test", "test/res", 2, new Class[]{Test1.class});
 
     assertConfig(configFor(Test1.class, "withDefaultsAnnotation"),
-        1, "foo", "from-test", 2, new Class[]{Test1.class});
+        1, "foo", "from-test", "test/res", 2, new Class[]{Test1.class});
 
     assertConfig(configFor(Test1.class, "withOverrideAnnotation"),
-        9, "furf", "from-method", 8, new Class[]{Test1.class, Test2.class});
+        9, "furf", "from-method", "method/res", 8, new Class[]{Test1.class, Test2.class});
   }
 
   @Test public void whenClassDoesntHaveConfigAnnotation_getConfig_shouldUseMethodConfig() throws Exception {
     assertConfig(configFor(Test2.class, "withoutAnnotation"),
-        -1, "--default", "", -1, new Class[]{});
+        -1, "--default", "", "res", -1, new Class[]{});
 
     assertConfig(configFor(Test2.class, "withDefaultsAnnotation"),
-        -1, "--default", "", -1, new Class[]{});
+        -1, "--default", "", "res", -1, new Class[]{});
 
     assertConfig(configFor(Test2.class, "withOverrideAnnotation"),
-        9, "furf", "from-method", 8, new Class[]{Test1.class});
+        9, "furf", "from-method", "method/res", 8, new Class[]{Test1.class});
   }
 
   @Test public void shouldLoadDefaultsFromPropertiesFile() throws Exception {
@@ -46,16 +46,17 @@ public class RobolectricTestRunnerTest {
         "emulateSdk: 432\n" +
             "manifest: --none\n" +
             "qualifiers: from-properties-file\n" +
+            "resourceDir: from/properties/file/res\n" +
             "reportSdk: 234\n" +
             "shadows: org.robolectric.shadows.ShadowView, org.robolectric.shadows.ShadowViewGroup\n");
     assertConfig(configFor(Test2.class, "withoutAnnotation", properties),
-        432, "--none", "from-properties-file", 234, new Class[] {ShadowView.class, ShadowViewGroup.class});
+        432, "--none", "from-properties-file", "from/properties/file/res", 234, new Class[] {ShadowView.class, ShadowViewGroup.class});
   }
 
   @Test public void withEmptyShadowList_shouldLoadDefaultsFromPropertiesFile() throws Exception {
     Properties properties = properties("shadows:");
     assertConfig(configFor(Test2.class, "withoutAnnotation", properties),
-        -1, "--default", "", -1, new Class[] {});
+        -1, "--default", "", "res", -1, new Class[] {});
   }
 
   @Test public void rememberThatSomeTestRunnerMethodsShouldBeOverridable() throws Exception {
@@ -92,11 +93,11 @@ public class RobolectricTestRunnerTest {
           .getConfig(method(methodName).withParameterTypes().in(testClass).info());
   }
 
-  private void assertConfig(Config config, int emulateSdk, String manifest, String qualifiers, int reportSdk, Class[] shadows) {
-    assertThat(stringify(config)).isEqualTo(stringify(emulateSdk, manifest, qualifiers, reportSdk, shadows));
+  private void assertConfig(Config config, int emulateSdk, String manifest, String qualifiers, String resourceDir, int reportSdk, Class[] shadows) {
+    assertThat(stringify(config)).isEqualTo(stringify(emulateSdk, manifest, qualifiers, resourceDir, reportSdk, shadows));
   }
 
-  @Ignore @Config(emulateSdk = 1, manifest = "foo", reportSdk = 2, shadows = Test1.class, qualifiers = "from-test")
+  @Ignore @Config(emulateSdk = 1, manifest = "foo", reportSdk = 2, shadows = Test1.class, qualifiers = "from-test", resourceDir = "test/res")
   public static class Test1 {
     @Test public void withoutAnnotation() throws Exception {
     }
@@ -105,7 +106,7 @@ public class RobolectricTestRunnerTest {
     @Test public void withDefaultsAnnotation() throws Exception {
     }
 
-    @Config(emulateSdk = 9, manifest = "furf", reportSdk = 8, shadows = Test2.class, qualifiers = "from-method")
+    @Config(emulateSdk = 9, manifest = "furf", reportSdk = 8, shadows = Test2.class, qualifiers = "from-method", resourceDir = "method/res")
     @Test public void withOverrideAnnotation() throws Exception {
     }
   }
@@ -119,7 +120,7 @@ public class RobolectricTestRunnerTest {
     @Test public void withDefaultsAnnotation() throws Exception {
     }
 
-    @Config(emulateSdk = 9, manifest = "furf", reportSdk = 8, shadows = Test1.class, qualifiers = "from-method")
+    @Config(emulateSdk = 9, manifest = "furf", reportSdk = 8, shadows = Test1.class, qualifiers = "from-method", resourceDir = "method/res")
     @Test public void withOverrideAnnotation() throws Exception {
     }
   }
@@ -128,15 +129,17 @@ public class RobolectricTestRunnerTest {
     int emulateSdk = config.emulateSdk();
     String manifest = config.manifest();
     String qualifiers = config.qualifiers();
+    String resourceDir = config.resourceDir();
     int reportSdk = config.reportSdk();
     Class<?>[] shadows = config.shadows();
-    return stringify(emulateSdk, manifest, qualifiers, reportSdk, shadows);
+    return stringify(emulateSdk, manifest, qualifiers, resourceDir, reportSdk, shadows);
   }
 
-  private String stringify(int emulateSdk, String manifest, String qualifiers, int reportSdk, Class<?>[] shadows) {
+  private String stringify(int emulateSdk, String manifest, String qualifiers, String resourceDir, int reportSdk, Class<?>[] shadows) {
     return "emulateSdk=" + emulateSdk + "\n" +
         "manifest=" + manifest + "\n" +
         "qualifiers=" + qualifiers + "\n" +
+        "resourceDir=" + resourceDir + "\n" +
         "reportSdk=" + reportSdk + "\n" +
         "shadows=" + Arrays.toString(shadows);
   }

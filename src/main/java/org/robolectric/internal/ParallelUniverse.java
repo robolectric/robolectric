@@ -7,7 +7,9 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+
 import java.lang.reflect.Method;
+
 import org.robolectric.AndroidManifest;
 import org.robolectric.RoboInstrumentation;
 import org.robolectric.Robolectric;
@@ -15,6 +17,7 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.SdkConfig;
 import org.robolectric.TestLifecycle;
 import org.robolectric.annotation.Config;
+import org.robolectric.res.ResBunch;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.shadows.ShadowActivityThread;
@@ -32,7 +35,6 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   private static final String DEFAULT_PACKAGE_NAME = "org.robolectric.default";
   private final RobolectricTestRunner robolectricTestRunner;
 
-  private Class<?> contextImplClass;
   private boolean loggingInitialized = false;
   private SdkConfig sdkConfig;
 
@@ -49,6 +51,21 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       loggingInitialized = true;
     }
   }
+  
+  /*
+   * If the Config already has a version qualifier, do nothing. Otherwise, add a version
+   * qualifier for the target api level (which comes from the manifest or Config.emulateSdk()).
+   */
+  private String addVersionQualifierToQualifiers(String qualifiers) {
+    int versionQualifierApiLevel = ResBunch.getVersionQualifierApiLevel(qualifiers);
+    if (versionQualifierApiLevel == -1) {
+      if (qualifiers.length() > 0) {
+        qualifiers += "-";
+      }
+      qualifiers += "v" + sdkConfig.getApiLevel();
+    }
+    return qualifiers;
+  }
 
   @Override public void setUpApplicationState(Method method, TestLifecycle testLifecycle, boolean strictI18n, ResourceLoader systemResourceLoader, AndroidManifest appManifest, Config config) {
     Robolectric.application = null;
@@ -63,13 +80,13 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     }
 
     ShadowResources.setSystemResources(systemResourceLoader);
-    String qualifiers = config.qualifiers();
+    String qualifiers = addVersionQualifierToQualifiers(config.qualifiers());
     Resources systemResources = Resources.getSystem();
     Configuration configuration = systemResources.getConfiguration();
     shadowOf(configuration).overrideQualifiers(qualifiers);
     systemResources.updateConfiguration(configuration, systemResources.getDisplayMetrics());
 
-    contextImplClass = type(ShadowContextImpl.CLASS_NAME)
+    Class<?> contextImplClass = type(ShadowContextImpl.CLASS_NAME)
         .withClassLoader(getClass().getClassLoader())
         .load();
 

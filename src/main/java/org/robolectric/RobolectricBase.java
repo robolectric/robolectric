@@ -50,6 +50,7 @@ import org.robolectric.shadows.ShadowConfiguration;
 import org.robolectric.shadows.ShadowConnectivityManager;
 import org.robolectric.shadows.ShadowContentObserver;
 import org.robolectric.shadows.ShadowContentProvider;
+import org.robolectric.shadows.ShadowContentProviderClient;
 import org.robolectric.shadows.ShadowContentProviderOperation;
 import org.robolectric.shadows.ShadowContentProviderResult;
 import org.robolectric.shadows.ShadowContentResolver;
@@ -78,7 +79,6 @@ import org.robolectric.shadows.ShadowDisplay;
 import org.robolectric.shadows.ShadowDownloadManager;
 import org.robolectric.shadows.ShadowDrawable;
 import org.robolectric.shadows.ShadowEdgeEffect;
-import org.robolectric.shadows.ShadowEditTextPreference;
 import org.robolectric.shadows.ShadowEmojiFactory;
 import org.robolectric.shadows.ShadowEnvironment;
 import org.robolectric.shadows.ShadowExifInterface;
@@ -277,6 +277,7 @@ public class RobolectricBase {
       ShadowConnectivityManager.class,
       ShadowContentObserver.class,
       ShadowContentProvider.class,
+      ShadowContentProviderClient.class,
       ShadowContentProviderOperation.class,
       ShadowContentProviderResult.class,
       ShadowContentResolver.class,
@@ -308,7 +309,6 @@ public class RobolectricBase {
       ShadowDownloadManager.ShadowRequest.class,
       ShadowDownloadManager.ShadowQuery.class,
       ShadowEdgeEffect.class,
-      ShadowEditTextPreference.class,
       ShadowEmojiFactory.class,
       ShadowEnvironment.class,
       ShadowExifInterface.class,

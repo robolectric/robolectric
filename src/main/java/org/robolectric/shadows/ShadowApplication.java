@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -62,7 +63,7 @@ public class ShadowApplication extends ShadowContextWrapper {
   private List<Intent> broadcastIntents = new ArrayList<Intent>();
   private List<ServiceConnection> unboundServiceConnections = new ArrayList<ServiceConnection>();
   private List<Wrapper> registeredReceivers = new ArrayList<Wrapper>();
-  private Map<String, Intent> stickyIntents = new HashMap<String, Intent>();
+  private Map<String, Intent> stickyIntents = new LinkedHashMap<String, Intent>();
   private FakeHttpLayer fakeHttpLayer = new FakeHttpLayer();
   private Looper mainLooper = ShadowLooper.myLooper();
   private Handler mainHandler = new Handler(mainLooper);
@@ -433,7 +434,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     if (receiver != null) {
       registeredReceivers.add(new Wrapper(receiver, filter, context, broadcastPermission, scheduler));
     }
-    return getStickyIntent(filter);
+    return processStickyIntents(filter, receiver, context);
   }
 
   private void verifyActivityInManifest(Intent intent) {
@@ -442,18 +443,21 @@ public class ShadowApplication extends ShadowContextWrapper {
     }
   }
 
-  private Intent getStickyIntent(IntentFilter filter) {
+  private Intent processStickyIntents(IntentFilter filter, BroadcastReceiver receiver, Context context) {
+    Intent result = null;
     for (Intent stickyIntent : stickyIntents.values()) {
-      String action = null;
-      for (int i = 0; i < filter.countActions(); i++) {
-        action = filter.getAction(i);
-        if (stickyIntent.getAction().equals(action)) {
-          return stickyIntent;
+      if (filter.matchAction(stickyIntent.getAction())) {
+        if (result == null) {
+          result = stickyIntent;
+        }
+        if (receiver != null) {
+          receiver.onReceive(context, stickyIntent);
+        } else if (result != null) {
+          break;
         }
       }
     }
-
-    return null;
+    return result;
   }
 
   @Override

@@ -59,7 +59,7 @@ mvn install:install-file -DgroupId=com.google.android.maps \
   
 mvn install:install-file -DgroupId=com.android.support \
   -DartifactId=support-v4 \
-  -Dversion=19.0.0 \
+  -Dversion=19.0.1 \
   -Dpackaging=jar \
   -Dfile="$ANDROID_HOME/extras/android/support/v4/android-support-v4.jar"
 ```
@@ -71,4 +71,4 @@ You will need to either replace or have `ANDROID_HOME` set to your local Android
 Robolectric can be built using either Maven or Ant. Both Eclipse (with the M2Eclipse plug-in) and
 IntelliJ can import the `pom.xml` file and will automatically generate their project files from it.
 
-Guides on to extending Robolectric can be found [here](http://robolectric.org/extending.html) and the contributor guidlines can be found [here](http://robolectric.org/contributor_guidelines.html).
+Guides on to extending Robolectric can be found [here](http://robolectric.org/extending/) and the contributor guidlines can be found [here](http://robolectric.org/contributor-guidelines/).

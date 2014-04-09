@@ -146,6 +146,11 @@ public class ShadowContextWrapper extends ShadowContext {
     getApplicationContext().sendBroadcast(intent, receiverPermission);
   }
 
+  @Implementation
+  public void sendStickyBroadcast(Intent intent) {
+    getApplicationContext().sendStickyBroadcast(intent);
+  }
+
   public List<Intent> getBroadcastIntents() {
     return ((ShadowApplication) shadowOf(getApplicationContext())).getBroadcastIntents();
   }

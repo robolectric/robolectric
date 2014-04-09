@@ -24,6 +24,7 @@ import android.appwidget.AppWidgetHostView;
 import android.appwidget.AppWidgetManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.ContentProviderClient;
 import android.content.ContentProviderOperation;
 import android.content.ContentProviderResult;
 import android.content.ContentResolver;
@@ -85,6 +86,7 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceGroup;
 import android.preference.PreferenceScreen;
+import android.speech.tts.TextToSpeech;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.widget.DrawerLayout;
 import android.telephony.SmsManager;
@@ -199,6 +201,7 @@ import org.robolectric.shadows.ShadowColorMatrix;
 import org.robolectric.shadows.ShadowConfiguration;
 import org.robolectric.shadows.ShadowConnectivityManager;
 import org.robolectric.shadows.ShadowContentObserver;
+import org.robolectric.shadows.ShadowContentProviderClient;
 import org.robolectric.shadows.ShadowContentProviderOperation;
 import org.robolectric.shadows.ShadowContentProviderResult;
 import org.robolectric.shadows.ShadowContentResolver;
@@ -220,7 +223,6 @@ import org.robolectric.shadows.ShadowDisplay;
 import org.robolectric.shadows.ShadowDownloadManager;
 import org.robolectric.shadows.ShadowDrawable;
 import org.robolectric.shadows.ShadowDrawerLayout;
-import org.robolectric.shadows.ShadowEditTextPreference;
 import org.robolectric.shadows.ShadowExpandableListView;
 import org.robolectric.shadows.ShadowFilter;
 import org.robolectric.shadows.ShadowFrameLayout;
@@ -297,6 +299,7 @@ import org.robolectric.shadows.ShadowSurface;
 import org.robolectric.shadows.ShadowTabHost;
 import org.robolectric.shadows.ShadowTelephonyManager;
 import org.robolectric.shadows.ShadowTextPaint;
+import org.robolectric.shadows.ShadowTextToSpeech;
 import org.robolectric.shadows.ShadowTextView;
 import org.robolectric.shadows.ShadowTimePickerDialog;
 import org.robolectric.shadows.ShadowToast;
@@ -555,6 +558,10 @@ public class Robolectric {
     return (ShadowContentResolver) shadowOf_(instance);
   }
 
+  public static ShadowContentProviderClient shadowOf(ContentProviderClient client) {
+    return (ShadowContentProviderClient) shadowOf_(client);
+  }
+
   public static ShadowContentProviderOperation shadowOf(ContentProviderOperation instance) {
     return (ShadowContentProviderOperation) shadowOf_(instance);
   }
@@ -609,10 +616,6 @@ public class Robolectric {
 
   public static ShadowDialogPreference shadowOf(DialogPreference instance) {
     return (ShadowDialogPreference) shadowOf_(instance);
-  }
-
-  public static ShadowEditTextPreference shadowOf(EditTextPreference instance) {
-    return (ShadowEditTextPreference) shadowOf_(instance);
   }
 
   public static ShadowDrawable shadowOf(Drawable instance) {
@@ -905,6 +908,10 @@ public class Robolectric {
 
   public static ShadowTextPaint shadowOf(TextPaint instance) {
     return (ShadowTextPaint) shadowOf_(instance);
+  }
+
+  public static ShadowTextToSpeech shadowOf(TextToSpeech instance) {
+    return (ShadowTextToSpeech) shadowOf_(instance);
   }
 
   public static ShadowTextView shadowOf(TextView instance) {

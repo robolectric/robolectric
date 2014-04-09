@@ -70,20 +70,20 @@ public class ShadowAudioManager {
     lastAbandonedAudioFocusListener = l;
     return nextResponseValue;
   }
-  
+
   @Implementation
   public int getRingerMode() {
-	  return ringerMode;
+    return ringerMode;
   }
 
   @Implementation
   public void setRingerMode(int ringerMode) {
-      if (!AudioManager.isValidRingerMode(ringerMode)) {
-          return;
-      }
-	  this.ringerMode = ringerMode;
+    if (!AudioManager.isValidRingerMode(ringerMode)) {
+      return;
+    }
+    this.ringerMode = ringerMode;
   }
-  
+
   public void setStreamMaxVolume(int streamMaxVolume) {
     for (Map.Entry<Integer, AudioStream> entry : streamStatus.entrySet()) {
       entry.getValue().setMaxVolume(streamMaxVolume);

@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.animation.TimeInterpolator;
+import android.animation.TypeEvaluator;
 import android.animation.ValueAnimator;
 import android.view.animation.LinearInterpolator;
 import org.robolectric.annotation.Implementation;
@@ -12,6 +13,7 @@ public class ShadowValueAnimator extends ShadowAnimator {
   private TimeInterpolator interpolator;
   @RealObject
   private ValueAnimator realObject;
+  private TypeEvaluator typeEvaluator;
 
   @Implementation
   public void setInterpolator(TimeInterpolator value) {
@@ -20,6 +22,11 @@ public class ShadowValueAnimator extends ShadowAnimator {
     } else {
       interpolator = new LinearInterpolator();
     }
+  }
+
+  @Implementation
+  public void setEvaluator(TypeEvaluator typeEvaluator) {
+    this.typeEvaluator = typeEvaluator;
   }
 
   @Implementation
@@ -40,6 +47,11 @@ public class ShadowValueAnimator extends ShadowAnimator {
   @Implementation @Override
   public long getDuration() {
     return super.getDuration();
+  }
+
+  @Implementation
+  public void cancel() {
+
   }
 
   @Implementation

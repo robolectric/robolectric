@@ -75,11 +75,7 @@ public class LocationManagerTest {
   }
 
   @Test
-  public void shouldReturnEnabledProviders() throws Exception {
-    shadowLocationManager.setProviderEnabled(NETWORK_PROVIDER, false);
-    shadowLocationManager.setProviderEnabled(GPS_PROVIDER, false);
-    shadowLocationManager.setProviderEnabled(LocationManager.PASSIVE_PROVIDER, false);
-
+  public void getProviders_returnsProvidersBasedOnEnabledParameter() throws Exception {
     assertTrue(locationManager.getProviders(true).isEmpty());
     assertThat(locationManager.getProviders(false).size()).isEqualTo(3);
 
@@ -243,12 +239,13 @@ public class LocationManagerTest {
   }
 
   @Test
-  public void shouldReturnNullIfBestProviderNotExplicitlySet() throws Exception {
+  public void getBestProvider_returnsProviderBasedOnCriteriaAndEnabledState() throws Exception {
     Criteria criteria = new Criteria();
-    assertNull(locationManager.getBestProvider(null, false));
-    assertNull(locationManager.getBestProvider(null, true));
-    assertNull(locationManager.getBestProvider(criteria, false));
-    assertNull(locationManager.getBestProvider(criteria, true));
+    criteria.setAccuracy(Criteria.ACCURACY_COARSE);
+    assertThat(locationManager.getBestProvider(null, false)).isEqualTo(LocationManager.GPS_PROVIDER);
+    assertThat(locationManager.getBestProvider(null, true)).isNull();
+    assertThat(locationManager.getBestProvider(criteria, false)).isEqualTo(LocationManager.NETWORK_PROVIDER);
+    assertThat(locationManager.getBestProvider(criteria, true)).isNull();
   }
 
   @Test
@@ -337,13 +334,13 @@ public class LocationManagerTest {
   }
 
   @Test
-  public void shouldReturnBestEnabledProvider() throws Exception {
+  public void getBestProvider_returnsBestProviderBasedOnEnabledState() throws Exception {
     shadowLocationManager.setProviderEnabled("BEST_ENABLED_PROVIDER", true);
 
-    assertTrue(shadowLocationManager.setBestProvider("BEST_ENABLED_PROVIDER", true));
-    assertFalse(shadowLocationManager.setBestProvider("BEST_ENABLED_PROVIDER", false));
-    assertThat("BEST_ENABLED_PROVIDER").isEqualTo(locationManager.getBestProvider(null, true));
-    assertNull(locationManager.getBestProvider(null, false));
+    assertThat(shadowLocationManager.setBestProvider("BEST_ENABLED_PROVIDER", true)).isTrue();
+    assertThat(shadowLocationManager.setBestProvider("BEST_ENABLED_PROVIDER", false)).isFalse();
+    assertThat(locationManager.getBestProvider(null, true)).isEqualTo("BEST_ENABLED_PROVIDER");
+    assertThat(locationManager.getBestProvider(null, false)).isEqualTo(LocationManager.GPS_PROVIDER);
   }
 
   @Test
@@ -386,6 +383,41 @@ public class LocationManagerTest {
     assertThat(shadowLocationManager.getRequestLocationUdpateCriteriaPendingIntents().get(someLocationListenerPendingIntent)).isEqualTo(someCriteria);
   }
 
+  @Test
+  public void simulateLocation_shouldNotNotifyListenerIfLessThanFastestInterval() throws Exception {
+    TestLocationListener listener = new TestLocationListener();
+    shadowLocationManager.requestLocationUpdates(GPS_PROVIDER, 2000, 0, listener);
+    long time = System.currentTimeMillis();
+
+    Location location1 = new Location(GPS_PROVIDER);
+    location1.setTime(time);
+
+    Location location2 = new Location(GPS_PROVIDER);
+    location2.setTime(time + 1000);
+
+    shadowLocationManager.simulateLocation(location1);
+    shadowLocationManager.simulateLocation(location2);
+    assertThat(listener.location).isEqualTo(location1);
+  }
+
+  @Test
+  public void simulateLocation_shouldNotNotifyListenerIfLessThanMinimumDistance() throws Exception {
+    TestLocationListener listener = new TestLocationListener();
+    shadowLocationManager.requestLocationUpdates(GPS_PROVIDER, 0, 200000, listener);
+
+    Location location1 = new Location(GPS_PROVIDER);
+    location1.setLatitude(0);
+    location1.setLongitude(0);
+
+    Location location2 = new Location(GPS_PROVIDER);
+    location2.setLatitude(1);
+    location2.setLongitude(1);
+
+    shadowLocationManager.simulateLocation(location1);
+    shadowLocationManager.simulateLocation(location2);
+    assertThat(listener.location).isEqualTo(location1);
+  }
+
   private Listener addGpsListenerToLocationManager() {
     Listener listener = new TestGpsListener();
     locationManager.addGpsStatusListener(listener);
@@ -394,9 +426,11 @@ public class LocationManagerTest {
 
   private static class TestLocationListener implements LocationListener {
     public boolean providerEnabled;
+    public Location location;
 
     @Override
     public void onLocationChanged(Location location) {
+      this.location = location;
     }
 
     @Override

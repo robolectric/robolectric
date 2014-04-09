@@ -8,6 +8,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -24,13 +25,13 @@ import org.junit.runner.RunWith;
 import org.robolectric.*;
 import org.robolectric.annotation.Config;
 import org.robolectric.res.builder.RobolectricPackageManager;
+import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowDrawable;
 import org.robolectric.test.TemporaryFolder;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.robolectric.util.TestUtil.resourceFile;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
@@ -229,8 +230,9 @@ public class RobolectricPackageManagerTest {
   @Test
   @Config(manifest = "src/test/resources/TestAndroidManifestWithReceivers.xml")
   public void testReceiverInfo() throws Exception {
-    rpm.addManifest(Robolectric.getShadowApplication().getAppManifest(), Robolectric.getShadowApplication().getResourceLoader());
-    ActivityInfo info = rpm.getReceiverInfo(new ComponentName(Robolectric.getShadowApplication().getApplicationContext(), ".test.ConfigTestReceiver"), PackageManager.GET_META_DATA);
+    ShadowApplication app = Robolectric.getShadowApplication();
+    rpm.addManifest(app.getAppManifest(), Robolectric.getShadowApplication().getResourceLoader());
+    ActivityInfo info = rpm.getReceiverInfo(new ComponentName(app.getApplicationContext(), ".test.ConfigTestReceiver"), PackageManager.GET_META_DATA);
     Bundle meta = info.metaData;
     Object metaValue = meta.get("org.robolectric.metaName1");
     assertTrue(String.class.isInstance(metaValue));
@@ -255,6 +257,30 @@ public class RobolectricPackageManagerTest {
     metaValue = meta.get("org.robolectric.metaFloat");
     assertTrue(Float.class.isInstance(metaValue));
     assertEquals(new Float(1.23), metaValue);
+
+    metaValue = meta.get("org.robolectric.metaColor");
+    assertTrue(Integer.class.isInstance(metaValue));
+    assertEquals(Color.WHITE, metaValue);
+
+    metaValue = meta.get("org.robolectric.metaBooleanFromRes");
+    assertTrue(Boolean.class.isInstance(metaValue));
+    assertEquals(app.getResources().getBoolean(R.bool.false_bool_value), metaValue);
+
+    metaValue = meta.get("org.robolectric.metaIntFromRes");
+    assertTrue(Integer.class.isInstance(metaValue));
+    assertEquals(app.getResources().getInteger(R.integer.test_integer1), metaValue);
+
+    metaValue = meta.get("org.robolectric.metaColorFromRes");
+    assertTrue(Integer.class.isInstance(metaValue));
+    assertEquals(app.getResources().getColor(R.color.clear), metaValue);
+
+    metaValue = meta.get("org.robolectric.metaStringFromRes");
+    assertTrue(String.class.isInstance(metaValue));
+    assertEquals(app.getString(R.string.app_name), metaValue);
+
+    metaValue = meta.get("org.robolectric.metaStringOfIntFromRes");
+    assertTrue(String.class.isInstance(metaValue));
+    assertEquals(app.getString(R.string.str_int), metaValue);
 
     metaValue = meta.get("org.robolectric.metaStringRes");
     assertTrue(Integer.class.isInstance(metaValue));
@@ -329,8 +355,10 @@ public class RobolectricPackageManagerTest {
   @Test
   @Config(manifest = "src/test/resources/TestAndroidManifestWithAppMetaData.xml")
   public void shouldAssignTheAppMetaDataFromTheManifest() throws Exception {
-    String packageName = Robolectric.getShadowApplication().getAppManifest().getPackageName();
-    ApplicationInfo info = Robolectric.getShadowApplication().getPackageManager().getApplicationInfo(packageName, 0);
+    ShadowApplication app = Robolectric.getShadowApplication();
+    String appName = app.getString(R.string.app_name);
+    String packageName = app.getAppManifest().getPackageName();
+    ApplicationInfo info = app.getPackageManager().getApplicationInfo(packageName, 0);
     Bundle meta = info.metaData;
 
     Object metaValue = meta.get("org.robolectric.metaName1");
@@ -356,6 +384,30 @@ public class RobolectricPackageManagerTest {
     metaValue = meta.get("org.robolectric.metaFloat");
     assertTrue(Float.class.isInstance(metaValue));
     assertEquals(new Float(1.23), metaValue);
+
+    metaValue = meta.get("org.robolectric.metaColor");
+    assertTrue(Integer.class.isInstance(metaValue));
+    assertEquals(Color.WHITE, metaValue);
+
+    metaValue = meta.get("org.robolectric.metaBooleanFromRes");
+    assertTrue(Boolean.class.isInstance(metaValue));
+    assertEquals(app.getResources().getBoolean(R.bool.false_bool_value), metaValue);
+
+    metaValue = meta.get("org.robolectric.metaIntFromRes");
+    assertTrue(Integer.class.isInstance(metaValue));
+    assertEquals(app.getResources().getInteger(R.integer.test_integer1), metaValue);
+
+    metaValue = meta.get("org.robolectric.metaColorFromRes");
+    assertTrue(Integer.class.isInstance(metaValue));
+    assertEquals(app.getResources().getColor(R.color.clear), metaValue);
+
+    metaValue = meta.get("org.robolectric.metaStringFromRes");
+    assertTrue(String.class.isInstance(metaValue));
+    assertEquals(app.getString(R.string.app_name), metaValue);
+
+    metaValue = meta.get("org.robolectric.metaStringOfIntFromRes");
+    assertTrue(String.class.isInstance(metaValue));
+    assertEquals(app.getString(R.string.str_int), metaValue);
 
     metaValue = meta.get("org.robolectric.metaStringRes");
     assertTrue(Integer.class.isInstance(metaValue));

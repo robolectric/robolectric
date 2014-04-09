@@ -43,6 +43,12 @@
       <meta-data android:name="org.robolectric.metaFalse" android:value="false" />
       <meta-data android:name="org.robolectric.metaInt" android:value="123" />
       <meta-data android:name="org.robolectric.metaFloat" android:value="1.23" />
+      <meta-data android:name="org.robolectric.metaColor" android:value="#FFFFFF" />
+      <meta-data android:name="org.robolectric.metaBooleanFromRes" android:value="@bool/false_bool_value" />
+      <meta-data android:name="org.robolectric.metaIntFromRes" android:value="@integer/test_integer1" />
+      <meta-data android:name="org.robolectric.metaColorFromRes" android:value="@color/clear" />
+      <meta-data android:name="org.robolectric.metaStringFromRes" android:value="@string/app_name" />
+      <meta-data android:name="org.robolectric.metaStringOfIntFromRes" android:value="@string/str_int" />
       <meta-data android:name="org.robolectric.metaStringRes" android:resource="@string/app_name" />
     </receiver>
 

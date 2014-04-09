@@ -7,7 +7,6 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.ResolveInfo;
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Pair;
@@ -353,7 +352,7 @@ public class RobolectricPackageManager extends StubPackageManager {
     ResourceIndex resourceIndex = loader.getResourceIndex();
 
     // first opportunity to access a resource index for this manifest, use it to init the references
-    androidManifest.initMetaData(resourceIndex);
+    androidManifest.initMetaData(loader);
 
     PackageInfo packageInfo = new PackageInfo();
     packageInfo.packageName = androidManifest.getPackageName();
@@ -449,52 +448,22 @@ public class RobolectricPackageManager extends StubPackageManager {
    * @param meta Meta data to put in to a bundle
    * @return bundle containing the meta data
    */
-  private Bundle metaDataToBundle(Map<String, String> meta) {
+  private Bundle metaDataToBundle(Map<String, Object> meta) {
     if (meta.size() == 0) {
         return null;
     }
 
     Bundle bundle = new Bundle();
 
-    for (Map.Entry<String,String> entry : meta.entrySet()) {
-      if (entry.getValue() == null) {
-        // skip it
-      } else if ("true".equals(entry.getValue())) {
-        bundle.putBoolean(entry.getKey(), true);
-      } else if ("false".equals(entry.getValue())) {
-        bundle.putBoolean(entry.getKey(), false);
+    for (Map.Entry<String,Object> entry : meta.entrySet()) {
+      if (Boolean.class.isInstance(entry.getValue())) {
+        bundle.putBoolean(entry.getKey(), (Boolean) entry.getValue());
+      } else if (Float.class.isInstance(entry.getValue())) {
+        bundle.putFloat(entry.getKey(), (Float) entry.getValue());
+      } else if (Integer.class.isInstance(entry.getValue())) {
+        bundle.putInt(entry.getKey(), (Integer) entry.getValue());
       } else {
-        if (entry.getValue().contains(".")) {
-          // if it's a float, add it and continue
-          try {
-            bundle.putFloat(entry.getKey(), Float.parseFloat(entry.getValue()));
-          } catch (NumberFormatException ef) {
-            /* Not a float */
-          }
-        }
-
-        if (!bundle.containsKey(entry.getKey()) && !entry.getValue().startsWith("#")) {
-          // if it's an int, add it and continue
-          try {
-            bundle.putInt(entry.getKey(), Integer.parseInt(entry.getValue()));
-          } catch (NumberFormatException ei) {
-            /* Not an int */
-          }
-        }
-
-        if (!bundle.containsKey(entry.getKey())) {
-          // if it's a color, add it and continue
-          try {
-            bundle.putInt(entry.getKey(), Color.parseColor(entry.getValue()));
-          } catch (IllegalArgumentException e) {
-            /* Not a color */
-          }
-        }
-
-        if (!bundle.containsKey(entry.getKey())) {
-          // otherwise it's a string
-          bundle.putString(entry.getKey(), entry.getValue());
-        }
+        bundle.putString(entry.getKey(), entry.getValue().toString());
       }
     }
     return bundle;
