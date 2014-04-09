@@ -649,7 +649,33 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
     Cursor c = db.query("FOO", null, null, null, null, null, null);
     assertThat(c).isNotNull();
     c.close();
+    db.close();
+    db = SQLiteDatabase.openOrCreateDatabase(Robolectric.application.getDatabasePath("db1").getPath(), null);
     db.execSQL("DROP TABLE IF EXISTS foo;");
+    try {
+    	c = db.query("FOO", null, null, null, null, null, null);
+    	fail("expected no such table exception");
+    } catch (SQLiteException e) {
+    	// TODO
+    }
+    db.close();
+  }
+
+  @Test
+  public void testCreateAndAlterTable() throws Exception {
+    SQLiteDatabase db = SQLiteDatabase.openOrCreateDatabase(Robolectric.application.getDatabasePath("db1").getPath(), null);
+    db.execSQL("CREATE TABLE foo(id INTEGER PRIMARY KEY AUTOINCREMENT, data TEXT);");
+    Cursor c = db.query("FOO", null, null, null, null, null, null);
+    assertThat(c).isNotNull();
+    c.close();
+    db.close();
+    db = SQLiteDatabase.openOrCreateDatabase(Robolectric.application.getDatabasePath("db1").getPath(), null);
+    db.execSQL("ALTER TABLE foo ADD COLUMN more TEXT NULL;");
+    c = db.query("FOO", null, null, null, null, null, null);
+    assertThat(c).isNotNull();
+	int moreIndex = c.getColumnIndex("more");
+	assertThat(moreIndex).isGreaterThanOrEqualTo(0);
+    c.close();
   }
 
   @Test
