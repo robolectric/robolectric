@@ -2,9 +2,13 @@ package org.robolectric.shadows;
 
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.FrameLayout;
+
+import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
+import static org.robolectric.Robolectric.directlyOn;
 import static org.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -16,6 +20,17 @@ public class ShadowAdapterView extends ShadowViewGroup {
   @RealObject
   private AdapterView realAdapterView;
 
+  private AdapterView.OnItemSelectedListener itemSelectedListener;
+
+  @Implementation
+  public void setOnItemSelectedListener(AdapterView.OnItemSelectedListener itemSelectedListener) {
+    this.itemSelectedListener = itemSelectedListener;
+    directlyOn(realAdapterView, AdapterView.class, "setOnItemSelectedListener", AdapterView.OnItemSelectedListener.class).invoke(itemSelectedListener);
+  }
+
+  public AdapterView.OnItemSelectedListener getItemSelectedListener() {
+    return itemSelectedListener;
+  }
 
   /**
    * Check if our adapter's items have changed without {@code onChanged()} or {@code onInvalidated()} having been called.
@@ -47,8 +62,8 @@ public class ShadowAdapterView extends ShadowViewGroup {
   }
 
   public int findIndexOfItemContainingText(String targetText) {
-    for (int i = 0; i < realAdapterView.getChildCount(); i++) {
-      View childView = realAdapterView.getChildAt(i);
+    for (int i = 0; i < realAdapterView.getCount(); i++) {
+      View childView = realAdapterView.getAdapter().getView(i, null, new FrameLayout(realAdapterView.getContext()));
       String innerText = shadowOf(childView).innerText();
       if (innerText.contains(targetText)) {
         return i;
@@ -76,5 +91,10 @@ public class ShadowAdapterView extends ShadowViewGroup {
   public void populateItems() {
     realView.measure(0, 0);
     realView.layout(0, 0, 100, 10000);
+  }
+
+  public void selectItemWithText(String s) {
+    int itemIndex = findIndexOfItemContainingText(s);
+    realAdapterView.setSelection(itemIndex);
   }
 }
