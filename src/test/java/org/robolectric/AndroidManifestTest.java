@@ -18,6 +18,7 @@ import org.robolectric.test.TemporaryFolder;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -40,7 +41,7 @@ import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.robolectric.util.TestUtil.joinPath;
+import static org.robolectric.util.TestUtil.joinCanonicalPath;
 import static org.robolectric.util.TestUtil.newConfig;
 import static org.robolectric.util.TestUtil.resourceFile;
 
@@ -205,16 +206,16 @@ public class AndroidManifestTest {
     assertEquals("@string/app_name", metaValue);
   }
   
-  @Test public void shouldLoadAllResourcesForExistingLibraries() {
+  @Test public void shouldLoadAllResourcesForExistingLibraries() throws Exception {
     AndroidManifest appManifest = new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"));
 
     // This intentionally loads from the non standard resources/project.properties
     List<String> resourcePaths = stringify(appManifest.getIncludedResourcePaths());
     assertEquals(asList(
-        joinPath(".", "src", "test", "resources", "res"),
-        joinPath(".", "src", "test", "resources", "lib1", "res"),
-        joinPath(".", "src", "test", "resources", "lib1", "..", "lib3", "res"),
-        joinPath(".", "src", "test", "resources", "lib2", "res")),
+        joinCanonicalPath(".", "src", "test", "resources", "res"),
+        joinCanonicalPath(".", "src", "test", "resources", "lib1", "res"),
+        joinCanonicalPath(".", "src", "test", "resources", "lib3", "res"),
+        joinCanonicalPath(".", "src", "test", "resources", "lib2", "res")),
         resourcePaths);
   }
 
@@ -301,7 +302,7 @@ public class AndroidManifestTest {
     return new AndroidManifest(Fs.newFile(f), null, null);
   }
 
-  private List<String> stringify(List<ResourcePath> resourcePaths) {
+  private List<String> stringify(Collection<ResourcePath> resourcePaths) {
     List<String> resourcePathBases = new ArrayList<String>();
     for (ResourcePath resourcePath : resourcePaths) {
       resourcePathBases.add(resourcePath.resourceBase.toString());
