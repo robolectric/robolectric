@@ -26,11 +26,13 @@ import static org.robolectric.shadows.ShadowMediaPlayer.State.*;
  */
 @Implements(MediaPlayer.class)
 public class ShadowMediaPlayer {
-  @SuppressWarnings("UnusedDeclaration")
   public static void __staticInitializer__() {
     // don't bind the JNI library
   }
 
+  /** Listener that is called when a new MediaPlayer is constructed. */
+  protected static CreateListener createListener;
+  
   @RealObject
   private MediaPlayer player;
 
@@ -39,6 +41,24 @@ public class ShadowMediaPlayer {
     IDLE, INITIALIZED, PREPARING, PREPARED, STARTED, STOPPED, PAUSED, PLAYBACK_COMPLETED, END, ERROR
   }
 
+  /** Class specifying information for an emulated media object. Used by
+   *  ShadowMediaPlayer when setDataSource() is called to populate the 
+   *  shadow player with the specified values. */
+  public static class MediaInfo {
+    public int duration;
+    public int preparationDelay;
+    
+    public MediaInfo(int duration, int preparationDelay) {
+      this.duration = duration;
+      this.preparationDelay = preparationDelay;
+    }
+  }
+  
+  public static interface CreateListener {
+    public void onCreate(MediaPlayer player,
+                         ShadowMediaPlayer shadow);
+  }
+  
   /** Current state of the media player. */
   private State state = IDLE;
 
@@ -50,6 +70,7 @@ public class ShadowMediaPlayer {
 
   private int auxEffect;
   private int audioSessionId;
+  private int audioStreamType;
   private int duration;
   private boolean looping;
   private int pendingSeek = -1;
@@ -76,10 +97,20 @@ public class ShadowMediaPlayer {
 
   private int videoHeight;
   private int videoWidth;
+  private float leftVolume;
+  private float rightVolume;
   private MediaPlayer.OnCompletionListener completionListener;
   private MediaPlayer.OnSeekCompleteListener seekCompleteListener;
   private MediaPlayer.OnPreparedListener preparedListener;
   private MediaPlayer.OnErrorListener errorListener;
+
+  /**
+   * Flag indicating that the shadow should assert if any 
+   * operations are invoked in invalid states, rather than
+   * the default (which is to emulate actual onError or
+   * exception behavior).
+   */
+  private boolean assertOnError;
   private Handler handler;
 
   private final Runnable completionCallback = new Runnable() {
@@ -112,9 +143,13 @@ public class ShadowMediaPlayer {
   private int errorOffset = -1;
 
   private class ErrorCallback implements Runnable {
-    public int what;
-    public int extra;
+    private int what;
+    private int extra;
 
+    public void setParams(int what, int extra) {
+      this.what = what;
+      this.extra = extra;
+    }
     public void run() {
       invokeErrorListener(what, extra);
     }
@@ -126,11 +161,16 @@ public class ShadowMediaPlayer {
   /** Exception to throw when {@link #setDataSource} is called. */
   private Exception setDataSourceException;
 
+  /** Map of strings to media metadata. Used by {@link #setDataSource(String)}. */
+  private Map<String, MediaInfo> dataSourceMap;
+
   @Implementation
   public static MediaPlayer create(Context context, int resId) {
     MediaPlayer mp = new MediaPlayer();
-    Shadows.shadowOf(mp).sourceResId = resId;
+    ShadowMediaPlayer shadow = shadowOf(mp);
+    shadow.sourceResId = resId;
     try {
+      shadow.setState(INITIALIZED);
       mp.prepare();
     } catch (Exception e) {
       return null;
@@ -161,18 +201,25 @@ public class ShadowMediaPlayer {
     Random random = new Random();
     audioSessionId = random.nextInt(Integer.MAX_VALUE) + 1;
     handler = new Handler();
+    // This gives test suites a chance to customize the MP instance
+    // and its shadow when it is created, without having to modify
+    // the code under test in order to do so.
+    if (createListener != null) {
+      createListener.onCreate(player, this);
+    }
   }
 
   @Implementation
   public void setDataSource(String path) throws IOException {
-    doSetDataSourceExceptions();
+    MediaInfo info = dataSourceMap == null ? null : dataSourceMap.get(path);
+    doSetDataSourceExceptions(info);
     this.sourcePath = path;
   }
 
   @Implementation
   public void setDataSource(Context context, Uri uri,
       Map<String, String> headers) throws IOException {
-    doSetDataSourceExceptions();
+    doSetDataSourceExceptions(null);
     this.sourceUri = uri;
     this.sourceHeaders = headers;
   }
@@ -180,17 +227,18 @@ public class ShadowMediaPlayer {
   @Implementation
   public void setDataSource(FileDescriptor fd, long offset, long length)
     throws IOException {
-    doSetDataSourceExceptions();
+    doSetDataSourceExceptions(null);
     this.sourceFd = fd;
     this.sourceOffset = offset;
     this.sourceLength = length;
   }
 
-  static private final EnumSet<State> idleState = EnumSet.of(IDLE); 
-  private void doSetDataSourceExceptions() throws IOException {
-    checkState("setDataSource()", idleState);
+  private void doSetDataSourceExceptions(MediaInfo info) throws IOException {
+    // By inspection I determined that the state check is one
+    // of the last things to happen (once you get into native
+    // code land) - there is plenty of code in Java land for
+    // another type of exception to be thrown before then.
     if (setDataSourceException != null) {
-      state = ERROR;
       if (setDataSourceException instanceof IOException) {
         throw (IOException)setDataSourceException;
       }
@@ -199,18 +247,52 @@ public class ShadowMediaPlayer {
       }  
       throw new AssertionError("Invalid exception type specified: " + setDataSourceException);
     }    
+    checkState("setDataSource()", idleState);
+    if (info != null) {
+      setDuration(info.duration);
+      setPreparationDelay(info.preparationDelay);
+    }
     state = INITIALIZED;
   }
 
-  private void checkState(String method, EnumSet<State> allowedStates) {
+  private void checkStateLog(String method, EnumSet<State> allowedStates) {
+    if (assertOnError && (!allowedStates.contains(state) || state == END)) {
+      String msg = "Can't call " + method + " from state " + state;
+      throw new AssertionError(msg);
+    } 
     if (state == END) {
       String msg = "Can't call " + method + " from state " + state;
-      throw new IllegalStateException(msg);      
+      throw new IllegalStateException(msg);
+    } 
+  }
+  
+  private boolean checkStateError(String method, EnumSet<State> allowedStates) {
+    if (!allowedStates.contains(state)) {
+      if (assertOnError) {
+        String msg = "Can't call " + method + " from state " + state;
+        throw new AssertionError(msg);
+      }
+      if (state == END) {
+        String msg = "Can't call " + method + " from state " + state;
+        throw new IllegalStateException(msg);
+      } 
+      state = ERROR;
+      // -38 and 0 are values that I obtained via
+      // inspection on a live device.
+      errorCallback.setParams(-38, 0);
+      handler.post(errorCallback);
+      return false;
     }
+    return true;
+  }
+  private void checkState(String method, EnumSet<State> allowedStates) {
     if (!allowedStates.contains(state)) {
       String msg = "Can't call " + method + " from state " + state;
-      state = ERROR;
-      throw new IllegalStateException(msg);
+      if (assertOnError) {
+        throw new AssertionError(msg);
+      } else {
+        throw new IllegalStateException(msg);
+      }
     }
   }
   
@@ -237,20 +319,30 @@ public class ShadowMediaPlayer {
 
   @Implementation
   public boolean isLooping() {
+    checkState("isLooping()", nonEndStates);
     return looping;
   }
 
+  static private final EnumSet<State> nonEndStates =
+      EnumSet.complementOf(EnumSet.of(END));
   static private final EnumSet<State> nonErrorStates =
-    EnumSet.complementOf(EnumSet.of(ERROR));
+    EnumSet.complementOf(EnumSet.of(ERROR, END));
   @Implementation
   public void setLooping(boolean looping) {
-    checkState("setLooping()", nonErrorStates);
+    checkStateError("setLooping()", nonErrorStates);
     this.looping = looping;
   }
 
   @Implementation
+  public void setVolume(float left, float right) {
+    checkStateError("setVolume()", nonErrorStates);
+    leftVolume = left;
+    rightVolume = right;
+  }
+
+  @Implementation
   public boolean isPlaying() {
-    checkState("setLooping()", nonErrorStates);
+    checkStateError("isPlaying()", nonErrorStates);
     return state == STARTED;
   }
 
@@ -284,12 +376,13 @@ public class ShadowMediaPlayer {
 
   @Implementation
   public void start() {
-    checkState("start()", startableStates);
-    if (state == PLAYBACK_COMPLETED) {
-      startOffset = 0;
+    if (checkStateError("start()", startableStates)) {
+      if (state == PLAYBACK_COMPLETED) {
+        startOffset = 0;
+      }
+      state = STARTED;
+      doStart();
     }
-    state = STARTED;
-    doStart();
   }
 
   private void doStart() {
@@ -312,9 +405,10 @@ public class ShadowMediaPlayer {
 
   @Implementation
   public void pause() {
-    checkState("pause()", pausableStates);
-    doStop();
-    state = PAUSED;
+    if (checkStateError("pause()", pausableStates)) {
+      doStop();
+      state = PAUSED;
+    }
   }
 
   static final EnumSet<State> allStates = EnumSet.allOf(State.class);
@@ -326,7 +420,7 @@ public class ShadowMediaPlayer {
 
   @Implementation
   public void reset() {
-    checkState("reset()", allStates);
+    checkState("reset()", nonEndStates);
     state = IDLE;
   }
 
@@ -335,9 +429,10 @@ public class ShadowMediaPlayer {
 
   @Implementation
   public void stop() {
-    checkState("stop()", stoppableStates);
-    doStop();
-    state = STOPPED;
+    if (checkStateError("stop()", stoppableStates)) {
+      doStop();
+      state = STOPPED;
+    }
   }
 
   private static final EnumSet<State> attachableStates = EnumSet
@@ -346,7 +441,7 @@ public class ShadowMediaPlayer {
 
   @Implementation
   public void attachAuxEffect(int effectId) {
-    checkState("attachAuxEffect()", attachableStates);
+    checkStateError("attachAuxEffect()", attachableStates);
     auxEffect = effectId;
   }
 
@@ -358,7 +453,7 @@ public class ShadowMediaPlayer {
 
   @Implementation
   public int getCurrentPosition() {
-    checkState("getCurrentPosition()", nonErrorStates);
+    checkStateError("getCurrentPosition()", attachableStates);
     int currentPos = startOffset;
     if (state == STARTED && pendingSeek < 0) {
       currentPos += (int) (SystemClock.uptimeMillis() - startTime);
@@ -368,19 +463,19 @@ public class ShadowMediaPlayer {
 
   @Implementation
   public int getDuration() {
-    checkState("getDuration()", stoppableStates);
+    checkStateError("getDuration()", stoppableStates);
     return duration;
   }
 
   @Implementation
   public int getVideoHeight() {
-    checkState("getVideoHeight()", nonErrorStates);
+    checkStateLog("getVideoHeight()", attachableStates);
     return videoHeight;
   }
 
   @Implementation
   public int getVideoWidth() {
-    checkState("getVideoWidth()", nonErrorStates);
+    checkStateLog("getVideoWidth()", attachableStates);
     return videoWidth;
   }
 
@@ -398,26 +493,41 @@ public class ShadowMediaPlayer {
    */
   @Implementation
   public void seekTo(int seekTo) {
-    checkState("seekTo()", seekableStates);
+    boolean success = checkStateError("seekTo()", seekableStates);
     // Cancel any pending seek operations.
     handler.removeCallbacks(seekCompleteCallback);
-    // Need to call doStop() before setting pendingSeek,
-    // because if pendingSeek is called it changes
-    // the behavior of getCurrentPosition(), which doStop()
-    // depends on.
-    doStop();
-    pendingSeek = seekTo;
-    if (seekDelay >= 0) {
-      handler.postDelayed(seekCompleteCallback, seekDelay);
+
+    if (success) {
+      // Need to call doStop() before setting pendingSeek,
+      // because if pendingSeek is called it changes
+      // the behavior of getCurrentPosition(), which doStop()
+      // depends on.
+      doStop();
+      pendingSeek = seekTo;
+      if (seekDelay >= 0) {
+        handler.postDelayed(seekCompleteCallback, seekDelay);
+      }
     }
   }
 
+  static private final EnumSet<State> idleState = EnumSet.of(IDLE);
   @Implementation
   public void setAudioSessionId(int sessionId) {
-    checkState("setAudioSessionId()", idleState);
+    checkStateError("setAudioSessionId()", idleState);
     audioSessionId = sessionId;
   }
 
+  static private final EnumSet<State> nonPlayingStates = EnumSet.of(IDLE, INITIALIZED, STOPPED);
+  @Implementation
+  public void setAudioStreamType(int audioStreamType) {
+    checkStateError("setAudioStreamType()", nonPlayingStates);
+    this.audioStreamType = audioStreamType;
+  }
+
+  public static void setCreateListener(CreateListener createListener) {
+    ShadowMediaPlayer.createListener = createListener;
+  }
+  
   /**
    * Retrieves the Handler object used by this <code>ShadowMediaPlayer</code>.
    * Can be used for posting custom asynchronous events to the thread (eg,
@@ -434,6 +544,28 @@ public class ShadowMediaPlayer {
     return handler;
   }
 
+  /**
+   * Retrieves current setting of the flag that indicates
+   * methods should assert when there is an error.
+   * @return
+   */
+  public boolean isAssertOnError() {
+    return assertOnError;
+  }
+  
+  /**
+   * Sets or clears the flag indicating that the player should
+   * assert when methods are invoked that cause an error. If this
+   * flag isn't set then the player will emulate normal behavior
+   * (ie, call onError() or throw an exception, as appropriate).
+   * @param assertOnError <code>true</code> if the player should assert
+   *                      when there are errors, <code>false</code> if
+   *                      it should emulate real behavior.
+   */
+  public void setAssertOnError(boolean assertOnError) {
+    this.assertOnError = assertOnError;
+  }
+  
   /**
    * Sets the exception to throw when setDataSource() is called.
    * <code>null</code> means no exception will be thrown. Note that emulation of
@@ -461,11 +593,28 @@ public class ShadowMediaPlayer {
   }
 
   /**
+   * Non-Android setter. Sets a map from String datasource
+   * to a MediaInfo instance containing info to use for that
+   * data source (eg, duration, preparation delay, etc).
+   */
+  public void setDataSourceMap(Map<String, MediaInfo> map) {
+    this.dataSourceMap = map;
+  }
+  /**
+   * Retrieves the current duration without doing
+   * the state checking that the emulated version does.
+   * Non-Android accessor.
+   * 
+   * @return The duration of the current clip loaded by the player.
+   */
+  public int getDurationRaw() {
+    return duration;
+  }
+  /**
    * Non-Android setter.
    * 
    * @param duration
    */
-
   public void setDuration(int duration) {
     this.duration = duration;
   }
@@ -586,6 +735,24 @@ public class ShadowMediaPlayer {
    *
    * @return The Source Res ID
    */
+  public float getLeftVolume() {
+    return leftVolume;
+  }
+
+  /**
+   * Non-Android accessor. Use for assertions.
+   * 
+   * @return
+   */
+  public float getRightVolume() {
+    return rightVolume;
+  }
+
+  /**
+   * Non-Android accessor. Use for assertions.
+   * 
+   * @return
+   */
   public int getSourceResId() {
     return sourceResId;
   }
@@ -595,7 +762,7 @@ public class ShadowMediaPlayer {
 
   /**
    * Non-Android accessor. Use for assertions. This is mainly used for backward
-   * compatibility. {@link #getState} may be more useful.
+   * compatibility. {@link #getState} may be more useful for new testing applications.
    * 
    * @return true if the MediaPlayer is in the PREPARED state, false otherwise.
    */

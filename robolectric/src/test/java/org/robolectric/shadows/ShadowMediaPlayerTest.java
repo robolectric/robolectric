@@ -2,10 +2,14 @@ package org.robolectric.shadows;
 
 import java.io.FileDescriptor;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.Map;
 
 import android.content.Context;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 
@@ -19,6 +23,7 @@ import org.mockito.Mockito;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.internal.Shadow;
+import org.robolectric.shadows.ShadowMediaPlayer.MediaInfo;
 import org.robolectric.shadows.ShadowMediaPlayer.State;
 import org.robolectric.util.Scheduler;
 
@@ -65,6 +70,19 @@ public class ShadowMediaPlayerTest {
   }
 
   @Test
+  public void testCreateListener() {
+    ShadowMediaPlayer.CreateListener createListener = 
+        Mockito.mock(ShadowMediaPlayer.CreateListener.class);
+    ShadowMediaPlayer.setCreateListener(createListener);
+
+    MediaPlayer newPlayer = new MediaPlayer();
+    ShadowMediaPlayer shadow = Robolectric.shadowOf(newPlayer);
+    
+    Mockito.verify(createListener).onCreate(newPlayer, shadow);
+    ShadowMediaPlayer.setCreateListener(null);
+  }
+  
+  @Test
   public void testPrepare() throws IOException {
     int[] testDelays = { 0, 10, 100, 1500 };
     scheduler.pause();
@@ -80,6 +98,21 @@ public class ShadowMediaPlayerTest {
     }
   }
 
+  @Test
+  public void testDataSourceMap() throws IOException {
+    Map<String, MediaInfo> map = new HashMap<String, MediaInfo>();
+    map.put("clip", new MediaInfo(100, 200));
+    shadowMediaPlayer.setDataSourceMap(map);
+    shadowMediaPlayer.setDataSource("clip");
+    
+    assertThat(shadowMediaPlayer.getDurationRaw())
+        .as("duration")
+        .isEqualTo(100);
+    assertThat(shadowMediaPlayer.getPreparationDelay())
+      .as("preparationDelay")
+      .isEqualTo(200);
+  }
+  
   @Test
   public void testPrepareAsyncAutoCallback() {
     mediaPlayer.setOnPreparedListener(preparedListener);
@@ -131,49 +164,18 @@ public class ShadowMediaPlayerTest {
 
   @Test
   public void testIsPlaying() {
-    for (State state : State.values()) {
+    EnumSet<State> nonPlayingStates = EnumSet.of(IDLE, INITIALIZED, PREPARED, PAUSED, STOPPED, PLAYBACK_COMPLETED);
+    for (State state : nonPlayingStates) {
       shadowMediaPlayer.setState(state);
-      boolean playing;
-      try {
-        playing = shadowMediaPlayer.isPlaying();
-        final State nextState = shadowMediaPlayer.getState();
-        assertThat(nextState)
-            .overridingErrorMessage(
-                "Expected state to remain unchanged <%s> when <isPlaying()> called, was <%s>",
-                state, nextState).isEqualTo(state);
-
-        if (state == STARTED) {
-          assertThat(playing).overridingErrorMessage(
-              "In state <%s>, expected isPlaying() to be true", state).isTrue();
-        } else if (state == ERROR || state == END) {
-          Assertions
-              .fail("Expected IllegalStateException to be thrown when <isPlaying()> called from state <"
-                  + state + ">");
-        } else {
-          assertThat(shadowMediaPlayer.isPlaying()).overridingErrorMessage(
-              "In state <%s>, expected isPlaying() to be false", state)
-              .isFalse();
-        }
-      } catch (IllegalStateException e) {
-        assertThat(state)
-            .overridingErrorMessage(
-                "<isPlaying()> should not throw IllegalStateException when in state <%s>",
-                state).isIn(ERROR, END);
-        final State nextState = shadowMediaPlayer.getState();
-        if (state == END) {
-          assertThat(nextState)
-            .overridingErrorMessage(
-              "Expected <isPlaying()> to leave state in <END>, was <%s>",
-              nextState).isSameAs(END);
-        }
-        else {
-          assertThat(nextState)
-            .overridingErrorMessage(
-                "Expected <isPlaying()> to change/leave state to <ERROR>, was <%s>",
-                nextState).isSameAs(ERROR);
-        }
-      }
+      assertThat(mediaPlayer.isPlaying())
+        .overridingErrorMessage(
+          "In state <%s>, expected isPlaying() to be false", state)
+        .isFalse();
     }
+    shadowMediaPlayer.setState(STARTED);
+    assertThat(mediaPlayer.isPlaying())
+      .overridingErrorMessage("In state <STARTED>, expected isPlaying() to be true")
+      .isTrue();
   }
 
   @Test
@@ -247,10 +249,10 @@ public class ShadowMediaPlayerTest {
     scheduler.pause();
     shadowMediaPlayer.setState(PREPARED);
     mediaPlayer.start();
-
     scheduler.advanceBy(200);
     mediaPlayer.pause();
     scheduler.advanceBy(800);
+
     Mockito.verifyZeroInteractions(completionListener);
 
     mediaPlayer.start();
@@ -355,8 +357,10 @@ public class ShadowMediaPlayerTest {
 
   @Test
   public void testAttachAuxEffectStates() {
-    testStates("attachAuxEffect(int)", method("attachAuxEffect")
-        .withParameterTypes(int.class), EnumSet.of(IDLE, ERROR), 37);
+    testStates(new MethodSpec("attachAuxEffect", 37),
+               EnumSet.of(IDLE, ERROR),
+               onErrorTester,
+               null);
   }
 
   private static final EnumSet<State> emptyStateSet = EnumSet
@@ -364,29 +368,46 @@ public class ShadowMediaPlayerTest {
 
   @Test
   public void testGetAudioSessionIdStates() {
-    testStates("getAudioSessionId", emptyStateSet);
+    testStates("getAudioSessionId", emptyStateSet, onErrorTester, null);
   }
 
   @Test
   public void testGetCurrentPositionStates() {
-    testStates("getCurrentPosition", EnumSet.of(ERROR));
+    testStates("getCurrentPosition",
+               EnumSet.of(IDLE, ERROR),
+               onErrorTester,
+               null);
   }
 
   @Test
   public void testGetDurationStates() {
-    testStates("getDuration", EnumSet.of(IDLE, INITIALIZED, ERROR));
+    testStates("getDuration", EnumSet.of(IDLE, INITIALIZED, ERROR), onErrorTester, null);
   }
 
   @Test
-  public void testGetVideoHeightAndWidth() {
-    testStates("getVideoHeight", EnumSet.of(ERROR));
-    testStates("getVideoWidth", EnumSet.of(ERROR));
+  public void testGetVideoHeightAndWidthStates() {
+    testStates("getVideoHeight", EnumSet.of(IDLE, ERROR), logTester, null);
+    testStates("getVideoWidth", EnumSet.of(IDLE, ERROR), logTester, null);
+  }
+
+  @Test
+  public void testIsLoopingStates() {
+    // isLooping is quite unique as it throws ISE when in END state,
+    // even though every other state is legal.
+    testStates("isLooping", EnumSet.of(END), iseTester, null);
+  }
+
+  @Test
+  public void testIsPlayingStates() {
+    testStates("isPlaying", EnumSet.of(ERROR), onErrorTester, null);
   }
 
   @Test
   public void testPauseStates() {
     testStates("pause",
-        EnumSet.of(IDLE, INITIALIZED, PREPARED, STOPPED, ERROR), PAUSED);
+        EnumSet.of(IDLE, INITIALIZED, PREPARED, STOPPED, ERROR),
+        onErrorTester,
+        PAUSED);
   }
 
   @Test
@@ -413,48 +434,77 @@ public class ShadowMediaPlayerTest {
 
   @Test
   public void testResetStates() {
-    testStates("reset", emptyStateSet, IDLE);
+    testStates("reset", EnumSet.of(END), IDLE);
   }
 
   @Test
   public void testSeekToStates() {
-    testStates("seekTo()", method("seekTo").withParameterTypes(int.class),
-        EnumSet.of(IDLE, INITIALIZED, STOPPED, ERROR), 38);
+    testStates(new MethodSpec("seekTo", 38),
+        EnumSet.of(IDLE, INITIALIZED, STOPPED, ERROR),
+        onErrorTester,
+        null);
   }
 
   @Test
   public void testSetAudioSessionIdStates() {
-    testStates("setAudioSessionId()", method("setAudioSessionId")
-        .withParameterTypes(int.class), EnumSet.of(INITIALIZED, PREPARED,
-        STARTED, PAUSED, STOPPED, PLAYBACK_COMPLETED, ERROR), 38);
+    testStates(new MethodSpec("setAudioSessionId", 40),
+        EnumSet.of(INITIALIZED, PREPARED, STARTED, PAUSED, STOPPED, PLAYBACK_COMPLETED, ERROR),
+        onErrorTester,
+        null);
+  }
+
+  // NOTE: This test diverges from the spec in the MediaPlayer
+  // doc, which says that setAudioStreamType() is valid to call
+  // from any state other than ERROR. It mentions that
+  // unless you call it before prepare it won't be effective.
+  // However, by inspection I found that it actually calls onError
+  // and moves into the ERROR state unless invoked from IDLE state,
+  // so that is what I have emulated.
+  @Test
+  public void testSetAudioStreamTypeStates() {
+    testStates(new MethodSpec("setAudioStreamType",
+                              AudioManager.STREAM_MUSIC),
+        EnumSet.of(PREPARED, STARTED, PAUSED, PLAYBACK_COMPLETED, ERROR),
+        onErrorTester,
+        null);
   }
 
   @Test
   public void testSetLoopingStates() {
-    testStates("setLooping()", method("setLooping")
-        .withParameterTypes(boolean.class), EnumSet.of(ERROR), true);
+    testStates(new MethodSpec("setLooping", true),
+               EnumSet.of(ERROR),
+               onErrorTester, null);
+  }
+
+  @Test
+  public void testSetVolumeStates() {
+    testStates(new MethodSpec("setVolume",
+                              new Class<?>[] { float.class, float.class },
+                              new Object[] {1.0f, 1.0f}),
+               EnumSet.of(ERROR),
+               onErrorTester, null);
   }
 
   @Test
   public void testSetDataSourceStates() {
-    final EnumSet<State> invalidStates = EnumSet.complementOf(EnumSet.of(IDLE));
-    testStatesWithNext("setDataSource(String)", method("setDataSource")
-        .withParameterTypes(String.class), invalidStates, INITIALIZED,
-        "dummyFile");
-    testStatesWithNext("setDataSource(Context,Uri)", method("setDataSource")
-        .withParameterTypes(Context.class, Uri.class), invalidStates,
-        INITIALIZED, null, null);
-    testStatesWithNext(
-        "setDataSource(Context,Uri,Map)",
-        method("setDataSource").withParameterTypes(Context.class, Uri.class,
-            Map.class), invalidStates, INITIALIZED, null, null, null);
-    testStatesWithNext("setDataSource(FileDescriptor)", method("setDataSource")
-        .withParameterTypes(FileDescriptor.class), invalidStates, INITIALIZED,
-        (FileDescriptor) null);
-    testStatesWithNext(
-        "setDataSource(FileDescriptor,long,long)",
-        method("setDataSource").withParameterTypes(FileDescriptor.class,
-            long.class, long.class), invalidStates, INITIALIZED, null, 1L, 10L);
+    final EnumSet<State> invalidStates = EnumSet.of(INITIALIZED, PREPARED, STARTED, PAUSED, PLAYBACK_COMPLETED, STOPPED, ERROR);
+    final MethodSpec[] methodSpecs = {
+        new MethodSpec("setDataSource", "dummyFile"),
+        new MethodSpec("setDataSource",
+            new Class<?>[] { Context.class, Uri.class },
+            new Object[] { null, null } ),
+        new MethodSpec("setDataSource",
+            new Class<?>[] { Context.class, Uri.class, Map.class },
+            new Object[] { null, null, null } ),
+        new MethodSpec("setDataSource", FileDescriptor.class),        
+        new MethodSpec("setDataSource",
+            new Class<?>[] { FileDescriptor.class, long.class, long.class },
+            new Object[] { null, 1L, 10L } )
+    };
+
+    for (MethodSpec methodSpec : methodSpecs) {
+      testStates(methodSpec, invalidStates, iseTester, INITIALIZED);
+    }
   }
 
   @Test
@@ -463,12 +513,17 @@ public class ShadowMediaPlayerTest {
     // into the PLAYBACK_COMPLETED state.
     scheduler.pause();
     testStates("start",
-        EnumSet.of(IDLE, INITIALIZED, PREPARING, STOPPED, ERROR), STARTED);
+        EnumSet.of(IDLE, INITIALIZED, PREPARING, STOPPED, ERROR),
+        onErrorTester,
+        STARTED);
   }
 
   @Test
   public void testStopStates() {
-    testStates("stop", EnumSet.of(IDLE, INITIALIZED, ERROR), STOPPED);
+    testStates("stop",
+               EnumSet.of(IDLE, INITIALIZED, ERROR),
+               onErrorTester,
+               STOPPED);
   }
 
   @Test
@@ -487,31 +542,83 @@ public class ShadowMediaPlayerTest {
         .isNotEqualTo(0);
   }
 
-  private void testStates(String methodName, MethodParameterTypes<?> params,
-      EnumSet<State> invalidStates, Object... args) {
-    testStates(methodName, params.in(mediaPlayer), invalidStates, null, args);
-  }
-
-  private void testStatesWithNext(String methodName,
-      MethodParameterTypes<?> params, EnumSet<State> invalidStates,
-      State nextState, Object... args) {
-    testStates(methodName, params.in(mediaPlayer), invalidStates, nextState,
-        args);
-  }
-
-  private void testStates(String methodName, EnumSet<State> invalidStates) {
-    testStates(methodName + "()", method(methodName).in(mediaPlayer),
-        invalidStates, null);
-  }
-
+  private Tester onErrorTester = new OnErrorTester(-38, 0);
+  private Tester iseTester = new ExceptionTester(IllegalStateException.class);
+  private Tester logTester = new LogTester(null);
+  private Tester assertTester = new ExceptionTester(AssertionError.class);
+  
   private void testStates(String methodName, EnumSet<State> invalidStates,
       State nextState) {
-    testStates(methodName + "()", method(methodName).in(mediaPlayer),
-        invalidStates, nextState);
+    testStates(new MethodSpec(methodName), invalidStates, iseTester, nextState);
   }
 
-  private void testStates(String methodName, Invoker<?> invoker,
-      EnumSet<State> invalidStates, State next, Object... args) {
+  public class MethodSpec {
+    public Method method;
+//    public String method;
+    public Class<?>[] argTypes;
+    public Object[] args;
+    
+    public MethodSpec(String method) {
+      this(method, (Class<?>[])null, (Object[])null);
+    }
+    public MethodSpec(String method, Class<?>[] argTypes, Object[] args) {
+      try {
+        this.method = MediaPlayer.class.getDeclaredMethod(method, argTypes);
+        this.args = args;
+      } catch (NoSuchMethodException e) {
+        throw new AssertionError("Method lookup failed: " + method, e);
+      }
+    }
+    public MethodSpec(String method, int arg) {
+      this(method,
+           new Class<?>[] { int.class },
+           new Object[] { arg });
+    }
+    public MethodSpec(String method, boolean arg) {
+      this(method,
+           new Class<?>[] { boolean.class },
+           new Object[] { arg });
+    }
+    public MethodSpec(String method, Class<?> c) {
+      this(method,
+           new Class<?>[] { c },
+           new Object[] { null });
+    }
+    public MethodSpec(String method, Object o) {
+      this(method,
+           new Class<?>[] { o.getClass() },
+           new Object[] { o });
+    }
+    public <T> MethodSpec(String method, T o, Class<T> c) {
+      this(method,
+           new Class<?>[] { c },
+           new Object[] { o });
+    }
+
+    public void invoke() throws InvocationTargetException {
+      try {
+        method.invoke(mediaPlayer, args);
+      } catch (IllegalAccessException e) {
+        throw new AssertionError(e);
+      }
+    }
+    
+    public String toString() {
+      return method.toString();
+    }
+  }
+
+  private void testStates(String method,
+      EnumSet<State> invalidStates,
+      Tester tester,
+      State next) {
+    testStates(new MethodSpec(method), invalidStates, tester, next);
+  }                      
+  
+  private void testStates(MethodSpec method,
+                          EnumSet<State> invalidStates,
+                          Tester tester,
+                          State next) {
     final EnumSet<State> invalid = EnumSet.copyOf(invalidStates);
 
     // The documentation specifies that the behavior of calling any
@@ -524,50 +631,151 @@ public class ShadowMediaPlayerTest {
     if (invalid.contains(PREPARED) || invalid.contains(INITIALIZED)) {
       invalid.add(PREPARING);
     }
-    invalid.add(END);
 
-    for (State state : State.values()) {
+    shadowMediaPlayer.setAssertOnError(false);
+    for (State state : invalid) {
       shadowMediaPlayer.setState(state);
-      if (invalid.contains(state)) {
-        try {
-          invoker.invoke(args);
-          Assertions.fail("Expected IllegalStateException to be thrown when <"
-              + methodName + "> called from state <" + state + ">");
-        } catch (IllegalStateException e) {
-          final State finalState = shadowMediaPlayer.getState();
-          if (state == END) {
-            assertThat(finalState).overridingErrorMessage(
-              "Expected player to remain in END state when <%s> called, was <%s>",
-              methodName, finalState).isSameAs(END);
-          } else {
-            assertThat(finalState).overridingErrorMessage(
-              "Expected ERROR state when <%s> called in state <%s>, was <%s>",
-              methodName, state, finalState).isSameAs(ERROR);
-          }
-        }
-      } else {
-        try {
-          invoker.invoke(args);
-          final State finalState = shadowMediaPlayer.getState();
-          if (next == null) {
-            assertThat(finalState)
-                .overridingErrorMessage(
-                    "Expected state <%s> to remain unchanged when <%s> called, was <%s>",
-                    state, methodName, finalState).isEqualTo(state);
-          } else {
-            assertThat(finalState).overridingErrorMessage(
-                "Expected <%s> to change state from <%s> to <%s>, was <%s>",
-                methodName, state, next, finalState).isEqualTo(next);
-          }
-        } catch (IllegalStateException e) {
-          Assertions.fail("<" + methodName
-              + "> should not throw IllegalStateException when in state <"
-              + state + ">", e);
-        }
+      tester.test(method);
+    }
+    for (State state : EnumSet.complementOf(invalid)) {
+      if (state == END) {
+        continue;
+      }
+      shadowMediaPlayer.setState(state);
+      testMethodSuccess(method, next);
+    }
+
+    // END state: by inspection we determined that if a method
+    // doesn't raise any kind of error in any other state then neither
+    // will it raise one in the END state; however if it raises errors
+    // in other states of any kind then it will throw
+    // IllegalArgumentException when in END.
+    shadowMediaPlayer.setState(END);
+    if (invalid.isEmpty()) {
+      testMethodSuccess(method, END);
+    } else {
+      iseTester.test(method);
+    }
+    shadowMediaPlayer.setAssertOnError(true);
+    for (State state : invalid) {
+      shadowMediaPlayer.setState(state);
+      assertTester.test(method);
+    }
+    for (State state : EnumSet.complementOf(invalid)) {
+      if (state == END) {
+        continue;
+      }
+      shadowMediaPlayer.setState(state);
+      testMethodSuccess(method, next);
+    }
+    shadowMediaPlayer.setState(END);
+    if (invalid.isEmpty()) {
+      testMethodSuccess(method, END);
+    } else {
+      assertTester.test(method);
+    }    
+  }
+
+  private interface Tester {
+    public void test(MethodSpec method);
+  }
+
+  private class OnErrorTester implements Tester {
+    private int what;
+    private int extra;
+    
+    public OnErrorTester(int what, int extra) {
+      this.what = what;
+      this.extra = extra;
+    }
+ 
+    public void test(MethodSpec method) {
+      final State state = shadowMediaPlayer.getState();
+      final boolean wasPaused = scheduler.isPaused();
+      scheduler.pause();
+      try {
+        method.invoke();
+      } catch (InvocationTargetException e) {
+        Assertions.fail("Expected <"
+            + method + "> to call onError rather than throw <" + e.getTargetException() + "> when called from <" + state + ">", e);
+      }
+      Mockito.verifyZeroInteractions(errorListener);
+      final State finalState = shadowMediaPlayer.getState();
+      assertThat(finalState)
+        .overridingErrorMessage("Expected state to change to ERROR when <%s> called from state <%s>, was <%s>", method, state, finalState)
+        .isSameAs(ERROR);
+      scheduler.unPause();
+      Mockito.verify(errorListener).onError(mediaPlayer, what, extra);
+      Mockito.reset(errorListener);
+      if (wasPaused) {
+        scheduler.pause();
       }
     }
   }
-
+  
+  private class ExceptionTester implements Tester {
+    private Class<? extends Throwable> eClass;
+    
+    public ExceptionTester(Class<? extends Throwable> eClass) {
+      this.eClass = eClass;
+    }
+    
+    public void test(MethodSpec method) {
+      final State state = shadowMediaPlayer.getState();
+      boolean success = false;
+      try {
+        method.invoke();
+        success = true;
+      } catch (InvocationTargetException e) {
+        Throwable cause = e.getTargetException();
+        assertThat(cause)
+          .overridingErrorMessage("Unexpected exception <%s> thrown when <%s> called from state <%s>, expecting <%s>",
+                                cause, method, state, eClass)
+          .isInstanceOf(eClass);
+        final State finalState = shadowMediaPlayer.getState();
+        assertThat(finalState).overridingErrorMessage(
+            "Expected player to remain in <%s> state when <%s> called, was <%s>",
+            state, method, finalState).isSameAs(state);
+      }
+      assertThat(success)
+        .overridingErrorMessage("No exception thrown, expected <%s> when <%s> called from state <%s>", eClass, method, state)
+        .isFalse();
+    }
+  }
+  
+  private class LogTester implements Tester {
+    private State next;
+    
+    public LogTester(State next) {
+      this.next = next;
+    }
+    public void test(MethodSpec method) {
+      testMethodSuccess(method, next);
+    }
+  }
+  private void testMethodSuccess(MethodSpec method, State next) {
+    final State state = shadowMediaPlayer.getState();
+    try {
+      method.invoke();
+      final State finalState = shadowMediaPlayer.getState();
+      if (next == null) {
+        assertThat(finalState)
+            .overridingErrorMessage(
+                "Expected state <%s> to remain unchanged when <%s> called, was <%s>",
+                state, method, finalState).isEqualTo(state);
+      } else {
+        assertThat(finalState).overridingErrorMessage(
+            "Expected <%s> to change state from <%s> to <%s>, was <%s>",
+            method, state, next, finalState).isEqualTo(next);
+      }
+    } catch (InvocationTargetException e) {
+      Throwable cause = e.getTargetException();
+      Assertions.fail("<" + method
+          + "> should not throw Exception when in state <"
+          + state + ">", cause);
+    }  
+  }
+  
   private static final State[] seekableStates = { PREPARED, PAUSED,
       PLAYBACK_COMPLETED, STARTED };
 
@@ -945,7 +1153,9 @@ public class ShadowMediaPlayerTest {
       } catch (Exception eThrown) {
         assertThat(eThrown).isSameAs(e);
       }
-      assertThat(shadowMediaPlayer.getState()).as(e.toString()).isSameAs(ERROR);
+      assertThat(shadowMediaPlayer.getState())
+        .as("State shouldn't change when " + e + " thrown")
+        .isSameAs(IDLE);
 
       // Test all three flavors of setDataSource()
       shadowMediaPlayer.setState(IDLE);
@@ -955,7 +1165,9 @@ public class ShadowMediaPlayerTest {
       } catch (Exception eThrown) {
         assertThat(eThrown).isSameAs(e);
       }
-      assertThat(shadowMediaPlayer.getState()).as(e.toString()).isSameAs(ERROR);
+      assertThat(shadowMediaPlayer.getState())
+        .as("State shouldn't change when " + e + " thrown")
+        .isSameAs(IDLE);
 
       shadowMediaPlayer.setState(IDLE);
       try {
@@ -964,22 +1176,23 @@ public class ShadowMediaPlayerTest {
       } catch (Exception eThrown) {
         assertThat(eThrown).isSameAs(e);
       }
-      assertThat(shadowMediaPlayer.getState()).as(e.toString()).isSameAs(ERROR);
+      assertThat(shadowMediaPlayer.getState())
+        .as("State shouldn't change when " + e + " thrown")
+        .isSameAs(IDLE);
     } 
   }
   
   @Test
-  public void testSetDataSourceIllegalStateOverridesCustomException() {
+  public void testSetDataSourceCustomeExceptionOveridesIllegalState() {
     shadowMediaPlayer.setState(PREPARED);
     shadowMediaPlayer.setSetDataSourceException(new IOException());
     try {
       mediaPlayer.setDataSource((String)null);
-      Assertions.fail("Expecting IllegalStateException to be thrown");
-    } catch (IllegalStateException eThrown) {
+      Assertions.fail("Expecting IOException to be thrown");
+    } catch (IOException eThrown) {
     } catch (Exception eThrown) {
-      Assertions.fail(eThrown + " was thrown, expecting IllegalStateException");
+      Assertions.fail(eThrown + " was thrown, expecting IOException");
     }
-    assertThat(shadowMediaPlayer.getState()).isSameAs(ERROR);
   }
   
   @Test
