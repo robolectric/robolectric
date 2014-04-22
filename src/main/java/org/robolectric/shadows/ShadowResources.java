@@ -404,6 +404,12 @@ public class ShadowResources {
     }
   }
 
+  public void setScaledDensity(float scaledDensity) {
+    if (displayMetrics != null) {
+      displayMetrics.scaledDensity = scaledDensity;
+    }
+  }
+
   public void setDisplay(Display display) {
     this.display = display;
     displayMetrics = null;

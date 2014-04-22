@@ -11,6 +11,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.NinePatchDrawable;
 
+import android.util.DisplayMetrics;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -114,7 +115,7 @@ public class ResourcesTest {
     assertThat(resources.getDimension(R.dimen.test_mm_dimen)).isEqualTo(((float) (42f / 25.4 * 240)));
     assertThat(resources.getDimension(R.dimen.test_px_dimen)).isEqualTo(15f);
     assertThat(resources.getDimension(R.dimen.test_pt_dimen)).isEqualTo(12 / 0.3f);
-    assertThat(resources.getDimension(R.dimen.test_sp_dimen)).isEqualTo(0); // huh?
+    assertThat(resources.getDimension(R.dimen.test_sp_dimen)).isEqualTo(5);
   }
 
   @Test
@@ -125,7 +126,7 @@ public class ResourcesTest {
     assertThat(resources.getDimensionPixelSize(R.dimen.test_mm_dimen)).isEqualTo(397);
     assertThat(resources.getDimensionPixelSize(R.dimen.test_px_dimen)).isEqualTo(15);
     assertThat(resources.getDimensionPixelSize(R.dimen.test_pt_dimen)).isEqualTo(40);
-    assertThat(resources.getDimensionPixelSize(R.dimen.test_sp_dimen)).isEqualTo(1);
+    assertThat(resources.getDimensionPixelSize(R.dimen.test_sp_dimen)).isEqualTo(5);
   }
 
   @Test
@@ -136,7 +137,7 @@ public class ResourcesTest {
     assertThat(resources.getDimensionPixelOffset(R.dimen.test_mm_dimen)).isEqualTo(396);
     assertThat(resources.getDimensionPixelOffset(R.dimen.test_px_dimen)).isEqualTo(15);
     assertThat(resources.getDimensionPixelOffset(R.dimen.test_pt_dimen)).isEqualTo(40);
-    assertThat(resources.getDimensionPixelOffset(R.dimen.test_sp_dimen)).isEqualTo(0);
+    assertThat(resources.getDimensionPixelOffset(R.dimen.test_sp_dimen)).isEqualTo(5);
   }
 
   @Test
@@ -365,6 +366,15 @@ public class ResourcesTest {
     InputStream resourceStream = resources.openRawResource(R.raw.lib_raw_resource);
     assertThat(resourceStream).isNotNull();
     assertThat(TestUtil.readString(resourceStream)).isEqualTo("from lib3");
+  }
+
+  @Test
+  public void setScaledDensityShouldSetScaledDensityInDisplayMetrics() {
+    final DisplayMetrics displayMetrics = resources.getDisplayMetrics();
+
+    assertThat(displayMetrics.scaledDensity).isEqualTo(1f);
+    shadowOf(resources).setScaledDensity(2.5f);
+    assertThat(displayMetrics.scaledDensity).isEqualTo(2.5f);
   }
 
   /////////////////////////////
