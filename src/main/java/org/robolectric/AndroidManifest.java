@@ -2,6 +2,7 @@ package org.robolectric;
 
 import android.app.Activity;
 import android.graphics.Color;
+import org.fest.util.Lists;
 import org.robolectric.res.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -14,11 +15,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.Properties;
 
 import static android.content.pm.ApplicationInfo.FLAG_ALLOW_BACKUP;
@@ -298,7 +301,7 @@ public class AndroidManifest {
   /***
    * Allows {@link org.robolectric.res.builder.RobolectricPackageManager} to provide
    * a resource index for initialising the resource attributes in all the metadata elements
-   * @param resIndex used for getting resource IDs from string identifiers
+   * @param resLoader used for getting resource IDs from string identifiers
    */
   public void initMetaData(ResourceLoader resLoader) {
     applicationMetaData.init(resLoader, packageName);
@@ -426,12 +429,12 @@ public class AndroidManifest {
   }
 
   public List<ResourcePath> getIncludedResourcePaths() {
-    List<ResourcePath> resourcePaths = new ArrayList<ResourcePath>();
+    Collection<ResourcePath> resourcePaths = new LinkedHashSet<ResourcePath>(); // Needs stable ordering and no duplicates
     resourcePaths.add(getResourcePath());
     for (AndroidManifest libraryManifest : getLibraryManifests()) {
       resourcePaths.addAll(libraryManifest.getIncludedResourcePaths());
     }
-    return resourcePaths;
+    return Lists.newArrayList(resourcePaths);
   }
 
   public List<ContentProviderData> getContentProviders() {
