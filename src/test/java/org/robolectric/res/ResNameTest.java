@@ -12,4 +12,16 @@ public class ResNameTest {
     assertThat(ResName.qualifyResourceName("type/name", "default.package", "deftype")).isEqualTo("default.package:type/name");
     assertThat(ResName.qualifyResourceName("name", "default.package", "deftype")).isEqualTo("default.package:deftype/name");
   }
+
+  @Test
+  public void qualifyFromFilePathShouldExtractResourceTypeAndNameFromUnqualifiedPath() {
+    final ResName actual = ResName.qualifyFromFilePath("some.package", "./res/drawable/icon.png");
+    assertThat(actual.getFullyQualifiedName()).isEqualTo("some.package:drawable/icon");
+  }
+
+  @Test
+  public void qualifyFromFilePathShouldExtractResourceTypeAndNameFromQualifiedPath() {
+    final ResName actual = ResName.qualifyFromFilePath("some.package", "./res/drawable-hdpi/icon.png");
+    assertThat(actual.getFullyQualifiedName()).isEqualTo("some.package:drawable/icon");
+  }
 }

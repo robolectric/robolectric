@@ -2,6 +2,7 @@ package org.robolectric.res;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -70,6 +71,14 @@ public class ResName {
     Integer resourceId = resourceIndex.getResourceId(new ResName(fullyQualifiedResourceName));
     // todo warn if resourceId is null
     return resourceId;
+  }
+
+  public static ResName qualifyFromFilePath(@NotNull final String packageName, @NotNull final String filePath) {
+    final FileFsFile filePathFile = new FileFsFile(new File(filePath));
+    final String type = filePathFile.getParent().getName().split("-")[0];
+    final String name = filePathFile.getBaseName();
+
+    return new ResName(packageName, type, name);
   }
 
   public ResName qualify(String string) {

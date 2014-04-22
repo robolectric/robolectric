@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Point;
 import android.net.Uri;
 import android.provider.MediaStore;
 import org.junit.Test;
@@ -160,6 +161,15 @@ public class BitmapFactoryTest {
   }
 
   @Test
+  public void decodeStream_shouldGetWidthAndHeightFromActualImage() throws Exception {
+    InputStream inputStream = getClass().getClassLoader().getResourceAsStream("res/drawable/fourth_image.jpg");
+    Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+    assertEquals("Bitmap", shadowOf(bitmap).getDescription());
+    assertEquals(160, bitmap.getWidth());
+    assertEquals(107, bitmap.getHeight());
+  }
+
+  @Test
   public void decodeByteArray_shouldSetDataChecksum() throws Exception {
     byte[] data = {23, -125, 0, 52, 23, 18, 76, 43};
 
@@ -201,5 +211,31 @@ public class BitmapFactoryTest {
     bm = ShadowBitmapFactory.create(name, options);
     assertThat(bm.getWidth()).isEqualTo(1);
     assertThat(bm.getHeight()).isEqualTo(1);
+  }
+
+  @Test
+  public void createShouldSetSizeToValueFromMapAsFirstPriority() {
+    ShadowBitmapFactory.provideWidthAndHeightHints("image.png", 111, 222);
+
+    final Bitmap bitmap = ShadowBitmapFactory.create("file:image.png", null, new Point(50, 60));
+
+    assertThat(bitmap.getWidth()).isEqualTo(111);
+    assertThat(bitmap.getHeight()).isEqualTo(222);
+  }
+
+  @Test
+  public void createShouldSetSizeToParameterAsSecondPriority() {
+    final Bitmap bitmap = ShadowBitmapFactory.create(null, null, new Point(70, 80));
+
+    assertThat(bitmap.getWidth()).isEqualTo(70);
+    assertThat(bitmap.getHeight()).isEqualTo(80);
+  }
+
+  @Test
+  public void createShouldSetSizeToHardcodedValueAsLastPriority() {
+    final Bitmap bitmap = ShadowBitmapFactory.create(null, null, null);
+
+    assertThat(bitmap.getWidth()).isEqualTo(100);
+    assertThat(bitmap.getHeight()).isEqualTo(100);
   }
 }
