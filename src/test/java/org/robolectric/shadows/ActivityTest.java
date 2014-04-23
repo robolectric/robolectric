@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.ActivityOptions;
 import android.app.Dialog;
 import android.app.Fragment;
 import android.appwidget.AppWidgetProvider;
@@ -744,6 +745,16 @@ public class ActivityTest {
     Intent intent = new Intent(Intent.ACTION_VIEW);
     activity.startActivityFromFragment(new Fragment(), intent, 0);
     assertThat(shadowOf(activity).getNextStartedActivity().getAction()).isEqualTo(Intent.ACTION_VIEW);
+  }
+
+  @Test
+  public void shouldUseAnimationOverride() {
+    Activity activity = buildActivity(Activity.class).create().get();
+    Intent intent = new Intent(activity, OptionsMenuActivity.class);
+
+    Bundle animationBundle = ActivityOptions.makeCustomAnimation(activity, R.anim.test_anim_1, R.anim.test_anim_1).toBundle();
+    activity.startActivity(intent, animationBundle);
+    assertThat(shadowOf(activity).getNextStartedActivityForResult().options).isSameAs(animationBundle);
   }
 
   /////////////////////////////
