@@ -422,10 +422,18 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   public class IntentForResult {
     public Intent intent;
     public int requestCode;
+    public Bundle options;
 
     public IntentForResult(Intent intent, int requestCode) {
       this.intent = intent;
       this.requestCode = requestCode;
+      this.options = null;
+    }
+
+    public IntentForResult(Intent intent, int requestCode, Bundle options) {
+      this.intent = intent;
+      this.requestCode = requestCode;
+      this.options = options;
     }
   }
 
@@ -435,9 +443,21 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   @Implementation
+  public void startActivity(Intent intent, Bundle options) {
+    startActivityForResult(intent, -1, options);
+  }
+
+  @Implementation
   public void startActivityForResult(Intent intent, int requestCode) {
     intentRequestCodeMap.put(intent, requestCode);
     startedActivitiesForResults.add(new IntentForResult(intent, requestCode));
+    getApplicationContext().startActivity(intent);
+  }
+
+  @Implementation
+  public void startActivityForResult(Intent intent, int requestCode, Bundle options) {
+    intentRequestCodeMap.put(intent, requestCode);
+    startedActivitiesForResults.add(new IntentForResult(intent, requestCode, options));
     getApplicationContext().startActivity(intent);
   }
 
