@@ -121,6 +121,14 @@ public class ShadowBitmapFactory {
     ShadowBitmap shadowBitmap = shadowOf(bitmap);
     shadowBitmap.appendDescription(name == null ? "Bitmap" : "Bitmap for " + name);
 
+    Bitmap.Config config;
+    if (options != null && options.inPreferredConfig != null) {
+      config = options.inPreferredConfig;
+    } else {
+      config = Bitmap.Config.ARGB_8888;
+    }
+    shadowBitmap.setConfig(config);
+
     String optionsString = stringify(options);
     if (!optionsString.isEmpty()) {
       shadowBitmap.appendDescription(" with options ");

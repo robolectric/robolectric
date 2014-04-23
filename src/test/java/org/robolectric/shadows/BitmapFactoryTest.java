@@ -29,6 +29,21 @@ public class BitmapFactoryTest {
   }
 
   @Test
+  public void decodeResource_shouldSetDefaultBitmapConfig() throws Exception {
+    Bitmap bitmap = BitmapFactory.decodeResource(Robolectric.application.getResources(), R.drawable.an_image);
+    assertThat(bitmap.getConfig()).isEqualTo(Bitmap.Config.ARGB_8888);
+    assertThat(bitmap.getRowBytes()).isNotZero();
+  }
+
+  @Test
+  public void decodeResource_shouldPassABitmapConfig() throws Exception {
+    BitmapFactory.Options options = new BitmapFactory.Options();
+    options.inPreferredConfig = Bitmap.Config.ALPHA_8;
+    Bitmap bitmap = BitmapFactory.decodeResource(Robolectric.application.getResources(), R.drawable.an_image, options);
+    assertThat(bitmap.getConfig()).isEqualTo(Bitmap.Config.ALPHA_8);
+  }
+
+  @Test
   public void decodeFile_shouldSetDescriptionAndCreatedFrom() throws Exception {
     Bitmap bitmap = BitmapFactory.decodeFile("/some/file.jpg");
     ShadowBitmap shadowBitmap = shadowOf(bitmap);
