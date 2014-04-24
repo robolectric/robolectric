@@ -5,6 +5,7 @@ import android.graphics.drawable.Drawable;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -72,5 +73,9 @@ public class ShadowWindow {
 
   public int getSoftInputMode() {
     return softInputMode;
+  }
+
+  public ProgressBar getIndeterminateProgressBar() {
+    return null;
   }
 }

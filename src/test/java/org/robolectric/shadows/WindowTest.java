@@ -4,10 +4,12 @@ import android.R;
 import android.app.Activity;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -77,12 +79,28 @@ public class WindowTest {
     assertThat(shadowWindow.getSoftInputMode()).isEqualTo(7);
   }
 
+  @Test
+  public void getIndeterminateProgressBar_returnsTheIndeterminateProgressBar() {
+    Activity activity = Robolectric.buildActivity(TestActivity.class).create().get();
+    Window window = activity.getWindow();
+    ShadowWindow shadowWindow = shadowOf(window);
+
+    ProgressBar indeterminate = shadowWindow.getIndeterminateProgressBar();
+
+    assertThat(indeterminate.getVisibility()).isEqualTo(View.INVISIBLE);
+    activity.setProgressBarIndeterminateVisibility(true);
+    assertThat(indeterminate.getVisibility()).isEqualTo(View.VISIBLE);
+    activity.setProgressBarIndeterminateVisibility(false);
+    assertThat(indeterminate.getVisibility()).isEqualTo(View.GONE);
+  }
+
   public static class TestActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
       setTheme(R.style.Theme_Holo_Light);
+      getWindow().requestFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
       setContentView(new LinearLayout(this));
       getActionBar().setIcon(R.drawable.ic_lock_power_off);
     }
