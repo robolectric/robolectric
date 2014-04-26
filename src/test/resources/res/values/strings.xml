@@ -14,7 +14,10 @@
   <string name="in_main_and_lib1">from main</string>
   <string name="ok">@string/ok2</string>
   <string name="ok2">ok yup!</string>
-  <string name="interpolate">Here's a %s!</string>
+  <string name="interpolate">Here is a %s!</string>
+  <string name="surrounding_quotes">"This'll work"</string>
+  <string name="escaped_apostrophe">This\'ll also work</string>
+  <string name="escaped_quotes">Click \"OK\"</string>
   <string name="app_name">Testing App</string>
   <string name="activity_name">Testing App Activity</string>
   <string name="minute_singular">minute</string>
