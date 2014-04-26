@@ -365,6 +365,16 @@ public class ShadowResources {
   }
 
   @Implementation
+  public CharSequence getText(int id) throws Resources.NotFoundException {
+    CharSequence text = directlyOn(realResources, Resources.class).getText(id);
+    if (text.length() > 1 && text.charAt(0) == '"' && text.charAt(text.length() - 1) == '"') {
+        return text.subSequence(1, text.length() - 1);
+    } else {
+        return text.toString().replaceAll("\\\\(['\"])", "$1");
+    }
+  }
+
+  @Implementation
   public String getQuantityString(int id, int quantity, Object... formatArgs) throws Resources.NotFoundException {
     String raw = getQuantityString(id, quantity);
     return String.format(Locale.ENGLISH, raw, formatArgs);
