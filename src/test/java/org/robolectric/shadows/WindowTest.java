@@ -76,8 +76,23 @@ public class WindowTest {
   }
 
   @Test
-  public void getIndeterminateProgressBar_returnsTheIndeterminateProgressBar() {
+  public void getProgressBar_returnsTheProgressBar() {
     Activity activity = Robolectric.buildActivity(TestActivity.class).create().get();
+
+    ProgressBar progress = shadowOf(activity.getWindow()).getProgressBar();
+
+    assertThat(progress.getVisibility()).isEqualTo(View.INVISIBLE);
+    activity.setProgressBarVisibility(true);
+    assertThat(progress.getVisibility()).isEqualTo(View.VISIBLE);
+    activity.setProgressBarVisibility(false);
+    assertThat(progress.getVisibility()).isEqualTo(View.GONE);
+  }
+
+  @Test
+  public void getIndeterminateProgressBar_returnsTheIndeterminateProgressBar() {
+    TestActivity.requestFeature = Window.FEATURE_INDETERMINATE_PROGRESS;
+    Activity activity = Robolectric.buildActivity(TestActivity.class).create().get();
+
     ProgressBar indeterminate = shadowOf(activity.getWindow()).getIndeterminateProgressBar();
 
     assertThat(indeterminate.getVisibility()).isEqualTo(View.INVISIBLE);
@@ -88,12 +103,13 @@ public class WindowTest {
   }
 
   public static class TestActivity extends Activity {
+    public static int requestFeature = Window.FEATURE_PROGRESS;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
       setTheme(R.style.Theme_Holo_Light);
-      getWindow().requestFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+      getWindow().requestFeature(requestFeature);
       setContentView(new LinearLayout(this));
       getActionBar().setIcon(R.drawable.ic_lock_power_off);
     }

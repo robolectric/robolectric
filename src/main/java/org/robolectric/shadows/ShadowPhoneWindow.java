@@ -38,6 +38,11 @@ public class ShadowPhoneWindow extends ShadowWindow {
   }
 
   @Override
+  public ProgressBar getProgressBar() {
+    return (ProgressBar) directlyOn(realWindow, PHONE_WINDOW_CLASS_NAME, "getHorizontalProgressBar", boolean.class).invoke(false);
+  }
+
+  @Override
   public ProgressBar getIndeterminateProgressBar() {
     return (ProgressBar) directlyOn(realWindow, PHONE_WINDOW_CLASS_NAME, "getCircularProgressBar", boolean.class).invoke(false);
   }

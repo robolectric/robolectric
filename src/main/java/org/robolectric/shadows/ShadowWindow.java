@@ -75,6 +75,10 @@ public class ShadowWindow {
     return softInputMode;
   }
 
+  public ProgressBar getProgressBar() {
+    return null;
+  }
+
   public ProgressBar getIndeterminateProgressBar() {
     return null;
   }
