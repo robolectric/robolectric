@@ -159,8 +159,7 @@ public final class ShadowAssetManager {
 
   @HiddenApi @Implementation
   public final InputStream openNonAsset(int cookie, String fileName, int accessMode) throws IOException {
-    final String packageName = getPackageNameForFile(fileName);
-    final ResName resName = ResName.qualifyFromFilePath(packageName, fileName);
+    final ResName resName = qualifyFromNonAssetFileName(fileName);
     final DrawableNode drawableNode = resourceLoader.getDrawableNode(resName, getQualifiers());
 
     if (drawableNode == null) {
@@ -170,11 +169,12 @@ public final class ShadowAssetManager {
     return new ByteArrayInputStream(drawableNode.getFsFile().getBytes());
   }
 
-  private String getPackageNameForFile(final String fileName) {
-    if (fileName.startsWith("jar")) {
-      return "android";
+  private ResName qualifyFromNonAssetFileName(String fileName) {
+    if (fileName.startsWith("jar:")) {
+      // Must remove "jar:" prefix, or else qualifyFromFilePath fails on Windows
+      return ResName.qualifyFromFilePath("android", fileName.replaceFirst("jar:", ""));
     } else {
-      return appManifest.getPackageName();
+      return ResName.qualifyFromFilePath(appManifest.getPackageName(), fileName);
     }
   }
 
