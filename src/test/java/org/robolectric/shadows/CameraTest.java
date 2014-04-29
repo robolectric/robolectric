@@ -250,17 +250,17 @@ public class CameraTest {
   }
 
   private void addBackCamera() {
-    Camera.CameraInfo frontCamera = new Camera.CameraInfo();
-    frontCamera.facing = Camera.CameraInfo.CAMERA_FACING_BACK;
-    frontCamera.orientation = 0;
-    ShadowCamera.addCameraInfo(0, frontCamera);
+    Camera.CameraInfo backCamera = new Camera.CameraInfo();
+    backCamera.facing = Camera.CameraInfo.CAMERA_FACING_BACK;
+    backCamera.orientation = 0;
+    ShadowCamera.addCameraInfo(0, backCamera);
   }
 
   private void addFrontCamera() {
-    Camera.CameraInfo backCamera = new Camera.CameraInfo();
-    backCamera.facing = Camera.CameraInfo.CAMERA_FACING_FRONT;
-    backCamera.orientation = 90;
-    ShadowCamera.addCameraInfo(1, backCamera);
+    Camera.CameraInfo frontCamera = new Camera.CameraInfo();
+    frontCamera.facing = Camera.CameraInfo.CAMERA_FACING_FRONT;
+    frontCamera.orientation = 90;
+    ShadowCamera.addCameraInfo(1, frontCamera);
   }
 
   private static class TestPreviewCallback implements Camera.PreviewCallback {
