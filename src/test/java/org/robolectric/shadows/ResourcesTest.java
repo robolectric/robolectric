@@ -50,12 +50,27 @@ public class ResourcesTest {
 
   @Test
   public void getString_withInterpolation() throws Exception {
-    assertThat(resources.getString(R.string.interpolate, "value")).isEqualTo("Here's a value!");
+    assertThat(resources.getString(R.string.interpolate, "value")).isEqualTo("Here is a value!");
   }
 
   @Test
   public void getString_withHtml() throws Exception {
     assertThat(resources.getString(R.string.some_html, "value")).isEqualTo("Hello, world");
+  }
+
+  @Test
+  public void getString_withSurroundingQuotes() throws Exception {
+    assertThat(resources.getString(R.string.surrounding_quotes, "value")).isEqualTo("This'll work");
+  }
+
+  @Test
+  public void getStringWithEscapedApostrophes() throws Exception {
+    assertThat(resources.getString(R.string.escaped_apostrophe)).isEqualTo("This'll also work");
+  }
+
+  @Test
+  public void getStringWithEscapedQuotes() throws Exception {
+    assertThat(resources.getString(R.string.escaped_quotes)).isEqualTo("Click \"OK\"");
   }
 
   @Test

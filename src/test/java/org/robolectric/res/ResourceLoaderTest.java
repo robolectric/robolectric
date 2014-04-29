@@ -62,7 +62,7 @@ public class ResourceLoaderTest {
     Class<?> internalRIdClass = Robolectric.class.getClassLoader().loadClass("com.android.internal.R$" + internalResource.type);
     assertThat(resId).isEqualTo(field(internalResource.name).ofType(int.class).in(internalRIdClass).get());
 
-    assertThat(Robolectric.application.getResources().getString(resId)).isEqualTo("The old PIN you typed isn\\'t correct.");
+    assertThat(Robolectric.application.getResources().getString(resId)).isEqualTo("The old PIN you typed isn't correct.");
   }
 
   private static class TestPreferenceActivity extends PreferenceActivity { }
