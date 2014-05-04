@@ -263,18 +263,12 @@ public class AndroidManifest {
   private IntentFilterData parseIntentFilterData(final Node intentFilterNode, IntentFilterData intentFilterData) {
     for (Node n : getChildrenTags(intentFilterNode, "data")) {
       NamedNodeMap attributes = n.getAttributes();
-      String scheme;
-      String path;
-      String pathPattern;
-      String pathPrefix;
-      String mimeType;
       String host = null;
       String port = null;
 
       Node schemeNode = attributes.getNamedItem("android:scheme");
       if (schemeNode != null) {
-        scheme = schemeNode.getNodeValue();
-        intentFilterData.addScheme(scheme);
+        intentFilterData.addScheme(schemeNode.getNodeValue());
       }
 
       Node hostNode = attributes.getNamedItem("android:host");
@@ -290,26 +284,22 @@ public class AndroidManifest {
 
       Node pathNode = attributes.getNamedItem("android:path");
       if (pathNode != null) {
-        path = pathNode.getNodeValue();
-        intentFilterData.addPath(path);
+        intentFilterData.addPath(pathNode.getNodeValue());
       }
 
       Node pathPatternNode = attributes.getNamedItem("android:pathPattern");
       if (pathPatternNode != null) {
-        pathPattern = pathPatternNode.getNodeValue();
-        intentFilterData.addPathPattern(pathPattern);
+        intentFilterData.addPathPattern(pathPatternNode.getNodeValue());
       }
 
       Node pathPrefixNode = attributes.getNamedItem("android:pathPrefix");
       if (pathPrefixNode != null) {
-        pathPrefix = pathPrefixNode.getNodeValue();
-        intentFilterData.addPathPrefix(pathPrefix);
+        intentFilterData.addPathPrefix(pathPrefixNode.getNodeValue());
       }
 
       Node mimeTypeNode = attributes.getNamedItem("android:mimeType");
       if (mimeTypeNode != null) {
-        mimeType = mimeTypeNode.getNodeValue();
-        intentFilterData.addMimeType(mimeType);
+        intentFilterData.addMimeType(mimeTypeNode.getNodeValue());
       }
     }
     return intentFilterData;
