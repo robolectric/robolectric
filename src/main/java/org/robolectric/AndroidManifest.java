@@ -252,11 +252,67 @@ public class AndroidManifest {
           categories.add(categoryNameNode.getNodeValue());
         }
       }
-
-      intentFilterDatas.add(new IntentFilterData(actionNames, categories));
+      IntentFilterData intentFilterData = new IntentFilterData(actionNames, categories);
+      intentFilterData = parseIntentFilterData(n, intentFilterData);
+      intentFilterDatas.add(intentFilterData);
     }
 
     return intentFilterDatas;
+  }
+
+  private IntentFilterData parseIntentFilterData(final Node intentFilterNode, IntentFilterData intentFilterData) {
+    for (Node n : getChildrenTags(intentFilterNode, "data")) {
+      NamedNodeMap attributes = n.getAttributes();
+      String scheme;
+      String path;
+      String pathPattern;
+      String pathPrefix;
+      String mimeType;
+      String host = null;
+      String port = null;
+
+      Node schemeNode = attributes.getNamedItem("android:scheme");
+      if (schemeNode != null) {
+        scheme = schemeNode.getNodeValue();
+        intentFilterData.addScheme(scheme);
+      }
+
+      Node hostNode = attributes.getNamedItem("android:host");
+      if (hostNode != null) {
+        host = hostNode.getNodeValue();
+      }
+
+      Node portNode = attributes.getNamedItem("android:port");
+      if (portNode != null) {
+        port = portNode.getNodeValue();
+      }
+      intentFilterData.addAuthority(host, port);
+
+      Node pathNode = attributes.getNamedItem("android:path");
+      if (pathNode != null) {
+        path = pathNode.getNodeValue();
+        intentFilterData.addPath(path);
+      }
+
+      Node pathPatternNode = attributes.getNamedItem("android:pathPattern");
+      if (pathPatternNode != null) {
+        pathPattern = pathPatternNode.getNodeValue();
+        intentFilterData.addPathPattern(pathPattern);
+      }
+
+      Node pathPrefixNode = attributes.getNamedItem("android:pathPrefix");
+      if (pathPrefixNode != null) {
+        pathPrefix = pathPrefixNode.getNodeValue();
+        intentFilterData.addPathPrefix(pathPrefix);
+      }
+
+      Node mimeTypeNode = attributes.getNamedItem("android:mimeType");
+      if (mimeTypeNode != null) {
+        mimeType = mimeTypeNode.getNodeValue();
+        intentFilterData.addMimeType(mimeType);
+      }
+    }
+    return intentFilterData;
   }
 
   /***
