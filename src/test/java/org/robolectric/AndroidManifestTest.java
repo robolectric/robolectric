@@ -301,6 +301,49 @@ public class AndroidManifestTest {
     assertThat(config.getActivityDatas()).containsKey("org.robolectric.shadows.TestActivity2");
   }
 
+  @Test
+  public void shouldReadIntentFilterWithData() {
+    AndroidManifest appManifest = newConfig("TestAndroidManifestForActivitiesWithIntentFilterWithData.xml");
+    appManifest.getMinSdkVersion(); // Force parsing
+
+    ActivityData activityData = appManifest.getActivityData("org.robolectric.shadows.TestActivity");
+    final List<IntentFilterData> ifd = activityData.getIntentFilters();
+    assertThat(ifd).isNotNull();
+    assertThat(ifd.size()).isEqualTo(1);
+
+    final IntentFilterData intentFilterData = ifd.get(0);
+    assertThat(intentFilterData.getActions().size()).isEqualTo(1);
+    assertThat(intentFilterData.getActions().get(0)).isEqualTo(Intent.ACTION_VIEW);
+    assertThat(intentFilterData.getCategories().size()).isEqualTo(1);
+    assertThat(intentFilterData.getCategories().get(0)).isEqualTo(Intent.CATEGORY_DEFAULT);
+
+    assertThat(intentFilterData.getSchemes().size()).isEqualTo(3);
+    assertThat(intentFilterData.getAuthorities().size()).isEqualTo(3);
+    assertThat(intentFilterData.getMimeTypes().size()).isEqualTo(3);
+    assertThat(intentFilterData.getPaths().size()).isEqualTo(1);
+    assertThat(intentFilterData.getPathPatterns().size()).isEqualTo(1);
+    assertThat(intentFilterData.getPathPrefixes().size()).isEqualTo(1);
+
+
+    assertThat(intentFilterData.getSchemes().get(0)).isEqualTo("content");
+    assertThat(intentFilterData.getPaths().get(0).toString()).isEqualTo("/testPath");
+    assertThat(intentFilterData.getMimeTypes().get(0)).isEqualTo("video/mpeg");
+    assertThat(intentFilterData.getAuthorities().get(0).getHost()).isEqualTo("testhost1.com");
+    assertThat(intentFilterData.getAuthorities().get(0).getPort()).isEqualTo("1");
+
+    assertThat(intentFilterData.getSchemes().get(1)).isEqualTo("http");
+    assertThat(intentFilterData.getPathPrefixes().get(0).toString()).isEqualTo("/testPrefix");
+    assertThat(intentFilterData.getMimeTypes().get(1)).isEqualTo("image/jpeg");
+    assertThat(intentFilterData.getAuthorities().get(1).getHost()).isEqualTo("testhost2.com");
+    assertThat(intentFilterData.getAuthorities().get(1).getPort()).isEqualTo("2");
+
+    assertThat(intentFilterData.getSchemes().get(2)).isEqualTo("https");
+    assertThat(intentFilterData.getPathPatterns().get(0).toString()).isEqualTo("/.*testPattern");
+    assertThat(intentFilterData.getMimeTypes().get(2)).isEqualTo("image/*");
+    assertThat(intentFilterData.getAuthorities().get(2).getHost()).isEqualTo("testhost3.com");
+    assertThat(intentFilterData.getAuthorities().get(2).getPort()).isEqualTo("3");
+  }
+
   /////////////////////////////
 
   public AndroidManifest newConfigWith(String usesSdkAttrs) throws IOException {
