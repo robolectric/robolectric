@@ -24,7 +24,11 @@ import java.util.Set;
 import java.util.TreeMap;
 import org.robolectric.AndroidManifest;
 import org.robolectric.Robolectric;
-import org.robolectric.res.*;
+import org.robolectric.res.ActivityData;
+import org.robolectric.res.IntentFilterData;
+import org.robolectric.res.ResName;
+import org.robolectric.res.ResourceIndex;
+import org.robolectric.res.ResourceLoader;
 import org.robolectric.shadows.ShadowContext;
 import org.robolectric.tester.android.content.pm.StubPackageManager;
 
