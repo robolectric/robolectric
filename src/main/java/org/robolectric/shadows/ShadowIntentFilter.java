@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.content.IntentFilter;
+import android.net.Uri;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
@@ -28,6 +29,7 @@ public class ShadowIntentFilter {
 
   List<String> actions = new ArrayList<String>();
   List<String> schemes = new ArrayList<String>();
+  List<String> types = new ArrayList<String>();
   List<IntentFilter.AuthorityEntry> authoritites = new ArrayList<IntentFilter.AuthorityEntry>();
   List<String> categories = new ArrayList<String>();
 
@@ -93,7 +95,22 @@ public class ShadowIntentFilter {
   public boolean hasDataScheme(String scheme) {
     return schemes.contains(scheme);
   }
-  
+
+  @Implementation
+  public void addDataType(String type) {
+    types.add(type);
+  }
+
+  @Implementation
+  public String getDataType(int index) {
+    return types.get(index);
+  }
+
+  @Implementation
+  public boolean hasDataType(String type) {
+    return types.contains(type);
+  }
+
   @Implementation
   public void addCategory( String category ) {
     categories.add( category );
@@ -136,6 +153,57 @@ public class ShadowIntentFilter {
     return null;
   }
 
+  @Implementation
+  public final int matchData(String type, String scheme, Uri data) {
+    if (types.isEmpty() && schemes.isEmpty()) {
+      if (type == null && data == null) {
+        return IntentFilter.MATCH_CATEGORY_EMPTY;
+      } else {
+        return IntentFilter.NO_MATCH_DATA;
+      }
+    }
+
+    if (schemes.isEmpty()) {
+      if (hasDataType(type)) {
+        return IntentFilter.MATCH_CATEGORY_TYPE;
+      } else {
+        return IntentFilter.NO_MATCH_TYPE;
+      }
+    } else {
+      if (types.isEmpty()) {
+        if (type != null) {
+          return IntentFilter.NO_MATCH_TYPE;
+        }
+      }
+
+      if (hasDataScheme(scheme)) {
+        if (!authoritites.isEmpty()) {
+          return matchDataAuthority(data);
+        } else {
+          return IntentFilter.MATCH_CATEGORY_SCHEME;
+        }
+      } else {
+        return IntentFilter.NO_MATCH_DATA;
+      }
+    }
+  }
+
+  @Implementation
+  public final int matchDataAuthority(Uri data) {
+    for (IntentFilter.AuthorityEntry entry : authoritites) {
+      if (entry.getHost().equals(data.getHost())) {
+        if (entry.getPort() != -1) {
+          if (entry.getPort() == data.getPort()){
+            return IntentFilter.MATCH_CATEGORY_HOST + IntentFilter.MATCH_CATEGORY_PORT;
+          }
+        } else {
+          return IntentFilter.MATCH_CATEGORY_HOST;
+        }
+      }
+    }
+    return IntentFilter.NO_MATCH_DATA;
+  }
+
   @Override @Implementation
   public boolean equals(Object o) {
     if (o == null) return false;
@@ -147,7 +215,8 @@ public class ShadowIntentFilter {
     ShadowIntentFilter that = (ShadowIntentFilter) o;
 
     return actions.equals( that.actions ) && categories.equals( that.categories )
-        && schemes.equals( that.schemes ) && authoritites.equals( that.authoritites );
+        && schemes.equals( that.schemes ) && authoritites.equals( that.authoritites )
+        && types.equals( that.types );
   }
 
   @Override @Implementation
@@ -157,6 +226,7 @@ public class ShadowIntentFilter {
     result = 31 * result + categories.hashCode();
     result = 31 * result + schemes.hashCode();
     result = 31 * result + authoritites.hashCode();
+    result = 31 * result + types.hashCode();
     return result;
   }
 

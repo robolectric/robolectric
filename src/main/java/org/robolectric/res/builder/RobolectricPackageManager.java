@@ -520,7 +520,7 @@ public class RobolectricPackageManager extends StubPackageManager {
       // match category
       String matchCategoriesResult = intentFilter.matchCategories(intent.getCategories());
       // match data
-      int matchResult = intentFilter.matchData(intent.getType(), intent.getScheme(), intent.getData());
+      int matchResult = intentFilter.matchData(intent.getType(), (intent.getData() != null ? intent.getData().getScheme() : null), intent.getData());
       if (matchActionResult && (matchCategoriesResult == null) &&
           (matchResult != IntentFilter.NO_MATCH_DATA && matchResult != IntentFilter.NO_MATCH_TYPE)){
         return true;

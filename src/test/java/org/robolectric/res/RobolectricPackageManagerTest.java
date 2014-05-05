@@ -125,11 +125,10 @@ public class RobolectricPackageManagerTest {
   @Config(manifest = "src/test/resources/TestAndroidManifestForActivitiesWithIntentFilterWithData.xml")
   public void queryIntentActivities__MatchWithImplicitIntents() throws Exception {
     rpm.addManifest(Robolectric.getShadowApplication().getAppManifest(), Robolectric.getShadowApplication().getResourceLoader());
-    Uri uri = Uri.parse("content://testhost1.com/testPath:1/test.jpeg");
+    Uri uri = Uri.parse("content://testhost1.com:1/testPath/test.jpeg");
     Intent i = new Intent(Intent.ACTION_VIEW);
     i.addCategory(Intent.CATEGORY_DEFAULT);
     i.setDataAndType(uri, "image/jpeg");
-
 
     rpm.setQueryIntentImplicitly(true);
     List<ResolveInfo> activities = rpm.queryIntentActivities(i, 0);
