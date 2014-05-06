@@ -452,14 +452,12 @@ public class RobolectricPackageManager extends StubPackageManager {
     List<ResolveInfo> resolveInfoList = new ArrayList<ResolveInfo>();
 
     for (Map.Entry<String, AndroidManifest> androidManifest : androidManifests.entrySet()) {
-      Map.Entry pairs = androidManifest;
-      String packageName = (String)pairs.getKey();
-      AndroidManifest appManifest = (AndroidManifest)pairs.getValue();
+      String packageName = androidManifest.getKey();
+      AndroidManifest appManifest = androidManifest.getValue();
 
       for (Map.Entry<String, ActivityData> activity : appManifest.getActivityDatas().entrySet()) {
-        Map.Entry activityPairs = activity;
-        String activityName = (String)activityPairs.getKey();
-        ActivityData activityData = (ActivityData)activityPairs.getValue();
+        String activityName = activity.getKey();
+        ActivityData activityData = activity.getValue();
 
         if (matchIntentFilter(activityData, intent)) {
           ResolveInfo resolveInfo = new ResolveInfo();
