@@ -450,16 +450,14 @@ public class RobolectricPackageManager extends StubPackageManager {
 
   private List<ResolveInfo> queryImplicitIntent(Intent intent, int flags) {
     List<ResolveInfo> resolveInfoList = new ArrayList<ResolveInfo>();
-    Iterator manifestIt = androidManifests.entrySet().iterator();
 
-    while (manifestIt.hasNext()) {
-      Map.Entry pairs = (Map.Entry)manifestIt.next();
+    for (Map.Entry<String, AndroidManifest> androidManifest : androidManifests.entrySet()) {
+      Map.Entry pairs = androidManifest;
       String packageName = (String)pairs.getKey();
       AndroidManifest appManifest = (AndroidManifest)pairs.getValue();
-      Iterator activityIt = appManifest.getActivityDatas().entrySet().iterator();
 
-      while (activityIt.hasNext()) {
-        Map.Entry activityPairs = (Map.Entry)activityIt.next();
+      for (Map.Entry<String, ActivityData> activity : appManifest.getActivityDatas().entrySet()) {
+        Map.Entry activityPairs = activity;
         String activityName = (String)activityPairs.getKey();
         ActivityData activityData = (ActivityData)activityPairs.getValue();
 
@@ -499,7 +497,7 @@ public class RobolectricPackageManager extends StubPackageManager {
         try {
           intentFilter.addDataType(mimeType);
         } catch (IntentFilter.MalformedMimeTypeException ex) {
-          // ignore
+          throw new RuntimeException(ex);
         }
       }
 
@@ -524,7 +522,10 @@ public class RobolectricPackageManager extends StubPackageManager {
       // match category
       String matchCategoriesResult = intentFilter.matchCategories(intent.getCategories());
       // match data
-      int matchResult = intentFilter.matchData(intent.getType(), (intent.getData() != null ? intent.getData().getScheme() : null), intent.getData());
+
+      int matchResult = intentFilter.matchData(intent.getType(),
+          (intent.getData() != null ? intent.getData().getScheme() : null),
+          intent.getData());
       if (matchActionResult && (matchCategoriesResult == null) &&
           (matchResult != IntentFilter.NO_MATCH_DATA && matchResult != IntentFilter.NO_MATCH_TYPE)){
         return true;
