@@ -11,6 +11,7 @@ import android.content.pm.ResolveInfo;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 
 import java.io.ByteArrayInputStream;
@@ -106,6 +107,35 @@ public class RobolectricPackageManagerTest {
     assertThat(activities).isNotNull();
     assertThat(activities).hasSize(1);
     assertThat(activities.get(0).nonLocalizedLabel.toString()).isEqualTo(TEST_PACKAGE_LABEL);
+  }
+
+  @Test
+  @Config(manifest = "src/test/resources/TestAndroidManifestForActivitiesWithIntentFilterWithData.xml")
+  public void queryIntentActivities__EmptyResultWithNoMatchingImplicitIntents() throws Exception {
+    rpm.addManifest(Robolectric.getShadowApplication().getAppManifest(), Robolectric.getShadowApplication().getResourceLoader());
+    Intent i = new Intent(Intent.ACTION_MAIN, null);
+    i.addCategory(Intent.CATEGORY_LAUNCHER);
+
+    rpm.setQueryIntentImplicitly(true);
+    List<ResolveInfo> activities = rpm.queryIntentActivities(i, 0);
+    assertThat(activities).isEmpty();
+  }
+
+  @Test
+  @Config(manifest = "src/test/resources/TestAndroidManifestForActivitiesWithIntentFilterWithData.xml")
+  public void queryIntentActivities__MatchWithImplicitIntents() throws Exception {
+    rpm.addManifest(Robolectric.getShadowApplication().getAppManifest(), Robolectric.getShadowApplication().getResourceLoader());
+    Uri uri = Uri.parse("content://testhost1.com:1/testPath/test.jpeg");
+    Intent i = new Intent(Intent.ACTION_VIEW);
+    i.addCategory(Intent.CATEGORY_DEFAULT);
+    i.setDataAndType(uri, "image/jpeg");
+
+    rpm.setQueryIntentImplicitly(true);
+    List<ResolveInfo> activities = rpm.queryIntentActivities(i, 0);
+    assertThat(activities).isNotNull();
+    assertThat(activities).hasSize(1);
+    assertThat(activities.get(0).resolvePackageName.toString()).isEqualTo("org.robolectric");
+    assertThat(activities.get(0).activityInfo.targetActivity.toString()).isEqualTo("org.robolectric.shadows.TestActivity");
   }
 
   @Test

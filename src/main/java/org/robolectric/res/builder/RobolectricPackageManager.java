@@ -9,6 +9,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.ResolveInfo;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.PatternMatcher;
 import android.util.Pair;
 import java.io.File;
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ import java.util.TreeMap;
 import org.robolectric.AndroidManifest;
 import org.robolectric.Robolectric;
 import org.robolectric.res.ActivityData;
+import org.robolectric.res.IntentFilterData;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceIndex;
 import org.robolectric.res.ResourceLoader;
@@ -94,6 +96,7 @@ public class RobolectricPackageManager extends StubPackageManager {
   private Map<String, Boolean> systemFeatureList = new LinkedHashMap<String, Boolean>();
   private Map<IntentFilter, ComponentName> preferredActivities = new LinkedHashMap<IntentFilter, ComponentName>();
   private Map<Pair<String, Integer>, Drawable> drawables = new LinkedHashMap<Pair<String, Integer>, Drawable>();
+  private boolean queryIntentImplicitly = false;
 
   @Override
   public PackageInfo getPackageInfo(String packageName, int flags) throws NameNotFoundException {
@@ -174,7 +177,13 @@ public class RobolectricPackageManager extends StubPackageManager {
 
   @Override
   public List<ResolveInfo> queryIntentActivities(Intent intent, int flags) {
-    return queryIntent(intent, flags);
+    List<ResolveInfo> resolveInfoList = queryIntent(intent, flags);
+
+    if (resolveInfoList.isEmpty() && isQueryIntentImplicitly()) {
+      resolveInfoList = queryImplicitIntent(intent, flags);
+    }
+
+    return resolveInfoList;
   }
 
   @Override
@@ -437,6 +446,98 @@ public class RobolectricPackageManager extends StubPackageManager {
     } else {
       return result;
     }
+  }
+
+  private List<ResolveInfo> queryImplicitIntent(Intent intent, int flags) {
+    List<ResolveInfo> resolveInfoList = new ArrayList<ResolveInfo>();
+
+    for (Map.Entry<String, AndroidManifest> androidManifest : androidManifests.entrySet()) {
+      String packageName = androidManifest.getKey();
+      AndroidManifest appManifest = androidManifest.getValue();
+
+      for (Map.Entry<String, ActivityData> activity : appManifest.getActivityDatas().entrySet()) {
+        String activityName = activity.getKey();
+        ActivityData activityData = activity.getValue();
+
+        if (matchIntentFilter(activityData, intent)) {
+          ResolveInfo resolveInfo = new ResolveInfo();
+          resolveInfo.resolvePackageName = packageName;
+          resolveInfo.activityInfo = new ActivityInfo();
+          resolveInfo.activityInfo.targetActivity = activityName;
+
+          resolveInfoList.add(resolveInfo);
+        }
+      }
+    }
+
+    return resolveInfoList;
+  }
+
+  private boolean matchIntentFilter(ActivityData activityData, Intent intent) {
+    for (IntentFilterData intentFilterData : activityData.getIntentFilters()) {
+      List<String> actionList = intentFilterData.getActions();
+      List<String> categoryList = intentFilterData.getCategories();
+      IntentFilter intentFilter = new IntentFilter();
+
+      for (String action : actionList) {
+        intentFilter.addAction(action);
+      }
+
+      for (String category : categoryList) {
+        intentFilter.addCategory(category);
+      }
+
+      for (String scheme : intentFilterData.getSchemes()) {
+        intentFilter.addDataScheme(scheme);
+      }
+
+      for (String mimeType : intentFilterData.getMimeTypes()) {
+        try {
+          intentFilter.addDataType(mimeType);
+        } catch (IntentFilter.MalformedMimeTypeException ex) {
+          throw new RuntimeException(ex);
+        }
+      }
+
+      for (String path : intentFilterData.getPaths()) {
+        intentFilter.addDataPath(path, PatternMatcher.PATTERN_LITERAL);
+      }
+
+      for (String pathPattern : intentFilterData.getPathPatterns()) {
+        intentFilter.addDataPath(pathPattern, PatternMatcher.PATTERN_SIMPLE_GLOB);
+      }
+
+      for (String pathPrefix : intentFilterData.getPathPrefixes()) {
+        intentFilter.addDataPath(pathPrefix, PatternMatcher.PATTERN_PREFIX);
+      }
+
+      for (IntentFilterData.DataAuthority authority : intentFilterData.getAuthorities()) {
+        intentFilter.addDataAuthority(authority.getHost(), authority.getPort());
+      }
+
+      // match action
+      boolean matchActionResult = intentFilter.matchAction(intent.getAction());
+      // match category
+      String matchCategoriesResult = intentFilter.matchCategories(intent.getCategories());
+      // match data
+
+      int matchResult = intentFilter.matchData(intent.getType(),
+          (intent.getData() != null ? intent.getData().getScheme() : null),
+          intent.getData());
+      if (matchActionResult && (matchCategoriesResult == null) &&
+          (matchResult != IntentFilter.NO_MATCH_DATA && matchResult != IntentFilter.NO_MATCH_TYPE)){
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public boolean isQueryIntentImplicitly() {
+    return queryIntentImplicitly;
+  }
+
+  public void setQueryIntentImplicitly(boolean queryIntentImplicitly) {
+    this.queryIntentImplicitly = queryIntentImplicitly;
   }
 
   /***
