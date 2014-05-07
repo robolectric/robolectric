@@ -1,10 +1,10 @@
 package org.robolectric;
 
+import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,28 +22,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import static android.content.pm.ApplicationInfo.FLAG_ALLOW_BACKUP;
-import static android.content.pm.ApplicationInfo.FLAG_ALLOW_CLEAR_USER_DATA;
-import static android.content.pm.ApplicationInfo.FLAG_ALLOW_TASK_REPARENTING;
-import static android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE;
-import static android.content.pm.ApplicationInfo.FLAG_HAS_CODE;
-import static android.content.pm.ApplicationInfo.FLAG_KILL_AFTER_RESTORE;
-import static android.content.pm.ApplicationInfo.FLAG_PERSISTENT;
-import static android.content.pm.ApplicationInfo.FLAG_RESIZEABLE_FOR_SCREENS;
-import static android.content.pm.ApplicationInfo.FLAG_RESTORE_ANY_VERSION;
-import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_LARGE_SCREENS;
-import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_NORMAL_SCREENS;
-import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_SCREEN_DENSITIES;
-import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_SMALL_SCREENS;
-import static android.content.pm.ApplicationInfo.FLAG_TEST_ONLY;
-import static android.content.pm.ApplicationInfo.FLAG_VM_SAFE_MODE;
+import static android.content.pm.ApplicationInfo.*;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.robolectric.util.TestUtil.joinCanonicalPath;
-import static org.robolectric.util.TestUtil.newConfig;
-import static org.robolectric.util.TestUtil.resourceFile;
+import static org.robolectric.util.TestUtil.*;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
@@ -205,8 +189,9 @@ public class AndroidManifestTest {
     metaValue = meta.get("org.robolectric.metaStringRes");
     assertEquals("@string/app_name", metaValue);
   }
-  
-  @Test public void shouldLoadAllResourcesForExistingLibraries() throws Exception {
+
+  @Test
+  public void shouldLoadAllResourcesForExistingLibraries() throws Exception {
     AndroidManifest appManifest = new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"));
 
     // This intentionally loads from the non standard resources/project.properties
@@ -280,6 +265,16 @@ public class AndroidManifestTest {
     ActivityData activityData = appManifest.getActivityData("org.robolectric.shadows.TestTaskAffinityActivity");
     assertThat(activityData).isNotNull();
     assertThat(activityData.getTaskAffinity()).isEqualTo("org.robolectric.shadows.TestTaskAffinity");
+  }
+
+  @Test
+  public void shouldReadPermissions() throws Exception {
+    AndroidManifest config = newConfig("TestAndroidManifestWithPermissions.xml");
+
+    assertThat(config.getUsedPermissions()).hasSize(3);
+    assertThat(config.getUsedPermissions().get(0)).isEqualTo(Manifest.permission.INTERNET);
+    assertThat(config.getUsedPermissions().get(1)).isEqualTo(Manifest.permission.SYSTEM_ALERT_WINDOW);
+    assertThat(config.getUsedPermissions().get(2)).isEqualTo(Manifest.permission.GET_TASKS);
   }
 
   @Test
