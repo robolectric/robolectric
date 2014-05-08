@@ -106,9 +106,10 @@ public final class R {
     public static final int preference_resource_key = 0x10115;
     public static final int preference_resource_title = 0x10116;
     public static final int preference_resource_summary = 0x10117;
-    public static final int surrounding_quotes = 0x10118;
-    public static final int escaped_apostrophe = 0x10119;
-    public static final int escaped_quotes = 0x10120;
+    public static final int preference_resource_default_value = 0x10118;
+    public static final int surrounding_quotes = 0x10119;
+    public static final int escaped_apostrophe = 0x10120;
+    public static final int escaped_quotes = 0x10121;
   }
 
   public static final class plurals {
