@@ -1000,6 +1000,7 @@ public class ShadowMediaPlayer {
     // seek callback can be invoked some time after reset()
     // has completed, which is not realistic.
     handler.removeCallbacksAndMessages(null);
+    startOffset = 0;
   }
 
   static private final EnumSet<State> stoppableStates = EnumSet.of(PREPARED,
