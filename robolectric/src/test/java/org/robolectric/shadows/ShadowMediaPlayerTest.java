@@ -91,6 +91,14 @@ public class ShadowMediaPlayerTest {
   }
 
   @Test
+  public void testResetResetsPosition() {
+    shadowMediaPlayer.setCurrentPosition(300);
+    mediaPlayer.reset();
+    assertThat(shadowMediaPlayer.getCurrentPositionRaw())
+      .isEqualTo(0);
+  }
+  
+  @Test
   public void testPrepare() throws IOException {
     int[] testDelays = { 0, 10, 100, 1500 };
 
