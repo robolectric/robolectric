@@ -7,6 +7,7 @@ import android.content.res.TypedArray;
 import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -54,6 +55,14 @@ public class ShadowPreference {
       key = typedArray.getString(com.android.internal.R.styleable.Preference_key);
       title = typedArray.getString(com.android.internal.R.styleable.Preference_title);
       summary = typedArray.getString(com.android.internal.R.styleable.Preference_summary);
+      initDefaultValue(typedArray);
+    }
+  }
+
+  private void initDefaultValue(TypedArray typedArray) {
+    TypedValue v = typedArray.peekValue(com.android.internal.R.styleable.Preference_defaultValue);
+    if (v != null) {
+      defaultValue = v.coerceToString();
     }
   }
 
