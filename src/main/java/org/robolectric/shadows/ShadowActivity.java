@@ -610,8 +610,13 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   @Implementation
-  public void startActivityFromFragment(Fragment fragment, Intent intent, int requestCode, Bundle options) {
+  public void startActivityFromFragment(Fragment fragment, Intent intent, int requestCode) {
     startActivityForResult(intent, requestCode);
+  }
+
+  @Implementation
+  public void startActivityFromFragment(Fragment fragment, Intent intent, int requestCode, Bundle options) {
+    startActivityForResult(intent, requestCode, options);
   }
 
   private final class ActivityInvoker {
