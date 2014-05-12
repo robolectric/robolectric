@@ -157,7 +157,7 @@ public class ShadowIntentFilter {
   public final int matchData(String type, String scheme, Uri data) {
     if (types.isEmpty() && schemes.isEmpty()) {
       if (type == null && data == null) {
-        return IntentFilter.MATCH_CATEGORY_EMPTY;
+        return IntentFilter.MATCH_CATEGORY_EMPTY + IntentFilter.MATCH_ADJUSTMENT_NORMAL;
       } else {
         return IntentFilter.NO_MATCH_DATA;
       }
@@ -165,27 +165,36 @@ public class ShadowIntentFilter {
 
     if (schemes.isEmpty()) {
       if (hasDataType(type)) {
-        return IntentFilter.MATCH_CATEGORY_TYPE;
+        return IntentFilter.MATCH_CATEGORY_TYPE + IntentFilter.MATCH_ADJUSTMENT_NORMAL;
       } else {
         return IntentFilter.NO_MATCH_TYPE;
       }
     } else {
-      if (types.isEmpty()) {
-        if (type != null) {
-          return IntentFilter.NO_MATCH_TYPE;
-        }
-      }
-
       if (hasDataScheme(scheme)) {
         if (!authoritites.isEmpty()) {
-          return matchDataAuthority(data);
+          if (matchDataAuthority(data) == IntentFilter.NO_MATCH_DATA) {
+            return IntentFilter.NO_MATCH_DATA;
+          }
         } else {
-          return IntentFilter.MATCH_CATEGORY_SCHEME;
+          return IntentFilter.MATCH_CATEGORY_SCHEME + IntentFilter.MATCH_ADJUSTMENT_NORMAL;
         }
       } else {
         return IntentFilter.NO_MATCH_DATA;
       }
+
+      if (types.isEmpty()) {
+        if (type != null) {
+          return IntentFilter.NO_MATCH_TYPE;
+        }
+      } else {
+        if (hasDataType(type)) {
+          return IntentFilter.MATCH_CATEGORY_TYPE + IntentFilter.MATCH_ADJUSTMENT_NORMAL;
+        } else {
+          return IntentFilter.NO_MATCH_TYPE;
+        }
+      }
     }
+    return IntentFilter.NO_MATCH_DATA;
   }
 
   @Implementation
@@ -194,10 +203,11 @@ public class ShadowIntentFilter {
       if (entry.getHost().equals(data.getHost())) {
         if (entry.getPort() != -1) {
           if (entry.getPort() == data.getPort()){
-            return IntentFilter.MATCH_CATEGORY_HOST + IntentFilter.MATCH_CATEGORY_PORT;
+            return IntentFilter.MATCH_CATEGORY_HOST + IntentFilter.MATCH_CATEGORY_PORT
+                + IntentFilter.MATCH_ADJUSTMENT_NORMAL;
           }
         } else {
-          return IntentFilter.MATCH_CATEGORY_HOST;
+          return IntentFilter.MATCH_CATEGORY_HOST + IntentFilter.MATCH_ADJUSTMENT_NORMAL;
         }
       }
     }
