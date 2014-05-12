@@ -740,11 +740,19 @@ public class ActivityTest {
   }
 
   @Test
-  public void canStartActivityFromFragment() throws Exception {
+  public void canStartActivityFromFragment() {
     Activity activity = buildActivity(Activity.class).create().get();
     Intent intent = new Intent(Intent.ACTION_VIEW);
     activity.startActivityFromFragment(new Fragment(), intent, 0);
-    assertThat(shadowOf(activity).getNextStartedActivity().getAction()).isEqualTo(Intent.ACTION_VIEW);
+    assertThat(shadowOf(activity).getNextStartedActivity()).isEqualTo(intent);
+  }
+
+  @Test
+  public void canStartActivityFromFragment_withBundle() {
+    Activity activity = buildActivity(Activity.class).create().get();
+    Intent intent = new Intent(Intent.ACTION_VIEW);
+    activity.startActivityFromFragment(new Fragment(), intent, 0, new Bundle());
+    assertThat(shadowOf(activity).getNextStartedActivity()).isEqualTo(intent);
   }
 
   @Test
