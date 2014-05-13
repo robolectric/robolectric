@@ -26,4 +26,5 @@
   <string name="preference_resource_key">preference_resource_key_value</string>
   <string name="preference_resource_title">preference_resource_title_value</string>
   <string name="preference_resource_summary">preference_resource_summary_value</string>
+  <item name="say_it_with_item" type="string">flowers</item>
 </resources>

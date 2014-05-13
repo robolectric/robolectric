@@ -41,6 +41,7 @@ public class ResourcesTest {
   @Test
   public void getString() throws Exception {
     assertThat(resources.getString(R.string.hello)).isEqualTo("Hello");
+    assertThat(resources.getString(R.string.say_it_with_item)).isEqualTo("flowers");
   }
 
   @Test
@@ -98,6 +99,7 @@ public class ResourcesTest {
     assertThat(resources.getInteger(R.integer.test_integer2)).isEqualTo(9);
     assertThat(resources.getInteger(R.integer.test_large_hex)).isEqualTo(-65536);
     assertThat(resources.getInteger(R.integer.test_value_with_zero)).isEqualTo(7210);
+    assertThat(resources.getInteger(R.integer.meaning_of_life_as_item)).isEqualTo(42);
   }
 
   @Test
@@ -116,6 +118,7 @@ public class ResourcesTest {
   public void getBoolean() throws Exception {
     assertThat(resources.getBoolean(R.bool.false_bool_value)).isEqualTo(false);
     assertThat(resources.getBoolean(R.bool.integers_are_true)).isEqualTo(true);
+    assertThat(resources.getBoolean(R.bool.true_as_item)).isEqualTo(true);
   }
 
   @Test
