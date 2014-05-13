@@ -110,6 +110,7 @@ public final class R {
     public static final int surrounding_quotes = 0x10119;
     public static final int escaped_apostrophe = 0x10120;
     public static final int escaped_quotes = 0x10121;
+    public static final int say_it_with_item = 0x10122;
   }
 
   public static final class plurals {
@@ -291,6 +292,7 @@ public final class R {
     public static final int hex_int = 0x10d07;
     public static final int test_value_with_zero = 0x10d08;
     public static final int reference_to_meaning_of_life = 0x10d09;
+    public static final int meaning_of_life_as_item = 0x10d0a;
   }
 
   public static final class bool {
@@ -299,6 +301,7 @@ public final class R {
     public static final int zero_is_false = 0x10e02;
     public static final int integers_are_true = 0x10e03;
     public static final int reference_to_true = 0x10e04;
+    public static final int true_as_item = 0x10e05;
   }
 
   public static final class style {
