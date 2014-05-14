@@ -142,7 +142,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   }
 
   protected ClassLoader createRobolectricClassLoader(Setup setup, SdkConfig sdkConfig) {
-    URL[] urls = MAVEN_CENTRAL.getLocalArtifactUrls(this, sdkConfig.getSdkClasspathDependencies()).values().toArray(new URL[0]);
+    URL[] urls = MAVEN_CENTRAL.getLocalArtifactUrls(this, sdkConfig.getSdkClasspathDependencies());
     return new AsmInstrumentingClassLoader(setup, urls);
   }
 
