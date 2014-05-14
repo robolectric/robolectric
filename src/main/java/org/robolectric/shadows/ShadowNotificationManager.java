@@ -10,7 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@SuppressWarnings({"UnusedDeclaration"})
+import static android.app.Notification.FLAG_FOREGROUND_SERVICE;
+
 @Implements(NotificationManager.class)
 public class ShadowNotificationManager {
 
@@ -23,7 +24,12 @@ public class ShadowNotificationManager {
 
   @Implementation
   public void notify(String tag, int id, Notification notification) {
-    notifications.put(new Key(tag, id), notification);
+    Notification prev = notifications.put(new Key(tag, id), notification);
+    if (prev == null || (prev.flags & FLAG_FOREGROUND_SERVICE) == 0) {
+      notification.flags &= ~FLAG_FOREGROUND_SERVICE;
+    } else {
+      notification.flags |= FLAG_FOREGROUND_SERVICE;
+    }
   }
 
   @Implementation
@@ -46,6 +52,29 @@ public class ShadowNotificationManager {
 
   public int size() {
     return notifications.size();
+  }
+
+  /**
+   * Sets a notification per {@link #notify(int, Notification)}, without
+   * modifying the flags. Allows you to bypass the Android emulation of
+   * flag treatment by the standard notify implementation.
+   * @param id the id of this notification.
+   * @param notification the notification object itself.
+   */
+  public void notifyRaw(int id, Notification notification) {
+    notifyRaw(null, id, notification);
+  }
+
+  /**
+   * Sets a notification per {@link #notify(String, int, Notification)},
+   * without modifying the flags. Allows you to bypass the Android emulation of
+   * flag treatment by the standard notify implementation.
+   * @param tag the tag to associate with this notification.
+   * @param id the id of this notification.
+   * @param notification the notification object itself.
+   */
+  public void notifyRaw(String tag, int id, Notification notification) {
+    notifications.put(new Key(tag, id), notification);    
   }
 
   public Notification getNotification(int id) {

@@ -65,11 +65,11 @@ public class ShadowService extends ShadowContextWrapper {
 
   @Implementation
   public final void startForeground(int id, Notification notification) {
-	  lastForegroundNotificationId = id;
+    lastForegroundNotificationId = id;
     lastForegroundNotification = notification;
+    ShadowNotificationManager sNM = shadowOf((NotificationManager)Robolectric.application.getSystemService(Context.NOTIFICATION_SERVICE));
     notification.flags |= Notification.FLAG_FOREGROUND_SERVICE;
-    NotificationManager nm = (NotificationManager)Robolectric.application.getSystemService(Context.NOTIFICATION_SERVICE);
-    nm.notify(id, notification);
+    sNM.notifyRaw(id, notification);
   }
 
   @Implementation
