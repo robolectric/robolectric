@@ -61,6 +61,7 @@ public class AndroidManifest {
   private final List<ContentProviderData> providers = new ArrayList<ContentProviderData>();
   private final List<ReceiverAndIntentFilter> receivers = new ArrayList<ReceiverAndIntentFilter>();
   private final Map<String, ActivityData> activityDatas = new LinkedHashMap<String, ActivityData>();
+  private final List<String> usedPermissions = new ArrayList<String>();
   private MetaData applicationMetaData;
   private List<AndroidManifest> libraryManifests;
 
@@ -163,10 +164,20 @@ public class AndroidManifest {
       parseActivities(manifestDocument);
       parseApplicationMetaData(manifestDocument);
       parseContentProviders(manifestDocument);
+      parseUsedPermissions(manifestDocument);
     } catch (Exception ignored) {
       ignored.printStackTrace();
     }
     manifestIsParsed = true;
+  }
+
+  private void parseUsedPermissions(Document manifestDocument) {
+    NodeList elementsByTagName = manifestDocument.getElementsByTagName("uses-permission");
+    int length = elementsByTagName.getLength();
+    for (int i = 0; i < length; i++) {
+      Node node = elementsByTagName.item(i).getAttributes().getNamedItem("android:name");
+      usedPermissions.add(node.getNodeValue());
+    }
   }
 
   private void parseContentProviders(Document manifestDocument) {
@@ -637,6 +648,11 @@ public class AndroidManifest {
   public Map<String, ActivityData> getActivityDatas() {
     parseAndroidManifest();
     return activityDatas;
+  }
+
+  public List<String> getUsedPermissions() {
+    parseAndroidManifest();
+    return usedPermissions;
   }
 
   private static final class MetaData {

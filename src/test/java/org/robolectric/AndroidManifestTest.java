@@ -1,10 +1,10 @@
 package org.robolectric;
 
+import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -205,8 +205,9 @@ public class AndroidManifestTest {
     metaValue = meta.get("org.robolectric.metaStringRes");
     assertEquals("@string/app_name", metaValue);
   }
-  
-  @Test public void shouldLoadAllResourcesForExistingLibraries() throws Exception {
+
+  @Test
+  public void shouldLoadAllResourcesForExistingLibraries() throws Exception {
     AndroidManifest appManifest = new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"));
 
     // This intentionally loads from the non standard resources/project.properties
@@ -280,6 +281,16 @@ public class AndroidManifestTest {
     ActivityData activityData = appManifest.getActivityData("org.robolectric.shadows.TestTaskAffinityActivity");
     assertThat(activityData).isNotNull();
     assertThat(activityData.getTaskAffinity()).isEqualTo("org.robolectric.shadows.TestTaskAffinity");
+  }
+
+  @Test
+  public void shouldReadPermissions() throws Exception {
+    AndroidManifest config = newConfig("TestAndroidManifestWithPermissions.xml");
+
+    assertThat(config.getUsedPermissions()).hasSize(3);
+    assertThat(config.getUsedPermissions().get(0)).isEqualTo(Manifest.permission.INTERNET);
+    assertThat(config.getUsedPermissions().get(1)).isEqualTo(Manifest.permission.SYSTEM_ALERT_WINDOW);
+    assertThat(config.getUsedPermissions().get(2)).isEqualTo(Manifest.permission.GET_TASKS);
   }
 
   @Test
