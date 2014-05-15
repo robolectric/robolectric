@@ -327,6 +327,7 @@ import org.robolectric.tester.org.apache.http.HttpRequestInfo;
 import org.robolectric.tester.org.apache.http.RequestMatcher;
 import org.robolectric.util.ActivityController;
 import org.robolectric.util.Scheduler;
+import org.robolectric.util.ServiceController;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -1355,6 +1356,14 @@ public class Robolectric {
     ShadowTypeface.reset();
     ShadowProcess.reset();
     ShadowMediaMetadataRetriever.reset();
+  }
+
+  public static <T extends Service> ServiceController<T> buildService(Class<T> serviceClass) {
+    return new ServiceController<T>(serviceClass);
+  }
+
+  public static <T extends Service> T setupService(Class<T> serviceClass) {
+    return new ServiceController<T>(serviceClass).attach().create().get();
   }
 
   public static <T extends Activity> ActivityController<T> buildActivity(Class<T> activityClass) {
