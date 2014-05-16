@@ -1,35 +1,20 @@
 package org.robolectric.util;
 
-import android.app.Activity;
-import android.app.Application;
-import android.app.Instrumentation;
-import android.content.Context;
-import android.content.Intent;
-import android.content.pm.ActivityInfo;
-import android.content.res.Configuration;
-import android.content.res.Resources;
-import android.os.Bundle;
-import android.os.IBinder;
-import android.os.Looper;
-import android.view.View;
-
-import org.robolectric.AndroidManifest;
-import org.robolectric.RoboInstrumentation;
-import org.robolectric.Robolectric;
-import org.robolectric.res.ResName;
-import org.robolectric.shadows.ShadowActivity;
-import org.robolectric.shadows.ShadowActivityThread;
-import org.robolectric.shadows.ShadowApplication;
-import org.robolectric.shadows.ShadowLooper;
-
 import static org.fest.reflect.core.Reflection.constructor;
-import static org.fest.reflect.core.Reflection.field;
 import static org.fest.reflect.core.Reflection.method;
-import static org.fest.reflect.core.Reflection.type;
 import static org.robolectric.Robolectric.shadowOf_;
 
+import org.robolectric.Robolectric;
+import org.robolectric.shadows.ShadowLooper;
+
+import android.app.Application;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.os.Looper;
+
 @SuppressWarnings("UnusedDeclaration")
-public abstract class ComponentController<C extends ComponentController<C, T, S>, T, S> {
+abstract class ComponentController<C extends ComponentController<C, T, S>, T, S> {
   protected final C myself;
   protected final T component;
   protected final S shadow;
@@ -113,6 +98,7 @@ public abstract class ComponentController<C extends ComponentController<C, T, S>
     });
     return myself;
   }
+  
   protected C invokeWhilePaused(final String methodName, final Intent arg, final int param1, final int param2) {
     shadowMainLooper.runPaused(new Runnable() {
       @Override public void run() {

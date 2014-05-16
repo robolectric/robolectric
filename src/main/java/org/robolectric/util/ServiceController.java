@@ -1,31 +1,17 @@
 package org.robolectric.util;
 
-import android.app.Service;
-import android.app.Application;
-import android.app.Instrumentation;
-import android.content.Context;
-import android.content.Intent;
-import android.content.pm.ActivityInfo;
-import android.content.res.Configuration;
-import android.content.res.Resources;
-import android.os.Bundle;
-import android.os.IBinder;
-import android.os.Looper;
-import android.view.View;
-import org.robolectric.AndroidManifest;
-import org.robolectric.RoboInstrumentation;
-import org.robolectric.Robolectric;
-import org.robolectric.res.ResName;
-import org.robolectric.shadows.ShadowService;
-import org.robolectric.shadows.ShadowActivityThread;
-import org.robolectric.shadows.ShadowApplication;
-import org.robolectric.shadows.ShadowLooper;
-
 import static org.fest.reflect.core.Reflection.constructor;
-import static org.fest.reflect.core.Reflection.field;
 import static org.fest.reflect.core.Reflection.method;
 import static org.fest.reflect.core.Reflection.type;
-import static org.robolectric.Robolectric.shadowOf_;
+
+import org.robolectric.Robolectric;
+import org.robolectric.shadows.ShadowActivityThread;
+import org.robolectric.shadows.ShadowService;
+
+import android.app.Application;
+import android.app.Service;
+import android.content.Context;
+import android.os.IBinder;
 
 public class ServiceController<T extends Service> extends ComponentController<ServiceController<T>, T, ShadowService>{
 
