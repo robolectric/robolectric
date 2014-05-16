@@ -13,7 +13,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Looper;
 
-@SuppressWarnings("UnusedDeclaration")
 abstract class ComponentController<C extends ComponentController<C, T, S>, T, S> {
   protected final C myself;
   protected final T component;

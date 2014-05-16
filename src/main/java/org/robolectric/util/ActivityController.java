@@ -26,7 +26,6 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.view.View;
 
-@SuppressWarnings("UnusedDeclaration")
 public class ActivityController<T extends Activity>
   extends ComponentController<ActivityController<T>, T, ShadowActivity>{
 
