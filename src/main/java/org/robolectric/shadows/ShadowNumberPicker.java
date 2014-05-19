@@ -25,7 +25,7 @@ public class ShadowNumberPicker extends ShadowLinearLayout {
 
   @Implementation
   public void setDisplayedValues(String[] displayedValues) {
-    if (displayedValues.length != (maxValue - minValue) + 1) {
+    if (displayedValues != null && displayedValues.length != (maxValue - minValue) + 1) {
       throw new RuntimeException("Displayed values should fit into range min and max values");
     }
     this.displayedValues = displayedValues;
@@ -45,6 +45,12 @@ public class ShadowNumberPicker extends ShadowLinearLayout {
   public void setMaxValue(int maxValue) {
     this.maxValue = maxValue;
   }
+
+  @Implementation
+  public int getMinValue() { return this.minValue; }
+
+  @Implementation
+  public int getMaxValue() { return this.maxValue; }
 
   @Implementation
   public void setWrapSelectorWheel(boolean wrapSelectorWheel) {
