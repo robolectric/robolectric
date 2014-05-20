@@ -148,6 +148,7 @@
       <artifactId>support-v4</artifactId>
       <version>19.0.1</version>
       <scope>compile</scope>
+      <optional>true</optional>
     </dependency>
 
     <dependency>
