@@ -38,7 +38,7 @@ You can install Robolectric for your project by adding the following to your pom
 <dependency>
    <groupId>org.robolectric</groupId>
    <artifactId>robolectric</artifactId>
-   <version>2.2</version>
+   <version>2.3</version>
    <scope>test</scope>
 </dependency>
 ```
