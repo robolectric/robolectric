@@ -41,9 +41,7 @@ import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.robolectric.util.TestUtil.joinCanonicalPath;
-import static org.robolectric.util.TestUtil.newConfig;
-import static org.robolectric.util.TestUtil.resourceFile;
+import static org.robolectric.util.TestUtil.*;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
@@ -207,16 +205,16 @@ public class AndroidManifestTest {
   }
 
   @Test
-  public void shouldLoadAllResourcesForExistingLibraries() throws Exception {
+  public void shouldLoadAllResourcesForExistingLibraries() {
     AndroidManifest appManifest = new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"));
 
     // This intentionally loads from the non standard resources/project.properties
     List<String> resourcePaths = stringify(appManifest.getIncludedResourcePaths());
     assertEquals(asList(
-        joinCanonicalPath(".", "src", "test", "resources", "res"),
-        joinCanonicalPath(".", "src", "test", "resources", "lib1", "res"),
-        joinCanonicalPath(".", "src", "test", "resources", "lib3", "res"),
-        joinCanonicalPath(".", "src", "test", "resources", "lib2", "res")),
+        joinPath(".", "src", "test", "resources", "res"),
+        joinPath(".", "src", "test", "resources", "lib1", "res"),
+        joinPath(".", "src", "test", "resources", "lib1", "..", "lib3", "res"),
+        joinPath(".", "src", "test", "resources", "lib1", "..", "lib2", "res")),
         resourcePaths);
   }
 
