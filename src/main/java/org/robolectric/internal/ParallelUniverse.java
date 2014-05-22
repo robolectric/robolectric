@@ -25,10 +25,7 @@ import org.robolectric.shadows.ShadowContextImpl;
 import org.robolectric.shadows.ShadowLog;
 import org.robolectric.shadows.ShadowResources;
 
-import static org.fest.reflect.core.Reflection.constructor;
-import static org.fest.reflect.core.Reflection.field;
-import static org.fest.reflect.core.Reflection.method;
-import static org.fest.reflect.core.Reflection.type;
+import static org.fest.reflect.core.Reflection.*;
 import static org.robolectric.Robolectric.shadowOf;
 
 public class ParallelUniverse implements ParallelUniverseInterface {
@@ -43,8 +40,8 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   }
 
   @Override
-  public void resetStaticState() {
-    Robolectric.reset();
+  public void resetStaticState(Config config) {
+    Robolectric.reset(config);
 
     if (!loggingInitialized) {
       ShadowLog.setupLogging();

@@ -8,7 +8,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
-@Implements(android.os.Binder.class)
+@Implements(value = Binder.class, resetStaticState = true)
 public class ShadowBinder {
   @RealObject
   Binder realObject;

@@ -23,7 +23,7 @@ import static org.robolectric.Robolectric.directlyOn;
 import static org.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(Dialog.class)
+@Implements(value = Dialog.class, resetStaticState = true)
 public class ShadowDialog {
 
   @RealObject private Dialog realDialog;

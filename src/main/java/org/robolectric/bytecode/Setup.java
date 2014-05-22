@@ -2,7 +2,6 @@ package org.robolectric.bytecode;
 
 import android.R;
 import org.robolectric.AndroidManifest;
-import org.robolectric.RobolectricBase;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.SdkConfig;
 import org.robolectric.SdkEnvironment;
@@ -37,7 +36,6 @@ import static java.util.Arrays.asList;
 
 public class Setup {
   public static final List<String> CLASSES_TO_ALWAYS_DELEGATE = stringify(
-      RobolectricBase.class,
       TestLifecycle.class,
       RealObject.class,
       ShadowWrangler.class,
@@ -74,11 +72,6 @@ public class Setup {
       strings.add(aClass.getName());
     }
     return strings;
-  }
-
-  public List<String> getClassesToDelegateFromRcl() {
-    //noinspection unchecked
-    return CLASSES_TO_ALWAYS_DELEGATE;
   }
 
   public boolean shouldInstrument(ClassInfo classInfo) {

@@ -1,6 +1,5 @@
 package org.robolectric.annotation;
 
-
 /**
  * Indicates that a class declaration is intended to Shadow an Android class declaration. The Robolectric runtime
  * searches classes with this annotation for methods with the {@link Implementation} annotation and calls them in
@@ -16,6 +15,12 @@ public @interface Implements {
   Class<?> value();
 
   String className() default "";
+
+  /**
+   * If true, Robolectric will invoke the shadow's reset method so it can release any static
+   * state between tests.
+   */
+  boolean resetStaticState() default false;
 
   /**
    * If true, Robolectric will invoke the actual Android code for any method that isn't shadowed.

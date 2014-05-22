@@ -67,7 +67,7 @@ public class TypefaceTest {
     typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL);
     assertThat(typeface).isNotNull();
     assertThat(typeface.getStyle()).isEqualTo((Typeface.NORMAL));
-    Robolectric.reset();
+    ShadowTypeface.reset();
     typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.ITALIC);
     assertThat(typeface).isNotNull();
     assertThat(typeface.getStyle()).isEqualTo((Typeface.ITALIC));

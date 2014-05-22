@@ -17,7 +17,7 @@ import org.robolectric.internal.HiddenApi;
 
 import static org.robolectric.Robolectric.shadowOf;
 
-@Implements(Typeface.class)
+@Implements(value = Typeface.class, resetStaticState = true)
 public class ShadowTypeface {
   private static Map<FontDesc, Integer> fonts = new HashMap<FontDesc, Integer>();
   private static int nextFontId = 1;
