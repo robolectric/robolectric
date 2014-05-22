@@ -14,13 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
-import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
+import android.widget.*;
 import com.google.android.maps.MapView;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -63,6 +57,15 @@ public class LayoutInflaterTest {
     TestUtil.assertInstanceOf(LinearLayout.class, view);
 
     assertSame(context, view.getContext());
+  }
+
+  @Test
+  public void testConverterAcceptsEnumOrdinal() throws Exception {
+    ViewGroup view = (ViewGroup) inflate("ordinal_scrollbar");
+    TestUtil.assertInstanceOf(RelativeLayout.class, view);
+    ListView listView = (ListView)
+        view.findViewById(org.robolectric.R.id.list_view_with_enum_scrollbar);
+    TestUtil.assertInstanceOf(ListView.class, listView);
   }
 
   @Test
