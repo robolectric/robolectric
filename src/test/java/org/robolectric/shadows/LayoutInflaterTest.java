@@ -60,15 +60,6 @@ public class LayoutInflaterTest {
   }
 
   @Test
-  public void testConverterAcceptsEnumOrdinal() throws Exception {
-    ViewGroup view = (ViewGroup) inflate("ordinal_scrollbar");
-    TestUtil.assertInstanceOf(RelativeLayout.class, view);
-    ListView listView = (ListView)
-        view.findViewById(org.robolectric.R.id.list_view_with_enum_scrollbar);
-    TestUtil.assertInstanceOf(ListView.class, listView);
-  }
-
-  @Test
   public void testChoosesLayoutBasedOnDefaultScreenSize() throws Exception {
     ViewGroup view = (ViewGroup) inflate("different_screen_sizes");
     TextView textView = (TextView) view.findViewById(android.R.id.text1);
@@ -428,6 +419,15 @@ public class LayoutInflaterTest {
   public void testIncludesLinearLayoutsOnlyOnce() throws Exception {
     ViewGroup parentView = (ViewGroup) inflate("included_layout_parent");
     assertEquals(1, parentView.getChildCount());
+  }
+
+  @Test
+  public void testConverterAcceptsEnumOrdinal() throws Exception {
+    ViewGroup view = (ViewGroup) inflate("ordinal_scrollbar");
+    TestUtil.assertInstanceOf(RelativeLayout.class, view);
+    ListView listView = (ListView)
+        view.findViewById(org.robolectric.R.id.list_view_with_enum_scrollbar);
+    TestUtil.assertInstanceOf(ListView.class, listView);
   }
 
   /////////////////////////

@@ -374,7 +374,12 @@ public class Converter<T> {
     protected int findValueFor(String key) {
       String valueFor = attrData.getValueFor(key);
       if (valueFor == null) {
-        throw new RuntimeException("no value found for " + key);
+        // Maybe they have passed in the value directly, rather than the name.
+        if (attrData.isValue(key)) {
+          valueFor = key;
+        } else {
+          throw new RuntimeException("no value found for " + key);
+        }
       }
       return Util.parseInt(valueFor);
     }

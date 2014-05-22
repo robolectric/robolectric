@@ -296,6 +296,7 @@ public final class R {
     public static final int test_value_with_zero = 0x10d08;
     public static final int reference_to_meaning_of_life = 0x10d09;
     public static final int meaning_of_life_as_item = 0x10d0a;
+    public static final int scrollbar_style_ordinal_outside_overlay = 0x10d0b;
   }
 
   public static final class bool {
