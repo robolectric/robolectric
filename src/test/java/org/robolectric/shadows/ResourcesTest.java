@@ -5,12 +5,7 @@ import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
-import android.graphics.drawable.AnimationDrawable;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.NinePatchDrawable;
-
+import android.graphics.drawable.*;
 import android.util.DisplayMetrics;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,7 +22,6 @@ import java.io.InputStream;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.robolectric.Robolectric.shadowOf;
-import static org.robolectric.util.TestUtil.joinCanonicalPath;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ResourcesTest {
@@ -83,7 +77,7 @@ public class ResourcesTest {
   @Test
   public void getText_withLayoutId() throws Exception {
     // todo: this needs to change...
-    assertThat(resources.getText(R.layout.different_screen_sizes, "value")).isEqualTo(joinCanonicalPath(".", "src", "test", "resources", "res", "layout", "different_screen_sizes.xml"));
+      assertThat(resources.getText(R.layout.different_screen_sizes, "value")).isEqualTo("." + File.separator + "src" + File.separator + "test" + File.separator + "resources" + File.separator + "res" + File.separator + "layout" + File.separator + "different_screen_sizes.xml");
   }
 
   @Test
