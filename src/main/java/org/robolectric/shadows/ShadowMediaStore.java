@@ -9,7 +9,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(MediaStore.class)
+@Implements(value = MediaStore.class, resetStaticState = true)
 public class ShadowMediaStore {
 
   @Implements(MediaStore.Images.class)

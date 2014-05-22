@@ -7,7 +7,7 @@ import android.media.MediaMetadataRetriever;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Implementation;
 
-@Implements(MediaMetadataRetriever.class)
+@Implements(value = MediaMetadataRetriever.class, resetStaticState = true)
 public class ShadowMediaMetadataRetriever {
   private String path;
   private static final Map<String, HashMap<Integer, String>> metadata = Maps.newHashMap();

@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Implements(Log.class)
+@Implements(value = Log.class, resetStaticState = true)
 public class ShadowLog {
   private static final int extraLogLength = "l/: \n".length();
   private static Map<String,List<LogItem>> logsByTag = new HashMap<String,List<LogItem>>();

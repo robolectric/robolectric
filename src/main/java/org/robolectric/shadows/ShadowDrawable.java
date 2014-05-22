@@ -23,7 +23,7 @@ import static org.robolectric.Robolectric.directlyOn;
 import static org.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(Drawable.class)
+@Implements(value = Drawable.class, resetStaticState = true)
 public class ShadowDrawable {
   private static int defaultIntrinsicWidth = -1;
   private static int defaultIntrinsicHeight = -1;

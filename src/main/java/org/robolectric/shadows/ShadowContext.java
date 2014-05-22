@@ -28,7 +28,7 @@ import static org.robolectric.Robolectric.shadowOf;
  * Calls through to the {@code resourceLoader} to actually load resources.
  */
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(Context.class)
+@Implements(value = Context.class, resetStaticState = true)
 abstract public class ShadowContext {
   public static final File CACHE_DIR = createTempDir("android-cache");
   public static final File EXTERNAL_CACHE_DIR = createTempDir("android-external-cache");
@@ -154,7 +154,7 @@ abstract public class ShadowContext {
     return getShadowApplication().isStrictI18n();
   }
 
-  public static void clearFilesAndCache() {
+  public static void reset() {
     clearFiles(FILES_DIR);
     clearFiles(CACHE_DIR);
     clearFiles(EXTERNAL_CACHE_DIR);

@@ -26,7 +26,7 @@ public class RobolectricWiringTest {
 
   @Test
   public void testAllImplementationMethodsHaveCorrectSignature() throws Exception {
-    for (Class<?> shadowClass : Robolectric.getDefaultShadowClasses()) {
+    for (Class<?> shadowClass : Robolectric.DEFAULT_SHADOW_CLASSES) {
       verifyClass(shadowClass);
     }
 

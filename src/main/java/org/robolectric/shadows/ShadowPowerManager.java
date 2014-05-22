@@ -8,7 +8,7 @@ import org.robolectric.annotation.Implements;
 /**
  * Shadows the {@code android.os.PowerManager} class.
  */
-@Implements(PowerManager.class)
+@Implements(value = PowerManager.class, resetStaticState = true)
 public class ShadowPowerManager {
 
   private boolean isScreenOn = true;

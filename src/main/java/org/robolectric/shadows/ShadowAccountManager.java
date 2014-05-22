@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Shadow implementation for the Android {@code AccountManager } class.
  */
-@Implements(AccountManager.class)
+@Implements(value = AccountManager.class, resetStaticState = true)
 public class ShadowAccountManager {
   private static final Object lock = new Object();
 

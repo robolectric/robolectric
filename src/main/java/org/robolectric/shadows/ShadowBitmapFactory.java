@@ -30,7 +30,7 @@ import static org.robolectric.Robolectric.directlyOn;
 import static org.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(BitmapFactory.class)
+@Implements(value = BitmapFactory.class, resetStaticState = true)
 public class ShadowBitmapFactory {
   private static Map<String, Point> widthAndHeightMap = new HashMap<String, Point>();
 

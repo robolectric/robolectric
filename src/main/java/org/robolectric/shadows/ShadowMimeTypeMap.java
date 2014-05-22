@@ -13,7 +13,7 @@ import static org.robolectric.Robolectric.shadowOf;
 /**
  * Shadow for {@code MimeTypeMap} that allows custom extension <-> mimetype mapping to be set up by tests.
  */
-@Implements(MimeTypeMap.class)
+@Implements(value = MimeTypeMap.class, resetStaticState = true)
 public class ShadowMimeTypeMap {
 
   Map<String, String> extensionToMimeTypeMap = new HashMap<String, String>();

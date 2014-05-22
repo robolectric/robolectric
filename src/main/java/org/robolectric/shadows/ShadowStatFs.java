@@ -8,7 +8,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
-@Implements(StatFs.class)
+@Implements(value = StatFs.class, resetStaticState = true)
 public class ShadowStatFs {
   public static final int BLOCK_SIZE = 4096;
   private static final Stats DEFAULT_STATS = new Stats(0, 0, 0);

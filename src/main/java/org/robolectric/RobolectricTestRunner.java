@@ -223,7 +223,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
           }
           assureTestLifecycle(sdkEnvironment);
 
-          parallelUniverseInterface.resetStaticState();
+          parallelUniverseInterface.resetStaticState(config);
           parallelUniverseInterface.setSdkConfig(sdkEnvironment.getSdkConfig());
 
           boolean strictI18n = determineI18nStrictState(bootstrappedMethod);
@@ -262,7 +262,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
             try {
               internalAfterTest(bootstrappedMethod);
             } finally {
-              parallelUniverseInterface.resetStaticState(); // afterward too, so stuff doesn't hold on to classes?
+              parallelUniverseInterface.resetStaticState(config); // afterward too, so stuff doesn't hold on to classes?
               // todo: is this really needed?
               Thread.currentThread().setContextClassLoader(RobolectricTestRunner.class.getClassLoader());
             }

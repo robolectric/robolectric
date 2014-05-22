@@ -51,7 +51,7 @@ import static org.robolectric.Robolectric.shadowOf;
  * @see org.robolectric.RobolectricTestRunner#RobolectricTestRunner(Class)
  */
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(Resources.class)
+@Implements(value = Resources.class, resetStaticState = true)
 public class ShadowResources {
   private static boolean DEBUG = false;
   private static Resources system = null;
