@@ -9,14 +9,16 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class FileFsFile implements FsFile {
-  private File file;
+    private final File canonicalFile;
+    private File file;
 
   FileFsFile(File file) {
+    this.file = file;
     try {
       // Android library references in project.properties are all
       // relative paths, so using a canonical path guarantees that
       // there won't be duplicates.
-      this.file = file.getCanonicalFile();
+      this.canonicalFile = file.getCanonicalFile();
     } catch (IOException e) {
       // In a case where file system queries are failing, it makes
       // sense for the test to fail.
@@ -99,14 +101,14 @@ public class FileFsFile implements FsFile {
 
     FileFsFile fsFile = (FileFsFile) o;
 
-    if (!file.equals(fsFile.file)) return false;
+    if (!canonicalFile.equals(fsFile.canonicalFile)) return false;
 
     return true;
   }
 
   @Override
   public int hashCode() {
-    return file.hashCode();
+    return canonicalFile.hashCode();
   }
 
   private FsFile[] asFsFiles(File[] files) {
