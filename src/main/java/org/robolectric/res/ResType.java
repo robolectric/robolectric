@@ -7,7 +7,6 @@ public enum ResType {
   ATTR_DATA,
   BOOLEAN,
   COLOR,
-  CHAR_SEQUENCE,
   COLOR_STATE_LIST,
   DIMEN,
   FILE,
@@ -17,6 +16,13 @@ public enum ResType {
   STYLE {
     @Override public TypedResource getValueWithType(XpathResourceXmlLoader.XmlNode xmlNode) {
       throw new UnsupportedOperationException();
+    }
+  },
+
+  CHAR_SEQUENCE {
+    @Override
+    public TypedResource getValueWithType(XpathResourceXmlLoader.XmlNode xmlNode) {
+      return new TypedResource<String>(StringResources.escape(xmlNode.getTextContent()), this);
     }
   },
 
