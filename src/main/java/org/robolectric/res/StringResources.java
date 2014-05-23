@@ -2,8 +2,6 @@ package org.robolectric.res;
 
 public class StringResources {
 
-  private StringResources() {}
-
   /**
    * Provides escaping of String resources as described
    *

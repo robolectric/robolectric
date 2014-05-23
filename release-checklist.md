@@ -1,29 +1,38 @@
 # Robolectric Release Checklist
 
-Set these properly:
-```bash
-ROBO_SRC=~/Development/robolectric
-ROBO_DOCS=~/Development/robolectric-docs
-```
+1. Perform a dry run of the release to make sure that everything works:
 
-* Ensure every story for this release in the Tracker project is accepted.
-* Update release notes at `$ROBO_DOCS/release-notes.md`.
-* `cd $ROBO_SRC && mvn clean release:clean release:prepare` (by xian)
-* `cd $ROBO_SRC && mvn release:perform` (by xian)
-* Update javadocs
+              mvn -DdryRun=true clean release:clean release:prepare
 
-```bash
-cd $ROBO_DOCS
-git fetch
-git st # make sure there are no changes...
-rm -rf javadoc/*
-mv $ROBO_SRC/target/apidocs/* javadoc/
-grm
-git commit -am "Update javadocs."
-git push
-```
+2. Perform the actual release build:
 
-* Post to [blog](http://robolectric.blogspot.com/)
-* Post to [twitter](http://twitter.com/Robolectric)
-* Email to [google group](http://groups.google.com/group/robolectric)
-* Update [RobolectricSample](https://github.com/robolectric/RobolectricSample)
+              mvn clean release:clean release:prepare
+
+3. Double check that you have the release credentials in your settings.xml:
+
+              <settings>
+                     <servers>
+                            <server>
+                                   <id>sonatype-nexus-snapshots</id>
+                                   <username>username</username>
+                                   <password>password</password>
+                            </server>
+                            <server>
+                                   <id>sonatype-nexus-staging</id>
+                                   <username>username</username>
+                                   <password>password</password>
+                            </server>
+                     </servers>
+              </settings>
+
+4. Upload the release artifacts to Sonatype:
+
+              mvn release:perform
+
+5. Log into Sonatype, close and release the staging repository.
+
+6. Download the released Javadocs and check them into the `robolectric.github.io` repository.
+
+7. Update the mailing list, Twitter account, and blog.
+
+8. Sit back and have a beer.
