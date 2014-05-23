@@ -9,9 +9,9 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static android.content.ClipboardManager.OnPrimaryClipChangedListener;
+import static org.fest.assertions.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ClipboardManagerTest {
@@ -31,25 +31,25 @@ public class ClipboardManagerTest {
   @Test
   public void shouldNotHaveTextIfTextIsNull() throws Exception {
     clipboardManager.setText(null);
-    assertFalse(clipboardManager.hasText());
+    assertThat(clipboardManager.hasText()).isFalse();
   }
 
   @Test
   public void shouldNotHaveTextIfTextIsEmpty() throws Exception {
     clipboardManager.setText("");
-    assertFalse(clipboardManager.hasText());
+    assertThat(clipboardManager.hasText()).isFalse();
   }
 
   @Test
   public void shouldHaveTextIfEmptyString() throws Exception {
     clipboardManager.setText(" ");
-    assertTrue(clipboardManager.hasText());
+    assertThat(clipboardManager.hasText()).isTrue();
   }
 
   @Test
   public void shouldHaveTextIfString() throws Exception {
     clipboardManager.setText("BLARG");
-    assertTrue(clipboardManager.hasText());
+    assertThat(clipboardManager.hasText()).isTrue();
   }
 
   @Test
@@ -62,24 +62,42 @@ public class ClipboardManagerTest {
   @Test
   public void shouldNotHaveTextIfPrimaryClipIsNull() throws Exception {
     clipboardManager.setPrimaryClip(null);
-    assertFalse(clipboardManager.hasText());
+    assertThat(clipboardManager.hasText()).isFalse();
   }
 
   @Test
   public void shouldNotHaveTextIfPrimaryClipIsEmpty() throws Exception {
     clipboardManager.setPrimaryClip(ClipData.newPlainText(null, ""));
-    assertFalse(clipboardManager.hasText());
+    assertThat(clipboardManager.hasText()).isFalse();
   }
 
   @Test
   public void shouldHaveTextIfEmptyPrimaryClip() throws Exception {
     clipboardManager.setPrimaryClip(ClipData.newPlainText(null, " "));
-    assertTrue(clipboardManager.hasText());
+    assertThat(clipboardManager.hasText()).isTrue();
   }
 
   @Test
   public void shouldHaveTextIfPrimaryClip() {
     clipboardManager.setPrimaryClip(ClipData.newPlainText(null, "BLARG?"));
-    assertTrue(clipboardManager.hasText());
+    assertThat(clipboardManager.hasText()).isTrue();
+  }
+
+  @Test
+  public void shouldHavePrimaryClipIfText() {
+    clipboardManager.setText("BLARG?");
+    assertThat(clipboardManager.hasPrimaryClip()).isTrue();
+  }
+
+  @Test
+  public void shouldFireListeners() {
+    OnPrimaryClipChangedListener listener = mock(OnPrimaryClipChangedListener.class);
+    clipboardManager.addPrimaryClipChangedListener(listener);
+    clipboardManager.setPrimaryClip(ClipData.newPlainText(null, "BLARG?"));
+    verify(listener).onPrimaryClipChanged();
+
+    clipboardManager.removePrimaryClipChangedListener(listener);
+    clipboardManager.setPrimaryClip(ClipData.newPlainText(null, "BLARG?"));
+    verifyNoMoreInteractions(listener);
   }
 }

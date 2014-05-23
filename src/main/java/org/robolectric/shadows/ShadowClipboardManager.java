@@ -3,19 +3,19 @@ package org.robolectric.shadows;
 import android.content.ClipData;
 import android.content.ClipDescription;
 import android.content.ClipboardManager;
+import android.content.ClipboardManager.OnPrimaryClipChangedListener;
+import com.google.android.collect.Lists;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-
+import java.util.Collection;
 import static org.robolectric.Robolectric.directlyOn;
 
 @SuppressWarnings("UnusedDeclaration")
 @Implements(ClipboardManager.class)
 public class ShadowClipboardManager {
-
-  @RealObject
-  private ClipboardManager realClipboardManager;
-
+  @RealObject private ClipboardManager realClipboardManager;
+  private final Collection<OnPrimaryClipChangedListener> listeners = Lists.newArrayList();
   private ClipData clip;
 
   @Implementation
@@ -24,6 +24,9 @@ public class ShadowClipboardManager {
        clip.prepareToLeaveProcess();
     }
     this.clip = clip;
+    for (OnPrimaryClipChangedListener listener : listeners) {
+      listener.onPrimaryClipChanged();
+    }
   }
 
   @Implementation
@@ -39,6 +42,21 @@ public class ShadowClipboardManager {
   @Implementation
   public boolean hasPrimaryClip() {
     return clip != null;
+  }
+
+  @Implementation
+  public void addPrimaryClipChangedListener(OnPrimaryClipChangedListener listener) {
+    listeners.add(listener);
+  }
+
+  @Implementation
+  public void removePrimaryClipChangedListener(OnPrimaryClipChangedListener listener) {
+    listeners.remove(listener);
+  }
+
+  @Implementation
+  public void setText(CharSequence text) {
+    setPrimaryClip(ClipData.newPlainText(null, text));
   }
 
   @Implementation
