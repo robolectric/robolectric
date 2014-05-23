@@ -29,6 +29,8 @@ public class ShadowAudioManager {
   private AudioManager.OnAudioFocusChangeListener lastAbandonedAudioFocusListener;
   private HashMap<Integer, AudioStream> streamStatus = new HashMap<Integer, AudioStream>();
   private int ringerMode = AudioManager.RINGER_MODE_NORMAL;
+  private boolean wiredHeadsetOn;
+  private boolean bluetoothA2dpOn;
 
   public ShadowAudioManager() {
     for (int stream : ALL_STREAMS) {
@@ -94,6 +96,26 @@ public class ShadowAudioManager {
     for (Map.Entry<Integer, AudioStream> entry : streamStatus.entrySet()) {
       entry.getValue().setCurrentVolume(streamVolume);
     }
+  }
+
+  @Implementation
+  public void setWiredHeadsetOn(boolean on) {
+    wiredHeadsetOn = on;
+  }
+
+  @Implementation
+  public boolean isWiredHeadsetOn() {
+    return wiredHeadsetOn;
+  }
+
+  @Implementation
+  public void setBluetoothA2dpOn(boolean on) {
+    bluetoothA2dpOn = on;
+  }
+
+  @Implementation
+  public boolean isBluetoothA2dpOn() {
+    return bluetoothA2dpOn;
   }
 
   public AudioFocusRequest getLastAudioFocusRequest() {
