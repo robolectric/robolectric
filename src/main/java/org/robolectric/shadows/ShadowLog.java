@@ -96,7 +96,7 @@ public class ShadowLog {
     return extraLogLength + tag.length() + msg.length();
   }
 
-  private static void addLog(int level, String tag, String msg, Throwable throwable) {
+  private static synchronized void addLog(int level, String tag, String msg, Throwable throwable) {
     if (stream != null) {
       logToStream(stream, level, tag, msg, throwable);
     }
@@ -136,7 +136,7 @@ public class ShadowLog {
    * Non-Android accessor.  Returns ordered list of all log entries.
    * @return
    */
-  public static List<LogItem> getLogs() {
+  public static synchronized List<LogItem> getLogs() {
     return logs;
   }
 
@@ -146,11 +146,11 @@ public class ShadowLog {
    * @param tag
    * @return
    */
-  public static List<LogItem> getLogsForTag( String tag ) {
+  public static synchronized List<LogItem> getLogsForTag( String tag ) {
     return logsByTag.get(tag);
   }
 
-  public static void reset() {
+  public static synchronized void reset() {
     logs.clear();
     logsByTag.clear();
   }
