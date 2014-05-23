@@ -9,9 +9,13 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
+import static android.content.ClipboardManager.OnPrimaryClipChangedListener;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ClipboardManagerTest {
@@ -81,5 +85,24 @@ public class ClipboardManagerTest {
   public void shouldHaveTextIfPrimaryClip() {
     clipboardManager.setPrimaryClip(ClipData.newPlainText(null, "BLARG?"));
     assertTrue(clipboardManager.hasText());
+  }
+
+  @Test
+  public void shouldHavePrimaryClipIfText() {
+    clipboardManager.setText("BLARG?");
+    assertTrue(clipboardManager.hasPrimaryClip());
+  }
+
+
+  @Test
+  public void shouldFireListeners() {
+    OnPrimaryClipChangedListener listener = mock(OnPrimaryClipChangedListener.class);
+    clipboardManager.addPrimaryClipChangedListener(listener);
+    clipboardManager.setPrimaryClip(ClipData.newPlainText(null, "BLARG?"));
+    verify(listener).onPrimaryClipChanged();
+
+    clipboardManager.removePrimaryClipChangedListener(listener);
+    clipboardManager.setPrimaryClip(ClipData.newPlainText(null, "BLARG?"));
+    verifyNoMoreInteractions(listener);
   }
 }
