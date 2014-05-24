@@ -79,6 +79,8 @@ public final class R {
 
     public static final int hello = 0x10038;
     public static final int world = 0x10039;
+
+    public static final int list_view_with_enum_scrollbar = 0x10040;
   }
 
   public static final class string {
@@ -204,6 +206,7 @@ public final class R {
     public static final int main_layout = 0x10623;
     public static final int activity_main = 0x10624;
     public static final int activity_main_1 = 0x10625;
+    public static final int ordinal_scrollbar = 0x10626;
   }
 
   public static final class anim {
@@ -293,6 +296,7 @@ public final class R {
     public static final int test_value_with_zero = 0x10d08;
     public static final int reference_to_meaning_of_life = 0x10d09;
     public static final int meaning_of_life_as_item = 0x10d0a;
+    public static final int scrollbar_style_ordinal_outside_overlay = 0x10d0b;
   }
 
   public static final class bool {
