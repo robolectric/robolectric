@@ -17,10 +17,12 @@ public class ResBunch {
   // Matches a version qualifier like "v14". Parentheses capture the numeric
   // part for easy retrieval with Matcher.group(1).
   private static final String VERSION_QUALIFIER_REGEX = "v([0-9]+)";
-  private static final Pattern VERSION_QUALIFIER_PATTERN_WITH_LINE_END =
-      Pattern.compile(VERSION_QUALIFIER_REGEX + "$");
-  private static final Pattern VERSION_QUALIFIER_PATTERN_WITH_DASHES =
-      Pattern.compile("-" + VERSION_QUALIFIER_REGEX + "-");
+  private static final String PADDED_VERSION_QUALIFIER_REGEX
+    = "-" + VERSION_QUALIFIER_REGEX + "-";
+  private static final Pattern VERSION_QUALIFIER_PATTERN_WITH_LINE_END
+    = Pattern.compile(VERSION_QUALIFIER_REGEX + "$");
+  private static final Pattern VERSION_QUALIFIER_PATTERN_WITH_DASHES
+    = Pattern.compile(PADDED_VERSION_QUALIFIER_REGEX);
 
   private final Map<String, ResMap<TypedResource>> types = new LinkedHashMap<String, ResMap<TypedResource>>();
 
@@ -105,9 +107,13 @@ public class ResBunch {
         
         Value value = values.get(i);
         int distance = getDistance(value, targetApiLevel);
-        if (distance >= 0 && distance < bestMatchDistance) {
-          bestMatch = value;
-          bestMatchDistance = distance;
+          // Remove the version part and see if they still match
+          String paddedQualifier = "-" + qualifiers + "-";
+          String valueWithoutVersion = value.qualifiers.replaceAll(PADDED_VERSION_QUALIFIER_REGEX, "--");
+          String qualifierWithoutVersion = paddedQualifier.replaceAll(PADDED_VERSION_QUALIFIER_REGEX, "--");
+          if (qualifierWithoutVersion.contains(valueWithoutVersion) && distance >= 0 && distance < bestMatchDistance) {
+            bestMatch = value;
+            bestMatchDistance = distance;
         }
       }
       if (bestMatch != null) {
@@ -140,6 +146,10 @@ public class ResBunch {
       if (m.find()) {
         throw new IllegalStateException("A resource file was found that had two API level qualifiers: " + val);
       }
+    } else {
+    	if (val.qualifiers.matches("--")) {
+    		distance = targetApiLevel;
+    	}
     }
     return distance;
   }

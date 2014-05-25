@@ -34,6 +34,17 @@ public class ResourceLoaderTest {
     assertThat(textView.getText().toString()).isEqualTo("land");
   }
 
+  @Test 
+  public void checkDefaultBooleanValue() throws Exception {
+	  assertThat(Robolectric.application.getResources().getBoolean(R.bool.different_resource_boolean)).isEqualTo(false);
+  }
+
+  @Test
+  @Config(qualifiers="w820dp")
+  public void checkQualifiedBooleanValue() throws Exception {
+	  assertThat(Robolectric.application.getResources().getBoolean(R.bool.different_resource_boolean)).isEqualTo(true);
+  }
+  
   @Test
   public void checkForPollution1() throws Exception {
     checkForPollutionHelper();
