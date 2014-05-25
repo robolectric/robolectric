@@ -80,7 +80,7 @@ public final class R {
     public static final int hello = 0x10038;
     public static final int world = 0x10039;
 
-    public static final int list_view_with_enum_scrollbar = 0x10040;
+    public static final int list_view_with_enum_scrollbar = 0x1003a;
   }
 
   public static final class string {
@@ -110,9 +110,9 @@ public final class R {
     public static final int preference_resource_summary = 0x10117;
     public static final int preference_resource_default_value = 0x10118;
     public static final int surrounding_quotes = 0x10119;
-    public static final int escaped_apostrophe = 0x10120;
-    public static final int escaped_quotes = 0x10121;
-    public static final int say_it_with_item = 0x10122;
+    public static final int escaped_apostrophe = 0x1011a;
+    public static final int escaped_quotes = 0x1011b;
+    public static final int say_it_with_item = 0x1011c;
   }
 
   public static final class plurals {
@@ -215,39 +215,39 @@ public final class R {
   }
 
   public static final class animator {
-    public static final int spinning = 0x10710;
-    public static final int fade = 0x10711;
+    public static final int spinning = 0x10800;
+    public static final int fade = 0x10801;
   }
 
   public static final class raw {
-    public static final int raw_resource = 0x10800;
-    public static final int raw_no_ext = 0x10801;
-    public static final int lib_raw_resource = 0x10802;
+    public static final int raw_resource = 0x10900;
+    public static final int raw_no_ext = 0x10901;
+    public static final int lib_raw_resource = 0x10902;
   }
 
   public static final class attr {
-    public static final int isSugary = 0x10900;
-    public static final int itemType = 0x10901;
-    public static final int scrollBars = 0x10902;
-    public static final int gravity = 0x10903;
-    public static final int keycode = 0x10904;
-    public static final int aspectRatio = 0x10905;
-    public static final int aspectRatioEnabled = 0x10906;
-    public static final int items = 0x10907;
-    public static final int logoHeight = 0x10908;
-    public static final int quitKeyCombo = 0x10909;
-    public static final int responses = 0x1090a;
-    public static final int animalStyle = 0x1090b;
+    public static final int isSugary = 0x10a00;
+    public static final int itemType = 0x10a01;
+    public static final int scrollBars = 0x10a02;
+    public static final int gravity = 0x10a03;
+    public static final int keycode = 0x10a04;
+    public static final int aspectRatio = 0x10a05;
+    public static final int aspectRatioEnabled = 0x10a06;
+    public static final int items = 0x10a07;
+    public static final int logoHeight = 0x10a08;
+    public static final int quitKeyCombo = 0x10a09;
+    public static final int responses = 0x10a0a;
+    public static final int animalStyle = 0x10a0b;
   }
 
   public static final class menu {
-    public static final int test = 0x10a00;
-    public static final int test_withchilds = 0x10a01;
-    public static final int action_menu = 0x10a02;
+    public static final int test = 0x10b00;
+    public static final int test_withchilds = 0x10b01;
+    public static final int action_menu = 0x10b02;
   }
 
   public static final class xml {
-    public static final int preferences = 0x10b00;
+    public static final int preferences = 0x10c00;
   }
 
   public static final class styleable {
@@ -275,48 +275,49 @@ public final class R {
   }
 
   public static final class dimen {
-    public static final int test_dp_dimen = 0x10c00;
-    public static final int test_dip_dimen = 0x10c01;
-    public static final int test_pt_dimen = 0x10c02;
-    public static final int test_px_dimen = 0x10c03;
-    public static final int test_sp_dimen = 0x10c04;
-    public static final int test_in_dimen = 0x10c05;
-    public static final int test_mm_dimen = 0x10c06;
+    public static final int test_dp_dimen = 0x10d00;
+    public static final int test_dip_dimen = 0x10d01;
+    public static final int test_pt_dimen = 0x10d02;
+    public static final int test_px_dimen = 0x10d03;
+    public static final int test_sp_dimen = 0x10d04;
+    public static final int test_in_dimen = 0x10d05;
+    public static final int test_mm_dimen = 0x10d06;
   }
 
   public static final class integer {
-    public static final int test_non_integer = 0x10d00;
-    public static final int test_integer1 = 0x10d01;
-    public static final int test_integer2 = 0x10d02;
-    public static final int test_large_hex = 0x10d03;
-    public static final int meaning_of_life = 0x10d04;
-    public static final int loneliest_number = 0x10d05;
-    public static final int there_can_be_only = 0x10d06;
-    public static final int hex_int = 0x10d07;
-    public static final int test_value_with_zero = 0x10d08;
-    public static final int reference_to_meaning_of_life = 0x10d09;
-    public static final int meaning_of_life_as_item = 0x10d0a;
-    public static final int scrollbar_style_ordinal_outside_overlay = 0x10d0b;
+    public static final int test_non_integer = 0x10e00;
+    public static final int test_integer1 = 0x10e01;
+    public static final int test_integer2 = 0x10e02;
+    public static final int test_large_hex = 0x10e03;
+    public static final int meaning_of_life = 0x10e04;
+    public static final int loneliest_number = 0x10e05;
+    public static final int there_can_be_only = 0x10e06;
+    public static final int hex_int = 0x10e07;
+    public static final int test_value_with_zero = 0x10e08;
+    public static final int reference_to_meaning_of_life = 0x10e09;
+    public static final int meaning_of_life_as_item = 0x10e0a;
+    public static final int scrollbar_style_ordinal_outside_overlay = 0x10e0b;
   }
 
   public static final class bool {
-    public static final int false_bool_value = 0x10e00;
-    public static final int true_bool_value = 0x10e01;
-    public static final int zero_is_false = 0x10e02;
-    public static final int integers_are_true = 0x10e03;
-    public static final int reference_to_true = 0x10e04;
-    public static final int true_as_item = 0x10e05;
+    public static final int false_bool_value = 0x10f00;
+    public static final int true_bool_value = 0x10f01;
+    public static final int zero_is_false = 0x10f02;
+    public static final int integers_are_true = 0x10f03;
+    public static final int reference_to_true = 0x10f04;
+    public static final int true_as_item = 0x10f05;
+    public static final int different_resource_boolean=0x10f06;
   }
 
   public static final class style {
-    public static final int FancyStyle = 0x10f00;
-    public static final int Theme_Robolectric = 0x10f01;
-    public static final int Theme_AnotherTheme = 0x10f02;
-    public static final int MyCustomView = 0x10f03;
-    public static final int Widget_Robolectric_Button = 0x10f04;
-    public static final int Widget_AnotherTheme_Button = 0x10f05;
-    public static final int Sized = 0x10f06;
-    public static final int Gastropod = 0x10f07;
-    public static final int Theme_ThirdTheme = 0x10f08;
+    public static final int FancyStyle = 0x11000;
+    public static final int Theme_Robolectric = 0x11001;
+    public static final int Theme_AnotherTheme = 0x11002;
+    public static final int MyCustomView = 0x11003;
+    public static final int Widget_Robolectric_Button = 0x11004;
+    public static final int Widget_AnotherTheme_Button = 0x11005;
+    public static final int Sized = 0x11006;
+    public static final int Gastropod = 0x11007;
+    public static final int Theme_ThirdTheme = 0x11008;
   }
 }
