@@ -84,6 +84,19 @@ public class ResBunchTest extends ResBunch {
   }
   
   @Test
+  public void onlyMatchingVersionsQualifiersWillBePicked() {
+    Values vals = new Values();
+    
+    Value val1 = new Value("v16", mock(TypedResource.class), null);
+    vals.add(val1);
+    Value val2 = new Value("sw600dp-v17", mock(TypedResource.class), null);
+    vals.add(val2);
+
+    Value v = ResBunch.pick(vals, "v18");
+    assertThat(v).isEqualTo(val1);
+  }
+  
+  @Test
   public void illegalResourceQualifierThrowsException() {
     Values vals = new Values();
     Value val1 = new Value("v11-en-v12", mock(TypedResource.class), null);
