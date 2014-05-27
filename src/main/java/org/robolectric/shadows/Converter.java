@@ -29,6 +29,7 @@ public class Converter<T> {
     ATTR_TYPE_MAP.put("float", ResType.FLOAT);
     ATTR_TYPE_MAP.put("integer", ResType.INTEGER);
     ATTR_TYPE_MAP.put("string", ResType.CHAR_SEQUENCE);
+    ATTR_TYPE_MAP.put("fraction", ResType.FRACTION);
   }
 
   synchronized private static int getNextStringCookie() {
@@ -176,6 +177,8 @@ public class Converter<T> {
         return new FromFloat();
       case INTEGER:
         return new FromInt();
+      case FRACTION:
+        return new FromFraction();
       case LAYOUT:
         return new FromFilePath();
 
@@ -269,6 +272,12 @@ public class Converter<T> {
     @Override public int asInt(TypedResource typedResource) {
       String rawValue = typedResource.asString();
       return convertInt(rawValue);
+    }
+  }
+
+  private static class FromFraction extends Converter<String> {
+    @Override public void fillTypedValue(String data, TypedValue typedValue) {
+      ResourceHelper.parseFloatAttribute(null, data, typedValue, false);
     }
   }
 

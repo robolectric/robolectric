@@ -319,4 +319,15 @@ public final class R {
     public static final int Gastropod = 0x10f07;
     public static final int Theme_ThirdTheme = 0x10f08;
   }
+
+  public static final class fraction {
+    public static final int half = 0x11000;
+    public static final int half_of_parent = 0x11001;
+    public static final int quarter_as_item = 0x11002;
+    public static final int quarter_of_parent_as_item = 0x11003;
+    public static final int fifth = 0x11004;
+    public static final int fifth_as_reference = 0x11005;
+    public static final int fifth_of_parent = 0x11006;
+    public static final int fifth_of_parent_as_reference = 0x11007;
+  }
 }
