@@ -65,7 +65,11 @@ public class SQLiteLibraryLoaderTest {
 
   @Test
   public void shouldRewriteExistingLibraryIfThereAreChanges() throws Exception {
-    SQLiteLibraryLoader.copy(new ByteArrayInputStream("changed".getBytes()), new FileOutputStream(loader.getNativeLibraryPath()));
+    loader.getNativeLibraryPath().getParentFile().mkdirs();
+
+    SQLiteLibraryLoader.copy(
+        new ByteArrayInputStream("changed".getBytes()),
+        new FileOutputStream(loader.getNativeLibraryPath()));
     long firstSize = loader.getNativeLibraryPath().length();
 
     loader.doLoad();
