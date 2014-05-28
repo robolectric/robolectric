@@ -695,6 +695,9 @@ public class AndroidManifest {
                 // Was provided by value attribute, need to parse it
                 TypedResource<?> typedRes = resLoader.getValue(resName, "");
                 // The typed resource's data is always a String, so need to parse the value.
+                if (typedRes == null) {
+                  throw new IllegalArgumentException("Resource not found: " + resName);
+                }
                 switch (typedRes.getResType()) {
                   case BOOLEAN: case COLOR: case INTEGER: case FLOAT:
                     valueMap.put(entry.getKey(),parseValue(typedRes.getData().toString()));

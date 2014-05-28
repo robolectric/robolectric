@@ -16,7 +16,7 @@ public class ResName {
   public final @NotNull String type;
   public final @NotNull String name;
 
-  public ResName(@NotNull String packageName, @NotNull String type, @NotNull String name) {
+  public ResName(@NotNull String packageName, String type, @NotNull String name) {
     this.packageName = packageName;
     this.type = type;
     this.name = name.indexOf('.') != -1 ? name.replace('.', '_') : name;
