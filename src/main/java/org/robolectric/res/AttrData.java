@@ -31,6 +31,19 @@ public class AttrData {
     return null;
   }
 
+  public boolean isValue(String value) {
+    if (pairs == null) {
+      return false;
+    } else {
+      for (Pair pair : pairs) {
+        if (pair.value.equals(value)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   @Override public String toString() {
   return "AttrData{" +
     "name='" + name + '\'' +

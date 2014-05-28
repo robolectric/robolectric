@@ -7,6 +7,8 @@ import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
 import android.graphics.drawable.*;
 import android.util.DisplayMetrics;
+
+import org.fest.assertions.data.Offset;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -171,6 +173,20 @@ public class ResourcesTest {
     assertThat(resources.getQuantityString(R.plurals.beer, 1)).isEqualTo("One beer");
     assertThat(resources.getQuantityString(R.plurals.beer, 2)).isEqualTo("Two beers");
     assertThat(resources.getQuantityString(R.plurals.beer, 3)).isEqualTo("%d beers, yay!");
+  }
+
+  @Test
+  public void getFraction() throws Exception {
+    final int myself = 300;
+    final int myParent = 600;
+    assertThat(resources.getFraction(R.fraction.half, myself, myParent)).isEqualTo(150f);
+    assertThat(resources.getFraction(R.fraction.half_of_parent, myself, myParent)).isEqualTo(300f);
+
+    assertThat(resources.getFraction(R.fraction.quarter_as_item, myself, myParent)).isEqualTo(75f);
+    assertThat(resources.getFraction(R.fraction.quarter_of_parent_as_item, myself, myParent)).isEqualTo(150f);
+
+    assertThat(resources.getFraction(R.fraction.fifth_as_reference, myself, myParent)).isEqualTo(60f, Offset.offset(0.01f));
+    assertThat(resources.getFraction(R.fraction.fifth_of_parent_as_reference, myself, myParent)).isEqualTo(120f, Offset.offset(0.01f));
   }
 
   @Test

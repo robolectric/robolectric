@@ -11,6 +11,7 @@ public enum ResType {
   DIMEN,
   FILE,
   FLOAT,
+  FRACTION,
   INTEGER,
   LAYOUT,
   STYLE {
