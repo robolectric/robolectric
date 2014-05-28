@@ -14,9 +14,31 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
-import static android.content.pm.ApplicationInfo.*;
+import static android.content.pm.ApplicationInfo.FLAG_ALLOW_BACKUP;
+import static android.content.pm.ApplicationInfo.FLAG_ALLOW_CLEAR_USER_DATA;
+import static android.content.pm.ApplicationInfo.FLAG_ALLOW_TASK_REPARENTING;
+import static android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE;
+import static android.content.pm.ApplicationInfo.FLAG_HAS_CODE;
+import static android.content.pm.ApplicationInfo.FLAG_KILL_AFTER_RESTORE;
+import static android.content.pm.ApplicationInfo.FLAG_PERSISTENT;
+import static android.content.pm.ApplicationInfo.FLAG_RESIZEABLE_FOR_SCREENS;
+import static android.content.pm.ApplicationInfo.FLAG_RESTORE_ANY_VERSION;
+import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_LARGE_SCREENS;
+import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_NORMAL_SCREENS;
+import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_SCREEN_DENSITIES;
+import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_SMALL_SCREENS;
+import static android.content.pm.ApplicationInfo.FLAG_TEST_ONLY;
+import static android.content.pm.ApplicationInfo.FLAG_VM_SAFE_MODE;
 
 public class AndroidManifest {
   private final FsFile androidManifestFile;
