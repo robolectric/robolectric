@@ -15,6 +15,8 @@ import static org.robolectric.Robolectric.shadowOf;
 public class ShadowNotification {
   private CharSequence contentTitle;
   private CharSequence contentText;
+  private CharSequence ticker;
+  private CharSequence contentInfo;
   private int smallIcon;
   private long when;
 
@@ -65,6 +67,22 @@ public class ShadowNotification {
     this.when = when;
   }
 
+  public CharSequence getTicker() {
+   return ticker;
+  }
+
+  public void setTicker(CharSequence ticker) {
+   this.ticker = ticker;
+  }
+
+  public CharSequence getContentInfo() {
+   return contentInfo;
+  }
+
+  public void setContentInfo(CharSequence contentInfo) {
+   this.contentInfo = contentInfo;
+  }
+
   @Implementation
   public void setLatestEventInfo(Context context, CharSequence contentTitle,
                    CharSequence contentText, PendingIntent contentIntent) {
@@ -106,6 +124,8 @@ public class ShadowNotification {
     @RealObject private Notification.Builder realBuilder;
     private String contentTitle;
     private String contentText;
+    private String ticker;
+    private String contentInfo;
     private int icon;
     private long when;
 
@@ -116,7 +136,9 @@ public class ShadowNotification {
       shadowResult.setContentTitle(contentTitle);
       shadowResult.setContentText(contentText);
       shadowResult.setSmallIcon(icon);
+      shadowResult.setTicker(ticker);
       shadowResult.setWhen(when);
+      shadowResult.setContentInfo(contentInfo);
       return result;
     }
 
@@ -150,6 +172,22 @@ public class ShadowNotification {
       directlyOn(realBuilder, Notification.Builder.class, "setWhen", long.class).invoke(when);
 
       return realBuilder;
+    }
+
+    @Implementation
+    public Notification.Builder setTicker(CharSequence ticker){
+     this.ticker = ticker.toString();
+     directlyOn(realBuilder, Notification.Builder.class, "setTicker", CharSequence.class).invoke(ticker);
+
+     return realBuilder;
+    }
+
+    @Implementation
+    public Notification.Builder setContentInfo(CharSequence info){
+     this.contentInfo = info.toString();
+     directlyOn(realBuilder, Notification.Builder.class, "setContentInfo", CharSequence.class).invoke(info);
+
+     return realBuilder;
     }
   }
 }

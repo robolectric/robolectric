@@ -47,4 +47,18 @@ public class NotificationBuilderTest {
     Notification notification = builder.build();
     assertEquals(11L, shadowOf(notification).getWhen());
   }
+
+  @Test
+  public void build_setsTickerOnNotification() throws Exception {
+    builder.setTicker("My ticker");
+    Notification notification = builder.build();
+    assertEquals("My ticker", shadowOf(notification).getTicker());
+  }
+
+  @Test
+  public void build_setsContentInfoOnNotification() throws Exception {
+    builder.setContentInfo("11");
+    Notification notification = builder.build();
+    assertEquals("11", shadowOf(notification).getContentInfo());
+  }
 }
