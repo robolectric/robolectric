@@ -587,6 +587,33 @@ public class ShadowContentResolverTest {
     scr.clearContentObservers();
     assertThat(scr.getContentObserver(EXTERNAL_CONTENT_URI)).isNull();
   }
+    
+  @Test
+  public void shouldRegisterMultipleContentObservers() throws Exception {
+    TestContentObserver co = new TestContentObserver(null);
+    TestContentObserver co1 = new TestContentObserver(null);
+    TestContentObserver co2 = new TestContentObserver(null);
+
+    assertThat(shadowContentResolver.getContentObservers(uri21)).isEmpty();
+
+    contentResolver.registerContentObserver(uri21, true, co);
+    contentResolver.registerContentObserver(uri21, true, co1);
+    contentResolver.registerContentObserver(uri22, true, co2);
+
+    assertThat(shadowContentResolver.getContentObservers(uri21)).containsExactly(co, co1);
+    assertThat(shadowContentResolver.getContentObservers(uri22)).containsExactly(co2);
+
+    assertThat(co.changed).isFalse();
+    assertThat(co1.changed).isFalse();
+    assertThat(co2.changed).isFalse();
+    contentResolver.notifyChange(uri21, null);
+    assertThat(co.changed).isTrue();
+    assertThat(co1.changed).isTrue();
+    assertThat(co2.changed).isFalse();
+
+    shadowContentResolver.clearContentObservers();
+    assertThat(shadowContentResolver.getContentObservers(uri21)).isEmpty();
+  }
 
   @Test
   public void shouldUnregisterContentObservers() throws Exception {
@@ -601,6 +628,37 @@ public class ShadowContentResolverTest {
     assertThat(co.changed).isFalse();
     contentResolver.notifyChange(EXTERNAL_CONTENT_URI, null);
     assertThat(co.changed).isFalse();
+  }
+    
+  @Test
+  public void shouldUnregisterMultipleContentObservers() throws Exception {
+    TestContentObserver co = new TestContentObserver(null);
+    TestContentObserver co1 = new TestContentObserver(null);
+    TestContentObserver co2 = new TestContentObserver(null);
+      
+    contentResolver.registerContentObserver(uri21, true, co);
+    contentResolver.registerContentObserver(uri21, true, co1);
+    contentResolver.registerContentObserver(uri22, true, co);
+    contentResolver.registerContentObserver(uri22, true, co2);
+    assertThat(shadowContentResolver.getContentObservers(uri21)).containsExactly(co, co1);
+    assertThat(shadowContentResolver.getContentObservers(uri22)).containsExactly(co, co2);
+
+    contentResolver.unregisterContentObserver(co);
+    assertThat(shadowContentResolver.getContentObservers(uri21)).containsExactly(co1);
+    assertThat(shadowContentResolver.getContentObservers(uri22)).containsExactly(co2);
+      
+    contentResolver.unregisterContentObserver(co2);
+    assertThat(shadowContentResolver.getContentObservers(uri21)).containsExactly(co1);
+    assertThat(shadowContentResolver.getContentObservers(uri22)).isEmpty();
+
+    assertThat(co.changed).isFalse();
+    assertThat(co1.changed).isFalse();
+    assertThat(co2.changed).isFalse();
+    contentResolver.notifyChange(uri21, null);
+    contentResolver.notifyChange(uri22, null);
+    assertThat(co.changed).isFalse();
+    assertThat(co1.changed).isTrue();
+    assertThat(co2.changed).isFalse();
   }
 
   @Test
