@@ -122,11 +122,11 @@ public class ShadowNotification {
   public static class ShadowBuilder {
 
     @RealObject private Notification.Builder realBuilder;
-    private String contentTitle;
-    private String contentText;
-    private String ticker;
-    private String contentInfo;
-    private int icon;
+    private CharSequence contentTitle;
+    private CharSequence contentInfo;
+    private CharSequence contentText;
+    private CharSequence ticker;
+    private int smallIcon;
     private long when;
 
     @Implementation
@@ -135,7 +135,7 @@ public class ShadowNotification {
       ShadowNotification shadowResult = shadowOf(result);
       shadowResult.setContentTitle(contentTitle);
       shadowResult.setContentText(contentText);
-      shadowResult.setSmallIcon(icon);
+      shadowResult.setSmallIcon(smallIcon);
       shadowResult.setTicker(ticker);
       shadowResult.setWhen(when);
       shadowResult.setContentInfo(contentInfo);
@@ -143,26 +143,23 @@ public class ShadowNotification {
     }
 
     @Implementation
-    public Notification.Builder setContentTitle(CharSequence title) {
-      contentTitle = title.toString();
-      directlyOn(realBuilder, Notification.Builder.class, "setContentTitle", CharSequence.class).invoke(title);
-
+    public Notification.Builder setContentTitle(CharSequence contentTitle) {
+      this.contentTitle = contentTitle;
+      directlyOn(realBuilder, Notification.Builder.class, "setContentTitle", CharSequence.class).invoke(contentTitle);
       return realBuilder;
     }
 
     @Implementation
     public Notification.Builder setContentText(CharSequence text) {
-      contentText = text.toString();
+      this.contentText = text;
       directlyOn(realBuilder, Notification.Builder.class, "setContentText", CharSequence.class).invoke(text);
-
       return realBuilder;
     }
 
     @Implementation
     public Notification.Builder setSmallIcon(int smallIcon) {
-      this.icon = smallIcon;
+      this.smallIcon = smallIcon;
       directlyOn(realBuilder, Notification.Builder.class, "setSmallIcon", int.class).invoke(smallIcon);
-
       return realBuilder;
     }
 
@@ -170,24 +167,21 @@ public class ShadowNotification {
     public Notification.Builder setWhen(long when) {
       this.when = when;
       directlyOn(realBuilder, Notification.Builder.class, "setWhen", long.class).invoke(when);
-
       return realBuilder;
     }
 
     @Implementation
-    public Notification.Builder setTicker(CharSequence ticker){
-     this.ticker = ticker.toString();
-     directlyOn(realBuilder, Notification.Builder.class, "setTicker", CharSequence.class).invoke(ticker);
-
-     return realBuilder;
+    public Notification.Builder setTicker(CharSequence ticker) {
+      this.ticker = ticker;
+      directlyOn(realBuilder, Notification.Builder.class, "setTicker", CharSequence.class).invoke(ticker);
+      return realBuilder;
     }
 
     @Implementation
-    public Notification.Builder setContentInfo(CharSequence info){
-     this.contentInfo = info.toString();
-     directlyOn(realBuilder, Notification.Builder.class, "setContentInfo", CharSequence.class).invoke(info);
-
-     return realBuilder;
+    public Notification.Builder setContentInfo(CharSequence contentInfo) {
+      this.contentInfo = contentInfo;
+      directlyOn(realBuilder, Notification.Builder.class, "setContentInfo", CharSequence.class).invoke(contentInfo);
+      return realBuilder;
     }
   }
 }
