@@ -1,6 +1,8 @@
 package org.robolectric.shadows;
 
+import android.accessibilityservice.AccessibilityServiceInfo;
 import android.content.Context;
+import android.content.pm.ServiceInfo;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -14,6 +16,8 @@ import org.robolectric.internal.HiddenApi;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.fest.reflect.core.Reflection.field;
 import static org.fest.reflect.core.Reflection.method;
@@ -38,6 +42,31 @@ public class ShadowAccessibilityManager {
   @Implementation
   public boolean removeAccessibilityStateChangeListener(AccessibilityManager.AccessibilityStateChangeListener listener) {
     return true;
+  }
+
+  @Implementation
+  public List<ServiceInfo> getAccessibilityServiceList () {
+    return new ArrayList<ServiceInfo>();
+  }
+
+  @Implementation
+  public List<AccessibilityServiceInfo> getEnabledAccessibilityServiceList (int feedbackTypeFlags) {
+    return new ArrayList<AccessibilityServiceInfo>();
+  }
+
+  @Implementation
+  public List<AccessibilityServiceInfo> getInstalledAccessibilityServiceList () {
+    return new ArrayList<AccessibilityServiceInfo>();
+  }
+
+  @Implementation
+  public boolean isEnabled () {
+    return false;
+  }
+
+  @Implementation
+  public boolean isTouchExplorationEnabled () {
+    return false;
   }
 
   static Field makeNonFinal(Field field) {

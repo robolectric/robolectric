@@ -112,6 +112,7 @@ public class ApplicationTest {
     checkSystemService(Context.DROPBOX_SERVICE, android.os.DropBoxManager.class);
     checkSystemService(Context.MEDIA_ROUTER_SERVICE, android.media.MediaRouter.class);
     checkSystemService(Context.DISPLAY_SERVICE, android.hardware.display.DisplayManager.class);
+    checkSystemService(Context.ACCESSIBILITY_SERVICE, android.view.accessibility.AccessibilityManager.class);
   }
 
   @Test public void shouldProvideLayoutInflater() throws Exception {
