@@ -137,6 +137,14 @@ public class ActivityControllerTest {
     transcript.assertEventsInclude("finishedOnUserLeaveHint", "onUserLeaveHint");
   }
 
+  @Test
+  public void launch() {
+    controller.launch();
+    transcript.assertEventsInclude("onCreate", "onStart", "onPostCreate", "onResume", "onPostResume");
+    assertEquals(controller.get().getWindow().getDecorView().getParent().getClass().getName(), "android.view.ViewRootImpl");
+  }
+
+
   public static class MyActivity extends Activity {
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
