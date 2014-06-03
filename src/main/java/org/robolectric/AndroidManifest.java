@@ -2,7 +2,6 @@ package org.robolectric;
 
 import android.app.Activity;
 import android.graphics.Color;
-import org.fest.util.Lists;
 import org.robolectric.res.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -491,7 +490,9 @@ public class AndroidManifest {
     for (AndroidManifest libraryManifest : getLibraryManifests()) {
       resourcePaths.addAll(libraryManifest.getIncludedResourcePaths());
     }
-    return Lists.newArrayList(resourcePaths);
+    List<ResourcePath> result = new ArrayList<ResourcePath>();
+    result.addAll(resourcePaths);
+    return result;
   }
 
   public List<ContentProviderData> getContentProviders() {
