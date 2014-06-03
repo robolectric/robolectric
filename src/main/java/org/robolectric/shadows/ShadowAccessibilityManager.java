@@ -25,6 +25,12 @@ import static org.fest.reflect.core.Reflection.method;
 @Implements(AccessibilityManager.class)
 public class ShadowAccessibilityManager {
 
+  private boolean enabled;
+  private List<AccessibilityServiceInfo> installedAccessibilityServiceList;
+  private List<AccessibilityServiceInfo> enabledAccessibilityServiceList;
+  private List<ServiceInfo> accessibilityServiceList;
+  private boolean touchExplorationEnabled;
+
   @HiddenApi @Implementation
   public static AccessibilityManager getInstance(Context context) throws Exception {
     AccessibilityManager accessibilityManager = Robolectric.newInstance(AccessibilityManager.class, new Class[0], new Object[0]);
@@ -46,27 +52,47 @@ public class ShadowAccessibilityManager {
 
   @Implementation
   public List<ServiceInfo> getAccessibilityServiceList () {
-    return new ArrayList<ServiceInfo>();
+    return accessibilityServiceList;
+  }
+
+  public void setAccessibilityServiceList(List<ServiceInfo> accessibilityServiceList) {
+    this.accessibilityServiceList = accessibilityServiceList;
   }
 
   @Implementation
   public List<AccessibilityServiceInfo> getEnabledAccessibilityServiceList (int feedbackTypeFlags) {
-    return new ArrayList<AccessibilityServiceInfo>();
+    return enabledAccessibilityServiceList;
+  }
+
+  public void setEnabledAccessibilityServiceList(List<AccessibilityServiceInfo> enabledAccessibilityServiceList) {
+    this.enabledAccessibilityServiceList = enabledAccessibilityServiceList;
   }
 
   @Implementation
   public List<AccessibilityServiceInfo> getInstalledAccessibilityServiceList () {
-    return new ArrayList<AccessibilityServiceInfo>();
+    return installedAccessibilityServiceList;
+  }
+
+  public void setInstalledAccessibilityServiceList(List<AccessibilityServiceInfo> installedAccessibilityServiceList) {
+    this.installedAccessibilityServiceList = installedAccessibilityServiceList;
   }
 
   @Implementation
   public boolean isEnabled () {
-    return false;
+    return enabled;
+  }
+
+  public void setEnabled(boolean enabled) {
+    this.enabled = enabled;
   }
 
   @Implementation
   public boolean isTouchExplorationEnabled () {
-    return false;
+    return touchExplorationEnabled;
+  }
+
+  public void setTouchExplorationEnabled(boolean touchExplorationEnabled) {
+    this.touchExplorationEnabled = touchExplorationEnabled;
   }
 
   static Field makeNonFinal(Field field) {
