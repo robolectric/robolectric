@@ -490,9 +490,7 @@ public class AndroidManifest {
     for (AndroidManifest libraryManifest : getLibraryManifests()) {
       resourcePaths.addAll(libraryManifest.getIncludedResourcePaths());
     }
-    List<ResourcePath> result = new ArrayList<ResourcePath>();
-    result.addAll(resourcePaths);
-    return result;
+    return new ArrayList<ResourcePath>(resourcePaths);
   }
 
   public List<ContentProviderData> getContentProviders() {

@@ -9,7 +9,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -306,8 +306,7 @@ public class ShadowCamera {
     }
 
     public void setSupportedFocusModes(String... focusModes) {
-      supportedFocusModes = new ArrayList<String>();
-      Collections.addAll(supportedFocusModes, focusModes);
+      supportedFocusModes = Arrays.asList(focusModes);
     }
 
     @Implementation
