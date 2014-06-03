@@ -1,11 +1,14 @@
 package org.robolectric.shadows;
 
+import android.widget.NumberPicker;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import android.widget.NumberPicker;
-import org.robolectric.TestRunners;
 import org.robolectric.Robolectric;
-import static junit.framework.Assert.*;
+import org.robolectric.TestRunners;
+
+import static junit.framework.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class NumberPickerTest {
@@ -31,5 +34,19 @@ public class NumberPickerTest {
     } catch (Exception e) {
       // pass
     }
+  }
+
+  @Test
+  public void shouldFireListeners() {
+    NumberPicker picker = new NumberPicker(Robolectric.application);
+
+    picker.setValue(5);
+
+    NumberPicker.OnValueChangeListener listener = mock(NumberPicker.OnValueChangeListener.class);
+    picker.setOnValueChangedListener(listener);
+
+    picker.setValue(10);
+
+    verify(listener).onValueChange(picker, 5, 10);
   }
 }
