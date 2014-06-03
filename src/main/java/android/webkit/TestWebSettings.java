@@ -36,6 +36,7 @@ public class TestWebSettings extends WebSettings {
   private String userAgentString = "Mozilla/5.0 (Linux; U; Android 4.0.3; ko-kr; LG-L160L Build/IML74K) AppleWebkit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30";
   private boolean useWideViewPort = false;
   private int cacheMode;
+  private long appCacheMaxSize;
 
   public TestWebSettings() {
   }
@@ -240,6 +241,15 @@ public class TestWebSettings extends WebSettings {
   @Implementation
   public void setUseWideViewPort(boolean useWideViewPort) {
     this.useWideViewPort = useWideViewPort;
+  }
+
+  @Override
+  public void setAppCacheMaxSize(long appCacheMaxSize) {
+    this.appCacheMaxSize = appCacheMaxSize;
+  }
+
+  public long getAppCacheMaxSize() {
+    return appCacheMaxSize;
   }
 
   @Implementation
