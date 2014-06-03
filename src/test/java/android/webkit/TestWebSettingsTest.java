@@ -237,6 +237,12 @@ public class TestWebSettingsTest {
   }
 
   @Test
+  public void testSetAppCacheMaxSize() throws Exception {
+    webSettings.setAppCacheMaxSize(100);
+    assertThat(webSettings.getAppCacheMaxSize()).isEqualTo(100);
+  }
+
+  @Test
   public void testSetGeolocationDatabasePath() throws Exception {
     webSettings.setGeolocationDatabasePath("new_path");
     assertThat(webSettings.getGeolocationDatabasePath()).isEqualTo("new_path");
