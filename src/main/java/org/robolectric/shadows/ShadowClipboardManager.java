@@ -4,18 +4,20 @@ import android.content.ClipData;
 import android.content.ClipDescription;
 import android.content.ClipboardManager;
 import android.content.ClipboardManager.OnPrimaryClipChangedListener;
-import com.google.android.collect.Lists;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+
 import java.util.Collection;
+import java.util.concurrent.CopyOnWriteArrayList;
+
 import static org.robolectric.Robolectric.directlyOn;
 
 @SuppressWarnings("UnusedDeclaration")
 @Implements(ClipboardManager.class)
 public class ShadowClipboardManager {
   @RealObject private ClipboardManager realClipboardManager;
-  private final Collection<OnPrimaryClipChangedListener> listeners = Lists.newArrayList();
+  private final Collection<OnPrimaryClipChangedListener> listeners = new CopyOnWriteArrayList<OnPrimaryClipChangedListener>();
   private ClipData clip;
 
   @Implementation
@@ -25,13 +27,7 @@ public class ShadowClipboardManager {
     }
     this.clip = clip;
 
-    // Synchronously copy the listeners, then handle the change event for each.
-    OnPrimaryClipChangedListener[] listenersCopy;
-    synchronized (listeners) {
-      listenersCopy = new OnPrimaryClipChangedListener[listeners.size()];
-      listenersCopy = listeners.toArray(listenersCopy);
-    }
-    for (OnPrimaryClipChangedListener listener : listenersCopy) {
+    for (OnPrimaryClipChangedListener listener : listeners) {
       listener.onPrimaryClipChanged();
     }
   }
@@ -53,16 +49,12 @@ public class ShadowClipboardManager {
 
   @Implementation
   public void addPrimaryClipChangedListener(OnPrimaryClipChangedListener listener) {
-    synchronized (listeners) {
-      listeners.add(listener);
-    }
+    listeners.add(listener);
   }
 
   @Implementation
   public void removePrimaryClipChangedListener(OnPrimaryClipChangedListener listener) {
-    synchronized (listeners) {
-      listeners.remove(listener);
-    }
+    listeners.remove(listener);
   }
 
   @Implementation
