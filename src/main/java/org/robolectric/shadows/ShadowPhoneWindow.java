@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.graphics.drawable.Drawable;
 import android.view.Window;
 
+import android.widget.ProgressBar;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -34,5 +35,15 @@ public class ShadowPhoneWindow extends ShadowWindow {
 
   public Drawable getBackgroundDrawable() {
     return backgroundDrawable;
+  }
+
+  @Override
+  public ProgressBar getProgressBar() {
+    return (ProgressBar) directlyOn(realWindow, PHONE_WINDOW_CLASS_NAME, "getHorizontalProgressBar", boolean.class).invoke(false);
+  }
+
+  @Override
+  public ProgressBar getIndeterminateProgressBar() {
+    return (ProgressBar) directlyOn(realWindow, PHONE_WINDOW_CLASS_NAME, "getCircularProgressBar", boolean.class).invoke(false);
   }
 }

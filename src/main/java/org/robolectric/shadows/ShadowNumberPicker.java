@@ -1,17 +1,16 @@
 package org.robolectric.shadows;
 
 import android.widget.NumberPicker;
-import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-
+import org.robolectric.annotation.Implementation;
 
 @Implements(NumberPicker.class)
 public class ShadowNumberPicker extends ShadowLinearLayout {
   private int value;
-  private String[] displayedValues;
   private int minValue;
   private int maxValue;
   private boolean wrapSelectorWheel;
+  private String[] displayedValues;
 
   @Implementation
   public void setValue(int value) {
@@ -25,7 +24,7 @@ public class ShadowNumberPicker extends ShadowLinearLayout {
 
   @Implementation
   public void setDisplayedValues(String[] displayedValues) {
-    if (displayedValues.length != (maxValue - minValue) + 1) {
+    if (displayedValues != null && displayedValues.length != (maxValue - minValue) + 1) {
       throw new RuntimeException("Displayed values should fit into range min and max values");
     }
     this.displayedValues = displayedValues;
@@ -44,6 +43,16 @@ public class ShadowNumberPicker extends ShadowLinearLayout {
   @Implementation
   public void setMaxValue(int maxValue) {
     this.maxValue = maxValue;
+  }
+
+  @Implementation
+  public int getMinValue() {
+    return this.minValue;
+  }
+
+  @Implementation
+  public int getMaxValue() {
+    return this.maxValue;
   }
 
   @Implementation

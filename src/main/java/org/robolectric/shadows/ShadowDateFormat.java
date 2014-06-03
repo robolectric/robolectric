@@ -12,12 +12,12 @@ public class ShadowDateFormat {
 
   @Implementation
   public static java.text.DateFormat getDateFormat(Context context) {
-    return new java.text.SimpleDateFormat("MMM-DD-yyyy", Locale.ROOT);
+    return new java.text.SimpleDateFormat("MMM-dd-yyyy", Locale.ROOT);
   }
 
   @Implementation
   public static java.text.DateFormat getLongDateFormat(Context context) {
-    return new java.text.SimpleDateFormat("MMMM DD, yyyy", Locale.ROOT);
+    return new java.text.SimpleDateFormat("MMMM dd, yyyy", Locale.ROOT);
   }
 
   @Implementation

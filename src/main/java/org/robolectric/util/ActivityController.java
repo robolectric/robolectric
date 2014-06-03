@@ -1,5 +1,19 @@
 package org.robolectric.util;
 
+import static org.fest.reflect.core.Reflection.constructor;
+import static org.fest.reflect.core.Reflection.field;
+import static org.fest.reflect.core.Reflection.method;
+import static org.fest.reflect.core.Reflection.type;
+import static org.robolectric.Robolectric.shadowOf_;
+
+import org.robolectric.AndroidManifest;
+import org.robolectric.RoboInstrumentation;
+import org.robolectric.Robolectric;
+import org.robolectric.res.ResName;
+import org.robolectric.shadows.ShadowActivity;
+import org.robolectric.shadows.ShadowActivityThread;
+import org.robolectric.shadows.ShadowApplication;
+
 import android.app.Activity;
 import android.app.Application;
 import android.app.Instrumentation;
@@ -10,35 +24,10 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.os.Looper;
 import android.view.View;
-import android.view.Window;
-import org.robolectric.AndroidManifest;
-import org.robolectric.RoboInstrumentation;
-import org.robolectric.Robolectric;
-import org.robolectric.res.ResName;
-import org.robolectric.shadows.ShadowActivity;
-import org.robolectric.shadows.ShadowActivityThread;
-import org.robolectric.shadows.ShadowApplication;
-import org.robolectric.shadows.ShadowLooper;
 
-import static org.fest.reflect.core.Reflection.constructor;
-import static org.fest.reflect.core.Reflection.field;
-import static org.fest.reflect.core.Reflection.method;
-import static org.fest.reflect.core.Reflection.type;
-import static org.robolectric.Robolectric.shadowOf_;
-
-@SuppressWarnings("UnusedDeclaration")
-public class ActivityController<T extends Activity> {
-  private final T activity;
-  private final ShadowActivity shadowActivity;
-  private final ShadowLooper shadowMainLooper;
-
-  private Application application;
-  private Context baseContext;
-  private Intent intent;
-
-  private boolean attached;
+public class ActivityController<T extends Activity>
+  extends ComponentController<ActivityController<T>, T, ShadowActivity>{
 
   public static <T extends Activity> ActivityController<T> of(Class<T> activityClass) {
     return new ActivityController<T>(activityClass);
@@ -49,44 +38,17 @@ public class ActivityController<T extends Activity> {
   }
 
   public ActivityController(Class<T> activityClass) {
-    this.activity = constructor().in(activityClass).newInstance();
-    shadowActivity = shadowOf_(activity);
-    shadowMainLooper = shadowOf_(Looper.getMainLooper());
+    this(constructor().in(activityClass).newInstance());
   }
 
   public ActivityController(T activity) {
-    this.activity = activity;
-    shadowActivity = shadowOf_(activity);
-    shadowMainLooper = shadowOf_(Looper.getMainLooper());
-    attached = true;
-  }
-
-  public T get() {
-    return activity;
-  }
-
-  public ActivityController<T> withApplication(Application application) {
-    this.application = application;
-    return this;
-  }
-
-  public ActivityController<T> withBaseContext(Context baseContext) {
-    this.baseContext = baseContext;
-    return this;
-  }
-
-  public ActivityController<T> withIntent(Intent intent) {
-    this.intent = intent;
-    return this;
+    super(activity);
   }
 
   public ActivityController<T> attach() {
     Application application = this.application == null ? Robolectric.application : this.application;
     Context baseContext = this.baseContext == null ? application : this.baseContext;
-    Intent intent = this.intent == null ? new Intent(application, activity.getClass()) : this.intent;
-    if (intent.getComponent() == null) {
-      intent.setClass(application, activity.getClass());
-    }
+    Intent intent = getIntent();
     ActivityInfo activityInfo = new ActivityInfo();
     String activityTitle = getActivityTitle();
 
@@ -102,26 +64,26 @@ public class ActivityController<T extends Activity> {
         CharSequence.class /* title */, Activity.class /* parent */, String.class /* id */,
         nonConfigurationInstancesClass /* lastNonConfigurationInstances */,
         Configuration.class /* config */
-    ).in(activity).invoke(baseContext, null /* aThread */,
+    ).in(component).invoke(baseContext, null /* aThread */,
         new RoboInstrumentation(), null /* token */, 0 /* ident */,
         application, intent /* intent */, activityInfo,
         activityTitle, null /* parent */, "id",
         null /* lastNonConfigurationInstances */,
         application.getResources().getConfiguration());
 
-    shadowActivity.setThemeFromManifest();
+    shadow.setThemeFromManifest();
     attached = true;
     return this;
   }
 
-  private final String getActivityTitle(){
+  private String getActivityTitle() {
     String title = null;
 
     /* Get the label for the activity from the manifest */
-    ShadowApplication shadowApplication = shadowOf_(activity.getApplication());
+    ShadowApplication shadowApplication = shadowOf_(component.getApplication());
     AndroidManifest appManifest = shadowApplication.getAppManifest();
     if (appManifest == null) return null;
-    String labelRef = appManifest.getActivityLabel(activity.getClass());
+    String labelRef = appManifest.getActivityLabel(component.getClass());
 
     if (labelRef != null) {
       if(labelRef.startsWith("@")){
@@ -135,7 +97,7 @@ public class ActivityController<T extends Activity> {
         }
 
         /* Get the resource ID, use the activity to look up the actual string */
-        title = activity.getString(labelRes);
+        title = component.getString(labelRes);
       } else {
         title = labelRef; /* Label isn't an identifier, use it directly as the title */
       }
@@ -144,14 +106,11 @@ public class ActivityController<T extends Activity> {
     return title;
   }
 
-
   public ActivityController<T> create(final Bundle bundle) {
     shadowMainLooper.runPaused(new Runnable() {
-      @Override
-      public void run() {
+      @Override public void run() {
         if (!attached) attach();
-
-        method("performCreate").withParameterTypes(Bundle.class).in(activity).invoke(bundle);
+        method("performCreate").withParameterTypes(Bundle.class).in(component).invoke(bundle);
       }
     });
     return this;
@@ -162,17 +121,12 @@ public class ActivityController<T extends Activity> {
   }
 
   public ActivityController<T> restoreInstanceState(Bundle bundle) {
-    method("performRestoreInstanceState").withParameterTypes(Bundle.class).in(activity).invoke(bundle);
+    invokeWhilePaused("performRestoreInstanceState", bundle);
     return this;
   }
 
-  public ActivityController<T> postCreate(final Bundle bundle) {
-    shadowMainLooper.runPaused(new Runnable() {
-      @Override
-      public void run() {
-        shadowActivity.callOnPostCreate(bundle);
-      }
-    });
+  public ActivityController<T> postCreate(Bundle bundle) {
+    invokeWhilePaused("onPostCreate", bundle);
     return this;
   }
 
@@ -192,36 +146,25 @@ public class ActivityController<T extends Activity> {
   }
 
   public ActivityController<T> postResume() {
-    shadowMainLooper.runPaused(new Runnable() {
-      @Override
-      public void run() {
-        shadowActivity.callOnPostResume();
-      }
-    });
+    invokeWhilePaused("onPostResume");
     return this;
   }
 
-  public ActivityController<T> newIntent(final android.content.Intent intent) {
-    shadowMainLooper.runPaused(new Runnable() {
-      @Override
-      public void run() {
-        shadowActivity.callOnNewIntent(intent);
-      }
-    });
+  public ActivityController<T> newIntent(Intent intent) {
+    invokeWhilePaused("onNewIntent", intent);
     return this;
   }
 
-  public ActivityController<T> saveInstanceState(android.os.Bundle outState) {
-    method("performSaveInstanceState").withParameterTypes(Bundle.class).in(activity).invoke(outState);
+  public ActivityController<T> saveInstanceState(Bundle outState) {
+    invokeWhilePaused("performSaveInstanceState", outState);
     return this;
   }
 
   public ActivityController<T> visible() {
     shadowMainLooper.runPaused(new Runnable() {
-      @Override
-      public void run() {
-        field("mDecor").ofType(View.class).in(activity).set(activity.getWindow().getDecorView());
-        method("makeVisible").in(activity).invoke();
+      @Override public void run() {
+        field("mDecor").ofType(View.class).in(component).set(component.getWindow().getDecorView());
+        method("makeVisible").in(component).invoke();
       }
     });
 
@@ -245,15 +188,6 @@ public class ActivityController<T extends Activity> {
 
   public ActivityController<T> destroy() {
     invokeWhilePaused("performDestroy");
-    return this;
-  }
-
-  private ActivityController<T> invokeWhilePaused(final String performStart) {
-    shadowMainLooper.runPaused(new Runnable() {
-      @Override public void run() {
-        method(performStart).in(activity).invoke();
-      }
-    });
     return this;
   }
 }

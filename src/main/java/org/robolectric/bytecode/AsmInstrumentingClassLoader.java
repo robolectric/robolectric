@@ -138,7 +138,7 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
       }
 
       final ClassReader classReader = new ClassReader(origClassBytes);
-      ClassNode classNode = new ClassNode() {
+      ClassNode classNode = new ClassNode(Opcodes.ASM4) {
         @Override
         public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
           desc = remapParamType(desc);

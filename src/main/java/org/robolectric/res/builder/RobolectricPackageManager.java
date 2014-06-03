@@ -9,34 +9,94 @@ import android.content.pm.PackageInfo;
 import android.content.pm.ResolveInfo;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.PatternMatcher;
 import android.util.Pair;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 import org.robolectric.AndroidManifest;
 import org.robolectric.Robolectric;
 import org.robolectric.res.ActivityData;
+import org.robolectric.res.IntentFilterData;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceIndex;
+import org.robolectric.res.ResourceLoader;
 import org.robolectric.shadows.ShadowContext;
 import org.robolectric.tester.android.content.pm.StubPackageManager;
 
 public class RobolectricPackageManager extends StubPackageManager {
 
+  private static class IntentComparator implements Comparator<Intent> {
+
+    @Override
+    public int compare(Intent i1, Intent i2) {
+      if (i1 == null && i2 == null) return 0;
+      if (i1 == null && i2 != null) return -1;
+      if (i1 != null && i2 == null) return 1;
+      if (i1.equals(i2)) return 0;
+      if (i1.getAction() == null && i2.getAction() != null) return -1;
+      if (i1.getAction() != null && i2.getAction() == null) return 1;
+      if (i1.getAction() != null && i2.getAction() != null) {
+        if (!i1.getAction().equals(i2.getAction())) {
+          return i1.getAction().compareTo(i2.getAction());
+        }
+      }
+      if (i1.getData() == null && i2.getData() != null) return -1;
+      if (i1.getData() != null && i2.getData() == null) return 1;
+      if (i1.getData() != null && i2.getData() != null) {
+        if (!i1.getData().equals(i2.getData())) {
+          return i1.getData().compareTo(i2.getData());
+        }
+      }
+      if (i1.getComponent() == null && i2.getComponent() != null) return -1;
+      if (i1.getComponent() != null && i2.getComponent() == null) return 1;
+      if (i1.getComponent() != null && i2.getComponent() != null) {
+        if (!i1.getComponent().equals(i2.getComponent())) {
+          return i1.getComponent().compareTo(i2.getComponent());
+        }
+      }
+      if (i1.getPackage() == null && i2.getPackage() != null) return -1;
+      if (i1.getPackage() != null && i2.getPackage() == null) return 1;
+      if (i1.getPackage() != null && i2.getPackage() != null) {
+        if (!i1.getPackage().equals(i2.getPackage())) {
+          return i1.getPackage().compareTo(i2.getPackage());
+        }
+      }
+      Set<String> categories1 = i1.getCategories();
+      Set<String> categories2 = i2.getCategories();
+      if (categories1 == null) return categories2 == null ? 0 : -1;
+      if (categories2 == null) return 1;
+      if (categories1.size() > categories2.size()) return 1;
+      if (categories1.size() < categories2.size()) return -1;
+      String[] array1 = categories1.toArray(new String[0]);
+      String[] array2 = categories2.toArray(new String[0]);
+      Arrays.sort(array1);
+      Arrays.sort(array2);
+      for (int i = 0; i < array1.length; ++i) {
+        int val = array1[i].compareTo(array2[i]);
+        if (val != 0) return val;
+      }
+      return 0;
+    }
+  }
+
   private final Map<String, AndroidManifest> androidManifests = new LinkedHashMap<String, AndroidManifest>();
   private final Map<String, PackageInfo> packageInfos = new LinkedHashMap<String, PackageInfo>();
-  private Map<Intent, List<ResolveInfo>> resolveInfoForIntent = new LinkedHashMap<Intent, List<ResolveInfo>>();
+  private Map<Intent, List<ResolveInfo>> resolveInfoForIntent = new TreeMap<Intent, List<ResolveInfo>>(new IntentComparator());
   private Map<ComponentName, ComponentState> componentList = new LinkedHashMap<ComponentName, ComponentState>();
   private Map<ComponentName, Drawable> drawableList = new LinkedHashMap<ComponentName, Drawable>();
   private Map<String, Boolean> systemFeatureList = new LinkedHashMap<String, Boolean>();
   private Map<IntentFilter, ComponentName> preferredActivities = new LinkedHashMap<IntentFilter, ComponentName>();
   private Map<Pair<String, Integer>, Drawable> drawables = new LinkedHashMap<Pair<String, Integer>, Drawable>();
+  private boolean queryIntentImplicitly = false;
 
   @Override
   public PackageInfo getPackageInfo(String packageName, int flags) throws NameNotFoundException {
@@ -85,13 +145,45 @@ public class RobolectricPackageManager extends StubPackageManager {
   }
 
   @Override
+  public ActivityInfo getReceiverInfo(ComponentName className, int flags) throws NameNotFoundException {
+    String packageName = className.getPackageName();
+    AndroidManifest androidManifest = androidManifests.get(packageName);
+    String classString = className.getClassName();
+    int index = classString.indexOf('.');
+    if (index == -1) {
+      classString = packageName + "." + classString;
+    } else if (index == 0) {
+      classString = packageName + classString;
+    }
+
+    ActivityInfo activityInfo = new ActivityInfo();
+    activityInfo.packageName = packageName;
+    activityInfo.name = classString;
+    if ((flags & GET_META_DATA) != 0) {
+      for (int i = 0; i < androidManifest.getReceiverCount(); ++i) {
+        if (androidManifest.getReceiverClassName(i).equals(classString)) {
+          activityInfo.metaData = metaDataToBundle(androidManifest.getReceiverMetaData(i));
+          break;
+        }
+      }
+    }
+    return activityInfo;
+  }
+
+  @Override
   public List<PackageInfo> getInstalledPackages(int flags) {
     return new ArrayList<PackageInfo>(packageInfos.values());
   }
 
   @Override
   public List<ResolveInfo> queryIntentActivities(Intent intent, int flags) {
-    return queryIntent(intent, flags);
+    List<ResolveInfo> resolveInfoList = queryIntent(intent, flags);
+
+    if (resolveInfoList.isEmpty() && isQueryIntentImplicitly()) {
+      resolveInfoList = queryImplicitIntent(intent, flags);
+    }
+
+    return resolveInfoList;
   }
 
   @Override
@@ -264,8 +356,12 @@ public class RobolectricPackageManager extends StubPackageManager {
     addPackage(packageInfo);
   }
 
-  public void addManifest(AndroidManifest androidManifest) {
+  public void addManifest(AndroidManifest androidManifest, ResourceLoader loader) {
     androidManifests.put(androidManifest.getPackageName(), androidManifest);
+    ResourceIndex resourceIndex = loader.getResourceIndex();
+
+    // first opportunity to access a resource index for this manifest, use it to init the references
+    androidManifest.initMetaData(loader);
 
     PackageInfo packageInfo = new PackageInfo();
     packageInfo.packageName = androidManifest.getPackageName();
@@ -278,26 +374,21 @@ public class RobolectricPackageManager extends StubPackageManager {
     applicationInfo.packageName = androidManifest.getPackageName();
     applicationInfo.processName = androidManifest.getProcessName();
     applicationInfo.name = androidManifest.getApplicationName();
-    initApplicationInfo(applicationInfo);
-    initApplicationMetaData(applicationInfo, androidManifest);
+    applicationInfo.metaData = metaDataToBundle(androidManifest.getApplicationMetaData());
+
+    if (androidManifest.getLabelRef() != null && resourceIndex != null) {
+      Integer id = ResName.getResourceId(resourceIndex, androidManifest.getLabelRef(), androidManifest.getPackageName());
+      applicationInfo.labelRes = id != null ? id : 0;
+    }
 
     packageInfo.applicationInfo = applicationInfo;
-
+    initApplicationInfo(applicationInfo);
     addPackage(packageInfo);
   }
 
   private void initApplicationInfo(ApplicationInfo applicationInfo) {
     applicationInfo.sourceDir = new File(".").getAbsolutePath();
     applicationInfo.dataDir = ShadowContext.FILES_DIR.getAbsolutePath();
-  }
-
-  private void initApplicationMetaData(ApplicationInfo applicationInfo, AndroidManifest androidManifest) {
-    Map<String, String> meta = androidManifest.getApplicationMetaData();
-    if (meta.isEmpty()) { return; }
-    applicationInfo.metaData = new Bundle();
-    for (Entry<String, String> metaEntry : meta.entrySet()) {
-      applicationInfo.metaData.putString(metaEntry.getKey(), metaEntry.getValue());
-    }
   }
 
   public void removePackage(String packageName) {
@@ -355,5 +446,127 @@ public class RobolectricPackageManager extends StubPackageManager {
     } else {
       return result;
     }
+  }
+
+  private List<ResolveInfo> queryImplicitIntent(Intent intent, int flags) {
+    List<ResolveInfo> resolveInfoList = new ArrayList<ResolveInfo>();
+
+    for (Map.Entry<String, AndroidManifest> androidManifest : androidManifests.entrySet()) {
+      String packageName = androidManifest.getKey();
+      AndroidManifest appManifest = androidManifest.getValue();
+
+      for (Map.Entry<String, ActivityData> activity : appManifest.getActivityDatas().entrySet()) {
+        String activityName = activity.getKey();
+        ActivityData activityData = activity.getValue();
+
+        if (matchIntentFilter(activityData, intent)) {
+          ResolveInfo resolveInfo = new ResolveInfo();
+          resolveInfo.resolvePackageName = packageName;
+          resolveInfo.activityInfo = new ActivityInfo();
+          resolveInfo.activityInfo.targetActivity = activityName;
+
+          resolveInfoList.add(resolveInfo);
+        }
+      }
+    }
+
+    return resolveInfoList;
+  }
+
+  private boolean matchIntentFilter(ActivityData activityData, Intent intent) {
+    for (IntentFilterData intentFilterData : activityData.getIntentFilters()) {
+      List<String> actionList = intentFilterData.getActions();
+      List<String> categoryList = intentFilterData.getCategories();
+      IntentFilter intentFilter = new IntentFilter();
+
+      for (String action : actionList) {
+        intentFilter.addAction(action);
+      }
+
+      for (String category : categoryList) {
+        intentFilter.addCategory(category);
+      }
+
+      for (String scheme : intentFilterData.getSchemes()) {
+        intentFilter.addDataScheme(scheme);
+      }
+
+      for (String mimeType : intentFilterData.getMimeTypes()) {
+        try {
+          intentFilter.addDataType(mimeType);
+        } catch (IntentFilter.MalformedMimeTypeException ex) {
+          throw new RuntimeException(ex);
+        }
+      }
+
+      for (String path : intentFilterData.getPaths()) {
+        intentFilter.addDataPath(path, PatternMatcher.PATTERN_LITERAL);
+      }
+
+      for (String pathPattern : intentFilterData.getPathPatterns()) {
+        intentFilter.addDataPath(pathPattern, PatternMatcher.PATTERN_SIMPLE_GLOB);
+      }
+
+      for (String pathPrefix : intentFilterData.getPathPrefixes()) {
+        intentFilter.addDataPath(pathPrefix, PatternMatcher.PATTERN_PREFIX);
+      }
+
+      for (IntentFilterData.DataAuthority authority : intentFilterData.getAuthorities()) {
+        intentFilter.addDataAuthority(authority.getHost(), authority.getPort());
+      }
+
+      // match action
+      boolean matchActionResult = intentFilter.matchAction(intent.getAction());
+      // match category
+      String matchCategoriesResult = intentFilter.matchCategories(intent.getCategories());
+      // match data
+
+      int matchResult = intentFilter.matchData(intent.getType(),
+          (intent.getData() != null ? intent.getData().getScheme() : null),
+          intent.getData());
+      if (matchActionResult && (matchCategoriesResult == null) &&
+          (matchResult != IntentFilter.NO_MATCH_DATA && matchResult != IntentFilter.NO_MATCH_TYPE)){
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public boolean isQueryIntentImplicitly() {
+    return queryIntentImplicitly;
+  }
+
+  public void setQueryIntentImplicitly(boolean queryIntentImplicitly) {
+    this.queryIntentImplicitly = queryIntentImplicitly;
+  }
+
+  /***
+   * Goes through the meta data and puts each value in to a
+   * bundle as the correct type.
+   *
+   * Note that this will convert resource identifiers specified
+   * via the value attribute as well.
+   * @param meta Meta data to put in to a bundle
+   * @return bundle containing the meta data
+   */
+  private Bundle metaDataToBundle(Map<String, Object> meta) {
+    if (meta.size() == 0) {
+        return null;
+    }
+
+    Bundle bundle = new Bundle();
+
+    for (Map.Entry<String,Object> entry : meta.entrySet()) {
+      if (Boolean.class.isInstance(entry.getValue())) {
+        bundle.putBoolean(entry.getKey(), (Boolean) entry.getValue());
+      } else if (Float.class.isInstance(entry.getValue())) {
+        bundle.putFloat(entry.getKey(), (Float) entry.getValue());
+      } else if (Integer.class.isInstance(entry.getValue())) {
+        bundle.putInt(entry.getKey(), (Integer) entry.getValue());
+      } else {
+        bundle.putString(entry.getKey(), entry.getValue().toString());
+      }
+    }
+    return bundle;
   }
 }

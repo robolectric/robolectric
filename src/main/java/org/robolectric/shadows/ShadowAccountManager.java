@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -260,7 +261,25 @@ public class ShadowAccountManager {
     } else {
       return null;
     }
-  }  
+  }
+
+  @Implementation
+  public void invalidateAuthToken(final String accountType, final String authToken) {
+    Account[] accountsByType = getAccountsByType(accountType);
+    for (Account account : accountsByType) {
+      Map<String, String> tokenMap = authTokens.get(account);
+      if (tokenMap != null) {
+        Iterator<Entry<String, String>> it = tokenMap.entrySet().iterator();
+        while (it.hasNext()) {
+          Map.Entry<String, String> map = it.next();
+          if (map.getValue().equals(authToken)) {
+            it.remove();
+          }
+        }
+        authTokens.put(account, tokenMap);
+      }
+    }
+  }
 
   private void notifyListeners() {
     Account[] accounts = getAccounts();
@@ -287,7 +306,7 @@ public class ShadowAccountManager {
    * Non-android accessor.  Allows the test case to populate the
    * list of active authenticators.
    *
-   * @param account
+   * @param authenticator
    */
   public void addAuthenticator(AuthenticatorDescription authenticator) {
     authenticators.add(authenticator);

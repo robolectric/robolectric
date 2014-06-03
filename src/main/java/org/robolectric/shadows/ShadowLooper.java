@@ -56,7 +56,15 @@ public class ShadowLooper {
 
   @Implementation
   public static Looper getMainLooper() {
-    return Robolectric.getShadowApplication().getMainLooper();
+    ShadowApplication shadowApplication = Robolectric.getShadowApplication();
+    if ((shadowApplication == null) && (Thread.currentThread() == MAIN_THREAD)) {
+      Looper mainLooper = looperForThread.get();
+      return mainLooper;
+    } else {
+      // might still throw NullPointerException
+      // better than returning null because this fails early.
+      return shadowApplication.getMainLooper();
+    }
   }
 
   @Implementation

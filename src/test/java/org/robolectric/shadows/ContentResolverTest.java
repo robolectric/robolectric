@@ -21,10 +21,14 @@ import android.os.RemoteException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.AndroidManifest;
+import org.robolectric.DefaultTestLifecycle;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
+import org.robolectric.res.ContentProviderData;
 import org.robolectric.tester.android.database.TestCursor;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -33,6 +37,7 @@ import java.util.List;
 import static android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -58,10 +63,41 @@ public class ContentResolverTest {
 
   @Test
   public void insert_shouldReturnIncreasingUris() throws Exception {
-    shadowContentResolver.setNextDatabaseIdForInserts(21);
+    shadowContentResolver.setNextDatabaseIdForInserts(20);
 
     assertThat(contentResolver.insert(EXTERNAL_CONTENT_URI, new ContentValues())).isEqualTo(uri21);
     assertThat(contentResolver.insert(EXTERNAL_CONTENT_URI, new ContentValues())).isEqualTo(uri22);
+  }
+
+  @Test
+  public void getType_shouldDefaultToNull() throws Exception {
+    assertThat(contentResolver.getType(uri21)).isNull();
+  }
+
+  @Test
+  public void getType_shouldReturnProviderValue() throws Exception {
+    ShadowContentResolver.registerProvider(AUTHORITY, new ContentProvider() {
+      @Override public boolean onCreate() {
+        return false;
+      }
+      @Override public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+        return new TestCursor();
+      }
+      @Override public Uri insert(Uri uri, ContentValues values) {
+        return null;
+      }
+      @Override public int delete(Uri uri, String selection, String[] selectionArgs) {
+        return -1;
+      }
+      @Override public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+        return -1;
+      }
+      @Override public String getType(Uri uri) {
+        return "mytype";
+      }
+    });
+    final Uri uri = Uri.parse("content://"+AUTHORITY+"/some/path");
+    assertThat(contentResolver.getType(uri)).isEqualTo("mytype");
   }
 
   @Test
@@ -140,7 +176,7 @@ public class ContentResolverTest {
   }
 
   @Test
-  public void query__shouldReturnSpecificCursorsForSpecificUris() throws Exception {
+  public void query_shouldReturnSpecificCursorsForSpecificUris() throws Exception {
     assertNull(shadowContentResolver.query(uri21, null, null, null, null));
     assertNull(shadowContentResolver.query(uri22, null, null, null, null));
 
@@ -154,7 +190,7 @@ public class ContentResolverTest {
   }
 
   @Test
-  public void query__shouldKnowWhatItsParamsWere() throws Exception {
+  public void query_shouldKnowWhatItsParamsWere() throws Exception {
     String[] projection = {};
     String selection = "select";
     String[] selectionArgs = {};
@@ -173,8 +209,58 @@ public class ContentResolverTest {
   }
 
   @Test
-  public void openInputStream_shouldReturnAnInputStream() throws Exception {
-    assertThat(contentResolver.openInputStream(uri21)).isInstanceOf(InputStream.class);
+  public void acquireUnstableProvider_shouldDefaultToNull() throws Exception {
+    assertThat(contentResolver.acquireUnstableProvider(uri21)).isNull();
+  }
+
+  @Test
+  public void acquireUnstableProvider_shouldReturnWithUri() throws Exception {
+    ContentProvider cp = mock(ContentProvider.class);
+    ShadowContentResolver.registerProvider(AUTHORITY, cp);
+    final Uri uri = Uri.parse("content://" + AUTHORITY);
+    assertThat(contentResolver.acquireUnstableProvider(uri)).isSameAs(cp.getIContentProvider());
+  }
+
+  @Test
+  public void acquireUnstableProvider_shouldReturnWithString() throws Exception {
+    ContentProvider cp = mock(ContentProvider.class);
+    ShadowContentResolver.registerProvider(AUTHORITY, cp);
+    assertThat(contentResolver.acquireUnstableProvider(AUTHORITY)).isSameAs(cp.getIContentProvider());
+  }
+
+  @Test
+  public void call_shouldCallProvider() throws Exception {
+    final String METHOD = "method";
+    final String ARG = "arg";
+    final Bundle EXTRAS = new Bundle();
+    final Uri uri = Uri.parse("content://" + AUTHORITY);
+
+    ContentProvider provider = mock(ContentProvider.class);
+    doReturn(null).when(provider).call(METHOD, ARG, EXTRAS);
+    ShadowContentResolver.registerProvider(AUTHORITY, provider);
+
+    contentResolver.call(uri, METHOD, ARG, EXTRAS);
+    verify(provider).call(METHOD, ARG, EXTRAS);
+  }
+
+  @Test
+  public void openInputStream_shouldReturnAnInputStreamThatExceptionsOnRead() throws Exception {
+    InputStream inputStream = contentResolver.openInputStream(uri21);
+    try {
+      inputStream.read();
+      fail("Expected unregistered input stream to throw UnsupportedOperationException on read");
+    } catch (UnsupportedOperationException expected) {
+      assertThat(expected).hasMessage("You must use ShadowContentResolver.registerInputStream() in order to call read()");
+    }
+  }
+
+  @Test
+  public void openInputStream_returnsPreRegisteredStream() throws Exception {
+    shadowContentResolver.registerInputStream(uri21, new ByteArrayInputStream("ourStream".getBytes()));
+    InputStream inputStream = contentResolver.openInputStream(uri21);
+    byte[] data = new byte[9];
+    inputStream.read(data);
+    assertThat(new String(data)).isEqualTo("ourStream");
   }
 
   @Test
@@ -207,7 +293,10 @@ public class ContentResolverTest {
     final ArrayList<String> operations = new ArrayList<String>();
     ShadowContentResolver.registerProvider("registeredProvider", new ContentProvider() {
       @Override
-      public boolean onCreate() { return true; }
+      public boolean onCreate() {
+        return true;
+      }
+
       @Override
       public Cursor query(Uri uri, String[] projection, String selection,
           String[] selectionArgs, String sortOrder) {
@@ -405,7 +494,7 @@ public class ContentResolverTest {
     assertNull(contentResolver.query(unrelated, null, null, null, null));
     assertNotNull(contentResolver.insert(unrelated, new ContentValues()));
     assertThat(contentResolver.delete(unrelated, null, null)).isEqualTo(1);
-    assertThat(contentResolver.update(unrelated, new ContentValues(), null, null)).isEqualTo(0);
+    assertThat(contentResolver.update(unrelated, new ContentValues(), null, null)).isEqualTo(1);
   }
 
   @Test
@@ -442,6 +531,18 @@ public class ContentResolverTest {
     assertThat(co.changed).isFalse();
   }
 
+  @Test
+  public void getProvider_shouldCreateProviderFromManifest() {
+    AndroidManifest manifest = Robolectric.getShadowApplication().getAppManifest();
+    manifest.getContentProviders().add(new ContentProviderData("org.robolectric.shadows.ContentResolverTest$TestContentProvider", AUTHORITY));
+    assertThat(ShadowContentResolver.getProvider(Uri.parse("content://" + AUTHORITY + "/shadows"))).isNotNull();
+  }
+
+  @Test
+  public void getProvider_shouldNotReturnAnyProviderWhenManifestIsNull() {
+    Robolectric.application = new DefaultTestLifecycle().createApplication(null, null);
+    assertThat(ShadowContentResolver.getProvider(Uri.parse("content://"))).isNull();
+  }
 
   static class QueryParamTrackingTestCursor extends TestCursor {
     public Uri uri;
@@ -475,6 +576,38 @@ public class ContentResolverTest {
     @Override
     public void onChange(boolean selfChange, Uri uri) {
       changed = true;
+    }
+  }
+
+  public static class TestContentProvider extends ContentProvider {
+    @Override
+    public int delete(Uri arg0, String arg1, String[] arg2) {
+      return 0;
+    }
+
+    @Override
+    public String getType(Uri arg0) {
+      return null;
+    }
+
+    @Override
+    public Uri insert(Uri arg0, ContentValues arg1) {
+      return null;
+    }
+
+    @Override
+    public boolean onCreate() {
+      return false;
+    }
+
+    @Override
+    public Cursor query(Uri arg0, String[] arg1, String arg2, String[] arg3, String arg4) {
+      return null;
+    }
+
+    @Override
+    public int update(Uri arg0, ContentValues arg1, String arg2, String[] arg3) {
+      return 0;
     }
   }
 }

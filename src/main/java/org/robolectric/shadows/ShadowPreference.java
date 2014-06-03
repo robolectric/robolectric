@@ -2,12 +2,15 @@ package org.robolectric.shadows;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.TypedArray;
 import android.preference.Preference;
+import android.preference.PreferenceManager;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.res.ResourceLoader;
 
 @Implements(Preference.class)
 public class ShadowPreference {
@@ -47,7 +50,19 @@ public class ShadowPreference {
     this.defStyle = defStyle;
 
     if (attributeSet != null) {
-      key = attributeSet.getAttributeValue(ResourceLoader.ANDROID_NS, "key");
+      final TypedArray typedArray = context.obtainStyledAttributes(attributeSet, com.android.internal.R.styleable.Preference);
+
+      key = typedArray.getString(com.android.internal.R.styleable.Preference_key);
+      title = typedArray.getString(com.android.internal.R.styleable.Preference_title);
+      summary = typedArray.getString(com.android.internal.R.styleable.Preference_summary);
+      initDefaultValue(typedArray);
+    }
+  }
+
+  private void initDefaultValue(TypedArray typedArray) {
+    TypedValue v = typedArray.peekValue(com.android.internal.R.styleable.Preference_defaultValue);
+    if (v != null) {
+      defaultValue = v.coerceToString();
     }
   }
 
@@ -63,7 +78,7 @@ public class ShadowPreference {
   public int getDefStyle() {
     return defStyle;
   }
-   
+
   @Implementation
   public void setEnabled(boolean enabled) {
     this.enabled = enabled;
@@ -212,5 +227,10 @@ public class ShadowPreference {
   @Implementation
   public String getDependency() {
     return this.dependencyKey;
+  }
+
+  @Implementation
+  public SharedPreferences getSharedPreferences() {
+    return PreferenceManager.getDefaultSharedPreferences(context);
   }
 }

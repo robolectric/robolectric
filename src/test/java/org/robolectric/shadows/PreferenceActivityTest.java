@@ -44,7 +44,7 @@ public class PreferenceActivityTest {
   @Test
   public void shouldLoadPreferenceScreen() {
     activity.addPreferencesFromResource(R.xml.preferences);
-    assertThat(activity.getPreferenceScreen().getPreferenceCount()).isEqualTo(7);
+    assertThat(activity.getPreferenceScreen().getPreferenceCount()).isEqualTo(8);
   }
 
   @Test
@@ -59,6 +59,12 @@ public class PreferenceActivityTest {
     assertNotNull(activity.findPreference("list"));
     assertNotNull(activity.findPreference("preference"));
     assertNotNull(activity.findPreference("ringtone"));
+  }
+
+  @Test
+  public void shouldFindPreferencesWithStringResourceKeyValue() {
+    activity.addPreferencesFromResource(R.xml.preferences);
+    assertNotNull(activity.findPreference("preference_resource_key_value"));
   }
 
   private static class TestPreferenceActivity extends PreferenceActivity {

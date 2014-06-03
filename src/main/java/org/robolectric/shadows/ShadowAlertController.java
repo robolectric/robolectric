@@ -3,7 +3,7 @@ package org.robolectric.shadows;
 import android.view.View;
 import android.widget.Adapter;
 import android.widget.ListView;
-import org.robolectric.Robolectric;
+import com.android.internal.app.AlertController;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -13,21 +13,21 @@ import java.lang.reflect.InvocationTargetException;
 import static org.fest.reflect.core.Reflection.method;
 import static org.robolectric.Robolectric.directlyOn;
 
-@Implements(value = Robolectric.Anything.class, className = ShadowAlertController.ALERT_CONTROLLER_CLASS_NAME)
+@Implements(AlertController.class)
 public class ShadowAlertController {
-  public static final String ALERT_CONTROLLER_CLASS_NAME = "com.android.internal.app.AlertController";
-  @RealObject Object realAlertController;
+
+  @RealObject AlertController realAlertController;
 
   private CharSequence title;
   private CharSequence message;
   private View view;
   private View customTitleView;
+  private int iconId;
 
   @Implementation
   public void setTitle(CharSequence title) throws InvocationTargetException, IllegalAccessException {
     this.title = title;
-    directlyOn(realAlertController, "com.android.internal.app.AlertController", "setTitle", CharSequence.class)
-        .invoke(title);
+    directlyOn(realAlertController, AlertController.class).setTitle(title);
   }
 
   public CharSequence getTitle() {
@@ -37,8 +37,7 @@ public class ShadowAlertController {
   @Implementation
   public void setCustomTitle(View customTitleView) {
     this.customTitleView = customTitleView;
-    directlyOn(realAlertController, "com.android.internal.app.AlertController", "setCustomTitle", View.class)
-        .invoke(customTitleView);
+    directlyOn(realAlertController, AlertController.class).setCustomTitle(customTitleView);
   }
 
   public View getCustomTitleView() {
@@ -48,8 +47,7 @@ public class ShadowAlertController {
   @Implementation
   public void setMessage(CharSequence message) {
     this.message = message;
-    directlyOn(realAlertController, "com.android.internal.app.AlertController", "setMessage", CharSequence.class)
-        .invoke(message);
+    directlyOn(realAlertController, AlertController.class).setMessage(message);
   }
 
   public CharSequence getMessage() {
@@ -59,8 +57,17 @@ public class ShadowAlertController {
   @Implementation
   public void setView(View view) {
     this.view = view;
-    directlyOn(realAlertController, "com.android.internal.app.AlertController", "setView", View.class)
-        .invoke(view);
+    directlyOn(realAlertController, AlertController.class).setView(view);
+  }
+
+  @Implementation
+  public void setIcon(int iconId) {
+    this.iconId = iconId;
+    directlyOn(realAlertController, AlertController.class).setIcon(iconId);
+  }
+
+  public int getIconId() {
+    return iconId;
   }
 
   public View getView() {

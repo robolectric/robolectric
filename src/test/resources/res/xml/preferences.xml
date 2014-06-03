@@ -1,21 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen
-  xmlns:android="http://schemas.android.com/apk/res/android">
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
   <PreferenceCategory
-    android:key="category"
-    android:title="Category Test">
+      android:key="category"
+      android:title="Category Test">
 
     <Preference
-      android:key="inside_category"
-      android:title="Inside Category Test"
-      android:summary=""/>
+        android:key="inside_category"
+        android:title="Inside Category Test"
+        android:summary=""/>
 
   </PreferenceCategory>
 
   <PreferenceScreen
       android:key="screen"
-      android:title="Screen Test">
+      android:title="Screen Test"
+      android:summary="Screen summary">
 
     <Preference
         android:key="inside_screen"
@@ -25,33 +26,38 @@
   </PreferenceScreen>
 
   <CheckBoxPreference
-    android:key="checkbox"
-    android:title="Checkbox Test"
-    android:summary=""
-    android:defaultValue="true"
-    />
+      android:key="checkbox"
+      android:title="Checkbox Test"
+      android:summary=""
+      android:defaultValue="true"
+      />
 
   <EditTextPreference
-    android:key="edit_text"
-    android:title="EditText Test"
-    android:summary=""
-    />
+      android:key="edit_text"
+      android:title="EditText Test"
+      android:summary=""
+      />
 
   <ListPreference
-    android:key="list"
-    android:title="List Test"
-    android:summary=""
-    />
+      android:key="list"
+      android:title="List Test"
+      android:summary=""
+      />
 
   <Preference
-    android:key="preference"
-    android:title="Preference Title"
-    android:summary=""/>
+      android:key="preference"
+      android:title="Preference Title"
+      android:summary=""/>
 
   <RingtonePreference
-    android:key="ringtone"
-    android:title="Ringtone Test"
-    android:summary=""
-    />
+      android:key="ringtone"
+      android:title="Ringtone Test"
+      android:summary=""
+      />
+
+  <Preference
+      android:key="@string/preference_resource_key"
+      android:title="@string/preference_resource_title"
+      android:summary="@string/preference_resource_summary"/>
 
 </PreferenceScreen>

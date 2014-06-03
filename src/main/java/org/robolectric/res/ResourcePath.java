@@ -34,8 +34,8 @@ public class ResourcePath {
 
     if (!assetsDir.equals(that.assetsDir)) return false;
     if (!packageName.equals(that.packageName)) return false;
-    if (rClass != null ? !rClass.equals(that.rClass) : that.rClass != null) return false;
-    if (!rawDir.equals(that.rawDir)) return false;
+    if (!(rClass == null ? that.rClass == null : rClass.equals(that.rClass))) return false;
+    if (!(rawDir == null ? that.rawDir == null : rawDir.equals(that.rawDir))) return false;
     if (!resourceBase.equals(that.resourceBase)) return false;
 
     return true;
@@ -47,7 +47,9 @@ public class ResourcePath {
     result = 31 * result + packageName.hashCode();
     result = 31 * result + resourceBase.hashCode();
     result = 31 * result + assetsDir.hashCode();
-    result = 31 * result + rawDir.hashCode();
+    if (rawDir != null) {
+      result = 31 * result + rawDir.hashCode();
+    }
     return result;
   }
 }

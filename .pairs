@@ -25,7 +25,7 @@ pairs:
   wei: Wei Wu; wwu@apptera.com
   ad: Andrew Dai
   bc: Brian Colvin
-  av: Aaron VonderHaar; avonderhaar
+  av: Aaron VonderHaar; av
   rs: Ryan Spore; ryan
   gm: Gavin Morgan; gmorgan
   at: Amrit Thakur
@@ -39,6 +39,13 @@ pairs:
   ed: Erich Douglass; erich
   ck: Chris Kramp; ckramp
   jr: Joseph Rodriguez; jrodriguez
+  ss: Sukhil Suresh; ssuresh
+  egd: Eugenia Dellapenna; eugenia
+  jd: Jeremy Dowdall; jdowdall
+  jo: Jonathan Ohms; johms
+  mt: Mike Trewartha; miketrewartha
+  mw: Matthew Wickman; mwickman
+  ml: Michael Lavrisha; mlavrisha
 email:
   prefix: pair
   domain: pivotallabs.com

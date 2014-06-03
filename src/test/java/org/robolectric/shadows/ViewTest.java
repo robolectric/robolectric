@@ -291,6 +291,17 @@ public class ViewTest {
   }
 
   @Test
+  public void shouldRemovePostedCallbacksFromMessageQueue() throws Exception {
+    TestRunnable runnable = new TestRunnable();
+    view.postDelayed(runnable, 1);
+
+    view.removeCallbacks(runnable);
+
+    Robolectric.getUiThreadScheduler().advanceBy(1);
+    assertThat(runnable.wasRun).isFalse();
+  }
+
+  @Test
   public void shouldSupportAllConstructors() throws Exception {
     new View(Robolectric.application);
     new View(Robolectric.application, null);
@@ -699,6 +710,17 @@ public class ViewTest {
     parent.removeAllViews();
     Robolectric.runUiThreadTasks();
     transcript.assertEventsSoFar("another child detached", "child detached");
+  }
+
+  @Test public void capturesOnSystemUiVisibilityChangeListener() throws Exception {
+    TestView testView = new TestView(buildActivity(Activity.class).create().get());
+    View.OnSystemUiVisibilityChangeListener changeListener = new View.OnSystemUiVisibilityChangeListener() {
+      @Override
+      public void onSystemUiVisibilityChange(int i) { }
+    };
+    testView.setOnSystemUiVisibilityChangeListener(changeListener);
+
+    assertThat(changeListener).isEqualTo(shadowOf(testView).getOnSystemUiVisibilityChangeListener());
   }
 
   public static class MyActivity extends Activity {

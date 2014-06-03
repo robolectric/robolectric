@@ -8,7 +8,8 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.database.sqlite.SQLiteDatabase;
+import android.content.SharedPreferences;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -31,6 +32,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Robolectric.buildActivity;
+import static org.robolectric.Robolectric.getShadowApplication;
 import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -157,6 +159,49 @@ public class ContextWrapperTest {
   }
 
   @Test
+  public void sendStickyBroadcast_shouldDeliverIntentToAllRegisteredReceivers() {
+    BroadcastReceiver receiver = broadcastReceiver("Larry");
+    contextWrapper.registerReceiver(receiver, intentFilter("foo", "baz"));
+
+    contextWrapper.sendStickyBroadcast(new Intent("foo"));
+    transcript.assertEventsSoFar("Larry notified of foo");
+
+    contextWrapper.sendStickyBroadcast(new Intent("womp"));
+    transcript.assertNoEventsSoFar();
+
+    contextWrapper.sendStickyBroadcast(new Intent("baz"));
+    transcript.assertEventsSoFar("Larry notified of baz");
+  }
+
+  @Test
+  public void sendStickyBroadcast_shouldStickSentIntent() {
+    contextWrapper.sendStickyBroadcast(new Intent("foo"));
+    transcript.assertNoEventsSoFar();
+
+    BroadcastReceiver receiver = broadcastReceiver("Larry");
+    Intent sticker = contextWrapper.registerReceiver(receiver, intentFilter("foo", "baz"));
+    transcript.assertEventsSoFar("Larry notified of foo");
+    assertThat(sticker).isNotNull();
+    assertThat(sticker.getAction()).isEqualTo("foo");
+  }
+
+  @Test
+  public void afterSendStickyBroadcast_allSentIntentsShouldBeDeliveredToNewRegistrants() {
+    contextWrapper.sendStickyBroadcast(new Intent("foo"));
+    contextWrapper.sendStickyBroadcast(new Intent("baz"));
+    transcript.assertNoEventsSoFar();
+
+    BroadcastReceiver receiver = broadcastReceiver("Larry");
+    Intent sticker = contextWrapper.registerReceiver(receiver, intentFilter("foo", "baz"));
+    transcript.assertEventsSoFar("Larry notified of foo", "Larry notified of baz");
+    /*
+       Note: we do not strictly test what is returned by the method in this case
+             because there no guaranties what particular Intent will be returned by Android system
+     */
+    assertThat(sticker).isNotNull();
+  }
+
+  @Test
   public void shouldReturnSameApplicationEveryTime() throws Exception {
     Activity activity = new Activity();
     assertThat(activity.getApplication()).isSameAs(activity.getApplication());
@@ -236,6 +281,26 @@ public class ContextWrapperTest {
     assertEquals("foo", shadowOf(Robolectric.application).getNextStartedService().getAction());
   }
 
+  @Test
+  public void startActivities_shouldStartAllActivities() {
+    final Intent view = new Intent(Intent.ACTION_VIEW);
+    final Intent pick = new Intent(Intent.ACTION_PICK);
+    contextWrapper.startActivities(new Intent[] {view, pick});
+
+    assertThat(getShadowApplication().getNextStartedActivity()).isEqualTo(pick);
+    assertThat(getShadowApplication().getNextStartedActivity()).isEqualTo(view);
+  }
+
+  @Test
+  public void startActivities_withBundle_shouldStartAllActivities() {
+    final Intent view = new Intent(Intent.ACTION_VIEW);
+    final Intent pick = new Intent(Intent.ACTION_PICK);
+    contextWrapper.startActivities(new Intent[] {view, pick}, new Bundle());
+
+    assertThat(getShadowApplication().getNextStartedActivity()).isEqualTo(pick);
+    assertThat(getShadowApplication().getNextStartedActivity()).isEqualTo(view);
+  }
+
   private BroadcastReceiver broadcastReceiver(final String name) {
     return new BroadcastReceiver() {
       @Override public void onReceive(Context context, Intent intent) {
@@ -294,10 +359,18 @@ public class ContextWrapperTest {
   }
 
   @Test
-  public void openOrCreateDatabaseShouldAlwaysReturnSameDatabase() throws Exception {
-    SQLiteDatabase db = contextWrapper.openOrCreateDatabase("db", 0, null);
-    assertThat(db).isNotNull();
-    assertThat(contextWrapper.openOrCreateDatabase("db", 0, null)).isSameAs(db);
-    assertThat(contextWrapper.openOrCreateDatabase("db", 0, null, null)).isSameAs(db);
+  public void getSharedPreferencesShouldReturnSameInstanceWhenSameNameIsSupplied() {
+    final SharedPreferences pref1 = contextWrapper.getSharedPreferences("pref", Context.MODE_PRIVATE);
+    final SharedPreferences pref2 = contextWrapper.getSharedPreferences("pref", Context.MODE_PRIVATE);
+
+    assertThat(pref1).isSameAs(pref2);
+  }
+
+  @Test
+  public void getSharedPreferencesShouldReturnDifferentInstancesWhenDifferentNameIsSupplied() {
+    final SharedPreferences pref1 = contextWrapper.getSharedPreferences("pref1", Context.MODE_PRIVATE);
+    final SharedPreferences pref2 = contextWrapper.getSharedPreferences("pref2", Context.MODE_PRIVATE);
+
+    assertThat(pref1).isNotSameAs(pref2);
   }
 }

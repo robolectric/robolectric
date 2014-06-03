@@ -158,10 +158,24 @@ public final class ShadowAssetManager {
   }
 
   @HiddenApi @Implementation
-  public final InputStream openNonAsset(int cookie, String fileName, int accessMode) {
-//        ResName resName = new ResName(fileName);
-//        resourceLoader.getDrawableNode(resName)
-    return new ByteArrayInputStream(fileName.getBytes()); // todo: something better
+  public final InputStream openNonAsset(int cookie, String fileName, int accessMode) throws IOException {
+    final ResName resName = qualifyFromNonAssetFileName(fileName);
+    final DrawableNode drawableNode = resourceLoader.getDrawableNode(resName, getQualifiers());
+
+    if (drawableNode == null) {
+      throw new IOException("Unable to find resource for " + fileName);
+    }
+
+    return new ByteArrayInputStream(drawableNode.getFsFile().getBytes());
+  }
+
+  private ResName qualifyFromNonAssetFileName(String fileName) {
+    if (fileName.startsWith("jar:")) {
+      // Must remove "jar:" prefix, or else qualifyFromFilePath fails on Windows
+      return ResName.qualifyFromFilePath("android", fileName.replaceFirst("jar:", ""));
+    } else {
+      return ResName.qualifyFromFilePath(appManifest.getPackageName(), fileName);
+    }
   }
 
   @HiddenApi @Implementation

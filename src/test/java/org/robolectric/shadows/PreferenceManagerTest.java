@@ -12,13 +12,14 @@ import org.robolectric.tester.android.content.TestSharedPreferences;
 
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class PreferenceManagerTest {
+
   @Test
-  public void shouldProvideDefaultSharedPreferences() throws Exception {
+  public void shouldProvideDefaultSharedPreferences() {
     Map<String, Map<String, Object>> content = Robolectric.getShadowApplication().getSharedPreferenceMap();
 
     TestSharedPreferences testPrefs = new TestSharedPreferences(content, "__default__", Context.MODE_PRIVATE);
@@ -29,7 +30,14 @@ public class PreferenceManagerTest {
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(Robolectric.application);
 
     assertNotNull(prefs);
-    assertEquals(13, prefs.getInt("foobar", 0));
+    assertThat(prefs.getInt("foobar", 0)).isEqualTo(13);
   }
 
+  @Test
+  public void shouldReturnTheSameInstanceEachTime() {
+    SharedPreferences prefs1 = PreferenceManager.getDefaultSharedPreferences(Robolectric.application);
+    SharedPreferences prefs2 = PreferenceManager.getDefaultSharedPreferences(Robolectric.application);
+
+    assertThat(prefs1).isSameAs(prefs2);
+  }
 }

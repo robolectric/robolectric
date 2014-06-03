@@ -1,8 +1,8 @@
 package org.robolectric.shadows;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.util.AttributeSet;
@@ -13,13 +13,13 @@ import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.res.Attribute;
-import org.robolectric.res.EmptyResourceLoader;
 import org.robolectric.util.TestUtil;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.junit.Assert.assertNotNull;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class PreferenceTest {
@@ -34,7 +34,7 @@ public class PreferenceTest {
 
   @Before
   public void setup() {
-    context = new Activity();
+    context = Robolectric.application;
     attrs = new RoboAttributeSet(new ArrayList<Attribute>(), TestUtil.emptyResources(), null);
     preference = new TestPreference(context, attrs);
     shadow = Robolectric.shadowOf(preference);
@@ -47,13 +47,13 @@ public class PreferenceTest {
     preference = new TestPreference(context, attrs, defStyle);
     shadow = Robolectric.shadowOf(preference);
     assertThat(shadow.getContext()).isSameAs(context);
-    assertThat(shadow.getAttrs()).isSameAs((AttributeSet) attrs);
+    assertThat(shadow.getAttrs()).isSameAs(attrs);
     assertThat(shadow.getDefStyle()).isEqualTo(defStyle);
 
     preference = new TestPreference(context, attrs);
     shadow = Robolectric.shadowOf(preference);
     assertThat(shadow.getContext()).isSameAs(context);
-    assertThat(shadow.getAttrs()).isSameAs((AttributeSet) attrs);
+    assertThat(shadow.getAttrs()).isSameAs(attrs);
     assertThat(shadow.getDefStyle()).isEqualTo(0);
 
     preference = new TestPreference(context);
@@ -66,12 +66,54 @@ public class PreferenceTest {
   @Test
   public void shouldInitializeFromAttributes() {
     String key = "key_value";
+    String title = "title_value";
+    String summary = "summary_value";
+
     List<Attribute> attributes = new ArrayList<Attribute>();
     attributes.add(new Attribute("android:attr/key", key, R.class.getPackage().getName()));
+    attributes.add(new Attribute("android:attr/title", title, R.class.getPackage().getName()));
+    attributes.add(new Attribute("android:attr/summary", summary, R.class.getPackage().getName()));
     attrs = new RoboAttributeSet(attributes, TestUtil.emptyResources(), null);
 
     preference = new TestPreference(context, attrs);
     assertThat(preference.getKey()).isEqualTo(key);
+    assertThat(preference.getTitle()).isEqualTo(title);
+    assertThat(preference.getSummary()).isEqualTo(summary);
+  }
+
+  @Test
+  public void shouldInitializeDefaultValueFromAttribute() throws Exception {
+    String defaultValue = "default_value";
+    List<Attribute> attributes = new ArrayList<Attribute>();
+    attributes.add(new Attribute("android:attr/defaultValue", defaultValue, R.class.getPackage().getName()));
+    attrs = new RoboAttributeSet(attributes, TestUtil.emptyResources(), null);
+    preference = new TestPreference(context, attrs);
+    assertThat(Robolectric.shadowOf(preference).getDefaultValue()).isEqualTo(defaultValue);
+  }
+
+  @Test
+  public void shouldInitializeAndResolveFromResourceAttributes() {
+    List<Attribute> attributes = new ArrayList<Attribute>();
+    attributes.add(new Attribute("android:attr/key", "@string/preference_resource_key", R.class.getPackage().getName()));
+    attributes.add(new Attribute("android:attr/title", "@string/preference_resource_title", R.class.getPackage().getName()));
+    attributes.add(new Attribute("android:attr/summary", "@string/preference_resource_summary", R.class.getPackage().getName()));
+    attrs = new RoboAttributeSet(attributes, TestUtil.emptyResources(), null);
+
+    preference = new TestPreference(context, attrs);
+    assertThat(preference.getKey()).isEqualTo("preference_resource_key_value");
+    assertThat(preference.getTitle()).isEqualTo("preference_resource_title_value");
+    assertThat(preference.getSummary()).isEqualTo("preference_resource_summary_value");
+  }
+
+  @Test
+  public void shouldInitializeAndResolveDefaultValueFromResourceAttribute() throws Exception {
+    List<Attribute> attributes = new ArrayList<Attribute>();
+    attributes.add(new Attribute("android:attr/defaultValue",
+        "@string/preference_resource_default_value", R.class.getPackage().getName()));
+    attrs = new RoboAttributeSet(attributes, TestUtil.emptyResources(), null);
+    preference = new TestPreference(context, attrs);
+    assertThat(Robolectric.shadowOf(preference).getDefaultValue())
+        .isEqualTo("preference_resource_default_value");
   }
 
   @Test
@@ -255,6 +297,12 @@ public class PreferenceTest {
     preference.setDependency("TEST_PREF_KEY");
     assertThat(preference.getDependency()).isNotNull();
     assertThat(preference.getDependency()).isEqualTo("TEST_PREF_KEY");
+  }
+
+  @Test
+  public void getSharedPreferencesShouldReturnSharedPreferences() {
+    final SharedPreferences sharedPreferences = preference.getSharedPreferences();
+    assertNotNull(sharedPreferences);
   }
 
   private static class TestPreference extends Preference {

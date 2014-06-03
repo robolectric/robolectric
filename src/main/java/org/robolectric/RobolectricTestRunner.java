@@ -11,16 +11,20 @@ import java.net.URL;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import org.apache.maven.artifact.ant.DependenciesTask;
 import org.jetbrains.annotations.TestOnly;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
+import org.junit.runners.model.TestClass;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.DisableStrictI18n;
 import org.robolectric.annotation.EnableStrictI18n;
@@ -43,10 +47,7 @@ import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.res.RoutingResourceLoader;
 import org.robolectric.util.AnnotationUtil;
-import org.robolectric.util.DatabaseConfig.DatabaseMap;
-import org.robolectric.util.DatabaseConfig.UsingDatabaseMap;
 import org.robolectric.util.Pair;
-import org.robolectric.util.SQLiteMap;
 
 import static org.fest.reflect.core.Reflection.constructor;
 import static org.fest.reflect.core.Reflection.staticField;
@@ -63,7 +64,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   private static Map<Pair<AndroidManifest, SdkConfig>, ResourceLoader> resourceLoadersByManifestAndConfig = new HashMap<Pair<AndroidManifest, SdkConfig>, ResourceLoader>();
   private static ShadowMap mainShadowMap;
   private final EnvHolder envHolder;
-  private DatabaseMap databaseMap;
   private TestLifecycle<Application> testLifecycle;
 
   static {
@@ -73,6 +73,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   private Class<? extends RobolectricTestRunner> lastTestRunnerClass;
   private SdkConfig lastSdkConfig;
   private SdkEnvironment lastSdkEnvironment;
+  private final HashSet<Class<?>> loadedTestClasses = new HashSet<Class<?>>();
 
   /**
    * Creates a runner to run {@code testClass}. Looks in your working directory for your AndroidManifest.xml file
@@ -94,7 +95,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       }
     }
     this.envHolder = envHolder;
-    databaseMap = setupDatabaseMap(testClass, new SQLiteMap());
   }
 
   private void assureTestLifecycle(SdkEnvironment sdkEnvironment) {
@@ -142,7 +142,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   }
 
   protected ClassLoader createRobolectricClassLoader(Setup setup, SdkConfig sdkConfig) {
-    URL[] urls = MAVEN_CENTRAL.getLocalArtifactUrls(this, sdkConfig.getSdkClasspathDependencies()).values().toArray(new URL[0]);
+    URL[] urls = MAVEN_CENTRAL.getLocalArtifactUrls(this, sdkConfig.getSdkClasspathDependencies());
     return new AsmInstrumentingClassLoader(setup, urls);
   }
 
@@ -169,17 +169,28 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
   @Override
   protected Statement classBlock(RunNotifier notifier) {
-    final Statement statement = super.classBlock(notifier);
+    final Statement statement = childrenInvoker(notifier);
     return new Statement() {
       @Override
       public void evaluate() throws Throwable {
         try {
           statement.evaluate();
+          for (Class<?> testClass : loadedTestClasses) {
+            invokeAfterClass(testClass);
+          }
         } finally {
           afterClass();
         }
       }
     };
+  }
+
+  private void invokeAfterClass(final Class<?> clazz) throws Throwable {
+    final TestClass testClass = new TestClass(clazz);
+    final List<FrameworkMethod> afters = testClass.getAnnotatedMethods(AfterClass.class);
+    for (FrameworkMethod after : afters) {
+      after.invokeExplosively(null);
+    }
   }
 
   @Override protected Statement methodBlock(final FrameworkMethod method) {
@@ -206,10 +217,13 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
         ParallelUniverseInterface parallelUniverseInterface = getHooksInterface(sdkEnvironment);
         try {
+          // Only invoke @BeforeClass once per class
+          if (!loadedTestClasses.contains(bootstrappedTestClass)) {
+            invokeBeforeClass(bootstrappedTestClass);
+          }
           assureTestLifecycle(sdkEnvironment);
 
           parallelUniverseInterface.resetStaticState();
-          parallelUniverseInterface.setDatabaseMap(databaseMap); //Set static DatabaseMap in DBConfig
           parallelUniverseInterface.setSdkConfig(sdkEnvironment.getSdkConfig());
 
           boolean strictI18n = determineI18nStrictState(bootstrappedMethod);
@@ -256,6 +270,18 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
         }
       }
     };
+  }
+
+  private void invokeBeforeClass(final Class clazz) throws Throwable {
+    if (!loadedTestClasses.contains(clazz)) {
+      loadedTestClasses.add(clazz);
+
+      final TestClass testClass = new TestClass(clazz);
+      final List<FrameworkMethod> befores = testClass.getAnnotatedMethods(BeforeClass.class);
+      for (FrameworkMethod before : befores) {
+        before.invokeExplosively(null);
+      }
+    }
   }
 
   protected HelperTestRunner getHelperTestRunner(Class bootstrappedTestClass) {
@@ -319,7 +345,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       assetsDir = Fs.fileFromPath(assetsProperty);
     } else {
       manifestFile = fsFile.join(defaultManifest ? "AndroidManifest.xml" : config.manifest());
-      resDir = manifestFile.getParent().join("res");
+      resDir = manifestFile.getParent().join(config.resourceDir());
       assetsDir = manifestFile.getParent().join("assets");
     }
 
@@ -441,12 +467,11 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
   private void afterClass() {
     testLifecycle = null;
-    databaseMap = null;
   }
 
   @TestOnly
   boolean allStateIsCleared() {
-    return testLifecycle == null && databaseMap == null;
+    return testLifecycle == null;
   }
 
   @Override
@@ -603,25 +628,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
   public PackageResourceLoader createResourceLoader(ResourcePath resourcePath) {
     return new PackageResourceLoader(resourcePath);
-  }
-
-  /*
-   * Specifies what database to use for testing (ex: H2 or Sqlite),
-   * this will load H2 by default, the SQLite TestRunner version will override this.
-   */
-  protected DatabaseMap setupDatabaseMap(Class<?> testClass, DatabaseMap map) {
-    DatabaseMap dbMap = map;
-
-    if (testClass.isAnnotationPresent(UsingDatabaseMap.class)) {
-      UsingDatabaseMap usingMap = testClass.getAnnotation(UsingDatabaseMap.class);
-      if (usingMap.value() != null) {
-        dbMap = Robolectric.newInstanceOf(usingMap.value());
-      } else {
-        if (dbMap == null)
-          throw new RuntimeException("UsingDatabaseMap annotation value must provide a class implementing DatabaseMap");
-      }
-    }
-    return dbMap;
   }
 
   protected ShadowMap createShadowMap() {

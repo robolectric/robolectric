@@ -9,6 +9,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -219,6 +220,8 @@ public class ShadowCamera {
     private int previewFpsMax = 30;
     private int previewFps = 30;
     private int exposureCompensation = 0;
+    private String focusMode;
+    private List<String> supportedFocusModes = new ArrayList<String>();
 
     @Implementation
     public Camera.Size getPictureSize() {
@@ -300,6 +303,25 @@ public class ShadowCamera {
       addSize(supportedSizes, 320, 240);
       addSize(supportedSizes, 640, 480);
       return supportedSizes;
+    }
+
+    public void setSupportedFocusModes(String... focusModes) {
+      supportedFocusModes = Arrays.asList(focusModes);
+    }
+
+    @Implementation
+    public List<String> getSupportedFocusModes() {
+      return supportedFocusModes;
+    }
+
+    @Implementation
+    public String getFocusMode() {
+      return focusMode;
+    }
+
+    @Implementation
+    public void setFocusMode(String focusMode) {
+      this.focusMode = focusMode;
     }
 
     @Implementation

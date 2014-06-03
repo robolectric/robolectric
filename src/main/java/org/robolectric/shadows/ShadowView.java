@@ -6,6 +6,7 @@ import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -42,6 +43,7 @@ public class ShadowView {
   private View.OnClickListener onClickListener;
   private View.OnLongClickListener onLongClickListener;
   private View.OnFocusChangeListener onFocusChangeListener;
+  private View.OnSystemUiVisibilityChangeListener onSystemUiVisibilityChangeListener;
   private boolean wasInvalidated;
   private View.OnTouchListener onTouchListener;
   protected AttributeSet attributeSet;
@@ -120,6 +122,12 @@ public class ShadowView {
   public void setOnLongClickListener(View.OnLongClickListener onLongClickListener) {
     this.onLongClickListener = onLongClickListener;
     directly().setOnLongClickListener(onLongClickListener);
+  }
+
+  @Implementation
+  public void setOnSystemUiVisibilityChangeListener(View.OnSystemUiVisibilityChangeListener onSystemUiVisibilityChangeListener) {
+    this.onSystemUiVisibilityChangeListener = onSystemUiVisibilityChangeListener;
+    directly().setOnSystemUiVisibilityChangeListener(onSystemUiVisibilityChangeListener);
   }
 
   @Implementation
@@ -293,6 +301,13 @@ public class ShadowView {
     return onLongClickListener;
   }
 
+  /**
+   * Non-android accessor.  Returns long click listener, if set.
+   */
+  public View.OnSystemUiVisibilityChangeListener getOnSystemUiVisibilityChangeListener() {
+    return onSystemUiVisibilityChangeListener;
+  }
+
   @Implementation
   public Bitmap getDrawingCache() {
     return Robolectric.newInstanceOf(Bitmap.class);
@@ -316,6 +331,11 @@ public class ShadowView {
         realView.invalidate();
       }
     }, delayMilliseconds);
+  }
+
+  @Implementation
+  public void removeCallbacks(Runnable callback) {
+    shadowOf(Looper.getMainLooper()).getScheduler().remove(callback);
   }
 
   @Implementation

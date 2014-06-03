@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="org.robolectric">
+  <application>
+    <provider
+      android:name="org.robolectric.tester.FullyQualifiedClassName"
+      android:authorities="org.robolectric"/>
+
+    <provider
+      android:name=".tester.PartiallyQualifiedClassName"
+      android:authorities="org.robolectric"/>
+  </application>
+</manifest>

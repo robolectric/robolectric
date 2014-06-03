@@ -3,7 +3,9 @@ package org.robolectric.shadows;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
 import android.widget.TextView;
@@ -15,10 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Shadow for {@code RemoteViews} that simulates its implementation. Supports pending intents for events, changing
- * visibility, setting text, updating etc...
+ * Shadow for {@code RemoteViews} that simulates its implementation.
  */
-@SuppressWarnings({"UnusedDeclaration"})
 @Implements(RemoteViews.class)
 public class ShadowRemoteViews {
   private String packageName;
@@ -99,6 +99,14 @@ public class ShadowRemoteViews {
   }
 
   @Implementation
+  public View apply(Context context, ViewGroup parent) {
+    LayoutInflater inflater = LayoutInflater.from(context);
+    View inflated = inflater.inflate(layoutId, parent);
+    reapply(context, inflated);
+    return inflated;
+  }
+
+  @Implementation
   public void reapply(Context context, View v) {
     for (ViewUpdater viewUpdater : viewUpdaters) {
       viewUpdater.update(v);
@@ -113,7 +121,6 @@ public class ShadowRemoteViews {
     }
 
     final void update(View parent) {
-
       View view = parent.findViewById(viewId);
       if (view == null) {
         throw new NullPointerException("couldn't find view " + viewId

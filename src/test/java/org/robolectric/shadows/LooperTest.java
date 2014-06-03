@@ -10,6 +10,8 @@ import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.util.Scheduler;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 import static org.robolectric.Robolectric.shadowOf;
@@ -134,5 +136,35 @@ public class LooperTest {
     assertThat(Robolectric.application.getMainLooper()).isSameAs(mainLooper);
     assertThat(shadowOf(mainLooper).getScheduler()).isNotSameAs(scheduler);
     assertThat(shadowOf(mainLooper).hasQuit()).isFalse();
+  }
+
+  @Test
+  public void getMainLooperReturnsNonNullOnMainThreadWhenRobolectricApplicationIsNull() {
+      Robolectric.application = null;
+      assertNotNull(Looper.getMainLooper());
+  }
+
+  @Test
+  public void getMainLooperThrowsNullPointerExceptionOnBackgroundThreadWhenRobolectricApplicationIsNull() throws Exception {
+      Robolectric.application = null;
+      final AtomicReference<Looper> mainLooperAtomicReference = new AtomicReference<Looper>();
+      final AtomicReference<NullPointerException> nullPointerExceptionAtomicReference = new AtomicReference<NullPointerException>();
+
+      Thread backgroundThread = new Thread(new Runnable() {
+          @Override
+          public void run() {
+              try {
+                  Looper mainLooper = Looper.getMainLooper();
+                  mainLooperAtomicReference.set(mainLooper);
+              } catch (NullPointerException nullPointerException) {
+                  nullPointerExceptionAtomicReference.set(nullPointerException);
+              }
+          }
+      });
+      backgroundThread.start();
+      backgroundThread.join();
+
+      assertThat(nullPointerExceptionAtomicReference.get()).isInstanceOf(NullPointerException.class);
+      assertNull(mainLooperAtomicReference.get());
   }
 }

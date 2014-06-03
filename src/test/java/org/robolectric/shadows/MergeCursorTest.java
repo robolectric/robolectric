@@ -3,12 +3,12 @@ package org.robolectric.shadows;
 import android.database.Cursor;
 import android.database.MergeCursor;
 import android.database.sqlite.SQLiteCursor;
+import android.database.sqlite.SQLiteDatabase;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
-import org.robolectric.util.DatabaseConfig;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -19,8 +19,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 @RunWith(TestRunners.WithDefaults.class)
 public class MergeCursorTest {
 
-  private Connection connection;
-
+  private SQLiteDatabase database;
   private MergeCursor cursor;
   private SQLiteCursor dbCursor1;
   private SQLiteCursor dbCursor2;
@@ -39,54 +38,47 @@ public class MergeCursorTest {
 
   @Before
   public void setUp() throws Exception {
-    connection = DatabaseConfig.getMemoryConnection();
+    database = SQLiteDatabase.create(null);
+    dbCursor1 = setupTable(
+        "CREATE TABLE table_1("
+            + "id INTEGER PRIMARY KEY, name_1 VARCHAR(255), value_1 INTEGER,"
+            + "float_value_1 REAL, double_value_1 DOUBLE, blob_value_1 BINARY, clob_value_1 CLOB );",
 
-    setupTable1();
-    setupTable2();
+        TABLE_1_INSERTS,
+
+        "SELECT * FROM table_1;"
+    );
+    dbCursor2 = setupTable(
+        "CREATE TABLE table_2("
+            + "id INTEGER PRIMARY KEY, name_2 VARCHAR(255), value_2 INTEGER,"
+            + "float_value_2 REAL, double_value_2 DOUBLE, blob_value_2 BINARY, clob_value_2 CLOB );",
+
+        TABLE_2_INSERTS,
+
+        "SELECT * FROM table_2;"
+    );
   }
 
-  private void setupTable1() throws Exception {
-    Statement statement = connection.createStatement();
-    statement.execute("CREATE TABLE table_1(" +
-        "id INTEGER PRIMARY KEY, name_1 VARCHAR(255), value_1 INTEGER," +
-        "float_value_1 REAL, double_value_1 DOUBLE, blob_value_1 BINARY, clob_value_1 CLOB );");
+  private SQLiteCursor setupTable(final String createSql, final String[] insertions, final String selectSql) {
+    database.execSQL(createSql);
 
-    for (String insert : TABLE_1_INSERTS) {
-      connection.createStatement().executeUpdate(insert);
+    for (String insert : insertions) {
+      database.execSQL(insert);
     }
 
-    statement = connection.createStatement(DatabaseConfig.getResultSetType(), ResultSet.CONCUR_READ_ONLY);
-    String sql ="SELECT * FROM table_1;";
-    ResultSet rs = statement.executeQuery(sql);
-    dbCursor1 = new SQLiteCursor(null, null, null);
-    Robolectric.shadowOf(dbCursor1).setResultSet(rs, sql);
+    Cursor cursor = database.rawQuery(selectSql, null);
+    assertThat(cursor).isInstanceOf(SQLiteCursor.class);
+
+    return (SQLiteCursor) cursor;
   }
 
-  private void setupTable2() throws Exception {
-    Statement statement = connection.createStatement();
-    statement.execute("CREATE TABLE table_2(" +
-        "id INTEGER PRIMARY KEY, name_2 VARCHAR(255), value_2 INTEGER," +
-        "float_value_2 REAL, double_value_2 DOUBLE, blob_value_2 BINARY, clob_value_2 CLOB );");
-
-    for (String insert : TABLE_2_INSERTS) {
-      connection.createStatement().executeUpdate(insert);
-    }
-
-    statement = connection.createStatement(DatabaseConfig.getResultSetType(), ResultSet.CONCUR_READ_ONLY);
-    String sql ="SELECT * FROM table_2;";
-    ResultSet rs = statement.executeQuery(sql);
-    dbCursor2 = new SQLiteCursor(null, null, null);
-    Robolectric.shadowOf(dbCursor2).setResultSet(rs, sql);
+  @Test(expected = NullPointerException.class)
+  public void shouldThrowIfConstructorArgumentIsNull() {
+    new MergeCursor(null);
   }
 
   @Test
   public void testEmptyCursors() throws Exception {
-    // null cursor list
-    cursor = new MergeCursor( null );
-    assertThat(cursor.getCount()).isEqualTo(0);
-    assertThat(cursor.moveToFirst()).isFalse();
-    assertThat(cursor.getColumnNames()).isNotNull();
-
     // cursor list with null contents
     cursor = new MergeCursor( new Cursor[1] );
     assertThat(cursor.getCount()).isEqualTo(0);

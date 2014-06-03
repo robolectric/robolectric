@@ -21,7 +21,6 @@ import org.robolectric.internal.Instrument;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.ResourcePath;
-import org.robolectric.util.DatabaseConfig;
 import org.robolectric.util.I18nException;
 import org.robolectric.util.Transcript;
 
@@ -43,7 +42,6 @@ public class Setup {
       RealObject.class,
       ShadowWrangler.class,
       AndroidManifest.class,
-      DatabaseConfig.DatabaseMap.class,
       R.class,
 
       org.robolectric.bytecode.InstrumentingClassLoader.class,
@@ -132,7 +130,7 @@ public class Setup {
             || name.startsWith("org.hamcrest")
             || name.startsWith("org.specs2")  // allows for android projects with mixed scala\java tests to be
             || name.startsWith("scala.")      //  run with Maven Surefire (see the RoboSpecs project on github)
-            || name.startsWith("org.sqlite.") // ugh, we're barfing while loading org.sqlite now for some reason?!? todo: still?
+            || name.startsWith("com.almworks.sqlite4java") // Fix #958: SQLite native library must be loaded once.
     );
   }
 

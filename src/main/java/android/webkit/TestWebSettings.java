@@ -20,6 +20,7 @@ public class TestWebSettings extends WebSettings {
   private boolean domStorageEnabled = false;
   private boolean geolocationEnabled = false;
   private boolean javaScriptEnabled = false;
+  private boolean javaScriptCanOpenWindowAutomatically = false;
   private boolean lightTouchEnabled = false;
   private boolean loadWithOverviewMode = false;
   private boolean needInitialFocus = false;
@@ -289,5 +290,15 @@ public class TestWebSettings extends WebSettings {
   @Implementation
   public void setGeolocationEnabled(boolean geolocationEnabled) {
     this.geolocationEnabled = geolocationEnabled;
+  }
+
+  @Implementation
+  public void setJavaScriptCanOpenWindowsAutomatically(boolean javaScriptCanOpenWindowAutomatically) {
+    this.javaScriptCanOpenWindowAutomatically = javaScriptCanOpenWindowAutomatically;
+  }
+
+  @Implementation
+  public boolean getJavaScriptCanOpenWindowsAutomatically() {
+    return this.javaScriptCanOpenWindowAutomatically;
   }
 }

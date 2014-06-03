@@ -3,6 +3,8 @@ package org.robolectric.shadows;
 
 import android.graphics.ImageFormat;
 import android.hardware.Camera;
+
+import org.fest.util.Lists;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -141,4 +143,26 @@ public class CameraParametersTest {
     parameters.setExposureCompensation(5);
     assertThat(parameters.getExposureCompensation()).isEqualTo(5);
   }
+
+  @Test
+  public void testGetSupportedFocusModesDefaultValue() {
+    List<String> supportedFocusModes = parameters.getSupportedFocusModes();
+    assertThat(supportedFocusModes).isEmpty();
+  }
+
+  @Test
+  public void testSetSupportedFocusModes() {
+    shadowParameters.setSupportedFocusModes("foo", "bar");
+    assertThat(parameters.getSupportedFocusModes()).isEqualTo(Lists.newArrayList("foo", "bar"));
+    shadowParameters.setSupportedFocusModes("baz");
+    assertThat(parameters.getSupportedFocusModes()).isEqualTo(Lists.newArrayList("baz"));
+  }
+
+  @Test
+  public void testSetAndGetFocusMode() {
+    parameters.setFocusMode("foo");
+    assertThat(parameters.getFocusMode()).isEqualTo("foo");
+  }
+
+
 }

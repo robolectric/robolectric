@@ -5,12 +5,10 @@ import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
-import android.graphics.drawable.AnimationDrawable;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.NinePatchDrawable;
+import android.graphics.drawable.*;
+import android.util.DisplayMetrics;
 
+import org.fest.assertions.data.Offset;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,6 +37,7 @@ public class ResourcesTest {
   @Test
   public void getString() throws Exception {
     assertThat(resources.getString(R.string.hello)).isEqualTo("Hello");
+    assertThat(resources.getString(R.string.say_it_with_item)).isEqualTo("flowers");
   }
 
   @Test
@@ -48,7 +47,7 @@ public class ResourcesTest {
 
   @Test
   public void getString_withInterpolation() throws Exception {
-    assertThat(resources.getString(R.string.interpolate, "value")).isEqualTo("Here's a value!");
+    assertThat(resources.getString(R.string.interpolate, "value")).isEqualTo("Here is a value!");
   }
 
   @Test
@@ -57,14 +56,27 @@ public class ResourcesTest {
   }
 
   @Test
+  public void getString_withSurroundingQuotes() throws Exception {
+    assertThat(resources.getString(R.string.surrounding_quotes, "value")).isEqualTo("This'll work");
+  }
+
+  @Test
+  public void getStringWithEscapedApostrophes() throws Exception {
+    assertThat(resources.getString(R.string.escaped_apostrophe)).isEqualTo("This'll also work");
+  }
+
+  @Test
+  public void getStringWithEscapedQuotes() throws Exception {
+    assertThat(resources.getString(R.string.escaped_quotes)).isEqualTo("Click \"OK\"");
+  }
+
+  @Test
   public void getText_withHtml() throws Exception {
-    // todo: this needs to change...
     assertThat(resources.getText(R.string.some_html, "value")).isEqualTo("Hello, world");
   }
 
   @Test
   public void getText_withLayoutId() throws Exception {
-    // todo: this needs to change...
     assertThat(resources.getText(R.layout.different_screen_sizes, "value")).isEqualTo("." + File.separator + "src" + File.separator + "test" + File.separator + "resources" + File.separator + "res" + File.separator + "layout" + File.separator + "different_screen_sizes.xml");
   }
 
@@ -81,6 +93,7 @@ public class ResourcesTest {
     assertThat(resources.getInteger(R.integer.test_integer2)).isEqualTo(9);
     assertThat(resources.getInteger(R.integer.test_large_hex)).isEqualTo(-65536);
     assertThat(resources.getInteger(R.integer.test_value_with_zero)).isEqualTo(7210);
+    assertThat(resources.getInteger(R.integer.meaning_of_life_as_item)).isEqualTo(42);
   }
 
   @Test
@@ -99,6 +112,7 @@ public class ResourcesTest {
   public void getBoolean() throws Exception {
     assertThat(resources.getBoolean(R.bool.false_bool_value)).isEqualTo(false);
     assertThat(resources.getBoolean(R.bool.integers_are_true)).isEqualTo(true);
+    assertThat(resources.getBoolean(R.bool.true_as_item)).isEqualTo(true);
   }
 
   @Test
@@ -114,7 +128,7 @@ public class ResourcesTest {
     assertThat(resources.getDimension(R.dimen.test_mm_dimen)).isEqualTo(((float) (42f / 25.4 * 240)));
     assertThat(resources.getDimension(R.dimen.test_px_dimen)).isEqualTo(15f);
     assertThat(resources.getDimension(R.dimen.test_pt_dimen)).isEqualTo(12 / 0.3f);
-    assertThat(resources.getDimension(R.dimen.test_sp_dimen)).isEqualTo(0); // huh?
+    assertThat(resources.getDimension(R.dimen.test_sp_dimen)).isEqualTo(5);
   }
 
   @Test
@@ -125,7 +139,7 @@ public class ResourcesTest {
     assertThat(resources.getDimensionPixelSize(R.dimen.test_mm_dimen)).isEqualTo(397);
     assertThat(resources.getDimensionPixelSize(R.dimen.test_px_dimen)).isEqualTo(15);
     assertThat(resources.getDimensionPixelSize(R.dimen.test_pt_dimen)).isEqualTo(40);
-    assertThat(resources.getDimensionPixelSize(R.dimen.test_sp_dimen)).isEqualTo(1);
+    assertThat(resources.getDimensionPixelSize(R.dimen.test_sp_dimen)).isEqualTo(5);
   }
 
   @Test
@@ -136,7 +150,7 @@ public class ResourcesTest {
     assertThat(resources.getDimensionPixelOffset(R.dimen.test_mm_dimen)).isEqualTo(396);
     assertThat(resources.getDimensionPixelOffset(R.dimen.test_px_dimen)).isEqualTo(15);
     assertThat(resources.getDimensionPixelOffset(R.dimen.test_pt_dimen)).isEqualTo(40);
-    assertThat(resources.getDimensionPixelOffset(R.dimen.test_sp_dimen)).isEqualTo(0);
+    assertThat(resources.getDimensionPixelOffset(R.dimen.test_sp_dimen)).isEqualTo(5);
   }
 
   @Test
@@ -159,6 +173,20 @@ public class ResourcesTest {
     assertThat(resources.getQuantityString(R.plurals.beer, 1)).isEqualTo("One beer");
     assertThat(resources.getQuantityString(R.plurals.beer, 2)).isEqualTo("Two beers");
     assertThat(resources.getQuantityString(R.plurals.beer, 3)).isEqualTo("%d beers, yay!");
+  }
+
+  @Test
+  public void getFraction() throws Exception {
+    final int myself = 300;
+    final int myParent = 600;
+    assertThat(resources.getFraction(R.fraction.half, myself, myParent)).isEqualTo(150f);
+    assertThat(resources.getFraction(R.fraction.half_of_parent, myself, myParent)).isEqualTo(300f);
+
+    assertThat(resources.getFraction(R.fraction.quarter_as_item, myself, myParent)).isEqualTo(75f);
+    assertThat(resources.getFraction(R.fraction.quarter_of_parent_as_item, myself, myParent)).isEqualTo(150f);
+
+    assertThat(resources.getFraction(R.fraction.fifth_as_reference, myself, myParent)).isEqualTo(60f, Offset.offset(0.01f));
+    assertThat(resources.getFraction(R.fraction.fifth_of_parent_as_reference, myself, myParent)).isEqualTo(120f, Offset.offset(0.01f));
   }
 
   @Test
@@ -365,6 +393,15 @@ public class ResourcesTest {
     InputStream resourceStream = resources.openRawResource(R.raw.lib_raw_resource);
     assertThat(resourceStream).isNotNull();
     assertThat(TestUtil.readString(resourceStream)).isEqualTo("from lib3");
+  }
+
+  @Test
+  public void setScaledDensityShouldSetScaledDensityInDisplayMetrics() {
+    final DisplayMetrics displayMetrics = resources.getDisplayMetrics();
+
+    assertThat(displayMetrics.scaledDensity).isEqualTo(1f);
+    shadowOf(resources).setScaledDensity(2.5f);
+    assertThat(displayMetrics.scaledDensity).isEqualTo(2.5f);
   }
 
   /////////////////////////////

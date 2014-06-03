@@ -17,11 +17,13 @@ public class TestMenuItem implements MenuItem {
   private boolean checked = false;
   private boolean checkable = false;
   private boolean visible = true;
+  private boolean expanded = false;
   private OnMenuItemClickListener menuItemClickListener;
   public int iconRes;
   private Intent intent;
   private SubMenu subMenu;
   private View actionView;
+  private OnActionExpandListener actionExpandListener;
 
   public TestMenuItem() {
     super();
@@ -243,21 +245,40 @@ public class TestMenuItem implements MenuItem {
 
   @Override
   public boolean expandActionView() {
+    if (actionView != null) {
+      if (actionExpandListener != null) {
+        actionExpandListener.onMenuItemActionExpand(this);
+      }
+
+      expanded = true;
+      return true;
+    }
+
     return false;
   }
 
   @Override
   public boolean collapseActionView() {
+    if (actionView != null) {
+      if (actionExpandListener != null) {
+        actionExpandListener.onMenuItemActionCollapse(this);
+      }
+
+      expanded = false;
+      return true;
+    }
+
     return false;
   }
 
   @Override
   public boolean isActionViewExpanded() {
-    return false;
+    return expanded;
   }
 
   @Override
   public MenuItem setOnActionExpandListener(OnActionExpandListener listener) {
-    return null;
+    actionExpandListener = listener;
+    return this;
   }
 }

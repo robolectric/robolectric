@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -11,11 +10,15 @@
 
   <groupId>org.robolectric</groupId>
   <artifactId>robolectric</artifactId>
-  <version>2.3-SNAPSHOT</version>
+  <version>2.4-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>Robolectric</name>
   <description>An alternative Android testing framework.</description>
   <url>http://robolectric.org/</url>
+
+  <properties>
+      <libsqlite.version>0.282-3</libsqlite.version>
+  </properties>
 
   <dependencies>
     <dependency>
@@ -32,33 +35,74 @@
     </dependency>
 
     <dependency>
-      <groupId>org.xerial</groupId>
-      <artifactId>sqlite-jdbc</artifactId>
-      <version>3.7.2</version>
+      <groupId>com.almworks.sqlite4java</groupId>
+      <artifactId>sqlite4java</artifactId>
+      <version>0.282</version>
+    </dependency>
+
+    <!-- sqlite native dependencies -->
+    <dependency>
+      <groupId>com.github.axet.litedb</groupId>
+      <artifactId>libsqlite</artifactId>
+      <version>${libsqlite.version}</version>
+      <classifier>natives-windows-x86</classifier>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.github.axet.litedb</groupId>
+      <artifactId>libsqlite</artifactId>
+      <version>${libsqlite.version}</version>
+      <classifier>natives-windows-x86_64</classifier>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.github.axet.litedb</groupId>
+      <artifactId>libsqlite</artifactId>
+      <version>${libsqlite.version}</version>
+      <classifier>natives-mac-x86_64</classifier>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.github.axet.litedb</groupId>
+      <artifactId>libsqlite</artifactId>
+      <version>${libsqlite.version}</version>
+      <classifier>natives-linux-x86</classifier>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.github.axet.litedb</groupId>
+      <artifactId>libsqlite</artifactId>
+      <classifier>natives-linux-x86_64</classifier>
+      <version>${libsqlite.version}</version>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>org.ow2.asm</groupId>
       <artifactId>asm</artifactId>
-      <version>4.1</version>
+      <version>5.0.1</version>
     </dependency>
 
     <dependency>
       <groupId>org.ow2.asm</groupId>
       <artifactId>asm-commons</artifactId>
-      <version>4.1</version>
+      <version>5.0.1</version>
     </dependency>
 
     <dependency>
       <groupId>org.ow2.asm</groupId>
       <artifactId>asm-util</artifactId>
-      <version>4.1</version>
+      <version>5.0.1</version>
     </dependency>
 
     <dependency>
       <groupId>org.ow2.asm</groupId>
       <artifactId>asm-analysis</artifactId>
-      <version>4.1</version>
+      <version>5.0.1</version>
     </dependency>
 
     <dependency>
@@ -102,14 +146,16 @@
     <dependency>
       <groupId>com.android.support</groupId>
       <artifactId>support-v4</artifactId>
-      <version>19.0.0</version>
+      <version>19.0.1</version>
       <scope>compile</scope>
+      <optional>true</optional>
     </dependency>
 
     <dependency>
       <groupId>org.easytesting</groupId>
       <artifactId>fest-util</artifactId>
       <version>1.2.5</version>
+      <scope>test</scope>
     </dependency>
 
     <dependency>
@@ -154,6 +200,12 @@
   </dependencies>
 
   <build>
+    <resources>
+        <resource>
+            <directory>target/natives</directory>
+        </resource>
+    </resources>
+
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -207,6 +259,24 @@
             </goals>
           </execution>
         </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>com.googlecode.mavennatives</groupId>
+        <artifactId>maven-nativedependencies-plugin</artifactId>
+        <version>0.0.7</version>
+        <executions>
+            <execution>
+                <id>unpacknatives</id>
+                <phase>generate-resources</phase>
+                <goals>
+                    <goal>copy</goal>
+                </goals>
+            </execution>
+        </executions>
+        <configuration>
+            <separateDirs>true</separateDirs>
+        </configuration>
       </plugin>
 
       <plugin>

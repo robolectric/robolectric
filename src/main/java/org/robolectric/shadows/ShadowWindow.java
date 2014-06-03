@@ -5,6 +5,7 @@ import android.graphics.drawable.Drawable;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -25,6 +26,7 @@ public class ShadowWindow {
   Window realWindow;
 
   private int flags;
+  private int softInputMode;
 
   public static Window create(Context context) throws Exception {
     Class<?> phoneWindowClass = type(ShadowPhoneWindow.PHONE_WINDOW_CLASS_NAME).load();
@@ -36,6 +38,12 @@ public class ShadowWindow {
   public void setFlags(int flags, int mask) {
     this.flags = (this.flags & ~mask) | (flags & mask);
     directlyOn(realWindow, Window.class, "setFlags", int.class, int.class).invoke(flags, mask);
+  }
+
+  @Implementation
+  public void setSoftInputMode(int softInputMode) {
+    this.softInputMode = softInputMode;
+    directlyOn(realWindow, Window.class, "setSoftInputMode", int.class).invoke(softInputMode);
   }
 
   public boolean getFlag(int flag) {
@@ -60,6 +68,18 @@ public class ShadowWindow {
   }
 
   public Drawable getBackgroundDrawable() {
+    return null;
+  }
+
+  public int getSoftInputMode() {
+    return softInputMode;
+  }
+
+  public ProgressBar getProgressBar() {
+    return null;
+  }
+
+  public ProgressBar getIndeterminateProgressBar() {
     return null;
   }
 }

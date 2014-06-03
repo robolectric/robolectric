@@ -2,7 +2,9 @@ package org.robolectric.shadows;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.ActivityOptions;
 import android.app.Dialog;
+import android.app.Fragment;
 import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.content.Intent;
@@ -33,7 +35,6 @@ import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.res.Fs;
-import org.robolectric.shadows.testing.OnMethodTestActivity;
 import org.robolectric.test.TemporaryFolder;
 import org.robolectric.util.ActivityController;
 import org.robolectric.util.TestRunnable;
@@ -539,7 +540,6 @@ public class ActivityTest {
         "onStart",
         "onResume"
     );
-
   }
 
   @Test
@@ -654,64 +654,6 @@ public class ActivityTest {
   }
 
   @Test
-  public void callOnXxxMethods_shouldCallProtectedVersions() throws Exception {
-    final Transcript transcript = new Transcript();
-
-    Activity activity = new OnMethodTestActivity(transcript);
-
-    ShadowActivity shadowActivity = shadowOf(activity);
-
-    Bundle bundle = new Bundle();
-    bundle.putString("key", "value");
-    shadowActivity.callOnCreate(bundle);
-    transcript.assertEventsSoFar("onCreate was called with value");
-
-    shadowActivity.callOnStart();
-    transcript.assertEventsSoFar("onStart was called");
-
-    shadowActivity.callOnRestoreInstanceState(null);
-    transcript.assertEventsSoFar("onRestoreInstanceState was called");
-
-    shadowActivity.callOnPostCreate(null);
-    transcript.assertEventsSoFar("onPostCreate was called");
-
-    shadowActivity.callOnRestart();
-    transcript.assertEventsSoFar("onRestart was called");
-
-    shadowActivity.callOnResume();
-    transcript.assertEventsSoFar("onResume was called");
-
-    shadowActivity.callOnPostResume();
-    transcript.assertEventsSoFar("onPostResume was called");
-
-    Intent intent = new Intent("some action");
-    shadowActivity.callOnNewIntent(intent);
-    transcript.assertEventsSoFar("onNewIntent was called with " + intent);
-
-    shadowActivity.callOnSaveInstanceState(null);
-    transcript.assertEventsSoFar("onSaveInstanceState was called");
-
-    shadowActivity.callOnPause();
-    transcript.assertEventsSoFar("onPause was called");
-
-    shadowActivity.callOnUserLeaveHint();
-    transcript.assertEventsSoFar("onUserLeaveHint was called");
-
-    shadowActivity.callOnStop();
-    transcript.assertEventsSoFar("onStop was called");
-
-    shadowActivity.callOnDestroy();
-    transcript.assertEventsSoFar("onDestroy was called");
-  }
-
-  @Test
-  public void callOnXxxMethods_shouldWorkIfNotDeclaredOnConcreteClass() throws Exception {
-    Activity activity = new Activity() {
-    };
-    shadowOf(activity).callOnStart();
-  }
-
-  @Test
   public void getAndSetParentActivity_shouldWorkForTestingPurposes() throws Exception {
     Activity parentActivity = new Activity() {
     };
@@ -795,6 +737,42 @@ public class ActivityTest {
     Menu optionsMenu = shadowOf(activity).getOptionsMenu();
     assertThat(optionsMenu).isNotNull();
     assertThat(optionsMenu.getItem(0).getTitle()).isEqualTo("Algebraic!");
+  }
+
+  @Test
+  public void canStartActivityFromFragment() {
+    final Activity activity = buildActivity(Activity.class).create().get();
+
+    Intent intent = new Intent(Intent.ACTION_VIEW);
+    activity.startActivityFromFragment(new Fragment(), intent, 4);
+
+    ShadowActivity.IntentForResult intentForResult = shadowOf(activity).getNextStartedActivityForResult();
+    assertThat(intentForResult.intent).isSameAs(intent);
+    assertThat(intentForResult.requestCode).isEqualTo(4);
+  }
+
+  @Test
+  public void canStartActivityFromFragment_withBundle() {
+    final Activity activity = buildActivity(Activity.class).create().get();
+
+    Bundle options = new Bundle();
+    Intent intent = new Intent(Intent.ACTION_VIEW);
+    activity.startActivityFromFragment(new Fragment(), intent, 5, options);
+
+    ShadowActivity.IntentForResult intentForResult = shadowOf(activity).getNextStartedActivityForResult();
+    assertThat(intentForResult.intent).isSameAs(intent);
+    assertThat(intentForResult.options).isSameAs(options);
+    assertThat(intentForResult.requestCode).isEqualTo(5);
+  }
+
+  @Test
+  public void shouldUseAnimationOverride() {
+    Activity activity = buildActivity(Activity.class).create().get();
+    Intent intent = new Intent(activity, OptionsMenuActivity.class);
+
+    Bundle animationBundle = ActivityOptions.makeCustomAnimation(activity, R.anim.test_anim_1, R.anim.test_anim_1).toBundle();
+    activity.startActivity(intent, animationBundle);
+    assertThat(shadowOf(activity).getNextStartedActivityForResult().options).isSameAs(animationBundle);
   }
 
   /////////////////////////////

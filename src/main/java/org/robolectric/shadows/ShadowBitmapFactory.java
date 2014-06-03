@@ -13,6 +13,9 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.internal.NamedStream;
 import org.robolectric.util.Join;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -82,9 +85,12 @@ public class ShadowBitmapFactory {
 
   @Implementation
   public static Bitmap decodeStream(InputStream is, Rect outPadding, BitmapFactory.Options opts) {
-    Bitmap bitmap = create(is instanceof NamedStream ? is.toString().replace("stream for ", "") : null, opts);
+    String name = is instanceof NamedStream ? is.toString().replace("stream for ", "") : null;
+    Point imageSize = is instanceof NamedStream ? null : getImageSizeFromStream(is);
+    Bitmap bitmap = create(name, opts, imageSize);
     ShadowBitmap shadowBitmap = shadowOf(bitmap);
     shadowBitmap.createdFromStream = is;
+
     return bitmap;
   }
 
@@ -117,9 +123,21 @@ public class ShadowBitmapFactory {
   }
 
   public static Bitmap create(String name, BitmapFactory.Options options) {
+    return create(name, options, null);
+  }
+
+  public static Bitmap create(final String name, final BitmapFactory.Options options, final Point widthAndHeight) {
     Bitmap bitmap = Robolectric.newInstanceOf(Bitmap.class);
     ShadowBitmap shadowBitmap = shadowOf(bitmap);
     shadowBitmap.appendDescription(name == null ? "Bitmap" : "Bitmap for " + name);
+
+    Bitmap.Config config;
+    if (options != null && options.inPreferredConfig != null) {
+      config = options.inPreferredConfig;
+    } else {
+      config = Bitmap.Config.ARGB_8888;
+    }
+    shadowBitmap.setConfig(config);
 
     String optionsString = stringify(options);
     if (!optionsString.isEmpty()) {
@@ -127,12 +145,7 @@ public class ShadowBitmapFactory {
       shadowBitmap.appendDescription(optionsString);
     }
 
-    Point widthAndHeight = widthAndHeightMap.get(name);
-    if (widthAndHeight == null) {
-      widthAndHeight = new Point(100, 100);
-    }
-
-    Point p = new Point(widthAndHeight);
+    Point p = new Point(selectWidthAndHeight(name, widthAndHeight));
     if (options != null && options.inSampleSize > 1) {
       p.x = p.x / options.inSampleSize;
       p.y = p.y / options.inSampleSize;
@@ -174,5 +187,35 @@ public class ShadowBitmapFactory {
 
   public static void reset() {
     widthAndHeightMap.clear();
+  }
+
+  private static Point selectWidthAndHeight(final String name, final Point widthAndHeight) {
+    final Point widthAndHeightFromMap = widthAndHeightMap.get(name);
+
+    if (widthAndHeightFromMap != null) {
+      return widthAndHeightFromMap;
+    }
+
+    if (widthAndHeight != null) {
+      return widthAndHeight;
+    }
+
+    return new Point(100, 100);
+  }
+
+  private static Point getImageSizeFromStream(final InputStream is) {
+    try {
+      final BufferedImage image = ImageIO.read(is);
+
+      if (image != null) {
+        return new Point(image.getWidth(), image.getHeight());
+      } else {
+        return null;
+      }
+    }
+
+    catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 }

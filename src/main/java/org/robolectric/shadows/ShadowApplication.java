@@ -14,11 +14,14 @@ import android.content.ServiceConnection;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.PowerManager;
 import android.view.LayoutInflater;
+import android.widget.ListPopupWindow;
+import android.widget.PopupWindow;
 import android.widget.Toast;
 import org.robolectric.AndroidManifest;
 import org.robolectric.Robolectric;
@@ -33,6 +36,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -59,7 +63,7 @@ public class ShadowApplication extends ShadowContextWrapper {
   private List<Intent> broadcastIntents = new ArrayList<Intent>();
   private List<ServiceConnection> unboundServiceConnections = new ArrayList<ServiceConnection>();
   private List<Wrapper> registeredReceivers = new ArrayList<Wrapper>();
-  private Map<String, Intent> stickyIntents = new HashMap<String, Intent>();
+  private Map<String, Intent> stickyIntents = new LinkedHashMap<String, Intent>();
   private FakeHttpLayer fakeHttpLayer = new FakeHttpLayer();
   private Looper mainLooper = ShadowLooper.myLooper();
   private Handler mainHandler = new Handler(mainLooper);
@@ -69,6 +73,7 @@ public class ShadowApplication extends ShadowContextWrapper {
   private PowerManager.WakeLock latestWakeLock;
   private ShadowAlertDialog latestAlertDialog;
   private ShadowDialog latestDialog;
+  private ShadowPopupMenu latestPopupMenu;
   private Object bluetoothAdapter = Robolectric.newInstanceOf("android.bluetooth.BluetoothAdapter");
   private Resources resources;
   private AssetManager assetManager;
@@ -84,6 +89,8 @@ public class ShadowApplication extends ShadowContextWrapper {
 
   private boolean strictI18n = false;
   private boolean checkActivities;
+  private PopupWindow latestPopupWindow;
+  private ListPopupWindow latestListPopupWindow;
 
   /**
    * Associates a {@code ResourceLoader} with an {@code Application} instance
@@ -204,11 +211,15 @@ public class ShadowApplication extends ShadowContextWrapper {
   @Implementation
   @Override
   public void startActivity(Intent intent) {
-    if (checkActivities && getPackageManager().resolveActivity(intent, -1) == null) {
-      throw new ActivityNotFoundException(intent.getAction());
-    } else {
-      startedActivities.add(intent);
-    }
+    verifyActivityInManifest(intent);
+    startedActivities.add(intent);
+  }
+
+  @Implementation
+  @Override
+  public void startActivity(Intent intent, Bundle options) {
+    verifyActivityInManifest(intent);
+    startedActivities.add(intent);
   }
 
   @Implementation
@@ -423,21 +434,30 @@ public class ShadowApplication extends ShadowContextWrapper {
     if (receiver != null) {
       registeredReceivers.add(new Wrapper(receiver, filter, context, broadcastPermission, scheduler));
     }
-    return getStickyIntent(filter);
+    return processStickyIntents(filter, receiver, context);
   }
 
-  private Intent getStickyIntent(IntentFilter filter) {
+  private void verifyActivityInManifest(Intent intent) {
+    if (checkActivities && getPackageManager().resolveActivity(intent, -1) == null) {
+      throw new ActivityNotFoundException(intent.getAction());
+    }
+  }
+
+  private Intent processStickyIntents(IntentFilter filter, BroadcastReceiver receiver, Context context) {
+    Intent result = null;
     for (Intent stickyIntent : stickyIntents.values()) {
-      String action = null;
-      for (int i = 0; i < filter.countActions(); i++) {
-        action = filter.getAction(i);
-        if (stickyIntent.getAction().equals(action)) {
-          return stickyIntent;
+      if (filter.matchAction(stickyIntent.getAction())) {
+        if (result == null) {
+          result = stickyIntent;
+        }
+        if (receiver != null) {
+          receiver.onReceive(context, stickyIntent);
+        } else if (result != null) {
+          break;
         }
       }
     }
-
-    return null;
+    return result;
   }
 
   @Override
@@ -629,6 +649,30 @@ public class ShadowApplication extends ShadowContextWrapper {
 
   public void checkActivities(boolean checkActivities) {
     this.checkActivities = checkActivities;
+  }
+
+  public ShadowPopupMenu getLatestPopupMenu() {
+    return latestPopupMenu;
+  }
+
+  public void setLatestPopupMenu(ShadowPopupMenu latestPopupMenu) {
+    this.latestPopupMenu = latestPopupMenu;
+  }
+
+  public PopupWindow getLatestPopupWindow() {
+    return latestPopupWindow;
+  }
+
+  public void setLatestPopupWindow(PopupWindow latestPopupWindow) {
+    this.latestPopupWindow = latestPopupWindow;
+  }
+
+  public ListPopupWindow getLatestListPopupWindow() {
+    return latestListPopupWindow;
+  }
+
+  public void setLatestListPopupWindow(ListPopupWindow latestListPopupWindow) {
+    this.latestListPopupWindow = latestListPopupWindow;
   }
 
   public class Wrapper {

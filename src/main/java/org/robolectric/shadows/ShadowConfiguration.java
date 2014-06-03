@@ -6,6 +6,8 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
+import static org.robolectric.Robolectric.directlyOn;
+
 @Implements(Configuration.class)
 public class ShadowConfiguration {
 
@@ -141,6 +143,7 @@ public class ShadowConfiguration {
 
   @Implementation
   public void setToDefaults() {
+    directlyOn(realConfiguration, Configuration.class).setToDefaults();
     realConfiguration.screenLayout = Configuration.SCREENLAYOUT_LONG_NO |
         Configuration.SCREENLAYOUT_SIZE_NORMAL;
   }

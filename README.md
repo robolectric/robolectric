@@ -38,7 +38,7 @@ You can install Robolectric for your project by adding the following to your pom
 <dependency>
    <groupId>org.robolectric</groupId>
    <artifactId>robolectric</artifactId>
-   <version>2.2</version>
+   <version>2.3</version>
    <scope>test</scope>
 </dependency>
 ```
@@ -47,7 +47,7 @@ You can install Robolectric for your project by adding the following to your pom
 
 #### Google API Jars
 
-Robolectric requires the Google APIs for Android (specifically, the maps JAR). To download this onto your development
+Robolectric requires the Google APIs for Android (specifically, the maps JAR) and Android support-v4 library. To download this onto your development
 machine use the Android SDK tools and then run the following to install them to your local Maven repository:
 
 ```
@@ -56,6 +56,12 @@ mvn install:install-file -DgroupId=com.google.android.maps \
   -Dversion=18_r3 \
   -Dpackaging=jar \
   -Dfile="$ANDROID_HOME/add-ons/addon-google_apis-google-18/libs/maps.jar"
+  
+mvn install:install-file -DgroupId=com.android.support \
+  -DartifactId=support-v4 \
+  -Dversion=19.0.1 \
+  -Dpackaging=jar \
+  -Dfile="$ANDROID_HOME/extras/android/support/v4/android-support-v4.jar"
 ```
 
 You will need to either replace or have `ANDROID_HOME` set to your local Android SDK for Maven to be able to install the jar.
@@ -65,4 +71,4 @@ You will need to either replace or have `ANDROID_HOME` set to your local Android
 Robolectric can be built using either Maven or Ant. Both Eclipse (with the M2Eclipse plug-in) and
 IntelliJ can import the `pom.xml` file and will automatically generate their project files from it.
 
-Guides on to extending Robolectric can be found [here](http://robolectric.org/extending.html) and the contributor guidlines can be found [here](http://robolectric.org/contributor_guidelines.html).
+Guides on to extending Robolectric can be found [here](http://robolectric.org/extending/) and the contributor guidlines can be found [here](http://robolectric.org/contributor-guidelines/).

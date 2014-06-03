@@ -5,6 +5,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
+import org.robolectric.util.Transcript;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -45,7 +46,7 @@ public class TestSharedPreferencesTest {
     editor.putInt("int", 2);
     editor.putLong("long", 3l);
     editor.putString("string", "foobar");
-    editor.putStringSet( "stringSet", stringSet );
+    editor.putStringSet("stringSet", stringSet);
   }
 
   @Test
@@ -114,6 +115,28 @@ public class TestSharedPreferencesTest {
   }
 
   @Test
+  public void putString_shouldRemovePairIfValueIsNull() throws Exception {
+    content.put(FILENAME, new HashMap<String, Object>());
+    content.get(FILENAME).put("deleteMe", "foo");
+
+    editor.putString("deleteMe", null);
+    editor.commit();
+
+    assertThat(sharedPreferences.getString("deleteMe", null)).isNull();
+  }
+
+  @Test
+  public void putStringSet_shouldRemovePairIfValueIsNull() throws Exception {
+    content.put(FILENAME, new HashMap<String, Object>());
+    content.get(FILENAME).put("deleteMe", stringSet);
+
+    editor.putStringSet("deleteMe", null);
+    editor.commit();
+
+    assertThat(sharedPreferences.getStringSet("deleteMe", null)).isNull();
+  }
+
+  @Test
   public void apply_shouldStoreValues() throws Exception {
     editor.apply();
 
@@ -146,6 +169,26 @@ public class TestSharedPreferencesTest {
 
     anotherSharedPreferences.unregisterOnSharedPreferenceChangeListener(testListener);
     assertFalse(anotherSharedPreferences.hasListener(testListener));
+  }
+
+  @Test
+  public void shouldTriggerRegisteredListeners() {
+    TestSharedPreferences anotherSharedPreferences = new TestSharedPreferences(content, "bazBang", 3);
+
+    final String testKey = "foo";
+
+    final Transcript transcript = new Transcript();
+
+    SharedPreferences.OnSharedPreferenceChangeListener listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+      @Override
+      public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        transcript.add(key + " called");
+      }
+    };
+    anotherSharedPreferences.registerOnSharedPreferenceChangeListener(listener);
+    anotherSharedPreferences.edit().putString(testKey, "bar").commit();
+
+    transcript.assertEventsSoFar(testKey+ " called");
   }
 
   private SharedPreferences.OnSharedPreferenceChangeListener testListener = new SharedPreferences.OnSharedPreferenceChangeListener() {

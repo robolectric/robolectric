@@ -424,6 +424,16 @@ public class AlertDialogTest {
     assertThat(ShadowDialog.getLatestDialog()).isEqualTo(nestedDialog);
   }
 
+  @Test
+  public void alertControllerShouldStoreCorrectIconIdFromBuilder() {
+    AlertDialog.Builder builder = new AlertDialog.Builder(application);
+    builder.setIcon(R.drawable.an_image);
+
+    final ShadowAlertDialog alertDialog = shadowOf(builder.create());
+    final ShadowAlertController alertController = alertDialog.getShadowAlertController();
+
+    assertThat(alertController.getIconId()).isEqualTo(R.drawable.an_image);
+  }
 
   private static class TestDialogOnClickListener extends Transcript implements DialogInterface.OnClickListener {
     public void onClick(DialogInterface dialog, int item) {

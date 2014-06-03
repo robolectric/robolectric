@@ -99,7 +99,7 @@ public class MatrixCursorTest {
   @Test
   public void shouldAllowTypeFlexibility() throws Exception {
     MatrixCursor cursor = new MatrixCursor(new String[]{"a", "b", "c"});
-    cursor.addRow(new Object[]{42, 3.3});
+    cursor.addRow(new Object[]{42, 3.3, 'a'});
     assertTrue(cursor.moveToFirst());
 
     assertThat(cursor.getString(0)).isEqualTo("42");
@@ -115,6 +115,8 @@ public class MatrixCursorTest {
     assertThat(cursor.getLong(1)).isEqualTo(3L);
     assertThat(cursor.getFloat(1)).isEqualTo(3.3F);
     assertThat(cursor.getDouble(1)).isEqualTo(3.3);
+
+    assertThat(cursor.getString(2)).isEqualTo("a");
   }
 
   @Test(expected = IllegalArgumentException.class)

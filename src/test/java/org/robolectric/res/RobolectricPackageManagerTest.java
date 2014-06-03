@@ -8,28 +8,34 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
+import android.os.Bundle;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.AndroidManifest;
-import org.robolectric.Robolectric;
-import org.robolectric.TestRunners;
+import org.robolectric.*;
+import org.robolectric.annotation.Config;
 import org.robolectric.res.builder.RobolectricPackageManager;
+import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowDrawable;
 import org.robolectric.test.TemporaryFolder;
 
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(RobolectricTestRunner.class)
+@Config(manifest = Config.NONE)
 public class RobolectricPackageManagerTest {
 
   private static final String TEST_PACKAGE_NAME = "com.some.other.package";
@@ -41,10 +47,6 @@ public class RobolectricPackageManagerTest {
   @Before
   public void setUp() throws Exception {
     rpm = (RobolectricPackageManager) Robolectric.application.getPackageManager();
-  }
-
-  @After
-  public void tearDown() throws Exception {
   }
 
   @Test
@@ -105,6 +107,35 @@ public class RobolectricPackageManagerTest {
     assertThat(activities).isNotNull();
     assertThat(activities).hasSize(1);
     assertThat(activities.get(0).nonLocalizedLabel.toString()).isEqualTo(TEST_PACKAGE_LABEL);
+  }
+
+  @Test
+  @Config(manifest = "src/test/resources/TestAndroidManifestForActivitiesWithIntentFilterWithData.xml")
+  public void queryIntentActivities__EmptyResultWithNoMatchingImplicitIntents() throws Exception {
+    rpm.addManifest(Robolectric.getShadowApplication().getAppManifest(), Robolectric.getShadowApplication().getResourceLoader());
+    Intent i = new Intent(Intent.ACTION_MAIN, null);
+    i.addCategory(Intent.CATEGORY_LAUNCHER);
+
+    rpm.setQueryIntentImplicitly(true);
+    List<ResolveInfo> activities = rpm.queryIntentActivities(i, 0);
+    assertThat(activities).isEmpty();
+  }
+
+  @Test
+  @Config(manifest = "src/test/resources/TestAndroidManifestForActivitiesWithIntentFilterWithData.xml")
+  public void queryIntentActivities__MatchWithImplicitIntents() throws Exception {
+    rpm.addManifest(Robolectric.getShadowApplication().getAppManifest(), Robolectric.getShadowApplication().getResourceLoader());
+    Uri uri = Uri.parse("content://testhost1.com:1/testPath/test.jpeg");
+    Intent i = new Intent(Intent.ACTION_VIEW);
+    i.addCategory(Intent.CATEGORY_DEFAULT);
+    i.setDataAndType(uri, "image/jpeg");
+
+    rpm.setQueryIntentImplicitly(true);
+    List<ResolveInfo> activities = rpm.queryIntentActivities(i, 0);
+    assertThat(activities).isNotNull();
+    assertThat(activities).hasSize(1);
+    assertThat(activities.get(0).resolvePackageName.toString()).isEqualTo("org.robolectric");
+    assertThat(activities.get(0).activityInfo.targetActivity.toString()).isEqualTo("org.robolectric.shadows.TestActivity");
   }
 
   @Test
@@ -227,6 +258,66 @@ public class RobolectricPackageManagerTest {
   }
 
   @Test
+  @Config(manifest = "src/test/resources/TestAndroidManifestWithReceivers.xml")
+  public void testReceiverInfo() throws Exception {
+    ShadowApplication app = Robolectric.getShadowApplication();
+    rpm.addManifest(app.getAppManifest(), Robolectric.getShadowApplication().getResourceLoader());
+    ActivityInfo info = rpm.getReceiverInfo(new ComponentName(app.getApplicationContext(), ".test.ConfigTestReceiver"), PackageManager.GET_META_DATA);
+    Bundle meta = info.metaData;
+    Object metaValue = meta.get("org.robolectric.metaName1");
+    assertTrue(String.class.isInstance(metaValue));
+    assertEquals("metaValue1", metaValue);
+
+    metaValue = meta.get("org.robolectric.metaName2");
+    assertTrue(String.class.isInstance(metaValue));
+    assertEquals("metaValue2", metaValue);
+
+    metaValue = meta.get("org.robolectric.metaFalse");
+    assertTrue(Boolean.class.isInstance(metaValue));
+    assertEquals(false, metaValue);
+
+    metaValue = meta.get("org.robolectric.metaTrue");
+    assertTrue(Boolean.class.isInstance(metaValue));
+    assertEquals(true, metaValue);
+
+    metaValue = meta.get("org.robolectric.metaInt");
+    assertTrue(Integer.class.isInstance(metaValue));
+    assertEquals(123, metaValue);
+
+    metaValue = meta.get("org.robolectric.metaFloat");
+    assertTrue(Float.class.isInstance(metaValue));
+    assertEquals(new Float(1.23), metaValue);
+
+    metaValue = meta.get("org.robolectric.metaColor");
+    assertTrue(Integer.class.isInstance(metaValue));
+    assertEquals(Color.WHITE, metaValue);
+
+    metaValue = meta.get("org.robolectric.metaBooleanFromRes");
+    assertTrue(Boolean.class.isInstance(metaValue));
+    assertEquals(app.getResources().getBoolean(R.bool.false_bool_value), metaValue);
+
+    metaValue = meta.get("org.robolectric.metaIntFromRes");
+    assertTrue(Integer.class.isInstance(metaValue));
+    assertEquals(app.getResources().getInteger(R.integer.test_integer1), metaValue);
+
+    metaValue = meta.get("org.robolectric.metaColorFromRes");
+    assertTrue(Integer.class.isInstance(metaValue));
+    assertEquals(app.getResources().getColor(R.color.clear), metaValue);
+
+    metaValue = meta.get("org.robolectric.metaStringFromRes");
+    assertTrue(String.class.isInstance(metaValue));
+    assertEquals(app.getString(R.string.app_name), metaValue);
+
+    metaValue = meta.get("org.robolectric.metaStringOfIntFromRes");
+    assertTrue(String.class.isInstance(metaValue));
+    assertEquals(app.getString(R.string.str_int), metaValue);
+
+    metaValue = meta.get("org.robolectric.metaStringRes");
+    assertTrue(Integer.class.isInstance(metaValue));
+    assertEquals(R.string.app_name, metaValue);
+  }
+
+  @Test
   public void testGetPreferredActivities() throws Exception {
     // Setup an intentfilter and add to packagemanager
     IntentFilter filter = new IntentFilter(Intent.ACTION_MAIN);
@@ -268,7 +359,7 @@ public class RobolectricPackageManagerTest {
   @Test
   public void shouldAssignTheApplicationNameFromTheManifest() throws Exception {
     AndroidManifest appManifest = newConfigWith("<application android:name=\"org.robolectric.TestApplication\"/>");
-    rpm.addManifest(appManifest);
+    rpm.addManifest(appManifest, Robolectric.getShadowApplication().getResourceLoader());
     ApplicationInfo applicationInfo = rpm.getApplicationInfo("org.robolectric", 0);
     assertThat(applicationInfo.name).isEqualTo("org.robolectric.TestApplication");
   }
@@ -292,17 +383,137 @@ public class RobolectricPackageManagerTest {
   }
 
   @Test
+  @Config(manifest = "src/test/resources/TestAndroidManifestWithAppMetaData.xml")
   public void shouldAssignTheAppMetaDataFromTheManifest() throws Exception {
-    AndroidManifest appManifest = newConfigWith(
-          "<application android:name=\"org.robolectric.TestApplication\">"
-        + "  <meta-data android:name=\"key\" android:value=\"value\"/>"
-        + "</application>"
-    );
-    rpm.addManifest(appManifest);
-    ApplicationInfo applicationInfo = rpm.getApplicationInfo("org.robolectric", 0);
-    assertThat(applicationInfo.metaData.getString("key")).isEqualTo("value");
+    ShadowApplication app = Robolectric.getShadowApplication();
+    String appName = app.getString(R.string.app_name);
+    String packageName = app.getAppManifest().getPackageName();
+    ApplicationInfo info = app.getPackageManager().getApplicationInfo(packageName, 0);
+    Bundle meta = info.metaData;
+
+    Object metaValue = meta.get("org.robolectric.metaName1");
+    assertTrue(String.class.isInstance(metaValue));
+    assertEquals("metaValue1", metaValue);
+
+    metaValue = meta.get("org.robolectric.metaName2");
+    assertTrue(String.class.isInstance(metaValue));
+    assertEquals("metaValue2", metaValue);
+
+    metaValue = meta.get("org.robolectric.metaFalse");
+    assertTrue(Boolean.class.isInstance(metaValue));
+    assertEquals(false, metaValue);
+
+    metaValue = meta.get("org.robolectric.metaTrue");
+    assertTrue(Boolean.class.isInstance(metaValue));
+    assertEquals(true, metaValue);
+
+    metaValue = meta.get("org.robolectric.metaInt");
+    assertTrue(Integer.class.isInstance(metaValue));
+    assertEquals(123, metaValue);
+
+    metaValue = meta.get("org.robolectric.metaFloat");
+    assertTrue(Float.class.isInstance(metaValue));
+    assertEquals(new Float(1.23), metaValue);
+
+    metaValue = meta.get("org.robolectric.metaColor");
+    assertTrue(Integer.class.isInstance(metaValue));
+    assertEquals(Color.WHITE, metaValue);
+
+    metaValue = meta.get("org.robolectric.metaBooleanFromRes");
+    assertTrue(Boolean.class.isInstance(metaValue));
+    assertEquals(app.getResources().getBoolean(R.bool.false_bool_value), metaValue);
+
+    metaValue = meta.get("org.robolectric.metaIntFromRes");
+    assertTrue(Integer.class.isInstance(metaValue));
+    assertEquals(app.getResources().getInteger(R.integer.test_integer1), metaValue);
+
+    metaValue = meta.get("org.robolectric.metaColorFromRes");
+    assertTrue(Integer.class.isInstance(metaValue));
+    assertEquals(app.getResources().getColor(R.color.clear), metaValue);
+
+    metaValue = meta.get("org.robolectric.metaStringFromRes");
+    assertTrue(String.class.isInstance(metaValue));
+    assertEquals(app.getString(R.string.app_name), metaValue);
+
+    metaValue = meta.get("org.robolectric.metaStringOfIntFromRes");
+    assertTrue(String.class.isInstance(metaValue));
+    assertEquals(app.getString(R.string.str_int), metaValue);
+
+    metaValue = meta.get("org.robolectric.metaStringRes");
+    assertTrue(Integer.class.isInstance(metaValue));
+    assertEquals(R.string.app_name, metaValue);
   }
 
+  @Test
+  public void testResolveDifferentIntentObjects() {
+    Intent intent1 = rpm.getLaunchIntentForPackage(TEST_PACKAGE_LABEL);
+    assertThat(intent1).isNull();
+
+    intent1 = new Intent(Intent.ACTION_MAIN);
+    intent1.setPackage(TEST_PACKAGE_LABEL);
+    intent1.addCategory(Intent.CATEGORY_LAUNCHER);
+    ResolveInfo resolveInfo = new ResolveInfo();
+    resolveInfo.activityInfo = new ActivityInfo();
+    resolveInfo.activityInfo.packageName = TEST_PACKAGE_LABEL;
+    resolveInfo.activityInfo.name = "LauncherActivity";
+    Robolectric.packageManager.addResolveInfoForIntent(intent1, resolveInfo);
+    
+    // the original intent object should yield a result
+    ResolveInfo result  = rpm.resolveActivity(intent1, -1);
+    assertThat(result).isNotNull();
+
+    // AND a new, functionally equivalent intent should also yield a result
+    Intent intent2 = new Intent(Intent.ACTION_MAIN);
+    intent2.setPackage(TEST_PACKAGE_LABEL);
+    intent2.addCategory(Intent.CATEGORY_LAUNCHER);
+    result = rpm.resolveActivity(intent2, -1);
+    assertThat(result).isNotNull();
+  }
+
+  @Test
+  public void testResolvePartiallySimilarIntents() {
+    Intent intent1 = rpm.getLaunchIntentForPackage(TEST_PACKAGE_LABEL);
+    assertThat(intent1).isNull();
+
+    intent1 = new Intent(Intent.ACTION_MAIN);
+    intent1.setPackage(TEST_PACKAGE_LABEL);
+    intent1.addCategory(Intent.CATEGORY_LAUNCHER);
+    ResolveInfo resolveInfo = new ResolveInfo();
+    resolveInfo.activityInfo = new ActivityInfo();
+    resolveInfo.activityInfo.packageName = TEST_PACKAGE_LABEL;
+    resolveInfo.activityInfo.name = "LauncherActivity";
+    Robolectric.packageManager.addResolveInfoForIntent(intent1, resolveInfo);
+
+    // the original intent object should yield a result
+    ResolveInfo result  = rpm.resolveActivity(intent1, -1);
+    assertThat(result).isNotNull();
+
+    // an intent with just the same action should not be considered the same
+    Intent intent2 = new Intent(Intent.ACTION_MAIN);
+    result = rpm.resolveActivity(intent2, -1);
+    assertThat(result).isNull();
+
+    // an intent with just the same category should not be considered the same 
+    Intent intent3 = new Intent();
+    intent3.addCategory(Intent.CATEGORY_LAUNCHER);
+    result = rpm.resolveActivity(intent3, -1);
+    assertThat(result).isNull();
+
+    // an intent without the correct package restriction should not be the same
+    Intent intent4 = new Intent(Intent.ACTION_MAIN);
+    intent4.addCategory(Intent.CATEGORY_LAUNCHER);
+    result = rpm.resolveActivity(intent4, -1);
+    assertThat(result).isNull();
+  }
+
+  @Test
+  @Config(manifest = "src/test/resources/TestAndroidManifest.xml")
+  public void shouldAssignLabelResFromTheManifest() throws Exception {
+    rpm.addManifest(Robolectric.getShadowApplication().getAppManifest(), Robolectric.getShadowApplication().getResourceLoader());
+    ApplicationInfo applicationInfo = rpm.getApplicationInfo("org.robolectric", 0);
+    String appName = Robolectric.getShadowApplication().getApplicationContext().getString(applicationInfo.labelRes);
+    assertThat(appName).isEqualTo("Testing App");
+  }
   /////////////////////////////
 
   public AndroidManifest newConfigWith(String contents) throws IOException {

@@ -15,7 +15,11 @@ import java.util.Map;
 public class MavenCentral {
   private final Project project = new Project();
 
-  public Map<String, URL> getLocalArtifactUrls(RobolectricTestRunner robolectricTestRunner, Dependency... dependencies) {
+  /**
+   * Get an array of local artifact URLs for the given dependencies. The order of the URLs is guaranteed to be the
+   * same as the input order of dependencies, i.e., urls[i] is the local artifact URL for dependencies[i].
+   */
+  public URL[] getLocalArtifactUrls(RobolectricTestRunner robolectricTestRunner, Dependency... dependencies) {
     DependenciesTask dependenciesTask = new DependenciesTask();
     if (robolectricTestRunner != null) {
       robolectricTestRunner.configureMaven(dependenciesTask);
@@ -32,20 +36,26 @@ public class MavenCentral {
 
     @SuppressWarnings("unchecked")
     Hashtable<String, String> artifacts = project.getProperties();
-    Map<String, URL> urls = new HashMap<String, URL>();
-    for (Map.Entry<String, String> entry : artifacts.entrySet()) {
+    URL[] urls = new URL[dependencies.length];
+    for (int i = 0; i < urls.length; i++) {
       try {
-        urls.put(entry.getKey(), Util.url(entry.getValue()));
+        urls[i] = Util.url(artifacts.get(key(dependencies[i])));
       } catch (MalformedURLException e) {
         throw new RuntimeException(e);
       }
-
     }
     return urls;
   }
 
   public URL getLocalArtifactUrl(RobolectricTestRunner robolectricTestRunner, Dependency dependency) {
-    Map<String, URL> map = getLocalArtifactUrls(robolectricTestRunner, dependency);
-    return map.get(dependency.getGroupId() + ":" + dependency.getArtifactId() + ":" + dependency.getType());
+    URL[] urls = getLocalArtifactUrls(robolectricTestRunner, dependency);
+    if (urls.length > 0) {
+      return urls[0];
+    }
+    return null;
+  }
+
+  private String key(Dependency dependency) {
+    return dependency.getGroupId() + ":" + dependency.getArtifactId() + ":" + dependency.getType();
   }
 }

@@ -144,6 +144,10 @@ public abstract class TestUtil {
     return file.getPath();
   }
 
+  public static String joinCanonicalPath(String... parts) throws IOException {
+    return new File(joinPath(parts)).getCanonicalPath();
+  }
+
   public static Resources createResourcesFor(ResourceLoader resourceLoader) {
     return ShadowResources.createFor(resourceLoader);
   }

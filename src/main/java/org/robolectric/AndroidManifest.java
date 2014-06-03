@@ -1,10 +1,8 @@
 package org.robolectric;
 
 import android.app.Activity;
-import org.robolectric.res.ActivityData;
-import org.robolectric.res.Fs;
-import org.robolectric.res.FsFile;
-import org.robolectric.res.ResourcePath;
+import android.graphics.Color;
+import org.robolectric.res.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -16,8 +14,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -50,14 +51,17 @@ public class AndroidManifest {
   private String packageName;
   private String processName;
   private String themeRef;
+  private String labelRef;
   private Integer targetSdkVersion;
   private Integer minSdkVersion;
   private int versionCode;
   private String versionName;
   private int applicationFlags;
+  private final List<ContentProviderData> providers = new ArrayList<ContentProviderData>();
   private final List<ReceiverAndIntentFilter> receivers = new ArrayList<ReceiverAndIntentFilter>();
   private final Map<String, ActivityData> activityDatas = new LinkedHashMap<String, ActivityData>();
-  private final Map<String, String> applicationMetaData = new LinkedHashMap<String, String>();
+  private final List<String> usedPermissions = new ArrayList<String>();
+  private MetaData applicationMetaData;
   private List<AndroidManifest> libraryManifests;
 
   /**
@@ -152,15 +156,40 @@ public class AndroidManifest {
       }
 
       themeRef = getTagAttributeText(manifestDocument, "application", "android:theme");
+      labelRef = getTagAttributeText(manifestDocument, "application", "android:label");
 
       parseApplicationFlags(manifestDocument);
       parseReceivers(manifestDocument);
       parseActivities(manifestDocument);
       parseApplicationMetaData(manifestDocument);
+      parseContentProviders(manifestDocument);
+      parseUsedPermissions(manifestDocument);
     } catch (Exception ignored) {
       ignored.printStackTrace();
     }
     manifestIsParsed = true;
+  }
+
+  private void parseUsedPermissions(Document manifestDocument) {
+    NodeList elementsByTagName = manifestDocument.getElementsByTagName("uses-permission");
+    int length = elementsByTagName.getLength();
+    for (int i = 0; i < length; i++) {
+      Node node = elementsByTagName.item(i).getAttributes().getNamedItem("android:name");
+      usedPermissions.add(node.getNodeValue());
+    }
+  }
+
+  private void parseContentProviders(Document manifestDocument) {
+    Node application = manifestDocument.getElementsByTagName("application").item(0);
+    if (application == null) return;
+
+    for (Node contentProviderNode : getChildrenTags(application, "provider")) {
+      Node nameItem = contentProviderNode.getAttributes().getNamedItem("android:name");
+      Node authorityItem = contentProviderNode.getAttributes().getNamedItem("android:authorities");
+      if (nameItem != null && authorityItem != null) {
+        providers.add(new ContentProviderData(resolveClassRef(nameItem.getTextContent()), authorityItem.getTextContent()));
+      }
+    }
   }
 
   private void parseReceivers(final Document manifestDocument) {
@@ -172,6 +201,8 @@ public class AndroidManifest {
       if (namedItem == null) continue;
 
       String receiverName = resolveClassRef(namedItem.getTextContent());
+      MetaData metaData = new MetaData(getChildrenTags(receiverNode, "meta-data"));
+
       for (Node intentFilterNode : getChildrenTags(receiverNode, "intent-filter")) {
         List<String> actions = new ArrayList<String>();
         for (Node actionNode : getChildrenTags(intentFilterNode, "action")) {
@@ -180,7 +211,7 @@ public class AndroidManifest {
             actions.add(nameNode.getTextContent());
           }
         }
-        receivers.add(new ReceiverAndIntentFilter(receiverName, actions));
+        receivers.add(new ReceiverAndIntentFilter(receiverName, actions, metaData));
       }
     }
   }
@@ -190,34 +221,155 @@ public class AndroidManifest {
     if (application == null) return;
 
     for (Node activityNode : getChildrenTags(application, "activity")) {
-      NamedNodeMap attributes = activityNode.getAttributes();
-      Node nameAttr = attributes.getNamedItem("android:name");
-      Node themeAttr = attributes.getNamedItem("android:theme");
-      Node labelAttr = attributes.getNamedItem("android:label");
-      if (nameAttr == null) continue;
-      String activityName = nameAttr.getNodeValue();
-      if(activityName.startsWith(".")) activityName = packageName + activityName;
+      final NamedNodeMap attributes = activityNode.getAttributes();
+      final int attrCount = attributes.getLength();
+      final List<IntentFilterData> intentFilterData = parseIntentFilters(activityNode);
+      final HashMap<String, String> activityAttrs = new HashMap<String, String>(attrCount);
+      for(int i = 0; i < attrCount; i++) {
+        Node attr = attributes.item(i);
+        String v = attr.getNodeValue();
+        if( v != null) {
+          activityAttrs.put(attr.getNodeName(), v);
+        }
+      }
 
-      activityDatas.put(activityName,
-          new ActivityData(activityName,
-              labelAttr == null ? null : labelAttr.getNodeValue(),
-              themeAttr == null ? null : resolveClassRef(themeAttr.getNodeValue())
-          ));
+      String activityName = resolveClassRef(activityAttrs.get(ActivityData.getNameAttr("android")));
+      if (activityName == null) {
+        continue;
+      }
+      activityAttrs.put(ActivityData.getNameAttr("android"), activityName);
+      activityDatas.put(activityName, new ActivityData(activityAttrs, intentFilterData));
+    }
+  }
+
+  private List<IntentFilterData> parseIntentFilters(final Node activityNode) {
+    ArrayList<IntentFilterData> intentFilterDatas = new ArrayList<IntentFilterData>();
+    for (Node n : getChildrenTags(activityNode, "intent-filter")) {
+      ArrayList<String> actionNames = new ArrayList<String>();
+      ArrayList<String> categories = new ArrayList<String>();
+      //should only be one action.
+      for (Node action : getChildrenTags(n, "action")) {
+        NamedNodeMap attributes = action.getAttributes();
+        Node actionNameNode = attributes.getNamedItem("android:name");
+        if (actionNameNode != null) {
+          actionNames.add(actionNameNode.getNodeValue());
+        }
+      }
+      for (Node category : getChildrenTags(n, "category")) {
+        NamedNodeMap attributes = category.getAttributes();
+        Node categoryNameNode = attributes.getNamedItem("android:name");
+        if (categoryNameNode != null) {
+          categories.add(categoryNameNode.getNodeValue());
+        }
+      }
+      IntentFilterData intentFilterData = new IntentFilterData(actionNames, categories);
+      intentFilterData = parseIntentFilterData(n, intentFilterData);
+      intentFilterDatas.add(intentFilterData);
+    }
+
+    return intentFilterDatas;
+  }
+
+  private IntentFilterData parseIntentFilterData(final Node intentFilterNode, IntentFilterData intentFilterData) {
+    for (Node n : getChildrenTags(intentFilterNode, "data")) {
+      NamedNodeMap attributes = n.getAttributes();
+      String host = null;
+      String port = null;
+
+      Node schemeNode = attributes.getNamedItem("android:scheme");
+      if (schemeNode != null) {
+        intentFilterData.addScheme(schemeNode.getNodeValue());
+      }
+
+      Node hostNode = attributes.getNamedItem("android:host");
+      if (hostNode != null) {
+        host = hostNode.getNodeValue();
+      }
+
+      Node portNode = attributes.getNamedItem("android:port");
+      if (portNode != null) {
+        port = portNode.getNodeValue();
+      }
+      intentFilterData.addAuthority(host, port);
+
+      Node pathNode = attributes.getNamedItem("android:path");
+      if (pathNode != null) {
+        intentFilterData.addPath(pathNode.getNodeValue());
+      }
+
+      Node pathPatternNode = attributes.getNamedItem("android:pathPattern");
+      if (pathPatternNode != null) {
+        intentFilterData.addPathPattern(pathPatternNode.getNodeValue());
+      }
+
+      Node pathPrefixNode = attributes.getNamedItem("android:pathPrefix");
+      if (pathPrefixNode != null) {
+        intentFilterData.addPathPrefix(pathPrefixNode.getNodeValue());
+      }
+
+      Node mimeTypeNode = attributes.getNamedItem("android:mimeType");
+      if (mimeTypeNode != null) {
+        intentFilterData.addMimeType(mimeTypeNode.getNodeValue());
+      }
+    }
+    return intentFilterData;
+  }
+
+  /***
+   * Attempt to parse a string in to it's appropriate type
+   * @param value Value to parse
+   * @return Parsed result
+   */
+  private static Object parseValue(String value) {
+    if (value == null) {
+      return null;
+    } else if ("true".equals(value)) {
+      return true;
+    } else if ("false".equals(value)) {
+      return false;
+    } else if (value.startsWith("#")) {
+      // if it's a color, add it and continue
+      try {
+        return Color.parseColor(value);
+      } catch (IllegalArgumentException e) {
+            /* Not a color */
+      }
+    } else if (value.contains(".")) {
+      // most likely a float
+      try {
+        return Float.parseFloat(value);
+      } catch (NumberFormatException e) {
+          // Not a float
+      }
+    } else {
+      // if it's an int, add it and continue
+      try {
+        return Integer.parseInt(value);
+      } catch (NumberFormatException ei) {
+          // Not an int
+      }
+    }
+
+    // Not one of the above types, keep as String
+    return value;
+  }
+
+  /***
+   * Allows {@link org.robolectric.res.builder.RobolectricPackageManager} to provide
+   * a resource index for initialising the resource attributes in all the metadata elements
+   * @param resLoader used for getting resource IDs from string identifiers
+   */
+  public void initMetaData(ResourceLoader resLoader) {
+    applicationMetaData.init(resLoader, packageName);
+    for (ReceiverAndIntentFilter receiver : receivers) {
+      receiver.metaData.init(resLoader, packageName);
     }
   }
 
   private void parseApplicationMetaData(final Document manifestDocument) {
     Node application = manifestDocument.getElementsByTagName("application").item(0);
     if (application == null) return;
-
-    for (Node metaNode : getChildrenTags(application, "meta-data")) {
-      NamedNodeMap attributes = metaNode.getAttributes();
-      Node nameAttr = attributes.getNamedItem("android:name");
-      Node valueAttr = attributes.getNamedItem("android:value");
-      // TODO: support android:resource attribute
-      if (valueAttr == null) { continue; }
-      applicationMetaData.put(nameAttr.getNodeValue(), valueAttr.getNodeValue());
-    }
+    applicationMetaData = new MetaData(getChildrenTags(application, "meta-data"));
   }
 
   private String resolveClassRef(String maybePartialClassName) {
@@ -298,6 +450,10 @@ public class AndroidManifest {
     return versionName;
   }
 
+  public String getLabelRef() {
+    return labelRef;
+  }
+
   public int getMinSdkVersion() {
     parseAndroidManifest();
     return minSdkVersion == null ? 1 : minSdkVersion;
@@ -318,9 +474,9 @@ public class AndroidManifest {
     return processName;
   }
 
-  public Map<String, String> getApplicationMetaData() {
+  public Map<String, Object> getApplicationMetaData() {
     parseAndroidManifest();
-    return applicationMetaData;
+    return applicationMetaData.valueMap;
   }
 
   public ResourcePath getResourcePath() {
@@ -329,12 +485,17 @@ public class AndroidManifest {
   }
 
   public List<ResourcePath> getIncludedResourcePaths() {
-    List<ResourcePath> resourcePaths = new ArrayList<ResourcePath>();
+    Collection<ResourcePath> resourcePaths = new LinkedHashSet<ResourcePath>(); // Needs stable ordering and no duplicates
     resourcePaths.add(getResourcePath());
     for (AndroidManifest libraryManifest : getLibraryManifests()) {
       resourcePaths.addAll(libraryManifest.getIncludedResourcePaths());
     }
-    return resourcePaths;
+    return new ArrayList<ResourcePath>(resourcePaths);
+  }
+
+  public List<ContentProviderData> getContentProviders() {
+    parseAndroidManifest();
+    return providers;
   }
 
   protected void createLibraryManifests() {
@@ -361,8 +522,12 @@ public class AndroidManifest {
       String lib;
       while ((lib = properties.getProperty("android.library.reference." + libRef)) != null) {
         FsFile libraryBaseDir = baseDir.join(lib);
-        if (libraryBaseDir.exists()) {
-          libraryBaseDirs.add(libraryBaseDir);
+        if (libraryBaseDir.isDirectory()) {
+          // Ignore directories without any files
+          FsFile[] libraryBaseDirFiles = libraryBaseDir.listFiles();
+          if (libraryBaseDirFiles != null && libraryBaseDirFiles.length > 0) {
+            libraryBaseDirs.add(libraryBaseDir);
+          }
         }
 
         libRef++;
@@ -430,6 +595,11 @@ public class AndroidManifest {
     return receivers.get(receiverIndex).getIntentFilterActions();
   }
 
+  public Map<String, Object> getReceiverMetaData(final int receiverIndex) {
+    parseAndroidManifest();
+    return receivers.get(receiverIndex).getMetaData().valueMap;
+  }
+
   private static String getTagAttributeText(final Document doc, final String tag, final String attribute) {
     NodeList elementsByTagName = doc.getElementsByTagName(tag);
     for (int i = 0; i < elementsByTagName.getLength(); ++i) {
@@ -475,16 +645,89 @@ public class AndroidManifest {
   }
 
   public Map<String, ActivityData> getActivityDatas() {
+    parseAndroidManifest();
     return activityDatas;
+  }
+
+  public List<String> getUsedPermissions() {
+    parseAndroidManifest();
+    return usedPermissions;
+  }
+
+  private static final class MetaData {
+    private final Map<String, Object> valueMap = new LinkedHashMap<String, Object>();
+    private final Map<String, VALUE_TYPE> typeMap = new LinkedHashMap<String, VALUE_TYPE>();
+    private boolean initialised;
+
+    public MetaData(List<Node> nodes) {
+      for (Node metaNode : nodes) {
+        NamedNodeMap attributes = metaNode.getAttributes();
+        Node nameAttr = attributes.getNamedItem("android:name");
+        Node valueAttr = attributes.getNamedItem("android:value");
+        Node resourceAttr = attributes.getNamedItem("android:resource");
+
+        if (valueAttr != null) {
+          valueMap.put(nameAttr.getNodeValue(), valueAttr.getNodeValue());
+          typeMap.put(nameAttr.getNodeValue(), VALUE_TYPE.VALUE);
+        } else if (resourceAttr != null) {
+          valueMap.put(nameAttr.getNodeValue(), resourceAttr.getNodeValue());
+          typeMap.put(nameAttr.getNodeValue(), VALUE_TYPE.RESOURCE);
+        }
+      }
+    }
+
+    public void init(ResourceLoader resLoader, String packageName) {
+      ResourceIndex resIndex = resLoader.getResourceIndex();
+
+      if (!initialised) {
+        for (Map.Entry<String,MetaData.VALUE_TYPE> entry : typeMap.entrySet()) {
+          String value = valueMap.get(entry.getKey()).toString();
+          if (value.startsWith("@")) {
+            ResName resName = ResName.qualifyResName(value.substring(1), packageName, null);
+
+            switch (entry.getValue()) {
+              case RESOURCE:
+                // Was provided by resource attribute, store resource ID
+                valueMap.put(entry.getKey(), resIndex.getResourceId(resName));
+                break;
+              case VALUE:
+                // Was provided by value attribute, need to parse it
+                TypedResource<?> typedRes = resLoader.getValue(resName, "");
+                // The typed resource's data is always a String, so need to parse the value.
+                switch (typedRes.getResType()) {
+                  case BOOLEAN: case COLOR: case INTEGER: case FLOAT:
+                    valueMap.put(entry.getKey(),parseValue(typedRes.getData().toString()));
+                    break;
+                  default:
+                    valueMap.put(entry.getKey(),typedRes.getData());
+                }
+                break;
+            }
+          } else if (entry.getValue() == MetaData.VALUE_TYPE.VALUE) {
+            // Raw value, so parse it in to the appropriate type and store it
+            valueMap.put(entry.getKey(), parseValue(value));
+          }
+        }
+        // Finished parsing, mark as initialised
+        initialised = true;
+      }
+    }
+
+    private enum VALUE_TYPE {
+      RESOURCE,
+      VALUE
+    }
   }
 
   private static class ReceiverAndIntentFilter {
     private final List<String> intentFilterActions;
     private final String broadcastReceiverClassName;
+    private final MetaData metaData;
 
-    public ReceiverAndIntentFilter(final String broadcastReceiverClassName, final List<String> intentFilterActions) {
+    public ReceiverAndIntentFilter(final String broadcastReceiverClassName, final List<String> intentFilterActions, final MetaData metaData) {
       this.broadcastReceiverClassName = broadcastReceiverClassName;
       this.intentFilterActions = intentFilterActions;
+      this.metaData = metaData;
     }
 
     public String getBroadcastReceiverClassName() {
@@ -493,6 +736,10 @@ public class AndroidManifest {
 
     public List<String> getIntentFilterActions() {
       return intentFilterActions;
+    }
+
+    public MetaData getMetaData() {
+      return metaData;
     }
   }
 }

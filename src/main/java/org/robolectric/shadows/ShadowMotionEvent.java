@@ -25,6 +25,7 @@ public class ShadowMotionEvent {
   private long eventTime;
   private int[] pointerIds = new int[2];
   private int pointerIndex;
+  private int source;
 
   @Implementation
   public static MotionEvent obtain(long downTime, long eventTime, int action, float x, float y, int metaState) {
@@ -156,5 +157,15 @@ public class ShadowMotionEvent {
   public void setPointerIds(int index0PointerId, int index1PointerId) {
     pointerIds[0] = index0PointerId;
     pointerIds[1] = index1PointerId;
+  }
+
+  @Implementation
+  public void setSource(int source) {
+    this.source = source;
+  }
+
+  @Implementation
+  public int getSource() {
+    return source;
   }
 }

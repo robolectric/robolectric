@@ -14,6 +14,7 @@ import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.database.DatabaseErrorHandler;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import org.robolectric.Robolectric;
@@ -27,7 +28,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static android.database.sqlite.SQLiteDatabase.CursorFactory;
 import static org.robolectric.Robolectric.shadowOf;
@@ -39,6 +42,9 @@ public class ShadowContextWrapper extends ShadowContext {
 
   private String appName;
   private String packageName;
+
+  private final Map<String, TestSharedPreferences> sharedPreferencesMap =
+      new HashMap<String, TestSharedPreferences>();
 
   @Implementation
   public int checkCallingPermission(String permission) {
@@ -145,6 +151,11 @@ public class ShadowContextWrapper extends ShadowContext {
     getApplicationContext().sendBroadcast(intent, receiverPermission);
   }
 
+  @Implementation
+  public void sendStickyBroadcast(Intent intent) {
+    getApplicationContext().sendStickyBroadcast(intent);
+  }
+
   public List<Intent> getBroadcastIntents() {
     return ((ShadowApplication) shadowOf(getApplicationContext())).getBroadcastIntents();
   }
@@ -214,8 +225,31 @@ public class ShadowContextWrapper extends ShadowContext {
   }
 
   @Implementation
+  public void startActivity(Intent intent, Bundle options) {
+    getApplicationContext().startActivity(intent, options);
+  }
+
+  @Implementation
+  public void startActivities(Intent[] intents) {
+    for (int i = intents.length - 1; i >= 0; i--) {
+      startActivity(intents[i]);
+    }
+  }
+
+  @Implementation
+  public void startActivities(Intent[] intents, Bundle options) {
+    for (int i = intents.length - 1; i >= 0; i--) {
+      startActivity(intents[i], options);
+    }
+  }
+
+  @Implementation
   public SharedPreferences getSharedPreferences(String name, int mode) {
-    return new TestSharedPreferences(getShadowApplication().getSharedPreferenceMap(), name, mode);
+    if (!sharedPreferencesMap.containsKey(name)) {
+      sharedPreferencesMap.put(name, new TestSharedPreferences(getShadowApplication().getSharedPreferenceMap(), name, mode));
+    }
+
+    return sharedPreferencesMap.get(name);
   }
 
   @Implementation

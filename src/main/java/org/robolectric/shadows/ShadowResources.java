@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -8,6 +9,7 @@ import android.content.res.XmlResourceParser;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.ParcelFileDescriptor;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.LongSparseArray;
@@ -19,19 +21,13 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.internal.HiddenApi;
-import org.robolectric.res.Attribute;
-import org.robolectric.res.Plural;
-import org.robolectric.res.ResName;
-import org.robolectric.res.ResType;
-import org.robolectric.res.ResourceIndex;
-import org.robolectric.res.ResourceLoader;
-import org.robolectric.res.Style;
-import org.robolectric.res.TypedResource;
+import org.robolectric.res.*;
 import org.robolectric.res.builder.XmlFileBuilder;
 import org.robolectric.util.Util;
 import org.w3c.dom.Document;
 
 import java.io.InputStream;
+import java.io.FileInputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -362,6 +358,12 @@ public class ShadowResources {
   }
 
   @Implementation
+  public CharSequence getText(int id) throws Resources.NotFoundException {
+    CharSequence text = directlyOn(realResources, Resources.class).getText(id);
+    return StringResources.escape(text.toString());
+  }
+
+  @Implementation
   public String getQuantityString(int id, int quantity, Object... formatArgs) throws Resources.NotFoundException {
     String raw = getQuantityString(id, quantity);
     return String.format(Locale.ENGLISH, raw, formatArgs);
@@ -384,10 +386,26 @@ public class ShadowResources {
     return resourceLoader.getRawValue(getResName(id));
   }
 
+  @Implementation
+  public AssetFileDescriptor openRawResourceFd(int id) throws Resources.NotFoundException {
+    try {
+      FileInputStream fis = (FileInputStream)openRawResource(id);
+      return new AssetFileDescriptor(ParcelFileDescriptor.dup(fis.getFD()), 0, fis.getChannel().size());
+    } catch (Exception e) {
+      return null;
+    }
+  }
+
   public void setDensity(float density) {
     this.density = density;
     if (displayMetrics != null) {
       displayMetrics.density = density;
+    }
+  }
+
+  public void setScaledDensity(float scaledDensity) {
+    if (displayMetrics != null) {
+      displayMetrics.scaledDensity = scaledDensity;
     }
   }
 

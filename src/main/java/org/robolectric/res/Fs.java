@@ -9,7 +9,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -44,10 +44,16 @@ abstract public class Fs {
   }
 
   static class JarFs extends Fs {
+    private static final Map<File, NavigableMap<String, JarEntry>> CACHE =
+        new LinkedHashMap<File, NavigableMap<String, JarEntry>>() {
+          @Override
+          protected boolean removeEldestEntry(Map.Entry<File, NavigableMap<String, JarEntry>> fileNavigableMapEntry) {
+            return size() > 10;
+          }
+        };
+
     private final JarFile jarFile;
-    private NavigableMap<String, JarEntry> jarEntryMap = new TreeMap<String, JarEntry>();
-    private static final Map<String, NavigableMap<String, JarEntry>> cache =
-            new HashMap<String, NavigableMap<String, JarEntry>>();
+    private final NavigableMap<String, JarEntry> jarEntryMap;
 
     public JarFs(File file) {
       try {
@@ -55,16 +61,25 @@ abstract public class Fs {
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
-      if (!cache.containsKey(file.getAbsolutePath())) {
+
+      NavigableMap<String, JarEntry> cachedMap;
+      synchronized (CACHE) {
+        cachedMap = CACHE.get(file.getAbsoluteFile());
+      }
+
+      if (cachedMap == null) {
+        cachedMap = new TreeMap<String, JarEntry>();
         Enumeration<JarEntry> entries = jarFile.entries();
         while (entries.hasMoreElements()) {
           JarEntry jarEntry = entries.nextElement();
-          jarEntryMap.put(jarEntry.getName(), jarEntry);
+          cachedMap.put(jarEntry.getName(), jarEntry);
         }
-        cache.put(file.getAbsolutePath(), jarEntryMap);
-      } else {
-        jarEntryMap = cache.get(file.getAbsolutePath());
+        synchronized (CACHE) {
+          CACHE.put(file.getAbsoluteFile(), cachedMap);
+        }
       }
+
+      jarEntryMap = cachedMap;
     }
 
     @Override public FsFile join(String folderBaseName) {
