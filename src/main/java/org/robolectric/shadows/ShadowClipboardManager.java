@@ -24,7 +24,14 @@ public class ShadowClipboardManager {
        clip.prepareToLeaveProcess();
     }
     this.clip = clip;
-    for (OnPrimaryClipChangedListener listener : listeners) {
+
+    // Synchronously copy the listeners, then handle the change event for each.
+    OnPrimaryClipChangedListener[] listenersCopy;
+    synchronized (listeners) {
+      listenersCopy = new OnPrimaryClipChangedListener[listeners.size()];
+      listenersCopy = listeners.toArray(listenersCopy);
+    }
+    for (OnPrimaryClipChangedListener listener : listenersCopy) {
       listener.onPrimaryClipChanged();
     }
   }
@@ -46,12 +53,16 @@ public class ShadowClipboardManager {
 
   @Implementation
   public void addPrimaryClipChangedListener(OnPrimaryClipChangedListener listener) {
-    listeners.add(listener);
+    synchronized (listeners) {
+      listeners.add(listener);
+    }
   }
 
   @Implementation
   public void removePrimaryClipChangedListener(OnPrimaryClipChangedListener listener) {
-    listeners.remove(listener);
+    synchronized (listeners) {
+      listeners.remove(listener);
+    }
   }
 
   @Implementation
