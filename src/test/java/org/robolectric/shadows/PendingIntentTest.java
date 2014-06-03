@@ -113,4 +113,100 @@ public class PendingIntentTest {
     assertThat(i).isSameAs(intent);
     assertThat(i.getIntExtra("TEST", -1)).isEqualTo(23);
   }
+
+  @Test
+  public void getActivity_withFlagNoCreate_shouldReturnNullIfNoPendingIntentExists() {
+    Intent intent = new Intent();
+
+    PendingIntent pendingIntent = PendingIntent.getActivity(Robolectric.application, 99, intent,
+        PendingIntent.FLAG_NO_CREATE);
+
+    assertThat(pendingIntent).isNull();
+  }
+
+  @Test
+  public void getActivity_withFlagNoCreate_shouldReturnExistingIntent() {
+    Intent intent = new Intent();
+
+    PendingIntent.getActivity(Robolectric.application, 99, intent, 100);
+
+    Intent identical = new Intent();
+    PendingIntent saved = PendingIntent.getActivity(Robolectric.application, 99, identical,
+        PendingIntent.FLAG_NO_CREATE);
+
+    assertThat(saved).isNotNull();
+    assertThat(intent).isEqualTo(shadowOf(saved).getSavedIntent());
+  }
+
+  @Test
+  public void getActivities_withFlagNoCreate_shouldReturnNullIfNoPendingIntentExists() {
+    Intent[] intents = new Intent[] { new Intent(Intent.ACTION_VIEW), new Intent(Intent.ACTION_PICK) };
+
+    PendingIntent pendingIntent = PendingIntent.getActivities(Robolectric.application, 99, intents,
+        PendingIntent.FLAG_NO_CREATE);
+
+    assertThat(pendingIntent).isNull();
+  }
+
+  @Test
+  public void getActivities_withFlagNoCreate_shouldReturnExistingIntent() {
+    Intent[] intents = new Intent[] { new Intent(Intent.ACTION_VIEW), new Intent(Intent.ACTION_PICK) };
+
+    PendingIntent.getActivities(Robolectric.application, 99, intents, 100);
+
+    Intent[] identicalIntents = new Intent[] { new Intent(Intent.ACTION_VIEW), new Intent(Intent.ACTION_PICK) };
+    PendingIntent saved = PendingIntent.getActivities(Robolectric.application, 99, identicalIntents,
+        PendingIntent.FLAG_NO_CREATE);
+
+    assertThat(saved).isNotNull();
+    assertThat(intents).isEqualTo(shadowOf(saved).getSavedIntents());
+  }
+
+  @Test
+  public void getBroadcast_withFlagNoCreate_shouldReturnNullIfNoPendingIntentExists() {
+    Intent intent = new Intent();
+
+    PendingIntent pendingIntent = PendingIntent.getBroadcast(Robolectric.application, 99, intent,
+        PendingIntent.FLAG_NO_CREATE);
+
+    assertThat(pendingIntent).isNull();
+  }
+
+  @Test
+  public void getBroadcast_withFlagNoCreate_shouldReturnExistingIntent() {
+    Intent intent = new Intent();
+
+    PendingIntent.getBroadcast(Robolectric.application, 99, intent, 100);
+    Intent identical = new Intent();
+    PendingIntent saved = PendingIntent.getBroadcast(Robolectric.application, 99, identical,
+        PendingIntent.FLAG_NO_CREATE);
+
+    assertThat(saved).isNotNull();
+    assertThat(intent).isEqualTo(shadowOf(saved).getSavedIntent());
+  }
+
+  @Test
+  public void getService_withFlagNoCreate_shouldReturnNullIfNoPendingIntentExists() {
+    Intent intent = new Intent();
+
+    PendingIntent pendingIntent = PendingIntent.getService(Robolectric.application, 99, intent,
+        PendingIntent.FLAG_NO_CREATE);
+
+    assertThat(pendingIntent).isNull();
+  }
+
+  @Test
+  public void getService_withFlagNoCreate_shouldReturnExistingIntent() {
+    Intent intent = new Intent();
+
+    PendingIntent.getService(Robolectric.application, 99, intent, 100);
+
+    Intent identical = new Intent();
+
+    PendingIntent saved = PendingIntent.getService(Robolectric.application, 99, identical,
+        PendingIntent.FLAG_NO_CREATE);
+
+    assertThat(saved).isNotNull();
+    assertThat(intent).isEqualTo(shadowOf(saved).getSavedIntent());
+  }
 }

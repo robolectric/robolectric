@@ -11,13 +11,17 @@ import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Shadow of {@code PendingIntent} that creates and sends {@code Intent}s appropriately.
  */
-@Implements(PendingIntent.class)
+@Implements(value = PendingIntent.class, resetStaticState = true)
 public class ShadowPendingIntent {
+  private static final List<PendingIntent> createdIntents = new ArrayList<PendingIntent>();
+
   private Intent[] savedIntents;
   private Context savedContext;
   private boolean isActivityIntent;
@@ -151,6 +155,10 @@ public class ShadowPendingIntent {
   }
 
   private static PendingIntent create(Context context, Intent[] intents, boolean isActivity, boolean isBroadcast, boolean isService, int requestCode, int flags) {
+    if ((flags & PendingIntent.FLAG_NO_CREATE) != 0) {
+      return getCreatedIntentFor(intents);
+    }
+
     PendingIntent pendingIntent = Robolectric.newInstanceOf(PendingIntent.class);
     ShadowPendingIntent shadowPendingIntent = Robolectric.shadowOf(pendingIntent);
     shadowPendingIntent.savedIntents = intents;
@@ -160,6 +168,36 @@ public class ShadowPendingIntent {
     shadowPendingIntent.savedContext = context;
     shadowPendingIntent.requestCode = requestCode;
     shadowPendingIntent.flags = flags;
+
+    createdIntents.add(pendingIntent);
     return pendingIntent;
+  }
+
+  private static PendingIntent getCreatedIntentFor(Intent[] intents) {
+    for (PendingIntent createdIntent : createdIntents) {
+      ShadowPendingIntent shadowPendingIntent = Robolectric.shadowOf(createdIntent);
+      if (shadowPendingIntent.savedIntents.length != intents.length) {
+        continue;
+      }
+
+      // Order matters in the framework. If I call getActivities(Activity1, Activity2), that will
+      // give me a different PendingIntent than if I call getActivities(Activity2, Activity1).
+      boolean equalIntents = true;
+      for (int i = 0; i < intents.length; i++) {
+        if (!shadowPendingIntent.savedIntents[i].filterEquals(intents[i])) {
+          equalIntents = false;
+          break;
+        }
+      }
+
+      if (equalIntents) {
+        return createdIntent;
+      }
+    }
+    return null;
+  }
+
+  public static void reset() {
+    createdIntents.clear();
   }
 }
