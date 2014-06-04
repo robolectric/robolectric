@@ -1353,6 +1353,7 @@ public class Robolectric {
     ShadowResources.reset();
     ShadowBinder.reset();
     ShadowBitmapFactory.reset();
+    ShadowPendingIntent.reset();
     ShadowDrawable.reset();
     ShadowMediaStore.reset();
     ShadowLog.reset();
