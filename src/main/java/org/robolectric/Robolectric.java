@@ -110,6 +110,7 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.accessibility.AccessibilityManager;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -165,6 +166,7 @@ import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.shadows.HttpResponseGenerator;
 import org.robolectric.shadows.ShadowAbsListView;
 import org.robolectric.shadows.ShadowAbsSeekBar;
+import org.robolectric.shadows.ShadowAccessibilityManager;
 import org.robolectric.shadows.ShadowAccountManager;
 import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.shadows.ShadowActivityGroup;
@@ -402,6 +404,10 @@ public class Robolectric {
 
   public static ShadowAbsSeekBar shadowOf(AbsSeekBar instance) {
     return (ShadowAbsSeekBar) shadowOf_(instance);
+  }
+
+  public static ShadowAccessibilityManager shadowOf(AccessibilityManager instance) {
+    return (ShadowAccessibilityManager) shadowOf_(instance);
   }
 
   public static ShadowAccountManager shadowOf(AccountManager instance) {
