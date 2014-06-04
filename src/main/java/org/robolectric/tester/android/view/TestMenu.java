@@ -37,6 +37,7 @@ public class TestMenu implements Menu {
   public MenuItem add(int groupId, int itemId, int order, CharSequence title) {
     TestMenuItem menuItem = new TestMenuItem();
     menuItems.add(menuItem);
+    menuItem.setGroupId(groupId);
     menuItem.setItemId(itemId);
     menuItem.setTitle(title);
     return menuItem;
@@ -72,6 +73,7 @@ public class TestMenu implements Menu {
     TestSubMenu tsm = new TestSubMenu();
     TestMenuItem menuItem = new TestMenuItem();
     menuItems.add(menuItem);
+    menuItem.setGroupId(groupId);
     menuItem.setItemId(itemId);
     menuItem.setTitle(title);
     menuItem.setSubMenu(tsm);
@@ -83,6 +85,7 @@ public class TestMenu implements Menu {
     TestSubMenu tsm = new TestSubMenu();
     TestMenuItem menuItem = new TestMenuItem();
     menuItems.add(menuItem);
+    menuItem.setGroupId(groupId);
     menuItem.setItemId(itemId);
     menuItem.setTitle(titleRes);
     menuItem.setSubMenu(tsm);

@@ -12,6 +12,7 @@ import org.robolectric.Robolectric;
 public class TestMenuItem implements MenuItem {
 
   private int itemId;
+  private int groupId;
   private CharSequence title;
   private boolean enabled = true;
   private boolean checked = false;
@@ -38,6 +39,10 @@ public class TestMenuItem implements MenuItem {
     this.itemId = itemId;
   }
 
+  public void setGroupId(int groupId) {
+    this.groupId = groupId;
+  }
+
   @Override
   public int getItemId() {
     return itemId;
@@ -45,7 +50,7 @@ public class TestMenuItem implements MenuItem {
 
   @Override
   public int getGroupId() {
-    return 0;
+    return groupId;
   }
 
   @Override
