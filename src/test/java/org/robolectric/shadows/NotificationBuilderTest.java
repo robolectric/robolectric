@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import android.app.PendingIntent;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import android.app.Notification;
@@ -69,5 +70,13 @@ public class NotificationBuilderTest {
   public void build_handlesNullContentInfo() {
     Notification notification = builder.setContentInfo(null).build();
     assertThat(shadowOf(notification).getContentInfo()).isNull();
+  }
+
+  @Test
+  public void build_addsActionToNotification() throws Exception {
+    PendingIntent action = PendingIntent.getBroadcast(application, 0, null, 0);
+    Notification notification = builder.addAction(0, "Action", action).build();
+    assertThat(shadowOf(notification).getActions().get(0).actionIntent)
+        .isEqualsToByComparingFields(action);
   }
 }

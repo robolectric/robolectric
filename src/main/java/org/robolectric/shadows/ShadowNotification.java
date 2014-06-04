@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
+import java.util.ArrayList;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -13,12 +14,15 @@ import static org.robolectric.Robolectric.shadowOf;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Notification.class)
 public class ShadowNotification {
+  private static final int MAX_ACTIONS = 3;
+
   private CharSequence contentTitle;
   private CharSequence contentText;
   private CharSequence ticker;
   private CharSequence contentInfo;
   private int smallIcon;
   private long when;
+  private ArrayList<Notification.Action> actions = new ArrayList<Notification.Action>(MAX_ACTIONS);
 
   public Notification getRealNotification() {
     return realNotification;
@@ -83,6 +87,14 @@ public class ShadowNotification {
    this.contentInfo = contentInfo;
   }
 
+  public void setActions(ArrayList<Notification.Action> actions) {
+    this.actions = actions;
+  }
+
+  public ArrayList<Notification.Action> getActions() {
+    return actions;
+  }
+
   @Implementation
   public void setLatestEventInfo(Context context, CharSequence contentTitle,
                    CharSequence contentText, PendingIntent contentIntent) {
@@ -128,6 +140,8 @@ public class ShadowNotification {
     private CharSequence ticker;
     private int smallIcon;
     private long when;
+    private ArrayList<Notification.Action> actions =
+        new ArrayList<Notification.Action>(MAX_ACTIONS);
 
     @Implementation
     public Notification build() {
@@ -139,6 +153,7 @@ public class ShadowNotification {
       shadowResult.setTicker(ticker);
       shadowResult.setWhen(when);
       shadowResult.setContentInfo(contentInfo);
+      shadowResult.setActions(actions);
       return result;
     }
 
@@ -181,6 +196,15 @@ public class ShadowNotification {
     public Notification.Builder setContentInfo(CharSequence contentInfo) {
       this.contentInfo = contentInfo;
       directlyOn(realBuilder, Notification.Builder.class, "setContentInfo", CharSequence.class).invoke(contentInfo);
+      return realBuilder;
+    }
+
+    @Implementation
+    public Notification.Builder addAction(int icon, CharSequence title, PendingIntent intent) {
+      this.actions.add(new Notification.Action(icon, title, intent));
+      // TODO: Call addAction on real builder after resolving issue with RemoteViews bitmap cache.
+      // directlyOn(realBuilder, Notification.Builder.class, "addAction", int.class,
+      //     CharSequence.class, PendingIntent.class).invoke(icon, title, intent);
       return realBuilder;
     }
   }
