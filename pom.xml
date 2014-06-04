@@ -155,7 +155,6 @@
       <groupId>org.easytesting</groupId>
       <artifactId>fest-util</artifactId>
       <version>1.2.5</version>
-      <scope>test</scope>
     </dependency>
 
     <dependency>

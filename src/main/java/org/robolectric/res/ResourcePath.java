@@ -1,5 +1,7 @@
 package org.robolectric.res;
 
+import org.fest.util.Objects;
+
 public class ResourcePath {
   public final Class<?> rClass;
   public final String packageName;
@@ -34,8 +36,8 @@ public class ResourcePath {
 
     if (!assetsDir.equals(that.assetsDir)) return false;
     if (!packageName.equals(that.packageName)) return false;
-    if (!(rClass == null ? that.rClass == null : rClass.equals(that.rClass))) return false;
-    if (!(rawDir == null ? that.rawDir == null : rawDir.equals(that.rawDir))) return false;
+    if (!Objects.areEqual(rClass, that.rClass)) return false;
+    if (!Objects.areEqual(rawDir, that.rawDir)) return false;
     if (!resourceBase.equals(that.resourceBase)) return false;
 
     return true;
