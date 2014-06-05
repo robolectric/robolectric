@@ -1673,7 +1673,7 @@ public class Robolectric {
   }
 
   public static <T extends Activity> T setupActivity(Class<T> activityClass) {
-    return new ActivityController<T>(activityClass).create().start().resume().visible().get();
+    return new ActivityController<T>(activityClass).setup().get();
   }
 
   /**

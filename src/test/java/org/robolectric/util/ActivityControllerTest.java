@@ -138,8 +138,8 @@ public class ActivityControllerTest {
   }
 
   @Test
-  public void launch() {
-    controller.launch();
+  public void setup_callsLifecycleMethodsAndMakesVisible() {
+    controller.setup();
     transcript.assertEventsInclude("onCreate", "onStart", "onPostCreate", "onResume", "onPostResume");
     assertEquals(controller.get().getWindow().getDecorView().getParent().getClass().getName(), "android.view.ViewRootImpl");
   }
