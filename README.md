@@ -14,7 +14,7 @@ public class MyActivityTest {
 
   @Test
   public void clickingButton_shouldChangeResultsViewText() throws Exception {
-    Activity activity = Robolectric.buildActivity(MyActivity.class).create().get();
+    Activity activity = Robolectric.setupActivity(MyActivity.class);
 
     Button pressMeButton = (Button) activity.findViewById(R.id.press_me_button);
     TextView results = (TextView) activity.findViewById(R.id.results_text_view);
@@ -56,7 +56,7 @@ mvn install:install-file -DgroupId=com.google.android.maps \
   -Dversion=18_r3 \
   -Dpackaging=jar \
   -Dfile="$ANDROID_HOME/add-ons/addon-google_apis-google-18/libs/maps.jar"
-  
+
 mvn install:install-file -DgroupId=com.android.support \
   -DartifactId=support-v4 \
   -Dversion=19.0.1 \
