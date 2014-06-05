@@ -2,7 +2,7 @@
 
 [![Build Status](https://secure.travis-ci.org/robolectric/robolectric.png?branch=master)](http://travis-ci.org/robolectric/robolectric)
 
-Robolectric is a unit test framework that de-fangs the Android SDK so you can test-drive the development of your Android app.
+Robolectric is a testing framework that de-fangs the Android SDK so you can test-drive the development of your Android app.
 
 ## Usage
 
@@ -32,7 +32,11 @@ contributors, please visit
 
 ## Install
 
-You can install Robolectric for your project by adding the following to your pom.xml:
+If you'd like to start a new project with Robolectric you can use deckard (for either [maven](http://github.com/robolectric/deckard-maven)
+or [gradle](http://github.com/robolectric/deckard-gradle)). These project will guide you through setting
+up both Android and Robolectric on your machine.
+
+Alternatively, you can install Robolectric for your current project by adding the following to your pom.xml:
 
 ```xml
 <dependency>
