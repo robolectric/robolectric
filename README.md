@@ -32,9 +32,13 @@ contributors, please visit
 
 ## Install
 
+### Starting a new project
+
 If you'd like to start a new project with Robolectric you can use deckard (for either [maven](http://github.com/robolectric/deckard-maven)
 or [gradle](http://github.com/robolectric/deckard-gradle)). These project will guide you through setting
 up both Android and Robolectric on your machine.
+
+### Current project
 
 Alternatively, you can install Robolectric for your current project by adding the following to your pom.xml:
 
@@ -46,10 +50,6 @@ Alternatively, you can install Robolectric for your current project by adding th
    <scope>test</scope>
 </dependency>
 ```
-
-### Dependencies
-
-#### Google API Jars
 
 Robolectric requires the Google APIs for Android (specifically, the maps JAR) and Android support-v4 library. To download this onto your development
 machine use the Android SDK tools and then run the following to install them to your local Maven repository:
