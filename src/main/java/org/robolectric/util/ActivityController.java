@@ -190,4 +190,12 @@ public class ActivityController<T extends Activity>
     invokeWhilePaused("performDestroy");
     return this;
   }
+
+  /**
+   * Calls the same lifecycle methods on the Activity called by
+   * Android the first time the Activity is created.
+   */
+  public ActivityController<T> setup() {
+    return create().start().postCreate(null).resume().postResume().visible();
+  }
 }
