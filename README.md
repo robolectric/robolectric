@@ -2,7 +2,7 @@
 
 [![Build Status](https://secure.travis-ci.org/robolectric/robolectric.png?branch=master)](http://travis-ci.org/robolectric/robolectric)
 
-Robolectric is a unit test framework that de-fangs the Android SDK so you can test-drive the development of your Android app.
+Robolectric is a testing framework that de-fangs the Android SDK so you can test-drive the development of your Android app.
 
 ## Usage
 
@@ -14,7 +14,7 @@ public class MyActivityTest {
 
   @Test
   public void clickingButton_shouldChangeResultsViewText() throws Exception {
-    Activity activity = Robolectric.buildActivity(MyActivity.class).create().get();
+    Activity activity = Robolectric.setupActivity(MyActivity.class);
 
     Button pressMeButton = (Button) activity.findViewById(R.id.press_me_button);
     TextView results = (TextView) activity.findViewById(R.id.results_text_view);
@@ -32,7 +32,15 @@ contributors, please visit
 
 ## Install
 
-You can install Robolectric for your project by adding the following to your pom.xml:
+### Starting a new project
+
+If you'd like to start a new project with Robolectric you can use deckard (for either [maven](http://github.com/robolectric/deckard-maven)
+or [gradle](http://github.com/robolectric/deckard-gradle)). These project will guide you through setting
+up both Android and Robolectric on your machine.
+
+### Current project
+
+Alternatively, you can install Robolectric for your current project by adding the following to your pom.xml:
 
 ```xml
 <dependency>
@@ -43,10 +51,6 @@ You can install Robolectric for your project by adding the following to your pom
 </dependency>
 ```
 
-### Dependencies
-
-#### Google API Jars
-
 Robolectric requires the Google APIs for Android (specifically, the maps JAR) and Android support-v4 library. To download this onto your development
 machine use the Android SDK tools and then run the following to install them to your local Maven repository:
 
@@ -56,7 +60,7 @@ mvn install:install-file -DgroupId=com.google.android.maps \
   -Dversion=18_r3 \
   -Dpackaging=jar \
   -Dfile="$ANDROID_HOME/add-ons/addon-google_apis-google-18/libs/maps.jar"
-  
+
 mvn install:install-file -DgroupId=com.android.support \
   -DartifactId=support-v4 \
   -Dversion=19.0.1 \
