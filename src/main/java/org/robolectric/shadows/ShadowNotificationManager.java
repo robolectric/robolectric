@@ -17,8 +17,7 @@ public class ShadowNotificationManager {
   private Map<Key, Notification> notifications = new HashMap<Key, Notification>();
 
   @Implementation
-  public void notify(int id, Notification notification)
-  {
+  public void notify(int id, Notification notification) {
     notify(null, id, notification);
   }
 
@@ -28,8 +27,7 @@ public class ShadowNotificationManager {
   }
 
   @Implementation
-  public void cancel(int id)
-  {
+  public void cancel(int id) {
     cancel(null, id);
   }
 
@@ -48,6 +46,10 @@ public class ShadowNotificationManager {
 
   public int size() {
     return notifications.size();
+  }
+
+  public Notification getNotification(int id) {
+    return notifications.get(new Key(null, id));
   }
 
   public Notification getNotification(String tag, int id) {
@@ -79,9 +81,7 @@ public class ShadowNotificationManager {
     public boolean equals(Object o) {
       if (!(o instanceof Key)) return false;
       Key other = (Key) o;
-      return (this.tag == null ? other.tag == null : this.tag.equals(other.tag))
-           && this.id == other.id;
-
+      return (this.tag == null ? other.tag == null : this.tag.equals(other.tag)) && this.id == other.id;
     }
   }
 }
