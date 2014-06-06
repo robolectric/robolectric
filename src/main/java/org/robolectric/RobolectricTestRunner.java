@@ -333,7 +333,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     String resourcesProperty = System.getProperty("android.resources");
     String assetsProperty = System.getProperty("android.assets");
 
-    FsFile fsFile = Fs.currentDirectory();
+    FsFile fsFile = getBaseDir();
     FsFile manifestFile;
     FsFile resDir;
     FsFile assetsDir;
@@ -362,6 +362,10 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       }
       return appManifest;
     }
+  }
+
+  protected FsFile getBaseDir() {
+    return Fs.currentDirectory();
   }
 
   public Config getConfig(Method method) {
