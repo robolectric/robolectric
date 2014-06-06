@@ -5,7 +5,9 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
-@Implements(NumberPicker.class)
+import static org.robolectric.Robolectric.directlyOn;
+
+@Implements(value = NumberPicker.class, callThroughByDefault = true)
 public class ShadowNumberPicker extends ShadowLinearLayout {
   @RealObject
   private NumberPicker realObject;
@@ -71,7 +73,7 @@ public class ShadowNumberPicker extends ShadowLinearLayout {
 
   @Implementation
   public void setOnValueChangedListener(NumberPicker.OnValueChangeListener listener) {
-    realObject.setOnValueChangedListener(listener);
+    directlyOn(realObject, NumberPicker.class).setOnValueChangedListener(listener);
     this.onValueChangeListener = listener;
   }
 

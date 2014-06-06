@@ -40,12 +40,11 @@ public class NumberPickerTest {
   public void shouldFireListeners() {
     NumberPicker picker = new NumberPicker(Robolectric.application);
 
-    picker.setValue(5);
-
     NumberPicker.OnValueChangeListener listener = mock(NumberPicker.OnValueChangeListener.class);
     picker.setOnValueChangedListener(listener);
 
-    picker.setValue(10);
+    ShadowNumberPicker shadowNumberPicker = Robolectric.shadowOf(picker);
+    shadowNumberPicker.getOnValueChangeListener().onValueChange(picker, 5, 10);
 
     verify(listener).onValueChange(picker, 5, 10);
   }
