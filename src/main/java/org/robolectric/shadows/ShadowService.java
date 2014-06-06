@@ -2,9 +2,11 @@ package org.robolectric.shadows;
 
 import android.app.Application;
 import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.ServiceConnection;
+
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -17,6 +19,7 @@ import static org.robolectric.Robolectric.shadowOf;
 public class ShadowService extends ShadowContextWrapper {
   @RealObject Service realService;
 
+  private int lastForegroundNotificationId;
   private Notification lastForegroundNotification;
   private boolean selfStopped = false;
   private boolean unbindServiceShouldThrowIllegalArgument = false;
@@ -36,6 +39,7 @@ public class ShadowService extends ShadowContextWrapper {
   @Implementation
   public void onDestroy() {
     assertNoBroadcastListenersRegistered();
+    removeForegroundNotification();
   }
 
   @Override @Implementation
@@ -61,7 +65,11 @@ public class ShadowService extends ShadowContextWrapper {
 
   @Implementation
   public final void startForeground(int id, Notification notification) {
+	lastForegroundNotificationId = id;
     lastForegroundNotification = notification;
+    notification.flags |= Notification.FLAG_FOREGROUND_SERVICE;
+    NotificationManager nm = (NotificationManager)Robolectric.application.getSystemService(Context.NOTIFICATION_SERVICE);
+    nm.notify(id, notification);
   }
 
   @Implementation
@@ -69,10 +77,20 @@ public class ShadowService extends ShadowContextWrapper {
     foregroundStopped = true;
     notificationShouldRemoved = removeNotification;
     if (removeNotification) {
-      lastForegroundNotification = null;
+      removeForegroundNotification();
     }
   }
 
+  private void removeForegroundNotification() {
+    NotificationManager nm = (NotificationManager)Robolectric.application.getSystemService(Context.NOTIFICATION_SERVICE);      
+    nm.cancel(lastForegroundNotificationId);    
+    lastForegroundNotification = null;
+  }
+  
+  public int getLastForegroundNotificationId() {
+    return lastForegroundNotificationId;
+  }
+  
   public Notification getLastForegroundNotification() {
     return lastForegroundNotification;
   }
