@@ -50,6 +50,10 @@ public class ShadowNotificationManager {
     return notifications.size();
   }
 
+  public Notification getNotification(int id) {
+    return notifications.get(new Key(null, id));
+  }
+
   public Notification getNotification(String tag, int id) {
     return notifications.get(new Key(tag, id));
   }
