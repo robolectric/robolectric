@@ -7,7 +7,7 @@ import org.robolectric.annotation.RealObject;
 
 import static org.robolectric.Robolectric.directlyOn;
 
-@Implements(value = NumberPicker.class, callThroughByDefault = true)
+@Implements(value = NumberPicker.class)
 public class ShadowNumberPicker extends ShadowLinearLayout {
   @RealObject
   private NumberPicker realObject;
