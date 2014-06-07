@@ -11,6 +11,7 @@ import android.util.TypedValue;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.bytecode.RobolectricInternals;
 
 @Implements(Preference.class)
 public class ShadowPreference {
@@ -57,6 +58,11 @@ public class ShadowPreference {
       summary = typedArray.getString(com.android.internal.R.styleable.Preference_summary);
       initDefaultValue(typedArray);
     }
+
+    // Also invoke the constructor on the actual object to give it a Context.
+    Class[] types = new Class[] { Context.class, AttributeSet.class, Integer.TYPE };
+    RobolectricInternals.getConstructor(Preference.class, this.realPreference, types)
+        .invoke(context, attributeSet, defStyle);
   }
 
   private void initDefaultValue(TypedArray typedArray) {

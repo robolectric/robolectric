@@ -42,7 +42,8 @@ public class PreferenceTest {
 
   @Test
   public void shouldConstruct() {
-    int defStyle = 7;
+    // Must be an attr that points to a style or else it won't be able to create the styled view.
+    int defStyle = R.attr.animalStyle;
 
     preference = new TestPreference(context, attrs, defStyle);
     shadow = Robolectric.shadowOf(preference);
