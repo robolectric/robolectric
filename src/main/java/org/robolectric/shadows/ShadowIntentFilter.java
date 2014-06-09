@@ -155,6 +155,8 @@ public class ShadowIntentFilter {
 
   @Implementation
   public final int matchData(String type, String scheme, Uri data) {
+    boolean schemeMatch = false;
+
     if (types.isEmpty() && schemes.isEmpty()) {
       if (type == null && data == null) {
         return IntentFilter.MATCH_CATEGORY_EMPTY + IntentFilter.MATCH_ADJUSTMENT_NORMAL;
@@ -175,9 +177,8 @@ public class ShadowIntentFilter {
           if (matchDataAuthority(data) == IntentFilter.NO_MATCH_DATA) {
             return IntentFilter.NO_MATCH_DATA;
           }
-        } else {
-          return IntentFilter.MATCH_CATEGORY_SCHEME + IntentFilter.MATCH_ADJUSTMENT_NORMAL;
         }
+        schemeMatch = true;
       } else {
         return IntentFilter.NO_MATCH_DATA;
       }
@@ -194,7 +195,8 @@ public class ShadowIntentFilter {
         }
       }
     }
-    return IntentFilter.NO_MATCH_DATA;
+    return schemeMatch ? IntentFilter.MATCH_CATEGORY_SCHEME + IntentFilter.MATCH_ADJUSTMENT_NORMAL :
+        IntentFilter.NO_MATCH_DATA;
   }
 
   @Implementation
