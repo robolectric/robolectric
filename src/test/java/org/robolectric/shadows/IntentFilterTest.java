@@ -183,4 +183,15 @@ public class IntentFilterTest {
     assertThat(intentFilter.matchData("image/test", "http", uriTest1))
         .isLessThan(0);
   }
+
+  @Test
+  public void matchData_MatchSchemeNoMatchType() throws IntentFilter.MalformedMimeTypeException {
+    IntentFilter intentFilter = new IntentFilter();
+    intentFilter.addDataScheme("http");
+    intentFilter.addDataType("image/testFail");
+
+    Uri uriTest1 = Uri.parse("http://testHost1:1");
+    assertThat(intentFilter.matchData("image/test", "http", uriTest1))
+        .isLessThan(0);
+  }
 }
