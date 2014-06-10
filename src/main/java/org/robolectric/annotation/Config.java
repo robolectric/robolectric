@@ -8,9 +8,10 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 
 /**
  * Indicate that robolectric should look for values that is specific by those qualifiers
@@ -113,7 +114,7 @@ public @interface Config {
       this.qualifiers = pick(baseConfig.qualifiers(), overlayConfig.qualifiers(), "");
       this.resourceDir = pick(baseConfig.resourceDir(), overlayConfig.resourceDir(), "res");
       this.reportSdk = pick(baseConfig.reportSdk(), overlayConfig.reportSdk(), -1);
-      ArrayList<Class<?>> shadows = new ArrayList<Class<?>>();
+      Set<Class<?>> shadows = new HashSet<Class<?>>();
       shadows.addAll(Arrays.asList(baseConfig.shadows()));
       shadows.addAll(Arrays.asList(overlayConfig.shadows()));
       this.shadows = shadows.toArray(new Class[shadows.size()]);

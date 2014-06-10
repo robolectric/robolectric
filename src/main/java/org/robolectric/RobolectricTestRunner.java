@@ -372,9 +372,14 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       config = new Config.Implementation(config, globalConfig);
     }
 
-    Config classConfig = method.getDeclaringClass().getAnnotation(Config.class);
-    if (classConfig != null) {
-      config = new Config.Implementation(config, classConfig);
+    Config methodClassConfig = method.getDeclaringClass().getAnnotation(Config.class);
+    if (methodClassConfig != null) {
+      config = new Config.Implementation(config, methodClassConfig);
+    }
+
+    Config testClassConfig = getTestClass().getJavaClass().getAnnotation(Config.class);
+    if (testClassConfig != null) {
+      config = new Config.Implementation(config, testClassConfig);
     }
 
     Config methodConfig = method.getAnnotation(Config.class);

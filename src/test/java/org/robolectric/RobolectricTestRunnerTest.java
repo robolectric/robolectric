@@ -41,6 +41,28 @@ public class RobolectricTestRunnerTest {
         9, "furf", "from-method", "method/res", 8, new Class[]{Test1.class});
   }
 
+  @Test public void whenClassAndSubclassHaveConfigAnnotation_getConfig_shouldMergeClassSubclassAndMethodConfig() throws Exception {
+      assertConfig(configFor(Test3.class, "withoutAnnotation"),
+          1, "foo", "from-subclass", "test/res", 2, new Class[]{Test1.class});
+
+    assertConfig(configFor(Test3.class, "withDefaultsAnnotation"),
+        1, "foo", "from-subclass", "test/res", 2, new Class[]{Test1.class});
+
+    assertConfig(configFor(Test3.class, "withOverrideAnnotation"),
+        9, "furf", "from-method", "method/res", 8, new Class[]{Test1.class, Test2.class});
+  }
+
+  @Test public void whenClassDoesntHaveConfigAnnotationButSubclassDoes_getConfig_shouldMergeSubclassAndMethodConfig() throws Exception {
+    assertConfig(configFor(Test4.class, "withoutAnnotation"),
+        -1, "--default", "from-subclass", "res", -1, new Class[]{});
+
+    assertConfig(configFor(Test4.class, "withDefaultsAnnotation"),
+        -1, "--default", "from-subclass", "res", -1, new Class[]{});
+
+    assertConfig(configFor(Test4.class, "withOverrideAnnotation"),
+        9, "furf", "from-method", "method/res", 8, new Class[]{Test1.class});
+  }
+
   @Test public void shouldLoadDefaultsFromPropertiesFile() throws Exception {
     Properties properties = properties(
         "emulateSdk: 432\n" +
@@ -123,6 +145,16 @@ public class RobolectricTestRunnerTest {
     @Config(emulateSdk = 9, manifest = "furf", reportSdk = 8, shadows = Test1.class, qualifiers = "from-method", resourceDir = "method/res")
     @Test public void withOverrideAnnotation() throws Exception {
     }
+  }
+
+  @Ignore
+  @Config(qualifiers = "from-subclass")
+  public static class Test3 extends Test1 {
+  }
+
+  @Ignore
+  @Config(qualifiers = "from-subclass")
+  public static class Test4 extends Test2 {
   }
 
   private String stringify(Config config) {
