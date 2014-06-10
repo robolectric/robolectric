@@ -301,6 +301,13 @@ public class ShadowContentResolver {
   }
 
   @Implementation
+  public static boolean isSyncActive(Account account, String authority) {
+    ShadowContentResolver.Status status = getStatus(account, authority);
+    // TODO: this means a sync is *perpetually* active after one request
+    return status != null && status.syncRequests > 0;
+  }
+
+  @Implementation
   public static void setIsSyncable(Account account, String authority, int syncable) {
     getStatus(account, authority, true).state = syncable;
   }

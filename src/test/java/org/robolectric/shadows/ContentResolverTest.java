@@ -387,6 +387,13 @@ public class ContentResolverTest {
   }
 
   @Test
+  public void shouldKnowIfSyncIsActive() throws Exception {
+    assertFalse(ContentResolver.isSyncActive(a, AUTHORITY));
+    ContentResolver.requestSync(a, AUTHORITY, new Bundle());
+    assertTrue(ContentResolver.isSyncActive(a, AUTHORITY));
+  }
+
+  @Test
   public void shouldSetIsSyncable() throws Exception {
     assertThat(ContentResolver.getIsSyncable(a, AUTHORITY)).isEqualTo(-1);
     assertThat(ContentResolver.getIsSyncable(b, AUTHORITY)).isEqualTo(-1);
