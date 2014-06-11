@@ -168,12 +168,19 @@ public class RobolectricTestRunnerTest {
   }
 
   private String stringify(int emulateSdk, String manifest, String qualifiers, String resourceDir, int reportSdk, Class<?>[] shadows) {
-    return "emulateSdk=" + emulateSdk + "\n" +
+      String[] stringClasses = new String[shadows.length];
+      for (int i = 0; i < stringClasses.length; i++) {
+          stringClasses[i] = shadows[i].toString();
+      }
+
+      Arrays.sort(stringClasses);
+
+      return "emulateSdk=" + emulateSdk + "\n" +
         "manifest=" + manifest + "\n" +
         "qualifiers=" + qualifiers + "\n" +
         "resourceDir=" + resourceDir + "\n" +
         "reportSdk=" + reportSdk + "\n" +
-        "shadows=" + Arrays.toString(shadows);
+        "shadows=" +  Arrays.toString(stringClasses);
   }
 
   private Properties properties(String s) throws IOException {
