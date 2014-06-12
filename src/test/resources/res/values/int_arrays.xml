@@ -13,4 +13,11 @@
       <item>@integer/test_integer1</item>
       <item>1</item>
    </integer-array>
+   <integer-array name="referenced_colors_int_array">
+      <item>@color/clear</item>
+      <item>@color/white</item>
+      <item>@color/black</item>
+      <item>@color/grey42</item>
+      <item>@color/color_with_alpha</item>
+   </integer-array>
 </resources>
