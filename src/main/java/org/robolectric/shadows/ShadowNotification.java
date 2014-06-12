@@ -1,9 +1,14 @@
 package org.robolectric.shadows;
 
 import android.app.Notification;
+import android.app.Notification.BigTextStyle;
+import android.app.Notification.Builder;
+import android.app.Notification.Style;
 import android.app.PendingIntent;
 import android.content.Context;
+
 import java.util.ArrayList;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -11,7 +16,6 @@ import org.robolectric.annotation.RealObject;
 import static org.robolectric.Robolectric.directlyOn;
 import static org.robolectric.Robolectric.shadowOf;
 
-@SuppressWarnings({"UnusedDeclaration"})
 @Implements(Notification.class)
 public class ShadowNotification {
   private static final int MAX_ACTIONS = 3;
@@ -24,6 +28,10 @@ public class ShadowNotification {
   private long when;
   private ArrayList<Notification.Action> actions = new ArrayList<Notification.Action>(MAX_ACTIONS);
 
+  private Style style;
+  private Progress progress;
+  private boolean usesChronometer;
+  
   public Notification getRealNotification() {
     return realNotification;
   }
@@ -55,6 +63,18 @@ public class ShadowNotification {
     return when;
   }
 
+  public Style getStyle() {
+    return style;
+  }
+
+  public Progress getProgress() {
+    return progress;
+  }
+  
+  public boolean usesChronometer() {
+    return usesChronometer;
+  }
+  
   public void setContentTitle(CharSequence contentTitle) {
     this.contentTitle = contentTitle;
   }
@@ -95,6 +115,18 @@ public class ShadowNotification {
     return actions;
   }
 
+  public void setStyle(Style style) {
+    this.style = style;
+  }
+
+  public void setProgress(Progress progress) {
+    this.progress = progress;
+  }
+  
+  public void setUsesChronometer(boolean usesChronometer) {
+    this.usesChronometer = usesChronometer;
+  }
+  
   @Implementation
   public void setLatestEventInfo(Context context, CharSequence contentTitle,
                    CharSequence contentText, PendingIntent contentIntent) {
@@ -130,10 +162,22 @@ public class ShadowNotification {
     }
   }
 
-  @Implements(Notification.Builder.class)
+  public static class Progress {
+    public final int max;
+    public final int progress;
+    public final boolean indeterminate;
+    
+    private Progress(int max, int progress, boolean indeterminate) {
+      this.max = max;
+      this.progress = progress;
+      this.indeterminate = indeterminate;
+    }
+  }
+  
+  @Implements(Builder.class)
   public static class ShadowBuilder {
 
-    @RealObject private Notification.Builder realBuilder;
+    @RealObject private Builder realBuilder;
     private CharSequence contentTitle;
     private CharSequence contentInfo;
     private CharSequence contentText;
@@ -142,70 +186,160 @@ public class ShadowNotification {
     private long when;
     private ArrayList<Notification.Action> actions =
         new ArrayList<Notification.Action>(MAX_ACTIONS);
+    private Style style;
+    private Progress progress;
+    private boolean usesChronometer;
 
     @Implementation
     public Notification build() {
-      Notification result = (Notification) directlyOn(realBuilder, Notification.Builder.class, "build").invoke();
-      ShadowNotification shadowResult = shadowOf(result);
-      shadowResult.setContentTitle(contentTitle);
-      shadowResult.setContentText(contentText);
-      shadowResult.setSmallIcon(smallIcon);
-      shadowResult.setTicker(ticker);
-      shadowResult.setWhen(when);
-      shadowResult.setContentInfo(contentInfo);
-      shadowResult.setActions(actions);
+      final Notification result = (Notification)directlyOn(realBuilder, Builder.class, "build").invoke();
+      populateShadow(result);
       return result;
     }
-
+    
     @Implementation
-    public Notification.Builder setContentTitle(CharSequence contentTitle) {
+    public Notification buildUnstyled() {
+      final Notification result = (Notification)directlyOn(realBuilder, Builder.class, "buildUnstyled").invoke();
+      populateShadow(result);
+      return result;
+    }
+    
+    private void populateShadow(Notification result) {
+      ShadowNotification s = shadowOf(result);
+      s.setContentTitle(contentTitle);
+      s.setContentText(contentText);
+      s.setSmallIcon(smallIcon);
+      s.setTicker(ticker);
+      s.setWhen(when);
+      s.setContentInfo(contentInfo);
+      s.setActions(actions);
+      s.setStyle(style);
+      s.setProgress(progress);
+      s.setUsesChronometer(usesChronometer);
+    }
+    
+    @Implementation
+    public Builder setContentTitle(CharSequence contentTitle) {
       this.contentTitle = contentTitle;
-      directlyOn(realBuilder, Notification.Builder.class, "setContentTitle", CharSequence.class).invoke(contentTitle);
+      directlyOn(realBuilder, Builder.class, "setContentTitle", CharSequence.class).invoke(contentTitle);
       return realBuilder;
     }
 
     @Implementation
-    public Notification.Builder setContentText(CharSequence text) {
+    public Builder setContentText(CharSequence text) {
       this.contentText = text;
-      directlyOn(realBuilder, Notification.Builder.class, "setContentText", CharSequence.class).invoke(text);
+      directlyOn(realBuilder, Builder.class, "setContentText", CharSequence.class).invoke(text);
       return realBuilder;
     }
 
     @Implementation
-    public Notification.Builder setSmallIcon(int smallIcon) {
+    public Builder setSmallIcon(int smallIcon) {
       this.smallIcon = smallIcon;
-      directlyOn(realBuilder, Notification.Builder.class, "setSmallIcon", int.class).invoke(smallIcon);
+      directlyOn(realBuilder, Builder.class, "setSmallIcon", int.class).invoke(smallIcon);
       return realBuilder;
     }
 
     @Implementation
-    public Notification.Builder setWhen(long when) {
+    public Builder setWhen(long when) {
       this.when = when;
-      directlyOn(realBuilder, Notification.Builder.class, "setWhen", long.class).invoke(when);
+      directlyOn(realBuilder, Builder.class, "setWhen", long.class).invoke(when);
       return realBuilder;
     }
 
     @Implementation
-    public Notification.Builder setTicker(CharSequence ticker) {
+    public Builder setTicker(CharSequence ticker) {
       this.ticker = ticker;
-      directlyOn(realBuilder, Notification.Builder.class, "setTicker", CharSequence.class).invoke(ticker);
+      directlyOn(realBuilder, Builder.class, "setTicker", CharSequence.class).invoke(ticker);
       return realBuilder;
     }
 
     @Implementation
-    public Notification.Builder setContentInfo(CharSequence contentInfo) {
+    public Builder setContentInfo(CharSequence contentInfo) {
       this.contentInfo = contentInfo;
-      directlyOn(realBuilder, Notification.Builder.class, "setContentInfo", CharSequence.class).invoke(contentInfo);
+      directlyOn(realBuilder, Builder.class, "setContentInfo", CharSequence.class).invoke(contentInfo);
       return realBuilder;
     }
 
     @Implementation
-    public Notification.Builder addAction(int icon, CharSequence title, PendingIntent intent) {
+    public Builder addAction(int icon, CharSequence title, PendingIntent intent) {
       this.actions.add(new Notification.Action(icon, title, intent));
       // TODO: Call addAction on real builder after resolving issue with RemoteViews bitmap cache.
-      // directlyOn(realBuilder, Notification.Builder.class, "addAction", int.class,
+      // directlyOn(realBuilder, Builder.class, "addAction", int.class,
       //     CharSequence.class, PendingIntent.class).invoke(icon, title, intent);
       return realBuilder;
+    }
+
+    @Implementation
+    public Builder setStyle(Style style) {
+      this.style = style;
+      directlyOn(realBuilder, Builder.class, "setStyle", Style.class).invoke(style);
+
+      return realBuilder;
+    }
+    
+    @Implementation
+    public Builder setProgress(int max, int progress, boolean indeterminate) {
+      this.progress = new Progress(max, progress, indeterminate);
+      directlyOn(realBuilder, Builder.class, "setProgress",
+          int.class, int.class, boolean.class).invoke(max, progress, indeterminate);
+
+      return realBuilder;
+    }
+
+    @Implementation
+    public Builder setUsesChronometer(boolean usesChronometer) {
+      this.usesChronometer = usesChronometer;
+      directlyOn(realBuilder, Builder.class, "setUsesChronometer", boolean.class).invoke(usesChronometer);
+      return realBuilder;
+    }
+  }
+  
+  @Implements(Style.class)
+  public static class ShadowStyle {
+
+    @RealObject
+    protected Style realStyle;
+
+    private String bigContentTitle;
+    private String summaryText;
+
+    @Implementation
+    public void internalSetBigContentTitle(CharSequence bigContentTitle) {
+      this.bigContentTitle = bigContentTitle.toString();
+      directlyOn(realStyle, Style.class, "internalSetBigContentTitle", CharSequence.class).invoke(bigContentTitle);
+    }
+    @Implementation
+    public void internalSetSummaryText(CharSequence summaryText) {
+      this.summaryText = summaryText.toString();
+      directlyOn(realStyle, Style.class, "internalSetSummaryText", CharSequence.class).invoke(summaryText);
+    }
+
+    /**
+     * Non-Android accessors
+     */
+    public String getBigContentTitle() {
+      return bigContentTitle;
+    }
+    public String getSummaryText() {
+      return summaryText;
+    }
+  }
+  
+  @Implements(BigTextStyle.class)
+  public static class ShadowBigTextStyle extends ShadowStyle {
+
+    @RealObject private BigTextStyle realStyle;
+    private String mBigText;
+    
+    @Implementation
+    public BigTextStyle bigText(CharSequence bt) {
+      mBigText = bt == null ? null : bt.toString();
+      directlyOn(realStyle, BigTextStyle.class, "bigText", CharSequence.class).invoke(bt);
+      return realStyle;
+    }
+    
+    public String getBigText() {
+      return mBigText;
     }
   }
 }

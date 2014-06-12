@@ -550,9 +550,11 @@ public class Robolectric {
       ShadowMimeTypeMap.class,
       ShadowMockPackageManager.class,
       ShadowMotionEvent.class,
-      ShadowNotification.class,
       ShadowNfcAdapter.class,
+      ShadowNotification.class,
+      ShadowNotification.ShadowBigTextStyle.class,
       ShadowNotification.ShadowBuilder.class,
+      ShadowNotification.ShadowStyle.class,
       ShadowNotificationManager.class,
       ShadowNetworkInfo.class,
       ShadowNinePatch.class,
@@ -1069,6 +1071,10 @@ public class Robolectric {
 
   public static ShadowNotification shadowOf(Notification other) {
     return (ShadowNotification) Robolectric.shadowOf_(other);
+  }
+
+  public static ShadowNotification.ShadowBigTextStyle shadowOf(Notification.BigTextStyle other) {
+    return (ShadowNotification.ShadowBigTextStyle) Robolectric.shadowOf_(other);
   }
 
   public static ShadowNotificationManager shadowOf(NotificationManager other) {
