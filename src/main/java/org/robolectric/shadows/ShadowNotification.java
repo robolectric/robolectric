@@ -300,27 +300,29 @@ public class ShadowNotification {
     @RealObject
     protected Style realStyle;
 
-    private String bigContentTitle;
-    private String summaryText;
+    private CharSequence bigContentTitle;
+    private CharSequence summaryText;
 
     @Implementation
     public void internalSetBigContentTitle(CharSequence bigContentTitle) {
-      this.bigContentTitle = bigContentTitle.toString();
+      this.bigContentTitle = bigContentTitle;
       directlyOn(realStyle, Style.class, "internalSetBigContentTitle", CharSequence.class).invoke(bigContentTitle);
     }
+    
     @Implementation
     public void internalSetSummaryText(CharSequence summaryText) {
-      this.summaryText = summaryText.toString();
+      this.summaryText = summaryText;
       directlyOn(realStyle, Style.class, "internalSetSummaryText", CharSequence.class).invoke(summaryText);
     }
 
     /**
      * Non-Android accessors
      */
-    public String getBigContentTitle() {
+    public CharSequence getBigContentTitle() {
       return bigContentTitle;
     }
-    public String getSummaryText() {
+
+    public CharSequence getSummaryText() {
       return summaryText;
     }
   }
@@ -329,17 +331,17 @@ public class ShadowNotification {
   public static class ShadowBigTextStyle extends ShadowStyle {
 
     @RealObject private BigTextStyle realStyle;
-    private String mBigText;
+    private CharSequence bigText;
     
     @Implementation
-    public BigTextStyle bigText(CharSequence bt) {
-      mBigText = bt == null ? null : bt.toString();
-      directlyOn(realStyle, BigTextStyle.class, "bigText", CharSequence.class).invoke(bt);
+    public BigTextStyle bigText(CharSequence bigText) {
+      this.bigText = bigText;
+      directlyOn(realStyle, BigTextStyle.class, "bigText", CharSequence.class).invoke(bigText);
       return realStyle;
     }
     
-    public String getBigText() {
-      return mBigText;
+    public CharSequence getBigText() {
+      return bigText;
     }
   }
 }
