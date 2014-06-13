@@ -122,7 +122,7 @@ public class TestRunnerSequenceTest {
   }
 
   public static class MyTestLifecycle extends DefaultTestLifecycle {
-    @Override public Application createApplication(Method method, AndroidManifest appManifest) {
+    @Override public Application createApplication(Method method, AndroidManifest appManifest, Config config) {
       StateHolder.transcript.add("createApplication");
       return new MyApplication();
     }

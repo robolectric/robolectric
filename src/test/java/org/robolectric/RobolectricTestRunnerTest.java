@@ -1,5 +1,6 @@
 package org.robolectric;
 
+import android.app.Application;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.model.InitializationError;
@@ -21,46 +22,46 @@ import static org.fest.reflect.core.Reflection.method;
 public class RobolectricTestRunnerTest {
   @Test public void whenClassHasConfigAnnotation_getConfig_shouldMergeClassAndMethodConfig() throws Exception {
     assertConfig(configFor(Test1.class, "withoutAnnotation"),
-        1, "foo", "from-test", "test/res", 2, new Class[]{Test1.class});
+        1, "foo", "from-test", "test/res", 2, new Class[]{Test1.class}, Application.class);
 
     assertConfig(configFor(Test1.class, "withDefaultsAnnotation"),
-        1, "foo", "from-test", "test/res", 2, new Class[]{Test1.class});
+        1, "foo", "from-test", "test/res", 2, new Class[]{Test1.class}, Application.class);
 
     assertConfig(configFor(Test1.class, "withOverrideAnnotation"),
-        9, "furf", "from-method", "method/res", 8, new Class[]{Test1.class, Test2.class});
+        9, "furf", "from-method", "method/res", 8, new Class[]{Test1.class, Test2.class}, Application.class);
   }
 
   @Test public void whenClassDoesntHaveConfigAnnotation_getConfig_shouldUseMethodConfig() throws Exception {
     assertConfig(configFor(Test2.class, "withoutAnnotation"),
-        -1, "--default", "", "res", -1, new Class[]{});
+        -1, "--default", "", "res", -1, new Class[]{}, Application.class);
 
     assertConfig(configFor(Test2.class, "withDefaultsAnnotation"),
-        -1, "--default", "", "res", -1, new Class[]{});
+        -1, "--default", "", "res", -1, new Class[]{}, Application.class);
 
     assertConfig(configFor(Test2.class, "withOverrideAnnotation"),
-        9, "furf", "from-method", "method/res", 8, new Class[]{Test1.class});
+        9, "furf", "from-method", "method/res", 8, new Class[]{Test1.class}, Application.class);
   }
 
   @Test public void whenClassAndSubclassHaveConfigAnnotation_getConfig_shouldMergeClassSubclassAndMethodConfig() throws Exception {
       assertConfig(configFor(Test3.class, "withoutAnnotation"),
-          1, "foo", "from-subclass", "test/res", 2, new Class[]{Test1.class});
+          1, "foo", "from-subclass", "test/res", 2, new Class[]{Test1.class}, Application.class);
 
     assertConfig(configFor(Test3.class, "withDefaultsAnnotation"),
-        1, "foo", "from-subclass", "test/res", 2, new Class[]{Test1.class});
+        1, "foo", "from-subclass", "test/res", 2, new Class[]{Test1.class}, Application.class);
 
     assertConfig(configFor(Test3.class, "withOverrideAnnotation"),
-        9, "furf", "from-method", "method/res", 8, new Class[]{Test1.class, Test2.class});
+        9, "furf", "from-method", "method/res", 8, new Class[]{Test1.class, Test2.class}, Application.class);
   }
 
   @Test public void whenClassDoesntHaveConfigAnnotationButSubclassDoes_getConfig_shouldMergeSubclassAndMethodConfig() throws Exception {
     assertConfig(configFor(Test4.class, "withoutAnnotation"),
-        -1, "--default", "from-subclass", "res", -1, new Class[]{});
+        -1, "--default", "from-subclass", "res", -1, new Class[]{}, Application.class);
 
     assertConfig(configFor(Test4.class, "withDefaultsAnnotation"),
-        -1, "--default", "from-subclass", "res", -1, new Class[]{});
+        -1, "--default", "from-subclass", "res", -1, new Class[]{}, Application.class);
 
     assertConfig(configFor(Test4.class, "withOverrideAnnotation"),
-        9, "furf", "from-method", "method/res", 8, new Class[]{Test1.class});
+        9, "furf", "from-method", "method/res", 8, new Class[]{Test1.class}, Application.class);
   }
 
   @Test public void shouldLoadDefaultsFromPropertiesFile() throws Exception {
@@ -70,15 +71,16 @@ public class RobolectricTestRunnerTest {
             "qualifiers: from-properties-file\n" +
             "resourceDir: from/properties/file/res\n" +
             "reportSdk: 234\n" +
-            "shadows: org.robolectric.shadows.ShadowView, org.robolectric.shadows.ShadowViewGroup\n");
+            "shadows: org.robolectric.shadows.ShadowView, org.robolectric.shadows.ShadowViewGroup\n" +
+            "application: org.robolectric.TestFakeApp");
     assertConfig(configFor(Test2.class, "withoutAnnotation", properties),
-        432, "--none", "from-properties-file", "from/properties/file/res", 234, new Class[] {ShadowView.class, ShadowViewGroup.class});
+        432, "--none", "from-properties-file", "from/properties/file/res", 234, new Class[] {ShadowView.class, ShadowViewGroup.class}, TestFakeApp.class);
   }
 
   @Test public void withEmptyShadowList_shouldLoadDefaultsFromPropertiesFile() throws Exception {
     Properties properties = properties("shadows:");
     assertConfig(configFor(Test2.class, "withoutAnnotation", properties),
-        -1, "--default", "", "res", -1, new Class[] {});
+        -1, "--default", "", "res", -1, new Class[] {}, Application.class);
   }
 
   @Test public void rememberThatSomeTestRunnerMethodsShouldBeOverridable() throws Exception {
@@ -115,7 +117,7 @@ public class RobolectricTestRunnerTest {
           .getConfig(method(methodName).withParameterTypes().in(testClass).info());
   }
 
-  private void assertConfig(Config config, int emulateSdk, String manifest, String qualifiers, String resourceDir, int reportSdk, Class[] shadows) {
+  private void assertConfig(Config config, int emulateSdk, String manifest, String qualifiers, String resourceDir, int reportSdk, Class[] shadows, Class<? extends Application> applicationClass) {
     assertThat(stringify(config)).isEqualTo(stringify(emulateSdk, manifest, qualifiers, resourceDir, reportSdk, shadows));
   }
 

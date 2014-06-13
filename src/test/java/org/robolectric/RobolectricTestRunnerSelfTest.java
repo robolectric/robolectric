@@ -87,7 +87,7 @@ public class RobolectricTestRunnerSelfTest {
     }
 
     public static class MyTestLifecycle extends DefaultTestLifecycle {
-      @Override public Application createApplication(Method method, AndroidManifest appManifest) {
+      @Override public Application createApplication(Method method, AndroidManifest appManifest, Config config) {
         return new MyTestApplication();
       }
     }
