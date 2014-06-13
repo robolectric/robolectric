@@ -15,6 +15,8 @@ import org.robolectric.TestRunners;
 import java.util.ArrayList;
 import java.util.List;
 
+import static android.widget.CursorAdapter.FLAG_AUTO_REQUERY;
+import static android.widget.CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -22,10 +24,11 @@ public class CursorAdapterTest {
 
   private Cursor curs;
   private CursorAdapter adapter;
+  private SQLiteDatabase database;
 
   @Before
   public void setUp() throws Exception {
-    SQLiteDatabase database = SQLiteDatabase.create(null);
+    database = SQLiteDatabase.create(null);
     database.execSQL("CREATE TABLE table_name(_id INT PRIMARY KEY, name VARCHAR(255));");
     String[] inserts = {
         "INSERT INTO table_name (_id, name) VALUES(1234, 'Chuck');",
@@ -84,6 +87,30 @@ public class CursorAdapterTest {
     }
   }
 
+  @Test public void shouldNotRegisterObserversIfNoFlagsAreSet() throws Exception {
+    adapter = new TestAdapterWithFlags(curs, 0);
+    assertThat(Robolectric.shadowOf(adapter).mChangeObserver).isNull();
+    assertThat(Robolectric.shadowOf(adapter).mDataSetObserver).isNull();
+  }
+
+  @Test public void shouldRegisterObserversWhenRegisterObserverFlagIsSet() throws Exception {
+    adapter = new TestAdapterWithFlags(curs, FLAG_REGISTER_CONTENT_OBSERVER);
+    assertThat(Robolectric.shadowOf(adapter).mChangeObserver).isNotNull();
+    assertThat(Robolectric.shadowOf(adapter).mDataSetObserver).isNotNull();
+  }
+
+  @Test public void shouldRegisterObserversWhenAutoRequeryFlagIsSet() throws Exception {
+    adapter = new TestAdapterWithFlags(curs, FLAG_AUTO_REQUERY);
+    assertThat(Robolectric.shadowOf(adapter).mChangeObserver).isNotNull();
+    assertThat(Robolectric.shadowOf(adapter).mDataSetObserver).isNotNull();
+  }
+
+  @Test public void shouldNotErrorOnCursorChangeWhenNoFlagsAreSet() throws Exception {
+    adapter = new TestAdapterWithFlags(curs, 0);
+    adapter.changeCursor(database.rawQuery("SELECT * FROM table_name;", null));
+    assertThat(adapter.getCursor()).isNotSameAs(curs);
+  }
+
   @Test public void shouldNotInterfereWithSupportCursorAdapter() throws Exception {
     new android.support.v4.widget.CursorAdapter(Robolectric.application, curs, false) {
       @Override public View newView(Context context, Cursor cursor, ViewGroup parent) {
@@ -108,6 +135,19 @@ public class CursorAdapterTest {
     @Override
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
       return null;
+    }
+  }
+
+  private class TestAdapterWithFlags extends CursorAdapter {
+    public TestAdapterWithFlags(Cursor c, int flags) {
+      super(Robolectric.application, c, flags);
+    }
+
+    @Override public View newView(Context context, Cursor cursor, ViewGroup parent) {
+      return null;
+    }
+
+    @Override public void bindView(View view, Context context, Cursor cursor) {
     }
   }
 }

@@ -35,6 +35,9 @@ import org.robolectric.annotation.RealObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import static android.widget.CursorAdapter.FLAG_AUTO_REQUERY;
+import static android.widget.CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER;
+
 /**
  * Adapter that exposes data from a {@link android.database.Cursor Cursor} to a
  * {@link android.widget.ListView ListView} widget. The Cursor must include
@@ -104,7 +107,7 @@ public class ShadowCursorAdapter extends ShadowBaseAdapter {
    * This field should be made private, so it is hidden from the SDK.
    * {@hide}
    */
-  protected DataSetObserver mDataSetObserver = new MyDataSetObserver();
+  protected DataSetObserver mDataSetObserver;
 //    /**
 //     * This field should be made private, so it is hidden from the SDK.
 //     * {@hide}
@@ -116,42 +119,42 @@ public class ShadowCursorAdapter extends ShadowBaseAdapter {
    */
   protected FilterQueryProvider mFilterQueryProvider;
 
-  /**
-   * Constructor. The adapter will call requery() on the cursor whenever
-   * it changes so that the most recent data is always displayed.
-   *
-   * @param c       The cursor from which to get the data.
-   * @param context The context
-   */
+  @Deprecated
   public void __constructor__(Context context, Cursor c) {
-    initialize(context, c, true);
+    initialize(context, c, FLAG_AUTO_REQUERY);
   }
 
-  /**
-   * Constructor
-   *
-   * @param c           The cursor from which to get the data.
-   * @param context     The context
-   * @param autoRequery If true the adapter will call requery() on the
-   *                    cursor whenever it changes so the most recent
-   *                    data is always displayed.
-   */
+  @Deprecated
   public void __constructor__(Context context, Cursor c, boolean autoRequery) {
-    initialize(context, c, autoRequery);
+    initialize(context, c, autoRequery ? FLAG_AUTO_REQUERY : FLAG_REGISTER_CONTENT_OBSERVER);
+  }
+
+  // Recommended constructor for API level 11+
+  public void __constructor__(Context context, Cursor c, int flags) {
+    initialize(context, c, flags);
   }
 
   // renamed from Android source so as not to conflict with RobolectricWiringTest
-  private void initialize(Context context, Cursor c, boolean autoRequery) {
+  private void initialize(Context context, Cursor c, int flags) {
     boolean cursorPresent = c != null;
-    mAutoRequery = autoRequery;
+    if ((flags & FLAG_AUTO_REQUERY) == FLAG_AUTO_REQUERY) {
+      flags |= FLAG_REGISTER_CONTENT_OBSERVER;
+      mAutoRequery = true;
+    }
+
     mCursor = c;
     mDataValid = cursorPresent;
     mContext = context;
     mRowIDColumn = cursorPresent ? c.getColumnIndexOrThrow("_id") : -1;
-    mChangeObserver = new ChangeObserver();
+
+    if ((flags & FLAG_REGISTER_CONTENT_OBSERVER) == FLAG_REGISTER_CONTENT_OBSERVER) {
+      mChangeObserver = new ChangeObserver();
+      mDataSetObserver = new MyDataSetObserver();
+    }
+
     if (cursorPresent) {
-      c.registerContentObserver(mChangeObserver);
-      c.registerDataSetObserver(mDataSetObserver);
+      if (mChangeObserver != null) c.registerContentObserver(mChangeObserver);
+      if (mDataSetObserver != null) c.registerDataSetObserver(mDataSetObserver);
     }
   }
 
@@ -294,14 +297,14 @@ public class ShadowCursorAdapter extends ShadowBaseAdapter {
       return;
     }
     if (mCursor != null) {
-      mCursor.unregisterContentObserver(mChangeObserver);
-      mCursor.unregisterDataSetObserver(mDataSetObserver);
+      if (mChangeObserver != null) mCursor.unregisterContentObserver(mChangeObserver);
+      if (mDataSetObserver != null) mCursor.unregisterDataSetObserver(mDataSetObserver);
       mCursor.close();
     }
     mCursor = cursor;
     if (cursor != null) {
-      cursor.registerContentObserver(mChangeObserver);
-      cursor.registerDataSetObserver(mDataSetObserver);
+      if (mChangeObserver != null) cursor.registerContentObserver(mChangeObserver);
+      if (mDataSetObserver != null) cursor.registerDataSetObserver(mDataSetObserver);
       mRowIDColumn = cursor.getColumnIndexOrThrow("_id");
       mDataValid = true;
       // notify the observers about the new cursor
