@@ -106,6 +106,7 @@ public class ResourcesTest {
     assertThat(resources.getIntArray(R.array.empty_int_array)).isEqualTo(new int[] {});
     assertThat(resources.getIntArray(R.array.zero_to_four_int_array)).isEqualTo(new int[] {0, 1, 2, 3, 4});
     assertThat(resources.getIntArray(R.array.with_references_int_array)).isEqualTo(new int[] {0, 2000, 1});
+    assertThat(resources.getIntArray(R.array.referenced_colors_int_array)).isEqualTo(new int[] { 0x1, 0xFFFFFFFF, 0xFF000000, 0xFFF5F5F5, 0x802C76AD });
   }
 
   @Test

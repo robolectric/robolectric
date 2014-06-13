@@ -128,6 +128,7 @@ public final class R {
     public static final int zero_to_four_int_array = 0x10304;
     public static final int empty_int_array = 0x10305;
     public static final int with_references_int_array = 0x10306;
+    public static final int referenced_colors_int_array = 0x10307;
   }
 
   public static final class color {

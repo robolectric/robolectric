@@ -245,6 +245,11 @@ public class Converter<T> {
       typedValue.data = Color.parseColor(data);
       typedValue.assetCookie = 0;
     }
+
+    @Override public int asInt(TypedResource typedResource) {
+      String rawValue = typedResource.asString();
+      return Color.parseColor(rawValue);
+    }
   }
 
   private static class FromFilePath extends Converter<String> {
