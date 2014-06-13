@@ -6,11 +6,7 @@ import static org.robolectric.Robolectric.shadowOf;
 import android.app.Notification;
 import android.app.Notification.BigTextStyle;
 import android.app.Notification.Builder;
-import android.app.PendingIntent;
-import android.content.Context;
-import android.content.Intent;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
@@ -19,8 +15,8 @@ import org.robolectric.shadows.ShadowNotification.ShadowBigTextStyle;
 @RunWith(TestRunners.WithDefaults.class)
 public class NotificationBigTextStyleTest {
 
-  private final BigTextStyle style =
-      new BigTextStyle(new Builder(application));
+  private final Builder builder = new Builder(application);
+  private final BigTextStyle style = new BigTextStyle(builder);
   private final ShadowBigTextStyle sStyle = shadowOf(style);
   private Notification notification;
   private ShadowNotification s;
@@ -29,6 +25,13 @@ public class NotificationBigTextStyleTest {
   public void build_setsBigTextStyleOnNotification() throws Exception {
     build();
     assertThat(s.getStyle()).isSameAs(style);
+  }
+
+  @Test
+  public void build_callsThroughTo_ShadowBuilder_build() throws Exception {
+    builder.setSmallIcon(76);
+    build();
+    assertThat(s.getSmallIcon()).isEqualTo(76);
   }
 
   @Test
