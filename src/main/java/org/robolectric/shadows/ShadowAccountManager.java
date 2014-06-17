@@ -8,7 +8,9 @@ import android.accounts.AuthenticatorDescription;
 import android.accounts.AuthenticatorException;
 import android.accounts.OnAccountsUpdateListener;
 import android.accounts.OperationCanceledException;
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 
@@ -20,6 +22,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -36,7 +39,7 @@ public class ShadowAccountManager {
 
   private List<Account> accounts = new ArrayList<Account>();
   private Map<Account, Map<String, String>> authTokens = new HashMap<Account, Map<String,String>>();
-  private List<AuthenticatorDescription> authenticators = new ArrayList<AuthenticatorDescription>();
+  private Map<String, AuthenticatorDescription> authenticators = new LinkedHashMap<String, AuthenticatorDescription>();
   private List<OnAccountsUpdateListener> listeners = new ArrayList<OnAccountsUpdateListener>();
   private Map<Account, Map<String, String>> userData = new HashMap<Account, Map<String,String>>();
   private Map<Account, String> passwords = new HashMap<Account, String>();
@@ -182,7 +185,7 @@ public class ShadowAccountManager {
 
   @Implementation
   public AuthenticatorDescription[] getAuthenticatorTypes() {
-    return authenticators.toArray(new AuthenticatorDescription[authenticators.size()]);
+    return authenticators.values().toArray(new AuthenticatorDescription[authenticators.size()]);
   }
 
   @Implementation
@@ -302,6 +305,51 @@ public class ShadowAccountManager {
     notifyListeners();
   }
 
+  @Implementation
+  public AccountManagerFuture<Bundle> addAccount(final String accountType, String authTokenType, String[] requiredFeatures, Bundle addAccountOptions, Activity activity, AccountManagerCallback<Bundle> callback, Handler handler) {
+    final Bundle resultBundle = new Bundle();
+    if (activity == null) {
+      Intent resultIntent = new Intent();
+      resultBundle.putParcelable(AccountManager.KEY_INTENT, resultIntent);
+    } else {
+      resultBundle.putString(AccountManager.KEY_ACCOUNT_NAME, "some_user@gmail.com");
+      resultBundle.putString(AccountManager.KEY_ACCOUNT_TYPE, accountType);
+    }
+
+    return new AccountManagerFuture<Bundle>() {
+      @Override
+      public boolean cancel(boolean b) {
+        return false;
+      }
+
+      @Override
+      public boolean isCancelled() {
+        return false;
+      }
+
+      @Override
+      public boolean isDone() {
+        return false;
+      }
+
+      @Override
+      public Bundle getResult() throws OperationCanceledException, IOException, AuthenticatorException {
+        if (!authenticators.containsKey(accountType)) {
+          throw new AuthenticatorException("No authenticator specified for " + accountType);
+        }
+        return resultBundle;
+      }
+
+      @Override
+      public Bundle getResult(long l, TimeUnit timeUnit) throws OperationCanceledException, IOException, AuthenticatorException {
+        if (!authenticators.containsKey(accountType)) {
+          throw new AuthenticatorException("No authenticator specified for " + accountType);
+        }
+        return resultBundle;
+      }
+    };
+  }
+
   /**
    * Non-android accessor.  Allows the test case to populate the
    * list of active authenticators.
@@ -309,7 +357,7 @@ public class ShadowAccountManager {
    * @param authenticator
    */
   public void addAuthenticator(AuthenticatorDescription authenticator) {
-    authenticators.add(authenticator);
+    authenticators.put(authenticator.type, authenticator);
   }
 
   /**
