@@ -198,4 +198,18 @@ public class ActivityController<T extends Activity>
   public ActivityController<T> setup() {
     return create().start().postCreate(null).resume().postResume().visible();
   }
+
+  /**
+   * Calls the same lifecycle methods on the Activity called by
+   * Android when an Activity is restored from previously saved state.
+   */
+  public ActivityController<T> setup(Bundle bundle) {
+    return create(bundle)
+        .start()
+        .restoreInstanceState(bundle)
+        .postCreate(bundle)
+        .resume()
+        .postResume()
+        .visible();
+  }
 }
