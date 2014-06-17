@@ -203,11 +203,11 @@ public class ActivityController<T extends Activity>
    * Calls the same lifecycle methods on the Activity called by
    * Android when an Activity is restored from previously saved state.
    */
-  public ActivityController<T> setup(Bundle bundle) {
-    return create(bundle)
+  public ActivityController<T> setup(Bundle savedInstanceState) {
+    return create(savedInstanceState)
         .start()
-        .restoreInstanceState(bundle)
-        .postCreate(bundle)
+        .restoreInstanceState(savedInstanceState)
+        .postCreate(savedInstanceState)
         .resume()
         .postResume()
         .visible();
