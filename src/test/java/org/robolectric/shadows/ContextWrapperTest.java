@@ -373,4 +373,42 @@ public class ContextWrapperTest {
 
     assertThat(pref1).isNotSameAs(pref2);
   }
+
+  @Test
+  public void sendBroadcast_shouldOnlySendIntentWithTypeWhenReceiverMatchesType()
+          throws IntentFilter.MalformedMimeTypeException {
+
+    final BroadcastReceiver viewAllTypesReceiver = broadcastReceiver("ViewActionWithAnyTypeReceiver");
+    final IntentFilter allTypesIntentFilter = intentFilter("view");
+    allTypesIntentFilter.addDataType("*/*");
+    contextWrapper.registerReceiver(viewAllTypesReceiver, allTypesIntentFilter);
+
+    final BroadcastReceiver imageReceiver = broadcastReceiver("ImageReceiver");
+    final IntentFilter imageIntentFilter = intentFilter("view");
+    imageIntentFilter.addDataType("img/*");
+    contextWrapper.registerReceiver(imageReceiver, imageIntentFilter);
+
+    final BroadcastReceiver videoReceiver = broadcastReceiver("VideoReceiver");
+    final IntentFilter videoIntentFilter = intentFilter("view");
+    videoIntentFilter.addDataType("video/*");
+    contextWrapper.registerReceiver(videoReceiver, videoIntentFilter);
+
+    final BroadcastReceiver viewReceiver = broadcastReceiver("ViewActionReceiver");
+    final IntentFilter viewIntentFilter = intentFilter("view");
+    contextWrapper.registerReceiver(viewReceiver, viewIntentFilter);
+
+    final Intent imageIntent = new Intent("view");
+    imageIntent.setType("img/jpeg");
+    contextWrapper.sendBroadcast(imageIntent);
+
+    final Intent videoIntent = new Intent("view");
+    videoIntent.setType("video/mp4");
+    contextWrapper.sendBroadcast(videoIntent);
+
+    transcript.assertEventsSoFar(
+            "ViewActionWithAnyTypeReceiver notified of view",
+            "ImageReceiver notified of view",
+            "ViewActionWithAnyTypeReceiver notified of view",
+            "VideoReceiver notified of view");
+  }
 }
