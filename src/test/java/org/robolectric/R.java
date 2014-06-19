@@ -113,6 +113,7 @@ public final class R {
     public static final int escaped_apostrophe = 0x1011a;
     public static final int escaped_quotes = 0x1011b;
     public static final int say_it_with_item = 0x1011c;
+    public static final int test_menu_2 = 0x1011d;
   }
 
   public static final class plurals {

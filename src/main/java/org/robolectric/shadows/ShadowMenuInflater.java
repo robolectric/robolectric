@@ -62,9 +62,13 @@ public class ShadowMenuInflater {
           MenuNode subMenuNode = child.getChildren().get(0);
           addChildrenInGroup(subMenuNode, groupId, sub);
         } else {
-          MenuItem item = root.add(groupId,
-              attributes.getAttributeResourceValue(ANDROID_NS, "id", 0),
-              0, attributes.getAttributeValue(ANDROID_NS, "title"));
+          String menuItemTitle = attributes.getAttributeValue(ANDROID_NS, "title");
+          if (isFullyQualifiedName(menuItemTitle)) {
+            menuItemTitle = getStringResourceValue(attributes);
+          }
+
+          int menuItemId = attributes.getAttributeResourceValue(ANDROID_NS, "id", 0);
+          MenuItem item = root.add(groupId, menuItemId, 0, menuItemTitle);
 
           addActionViewToItem(item, attributes);
         }
@@ -73,6 +77,15 @@ public class ShadowMenuInflater {
         addChildrenInGroup(child, newGroupId, root);
       }
     }
+  }
+
+  private String getStringResourceValue(RoboAttributeSet attributes) {
+    int menuItemTitleId = attributes.getAttributeResourceValue(ANDROID_NS, "title", 0);
+    return context.getString(menuItemTitleId);
+  }
+
+  private boolean isFullyQualifiedName(String menuItemTitle) {
+    return menuItemTitle != null && menuItemTitle.startsWith("@");
   }
 
   private void addActionViewToItem(MenuItem item, RoboAttributeSet attributes) {
