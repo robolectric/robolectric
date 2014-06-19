@@ -390,15 +390,18 @@ public class ShadowApplication extends ShadowContextWrapper {
     for (Wrapper wrapper : copy) {
       if (hasMatchingPermission(wrapper.broadcastPermission, receiverPermission)
           && wrapper.intentFilter.matchAction(intent.getAction())) {
-        final Handler scheduler = (wrapper.scheduler != null) ? wrapper.scheduler : this.mainHandler;
-        final BroadcastReceiver receiver = wrapper.broadcastReceiver;
-        final Intent broadcastIntent = intent;
-        scheduler.post(new Runnable() {
-          @Override
-          public void run() {
-            receiver.onReceive(realApplication, broadcastIntent);
-          }
-        });
+        final int match = wrapper.intentFilter.matchData(intent.getType(), intent.getScheme(), intent.getData());
+        if (match != IntentFilter.NO_MATCH_DATA && match != IntentFilter.NO_MATCH_TYPE) {
+          final Handler scheduler = (wrapper.scheduler != null) ? wrapper.scheduler : this.mainHandler;
+          final BroadcastReceiver receiver = wrapper.broadcastReceiver;
+          final Intent broadcastIntent = intent;
+          scheduler.post(new Runnable() {
+            @Override
+            public void run() {
+              receiver.onReceive(realApplication, broadcastIntent);
+            }
+          });
+        }
       }
     }
   }
