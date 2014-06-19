@@ -4,10 +4,12 @@ import android.app.Activity;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
 import android.graphics.drawable.*;
 import android.util.DisplayMetrics;
 
+import android.util.TypedValue;
 import org.fest.assertions.data.Offset;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,6 +25,7 @@ import java.io.File;
 import java.io.InputStream;
 
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.reflect.core.Reflection.field;
 import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -403,6 +406,53 @@ public class ResourcesTest {
     assertThat(displayMetrics.scaledDensity).isEqualTo(1f);
     shadowOf(resources).setScaledDensity(2.5f);
     assertThat(displayMetrics.scaledDensity).isEqualTo(2.5f);
+  }
+
+
+  @Test
+  public void getThemeValueShouldSupportDereferenceResource() {
+    TypedValue out = new TypedValue();
+
+    Resources.Theme theme = resources.newTheme();
+    theme.applyStyle(R.style.MyBlackTheme, false);
+    int internalId = field("mTheme").ofType(int.class).in(theme).get();
+
+    ShadowAssetManager shadow = Robolectric.shadowOf(resources.getAssets());
+    shadow.getThemeValue(internalId, android.R.attr.windowBackground, out, true);
+    assertThat(out.type).isNotEqualTo(TypedValue.TYPE_REFERENCE);
+    assertThat(out.type).isGreaterThanOrEqualTo(TypedValue.TYPE_FIRST_COLOR_INT);
+    assertThat(out.type).isLessThanOrEqualTo(TypedValue.TYPE_LAST_COLOR_INT);
+
+    TypedValue expected = new TypedValue();
+    shadow.getResourceValue(android.R.color.black, TypedValue.DENSITY_DEFAULT, expected, false);
+    assertThat(out.type).isEqualTo(expected.type);
+    assertThat(out.data).isEqualTo(expected.data);
+  }
+
+  @Test
+  public void getThemeValueShouldSupportNotDereferencingResource() {
+    TypedValue out = new TypedValue();
+
+    Resources.Theme theme = resources.newTheme();
+    theme.applyStyle(R.style.MyBlackTheme, false);
+    int internalId = field("mTheme").ofType(int.class).in(theme).get();
+
+    ShadowAssetManager shadow = Robolectric.shadowOf(resources.getAssets());
+    shadow.getThemeValue(internalId, android.R.attr.windowBackground, out, false);
+    assertThat(out.type).isEqualTo(TypedValue.TYPE_REFERENCE);
+    assertThat(out.resourceId).isEqualTo(android.R.color.black);
+  }
+
+  @Test
+  public void obtainStyledAttributesShouldDereferenceValues() {
+    Resources.Theme theme = resources.newTheme();
+    theme.applyStyle(R.style.MyBlackTheme, false);
+    TypedArray arr = theme.obtainStyledAttributes(new int[] { android.R.attr.windowBackground });
+    TypedValue value = new TypedValue();
+    arr.getValue(0, value);
+    arr.recycle();
+
+    assertThat(value.type).isGreaterThanOrEqualTo(TypedValue.TYPE_FIRST_COLOR_INT).isLessThanOrEqualTo(TypedValue.TYPE_LAST_INT);
   }
 
   /////////////////////////////

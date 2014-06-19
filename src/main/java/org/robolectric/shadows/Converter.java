@@ -36,7 +36,7 @@ public class Converter<T> {
     return nextStringCookie++;
   }
 
-  public static void convertAndFill(Attribute attribute, TypedValue outValue, ResourceLoader resourceLoader, String qualifiers) {
+  public static void convertAndFill(Attribute attribute, TypedValue outValue, ResourceLoader resourceLoader, String qualifiers, boolean resolveRefs) {
     if (attribute == null || attribute.isNull()) {
       outValue.type = TypedValue.TYPE_NULL;
       return;
@@ -48,10 +48,10 @@ public class Converter<T> {
     }
 
     AttrData attrData = (AttrData) attrTypeData.getData();
-    convertAndFill(attribute, outValue, resourceLoader, qualifiers, attrData);
+    convertAndFill(attribute, outValue, resourceLoader, qualifiers, attrData, resolveRefs);
   }
 
-  public static void convertAndFill(Attribute attribute, TypedValue outValue, ResourceLoader resourceLoader, String qualifiers, AttrData attrData) {
+  public static void convertAndFill(Attribute attribute, TypedValue outValue, ResourceLoader resourceLoader, String qualifiers, AttrData attrData, boolean resolveRefs) {
     // short-circuit Android caching of loaded resources cuz our string positions don't remain stable...
     outValue.assetCookie = getNextStringCookie();
     String format = attrData.getFormat();
@@ -109,6 +109,10 @@ public class Converter<T> {
           attribute = new Attribute(attribute.resName, dereferencedRef.asString(), resName.packageName);
           if (attribute.isResourceReference()) {
             continue;
+          }
+          if (resolveRefs) {
+            getConverter(dereferencedRef.getResType()).fillTypedValue(attribute.value, outValue);
+            return;
           }
         }
       }

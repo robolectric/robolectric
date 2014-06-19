@@ -132,7 +132,7 @@ public final class ShadowAssetManager {
         System.out.println("Couldn't find " + resName + " in " + themeStyleName);
       } else {
         TypedResource attrDataValue = resourceLoader.getValue(resName, getQualifiers());
-        Converter.convertAndFill(attrValue, outValue, resourceLoader, getQualifiers());
+        Converter.convertAndFill(attrValue, outValue, resourceLoader, getQualifiers(), resolveRefs);
         return true;
       }
     }
