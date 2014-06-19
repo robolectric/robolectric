@@ -44,4 +44,8 @@
   <style name="Gastropod">
       <item name="aspectRatio">1.69</item>
   </style>
+
+  <style name="MyBlackTheme">
+    <item name="android:windowBackground">@android:color/black</item>
+  </style>
 </resources>

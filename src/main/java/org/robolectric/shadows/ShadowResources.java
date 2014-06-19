@@ -226,7 +226,7 @@ public class ShadowResources {
       if (attrName != null) {
         Attribute attribute = Attribute.find(set, attrName);
         TypedValue typedValue = new TypedValue();
-        Converter.convertAndFill(attribute, typedValue, resourceLoader, qualifiers);
+        Converter.convertAndFill(attribute, typedValue, resourceLoader, qualifiers, true);
 
         if (attribute != null && !attribute.isNull()) {
           //noinspection PointlessArithmeticExpression

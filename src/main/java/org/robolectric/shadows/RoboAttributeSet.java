@@ -74,7 +74,7 @@ public class RoboAttributeSet implements AttributeSet {
     }
 
     TypedValue outValue = new TypedValue();
-    Converter.convertAndFill(attr, outValue, resourceLoader, qualifiers, typedResource.getData());
+    Converter.convertAndFill(attr, outValue, resourceLoader, qualifiers, typedResource.getData(), false);
     if (outValue.type == TypedValue.TYPE_NULL) {
       return defaultValue;
     }
