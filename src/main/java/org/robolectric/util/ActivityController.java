@@ -196,7 +196,7 @@ public class ActivityController<T extends Activity>
    * Android the first time the Activity is created.
    */
   public ActivityController<T> setup() {
-    return create().start().postCreate(null).resume().postResume().visible();
+    return create().start().postCreate(null).resume().visible();
   }
 
   /**
@@ -209,7 +209,6 @@ public class ActivityController<T extends Activity>
         .restoreInstanceState(savedInstanceState)
         .postCreate(savedInstanceState)
         .resume()
-        .postResume()
         .visible();
   }
 }
