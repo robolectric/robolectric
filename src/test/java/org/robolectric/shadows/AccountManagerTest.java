@@ -420,4 +420,37 @@ public class AccountManagerTest {
     assertThat(am.peekAuthToken(account, "token_type_1")).isNull();
     assertThat(am.peekAuthToken(account, "token_type_2")).isNull();
   }
+
+  @Test
+  public void addAccount_noActivitySpecified() throws Exception {
+    Robolectric.shadowOf(am).addAuthenticator("google.com");
+
+    AccountManagerFuture<Bundle> result = am.addAccount("google.com", "auth_token_type", null, null, null, null, null);
+
+    Bundle resultBundle = result.getResult();
+
+    assertThat(resultBundle.getParcelable(AccountManager.KEY_INTENT)).isNotNull();
+  }
+
+  @Test
+  public void addAccount_activitySpecified() throws Exception {
+    Robolectric.shadowOf(am).addAuthenticator("google.com");
+
+    AccountManagerFuture<Bundle> result = am.addAccount("google.com", "auth_token_type", null, null, new Activity(), null, null);
+
+    Bundle resultBundle = result.getResult();
+
+    assertThat(resultBundle.getString(AccountManager.KEY_ACCOUNT_TYPE)).isEqualTo("google.com");
+    assertThat(resultBundle.getString(AccountManager.KEY_ACCOUNT_NAME)).isNotNull();
+  }
+
+  @Test
+  public void addAccount_noAuthenticatorDefined() throws Exception {
+    try {
+      am.addAccount("unknown_account_type", "auth_token_type", null, null, new Activity(), null, null).getResult();
+      fail("addAccount() should throw an authenticator exception if no authenticator was registered for this account type");
+    } catch(AuthenticatorException e) {
+      // Expected
+    }
+  }
 }
