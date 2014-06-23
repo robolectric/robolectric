@@ -3,6 +3,7 @@ package org.robolectric;
 import android.app.Application;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
+import org.robolectric.annotation.Config;
 import org.robolectric.internal.ClassNameResolver;
 import org.robolectric.res.ActivityData;
 import org.robolectric.res.builder.RobolectricPackageManager;
@@ -14,47 +15,69 @@ public class DefaultTestLifecycle implements TestLifecycle {
   /**
    * Override this method if you want to provide your own implementation of Application.
    * <p/>
-   * This method attempts to instantiate an application instance as specified by the AndroidManifest.xml.
+   * This method attempts to instantiate an application instance as follows:-
+   *
+   * <li>
+   *   <ol>If specified loads the application specified in the Config annotation</ol>
+   *   <ol>Attempt to load a test application as documented <a href="http://robolectric.blogspot.com/2013/04/the-test-lifecycle-in-20.html">here</a></ol>
+   *   <ol>Use the application as specified in the AndroidManifest.xml</ol>
+   *   <ol>Instantiate a standard {@link android.app.Application}</ol>
+   * </li>
    *
    * @param method The currently-running test method.
    * @param appManifest The application manifest.
+   * @param config The configuration annotation from the test if present.
    * @return An instance of the Application class specified by the ApplicationManifest.xml or an instance of
    *         Application if not specified.
    */
-  public Application createApplication(Method method, AndroidManifest appManifest) {
-    String applicationName = appManifest == null ? Application.class.getName() : appManifest.getApplicationName();
-    Application application;
-    if (applicationName != null) {
-      Class<? extends Application> applicationClass = null;
+  public Application createApplication(Method method, AndroidManifest appManifest, Config config) {
 
-      String packageName = appManifest == null ? null : appManifest.getPackageName();
+    Application application = null;
+    if (config != null && !config.application().getCanonicalName().equals(Application.class.getCanonicalName())) {
+      if (config.application().getCanonicalName() != null) {
+        Class<? extends Application> applicationClass = null;
+        try {
+          applicationClass = new ClassNameResolver<Application>(null, config.application().getCanonicalName()).resolve();
+        } catch (ClassNotFoundException e) {
+          throw new RuntimeException(e);
+        }
+        application = newInstance(applicationClass);
+      }
+    } else if (appManifest != null && appManifest.getApplicationName() != null) {
+      Class<? extends Application> applicationClass = null;
       try {
-        applicationClass = new ClassNameResolver<Application>(packageName, getTestApplicationName(applicationName)).resolve();
+        applicationClass = new ClassNameResolver<Application>(appManifest.getPackageName(), getTestApplicationName(appManifest.getApplicationName())).resolve();
       } catch (ClassNotFoundException e) {
         // no problem
       }
 
       if (applicationClass == null) {
         try {
-          applicationClass = new ClassNameResolver<Application>(packageName, applicationName).resolve();
+          applicationClass = new ClassNameResolver<Application>(appManifest.getPackageName(), appManifest.getApplicationName()).resolve();
         } catch (ClassNotFoundException e) {
           throw new RuntimeException(e);
         }
       }
 
-      try {
-        application = applicationClass.newInstance();
-      } catch (InstantiationException e) {
-        throw new RuntimeException(e);
-      } catch (IllegalAccessException e) {
-        throw new RuntimeException(e);
-      }
+      application = newInstance(applicationClass);
     } else {
       application = new Application();
     }
 
     addManifestActivitiesToPackageManager(appManifest, application);
 
+    return application;
+  }
+
+  private static Application newInstance(Class<? extends Application> applicationClass) {
+    Application application;
+    try {
+      application = applicationClass.newInstance();
+    } catch (InstantiationException e) {
+      throw new RuntimeException(e);
+    } catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
     return application;
   }
 

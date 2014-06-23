@@ -1,5 +1,6 @@
 package org.robolectric.annotation;
 
+import android.app.Application;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.annotation.Annotation;
@@ -40,6 +41,12 @@ public @interface Config {
   String manifest() default DEFAULT;
 
   /**
+   * The {@link android.app.Application} class to use in the test, this takes precedence over any application
+   * specified in the AndroidManifest.xml.
+   */
+  Class<? extends Application> application() default Application.class;
+
+  /**
    * Qualifiers for the resource resolution, such as "fr-normal-port-hdpi".
    *
    * @see <a href="http://developer.android.com/guide/topics/resources/providing-resources.html">Providing Resources</a> in the Android Developer docs for more information.
@@ -72,6 +79,7 @@ public @interface Config {
     private final String resourceDir;
     private final int reportSdk;
     private final Class<?>[] shadows;
+    private final Class<? extends Application> application;
 
     public static Config fromProperties(Properties configProperties) {
       if (configProperties == null || configProperties.size() == 0) return null;
@@ -81,7 +89,8 @@ public @interface Config {
           configProperties.getProperty("qualifiers", ""),
           configProperties.getProperty("resourceDir", "res"),
           Integer.parseInt(configProperties.getProperty("reportSdk", "-1")),
-          parseClasses(configProperties.getProperty("shadows", ""))
+          parseClasses(configProperties.getProperty("shadows", "")),
+          parseApplication(configProperties.getProperty("application", "android.app.Application"))
       );
     }
 
@@ -99,13 +108,23 @@ public @interface Config {
       return classes;
     }
 
-    public Implementation(int emulateSdk, String manifest, String qualifiers, String resourceDir, int reportSdk, Class<?>[] shadows) {
+    private static <T extends Application> Class<T> parseApplication(String className) {
+      try {
+        Class<T> aClass = (Class<T>) Implementation.class.getClassLoader().loadClass(className);
+        return aClass;
+      } catch (ClassNotFoundException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
+    public Implementation(int emulateSdk, String manifest, String qualifiers, String resourceDir, int reportSdk, Class<?>[] shadows, Class<? extends Application> application) {
       this.emulateSdk = emulateSdk;
       this.manifest = manifest;
       this.qualifiers = qualifiers;
       this.resourceDir = resourceDir;
       this.reportSdk = reportSdk;
       this.shadows = shadows;
+      this.application = application;
     }
 
     public Implementation(Config baseConfig, Config overlayConfig) {
@@ -118,6 +137,7 @@ public @interface Config {
       shadows.addAll(Arrays.asList(baseConfig.shadows()));
       shadows.addAll(Arrays.asList(overlayConfig.shadows()));
       this.shadows = shadows.toArray(new Class[shadows.size()]);
+      this.application = pick(baseConfig.application(), overlayConfig.application(), null);
     }
 
     private <T> T pick(T baseValue, T overlayValue, T nullValue) {
@@ -130,6 +150,11 @@ public @interface Config {
 
     @Override public String manifest() {
       return manifest;
+    }
+
+    @Override
+    public Class<? extends Application> application() {
+      return application;
     }
 
     @Override public String qualifiers() {
@@ -164,6 +189,7 @@ public @interface Config {
       if (reportSdk != other.reportSdk) return false;
       if (!qualifiers.equals(other.qualifiers)) return false;
       if (!Arrays.equals(shadows, other.shadows)) return false;
+      if (application != other.application) return false;
 
       return true;
     }
@@ -174,6 +200,7 @@ public @interface Config {
       result = 31 * result + qualifiers.hashCode();
       result = 31 * result + reportSdk;
       result = 31 * result + Arrays.hashCode(shadows);
+      result = 31 * result + application.hashCode();
       return result;
     }
   }

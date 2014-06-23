@@ -547,7 +547,7 @@ public class ContentResolverTest {
 
   @Test
   public void getProvider_shouldNotReturnAnyProviderWhenManifestIsNull() {
-    Robolectric.application = new DefaultTestLifecycle().createApplication(null, null);
+    Robolectric.application = new DefaultTestLifecycle().createApplication(null, null, null);
     assertThat(ShadowContentResolver.getProvider(Uri.parse("content://"))).isNull();
   }
 

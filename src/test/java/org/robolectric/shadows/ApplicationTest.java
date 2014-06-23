@@ -361,14 +361,14 @@ public class ApplicationTest {
 
   @Test
   public void shouldRememberResourcesAfterLazilyLoading() throws Exception {
-    Application application = new DefaultTestLifecycle().createApplication(null, newConfigWith("com.wacka.wa", ""));
+    Application application = new DefaultTestLifecycle().createApplication(null, newConfigWith("com.wacka.wa", ""), null);
     assertSame(application.getResources(), application.getResources());
   }
 
   @Test
   public void shouldBeAbleToResetResources() throws Exception {
     Application application = new DefaultTestLifecycle().createApplication(null,
-        newConfigWith("com.wacka.wa", ""));
+        newConfigWith("com.wacka.wa", ""), null);
     Resources res = application.getResources();
     shadowOf(application).resetResources();
     assertFalse(res == application.getResources());
@@ -377,7 +377,7 @@ public class ApplicationTest {
   @Test
   public void checkPermission_shouldTrackGrantedAndDeniedPermissions() throws Exception {
     Application application = new DefaultTestLifecycle().createApplication(null,
-        newConfigWith("com.wacka.wa", ""));
+        newConfigWith("com.wacka.wa", ""), null);
     shadowOf(application).grantPermissions("foo", "bar");
     shadowOf(application).denyPermissions("foo", "qux");
     assertThat(application.checkPermission("foo", -1, -1)).isEqualTo(PERMISSION_DENIED);
@@ -389,7 +389,7 @@ public class ApplicationTest {
   @Test
   public void startActivity_whenActivityCheckingEnabled_checksPackageManagerResolveInfo() throws Exception {
     Application application = new DefaultTestLifecycle().createApplication(null,
-        newConfigWith("com.wacka.wa", ""));
+        newConfigWith("com.wacka.wa", ""), null);
     shadowOf(application).checkActivities(true);
 
     String action = "com.does.not.exist.android.app.v2.mobile";
