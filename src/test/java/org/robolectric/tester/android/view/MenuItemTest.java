@@ -11,7 +11,7 @@ import org.robolectric.RobolectricTestRunner;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(RobolectricTestRunner.class)
-public class TestMenuItemTest {
+public class MenuItemTest {
   private MenuItem item;
   private TestOnActionExpandListener listener;
 
