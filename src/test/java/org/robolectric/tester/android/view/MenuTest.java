@@ -15,7 +15,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
-public class TestMenuTest {
+public class MenuTest {
 
   @Test
   public void addAndRemoveMenuItems() {
