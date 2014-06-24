@@ -86,6 +86,48 @@ public class MenuItemTest {
   }
 
   @Test
+  public void methodsShouldReturnThis() throws Exception {
+    item = item.setEnabled(true);
+    assertThat(item).isNotNull();
+    item = item.setOnMenuItemClickListener(null);
+    assertThat(item).isNotNull();
+    item = item.setActionProvider(null);
+    assertThat(item).isNotNull();
+    item = item.setActionView(0);
+    assertThat(item).isNotNull();
+    item = item.setActionView(null);
+    assertThat(item).isNotNull();
+    item = item.setAlphabeticShortcut('a');
+    assertThat(item).isNotNull();
+    item = item.setCheckable(false);
+    assertThat(item).isNotNull();
+    item = item.setChecked(true);
+    assertThat(item).isNotNull();
+    item = item.setIcon(null);
+    assertThat(item).isNotNull();
+    item = item.setIcon(0);
+    assertThat(item).isNotNull();
+    item = item.setIntent(null);
+    assertThat(item).isNotNull();
+    item = item.setNumericShortcut('6');
+    assertThat(item).isNotNull();
+    item = item.setOnActionExpandListener(null);
+    assertThat(item).isNotNull();
+    item = item.setShortcut('6', 'z');
+    assertThat(item).isNotNull();
+    item = item.setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS);
+    assertThat(item).isNotNull();
+    item = item.setTitleCondensed("condensed");
+    assertThat(item).isNotNull();
+    item = item.setVisible(true);
+    assertThat(item).isNotNull();
+    item = item.setTitle("title");
+    assertThat(item).isNotNull();
+    item = item.setTitle(0);
+    assertThat(item).isNotNull();
+  }
+
+  @Test
   public void setOnActionExpandListener_shouldReturnMenuItem() throws Exception {
     assertThat(item.setOnActionExpandListener(listener)).isSameAs(item);
   }
