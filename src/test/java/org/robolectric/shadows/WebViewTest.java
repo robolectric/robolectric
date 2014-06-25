@@ -42,6 +42,15 @@ public class WebViewTest {
   public void shouldRecordLastLoadedUrlForRequestWithAdditionalHeaders() {
     webView.loadUrl("http://example.com", null);
     assertThat(shadowOf(webView).getLastLoadedUrl()).isEqualTo("http://example.com");
+    assertThat(shadowOf(webView).getLastAdditionalHttpHeaders()).isNull();
+
+    Map<String, String> additionalHttpHeaders = new HashMap<String, String>(1);
+    additionalHttpHeaders.put("key1", "value1");
+    webView.loadUrl("http://example.com", additionalHttpHeaders);
+    assertThat(shadowOf(webView).getLastLoadedUrl()).isEqualTo("http://example.com");
+    assertThat(shadowOf(webView).getLastAdditionalHttpHeaders()).isNotNull();
+    assertThat(shadowOf(webView).getLastAdditionalHttpHeaders()).containsKey("key1");
+    assertThat(shadowOf(webView).getLastAdditionalHttpHeaders().get("key1")).isEqualTo("value1");
   }
 
   @Test
