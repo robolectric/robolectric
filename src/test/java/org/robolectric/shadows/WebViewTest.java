@@ -6,6 +6,8 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,6 +35,12 @@ public class WebViewTest {
   @Test
   public void shouldRecordLastLoadedUrl() {
     webView.loadUrl("http://example.com");
+    assertThat(shadowOf(webView).getLastLoadedUrl()).isEqualTo("http://example.com");
+  }
+
+  @Test
+  public void shouldRecordLastLoadedUrlForRequestWithAdditionalHeaders() {
+    webView.loadUrl("http://example.com", null);
     assertThat(shadowOf(webView).getLastLoadedUrl()).isEqualTo("http://example.com");
   }
 
