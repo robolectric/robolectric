@@ -64,7 +64,8 @@ public class ShadowMenuInflater {
         } else {
           MenuItem item = root.add(groupId,
               attributes.getAttributeResourceValue(ANDROID_NS, "id", 0),
-              0, attributes.getAttributeValue(ANDROID_NS, "title"));
+              attributes.getAttributeIntValue(ANDROID_NS, "orderInCategory", 0),
+              attributes.getAttributeValue(ANDROID_NS, "title"));
 
           addActionViewToItem(item, attributes);
         }

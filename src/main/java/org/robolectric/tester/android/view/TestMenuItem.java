@@ -25,6 +25,7 @@ public class TestMenuItem implements MenuItem {
   private SubMenu subMenu;
   private View actionView;
   private OnActionExpandListener actionExpandListener;
+  private int order;
 
   public TestMenuItem() {
     super();
@@ -55,7 +56,11 @@ public class TestMenuItem implements MenuItem {
 
   @Override
   public int getOrder() {
-    return 0;
+    return order;
+  }
+
+  public void setOrder(int order) {
+    this.order = order;
   }
 
   @Override
@@ -286,4 +291,5 @@ public class TestMenuItem implements MenuItem {
     actionExpandListener = listener;
     return this;
   }
+
 }
