@@ -37,4 +37,20 @@ public class PackageResourceLoaderTest {
     assertThat(value).describedAs("Item string from gradle output is not loaded").isNotNull();
     assertThat(value.asString()).isEqualTo("3.14");
   }
+
+  @Test
+  public void shouldLoadColorResourcesFromGradleOutputDirectoriesDefinedByColorTag() {
+    PackageResourceLoader loader = new PackageResourceLoader(gradleAppResources());
+    TypedResource value = loader.getValue(new ResName("org.robolectric.gradleapp", "color", "example_color"), "");
+    assertThat(value).describedAs("Color from gradle output is not loaded").isNotNull();
+    assertThat(value.asString()).isEqualTo("#00FF00FF");
+  }
+
+  @Test
+  public void shouldLoadColorResourcesFromGradleOutputDirectoriesDefinedByItemTag() {
+    PackageResourceLoader loader = new PackageResourceLoader(gradleAppResources());
+    TypedResource value = loader.getValue(new ResName("org.robolectric.gradleapp", "color", "example_item_color"), "");
+    assertThat(value).describedAs("Item color from gradle output is not loaded").isNotNull();
+    assertThat(value.asString()).isEqualTo("1.0");
+  }
 }
