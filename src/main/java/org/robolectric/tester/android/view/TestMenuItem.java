@@ -66,7 +66,7 @@ public class TestMenuItem implements MenuItem {
 
   @Override
   public MenuItem setTitle(int title) {
-    return null;
+    return this;
   }
 
   @Override
@@ -76,7 +76,7 @@ public class TestMenuItem implements MenuItem {
 
   @Override
   public MenuItem setTitleCondensed(CharSequence title) {
-    return null;
+    return this;
   }
 
   @Override
@@ -86,7 +86,7 @@ public class TestMenuItem implements MenuItem {
 
   @Override
   public MenuItem setIcon(Drawable icon) {
-    return null;
+    return this;
   }
 
   @Override
@@ -113,12 +113,12 @@ public class TestMenuItem implements MenuItem {
 
   @Override
   public MenuItem setShortcut(char numericChar, char alphaChar) {
-    return null;
+    return this;
   }
 
   @Override
   public MenuItem setNumericShortcut(char numericChar) {
-    return null;
+    return this;
   }
 
   @Override
@@ -128,7 +128,7 @@ public class TestMenuItem implements MenuItem {
 
   @Override
   public MenuItem setAlphabeticShortcut(char alphaChar) {
-    return null;
+    return this;
   }
 
   @Override
@@ -219,7 +219,7 @@ public class TestMenuItem implements MenuItem {
 
   @Override
   public MenuItem setShowAsActionFlags(int actionEnum) {
-    return null;
+    return this;
   }
 
   @Override
@@ -230,7 +230,7 @@ public class TestMenuItem implements MenuItem {
 
   @Override
   public MenuItem setActionView(int resId) {
-    return null;
+    return this;
   }
 
   @Override
@@ -240,7 +240,7 @@ public class TestMenuItem implements MenuItem {
 
   @Override
   public MenuItem setActionProvider(ActionProvider actionProvider) {
-    return null;
+    return this;
   }
 
   @Override
