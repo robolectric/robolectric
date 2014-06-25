@@ -1,24 +1,24 @@
 package org.robolectric.shadows;
 
-import static org.fest.reflect.core.Reflection.field;
-
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-import java.util.HashMap;
-
-import org.fest.reflect.field.Invoker;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
-import org.robolectric.internal.HiddenApi;
-
 import android.view.ViewGroup.LayoutParams;
 import android.webkit.TestWebSettings;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import org.fest.reflect.field.Invoker;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.internal.HiddenApi;
+
+import static org.fest.reflect.core.Reflection.field;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(value = WebView.class, inheritImplementationMethods = true)
@@ -29,6 +29,7 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
   private WebView realWebView;
   
   private String lastUrl;
+  private Map<String, String> lastAdditionalHttpHeaders;
   private HashMap<String, Object> javascriptInterfaces = new HashMap<String, Object>();
   private WebSettings webSettings = new TestWebSettings();
   private WebViewClient webViewClient = null;
@@ -107,7 +108,18 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
 
   @Implementation
   public void loadUrl(String url) {
+    loadUrl(url, null);
+  }
+
+  @Implementation
+  public void loadUrl(String url, Map<String, String> additionalHttpHeaders) {
     lastUrl = url;
+
+    if (additionalHttpHeaders != null) {
+      this.lastAdditionalHttpHeaders = Collections.unmodifiableMap(additionalHttpHeaders);
+    } else {
+      this.lastAdditionalHttpHeaders = null;
+    }
   }
 
   @Implementation
@@ -127,6 +139,15 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
    */
   public String getLastLoadedUrl() {
     return lastUrl;
+  }
+
+  /**
+   * Non-Android accessor.
+   *
+   * @return the additional Http headers that in the same request with last loaded url
+   */
+  public Map<String, String> getLastAdditionalHttpHeaders() {
+    return lastAdditionalHttpHeaders;
   }
 
   @Implementation
