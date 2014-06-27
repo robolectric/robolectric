@@ -1,16 +1,18 @@
 package org.robolectric.tester.android.view;
 
+import android.graphics.drawable.Drawable;
 import android.view.View;
 import org.junit.Before;
 import org.junit.Test;
 import android.view.MenuItem;
 import org.junit.runner.RunWith;
+import org.robolectric.R;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
+import org.robolectric.TestRunners;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class MenuItemTest {
   private MenuItem item;
   private TestOnActionExpandListener listener;
@@ -125,6 +127,34 @@ public class MenuItemTest {
     assertThat(item).isNotNull();
     item = item.setTitle(0);
     assertThat(item).isNotNull();
+  }
+
+  @Test
+  public void setIcon_shouldNullifyOnZero() throws Exception {
+    Drawable expectedDrawable = Robolectric.application.getResources().getDrawable(R.drawable.an_image);
+    assertThat(expectedDrawable).isNotNull();
+    assertThat(item.getIcon()).isNull();
+    item.setIcon(R.drawable.an_image);
+    assertThat(item.getIcon()).isEqualTo(expectedDrawable);
+    item.setIcon(0);
+    assertThat(item.getIcon()).isNull();
+  }
+
+  @Test
+  public void getIcon_shouldReturnDrawableFromSetIconDrawable() throws Exception {
+    Drawable testDrawable = Robolectric.application.getResources().getDrawable(R.drawable.an_image);
+    assertThat(testDrawable).isNotNull();
+    assertThat(item.getIcon()).isNull();
+    item.setIcon(testDrawable);
+    assertThat(item.getIcon()).isSameAs(testDrawable);
+  }
+
+  @Test
+  public void getIcon_shouldReturnDrawableFromSetIconResourceId() throws Exception {
+    assertThat(item.getIcon()).isNull();
+    item.setIcon(R.drawable.an_other_image);
+    Drawable expectedDrawable = Robolectric.application.getResources().getDrawable(R.drawable.an_other_image);
+    assertThat(item.getIcon()).isEqualTo(expectedDrawable);
   }
 
   @Test

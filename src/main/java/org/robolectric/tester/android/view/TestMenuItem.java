@@ -19,7 +19,7 @@ public class TestMenuItem implements MenuItem {
   private boolean visible = true;
   private boolean expanded = false;
   private OnMenuItemClickListener menuItemClickListener;
-  public int iconRes;
+  public Drawable icon;
   private Intent intent;
   private SubMenu subMenu;
   private View actionView;
@@ -27,11 +27,9 @@ public class TestMenuItem implements MenuItem {
   private int order;
 
   public TestMenuItem() {
-    super();
   }
 
   public TestMenuItem(int itemId) {
-    super();
     this.itemId = itemId;
   }
 
@@ -90,18 +88,19 @@ public class TestMenuItem implements MenuItem {
 
   @Override
   public MenuItem setIcon(Drawable icon) {
+    this.icon = icon;
     return this;
   }
 
   @Override
   public MenuItem setIcon(int iconRes) {
-    this.iconRes = iconRes;
+    this.icon = iconRes == 0 ? null : Robolectric.application.getResources().getDrawable(iconRes);
     return this;
   }
 
   @Override
   public Drawable getIcon() {
-    return null;
+    return this.icon;
   }
 
   @Override
