@@ -50,8 +50,8 @@ public class ShadowDisplay {
   @Implementation
   public void getRealMetrics(DisplayMetrics outMetrics) {
     getMetrics(outMetrics);
-	outMetrics.widthPixels = realWidth;
-	outMetrics.heightPixels = realHeight;
+    outMetrics.widthPixels = realWidth;
+    outMetrics.heightPixels = realHeight;
   }
 
   @Implementation
