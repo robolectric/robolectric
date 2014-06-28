@@ -16,8 +16,12 @@ import org.robolectric.annotation.Implements;
 @Implements(Display.class)
 public class ShadowDisplay {
   private int displayId;
+  private String name = "Default Display";
+  private int flags;
   private int width = 480;
   private int height = 800;
+  private int realWidth = 480;
+  private int realHeight = 854;
   private float density = 1.5f;
   private int densityDpi = DisplayMetrics.DENSITY_HIGH;
   private float xdpi = 240.0f;
@@ -44,6 +48,13 @@ public class ShadowDisplay {
   }
 
   @Implementation
+  public void getRealMetrics(DisplayMetrics outMetrics) {
+    getMetrics(outMetrics);
+	outMetrics.widthPixels = realWidth;
+	outMetrics.heightPixels = realHeight;
+  }
+
+  @Implementation
   public int getWidth() {
     return width;
   }
@@ -51,6 +62,16 @@ public class ShadowDisplay {
   @Implementation
   public int getDisplayId() {
     return displayId;
+  }
+
+  @Implementation
+  public String getName() {
+    return name;
+  }
+
+  @Implementation
+  public int getFlags() {
+    return flags;
   }
 
   @Implementation
@@ -89,6 +110,11 @@ public class ShadowDisplay {
   @Implementation
   public void getRectSize(Rect outSize) {
     outSize.set(0, 0, width, height);
+  }
+
+  @Implementation
+  public void getRealSize(Point outSize) {
+    outSize.set(realWidth, realHeight);
   }
 
   public float getDensity() {
@@ -135,12 +161,28 @@ public class ShadowDisplay {
     this.displayId = displayId;
   }
 
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public void setFlags(int flags) {
+    this.flags = flags;
+  }
+
   public void setWidth(int width) {
     this.width = width;
   }
 
   public void setHeight(int height) {
     this.height = height;
+  }
+
+  public void setRealWidth(int realWidth) {
+    this.realWidth = realWidth;
+  }
+
+  public void setRealHeight(int realHeight) {
+    this.realHeight = realHeight;
   }
 
   public void setRefreshRate(float refreshRate) {
