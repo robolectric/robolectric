@@ -196,5 +196,4 @@ public class ShadowDisplay {
   public void setPixelFormat(int pixelFormat) {
     this.pixelFormat = pixelFormat;
   }
-
 }

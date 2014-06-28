@@ -219,7 +219,7 @@ public class ShadowWrangler implements ClassHandler {
     return getInterceptionHandler(methodSignature).call(theClass, instance, params);
   }
 
-  public Function<Object, Object> getInterceptionHandler(MethodSignature methodSignature) {
+  public Function<Object, Object> getInterceptionHandler(final MethodSignature methodSignature) {
     // todo: move these somewhere else!
     if (methodSignature.matches(LinkedHashMap.class.getName(), "eldest")) {
       return new Function<Object, Object>() {
@@ -243,12 +243,13 @@ public class ShadowWrangler implements ClassHandler {
               .invoke(context);
         }
       };
-    } else if (methodSignature.matches("java.lang.System", "nanoTime")) {
+    } else if (methodSignature.matches("java.lang.System", "nanoTime")
+	    || methodSignature.matches("java.lang.System", "currentTimeMillis")) {
       return new Function<Object, Object>() {
         @Override public Object call(Class<?> theClass, Object value, Object[] params) {
           ClassLoader cl = theClass.getClassLoader();
           Class<?> shadowSystemClockClass = type("org.robolectric.shadows.ShadowSystemClock").withClassLoader(cl).load();
-          return method("nanoTime")
+          return method(methodSignature.methodName)
               .in(shadowSystemClockClass)
               .invoke();
         }

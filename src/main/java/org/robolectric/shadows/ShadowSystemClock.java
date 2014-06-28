@@ -11,7 +11,7 @@ public class ShadowSystemClock {
   private static long bootedAt = 0;
   private static long nanoTime = 0;
 
-  private static long now() {
+  static long now() {
     return Robolectric.getUiThreadScheduler().getCurrentTime();
   }
 
@@ -20,9 +20,23 @@ public class ShadowSystemClock {
     Robolectric.getUiThreadScheduler().advanceBy(ms);
   }
 
+  /**
+   * The concept of current time is base on the current time
+   * of the UI Scheduler for consistency with previous implementations.
+   * This is not ideal, since both schedulers (background and foreground),
+   * can see different values for the current time.
+   */
   @Implementation
   public static boolean setCurrentTimeMillis(long millis) {
-    return false;
+    if (now() > millis) {
+      return false;
+    } 
+    Robolectric.getUiThreadScheduler().advanceTo(millis);
+    return true;
+  }
+  
+  public static void setNanoTime(long nanoTime) {
+    ShadowSystemClock.nanoTime = nanoTime;
   }
 
   @Implementation
@@ -49,14 +63,22 @@ public class ShadowSystemClock {
   public static long currentTimeMicro() {
     return now() * 1000;
   }
+  
+  /**
+   * Implements {@link System#currentTimeMillis} through ShadowWrangler.
+   */
+  @SuppressWarnings("UnusedDeclaration")
+  public static long currentTimeMillis() {
+    long currTimeMillis = nanoTime / 1000000;
+    nanoTime += 1000000;
+    return currTimeMillis;
+  }
 
-  // used by ShadowWranger for System.nanoTime() calls...
+  /**
+   * Implements {@link System#nanoTime} through ShadowWrangler.
+   */
   @SuppressWarnings("UnusedDeclaration")
   public static long nanoTime() {
     return nanoTime++;
-  }
-
-  public static void setNanoTime(long nanoTime) {
-    ShadowSystemClock.nanoTime = nanoTime;
   }
 }
