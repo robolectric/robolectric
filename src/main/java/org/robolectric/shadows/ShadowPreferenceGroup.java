@@ -9,6 +9,8 @@ import org.robolectric.annotation.RealObject;
 
 import java.util.ArrayList;
 
+import static org.robolectric.Robolectric.shadowOf;
+
 /**
  * See: http://android.git.kernel.org/?p=platform/frameworks/base.git;a=blob_plain;f=core/java/android/preference/PreferenceGroup.java;hb=HEAD
  */
@@ -32,6 +34,7 @@ public class ShadowPreferenceGroup extends ShadowPreference {
 
     // TODO currently punting on ordering logic
     preferenceList.add(preference);
+    shadowOf(preference).onAttachedToHierarchy(realPreferenceGroup.getPreferenceManager());
 
     return true;
   }

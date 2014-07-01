@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.preference.Preference;
 import android.preference.PreferenceGroup;
+import android.preference.PreferenceManager;
 import android.util.AttributeSet;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,22 +24,23 @@ public class PreferenceGroupTest {
 
   private TestPreferenceGroup group;
   private ShadowPreferenceGroup shadow;
-  private Context context;
+  private Activity activity;
   private RoboAttributeSet attrs;
   private Preference pref1, pref2;
 
   @Before
   public void setUp() throws Exception {
-    context = buildActivity(Activity.class).create().get();
+    activity = buildActivity(Activity.class).create().get();
     attrs = new RoboAttributeSet(new ArrayList<Attribute>(), TestUtil.emptyResources(), null);
 
-    group = new TestPreferenceGroup(context, attrs);
+    group = new TestPreferenceGroup(activity, attrs);
     shadow = Robolectric.shadowOf(group);
+    shadow.onAttachedToHierarchy(new PreferenceManager(activity, 0));
 
-    pref1 = new Preference(context);
+    pref1 = new Preference(activity);
     pref1.setKey("pref1");
 
-    pref2 = new Preference(context);
+    pref2 = new Preference(activity);
     pref2.setKey("pref2");
   }
 
@@ -139,7 +141,8 @@ public class PreferenceGroupTest {
 
   @Test
   public void shouldFindPreferenceRecursively() {
-    TestPreferenceGroup group2 = new TestPreferenceGroup(context, attrs);
+    TestPreferenceGroup group2 = new TestPreferenceGroup(activity, attrs);
+    Robolectric.shadowOf(group2).onAttachedToHierarchy(new PreferenceManager(activity, 0));
     group2.addPreference(pref2);
 
     group.addPreference(pref1);
@@ -152,7 +155,8 @@ public class PreferenceGroupTest {
   public void shouldSetEnabledRecursively() {
     boolean[] values = {false, true};
 
-    TestPreferenceGroup group2 = new TestPreferenceGroup(context, attrs);
+    TestPreferenceGroup group2 = new TestPreferenceGroup(activity, attrs);
+    Robolectric.shadowOf(group2).onAttachedToHierarchy(new PreferenceManager(activity, 0));
     group2.addPreference(pref2);
 
     group.addPreference(pref1);

@@ -8,6 +8,7 @@ import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.util.AttributeSet;
 import android.util.TypedValue;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -70,6 +71,11 @@ public class ShadowPreference {
     if (v != null) {
       defaultValue = v.coerceToString();
     }
+  }
+
+  @Implementation
+  public void onAttachedToHierarchy(PreferenceManager preferenceManager) {
+    Robolectric.directlyOn(realPreference, Preference.class, "onAttachedToHierarchy", PreferenceManager.class).invoke(preferenceManager);
   }
 
   @Implementation

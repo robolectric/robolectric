@@ -1,5 +1,6 @@
 package org.robolectric.res;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.preference.CheckBoxPreference;
@@ -39,32 +40,33 @@ public class PreferenceLoaderTest {
   @Test
   public void shouldCreateCorrectClasses() {
     PreferenceNode preferenceNode = resBundle.get(new ResName(TEST_PACKAGE + ":xml/preferences"), "");
-    PreferenceScreen screen = (PreferenceScreen) preferenceBuilder.inflate(preferenceNode, Robolectric.application, null);
+    PreferenceScreen screen = (PreferenceScreen) preferenceBuilder.inflate(preferenceNode, Robolectric.setupActivity(Activity.class), null);
     assertThatScreenMatchesExpected(screen);
   }
 
   @Test
   public void shouldSetContextInScreens() {
     PreferenceNode preferenceNode = resBundle.get(new ResName(TEST_PACKAGE + ":xml/preferences"), "");
-    PreferenceScreen screen = (PreferenceScreen) preferenceBuilder.inflate(preferenceNode, Robolectric.application, null);
+    Activity activity = Robolectric.setupActivity(Activity.class);
+    PreferenceScreen screen = (PreferenceScreen) preferenceBuilder.inflate(preferenceNode, activity, null);
 
-    assertThat(screen.getContext()).isEqualTo(Robolectric.application);
+    assertThat(screen.getContext()).isEqualTo(activity);
 
     PreferenceScreen innerScreen = (PreferenceScreen) screen.getPreference(1);
-    assertThat(innerScreen.getContext()).isEqualTo(Robolectric.application);
+    assertThat(innerScreen.getContext()).isEqualTo(activity);
   }
 
   @Test(expected = I18nException.class)
   public void shouldThrowI18nExceptionOnPrefsWithBareStrings() throws Exception {
     Robolectric.getShadowApplication().setStrictI18n(true);
     PreferenceNode preferenceNode = resBundle.get(new ResName(TEST_PACKAGE + ":xml/preferences"), "");
-    preferenceBuilder.inflate(preferenceNode, Robolectric.application, null);
+    preferenceBuilder.inflate(preferenceNode, Robolectric.setupActivity(Activity.class), null);
   }
 
   @Test
   public void shouldParseIntentContainedInPreference() throws Exception {
     PreferenceNode preferenceNode = resBundle.get(new ResName(TEST_PACKAGE + ":xml/intent_preference"), "");
-    PreferenceScreen screen = (PreferenceScreen) preferenceBuilder.inflate(preferenceNode, Robolectric.application, null);
+    PreferenceScreen screen = (PreferenceScreen) preferenceBuilder.inflate(preferenceNode, Robolectric.setupActivity(Activity.class), null);
 
     assertThat(screen.getPreferenceCount()).isEqualTo(1);
     Preference intentPreference = screen.getPreference(0);
