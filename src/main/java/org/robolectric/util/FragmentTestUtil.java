@@ -7,13 +7,17 @@ import android.app.FragmentManager;
 import org.robolectric.Robolectric;
 
 public final class FragmentTestUtil {
-  
+
   public static void startFragment(Fragment fragment) {
-    Activity activity = createActivity(Activity.class);
+    startFragment(fragment, Activity.class);
+  }
+
+  public static void startFragment(Fragment fragment, Class<? extends Activity> activityClass) {
+    Activity activity = createActivity(activityClass);
     FragmentManager fragmentManager = activity.getFragmentManager();
     fragmentManager.beginTransaction().add(fragment, null).commit();
   }
-  
+
   public static void startFragment(android.support.v4.app.Fragment fragment) {
     FragmentActivity activity = createActivity(FragmentActivity.class);
 
@@ -24,6 +28,6 @@ public final class FragmentTestUtil {
   private static <T extends Activity> T createActivity(Class<T> klass) {
     ActivityController<T> controller = Robolectric.buildActivity(klass);
     controller.create().start().resume();
-    return controller.get();  
+    return controller.get();
   }
 }
