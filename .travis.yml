@@ -5,7 +5,7 @@ before_install:
     - export ANDROID_HOME=$PWD/android-sdk-linux
     - export PATH=${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/platform-tools
     - echo y | android update sdk --filter platform-tools --no-ui --force
-    - echo y | android update sdk --filter android-18,addon-google_apis-google-18,extra-android-m2repository,extra-android-support
+    - echo y | android update sdk --filter android-18,addon-google_apis-google-18,extra-android-m2repository,extra-android-support --no-ui --force
     - ./scripts/install-maps-jar.sh
     - ./scripts/install-support-jar.sh
 
