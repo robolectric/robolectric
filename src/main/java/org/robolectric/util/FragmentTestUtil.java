@@ -1,39 +1,55 @@
 package org.robolectric.util;
 
+import org.robolectric.Robolectric;
+
 import android.app.Activity;
 import android.app.Fragment;
+import android.app.FragmentManager;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
-import android.app.FragmentManager;
 import android.widget.LinearLayout;
-import com.android.internal.widget.LinearLayoutWithDefaultTouchRecepient;
-import org.robolectric.Robolectric;
 
 public final class FragmentTestUtil {
   
   public static void startFragment(Fragment fragment) {
-    buildFragmentManager().beginTransaction().add(fragment, null).commit();
+    buildFragmentManager(FragmentUtilActivity.class)
+        .beginTransaction().add(fragment, null).commit();
   }
-  
+
+  public static void startFragment(Fragment fragment, Class<? extends Activity> activityClass) {
+    buildFragmentManager(activityClass)
+        .beginTransaction().add(fragment, null).commit();
+  }
+
   public static void startFragment(android.support.v4.app.Fragment fragment) {
-    buildSupportFragmentManager().beginTransaction().add(fragment, null).commit();
+    buildSupportFragmentManager(FragmentUtilActivity.class)
+        .beginTransaction().add(fragment, null).commit();
+  }
+
+  public static void startFragment(android.support.v4.app.Fragment fragment,
+      Class<? extends FragmentActivity> fragmentActivityClass) {
+    buildSupportFragmentManager(fragmentActivityClass)
+        .beginTransaction().add(fragment, null).commit();
   }
 
   public static void startVisibleFragment(Fragment fragment) {
-    buildFragmentManager().beginTransaction().add(1, fragment, null).commit();
+    buildFragmentManager(FragmentUtilActivity.class)
+        .beginTransaction().add(1, fragment, null).commit();
   }
 
   public static void startVisibleFragment(android.support.v4.app.Fragment fragment) {
-    buildSupportFragmentManager().beginTransaction().add(1, fragment, null).commit();
+    buildSupportFragmentManager(FragmentUtilActivity.class)
+        .beginTransaction().add(1, fragment, null).commit();
   }
 
-  private static FragmentManager buildFragmentManager() {
-    Activity activity = Robolectric.setupActivity(FragmentUtilActivity.class);
+  private static FragmentManager buildFragmentManager(Class<? extends Activity> activityClass) {
+    Activity activity = Robolectric.setupActivity(activityClass);
     return activity.getFragmentManager();
   }
 
-  private static android.support.v4.app.FragmentManager buildSupportFragmentManager() {
-    FragmentActivity activity = Robolectric.setupActivity(FragmentUtilActivity.class);
+  private static android.support.v4.app.FragmentManager buildSupportFragmentManager(
+      Class<? extends FragmentActivity> fragmentActivityClass) {
+    FragmentActivity activity = Robolectric.setupActivity(fragmentActivityClass);
     return activity.getSupportFragmentManager();
   }
 
