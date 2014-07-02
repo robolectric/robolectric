@@ -4,16 +4,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class Scheduler {
   private List<PostedRunnable> postedRunnables = new ArrayList<PostedRunnable>();
-  private long currentTime = 0;
+  private AtomicLong currentTime = new AtomicLong(0);
   private boolean paused = false;
   private Thread associatedThread = Thread.currentThread();
   private boolean isConstantlyIdling = false;
 
-  public synchronized long getCurrentTime() {
-    return currentTime;
+  public long getCurrentTime() {
+    return currentTime.get();
   }
 
   public synchronized void pause() {
@@ -31,7 +32,7 @@ public class Scheduler {
 
   public synchronized void postDelayed(Runnable runnable, long delayMillis) {
     if ((!isConstantlyIdling && (paused || delayMillis > 0)) || Thread.currentThread() != associatedThread) {
-      postedRunnables.add(new PostedRunnable(runnable, currentTime + delayMillis));
+      postedRunnables.add(new PostedRunnable(runnable, currentTime.get() + delayMillis));
       Collections.sort(postedRunnables);
     } else {
       runnable.run();
@@ -44,7 +45,7 @@ public class Scheduler {
 
   public synchronized void postAtFrontOfQueue(Runnable runnable) {
     if (paused || Thread.currentThread() != associatedThread) {
-      postedRunnables.add(0, new PostedRunnable(runnable, currentTime));
+      postedRunnables.add(0, new PostedRunnable(runnable, currentTime.get()));
     } else {
       runnable.run();
     }
@@ -77,13 +78,13 @@ public class Scheduler {
   }
 
   public synchronized boolean advanceBy(long intervalMs) {
-    long endingTime = currentTime + intervalMs;
+    long endingTime = currentTime.get() + intervalMs;
     return advanceTo(endingTime);
   }
 
   public synchronized boolean advanceTo(long endingTime) {
-    if (endingTime - currentTime < 0 || enqueuedTaskCount() < 1) {
-      currentTime = endingTime;
+    if (endingTime - currentTime.get() < 0 || enqueuedTaskCount() < 1) {
+      currentTime.set(endingTime);
       return false;
     }
 
@@ -92,7 +93,7 @@ public class Scheduler {
       runOneTask();
       ++runCount;
     }
-    currentTime = endingTime;
+    currentTime.set(endingTime);
 
     return runCount > 0;
   }
@@ -103,7 +104,7 @@ public class Scheduler {
     }
 
     PostedRunnable postedRunnable = postedRunnables.remove(0);
-    currentTime = postedRunnable.scheduledTime;
+    currentTime.set(postedRunnable.scheduledTime);
     postedRunnable.run();
     return true;
   }
@@ -115,7 +116,7 @@ public class Scheduler {
 
     while (howMany > 0) {
       PostedRunnable postedRunnable = postedRunnables.remove(0);
-      currentTime = postedRunnable.scheduledTime;
+      currentTime.set(postedRunnable.scheduledTime);
       postedRunnable.run();
       howMany--;
     }
@@ -127,7 +128,7 @@ public class Scheduler {
   }
 
   public synchronized boolean areAnyRunnable() {
-    return nextTaskIsScheduledBefore(currentTime);
+    return nextTaskIsScheduledBefore(currentTime.get());
   }
 
   public synchronized void reset() {

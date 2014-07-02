@@ -3,6 +3,8 @@ package org.robolectric.util;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import static org.fest.assertions.api.Assertions.assertThat;
 
 public class SchedulerTest {
@@ -153,6 +155,29 @@ public class SchedulerTest {
     assertThat(runnable2.wasRun).isTrue();
   }
 
+  @Test
+  public void getCurrentTimeShouldNotBeDeadlockRisky() {
+    LongRunningTask task = givenSchedulerIsLockedByAsyncPostAction();
+
+    scheduler.getCurrentTime();
+
+    assertThat(task.stopWithoutTimeout()).overridingErrorMessage("previous action is executed immediately and we stop the async task, not a timeout").isTrue();
+  }
+
+  private LongRunningTask givenSchedulerIsLockedByAsyncPostAction() {
+    final LongRunningTask task = new LongRunningTask();
+      new Thread(new Runnable() {
+        @Override
+        public void run() {
+          scheduler = new Scheduler();
+          scheduler.post(task);
+          scheduler.runOneTask();
+        }
+      }).start();
+    sleep(10); // ensure that task is running
+    return task;
+  }
+
   private class AddToTranscript implements Runnable {
     private String event;
 
@@ -164,5 +189,35 @@ public class SchedulerTest {
     public void run() {
       transcript.add(event);
     }
+  }
+
+  private static class LongRunningTask implements Runnable {
+      private AtomicBoolean finish = new AtomicBoolean(false);
+      private long started;
+
+      @Override
+      public void run() {
+          started = System.currentTimeMillis();
+          while (!finish.get() && !timeout()) {
+              sleep(10);
+          }
+          finish.set(true);
+      }
+
+      private boolean timeout() {
+          return System.currentTimeMillis() - started > 1000;
+      }
+
+      public boolean stopWithoutTimeout() {
+          return !finish.getAndSet(true);
+      }
+  }
+
+  static void sleep(int milliseconds) {
+      try {
+          Thread.sleep(milliseconds);
+      } catch (InterruptedException e) {
+          throw new RuntimeException(e);
+      }
   }
 }
