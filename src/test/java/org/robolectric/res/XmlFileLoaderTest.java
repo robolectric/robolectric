@@ -274,7 +274,7 @@ public class XmlFileLoaderTest {
   @Test
   public void testGetDepth() throws XmlPullParserException, IOException {
     // Recorded depths from preference file elements
-    List<Integer> expectedDepths = asList(1, 2, 3, 2, 3, 2, 2, 2, 2, 2, 2);
+    List<Integer> expectedDepths = asList(1, 2, 3, 2, 3, 3, 2, 2, 2, 2, 2, 2);
     List<Integer> actualDepths = new ArrayList<Integer>();
     int evt;
     while ((evt = parser.next()) != XmlResourceParser.END_DOCUMENT) {
@@ -453,6 +453,8 @@ public class XmlFileLoaderTest {
         ">",
 
         "<", // PreferenceScreen
+        "<", // Preference
+        ">",
         "<", // Preference
         ">",
         ">",

@@ -1,11 +1,13 @@
 package org.robolectric.res.builder;
 
+import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.preference.Preference;
 import android.preference.PreferenceGroup;
+import android.preference.PreferenceManager;
 import android.util.AttributeSet;
 import org.robolectric.res.Attribute;
 import org.robolectric.res.PreferenceNode;
@@ -28,16 +30,17 @@ public class PreferenceBuilder {
   }
 
 
-  public Preference inflate(PreferenceNode preferenceNode, Context context, Preference parent) {
+  public Preference inflate(PreferenceNode preferenceNode, Activity activity, Preference parent) {
     if ("intent".equals(preferenceNode.getName())) {
       shadowOf(parent).setIntent(createIntent(preferenceNode));
       return null;
     }
 
-    Preference preference = create(preferenceNode, context, (PreferenceGroup) parent);
+    Preference preference = create(preferenceNode, activity, (PreferenceGroup) parent);
+    shadowOf(preference).onAttachedToHierarchy(new PreferenceManager(activity, 0));
 
     for (PreferenceNode child : preferenceNode.getChildren()) {
-      inflate(child, context, preference);
+      inflate(child, activity, preference);
     }
 
     return preference;

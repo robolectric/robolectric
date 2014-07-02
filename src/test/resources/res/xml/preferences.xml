@@ -23,6 +23,12 @@
         android:title="Inside Screen Test"
         android:summary=""/>
 
+    <Preference
+        android:key="inside_screen_dependent"
+        android:title="Inside Screen Dependent Test"
+        android:dependency="inside_screen"
+        android:summary=""/>
+
   </PreferenceScreen>
 
   <CheckBoxPreference
