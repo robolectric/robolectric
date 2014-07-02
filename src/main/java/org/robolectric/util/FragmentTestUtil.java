@@ -17,8 +17,8 @@ public final class FragmentTestUtil {
   }
 
   public static void startFragment(Fragment fragment, Class<? extends Activity> activityClass) {
-	buildFragmentManager(activityClass)
-	    .beginTransaction().add(fragment, null).commit();
+    buildFragmentManager(activityClass)
+        .beginTransaction().add(fragment, null).commit();
   }
 
   public static void startFragment(android.support.v4.app.Fragment fragment) {
