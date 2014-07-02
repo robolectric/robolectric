@@ -36,19 +36,19 @@ class CachedMavenCentral implements MavenCentral {
   }
 
   @Override
-  public Map<String, URL> getLocalArtifactUrls(RobolectricTestRunner robolectricTestRunner, Dependency... dependencies) {
+  public URL[] getLocalArtifactUrls(RobolectricTestRunner robolectricTestRunner, Dependency... dependencies) {
 
     String cacheName = cacheNamingStrategy.getName(CACHE_PREFIX_1, dependencies);
 
-    HashMap<String, URL> urlsFromCache = cache.load(cacheName, HashMap.class);
+    URL[] urlsFromCache = cache.load(cacheName, URL[].class);
 
     if(urlsFromCache != null) {
       return urlsFromCache;
     }
 
-    Map<String, URL> urls = mavenCentral.getLocalArtifactUrls(robolectricTestRunner, dependencies);
+    URL[] urls = mavenCentral.getLocalArtifactUrls(robolectricTestRunner, dependencies);
 
-    cache.write(cacheName, new HashMap<String, URL>(urls));
+    cache.write(cacheName, urls);
 
     return urls;
   }

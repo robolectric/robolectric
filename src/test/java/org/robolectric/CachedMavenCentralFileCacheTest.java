@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.URL;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -64,6 +65,19 @@ public class CachedMavenCentralFileCacheTest {
     Object actual = readFromCacheFile();
 
     assertEquals(expectedValue, actual);
+  }
+
+  @Test
+  public void shouldWriteUrlArrayToFile() throws Exception {
+    Cache cache = createCache();
+
+    URL[] urls = { new URL("http://localhost") };
+
+    assertTrue(cache.write(ID, urls));
+
+    Object actual = readFromCacheFile();
+
+    assertArrayEquals(urls, (URL[]) actual);
   }
 
   private Object readFromCacheFile() throws ClassNotFoundException, IOException {

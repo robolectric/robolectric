@@ -32,7 +32,7 @@ public class CachedMavenCentralTest {
     }
   };
   private RobolectricTestRunner testRunner;
-  private Map<String, URL> map;
+  private URL[] urls;
   private Cache cache = new CacheStub();
   private Dependency[] dependencies = new Dependency[]{
       createDependency("group1", "artifact1"),
@@ -44,8 +44,7 @@ public class CachedMavenCentralTest {
   @Before
   public void setUp() throws InitializationError, MalformedURLException {
     testRunner = new RobolectricTestRunner(this.getClass());
-    map = new HashMap<String, URL>();
-    map.put("test", new URL("http://localhost"));
+    urls = new URL[] { new URL("http://localhost") };
     url = new URL("http://localhost");
   }
 
@@ -53,11 +52,11 @@ public class CachedMavenCentralTest {
   public void shouldWriteLocalArtifactsUrlsWhenCacheMiss() throws Exception {
     MavenCentral mv = createMavenCentral();
 
-    when(internalMc.getLocalArtifactUrls(testRunner, dependencies)).thenReturn(map);
+    when(internalMc.getLocalArtifactUrls(testRunner, dependencies)).thenReturn(urls);
 
-    Map<String, URL> urls = mv.getLocalArtifactUrls(testRunner, dependencies);
+    URL[] urls = mv.getLocalArtifactUrls(testRunner, dependencies);
 
-    assertEquals(map, urls);
+    assertArrayEquals(this.urls, urls);
     assertCacheContents(urls);
   }
 
@@ -66,13 +65,13 @@ public class CachedMavenCentralTest {
 
     MavenCentral mv = createMavenCentral();
 
-    cache.write(CACHE_NAME, new HashMap<String, URL>(map));
+    cache.write(CACHE_NAME, urls);
 
-    Map<String, URL> urls = mv.getLocalArtifactUrls(testRunner, dependencies);
+    URL[] urls = mv.getLocalArtifactUrls(testRunner, dependencies);
 
     verify(internalMc, never()).getLocalArtifactUrls(testRunner, dependencies);
 
-    assertEquals(map, urls);
+    assertArrayEquals(this.urls, urls);
   }
 
   @Test
@@ -100,8 +99,8 @@ public class CachedMavenCentralTest {
     assertEquals(this.url, url);
   }
 
-  private void assertCacheContents(Map<String, URL> urls) {
-    assertEquals(new HashMap<String, URL>(urls), cache.load(CACHE_NAME, HashMap.class));
+  private void assertCacheContents(URL[] urls) {
+    assertArrayEquals(urls, cache.load(CACHE_NAME, URL[].class));
   }
 
   private void assertCacheContents(URL url) {
