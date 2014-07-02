@@ -322,6 +322,7 @@ public final class R {
     public static final int Sized = 0x11006;
     public static final int Gastropod = 0x11007;
     public static final int Theme_ThirdTheme = 0x11008;
+    public static final int MyBlackTheme = 0x11009;
   }
 
   public static final class fraction {
