@@ -33,6 +33,7 @@ public class ShadowLocationManager {
   private final Map<String, Location> lastKnownLocations = new HashMap<String, Location>();
   private final Map<PendingIntent, Criteria> requestLocationUdpateCriteriaPendingIntents = new HashMap<PendingIntent, Criteria>();
   private final Map<PendingIntent, String> requestLocationUdpateProviderPendingIntents = new HashMap<PendingIntent, String>();
+  private final ArrayList<LocationListener> removedLocationListeners = new ArrayList<LocationListener>();
 
   private final ArrayList<Listener> gpsStatusListeners = new ArrayList<Listener>();
   private Criteria lastBestProviderCriteria;
@@ -281,10 +282,17 @@ public class ShadowLocationManager {
 
   @Implementation
   public void removeUpdates(LocationListener listener) {
+    removedLocationListeners.add(listener);
+  }
+
+  private void cleanupRemovedLocationListeners() {
     for (Map.Entry<String, List<ListenerRegistration>> entry : locationListeners.entrySet()) {
       List<ListenerRegistration> listenerRegistrations = entry.getValue();
       for (int i = listenerRegistrations.size() - 1; i >= 0; i--) {
-        if (listenerRegistrations.get(i).listener.equals(listener)) listenerRegistrations.remove(i);
+        LocationListener listener = listenerRegistrations.get(i).listener;
+        if(removedLocationListeners.contains(listener)) {
+          listenerRegistrations.remove(i);
+        }
       }
     }
   }
@@ -390,6 +398,7 @@ public class ShadowLocationManager {
    * @return lastRequestedLocationUpdatesLocationListener
    */
   public List<LocationListener> getRequestLocationUpdateListeners() {
+    cleanupRemovedLocationListeners();
     List<LocationListener> all = new ArrayList<LocationListener>();
     for (Map.Entry<String, List<ListenerRegistration>> entry : locationListeners.entrySet()) {
       for (ListenerRegistration reg : entry.getValue()) {
@@ -401,6 +410,7 @@ public class ShadowLocationManager {
   }
 
   public void simulateLocation(Location location) {
+    cleanupRemovedLocationListeners();
     setLastKnownLocation(location.getProvider(), location);
 
     List<ListenerRegistration> providerListeners = locationListeners.get(
@@ -418,6 +428,7 @@ public class ShadowLocationManager {
       listenerReg.lastSeenTime = location == null ? 0 : location.getTime();
       listenerReg.listener.onLocationChanged(copyOf(location));
     }
+    cleanupRemovedLocationListeners();
   }
 
   private Location copyOf(Location location) {
@@ -463,6 +474,7 @@ public class ShadowLocationManager {
   }
 
   public Collection<String> getProvidersForListener(LocationListener listener) {
+    cleanupRemovedLocationListeners();
     Set<String> providers = new HashSet<String>();
     for (List<ListenerRegistration> listenerRegistrations : locationListeners.values()) {
       for (ListenerRegistration listenerRegistration : listenerRegistrations) {

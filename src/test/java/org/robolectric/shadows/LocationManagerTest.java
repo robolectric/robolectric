@@ -418,6 +418,19 @@ public class LocationManagerTest {
     assertThat(listener.location).isEqualTo(location1);
   }
 
+  @Test
+  public void shouldNotThrowExceptionIfLocationListenerRemovedInsideOnLocationChanged() throws Exception {
+    TestLocationListenerSelfRemoval listener = new TestLocationListenerSelfRemoval(locationManager);
+    shadowLocationManager.requestLocationUpdates(GPS_PROVIDER, 0, 0, listener);
+
+    Location location = new Location(GPS_PROVIDER);
+    location.setLatitude(0);
+    location.setLongitude(0);
+
+    shadowLocationManager.simulateLocation(location);
+    assertThat(shadowLocationManager.getRequestLocationUpdateListeners().size()).isEqualTo(0);
+  }
+
   private Listener addGpsListenerToLocationManager() {
     Listener listener = new TestGpsListener();
     locationManager.addGpsStatusListener(listener);
@@ -445,6 +458,31 @@ public class LocationManagerTest {
     @Override
     public void onProviderDisabled(String s) {
       providerEnabled = false;
+    }
+  }
+
+  private static class TestLocationListenerSelfRemoval implements LocationListener {
+    LocationManager locationManager;
+
+    public TestLocationListenerSelfRemoval(LocationManager locationManager) {
+      this.locationManager = locationManager;
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+      locationManager.removeUpdates(this);
+    }
+
+    @Override
+    public void onStatusChanged(String s, int i, Bundle bundle) {
+    }
+
+    @Override
+    public void onProviderEnabled(String s) {
+    }
+
+    @Override
+    public void onProviderDisabled(String s) {
     }
   }
 
