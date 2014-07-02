@@ -25,6 +25,8 @@ public class DisplayTest {
     shadow.setScaledDensity(1.6f);
     shadow.setWidth(1024);
     shadow.setHeight(600);
+    shadow.setRealWidth(1400);
+    shadow.setRealHeight(900);
     shadow.setXdpi(183.0f);
     shadow.setYdpi(184.0f);
 
@@ -37,6 +39,18 @@ public class DisplayTest {
     assertEquals(1.6f, metrics.scaledDensity, 0.05);
     assertEquals(1024, metrics.widthPixels);
     assertEquals(600, metrics.heightPixels);
+    assertEquals(183.0f, metrics.xdpi, 0.05);
+    assertEquals(184.0f, metrics.ydpi, 0.05);
+
+    metrics = new DisplayMetrics();
+
+    display.getRealMetrics(metrics);
+
+    assertEquals(1.5f, metrics.density, 0.05);
+    assertEquals(DisplayMetrics.DENSITY_MEDIUM, metrics.densityDpi);
+    assertEquals(1.6f, metrics.scaledDensity, 0.05);
+    assertEquals(1400, metrics.widthPixels);
+    assertEquals(900, metrics.heightPixels);
     assertEquals(183.0f, metrics.xdpi, 0.05);
     assertEquals(184.0f, metrics.ydpi, 0.05);
   }
@@ -53,6 +67,8 @@ public class DisplayTest {
 
     shadow.setWidth(400);
     shadow.setHeight(600);
+    shadow.setRealWidth(480);
+    shadow.setRealHeight(800);
 
     display.getCurrentSizeRange(outSmallestSize, outLargestSize);
     assertEquals(400, outSmallestSize.x);
@@ -67,6 +83,24 @@ public class DisplayTest {
     display.getRectSize(outRect);
     assertEquals(400, outRect.width());
     assertEquals(600, outRect.height());
+
+    display.getRealSize(outSize);
+    assertEquals(480, outSize.x);
+    assertEquals(800, outSize.y);
+  }
+
+  @Test
+  public void shouldProvideDisplayInformation() {
+    Display display = newInstanceOf(Display.class);
+    ShadowDisplay shadow = shadowOf(display);
+
+    shadow.setDisplayId(42);
+    shadow.setName("foo");
+    shadow.setFlags(8);
+
+    assertEquals(42, display.getDisplayId());
+    assertEquals("foo", display.getName());
+    assertEquals(8, display.getFlags());
   }
 
   /**
