@@ -36,6 +36,7 @@ public class TestWebSettingsTest {
     assertThat(webSettings.getLoadWithOverviewMode()).isFalse();
     assertThat(webSettings.getPluginState()).isEqualTo(WebSettings.PluginState.OFF);
     assertThat(webSettings.getSaveFormData()).isFalse();
+    assertThat(webSettings.getTextZoom()).isEqualTo(100);
 
     // deprecated methods
     assertThat(webSettings.getPluginsEnabled()).isFalse();
@@ -258,5 +259,11 @@ public class TestWebSettingsTest {
   public void testSetJavascriptCanOpenWindowsAutomaticallyIsFalse() throws Exception {
     webSettings.setJavaScriptCanOpenWindowsAutomatically(false);
     assertThat(webSettings.getJavaScriptCanOpenWindowsAutomatically()).isFalse();
+  }
+
+  @Test
+  public void testSetTextZoom() throws Exception {
+    webSettings.setTextZoom(50);
+    assertThat(webSettings.getTextZoom()).isEqualTo(50);
   }
 }
