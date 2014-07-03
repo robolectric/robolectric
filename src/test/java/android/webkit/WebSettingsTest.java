@@ -10,7 +10,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 
 @DoNotInstrument
 @RunWith(TestRunners.WithDefaults.class)
-public class TestWebSettingsTest {
+public class WebSettingsTest {
 
   private TestWebSettings webSettings;
 
