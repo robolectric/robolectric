@@ -37,6 +37,7 @@ public class TestWebSettings extends WebSettings {
   private boolean useWideViewPort = false;
   private int cacheMode;
   private long appCacheMaxSize;
+  private int textZoom = 100;
 
   public TestWebSettings() {
   }
@@ -310,5 +311,15 @@ public class TestWebSettings extends WebSettings {
   @Implementation
   public boolean getJavaScriptCanOpenWindowsAutomatically() {
     return this.javaScriptCanOpenWindowAutomatically;
+  }
+
+  @Implementation
+  public int getTextZoom() {
+    return textZoom;
+  }
+
+  @Implementation
+  public void setTextZoom(int textZoom) {
+    this.textZoom = textZoom;
   }
 }
