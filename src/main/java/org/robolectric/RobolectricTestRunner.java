@@ -2,6 +2,8 @@ package org.robolectric;
 
 import android.app.Application;
 import android.os.Build;
+
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
@@ -15,6 +17,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
 import org.apache.maven.artifact.ant.DependenciesTask;
 import org.jetbrains.annotations.TestOnly;
 import org.junit.AfterClass;
@@ -59,7 +62,7 @@ import static org.fest.reflect.core.Reflection.type;
  * provide a simulation of the Android runtime environment.
  */
 public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
-  private static final MavenCentral MAVEN_CENTRAL = new MavenCentral();
+  private static final MavenCentral MAVEN_CENTRAL;
   private static final Map<Class<? extends RobolectricTestRunner>, EnvHolder> envHoldersByTestRunner = new HashMap<Class<? extends RobolectricTestRunner>, EnvHolder>();
   private static Map<Pair<AndroidManifest, SdkConfig>, ResourceLoader> resourceLoadersByManifestAndConfig = new HashMap<Pair<AndroidManifest, SdkConfig>, ResourceLoader>();
   private static ShadowMap mainShadowMap;
@@ -67,6 +70,20 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   private TestLifecycle<Application> testLifecycle;
 
   static {
+
+    MavenCentral mc;
+
+    File cacheDir = new File(new File(System.getProperty("java.io.tmpdir")), "robolectric");
+    cacheDir.mkdir();
+
+    if (cacheDir.exists()) {
+      mc = new CachedMavenCentral(new MavenCentralImpl(), cacheDir, 60 * 60 * 24 * 1000);
+    } else {
+      mc = new MavenCentralImpl();
+    }
+
+    MAVEN_CENTRAL = mc;
+
     new SecureRandom(); // this starts up the Poller SunPKCS11-Darwin thread early, outside of any Robolectric classloader
   }
 
