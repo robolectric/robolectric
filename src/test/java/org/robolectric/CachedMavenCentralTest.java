@@ -11,8 +11,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runners.model.InitializationError;
-import org.robolectric.CachedMavenCentral.Cache;
-import org.robolectric.CachedMavenCentral.CacheNamingStrategy;
+import org.robolectric.CachedMavenResolver.Cache;
+import org.robolectric.CachedMavenResolver.CacheNamingStrategy;
 import org.robolectric.test.TemporaryFolder;
 
 import static org.mockito.Mockito.*;
@@ -24,7 +24,7 @@ public class CachedMavenCentralTest {
 
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-  private MavenCentral internalMc = mock(MavenCentral.class);
+  private DependencyResolver internalMc = mock(DependencyResolver.class);
   private CacheNamingStrategy cacheNamingStrategy = new CacheNamingStrategy() {
     @Override
     public String getName(String prefix, Dependency... dependencies) {
@@ -50,7 +50,7 @@ public class CachedMavenCentralTest {
 
   @Test
   public void shouldWriteLocalArtifactsUrlsWhenCacheMiss() throws Exception {
-    MavenCentral mv = createMavenCentral();
+    DependencyResolver mv = createMavenCentral();
 
     when(internalMc.getLocalArtifactUrls(testRunner, dependencies)).thenReturn(urls);
 
@@ -63,7 +63,7 @@ public class CachedMavenCentralTest {
   @Test
   public void shouldReadLocalArtifactUrlsFromCacheIfExists() throws Exception {
 
-    MavenCentral mv = createMavenCentral();
+    DependencyResolver mv = createMavenCentral();
 
     cache.write(CACHE_NAME, urls);
 
@@ -76,7 +76,7 @@ public class CachedMavenCentralTest {
 
   @Test
   public void shouldWriteLocalArtifactUrlWhenCacheMiss() throws Exception{
-    MavenCentral mv = createMavenCentral();
+    DependencyResolver mv = createMavenCentral();
 
     when(internalMc.getLocalArtifactUrl(testRunner, dependency)).thenReturn(url);
 
@@ -88,7 +88,7 @@ public class CachedMavenCentralTest {
 
   @Test
   public void shouldReadLocalArtifactUrlFromCacheIfExists() throws Exception {
-    MavenCentral mv = createMavenCentral();
+    DependencyResolver mv = createMavenCentral();
 
     cache.write(CACHE_NAME, url);
 
@@ -107,8 +107,8 @@ public class CachedMavenCentralTest {
     assertEquals(url, cache.load(CACHE_NAME, URL.class));
   }
 
-  private MavenCentral createMavenCentral() {
-    return new CachedMavenCentral(internalMc, cache, cacheNamingStrategy);
+  private DependencyResolver createMavenCentral() {
+    return new CachedMavenResolver(internalMc, cache, cacheNamingStrategy);
   }
 
   private Dependency createDependency(final String groupId, final String artifactId) {
@@ -129,7 +129,7 @@ public class CachedMavenCentralTest {
     };
   }
 
-  private static class CacheStub implements CachedMavenCentral.Cache {
+  private static class CacheStub implements CachedMavenResolver.Cache {
 
     private Map<String, Serializable> map = new HashMap<String, Serializable>();
 

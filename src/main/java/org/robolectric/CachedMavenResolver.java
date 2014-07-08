@@ -10,26 +10,24 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.zip.CRC32;
 
 import org.apache.maven.model.Dependency;
 
-class CachedMavenCentral implements MavenCentral {
+class CachedMavenResolver implements DependencyResolver {
 
   private final static String CACHE_PREFIX_1 = "localArtifactUrls";
   private final static String CACHE_PREFIX_2 = "localArtifactUrl";
 
-  private final MavenCentral mavenCentral;
+  private final DependencyResolver mavenCentral;
   private final CacheNamingStrategy cacheNamingStrategy;
   private final Cache cache;
 
-  CachedMavenCentral(MavenCentral mavenCentral, File cacheDir, long cacheValidTime) {
+  CachedMavenResolver(DependencyResolver mavenCentral, File cacheDir, long cacheValidTime) {
     this(mavenCentral, new FileCache(cacheDir, cacheValidTime), new DefaultCacheNamingStrategy());
   }
 
-  CachedMavenCentral(MavenCentral mavenCentral, Cache cache, CacheNamingStrategy cacheNamingStrategy) {
+  CachedMavenResolver(DependencyResolver mavenCentral, Cache cache, CacheNamingStrategy cacheNamingStrategy) {
     this.mavenCentral = mavenCentral;
     this.cache = cache;
     this.cacheNamingStrategy = cacheNamingStrategy;
