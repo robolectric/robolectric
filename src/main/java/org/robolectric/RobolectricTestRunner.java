@@ -115,13 +115,18 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
   protected DependencyResolver getJarResolver() {
     if (jarResolver == null) {
-      File cacheDir = new File(new File(System.getProperty("java.io.tmpdir")), "robolectric");
-      cacheDir.mkdir();
-
-      if (cacheDir.exists()) {
-        jarResolver = new CachedMavenResolver(new MavenResolver(), cacheDir, 60 * 60 * 24 * 1000);
+      if (Boolean.parseBoolean(System.getProperty("robolectric.offline"))) {
+        String dependencyDir = System.getProperty("robolectric.dependency.dir", ".");
+        jarResolver = new OfflineResolver(new File(dependencyDir));
       } else {
-        jarResolver = new MavenResolver();
+        File cacheDir = new File(new File(System.getProperty("java.io.tmpdir")), "robolectric");
+        cacheDir.mkdir();
+
+        if (cacheDir.exists()) {
+          jarResolver = new CachedMavenResolver(new MavenResolver(), cacheDir, 60 * 60 * 24 * 1000);
+        } else {
+          jarResolver = new MavenResolver();
+        }
       }
     }
 
