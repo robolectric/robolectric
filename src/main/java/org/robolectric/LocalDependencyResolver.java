@@ -15,7 +15,7 @@ public class LocalDependencyResolver implements DependencyResolver {
   }
 
   @Override
-  public URL getLocalArtifactUrl(RobolectricTestRunner robolectricTestRunner, Dependency dependency) {
+  public URL getLocalArtifactUrl(Dependency dependency) {
     String filename = dependency.getArtifactId() + "-" +
         dependency.getVersion() + "." +
         dependency.getType();
@@ -24,11 +24,11 @@ public class LocalDependencyResolver implements DependencyResolver {
   }
 
   @Override
-  public URL[] getLocalArtifactUrls(RobolectricTestRunner robolectricTestRunner, Dependency... dependencies) {
+  public URL[] getLocalArtifactUrls(Dependency... dependencies) {
     URL[] urls = new URL[dependencies.length];
 
     for (int i=0; i<dependencies.length; i++) {
-      urls[i] = getLocalArtifactUrl(robolectricTestRunner, dependencies[i]);
+      urls[i] = getLocalArtifactUrl(dependencies[i]);
     }
 
     return urls;

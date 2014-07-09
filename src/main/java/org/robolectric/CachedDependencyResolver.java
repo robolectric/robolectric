@@ -34,7 +34,7 @@ class CachedDependencyResolver implements DependencyResolver {
   }
 
   @Override
-  public URL[] getLocalArtifactUrls(RobolectricTestRunner robolectricTestRunner, Dependency... dependencies) {
+  public URL[] getLocalArtifactUrls(Dependency... dependencies) {
 
     String cacheName = cacheNamingStrategy.getName(CACHE_PREFIX_1, dependencies);
 
@@ -44,7 +44,7 @@ class CachedDependencyResolver implements DependencyResolver {
       return urlsFromCache;
     }
 
-    URL[] urls = dependencyResolver.getLocalArtifactUrls(robolectricTestRunner, dependencies);
+    URL[] urls = dependencyResolver.getLocalArtifactUrls(dependencies);
 
     cache.write(cacheName, urls);
 
@@ -52,7 +52,7 @@ class CachedDependencyResolver implements DependencyResolver {
   }
 
   @Override
-  public URL getLocalArtifactUrl(RobolectricTestRunner robolectricTestRunner, Dependency dependency) {
+  public URL getLocalArtifactUrl(Dependency dependency) {
 
     String cacheName = cacheNamingStrategy.getName(CACHE_PREFIX_2, dependency);
 
@@ -62,7 +62,7 @@ class CachedDependencyResolver implements DependencyResolver {
       return urlFromCache;
     }
 
-    URL url = dependencyResolver.getLocalArtifactUrl(robolectricTestRunner, dependency);
+    URL url = dependencyResolver.getLocalArtifactUrl(dependency);
     cache.write(cacheName, url);
 
     return url;

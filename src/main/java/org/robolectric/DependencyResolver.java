@@ -4,6 +4,6 @@ import java.net.URL;
 import org.apache.maven.model.Dependency;
 
 public interface DependencyResolver {
-  URL[] getLocalArtifactUrls(RobolectricTestRunner robolectricTestRunner, Dependency... dependencies);
-  URL getLocalArtifactUrl(RobolectricTestRunner robolectricTestRunner, Dependency dependency);
+  URL[] getLocalArtifactUrls(Dependency... dependencies);
+  URL getLocalArtifactUrl(Dependency dependency);
 }

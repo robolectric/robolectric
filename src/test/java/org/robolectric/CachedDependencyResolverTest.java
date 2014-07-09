@@ -31,7 +31,7 @@ public class CachedDependencyResolverTest {
       return CACHE_NAME;
     }
   };
-  private RobolectricTestRunner testRunner;
+
   private URL[] urls;
   private Cache cache = new CacheStub();
   private Dependency[] dependencies = new Dependency[]{
@@ -43,7 +43,6 @@ public class CachedDependencyResolverTest {
 
   @Before
   public void setUp() throws InitializationError, MalformedURLException {
-    testRunner = new RobolectricTestRunner(this.getClass());
     urls = new URL[] { new URL("http://localhost") };
     url = new URL("http://localhost");
   }
@@ -52,9 +51,9 @@ public class CachedDependencyResolverTest {
   public void shouldWriteLocalArtifactsUrlsWhenCacheMiss() throws Exception {
     DependencyResolver res = createResolver();
 
-    when(internalResolver.getLocalArtifactUrls(testRunner, dependencies)).thenReturn(urls);
+    when(internalResolver.getLocalArtifactUrls(dependencies)).thenReturn(urls);
 
-    URL[] urls = res.getLocalArtifactUrls(testRunner, dependencies);
+    URL[] urls = res.getLocalArtifactUrls(dependencies);
 
     assertArrayEquals(this.urls, urls);
     assertCacheContents(urls);
@@ -67,9 +66,9 @@ public class CachedDependencyResolverTest {
 
     cache.write(CACHE_NAME, urls);
 
-    URL[] urls = res.getLocalArtifactUrls(testRunner, dependencies);
+    URL[] urls = res.getLocalArtifactUrls(dependencies);
 
-    verify(internalResolver, never()).getLocalArtifactUrls(testRunner, dependencies);
+    verify(internalResolver, never()).getLocalArtifactUrls(dependencies);
 
     assertArrayEquals(this.urls, urls);
   }
@@ -78,9 +77,9 @@ public class CachedDependencyResolverTest {
   public void shouldWriteLocalArtifactUrlWhenCacheMiss() throws Exception{
     DependencyResolver res = createResolver();
 
-    when(internalResolver.getLocalArtifactUrl(testRunner, dependency)).thenReturn(url);
+    when(internalResolver.getLocalArtifactUrl(dependency)).thenReturn(url);
 
-    URL url = res.getLocalArtifactUrl(testRunner, dependency);
+    URL url = res.getLocalArtifactUrl(dependency);
 
     assertEquals(this.url, url);
     assertCacheContents(url);
@@ -92,9 +91,9 @@ public class CachedDependencyResolverTest {
 
     cache.write(CACHE_NAME, url);
 
-    URL url = res.getLocalArtifactUrl(testRunner, dependency);
+    URL url = res.getLocalArtifactUrl(dependency);
 
-    verify(internalResolver, never()).getLocalArtifactUrl(testRunner, dependency);
+    verify(internalResolver, never()).getLocalArtifactUrl(dependency);
 
     assertEquals(this.url, url);
   }

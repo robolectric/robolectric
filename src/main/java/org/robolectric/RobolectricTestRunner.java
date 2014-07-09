@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.maven.artifact.ant.DependenciesTask;
 import org.jetbrains.annotations.TestOnly;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -165,7 +164,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   }
 
   protected ClassLoader createRobolectricClassLoader(Setup setup, SdkConfig sdkConfig) {
-    URL[] urls = getJarResolver().getLocalArtifactUrls(this, sdkConfig.getSdkClasspathDependencies());
+    URL[] urls = getJarResolver().getLocalArtifactUrls(sdkConfig.getSdkClasspathDependencies());
     return new AsmInstrumentingClassLoader(setup, urls);
   }
 
@@ -183,11 +182,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  @SuppressWarnings("UnusedParameters")
-  protected void configureMaven(DependenciesTask dependenciesTask) {
-    // maybe you want to override this method and some settings?
   }
 
   @Override
