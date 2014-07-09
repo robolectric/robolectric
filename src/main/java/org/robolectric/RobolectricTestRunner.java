@@ -67,7 +67,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   private static ShadowMap mainShadowMap;
   private final EnvHolder envHolder;
   private TestLifecycle<Application> testLifecycle;
-  private DependencyResolver jarResolver;
+  private DependencyResolver dependencyResolver;
 
   static {
     new SecureRandom(); // this starts up the Poller SunPKCS11-Darwin thread early, outside of any Robolectric classloader
@@ -114,23 +114,23 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   }
 
   protected DependencyResolver getJarResolver() {
-    if (jarResolver == null) {
-      if (Boolean.parseBoolean(System.getProperty("robolectric.offline"))) {
+    if (dependencyResolver == null) {
+      if (Boolean.getBoolean("robolectric.offline")) {
         String dependencyDir = System.getProperty("robolectric.dependency.dir", ".");
-        jarResolver = new OfflineResolver(new File(dependencyDir));
+        dependencyResolver = new LocalDependencyResolver(new File(dependencyDir));
       } else {
         File cacheDir = new File(new File(System.getProperty("java.io.tmpdir")), "robolectric");
         cacheDir.mkdir();
 
         if (cacheDir.exists()) {
-          jarResolver = new CachedMavenResolver(new MavenResolver(), cacheDir, 60 * 60 * 24 * 1000);
+          dependencyResolver = new CachedDependencyResolver(new MavenDependencyResolver(), cacheDir, 60 * 60 * 24 * 1000);
         } else {
-          jarResolver = new MavenResolver();
+          dependencyResolver = new MavenDependencyResolver();
         }
       }
     }
 
-    return jarResolver;
+    return dependencyResolver;
   }
 
   public SdkEnvironment createSdkEnvironment(SdkConfig sdkConfig) {

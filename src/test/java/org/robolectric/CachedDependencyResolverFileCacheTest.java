@@ -11,12 +11,12 @@ import java.net.URL;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.robolectric.CachedMavenResolver.Cache;
+import org.robolectric.CachedDependencyResolver.Cache;
 import org.robolectric.test.TemporaryFolder;
 
 import static org.junit.Assert.*;
 
-public class CachedMavenCentralFileCacheTest {
+public class CachedDependencyResolverFileCacheTest {
 
   private final String ID = "id";
   private final String DIR = "tmp";
@@ -109,6 +109,6 @@ public class CachedMavenCentralFileCacheTest {
   }
 
   private Cache createCache() {
-    return new CachedMavenResolver.FileCache(temporaryFolder.newFolder(DIR), 1000);
+    return new CachedDependencyResolver.FileCache(temporaryFolder.newFolder(DIR), 1000);
   }
 }

@@ -14,21 +14,21 @@ import java.util.zip.CRC32;
 
 import org.apache.maven.model.Dependency;
 
-class CachedMavenResolver implements DependencyResolver {
+class CachedDependencyResolver implements DependencyResolver {
 
   private final static String CACHE_PREFIX_1 = "localArtifactUrls";
   private final static String CACHE_PREFIX_2 = "localArtifactUrl";
 
-  private final DependencyResolver mavenCentral;
+  private final DependencyResolver dependencyResolver;
   private final CacheNamingStrategy cacheNamingStrategy;
   private final Cache cache;
 
-  CachedMavenResolver(DependencyResolver mavenCentral, File cacheDir, long cacheValidTime) {
-    this(mavenCentral, new FileCache(cacheDir, cacheValidTime), new DefaultCacheNamingStrategy());
+  CachedDependencyResolver(DependencyResolver dependencyResolver, File cacheDir, long cacheValidTime) {
+    this(dependencyResolver, new FileCache(cacheDir, cacheValidTime), new DefaultCacheNamingStrategy());
   }
 
-  CachedMavenResolver(DependencyResolver mavenCentral, Cache cache, CacheNamingStrategy cacheNamingStrategy) {
-    this.mavenCentral = mavenCentral;
+  CachedDependencyResolver(DependencyResolver dependencyResolver, Cache cache, CacheNamingStrategy cacheNamingStrategy) {
+    this.dependencyResolver = dependencyResolver;
     this.cache = cache;
     this.cacheNamingStrategy = cacheNamingStrategy;
   }
@@ -44,7 +44,7 @@ class CachedMavenResolver implements DependencyResolver {
       return urlsFromCache;
     }
 
-    URL[] urls = mavenCentral.getLocalArtifactUrls(robolectricTestRunner, dependencies);
+    URL[] urls = dependencyResolver.getLocalArtifactUrls(robolectricTestRunner, dependencies);
 
     cache.write(cacheName, urls);
 
@@ -62,7 +62,7 @@ class CachedMavenResolver implements DependencyResolver {
       return urlFromCache;
     }
 
-    URL url = mavenCentral.getLocalArtifactUrl(robolectricTestRunner, dependency);
+    URL url = dependencyResolver.getLocalArtifactUrl(robolectricTestRunner, dependency);
     cache.write(cacheName, url);
 
     return url;

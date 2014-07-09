@@ -10,7 +10,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Hashtable;
 
-public class MavenResolver implements DependencyResolver {
+public class MavenDependencyResolver implements DependencyResolver {
   private final Project project = new Project();
 
   /**

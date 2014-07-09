@@ -6,10 +6,10 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class OfflineResolver implements DependencyResolver {
+public class LocalDependencyResolver implements DependencyResolver {
   private File offlineJarDir;
 
-  public OfflineResolver(File offlineJarDir) {
+  public LocalDependencyResolver(File offlineJarDir) {
     super();
     this.offlineJarDir = offlineJarDir;
   }
