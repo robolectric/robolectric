@@ -48,6 +48,16 @@ public class ShadowToast {
   }
 
   @Implementation
+  public void setText(int resId) {
+    this.text = Robolectric.getShadowApplication().getString(resId);
+  }
+
+  @Implementation
+  public void setText(CharSequence text) {
+    this.text = text.toString();
+  }
+
+  @Implementation
   public void setView(View view) {
     this.view = view;
   }

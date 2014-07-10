@@ -8,6 +8,7 @@ import android.widget.Toast;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
@@ -38,6 +39,26 @@ public class ToastTest {
     assertThat(ShadowToast.getLatestToast()).isSameAs(toast);
     assertThat(ShadowToast.getTextOfLatestToast()).isEqualTo("short toast");
     assertThat(ShadowToast.showedToast("short toast")).isTrue();
+  }
+
+  @Test
+  public void shouldMakeTextCorrectly() throws Exception {
+    Toast toast = Toast.makeText(new Activity(), "short toast", Toast.LENGTH_SHORT);
+    toast.setText("other toast");
+    toast.show();
+    assertThat(ShadowToast.getLatestToast()).isSameAs(toast);
+    assertThat(ShadowToast.getTextOfLatestToast()).isEqualTo("other toast");
+    assertThat(ShadowToast.showedToast("other toast")).isTrue();
+  }
+
+  @Test
+  public void shouldSetTextWithIdCorrectly() throws Exception {
+    Toast toast = Toast.makeText(new Activity(), "short toast", Toast.LENGTH_SHORT);
+    toast.setText(R.string.hello);
+    toast.show();
+    assertThat(ShadowToast.getLatestToast()).isSameAs(toast);
+    assertThat(ShadowToast.getTextOfLatestToast()).isEqualTo("Hello");
+    assertThat(ShadowToast.showedToast("Hello")).isTrue();
   }
 
   @Test
