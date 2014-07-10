@@ -31,7 +31,7 @@ public class ToastTest {
   }
 
   @Test
-  public void shouldSetTextCorrectly() throws Exception {
+  public void shouldMakeTextCorrectly() throws Exception {
     Toast toast = Toast.makeText(new Activity(), "short toast", Toast.LENGTH_SHORT);
     assertThat(toast).isNotNull();
     assertThat(toast.getDuration()).isEqualTo(Toast.LENGTH_SHORT);
@@ -42,7 +42,7 @@ public class ToastTest {
   }
 
   @Test
-  public void shouldMakeTextCorrectly() throws Exception {
+  public void shouldSetTextCorrectly() throws Exception {
     Toast toast = Toast.makeText(new Activity(), "short toast", Toast.LENGTH_SHORT);
     toast.setText("other toast");
     toast.show();
