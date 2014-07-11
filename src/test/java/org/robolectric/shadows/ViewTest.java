@@ -8,6 +8,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.view.ContextMenu;
 import android.view.HapticFeedbackConstants;
 import android.view.MotionEvent;
 import android.view.View;
@@ -721,6 +722,21 @@ public class ViewTest {
     testView.setOnSystemUiVisibilityChangeListener(changeListener);
 
     assertThat(changeListener).isEqualTo(shadowOf(testView).getOnSystemUiVisibilityChangeListener());
+  }
+  @Test public void capturesOnCreateContextMenuListener() throws Exception {
+    TestView testView = new TestView(buildActivity(Activity.class).create().get());
+    assertThat(shadowOf(testView).getOnCreateContextMenuListener()).isNull();
+
+    View.OnCreateContextMenuListener createListener = new View.OnCreateContextMenuListener() {
+      @Override
+      public void onCreateContextMenu(ContextMenu contextMenu, View view, ContextMenu.ContextMenuInfo contextMenuInfo) {}
+    };
+
+    testView.setOnCreateContextMenuListener(createListener);
+    assertThat(shadowOf(testView).getOnCreateContextMenuListener()).isEqualTo(createListener);
+
+    testView.setOnCreateContextMenuListener(null);
+    assertThat(shadowOf(testView).getOnCreateContextMenuListener()).isNull();
   }
 
   public static class MyActivity extends Activity {
