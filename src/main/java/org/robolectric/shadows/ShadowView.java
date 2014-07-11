@@ -54,6 +54,7 @@ public class ShadowView {
   private float scaleY = 1.0f;
   private int hapticFeedbackPerformed = -1;
   private boolean onLayoutWasCalled;
+  private View.OnCreateContextMenuListener onCreateContextMenuListener;
 
   public void __constructor__(Context context, AttributeSet attributeSet, int defStyle) {
     if (context == null) throw new NullPointerException("no context");
@@ -128,6 +129,12 @@ public class ShadowView {
   public void setOnSystemUiVisibilityChangeListener(View.OnSystemUiVisibilityChangeListener onSystemUiVisibilityChangeListener) {
     this.onSystemUiVisibilityChangeListener = onSystemUiVisibilityChangeListener;
     directly().setOnSystemUiVisibilityChangeListener(onSystemUiVisibilityChangeListener);
+  }
+
+  @Implementation
+  public void setOnCreateContextMenuListener(View.OnCreateContextMenuListener onCreateContextMenuListener) {
+    this.onCreateContextMenuListener = onCreateContextMenuListener;
+    directly().setOnCreateContextMenuListener(onCreateContextMenuListener);
   }
 
   @Implementation
@@ -306,6 +313,13 @@ public class ShadowView {
    */
   public View.OnSystemUiVisibilityChangeListener getOnSystemUiVisibilityChangeListener() {
     return onSystemUiVisibilityChangeListener;
+  }
+
+  /**
+   * Non-android accessor.  Returns create ContextMenu listener, if set.
+   */
+  public View.OnCreateContextMenuListener getOnCreateContextMenuListener() {
+    return onCreateContextMenuListener;
   }
 
   @Implementation

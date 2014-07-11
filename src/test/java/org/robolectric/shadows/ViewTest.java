@@ -8,6 +8,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.view.ContextMenu;
 import android.view.HapticFeedbackConstants;
 import android.view.MotionEvent;
 import android.view.View;
@@ -675,7 +676,8 @@ public class ViewTest {
     }
   }
 
-  @Test public void shouldCallOnAttachedToAndDetachedFromWindow() throws Exception {
+  @Test
+  public void shouldCallOnAttachedToAndDetachedFromWindow() throws Exception {
     MyView parent = new MyView("parent", transcript);
     parent.addView(new MyView("child", transcript));
     transcript.assertNoEventsSoFar();
@@ -698,7 +700,8 @@ public class ViewTest {
   }
 
   // todo looks like this is flaky...
-  @Test public void removeAllViews_shouldCallOnAttachedToAndDetachedFromWindow() throws Exception {
+  @Test
+  public void removeAllViews_shouldCallOnAttachedToAndDetachedFromWindow() throws Exception {
     MyView parent = new MyView("parent", transcript);
     Activity activity = Robolectric.buildActivity(ContentViewActivity.class).create().get();
     activity.getWindowManager().addView(parent, new WindowManager.LayoutParams(100, 100));
@@ -712,7 +715,8 @@ public class ViewTest {
     transcript.assertEventsSoFar("another child detached", "child detached");
   }
 
-  @Test public void capturesOnSystemUiVisibilityChangeListener() throws Exception {
+  @Test
+  public void capturesOnSystemUiVisibilityChangeListener() throws Exception {
     TestView testView = new TestView(buildActivity(Activity.class).create().get());
     View.OnSystemUiVisibilityChangeListener changeListener = new View.OnSystemUiVisibilityChangeListener() {
       @Override
@@ -721,6 +725,23 @@ public class ViewTest {
     testView.setOnSystemUiVisibilityChangeListener(changeListener);
 
     assertThat(changeListener).isEqualTo(shadowOf(testView).getOnSystemUiVisibilityChangeListener());
+  }
+
+  @Test
+  public void capturesOnCreateContextMenuListener() throws Exception {
+    TestView testView = new TestView(buildActivity(Activity.class).create().get());
+    assertThat(shadowOf(testView).getOnCreateContextMenuListener()).isNull();
+
+    View.OnCreateContextMenuListener createListener = new View.OnCreateContextMenuListener() {
+      @Override
+      public void onCreateContextMenu(ContextMenu contextMenu, View view, ContextMenu.ContextMenuInfo contextMenuInfo) {}
+    };
+
+    testView.setOnCreateContextMenuListener(createListener);
+    assertThat(shadowOf(testView).getOnCreateContextMenuListener()).isEqualTo(createListener);
+
+    testView.setOnCreateContextMenuListener(null);
+    assertThat(shadowOf(testView).getOnCreateContextMenuListener()).isNull();
   }
 
   public static class MyActivity extends Activity {
