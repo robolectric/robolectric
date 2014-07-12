@@ -195,6 +195,13 @@ public class ShadowBitmap {
       return src; // Return the original.
     }
 
+    if (x + width > src.getWidth()) {
+      throw new IllegalArgumentException("x + width must be <= bitmap.width()");
+    }
+    if (y + height > src.getHeight()) {
+      throw new IllegalArgumentException("y + height must be <= bitmap.height()");
+    }
+
     Bitmap newBitmap = Robolectric.newInstanceOf(Bitmap.class);
     ShadowBitmap shadowBitmap = shadowOf(newBitmap);
 
