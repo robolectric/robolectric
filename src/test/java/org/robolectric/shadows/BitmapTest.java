@@ -188,8 +188,8 @@ public class BitmapTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void throwsExceptionForInvalidDimensions() {
-      Bitmap b = Bitmap.createBitmap(10, 20, Config.ARGB_8888);
-      Bitmap.createBitmap(b, 0, 0, 20, 10, null, false);
+    Bitmap b = Bitmap.createBitmap(10, 20, Config.ARGB_8888);
+    Bitmap.createBitmap(b, 0, 0, 20, 10, null, false);
   }
 
   private static Bitmap create(String name) {
