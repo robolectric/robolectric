@@ -48,13 +48,13 @@ public class IntentFilterTest {
 
     assertThat(intentFilter.hasAction("test")).isTrue();
   }
-  
+
   @Test
   public void hasDataScheme() {
     IntentFilter intentFilter = new IntentFilter();
     assertThat(intentFilter.hasDataScheme("test")).isFalse();
     intentFilter.addDataScheme("test");
-  
+
     assertThat(intentFilter.hasDataScheme("test")).isTrue();
   }
 
@@ -193,5 +193,29 @@ public class IntentFilterTest {
     Uri uriTest1 = Uri.parse("http://testHost1:1");
     assertThat(intentFilter.matchData("image/test", "http", uriTest1))
         .isLessThan(0);
+  }
+
+  @Test
+  public void matchData_MatchesPartialType() throws IntentFilter.MalformedMimeTypeException {
+    IntentFilter intentFilter = new IntentFilter();
+    intentFilter.addDataScheme("content");
+    intentFilter.addDataType("image/*");
+
+    Uri uri = Uri.parse("content://authority/images");
+    assertThat(intentFilter.matchData("image/test", "content", uri)).isGreaterThanOrEqualTo(0);
+    assertThat(intentFilter.matchData("video/test", "content", uri)).isLessThan(0);
+  }
+
+  @Test
+  public void matchData_MatchesAnyTypeAndSubtype() throws IntentFilter.MalformedMimeTypeException {
+    IntentFilter intentFilter = new IntentFilter();
+    intentFilter.addDataScheme("content");
+    intentFilter.addDataType("*/*");
+
+    Uri uri = Uri.parse("content://authority/images");
+    assertThat(intentFilter.matchData("image/test", "content", uri)).isGreaterThanOrEqualTo(0);
+    assertThat(intentFilter.matchData("image/*", "content", uri)).isGreaterThanOrEqualTo(0);
+    assertThat(intentFilter.matchData("video/test", "content", uri)).isGreaterThanOrEqualTo(0);
+    assertThat(intentFilter.matchData("video/*", "content", uri)).isGreaterThanOrEqualTo(0);
   }
 }

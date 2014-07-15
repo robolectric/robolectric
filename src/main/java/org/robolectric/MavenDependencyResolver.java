@@ -10,7 +10,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Hashtable;
 
-public class MavenCentralImpl implements MavenCentral {
+public class MavenDependencyResolver implements DependencyResolver {
   private final Project project = new Project();
 
   /**
@@ -18,11 +18,9 @@ public class MavenCentralImpl implements MavenCentral {
    * same as the input order of dependencies, i.e., urls[i] is the local artifact URL for dependencies[i].
    */
   @Override
-  public URL[] getLocalArtifactUrls(RobolectricTestRunner robolectricTestRunner, Dependency... dependencies) {
+  public URL[] getLocalArtifactUrls(Dependency... dependencies) {
     DependenciesTask dependenciesTask = new DependenciesTask();
-    if (robolectricTestRunner != null) {
-      robolectricTestRunner.configureMaven(dependenciesTask);
-    }
+    configureMaven(dependenciesTask);
     RemoteRepository sonatypeRepository = new RemoteRepository();
     sonatypeRepository.setUrl("https://oss.sonatype.org/content/groups/public/");
     sonatypeRepository.setId("sonatype");
@@ -47,8 +45,8 @@ public class MavenCentralImpl implements MavenCentral {
   }
 
   @Override
-  public URL getLocalArtifactUrl(RobolectricTestRunner robolectricTestRunner, Dependency dependency) {
-    URL[] urls = getLocalArtifactUrls(robolectricTestRunner, dependency);
+  public URL getLocalArtifactUrl(Dependency dependency) {
+    URL[] urls = getLocalArtifactUrls(dependency);
     if (urls.length > 0) {
       return urls[0];
     }
@@ -57,5 +55,9 @@ public class MavenCentralImpl implements MavenCentral {
 
   private String key(Dependency dependency) {
     return dependency.getGroupId() + ":" + dependency.getArtifactId() + ":" + dependency.getType();
+  }
+
+  protected void configureMaven(DependenciesTask dependenciesTask) {
+    // maybe you want to override this method and some settings?
   }
 }

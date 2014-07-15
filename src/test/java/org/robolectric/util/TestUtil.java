@@ -2,7 +2,7 @@ package org.robolectric.util;
 
 import android.content.res.Resources;
 import org.robolectric.AndroidManifest;
-import org.robolectric.MavenCentralImpl;
+import org.robolectric.MavenDependencyResolver;
 import org.robolectric.R;
 import org.robolectric.SdkConfig;
 import org.robolectric.res.Attribute;
@@ -105,7 +105,7 @@ public abstract class TestUtil {
 
   public static ResourcePath systemResources() {
     if (SYSTEM_RESOURCE_PATH == null) {
-      URL url = new MavenCentralImpl().getLocalArtifactUrl(null, SdkConfig.getDefaultSdk().getSystemResourceDependency());
+      URL url = new MavenDependencyResolver().getLocalArtifactUrl(SdkConfig.getDefaultSdk().getSystemResourceDependency());
       Fs fs = Fs.fromJar(url);
       SYSTEM_RESOURCE_PATH = new ResourcePath(android.R.class, "android", fs.join("res"), fs.join("assets"));
     }
