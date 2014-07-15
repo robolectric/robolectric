@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.maven.artifact.ant.DependenciesTask;
 import org.jetbrains.annotations.TestOnly;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -62,28 +61,14 @@ import static org.fest.reflect.core.Reflection.type;
  * provide a simulation of the Android runtime environment.
  */
 public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
-  private static final MavenCentral MAVEN_CENTRAL;
   private static final Map<Class<? extends RobolectricTestRunner>, EnvHolder> envHoldersByTestRunner = new HashMap<Class<? extends RobolectricTestRunner>, EnvHolder>();
   private static Map<Pair<AndroidManifest, SdkConfig>, ResourceLoader> resourceLoadersByManifestAndConfig = new HashMap<Pair<AndroidManifest, SdkConfig>, ResourceLoader>();
   private static ShadowMap mainShadowMap;
   private final EnvHolder envHolder;
   private TestLifecycle<Application> testLifecycle;
+  private DependencyResolver dependencyResolver;
 
   static {
-
-    MavenCentral mc;
-
-    File cacheDir = new File(new File(System.getProperty("java.io.tmpdir")), "robolectric");
-    cacheDir.mkdir();
-
-    if (cacheDir.exists()) {
-      mc = new CachedMavenCentral(new MavenCentralImpl(), cacheDir, 60 * 60 * 24 * 1000);
-    } else {
-      mc = new MavenCentralImpl();
-    }
-
-    MAVEN_CENTRAL = mc;
-
     new SecureRandom(); // this starts up the Poller SunPKCS11-Darwin thread early, outside of any Robolectric classloader
   }
 
@@ -127,6 +112,26 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     }
   }
 
+  protected DependencyResolver getJarResolver() {
+    if (dependencyResolver == null) {
+      if (Boolean.getBoolean("robolectric.offline")) {
+        String dependencyDir = System.getProperty("robolectric.dependency.dir", ".");
+        dependencyResolver = new LocalDependencyResolver(new File(dependencyDir));
+      } else {
+        File cacheDir = new File(new File(System.getProperty("java.io.tmpdir")), "robolectric");
+        cacheDir.mkdir();
+
+        if (cacheDir.exists()) {
+          dependencyResolver = new CachedDependencyResolver(new MavenDependencyResolver(), cacheDir, 60 * 60 * 24 * 1000);
+        } else {
+          dependencyResolver = new MavenDependencyResolver();
+        }
+      }
+    }
+
+    return dependencyResolver;
+  }
+
   public SdkEnvironment createSdkEnvironment(SdkConfig sdkConfig) {
     Setup setup = createSetup();
     ClassLoader robolectricClassLoader = createRobolectricClassLoader(setup, sdkConfig);
@@ -159,7 +164,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   }
 
   protected ClassLoader createRobolectricClassLoader(Setup setup, SdkConfig sdkConfig) {
-    URL[] urls = MAVEN_CENTRAL.getLocalArtifactUrls(this, sdkConfig.getSdkClasspathDependencies());
+    URL[] urls = getJarResolver().getLocalArtifactUrls(sdkConfig.getSdkClasspathDependencies());
     return new AsmInstrumentingClassLoader(setup, urls);
   }
 
@@ -177,11 +182,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  @SuppressWarnings("UnusedParameters")
-  protected void configureMaven(DependenciesTask dependenciesTask) {
-    // maybe you want to override this method and some settings?
   }
 
   @Override
@@ -249,7 +249,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
           Class<?> versionClass = sdkEnvironment.bootstrappedClass(Build.VERSION.class);
           staticField("SDK_INT").ofType(int.class).in(versionClass).set(sdkVersion);
 
-          ResourceLoader systemResourceLoader = sdkEnvironment.getSystemResourceLoader(MAVEN_CENTRAL, RobolectricTestRunner.this);
+          ResourceLoader systemResourceLoader = sdkEnvironment.getSystemResourceLoader(getJarResolver(), RobolectricTestRunner.this);
           setUpApplicationState(bootstrappedMethod, parallelUniverseInterface, strictI18n, systemResourceLoader, appManifest, config);
           testLifecycle.beforeTest(bootstrappedMethod);
         } catch (Exception e) {

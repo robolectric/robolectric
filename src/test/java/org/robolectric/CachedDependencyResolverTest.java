@@ -11,27 +11,27 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runners.model.InitializationError;
-import org.robolectric.CachedMavenCentral.Cache;
-import org.robolectric.CachedMavenCentral.CacheNamingStrategy;
+import org.robolectric.CachedDependencyResolver.Cache;
+import org.robolectric.CachedDependencyResolver.CacheNamingStrategy;
 import org.robolectric.test.TemporaryFolder;
 
 import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
 
-public class CachedMavenCentralTest {
+public class CachedDependencyResolverTest {
 
   private static final String CACHE_NAME = "someName";
 
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-  private MavenCentral internalMc = mock(MavenCentral.class);
+  private DependencyResolver internalResolver = mock(DependencyResolver.class);
   private CacheNamingStrategy cacheNamingStrategy = new CacheNamingStrategy() {
     @Override
     public String getName(String prefix, Dependency... dependencies) {
       return CACHE_NAME;
     }
   };
-  private RobolectricTestRunner testRunner;
+
   private URL[] urls;
   private Cache cache = new CacheStub();
   private Dependency[] dependencies = new Dependency[]{
@@ -43,18 +43,17 @@ public class CachedMavenCentralTest {
 
   @Before
   public void setUp() throws InitializationError, MalformedURLException {
-    testRunner = new RobolectricTestRunner(this.getClass());
     urls = new URL[] { new URL("http://localhost") };
     url = new URL("http://localhost");
   }
 
   @Test
   public void shouldWriteLocalArtifactsUrlsWhenCacheMiss() throws Exception {
-    MavenCentral mv = createMavenCentral();
+    DependencyResolver res = createResolver();
 
-    when(internalMc.getLocalArtifactUrls(testRunner, dependencies)).thenReturn(urls);
+    when(internalResolver.getLocalArtifactUrls(dependencies)).thenReturn(urls);
 
-    URL[] urls = mv.getLocalArtifactUrls(testRunner, dependencies);
+    URL[] urls = res.getLocalArtifactUrls(dependencies);
 
     assertArrayEquals(this.urls, urls);
     assertCacheContents(urls);
@@ -63,24 +62,24 @@ public class CachedMavenCentralTest {
   @Test
   public void shouldReadLocalArtifactUrlsFromCacheIfExists() throws Exception {
 
-    MavenCentral mv = createMavenCentral();
+    DependencyResolver res = createResolver();
 
     cache.write(CACHE_NAME, urls);
 
-    URL[] urls = mv.getLocalArtifactUrls(testRunner, dependencies);
+    URL[] urls = res.getLocalArtifactUrls(dependencies);
 
-    verify(internalMc, never()).getLocalArtifactUrls(testRunner, dependencies);
+    verify(internalResolver, never()).getLocalArtifactUrls(dependencies);
 
     assertArrayEquals(this.urls, urls);
   }
 
   @Test
   public void shouldWriteLocalArtifactUrlWhenCacheMiss() throws Exception{
-    MavenCentral mv = createMavenCentral();
+    DependencyResolver res = createResolver();
 
-    when(internalMc.getLocalArtifactUrl(testRunner, dependency)).thenReturn(url);
+    when(internalResolver.getLocalArtifactUrl(dependency)).thenReturn(url);
 
-    URL url = mv.getLocalArtifactUrl(testRunner, dependency);
+    URL url = res.getLocalArtifactUrl(dependency);
 
     assertEquals(this.url, url);
     assertCacheContents(url);
@@ -88,13 +87,13 @@ public class CachedMavenCentralTest {
 
   @Test
   public void shouldReadLocalArtifactUrlFromCacheIfExists() throws Exception {
-    MavenCentral mv = createMavenCentral();
+    DependencyResolver res = createResolver();
 
     cache.write(CACHE_NAME, url);
 
-    URL url = mv.getLocalArtifactUrl(testRunner, dependency);
+    URL url = res.getLocalArtifactUrl(dependency);
 
-    verify(internalMc, never()).getLocalArtifactUrl(testRunner, dependency);
+    verify(internalResolver, never()).getLocalArtifactUrl(dependency);
 
     assertEquals(this.url, url);
   }
@@ -107,8 +106,8 @@ public class CachedMavenCentralTest {
     assertEquals(url, cache.load(CACHE_NAME, URL.class));
   }
 
-  private MavenCentral createMavenCentral() {
-    return new CachedMavenCentral(internalMc, cache, cacheNamingStrategy);
+  private DependencyResolver createResolver() {
+    return new CachedDependencyResolver(internalResolver, cache, cacheNamingStrategy);
   }
 
   private Dependency createDependency(final String groupId, final String artifactId) {
@@ -129,7 +128,7 @@ public class CachedMavenCentralTest {
     };
   }
 
-  private static class CacheStub implements CachedMavenCentral.Cache {
+  private static class CacheStub implements CachedDependencyResolver.Cache {
 
     private Map<String, Serializable> map = new HashMap<String, Serializable>();
 

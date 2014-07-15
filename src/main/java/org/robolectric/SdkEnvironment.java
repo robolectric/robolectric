@@ -25,17 +25,17 @@ public class SdkEnvironment {
     this.robolectricClassLoader = robolectricClassLoader;
   }
 
-  public PackageResourceLoader createSystemResourceLoader(MavenCentral mavenCentral, RobolectricTestRunner robolectricTestRunner) {
-    URL url = mavenCentral.getLocalArtifactUrl(robolectricTestRunner, sdkConfig.getSystemResourceDependency());
+  public PackageResourceLoader createSystemResourceLoader(DependencyResolver dependencyResolver, RobolectricTestRunner robolectricTestRunner) {
+    URL url = dependencyResolver.getLocalArtifactUrl(sdkConfig.getSystemResourceDependency());
     Fs systemResFs = Fs.fromJar(url);
     ResourceExtractor resourceExtractor = new ResourceExtractor(getRobolectricClassLoader());
     ResourcePath resourcePath = new ResourcePath(resourceExtractor.getProcessedRFile(), resourceExtractor.getPackageName(), systemResFs.join("res"), systemResFs.join("assets"));
     return new PackageResourceLoader(resourcePath, resourceExtractor);
   }
 
-  public synchronized ResourceLoader getSystemResourceLoader(MavenCentral mavenCentral, RobolectricTestRunner robolectricTestRunner) {
+  public synchronized ResourceLoader getSystemResourceLoader(DependencyResolver dependencyResolver, RobolectricTestRunner robolectricTestRunner) {
     if (systemResourceLoader == null) {
-      systemResourceLoader = createSystemResourceLoader(mavenCentral, robolectricTestRunner);
+      systemResourceLoader = createSystemResourceLoader(dependencyResolver, robolectricTestRunner);
     }
     return systemResourceLoader;
   }

@@ -10,33 +10,31 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.zip.CRC32;
 
 import org.apache.maven.model.Dependency;
 
-class CachedMavenCentral implements MavenCentral {
+class CachedDependencyResolver implements DependencyResolver {
 
   private final static String CACHE_PREFIX_1 = "localArtifactUrls";
   private final static String CACHE_PREFIX_2 = "localArtifactUrl";
 
-  private final MavenCentral mavenCentral;
+  private final DependencyResolver dependencyResolver;
   private final CacheNamingStrategy cacheNamingStrategy;
   private final Cache cache;
 
-  CachedMavenCentral(MavenCentral mavenCentral, File cacheDir, long cacheValidTime) {
-    this(mavenCentral, new FileCache(cacheDir, cacheValidTime), new DefaultCacheNamingStrategy());
+  CachedDependencyResolver(DependencyResolver dependencyResolver, File cacheDir, long cacheValidTime) {
+    this(dependencyResolver, new FileCache(cacheDir, cacheValidTime), new DefaultCacheNamingStrategy());
   }
 
-  CachedMavenCentral(MavenCentral mavenCentral, Cache cache, CacheNamingStrategy cacheNamingStrategy) {
-    this.mavenCentral = mavenCentral;
+  CachedDependencyResolver(DependencyResolver dependencyResolver, Cache cache, CacheNamingStrategy cacheNamingStrategy) {
+    this.dependencyResolver = dependencyResolver;
     this.cache = cache;
     this.cacheNamingStrategy = cacheNamingStrategy;
   }
 
   @Override
-  public URL[] getLocalArtifactUrls(RobolectricTestRunner robolectricTestRunner, Dependency... dependencies) {
+  public URL[] getLocalArtifactUrls(Dependency... dependencies) {
 
     String cacheName = cacheNamingStrategy.getName(CACHE_PREFIX_1, dependencies);
 
@@ -46,7 +44,7 @@ class CachedMavenCentral implements MavenCentral {
       return urlsFromCache;
     }
 
-    URL[] urls = mavenCentral.getLocalArtifactUrls(robolectricTestRunner, dependencies);
+    URL[] urls = dependencyResolver.getLocalArtifactUrls(dependencies);
 
     cache.write(cacheName, urls);
 
@@ -54,7 +52,7 @@ class CachedMavenCentral implements MavenCentral {
   }
 
   @Override
-  public URL getLocalArtifactUrl(RobolectricTestRunner robolectricTestRunner, Dependency dependency) {
+  public URL getLocalArtifactUrl(Dependency dependency) {
 
     String cacheName = cacheNamingStrategy.getName(CACHE_PREFIX_2, dependency);
 
@@ -64,7 +62,7 @@ class CachedMavenCentral implements MavenCentral {
       return urlFromCache;
     }
 
-    URL url = mavenCentral.getLocalArtifactUrl(robolectricTestRunner, dependency);
+    URL url = dependencyResolver.getLocalArtifactUrl(dependency);
     cache.write(cacheName, url);
 
     return url;
