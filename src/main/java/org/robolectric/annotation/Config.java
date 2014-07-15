@@ -72,6 +72,11 @@ public @interface Config {
    */
   Class<?>[] shadows() default {};
 
+  /**
+   * A list of folders containing Android Libraries on which this project depends.
+   */
+  String[] libraries() default {};
+
   public class Implementation implements Config {
     private final int emulateSdk;
     private final String manifest;
@@ -80,6 +85,7 @@ public @interface Config {
     private final int reportSdk;
     private final Class<?>[] shadows;
     private final Class<? extends Application> application;
+    private final String[] libraries;
 
     public static Config fromProperties(Properties configProperties) {
       if (configProperties == null || configProperties.size() == 0) return null;
@@ -90,7 +96,8 @@ public @interface Config {
           configProperties.getProperty("resourceDir", "res"),
           Integer.parseInt(configProperties.getProperty("reportSdk", "-1")),
           parseClasses(configProperties.getProperty("shadows", "")),
-          parseApplication(configProperties.getProperty("application", "android.app.Application"))
+          parseApplication(configProperties.getProperty("application", "android.app.Application")),
+          parsePaths(configProperties.getProperty("libraries", ""))
       );
     }
 
@@ -117,7 +124,12 @@ public @interface Config {
       }
     }
 
-    public Implementation(int emulateSdk, String manifest, String qualifiers, String resourceDir, int reportSdk, Class<?>[] shadows, Class<? extends Application> application) {
+    private static String[] parsePaths(String pathList) {
+      if (pathList.length() == 0) return new String[0];
+      return pathList.split("[, ]+");
+    }
+
+    public Implementation(int emulateSdk, String manifest, String qualifiers, String resourceDir, int reportSdk, Class<?>[] shadows, Class<? extends Application> application, String[] libraries) {
       this.emulateSdk = emulateSdk;
       this.manifest = manifest;
       this.qualifiers = qualifiers;
@@ -125,6 +137,7 @@ public @interface Config {
       this.reportSdk = reportSdk;
       this.shadows = shadows;
       this.application = application;
+      this.libraries = libraries;
     }
 
     public Implementation(Config baseConfig, Config overlayConfig) {
@@ -133,11 +146,18 @@ public @interface Config {
       this.qualifiers = pick(baseConfig.qualifiers(), overlayConfig.qualifiers(), "");
       this.resourceDir = pick(baseConfig.resourceDir(), overlayConfig.resourceDir(), "res");
       this.reportSdk = pick(baseConfig.reportSdk(), overlayConfig.reportSdk(), -1);
+
       Set<Class<?>> shadows = new HashSet<Class<?>>();
       shadows.addAll(Arrays.asList(baseConfig.shadows()));
       shadows.addAll(Arrays.asList(overlayConfig.shadows()));
       this.shadows = shadows.toArray(new Class[shadows.size()]);
+
       this.application = pick(baseConfig.application(), overlayConfig.application(), null);
+
+      Set<String> libraries = new HashSet<String>();
+      libraries.addAll(Arrays.asList(baseConfig.libraries()));
+      libraries.addAll(Arrays.asList(overlayConfig.libraries()));
+      this.libraries = libraries.toArray(new String[libraries.size()]);
     }
 
     private <T> T pick(T baseValue, T overlayValue, T nullValue) {
@@ -172,6 +192,10 @@ public @interface Config {
 
     @Override public Class<?>[] shadows() {
       return shadows;
+    }
+
+    @Override public String[] libraries() {
+      return libraries;
     }
 
     @NotNull @Override public Class<? extends Annotation> annotationType() {

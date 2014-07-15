@@ -4,6 +4,9 @@ import android.content.res.Resources;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
+
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
@@ -34,5 +37,14 @@ public class LibraryHandlingTest {
     assertEquals("from lib3", resources.getText(org.robolectric.R.string.in_lib2_and_lib3));
     assertEquals("from lib1", resources.getText(org.robolectric.R.string.in_lib1_and_lib3));
     assertEquals("from main", resources.getText(org.robolectric.R.string.in_main_and_lib1));
+  }
+
+  @Test
+  @Config(manifest="src/test/resources/TestAndroidManifest.xml", libraries="lib1")
+  public void libraryConfigShouldOverrideProjectProperties() throws Exception {
+    AndroidManifest manifest = Robolectric.shadowOf(Robolectric.application).getAppManifest();
+    List<AndroidManifest> libraryManifests = manifest.getLibraryManifests();
+    assertEquals(1, libraryManifests.size());
+    assertEquals("org.robolectric.lib1", libraryManifests.get(0).getPackageName());
   }
 }
