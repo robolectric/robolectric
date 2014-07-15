@@ -152,6 +152,11 @@ public class ShadowPopupWindow {
     showAsDropDown(anchor);
   }
 
+  @Implementation
+  public void showAtLocation(View parent, int gravity, int x, int y) {
+    showAsDropDown(parent);
+  }
+
   public boolean dispatchTouchEvent(MotionEvent e) {
     return onTouchInterceptor != null && onTouchInterceptor.onTouch(realPopupWindow.getContentView(), e);
   }
