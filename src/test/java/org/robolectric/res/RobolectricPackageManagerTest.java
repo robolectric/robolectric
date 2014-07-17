@@ -139,6 +139,21 @@ public class RobolectricPackageManagerTest {
   }
 
   @Test
+  @Config(manifest = "src/test/resources/TestAndroidManifestForActivityAliases.xml")
+  public void queryIntentActivities__MatchWithAliasIntents() throws Exception {
+    rpm.addManifest(Robolectric.getShadowApplication().getAppManifest(), Robolectric.getShadowApplication().getResourceLoader());
+    Intent i = new Intent(Intent.ACTION_MAIN);
+    i.addCategory(Intent.CATEGORY_LAUNCHER);
+
+    rpm.setQueryIntentImplicitly(true);
+    List<ResolveInfo> activities = rpm.queryIntentActivities(i, 0);
+    assertThat(activities).isNotNull();
+    assertThat(activities).hasSize(1);
+    assertThat(activities.get(0).resolvePackageName.toString()).isEqualTo("org.robolectric");
+    assertThat(activities.get(0).activityInfo.targetActivity.toString()).isEqualTo("org.robolectric.shadows.TestActivity");
+  }
+
+  @Test
   public void resolveActivity__Match() throws Exception {
     Intent i = new Intent(Intent.ACTION_MAIN, null).addCategory(Intent.CATEGORY_LAUNCHER);
     ResolveInfo info = new ResolveInfo();

@@ -221,25 +221,44 @@ public class AndroidManifest {
     if (application == null) return;
 
     for (Node activityNode : getChildrenTags(application, "activity")) {
-      final NamedNodeMap attributes = activityNode.getAttributes();
-      final int attrCount = attributes.getLength();
-      final List<IntentFilterData> intentFilterData = parseIntentFilters(activityNode);
-      final HashMap<String, String> activityAttrs = new HashMap<String, String>(attrCount);
-      for(int i = 0; i < attrCount; i++) {
-        Node attr = attributes.item(i);
-        String v = attr.getNodeValue();
-        if( v != null) {
-          activityAttrs.put(attr.getNodeName(), v);
-        }
-      }
-
-      String activityName = resolveClassRef(activityAttrs.get(ActivityData.getNameAttr("android")));
-      if (activityName == null) {
-        continue;
-      }
-      activityAttrs.put(ActivityData.getNameAttr("android"), activityName);
-      activityDatas.put(activityName, new ActivityData(activityAttrs, intentFilterData));
+      parseActivity(activityNode, false);
     }
+
+    for (Node activityNode : getChildrenTags(application, "activity-alias")) {
+      parseActivity(activityNode, true);
+    }
+  }
+
+  private void parseActivity(Node activityNode, boolean isAlias) {
+    final NamedNodeMap attributes = activityNode.getAttributes();
+    final int attrCount = attributes.getLength();
+    final List<IntentFilterData> intentFilterData = parseIntentFilters(activityNode);
+    final HashMap<String, String> activityAttrs = new HashMap<String, String>(attrCount);
+    for(int i = 0; i < attrCount; i++) {
+      Node attr = attributes.item(i);
+      String v = attr.getNodeValue();
+      if( v != null) {
+        activityAttrs.put(attr.getNodeName(), v);
+      }
+    }
+
+    String activityName = resolveClassRef(activityAttrs.get(ActivityData.getNameAttr("android")));
+    if (activityName == null) {
+      return;
+    }
+    ActivityData targetActivity = null;
+    if (isAlias) {
+      String targetName = resolveClassRef(activityAttrs.get(ActivityData.getTargetAttr("android")));
+      if (activityName == null) {
+        return;
+      }
+      // The target activity should have been parsed already so if it exists we should find it in
+      // activityDatas.
+      targetActivity = activityDatas.get(targetName);
+      activityAttrs.put(ActivityData.getTargetAttr("android"), targetName);
+    }
+    activityAttrs.put(ActivityData.getNameAttr("android"), activityName);
+    activityDatas.put(activityName, new ActivityData("android", activityAttrs, intentFilterData, targetActivity));
   }
 
   private List<IntentFilterData> parseIntentFilters(final Node activityNode) {
