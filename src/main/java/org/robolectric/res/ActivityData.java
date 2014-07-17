@@ -28,6 +28,7 @@ public class ActivityData {
   private static final String PROCESS = "process";
   private static final String SCREEN_ORIENTATION = "screenOrientation";
   private static final String STATE_NOT_NEEDED = "stateNotNeeded";
+  private static final String TARGET_ACTIVITY = "targetActivity";
   private static final String TASK_AFFINITY = "taskAffinity";
   private static final String THEME = "theme";
   private static final String UI_OPTIONS = "uiOptions";
@@ -35,6 +36,8 @@ public class ActivityData {
 
   private final List<IntentFilterData> intentFilters;
   private final HashMap<String, String> attrs;
+  // Non-null only for activity-alias'es.
+  private final ActivityData targetActivity;
 
   /**
    * XML Namespace used for android.
@@ -46,10 +49,16 @@ public class ActivityData {
   }
 
   public ActivityData(String xmlns, Map<String, String> attrMap, List<IntentFilterData> intentFilters) {
+    this(xmlns, attrMap, intentFilters, null);
+  }
+
+  public ActivityData(String xmlns, Map<String, String> attrMap, List<IntentFilterData> intentFilters,
+      ActivityData targetActivity) {
     this.xmlns = xmlns;
     attrs = new HashMap<String,String>();
     attrs.putAll(attrMap);
     this.intentFilters = new ArrayList<IntentFilterData>(intentFilters);
+    this.targetActivity = targetActivity;
   }
 
   public boolean isAllowTaskReparenting() {
@@ -147,6 +156,10 @@ public class ActivityData {
     return getBooleanAttr(withXMLNS(STATE_NOT_NEEDED), false);
   }
 
+  public String getTargetActivityName() {
+    return attrs.get(withXMLNS(TARGET_ACTIVITY));
+  }
+
   public String getTaskAffinity() {
     return attrs.get(withXMLNS(TASK_AFFINITY));
   }
@@ -217,11 +230,19 @@ public class ActivityData {
     return intentFilters;
   }
 
+  public ActivityData getTargetActivity() {
+    return targetActivity;
+  }
+
   private static String withXMLNS(String xmlns, String attr) {
     return String.format("%s:%s", xmlns, attr);
   }
 
   public static String getNameAttr(String xmlns) {
     return withXMLNS(xmlns, NAME);
+  }
+
+  public static String getTargetAttr(String xmlns) {
+    return withXMLNS("android", TARGET_ACTIVITY);
   }
 }

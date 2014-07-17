@@ -300,6 +300,14 @@ public class AndroidManifestTest {
   }
 
   @Test
+  public void shouldReadActivityAliases() throws Exception {
+    AndroidManifest config = newConfig("TestAndroidManifestForActivityAliases.xml");
+    assertThat(config.getActivityDatas()).hasSize(2);
+    assertThat(config.getActivityDatas()).containsKey("org.robolectric.shadows.TestActivity");
+    assertThat(config.getActivityDatas()).containsKey("org.robolectric.shadows.TestActivityAlias");
+  }
+
+  @Test
   public void shouldReadIntentFilterWithData() {
     AndroidManifest appManifest = newConfig("TestAndroidManifestForActivitiesWithIntentFilterWithData.xml");
     appManifest.getMinSdkVersion(); // Force parsing

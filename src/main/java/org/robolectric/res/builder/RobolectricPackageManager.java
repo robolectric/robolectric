@@ -458,6 +458,9 @@ public class RobolectricPackageManager extends StubPackageManager {
       for (Map.Entry<String, ActivityData> activity : appManifest.getActivityDatas().entrySet()) {
         String activityName = activity.getKey();
         ActivityData activityData = activity.getValue();
+        if (activityData.getTargetActivity() != null) {
+          activityName = activityData.getTargetActivityName();
+        }
 
         if (matchIntentFilter(activityData, intent)) {
           ResolveInfo resolveInfo = new ResolveInfo();
