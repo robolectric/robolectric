@@ -115,6 +115,9 @@ abstract public class ShadowContext {
 
   @Implementation
   public FileOutputStream openFileOutput(String path, int mode) throws FileNotFoundException {
+    if ((mode & Context.MODE_APPEND) == Context.MODE_APPEND) {
+      return new FileOutputStream(getFileStreamPath(path), true);
+    }
     return new FileOutputStream(getFileStreamPath(path));
   }
 

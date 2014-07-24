@@ -264,6 +264,71 @@ public class ContextTest {
   }
 
   @Test
+  public void openFileOutput_shouldAppendData() throws Exception {
+    File file = new File("__test__");
+    String initialFileContents = "foo";
+    String appendedFileContents = "bar";
+    String finalFileContents = initialFileContents + appendedFileContents;
+    FileOutputStream fileOutputStream = null;
+    try {
+      fileOutputStream = context.openFileOutput("__test__", Context.MODE_APPEND);
+      fileOutputStream.write(initialFileContents.getBytes());
+    } finally {
+      if (fileOutputStream != null)
+        fileOutputStream.close();
+    }
+    try {
+      fileOutputStream = context.openFileOutput("__test__", Context.MODE_APPEND);
+      fileOutputStream.write(appendedFileContents.getBytes());
+    } finally {
+      if (fileOutputStream != null)
+        fileOutputStream.close();
+    }
+    FileInputStream fileInputStream = null;
+    try {
+      fileInputStream = new FileInputStream(new File(context.getFilesDir(), file.getName()));
+      byte[] readBuffer = new byte[finalFileContents.length()];
+      fileInputStream.read(readBuffer);
+      assertThat(new String(readBuffer)).isEqualTo(finalFileContents);
+    } finally {
+      if (fileInputStream != null)
+        fileInputStream.close();
+    }
+  }
+
+  @Test
+  public void openFileOutput_shouldOverwriteData() throws Exception {
+    File file = new File("__test__");
+    String initialFileContents = "foo";
+    String newFileContents = "bar";
+    FileOutputStream fileOutputStream = null;
+    try {
+      fileOutputStream = context.openFileOutput("__test__", 0);
+      fileOutputStream.write(initialFileContents.getBytes());
+    } finally {
+      if (fileOutputStream != null)
+        fileOutputStream.close();
+    }
+    try {
+      fileOutputStream = context.openFileOutput("__test__", 0);
+      fileOutputStream.write(newFileContents.getBytes());
+    } finally {
+      if (fileOutputStream != null)
+        fileOutputStream.close();
+    }
+    FileInputStream fileInputStream = null;
+    try {
+      fileInputStream = new FileInputStream(new File(context.getFilesDir(), file.getName()));
+      byte[] readBuffer = new byte[newFileContents.length()];
+      fileInputStream.read(readBuffer);
+      assertThat(new String(readBuffer)).isEqualTo(newFileContents);
+    } finally {
+      if (fileInputStream != null)
+        fileInputStream.close();
+    }
+  }
+
+  @Test
   public void deleteFile_shouldReturnTrue() throws IOException {
     File filesDir = context.getFilesDir();
     File file = new File(filesDir, "test.txt");
