@@ -22,7 +22,12 @@ public class ShadowSystemClock {
 
   @Implementation
   public static boolean setCurrentTimeMillis(long millis) {
-    return false;
+    setNanoTime(millis * 1000000);
+	return true;
+  }
+  
+  public static void setNanoTime(long nanoTime) {
+    ShadowSystemClock.nanoTime = nanoTime;
   }
 
   @Implementation
@@ -49,14 +54,22 @@ public class ShadowSystemClock {
   public static long currentTimeMicro() {
     return now() * 1000;
   }
+  
+  /**
+   * Implements {@link System#currentTimeMillis} through ShadowWrangler.
+   */
+  @SuppressWarnings("UnusedDeclaration")
+  public static long currentTimeMillis() {
+    long currTimeMillis = nanoTime / 1000000;
+	nanoTime += 1000000;
+	return currTimeMillis;
+  }
 
-  // used by ShadowWranger for System.nanoTime() calls...
+  /**
+   * Implements {@link System#nanoTime} through ShadowWrangler.
+   */
   @SuppressWarnings("UnusedDeclaration")
   public static long nanoTime() {
     return nanoTime++;
-  }
-
-  public static void setNanoTime(long nanoTime) {
-    ShadowSystemClock.nanoTime = nanoTime;
   }
 }
