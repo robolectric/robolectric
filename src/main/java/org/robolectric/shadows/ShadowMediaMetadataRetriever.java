@@ -2,12 +2,16 @@ package org.robolectric.shadows;
 
 import java.util.Map;
 import java.util.HashMap;
+
 import com.google.android.collect.Maps;
+
 import android.media.MediaMetadataRetriever;
+
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Resetter;
 
-@Implements(value = MediaMetadataRetriever.class, resetStaticState = true)
+@Implements(MediaMetadataRetriever.class)
 public class ShadowMediaMetadataRetriever {
   private String path;
   private static final Map<String, HashMap<Integer, String>> metadata = Maps.newHashMap();
@@ -32,6 +36,7 @@ public class ShadowMediaMetadataRetriever {
     metadata.get(path).put(keyCode, value);
   }
 
+  @Resetter
   public static void reset() {
     metadata.clear();
   }

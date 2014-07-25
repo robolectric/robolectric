@@ -7,9 +7,11 @@ import android.content.Intent;
 import android.content.IntentSender;
 import android.content.TestIntentSender;
 import android.os.Bundle;
+
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,7 +20,7 @@ import java.util.List;
 /**
  * Shadow of {@code PendingIntent} that creates and sends {@code Intent}s appropriately.
  */
-@Implements(value = PendingIntent.class, resetStaticState = true)
+@Implements(PendingIntent.class)
 public class ShadowPendingIntent {
   private static final List<PendingIntent> createdIntents = new ArrayList<PendingIntent>();
 
@@ -197,6 +199,7 @@ public class ShadowPendingIntent {
     return null;
   }
 
+  @Resetter
   public static void reset() {
     createdIntents.clear();
   }

@@ -9,10 +9,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +25,7 @@ import static org.robolectric.Robolectric.directlyOn;
 import static org.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(value = Dialog.class, resetStaticState = true)
+@Implements(Dialog.class)
 public class ShadowDialog {
 
   @RealObject private Dialog realDialog;
@@ -42,6 +44,7 @@ public class ShadowDialog {
   private static final ArrayList<Dialog> shownDialogs = new ArrayList<Dialog>();
   private boolean isCancelableOnTouchOutside;
 
+  @Resetter
   public static void reset() {
     setLatestDialog(null);
     shownDialogs.clear();

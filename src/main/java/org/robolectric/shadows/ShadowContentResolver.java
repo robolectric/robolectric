@@ -20,6 +20,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.internal.NamedStream;
 import org.robolectric.res.ContentProviderData;
 import org.robolectric.tester.android.database.TestCursor;
@@ -34,7 +35,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-@Implements(value = ContentResolver.class, resetStaticState = true)
+@Implements(ContentResolver.class)
 public class ShadowContentResolver {
   private int nextDatabaseIdForInserts;
   private int nextDatabaseIdForUpdates;
@@ -58,6 +59,7 @@ public class ShadowContentResolver {
   private static final Map<String, ContentProvider> providers = new HashMap<String, ContentProvider>();
   private static boolean masterSyncAutomatically;
 
+  @Resetter
   public static void reset() {
     syncableAccounts.clear();
     providers.clear();

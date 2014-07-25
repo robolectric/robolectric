@@ -2,9 +2,11 @@ package org.robolectric.shadows;
 
 import android.os.Looper;
 import android.view.Choreographer;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.bytecode.RobolectricInternals;
 import org.robolectric.util.SoftThreadLocal;
 
@@ -33,6 +35,7 @@ public class ShadowChoreographer {
     return sThreadInstance.get();
   }
 
+  @Resetter
   public static synchronized void resetThreadLoopers() {
     // Blech. We need to share the main looper because somebody might refer to it in a static
     // field. We also need to keep it in a soft reference so we don't max out permgen.

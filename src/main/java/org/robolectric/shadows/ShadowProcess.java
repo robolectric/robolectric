@@ -2,11 +2,12 @@ package org.robolectric.shadows;
 
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 
 /**
  * Shadows the {@code android.os.Process} class.
  */
-@Implements(value = android.os.Process.class, resetStaticState = true)
+@Implements(android.os.Process.class)
 public class ShadowProcess {
   private static int pid;
 
@@ -19,6 +20,7 @@ public class ShadowProcess {
     ShadowProcess.pid = pid;
   }
   
+  @Resetter
   public static void reset() {
     ShadowProcess.pid = 0;
   }

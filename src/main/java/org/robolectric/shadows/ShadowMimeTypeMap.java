@@ -1,9 +1,11 @@
 package org.robolectric.shadows;
 
 import android.webkit.MimeTypeMap;
+
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -13,7 +15,7 @@ import static org.robolectric.Robolectric.shadowOf;
 /**
  * Shadow for {@code MimeTypeMap} that allows custom extension <-> mimetype mapping to be set up by tests.
  */
-@Implements(value = MimeTypeMap.class, resetStaticState = true)
+@Implements(MimeTypeMap.class)
 public class ShadowMimeTypeMap {
 
   Map<String, String> extensionToMimeTypeMap = new HashMap<String, String>();
@@ -35,6 +37,7 @@ public class ShadowMimeTypeMap {
     return sSingleton;
   }
 
+  @Resetter
   public static void reset() {
     if (sSingleton != null) {
       shadowOf(getSingleton()).clearMappings();
