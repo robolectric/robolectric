@@ -7,13 +7,16 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.util.TypedValue;
+
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.internal.NamedStream;
 import org.robolectric.util.Join;
 
 import javax.imageio.ImageIO;
+
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,7 +33,7 @@ import static org.robolectric.Robolectric.directlyOn;
 import static org.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(value = BitmapFactory.class, resetStaticState = true)
+@Implements(BitmapFactory.class)
 public class ShadowBitmapFactory {
   private static Map<String, Point> widthAndHeightMap = new HashMap<String, Point>();
 
@@ -185,6 +188,7 @@ public class ShadowBitmapFactory {
     return Join.join(", ", opts);
   }
 
+  @Resetter
   public static void reset() {
     widthAndHeightMap.clear();
   }

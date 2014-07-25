@@ -9,12 +9,13 @@ import com.google.android.collect.Maps;
 
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 
 import java.io.FileDescriptor;
 import java.util.HashMap;
 import java.util.Map;
 
-@Implements(value = MediaMetadataRetriever.class, resetStaticState = true)
+@Implements(MediaMetadataRetriever.class)
 public class ShadowMediaMetadataRetriever {
   private String dataSource;
   private static final Map<String, HashMap<Integer, String>> metadata = Maps.newHashMap();
@@ -92,6 +93,7 @@ public class ShadowMediaMetadataRetriever {
     frames.get(dataSource).put(time, bitmap);
   }
 
+  @Resetter
   public static void reset() {
     metadata.clear();
     frames.clear();

@@ -2,22 +2,25 @@ package org.robolectric.shadows;
 
 import android.content.res.AssetManager;
 import android.graphics.Typeface;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.robolectric.AndroidManifest;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.bytecode.RobolectricInternals;
 import org.robolectric.internal.HiddenApi;
 
 import static org.robolectric.Robolectric.shadowOf;
 
-@Implements(value = Typeface.class, resetStaticState = true)
+@Implements(Typeface.class)
 public class ShadowTypeface {
   private static Map<FontDesc, Integer> fonts = new HashMap<FontDesc, Integer>();
   private static int nextFontId = 1;
@@ -35,6 +38,7 @@ public class ShadowTypeface {
     return fontDesc.familyName;
   }
 
+  @Resetter
   synchronized public static void reset() {
     // Don't need to reset cache, because native Typeface itself has a cache of font instance,
     // so this class should be consistent with it. 

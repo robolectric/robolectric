@@ -1,14 +1,16 @@
 package org.robolectric.shadows;
 
 import android.os.PowerManager;
+
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 
 /**
  * Shadows the {@code android.os.PowerManager} class.
  */
-@Implements(value = PowerManager.class, resetStaticState = true)
+@Implements(PowerManager.class)
 public class ShadowPowerManager {
 
   private boolean isScreenOn = true;
@@ -32,6 +34,7 @@ public class ShadowPowerManager {
   /**
    * Non-Android accessor that discards the most recent {@code PowerManager.WakeLock}s
    */
+  @Resetter
   public static void reset() {
     ShadowApplication shadowApplication = Robolectric.getShadowApplication();
     if (shadowApplication != null) {

@@ -17,6 +17,7 @@ import android.os.Handler;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,7 +32,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Shadow implementation for the Android {@code AccountManager } class.
  */
-@Implements(value = AccountManager.class, resetStaticState = true)
+@Implements(AccountManager.class)
 public class ShadowAccountManager {
   private static final Object lock = new Object();
 
@@ -44,6 +45,7 @@ public class ShadowAccountManager {
   private Map<Account, Map<String, String>> userData = new HashMap<Account, Map<String,String>>();
   private Map<Account, String> passwords = new HashMap<Account, String>();
 
+  @Resetter
   public static void reset() {
     synchronized (lock) {
       instance = null;

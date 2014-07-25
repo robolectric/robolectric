@@ -19,7 +19,10 @@ public @interface Implements {
   /**
    * If true, Robolectric will invoke the shadow's reset method so it can release any static
    * state between tests.
+   * 
+   * @deprecated Use the @Resetter annotation instead
    */
+  @Deprecated
   boolean resetStaticState() default false;
 
   /**

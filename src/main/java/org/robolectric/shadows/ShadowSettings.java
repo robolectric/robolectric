@@ -17,7 +17,7 @@ import java.util.WeakHashMap;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Settings.class)
 public class ShadowSettings {
-  @Implements(Settings.System.class)
+  @Implements(Settings.NameValueTable.class)
   public static class SettingsImpl {
     private static final WeakHashMap<ContentResolver, Map<String, Object>> dataMap = new WeakHashMap<ContentResolver, Map<String, Object>>();
 
