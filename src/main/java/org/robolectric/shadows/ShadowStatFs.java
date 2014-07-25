@@ -3,12 +3,13 @@ package org.robolectric.shadows;
 import android.os.StatFs;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
-@Implements(value = StatFs.class, resetStaticState = true)
+@Implements(StatFs.class)
 public class ShadowStatFs {
   public static final int BLOCK_SIZE = 4096;
   private static final Stats DEFAULT_STATS = new Stats(0, 0, 0);
@@ -55,6 +56,7 @@ public class ShadowStatFs {
     stats.put(path, new Stats(blockCount, freeBlocks, availableBlocks));
   }
 
+  @Resetter
   public static void reset() {
     stats.clear();
   }

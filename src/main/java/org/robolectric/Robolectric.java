@@ -549,7 +549,6 @@ public class Robolectric {
       ShadowMenuInflater.class,
       ShadowMessenger.class,
       ShadowMimeTypeMap.class,
-      ShadowMockPackageManager.class,
       ShadowMotionEvent.class,
       ShadowNfcAdapter.class,
       ShadowNotification.class,
@@ -1657,14 +1656,8 @@ public class Robolectric {
     Robolectric.packageManager = null;
     Robolectric.activityThread = null;
 
-    ShadowLooper.resetThreadLoopers();
-    ShadowChoreographer.resetThreadLoopers();
-
-    List<Class<?>> klasses = Lists.newArrayList();
-    klasses.addAll(Arrays.asList(Robolectric.DEFAULT_SHADOW_CLASSES));
-    klasses.addAll(Arrays.asList(config.shadows()));
-
-    for (Class<?> klass : klasses) {
+    RobolectricGen.reset();
+    for (Class<?> klass : config.shadows()) {
       if (klass.getAnnotation(Implements.class).resetStaticState()) {
         staticMethod("reset").in(klass).invoke();
       }

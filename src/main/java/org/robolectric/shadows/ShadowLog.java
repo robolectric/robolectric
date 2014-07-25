@@ -1,10 +1,13 @@
 package org.robolectric.shadows;
 
 import android.util.Log;
+
 import java.io.FileOutputStream;
 import java.io.IOException;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -12,7 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Implements(value = Log.class, resetStaticState = true)
+@Implements(Log.class)
 public class ShadowLog {
   private static final int extraLogLength = "l/: \n".length();
   private static Map<String,List<LogItem>> logsByTag = new HashMap<String,List<LogItem>>();
@@ -150,6 +153,7 @@ public class ShadowLog {
     return logsByTag.get(tag);
   }
 
+  @Resetter
   public static synchronized void reset() {
     logs.clear();
     logsByTag.clear();

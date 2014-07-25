@@ -20,6 +20,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.internal.HiddenApi;
 import org.robolectric.res.*;
 import org.robolectric.res.builder.XmlFileBuilder;
@@ -44,7 +45,7 @@ import static org.robolectric.Robolectric.shadowOf;
  * @see org.robolectric.RobolectricTestRunner#RobolectricTestRunner(Class)
  */
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(value = Resources.class, resetStaticState = true)
+@Implements(Resources.class)
 public class ShadowResources {
   private static boolean DEBUG = false;
   private static Resources system = null;
@@ -55,6 +56,7 @@ public class ShadowResources {
   @RealObject Resources realResources;
   private ResourceLoader resourceLoader;
 
+  @Resetter
   public static void reset() {
     for (Field field : Resources.class.getDeclaredFields()) {
       if (Modifier.isStatic(field.getModifiers()) && field.getType().equals(LongSparseArray.class)) {

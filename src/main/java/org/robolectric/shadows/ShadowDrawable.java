@@ -10,20 +10,23 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.NinePatchDrawable;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
+
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 
 import static org.fest.reflect.core.Reflection.method;
 import static org.robolectric.Robolectric.directlyOn;
 import static org.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(value = Drawable.class, resetStaticState = true)
+@Implements(Drawable.class)
 public class ShadowDrawable {
   private static int defaultIntrinsicWidth = -1;
   private static int defaultIntrinsicHeight = -1;
@@ -120,6 +123,7 @@ public class ShadowDrawable {
     corruptStreamSources.add(src);
   }
 
+  @Resetter
   public static void clearCorruptStreamSources() {
     corruptStreamSources.clear();
   }
