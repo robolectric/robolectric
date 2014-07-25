@@ -14,8 +14,11 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.TimeZone;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.fest.reflect.core.Reflection.constructor;
+import static org.robolectric.bytecode.RobolectricInternals.directlyOn;
 
 @Implements(Time.class)
 public class ShadowTime {
@@ -62,7 +65,7 @@ public class ShadowTime {
 
   @Implementation
   public void setToNow() {
-    set(System.currentTimeMillis());
+    set(ShadowSystemClock.now());
   }
 
 
@@ -114,7 +117,7 @@ public class ShadowTime {
         c.get(Calendar.DAY_OF_MONTH),
         c.get(Calendar.MONTH),
         c.get(Calendar.YEAR)
-    );
+        );
   }
 
   @Implementation
@@ -209,7 +212,7 @@ public class ShadowTime {
       try {
         set(dfShort.parse(timeString).getTime());
       } catch (ParseException e2) {
-        throwTimeFormatException();
+        throwTimeFormatException(e2.getLocalizedMessage());
       }
     }
     return "UTC".equals(tz.getID());
@@ -246,10 +249,64 @@ public class ShadowTime {
       return String.format("%s%s%02d:%02d", base, sign, hours, minutes);
     }
   }
+  
+  @Implementation
+  public boolean parse3339(String rfc3339String) {
+  	SimpleDateFormat formatter =  new SimpleDateFormat();
+  	// Special case Date without time first
+  	if (rfc3339String.matches("\\d{4}-\\d{2}-\\d{2}")) {
+  		formatter.applyLocalizedPattern("yyyy-MM-dd");
+  		Calendar calendar = Calendar.getInstance(
+  		    TimeZone.getTimeZone(time.timezone), Locale.getDefault());
+  		try {
+  		  calendar.setTime(formatter.parse(rfc3339String));
+  		} catch (java.text.ParseException e) {
+  			throwTimeFormatException(e.getLocalizedMessage());
+  		}
+  		time.second = time.minute = time.hour = 0;
+      time.monthDay = calendar.get(Calendar.DAY_OF_MONTH);
+      time.month = calendar.get(Calendar.MONTH);
+      time.year = calendar.get(Calendar.YEAR);
+      time.weekDay = calendar.get(Calendar.DAY_OF_WEEK) - Calendar.SUNDAY;
+      time.yearDay = calendar.get(Calendar.DAY_OF_YEAR);
+      time.isDst = calendar.get(Calendar.DST_OFFSET) != 0 ? 1 : 0;
+      time.allDay = true;
+      return false;
+  	}
 
-  private void throwTimeFormatException() {
+  	// Store a string normalized for SimpleDateFormat;
+  	String dateString = rfc3339String
+  			// Look-ahead to remove the colon followed by minutes in timezone
+  			.replaceFirst(":(?=\\d{2}$)", "")
+  			// Look-behind to pad with minutes any timezone only defines hours
+  			.replaceFirst("(?<=[+-]\\d{2})$", "00")
+  			// If it ends with a Z, just replace it with no offset
+  			.replaceFirst("(Z)$", "+0000");
+  	
+  	formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+  	formatter.applyLocalizedPattern("yyyy-MM-dd'T'HH:mm:ssZ");
+  	long millisInUtc = time.toMillis(false);
+  	try {
+  		millisInUtc = formatter.parse(dateString).getTime();	
+  	} catch (java.text.ParseException e1) {
+  	  // Try again with fractional seconds.
+  	  formatter.applyLocalizedPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ");
+  	  formatter.setLenient(true);
+  	  try {
+  	  	millisInUtc = formatter.parse(dateString).getTime();	
+  	  } catch (java.text.ParseException e2) {
+  	    throwTimeFormatException(e2.getLocalizedMessage());
+  	  }
+    }
+  	// Clear to UTC, then set time;
+  	clear("UTC");
+  	set(millisInUtc);
+  	return true;
+  }
+
+  private void throwTimeFormatException(String optionalMessage) {
     throw constructor().withParameterTypes(String.class).in(TimeFormatException.class)
-        .newInstance("fail");
+    	.newInstance(optionalMessage == null ? "fail" : optionalMessage);
   }
 
   private Calendar getCalendar() {
@@ -262,21 +319,21 @@ public class ShadowTime {
   // taken from org.apache.catalina.util.Strftime.java
   // see http://javasourcecode.org/html/open-source/tomcat/tomcat-6.0.32/org/apache/catalina/util/Strftime.java.html
   /*
-  * Licensed to the Apache Software Foundation (ASF) under one or more
-  * contributor license agreements.  See the NOTICE file distributed with
-  * this work for additional information regarding copyright ownership.
-  * The ASF licenses this file to You under the Apache License, Version 2.0
-  * (the "License"); you may not use this file except in compliance with
-  * the License.  You may obtain a copy of the License at
-  *
-  *      http://www.apache.org/licenses/LICENSE-2.0
-  *
-  * Unless required by applicable law or agreed to in writing, software
-  * distributed under the License is distributed on an "AS IS" BASIS,
-  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  * See the License for the specific language governing permissions and
-  * limitations under the License.
-  */
+   * Licensed to the Apache Software Foundation (ASF) under one or more
+   * contributor license agreements.  See the NOTICE file distributed with
+   * this work for additional information regarding copyright ownership.
+   * The ASF licenses this file to You under the Apache License, Version 2.0
+   * (the "License"); you may not use this file except in compliance with
+   * the License.  You may obtain a copy of the License at
+   *
+   *      http://www.apache.org/licenses/LICENSE-2.0
+   *
+   * Unless required by applicable law or agreed to in writing, software
+   * distributed under the License is distributed on an "AS IS" BASIS,
+   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   * See the License for the specific language governing permissions and
+   * limitations under the License.
+   */
   public static class Strftime {
     protected static Properties translate;
     protected SimpleDateFormat simpleDateFormat;
@@ -305,8 +362,8 @@ public class ShadowTime {
       translate.put("h", "MMM");
       translate.put("I", "hh");
       translate.put("j", "DDD");
-      translate.put("k", "HH"); //will show as '07' instead of ' 7'
-      translate.put("l", "hh"); //will show as '07' instead of ' 7'
+      translate.put("k", "H");
+      translate.put("l", "h");
       translate.put("m", "MM");
       translate.put("M", "mm");
       translate.put("n", "\n");

@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import android.os.SystemClock;
 import android.text.format.Time;
 import android.util.TimeFormatException;
 import org.junit.Test;
@@ -14,8 +15,9 @@ public class TimeTest {
   @Test
   public void shouldSetToNow() throws Exception {
     Time t = new Time();
+    SystemClock.setCurrentTimeMillis(1000);
     t.setToNow();
-    assertThat(t.toMillis(false)).isNotEqualTo(0l);
+    assertThat(t.toMillis(false)).isEqualTo(1000);
   }
 
   @Test
@@ -146,6 +148,53 @@ public class TimeTest {
     assertEquals(0, t.minute);
     assertEquals(0, t.second);
   }
+  
+  @Test
+  public void shouldParseRfc3339() {
+  	Time t = new Time("Europe/Berlin");
+  	assertTrue(t.parse3339("2008-10-13T16:30:50Z"));
+  	assertEquals(2008, t.year);
+    assertEquals(9, t.month);
+    assertEquals(13, t.monthDay);
+    assertEquals(16, t.hour);
+    assertEquals(30, t.minute);
+    assertEquals(50, t.second);
+    assertEquals("UTC", t.timezone);
+    assertFalse(t.allDay);
+
+    t = new Time("Europe/Berlin");
+  	assertTrue(t.parse3339("2008-10-13T16:30:50.1000+07:00"));
+  	assertEquals(2008, t.year);
+    assertEquals(9, t.month);
+    assertEquals(13, t.monthDay);
+    assertEquals(9, t.hour);
+    assertEquals(30, t.minute);
+    assertEquals(51, t.second);
+    assertEquals("UTC", t.timezone);
+    assertFalse(t.allDay);
+    
+    t = new Time("Europe/Berlin");
+  	assertTrue(t.parse3339("2008-10-13T16:30:50.999-03"));
+  	assertEquals(2008, t.year);
+    assertEquals(9, t.month);
+    assertEquals(13, t.monthDay);
+    assertEquals(19, t.hour);
+    assertEquals(30, t.minute);
+    assertEquals(50, t.second);
+    assertEquals("UTC", t.timezone);
+    assertFalse(t.allDay);
+    
+    t = new Time("Europe/Berlin");
+  	assertFalse(t.parse3339("2008-10-13"));
+  	assertEquals(2008, t.year);
+    assertEquals(9, t.month);
+    assertEquals(13, t.monthDay);
+    assertEquals(0, t.hour);
+    assertEquals(0, t.minute);
+    assertEquals(0, t.second);
+    assertEquals("Europe/Berlin", t.timezone);
+    assertTrue(t.allDay);
+  }
 
   @Test(expected = TimeFormatException.class)
   public void shouldThrowTimeFormatException() throws Exception {
@@ -167,8 +216,10 @@ public class TimeTest {
 
   @Test
   public void shouldFormat() throws Exception {
-    Time t = new Time();
-    assertEquals("Hallo epoch 01 1970 01", t.format("Hallo epoch %d %Y %d"));
+    Time t = new Time(Time.TIMEZONE_UTC);
+    t.set(3600000L);
+    assertEquals("Hello epoch 01 1970 01", t.format("Hello epoch %d %Y %d"));
+    assertEquals("Hello epoch 1:00 AM", t.format("Hello epoch %l:%M %p"));
   }
 
   @Test
