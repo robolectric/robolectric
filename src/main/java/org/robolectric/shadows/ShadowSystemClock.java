@@ -29,10 +29,10 @@ public class ShadowSystemClock {
   @Implementation
   public static boolean setCurrentTimeMillis(long millis) {
     if (now() > millis) {
-  	  return false;
-  	}
-	  Robolectric.getUiThreadScheduler().advanceTo(millis);
-	  return true;
+      return false;
+    } 
+    Robolectric.getUiThreadScheduler().advanceTo(millis);
+    return true;
   }
   
   public static void setNanoTime(long nanoTime) {
@@ -70,8 +70,8 @@ public class ShadowSystemClock {
   @SuppressWarnings("UnusedDeclaration")
   public static long currentTimeMillis() {
     long currTimeMillis = nanoTime / 1000000;
-	nanoTime += 1000000;
-	return currTimeMillis;
+    nanoTime += 1000000;
+    return currTimeMillis;
   }
 
   /**
