@@ -248,12 +248,12 @@ public class ShadowTime {
   
   @Implementation
   public boolean parse3339(String rfc3339String) {
-  	SimpleDateFormat formatter =  new SimpleDateFormat();
-  	// Special case Date without time first
-  	if (rfc3339String.matches("\\d{4}-\\d{2}-\\d{2}")) {
+    SimpleDateFormat formatter =  new SimpleDateFormat();
+    // Special case Date without time first
+    if (rfc3339String.matches("\\d{4}-\\d{2}-\\d{2}")) {
       formatter.applyLocalizedPattern("yyyy-MM-dd");
   	  Calendar calendar = Calendar.getInstance(
-  		    TimeZone.getTimeZone(time.timezone), Locale.getDefault());
+  	      TimeZone.getTimeZone(time.timezone), Locale.getDefault());
   		try {
         calendar.setTime(formatter.parse(rfc3339String));
   		} catch (java.text.ParseException e) {
@@ -268,7 +268,7 @@ public class ShadowTime {
       time.isDst = calendar.get(Calendar.DST_OFFSET) != 0 ? 1 : 0;
       time.allDay = true;
       return false;
-  	}
+    }
 
   	// Store a string normalized for SimpleDateFormat;
   	String dateString = rfc3339String
