@@ -252,14 +252,14 @@ public class ShadowTime {
     // Special case Date without time first
     if (rfc3339String.matches("\\d{4}-\\d{2}-\\d{2}")) {
       formatter.applyLocalizedPattern("yyyy-MM-dd");
-  	  Calendar calendar = Calendar.getInstance(
-  	      TimeZone.getTimeZone(time.timezone), Locale.getDefault());
-  		try {
+      Calendar calendar = Calendar.getInstance(
+          TimeZone.getTimeZone(time.timezone), Locale.getDefault());
+      try {
         calendar.setTime(formatter.parse(rfc3339String));
-  		} catch (java.text.ParseException e) {
-  			throwTimeFormatException(e.getLocalizedMessage());
-  		}
-  		time.second = time.minute = time.hour = 0;
+      } catch (java.text.ParseException e) {
+        throwTimeFormatException(e.getLocalizedMessage());
+      }
+      time.second = time.minute = time.hour = 0;
       time.monthDay = calendar.get(Calendar.DAY_OF_MONTH);
       time.month = calendar.get(Calendar.MONTH);
       time.year = calendar.get(Calendar.YEAR);
@@ -270,34 +270,34 @@ public class ShadowTime {
       return false;
     }
 
-  	// Store a string normalized for SimpleDateFormat;
-  	String dateString = rfc3339String
-  			// Look-ahead to remove the colon followed by minutes in timezone
-  			.replaceFirst(":(?=\\d{2}$)", "")
-  			// Look-behind to pad with minutes any timezone only defines hours
-  			.replaceFirst("(?<=[+-]\\d{2})$", "00")
-  			// If it ends with a Z, just replace it with no offset
-  			.replaceFirst("(Z)$", "+0000");
+    // Store a string normalized for SimpleDateFormat;
+    String dateString = rfc3339String
+        // Look-ahead to remove the colon followed by minutes in timezone
+        .replaceFirst(":(?=\\d{2}$)", "")
+        // Look-behind to pad with minutes any timezone only defines hours
+        .replaceFirst("(?<=[+-]\\d{2})$", "00")
+        // If it ends with a Z, just replace it with no offset
+        .replaceFirst("(Z)$", "+0000");
   	
-  	formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-  	formatter.applyLocalizedPattern("yyyy-MM-dd'T'HH:mm:ssZ");
-  	long millisInUtc = time.toMillis(false);
-  	try {
-  		millisInUtc = formatter.parse(dateString).getTime();	
-  	} catch (java.text.ParseException e1) {
-  	  // Try again with fractional seconds.
-  	  formatter.applyLocalizedPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ");
-  	  formatter.setLenient(true);
-  	  try {
-  	  	millisInUtc = formatter.parse(dateString).getTime();	
-  	  } catch (java.text.ParseException e2) {
-  	    throwTimeFormatException(e2.getLocalizedMessage());
-  	  }
+    formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+    formatter.applyLocalizedPattern("yyyy-MM-dd'T'HH:mm:ssZ");
+    long millisInUtc = time.toMillis(false);
+    try {
+      millisInUtc = formatter.parse(dateString).getTime();	
+    } catch (java.text.ParseException e1) {
+      // Try again with fractional seconds.
+      formatter.applyLocalizedPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ");
+      formatter.setLenient(true);
+      try {
+        millisInUtc = formatter.parse(dateString).getTime();	
+      } catch (java.text.ParseException e2) {
+        throwTimeFormatException(e2.getLocalizedMessage());
+      }
     }
-  	// Clear to UTC, then set time;
-  	clear("UTC");
-  	set(millisInUtc);
-  	return true;
+    // Clear to UTC, then set time;
+    clear("UTC");
+    set(millisInUtc);
+    return true;
   }
 
   private void throwTimeFormatException(String optionalMessage) {
