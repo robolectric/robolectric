@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-
 import android.text.format.Time;
 import android.util.TimeFormatException;
 import org.robolectric.annotation.Implementation;
@@ -14,11 +13,8 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.TimeZone;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static org.fest.reflect.core.Reflection.constructor;
-import static org.robolectric.bytecode.RobolectricInternals.directlyOn;
 
 @Implements(Time.class)
 public class ShadowTime {
@@ -255,8 +251,8 @@ public class ShadowTime {
   	SimpleDateFormat formatter =  new SimpleDateFormat();
   	// Special case Date without time first
   	if (rfc3339String.matches("\\d{4}-\\d{2}-\\d{2}")) {
-  		formatter.applyLocalizedPattern("yyyy-MM-dd");
-  		Calendar calendar = Calendar.getInstance(
+      formatter.applyLocalizedPattern("yyyy-MM-dd");
+  	  Calendar calendar = Calendar.getInstance(
   		    TimeZone.getTimeZone(time.timezone), Locale.getDefault());
   		try {
   		  calendar.setTime(formatter.parse(rfc3339String));

@@ -28,8 +28,8 @@ public class ShadowSystemClock {
    */
   @Implementation
   public static boolean setCurrentTimeMillis(long millis) {
-  	if (now() > millis) {
-  		return false;
+    if (now() > millis) {
+  	  return false;
   	}
 	  Robolectric.getUiThreadScheduler().advanceTo(millis);
 	  return true;
