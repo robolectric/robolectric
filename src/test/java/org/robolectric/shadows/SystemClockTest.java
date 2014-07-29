@@ -39,11 +39,11 @@ public class SystemClockTest {
   @Test
   public void shouldInterceptSystemTimeCalls() throws Throwable {
     ShadowSystemClock.setNanoTime(3141592L);
-	  long systemNanoTime = (Long) Robolectric.getShadowWrangler().intercept(
+    long systemNanoTime = (Long) Robolectric.getShadowWrangler().intercept(
         "java/lang/System/nanoTime()", null, null, getClass());
-	  assertThat(systemNanoTime).isEqualTo(3141592L);
-	  long systemMilliTime = (Long) Robolectric.getShadowWrangler().intercept(
+    assertThat(systemNanoTime).isEqualTo(3141592L);
+    long systemMilliTime = (Long) Robolectric.getShadowWrangler().intercept(
         "java/lang/System/currentTimeMillis()", null, null, getClass());
-	  assertThat(systemMilliTime).isEqualTo(3L);
+    assertThat(systemMilliTime).isEqualTo(3L);
   }
 }
