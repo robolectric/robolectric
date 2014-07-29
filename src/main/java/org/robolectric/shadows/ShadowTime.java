@@ -255,7 +255,7 @@ public class ShadowTime {
   	  Calendar calendar = Calendar.getInstance(
   		    TimeZone.getTimeZone(time.timezone), Locale.getDefault());
   		try {
-  		  calendar.setTime(formatter.parse(rfc3339String));
+        calendar.setTime(formatter.parse(rfc3339String));
   		} catch (java.text.ParseException e) {
   			throwTimeFormatException(e.getLocalizedMessage());
   		}
