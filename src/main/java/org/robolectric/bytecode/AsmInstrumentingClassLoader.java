@@ -8,6 +8,7 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
+import org.objectweb.asm.commons.JSRInlinerAdapter;
 import org.objectweb.asm.commons.Method;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.AnnotationNode;
@@ -69,8 +70,6 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
   private final Map<String, Class> classes = new HashMap<String, Class>();
   private final Set<Setup.MethodRef> methodsToIntercept;
   private final Map<String, String> classesToRemap;
-  private int number = 0;
-
 
   public AsmInstrumentingClassLoader(Setup setup, URL... urls) {
     super(AsmInstrumentingClassLoader.class.getClassLoader());
@@ -91,10 +90,8 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
       }
     }
 
-    boolean shouldComeFromThisClassLoader = setup.shouldAcquire(name);
-
     try {
-      if (shouldComeFromThisClassLoader) {
+      if (setup.shouldAcquire(name)) {
         theClass = findClass(name);
       } else {
         theClass = getParent().loadClass(name);
@@ -137,7 +134,6 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
         throw new ClassNotFoundException("couldn't load " + className, e);
       }
 
-      final ClassReader classReader = new ClassReader(origClassBytes);
       ClassNode classNode = new ClassNode(Opcodes.ASM4) {
         @Override
         public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
@@ -147,9 +143,12 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
 
         @Override
         public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-          return super.visitMethod(access, name, remapParams(desc), signature, exceptions);
+          MethodVisitor methodVisitor = super.visitMethod(access, name, remapParams(desc), signature, exceptions);
+          return new JSRInlinerAdapter(methodVisitor, access, name, desc, signature, exceptions);
         }
       };
+
+      final ClassReader classReader = new ClassReader(origClassBytes);
       classReader.accept(classNode, 0);
 
       try {
@@ -244,7 +243,7 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
   private byte[] getInstrumentedBytes(String className, ClassNode classNode, boolean containsStubs) throws ClassNotFoundException {
     new ClassInstrumentor(classNode, containsStubs).instrument();
 
-    ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS) {
+    ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES) {
       @Override
       public int newNameType(String name, String desc) {
         return super.newNameType(name, desc.charAt(0) == ')' ? remapParams(desc) : remapParamType(desc));
@@ -255,9 +254,33 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
         value = remapType(value);
         return super.newClass(value);
       }
+
+      @Override
+      protected String getCommonSuperClass(String type1, String type2) {
+        Class<?> c, d;
+        try {
+          c = Class.forName(type1.replace('/', '.'), false, urls);
+          d = Class.forName(type2.replace('/', '.'), false, urls);
+        } catch (Exception e) {
+          throw new RuntimeException(e.toString());
+        }
+        if (c.isAssignableFrom(d)) {
+          return type1;
+        }
+        if (d.isAssignableFrom(c)) {
+          return type2;
+        }
+        if (c.isInterface() || d.isInterface()) {
+          return "java/lang/Object";
+        } else {
+          do {
+            c = c.getSuperclass();
+          } while (!c.isAssignableFrom(d));
+          return c.getName().replace('.', '/');
+        }
+      }
     };
     classNode.accept(classWriter);
-
     byte[] classBytes = classWriter.toByteArray();
 
     if (debug) {

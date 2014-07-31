@@ -11,6 +11,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
 import org.robolectric.util.Transcript;
 
 import static junit.framework.Assert.assertEquals;
@@ -169,6 +170,12 @@ public class DialogTest {
     Dialog dialog = new Dialog(Robolectric.application);
     dialog.setContentView(dialog.getLayoutInflater().inflate(R.layout.main, null));
     assertInstanceOf(TextView.class, dialog.findViewById(R.id.title));
+  }
+
+  @Test @Config(emulateSdk = 19)
+  public void show_shouldWorkWithAPI19() {
+    Dialog dialog = new Dialog(Robolectric.application);
+    dialog.show();
   }
 
   private static class TestDialog extends Dialog {

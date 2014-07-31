@@ -15,6 +15,7 @@ public class SdkConfig {
     SUPPORTED_APIS.put(Build.VERSION_CODES.JELLY_BEAN, new SdkVersion("4.1.2_r1", "0"));
     SUPPORTED_APIS.put(Build.VERSION_CODES.JELLY_BEAN_MR1, new SdkVersion("4.2.2_r1.2", "0"));
     SUPPORTED_APIS.put(Build.VERSION_CODES.JELLY_BEAN_MR2, new SdkVersion("4.3_r2", "0"));
+    SUPPORTED_APIS.put(Build.VERSION_CODES.KITKAT, new SdkVersion("4.4_r1", "0"));
   }
 
   public SdkConfig(int apiLevel) {
@@ -55,22 +56,23 @@ public class SdkConfig {
   public Dependency[] getSdkClasspathDependencies() {
     return new Dependency[] {
         realAndroidDependency("android-all"),
-        createDependency("org.json", "json", "20080701", "jar", null),
-        createDependency("org.ccil.cowan.tagsoup", "tagsoup", "1.2", "jar", null)
+        createDependency("org.json", "json", "20080701", "jar", false),
+        createDependency("org.ccil.cowan.tagsoup", "tagsoup", "1.2", "jar", false),
+        createDependency("com.android.support", "support-v4", "19.0.0", "jar", true)
     };
   }
 
   public Dependency realAndroidDependency(String artifactId) {
-    return createDependency("org.robolectric", artifactId, getArtifactVersionString(), "jar", null);
+    return createDependency("org.robolectric", artifactId, getArtifactVersionString(), "jar", false);
   }
 
-  public Dependency createDependency(String groupId, String artifactId, String version, String type, String classifier) {
+  public Dependency createDependency(String groupId, String artifactId, String version, String type, boolean optional) {
     Dependency dependency = new Dependency();
     dependency.setGroupId(groupId);
     dependency.setArtifactId(artifactId);
     dependency.setVersion(version);
     dependency.setType(type);
-    dependency.setClassifier(classifier);
+    dependency.setOptional(optional);
     return dependency;
   }
 

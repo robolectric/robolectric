@@ -12,7 +12,8 @@ import org.robolectric.annotation.Config;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
-@RunWith(TestRunners.WithDefaults.class) @Config(manifest = Config.NONE)
+@Config(manifest = Config.NONE)
+@RunWith(TestRunners.WithDefaults.class)
 public class NonAppLibraryTest {
   @Test public void shouldStillCreateAnApplication() throws Exception {
     assertThat(Robolectric.application).isExactlyInstanceOf(Application.class);

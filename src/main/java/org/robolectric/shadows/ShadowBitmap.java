@@ -270,6 +270,7 @@ public class ShadowBitmap {
     return config;
   }
 
+  @Implementation
   public void setConfig(Bitmap.Config config) {
     this.config = config;
   }
@@ -295,6 +296,7 @@ public class ShadowBitmap {
     return description;
   }
 
+  @Implementation
   public void setWidth(int width) {
     this.width = width;
   }
@@ -304,6 +306,7 @@ public class ShadowBitmap {
     return width;
   }
 
+  @Implementation
   public void setHeight(int height) {
     this.height = height;
   }
