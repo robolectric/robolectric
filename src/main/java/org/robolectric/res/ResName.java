@@ -19,7 +19,7 @@ public class ResName {
   public ResName(@NotNull String packageName, @NotNull String type, @NotNull String name) {
     this.packageName = packageName;
     this.type = type;
-    this.name = name.indexOf('.') != -1 ? name.replace('.', '_') : name;
+    this.name = name.indexOf('.') != -1 ? name.replace('.', '_').trim() : name.trim();
   }
 
   public ResName(@NotNull String fullyQualifiedName) {
