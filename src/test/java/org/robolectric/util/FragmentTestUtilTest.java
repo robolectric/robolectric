@@ -4,6 +4,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.robolectric.util.FragmentTestUtil.startFragment;
 import static org.robolectric.util.FragmentTestUtil.startVisibleFragment;
 
+import android.widget.LinearLayout;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
@@ -97,6 +98,46 @@ public class FragmentTestUtilTest {
     assertThat(fragment.getActivity()).isInstanceOf(LoginFragmentActivity.class);
   }
 
+  @Test
+  public void startVisibleFragment_shouldStartFragmentWithSpecifiedActivityClass() {
+    final LoginFragment fragment = new LoginFragment();
+    startVisibleFragment(fragment, LoginActivity.class, 1);
+
+    assertThat(fragment.getView()).isNotNull();
+    assertThat(fragment.getActivity()).isNotNull();
+    assertThat(fragment.getView().findViewById(R.id.tacos)).isNotNull();
+    assertThat(fragment.getActivity()).isInstanceOf(LoginActivity.class);
+  }
+
+  @Test
+  public void startVisibleFragment_shouldStartSupportFragmentWithSpecifiedActivityClass() {
+    final LoginSupportFragment fragment = new LoginSupportFragment();
+    startVisibleFragment(fragment, LoginFragmentActivity.class, 1);
+
+    assertThat(fragment.getView()).isNotNull();
+    assertThat(fragment.getActivity()).isNotNull();
+    assertThat(fragment.getView().findViewById(R.id.tacos)).isNotNull();
+    assertThat(fragment.getActivity()).isInstanceOf(LoginFragmentActivity.class);
+  }
+
+  @Test
+  public void startVisibleFragment_shouldAttachFragmentToActivityWithSpecifiedActivityClass() {
+    final LoginFragment fragment = new LoginFragment();
+    startVisibleFragment(fragment, LoginActivity.class, 1);
+
+    assertThat(fragment.getView().getWindowToken()).isNotNull();
+    assertThat(fragment.getActivity()).isInstanceOf(LoginActivity.class);
+  }
+
+  @Test
+  public void startVisibleFragment_shouldAttachSupportFragmentToActivityWithSpecifiedActivityClass() {
+    final LoginSupportFragment fragment = new LoginSupportFragment();
+    startVisibleFragment(fragment, LoginFragmentActivity.class, 1);
+
+    assertThat(fragment.getView().getWindowToken()).isNotNull();
+    assertThat(fragment.getActivity()).isInstanceOf(LoginFragmentActivity.class);
+  }
+
   private static class LoginFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -111,8 +152,26 @@ public class FragmentTestUtilTest {
     }
   }
 
-  private static class LoginActivity extends Activity { }
+  private static class LoginActivity extends Activity {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+      super.onCreate(savedInstanceState);
+      LinearLayout view = new LinearLayout(this);
+      view.setId(1);
 
-  private static class LoginFragmentActivity extends FragmentActivity { }
+      setContentView(view);
+    }
+  }
+
+  private static class LoginFragmentActivity extends FragmentActivity {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+      super.onCreate(savedInstanceState);
+      LinearLayout view = new LinearLayout(this);
+      view.setId(1);
+
+      setContentView(view);
+    }
+  }
 }
 

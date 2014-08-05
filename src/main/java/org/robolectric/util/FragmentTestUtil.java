@@ -37,9 +37,21 @@ public final class FragmentTestUtil {
         .beginTransaction().add(1, fragment, null).commit();
   }
 
+  public static void startVisibleFragment(Fragment fragment,
+      Class<? extends Activity> activityClass, int containerViewId) {
+    buildFragmentManager(activityClass)
+        .beginTransaction().add(containerViewId, fragment, null).commit();
+  }
+
   public static void startVisibleFragment(android.support.v4.app.Fragment fragment) {
     buildSupportFragmentManager(FragmentUtilActivity.class)
         .beginTransaction().add(1, fragment, null).commit();
+  }
+
+  public static void startVisibleFragment(android.support.v4.app.Fragment fragment,
+      Class<?extends FragmentActivity> fragmentActivityClass, int containerViewId) {
+    buildSupportFragmentManager(fragmentActivityClass)
+        .beginTransaction().add(containerViewId, fragment, null).commit();
   }
 
   private static FragmentManager buildFragmentManager(Class<? extends Activity> activityClass) {
