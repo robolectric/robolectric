@@ -275,11 +275,19 @@ public class RobolectricPackageManagerTest {
 
   @Test
   @Config(manifest = "src/test/resources/TestAndroidManifestWithContentProviders.xml")
-  public void getPackageInfo_shouldReturnProviderInfos() throws Exception {
+  public void getPackageInfo_getProvidersShouldReturnProviderInfos() throws Exception {
     PackageInfo packageInfo = rpm.getPackageInfo(Robolectric.application.getPackageName(), PackageManager.GET_PROVIDERS);
     ProviderInfo[] providers = packageInfo.providers;
     assertThat(providers).isNotEmpty();
     assertThat(providers.length).isEqualTo(2);
+  }
+
+  @Test
+  @Config(manifest = "src/test/resources/TestAndroidManifestWithNoContentProviders.xml")
+  public void getPackageInfo_getProvidersShouldReturnNullOnNoProviders() throws Exception {
+    PackageInfo packageInfo = rpm.getPackageInfo(Robolectric.application.getPackageName(), PackageManager.GET_PROVIDERS);
+    ProviderInfo[] providers = packageInfo.providers;
+    assertThat(providers).isNull();
   }
 
   @Test
