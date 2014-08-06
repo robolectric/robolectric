@@ -7,6 +7,7 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.ProviderInfo;
 import android.content.pm.ResolveInfo;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
@@ -273,6 +274,23 @@ public class RobolectricPackageManagerTest {
   }
 
   @Test
+  @Config(manifest = "src/test/resources/TestAndroidManifestWithContentProviders.xml")
+  public void getPackageInfo_getProvidersShouldReturnProviderInfos() throws Exception {
+    PackageInfo packageInfo = rpm.getPackageInfo(Robolectric.application.getPackageName(), PackageManager.GET_PROVIDERS);
+    ProviderInfo[] providers = packageInfo.providers;
+    assertThat(providers).isNotEmpty();
+    assertThat(providers.length).isEqualTo(2);
+  }
+
+  @Test
+  @Config(manifest = "src/test/resources/TestAndroidManifestWithNoContentProviders.xml")
+  public void getPackageInfo_getProvidersShouldReturnNullOnNoProviders() throws Exception {
+    PackageInfo packageInfo = rpm.getPackageInfo(Robolectric.application.getPackageName(), PackageManager.GET_PROVIDERS);
+    ProviderInfo[] providers = packageInfo.providers;
+    assertThat(providers).isNull();
+  }
+
+  @Test
   @Config(manifest = "src/test/resources/TestAndroidManifestWithReceivers.xml")
   public void testReceiverInfo() throws Exception {
     ShadowApplication app = Robolectric.getShadowApplication();
@@ -330,6 +348,23 @@ public class RobolectricPackageManagerTest {
     metaValue = meta.get("org.robolectric.metaStringRes");
     assertTrue(Integer.class.isInstance(metaValue));
     assertEquals(R.string.app_name, metaValue);
+  }
+
+  @Test
+  @Config(manifest = "src/test/resources/TestAndroidManifestWithPermissions.xml")
+  public void getPackageInfo_shouldReturnRequestedPermissions() throws Exception {
+    PackageInfo packageInfo = rpm.getPackageInfo(Robolectric.application.getPackageName(), PackageManager.GET_PERMISSIONS);
+    String[] permissions = packageInfo.requestedPermissions;
+    assertThat(permissions).isNotNull();
+    assertThat(permissions.length).isEqualTo(3);
+  }
+
+  @Test
+  @Config(manifest = "src/test/resources/TestAndroidManifestWithoutPermissions.xml")
+  public void getPackageInfo_shouldReturnNullOnNoRequestedPermissions() throws Exception {
+    PackageInfo packageInfo = rpm.getPackageInfo(Robolectric.application.getPackageName(), PackageManager.GET_PERMISSIONS);
+    String[] permissions = packageInfo.requestedPermissions;
+    assertThat(permissions).isNull();
   }
 
   @Test

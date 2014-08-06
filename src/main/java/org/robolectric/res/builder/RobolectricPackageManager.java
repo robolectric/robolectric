@@ -6,6 +6,7 @@ import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
+import android.content.pm.ProviderInfo;
 import android.content.pm.ResolveInfo;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -25,6 +26,7 @@ import java.util.TreeMap;
 import org.robolectric.AndroidManifest;
 import org.robolectric.Robolectric;
 import org.robolectric.res.ActivityData;
+import org.robolectric.res.ContentProviderData;
 import org.robolectric.res.IntentFilterData;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceIndex;
@@ -367,6 +369,26 @@ public class RobolectricPackageManager extends StubPackageManager {
     packageInfo.packageName = androidManifest.getPackageName();
     packageInfo.versionName = androidManifest.getVersionName();
     packageInfo.versionCode = androidManifest.getVersionCode();
+
+    ContentProviderData[] cpdata = androidManifest.getContentProviders().toArray(new ContentProviderData[]{});
+    if (cpdata.length == 0) {
+      packageInfo.providers = null;
+    } else {
+      packageInfo.providers = new ProviderInfo[cpdata.length];
+      for (int i = 0; i < cpdata.length; i++) {
+          ProviderInfo info = new ProviderInfo();
+          info.authority = cpdata[i].getAuthority();
+          info.name = cpdata[i].getClassName();
+          packageInfo.providers[i] = info;
+      }
+    }
+
+    String[] usedPermissions = androidManifest.getUsedPermissions().toArray(new String[]{});
+    if (usedPermissions.length == 0) {
+      packageInfo.requestedPermissions = null;
+    } else {
+      packageInfo.requestedPermissions = usedPermissions;
+    }
 
     ApplicationInfo applicationInfo = new ApplicationInfo();
     applicationInfo.flags = androidManifest.getApplicationFlags();
