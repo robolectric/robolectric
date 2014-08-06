@@ -19,11 +19,11 @@ public class ResName {
   public ResName(@NotNull String packageName, @NotNull String type, @NotNull String name) {
     this.packageName = packageName;
     this.type = type;
-    this.name = name.indexOf('.') != -1 ? name.replace('.', '_') : name;
+    this.name = name.indexOf('.') != -1 ? name.replace('.', '_').trim() : name.trim();
   }
 
   public ResName(@NotNull String fullyQualifiedName) {
-    Matcher matcher = FQN_PATTERN.matcher(fullyQualifiedName);
+    Matcher matcher = FQN_PATTERN.matcher(fullyQualifiedName.trim());
     if (!matcher.find()) {
       throw new IllegalStateException("\"" + fullyQualifiedName + "\" is not fully qualified");
     }
