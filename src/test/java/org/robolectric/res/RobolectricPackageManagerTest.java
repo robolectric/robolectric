@@ -7,6 +7,7 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.ProviderInfo;
 import android.content.pm.ResolveInfo;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
@@ -270,6 +271,15 @@ public class RobolectricPackageManagerTest {
     // negative
     rpm.setSystemFeature(PackageManager.FEATURE_CAMERA, false);
     assertThat(rpm.hasSystemFeature(PackageManager.FEATURE_CAMERA)).isFalse();
+  }
+
+  @Test
+  @Config(manifest = "src/test/resources/TestAndroidManifestWithContentProviders.xml")
+  public void getPackageInfo_shouldReturnProviderInfos() throws Exception {
+    PackageInfo packageInfo = rpm.getPackageInfo(Robolectric.application.getPackageName(), PackageManager.GET_PROVIDERS);
+    ProviderInfo[] providers = packageInfo.providers;
+    assertThat(providers).isNotEmpty();
+    assertThat(providers.length).isEqualTo(2);
   }
 
   @Test
