@@ -383,6 +383,13 @@ public class RobolectricPackageManager extends StubPackageManager {
       }
     }
 
+    String[] usedPermissions = androidManifest.getUsedPermissions().toArray(new String[]{});
+    if (usedPermissions.length == 0) {
+      packageInfo.requestedPermissions = null;
+    } else {
+      packageInfo.requestedPermissions = usedPermissions;
+    }
+
     ApplicationInfo applicationInfo = new ApplicationInfo();
     applicationInfo.flags = androidManifest.getApplicationFlags();
     applicationInfo.targetSdkVersion = androidManifest.getTargetSdkVersion();
