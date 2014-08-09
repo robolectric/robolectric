@@ -4,6 +4,9 @@
 .settings
 eclipsebin
 
+# m2e-apt
+.factorypath
+
 # Ant
 bin/
 out/
