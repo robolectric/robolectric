@@ -1651,7 +1651,7 @@ public class Robolectric {
     Robolectric.packageManager = null;
     Robolectric.activityThread = null;
 
-    RobolectricGen.reset();
+    RobolectricBase.reset();
     for (Class<?> klass : config.shadows()) {
       if (klass.getAnnotation(Implements.class).resetStaticState()) {
         staticMethod("reset").in(klass).invoke();
