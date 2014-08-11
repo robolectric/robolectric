@@ -24,4 +24,37 @@ public class ResNameTest {
     final ResName actual = ResName.qualifyFromFilePath("some.package", "./res/drawable-hdpi/icon.png");
     assertThat(actual.getFullyQualifiedName()).isEqualTo("some.package:drawable/icon");
   }
+
+  @Test
+  public void hierarchicalNameHandlesWhiteSpace() {
+    String name = "TextAppearance.AppCompat.Widget.ActionMode.Subtitle\n" +
+        "    ";
+
+    ResName resName = new ResName("org.robolectric.example", "style", name);
+    assertThat(resName.name).isEqualTo("TextAppearance_AppCompat_Widget_ActionMode_Subtitle");
+    assertThat(resName.type).isEqualTo("style");
+    assertThat(resName.packageName).isEqualTo("org.robolectric.example");
+  }
+
+  @Test
+  public void simpleNameHandlesWhiteSpace() {
+    String name = "Subtitle\n" +
+        "    ";
+
+    ResName resName = new ResName("org.robolectric.example", "style", name);
+    assertThat(resName.name).isEqualTo("Subtitle");
+    assertThat(resName.type).isEqualTo("style");
+    assertThat(resName.packageName).isEqualTo("org.robolectric.example");
+  }
+
+  @Test
+  public void fullyQualifiedNameHandlesWhiteSpace() {
+    String name = "android:style/TextAppearance.AppCompat.Widget.ActionMode.Subtitle\n" +
+        "    ";
+
+    ResName resName = new ResName(name);
+    assertThat(resName.name).isEqualTo("TextAppearance_AppCompat_Widget_ActionMode_Subtitle");
+    assertThat(resName.type).isEqualTo("style");
+    assertThat(resName.packageName).isEqualTo("android");
+  }
 }

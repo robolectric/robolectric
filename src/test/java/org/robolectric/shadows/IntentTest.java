@@ -490,10 +490,11 @@ public class IntentTest {
   }
 
   @Test
-  public void constructor_shouldSetComponentAndAction() {
-    Intent intent = new Intent("roboaction", null, Robolectric.application, Activity.class);
+  public void constructor_shouldSetComponentAndActionAndData() {
+    Intent intent = new Intent("roboaction", Uri.parse("http://www.robolectric.org"), Robolectric.application, Activity.class);
     assertThat(shadowOf(intent).getComponent()).isEqualTo(new ComponentName("org.robolectric", "android.app.Activity"));
     assertThat(shadowOf(intent).getAction()).isEqualTo("roboaction");
+    assertThat(shadowOf(intent).getData()).isEqualTo(Uri.parse("http://www.robolectric.org"));
   }
 
   private static class TestSerializable implements Serializable {

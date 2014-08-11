@@ -193,12 +193,11 @@ public class TestHttpResponse extends HttpResponseStub {
     }
 
     @Override public Header getContentType() {
-      for (Header header : headers) {
-        if (header.getName().equals("Content-Type")) {
-          return header;
-        }
-      }
-      return null;
+      return getFirstHeader("Content-Type");
+    }
+
+    @Override public Header getContentEncoding() {
+      return getFirstHeader("Content-Encoding");
     }
 
     @Override public boolean isStreaming() {
