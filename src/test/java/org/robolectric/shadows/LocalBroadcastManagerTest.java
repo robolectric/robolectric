@@ -74,4 +74,40 @@ public class LocalBroadcastManagerTest {
 
     transcript.assertEventsSoFar("got intent foo");
   }
+
+  @Test
+  public void testGetRegisteredBroadcastReceivers() throws Exception {
+    LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(Robolectric.application);
+    ShadowLocalBroadcastManager shadowLocalBroadcastManager = Robolectric.shadowOf(broadcastManager);
+    assertEquals(0, shadowLocalBroadcastManager.getRegisteredBroadcastReceivers().size());
+
+    BroadcastReceiver receiver = new BroadcastReceiver() {
+      @Override
+      public void onReceive(Context context, Intent intent) {}
+    };
+    IntentFilter filter = new IntentFilter("foo");
+
+    broadcastManager.registerReceiver(receiver, filter);
+
+    assertEquals(1, shadowLocalBroadcastManager.getRegisteredBroadcastReceivers().size());
+    ShadowLocalBroadcastManager.Wrapper capturedWrapper = shadowLocalBroadcastManager.getRegisteredBroadcastReceivers().get(0);
+    assertEquals(receiver, capturedWrapper.broadcastReceiver);
+    assertEquals(filter, capturedWrapper.intentFilter);
+
+    broadcastManager.unregisterReceiver(receiver);
+    assertEquals(0, shadowLocalBroadcastManager.getRegisteredBroadcastReceivers().size());
+  }
+
+  @Test
+  public void testGetSentBroadcastIntents() throws Exception {
+    LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(Robolectric.application);
+    ShadowLocalBroadcastManager shadowLocalBroadcastManager = Robolectric.shadowOf(broadcastManager);
+    assertEquals(0, shadowLocalBroadcastManager.getSentBroadcastIntents().size());
+
+    Intent broadcastIntent = new Intent("foo");
+    broadcastManager.sendBroadcast(broadcastIntent);
+
+    assertEquals(1, shadowLocalBroadcastManager.getSentBroadcastIntents().size());
+    assertEquals(broadcastIntent, shadowLocalBroadcastManager.getSentBroadcastIntents().get(0));
+  }
 }
