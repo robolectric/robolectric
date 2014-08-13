@@ -100,9 +100,17 @@ public class IntentTest {
     TestSerializable serializable = new TestSerializable("some string");
     assertSame(intent, intent.putExtra("foo", serializable));
     assertEquals(serializable, intent.getExtras().get("foo"));
-    assertNotSame(serializable, intent.getExtras().get("foo"));
     assertEquals(serializable, intent.getSerializableExtra("foo"));
-    assertNotSame(serializable, intent.getSerializableExtra("foo"));
+  }
+
+  @Test
+  public void testSerializableOfParcelableExtra() throws Exception {
+    Intent intent = new Intent();
+    ArrayList<Parcelable> serializable = new ArrayList();
+    serializable.add(new TestParcelable(12));
+    assertSame(intent, intent.putExtra("foo", serializable));
+    assertEquals(serializable, intent.getExtras().get("foo"));
+    assertEquals(serializable, intent.getSerializableExtra("foo"));
   }
 
   @Test
