@@ -531,15 +531,17 @@ public class AndroidManifest {
   protected List<FsFile> findLibraries() {
     FsFile baseDir = getBaseDir();
     List<FsFile> libraryBaseDirs = new ArrayList<FsFile>();
+    Properties combinedProperties = new Properties();
 
     Properties properties = getProperties(baseDir.join("project.properties"));
     // get the project.properties overrides and apply them (if any)
     Properties overrideProperties = getProperties(baseDir.join("test-project.properties"));
-    if (overrideProperties!=null) properties.putAll(overrideProperties);
-    if (properties != null) {
+    if (properties!=null) combinedProperties.putAll(properties);
+    if (overrideProperties!=null) combinedProperties.putAll(overrideProperties);
+    if (combinedProperties.size() > 0) {
       int libRef = 1;
       String lib;
-      while ((lib = properties.getProperty("android.library.reference." + libRef)) != null) {
+      while ((lib = combinedProperties.getProperty("android.library.reference." + libRef)) != null) {
         FsFile libraryBaseDir = baseDir.join(lib);
         if (libraryBaseDir.isDirectory()) {
           // Ignore directories without any files
