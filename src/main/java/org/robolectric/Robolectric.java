@@ -87,6 +87,7 @@ import android.preference.PreferenceGroup;
 import android.preference.PreferenceScreen;
 import android.speech.tts.TextToSpeech;
 import android.support.v4.content.CursorLoader;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.DrawerLayout;
 import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
@@ -939,6 +940,10 @@ public class Robolectric {
 
   public static ShadowExpandableListView shadowOf(ExpandableListView instance) {
     return (ShadowExpandableListView) shadowOf_(instance);
+  }
+
+  public static ShadowLocalBroadcastManager shadowOf(LocalBroadcastManager instance) {
+    return (ShadowLocalBroadcastManager) shadowOf_(instance);
   }
 
   public static ShadowLocation shadowOf(Location instance) {
