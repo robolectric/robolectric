@@ -260,7 +260,7 @@ public class ShadowIntent {
 
   @Implementation
   public Intent putExtra(String key, Serializable value) {
-    extras.putSerializable(key, serializeCycle(value));
+    extras.putSerializable(key, value);
     return realIntent;
   }
 
@@ -637,23 +637,6 @@ public class ShadowIntent {
             ifWeHave(type, "type")
         ) +
         '}';
-  }
-
-  private Serializable serializeCycle(Serializable serializable) {
-    try {
-      ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-      ObjectOutputStream output = new ObjectOutputStream(byteArrayOutputStream);
-      output.writeObject(serializable);
-      output.close();
-
-      byte[] bytes = byteArrayOutputStream.toByteArray();
-      ObjectInputStream input = new ObjectInputStream(new ByteArrayInputStream(bytes));
-      return (Serializable) input.readObject();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e);
-    }
   }
 
   private String ifWeHave(Object o, String name) {
