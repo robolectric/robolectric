@@ -185,6 +185,14 @@
     </dependency>
 
     <dependency>
+      <groupId>org.jacoco</groupId>
+      <artifactId>org.jacoco.agent</artifactId>
+      <classifier>runtime</classifier>
+      <version>0.7.1.201405082137</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
       <groupId>com.intellij</groupId>
       <artifactId>annotations</artifactId>
       <version>12.0</version>
