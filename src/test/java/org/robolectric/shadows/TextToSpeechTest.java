@@ -74,4 +74,10 @@ public class TextToSpeechTest {
     textToSpeech.shutdown();
     assertThat(shadowOf(textToSpeech).isShutdown()).isTrue();
   }
+
+  @Test
+  public void getQueueMode_shouldReturnMostRecentQueueMode() throws Exception {
+    textToSpeech.speak("Hello", TextToSpeech.QUEUE_ADD, null);
+    assertThat(shadowOf(textToSpeech).getQueueMode()).isEqualTo(TextToSpeech.QUEUE_ADD);
+  }
 }
