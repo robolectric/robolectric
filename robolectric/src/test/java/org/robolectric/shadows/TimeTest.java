@@ -258,7 +258,93 @@ public class TimeTest {
     Time t = new Time(Time.TIMEZONE_UTC);
     t.set(3600000L);
     assertEquals("Hello epoch 01 1970 01", t.format("Hello epoch %d %Y %d"));
-    assertEquals("Hello epoch 1:00 AM", t.format("Hello epoch %l:%M %p"));
+    assertEquals("Hello epoch  1:00 AM", t.format("Hello epoch %l:%M %p"));
+  }
+
+  @Test
+  public void shouldFormatAndroidStrings() throws Exception {
+    Time t = new Time("UTC");
+    // NOTE: month is zero-based.
+    t.set(12, 13, 14, 8, 8, 1987);
+
+    assertEquals(1987, t.year);
+    assertEquals(8, t.month);
+    assertEquals(8, t.monthDay);
+    assertEquals(14, t.hour);
+    assertEquals(13, t.minute);
+    assertEquals(12, t.second);
+
+    // ICS
+
+    // date_and_time
+    assertEquals(
+        "Sep 8, 1987, 2:13:12 PM",
+        t.format("%b %-e, %Y, %-l:%M:%S %p"));
+
+    // hour_minute_cap_ampm
+    assertEquals(
+        "2:13PM",
+        t.format("%-l:%M%^p"));
+  }
+
+  @Test
+  public void shouldFormatAllFormats() throws Exception {
+    Time t = new Time("JST");
+    t.set(1407496560000L);
+
+    assertEquals("Fri", t.format("%a"));
+    assertEquals("Friday", t.format("%A"));
+    assertEquals("Aug", t.format("%b"));
+    assertEquals("August", t.format("%B"));
+    assertEquals("Fri 08 Aug 2014 08:16:00 PM JST", t.format("%c"));
+    assertEquals("20", t.format("%C"));
+    assertEquals("08", t.format("%d"));
+    assertEquals("08/08/14", t.format("%D"));
+    assertEquals(" 8", t.format("%e"));
+    assertEquals("2014-08-08", t.format("%F"));
+    assertEquals("14", t.format("%g"));
+    assertEquals("2014", t.format("%G"));
+    assertEquals("Aug", t.format("%h"));
+    assertEquals("20", t.format("%H"));
+    assertEquals("08", t.format("%I"));
+    assertEquals("220", t.format("%j"));
+    assertEquals("20", t.format("%k"));
+    assertEquals(" 8", t.format("%l"));
+    assertEquals("08", t.format("%m"));
+    assertEquals("16", t.format("%M"));
+    assertEquals("\n", t.format("%n"));
+    assertEquals("PM", t.format("%p"));
+    assertEquals("pm", t.format("%P"));
+    assertEquals("08:16:00 PM", t.format("%r"));
+    assertEquals("20:16", t.format("%R"));
+    assertEquals("1407496560", t.format("%s"));
+    assertEquals("00", t.format("%S"));
+    assertEquals("\t", t.format("%t"));
+    assertEquals("20:16:00", t.format("%T"));
+    assertEquals("5", t.format("%u"));
+    // assertEquals("31", t.format("%U"));
+    assertEquals("32", t.format("%V"));
+    assertEquals("5", t.format("%w"));
+    // assertEquals("31", t.format("%W"));
+    assertEquals("08/08/2014", t.format("%x"));
+    assertEquals("08:16:00 PM", t.format("%X"));
+    assertEquals("14", t.format("%y"));
+    assertEquals("2014", t.format("%Y"));
+    assertEquals("+0900", t.format("%z"));
+    assertEquals("JST", t.format("%Z"));
+
+    // Case.
+    assertEquals("PM", t.format("%^P"));
+    assertEquals("PM", t.format("%#P"));
+
+    // Padding.
+    assertEquals("8", t.format("%-l"));
+    assertEquals(" 8", t.format("%_l"));
+    assertEquals("08", t.format("%0l"));
+    assertEquals("  8", t.format("%3l"));
+
+    // Escape.
+    assertEquals("%", t.format("%%"));
   }
 
   @Test
