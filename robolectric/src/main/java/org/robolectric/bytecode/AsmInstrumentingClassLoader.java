@@ -123,19 +123,7 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
   @Override
   protected Class<?> findClass(final String className) throws ClassNotFoundException {
     if (setup.shouldAcquire(className)) {
-      String classFilename = className.replace('.', '/') + ".class";
-      InputStream classBytesStream = urls.getResourceAsStream(classFilename);
-      if (classBytesStream == null) {
-        classBytesStream = getResourceAsStream(classFilename);
-      }
-      if (classBytesStream == null) throw new ClassNotFoundException(className);
-
-      byte[] origClassBytes;
-      try {
-        origClassBytes = readBytes(classBytesStream);
-      } catch (IOException e) {
-        throw new ClassNotFoundException("couldn't load " + className, e);
-      }
+      byte[] origClassBytes = getByteCode(className);
 
       final ClassReader classReader = new ClassReader(origClassBytes);
       ClassNode classNode = new ClassNode(Opcodes.ASM4) {
@@ -173,6 +161,23 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
       throw new IllegalStateException("how did we get here? " + className);
 //            return super.findClass(className);
     }
+  }
+
+  protected byte[] getByteCode(String className) throws ClassNotFoundException {
+    String classFilename = className.replace('.', '/') + ".class";
+    InputStream classBytesStream = urls.getResourceAsStream(classFilename);
+    if (classBytesStream == null) {
+      classBytesStream = getResourceAsStream(classFilename);
+    }
+    if (classBytesStream == null) throw new ClassNotFoundException(className);
+
+    byte[] origClassBytes;
+    try {
+      origClassBytes = readBytes(classBytesStream);
+    } catch (IOException e) {
+      throw new ClassNotFoundException("couldn't load " + className, e);
+    }
+    return origClassBytes;
   }
 
   private void ensurePackage(final String className) {
