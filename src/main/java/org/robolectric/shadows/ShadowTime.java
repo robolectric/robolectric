@@ -254,6 +254,7 @@ public class ShadowTime {
     SimpleDateFormat formatter =  new SimpleDateFormat();
     // Special case Date without time first
     if (rfc3339String.matches("\\d{4}-\\d{2}-\\d{2}")) {
+      formatter.setTimeZone(TimeZone.getTimeZone(time.timezone));
       formatter.applyLocalizedPattern("yyyy-MM-dd");
       Calendar calendar = Calendar.getInstance(
           TimeZone.getTimeZone(time.timezone), Locale.getDefault());

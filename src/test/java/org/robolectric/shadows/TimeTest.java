@@ -219,7 +219,7 @@ public class TimeTest {
     Time t = new Time(Time.TIMEZONE_UTC);
     t.set(3600000L);
     assertEquals("Hello epoch 01 1970 01", t.format("Hello epoch %d %Y %d"));
-    assertEquals("Hello epoch 1:00 AM", t.format("Hello epoch %l:%M %p"));
+    assertEquals("Hello epoch  1:00 AM", t.format("Hello epoch %l:%M %p"));
   }
 
   @Test
