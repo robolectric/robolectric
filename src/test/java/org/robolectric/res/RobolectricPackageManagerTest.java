@@ -38,27 +38,20 @@ import static org.junit.Assert.assertTrue;
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class RobolectricPackageManagerTest {
-
   private static final String TEST_PACKAGE_NAME = "com.some.other.package";
   private static final String TEST_PACKAGE_LABEL = "My Little App";
-
+  private final RobolectricPackageManager rpm = (RobolectricPackageManager) Robolectric.application.getPackageManager();
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
-  RobolectricPackageManager rpm;
-
-  @Before
-  public void setUp() throws Exception {
-    rpm = (RobolectricPackageManager) Robolectric.application.getPackageManager();
-  }
 
   @Test
-  public void getApplicationInfo__ThisApplication() throws Exception {
+  public void getApplicationInfo_ThisApplication() throws Exception {
     ApplicationInfo info = rpm.getApplicationInfo(Robolectric.application.getPackageName(), 0);
     assertThat(info).isNotNull();
     assertThat(info.packageName).isEqualTo(Robolectric.application.getPackageName());
   }
 
   @Test
-  public void getApplicationInfo__OtherApplication() throws Exception {
+  public void getApplicationInfo_OtherApplication() throws Exception {
     PackageInfo packageInfo = new PackageInfo();
     packageInfo.packageName = TEST_PACKAGE_NAME;
     packageInfo.applicationInfo = new ApplicationInfo();
@@ -86,7 +79,7 @@ public class RobolectricPackageManagerTest {
   }
 
   @Test
-  public void queryIntentActivities__EmptyResult() throws Exception {
+  public void queryIntentActivities_EmptyResult() throws Exception {
     Intent i = new Intent(Intent.ACTION_MAIN, null);
     i.addCategory(Intent.CATEGORY_LAUNCHER);
 
@@ -95,7 +88,7 @@ public class RobolectricPackageManagerTest {
   }
 
   @Test
-  public void queryIntentActivities__Match() throws Exception {
+  public void queryIntentActivities_Match() throws Exception {
     Intent i = new Intent(Intent.ACTION_MAIN, null);
     i.addCategory(Intent.CATEGORY_LAUNCHER);
 
@@ -112,7 +105,7 @@ public class RobolectricPackageManagerTest {
 
   @Test
   @Config(manifest = "src/test/resources/TestAndroidManifestForActivitiesWithIntentFilterWithData.xml")
-  public void queryIntentActivities__EmptyResultWithNoMatchingImplicitIntents() throws Exception {
+  public void queryIntentActivities_EmptyResultWithNoMatchingImplicitIntents() throws Exception {
     rpm.addManifest(Robolectric.getShadowApplication().getAppManifest(), Robolectric.getShadowApplication().getResourceLoader());
     Intent i = new Intent(Intent.ACTION_MAIN, null);
     i.addCategory(Intent.CATEGORY_LAUNCHER);
@@ -124,7 +117,7 @@ public class RobolectricPackageManagerTest {
 
   @Test
   @Config(manifest = "src/test/resources/TestAndroidManifestForActivitiesWithIntentFilterWithData.xml")
-  public void queryIntentActivities__MatchWithImplicitIntents() throws Exception {
+  public void queryIntentActivities_MatchWithImplicitIntents() throws Exception {
     rpm.addManifest(Robolectric.getShadowApplication().getAppManifest(), Robolectric.getShadowApplication().getResourceLoader());
     Uri uri = Uri.parse("content://testhost1.com:1/testPath/test.jpeg");
     Intent i = new Intent(Intent.ACTION_VIEW);
@@ -141,7 +134,7 @@ public class RobolectricPackageManagerTest {
 
   @Test
   @Config(manifest = "src/test/resources/TestAndroidManifestForActivityAliases.xml")
-  public void queryIntentActivities__MatchWithAliasIntents() throws Exception {
+  public void queryIntentActivities_MatchWithAliasIntents() throws Exception {
     rpm.addManifest(Robolectric.getShadowApplication().getAppManifest(), Robolectric.getShadowApplication().getResourceLoader());
     Intent i = new Intent(Intent.ACTION_MAIN);
     i.addCategory(Intent.CATEGORY_LAUNCHER);
@@ -155,7 +148,7 @@ public class RobolectricPackageManagerTest {
   }
 
   @Test
-  public void resolveActivity__Match() throws Exception {
+  public void resolveActivity_Match() throws Exception {
     Intent i = new Intent(Intent.ACTION_MAIN, null).addCategory(Intent.CATEGORY_LAUNCHER);
     ResolveInfo info = new ResolveInfo();
     info.nonLocalizedLabel = TEST_PACKAGE_LABEL;
@@ -165,14 +158,14 @@ public class RobolectricPackageManagerTest {
   }
 
   @Test
-  public void resolveActivity__NoMatch() throws Exception {
+  public void resolveActivity_NoMatch() throws Exception {
     Intent i = new Intent();
     i.setComponent(new ComponentName("foo.bar", "No Activity"));
     assertThat(rpm.resolveActivity(i, 0)).isNull();
   }
 
   @Test
-  public void queryIntentServices__EmptyResult() throws Exception {
+  public void queryIntentServices_EmptyResult() throws Exception {
     Intent i = new Intent(Intent.ACTION_MAIN, null);
     i.addCategory(Intent.CATEGORY_LAUNCHER);
 
@@ -181,7 +174,7 @@ public class RobolectricPackageManagerTest {
   }
 
   @Test
-  public void queryIntentServices__Match() throws Exception {
+  public void queryIntentServices_Match() throws Exception {
     Intent i = new Intent(Intent.ACTION_MAIN, null);
 
     ResolveInfo info = new ResolveInfo();
@@ -195,7 +188,7 @@ public class RobolectricPackageManagerTest {
   }
 
   @Test
-  public void queryBroadcastReceivers__EmptyResult() throws Exception {
+  public void queryBroadcastReceivers_EmptyResult() throws Exception {
     Intent i = new Intent(Intent.ACTION_MAIN, null);
     i.addCategory(Intent.CATEGORY_LAUNCHER);
 
@@ -204,7 +197,7 @@ public class RobolectricPackageManagerTest {
   }
 
   @Test
-  public void queryBroadcastReceivers__Match() throws Exception {
+  public void queryBroadcastReceivers_Match() throws Exception {
     Intent i = new Intent(Intent.ACTION_MAIN, null);
 
     ResolveInfo info = new ResolveInfo();
@@ -219,7 +212,7 @@ public class RobolectricPackageManagerTest {
   }
 
   @Test
-  public void resolveService__Match() throws Exception {
+  public void resolveService_Match() throws Exception {
     Intent i = new Intent(Intent.ACTION_MAIN, null);
     ResolveInfo info = new ResolveInfo();
     rpm.addResolveInfoForIntent(i, info);
@@ -241,14 +234,14 @@ public class RobolectricPackageManagerTest {
   }
 
   @Test
-  public void resolveService__NoMatch() throws Exception {
+  public void resolveService_NoMatch() throws Exception {
     Intent i = new Intent();
     i.setComponent(new ComponentName("foo.bar", "No Activity"));
     assertThat(rpm.resolveService(i, 0)).isNull();
   }
 
   @Test
-  public void queryActivityIcons__Match() throws Exception {
+  public void queryActivityIcons_Match() throws Exception {
     Intent i = new Intent();
     i.setComponent(new ComponentName(TEST_PACKAGE_NAME, ""));
     Drawable d = new BitmapDrawable();
@@ -280,6 +273,8 @@ public class RobolectricPackageManagerTest {
     ProviderInfo[] providers = packageInfo.providers;
     assertThat(providers).isNotEmpty();
     assertThat(providers.length).isEqualTo(2);
+    assertThat(providers[0].packageName).isEqualTo("org.robolectric");
+    assertThat(providers[1].packageName).isEqualTo("org.robolectric");
   }
 
   @Test

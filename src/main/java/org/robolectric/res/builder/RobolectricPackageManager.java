@@ -376,10 +376,11 @@ public class RobolectricPackageManager extends StubPackageManager {
     } else {
       packageInfo.providers = new ProviderInfo[cpdata.length];
       for (int i = 0; i < cpdata.length; i++) {
-          ProviderInfo info = new ProviderInfo();
-          info.authority = cpdata[i].getAuthority();
-          info.name = cpdata[i].getClassName();
-          packageInfo.providers[i] = info;
+        ProviderInfo info = new ProviderInfo();
+        info.authority = cpdata[i].getAuthority();
+        info.name = cpdata[i].getClassName();
+        info.packageName = androidManifest.getPackageName();
+        packageInfo.providers[i] = info;
       }
     }
 
