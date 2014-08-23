@@ -344,8 +344,9 @@ public class ShadowIntent {
   }
 
   @Implementation
-  public void putExtra(String key, byte[] value) {
+  public Intent putExtra(String key, byte[] value) {
     extras.putByteArray(key, value);
+    return realIntent;
   }
 
   @Implementation
