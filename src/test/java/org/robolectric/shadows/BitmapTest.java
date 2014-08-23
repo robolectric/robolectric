@@ -1,12 +1,7 @@
 package org.robolectric.shadows;
 
-import android.graphics.Bitmap;
+import android.graphics.*;
 import android.graphics.Bitmap.Config;
-import android.graphics.Canvas;
-import android.graphics.ColorMatrix;
-import android.graphics.ColorMatrixColorFilter;
-import android.graphics.Matrix;
-import android.graphics.Paint;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -34,22 +29,28 @@ public class BitmapTest {
   public void shouldCreateActiveBitmap() throws Exception {
     Bitmap bitmap = Bitmap.createBitmap(100, 200, Config.ARGB_8888);
     assertFalse(bitmap.isRecycled());
-  }
-
-  @Test
-  public void shouldCreateBitmapWithCorrectConfig() throws Exception {
-    Bitmap bitmap = Bitmap.createBitmap(100, 200, Config.ARGB_8888);
+    assertThat(bitmap.getPixel(0, 0)).isZero();
     assertThat(bitmap.getWidth()).isEqualTo(100);
     assertThat(bitmap.getHeight()).isEqualTo(200);
     assertThat(bitmap.getConfig()).isEqualTo(Config.ARGB_8888);
   }
 
   @Test
-  public void shouldCreateBitmapWithCorrectConfig_factoryWithColorArg() throws Exception {
-    Bitmap bitmap = Bitmap.createBitmap(new int[] {1, 2, 3}, 100, 200, Config.ARGB_8888);
-    assertThat(bitmap.getWidth()).isEqualTo(100);
-    assertThat(bitmap.getHeight()).isEqualTo(200);
+  public void shouldCreateBitmapWithColors() throws Exception {
+    int[] colors = new int[] {
+        Color.parseColor("#ff0000"), Color.parseColor("#00ff00"), Color.parseColor("#0000ff"),
+        Color.parseColor("#990000"), Color.parseColor("#009900"), Color.parseColor("#000099")
+    };
+    Bitmap bitmap = Bitmap.createBitmap(colors, 3, 2, Config.ARGB_8888);
+    assertThat(bitmap.getWidth()).isEqualTo(3);
+    assertThat(bitmap.getHeight()).isEqualTo(2);
     assertThat(bitmap.getConfig()).isEqualTo(Config.ARGB_8888);
+    assertThat(bitmap.getPixel(0, 0)).isEqualTo(Color.parseColor("#ff0000"));
+    assertThat(bitmap.getPixel(0, 1)).isEqualTo(Color.parseColor("#990000"));
+    assertThat(bitmap.getPixel(1, 0)).isEqualTo(Color.parseColor("#00ff00"));
+    assertThat(bitmap.getPixel(1, 1)).isEqualTo(Color.parseColor("#009900"));
+    assertThat(bitmap.getPixel(2, 0)).isEqualTo(Color.parseColor("#0000ff"));
+    assertThat(bitmap.getPixel(2, 1)).isEqualTo(Color.parseColor("#000099"));
   }
 
   @Test
@@ -164,6 +165,21 @@ public class BitmapTest {
       fail();
     } catch (NullPointerException expected) {
     }
+  }
+
+  @Test
+  public void shouldSetPixel() {
+    Bitmap bitmap = Bitmap.createBitmap(new int[] { 1 }, 1, 1, Config.ARGB_8888);
+    shadowOf(bitmap).setMutable(true);
+    bitmap.setPixel(0, 0, 2);
+    assertThat(bitmap.getPixel(0, 0)).isEqualTo(2);
+    assertThat(shadowOf(bitmap).getCreatedFromColors()).isEqualTo(new int[] { 1 });
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void shouldThrowExceptionForSetPixelOnImmutableBitmap() {
+    Bitmap bitmap = Bitmap.createBitmap(new int[] { 1 }, 1, 1, Config.ARGB_8888);
+    bitmap.setPixel(0, 0, 2);
   }
 
   @Test
