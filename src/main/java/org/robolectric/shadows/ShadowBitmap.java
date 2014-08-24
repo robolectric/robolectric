@@ -28,11 +28,13 @@ public class ShadowBitmap {
   private int createdFromY = -1;
   private int createdFromWidth = -1;
   private int createdFromHeight = -1;
+  private int[] createdFromColors;
   private Matrix createdFromMatrix;
   private boolean createdFromFilter;
 
   private int width;
   private int height;
+  private int[] colors;
   private Bitmap.Config config;
   private boolean mutable;
   private String description = "";
@@ -101,6 +103,14 @@ public class ShadowBitmap {
    */
   public int getCreatedFromHeight() {
     return createdFromHeight;
+  }
+
+  /**
+   * Color array from which this Bitmap was created. {@code null} if this Bitmap was not created
+   * from a color array.
+   */
+  public int[] getCreatedFromColors() {
+    return createdFromColors;
   }
 
   /** Matrix from which this Bitmap's content was transformed, or {@code null}. */
@@ -231,8 +241,46 @@ public class ShadowBitmap {
   }
 
   @Implementation
-  public static Bitmap createBitmap(int[] ignored, int width, int height, Bitmap.Config config) {
-    return Bitmap.createBitmap(width, height, config);
+  public static Bitmap createBitmap(int[] colors, int width, int height, Bitmap.Config config) {
+    if (colors.length != width * height) {
+      throw new IllegalArgumentException("array length (" + colors.length + ") did not match width * height (" + (width * height) + ")");
+    }
+
+    Bitmap newBitmap = Bitmap.createBitmap(width, height, config);
+    ShadowBitmap shadowBitmap = shadowOf(newBitmap);
+
+    shadowBitmap.createdFromColors = colors;
+    shadowBitmap.colors = new int[colors.length];
+    System.arraycopy(colors, 0, shadowBitmap.colors, 0, colors.length);
+    return newBitmap;
+  }
+
+  @Implementation
+  public int getPixel(int x, int y) {
+    internalCheckPixelAccess(x, y);
+    if (colors != null) {
+      // Note that getPixel() returns a non-premultiplied ARGB value; if
+      // config is RGB_565, our return value will likely be more precise than
+      // on a physical device, since it needs to map each color component from
+      // 5 or 6 bits to 8 bits.
+      return colors[y * getWidth() + x];
+    } else {
+      return 0;
+    }
+  }
+
+  @Implementation
+  public void setPixel(int x, int y, int color) {
+    if (isRecycled()) {
+      throw new IllegalStateException("Can't call setPixel() on a recycled bitmap");
+    } else if (!isMutable()) {
+      throw new IllegalStateException("Bitmap is immutable");
+    }
+    internalCheckPixelAccess(x, y);
+    if (colors == null) {
+      colors = new int[getWidth() * getHeight()];
+    }
+    colors[y * getWidth() + x] = color;
   }
 
   @Implementation
@@ -368,5 +416,20 @@ public class ShadowBitmap {
   public void setCreatedFromResId(int resId, ResName resName) {
     this.createdFromResId = resId;
     appendDescription(" for resource:" + resName.getFullyQualifiedName());
+  }
+
+  private void internalCheckPixelAccess(int x, int y) {
+    if (x < 0) {
+      throw new IllegalArgumentException("x must be >= 0");
+    }
+    if (y < 0) {
+      throw new IllegalArgumentException("y must be >= 0");
+    }
+    if (x >= getWidth()) {
+      throw new IllegalArgumentException("x must be < bitmap.width()");
+    }
+    if (y >= getHeight()) {
+      throw new IllegalArgumentException("y must be < bitmap.height()");
+    }
   }
 }
