@@ -96,4 +96,9 @@ public class ShadowActivityManager {
   public android.content.pm.ConfigurationInfo getDeviceConfigurationInfo() {
     return new ConfigurationInfo();
   }
+
+  @Implementation
+  public static boolean isUserAMonkey() {
+      return false;
+  }
 }
