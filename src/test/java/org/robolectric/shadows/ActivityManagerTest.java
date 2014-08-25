@@ -36,4 +36,9 @@ public class ActivityManagerTest {
     ActivityManager activityManager = (ActivityManager) Robolectric.application.getSystemService(Context.ACTIVITY_SERVICE);
     assertThat(activityManager.getLauncherLargeIconDensity()).isGreaterThan(0);
   }
+
+  @Test
+  public void isUserAMonkey_should_be_always_false() {
+      assertThat(ActivityManager.isUserAMonkey()).isFalse();
+  }
 }
