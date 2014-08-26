@@ -6,9 +6,11 @@ import android.content.res.Resources;
 import android.database.DatabaseErrorHandler;
 import android.database.sqlite.SQLiteDatabase;
 import android.view.View;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.res.Attribute;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceLoader;
@@ -28,7 +30,7 @@ import static org.robolectric.Robolectric.shadowOf;
  * Calls through to the {@code resourceLoader} to actually load resources.
  */
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(value = Context.class, resetStaticState = true)
+@Implements(Context.class)
 abstract public class ShadowContext {
   public static final File CACHE_DIR = createTempDir("android-cache");
   public static final File EXTERNAL_CACHE_DIR = createTempDir("android-external-cache");
@@ -157,6 +159,7 @@ abstract public class ShadowContext {
     return getShadowApplication().isStrictI18n();
   }
 
+  @Resetter
   public static void reset() {
     clearFiles(FILES_DIR);
     clearFiles(CACHE_DIR);

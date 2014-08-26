@@ -4,11 +4,13 @@ import android.os.Binder;
 import android.os.Parcel;
 import android.os.RemoteException;
 import android.os.ShadowBinderBridge;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 
-@Implements(value = Binder.class, resetStaticState = true)
+@Implements(Binder.class)
 public class ShadowBinder {
   @RealObject
   Binder realObject;
@@ -45,6 +47,7 @@ public class ShadowBinder {
     ShadowBinder.callingUid = uid;
   }
 
+  @Resetter
   public static void reset() {
     ShadowBinder.callingPid = null;
     ShadowBinder.callingUid = null;
