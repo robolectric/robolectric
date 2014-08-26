@@ -505,6 +505,41 @@ public class IntentTest {
     assertThat(shadowOf(intent).getData()).isEqualTo(Uri.parse("http://www.robolectric.org"));
   }
 
+  @Test
+  public void putExtra_shouldBeChainable() {
+    // Ensure that all putExtra methods return the Intent properly and can therefore be chained
+    // without causing NPE's
+    Intent intent = new Intent();
+
+    assertThat(intent.putExtra("double array", new double[] { 0.0 })).isEqualTo(intent);
+    assertThat(intent.putExtra("int", 0)).isEqualTo(intent);
+    assertThat(intent.putExtra("CharSequence", new TestCharSequence("test"))).isEqualTo(intent);
+    assertThat(intent.putExtra("char", 'a')).isEqualTo(intent);
+    assertThat(intent.putExtra("Bundle", new Bundle())).isEqualTo(intent);
+    assertThat(intent.putExtra("Parcelable array", new Parcelable[] { new TestParcelable(0) }))
+        .isEqualTo(intent);
+    assertThat(intent.putExtra("Serializable", new TestSerializable("test"))).isEqualTo(intent);
+    assertThat(intent.putExtra("int array", new int[] { 0 })).isEqualTo(intent);
+    assertThat(intent.putExtra("float", 0f)).isEqualTo(intent);
+    assertThat(intent.putExtra("byte array", new byte[] { 0 })).isEqualTo(intent);
+    assertThat(intent.putExtra("long array", new long[] { 0L })).isEqualTo(intent);
+    assertThat(intent.putExtra("Parcelable", new TestParcelable(0))).isEqualTo(intent);
+    assertThat(intent.putExtra("float array", new float[] { 0f })).isEqualTo(intent);
+    assertThat(intent.putExtra("long", 0L)).isEqualTo(intent);
+    assertThat(intent.putExtra("String array", new String[] { "test" })).isEqualTo(intent);
+    assertThat(intent.putExtra("boolean", true)).isEqualTo(intent);
+    assertThat(intent.putExtra("boolean array", new boolean[] { true })).isEqualTo(intent);
+    assertThat(intent.putExtra("short", (short) 0)).isEqualTo(intent);
+    assertThat(intent.putExtra("double", 0.0)).isEqualTo(intent);
+    assertThat(intent.putExtra("short array", new short[] { 0 })).isEqualTo(intent);
+    assertThat(intent.putExtra("String", "test")).isEqualTo(intent);
+    assertThat(intent.putExtra("byte", (byte) 0)).isEqualTo(intent);
+    assertThat(intent.putExtra("char array", new char[] { 'a' })).isEqualTo(intent);
+    assertThat(intent.putExtra("CharSequence array",
+        new CharSequence[] { new TestCharSequence("test") }))
+        .isEqualTo(intent);
+  }
+
   private static class TestSerializable implements Serializable {
     private String someValue;
 
