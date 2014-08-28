@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.Uri;
 import android.support.v4.content.LocalBroadcastManager;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,6 +40,26 @@ public class LocalBroadcastManagerTest {
     instance.sendBroadcast(new Intent("com.bar"));
     assertFalse(called[0]);
     instance.sendBroadcast(new Intent("com.foo"));
+    assertTrue(called[0]);
+  }
+  
+  @Test
+  public void shouldSendBroadcastsWithDataScheme() throws Exception {
+    LocalBroadcastManager instance = LocalBroadcastManager.getInstance(Robolectric.application);
+    final boolean[] called = new boolean[1];
+    final BroadcastReceiver receiver = new BroadcastReceiver() {
+      @Override
+      public void onReceive(Context context, Intent intent) {
+        called[0] = true;
+      }
+    };
+    IntentFilter intentFilter = new IntentFilter("com.foo");
+    intentFilter.addDataScheme("http");
+    instance.registerReceiver(receiver, intentFilter);
+    
+    instance.sendBroadcast(new Intent("com.foo", Uri.parse("ftp://robolectric.org")));
+    assertFalse(called[0]);
+    instance.sendBroadcast(new Intent("com.foo", Uri.parse("http://robolectric.org")));
     assertTrue(called[0]);
   }
 
