@@ -191,6 +191,15 @@ public class IntentTest {
     assertSame(uri, intent.getData());
     assertNull(intent.getType());
   }
+  
+  @Test
+  public void testGetScheme() throws Exception {
+    Intent intent = new Intent();
+    Uri uri = Uri.parse("http://robolectric.org");
+    assertSame(intent, intent.setData(uri));
+    assertSame(uri, intent.getData());
+    assertEquals("http", intent.getScheme());
+  }
 
   @Test
   public void testSetType() throws Exception {

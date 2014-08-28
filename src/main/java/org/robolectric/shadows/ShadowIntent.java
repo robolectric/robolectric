@@ -161,6 +161,11 @@ public class ShadowIntent {
   }
 
   @Implementation
+  public String getScheme() {
+      return data != null ? data.getScheme() : null;
+  }
+
+  @Implementation
   public String getDataString() {
     if (data != null) {
       return data.toString();
