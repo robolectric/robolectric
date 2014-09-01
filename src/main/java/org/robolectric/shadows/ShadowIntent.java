@@ -240,6 +240,18 @@ public class ShadowIntent {
   }
 
   @Implementation
+  public Intent putExtra(String key, char value) {
+    extras.putChar(key, value);
+    return realIntent;
+  }
+
+  @Implementation
+  public Intent putExtra(String key, byte value) {
+    extras.putByte(key, value);
+    return realIntent;
+  }
+
+  @Implementation
   public Intent putExtra(String key, int value) {
     extras.putInt(key, value);
     return realIntent;
@@ -248,6 +260,12 @@ public class ShadowIntent {
   @Implementation
   public Intent putExtra(String key, double value) {
     extras.putDouble(key, value);
+    return realIntent;
+  }
+
+  @Implementation
+  public Intent putExtra(String key, short value) {
+    extras.putShort(key, value);
     return realIntent;
   }
 
@@ -306,6 +324,18 @@ public class ShadowIntent {
   }
 
   @Implementation
+  public Intent putExtra(String key, boolean[] value) {
+    extras.putBooleanArray(key, value);
+    return realIntent;
+  }
+
+  @Implementation
+  public Intent putExtra(String key, char[] value) {
+    extras.putCharArray(key, value);
+    return realIntent;
+  }
+
+  @Implementation
   public Intent putExtra(String key, int[] value) {
     extras.putIntArray(key, value);
     return realIntent;
@@ -315,6 +345,34 @@ public class ShadowIntent {
   public Intent putExtra(String key, long[] value) {
     extras.putLongArray(key, value);
     return realIntent;
+  }
+
+  @Implementation
+  public Intent putExtra(String key, float[] value) {
+    extras.putFloatArray(key, value);
+    return realIntent;
+  }
+
+  @Implementation
+  public Intent putExtra(String key, double[] value) {
+    extras.putDoubleArray(key, value);
+    return realIntent;
+  }
+
+  @Implementation
+  public Intent putExtra(String key, short[] value) {
+    extras.putShortArray(key, value);
+    return realIntent;
+  }
+
+  @Implementation
+  public char[] getCharArrayExtra(String name) {
+    return extras.getCharArray(name);
+  }
+
+  @Implementation
+  public boolean[] getBooleanArrayExtra(String name) {
+    return extras.getBooleanArray(name);
   }
 
   @Implementation
@@ -328,6 +386,21 @@ public class ShadowIntent {
   }
 
   @Implementation
+  public float[] getFloatArrayExtra(String name) {
+    return extras.getFloatArray(name);
+  }
+
+  @Implementation
+  public double[] getDoubleArrayExtra(String name) {
+    return extras.getDoubleArray(name);
+  }
+
+  @Implementation
+  public short[] getShortArrayExtra(String name) {
+    return extras.getShortArray(name);
+  }
+
+  @Implementation
   public boolean getBooleanExtra(String name, boolean defaultValue) {
     return extras.getBoolean(name, defaultValue);
   }
@@ -335,6 +408,16 @@ public class ShadowIntent {
   @Implementation
   public String[] getStringArrayExtra(String name) {
     return extras.getStringArray(name);
+  }
+
+  @Implementation
+  public CharSequence[] getCharSequenceArrayExtra(String name) {
+    return extras.getCharSequenceArray(name);
+  }
+
+  @Implementation
+  public ArrayList<CharSequence> getCharSequenceArrayListExtra(String name) {
+    return extras.getCharSequenceArrayList(name);
   }
 
   @Implementation
@@ -357,6 +440,18 @@ public class ShadowIntent {
   @Implementation
   public Intent putStringArrayListExtra(String key, ArrayList<String> value) {
     extras.putStringArrayList(key, value);
+    return realIntent;
+  }
+
+  @Implementation
+  public Intent putExtra(String key, CharSequence[] value) {
+    extras.putCharSequenceArray(key, value);
+    return realIntent;
+  }
+
+  @Implementation
+  public Intent putCharSequenceArrayListExtra(String key, ArrayList<CharSequence> value) {
+    extras.putCharSequenceArrayList(key, value);
     return realIntent;
   }
 
@@ -408,6 +503,16 @@ public class ShadowIntent {
   }
 
   @Implementation
+  public byte getByteExtra(String name, byte defaultValue) {
+    return extras.getByte(name, defaultValue);
+  }
+
+  @Implementation
+  public char getCharExtra(String name, char defaultValue) {
+    return extras.getChar(name, defaultValue);
+  }
+
+  @Implementation
   public int getIntExtra(String name, int defaultValue) {
     return extras.getInt(name, defaultValue);
   }
@@ -420,6 +525,11 @@ public class ShadowIntent {
   @Implementation
   public double getDoubleExtra(String name, double defaultValue) {
     return extras.getDouble(name, defaultValue);
+  }
+
+  @Implementation
+  public short getShortExtra(String name, short defaultValue) {
+    return extras.getShort(name, defaultValue);
   }
 
   @Implementation
