@@ -27,6 +27,7 @@ public class ShadowNotification {
   private int smallIcon;
   private long when;
   private boolean ongoing;
+  private boolean showWhen;
 
   private ArrayList<Notification.Action> actions = new ArrayList<Notification.Action>(MAX_ACTIONS);
 
@@ -69,6 +70,10 @@ public class ShadowNotification {
     return when;
   }
 
+  public boolean isWhenShown() {
+    return showWhen;
+  }
+
   public Style getStyle() {
     return style;
   }
@@ -99,6 +104,10 @@ public class ShadowNotification {
 
   public void setWhen(long when) {
     this.when = when;
+  }
+
+  public void setShowWhen(boolean showWhen) {
+    this.showWhen = showWhen;
   }
 
   public CharSequence getTicker() {
@@ -195,6 +204,7 @@ public class ShadowNotification {
     private int smallIcon;
     private boolean ongoing;
     private long when;
+    private boolean showWhen = true;
     private ArrayList<Notification.Action> actions =
         new ArrayList<Notification.Action>(MAX_ACTIONS);
     private Style style;
@@ -222,6 +232,7 @@ public class ShadowNotification {
       s.setSmallIcon(smallIcon);
       s.setTicker(ticker);
       s.setWhen(when);
+      s.setShowWhen(showWhen);
       s.setContentInfo(contentInfo);
       s.setActions(actions);
       s.setStyle(style);
@@ -311,8 +322,15 @@ public class ShadowNotification {
       directlyOn(realBuilder, Builder.class, "setUsesChronometer", boolean.class).invoke(usesChronometer);
       return realBuilder;
     }
+
+    @Implementation
+    public Builder setShowWhen(boolean showWhen) {
+      this.showWhen = showWhen;
+      directlyOn(realBuilder, Builder.class, "setShowWhen", boolean.class).invoke(showWhen);
+      return realBuilder;
+    }
   }
-  
+
   @Implements(Style.class)
   public static class ShadowStyle {
 
