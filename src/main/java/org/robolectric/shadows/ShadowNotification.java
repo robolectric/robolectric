@@ -26,6 +26,8 @@ public class ShadowNotification {
   private CharSequence contentInfo;
   private int smallIcon;
   private long when;
+  private boolean ongoing;
+
   private ArrayList<Notification.Action> actions = new ArrayList<Notification.Action>(MAX_ACTIONS);
 
   private Style style;
@@ -55,6 +57,10 @@ public class ShadowNotification {
     return contentText;
   }
 
+  public boolean isOngoing() {
+    return ongoing;
+  }
+
   public int getSmallIcon() {
     return smallIcon;
   }
@@ -81,6 +87,10 @@ public class ShadowNotification {
 
   public void setContentText(CharSequence contentText) {
     this.contentText = contentText;
+  }
+
+  public void setOngoing(boolean ongoing) {
+    this.ongoing = ongoing;
   }
 
   public void setSmallIcon(int icon) {
@@ -183,6 +193,7 @@ public class ShadowNotification {
     private CharSequence contentText;
     private CharSequence ticker;
     private int smallIcon;
+    private boolean ongoing;
     private long when;
     private ArrayList<Notification.Action> actions =
         new ArrayList<Notification.Action>(MAX_ACTIONS);
@@ -216,6 +227,7 @@ public class ShadowNotification {
       s.setStyle(style);
       s.setProgress(progress);
       s.setUsesChronometer(usesChronometer);
+      s.setOngoing(ongoing);
     }
     
     @Implementation
@@ -236,6 +248,13 @@ public class ShadowNotification {
     public Builder setSmallIcon(int smallIcon) {
       this.smallIcon = smallIcon;
       directlyOn(realBuilder, Builder.class, "setSmallIcon", int.class).invoke(smallIcon);
+      return realBuilder;
+    }
+
+    @Implementation
+    public Builder setOngoing(boolean ongoing) {
+      this.ongoing = ongoing;
+      directlyOn(realBuilder, Builder.class, "setOngoing", boolean.class).invoke(ongoing);
       return realBuilder;
     }
 
