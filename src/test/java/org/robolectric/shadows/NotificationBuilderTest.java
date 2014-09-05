@@ -41,6 +41,19 @@ public class NotificationBuilderTest {
   }
 
   @Test
+  public void build_whenShowWhenNotSet_setsShowWhenOnNotificationToTrue() {
+    build();
+    assertThat(s.isWhenShown()).isTrue();
+  }
+
+  @Test
+  public void build_setShowWhenOnNotification() {
+    builder.setShowWhen(false);
+    build();
+    assertThat(s.isWhenShown()).isFalse();
+  }
+
+  @Test
   public void build_setsContentTextOnNotification() throws Exception {
     builder.setContentText("Hello Text");
     build();
