@@ -5,12 +5,12 @@
   <parent>
     <groupId>org.robolectric</groupId>
     <artifactId>robolectric-parent</artifactId>
-    <version>1.0</version>
+    <version>1.0-SNAPSHOT</version>
   </parent>
 
   <groupId>org.robolectric</groupId>
   <artifactId>robolectric</artifactId>
-  <version>${robolectric.version}</version>
+  <version>2.4-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>Robolectric Core</name>
   <description>An alternative Android testing framework - core libraries.</description>
@@ -24,13 +24,11 @@
     <dependency>
       <groupId>org.robolectric</groupId>
       <artifactId>robolectric-annotations</artifactId>
-      <version>${annotations.version}</version>
     </dependency>
 
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit-dep</artifactId>
-      <version>${junit.version}</version>
       <scope>provided</scope>
     </dependency>
 
@@ -138,8 +136,6 @@
     <dependency>
       <groupId>org.robolectric</groupId>
       <artifactId>android-all</artifactId>
-      <version>${android-all.version}</version>
-      <scope>provided</scope>
     </dependency>
 
     <dependency>
@@ -186,15 +182,11 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>${mockito.version}</version>
-      <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>com.intellij</groupId>
       <artifactId>annotations</artifactId>
-      <version>${intellij.annotations.version}</version>
-      <scope>provided</scope>
     </dependency>
 
     <dependency>
@@ -227,112 +219,35 @@
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.3.2</version>
-        <configuration>
-          <source>${maven.compiler.source}</source>
-          <target>${maven.compiler.target}</target>
-          <compilerArgument>-proc:none</compilerArgument>
-        </configuration>
       </plugin>
 
       <plugin>
         <groupId>org.bsc.maven</groupId>
         <artifactId>maven-processor-plugin</artifactId>
-        <version>2.2.1</version>
-        <executions>
-          <execution>
-            <id>process</id>
-            <goals>
-                <goal>process</goal>
-            </goals>
-            <phase>generate-sources</phase>
-          </execution>
-        </executions>
-        <dependencies>
-          <dependency>
-            <groupId>org.robolectric</groupId>
-            <artifactId>robolectric-processor</artifactId>
-            <version>${processor.version}</version>
-          </dependency>
-        </dependencies>
       </plugin>
       
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.13</version>
-        <configuration>
-          <excludes>
-            <exclude>**/Test*.java</exclude>
-          </excludes>
-          <argLine>-Xms512m -Xmx1024m -XX:MaxPermSize=256m</argLine>
-        </configuration>
       </plugin>
 
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
-        <version>2.2</version>
-        <configuration>
-          <descriptorRefs>
-            <descriptorRef>jar-with-dependencies</descriptorRef>
-          </descriptorRefs>
-        </configuration>
-        <executions>
-          <execution>
-            <id>make-assembly</id>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
 
       <!-- required for testing robolectric-sqlite -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>2.3.1</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>test-jar</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
 
       <plugin>
         <groupId>com.googlecode.mavennatives</groupId>
         <artifactId>maven-nativedependencies-plugin</artifactId>
-        <version>0.0.7</version>
-        <executions>
-            <execution>
-                <id>unpacknatives</id>
-                <phase>generate-resources</phase>
-                <goals>
-                    <goal>copy</goal>
-                </goals>
-            </execution>
-        </executions>
-        <configuration>
-            <separateDirs>true</separateDirs>
-        </configuration>
       </plugin>
 
       <plugin>
         <artifactId>maven-clean-plugin</artifactId>
-        <version>2.4.1</version>
-        <configuration>
-          <filesets>
-            <fileset>
-              <directory>tmp</directory>
-              <includes>
-                <include>*</include>
-              </includes>
-            </fileset>
-          </filesets>
-        </configuration>
       </plugin>
     </plugins>
   </build>
