@@ -10,7 +10,7 @@
 
   <groupId>org.robolectric</groupId>
   <artifactId>robolectric-parent</artifactId>
-  <version>1.0</version>
+  <version>1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Robolectric All</name>
   <description>An alternative Android testing framework.</description>
@@ -26,22 +26,167 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.6</maven.compiler.source>
     <maven.compiler.target>1.6</maven.compiler.target>
-
-    <!-- Versions of submodules -->
-    <annotations.version>0.0.1-SNAPSHOT</annotations.version>
-    <processor.version>0.0.1-SNAPSHOT</processor.version>
-    <robolectric.version>2.4-SNAPSHOT</robolectric.version>
-    <android-all.version>4.3_r2-robolectric-0</android-all.version>
-    
-    <!-- Versions of common 3rd-party dependencies -->
-    <mockito.version>1.9.5</mockito.version>
-    <intellij.annotations.version>12.0</intellij.annotations.version>
-    <junit.version>4.8.2</junit.version>
-    <guava.version></guava.version>
-    <hamcrest.version></hamcrest.version>
-    <testng.version></testng.version>
-    <assertj.version></assertj.version>
   </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.robolectric</groupId>
+        <artifactId>robolectric-annotations</artifactId>
+        <version>1.0-SNAPSHOT</version>
+      </dependency>
+
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit-dep</artifactId>
+        <version>4.8.2</version>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.robolectric</groupId>
+        <artifactId>android-all</artifactId>
+        <version>4.3_r2-robolectric-0</version>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-core</artifactId>
+        <version>1.9.5</version>
+        <scope>test</scope>
+      </dependency>
+      
+      <dependency>
+        <groupId>org.easytesting</groupId>
+        <artifactId>fest-util</artifactId>
+        <version>1.2.5</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.intellij</groupId>
+        <artifactId>annotations</artifactId>
+        <version>12.0</version>
+        <scope>provided</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>2.3.2</version>
+        <configuration>
+          <source>${maven.compiler.source}</source>
+          <target>${maven.compiler.target}</target>
+          <compilerArgument>-proc:none</compilerArgument>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.bsc.maven</groupId>
+        <artifactId>maven-processor-plugin</artifactId>
+        <version>2.2.1</version>
+        <executions>
+          <execution>
+            <id>process</id>
+            <goals>
+                <goal>process</goal>
+            </goals>
+            <phase>generate-sources</phase>
+          </execution>
+        </executions>
+        <dependencies>
+          <dependency>
+            <groupId>org.robolectric</groupId>
+            <artifactId>robolectric-processor</artifactId>
+            <version>0.9-SNAPSHOT</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+      
+      <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>2.13</version>
+          <configuration>
+            <excludes>
+              <exclude>**/Test*.java</exclude>
+            </excludes>
+            <argLine>-Xms512m -Xmx1024m -XX:MaxPermSize=256m</argLine>
+          </configuration>
+        </plugin>
+
+        <plugin>
+          <artifactId>maven-assembly-plugin</artifactId>
+          <version>2.2</version>
+          <configuration>
+            <descriptorRefs>
+              <descriptorRef>jar-with-dependencies</descriptorRef>
+            </descriptorRefs>
+          </configuration>
+          <executions>
+            <execution>
+              <id>make-assembly</id>
+              <phase>package</phase>
+              <goals>
+                <goal>single</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+
+        <!-- required for testing robolectric-sqlite -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>2.3.1</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>test-jar</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+
+        <plugin>
+          <groupId>com.googlecode.mavennatives</groupId>
+          <artifactId>maven-nativedependencies-plugin</artifactId>
+          <version>0.0.7</version>
+          <executions>
+            <execution>
+                  <id>unpacknatives</id>
+                  <phase>generate-resources</phase>
+                  <goals>
+                      <goal>copy</goal>
+                  </goals>
+              </execution>
+          </executions>
+          <configuration>
+              <separateDirs>true</separateDirs>
+          </configuration>
+        </plugin>
+
+        <plugin>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>2.4.1</version>
+          <configuration>
+            <filesets>
+              <fileset>
+                <directory>tmp</directory>
+                <includes>
+                  <include>*</include>
+                </includes>
+              </fileset>
+            </filesets>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
   
   <scm>
     <url>git@github.com:robolectric/robolectric.git</url>

@@ -5,13 +5,13 @@
   <parent>
     <groupId>org.robolectric</groupId>
     <artifactId>robolectric-parent</artifactId>
-    <version>1.0</version>
+    <version>1.0-SNAPSHOT</version>
   </parent>
 
   <groupId>org.robolectric</groupId>
   <artifactId>robolectric-annotations</artifactId>
-  <version>${annotations.version}</version>
   <packaging>jar</packaging>
+
   <name>Robolectric Annotations</name>
   <description>Annotations used by the Robolectric testing framework.</description>
   <url>http://robolectric.org</url>
@@ -24,32 +24,17 @@
     <dependency>
       <groupId>com.intellij</groupId>
       <artifactId>annotations</artifactId>
-      <version>${intellij.annotations.version}</version>
-      <scope>provided</scope>
     </dependency>
-    <!-- <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>${4.8.2</version>
-      <scope>test</scope>
-    </dependency> -->
     <dependency>
       <groupId>org.robolectric</groupId>
       <artifactId>android-all</artifactId>
-      <version>${android-all.version}</version>
-      <scope>provided</scope>
     </dependency>
   </dependencies>
   <build>
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.3.2</version>
-        <configuration>
-          <source>${maven.compiler.source}</source>
-          <target>${maven.compiler.target}</target>
-        </configuration>
-      </plugin>
+     </plugin>
     </plugins>
   </build>
 </project>
