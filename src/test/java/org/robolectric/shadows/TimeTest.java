@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import java.util.Arrays;
 import java.util.TimeZone;
 
 import android.os.SystemClock;
@@ -166,10 +167,9 @@ public class TimeTest {
   
   @Test
   public void shouldParseRfc3339() {
-    for (String tz : new String[] { "Europe/Berlin",
-                                    "America/Los Angeles",
-                                    "Australia/Adelaide"
-                     } ) {
+    for (String tz : Arrays.asList("Europe/Berlin",
+                                   "America/Los Angeles",
+                                   "Australia/Adelaide")) {
       String desc = "Eval when local timezone is " + tz;
       TimeZone.setDefault(TimeZone.getTimeZone(tz));
 
