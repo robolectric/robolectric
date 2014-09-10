@@ -1,8 +1,12 @@
 package org.robolectric.shadows;
 
+import java.util.TimeZone;
+
 import android.os.SystemClock;
 import android.text.format.Time;
 import android.util.TimeFormatException;
+
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
@@ -12,6 +16,17 @@ import static org.junit.Assert.*;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class TimeTest {
+  
+  static final TimeZone DEFAULT_TIMEZONE = TimeZone.getDefault();
+  
+  @After
+  public void tearDown() {
+    // Just in case any of the tests mess with the system-wide
+    // default time zone, make sure we've set it back to what
+    // it should be.
+    TimeZone.setDefault(DEFAULT_TIMEZONE);
+  }
+  
   @Test
   public void shouldSetToNow() throws Exception {
     Time t = new Time();
@@ -151,49 +166,57 @@ public class TimeTest {
   
   @Test
   public void shouldParseRfc3339() {
-  	Time t = new Time("Europe/Berlin");
-  	assertTrue(t.parse3339("2008-10-13T16:30:50Z"));
-  	assertEquals(2008, t.year);
-    assertEquals(9, t.month);
-    assertEquals(13, t.monthDay);
-    assertEquals(16, t.hour);
-    assertEquals(30, t.minute);
-    assertEquals(50, t.second);
-    assertEquals("UTC", t.timezone);
-    assertFalse(t.allDay);
+    for (String tz : new String[] { "Europe/Berlin",
+                                    "America/Los Angeles",
+                                    "Australia/Adelaide"
+                     } ) {
+      String desc = "Eval when local timezone is " + tz;
+      TimeZone.setDefault(TimeZone.getTimeZone(tz));
 
-    t = new Time("Europe/Berlin");
-  	assertTrue(t.parse3339("2008-10-13T16:30:50.1000+07:00"));
-  	assertEquals(2008, t.year);
-    assertEquals(9, t.month);
-    assertEquals(13, t.monthDay);
-    assertEquals(9, t.hour);
-    assertEquals(30, t.minute);
-    assertEquals(51, t.second);
-    assertEquals("UTC", t.timezone);
-    assertFalse(t.allDay);
+      Time t = new Time("Europe/Berlin");
+      assertTrue(desc, t.parse3339("2008-10-13T16:30:50Z"));
+      assertEquals(desc, 2008, t.year);
+      assertEquals(desc, 9, t.month);
+      assertEquals(desc, 13, t.monthDay);
+      assertEquals(desc, 16, t.hour);
+      assertEquals(desc, 30, t.minute);
+      assertEquals(desc, 50, t.second);
+      assertEquals(desc, "UTC", t.timezone);
+      assertFalse(desc, t.allDay);
+
+      t = new Time("Europe/Berlin");
+      assertTrue(desc, t.parse3339("2008-10-13T16:30:50.1000+07:00"));
+      assertEquals(desc, 2008, t.year);
+      assertEquals(desc, 9, t.month);
+      assertEquals(desc, 13, t.monthDay);
+      assertEquals(desc, 9, t.hour);
+      assertEquals(desc, 30, t.minute);
+      assertEquals(desc, 51, t.second);
+      assertEquals(desc, "UTC", t.timezone);
+      assertFalse(desc, t.allDay);
     
-    t = new Time("Europe/Berlin");
-  	assertTrue(t.parse3339("2008-10-13T16:30:50.999-03"));
-  	assertEquals(2008, t.year);
-    assertEquals(9, t.month);
-    assertEquals(13, t.monthDay);
-    assertEquals(19, t.hour);
-    assertEquals(30, t.minute);
-    assertEquals(50, t.second);
-    assertEquals("UTC", t.timezone);
-    assertFalse(t.allDay);
+      t = new Time("Europe/Berlin");
+      assertTrue(desc, t.parse3339("2008-10-13T16:30:50.999-03"));
+      assertEquals(desc, 2008, t.year);
+      assertEquals(desc, 9, t.month);
+      assertEquals(desc, 13, t.monthDay);
+      assertEquals(desc, 19, t.hour);
+      assertEquals(desc, 30, t.minute);
+      assertEquals(desc, 50, t.second);
+      assertEquals(desc, "UTC", t.timezone);
+      assertFalse(desc, t.allDay);
     
-    t = new Time("Europe/Berlin");
-  	assertFalse(t.parse3339("2008-10-13"));
-  	assertEquals(2008, t.year);
-    assertEquals(9, t.month);
-    assertEquals(13, t.monthDay);
-    assertEquals(0, t.hour);
-    assertEquals(0, t.minute);
-    assertEquals(0, t.second);
-    assertEquals("Europe/Berlin", t.timezone);
-    assertTrue(t.allDay);
+      t = new Time("Europe/Berlin");
+      assertFalse(desc, t.parse3339("2008-10-13"));
+      assertEquals(desc, 2008, t.year);
+      assertEquals(desc, 9, t.month);
+      assertEquals(desc, 13, t.monthDay);
+      assertEquals(desc, 0, t.hour);
+      assertEquals(desc, 0, t.minute);
+      assertEquals(desc, 0, t.second);
+      assertEquals(desc, "Europe/Berlin", t.timezone);
+      assertTrue(desc, t.allDay);
+    }
   }
 
   @Test(expected = TimeFormatException.class)
