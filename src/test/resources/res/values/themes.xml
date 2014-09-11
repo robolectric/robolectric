@@ -54,4 +54,9 @@
     <item name="android:windowBackground">@color/blue</item>
     <item name="android:textColor">@color/white</item>
   </style>
+
+  <style name="IndirectButtonStyle" parent="@android:attr/buttonStyle">
+    <item name="android:minHeight">12dp</item>
+  </style>
+
 </resources>

@@ -330,6 +330,7 @@ public final class R {
     public static final int Theme_ThirdTheme = 0x11008;
     public static final int MyBlackTheme = 0x11009;
     public static final int MyBlueTheme = 0x1100a;
+    public static final int IndirectButtonStyle = 0x1100b;
   }
 
   public static final class fraction {
