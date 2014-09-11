@@ -127,7 +127,7 @@ public class ResName {
 
   public void mustBe(String expectedType) {
     if (!type.equals(expectedType)) {
-      throw new RuntimeException("expected " + getFullyQualifiedName() + " to be a " + expectedType);
+      throw new RuntimeException("expected " + getFullyQualifiedName() + " to be a " + expectedType + ", is a " + type);
     }
   }
 }
