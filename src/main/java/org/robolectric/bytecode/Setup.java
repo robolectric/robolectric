@@ -123,6 +123,7 @@ public class Setup {
             || name.startsWith("org.hamcrest")
             || name.startsWith("org.specs2")  // allows for android projects with mixed scala\java tests to be
             || name.startsWith("scala.")      //  run with Maven Surefire (see the RoboSpecs project on github)
+            || name.startsWith("kotlin.")
             || name.startsWith("com.almworks.sqlite4java") // Fix #958: SQLite native library must be loaded once.
     );
   }
