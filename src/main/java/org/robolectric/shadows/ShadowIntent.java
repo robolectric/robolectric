@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcel;
 import android.os.Parcelable;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -28,6 +29,7 @@ import static android.content.Intent.FILL_IN_CATEGORIES;
 import static android.content.Intent.FILL_IN_COMPONENT;
 import static android.content.Intent.FILL_IN_DATA;
 import static android.content.Intent.FILL_IN_PACKAGE;
+import static org.robolectric.Robolectric.directlyOn;
 import static org.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -67,6 +69,47 @@ public class ShadowIntent {
   public void __constructor__(String action) {
     __constructor__(action, null);
     RobolectricInternals.getConstructor(Intent.class, realIntent, String.class).invoke(action);
+  }
+
+  public void __constructor__(Parcel in) {
+    __constructor__(in.readString());
+    data = Uri.CREATOR.createFromParcel(in);
+    type = in.readString();
+    flags = in.readInt();
+    packageName = in.readString();
+    componentName = ComponentName.readFromParcel(in);
+
+    int N = in.readInt();
+    if (N > 0) {
+      int i;
+      for (i=0; i<N; i++) {
+        categories.add(in.readString());
+      }
+    }
+
+    extras.putAll(in.readBundle());
+  }
+
+  @Implementation
+  public void writeToParcel(Parcel out, int flags) {
+    out.writeString(action);
+    Uri.writeToParcel(out, data);
+    out.writeString(type);
+    out.writeInt(this.flags);
+    out.writeString(packageName);
+    ComponentName.writeToParcel(componentName, out);
+
+    if (categories != null) {
+      final int N = categories.size();
+      out.writeInt(N);
+      for (String s : categories) {
+        out.writeString(s);
+      }
+    } else {
+      out.writeInt(0);
+    }
+
+    out.writeBundle(extras);
   }
 
   public void __constructor__(Intent intent) {
