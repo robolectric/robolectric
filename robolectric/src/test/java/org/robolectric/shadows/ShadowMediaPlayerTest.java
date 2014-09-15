@@ -1235,7 +1235,7 @@ public class ShadowMediaPlayerTest {
     shadowMediaPlayer.setCurrentPosition(400);
     shadowMediaPlayer.setState(PAUSED);
     shadowMediaPlayer.getDefaultMediaInfo().scheduleErrorAtOffset(200, 1, 2);
-    shadowMediaPlayer.start();
+    mediaPlayer.start();
     scheduler.unPause();
     Mockito.verifyZeroInteractions(errorListener);
   }
