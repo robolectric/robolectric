@@ -172,9 +172,9 @@ public class RobolectricInternals {
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);
     }
-    for (int i = 1; i < parameterTypes.length; i++) {
+    for (int i = 0; i < parameterTypes.length; i++) {
       try {
-        parameterClasses[i] = clazz.getClassLoader().loadClass(parameterTypes[i]);
+        parameterClasses[i + 1] = clazz.getClassLoader().loadClass(parameterTypes[i]);
       } catch (ClassNotFoundException e) {
         throw new RuntimeException(e);
       }
