@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import java.util.Random;
 import java.util.TreeMap;
 
+import android.app.Activity;
 import android.content.Context;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -17,7 +18,6 @@ import android.os.Handler;
 import android.os.SystemClock;
 
 import org.robolectric.Robolectric;
-import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -597,6 +597,8 @@ public class ShadowMediaPlayer {
     if (createListener != null) {
       createListener.onCreate(player, this);
     }
+    // Ensure that the real object is set up properly.
+    Robolectric.invokeConstructor(MediaPlayer.class, player);
   }
 
   @Implementation
@@ -852,7 +854,7 @@ public class ShadowMediaPlayer {
       PAUSED, PLAYBACK_COMPLETED);
 
   /**
-   * Simulates {@link MediaPlayer#start()}. Sets state to STARTED and calls
+   * Simulates private native method {@link MediaPlayer#_start()}. Sets state to STARTED and calls
    * {@link #doStart()} to start scheduling playback callback events.
    * 
    * If the current state is PLAYBACK_COMPLETED, the current position is reset
@@ -861,7 +863,7 @@ public class ShadowMediaPlayer {
    * @see #doStart()
    */
   @Implementation
-  public void start() {
+  public void _start() {
     if (checkStateError("start()", startableStates)) {
       if (state == PLAYBACK_COMPLETED) {
         startOffset = 0;
@@ -951,13 +953,13 @@ public class ShadowMediaPlayer {
       PAUSED, PLAYBACK_COMPLETED);
 
   /**
-   * Simulates {@link MediaPlayer#pause()}. Invokes {@link #doStop()} to suspend
+   * Simulates {@link MediaPlayer#_pause()}. Invokes {@link #doStop()} to suspend
    * playback event callbacks and sets the state to PAUSED.
    * 
    * @see #doStop()
    */
   @Implementation
-  public void pause() {
+  public void _pause() {
     if (checkStateError("pause()", pausableStates)) {
       doStop();
       state = PAUSED;
@@ -967,11 +969,11 @@ public class ShadowMediaPlayer {
   static final EnumSet<State> allStates = EnumSet.allOf(State.class);
 
   /**
-   * Simulates call to {@link MediaPlayer#release()}. Calls {@link #doStop()} to
+   * Simulates call to {@link MediaPlayer#_release()}. Calls {@link #doStop()} to
    * suspend playback event callbacks and sets the state to END.
    */
   @Implementation
-  public void release() {
+  public void _release() {
     checkStateException("release()", allStates);
     doStop();
     state = END;
@@ -985,11 +987,11 @@ public class ShadowMediaPlayer {
   }
 
   /**
-   * Simulates call to {@link MediaPlayer#reset()}. Calls {@link #doStop()} to
+   * Simulates call to {@link MediaPlayer#_reset()}. Calls {@link #doStop()} to
    * suspend playback event callbacks and sets the state to IDLE.
    */
   @Implementation
-  public void reset() {
+  public void _reset() {
     checkStateException("reset()", nonEndStates);
     doStop();
     state = IDLE;
@@ -1011,7 +1013,7 @@ public class ShadowMediaPlayer {
    * suspend playback event callbacks and sets the state to STOPPED.
    */
   @Implementation
-  public void stop() {
+  public void _stop() {
     if (checkStateError("stop()", stoppableStates)) {
       doStop();
       state = STOPPED;
