@@ -15,7 +15,7 @@ public class ShadowImageView extends ShadowView {
   private Drawable imageDrawable;
   private Bitmap imageBitmap;
   private ImageView.ScaleType scaleType;
-  private Matrix matrix;
+  private Matrix matrix = new Matrix();
   private int imageLevel;
 
   @Implementation
