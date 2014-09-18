@@ -299,16 +299,6 @@ public class ShadowResources {
   }
 
   @Implementation
-  public void updateConfiguration(Configuration config, DisplayMetrics metrics) {
-    if (config != null) {
-      String qualifiers = shadowOf(config).getQualifiers();
-      shadowOf(realResources.getAssets()).setQualifiers(qualifiers);
-    }
-
-    directlyOn(realResources, Resources.class).updateConfiguration(config, metrics);
-  }
-
-  @Implementation
   public int getIdentifier(String name, String defType, String defPackage) {
     ResourceIndex resourceIndex = resourceLoader.getResourceIndex();
     ResName resName = ResName.qualifyResName(name, defPackage, defType);
