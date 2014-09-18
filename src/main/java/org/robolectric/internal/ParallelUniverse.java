@@ -82,6 +82,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     Configuration configuration = systemResources.getConfiguration();
     shadowOf(configuration).overrideQualifiers(qualifiers);
     systemResources.updateConfiguration(configuration, systemResources.getDisplayMetrics());
+    shadowOf(systemResources.getAssets()).setQualifiers(qualifiers);
 
     Class<?> contextImplClass = type(ShadowContextImpl.CLASS_NAME)
         .withClassLoader(getClass().getClassLoader())
@@ -155,6 +156,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
           .invoke(contextImpl);
 
       appResources.updateConfiguration(configuration, appResources.getDisplayMetrics());
+      shadowOf(appResources.getAssets()).setQualifiers(qualifiers);
       shadowOf(application).setStrictI18n(strictI18n);
 
       Robolectric.application = application;
