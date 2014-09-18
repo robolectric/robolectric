@@ -5,6 +5,7 @@ import org.fest.reflect.method.Invoker;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 
 import static org.fest.reflect.core.Reflection.method;
 
@@ -164,11 +165,16 @@ public class RobolectricInternals {
     }
   }
 
-  public static Invoker<Void> getConstructor(Class<?> clazz, Object instance, String... parameterTypes) {
-    Class[] parameterClasses = new Class[parameterTypes.length];
+  public static Invoker<Void> getConstructor(Class<?> clazz, Object instance, String parameterType0, String... parameterTypes) {
+    Class<?>[] parameterClasses = new Class<?>[parameterTypes.length + 1];
+    try {
+      parameterClasses[0] = clazz.getClassLoader().loadClass(parameterType0);
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(e);
+    }
     for (int i = 0; i < parameterTypes.length; i++) {
       try {
-        parameterClasses[i] = clazz.getClassLoader().loadClass(parameterTypes[i]);
+        parameterClasses[i + 1] = clazz.getClassLoader().loadClass(parameterTypes[i]);
       } catch (ClassNotFoundException e) {
         throw new RuntimeException(e);
       }
@@ -176,7 +182,7 @@ public class RobolectricInternals {
     return getConstructor(clazz, instance, parameterClasses);
   }
 
-  public static Invoker<Void> getConstructor(Class<?> clazz, Object instance, Class... parameterTypes) {
+  public static Invoker<Void> getConstructor(Class<?> clazz, Object instance, Class<?>... parameterTypes) {
     String name = directMethodName(clazz.getName(), InstrumentingClassLoader.CONSTRUCTOR_METHOD_NAME);
     return method(name).withParameterTypes(parameterTypes).in(instance);
   }

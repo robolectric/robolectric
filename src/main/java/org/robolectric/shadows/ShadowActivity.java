@@ -75,7 +75,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   private Menu optionsMenu;
 
   public void __constructor__() {
-    RobolectricInternals.getConstructor(Activity.class, realActivity, new Class[0]).invoke();
+    RobolectricInternals.getConstructor(Activity.class, realActivity).invoke();
   }
 
   public void setApplication(Application application) {
