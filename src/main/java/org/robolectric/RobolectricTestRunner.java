@@ -9,6 +9,8 @@ import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
 import java.net.URL;
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -202,6 +204,28 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     };
   }
 
+  /**
+   * Replaces current ClassLoader.
+   *
+   * @param erasePackage package or class name to remove from the current ClassLoader cache
+   * @return true if the replacement was successful
+   */
+  public boolean replaceClassLoader(String erasePackage) {
+    if (lastSdkEnvironment==null || lastSdkConfig==null) {
+      return false;
+    }
+
+    AsmInstrumentingClassLoader currentClassLoader =
+        (AsmInstrumentingClassLoader)lastSdkEnvironment.getRobolectricClassLoader();
+    AsmInstrumentingClassLoader newClassLoader =
+        (AsmInstrumentingClassLoader)createRobolectricClassLoader(createSetup(), lastSdkConfig);
+    newClassLoader.replicateCache(erasePackage, currentClassLoader);
+    lastSdkEnvironment.setRobolectricClassLoader(newClassLoader);
+    injectClassHandler(newClassLoader, lastSdkEnvironment.getCurrentClassHandler());
+    Thread.currentThread().setContextClassLoader(newClassLoader);
+    return true;
+  }
+
   private void invokeAfterClass(final Class<?> clazz) throws Throwable {
     final TestClass testClass = new TestClass(clazz);
     final List<FrameworkMethod> afters = testClass.getAnnotatedMethods(AfterClass.class);
@@ -292,6 +316,15 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   private void invokeBeforeClass(final Class clazz) throws Throwable {
     if (!loadedTestClasses.contains(clazz)) {
       loadedTestClasses.add(clazz);
+
+      for (Method method: clazz.getMethods()) {
+        if (Modifier.isStatic(method.getModifiers())) {
+          Type[] argumentTypes = method.getParameterTypes();
+          if (argumentTypes.length==1 && argumentTypes[0]==RobolectricTestRunner.class) {
+            method.invoke(null, this);
+          }
+        }
+      }
 
       final TestClass testClass = new TestClass(clazz);
       final List<FrameworkMethod> befores = testClass.getAnnotatedMethods(BeforeClass.class);

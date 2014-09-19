@@ -65,6 +65,7 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
   private static boolean debug = false;
 
   private final Setup setup;
+  private final URL[] gotUrls;
   private final URLClassLoader urls;
   private final Map<String, Class> classes = new HashMap<String, Class>();
   private final Set<Setup.MethodRef> methodsToIntercept;
@@ -75,6 +76,7 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
   public AsmInstrumentingClassLoader(Setup setup, URL... urls) {
     super(AsmInstrumentingClassLoader.class.getClassLoader());
     this.setup = setup;
+    this.gotUrls = urls;
     this.urls = new URLClassLoader(urls, null);
     classesToRemap = convertToSlashes(setup.classNameTranslations());
     methodsToIntercept = convertToSlashes(setup.methodsToIntercept());
@@ -118,6 +120,16 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
       return fromUrlsClassLoader;
     }
     return super.getResourceAsStream(resName);
+  }
+
+  public void replicateCache(String erasePackage, AsmInstrumentingClassLoader other) {
+    boolean checkPackageName = erasePackage!=null && !erasePackage.isEmpty();
+    for (Map.Entry<String, Class> clazz : other.classes.entrySet()) {
+      String key = clazz.getKey();
+      if (checkPackageName && !key.startsWith(erasePackage)) {
+        classes.put(key, clazz.getValue());
+      }
+    }
   }
 
   @Override
