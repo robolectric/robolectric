@@ -164,6 +164,15 @@ public class ShadowTime {
   public static String getCurrentTimezone() {
     return TimeZone.getDefault().getID();
   }
+  
+  @Implementation
+  public void switchTimezone(String timezone) {
+    long date = toMillis(true);
+    long gmtoff = TimeZone.getTimeZone(timezone).getOffset(date);
+    set(date + gmtoff);
+    time.timezone = timezone;
+    time.gmtoff = (gmtoff / 1000);
+  }
 
   @Implementation
   public static int compare(Time a, Time b) {
