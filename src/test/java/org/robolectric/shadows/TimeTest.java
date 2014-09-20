@@ -127,6 +127,22 @@ public class TimeTest {
   public void shouldHaveCurrentTimeZone() throws Exception {
     assertNotNull(Time.getCurrentTimezone());
   }
+  
+  @Test
+  public void shouldSwitchTimeZones() throws Exception {
+    Time t = new Time("UTC");
+  	
+    t.set(1414213562373L);
+    assertThat(t.timezone).isEqualTo("UTC");
+    assertThat(t.gmtoff).isEqualTo(0);
+    assertThat(t.format3339(false)).isEqualTo("2014-10-25T05:06:02.000Z");
+    
+    t.switchTimezone("America/New_York");
+    assertThat(t.format3339(false)).isEqualTo("2014-10-25T01:06:02.000-04:00");
+    assertThat(t.timezone).isEqualTo("America/New_York");
+    assertThat(t.gmtoff).isEqualTo(-14400L);
+    assertThat(t.toMillis(true)).isEqualTo(1414213562000L);
+  }
 
   @Test
   public void shouldHaveCompareAndBeforeAfter() throws Exception {
