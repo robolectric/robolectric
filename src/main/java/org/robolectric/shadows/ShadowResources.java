@@ -97,6 +97,17 @@ public class ShadowResources {
   }
 
   private TypedArray attrsToTypedArray(AttributeSet set, int[] attrs, int defStyleAttr, int themeResourceId, int defStyleRes) {
+    if (set == null) {
+      set = new RoboAttributeSet(new ArrayList<Attribute>(), realResources, null);
+    }
+    List<Attribute> attributes = getStyleAttributes(set, attrs, defStyleAttr, themeResourceId, defStyleRes);
+
+    TypedArray typedArray = createTypedArray(attributes, attrs);
+    shadowOf(typedArray).positionDescription = set.getPositionDescription();
+    return typedArray;
+  }
+
+  private List<Attribute> getStyleAttributes(AttributeSet set, int[] attrs, int defStyleAttr, int themeResourceId, int defStyleRes) {
     /*
      * When determining the final value of a particular attribute, there are four inputs that come into play:
      *
@@ -109,9 +120,6 @@ public class ShadowResources {
     ShadowAssetManager shadowAssetManager = shadowOf(realResources.getAssets());
     String qualifiers = shadowAssetManager.getQualifiers();
 
-    if (set == null) {
-      set = new RoboAttributeSet(new ArrayList<Attribute>(), realResources, null);
-    }
     Style defStyleFromAttr = null;
     Style defStyleFromRes = null;
     Style styleAttrStyle = null;
@@ -200,10 +208,7 @@ public class ShadowResources {
         Attribute.put(attributes, attribute);
       }
     }
-
-    TypedArray typedArray = createTypedArray(attributes, attrs);
-    shadowOf(typedArray).positionDescription = set.getPositionDescription();
-    return typedArray;
+    return attributes;
   }
 
   public TypedArray createTypedArray(List<Attribute> set, int[] attrs) {
@@ -443,15 +448,21 @@ public class ShadowResources {
     @RealObject Resources.Theme realTheme;
     protected Resources resources;
     private int styleResourceId;
+    private List<AppliedStyle> appliedStyles = new ArrayList<AppliedStyle>();
 
     @Implementation
     public void applyStyle(int resid, boolean force) {
-      this.styleResourceId = resid;
+      if (styleResourceId == 0) {
+        this.styleResourceId = resid;
+      } else {
+        this.appliedStyles.add(0, new AppliedStyle(resid, force));
+      }
     }
 
     @Implementation
     public void setTo(Resources.Theme other) {
       this.styleResourceId = shadowOf(other).styleResourceId;
+      this.appliedStyles.clear();
     }
 
     public int getStyleResourceId() {
@@ -470,12 +481,43 @@ public class ShadowResources {
 
     @Implementation
     public TypedArray obtainStyledAttributes(AttributeSet set, int[] attrs, int defStyleAttr, int defStyleRes) {
-      return shadowOf(getResources()).attrsToTypedArray(set, attrs, defStyleAttr, styleResourceId, defStyleRes);
+      ShadowResources shadowResources = shadowOf(getResources());
+      if (set == null) {
+        set = new RoboAttributeSet(new ArrayList<Attribute>(), shadowResources.realResources, null);
+      }
+
+      List<Attribute> styleAttributes = shadowResources.getStyleAttributes(set, attrs, defStyleAttr, styleResourceId, defStyleRes);
+
+      for (AppliedStyle appliedStyle : appliedStyles) {
+        List<Attribute> overlayedAttributes = shadowResources.getStyleAttributes(set, attrs, defStyleAttr, appliedStyle.resid, defStyleRes);
+        for (Attribute overlayedAttribute : overlayedAttributes) {
+          if (appliedStyle.force) {
+            Attribute.put(styleAttributes, overlayedAttribute);
+          } else {
+            if (Attribute.find(styleAttributes, overlayedAttribute.resName) == null) {
+              Attribute.put(styleAttributes, overlayedAttribute);
+            }
+          }
+        }
+      }
+      TypedArray typedArray = shadowResources.createTypedArray(styleAttributes, attrs);
+      shadowOf(typedArray).positionDescription = set.getPositionDescription();
+      return typedArray;
     }
 
     Resources getResources() {
       // ugh
       return field("this$0").ofType(Resources.class).in(realTheme).get();
+    }
+
+    private static class AppliedStyle {
+      private final int resid;
+      private final boolean force;
+
+      public AppliedStyle(int resid, boolean force) {
+        this.resid = resid;
+        this.force = force;
+      }
     }
   }
 

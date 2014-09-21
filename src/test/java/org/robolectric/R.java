@@ -137,15 +137,16 @@ public final class R {
     public static final int foreground = 0x10401;
     public static final int grey42 = 0x10402;
     public static final int black = 0x10403;
-    public static final int white = 0x10404;
-    public static final int clear = 0x10405;
-    public static final int color_with_alpha = 0x10406;
-    public static final int android_namespaced_black = 0x10407;
-    public static final int android_namespaced_transparent = 0x10408;
-    public static final int android_red = 0x10409;
-    public static final int test_color_1 = 0x1040a;
-    public static final int color_state_list = 0x1040b;
-    public static final int list_separator = 0x1040c;
+    public static final int blue = 0x10404;
+    public static final int white = 0x10405;
+    public static final int clear = 0x10406;
+    public static final int color_with_alpha = 0x10407;
+    public static final int android_namespaced_black = 0x10408;
+    public static final int android_namespaced_transparent = 0x10409;
+    public static final int android_red = 0x1040a;
+    public static final int test_color_1 = 0x1040b;
+    public static final int color_state_list = 0x1040c;
+    public static final int list_separator = 0x1040d;
   }
 
   public static final class drawable {
@@ -323,6 +324,7 @@ public final class R {
     public static final int Gastropod = 0x11007;
     public static final int Theme_ThirdTheme = 0x11008;
     public static final int MyBlackTheme = 0x11009;
+    public static final int MyBlueTheme = 0x1100a;
   }
 
   public static final class fraction {

@@ -4,6 +4,7 @@
   <color name="clear">#00000001</color>
   <color name="white">#FFFFFF</color>
   <color name="black">#000000</color>
+  <color name="blue">#0000ff</color>
   <color name="grey42">#f5f5f5</color>
   <color name="color_with_alpha">#802C76AD</color>
 
