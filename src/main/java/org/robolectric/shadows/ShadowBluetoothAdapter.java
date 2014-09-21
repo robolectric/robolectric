@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothAdapter.LeScanCallback;
 import android.bluetooth.BluetoothDevice;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
@@ -9,6 +10,7 @@ import org.robolectric.annotation.Implements;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 import static org.robolectric.Robolectric.shadowOf;
 
@@ -18,6 +20,7 @@ public class ShadowBluetoothAdapter {
   private static final int ADDRESS_LENGTH = 17;
 
   private Set<BluetoothDevice> bondedDevices = new HashSet<BluetoothDevice>();
+  private Set<LeScanCallback> leScanCallbacks = new HashSet<LeScanCallback>();
   private boolean isDiscovering;
   private String address;
   private boolean enabled;
@@ -47,6 +50,34 @@ public class ShadowBluetoothAdapter {
   public boolean cancelDiscovery() {
     isDiscovering = false;
     return true;
+  }
+
+  @Implementation
+  public boolean startLeScan(LeScanCallback callback) {
+    return startLeScan(null, callback);
+  }
+
+  @Implementation
+  public boolean startLeScan(UUID[] serviceUuids, LeScanCallback callback) {
+    // Ignoring the serviceUuids param for now.
+    leScanCallbacks.add(callback);
+    return true;
+  }
+
+  @Implementation
+  public void stopLeScan(LeScanCallback callback) {
+    leScanCallbacks.remove(callback);
+  }
+
+  public Set<LeScanCallback> getLeScanCallbacks() {
+    return Collections.unmodifiableSet(leScanCallbacks);
+  }
+
+  public LeScanCallback getSingleLeScanCallback() {
+    if (leScanCallbacks.size() != 1) {
+      throw new IllegalStateException("There are " + leScanCallbacks.size() + " callbacks");
+    }
+    return leScanCallbacks.iterator().next();
   }
 
   @Implementation
