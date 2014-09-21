@@ -455,7 +455,7 @@ public class ShadowResources {
       if (styleResourceId == 0) {
         this.styleResourceId = resid;
       } else {
-        this.appliedStyles.add(0, new AppliedStyle(resid, force));
+        this.appliedStyles.add(new AppliedStyle(resid, force));
       }
     }
 
