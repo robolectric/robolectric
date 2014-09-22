@@ -485,6 +485,7 @@ public class ShadowResources {
       if (set == null) {
         set = new RoboAttributeSet(new ArrayList<Attribute>(), shadowResources.realResources, null);
       }
+      if (attrs == null) attrs = new int[0];
 
       List<Attribute> styleAttributes = shadowResources.getStyleAttributes(set, attrs, defStyleAttr, styleResourceId, defStyleRes);
 
