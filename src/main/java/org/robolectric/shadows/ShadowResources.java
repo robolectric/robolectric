@@ -183,9 +183,11 @@ public class ShadowResources {
           } else if (attributeValue.isResourceReference()) {
             resName = attributeValue.getResourceReference();
           }
+          defStyleFromRes = ShadowAssetManager.resolveStyle(resourceLoader, resName, shadowAssetManager.getQualifiers());
+        } else if (resName.type.equals("style")) {
+          defStyleFromRes = ShadowAssetManager.resolveStyle(resourceLoader, resName, shadowAssetManager.getQualifiers());
         }
       }
-      defStyleFromRes = ShadowAssetManager.resolveStyle(resourceLoader, resName, shadowAssetManager.getQualifiers());
     }
 
     List<Attribute> attributes = new ArrayList<Attribute>();
