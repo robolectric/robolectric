@@ -97,17 +97,6 @@ public class ShadowResources {
   }
 
   private TypedArray attrsToTypedArray(AttributeSet set, int[] attrs, int defStyleAttr, int themeResourceId, int defStyleRes) {
-    if (set == null) {
-      set = new RoboAttributeSet(new ArrayList<Attribute>(), realResources, null);
-    }
-    List<Attribute> attributes = getStyleAttributes(set, attrs, defStyleAttr, themeResourceId, defStyleRes);
-
-    TypedArray typedArray = createTypedArray(attributes, attrs);
-    shadowOf(typedArray).positionDescription = set.getPositionDescription();
-    return typedArray;
-  }
-
-  private List<Attribute> getStyleAttributes(AttributeSet set, int[] attrs, int defStyleAttr, int themeResourceId, int defStyleRes) {
     /*
      * When determining the final value of a particular attribute, there are four inputs that come into play:
      *
@@ -120,11 +109,15 @@ public class ShadowResources {
     ShadowAssetManager shadowAssetManager = shadowOf(realResources.getAssets());
     String qualifiers = shadowAssetManager.getQualifiers();
 
+    if (set == null) {
+      set = new RoboAttributeSet(new ArrayList<Attribute>(), realResources, null);
+    }
     Style defStyleFromAttr = null;
     Style defStyleFromRes = null;
     Style styleAttrStyle = null;
     Style theme = null;
 
+    List<ShadowAssetManager.OverlayedStyle> overlayedStyles = ShadowAssetManager.getOverlayThemeStyles(themeResourceId);
     if (themeResourceId != 0) {
       // Load the style for the theme we represent. E.g. "@style/Theme.Robolectric"
       ResName themeStyleName = getResName(themeResourceId);
@@ -137,7 +130,7 @@ public class ShadowResources {
         ResName defStyleName = getResName(defStyleAttr);
 
         // Load the style for the default style attribute. E.g. "@style/Widget.Robolectric.Button";
-        Attribute defStyleAttribute = theme.getAttrValue(defStyleName);
+        Attribute defStyleAttribute = getOverlayedThemeValue(defStyleName, theme, overlayedStyles);
         if (defStyleAttribute != null) {
           while (defStyleAttribute.isStyleReference()) {
             Attribute other = theme.getAttrValue(defStyleAttribute.getStyleReference());
@@ -162,7 +155,7 @@ public class ShadowResources {
     if (styleAttrResId != 0) {
       ResName styleAttributeResName = getResName(styleAttrResId);
       while (styleAttributeResName.type.equals("attr")) {
-        Attribute attrValue = theme.getAttrValue(styleAttributeResName);
+        Attribute attrValue = getOverlayedThemeValue(styleAttributeResName, theme, overlayedStyles);
         if (attrValue.isResourceReference()) {
           styleAttributeResName = attrValue.getResourceReference();
         } else if (attrValue.isStyleReference()) {
@@ -172,22 +165,19 @@ public class ShadowResources {
       styleAttrStyle = ShadowAssetManager.resolveStyle(resourceLoader, styleAttributeResName, shadowAssetManager.getQualifiers());
     }
 
-
     if (defStyleRes != 0) {
       ResName resName = getResName(defStyleRes);
       if (resName.type.equals("attr")) {
-        Attribute attributeValue = findAttributeValue(getResName(defStyleRes), set, styleAttrStyle, defStyleFromAttr, defStyleFromAttr, theme);
+        Attribute attributeValue = findAttributeValue(getResName(defStyleRes), set, styleAttrStyle, defStyleFromAttr, defStyleFromAttr, theme, overlayedStyles);
         if (attributeValue != null) {
           if (attributeValue.isStyleReference()) {
-            resName = theme.getAttrValue(attributeValue.getStyleReference()).getResourceReference();
+            resName = getOverlayedThemeValue(attributeValue.getStyleReference(), theme, overlayedStyles).getResourceReference();
           } else if (attributeValue.isResourceReference()) {
             resName = attributeValue.getResourceReference();
           }
-          defStyleFromRes = ShadowAssetManager.resolveStyle(resourceLoader, resName, shadowAssetManager.getQualifiers());
-        } else if (resName.type.equals("style")) {
-          defStyleFromRes = ShadowAssetManager.resolveStyle(resourceLoader, resName, shadowAssetManager.getQualifiers());
         }
       }
+      defStyleFromRes = ShadowAssetManager.resolveStyle(resourceLoader, resName, shadowAssetManager.getQualifiers());
     }
 
     List<Attribute> attributes = new ArrayList<Attribute>();
@@ -196,11 +186,11 @@ public class ShadowResources {
       ResName attrName = tryResName(attr); // todo probably getResName instead here?
       if (attrName == null) continue;
 
-      Attribute attribute = findAttributeValue(attrName, set, styleAttrStyle, defStyleFromAttr, defStyleFromRes, theme);
+      Attribute attribute = findAttributeValue(attrName, set, styleAttrStyle, defStyleFromAttr, defStyleFromRes, theme, overlayedStyles);
       while (attribute != null && attribute.isStyleReference()) {
         ResName otherAttrName = attribute.getStyleReference();
         if (theme == null) throw new RuntimeException("no theme, but trying to look up " + otherAttrName);
-        attribute = theme.getAttrValue(otherAttrName);
+        attribute = getOverlayedThemeValue(otherAttrName, theme, overlayedStyles);
         if (attribute != null) {
           attribute = new Attribute(attrName, attribute.value, attribute.contextPackageName);
         }
@@ -210,7 +200,10 @@ public class ShadowResources {
         Attribute.put(attributes, attribute);
       }
     }
-    return attributes;
+
+    TypedArray typedArray = createTypedArray(attributes, attrs);
+    shadowOf(typedArray).positionDescription = set.getPositionDescription();
+    return typedArray;
   }
 
   public TypedArray createTypedArray(List<Attribute> set, int[] attrs) {
@@ -256,7 +249,7 @@ public class ShadowResources {
     return ShadowTypedArray.create(realResources, attrs, data, indices, nextIndex, stringData);
   }
 
-  private Attribute findAttributeValue(ResName attrName, AttributeSet attributeSet, Style styleAttrStyle, Style defStyleFromAttr, Style defStyleFromRes, Style theme) {
+  private Attribute findAttributeValue(ResName attrName, AttributeSet attributeSet, Style styleAttrStyle, Style defStyleFromAttr, Style defStyleFromRes, Style theme, List<ShadowAssetManager.OverlayedStyle> overlayedStyles) {
     String attrValue = attributeSet.getAttributeValue(attrName.getNamespaceUri(), attrName.name);
     if (attrValue != null) {
       if (DEBUG) System.out.println("Got " + attrName + " from attr: " + attrValue);
@@ -290,14 +283,28 @@ public class ShadowResources {
 
     // else if attr in theme, use its value
     if (theme != null) {
-      Attribute attribute = theme.getAttrValue(attrName);
-      if (attribute != null) {
-        if (DEBUG) System.out.println("Got " + attrName + " from theme: " + attribute);
-        return attribute;
-      }
+      return getOverlayedThemeValue(attrName, theme, overlayedStyles);
     }
 
     return null;
+  }
+
+  Attribute getOverlayedThemeValue(ResName attrName, Style theme, List<ShadowAssetManager.OverlayedStyle> overlayedStyles) {
+    Attribute attribute = theme.getAttrValue(attrName);
+
+    if (overlayedStyles != null) {
+      for (ShadowAssetManager.OverlayedStyle overlayedStyle : overlayedStyles) {
+        Attribute overlayedAttribute = overlayedStyle.style.getAttrValue(attrName);
+        if (overlayedAttribute != null && (attribute == null || overlayedStyle.force)) {
+          attribute = overlayedAttribute;
+        }
+      }
+    }
+
+    if (attribute != null) {
+      if (DEBUG) System.out.println("Got " + attrName + " from theme: " + attribute);
+    }
+    return attribute;
   }
 
   @Implementation
@@ -450,21 +457,19 @@ public class ShadowResources {
     @RealObject Resources.Theme realTheme;
     protected Resources resources;
     private int styleResourceId;
-    private List<AppliedStyle> appliedStyles = new ArrayList<AppliedStyle>();
 
     @Implementation
     public void applyStyle(int resid, boolean force) {
       if (styleResourceId == 0) {
         this.styleResourceId = resid;
-      } else {
-        this.appliedStyles.add(new AppliedStyle(resid, force));
       }
+
+      ShadowAssetManager.applyThemeStyle(styleResourceId, resid, force);
     }
 
     @Implementation
     public void setTo(Resources.Theme other) {
       this.styleResourceId = shadowOf(other).styleResourceId;
-      this.appliedStyles.clear();
     }
 
     public int getStyleResourceId() {
@@ -483,44 +488,12 @@ public class ShadowResources {
 
     @Implementation
     public TypedArray obtainStyledAttributes(AttributeSet set, int[] attrs, int defStyleAttr, int defStyleRes) {
-      ShadowResources shadowResources = shadowOf(getResources());
-      if (set == null) {
-        set = new RoboAttributeSet(new ArrayList<Attribute>(), shadowResources.realResources, null);
-      }
-      if (attrs == null) attrs = new int[0];
-
-      List<Attribute> styleAttributes = shadowResources.getStyleAttributes(set, attrs, defStyleAttr, styleResourceId, defStyleRes);
-
-      for (AppliedStyle appliedStyle : appliedStyles) {
-        List<Attribute> overlayedAttributes = shadowResources.getStyleAttributes(set, attrs, defStyleAttr, appliedStyle.resid, defStyleRes);
-        for (Attribute overlayedAttribute : overlayedAttributes) {
-          if (appliedStyle.force) {
-            Attribute.put(styleAttributes, overlayedAttribute);
-          } else {
-            if (Attribute.find(styleAttributes, overlayedAttribute.resName) == null) {
-              Attribute.put(styleAttributes, overlayedAttribute);
-            }
-          }
-        }
-      }
-      TypedArray typedArray = shadowResources.createTypedArray(styleAttributes, attrs);
-      shadowOf(typedArray).positionDescription = set.getPositionDescription();
-      return typedArray;
+      return shadowOf(getResources()).attrsToTypedArray(set, attrs, defStyleAttr, styleResourceId, defStyleRes);
     }
 
     Resources getResources() {
       // ugh
       return field("this$0").ofType(Resources.class).in(realTheme).get();
-    }
-
-    private static class AppliedStyle {
-      private final int resid;
-      private final boolean force;
-
-      public AppliedStyle(int resid, boolean force) {
-        this.resid = resid;
-        this.force = force;
-      }
     }
   }
 
