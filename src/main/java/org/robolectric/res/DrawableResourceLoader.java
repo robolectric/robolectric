@@ -1,7 +1,5 @@
 package org.robolectric.res;
 
-import java.io.File;
-
 /**
  * DrawableResourceLoader
  */
@@ -9,7 +7,7 @@ public class DrawableResourceLoader extends XmlLoader {
   private final ResBundle<DrawableNode> drawableNodes;
 
   public static boolean isStillHandledHere(ResName resName) {
-    return "drawable".equals(resName.type) || "anim".equals(resName.type);
+    return "drawable".equals(resName.type) || "anim".equals(resName.type) || "mipmap".equals(resName.type);
   }
 
   public DrawableResourceLoader(ResBundle<DrawableNode> drawableNodes) {
@@ -39,32 +37,37 @@ public class DrawableResourceLoader extends XmlLoader {
    * @param resourcePath
    */
   public void findDrawableResources(ResourcePath resourcePath) {
-    listDrawableResources(resourcePath, resourcePath.resourceBase);
-  }
-
-  private void listDrawableResources(ResourcePath resourcePath, FsFile dir) {
-    FsFile[] files = dir.listFiles();
+    FsFile[] files = resourcePath.resourceBase.listFiles();
     if (files != null) {
       for (FsFile f : files) {
         if (f.isDirectory() && f.getName().startsWith("drawable")) {
-          listDrawableResources(resourcePath, f);
-        } else {
-          String name = f.getName();
-          if (name.startsWith(".")) continue;
-
-          String shortName;
-          if (name.endsWith(".xml")) {
-            // already handled, do nothing...
-            continue;
-          } else if (name.endsWith(".9.png")) {
-            String[] tokens = name.split("\\.9\\.png$");
-            shortName = tokens[0];
-          } else {
-            shortName = f.getBaseName();
-          }
-          XmlContext fakeXmlContext = new XmlContext(resourcePath.getPackageName(), f);
-          drawableNodes.put("drawable", shortName, new DrawableNode.ImageFile(f, true), fakeXmlContext);
+          listDrawableResources(resourcePath, f, "drawable");
+        } else if (f.isDirectory() && f.getName().startsWith("mipmap")) {
+          listDrawableResources(resourcePath, f, "mipmap");
         }
+      }
+    }
+  }
+
+  private void listDrawableResources(ResourcePath resourcePath, FsFile dir, String type) {
+    FsFile[] files = dir.listFiles();
+    if (files != null) {
+      for (FsFile f : files) {
+        String name = f.getName();
+        if (name.startsWith(".")) continue;
+
+        String shortName;
+        if (name.endsWith(".xml")) {
+          // already handled, do nothing...
+          continue;
+        } else if (name.endsWith(".9.png")) {
+          String[] tokens = name.split("\\.9\\.png$");
+          shortName = tokens[0];
+        } else {
+          shortName = f.getBaseName();
+        }
+        XmlContext fakeXmlContext = new XmlContext(resourcePath.getPackageName(), f);
+        drawableNodes.put(type, shortName, new DrawableNode.ImageFile(f, true), fakeXmlContext);
       }
     }
   }

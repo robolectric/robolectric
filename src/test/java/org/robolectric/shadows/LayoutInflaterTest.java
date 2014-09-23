@@ -271,6 +271,14 @@ public class LayoutInflaterTest {
   }
 
   @Test
+  public void testImageViewSrcIsSetFromMipmap() throws Exception {
+    View mediaView = inflate("main");
+    ImageView imageView = (ImageView) mediaView.findViewById(R.id.mipmapImage);
+    BitmapDrawable drawable = (BitmapDrawable) imageView.getDrawable();
+    assertThat(shadowOf(drawable.getBitmap()).getCreatedFromResId()).isEqualTo(R.mipmap.robolectric);
+  }
+
+  @Test
   public void shouldInflateMergeLayoutIntoParent() throws Exception {
     LinearLayout linearLayout = new LinearLayout(context);
     View innerMerge = inflate(context, TEST_PACKAGE, "inner_merge", linearLayout, "");

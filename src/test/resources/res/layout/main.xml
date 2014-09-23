@@ -80,6 +80,13 @@
       android:background="@drawable/image_background"
       />
 
+    <ImageView
+            android:id="@+id/mipmapImage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@mipmap/robolectric"
+            />
+
   <Button
       android:id="@+id/button"
       android:layout_width="wrap_content"
