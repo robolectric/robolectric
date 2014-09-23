@@ -39,7 +39,7 @@ public class ImageViewTest {
 
   @Test
   public void shouldCopyMatrixSetup() throws Exception {
-    Matrix matrix = new Matrix();
+    Matrix matrix = imageView.getImageMatrix();
     matrix.setTranslate(15, 20);
     imageView.setImageMatrix(matrix);
     ShadowMatrix m1 = shadowOf(imageView.getImageMatrix());
