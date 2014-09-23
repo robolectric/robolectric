@@ -32,6 +32,7 @@ import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceLoader;
+import org.robolectric.util.CustomStateView;
 import org.robolectric.util.CustomView;
 import org.robolectric.util.CustomView2;
 import org.robolectric.util.TestUtil;
@@ -220,6 +221,17 @@ public class LayoutInflaterTest {
   public void shouldConstructCustomViewsWithAttributesConstructor() throws Exception {
     CustomView view = (CustomView) inflate("custom_layout");
     assertThat(view.attributeResourceValue).isEqualTo(R.string.hello);
+  }
+
+  @Test
+  public void shouldConstructCustomViewsWithCustomState() throws Exception {
+    CustomStateView view = (CustomStateView) inflate("custom_layout6");
+    assertThat(view.getDrawableState()).doesNotContain(R.attr.stateFoo);
+
+    view.isFoo = true;
+    view.refreshDrawableState();
+
+    assertThat(view.getDrawableState()).contains(R.attr.stateFoo);
   }
 
   @Test
