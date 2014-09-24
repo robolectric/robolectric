@@ -283,7 +283,7 @@ public class XmlFileBuilder {
     public String getAttributeName(int index) {
       try {
         Node attr = getAttributeAt(index);
-        return packageName.equals(attr.getNamespaceURI()) ?
+        return (Attribute.ANDROID_RES_NS_PREFIX + packageName).equals(attr.getNamespaceURI()) ?
           attr.getLocalName() :
           attr.getNodeName();
       } catch (IndexOutOfBoundsException ex) {
