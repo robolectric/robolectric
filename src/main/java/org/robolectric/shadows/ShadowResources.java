@@ -300,7 +300,7 @@ public class ShadowResources {
 
   @Implementation
   public int getIdentifier(String name, String defType, String defPackage) {
-    ResourceIndex resourceIndex = resourceLoader.getResourceIndex();
+    ResourceIndex resourceIndex = getResourceLoader().getResourceIndex();
     ResName resName = ResName.qualifyResName(name, defPackage, defType);
     Integer resourceId = resourceIndex.getResourceId(resName);
     if (resourceId == null) return 0;
@@ -332,7 +332,7 @@ public class ShadowResources {
   }
 
   private @NotNull ResName getResName(int id) {
-    ResName resName = resourceLoader.getResourceIndex().getResName(id);
+    ResName resName = getResourceLoader().getResourceIndex().getResName(id);
     if (resName == null) {
       throw new Resources.NotFoundException("Unable to find resource ID #0x" + Integer.toHexString(id));
     }
@@ -340,7 +340,7 @@ public class ShadowResources {
   }
 
   private ResName tryResName(int id) {
-    return resourceLoader.getResourceIndex().getResName(id);
+    return getResourceLoader().getResourceIndex().getResName(id);
   }
 
   private String getQualifiers() {
@@ -362,7 +362,7 @@ public class ShadowResources {
   @Implementation
   public String getQuantityString(int id, int quantity) throws Resources.NotFoundException {
     ResName resName = getResName(id);
-    Plural plural = resourceLoader.getPlural(resName, quantity, getQualifiers());
+    Plural plural = getResourceLoader().getPlural(resName, quantity, getQualifiers());
     String string = plural.getString();
     ShadowAssetManager shadowAssetManager = shadowOf(realResources.getAssets());
     TypedResource typedResource = shadowAssetManager.resolve(
@@ -373,7 +373,7 @@ public class ShadowResources {
 
   @Implementation
   public InputStream openRawResource(int id) throws Resources.NotFoundException {
-    return resourceLoader.getRawValue(getResName(id));
+    return getResourceLoader().getRawValue(getResName(id));
   }
 
   @Implementation
@@ -421,20 +421,23 @@ public class ShadowResources {
   @Implementation
   public XmlResourceParser getXml(int id) throws Resources.NotFoundException {
     ResName resName = getResName(id);
-    Document document = resourceLoader.getXml(resName, getQualifiers());
+    Document document = getResourceLoader().getXml(resName, getQualifiers());
     if (document == null) {
       throw new Resources.NotFoundException();
     }
-    return new XmlFileBuilder().getXml(document, resName.getFullyQualifiedName(), resName.packageName, resourceLoader.getResourceIndex());
+    return new XmlFileBuilder().getXml(document, resName.getFullyQualifiedName(), resName.packageName, getResourceLoader().getResourceIndex());
   }
 
   @HiddenApi @Implementation
   public XmlResourceParser loadXmlResourceParser(String file, int id, int assetCookie, String type) throws Resources.NotFoundException {
     String packageName = getResName(id).packageName;
-    return XmlFileBuilder.getXmlResourceParser(file, packageName, resourceLoader.getResourceIndex());
+    return XmlFileBuilder.getXmlResourceParser(file, packageName, getResourceLoader().getResourceIndex());
   }
 
   public ResourceLoader getResourceLoader() {
+    if (resourceLoader == null) {
+      resourceLoader = Robolectric.getShadowApplication().getResourceLoader();
+    }
     return resourceLoader;
   }
 

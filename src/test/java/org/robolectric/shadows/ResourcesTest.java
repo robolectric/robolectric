@@ -6,9 +6,12 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
-import android.graphics.drawable.*;
+import android.graphics.drawable.AnimationDrawable;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.NinePatchDrawable;
 import android.util.DisplayMetrics;
-
 import android.util.TypedValue;
 import org.fest.assertions.data.Offset;
 import org.junit.Before;
@@ -452,6 +455,19 @@ public class ResourcesTest {
     arr.recycle();
 
     assertThat(value.type).isGreaterThanOrEqualTo(TypedValue.TYPE_FIRST_COLOR_INT).isLessThanOrEqualTo(TypedValue.TYPE_LAST_INT);
+  }
+
+  @Test
+  public void subClassInitializedOK() {
+    SubClassResources subClassResources = new SubClassResources(Robolectric.getShadowApplication().getResources());
+    assertThat(subClassResources.openRawResource(R.raw.raw_resource)).isNotNull();
+  }
+
+  private static class SubClassResources extends Resources {
+
+    public SubClassResources(Resources res) {
+      super(res.getAssets(), res.getDisplayMetrics(), res.getConfiguration());
+    }
   }
 
   /////////////////////////////

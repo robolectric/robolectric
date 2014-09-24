@@ -160,8 +160,8 @@ public class ShadowApplication extends ShadowContextWrapper {
   @Override
   @Implementation
   public Resources getResources() {
-    if (resources == null ) {
-      resources = ShadowResources.bind(new Resources(realApplication.getAssets(), null, new Configuration()), resourceLoader);
+    if (resources == null) {
+      resources = new Resources(realApplication.getAssets(), null, new Configuration());
     }
     return resources;
   }
