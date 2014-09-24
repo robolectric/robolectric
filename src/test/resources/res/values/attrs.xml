@@ -42,4 +42,8 @@
   </attr>
 
   <attr name="responses" format="reference"/>
+
+  <declare-styleable name="CustomStateView">
+    <attr name="stateFoo" format="boolean" />
+  </declare-styleable>
 </resources>

@@ -147,6 +147,7 @@ public final class R {
     public static final int test_color_1 = 0x1040a;
     public static final int color_state_list = 0x1040b;
     public static final int list_separator = 0x1040c;
+    public static final int custom_state_view_text_color = 0x1040d;
   }
 
   public static final class drawable {
@@ -210,6 +211,7 @@ public final class R {
     public static final int activity_main = 0x10624;
     public static final int activity_main_1 = 0x10625;
     public static final int ordinal_scrollbar = 0x10626;
+    public static final int custom_layout6 = 0x10627;
   }
 
   public static final class anim {
@@ -241,6 +243,7 @@ public final class R {
     public static final int quitKeyCombo = 0x10a09;
     public static final int responses = 0x10a0a;
     public static final int animalStyle = 0x10a0b;
+    public static final int stateFoo = 0x10a0c;
   }
 
   public static final class menu {
