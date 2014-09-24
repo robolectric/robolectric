@@ -147,6 +147,7 @@ public final class R {
     public static final int test_color_1 = 0x1040b;
     public static final int color_state_list = 0x1040c;
     public static final int list_separator = 0x1040d;
+    public static final int custom_state_view_text_color = 0x1040e;
   }
 
   public static final class drawable {
@@ -324,7 +325,6 @@ public final class R {
     public static final int Gastropod = 0x11007;
     public static final int Theme_ThirdTheme = 0x11008;
     public static final int MyBlackTheme = 0x11009;
-    public static final int MyBlueTheme = 0x1100a;
   }
 
   public static final class fraction {
