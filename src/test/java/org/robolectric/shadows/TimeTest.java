@@ -130,7 +130,7 @@ public class TimeTest {
   
   @Test
   public void shouldSwitchTimeZones() throws Exception {
-  	Time t = new Time("UTC");
+    Time t = new Time("UTC");
   	
     t.set(1414213562373L);
     assertThat(t.timezone).isEqualTo("UTC");
