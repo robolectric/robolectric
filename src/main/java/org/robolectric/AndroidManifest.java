@@ -40,6 +40,10 @@ import static android.content.pm.ApplicationInfo.FLAG_TEST_ONLY;
 import static android.content.pm.ApplicationInfo.FLAG_VM_SAFE_MODE;
 
 public class AndroidManifest {
+  public static final String DEFAULT_MANIFEST_NAME = "AndroidManifest.xml";
+  public static final String DEFAULT_RES_FOLDER = "res";
+  public static final String DEFAULT_ASSETS_FOLDER = "assets";
+
   private final FsFile androidManifestFile;
   private final FsFile resDirectory;
   private final FsFile assetsDirectory;
@@ -62,6 +66,7 @@ public class AndroidManifest {
   private final Map<String, ActivityData> activityDatas = new LinkedHashMap<String, ActivityData>();
   private final List<String> usedPermissions = new ArrayList<String>();
   private MetaData applicationMetaData;
+  private List<FsFile> libraryDirectories;
   private List<AndroidManifest> libraryManifests;
 
   /**
@@ -77,14 +82,15 @@ public class AndroidManifest {
   }
 
   public AndroidManifest(final FsFile androidManifestFile, final FsFile resDirectory) {
-    this(androidManifestFile, resDirectory, resDirectory.getParent().join("assets"));
+    this(androidManifestFile, resDirectory, resDirectory.getParent().join(DEFAULT_ASSETS_FOLDER));
   }
 
   /**
    * @deprecated Use {@link #AndroidManifest(org.robolectric.res.FsFile, org.robolectric.res.FsFile, org.robolectric.res.FsFile)} instead.}
    */
   public AndroidManifest(final FsFile baseDir) {
-    this(baseDir.join("AndroidManifest.xml"), baseDir.join("res"), baseDir.join("assets"));
+    this(baseDir.join(DEFAULT_MANIFEST_NAME), baseDir.join(DEFAULT_RES_FOLDER),
+        baseDir.join(DEFAULT_ASSETS_FOLDER));
   }
 
   /**
@@ -517,11 +523,17 @@ public class AndroidManifest {
     return providers;
   }
 
+  public void setLibraryDirectories(List<FsFile> libraryDirectories) {
+    this.libraryDirectories = libraryDirectories;
+  }
+
   protected void createLibraryManifests() {
     libraryManifests = new ArrayList<AndroidManifest>();
-    List<FsFile> libraryBaseDirs = findLibraries();
+    if (libraryDirectories == null) {
+      libraryDirectories = findLibraries();
+    }
 
-    for (FsFile libraryBaseDir : libraryBaseDirs) {
+    for (FsFile libraryBaseDir : libraryDirectories) {
       AndroidManifest libraryManifest = createLibraryAndroidManifest(libraryBaseDir);
       libraryManifest.createLibraryManifests();
       libraryManifests.add(libraryManifest);

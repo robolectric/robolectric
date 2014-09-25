@@ -350,7 +350,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     String resourcesProperty = System.getProperty("android.resources");
     String assetsProperty = System.getProperty("android.assets");
 
-    FsFile fsFile = getBaseDir();
+    FsFile baseDir;
     FsFile manifestFile;
     FsFile resDir;
     FsFile assetsDir;
@@ -358,12 +358,22 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     boolean defaultManifest = config.manifest().equals(Config.DEFAULT);
     if (defaultManifest && manifestProperty != null) {
       manifestFile = Fs.fileFromPath(manifestProperty);
+      baseDir = manifestFile.getParent();
       resDir = Fs.fileFromPath(resourcesProperty);
       assetsDir = Fs.fileFromPath(assetsProperty);
     } else {
-      manifestFile = fsFile.join(defaultManifest ? "AndroidManifest.xml" : config.manifest());
-      resDir = manifestFile.getParent().join(config.resourceDir());
-      assetsDir = manifestFile.getParent().join("assets");
+      manifestFile = getBaseDir().join(defaultManifest ? AndroidManifest.DEFAULT_MANIFEST_NAME : config.manifest());
+      baseDir = manifestFile.getParent();
+      resDir = baseDir.join(config.resourceDir());
+      assetsDir = baseDir.join(AndroidManifest.DEFAULT_ASSETS_FOLDER);
+    }
+
+    List<FsFile> libraryDirs = null;
+    if (config.libraries().length > 0) {
+      libraryDirs = new ArrayList<FsFile>();
+      for (String libraryDirName : config.libraries()) {
+        libraryDirs.add(baseDir.join(libraryDirName));
+      }
     }
 
     synchronized (envHolder) {
@@ -372,6 +382,11 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       if (appManifest == null) {
         long startTime = System.currentTimeMillis();
         appManifest = createAppManifest(manifestFile, resDir, assetsDir);
+
+        if (libraryDirs != null) {
+          appManifest.setLibraryDirectories(libraryDirs);
+        }
+
         if (DocumentLoader.DEBUG_PERF)
           System.out.println(String.format("%4dms spent in %s", System.currentTimeMillis() - startTime, manifestFile));
 
