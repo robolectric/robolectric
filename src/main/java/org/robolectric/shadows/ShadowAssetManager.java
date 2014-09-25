@@ -8,10 +8,14 @@ import android.util.TypedValue;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import org.jetbrains.annotations.NotNull;
 import org.robolectric.AndroidManifest;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.internal.HiddenApi;
@@ -45,6 +49,8 @@ public final class ShadowAssetManager {
   private String qualifiers = "";
   private Map<Integer, Resources.Theme> themesById = new LinkedHashMap<Integer, Resources.Theme>();
   private int nextInternalThemeId = 1000;
+
+  private static Map<Integer, List<OverlayedStyle>> appliedThemeStyles = new HashMap<Integer, List<OverlayedStyle>>();
 
   static AssetManager bind(AssetManager assetManager, AndroidManifest androidManifest, ResourceLoader resourceLoader) {
     ShadowAssetManager shadowAssetManager = shadowOf(assetManager);
@@ -242,7 +248,33 @@ public final class ShadowAssetManager {
 
   @HiddenApi @Implementation
   public static void applyThemeStyle(int theme, int styleRes, boolean force) {
-    throw new UnsupportedOperationException();
+    if (!appliedThemeStyles.containsKey(theme)) {
+      appliedThemeStyles.put(theme, new LinkedList<OverlayedStyle>());
+    }
+
+    ResourceLoader resourceLoader = Robolectric.getShadowApplication().getResourceLoader();
+    ShadowAssetManager assertManager = Robolectric.shadowOf(Robolectric.getShadowApplication().getAssets());
+
+    ResourceIndex resourceIndex = resourceLoader.getResourceIndex();
+    ResName resName = resourceIndex.getResName(styleRes);
+
+    Style style = resolveStyle(resourceLoader, resName, assertManager.getQualifiers());
+
+    appliedThemeStyles.get(theme).add(new OverlayedStyle(style, force));
+  }
+
+  static List<OverlayedStyle> getOverlayThemeStyles(int themeResourceId) {
+    return appliedThemeStyles.get(themeResourceId);
+  }
+
+  static class OverlayedStyle {
+    Style style;
+    boolean force;
+
+    public OverlayedStyle(Style style, boolean force) {
+      this.style = style;
+      this.force = force;
+    }
   }
 
   @HiddenApi @Implementation
