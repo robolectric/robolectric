@@ -3,6 +3,7 @@ package org.robolectric.res;
 import org.robolectric.util.Join;
 import org.robolectric.util.Util;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -152,11 +153,11 @@ abstract public class Fs {
       }
 
       @Override public InputStream getInputStream() throws IOException {
-        return jarFile.getInputStream(jarEntryMap.get(path));
+        return new BufferedInputStream(jarFile.getInputStream(jarEntryMap.get(path)));
       }
 
       @Override public byte[] getBytes() throws IOException {
-        return Util.readBytes(getInputStream());
+        return Util.readBytes(jarFile.getInputStream(jarEntryMap.get(path)));
       }
 
       @Override public FsFile join(String... pathParts) {

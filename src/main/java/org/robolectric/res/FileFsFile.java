@@ -2,6 +2,7 @@ package org.robolectric.res;
 
 import org.robolectric.util.Util;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
@@ -9,21 +10,13 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class FileFsFile implements FsFile {
-    private final File canonicalFile;
-    private File file;
+
+  /** Guarded by the instance lock */
+  private File canonicalFile;
+  private final File file;
 
   FileFsFile(File file) {
     this.file = file;
-    try {
-      // Android library references in project.properties are all
-      // relative paths, so using a canonical path guarantees that
-      // there won't be duplicates.
-      this.canonicalFile = file.getCanonicalFile();
-    } catch (IOException e) {
-      // In a case where file system queries are failing, it makes
-      // sense for the test to fail.
-      throw new RuntimeException(e);
-    }
   }
 
   @Override public boolean exists() {
@@ -70,7 +63,7 @@ public class FileFsFile implements FsFile {
   }
 
   @Override public InputStream getInputStream() throws IOException {
-    return new FileInputStream(file);
+    return new BufferedInputStream(new FileInputStream(file));
   }
 
   @Override public byte[] getBytes() throws IOException {
@@ -101,14 +94,33 @@ public class FileFsFile implements FsFile {
 
     FileFsFile fsFile = (FileFsFile) o;
 
-    if (!canonicalFile.equals(fsFile.canonicalFile)) return false;
+    return getCanonicalFile().equals(fsFile.getCanonicalFile());
+  }
 
-    return true;
+  /**
+   * Canonical file queries can be expensive, so perform them lazily. In
+   * practice, this should only happen for raw resources, AndroidManifest.xmls,
+   * and project.properties.
+   */
+  private final synchronized File getCanonicalFile() {
+    if (canonicalFile == null) {
+      try {
+        // Android library references in project.properties are all
+        // relative paths, so using a canonical path guarantees that
+        // there won't be duplicates.
+        this.canonicalFile = file.getCanonicalFile();
+      } catch (IOException e) {
+        // In a case where file system queries are failing, it makes
+        // sense for the test to fail.
+        throw new RuntimeException(e);
+      }
+    }
+    return canonicalFile;
   }
 
   @Override
   public int hashCode() {
-    return canonicalFile.hashCode();
+    return getCanonicalFile().hashCode();
   }
 
   private FsFile[] asFsFiles(File[] files) {
