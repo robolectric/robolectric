@@ -5,9 +5,6 @@ import android.os.StrictMode;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-/**
- * Created by karlicos on 11.09.14.
- */
 @Implements(StrictMode.class)
 public class ShadowStrictMode {
   @Implementation
