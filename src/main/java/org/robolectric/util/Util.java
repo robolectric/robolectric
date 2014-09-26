@@ -23,10 +23,19 @@ public class Util {
     }
   }
 
+  /**
+   * This method consumes an inputstream, returning its content then closing
+   * it.
+   */
   public static byte[] readBytes(InputStream inputStream) throws IOException {
-    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-    copy(inputStream, byteArrayOutputStream);
-    return byteArrayOutputStream.toByteArray();
+    try {
+      ByteArrayOutputStream byteArrayOutputStream =
+              new ByteArrayOutputStream(inputStream.available());
+      copy(inputStream, byteArrayOutputStream);
+      return byteArrayOutputStream.toByteArray();
+    } finally {
+      inputStream.close();
+    }
   }
 
   public static <T> T[] reverse(T[] array) {
