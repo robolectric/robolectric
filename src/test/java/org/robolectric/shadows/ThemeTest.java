@@ -105,6 +105,18 @@ public class ThemeTest {
     assertThat(style.getAttrValue(new ResName("android", "attr", "background"))).isNull();
   }
 
+
+  @Test public void shouldApplyParentStylesFromAttrs() throws Exception {
+    TestActivity activity = buildActivity(TestActivityWithAnotherTheme.class).create().get();
+    ResourceLoader resourceLoader = Robolectric.shadowOf(activity.getResources()).getResourceLoader();
+    Style theme = ShadowAssetManager.resolveStyle(resourceLoader, null,
+        new ResName(TestUtil.TEST_PACKAGE, "style", "Theme.AnotherTheme"), "");
+    Style style = ShadowAssetManager.resolveStyle(resourceLoader, theme,
+        new ResName(TestUtil.TEST_PACKAGE, "style", "IndirectButtonStyle"), "");
+    assertThat(style.getAttrValue(new ResName("android", "attr", "background")).value)
+        .isEqualTo("#ffff0000");
+  }
+
   public static class TestActivity extends Activity {
     @Override protected void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
