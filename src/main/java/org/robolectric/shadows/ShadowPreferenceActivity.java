@@ -19,11 +19,6 @@ public class ShadowPreferenceActivity extends ShadowActivity {
   private PreferenceScreen preferenceScreen;
 
   @Implementation
-  public void onCreate(Bundle savedInstanceState) {
-    realActivity.setContentView(android.R.layout.list_content);
-  }
-
-  @Implementation
   public void addPreferencesFromResource(int preferencesResId) {
     this.preferencesResId = preferencesResId;
     preferenceScreen = inflatePreferences(preferencesResId);
