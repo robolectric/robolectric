@@ -123,7 +123,7 @@ public class ShadowResources {
       ResName themeStyleName = getResName(themeResourceId);
       if (DEBUG) System.out.println("themeStyleName = " + themeStyleName);
 
-      theme = ShadowAssetManager.resolveStyle(resourceLoader, themeStyleName, shadowAssetManager.getQualifiers());
+      theme = ShadowAssetManager.resolveStyle(resourceLoader, null, themeStyleName, shadowAssetManager.getQualifiers());
 
       if (defStyleAttr != 0) {
         // Load the theme attribute for the default style attributes. E.g., attr/buttonStyle
@@ -145,7 +145,7 @@ public class ShadowResources {
 
           if (defStyleAttribute.isResourceReference()) {
             ResName defStyleResName = defStyleAttribute.getResourceReference();
-            defStyleFromAttr = ShadowAssetManager.resolveStyle(resourceLoader, defStyleResName, shadowAssetManager.getQualifiers());
+            defStyleFromAttr = ShadowAssetManager.resolveStyle(resourceLoader, theme, defStyleResName, shadowAssetManager.getQualifiers());
           }
         }
       }
@@ -162,7 +162,7 @@ public class ShadowResources {
           styleAttributeResName = attrValue.getStyleReference();
         }
       }
-      styleAttrStyle = ShadowAssetManager.resolveStyle(resourceLoader, styleAttributeResName, shadowAssetManager.getQualifiers());
+      styleAttrStyle = ShadowAssetManager.resolveStyle(resourceLoader, theme, styleAttributeResName, shadowAssetManager.getQualifiers());
     }
 
     if (defStyleRes != 0) {
@@ -177,7 +177,7 @@ public class ShadowResources {
           }
         }
       }
-      defStyleFromRes = ShadowAssetManager.resolveStyle(resourceLoader, resName, shadowAssetManager.getQualifiers());
+      defStyleFromRes = ShadowAssetManager.resolveStyle(resourceLoader, theme, resName, shadowAssetManager.getQualifiers());
     }
 
     List<Attribute> attributes = new ArrayList<Attribute>();

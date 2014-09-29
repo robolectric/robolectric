@@ -45,10 +45,23 @@ public class AttrData {
   }
 
   @Override public String toString() {
-  return "AttrData{" +
-    "name='" + name + '\'' +
-    ", format='" + format + '\'' +
-    '}';
+
+    StringBuilder builder = new StringBuilder("AttrData{name='")
+        .append(name)
+        .append("', format='")
+        .append(format)
+        .append('\'');
+    if (pairs != null) {
+      for (Pair p : pairs) {
+        builder.append(' ')
+            .append(p.name)
+            .append("='")
+            .append(p.value)
+            .append('\'');
+      }
+    }
+    builder.append('}');
+    return builder.toString();
   }
 
   public static class Pair {
