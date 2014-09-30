@@ -7,19 +7,17 @@ import org.robolectric.TestRunners;
 import org.robolectric.internal.Shadow;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ShadowCookieManagerTest {
-  String url = "robolectric.org/";
-  String httpUrl = "http://robolectric.org/";
-  String httpsUrl = "https://robolectric.org/";
-  CookieManager cookieManager = Shadow.newInstanceOf(CookieManager.class);
-  
+  private final String url = "robolectric.org/";
+  private final String httpUrl = "http://robolectric.org/";
+  private final String httpsUrl = "https://robolectric.org/";
+  private final CookieManager cookieManager = Shadow.newInstanceOf(CookieManager.class);
+
   @Test
   public void shouldGetASingletonInstance() {
-    assertNotNull(CookieManager.getInstance());
+    assertThat(CookieManager.getInstance()).isNotNull();
     assertThat(CookieManager.getInstance()).isSameAs(CookieManager.getInstance());
   }
 
@@ -48,16 +46,52 @@ public class ShadowCookieManagerTest {
   }
 
   @Test
+  public void shouldGetCookieForHostInDomain() {
+    CookieManager cookieManager = CookieManager.getInstance();
+    String value1 = "my cookie";
+    cookieManager.setCookie("foo.com/this%20is%20a%20test", value1);
+
+    assertThat(cookieManager.getCookie(".foo.com")).isEqualTo(value1);
+  }
+
+  @Test
+  public void shouldNotGetCookieForHostNotInDomain() {
+    CookieManager cookieManager = CookieManager.getInstance();
+    String value1 = "my cookie";
+    cookieManager.setCookie("bar.foo.com/this%20is%20a%20test", value1);
+
+    assertThat(cookieManager.getCookie(".bar.com")).isNull();
+  }
+
+  @Test
+  public void shouldGetCookieForHostInSubDomain() {
+    CookieManager cookieManager = CookieManager.getInstance();
+    String value1 = "my cookie";
+    cookieManager.setCookie("host.in.subdomain.bar.com", value1);
+
+    assertThat(cookieManager.getCookie(".bar.com")).isEqualTo(value1);
+  }
+
+  @Test
+  public void shouldGetCookieForHostInDomainDefinedWithProtocol() {
+    CookieManager cookieManager = CookieManager.getInstance();
+    String value1 = "my cookie";
+    cookieManager.setCookie("qutz.com/", value1);
+
+    assertThat(cookieManager.getCookie("http://.qutz.com")).isEqualTo(value1);
+  }
+
+  @Test
   public void shouldRecordAcceptCookie() {
     CookieManager cookieManager = CookieManager.getInstance();
     cookieManager.setCookie("foo", "bar");
     cookieManager.setCookie("baz", "qux");
-    assertNotNull(cookieManager.getCookie("foo"));
+    assertThat(cookieManager.getCookie("foo")).isNotNull();
     cookieManager.removeAllCookie();
-    assertNull(cookieManager.getCookie("foo"));
-    assertNull(cookieManager.getCookie("baz"));
+    assertThat(cookieManager.getCookie("foo")).isNull();
+    assertThat(cookieManager.getCookie("baz")).isNull();
   }
-  
+
   @Test
   public void shouldHaveCookieWhenCookieIsSet() {
     cookieManager.setCookie(url, "name=value; Expires=Wed, 09 Jun 2021 10:18:14 GMT");
@@ -79,7 +113,7 @@ public class ShadowCookieManagerTest {
     cookieManager.setCookie(httpUrl, "name=value; Expires=Wed, 11 Jul 2035 08:12:26 GMT");
     assertThat(cookieManager.getCookie("http://google.com")).isNull();
   }
- 
+
   @Test
   public void shouldSetAndGetOneCookie() {
     cookieManager.setCookie(httpUrl, "name=value; Expires=Wed, 11 Jul 2035 08:12:26 GMT");
@@ -116,7 +150,7 @@ public class ShadowCookieManagerTest {
     cookieManager.setCookie(httpUrl, "name=");
     assertThat(cookieManager.getCookie(url)).isEqualTo("name=");
   }
-  
+
   @Test
   public void shouldSetCookieWithNameOnly() {
     cookieManager.setCookie(httpUrl, "name");
@@ -155,4 +189,3 @@ public class ShadowCookieManagerTest {
     assertThat(cookieManager.getCookie(url)).isEqualTo("name=value");
   }
 }
-

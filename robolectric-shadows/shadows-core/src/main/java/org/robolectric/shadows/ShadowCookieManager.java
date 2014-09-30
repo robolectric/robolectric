@@ -1,7 +1,9 @@
 package org.robolectric.shadows;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -46,21 +48,34 @@ public class ShadowCookieManager {
   @Implementation
   public void setCookie(String url, String value) {
     List<Cookie> cookies = parseCookies(url, value);
-    for(Cookie cookie : cookies) {
+    for (Cookie cookie : cookies) {
       store.addCookie(cookie);
     }
   }
 
   @Implementation
   public String getCookie(String url) {
-    CookieOrigin origin = getOrigin(url);
-    List<Cookie> matchedCookies = filter(origin);
+    final List<Cookie> matchedCookies;
+    try {
+      url = URLDecoder.decode(url, "UTF-8");
+    } catch (UnsupportedEncodingException e) {
+      throw new RuntimeException(e);
+    }
+
+    if (url.startsWith(".")) {
+      matchedCookies = filter(url.substring(1));
+    } else if (url.contains("//.")) {
+      matchedCookies = filter(url.substring(url.indexOf("//.") + 3));
+    } else {
+      CookieOrigin origin = getOrigin(url);
+      matchedCookies = filter(origin);
+    }
     if (matchedCookies.isEmpty()) {
       return null;
     }
 
     StringBuffer cookieHeaderValue = new StringBuffer();
-    for (int i=0, n= matchedCookies.size(); i<n ; i++) {
+    for (int i = 0, n = matchedCookies.size(); i < n; i++) {
       Cookie cookie = matchedCookies.get(i);
 
       if (i > 0) {
@@ -82,11 +97,24 @@ public class ShadowCookieManager {
     Date now = new Date();
     CookieSpec cookieSpec = createSpec();
     for (Cookie cookie : store.getCookies()) {
-        if (!cookie.isExpired(now)) {
-            if (cookieSpec.match(cookie, origin)) {
-                matchedCookies.add(cookie);
-            }
+      if (!cookie.isExpired(now)) {
+        if (cookieSpec.match(cookie, origin)) {
+          matchedCookies.add(cookie);
         }
+      }
+    }
+    return matchedCookies;
+  }
+
+  private List<Cookie> filter(String domain) {
+    List<Cookie> matchedCookies = new ArrayList<>();
+    Date now = new Date();
+    for (Cookie cookie : store.getCookies()) {
+      if (!cookie.isExpired(now)) {
+        if (cookie.getDomain().endsWith(domain)) {
+          matchedCookies.add(cookie);
+        }
+      }
     }
     return matchedCookies;
   }
@@ -105,7 +133,7 @@ public class ShadowCookieManager {
   public void removeAllCookie() {
     store.clear();
   }
-  
+
   @Implementation
   public void removeExpiredCookie() {
     store.clearExpired(new Date());
@@ -118,7 +146,7 @@ public class ShadowCookieManager {
 
   @Implementation
   public void removeSessionCookie() {
-    synchronized(store){
+    synchronized (store) {
       clearAndAddPersistentCookies();
     }
   }
@@ -139,31 +167,31 @@ public class ShadowCookieManager {
   private void clearAndAddPersistentCookies() {
     List<Cookie> cookies = new ArrayList<>(store.getCookies());
     store.clear();
-    for(Cookie cookie : cookies) {
-      if(cookie.isPersistent()){
+    for (Cookie cookie : cookies) {
+      if (cookie.isPersistent()) {
         store.addCookie(cookie);
       }
     }
   }
 
   private List<Cookie> parseCookies(String url, String cookieHeader) {
-      CookieOrigin origin = getOrigin(url);
-      BasicHeader header = new BasicHeader(SM.SET_COOKIE, cookieHeader);
-      int attrIndex = 0;
-      do {
-        try {
-          CookieSpec cookieSpec = createSpec();
-          return cookieSpec.parse(header, origin);
-        } catch (MalformedCookieException e) {
-          int indexOfAttrTitle = cookieHeader.indexOf(COOKIE_ATTRS_NOT_STRICT[attrIndex]);
-          if (indexOfAttrTitle != -1) {
-            cookieHeader = cookieHeader.substring(0,indexOfAttrTitle);
-            header = new BasicHeader(SM.SET_COOKIE, cookieHeader);
-          }
-          attrIndex++;
+    CookieOrigin origin = getOrigin(url);
+    BasicHeader header = new BasicHeader(SM.SET_COOKIE, cookieHeader);
+    int attrIndex = 0;
+    do {
+      try {
+        CookieSpec cookieSpec = createSpec();
+        return cookieSpec.parse(header, origin);
+      } catch (MalformedCookieException e) {
+        int indexOfAttrTitle = cookieHeader.indexOf(COOKIE_ATTRS_NOT_STRICT[attrIndex]);
+        if (indexOfAttrTitle != -1) {
+          cookieHeader = cookieHeader.substring(0, indexOfAttrTitle);
+          header = new BasicHeader(SM.SET_COOKIE, cookieHeader);
         }
-      } while (attrIndex <= COOKIE_ATTRS_NOT_STRICT.length);
-      return emtpyCookieList;
+        attrIndex++;
+      }
+    } while (attrIndex <= COOKIE_ATTRS_NOT_STRICT.length);
+    return emtpyCookieList;
   }
 
   private CookieSpec createSpec() {
@@ -171,10 +199,10 @@ public class ShadowCookieManager {
   }
 
   private CookieOrigin getOrigin(String url) {
-    if ( !(url.startsWith(HTTP) || url.startsWith(HTTPS)) ) {
+    if (!(url.startsWith(HTTP) || url.startsWith(HTTPS))) {
       url = HTTP + url;
     }
-    URI uri = null;
+    URI uri;
     try {
       uri = new URI(url);
     } catch (URISyntaxException e) {
@@ -183,7 +211,6 @@ public class ShadowCookieManager {
 
     int port = (uri.getPort() < 0) ? 80 : uri.getPort();
     boolean secure = "https".equals(uri.getScheme());
-    CookieOrigin origin = new CookieOrigin(uri.getHost(), port, uri.getPath(),  secure);
-    return origin;
+    return new CookieOrigin(uri.getHost(), port, uri.getPath(), secure);
   }
 }
