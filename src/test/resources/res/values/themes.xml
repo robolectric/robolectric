@@ -47,12 +47,6 @@
 
   <style name="MyBlackTheme">
     <item name="android:windowBackground">@android:color/black</item>
-    <item name="android:textColorHint">@android:color/darker_gray</item>
-  </style>
-
-  <style name="MyBlueTheme">
-    <item name="android:windowBackground">@color/blue</item>
-    <item name="android:textColor">@color/white</item>
   </style>
 
   <style name="IndirectButtonStyle" parent="@android:attr/buttonStyle">
