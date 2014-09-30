@@ -17,7 +17,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xmlpull.v1.XmlPullParserException;
 
 public class XmlFileBuilder {
@@ -53,48 +52,16 @@ public class XmlFileBuilder {
   }
 
   public static XmlResourceParser getXmlResourceParser(String file, String packageName, ResourceIndex resourceIndex) {
-    FsFile fsFile = Fs.fileFromPath(file);
-    Document document = new XmlFileLoader(null, "xml").parse(fsFile);
-    if (document == null) {
-      throw new Resources.NotFoundException("couldn't find resource " + fsFile.getPath());
-    }
-    replaceResAutoNamespace(document, packageName);
-    return new XmlFileBuilder().getXml(document, fsFile.getPath(), packageName, resourceIndex);
-  }
+   FsFile fsFile = Fs.fileFromPath(file);
+   Document document = new XmlFileLoader(null, "xml").parse(fsFile);
+   if (document == null) {
+     throw new Resources.NotFoundException("couldn't find resource " + fsFile.getPath());
+   }
+   return new XmlFileBuilder().getXml(document, fsFile.getPath(), packageName, resourceIndex);
+ }
 
   public XmlResourceParser getXml(Document document, String fileName, String packageName, ResourceIndex resourceIndex) {
     return new XmlResourceParserImpl(document, fileName, packageName, resourceIndex);
-  }
-
-  /**
-   * Replaces all instances of "http://schemas.android.com/apk/res-auto" with 
-   * "http://schemas.android.com/apk/res/packageName" in the given Document.
-   */
-  private static void replaceResAutoNamespace(Document document, String packageName) {
-    String autoNs = Attribute.RES_AUTO_NS_URI;
-    String newNs = Attribute.ANDROID_RES_NS_PREFIX + packageName;
-    replaceAttributeNamespace(document, document.getDocumentElement(), autoNs, newNs);
-  }
-
-  private static void replaceAttributeNamespace(Document document, Node n, String oldNs, String newNs) {
-    NamedNodeMap attrs = n.getAttributes();
-    if (attrs != null) {
-      for (int i = 0; i < attrs.getLength(); i++) {
-        replaceNamespace(document, attrs.item(i), oldNs, newNs);
-      }
-    }
-    if (n.hasChildNodes()) {
-      NodeList list = n.getChildNodes();
-      for (int i = 0; i < list.getLength(); i++) {
-        replaceAttributeNamespace(document, list.item(i), oldNs, newNs);
-      }
-    }
-  }
-
-  private static void replaceNamespace(Document document, Node n, String oldNs, String newNs) {
-    if (oldNs.equals(n.getNamespaceURI())) {
-      document.renameNode(n, newNs, n.getNodeName());
-    }
   }
 
   /**
