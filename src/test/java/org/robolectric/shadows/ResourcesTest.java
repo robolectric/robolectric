@@ -470,64 +470,6 @@ public class ResourcesTest {
     }
   }
 
-  @Test
-  public void applyStyleForced() {
-    Resources.Theme theme = resources.newTheme();
-    theme.applyStyle(R.style.MyBlackTheme, true);
-    TypedArray arr = theme.obtainStyledAttributes(new int[] { android.R.attr.windowBackground,  android.R.attr.textColorHint });
-    TypedValue backgroundColor = new TypedValue();
-    arr.getValue(0, backgroundColor);
-    arr.recycle();
-
-    assertThat(backgroundColor.resourceId).isEqualTo(android.R.color.black);
-
-    theme.applyStyle(R.style.MyBlueTheme, true);
-
-    arr = theme.obtainStyledAttributes(new int[] { android.R.attr.windowBackground, android.R.attr.textColor,  android.R.attr.textColorHint});
-    backgroundColor = new TypedValue();
-    arr.getValue(0, backgroundColor);
-    TypedValue textColor = new TypedValue();
-    arr.getValue(1, textColor);
-    TypedValue textColorHint = new TypedValue();
-    arr.getValue(2, textColorHint);
-    arr.recycle();
-
-    assertThat(backgroundColor.resourceId).isEqualTo(R.color.blue);
-    assertThat(textColor.resourceId).isEqualTo(R.color.white);
-    assertThat(textColorHint.resourceId).isEqualTo(android.R.color.darker_gray);
-  }
-
-  @Test
-  public void applyStyleNotForced() {
-    Resources.Theme theme = resources.newTheme();
-    theme.applyStyle(R.style.MyBlackTheme, true);
-    TypedArray arr = theme.obtainStyledAttributes(new int[] { android.R.attr.windowBackground, android.R.attr.textColorHint });
-    TypedValue backgroundColor = new TypedValue();
-    arr.getValue(0, backgroundColor);
-    TypedValue textColorHint = new TypedValue();
-    arr.getValue(1, textColorHint);
-
-    arr.recycle();
-
-    assertThat(backgroundColor.resourceId).isEqualTo(android.R.color.black);
-    assertThat(textColorHint.resourceId).isEqualTo(android.R.color.darker_gray);
-
-    theme.applyStyle(R.style.MyBlueTheme, false);
-
-    arr = theme.obtainStyledAttributes(new int[] { android.R.attr.windowBackground, android.R.attr.textColor,  android.R.attr.textColorHint});
-    backgroundColor = new TypedValue();
-    arr.getValue(0, backgroundColor);
-    TypedValue textColor = new TypedValue();
-    arr.getValue(1, textColor);
-    textColorHint = new TypedValue();
-    arr.getValue(2, textColorHint);
-    arr.recycle();
-
-    assertThat(textColor.resourceId).isEqualTo(R.color.white);
-    assertThat(textColorHint.resourceId).isEqualTo(android.R.color.darker_gray);
-    assertThat(backgroundColor.resourceId).isEqualTo(android.R.color.black);
-  }
-
   /////////////////////////////
 
   private static String findRootTag(XmlResourceParser parser) throws Exception {
