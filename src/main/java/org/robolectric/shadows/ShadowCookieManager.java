@@ -52,8 +52,15 @@ public class ShadowCookieManager {
 
   @Implementation
   public String getCookie(String url) {
-    CookieOrigin origin = getOrigin(url);
-    List<Cookie> matchedCookies = filter(origin);
+    final List<Cookie> matchedCookies;
+    if( url.startsWith(".")) {
+        matchedCookies = filter(url.substring(1));
+    } else if( url.contains("//.")) {
+        matchedCookies = filter(url.substring(url.indexOf("//.")+3));
+    } else {
+        CookieOrigin origin = getOrigin(url);
+        matchedCookies = filter(origin);
+    }
     if (matchedCookies.isEmpty()) {
       return null;
     }
@@ -90,6 +97,20 @@ public class ShadowCookieManager {
     return matchedCookies;
   }
 
+  private List<Cookie> filter(String domain) {
+      List<Cookie> matchedCookies = new ArrayList<Cookie>();
+      Date now = new Date();
+      CookieSpec cookieSpec = createSpec();
+      for (Cookie cookie : store.getCookies()) {
+          if (!cookie.isExpired(now)) {
+              if (cookie.getDomain().endsWith(domain)) {
+                  matchedCookies.add(cookie);
+              }
+          }
+      }
+      return matchedCookies;
+  }
+
   @Implementation
   public void setAcceptCookie(boolean accept) {
     this.accept = accept;
@@ -104,7 +125,7 @@ public class ShadowCookieManager {
   public void removeAllCookie() {
     store.clear();
   }
-  
+
   @Implementation
   public void removeExpiredCookie() {
     store.clearExpired(new Date());
