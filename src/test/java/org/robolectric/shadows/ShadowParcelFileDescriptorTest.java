@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.os.ParcelFileDescriptor;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -14,24 +15,46 @@ import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ShadowParcelFileDescriptorTest {
-  @Test
-  public void testParcelFileDescriptor() throws Exception {
-    byte[] data = new byte[] {1, 2, 3, 4};
-    File filePath = new File(Robolectric.application.getFilesDir(), "test");
+  private File file;
 
-    FileOutputStream os = new FileOutputStream(filePath);
-    os.write(data);
+  @Before
+  public void setup() throws Exception {
+    file = new File(Robolectric.application.getFilesDir(), "test");
+
+    // just touches a file
+    FileOutputStream os = new FileOutputStream(file);
     os.close();
+  }
 
-    ParcelFileDescriptor pfd = ParcelFileDescriptor.open(filePath, -1);
+  @Test
+  public void testOpens() throws Exception {
+    ParcelFileDescriptor pfd = ParcelFileDescriptor.open(file, -1);
     assertThat(pfd).isNotNull();
-
-    byte[] readData = new byte[4];
-    FileInputStream is = new FileInputStream(pfd.getFileDescriptor());
-    is.read(readData);
-    is.close();
+    assertThat(pfd.getFileDescriptor().valid()).isTrue();
     pfd.close();
+  }
 
-    assertThat(readData).isEqualTo(data);
+  @Test
+  public void testCloses() throws Exception {
+    ParcelFileDescriptor pfd = ParcelFileDescriptor.open(file, -1);
+    pfd.close();
+    assertThat(pfd.getFileDescriptor().valid()).isFalse();
+  }
+
+  @Test
+  public void testAutoCloseInputStream() throws Exception {
+    ParcelFileDescriptor pfd = ParcelFileDescriptor.open(file, -1);
+    ParcelFileDescriptor.AutoCloseInputStream is = new ParcelFileDescriptor.AutoCloseInputStream(pfd);
+    is.close();
+    assertThat(pfd.getFileDescriptor().valid()).isFalse();
+  }
+
+  @Test
+  public void testAutoCloseOutputStream() throws Exception {
+    File f = new File(Robolectric.application.getFilesDir(), "outfile");
+    ParcelFileDescriptor pfd = ParcelFileDescriptor.open(f, -1);
+    ParcelFileDescriptor.AutoCloseOutputStream os = new ParcelFileDescriptor.AutoCloseOutputStream(pfd);
+    os.close();
+    assertThat(pfd.getFileDescriptor().valid()).isFalse();
   }
 }
