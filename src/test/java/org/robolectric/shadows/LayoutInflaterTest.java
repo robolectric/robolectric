@@ -235,12 +235,6 @@ public class LayoutInflaterTest {
   }
 
   @Test
-  public void shouldConstructCustomViewsWithAttributesInResAutoNamespace() throws Exception {
-    CustomView view = (CustomView) inflate("custom_layout5");
-    assertThat(view.attributeResourceValue).isEqualTo(R.string.hello);
-  }
-
-  @Test
   public void shouldConstructCustomViewsWithAttributesWithURLEncodedNamespaces() throws Exception {
     CustomView view = (CustomView) inflate("custom_layout4")
         .findViewById(R.id.custom_view);
