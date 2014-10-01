@@ -12,7 +12,7 @@ public class Attribute {
   public static final String ANDROID_RES_NS_PREFIX = "http://schemas.android.com/apk/res/";
   private static final int ANDROID_RES_NS_PREFIX_LENGTH = ANDROID_RES_NS_PREFIX.length();
   private static final Logger LOGGER = Logger.getLogger(Attribute.class.getName());
-  private static final String RES_AUTO_NS_URI = "http://schemas.android.com/apk/res-auto";
+  public static final String RES_AUTO_NS_URI = "http://schemas.android.com/apk/res-auto";
 
   public final @NotNull ResName resName;
   public final @NotNull String value;
