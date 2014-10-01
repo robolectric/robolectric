@@ -33,6 +33,7 @@ public class ShadowIntentFilter {
   List<String> types = new ArrayList<String>();
   List<IntentFilter.AuthorityEntry> authoritites = new ArrayList<IntentFilter.AuthorityEntry>();
   List<String> categories = new ArrayList<String>();
+  int priority;
 
   public void __constructor__(String action) {
     actions.add(action);
@@ -49,6 +50,17 @@ public class ShadowIntentFilter {
     types = new ArrayList<String>(shadow.types);
     authoritites = new ArrayList<IntentFilter.AuthorityEntry>(shadow.authoritites);
     categories = new ArrayList<String>(shadow.categories);
+    priority = shadow.priority;
+  }
+
+  @Implementation
+  public void setPriority(int priority) {
+    this.priority = priority;
+  }
+
+  @Implementation
+  public int getPriority() {
+    return priority;
   }
 
   @Implementation

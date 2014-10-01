@@ -20,6 +20,13 @@ public class IntentFilterTest {
   }
 
   @Test
+  public void setsPriority() throws Exception {
+    IntentFilter filter = new IntentFilter();
+    filter.setPriority(123);
+    assertThat(filter.getPriority()).isEqualTo(123);
+  }
+
+  @Test
   public void addDataScheme_shouldAddTheDataScheme() throws Exception {
     IntentFilter intentFilter = new IntentFilter();
     intentFilter.addDataScheme("http");
