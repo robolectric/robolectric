@@ -152,6 +152,11 @@ public class ShadowContextWrapper extends ShadowContext {
   }
 
   @Implementation
+  public void sendOrderedBroadcast(Intent intent, String receiverPermission) {
+    getApplicationContext().sendOrderedBroadcast(intent, receiverPermission);
+  }
+
+  @Implementation
   public void sendStickyBroadcast(Intent intent) {
     getApplicationContext().sendStickyBroadcast(intent);
   }

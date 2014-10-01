@@ -23,6 +23,7 @@ import android.view.LayoutInflater;
 import android.widget.ListPopupWindow;
 import android.widget.PopupWindow;
 import android.widget.Toast;
+import libcore.util.MutableBoolean;
 import org.robolectric.AndroidManifest;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
@@ -33,6 +34,8 @@ import org.robolectric.tester.org.apache.http.FakeHttpLayer;
 import org.robolectric.util.Scheduler;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -374,6 +377,54 @@ public class ShadowApplication extends ShadowContextWrapper {
     sendBroadcastWithPermission(intent, receiverPermission);
   }
 
+  @Override
+  @Implementation
+  public void sendOrderedBroadcast(Intent intent, String receiverPermission) {
+    sendOrderedBroadcastWithPermission(intent, receiverPermission);
+  }
+
+  /*
+    Returns the BroadcaseReceivers wrappers, matching intent's action and permissions.
+   */
+  private List<Wrapper> getAppropriateWrappers(Intent intent, String receiverPermission) {
+    broadcastIntents.add(intent);
+
+    List<Wrapper> result = new ArrayList<Wrapper>();
+
+    List<Wrapper> copy = new ArrayList<Wrapper>();
+    copy.addAll(registeredReceivers);
+    for (Wrapper wrapper : copy) {
+      if (hasMatchingPermission(wrapper.broadcastPermission, receiverPermission)
+          && wrapper.intentFilter.matchAction(intent.getAction())) {
+        final int match = wrapper.intentFilter.matchData(intent.getType(), intent.getScheme(), intent.getData());
+        if (match != IntentFilter.NO_MATCH_DATA && match != IntentFilter.NO_MATCH_TYPE) {
+          result.add(wrapper);
+        }
+      }
+    }
+    return result;
+  }
+
+  private void postIntent(Intent intent, Wrapper wrapper, final MutableBoolean abort) {
+    final Handler scheduler = (wrapper.scheduler != null) ? wrapper.scheduler : this.mainHandler;
+    final BroadcastReceiver receiver = wrapper.broadcastReceiver;
+    final ShadowBroadcastReceiver shReceiver = Robolectric.shadowOf_(receiver);
+    final Intent broadcastIntent = intent;
+    scheduler.post(new Runnable() {
+      @Override
+      public void run() {
+        shReceiver.onReceive(realApplication, broadcastIntent, abort);
+      }
+    });
+  }
+
+  private void postToWrappers(List<Wrapper> wrappers, Intent intent, String receiverPermission) {
+    MutableBoolean abort = new MutableBoolean(false); // abort state is shared among all broadcast receivers
+    for (Wrapper wrapper: wrappers) {
+      postIntent(intent, wrapper, abort);
+    }
+  }
+
   /**
    * Broadcasts the {@code Intent} by iterating through the registered receivers, invoking their filters including
    * permissions, and calling {@code onReceive(Application, Intent)} as appropriate. Does not enqueue the
@@ -383,27 +434,21 @@ public class ShadowApplication extends ShadowContextWrapper {
    *               todo: enqueue the Intent for later inspection
    */
   private void sendBroadcastWithPermission(Intent intent, String receiverPermission) {
-    broadcastIntents.add(intent);
+    List<Wrapper> wrappers = getAppropriateWrappers(intent, receiverPermission);
+    postToWrappers(wrappers, intent, receiverPermission);
+  }
 
-    List<Wrapper> copy = new ArrayList<Wrapper>();
-    copy.addAll(registeredReceivers);
-    for (Wrapper wrapper : copy) {
-      if (hasMatchingPermission(wrapper.broadcastPermission, receiverPermission)
-          && wrapper.intentFilter.matchAction(intent.getAction())) {
-        final int match = wrapper.intentFilter.matchData(intent.getType(), intent.getScheme(), intent.getData());
-        if (match != IntentFilter.NO_MATCH_DATA && match != IntentFilter.NO_MATCH_TYPE) {
-          final Handler scheduler = (wrapper.scheduler != null) ? wrapper.scheduler : this.mainHandler;
-          final BroadcastReceiver receiver = wrapper.broadcastReceiver;
-          final Intent broadcastIntent = intent;
-          scheduler.post(new Runnable() {
-            @Override
-            public void run() {
-              receiver.onReceive(realApplication, broadcastIntent);
-            }
-          });
-        }
+  private void sendOrderedBroadcastWithPermission(Intent intent, String receiverPermission) {
+    List<Wrapper> wrappers = getAppropriateWrappers(intent, receiverPermission);
+    // sort by the decrease of priorities
+    Collections.sort(wrappers, new Comparator<Wrapper>() {
+      @Override
+      public int compare(Wrapper o1, Wrapper o2) {
+        return Integer.compare(o2.getIntentFilter().getPriority(), o1.getIntentFilter().getPriority());
       }
-    }
+    });
+
+    postToWrappers(wrappers, intent, receiverPermission);
   }
 
   public List<Intent> getBroadcastIntents() {
