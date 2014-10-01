@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.content.IntentFilter;
 import android.net.Uri;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
@@ -32,6 +33,7 @@ public class ShadowIntentFilter {
   List<String> types = new ArrayList<String>();
   List<IntentFilter.AuthorityEntry> authoritites = new ArrayList<IntentFilter.AuthorityEntry>();
   List<String> categories = new ArrayList<String>();
+  int priority;
 
   public void __constructor__(String action) {
     actions.add(action);
@@ -39,6 +41,26 @@ public class ShadowIntentFilter {
 
   public void __constructor__(String action, String dataType) {
     actions.add(action);
+  }
+
+  public void __constructor__(IntentFilter filter) {
+    ShadowIntentFilter shadow = Robolectric.shadowOf_(filter);
+    actions = new ArrayList<String>(shadow.actions);
+    schemes = new ArrayList<String>(shadow.schemes);
+    types = new ArrayList<String>(shadow.types);
+    authoritites = new ArrayList<IntentFilter.AuthorityEntry>(shadow.authoritites);
+    categories = new ArrayList<String>(shadow.categories);
+    priority = shadow.priority;
+  }
+
+  @Implementation
+  public void setPriority(int priority) {
+    this.priority = priority;
+  }
+
+  @Implementation
+  public int getPriority() {
+    return priority;
   }
 
   @Implementation
