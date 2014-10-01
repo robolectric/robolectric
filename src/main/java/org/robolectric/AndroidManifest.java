@@ -460,6 +460,7 @@ public class AndroidManifest {
 
   public void setPackageName(String packageName) {
     this.packageName = packageName;
+    this.rClassName = packageName + ".R";
   }
 
   public String getPackageName() {
