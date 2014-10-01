@@ -374,6 +374,46 @@ public class ShadowApplication extends ShadowContextWrapper {
     sendBroadcastWithPermission(intent, receiverPermission);
   }
 
+  @Override
+  @Implementation
+  public void sendOrderedBroadcast(Intent intent, String receiverPermission) {
+    sendOrderedBroadcastWithPermission(intent, receiverPermission);
+  }
+
+  /*
+    Returns the BroadcaseReceivers wrappers, matching intent's action and permissions.
+   */
+  private List<Wrapper> getAppropriateWrappers(Intent intent, String receiverPermission) {
+    broadcastIntents.add(intent);
+
+    List<Wrapper> result = new ArrayList<Wrapper>();
+
+    List<Wrapper> copy = new ArrayList<Wrapper>();
+    copy.addAll(registeredReceivers);
+    for (Wrapper wrapper : copy) {
+      if (hasMatchingPermission(wrapper.broadcastPermission, receiverPermission)
+          && wrapper.intentFilter.matchAction(intent.getAction())) {
+        final int match = wrapper.intentFilter.matchData(intent.getType(), intent.getScheme(), intent.getData());
+        if (match != IntentFilter.NO_MATCH_DATA && match != IntentFilter.NO_MATCH_TYPE) {
+          result.add(wrapper);
+        }
+      }
+    }
+    return result;
+  }
+
+  private void postIntent(Intent intent, Wrapper wrapper) {
+    final Handler scheduler = (wrapper.scheduler != null) ? wrapper.scheduler : this.mainHandler;
+    final BroadcastReceiver receiver = wrapper.broadcastReceiver;
+    final Intent broadcastIntent = intent;
+    scheduler.post(new Runnable() {
+      @Override
+      public void run() {
+        receiver.onReceive(realApplication, broadcastIntent);
+      }
+    });
+  }
+
   /**
    * Broadcasts the {@code Intent} by iterating through the registered receivers, invoking their filters including
    * permissions, and calling {@code onReceive(Application, Intent)} as appropriate. Does not enqueue the
@@ -383,27 +423,21 @@ public class ShadowApplication extends ShadowContextWrapper {
    *               todo: enqueue the Intent for later inspection
    */
   private void sendBroadcastWithPermission(Intent intent, String receiverPermission) {
-    broadcastIntents.add(intent);
+    List<Wrapper> wrappers = getAppropriateWrappers(intent, receiverPermission);
+    for (Wrapper wrapper: wrappers) {
+      postIntent(intent, wrapper);
+    }
+  }
 
-    List<Wrapper> copy = new ArrayList<Wrapper>();
-    copy.addAll(registeredReceivers);
-    for (Wrapper wrapper : copy) {
-      if (hasMatchingPermission(wrapper.broadcastPermission, receiverPermission)
-          && wrapper.intentFilter.matchAction(intent.getAction())) {
-        final int match = wrapper.intentFilter.matchData(intent.getType(), intent.getScheme(), intent.getData());
-        if (match != IntentFilter.NO_MATCH_DATA && match != IntentFilter.NO_MATCH_TYPE) {
-          final Handler scheduler = (wrapper.scheduler != null) ? wrapper.scheduler : this.mainHandler;
-          final BroadcastReceiver receiver = wrapper.broadcastReceiver;
-          final Intent broadcastIntent = intent;
-          scheduler.post(new Runnable() {
-            @Override
-            public void run() {
-              receiver.onReceive(realApplication, broadcastIntent);
-            }
-          });
-        }
+  private void sendOrderedBroadcastWithPermission(Intent intent, String receiverPermission) {
+    List<Wrapper> wrappers = getAppropriateWrappers(intent, receiverPermission);
+    Wrapper highest = null;
+    for (Wrapper wrapper: wrappers) {
+      if (highest == null || wrapper.getIntentFilter().getPriority() > highest.getIntentFilter().getPriority()) {
+        highest = wrapper;
       }
     }
+    postIntent(intent, highest);
   }
 
   public List<Intent> getBroadcastIntents() {

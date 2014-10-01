@@ -121,6 +121,24 @@ public class ContextWrapperTest {
   }
 
   @Test
+  public void sendOrderedBroadcast_shouldSendByPriority() throws Exception {
+    String action = "test";
+
+    IntentFilter lowFilter = new IntentFilter(action);
+    lowFilter.setPriority(1);
+    BroadcastReceiver lowReceiver = broadcastReceiver("Low");
+    contextWrapper.registerReceiver(lowReceiver, lowFilter);
+
+    IntentFilter highFilter = new IntentFilter(action);
+    highFilter.setPriority(2);
+    BroadcastReceiver highReceiver = broadcastReceiver("High");
+    contextWrapper.registerReceiver(highReceiver, highFilter);
+
+    contextWrapper.sendOrderedBroadcast(new Intent(action), null);
+    transcript.assertEventsSoFar("High notified of test");
+  }
+
+  @Test
   public void unregisterReceiver_shouldUnregisterReceiver() throws Exception {
     BroadcastReceiver receiver = broadcastReceiver("Larry");
 
