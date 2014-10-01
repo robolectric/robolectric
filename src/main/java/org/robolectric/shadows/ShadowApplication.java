@@ -23,6 +23,7 @@ import android.view.LayoutInflater;
 import android.widget.ListPopupWindow;
 import android.widget.PopupWindow;
 import android.widget.Toast;
+import libcore.util.MutableBoolean;
 import org.robolectric.AndroidManifest;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
@@ -33,6 +34,8 @@ import org.robolectric.tester.org.apache.http.FakeHttpLayer;
 import org.robolectric.util.Scheduler;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -402,16 +405,24 @@ public class ShadowApplication extends ShadowContextWrapper {
     return result;
   }
 
-  private void postIntent(Intent intent, Wrapper wrapper) {
+  private void postIntent(Intent intent, Wrapper wrapper, final MutableBoolean abort) {
     final Handler scheduler = (wrapper.scheduler != null) ? wrapper.scheduler : this.mainHandler;
     final BroadcastReceiver receiver = wrapper.broadcastReceiver;
+    final ShadowBroadcastReceiver shReceiver = Robolectric.shadowOf_(receiver);
     final Intent broadcastIntent = intent;
     scheduler.post(new Runnable() {
       @Override
       public void run() {
-        receiver.onReceive(realApplication, broadcastIntent);
+        shReceiver.onReceive(realApplication, broadcastIntent, abort);
       }
     });
+  }
+
+  private void postToWrappers(List<Wrapper> wrappers, Intent intent, String receiverPermission) {
+    MutableBoolean abort = new MutableBoolean(false); // abort state is shared among all broadcast receivers
+    for (Wrapper wrapper: wrappers) {
+      postIntent(intent, wrapper, abort);
+    }
   }
 
   /**
@@ -424,20 +435,20 @@ public class ShadowApplication extends ShadowContextWrapper {
    */
   private void sendBroadcastWithPermission(Intent intent, String receiverPermission) {
     List<Wrapper> wrappers = getAppropriateWrappers(intent, receiverPermission);
-    for (Wrapper wrapper: wrappers) {
-      postIntent(intent, wrapper);
-    }
+    postToWrappers(wrappers, intent, receiverPermission);
   }
 
   private void sendOrderedBroadcastWithPermission(Intent intent, String receiverPermission) {
     List<Wrapper> wrappers = getAppropriateWrappers(intent, receiverPermission);
-    Wrapper highest = null;
-    for (Wrapper wrapper: wrappers) {
-      if (highest == null || wrapper.getIntentFilter().getPriority() > highest.getIntentFilter().getPriority()) {
-        highest = wrapper;
+    // sort by the decrease of priorities
+    Collections.sort(wrappers, new Comparator<Wrapper>() {
+      @Override
+      public int compare(Wrapper o1, Wrapper o2) {
+        return Integer.compare(o2.getIntentFilter().getPriority(), o1.getIntentFilter().getPriority());
       }
-    }
-    postIntent(intent, highest);
+    });
+
+    postToWrappers(wrappers, intent, receiverPermission);
   }
 
   public List<Intent> getBroadcastIntents() {
