@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
 import org.junit.Test;
@@ -10,6 +11,14 @@ import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class IntentFilterTest {
+  @Test
+  public void copyConstructorTest() throws Exception {
+    String action = "test";
+    IntentFilter intentFilter = new IntentFilter(action);
+    IntentFilter copy = new IntentFilter(intentFilter);
+    assertThat(copy.hasAction("test"));
+  }
+
   @Test
   public void addDataScheme_shouldAddTheDataScheme() throws Exception {
     IntentFilter intentFilter = new IntentFilter();
