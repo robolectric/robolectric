@@ -6,6 +6,7 @@ import android.content.res.TypedArray;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.util.TypedValue;
 import android.view.View;
 import android.widget.Button;
 import org.junit.Test;
@@ -84,6 +85,21 @@ public class ThemeTest {
     int animalStyleId = a.getResourceId(R.styleable.CustomView_animalStyle, 0);
     assertThat(animalStyleId).isEqualTo(R.style.Gastropod);
     assertThat(a.getFloat(R.styleable.CustomView_aspectRatio, 0.2f)).isEqualTo(1.69f);
+  }
+
+  @Test public void shouldGetValuesFromAttributeReference() throws Exception {
+    TestActivity activity = buildActivity(TestActivityWithAThirdTheme.class).create().get();
+
+    TypedValue value1 = new TypedValue();
+    TypedValue value2 = new TypedValue();
+    boolean resolved1 = activity.getTheme().resolveAttribute(R.attr.someLayoutOne, value1, true);
+    boolean resolved2 = activity.getTheme().resolveAttribute(R.attr.someLayoutTwo, value2, true);
+
+    assertThat(resolved1).isTrue();
+    assertThat(resolved2).isTrue();
+    assertThat(value1.resourceId).isEqualTo(R.layout.activity_main);
+    assertThat(value2.resourceId).isEqualTo(R.layout.activity_main);
+    assertThat(value1.coerceToString()).isEqualTo(value2.coerceToString());
   }
 
   @Test public void shouldInheritThemeValuesFromImplicitParents() throws Exception {

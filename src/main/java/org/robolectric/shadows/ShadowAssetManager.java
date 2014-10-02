@@ -13,7 +13,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.List;
 import java.util.ArrayList;
 import org.jetbrains.annotations.NotNull;
 import org.robolectric.AndroidManifest;
@@ -135,7 +134,13 @@ public final class ShadowAssetManager {
     //ResName defStyleResName = new ResName(defStyleName.packageName, "style", defStyleName.name);
     //Style style = resolveStyle(resourceLoader, defStyleResName, getQualifiers());
     if (themeStyle != null) {
-      Attribute attrValue = themeStyle.getAttrValue(resName);
+      int styleResourceId = Robolectric.shadowOf(theTheme).getStyleResourceId();
+      List<OverlayedStyle> overlayThemeStyles = getOverlayThemeStyles(styleResourceId);
+      Attribute attrValue = ShadowResources.getOverlayedThemeValue(resName, themeStyle, overlayThemeStyles);
+      while(resolveRefs && attrValue != null && attrValue.isStyleReference()) {
+        ResName attrResName = new ResName(attrValue.contextPackageName, "attr", attrValue.value.substring(1));
+        attrValue = ShadowResources.getOverlayedThemeValue(attrResName, themeStyle, overlayThemeStyles);
+      }
       if (attrValue == null) {
         System.out.println("Couldn't find " + resName + " in " + themeStyleName);
       } else {

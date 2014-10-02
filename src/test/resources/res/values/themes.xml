@@ -16,6 +16,8 @@
   <style name="Theme.ThirdTheme" parent="@style/Theme.Robolectric">
     <item name="snail">@style/Gastropod</item>
     <item name="animalStyle">?attr/snail</item>
+    <item name="someLayoutOne">@layout/activity_main</item>
+    <item name="someLayoutTwo">?someLayoutOne</item>
   </style>
 
   <style name="Theme.MyTheme" parent=""/>

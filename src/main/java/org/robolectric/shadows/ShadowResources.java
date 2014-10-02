@@ -289,7 +289,7 @@ public class ShadowResources {
     return null;
   }
 
-  Attribute getOverlayedThemeValue(ResName attrName, Style theme, List<ShadowAssetManager.OverlayedStyle> overlayedStyles) {
+  static Attribute getOverlayedThemeValue(ResName attrName, Style theme, List<ShadowAssetManager.OverlayedStyle> overlayedStyles) {
     Attribute attribute = theme.getAttrValue(attrName);
 
     if (overlayedStyles != null) {
