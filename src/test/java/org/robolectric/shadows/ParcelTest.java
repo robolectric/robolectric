@@ -514,4 +514,19 @@ public class ParcelTest {
     assertThat(parcel2.readFloat()).isEqualTo(1.25f);
     assertThat(parcel2.readByte()).isEqualTo((byte) 0xAF);
   }
+
+    @Test
+    public void testComplexParcelableWriteAndReadFromBundle() {
+        final String KEY = "KEY";
+        Bundle bundle = new Bundle();
+        String stringContent = "stringContent";
+        Double doubleContent = 1.0;
+        Integer integerContent = 2;
+        TestParcelable parcelableContent = new TestParcelable(23);
+        TestComplexParcelable complexParcelable = new TestComplexParcelable(stringContent, doubleContent, integerContent, parcelableContent);
+        bundle.putParcelable(KEY, complexParcelable);
+
+        TestComplexParcelable complesxParcelableResult = bundle.getParcelable(KEY);
+        assertThat(complexParcelable).isEqualTo(complesxParcelableResult);
+    }
 }
