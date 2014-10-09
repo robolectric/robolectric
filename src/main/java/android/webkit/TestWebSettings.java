@@ -2,6 +2,7 @@ package android.webkit;
 
 import org.robolectric.internal.DoNotInstrument;
 import org.robolectric.annotation.Implementation;
+import android.webkit.WebSettings.LayoutAlgorithm;
 
 /**
  * Concrete implementation of the abstract WebSettings class.
@@ -38,6 +39,7 @@ public class TestWebSettings extends WebSettings {
   private int cacheMode;
   private long appCacheMaxSize;
   private int textZoom = 100;
+  private WebSettings.LayoutAlgorithm layoutAlgorithm = WebSettings.LayoutAlgorithm.NARROW_COLUMNS;
 
   public TestWebSettings() {
   }
@@ -322,4 +324,10 @@ public class TestWebSettings extends WebSettings {
   public void setTextZoom(int textZoom) {
     this.textZoom = textZoom;
   }
+
+  @Implementation
+  public synchronized void setLayoutAlgorithm(WebSettings.LayoutAlgorithm algorithm) {
+     this.layoutAlgorithm=algorithm;
+  }
+
 }
