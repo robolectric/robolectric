@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,6 +43,7 @@ import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.robolectric.util.TestUtil.*;
 
 @RunWith(RobolectricTestRunner.class)
@@ -87,6 +89,12 @@ public class AndroidManifestTest {
 
     assertEquals("com.foo.Receiver", config.getReceiverClassName(6));
     assertEquals("org.robolectric.ACTION_DIFFERENT_PACKAGE", config.getReceiverIntentFilterActions(6).get(0));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testManifestWithNoApplicationElement() throws Exception {
+    AndroidManifest config = newConfig("TestAndroidManifestNoApplicationElement.xml");
+    config.parseAndroidManifest();
   }
 
   @Test
@@ -359,6 +367,7 @@ public class AndroidManifestTest {
             "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
             "          package=\"org.robolectric\">\n" +
             "    <uses-sdk " + usesSdkAttrs + "/>\n" +
+            "<application/>" +
             "</manifest>\n");
     return new AndroidManifest(Fs.newFile(f), null, null);
   }

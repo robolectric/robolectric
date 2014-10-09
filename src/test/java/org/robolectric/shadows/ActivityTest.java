@@ -795,6 +795,7 @@ public class ActivityTest {
             "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
             "          package=\"" + packageName + "\">\n" +
             "    " + contents + "\n" +
+            "<application/>\n" +
             "</manifest>\n");
     return new AndroidManifest(Fs.newFile(f), null, null);
   }

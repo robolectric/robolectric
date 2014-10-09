@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -135,44 +136,51 @@ public class AndroidManifest {
     }
   }
 
-  void parseAndroidManifest() {
+  public void parseAndroidManifest() {
     if (manifestIsParsed) {
       return;
     }
     DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+
+    Document manifestDocument = null;
     try {
       DocumentBuilder db = dbf.newDocumentBuilder();
       InputStream inputStream = androidManifestFile.getInputStream();
-      Document manifestDocument = db.parse(inputStream);
+      manifestDocument = db.parse(inputStream);
       inputStream.close();
-
-      if (packageName == null) {
-        packageName = getTagAttributeText(manifestDocument, "manifest", "package");
-      }
-      versionCode = getTagAttributeIntValue(manifestDocument, "manifest", "android:versionCode", 0);
-      versionName = getTagAttributeText(manifestDocument, "manifest", "android:versionName");
-      rClassName = packageName + ".R";
-      applicationName = getTagAttributeText(manifestDocument, "application", "android:name");
-      applicationLabel = getTagAttributeText(manifestDocument, "application", "android:label");
-      minSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:minSdkVersion");
-      targetSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:targetSdkVersion");
-      processName = getTagAttributeText(manifestDocument, "application", "android:process");
-      if (processName == null) {
-        processName = packageName;
-      }
-
-      themeRef = getTagAttributeText(manifestDocument, "application", "android:theme");
-      labelRef = getTagAttributeText(manifestDocument, "application", "android:label");
-
-      parseApplicationFlags(manifestDocument);
-      parseReceivers(manifestDocument);
-      parseActivities(manifestDocument);
-      parseApplicationMetaData(manifestDocument);
-      parseContentProviders(manifestDocument);
-      parseUsedPermissions(manifestDocument);
     } catch (Exception ignored) {
       ignored.printStackTrace();
     }
+
+    if(manifestDocument.getElementsByTagName("application").item(0) == null) {
+      throw new IllegalArgumentException("Missing required <application/> element in " + androidManifestFile.getPath());
+    }
+
+    if (packageName == null) {
+      packageName = getTagAttributeText(manifestDocument, "manifest", "package");
+    }
+    versionCode = getTagAttributeIntValue(manifestDocument, "manifest", "android:versionCode", 0);
+    versionName = getTagAttributeText(manifestDocument, "manifest", "android:versionName");
+    rClassName = packageName + ".R";
+    applicationName = getTagAttributeText(manifestDocument, "application", "android:name");
+    applicationLabel = getTagAttributeText(manifestDocument, "application", "android:label");
+    minSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:minSdkVersion");
+    targetSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:targetSdkVersion");
+    processName = getTagAttributeText(manifestDocument, "application", "android:process");
+    if (processName == null) {
+      processName = packageName;
+    }
+
+    themeRef = getTagAttributeText(manifestDocument, "application", "android:theme");
+    labelRef = getTagAttributeText(manifestDocument, "application", "android:label");
+
+    parseApplicationFlags(manifestDocument);
+    parseReceivers(manifestDocument);
+    parseActivities(manifestDocument);
+    parseApplicationMetaData(manifestDocument);
+    parseContentProviders(manifestDocument);
+    parseUsedPermissions(manifestDocument);
+
     manifestIsParsed = true;
   }
 
@@ -386,6 +394,7 @@ public class AndroidManifest {
    */
   public void initMetaData(ResourceLoader resLoader) {
     applicationMetaData.init(resLoader, packageName);
+
     for (ReceiverAndIntentFilter receiver : receivers) {
       receiver.metaData.init(resLoader, packageName);
     }
