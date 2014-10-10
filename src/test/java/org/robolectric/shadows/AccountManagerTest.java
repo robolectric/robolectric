@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
 import android.accounts.AuthenticatorDescription;
 import android.accounts.AuthenticatorException;
@@ -10,7 +11,9 @@ import android.accounts.OperationCanceledException;
 import android.app.Activity;
 import android.app.Application;
 import android.os.Bundle;
-
+import org.hamcrest.BaseMatcher;
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,6 +24,13 @@ import java.io.IOException;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.fest.assertions.api.Assertions.fail;
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Mockito.*;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class AccountManagerTest {
@@ -445,12 +455,62 @@ public class AccountManagerTest {
   }
 
   @Test
+  public void addAccount_shouldCallCallback() throws Exception {
+    Robolectric.shadowOf(am).addAuthenticator("google.com");
+
+    AccountManagerCallback<Bundle> callback = mock(AccountManagerCallback.class);
+    AccountManagerFuture<Bundle> result = am.addAccount("google.com", "auth_token_type", null, null, new Activity(), callback, null);
+    verify(callback, never()).run(any(AccountManagerFuture.class));
+    assertFalse(result.isDone());
+    Robolectric.shadowOf(am).addAccount(new Account("thebomb@google.com", "google.com"));
+    assertTrue(result.isDone());
+    AccountManagerFutureMatcher<Bundle> matcher = new AccountManagerFutureMatcher<Bundle>(new BaseMatcher<Bundle>() {
+      @Override
+      public boolean matches(Object o) {
+        return "thebomb@google.com".equals(((Bundle) o).getString(AccountManager.KEY_ACCOUNT_NAME));
+      }
+
+      @Override
+      public void describeTo(Description description) {
+        description.appendText("Expected thebomb@google.com");
+      }
+    });
+    verify(callback).run(argThat(allOf(matcher, sameInstance(result))));
+    Bundle resultBundle = result.getResult();
+
+    assertThat(resultBundle.getString(AccountManager.KEY_ACCOUNT_TYPE)).isEqualTo("google.com");
+    assertThat(resultBundle.getString(AccountManager.KEY_ACCOUNT_NAME)).isNotNull();
+  }
+
+  @Test
   public void addAccount_noAuthenticatorDefined() throws Exception {
     try {
       am.addAccount("unknown_account_type", "auth_token_type", null, null, new Activity(), null, null).getResult();
       fail("addAccount() should throw an authenticator exception if no authenticator was registered for this account type");
     } catch(AuthenticatorException e) {
       // Expected
+    }
+  }
+
+  private static class AccountManagerFutureMatcher<T> extends BaseMatcher<AccountManagerFuture<T>> {
+
+    private final Matcher<T> matcher;
+
+    AccountManagerFutureMatcher(Matcher<T> matcher) { this.matcher = matcher; }
+
+    @Override
+    public boolean matches(Object o) {
+      try {
+        return matcher.matches(((AccountManagerFuture) o).getResult());
+      } catch (Exception e) {
+        e.printStackTrace();
+        return false;
+      }
+    }
+
+    @Override
+    public void describeTo(Description description) {
+      matcher.describeTo(description);
     }
   }
 }

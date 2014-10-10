@@ -43,6 +43,8 @@ public class ShadowAccountManager {
   private List<OnAccountsUpdateListener> listeners = new ArrayList<OnAccountsUpdateListener>();
   private Map<Account, Map<String, String>> userData = new HashMap<Account, Map<String,String>>();
   private Map<Account, String> passwords = new HashMap<Account, String>();
+  private AccountManagerCallback<Bundle> pendingAddCallback;
+  private RoboAccountManagerFuture pendingAddFuture;
 
   public static void reset() {
     synchronized (lock) {
@@ -302,8 +304,55 @@ public class ShadowAccountManager {
    */
   public void addAccount(Account account) {
     accounts.add(account);
+    if (pendingAddCallback != null) {
+      pendingAddFuture.resultBundle.putString(AccountManager.KEY_ACCOUNT_NAME, account.name);
+      pendingAddCallback.run(pendingAddFuture);
+    }
     notifyListeners();
   }
+
+  private class RoboAccountManagerFuture implements AccountManagerFuture<Bundle> {
+    private final String accountType;
+    final Bundle resultBundle;
+
+    public RoboAccountManagerFuture(String accountType, Bundle resultBundle) {
+      this.accountType = accountType;
+      this.resultBundle = resultBundle;
+    }
+
+    @Override
+    public boolean cancel(boolean b) {
+      return false;
+    }
+
+    @Override
+    public boolean isCancelled() {
+      return false;
+    }
+
+    @Override
+    public boolean isDone() {
+      return resultBundle.containsKey(AccountManager.KEY_ACCOUNT_NAME);
+    }
+
+    @Override
+    public Bundle getResult() throws OperationCanceledException, IOException, AuthenticatorException {
+      if (!authenticators.containsKey(accountType)) {
+        throw new AuthenticatorException("No authenticator specified for " + accountType);
+      }
+      resultBundle.putString(AccountManager.KEY_ACCOUNT_TYPE, accountType);
+      return resultBundle;
+    }
+
+    @Override
+    public Bundle getResult(long l, TimeUnit timeUnit) throws OperationCanceledException, IOException, AuthenticatorException {
+      if (!authenticators.containsKey(accountType)) {
+        throw new AuthenticatorException("No authenticator specified for " + accountType);
+      }
+      return resultBundle;
+    }
+  }
+
 
   @Implementation
   public AccountManagerFuture<Bundle> addAccount(final String accountType, String authTokenType, String[] requiredFeatures, Bundle addAccountOptions, Activity activity, AccountManagerCallback<Bundle> callback, Handler handler) {
@@ -311,43 +360,13 @@ public class ShadowAccountManager {
     if (activity == null) {
       Intent resultIntent = new Intent();
       resultBundle.putParcelable(AccountManager.KEY_INTENT, resultIntent);
-    } else {
+    } else if (callback == null) {
       resultBundle.putString(AccountManager.KEY_ACCOUNT_NAME, "some_user@gmail.com");
-      resultBundle.putString(AccountManager.KEY_ACCOUNT_TYPE, accountType);
     }
+    pendingAddCallback = callback;
 
-    return new AccountManagerFuture<Bundle>() {
-      @Override
-      public boolean cancel(boolean b) {
-        return false;
-      }
-
-      @Override
-      public boolean isCancelled() {
-        return false;
-      }
-
-      @Override
-      public boolean isDone() {
-        return false;
-      }
-
-      @Override
-      public Bundle getResult() throws OperationCanceledException, IOException, AuthenticatorException {
-        if (!authenticators.containsKey(accountType)) {
-          throw new AuthenticatorException("No authenticator specified for " + accountType);
-        }
-        return resultBundle;
-      }
-
-      @Override
-      public Bundle getResult(long l, TimeUnit timeUnit) throws OperationCanceledException, IOException, AuthenticatorException {
-        if (!authenticators.containsKey(accountType)) {
-          throw new AuthenticatorException("No authenticator specified for " + accountType);
-        }
-        return resultBundle;
-      }
-    };
+    pendingAddFuture = new RoboAccountManagerFuture(accountType, resultBundle);
+    return pendingAddFuture;
   }
 
   /**
@@ -366,4 +385,5 @@ public class ShadowAccountManager {
   public void addAuthenticator(String type) {
     addAuthenticator(AuthenticatorDescription.newKey(type));
   }
+
 }
