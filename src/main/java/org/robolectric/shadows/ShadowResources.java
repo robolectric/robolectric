@@ -133,7 +133,7 @@ public class ShadowResources {
         Attribute defStyleAttribute = getOverlayedThemeValue(defStyleName, theme, overlayedStyles);
         if (defStyleAttribute != null) {
           while (defStyleAttribute.isStyleReference()) {
-            Attribute other = theme.getAttrValue(defStyleAttribute.getStyleReference());
+            Attribute other = getOverlayedThemeValue(defStyleAttribute.getStyleReference(), theme, overlayedStyles);
             if (other == null) {
               throw new RuntimeException("couldn't dereference " + defStyleAttribute);
             }
