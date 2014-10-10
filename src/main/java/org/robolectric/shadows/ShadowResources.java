@@ -133,7 +133,7 @@ public class ShadowResources {
         Attribute defStyleAttribute = getOverlayedThemeValue(defStyleName, theme, overlayedStyles);
         if (defStyleAttribute != null) {
           while (defStyleAttribute.isStyleReference()) {
-            Attribute other = theme.getAttrValue(defStyleAttribute.getStyleReference());
+            Attribute other = getOverlayedThemeValue(defStyleAttribute.getStyleReference(), theme, overlayedStyles);
             if (other == null) {
               throw new RuntimeException("couldn't dereference " + defStyleAttribute);
             }
@@ -289,7 +289,7 @@ public class ShadowResources {
     return null;
   }
 
-  Attribute getOverlayedThemeValue(ResName attrName, Style theme, List<ShadowAssetManager.OverlayedStyle> overlayedStyles) {
+  static Attribute getOverlayedThemeValue(ResName attrName, Style theme, List<ShadowAssetManager.OverlayedStyle> overlayedStyles) {
     Attribute attribute = theme.getAttrValue(attrName);
 
     if (overlayedStyles != null) {

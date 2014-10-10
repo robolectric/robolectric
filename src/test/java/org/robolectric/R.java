@@ -246,6 +246,8 @@ public final class R {
     public static final int responses = 0x10a0a;
     public static final int animalStyle = 0x10a0b;
     public static final int stateFoo = 0x10a0c;
+    public static final int someLayoutOne = 0x10a0d;
+    public static final int someLayoutTwo = 0x10a0e;
   }
 
   public static final class menu {
