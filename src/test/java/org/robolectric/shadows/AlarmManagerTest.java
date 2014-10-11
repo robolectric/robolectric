@@ -45,6 +45,15 @@ public class AlarmManagerTest {
     assertThat(scheduledAlarm).isNotNull();
   }
 
+  @Test @Config(emulateSdk = Build.VERSION_CODES.KITKAT)
+  public void shouldSupportSetExact_forApiLevel19() throws Exception {
+	  assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNull();
+	  alarmManager.setExact(AlarmManager.ELAPSED_REALTIME, 0, PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
+	  
+	  ShadowAlarmManager.ScheduledAlarm scheduledAlarm = shadowAlarmManager.getNextScheduledAlarm();
+	  assertThat(scheduledAlarm).isNotNull();
+  }
+
   @Test
   public void shouldSupportSetRepeating() throws Exception {
     assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNull();
@@ -54,12 +63,14 @@ public class AlarmManagerTest {
     ShadowAlarmManager.ScheduledAlarm scheduledAlarm = shadowAlarmManager.getNextScheduledAlarm();
     assertThat(scheduledAlarm).isNotNull();
   }
+  
   @Test
   public void setShouldReplaceDuplicates() {
     alarmManager.set(AlarmManager.ELAPSED_REALTIME, 0, PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
     alarmManager.set(AlarmManager.ELAPSED_REALTIME, 0, PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
     assertEquals(1, shadowAlarmManager.getScheduledAlarms().size());
   }
+  
   @Test
   public void setRepeatingShouldReplaceDuplicates() {
     alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME, 0, AlarmManager.INTERVAL_HOUR, PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
