@@ -20,6 +20,7 @@ import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
+import org.objectweb.asm.tree.VarInsnNode;
 import org.objectweb.asm.util.CheckClassAdapter;
 import org.objectweb.asm.util.TraceClassVisitor;
 
@@ -558,21 +559,31 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
 
     private InsnList extractCallToSuperConstructor(MethodNode ctor) {
       InsnList removedInstructions = new InsnList();
+      int startIndex = 0;
 
-      InsnList ins = ctor.instructions;
-      ListIterator li = ins.iterator();
-
-      while (li.hasNext()) {
-        AbstractInsnNode node = (AbstractInsnNode) li.next();
-
-        li.remove();
-        removedInstructions.add(node);
+      AbstractInsnNode[] insns = ctor.instructions.toArray();
+      for (int i = 0; i < insns.length; i++) {
+        AbstractInsnNode node = insns[i];
 
         switch (node.getOpcode()) {
+          case ALOAD:
+            VarInsnNode vnode = (VarInsnNode) node;
+            if (vnode.var == 0) {
+              startIndex = i;
+            }
+            break;
+
           case INVOKESPECIAL:
             MethodInsnNode mnode = (MethodInsnNode) node;
             if (mnode.owner.equals(internalClassName) || mnode.owner.equals(classNode.superName)) {
               assert mnode.name.equals("<init>");
+
+              // remove all instructions in the range startIndex..i, from aload_0 to invokespecial <init>
+              while (startIndex <= i) {
+                ctor.instructions.remove(insns[startIndex]);
+                removedInstructions.add(insns[startIndex]);
+                startIndex++;
+              }
               return removedInstructions;
             }
             break;
