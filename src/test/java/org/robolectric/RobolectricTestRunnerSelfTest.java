@@ -4,10 +4,12 @@ import android.app.Application;
 import android.content.res.Resources;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.BeforeClass;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.DisableStrictI18n;
 import org.robolectric.annotation.EnableStrictI18n;
+import org.robolectric.annotation.TestRunnerAcceptor;
 
 import java.lang.reflect.Method;
 
@@ -16,6 +18,8 @@ import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(RobolectricTestRunnerSelfTest.RunnerForTesting.class)
 public class RobolectricTestRunnerSelfTest {
+
+  private static RobolectricTestRunner runner = null;
 
   @Test
   public void shouldInitializeAndBindApplicationButNotCallOnCreate() throws Exception {
@@ -74,6 +78,31 @@ public class RobolectricTestRunnerSelfTest {
     assertFalse(Robolectric.getShadowApplication().isStrictI18n());
   }
 
+  @BeforeClass
+  public static void checkRunnerReceived() {
+    assertNotNull("expected that runner is not null", runner);
+  }
+
+  @Test
+  public void shouldReplaceClassLoader() throws Exception {
+    String className = "org.robolectric.RobolectricTestRunnerSelfTest$MySimpleClass";
+    ClassLoader cl = Thread.currentThread().getContextClassLoader();
+    assertNotNull(cl);
+    Class<?> class1 = cl.loadClass(className);
+
+    runner.replaceClassLoader(className);
+
+    ClassLoader cl2 = Thread.currentThread().getContextClassLoader();
+    assertNotNull(cl2);
+    Class<?> class2 = cl2.loadClass(className);
+    assertNotSame("loaded classes", class1, class2);
+  }
+
+  @TestRunnerAcceptor
+  public static void acceptRunner(RobolectricTestRunner runner) {
+    RobolectricTestRunnerSelfTest.runner = runner;
+  }
+
   public static class RunnerForTesting extends TestRunners.WithDefaults {
     public static RunnerForTesting instance;
 
@@ -99,5 +128,9 @@ public class RobolectricTestRunnerSelfTest {
     @Override public void onCreate() {
       this.onCreateWasCalled = true;
     }
+  }
+
+  public static class MySimpleClass {
+
   }
 }
