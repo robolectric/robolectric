@@ -5,20 +5,14 @@
   <parent>
     <groupId>org.robolectric</groupId>
     <artifactId>robolectric-parent</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>2.4-SNAPSHOT</version>
   </parent>
 
-  <groupId>org.robolectric</groupId>
   <artifactId>robolectric-annotations</artifactId>
   <packaging>jar</packaging>
-
   <name>Robolectric Annotations</name>
   <description>Annotations used by the Robolectric testing framework.</description>
   <url>http://robolectric.org</url>
-
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
 
   <dependencies>
     <dependency>
