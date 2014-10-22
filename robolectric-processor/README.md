@@ -18,17 +18,9 @@ Robolectric has a large amount of boilerplate code in the form of the <code>shad
 
 ### Constraint enforcement
 
-The test-driven development process typically takes the form of a series of concentric circles:
+There are a number of usages and constraints implicit in Robolectric's annotation model which if violated will introduce bugs. Many of these cannot be expressed using the simple type system in the annotations themselves. Testing for violations of these constraints at present is enforced by unit tests such as `RobolectricWiringTest`.
 
-* develop
-* compile
-* unit test
-* integration test
-* user test
-
-Each of these stages may uncover problems that require looping back to the first stage (development). As each of these stages represents a progressively more advanced stage of development, with correspondingly higher overheads involved if a return to the development stage is required. So in the interests of maximizing development efficiency it is best to catch as many bugs as possible as early as possible in the cycle. Why wait to find a bug at integration test time that could have been tested for at unit testing time, or better still at compile time?
-
-RAP employs this philosophy and attempts to shorten the development cycle by moving some tests to compile time. There are a number of usages and constraints implicit in Robolectric's annotation model that cannot be expressed using the simple type system in the annotations themselves. RAP detects violations of these constraints and enforces them at compile time, short-circuiting the need for unit tests or integration tests.
+RAP employs the philosophy that the earlier in the development cycle you can perform these tests, the better. RAP allows detection of constraint violations at *compile time* rather than during unit testing, which helps to further shorten the development cycle.
 
 Constraints currently enforced by RAP are:
 
@@ -38,9 +30,13 @@ Constraints currently enforced by RAP are:
 * <code>@Implements</code> specifying an unknown class.
 * <code>@Implements</code> specifying <code>Anything</code> without specifying <code>className</code> attribute.
 
+Eventually it should be possible to migrate all of the relevant unit tests (such as `RobolectricWiringTest`) to RAP so that all the relevant constraints are enforced by the compiler.
+
 #### In-editor error feedback
 
-As an added bonus, when RAP reports an error to its tooling environment, the tooling environment will give feedback on where in the source the error is. In Eclipse (and presumably other modern IDEs like IntelliJ), errors detected by RAP will be reported in the editor with the standard error markers, and mouse-overing them will tell you what the error is. This typically happens immediately when you save a document.
+As an added bonus over constraint enforcement during unit testing, when RAP reports an constraint violation to its tooling environment, the tooling environment will give feedback on where in the source the error is. In Eclipse (and presumably other modern IDEs like IntelliJ), errors detected by RAP will be reported in the editor with the standard error markers, and mouse-overing them will tell you what the error is. This typically happens immediately when you save a document.
+
+![Example RealObject constraint violation](images/RealObject-error.png)
 
 ### Better runtime performance
 
