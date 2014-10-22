@@ -8,7 +8,7 @@ import org.robolectric.annotation.Config;
 import java.util.Arrays;
 import java.util.Collection;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Parameterized tests using an Android class.

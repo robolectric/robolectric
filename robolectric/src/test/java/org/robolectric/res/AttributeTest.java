@@ -4,7 +4,7 @@ import org.junit.Test;
 import org.robolectric.util.TestUtil;
 import org.w3c.dom.Node;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;

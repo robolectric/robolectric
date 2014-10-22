@@ -4,7 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.robolectric.util.TestUtil;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.util.TestUtil.testResources;
 
 public class PluralResourceLoaderTest {

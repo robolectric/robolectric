@@ -17,7 +17,7 @@ import java.util.Map;
 import static android.media.MediaMetadataRetriever.METADATA_KEY_ALBUM;
 import static android.media.MediaMetadataRetriever.METADATA_KEY_ARTIST;
 import static android.media.MediaMetadataRetriever.METADATA_KEY_TITLE;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.shadows.ShadowMediaMetadataRetriever.addFrame;
 import static org.robolectric.shadows.ShadowMediaMetadataRetriever.addMetadata;
 

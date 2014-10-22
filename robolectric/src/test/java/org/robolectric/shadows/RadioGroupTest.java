@@ -9,7 +9,7 @@ import org.robolectric.TestRunners;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(TestRunners.WithDefaults.class)

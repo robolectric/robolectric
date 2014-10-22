@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Random;
 
 import static java.util.Arrays.asList;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;

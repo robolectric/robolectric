@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Set;
 
 import static java.util.Arrays.asList;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.robolectric.util.TestUtil.TEST_PACKAGE;

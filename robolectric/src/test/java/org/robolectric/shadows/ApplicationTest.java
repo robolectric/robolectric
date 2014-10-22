@@ -40,8 +40,8 @@ import java.util.List;
 
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.fest.assertions.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;

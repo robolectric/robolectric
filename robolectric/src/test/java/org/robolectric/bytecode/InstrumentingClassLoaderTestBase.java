@@ -43,7 +43,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.fest.reflect.core.Reflection.staticField;
 import static org.junit.Assert.*;
 import static org.robolectric.Robolectric.directlyOn;

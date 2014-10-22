@@ -16,7 +16,7 @@ import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(TestRunners.WithDefaults.class)

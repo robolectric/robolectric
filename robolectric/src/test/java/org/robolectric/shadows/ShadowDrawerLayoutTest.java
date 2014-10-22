@@ -7,7 +7,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Robolectric.shadowOf;

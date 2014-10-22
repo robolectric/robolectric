@@ -20,8 +20,8 @@ import org.robolectric.res.ResourceLoader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.fest.assertions.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.fest.reflect.core.Reflection.field;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

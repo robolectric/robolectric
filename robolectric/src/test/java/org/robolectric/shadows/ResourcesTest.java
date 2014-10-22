@@ -13,7 +13,7 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.NinePatchDrawable;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
-import org.fest.assertions.data.Offset;
+import org.assertj.core.data.Offset;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,7 +27,7 @@ import org.xmlpull.v1.XmlPullParser;
 import java.io.File;
 import java.io.InputStream;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.fest.reflect.core.Reflection.field;
 import static org.robolectric.Robolectric.shadowOf;
 

@@ -10,7 +10,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)

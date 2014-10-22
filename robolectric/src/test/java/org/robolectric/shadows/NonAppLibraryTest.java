@@ -10,7 +10,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class) @Config(manifest = Config.NONE)
 public class NonAppLibraryTest {

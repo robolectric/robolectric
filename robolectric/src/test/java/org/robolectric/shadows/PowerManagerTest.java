@@ -12,7 +12,7 @@ import org.robolectric.TestRunners;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)

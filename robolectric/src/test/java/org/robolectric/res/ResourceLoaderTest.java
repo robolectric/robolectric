@@ -12,7 +12,7 @@ import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.I18nException;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.fest.reflect.core.Reflection.field;
 import static org.robolectric.Robolectric.shadowOf;
 

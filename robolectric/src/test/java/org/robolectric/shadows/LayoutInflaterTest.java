@@ -37,7 +37,7 @@ import org.robolectric.util.CustomView;
 import org.robolectric.util.CustomView2;
 import org.robolectric.util.TestUtil;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;

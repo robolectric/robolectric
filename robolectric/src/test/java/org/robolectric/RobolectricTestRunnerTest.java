@@ -16,7 +16,7 @@ import java.io.StringReader;
 import java.util.Arrays;
 import java.util.Properties;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.fest.reflect.core.Reflection.method;
 
 public class RobolectricTestRunnerTest {

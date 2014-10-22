@@ -10,7 +10,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
 import static android.content.ClipboardManager.OnPrimaryClipChangedListener;
-import static org.fest.assertions.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @RunWith(TestRunners.WithDefaults.class)

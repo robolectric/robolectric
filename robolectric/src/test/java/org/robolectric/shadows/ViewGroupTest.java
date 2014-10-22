@@ -23,7 +23,7 @@ import org.robolectric.TestRunners;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 import static org.robolectric.Robolectric.shadowOf;
 

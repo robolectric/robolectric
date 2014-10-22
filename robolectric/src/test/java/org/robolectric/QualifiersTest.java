@@ -4,7 +4,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import static org.robolectric.Robolectric.*;
-import static org.fest.assertions.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @Config(qualifiers = "en")
 @RunWith(TestRunners.WithDefaults.class)
