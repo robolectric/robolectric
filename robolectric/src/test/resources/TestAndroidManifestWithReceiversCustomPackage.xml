@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="org.robolectric.mypackage">
+  <uses-sdk android:targetSdkVersion="18"/>
+
+  <application>
+    <receiver android:name="org.robolectric.ConfigTestReceiverPermissionsAndActions"
+        android:permission="org.robolectric.CUSTOM_PERM">
+      <intent-filter>
+        <action android:name="org.robolectric.ACTION_RECEIVER_PERMISSION_PACKAGE"/>
+      </intent-filter>
+    </receiver>
+  </application>
+</manifest>
