@@ -7,7 +7,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 public class ImplementationValidatorTest {
-  @Ignore
   @Test
   public void implementationWithoutImplements_shouldNotCompile() {
     final String testClass = "org.robolectric.annotation.processing.shadows.ShadowImplementationWithoutImplements";

@@ -45,12 +45,7 @@ public class RoboProcessor extends AbstractProcessor {
                           env.getTypeUtils());
     messager = processingEnv.getMessager();
     messager.printMessage(Kind.NOTE, "Initialising RAP");
-    // Currently android.webkit.TestWebSettings violates this
-    // constraint, so I have disabled it for now. It would be
-    // good to reinstate it - one possibility is that we
-    // relax the requirement for the @Implements annotation
-    // if there is a @DoNotInstrument annotation.
-    //addValidator(new ImplementationValidator(model, env));
+    addValidator(new ImplementationValidator(model, env));
     addValidator(new ImplementsValidator(model, env));
     addValidator(new RealObjectValidator(model, env));
     addValidator(new ResetterValidator(model, env));
