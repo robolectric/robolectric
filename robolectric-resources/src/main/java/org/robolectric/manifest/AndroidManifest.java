@@ -199,6 +199,10 @@ public class AndroidManifest {
             receiver.addAction(nameNode.getTextContent());
           }
         }
+        Node permissionItem = receiverNode.getAttributes().getNamedItem("android:permission");
+        if (permissionItem != null) {
+          receiver.setPermission(permissionItem.getTextContent());
+        }
       }
       receivers.add(receiver);
     }
@@ -597,6 +601,11 @@ public class AndroidManifest {
   public List<BroadcastReceiverData> getBroadcastReceivers() {
     parseAndroidManifest();
     return receivers;
+  }
+
+  public String getReceiverPermission(final int receiverIndex) {
+    parseAndroidManifest();
+    return receivers.get(receiverIndex).getPermission();
   }
 
   private static String getTagAttributeText(final Document doc, final String tag, final String attribute) {

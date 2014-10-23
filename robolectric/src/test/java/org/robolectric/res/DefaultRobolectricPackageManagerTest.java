@@ -357,6 +357,52 @@ public class DefaultRobolectricPackageManagerTest {
   }
 
   @Test
+  @Config(manifest = "src/test/resources/TestAndroidManifestWithReceivers.xml")
+  public void testQueryBroadcastReceiverSucceeds() {
+    Intent intent = new Intent("org.robolectric.ACTION_RECEIVER_PERMISSION_PACKAGE");
+    intent.setPackage(RuntimeEnvironment.application.getPackageName());
+
+    List<ResolveInfo> receiverInfos = rpm.queryBroadcastReceivers(intent, PackageManager.GET_INTENT_FILTERS);
+    assertTrue(receiverInfos.size() == 1);
+    assertEquals("org.robolectric.ConfigTestReceiverPermissionsAndActions", receiverInfos.get(0).activityInfo.name);
+    assertEquals("org.robolectric.CUSTOM_PERM", receiverInfos.get(0).activityInfo.permission);
+    assertEquals("org.robolectric.ACTION_RECEIVER_PERMISSION_PACKAGE", receiverInfos.get(0).filter.getAction(0));
+  }
+
+  @Test
+  @Config(manifest = "src/test/resources/TestAndroidManifestWithReceivers.xml")
+  public void testQueryBroadcastReceiverFailsForMissingPackageName() {
+    Intent intent = new Intent("org.robolectric.ACTION_ONE_MORE_PACKAGE");
+    List<ResolveInfo> receiverInfos = rpm.queryBroadcastReceivers(intent, PackageManager.GET_INTENT_FILTERS);
+    assertTrue(receiverInfos.size() == 0);
+  }
+
+  @Test
+  @Config(manifest = "src/test/resources/TestAndroidManifestWithReceivers.xml")
+  public void testQueryBroadcastReceiverFailsForMissingAction() {
+    Intent intent = new Intent();
+    intent.setPackage(RuntimeEnvironment.application.getPackageName());
+    List<ResolveInfo> receiverInfos = rpm.queryBroadcastReceivers(intent, PackageManager.GET_INTENT_FILTERS);
+    assertTrue(receiverInfos.size() == 0);
+  }
+
+  @Test
+  @Config(manifest = "src/test/resources/TestAndroidManifestWithReceiversCustomPackage.xml")
+  public void testGetPackageInfo_ForReceiversSucceeds() throws Exception {
+    PackageInfo receiverInfos = rpm.getPackageInfo(RuntimeEnvironment.application.getPackageName(), PackageManager.GET_RECEIVERS);
+
+    assertEquals(1, receiverInfos.receivers.length);
+    assertEquals("org.robolectric.ConfigTestReceiverPermissionsAndActions", receiverInfos.receivers[0].name);
+    assertEquals("org.robolectric.CUSTOM_PERM", receiverInfos.receivers[0].permission);
+  }
+
+  @Test(expected = PackageManager.NameNotFoundException.class)
+  @Config(manifest = "src/test/resources/TestAndroidManifestWithReceiversCustomPackage.xml")
+  public void testGetPackageInfo_ForReceiversIncorrectPackage() throws Exception {
+    PackageInfo receiverInfos = rpm.getPackageInfo("unknown_package", PackageManager.GET_RECEIVERS);
+  }
+
+  @Test
   @Config(manifest = "src/test/resources/TestAndroidManifestWithPermissions.xml")
   public void getPackageInfo_shouldReturnRequestedPermissions() throws Exception {
     PackageInfo packageInfo = rpm.getPackageInfo(RuntimeEnvironment.application.getPackageName(), PackageManager.GET_PERMISSIONS);
