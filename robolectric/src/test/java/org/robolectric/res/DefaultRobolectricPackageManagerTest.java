@@ -20,7 +20,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -348,6 +347,17 @@ public class DefaultRobolectricPackageManagerTest {
 
   @Test
   @Config(manifest = "src/test/resources/TestAndroidManifestWithPermissions.xml")
+  public void testCheckPermissions() throws Exception {
+    assertEquals(PackageManager.PERMISSION_GRANTED, rpm.checkPermission("android.permission.INTERNET", RuntimeEnvironment.application.getPackageName()));
+    assertEquals(PackageManager.PERMISSION_GRANTED, rpm.checkPermission("android.permission.SYSTEM_ALERT_WINDOW", RuntimeEnvironment.application.getPackageName()));
+    assertEquals(PackageManager.PERMISSION_GRANTED, rpm.checkPermission("android.permission.GET_TASKS", RuntimeEnvironment.application.getPackageName()));
+
+    assertEquals(PackageManager.PERMISSION_DENIED, rpm.checkPermission("android.permission.ACCESS_FINE_LOCATION", RuntimeEnvironment.application.getPackageName()));
+    assertEquals(PackageManager.PERMISSION_DENIED, rpm.checkPermission("android.permission.ACCESS_FINE_LOCATION", "random-package"));
+  }
+
+  @Test
+  @Config(manifest = "src/test/resources/TestAndroidManifestWithPermissions.xml")
   public void getPackageInfo_shouldReturnRequestedPermissions() throws Exception {
     PackageInfo packageInfo = rpm.getPackageInfo(RuntimeEnvironment.application.getPackageName(), PackageManager.GET_PERMISSIONS);
     String[] permissions = packageInfo.requestedPermissions;
@@ -503,7 +513,6 @@ public class DefaultRobolectricPackageManagerTest {
     resolveInfo.activityInfo.packageName = TEST_PACKAGE_LABEL;
     resolveInfo.activityInfo.name = "LauncherActivity";
     RuntimeEnvironment.getRobolectricPackageManager().addResolveInfoForIntent(intent1, resolveInfo);
-    
     // the original intent object should yield a result
     ResolveInfo result  = rpm.resolveActivity(intent1, -1);
     assertThat(result).isNotNull();

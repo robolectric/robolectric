@@ -606,7 +606,20 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
       return applicationEnabledSettingMap.get(packageName);
   }
 
-    /***
+  public int checkPermission(String permName, String pkgName) {
+    PackageInfo permissionsInfo = packageInfos.get(pkgName);
+    if (permissionsInfo == null) {
+      return PackageManager.PERMISSION_DENIED;
+    }
+    for (String permission : permissionsInfo.requestedPermissions) {
+      if (permission != null && permission.toString().equals(permName)) {
+        return PackageManager.PERMISSION_GRANTED;
+      }
+    }
+    return PackageManager.PERMISSION_DENIED;
+  }
+
+  /**
    * Goes through the meta data and puts each value in to a
    * bundle as the correct type.
    *
