@@ -73,6 +73,8 @@ public interface RobolectricPackageManager {
 
   Drawable getDrawable(String packageName, int resourceId, ApplicationInfo applicationInfo);
 
+  int checkPermission(String permName, String pkgName);
+
   boolean isQueryIntentImplicitly();
 
   void setQueryIntentImplicitly(boolean queryIntentImplicitly);

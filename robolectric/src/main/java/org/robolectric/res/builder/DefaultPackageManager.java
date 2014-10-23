@@ -6,6 +6,7 @@ import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.content.pm.ProviderInfo;
 import android.content.pm.ResolveInfo;
 import android.graphics.drawable.Drawable;
@@ -571,6 +572,20 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
   @Override
   public void setQueryIntentImplicitly(boolean queryIntentImplicitly) {
     this.queryIntentImplicitly = queryIntentImplicitly;
+  }
+
+  @Override
+  public int checkPermission(String permName, String pkgName) {
+    PackageInfo permissionsInfo = packageInfos.get(pkgName);
+    if (permissionsInfo == null) {
+      return PackageManager.PERMISSION_DENIED;
+    }
+    for (String permission : permissionsInfo.requestedPermissions) {
+      if (permission != null && permission.toString().equals(permName)) {
+        return PackageManager.PERMISSION_GRANTED;
+      }
+    }
+    return PackageManager.PERMISSION_DENIED;
   }
 
   /***
