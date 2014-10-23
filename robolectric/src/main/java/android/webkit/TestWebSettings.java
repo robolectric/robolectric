@@ -1,12 +1,8 @@
 package android.webkit;
 
-import org.robolectric.internal.DoNotInstrument;
-import org.robolectric.annotation.Implementation;
-
 /**
  * Concrete implementation of the abstract WebSettings class.
  */
-@DoNotInstrument
 public class TestWebSettings extends WebSettings {
 
   private boolean allowFileAccess = true;
@@ -42,108 +38,112 @@ public class TestWebSettings extends WebSettings {
   public TestWebSettings() {
   }
 
+  @Override
   public boolean getAllowFileAccessFromFileURLs() {
     return allowFileAccessFromFile;
   }
 
+  @Override
   public boolean getAllowUniversalAccessFromFileURLs() {
     return allowUniversalAccessFromFile;
   }
 
+  @Override
   public void setAllowFileAccessFromFileURLs(boolean allow) {
     allowFileAccessFromFile = allow;
   }
 
+  @Override
   public void setAllowUniversalAccessFromFileURLs(boolean allow) {
     allowUniversalAccessFromFile = allow;
   }
 
-  @Implementation
+  @Override
   public boolean getAllowFileAccess() {
     return allowFileAccess;
   }
 
-  @Implementation
+  @Override
   public void setAllowFileAccess(boolean allow) {
     allowFileAccess = allow;
   }
 
-  @Implementation
+  @Override
   public synchronized boolean getBlockNetworkImage() {
     return blockNetworkImage;
   }
 
-  @Implementation
+  @Override
   public synchronized void setBlockNetworkImage(boolean flag) {
     blockNetworkImage = flag;
   }
 
-  @Implementation
+  @Override
   public synchronized boolean getBlockNetworkLoads() {
     return blockNetworkLoads;
   }
 
-  @Implementation
+  @Override
   public synchronized void setBlockNetworkLoads(boolean flag) {
     blockNetworkLoads = flag;
   }
 
-  @Implementation
+  @Override
   public boolean getBuiltInZoomControls() {
     return builtInZoomControls;
   }
 
-  @Implementation
+  @Override
   public void setBuiltInZoomControls(boolean enabled) {
     builtInZoomControls = enabled;
   }
 
-  @Implementation
+  @Override
   public synchronized boolean getDatabaseEnabled() {
     return databaseEnabled;
   }
 
-  @Implementation
+  @Override
   public synchronized void setDatabaseEnabled(boolean flag) {
     databaseEnabled = flag;
   }
 
-  @Implementation
+  @Override
   public synchronized boolean getDomStorageEnabled() {
     return domStorageEnabled;
   }
 
-  @Implementation
+  @Override
   public synchronized void setDomStorageEnabled(boolean flag) {
     domStorageEnabled = flag;
   }
 
-  @Implementation
+  @Override
   public synchronized boolean getJavaScriptEnabled() {
     return javaScriptEnabled;
   }
 
-  @Implementation
+  @Override
   public synchronized void setJavaScriptEnabled(boolean flag) {
     javaScriptEnabled = flag;
   }
 
-  @Implementation
+  @Override
   public boolean getLightTouchEnabled() {
     return lightTouchEnabled;
   }
 
-  @Implementation
+  @Override
   public void setLightTouchEnabled(boolean flag) {
     lightTouchEnabled = flag;
   }
 
-  @Implementation
+  @Override
   public boolean getLoadWithOverviewMode() {
     return loadWithOverviewMode;
   }
 
-  @Implementation
+  @Override
   public void setLoadWithOverviewMode(boolean flag) {
     loadWithOverviewMode = flag;
   }
@@ -152,7 +152,7 @@ public class TestWebSettings extends WebSettings {
     return needInitialFocus;
   }
 
-  @Implementation
+  @Override
   public void setNeedInitialFocus(boolean flag) {
     needInitialFocus = flag;
   }
@@ -166,22 +166,22 @@ public class TestWebSettings extends WebSettings {
     return renderPriority;
   }
 
-  @Implementation
+  @Override
   public synchronized boolean getPluginsEnabled() {
     return pluginsEnabled;
   }
 
-  @Implementation
+  @Override
   public synchronized void setPluginsEnabled(boolean flag) {
     pluginsEnabled = flag;
   }
 
-  @Implementation
+  @Override
   public synchronized WebSettings.PluginState getPluginState() {
     return pluginState;
   }
 
-  @Implementation
+  @Override
   public synchronized void setPluginState(WebSettings.PluginState state) {
     pluginState = state;
   }
@@ -190,17 +190,17 @@ public class TestWebSettings extends WebSettings {
     return supportMultipleWindows;
   }
 
-  @Implementation
+  @Override
   public synchronized void setDatabasePath(String path) {
     databasePath = path;
   }
 
-  @Implementation
+  @Override
   public synchronized String getDatabasePath() {
     return databasePath;
   }
 
-  @Implementation
+  @Override
   public synchronized void setSupportMultipleWindows(boolean support) {
     supportMultipleWindows = support;
   }
@@ -209,37 +209,37 @@ public class TestWebSettings extends WebSettings {
     return supportZoom;
   }
 
-  @Implementation
+  @Override
   public void setSupportZoom(boolean support) {
     supportZoom = support;
   }
 
-  @Implementation
+  @Override
   public synchronized void setUserAgentString(String ua) {
     userAgentString = ua;
   }
 
-  @Implementation
+  @Override
   public synchronized String getUserAgentString() {
     return userAgentString;
   }
 
-  @Implementation
+  @Override
   public void setCacheMode(int mode) {
     this.cacheMode = mode;
   }
 
-  @Implementation
+  @Override
   public int getCacheMode() {
     return cacheMode;
   }
 
-  @Implementation
+  @Override
   public boolean getUseWideViewPort() {
     return useWideViewPort;
   }
 
-  @Implementation
+  @Override
   public void setUseWideViewPort(boolean useWideViewPort) {
     this.useWideViewPort = useWideViewPort;
   }
@@ -253,72 +253,68 @@ public class TestWebSettings extends WebSettings {
     return appCacheMaxSize;
   }
 
-  @Implementation
   public String getAppCachePath() {
     return appCachePath;
   }
 
-  @Implementation
+  @Override
   public void setAppCachePath(String appCachePath) {
     this.appCachePath = appCachePath;
   }
 
-  @Implementation
   public boolean getAppCacheEnabled() {
     return appCacheEnabled;
   }
 
-  @Implementation
+  @Override
   public void setAppCacheEnabled(boolean appCacheEnabled) {
     this.appCacheEnabled = appCacheEnabled;
   }
 
-  @Implementation
+  @Override
   public boolean getSaveFormData() {
     return saveFormData;
   }
 
-  @Implementation
+  @Override
   public void setSaveFormData(boolean saveFormData) {
     this.saveFormData = saveFormData;
   }
 
-  @Implementation
   public String getGeolocationDatabasePath() {
     return geolocationDatabasePath;
   }
 
-  @Implementation
+  @Override
   public void setGeolocationDatabasePath(String geolocationDatabasePath) {
     this.geolocationDatabasePath = geolocationDatabasePath;
   }
 
-  @Implementation
   public boolean getGeolocationEnabled() {
     return geolocationEnabled;
   }
 
-  @Implementation
+  @Override
   public void setGeolocationEnabled(boolean geolocationEnabled) {
     this.geolocationEnabled = geolocationEnabled;
   }
 
-  @Implementation
+  @Override
   public void setJavaScriptCanOpenWindowsAutomatically(boolean javaScriptCanOpenWindowAutomatically) {
     this.javaScriptCanOpenWindowAutomatically = javaScriptCanOpenWindowAutomatically;
   }
 
-  @Implementation
+  @Override
   public boolean getJavaScriptCanOpenWindowsAutomatically() {
     return this.javaScriptCanOpenWindowAutomatically;
   }
 
-  @Implementation
+  @Override
   public int getTextZoom() {
     return textZoom;
   }
 
-  @Implementation
+  @Override
   public void setTextZoom(int textZoom) {
     this.textZoom = textZoom;
   }
