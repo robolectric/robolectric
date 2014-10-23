@@ -1,11 +1,6 @@
 package org.robolectric.shadows;
 
-import android.content.res.AssetFileDescriptor;
-import android.content.res.AssetManager;
-import android.content.res.Configuration;
-import android.content.res.Resources;
-import android.content.res.TypedArray;
-import android.content.res.XmlResourceParser;
+import android.content.res.*;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -27,15 +22,14 @@ import org.robolectric.res.builder.XmlFileBuilder;
 import org.robolectric.util.Util;
 import org.w3c.dom.Document;
 
-import java.io.InputStream;
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import static org.fest.reflect.core.Reflection.field;
 import static org.robolectric.Robolectric.directlyOn;
 import static org.robolectric.Robolectric.shadowOf;
 
@@ -498,14 +492,31 @@ public class ShadowResources {
 
     Resources getResources() {
       // ugh
-      return field("this$0").ofType(Resources.class).in(realTheme).get();
+      try {
+        Field this$0 = Resources.Theme.class.getDeclaredField("this$0");
+        this$0.setAccessible(true);
+        return (Resources) this$0.get(realTheme);
+      } catch (NoSuchFieldException e) {
+        throw new RuntimeException(e);
+      } catch (IllegalAccessException e) {
+        throw new RuntimeException(e);
+      }
     }
   }
 
   @Implementation
   public final Resources.Theme newTheme() {
     Resources.Theme theme = directlyOn(realResources, Resources.class).newTheme();
-    int themeId = field("mTheme").ofType(int.class).in(theme).get();
+    int themeId;
+    try {
+      Field mTheme = Resources.Theme.class.getDeclaredField("mTheme");
+      mTheme.setAccessible(true);
+      themeId = mTheme.getInt(theme);
+    } catch (NoSuchFieldException e) {
+      throw new RuntimeException(e);
+    } catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
     shadowOf(realResources.getAssets()).setTheme(themeId, theme);
     return theme;
   }

@@ -7,7 +7,8 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.internal.HiddenApi;
 
-import static org.fest.reflect.core.Reflection.constructor;
+import java.lang.reflect.InvocationTargetException;
+
 import static org.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -18,10 +19,18 @@ public class ShadowTypedArray {
   public String positionDescription;
 
   public static TypedArray create(Resources realResources, int[] attrs, int[] data, int[] indices, int len, CharSequence[] stringData) {
-    TypedArray typedArray = constructor()
-        .withParameterTypes(Resources.class, int[].class, int[].class, int.class)
-        .in(TypedArray.class)
-        .newInstance(realResources, data, indices, len);
+    TypedArray typedArray;
+    try {
+      typedArray = TypedArray.class.getConstructor(Resources.class, int[].class, int[].class, int.class).newInstance(realResources, data, indices, len);
+    } catch (InstantiationException e) {
+      throw new RuntimeException(e);
+    } catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    } catch (InvocationTargetException e) {
+      throw new RuntimeException(e);
+    } catch (NoSuchMethodException e) {
+      throw new RuntimeException(e);
+    }
     shadowOf(typedArray).stringData = stringData;
     return typedArray;
   }

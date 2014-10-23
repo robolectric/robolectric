@@ -1,17 +1,16 @@
 package org.robolectric.util;
 
-import static org.fest.reflect.core.Reflection.constructor;
-import static org.fest.reflect.core.Reflection.method;
-import static org.robolectric.Robolectric.shadowOf_;
-
-import org.robolectric.Robolectric;
-import org.robolectric.shadows.ShadowLooper;
-
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Looper;
+import org.robolectric.Robolectric;
+import org.robolectric.shadows.ShadowLooper;
+
+import java.lang.reflect.InvocationTargetException;
+
+import static org.robolectric.Robolectric.shadowOf_;
 
 abstract class ComponentController<C extends ComponentController<C, T, S>, T, S> {
   protected final C myself;
@@ -25,13 +24,13 @@ abstract class ComponentController<C extends ComponentController<C, T, S>, T, S>
 
   protected boolean attached;
 
-  public ComponentController(Class<T> componentClass) {
-    this(constructor().in(componentClass).newInstance());
+  public ComponentController(Class<T> componentClass) throws IllegalAccessException, InstantiationException {
+    this(componentClass.newInstance());
   }
 
   @SuppressWarnings("unchecked")
   public ComponentController(T component) {
-    myself = (C)this;
+    myself = (C) this;
     this.component = component;
     shadow = shadowOf_(component);
     shadowMainLooper = shadowOf_(Looper.getMainLooper());
@@ -70,11 +69,22 @@ abstract class ComponentController<C extends ComponentController<C, T, S>, T, S>
     }
     return intent;
   }
-  
+
   protected C invokeWhilePaused(final String methodName) {
     shadowMainLooper.runPaused(new Runnable() {
-      @Override public void run() {
-        method(methodName).in(component).invoke();
+      @Override
+      public void run() {
+
+//        method(methodName).in(component).invoke();
+        try {
+          component.getClass().getMethod(methodName).invoke(component);
+        } catch (IllegalAccessException e) {
+          throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+          throw (RuntimeException) e.getTargetException();
+        } catch (NoSuchMethodException e) {
+          throw new RuntimeException(e);
+        }
       }
     });
     return myself;
@@ -82,8 +92,17 @@ abstract class ComponentController<C extends ComponentController<C, T, S>, T, S>
 
   protected C invokeWhilePaused(final String methodName, final Bundle arg) {
     shadowMainLooper.runPaused(new Runnable() {
-      @Override public void run() {
-        method(methodName).withParameterTypes(Bundle.class).in(component).invoke(arg);
+      @Override
+      public void run() {
+        try {
+          component.getClass().getMethod(methodName, Bundle.class).invoke(component, arg);
+        } catch (IllegalAccessException e) {
+          throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+          throw new RuntimeException(e);
+        } catch (NoSuchMethodException e) {
+          throw new RuntimeException(e);
+        }
       }
     });
     return myself;
@@ -91,17 +110,35 @@ abstract class ComponentController<C extends ComponentController<C, T, S>, T, S>
 
   protected C invokeWhilePaused(final String methodName, final Intent arg) {
     shadowMainLooper.runPaused(new Runnable() {
-      @Override public void run() {
-        method(methodName).withParameterTypes(Intent.class).in(component).invoke(arg);
+      @Override
+      public void run() {
+        try {
+          component.getClass().getMethod(methodName, Intent.class).invoke(component, arg);
+        } catch (IllegalAccessException e) {
+          throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+          throw new RuntimeException(e);
+        } catch (NoSuchMethodException e) {
+          throw new RuntimeException(e);
+        }
       }
     });
     return myself;
   }
-  
+
   protected C invokeWhilePaused(final String methodName, final Intent arg, final int param1, final int param2) {
     shadowMainLooper.runPaused(new Runnable() {
-      @Override public void run() {
-        method(methodName).withParameterTypes(Intent.class, int.class, int.class).in(component).invoke(arg, param1, param2);
+      @Override
+      public void run() {
+        try {
+          component.getClass().getMethod(methodName, Intent.class, int.class, int.class).invoke(component, arg, param1, param2);
+        } catch (IllegalAccessException e) {
+          throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+          throw new RuntimeException(e);
+        } catch (NoSuchMethodException e) {
+          throw new RuntimeException(e);
+        }
       }
     });
     return myself;

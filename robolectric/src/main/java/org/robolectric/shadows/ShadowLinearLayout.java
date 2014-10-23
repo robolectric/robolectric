@@ -4,13 +4,22 @@ import android.widget.LinearLayout;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
-import static org.fest.reflect.core.Reflection.field;
+import java.lang.reflect.Field;
+
 
 @Implements(LinearLayout.class)
 public class ShadowLinearLayout extends ShadowViewGroup {
   @RealObject LinearLayout realObject;
 
   public int getGravity() {
-    return field("mGravity").ofType(int.class).in(realObject).get();
+    try {
+      Field mGravity = LinearLayout.class.getDeclaredField("mGravity");
+      mGravity.setAccessible(true);
+      return mGravity.getInt(realObject);
+    } catch (NoSuchFieldException e) {
+      throw new RuntimeException(e);
+    } catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
   }
 }

@@ -7,21 +7,17 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ZoomButtonsController;
-import com.google.android.maps.GeoPoint;
-import com.google.android.maps.MapController;
-import com.google.android.maps.MapView;
-import com.google.android.maps.Overlay;
-import com.google.android.maps.Projection;
+import com.google.android.maps.*;
 import org.robolectric.Robolectric;
-import org.robolectric.internal.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.internal.HiddenApi;
 import org.robolectric.res.Attribute;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.fest.reflect.core.Reflection.field;
 import static org.robolectric.Robolectric.directlyOn;
 import static org.robolectric.RobolectricForMaps.shadowOf;
 import static org.robolectric.bytecode.RobolectricInternals.getConstructor;
@@ -58,7 +54,7 @@ public class ShadowMapView extends ShadowViewGroup {
 
   @HiddenApi
   public void __constructor__(Context context) {
-    field("mContext").ofType(Context.class).in(realView).set(context);
+    setContextOnRealView(context);
     this.attributeSet = new RoboAttributeSet(new ArrayList<Attribute>(), context.getResources(), null);
     getConstructor(View.class, realView, Context.class)
         .invoke(context);
@@ -67,7 +63,7 @@ public class ShadowMapView extends ShadowViewGroup {
   }
 
   public void __constructor__(Context context, AttributeSet attributeSet) {
-    field("mContext").ofType(Context.class).in(realView).set(context);
+    setContextOnRealView(context);
     this.attributeSet = attributeSet;
     getConstructor(View.class, realView, Context.class, AttributeSet.class, int.class)
         .invoke(context, attributeSet, 0);
@@ -76,7 +72,7 @@ public class ShadowMapView extends ShadowViewGroup {
   }
 
   @Override public void __constructor__(Context context, AttributeSet attributeSet, int defStyle) {
-    field("mContext").ofType(Context.class).in(realView).set(context);
+    setContextOnRealView(context);
     this.attributeSet = attributeSet;
     getConstructor(View.class, realView, Context.class, AttributeSet.class, int.class)
         .invoke(context, attributeSet, defStyle);
@@ -318,5 +314,17 @@ public class ShadowMapView extends ShadowViewGroup {
    */
   public void setCanCoverCenter(boolean canCoverCenter) {
     this.canCoverCenter = canCoverCenter;
+  }
+
+  private void setContextOnRealView(Context context) {
+    try {
+      Field mContext = View.class.getDeclaredField("mContext");
+      mContext.setAccessible(true);
+      mContext.set(realView, context);
+    } catch (NoSuchFieldException e) {
+      throw new RuntimeException(e);
+    } catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
   }
 }

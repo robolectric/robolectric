@@ -14,9 +14,8 @@ import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceLoader;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 
-import static org.fest.reflect.core.Reflection.field;
-import static org.fest.reflect.core.Reflection.type;
 import static org.robolectric.Robolectric.directlyOn;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -29,7 +28,7 @@ public class ShadowWindow {
   private int softInputMode;
 
   public static Window create(Context context) throws Exception {
-    Class<?> phoneWindowClass = type(ShadowPhoneWindow.PHONE_WINDOW_CLASS_NAME).load();
+    Class<?> phoneWindowClass = ShadowWindow.class.getClassLoader().loadClass(ShadowPhoneWindow.PHONE_WINDOW_CLASS_NAME);
     Constructor<?> constructor = phoneWindowClass.getConstructor(Context.class);
     return (Window) constructor.newInstance(context);
   }
@@ -60,7 +59,16 @@ public class ShadowWindow {
     Integer resId = resourceLoader.getResourceIndex().getResourceId(internalResource);
     try {
       Class<?> actionBarViewClass = Class.forName("com.android.internal.widget.ActionBarView");
-      ViewGroup actionBarView = (ViewGroup) field("mActionBar").ofType(actionBarViewClass).in(realWindow).get();
+      ViewGroup actionBarView;
+      try {
+        Field mActionBar = realWindow.getClass().getDeclaredField("mActionBar");
+        mActionBar.setAccessible(true);
+        actionBarView = (ViewGroup) mActionBar.get(realWindow);
+      } catch (IllegalAccessException e) {
+        throw new RuntimeException(e);
+      } catch (NoSuchFieldException e) {
+        throw new RuntimeException(e);
+      }
       return (ImageView) actionBarView.findViewById(resId);
     } catch (ClassNotFoundException e) {
       throw new RuntimeException("could not resolve ActionBarView");

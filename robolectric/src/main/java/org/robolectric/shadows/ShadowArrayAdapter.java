@@ -4,7 +4,7 @@ import android.widget.ArrayAdapter;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
-import static org.fest.reflect.core.Reflection.field;
+import java.lang.reflect.Field;
 
 @SuppressWarnings( { "UnusedDeclaration" })
 @Implements(ArrayAdapter.class)
@@ -12,10 +12,26 @@ public class ShadowArrayAdapter<T> extends ShadowBaseAdapter {
   @RealObject private ArrayAdapter realArrayAdapter;
 
   public int getTextViewResourceId() {
-    return field("mFieldId").ofType(int.class).in(realArrayAdapter).get();
+    try {
+      Field mFieldId = ArrayAdapter.class.getDeclaredField("mFieldId");
+      mFieldId.setAccessible(true);
+      return mFieldId.getInt(realArrayAdapter);
+    } catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    } catch (NoSuchFieldException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public int getResourceId() {
-    return field("mResource").ofType(int.class).in(realArrayAdapter).get();
+    try {
+      Field mResource = ArrayAdapter.class.getDeclaredField("mResource");
+      mResource.setAccessible(true);
+      return mResource.getInt(realArrayAdapter);
+    } catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    } catch (NoSuchFieldException e) {
+      throw new RuntimeException(e);
+    }
   }
 }

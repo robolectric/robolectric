@@ -1,19 +1,5 @@
 package org.robolectric.util;
 
-import static org.fest.reflect.core.Reflection.constructor;
-import static org.fest.reflect.core.Reflection.field;
-import static org.fest.reflect.core.Reflection.method;
-import static org.fest.reflect.core.Reflection.type;
-import static org.robolectric.Robolectric.shadowOf_;
-
-import org.robolectric.AndroidManifest;
-import org.robolectric.RoboInstrumentation;
-import org.robolectric.Robolectric;
-import org.robolectric.res.ResName;
-import org.robolectric.shadows.ShadowActivity;
-import org.robolectric.shadows.ShadowActivityThread;
-import org.robolectric.shadows.ShadowApplication;
-
 import android.app.Activity;
 import android.app.Application;
 import android.app.Instrumentation;
@@ -24,21 +10,41 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.view.View;
+import org.robolectric.AndroidManifest;
+import org.robolectric.RoboInstrumentation;
+import org.robolectric.Robolectric;
+import org.robolectric.res.ResName;
+import org.robolectric.shadows.ShadowActivity;
+import org.robolectric.shadows.ShadowActivityThread;
+import org.robolectric.shadows.ShadowApplication;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+
+import static org.robolectric.Robolectric.shadowOf_;
 
 public class ActivityController<T extends Activity>
   extends ComponentController<ActivityController<T>, T, ShadowActivity>{
 
   public static <T extends Activity> ActivityController<T> of(Class<T> activityClass) {
-    return new ActivityController<T>(activityClass);
+    try {
+      Constructor<T> constructor = activityClass.getDeclaredConstructor();
+      constructor.setAccessible(true);
+      return new ActivityController<T>(constructor.newInstance());
+    } catch (InstantiationException e) {
+      throw new RuntimeException(e);
+    } catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    } catch (NoSuchMethodException e) {
+      throw new RuntimeException(e);
+    } catch (InvocationTargetException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public static <T extends Activity> ActivityController<T> of(T activity) {
     return new ActivityController<T>(activity);
-  }
-
-  public ActivityController(Class<T> activityClass) {
-    this(constructor().in(activityClass).newInstance());
   }
 
   public ActivityController(T activity) {
@@ -53,23 +59,38 @@ public class ActivityController<T extends Activity>
     String activityTitle = getActivityTitle();
 
     ClassLoader cl = baseContext.getClassLoader();
-    Class<?> activityThreadClass = type(ShadowActivityThread.CLASS_NAME).withClassLoader(cl).load();
-    Class<?> nonConfigurationInstancesClass = type("android.app.Activity$NonConfigurationInstances")
-        .withClassLoader(cl).load();
+    Class<?> activityThreadClass = null;
+    try {
+      activityThreadClass = cl.loadClass(ShadowActivityThread.CLASS_NAME);
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(e);
+    }
+    Class<?> nonConfigurationInstancesClass = null;
+    try {
+      nonConfigurationInstancesClass = cl.loadClass("android.app.Activity$NonConfigurationInstances");
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(e);
+    }
 
-    method("attach").withParameterTypes(
-        Context.class /* context */, activityThreadClass /* aThread */,
-        Instrumentation.class /* instr */, IBinder.class /* token */, int.class /* ident */,
-        Application.class /* application */, Intent.class /* intent */, ActivityInfo.class /* info */,
-        CharSequence.class /* title */, Activity.class /* parent */, String.class /* id */,
-        nonConfigurationInstancesClass /* lastNonConfigurationInstances */,
-        Configuration.class /* config */
-    ).in(component).invoke(baseContext, null /* aThread */,
-        new RoboInstrumentation(), null /* token */, 0 /* ident */,
-        application, intent /* intent */, activityInfo,
-        activityTitle, null /* parent */, "id",
-        null /* lastNonConfigurationInstances */,
-        application.getResources().getConfiguration());
+    try {
+      component.getClass().getMethod("attach", Context.class /* context */, activityThreadClass /* aThread */,
+          Instrumentation.class /* instr */, IBinder.class /* token */, int.class /* ident */,
+          Application.class /* application */, Intent.class /* intent */, ActivityInfo.class /* info */,
+          CharSequence.class /* title */, Activity.class /* parent */, String.class /* id */,
+          nonConfigurationInstancesClass /* lastNonConfigurationInstances */,
+          Configuration.class /* config */).invoke(component, baseContext, null /* aThread */,
+          new RoboInstrumentation(), null /* token */, 0 /* ident */,
+          application, intent /* intent */, activityInfo,
+          activityTitle, null /* parent */, "id",
+          null /* lastNonConfigurationInstances */,
+          application.getResources().getConfiguration());
+    } catch (NoSuchMethodException e) {
+      throw new RuntimeException(e);
+    } catch (InvocationTargetException e) {
+      throw new RuntimeException(e);
+    } catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
 
     shadow.setThemeFromManifest();
     attached = true;
@@ -110,7 +131,15 @@ public class ActivityController<T extends Activity>
     shadowMainLooper.runPaused(new Runnable() {
       @Override public void run() {
         if (!attached) attach();
-        method("performCreate").withParameterTypes(Bundle.class).in(component).invoke(bundle);
+        try {
+          component.getClass().getMethod("performCreate", Bundle.class).invoke(component, bundle);
+        } catch (IllegalAccessException e) {
+          throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+          throw new RuntimeException(e);
+        } catch (NoSuchMethodException e) {
+          throw new RuntimeException(e);
+        }
       }
     });
     return this;
@@ -163,8 +192,24 @@ public class ActivityController<T extends Activity>
   public ActivityController<T> visible() {
     shadowMainLooper.runPaused(new Runnable() {
       @Override public void run() {
-        field("mDecor").ofType(View.class).in(component).set(component.getWindow().getDecorView());
-        method("makeVisible").in(component).invoke();
+        try {
+          Field mDecor = Activity.class.getDeclaredField("mDecor");
+          mDecor.setAccessible(true);
+          mDecor.set(component, component.getWindow().getDecorView());
+        } catch (NoSuchFieldException e) {
+          throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+          throw new RuntimeException(e);
+        }
+        try {
+          component.getClass().getMethod("makeVisible").invoke(component);
+        } catch (IllegalAccessException e) {
+          throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+          throw new RuntimeException(e);
+        } catch (NoSuchMethodException e) {
+          throw new RuntimeException(e);
+        }
       }
     });
 

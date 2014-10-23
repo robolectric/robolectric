@@ -20,6 +20,8 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,7 +30,6 @@ import java.util.Map;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
-import static org.fest.reflect.core.Reflection.method;
 import static org.robolectric.Robolectric.directlyOn;
 import static org.robolectric.Robolectric.shadowOf;
 
@@ -47,7 +48,16 @@ public class ShadowBitmapFactory {
 
     if (value != null && value.string != null && value.string.toString().contains(".9.")) {
       // todo: better support for nine-patches
-      method("setNinePatchChunk").withParameterTypes(byte[].class).in(bitmap).invoke(new byte[0]);
+      try {
+        Method setNinePatchChunk = Bitmap.class.getMethod("setNinePatchChunk", byte[].class);
+        setNinePatchChunk.invoke(bitmap, new byte[0]);
+      } catch (NoSuchMethodException e) {
+        throw new RuntimeException(e);
+      } catch (InvocationTargetException e) {
+        throw new RuntimeException(e);
+      } catch (IllegalAccessException e) {
+        throw new RuntimeException(e);
+      }
     }
     return bitmap;
   }

@@ -13,13 +13,7 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.text.Selection;
 import android.text.SpannableStringBuilder;
-import android.view.KeyEvent;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.Window;
+import android.view.*;
 import org.robolectric.AndroidManifest;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
@@ -29,16 +23,11 @@ import org.robolectric.bytecode.RobolectricInternals;
 import org.robolectric.internal.HiddenApi;
 import org.robolectric.res.ResName;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
-import static org.fest.reflect.core.Reflection.field;
 import static org.robolectric.Robolectric.directlyOn;
 import static org.robolectric.Robolectric.shadowOf;
 
@@ -79,7 +68,15 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   public void setApplication(Application application) {
-    field("mApplication").ofType(Application.class).in(realActivity).set(application);
+    try {
+      Field mApplication = Application.class.getDeclaredField("mApplication");
+      mApplication.setAccessible(true);
+      mApplication.set(realActivity, application);
+    } catch (NoSuchFieldException e) {
+      throw new RuntimeException(e);
+    } catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public boolean setThemeFromManifest() {
@@ -235,7 +232,15 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   public void setWindow(Window window) {
-    field("mWindow").ofType(Window.class).in(realActivity).set(window);
+    try {
+      Field mWindow = realActivity.getClass().getDeclaredField("mWindow");
+      mWindow.setAccessible(true);
+      mWindow.set(realActivity, window);
+    } catch (NoSuchFieldException e) {
+      throw new RuntimeException(e);
+    } catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Implementation

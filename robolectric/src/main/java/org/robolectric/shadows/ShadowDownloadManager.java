@@ -8,12 +8,12 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.tester.android.database.TestCursor;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.fest.reflect.core.Reflection.field;
 import static org.robolectric.Robolectric.shadowOf_;
 
 /**
@@ -81,43 +81,43 @@ public class ShadowDownloadManager {
     }
 
     public Uri getUri() {
-      return field("mUri").ofType(Uri.class).in(realObject).get();
+      return getFieldReflectively("mUri", realObject, DownloadManager.Request.class);
     }
 
     public Uri getDestination() {
-      return field("mDestinationUri").ofType(Uri.class).in(realObject).get();
+      return getFieldReflectively("mDestinationUri", realObject, DownloadManager.Request.class);
     }
 
     public CharSequence getTitle() {
-      return field("mTitle").ofType(CharSequence.class).in(realObject).get();
+      return getFieldReflectively("mTitle", realObject, DownloadManager.Request.class);
     }
 
     public CharSequence getDescription() {
-      return field("mDescription").ofType(CharSequence.class).in(realObject).get();
+      return getFieldReflectively("mDescription", realObject, DownloadManager.Request.class);
     }
 
     public CharSequence getMimeType() {
-      return field("mMimeType").ofType(CharSequence.class).in(realObject).get();
+      return getFieldReflectively("mMimeType", realObject, DownloadManager.Request.class);
     }
 
     public int getNotificationVisibility() {
-      return field("mNotificationVisibility").ofType(int.class).in(realObject).get();
+      return getFieldReflectively("mNotificationVisibility", realObject, DownloadManager.Request.class);
     }
 
     public int getAllowedNetworkTypes() {
-      return field("mAllowedNetworkTypes").ofType(int.class).in(realObject).get();
+      return getFieldReflectively("mAllowedNetworkTypes", realObject, DownloadManager.Request.class);
     }
 
     public boolean getAllowedOverRoaming() {
-      return field("mRoamingAllowed").ofType(boolean.class).in(realObject).get();
+      return getFieldReflectively("mRoamingAllowed", realObject, DownloadManager.Request.class);
     }
 
     public boolean getAllowedOverMetered() {
-      return field("mMeteredAllowed").ofType(boolean.class).in(realObject).get();
+      return getFieldReflectively("mMeteredAllowed", realObject, DownloadManager.Request.class);
     }
 
     public boolean getVisibleInDownloadsUi() {
-      return field("mIsVisibleInDownloadsUi").ofType(boolean.class).in(realObject).get();
+      return getFieldReflectively("mIsVisibleInDownloadsUi", realObject, DownloadManager.Request.class);
     }
   }
 
@@ -126,7 +126,7 @@ public class ShadowDownloadManager {
     @RealObject DownloadManager.Query realObject;
 
     public long[] getIds() {
-      return field("mIds").ofType(long[].class).in(realObject).get();
+      return getFieldReflectively("mIds", realObject, DownloadManager.Query.class);
     }
   }
 
@@ -236,6 +236,18 @@ public class ShadowDownloadManager {
       if (closed) {
         throw new IllegalStateException("Cursor is already closed.");
       }
+    }
+  }
+
+  private static <T> T getFieldReflectively(String fieldName, Object object, Class aClass) {
+    try {
+      Field field = aClass.getDeclaredField(fieldName);
+      field.setAccessible(true);
+      return (T) field.get(object);
+    } catch (NoSuchFieldException e) {
+      throw new RuntimeException(e);
+    } catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
     }
   }
 }

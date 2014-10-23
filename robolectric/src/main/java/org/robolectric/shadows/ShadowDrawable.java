@@ -10,18 +10,16 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.NinePatchDrawable;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
-
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 
-import static org.fest.reflect.core.Reflection.method;
 import static org.robolectric.Robolectric.directlyOn;
 import static org.robolectric.Robolectric.shadowOf;
 
@@ -68,7 +66,15 @@ public class ShadowDrawable {
     if (bm != null) {
       boolean isNinePatch = srcName != null && srcName.contains(".9.");
       if (isNinePatch) {
-        method("setNinePatchChunk").withParameterTypes(byte[].class).in(bm).invoke(new byte[0]);
+        try {
+          Bitmap.class.getMethod("setNinePatchChunk", byte[].class).invoke(bm, new byte[0]);
+        } catch (NoSuchMethodException e) {
+          throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+          throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+          throw new RuntimeException(e);
+        }
       }
 
       byte[] np = bm.getNinePatchChunk();
@@ -76,15 +82,10 @@ public class ShadowDrawable {
         np = null;
         pad = null;
       }
-      int[] layoutBounds = method("getLayoutBounds").withReturnType(int[].class).in(bm).invoke();
-      Rect layoutBoundsRect = null;
-      if (layoutBounds != null) {
-        layoutBoundsRect = new Rect(layoutBounds[0], layoutBounds[1],
-            layoutBounds[2], layoutBounds[3]);
-      }
+
       if (np != null) {
         // todo: wrong
-        return new NinePatchDrawable(res, bm, np, pad, /*layoutBoundsRect,*/ srcName);
+        return new NinePatchDrawable(res, bm, np, pad, srcName);
       }
 
       return new BitmapDrawable(res, bm);

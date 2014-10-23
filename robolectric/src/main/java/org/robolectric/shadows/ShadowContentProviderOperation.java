@@ -7,9 +7,8 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.internal.HiddenApi;
 
+import java.lang.reflect.Field;
 import java.util.Map;
-
-import static org.fest.reflect.core.Reflection.field;
 
 /**
  * Shadow for {@link ContentProviderOperation}. Gives access to operation internal properties.
@@ -27,31 +26,42 @@ public class ShadowContentProviderOperation {
 
   @HiddenApi @Implementation
   public int getType() {
-    return field("mType").ofType(int.class).in(realOperation).get();
+    return getFieldReflectively("mType");
   }
 
   public String getSelection() {
-    return field("mSelection").ofType(String.class).in(realOperation).get();
+    return getFieldReflectively("mSelection");
   }
   public String[] getSelectionArgs() {
-    return field("mSelectionArgs").ofType(String[].class).in(realOperation).get();
+    return getFieldReflectively("mSelectionArgs");
   }
 
   public ContentValues getContentValues() {
-    return field("mValues").ofType(ContentValues.class).in(realOperation).get();
+    return getFieldReflectively("mValues");
   }
 
   public Integer getExpectedCount() {
-    return field("mExpectedCount").ofType(Integer.class).in(realOperation).get();
+    return getFieldReflectively("mExpectedCount");
   }
 
   public ContentValues getValuesBackReferences() {
-    return field("mValuesBackReferences").ofType(ContentValues.class).in(realOperation).get();
+    return getFieldReflectively("mValuesBackReferences");
   }
 
   @SuppressWarnings("unchecked")
   public Map<Integer, Integer> getSelectionArgsBackReferences() {
-    return field("mSelectionArgsBackReferences").ofType(Map.class).in(realOperation).get();
+    return getFieldReflectively("mSelectionArgsBackReferences");
   }
 
+  private <T> T getFieldReflectively(String fieldName) {
+    try {
+      Field declaredField = ContentProviderOperation.class.getDeclaredField(fieldName);
+      declaredField.setAccessible(true);
+      return (T) declaredField.get(realOperation);
+    } catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    } catch (NoSuchFieldException e) {
+      throw new RuntimeException(e);
+    }
+  }
 }

@@ -9,8 +9,8 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
-import static org.fest.reflect.core.Reflection.method;
 import static org.robolectric.Robolectric.directlyOn;
 
 @Implements(AlertController.class)
@@ -75,10 +75,16 @@ public class ShadowAlertController {
   }
 
   public Adapter getAdapter() {
-    return method("getListView")
-        .withReturnType(ListView.class)
-        .in(realAlertController)
-        .invoke()
-        .getAdapter();
+    try {
+      Method getListView = realAlertController.getClass().getMethod("getListView");
+      ListView listView = (ListView) getListView.invoke(realAlertController);
+      return listView.getAdapter();
+    } catch (NoSuchMethodException e) {
+      throw new RuntimeException(e);
+    } catch (InvocationTargetException e) {
+      throw new RuntimeException(e);
+    } catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
   }
 }

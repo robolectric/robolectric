@@ -13,7 +13,6 @@ import org.robolectric.annotation.Config;
 import org.robolectric.util.I18nException;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.fest.reflect.core.Reflection.field;
 import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -71,7 +70,9 @@ public class ResourceLoaderTest {
     assertThat(resourceLoader.getResourceIndex().getResName(resId)).isEqualTo(internalResource);
 
     Class<?> internalRIdClass = Robolectric.class.getClassLoader().loadClass("com.android.internal.R$" + internalResource.type);
-    assertThat(resId).isEqualTo(field(internalResource.name).ofType(int.class).in(internalRIdClass).get());
+    int internalResourceId;
+    internalResourceId = (Integer) internalRIdClass.getDeclaredField(internalResource.name).get(null);
+    assertThat(resId).isEqualTo(internalResourceId);
 
     assertThat(Robolectric.application.getResources().getString(resId)).isEqualTo("The old PIN you typed isn't correct.");
   }

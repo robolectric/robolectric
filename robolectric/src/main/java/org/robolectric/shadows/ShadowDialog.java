@@ -16,11 +16,12 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.fest.reflect.core.Reflection.field;
-import static org.fest.reflect.core.Reflection.method;
 import static org.robolectric.Robolectric.directlyOn;
 import static org.robolectric.Robolectric.shadowOf;
 
@@ -84,7 +85,15 @@ public class ShadowDialog {
   }
 
   public boolean isCancelable() {
-    return field("mCancelable").ofType(boolean.class).in(realDialog).get();
+    try {
+      Field mCancelable = Dialog.class.getDeclaredField("mCancelable");
+      mCancelable.setAccessible(true);
+      return mCancelable.getBoolean(realDialog);
+    } catch (NoSuchFieldException e) {
+      throw new RuntimeException(e);
+    } catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public boolean isCancelableOnTouchOutside() {
@@ -141,6 +150,15 @@ public class ShadowDialog {
   }
 
   public void callOnCreate(Bundle bundle) {
-    method("onCreate").withParameterTypes(Bundle.class).in(realDialog).invoke(bundle);
+    try {
+      Method onCreate = Dialog.class.getMethod("onCreate", Bundle.class);
+      onCreate.invoke(realDialog, bundle);
+    } catch (NoSuchMethodException e) {
+      throw new RuntimeException(e);
+    } catch (InvocationTargetException e) {
+      throw new RuntimeException(e);
+    } catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
   }
 }

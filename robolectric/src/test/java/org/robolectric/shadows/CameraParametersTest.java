@@ -3,8 +3,7 @@ package org.robolectric.shadows;
 
 import android.graphics.ImageFormat;
 import android.hardware.Camera;
-
-import org.fest.util.Lists;
+import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -163,6 +162,4 @@ public class CameraParametersTest {
     parameters.setFocusMode("foo");
     assertThat(parameters.getFocusMode()).isEqualTo("foo");
   }
-
-
 }

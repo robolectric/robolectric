@@ -1,30 +1,33 @@
 package org.robolectric.util;
 
-import static org.fest.reflect.core.Reflection.constructor;
-import static org.fest.reflect.core.Reflection.method;
-import static org.fest.reflect.core.Reflection.type;
-
-import org.robolectric.Robolectric;
-import org.robolectric.shadows.ShadowActivityThread;
-import org.robolectric.shadows.ShadowService;
-
 import android.app.Application;
 import android.app.Service;
 import android.content.Context;
 import android.os.IBinder;
+import org.robolectric.Robolectric;
+import org.robolectric.shadows.ShadowActivityThread;
+import org.robolectric.shadows.ShadowService;
+
+import java.lang.reflect.InvocationTargetException;
 
 public class ServiceController<T extends Service> extends ComponentController<ServiceController<T>, T, ShadowService>{
 
   public static <T extends Service> ServiceController<T> of(Class<T> serviceClass) {
-    return new ServiceController<T>(serviceClass);
+    try {
+      return new ServiceController<T>(serviceClass);
+    } catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    } catch (InstantiationException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public static <T extends Service> ServiceController<T> of(T service) {
     return new ServiceController<T>(service);
   }
 
-  public ServiceController(Class<T> serviceClass) {
-    this(constructor().in(serviceClass).newInstance());
+  public ServiceController(Class<T> serviceClass) throws IllegalAccessException, InstantiationException {
+    this(serviceClass.newInstance());
   }
 
   public ServiceController(T service) {
@@ -36,23 +39,34 @@ public class ServiceController<T extends Service> extends ComponentController<Se
     Context baseContext = this.baseContext == null ? application : this.baseContext;
 
     ClassLoader cl = baseContext.getClassLoader();
-    Class<?> activityThreadClass = type(ShadowActivityThread.CLASS_NAME).withClassLoader(cl).load();
-    
-    method("attach").withParameterTypes(
-        Context.class /* context */,
-        activityThreadClass /* aThread */,
-        String.class /* className */,
-        IBinder.class /* token */,
-        Application.class /* application */,
-        Object.class /* activityManager */
-        
-    ).in(component).invoke(
-        baseContext,
-        null /* aThread */,
-        component.getClass().getSimpleName(), /* className */
-        null /* token */,
-        application,
-        null /* activityManager */);
+    Class<?> activityThreadClass;
+    try {
+      activityThreadClass = cl.loadClass(ShadowActivityThread.CLASS_NAME);
+    } catch (ClassNotFoundException e) {
+      e.printStackTrace();
+      throw new RuntimeException(e);
+    }
+
+    try {
+      component.getClass().getMethod("attach",
+          Context.class /* context */,
+          activityThreadClass /* aThread */,
+          String.class /* className */,
+          IBinder.class /* token */,
+          Application.class /* application */,
+          Object.class /* activityManager */).invoke(component, baseContext,
+          null /* aThread */,
+          component.getClass().getSimpleName(), /* className */
+          null /* token */,
+          application,
+          null /* activityManager */);
+    } catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    } catch (InvocationTargetException e) {
+      throw new RuntimeException(e);
+    } catch (NoSuchMethodException e) {
+      throw new RuntimeException(e);
+    }
 
     attached = true;
     return this;
@@ -72,12 +86,12 @@ public class ServiceController<T extends Service> extends ComponentController<Se
     invokeWhilePaused("onDestroy");
     return this;
   }
-  
+
   public ServiceController<T> rebind() {
     invokeWhilePaused("onRebind", getIntent());
     return this;
   }
-  
+
   public ServiceController<T> startCommand(int flags, int startId) {
     invokeWhilePaused("onStartCommand", getIntent(), flags, startId);
     return this;

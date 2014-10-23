@@ -5,7 +5,7 @@ import android.net.Uri;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
-import static org.fest.reflect.core.Reflection.field;
+import java.lang.reflect.Field;
 
 @Implements(AbstractCursor.class)
 public class ShadowAbstractCursor {
@@ -18,8 +18,14 @@ public class ShadowAbstractCursor {
    * pre-API 11 projects.
    */
   public Uri getNotificationUri_Compatibility() {
-    return field("mNotifyUri").ofType(Uri.class).in(realAbstractCursor).get();
+    try {
+      Field mNotifyUri = AbstractCursor.class.getDeclaredField("mNotifyUri");
+      mNotifyUri.setAccessible(true);
+      return (Uri) mNotifyUri.get(realAbstractCursor);
+    } catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    } catch (NoSuchFieldException e) {
+      throw new RuntimeException(e);
+    }
   }
-
-
 }

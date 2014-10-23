@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.app.Application;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.res.Resources;
 import android.database.DatabaseErrorHandler;
 import android.database.sqlite.SQLiteDatabase;
@@ -15,15 +16,12 @@ import org.robolectric.res.Attribute;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceLoader;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.UUID;
 
-import static org.fest.reflect.core.Reflection.method;
 import static org.robolectric.Robolectric.shadowOf;
 
 /**
@@ -206,9 +204,15 @@ abstract public class ShadowContext {
   }
 
   public void callAttachBaseContext(Context context) {
-    method("attachBaseContext")
-        .withParameterTypes(Context.class)
-        .in(realContext)
-        .invoke(context);
+    try {
+      Method attachBaseContext = ContextWrapper.class.getDeclaredMethod("attachBaseContext", Context.class);
+      attachBaseContext.invoke(realContext, context);
+    } catch (NoSuchMethodException e) {
+      throw new RuntimeException(e);
+    } catch (InvocationTargetException e) {
+      throw new RuntimeException(e);
+    } catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
   }
 }

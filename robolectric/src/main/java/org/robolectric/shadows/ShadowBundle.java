@@ -1,12 +1,13 @@
 package org.robolectric.shadows;
 
 import android.os.Bundle;
-import java.util.Map;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
-import static org.fest.reflect.core.Reflection.field;
+import java.lang.reflect.Field;
+import java.util.Map;
+
 
 @Implements(Bundle.class)
 public class ShadowBundle {
@@ -42,6 +43,14 @@ public class ShadowBundle {
   }
 
   private static Map getUnderlyingMap(Bundle bundle) {
-    return field("mMap").ofType(Map.class).in(bundle).get();
+    try {
+      Field mMap = Bundle.class.getDeclaredField("mMap");
+      mMap.setAccessible(true);
+      return (Map) mMap.get(bundle);
+    } catch (NoSuchFieldException e) {
+      throw new RuntimeException(e);
+    } catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
   }
 }

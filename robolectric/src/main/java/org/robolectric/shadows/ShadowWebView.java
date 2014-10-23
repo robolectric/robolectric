@@ -1,24 +1,20 @@
 package org.robolectric.shadows;
 
+import android.view.View;
 import android.view.ViewGroup.LayoutParams;
-import android.webkit.TestWebSettings;
-import android.webkit.WebChromeClient;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
+import android.webkit.*;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.internal.HiddenApi;
+
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import org.fest.reflect.field.Invoker;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
-import org.robolectric.internal.HiddenApi;
-
-import static org.fest.reflect.core.Reflection.field;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(value = WebView.class, inheritImplementationMethods = true)
@@ -53,35 +49,51 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
   public void ensureProviderCreated() {
     final ClassLoader classLoader = getClass().getClassLoader();
     Class<?> webViewProviderClass = getClassNamed("android.webkit.WebViewProvider");
-    Invoker<Object> mProviderField = field("mProvider").ofType((Class<Object>) webViewProviderClass).in(realView);
-    if (mProviderField.get() == null) {
-      Object provider = Proxy.newProxyInstance(classLoader, new Class[]{webViewProviderClass}, new InvocationHandler() {
-        @Override public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-          if (DEBUG) System.out.println("[DEBUG] WebView: " + method);
+    Field mProvider;
+    try {
+      mProvider = WebView.class.getDeclaredField("mProvider");
+      mProvider.setAccessible(true);
+      if (mProvider.get(realView) == null) {
+        Object provider = Proxy.newProxyInstance(classLoader, new Class[]{webViewProviderClass}, new InvocationHandler() {
+          @Override public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            if (DEBUG) System.out.println("[DEBUG] WebView: " + method);
 
-          if (method.getName().equals("getViewDelegate") || method.getName().equals("getScrollDelegate")) {
-            return Proxy.newProxyInstance(classLoader, new Class[]{
-                getClassNamed("android.webkit.WebViewProvider$ViewDelegate"),
-                getClassNamed("android.webkit.WebViewProvider$ScrollDelegate")
-            }, new InvocationHandler() {
-              @Override
-              public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                if (DEBUG) System.out.println("[DEBUG] WebView delegate: " + method);
-                return nullish(method);
-              }
-            });
+            if (method.getName().equals("getViewDelegate") || method.getName().equals("getScrollDelegate")) {
+              return Proxy.newProxyInstance(classLoader, new Class[]{
+                  getClassNamed("android.webkit.WebViewProvider$ViewDelegate"),
+                  getClassNamed("android.webkit.WebViewProvider$ScrollDelegate")
+              }, new InvocationHandler() {
+                @Override
+                public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                  if (DEBUG) System.out.println("[DEBUG] WebView delegate: " + method);
+                  return nullish(method);
+                }
+              });
+            }
+
+            return nullish(method);
           }
-
-          return nullish(method);
-        }
-      });
-      mProviderField.set(provider);
+        });
+        mProvider.set(realView, provider);
+      }
+    } catch (NoSuchFieldException e) {
+      throw new RuntimeException(e);
+    } catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
     }
   }
 
   @Implementation
   public void setLayoutParams(LayoutParams params) {
-    field("mLayoutParams").ofType(LayoutParams.class).in(realWebView).set(params);
+    try {
+      Field mLayoutParams = View.class.getDeclaredField("mLayoutParams");
+      mLayoutParams.setAccessible(true);
+      mLayoutParams.set(realWebView, params);
+    } catch (NoSuchFieldException e) {
+      throw new RuntimeException(e);
+    } catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   private Object nullish(Method method) {
