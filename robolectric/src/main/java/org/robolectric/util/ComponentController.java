@@ -74,8 +74,6 @@ abstract class ComponentController<C extends ComponentController<C, T, S>, T, S>
     shadowMainLooper.runPaused(new Runnable() {
       @Override
       public void run() {
-
-//        method(methodName).in(component).invoke();
         try {
           component.getClass().getMethod(methodName).invoke(component);
         } catch (IllegalAccessException e) {
