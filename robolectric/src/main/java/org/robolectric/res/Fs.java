@@ -7,6 +7,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -23,7 +24,11 @@ import static java.util.Arrays.asList;
 
 abstract public class Fs {
   public static Fs fromJar(URL url) {
-    return new JarFs(new File(url.getFile()));
+    try {
+      return new JarFs(new File(url.toURI().getPath()));
+    } catch (URISyntaxException e) {
+      throw new IllegalArgumentException(e);
+    }
   }
 
   public static FsFile fileFromPath(String urlString) {
