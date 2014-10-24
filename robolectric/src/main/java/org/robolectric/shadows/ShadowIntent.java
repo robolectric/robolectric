@@ -7,16 +7,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -24,12 +14,14 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.bytecode.RobolectricInternals;
 import org.robolectric.util.Join;
 
-import static android.content.Intent.FILL_IN_ACTION;
-import static android.content.Intent.FILL_IN_CATEGORIES;
-import static android.content.Intent.FILL_IN_COMPONENT;
-import static android.content.Intent.FILL_IN_DATA;
-import static android.content.Intent.FILL_IN_PACKAGE;
-import static org.robolectric.Robolectric.directlyOn;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import static android.content.Intent.*;
+import static org.robolectric.Robolectric.ClassParameter;
 import static org.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -51,24 +43,27 @@ public class ShadowIntent {
     componentName = new ComponentName(packageContext, cls);
     data = uri;
     intentClass = cls;
-    RobolectricInternals.getConstructor(Intent.class, realIntent, String.class, Uri.class, Context.class, Class.class).invoke(action, uri, packageContext, cls);
+    RobolectricInternals.invokeConstructor(Intent.class, realIntent, new ClassParameter(String.class, action),
+        new ClassParameter(Uri.class, uri), new ClassParameter(Context.class, packageContext), new ClassParameter(Class.class, cls));
   }
 
   public void __constructor__(Context packageContext, Class cls) {
     componentName = new ComponentName(packageContext, cls);
     intentClass = cls;
-    RobolectricInternals.getConstructor(Intent.class, realIntent, Context.class, Class.class).invoke(packageContext, cls);
+    RobolectricInternals.invokeConstructor(Intent.class, realIntent, new ClassParameter(Context.class, packageContext),
+        new ClassParameter(Class.class, cls));
   }
 
   public void __constructor__(String action, Uri uri) {
     this.action = action;
     data = uri;
-    RobolectricInternals.getConstructor(Intent.class, realIntent, String.class, Uri.class).invoke(action, uri);
+    RobolectricInternals.invokeConstructor(Intent.class, realIntent, new ClassParameter(String.class, action),
+        new ClassParameter(Uri.class, uri));
   }
 
   public void __constructor__(String action) {
     __constructor__(action, null);
-    RobolectricInternals.getConstructor(Intent.class, realIntent, String.class).invoke(action);
+    RobolectricInternals.invokeConstructor(Intent.class, realIntent, new ClassParameter(String.class, action));
   }
 
   public void __constructor__(Parcel in) {
@@ -123,7 +118,7 @@ public class ShadowIntent {
     intentClass = other.intentClass;
     packageName = other.packageName;
     categories.addAll(other.categories);
-    RobolectricInternals.getConstructor(Intent.class, realIntent, Intent.class).invoke(intent);
+    RobolectricInternals.invokeConstructor(Intent.class, realIntent, new ClassParameter(Intent.class, intent));
   }
 
   @Implementation

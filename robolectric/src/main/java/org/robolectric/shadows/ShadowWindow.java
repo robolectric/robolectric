@@ -36,13 +36,13 @@ public class ShadowWindow {
   @Implementation
   public void setFlags(int flags, int mask) {
     this.flags = (this.flags & ~mask) | (flags & mask);
-    directlyOn(realWindow, Window.class, "setFlags", int.class, int.class).invoke(flags, mask);
+    directlyOn(realWindow, Window.class, "setFlags", new Robolectric.ClassParameter(int.class, flags), new Robolectric.ClassParameter(int.class, mask));
   }
 
   @Implementation
   public void setSoftInputMode(int softInputMode) {
     this.softInputMode = softInputMode;
-    directlyOn(realWindow, Window.class, "setSoftInputMode", int.class).invoke(softInputMode);
+    directlyOn(realWindow, Window.class, "setSoftInputMode", new Robolectric.ClassParameter(int.class, softInputMode));
   }
 
   public boolean getFlag(int flag) {

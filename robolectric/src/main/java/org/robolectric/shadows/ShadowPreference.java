@@ -61,9 +61,8 @@ public class ShadowPreference {
     }
 
     // Also invoke the constructor on the actual object to give it a Context.
-    Class[] types = new Class[] { Context.class, AttributeSet.class, Integer.TYPE };
-    RobolectricInternals.getConstructor(Preference.class, this.realPreference, types)
-        .invoke(context, attributeSet, defStyle);
+    RobolectricInternals.invokeConstructor(Preference.class, this.realPreference, new Robolectric.ClassParameter(Context.class, context),
+        new Robolectric.ClassParameter(AttributeSet.class, attributeSet), new Robolectric.ClassParameter(Integer.TYPE, defStyle));
   }
 
   private void initDefaultValue(TypedArray typedArray) {
@@ -75,7 +74,7 @@ public class ShadowPreference {
 
   @Implementation
   public void onAttachedToHierarchy(PreferenceManager preferenceManager) {
-    Robolectric.directlyOn(realPreference, Preference.class, "onAttachedToHierarchy", PreferenceManager.class).invoke(preferenceManager);
+    Robolectric.directlyOn(realPreference, Preference.class, "onAttachedToHierarchy", new Robolectric.ClassParameter(PreferenceManager.class, preferenceManager));
   }
 
   @Implementation

@@ -3,7 +3,7 @@ package org.robolectric.shadows;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.FrameLayout;
-
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -25,7 +25,7 @@ public class ShadowAdapterView extends ShadowViewGroup {
   @Implementation
   public void setOnItemSelectedListener(AdapterView.OnItemSelectedListener itemSelectedListener) {
     this.itemSelectedListener = itemSelectedListener;
-    directlyOn(realAdapterView, AdapterView.class, "setOnItemSelectedListener", AdapterView.OnItemSelectedListener.class).invoke(itemSelectedListener);
+    directlyOn(realAdapterView, AdapterView.class, "setOnItemSelectedListener", new Robolectric.ClassParameter(AdapterView.OnItemSelectedListener.class, itemSelectedListener));
   }
 
   public AdapterView.OnItemSelectedListener getItemSelectedListener() {

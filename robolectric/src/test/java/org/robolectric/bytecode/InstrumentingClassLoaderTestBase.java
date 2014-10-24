@@ -426,7 +426,7 @@ abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" 
     setClassLoader(createClassLoader(new MethodInterceptingSetup(new Setup.MethodRef(AClassToForget.class, "*"))));
     Class<?> theClass = loadClass(AClassThatRefersToAForgettableClassInMethodCallsReturningPrimitive.class);
     Object instance = theClass.newInstance();
-    directlyOn(instance, (Class<Object>) theClass, "longMethod").invoke();
+    directlyOn(instance, (Class<Object>) theClass, "longMethod");
     transcript.assertEventsSoFar(
         "methodInvoked: AClassThatRefersToAForgettableClassInMethodCallsReturningPrimitive.__constructor__()",
         "intercept: org/robolectric/bytecode/testing/AClassToForget/longReturningMethod(Ljava/lang/String;IJ)J with params (str str, 123 123, 456 456)");

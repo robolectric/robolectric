@@ -23,7 +23,7 @@ public class ShadowWindowManagerImpl extends ShadowWindowManager {
   public void addView(View view, android.view.ViewGroup.LayoutParams layoutParams) {
     views.add(view);
     directlyOn(realObject, WINDOW_MANAGER_IMPL_CLASS_NAME, "addView",
-        View.class, ViewGroup.LayoutParams.class).invoke(view, layoutParams);
+        new Robolectric.ClassParameter(View.class, view), new Robolectric.ClassParameter(ViewGroup.LayoutParams.class, layoutParams));
   }
 
   @Implementation
@@ -31,7 +31,7 @@ public class ShadowWindowManagerImpl extends ShadowWindowManager {
     views.remove(view);
 
     directlyOn(realObject, WINDOW_MANAGER_IMPL_CLASS_NAME, "removeView",
-        View.class).invoke(view);
+        new Robolectric.ClassParameter(View.class, view));
   }
 
   public List<View> getViews() {

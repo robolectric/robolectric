@@ -1,13 +1,10 @@
 package org.robolectric.bytecode;
 
-import org.fest.reflect.method.Invoker;
+import org.robolectric.Robolectric;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
-
-import static org.fest.reflect.core.Reflection.method;
 
 public class RobolectricInternals {
   public static final String ROBO_PREFIX = "$$robo$$";
@@ -82,7 +79,7 @@ public class RobolectricInternals {
   public static Object intercept(String signature, Object instance, Object[] params, Class theClass) throws Throwable {
     try {
       return classHandler.intercept(signature, instance, params, theClass);
-    } catch(java.lang.LinkageError e) {
+    } catch (java.lang.LinkageError e) {
       throw new Exception(e);
     }
   }
@@ -165,25 +162,55 @@ public class RobolectricInternals {
     }
   }
 
-  public static Invoker<Void> getConstructor(Class<?> clazz, Object instance, String parameterType0, String... parameterTypes) {
-    Class<?>[] parameterClasses = new Class<?>[parameterTypes.length + 1];
+  public static <R> R invokeConstructor(Class<? extends R> clazz, R instance, Robolectric.StringParameter paramValue0, Robolectric.StringParameter... paramValues) {
+    Robolectric.ClassParameter[] classParamValues = new Robolectric.ClassParameter[paramValues.length + 1];
     try {
-      parameterClasses[0] = clazz.getClassLoader().loadClass(parameterType0);
+      Class<?> paramClass = clazz.getClassLoader().loadClass(paramValue0.className);
+      classParamValues[0] = new Robolectric.ClassParameter(paramClass, paramValue0.val);
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);
     }
-    for (int i = 0; i < parameterTypes.length; i++) {
+    for (int i = 0; i < paramValues.length; i++) {
       try {
-        parameterClasses[i + 1] = clazz.getClassLoader().loadClass(parameterTypes[i]);
+        Class<?> paramClass = clazz.getClassLoader().loadClass(paramValues[i].className);
+        classParamValues[i + 1] = new Robolectric.ClassParameter(paramClass, paramValues[i].val);
       } catch (ClassNotFoundException e) {
         throw new RuntimeException(e);
       }
     }
-    return getConstructor(clazz, instance, parameterClasses);
+    return invokeConstructor(clazz, instance, classParamValues);
   }
 
-  public static Invoker<Void> getConstructor(Class<?> clazz, Object instance, Class<?>... parameterTypes) {
-    String name = directMethodName(clazz.getName(), InstrumentingClassLoader.CONSTRUCTOR_METHOD_NAME);
-    return method(name).withParameterTypes(parameterTypes).in(instance);
+  public static <R> R invokeConstructor(Class<? extends R> clazz, R instance, Robolectric.ClassParameter... paramValues) {
+
+    try {
+      Class[] classes = new Class[paramValues.length];
+      for (int i = 0; i < paramValues.length; i++) {
+        Class<?> paramClass = paramValues[i].clazz;
+        classes[i] = paramClass;
+      }
+      Object[] values = new Object[paramValues.length];
+      for (int i = 0; i < paramValues.length; i++) {
+        Object paramValue = paramValues[i].val;
+        values[i] = paramValue;
+      }
+
+      String directMethodName = directMethodName(clazz.getName(), InstrumentingClassLoader.CONSTRUCTOR_METHOD_NAME);
+      Class klass = clazz;
+      while (klass != null) {
+        try {
+          Method declaredMethod = klass.getDeclaredMethod(directMethodName, classes);
+          declaredMethod.setAccessible(true);
+          return (R) declaredMethod.invoke(instance, values);
+        } catch (NoSuchMethodException e) {
+          klass = klass.getSuperclass();
+        }
+      }
+      throw new RuntimeException(new NoSuchMethodException());
+    } catch (InvocationTargetException e) {
+      throw (RuntimeException) e.getTargetException();
+    } catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
   }
 }

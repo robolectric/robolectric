@@ -18,9 +18,10 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.robolectric.Robolectric.ClassParameter;
 import static org.robolectric.Robolectric.directlyOn;
 import static org.robolectric.RobolectricForMaps.shadowOf;
-import static org.robolectric.bytecode.RobolectricInternals.getConstructor;
+import static org.robolectric.bytecode.RobolectricInternals.invokeConstructor;
 
 /**
  * Shadow of {@code MapView} that simulates the internal state of a {@code MapView}. Supports {@code Projection}s,
@@ -56,28 +57,26 @@ public class ShadowMapView extends ShadowViewGroup {
   public void __constructor__(Context context) {
     setContextOnRealView(context);
     this.attributeSet = new RoboAttributeSet(new ArrayList<Attribute>(), context.getResources(), null);
-    getConstructor(View.class, realView, Context.class)
-        .invoke(context);
-    getConstructor(ViewGroup.class, realView, Context.class)
-        .invoke(context);
+    invokeConstructor(View.class, realView, new ClassParameter(Context.class, context));
+    invokeConstructor(ViewGroup.class, realView, new ClassParameter(Context.class, context));
   }
 
   public void __constructor__(Context context, AttributeSet attributeSet) {
     setContextOnRealView(context);
     this.attributeSet = attributeSet;
-    getConstructor(View.class, realView, Context.class, AttributeSet.class, int.class)
-        .invoke(context, attributeSet, 0);
-    getConstructor(ViewGroup.class, realView, Context.class, AttributeSet.class, int.class)
-        .invoke(context, attributeSet, 0);
+    invokeConstructor(View.class, realView, new ClassParameter(Context.class, context), new ClassParameter(AttributeSet.class, attributeSet),
+        new ClassParameter(int.class, 0));
+    invokeConstructor(ViewGroup.class, realView, new ClassParameter(Context.class, context), new ClassParameter(AttributeSet.class, attributeSet),
+        new ClassParameter(int.class, 0));
   }
 
   @Override public void __constructor__(Context context, AttributeSet attributeSet, int defStyle) {
     setContextOnRealView(context);
     this.attributeSet = attributeSet;
-    getConstructor(View.class, realView, Context.class, AttributeSet.class, int.class)
-        .invoke(context, attributeSet, defStyle);
-    getConstructor(ViewGroup.class, realView, Context.class, AttributeSet.class, int.class)
-        .invoke(context, attributeSet, defStyle);
+    invokeConstructor(View.class, realView, new ClassParameter(Context.class, context), new ClassParameter(AttributeSet.class, attributeSet),
+        new ClassParameter(int.class, defStyle));
+    invokeConstructor(ViewGroup.class, realView, new ClassParameter(Context.class, context), new ClassParameter(AttributeSet.class, attributeSet),
+        new ClassParameter(int.class, defStyle));
     super.__constructor__(context, attributeSet, defStyle);
   }
 

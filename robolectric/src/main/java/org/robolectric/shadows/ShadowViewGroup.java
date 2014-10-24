@@ -6,10 +6,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.LayoutAnimationController;
-import java.io.PrintStream;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+
+import java.io.PrintStream;
 
 import static org.robolectric.Robolectric.directlyOn;
 import static org.robolectric.Robolectric.shadowOf;
@@ -31,8 +33,8 @@ public class ShadowViewGroup extends ShadowView {
   public void addView(final View child, final int index, final ViewGroup.LayoutParams params) {
     shadowOf(Looper.getMainLooper()).runPaused(new Runnable() {
       @Override public void run() {
-        directlyOn(realViewGroup, ViewGroup.class, "addView", View.class, int.class, ViewGroup.LayoutParams.class)
-            .invoke(child, index, params);
+        directlyOn(realViewGroup, ViewGroup.class, "addView", new Robolectric.ClassParameter(View.class, child),
+            new Robolectric.ClassParameter(int.class, index), new Robolectric.ClassParameter(ViewGroup.LayoutParams.class, params));
       }
     });
   }

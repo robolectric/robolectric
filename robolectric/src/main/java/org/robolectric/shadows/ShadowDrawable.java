@@ -183,7 +183,7 @@ public class ShadowDrawable {
   @Implementation
   public void invalidateSelf() {
     wasInvalidated = true;
-    directlyOn(realDrawable, Drawable.class, "invalidateSelf").invoke();
+    directlyOn(realDrawable, Drawable.class, "invalidateSelf");
   }
 
   public int getAlpha() {

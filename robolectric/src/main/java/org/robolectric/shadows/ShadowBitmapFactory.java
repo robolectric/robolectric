@@ -30,8 +30,7 @@ import java.util.Map;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
-import static org.robolectric.Robolectric.directlyOn;
-import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Robolectric.*;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(BitmapFactory.class)
@@ -41,11 +40,9 @@ public class ShadowBitmapFactory {
   @Implementation
   public static Bitmap decodeResourceStream(Resources res, TypedValue value,
                         InputStream is, Rect pad, BitmapFactory.Options opts) {
-    Bitmap bitmap = (Bitmap) directlyOn(BitmapFactory.class, "decodeResourceStream",
-        Resources.class, TypedValue.class,
-        InputStream.class, Rect.class, BitmapFactory.Options.class)
-        .invoke(res, value, is, pad, opts);
-
+    Bitmap bitmap = directlyOn(BitmapFactory.class, "decodeResourceStream", new ClassParameter(Resources.class, res),
+        new ClassParameter(TypedValue.class, value), new ClassParameter(InputStream.class, is),
+        new ClassParameter(Rect.class, pad), new ClassParameter(BitmapFactory.Options.class, opts));
     if (value != null && value.string != null && value.string.toString().contains(".9.")) {
       // todo: better support for nine-patches
       try {

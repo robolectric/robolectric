@@ -60,7 +60,6 @@ import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.impl.client.DefaultRequestDirector;
-import org.fest.reflect.method.Invoker;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implements;
 import org.robolectric.bytecode.RobolectricInternals;
@@ -76,12 +75,11 @@ import org.robolectric.util.Scheduler;
 import org.robolectric.util.ServiceController;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.List;
-
-import static org.fest.reflect.core.Reflection.method;
-import static org.fest.reflect.core.Reflection.staticMethod;
 
 public class Robolectric {
   public static Application application;
@@ -357,23 +355,72 @@ public class Robolectric {
     return RobolectricInternals.directlyOn(shadowedObject, clazz);
   }
 
-  public static <T> Invoker directlyOn(T shadowedObject, Class<T> clazz, String methodName, Class<?>... paramTypes) {
-    String directMethodName = RobolectricInternals.directMethodName(clazz.getName(), methodName);
-    return method(directMethodName).withReturnType(Object.class).withParameterTypes(paramTypes).in(
-        shadowedObject);
-  }
-
-  public static <T> Invoker directlyOn(Class<T> clazz, String methodName, Class<?>... paramTypes) {
-    String directMethodName = RobolectricInternals.directMethodName(clazz.getName(), methodName);
-    return method(directMethodName).withReturnType(Object.class).withParameterTypes(paramTypes).in(clazz);
-  }
-
-  public static <T> Invoker directlyOn(Object shadowedObject, String clazzName, String methodName, Class<?>... paramTypes) {
+  public static <R> R directlyOn(Object shadowedObject, String clazzName, String methodName, ClassParameter... paramValues) {
     try {
       Class<Object> aClass = (Class<Object>) shadowedObject.getClass().getClassLoader().loadClass(clazzName);
-      return directlyOn(shadowedObject, aClass, methodName, paramTypes);
+      return directlyOn(shadowedObject, aClass, methodName, paramValues);
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);
+    }
+  }
+
+  public static <R, T> R directlyOn(T shadowedObject, Class<T> clazz, String methodName, ClassParameter... paramValues) {
+    return directlyOnInternal(shadowedObject, clazz, methodName, shadowedObject.getClass(), paramValues);
+  }
+
+  public static <R, T> R directlyOn(Class<T> clazz, String methodName, ClassParameter... paramValues) {
+    return directlyOnInternal(null, clazz, methodName, clazz, paramValues);
+  }
+
+  private static <R, T> R directlyOnInternal(Object shadowedObject, Class<T> clazz, String methodName, Class classHierarchyStart, ClassParameter... paramValues) {
+    String directMethodName = RobolectricInternals.directMethodName(clazz.getName(), methodName);
+    try {
+      Class[] classes = new Class[paramValues.length];
+      for (int i = 0; i < paramValues.length; i++) {
+        Class<?> paramClass = paramValues[i].clazz;
+        classes[i] = paramClass;
+      }
+      Object[] values = new Object[paramValues.length];
+      for (int i = 0; i < paramValues.length; i++) {
+        Object paramValue = paramValues[i].val;
+        values[i] = paramValue;
+      }
+
+      Class hierarchyTraversalClass = classHierarchyStart;
+      while(hierarchyTraversalClass != null) {
+        try {
+          Method declaredMethod = hierarchyTraversalClass.getDeclaredMethod(directMethodName, classes);
+          declaredMethod.setAccessible(true);
+          return (R) declaredMethod.invoke(shadowedObject, values);
+        } catch (NoSuchMethodException e) {
+          hierarchyTraversalClass = hierarchyTraversalClass.getSuperclass();
+        }
+      }
+      throw new RuntimeException(new NoSuchMethodException());
+    } catch (InvocationTargetException e) {
+      throw (RuntimeException) e.getTargetException();
+    } catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static class ClassParameter<V> {
+    public Class clazz;
+    public V val;
+
+    public ClassParameter(Class<? extends V> clazz, V val) {
+      this.clazz = clazz;
+      this.val = val;
+    }
+  }
+
+  public static class StringParameter<V> {
+    public String className;
+    public V val;
+
+    public StringParameter(String className, V val) {
+      this.className = className;
+      this.val = val;
     }
   }
 
@@ -1340,7 +1387,15 @@ public class Robolectric {
     RobolectricBase.reset();
     for (Class<?> klass : config.shadows()) {
       if (klass.getAnnotation(Implements.class).resetStaticState()) {
-        staticMethod("reset").in(klass).invoke();
+        try {
+          klass.getDeclaredMethod("reset").invoke(null);
+        } catch (IllegalAccessException e) {
+          throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+          throw new RuntimeException(e);
+        } catch (NoSuchMethodException e) {
+          throw new RuntimeException(e);
+        }
       }
     }
   }

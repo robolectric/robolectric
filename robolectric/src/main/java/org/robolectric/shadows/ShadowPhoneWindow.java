@@ -1,8 +1,6 @@
 package org.robolectric.shadows;
 
 import android.graphics.drawable.Drawable;
-import android.view.Window;
-
 import android.widget.ProgressBar;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
@@ -20,7 +18,7 @@ public class ShadowPhoneWindow extends ShadowWindow {
   @Implementation
   public void setTitle(CharSequence title) {
     this.title = title;
-    directlyOn(realWindow, PHONE_WINDOW_CLASS_NAME, "setTitle", CharSequence.class).invoke(title);
+    directlyOn(realWindow, PHONE_WINDOW_CLASS_NAME, "setTitle", new Robolectric.ClassParameter(CharSequence.class, title));
   }
 
   public CharSequence getTitle() {
@@ -30,7 +28,7 @@ public class ShadowPhoneWindow extends ShadowWindow {
   @Implementation
   public void setBackgroundDrawable(Drawable drawable) {
     this.backgroundDrawable = drawable;
-    directlyOn(realWindow, PHONE_WINDOW_CLASS_NAME, "setBackgroundDrawable", Drawable.class).invoke(drawable);
+    directlyOn(realWindow, PHONE_WINDOW_CLASS_NAME, "setBackgroundDrawable", new Robolectric.ClassParameter(Drawable.class, drawable));
   }
 
   public Drawable getBackgroundDrawable() {
@@ -39,11 +37,11 @@ public class ShadowPhoneWindow extends ShadowWindow {
 
   @Override
   public ProgressBar getProgressBar() {
-    return (ProgressBar) directlyOn(realWindow, PHONE_WINDOW_CLASS_NAME, "getHorizontalProgressBar", boolean.class).invoke(false);
+    return (ProgressBar) directlyOn(realWindow, PHONE_WINDOW_CLASS_NAME, "getHorizontalProgressBar", new Robolectric.ClassParameter(boolean.class, false));
   }
 
   @Override
   public ProgressBar getIndeterminateProgressBar() {
-    return (ProgressBar) directlyOn(realWindow, PHONE_WINDOW_CLASS_NAME, "getCircularProgressBar", boolean.class).invoke(false);
+    return (ProgressBar) directlyOn(realWindow, PHONE_WINDOW_CLASS_NAME, "getCircularProgressBar", new Robolectric.ClassParameter(boolean.class, false));
   }
 }

@@ -524,7 +524,8 @@ public class ShadowResources {
   @HiddenApi @Implementation
   public Drawable loadDrawable(TypedValue value, int id) {
     ResName resName = tryResName(id);
-    Drawable drawable = (Drawable) directlyOn(realResources, Resources.class, "loadDrawable", TypedValue.class, int.class).invoke(value, id);
+    Drawable drawable = directlyOn(realResources, Resources.class, "loadDrawable", new Robolectric.ClassParameter(TypedValue.class, value),
+        new Robolectric.ClassParameter(int.class, id));
     // todo: this kinda sucks, find some better way...
     if (drawable != null) {
       shadowOf(drawable).createdFromResId = id;
