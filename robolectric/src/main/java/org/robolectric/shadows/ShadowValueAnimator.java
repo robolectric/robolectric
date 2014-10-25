@@ -35,11 +35,6 @@ public class ShadowValueAnimator extends ShadowAnimator {
   }
 
   @Implementation
-  public static ValueAnimator ofInt (int... values){
-    return new ValueAnimator();
-  }
-
-  @Implementation
   public boolean isRunning() {
     return false;
   }
