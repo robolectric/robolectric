@@ -10,6 +10,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.internal.ReflectionHelpers;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceLoader;
 
@@ -36,13 +37,13 @@ public class ShadowWindow {
   @Implementation
   public void setFlags(int flags, int mask) {
     this.flags = (this.flags & ~mask) | (flags & mask);
-    directlyOn(realWindow, Window.class, "setFlags", new Robolectric.ClassParameter(int.class, flags), new Robolectric.ClassParameter(int.class, mask));
+    directlyOn(realWindow, Window.class, "setFlags", new ReflectionHelpers.ClassParameter(int.class, flags), new ReflectionHelpers.ClassParameter(int.class, mask));
   }
 
   @Implementation
   public void setSoftInputMode(int softInputMode) {
     this.softInputMode = softInputMode;
-    directlyOn(realWindow, Window.class, "setSoftInputMode", new Robolectric.ClassParameter(int.class, softInputMode));
+    directlyOn(realWindow, Window.class, "setSoftInputMode", new ReflectionHelpers.ClassParameter(int.class, softInputMode));
   }
 
   public boolean getFlag(int flag) {
@@ -60,15 +61,7 @@ public class ShadowWindow {
     try {
       Class<?> actionBarViewClass = Class.forName("com.android.internal.widget.ActionBarView");
       ViewGroup actionBarView;
-      try {
-        Field mActionBar = realWindow.getClass().getDeclaredField("mActionBar");
-        mActionBar.setAccessible(true);
-        actionBarView = (ViewGroup) mActionBar.get(realWindow);
-      } catch (IllegalAccessException e) {
-        throw new RuntimeException(e);
-      } catch (NoSuchFieldException e) {
-        throw new RuntimeException(e);
-      }
+      actionBarView = ReflectionHelpers.getFieldReflectively(realWindow, "mActionBar");
       return (ImageView) actionBarView.findViewById(resId);
     } catch (ClassNotFoundException e) {
       throw new RuntimeException("could not resolve ActionBarView");

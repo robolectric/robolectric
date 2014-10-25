@@ -15,6 +15,7 @@ import org.robolectric.annotation.*;
 import org.robolectric.bytecode.*;
 import org.robolectric.internal.ParallelUniverse;
 import org.robolectric.internal.ParallelUniverseInterface;
+import org.robolectric.internal.ReflectionHelpers;
 import org.robolectric.res.*;
 import org.robolectric.util.AnnotationUtil;
 import org.robolectric.util.Pair;
@@ -142,19 +143,9 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   }
 
   public static void injectClassHandler(ClassLoader robolectricClassLoader, ClassHandler classHandler) {
-    try {
-      String className = RobolectricInternals.class.getName();
-      Class<?> robolectricInternalsClass = robolectricClassLoader.loadClass(className);
-      Field field = robolectricInternalsClass.getDeclaredField("classHandler");
-      field.setAccessible(true);
-      field.set(null, classHandler);
-    } catch (NoSuchFieldException e) {
-      throw new RuntimeException(e);
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e);
-    }
+    String className = RobolectricInternals.class.getName();
+    Class<?> robolectricInternalsClass = ReflectionHelpers.loadClassReflectively(robolectricClassLoader, className);
+    ReflectionHelpers.setStaticFieldReflectively(robolectricInternalsClass, "classHandler", classHandler);
   }
 
   @Override

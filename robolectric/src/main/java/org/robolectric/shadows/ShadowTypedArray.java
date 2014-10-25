@@ -6,8 +6,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.internal.HiddenApi;
-
-import java.lang.reflect.InvocationTargetException;
+import org.robolectric.internal.ReflectionHelpers;
 
 import static org.robolectric.Robolectric.shadowOf;
 
@@ -19,18 +18,9 @@ public class ShadowTypedArray {
   public String positionDescription;
 
   public static TypedArray create(Resources realResources, int[] attrs, int[] data, int[] indices, int len, CharSequence[] stringData) {
-    TypedArray typedArray;
-    try {
-      typedArray = TypedArray.class.getConstructor(Resources.class, int[].class, int[].class, int.class).newInstance(realResources, data, indices, len);
-    } catch (InstantiationException e) {
-      throw new RuntimeException(e);
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    } catch (InvocationTargetException e) {
-      throw new RuntimeException(e);
-    } catch (NoSuchMethodException e) {
-      throw new RuntimeException(e);
-    }
+    TypedArray typedArray = ReflectionHelpers.callConstructorReflectively(TypedArray.class, new ReflectionHelpers.ClassParameter(Resources.class, realResources),
+        new ReflectionHelpers.ClassParameter(int[].class, data), new ReflectionHelpers.ClassParameter(int[].class, indices),
+        new ReflectionHelpers.ClassParameter(int.class, len));
     shadowOf(typedArray).stringData = stringData;
     return typedArray;
   }

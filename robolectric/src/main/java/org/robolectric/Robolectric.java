@@ -38,8 +38,22 @@ import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
-import android.os.*;
-import android.preference.*;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Looper;
+import android.os.Parcel;
+import android.os.PowerManager;
+import android.os.ResultReceiver;
+import android.preference.DialogPreference;
+import android.preference.ListPreference;
+import android.preference.Preference;
+import android.preference.PreferenceActivity;
+import android.preference.PreferenceCategory;
+import android.preference.PreferenceGroup;
+import android.preference.PreferenceScreen;
 import android.speech.tts.TextToSpeech;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.LocalBroadcastManager;
@@ -63,6 +77,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implements;
 import org.robolectric.bytecode.RobolectricInternals;
 import org.robolectric.bytecode.ShadowWrangler;
+import org.robolectric.internal.ReflectionHelpers;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.shadows.*;
@@ -353,7 +368,7 @@ public class Robolectric {
     return RobolectricInternals.directlyOn(shadowedObject, clazz);
   }
 
-  public static <R> R directlyOn(Object shadowedObject, String clazzName, String methodName, ClassParameter... paramValues) {
+  public static <R> R directlyOn(Object shadowedObject, String clazzName, String methodName, ReflectionHelpers.ClassParameter... paramValues) {
     try {
       Class<Object> aClass = (Class<Object>) shadowedObject.getClass().getClassLoader().loadClass(clazzName);
       return directlyOn(shadowedObject, aClass, methodName, paramValues);
@@ -362,27 +377,19 @@ public class Robolectric {
     }
   }
 
-  public static <R, T> R directlyOn(T shadowedObject, Class<T> clazz, String methodName, ClassParameter... paramValues) {
+  public static <R, T> R directlyOn(T shadowedObject, Class<T> clazz, String methodName, ReflectionHelpers.ClassParameter... paramValues) {
     return directlyOnInternal(shadowedObject, clazz, methodName, shadowedObject.getClass(), paramValues);
   }
 
-  public static <R, T> R directlyOn(Class<T> clazz, String methodName, ClassParameter... paramValues) {
+  public static <R, T> R directlyOn(Class<T> clazz, String methodName, ReflectionHelpers.ClassParameter... paramValues) {
     return directlyOnInternal(null, clazz, methodName, clazz, paramValues);
   }
 
-  private static <R, T> R directlyOnInternal(Object shadowedObject, Class<T> clazz, String methodName, Class classHierarchyStart, ClassParameter... paramValues) {
+  private static <R, T> R directlyOnInternal(Object shadowedObject, Class<T> clazz, String methodName, Class classHierarchyStart, ReflectionHelpers.ClassParameter... paramValues) {
     String directMethodName = RobolectricInternals.directMethodName(clazz.getName(), methodName);
     try {
-      Class[] classes = new Class[paramValues.length];
-      for (int i = 0; i < paramValues.length; i++) {
-        Class<?> paramClass = paramValues[i].clazz;
-        classes[i] = paramClass;
-      }
-      Object[] values = new Object[paramValues.length];
-      for (int i = 0; i < paramValues.length; i++) {
-        Object paramValue = paramValues[i].val;
-        values[i] = paramValue;
-      }
+      Class[] classes = ReflectionHelpers.ClassParameter.getClasses(paramValues);
+      Object[] values = ReflectionHelpers.ClassParameter.getValues(paramValues);
 
       Class hierarchyTraversalClass = classHierarchyStart;
       while(hierarchyTraversalClass != null) {
@@ -399,26 +406,6 @@ public class Robolectric {
       throw (RuntimeException) e.getTargetException();
     } catch (IllegalAccessException e) {
       throw new RuntimeException(e);
-    }
-  }
-
-  public static class ClassParameter<V> {
-    public Class clazz;
-    public V val;
-
-    public ClassParameter(Class<? extends V> clazz, V val) {
-      this.clazz = clazz;
-      this.val = val;
-    }
-  }
-
-  public static class StringParameter<V> {
-    public String className;
-    public V val;
-
-    public StringParameter(String className, V val) {
-      this.className = className;
-      this.val = val;
     }
   }
 
@@ -1385,15 +1372,7 @@ public class Robolectric {
     RobolectricBase.reset();
     for (Class<?> klass : config.shadows()) {
       if (klass.getAnnotation(Implements.class).resetStaticState()) {
-        try {
-          klass.getDeclaredMethod("reset").invoke(null);
-        } catch (IllegalAccessException e) {
-          throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
-          throw new RuntimeException(e);
-        } catch (NoSuchMethodException e) {
-          throw new RuntimeException(e);
-        }
+        ReflectionHelpers.callStaticMethodReflectively(klass, "reset");
       }
     }
   }
@@ -1441,12 +1420,7 @@ public class Robolectric {
     }
 
     public static void setFinalStaticField(Class classWhichContainsField, String fieldName, Object newValue) {
-      try {
-        Field field = classWhichContainsField.getDeclaredField(fieldName);
-        setFinalStaticField(field, newValue);
-      } catch (NoSuchFieldException e) {
-        throw new RuntimeException(e);
-      }
+      ReflectionHelpers.setStaticFieldReflectively(classWhichContainsField, fieldName, newValue);
     }
 
     public static Object setFinalStaticField(Field field, Object newValue) {

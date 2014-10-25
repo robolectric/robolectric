@@ -13,6 +13,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.bytecode.RobolectricInternals;
+import org.robolectric.internal.ReflectionHelpers;
 
 @Implements(Preference.class)
 public class ShadowPreference {
@@ -61,8 +62,8 @@ public class ShadowPreference {
     }
 
     // Also invoke the constructor on the actual object to give it a Context.
-    RobolectricInternals.invokeConstructor(Preference.class, this.realPreference, new Robolectric.ClassParameter(Context.class, context),
-        new Robolectric.ClassParameter(AttributeSet.class, attributeSet), new Robolectric.ClassParameter(Integer.TYPE, defStyle));
+    RobolectricInternals.invokeConstructor(Preference.class, this.realPreference, new ReflectionHelpers.ClassParameter(Context.class, context),
+        new ReflectionHelpers.ClassParameter(AttributeSet.class, attributeSet), new ReflectionHelpers.ClassParameter(Integer.TYPE, defStyle));
   }
 
   private void initDefaultValue(TypedArray typedArray) {
@@ -74,7 +75,7 @@ public class ShadowPreference {
 
   @Implementation
   public void onAttachedToHierarchy(PreferenceManager preferenceManager) {
-    Robolectric.directlyOn(realPreference, Preference.class, "onAttachedToHierarchy", new Robolectric.ClassParameter(PreferenceManager.class, preferenceManager));
+    Robolectric.directlyOn(realPreference, Preference.class, "onAttachedToHierarchy", new ReflectionHelpers.ClassParameter(PreferenceManager.class, preferenceManager));
   }
 
   @Implementation

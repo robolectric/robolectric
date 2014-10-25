@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static android.content.Intent.*;
-import static org.robolectric.Robolectric.ClassParameter;
+import static org.robolectric.internal.ReflectionHelpers.ClassParameter;
 import static org.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})

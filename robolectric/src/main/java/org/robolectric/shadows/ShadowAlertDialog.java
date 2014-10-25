@@ -9,6 +9,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.internal.ReflectionHelpers;
 
 import java.lang.reflect.Field;
 
@@ -118,15 +119,7 @@ public class ShadowAlertDialog extends ShadowDialog {
   }
 
   public ShadowAlertController getShadowAlertController() {
-    try {
-      Field mAlert = AlertDialog.class.getDeclaredField("mAlert");
-      mAlert.setAccessible(true);
-      return shadowOf_(mAlert.get(realAlertDialog));
-    } catch (NoSuchFieldException e) {
-      throw new RuntimeException(e);
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    }
+    return shadowOf_(ReflectionHelpers.getFieldReflectively(realAlertDialog, "mAlert"));
   }
 
   /**

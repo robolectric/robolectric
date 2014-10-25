@@ -6,6 +6,7 @@ import android.net.Uri;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.internal.ReflectionHelpers;
 import org.robolectric.tester.android.database.TestCursor;
 
 import java.lang.reflect.Field;
@@ -240,14 +241,6 @@ public class ShadowDownloadManager {
   }
 
   private static <T> T getFieldReflectively(String fieldName, Object object, Class aClass) {
-    try {
-      Field field = aClass.getDeclaredField(fieldName);
-      field.setAccessible(true);
-      return (T) field.get(object);
-    } catch (NoSuchFieldException e) {
-      throw new RuntimeException(e);
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    }
+    return ReflectionHelpers.getFieldReflectively(object, fieldName);
   }
 }

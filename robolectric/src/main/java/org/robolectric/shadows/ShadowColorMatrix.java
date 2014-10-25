@@ -4,6 +4,7 @@ import android.graphics.ColorMatrix;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.internal.ReflectionHelpers;
 import org.robolectric.util.Join;
 
 import java.lang.reflect.Field;
@@ -28,14 +29,6 @@ public class ShadowColorMatrix {
   }
   
   private float[] getMatrix() {
-    try {
-      Field mArray = ColorMatrix.class.getDeclaredField("mArray");
-      mArray.setAccessible(true);
-      return (float[]) mArray.get(realColorMatrix);
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    } catch (NoSuchFieldException e) {
-      throw new RuntimeException(e);
-    }
+    return ReflectionHelpers.getFieldReflectively(realColorMatrix, "mArray");
   }
 }

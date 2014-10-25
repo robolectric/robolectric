@@ -6,7 +6,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.bytecode.RobolectricInternals;
 
-import static org.robolectric.Robolectric.ClassParameter;
+import static org.robolectric.internal.ReflectionHelpers.ClassParameter;
 
 @Implements(value = TimePickerDialog.class, inheritImplementationMethods = true)
 public class ShadowTimePickerDialog extends ShadowAlertDialog {

@@ -4,6 +4,7 @@ import android.os.Bundle;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.internal.ReflectionHelpers;
 
 import java.lang.reflect.Field;
 import java.util.Map;
@@ -43,14 +44,6 @@ public class ShadowBundle {
   }
 
   private static Map getUnderlyingMap(Bundle bundle) {
-    try {
-      Field mMap = Bundle.class.getDeclaredField("mMap");
-      mMap.setAccessible(true);
-      return (Map) mMap.get(bundle);
-    } catch (NoSuchFieldException e) {
-      throw new RuntimeException(e);
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    }
+    return ReflectionHelpers.getFieldReflectively(bundle, "mMap");
   }
 }

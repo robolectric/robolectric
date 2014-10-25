@@ -17,10 +17,9 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.internal.HiddenApi;
+import org.robolectric.internal.ReflectionHelpers;
 
 import java.io.PrintStream;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import static org.robolectric.Robolectric.directlyOn;
@@ -62,8 +61,8 @@ public class ShadowView {
 
     this.attributeSet = attributeSet;
 
-    invokeConstructor(View.class, realView, new Robolectric.ClassParameter(Context.class, context), new Robolectric.ClassParameter(AttributeSet.class, attributeSet),
-        new Robolectric.ClassParameter(int.class, defStyle));
+    invokeConstructor(View.class, realView, new ReflectionHelpers.ClassParameter(Context.class, context), new ReflectionHelpers.ClassParameter(AttributeSet.class, attributeSet),
+        new ReflectionHelpers.ClassParameter(int.class, defStyle));
   }
 
   /**
@@ -151,8 +150,8 @@ public class ShadowView {
   @Implementation
   public void onLayout(boolean changed, int left, int top, int right, int bottom) {
     onLayoutWasCalled = true;
-    directlyOn(realView, View.class, "onLayout", new Robolectric.ClassParameter(boolean.class, changed), new Robolectric.ClassParameter(int.class, left),
-        new Robolectric.ClassParameter(int.class, top), new Robolectric.ClassParameter(int.class, right), new Robolectric.ClassParameter(int.class, bottom));
+    directlyOn(realView, View.class, "onLayout", new ReflectionHelpers.ClassParameter(boolean.class, changed), new ReflectionHelpers.ClassParameter(int.class, left),
+        new ReflectionHelpers.ClassParameter(int.class, top), new ReflectionHelpers.ClassParameter(int.class, right), new ReflectionHelpers.ClassParameter(int.class, bottom));
   }
 
   public boolean onLayoutWasCalled() {
@@ -424,15 +423,7 @@ public class ShadowView {
   }
 
   public boolean isAttachedToWindow() {
-    try {
-      Field mAttachInfo = View.class.getDeclaredField("mAttachInfo");
-      mAttachInfo.setAccessible(true);
-      return mAttachInfo.get(realView) != null;
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    } catch (NoSuchFieldException e) {
-      throw new RuntimeException(e);
-    }
+    return ReflectionHelpers.getFieldReflectively(realView, "mAttachInfo") != null;
   }
 
   public void callOnAttachedToWindow() {
@@ -444,17 +435,7 @@ public class ShadowView {
   }
 
   private void invokeReflectively(String methodName) {
-    try {
-      Method method = View.class.getDeclaredMethod(methodName);
-      method.setAccessible(true);
-      method.invoke(realView);
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    } catch (InvocationTargetException e) {
-      throw new RuntimeException(e);
-    } catch (NoSuchMethodException e) {
-      throw new RuntimeException(e);
-    }
+    ReflectionHelpers.callInstanceMethodReflectively(realView, methodName);
   }
 
   @Implementation
@@ -468,7 +449,7 @@ public class ShadowView {
   }
 
   public void setMyParent(ViewParent viewParent) {
-    directlyOn(realView, View.class, "assignParent", new Robolectric.ClassParameter(ViewParent.class, viewParent));
+    directlyOn(realView, View.class, "assignParent", new ReflectionHelpers.ClassParameter(ViewParent.class, viewParent));
   }
 
   private View directly() {

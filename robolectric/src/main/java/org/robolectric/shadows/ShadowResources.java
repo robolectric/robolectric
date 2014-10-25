@@ -17,6 +17,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.internal.HiddenApi;
+import org.robolectric.internal.ReflectionHelpers;
 import org.robolectric.res.*;
 import org.robolectric.res.builder.XmlFileBuilder;
 import org.robolectric.util.Util;
@@ -492,31 +493,14 @@ public class ShadowResources {
 
     Resources getResources() {
       // ugh
-      try {
-        Field this$0 = Resources.Theme.class.getDeclaredField("this$0");
-        this$0.setAccessible(true);
-        return (Resources) this$0.get(realTheme);
-      } catch (NoSuchFieldException e) {
-        throw new RuntimeException(e);
-      } catch (IllegalAccessException e) {
-        throw new RuntimeException(e);
-      }
+      return ReflectionHelpers.getFieldReflectively(realTheme, "this$0");
     }
   }
 
   @Implementation
   public final Resources.Theme newTheme() {
     Resources.Theme theme = directlyOn(realResources, Resources.class).newTheme();
-    int themeId;
-    try {
-      Field mTheme = Resources.Theme.class.getDeclaredField("mTheme");
-      mTheme.setAccessible(true);
-      themeId = mTheme.getInt(theme);
-    } catch (NoSuchFieldException e) {
-      throw new RuntimeException(e);
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    }
+    int themeId = ReflectionHelpers.getFieldReflectively(theme, "mTheme");
     shadowOf(realResources.getAssets()).setTheme(themeId, theme);
     return theme;
   }
@@ -524,8 +508,8 @@ public class ShadowResources {
   @HiddenApi @Implementation
   public Drawable loadDrawable(TypedValue value, int id) {
     ResName resName = tryResName(id);
-    Drawable drawable = directlyOn(realResources, Resources.class, "loadDrawable", new Robolectric.ClassParameter(TypedValue.class, value),
-        new Robolectric.ClassParameter(int.class, id));
+    Drawable drawable = directlyOn(realResources, Resources.class, "loadDrawable", new ReflectionHelpers.ClassParameter(TypedValue.class, value),
+        new ReflectionHelpers.ClassParameter(int.class, id));
     // todo: this kinda sucks, find some better way...
     if (drawable != null) {
       shadowOf(drawable).createdFromResId = id;

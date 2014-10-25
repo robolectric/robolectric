@@ -6,9 +6,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Looper;
 import org.robolectric.Robolectric;
+import org.robolectric.internal.ReflectionHelpers;
 import org.robolectric.shadows.ShadowLooper;
-
-import java.lang.reflect.InvocationTargetException;
 
 import static org.robolectric.Robolectric.shadowOf_;
 
@@ -74,15 +73,7 @@ abstract class ComponentController<C extends ComponentController<C, T, S>, T, S>
     shadowMainLooper.runPaused(new Runnable() {
       @Override
       public void run() {
-        try {
-          component.getClass().getMethod(methodName).invoke(component);
-        } catch (IllegalAccessException e) {
-          throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
-          throw (RuntimeException) e.getTargetException();
-        } catch (NoSuchMethodException e) {
-          throw new RuntimeException(e);
-        }
+        ReflectionHelpers.callInstanceMethodReflectively(component, methodName);
       }
     });
     return myself;
@@ -92,15 +83,7 @@ abstract class ComponentController<C extends ComponentController<C, T, S>, T, S>
     shadowMainLooper.runPaused(new Runnable() {
       @Override
       public void run() {
-        try {
-          component.getClass().getMethod(methodName, Bundle.class).invoke(component, arg);
-        } catch (IllegalAccessException e) {
-          throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
-          throw new RuntimeException(e);
-        } catch (NoSuchMethodException e) {
-          throw new RuntimeException(e);
-        }
+        ReflectionHelpers.callInstanceMethodReflectively(component, methodName, new ReflectionHelpers.ClassParameter(Bundle.class, arg));
       }
     });
     return myself;
@@ -110,15 +93,7 @@ abstract class ComponentController<C extends ComponentController<C, T, S>, T, S>
     shadowMainLooper.runPaused(new Runnable() {
       @Override
       public void run() {
-        try {
-          component.getClass().getMethod(methodName, Intent.class).invoke(component, arg);
-        } catch (IllegalAccessException e) {
-          throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
-          throw new RuntimeException(e);
-        } catch (NoSuchMethodException e) {
-          throw new RuntimeException(e);
-        }
+        ReflectionHelpers.callInstanceMethodReflectively(component, methodName, new ReflectionHelpers.ClassParameter(Intent.class, arg));
       }
     });
     return myself;
@@ -128,15 +103,7 @@ abstract class ComponentController<C extends ComponentController<C, T, S>, T, S>
     shadowMainLooper.runPaused(new Runnable() {
       @Override
       public void run() {
-        try {
-          component.getClass().getMethod(methodName, Intent.class, int.class, int.class).invoke(component, arg, param1, param2);
-        } catch (IllegalAccessException e) {
-          throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
-          throw new RuntimeException(e);
-        } catch (NoSuchMethodException e) {
-          throw new RuntimeException(e);
-        }
+        ReflectionHelpers.callInstanceMethodReflectively(component, methodName, new ReflectionHelpers.ClassParameter(Intent.class, arg), new ReflectionHelpers.ClassParameter(int.class, param1), new ReflectionHelpers.ClassParameter(int.class, param2));
       }
     });
     return myself;

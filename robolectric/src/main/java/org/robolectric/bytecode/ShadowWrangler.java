@@ -4,6 +4,7 @@ import android.content.Context;
 import org.robolectric.SdkConfig;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.internal.ReflectionHelpers;
 import org.robolectric.shadows.ShadowWindow;
 import org.robolectric.util.Function;
 
@@ -243,16 +244,7 @@ public class ShadowWrangler implements ClassHandler {
           }
 
           Object context = params[0];
-          try {
-            Method create = shadowWindowClass.getMethod("create", activityClass);
-            return create.invoke(null, context);
-          } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-          } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
-          } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-          }
+          return ReflectionHelpers.callStaticMethodReflectively(shadowWindowClass, "create", new ReflectionHelpers.ClassParameter(activityClass, context));
         }
       };
     } else if (methodSignature.matches("java.lang.System", "nanoTime")
@@ -268,16 +260,7 @@ public class ShadowWrangler implements ClassHandler {
             throw new RuntimeException(e);
           }
 
-          try {
-            Method method = shadowSystemClockClass.getMethod(methodSignature.methodName);
-            return method.invoke(null);
-          } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-          } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
-          } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-          }
+          return ReflectionHelpers.callStaticMethodReflectively(shadowSystemClockClass, methodSignature.methodName);
         }
       };
     }

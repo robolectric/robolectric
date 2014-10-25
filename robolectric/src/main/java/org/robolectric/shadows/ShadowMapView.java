@@ -12,13 +12,14 @@ import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.internal.HiddenApi;
+import org.robolectric.internal.ReflectionHelpers;
 import org.robolectric.res.Attribute;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.robolectric.Robolectric.ClassParameter;
+import static org.robolectric.internal.ReflectionHelpers.ClassParameter;
 import static org.robolectric.Robolectric.directlyOn;
 import static org.robolectric.RobolectricForMaps.shadowOf;
 import static org.robolectric.bytecode.RobolectricInternals.invokeConstructor;
@@ -316,14 +317,6 @@ public class ShadowMapView extends ShadowViewGroup {
   }
 
   private void setContextOnRealView(Context context) {
-    try {
-      Field mContext = View.class.getDeclaredField("mContext");
-      mContext.setAccessible(true);
-      mContext.set(realView, context);
-    } catch (NoSuchFieldException e) {
-      throw new RuntimeException(e);
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    }
+    ReflectionHelpers.setFieldReflectively(realView, "mContext", context);
   }
 }

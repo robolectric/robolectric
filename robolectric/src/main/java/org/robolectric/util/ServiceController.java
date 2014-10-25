@@ -5,10 +5,9 @@ import android.app.Service;
 import android.content.Context;
 import android.os.IBinder;
 import org.robolectric.Robolectric;
+import org.robolectric.internal.ReflectionHelpers;
 import org.robolectric.shadows.ShadowActivityThread;
 import org.robolectric.shadows.ShadowService;
-
-import java.lang.reflect.InvocationTargetException;
 
 public class ServiceController<T extends Service> extends ComponentController<ServiceController<T>, T, ShadowService>{
 
@@ -47,26 +46,10 @@ public class ServiceController<T extends Service> extends ComponentController<Se
       throw new RuntimeException(e);
     }
 
-    try {
-      component.getClass().getMethod("attach",
-          Context.class /* context */,
-          activityThreadClass /* aThread */,
-          String.class /* className */,
-          IBinder.class /* token */,
-          Application.class /* application */,
-          Object.class /* activityManager */).invoke(component, baseContext,
-          null /* aThread */,
-          component.getClass().getSimpleName(), /* className */
-          null /* token */,
-          application,
-          null /* activityManager */);
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    } catch (InvocationTargetException e) {
-      throw new RuntimeException(e);
-    } catch (NoSuchMethodException e) {
-      throw new RuntimeException(e);
-    }
+    ReflectionHelpers.callInstanceMethodReflectively(component, "attach", new ReflectionHelpers.ClassParameter(Context.class, baseContext),
+        new ReflectionHelpers.ClassParameter(activityThreadClass, null), new ReflectionHelpers.ClassParameter(String.class, component.getClass().getSimpleName()),
+        new ReflectionHelpers.ClassParameter(IBinder.class, null), new ReflectionHelpers.ClassParameter(Application.class, application),
+        new ReflectionHelpers.ClassParameter(Object.class, null));
 
     attached = true;
     return this;

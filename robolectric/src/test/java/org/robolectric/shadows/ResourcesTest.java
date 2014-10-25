@@ -13,12 +13,12 @@ import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
+import org.robolectric.internal.ReflectionHelpers;
 import org.robolectric.util.TestUtil;
 import org.xmlpull.v1.XmlPullParser;
 
 import java.io.File;
 import java.io.InputStream;
-import java.lang.reflect.Field;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Robolectric.shadowOf;
@@ -440,15 +440,7 @@ public class ResourcesTest {
   }
 
   private int getInternalId(Resources.Theme theme) {
-    try {
-      Field mTheme = theme.getClass().getDeclaredField("mTheme");
-      mTheme.setAccessible(true);
-      return mTheme.getInt(theme);
-    } catch (NoSuchFieldException e) {
-      throw new RuntimeException(e);
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    }
+    return ReflectionHelpers.getFieldReflectively(theme, "mTheme");
   }
 
   @Test

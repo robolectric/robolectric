@@ -7,6 +7,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.internal.HiddenApi;
+import org.robolectric.internal.ReflectionHelpers;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
@@ -85,15 +86,7 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
 
   @Implementation
   public void setLayoutParams(LayoutParams params) {
-    try {
-      Field mLayoutParams = View.class.getDeclaredField("mLayoutParams");
-      mLayoutParams.setAccessible(true);
-      mLayoutParams.set(realWebView, params);
-    } catch (NoSuchFieldException e) {
-      throw new RuntimeException(e);
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    }
+    ReflectionHelpers.setFieldReflectively(realWebView, "mLayoutParams", params);
   }
 
   private Object nullish(Method method) {

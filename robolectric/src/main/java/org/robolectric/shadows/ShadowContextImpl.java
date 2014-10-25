@@ -13,8 +13,8 @@ import org.robolectric.SdkConfig;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.internal.ReflectionHelpers;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -93,28 +93,23 @@ public class ShadowContextImpl extends ShadowContext {
 
       try {
         if (serviceClassName.equals("android.app.SearchManager")) {
-          service = SearchManager.class.getConstructor(Context.class, Handler.class).newInstance(realContextImpl, null);
+          service = ReflectionHelpers.callConstructorReflectively(SearchManager.class, new ReflectionHelpers.ClassParameter(Context.class, realContextImpl),
+              new ReflectionHelpers.ClassParameter(Handler.class, null));
         } else if (serviceClassName.equals("android.app.ActivityManager")) {
-          service = ActivityManager.class.getConstructor(Context.class, Handler.class).newInstance(realContextImpl, null);
+          service = ReflectionHelpers.callConstructorReflectively(ActivityManager.class, new ReflectionHelpers.ClassParameter(Context.class, realContextImpl),
+              new ReflectionHelpers.ClassParameter(Handler.class, null));
         } else if (serviceClassName.equals("android.app.admin.DevicePolicyManager")) {
-          service = DevicePolicyManager.class.getConstructor(Context.class, Handler.class).newInstance(realContextImpl, null);
+          service = ReflectionHelpers.callConstructorReflectively(DevicePolicyManager.class, new ReflectionHelpers.ClassParameter(Context.class, realContextImpl),
+              new ReflectionHelpers.ClassParameter(Handler.class, null));
         } else if (serviceClassName.equals("android.os.storage.StorageManager")) {
-          service = StorageManager.class.getConstructor().newInstance();
+          service = ReflectionHelpers.callConstructorReflectively(StorageManager.class);
         } else if ((sdkConfig.getApiLevel() >= Build.VERSION_CODES.JELLY_BEAN_MR1) && (serviceClassName.equals("android.view.WindowManagerImpl"))) {
           Display display = newInstanceOf(Display.class);
-          service = Class.forName("android.view.WindowManagerImpl").getConstructor(Display.class).newInstance(display);
+          service = ReflectionHelpers.callConstructorReflectively(Class.forName("android.view.WindowManagerImpl"), new ReflectionHelpers.ClassParameter(Display.class, display));
         } else {
           service = newInstanceOf(Class.forName(serviceClassName));
         }
       } catch (ClassNotFoundException e) {
-        throw new RuntimeException(e);
-      } catch (InvocationTargetException e) {
-        throw new RuntimeException(e);
-      } catch (NoSuchMethodException e) {
-        throw new RuntimeException(e);
-      } catch (InstantiationException e) {
-        throw new RuntimeException(e);
-      } catch (IllegalAccessException e) {
         throw new RuntimeException(e);
       }
 

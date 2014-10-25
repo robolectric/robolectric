@@ -5,8 +5,8 @@ import android.util.TimeFormatException;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.internal.ReflectionHelpers;
 
-import java.lang.reflect.InvocationTargetException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -308,17 +308,7 @@ public class ShadowTime {
   }
 
   private void throwTimeFormatException(String optionalMessage) {
-    try {
-      throw TimeFormatException.class.getConstructor(String.class).newInstance(optionalMessage == null ? "fail" : optionalMessage);
-    } catch (InstantiationException e) {
-      throw new RuntimeException(e);
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    } catch (InvocationTargetException e) {
-      throw new RuntimeException(e);
-    } catch (NoSuchMethodException e) {
-      throw new RuntimeException(e);
-    }
+    throw ReflectionHelpers.<TimeFormatException>callConstructorReflectively(TimeFormatException.class, new ReflectionHelpers.ClassParameter(String.class, optionalMessage == null ? "fail" : optionalMessage));
   }
 
   private Calendar getCalendar() {

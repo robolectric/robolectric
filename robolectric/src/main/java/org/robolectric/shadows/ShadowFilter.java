@@ -4,9 +4,7 @@ import android.widget.Filter;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import org.robolectric.internal.ReflectionHelpers;
 
 @Implements(Filter.class)
 public class ShadowFilter {
@@ -17,29 +15,9 @@ public class ShadowFilter {
     try {
       Class<?> forName = Class.forName("android.widget.Filter$FilterResults");
       Object filtering;
-      try {
-        Method performFiltering = Filter.class.getDeclaredMethod("performFiltering", CharSequence.class);
-        performFiltering.setAccessible(true);
-        filtering = performFiltering.invoke(realObject, constraint);
-      } catch (IllegalAccessException e) {
-        throw new RuntimeException(e);
-      } catch (InvocationTargetException e) {
-        throw new RuntimeException(e);
-      } catch (NoSuchMethodException e) {
-        throw new RuntimeException(e);
-      }
-
-      try {
-        Method publishResults = Filter.class.getDeclaredMethod("publishResults", CharSequence.class, forName);
-        publishResults.setAccessible(true);
-        publishResults.invoke(realObject, constraint, filtering);
-      } catch (IllegalAccessException e) {
-        throw new RuntimeException(e);
-      } catch (InvocationTargetException e) {
-        throw new RuntimeException(e);
-      } catch (NoSuchMethodException e) {
-        throw new RuntimeException(e);
-      }
+      filtering = ReflectionHelpers.callInstanceMethodReflectively(realObject, "performFiltering", new ReflectionHelpers.ClassParameter(CharSequence.class, constraint));
+      ReflectionHelpers.callInstanceMethodReflectively(realObject, "publishResults", new ReflectionHelpers.ClassParameter(CharSequence.class, constraint),
+          new ReflectionHelpers.ClassParameter(forName, filtering));
     } catch (ClassNotFoundException e) {
       throw new RuntimeException("Cannot load android.widget.Filter$FilterResults");
     }

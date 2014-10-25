@@ -7,6 +7,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.internal.ReflectionHelpers;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -116,15 +117,7 @@ public class ShadowHandler {
   }
 
   private void setMessageWhen(Message msg, long when) {
-    try {
-      Field whenField = Message.class.getDeclaredField("when");
-      whenField.setAccessible(true);
-      whenField.set(msg, when);
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    } catch (NoSuchFieldException e) {
-      throw new RuntimeException(e);
-    }
+    ReflectionHelpers.setFieldReflectively(msg, "when", when);
   }
 
   private void routeMessage(Message msg) {

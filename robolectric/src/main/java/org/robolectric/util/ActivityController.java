@@ -13,34 +13,19 @@ import android.os.IBinder;
 import org.robolectric.AndroidManifest;
 import org.robolectric.RoboInstrumentation;
 import org.robolectric.Robolectric;
+import org.robolectric.internal.ReflectionHelpers;
 import org.robolectric.res.ResName;
 import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.shadows.ShadowActivityThread;
 import org.robolectric.shadows.ShadowApplication;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-
 import static org.robolectric.Robolectric.shadowOf_;
 
 public class ActivityController<T extends Activity>
-  extends ComponentController<ActivityController<T>, T, ShadowActivity>{
+    extends ComponentController<ActivityController<T>, T, ShadowActivity> {
 
   public static <T extends Activity> ActivityController<T> of(Class<T> activityClass) {
-    try {
-      Constructor<T> constructor = activityClass.getDeclaredConstructor();
-      constructor.setAccessible(true);
-      return new ActivityController<T>(constructor.newInstance());
-    } catch (InstantiationException e) {
-      throw new RuntimeException(e);
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    } catch (NoSuchMethodException e) {
-      throw new RuntimeException(e);
-    } catch (InvocationTargetException e) {
-      throw new RuntimeException(e);
-    }
+    return new ActivityController<T>(ReflectionHelpers.<T>callConstructorReflectively(activityClass));
   }
 
   public static <T extends Activity> ActivityController<T> of(T activity) {
@@ -72,25 +57,20 @@ public class ActivityController<T extends Activity>
       throw new RuntimeException(e);
     }
 
-    try {
-      component.getClass().getMethod("attach", Context.class /* context */, activityThreadClass /* aThread */,
-          Instrumentation.class /* instr */, IBinder.class /* token */, int.class /* ident */,
-          Application.class /* application */, Intent.class /* intent */, ActivityInfo.class /* info */,
-          CharSequence.class /* title */, Activity.class /* parent */, String.class /* id */,
-          nonConfigurationInstancesClass /* lastNonConfigurationInstances */,
-          Configuration.class /* config */).invoke(component, baseContext, null /* aThread */,
-          new RoboInstrumentation(), null /* token */, 0 /* ident */,
-          application, intent /* intent */, activityInfo,
-          activityTitle, null /* parent */, "id",
-          null /* lastNonConfigurationInstances */,
-          application.getResources().getConfiguration());
-    } catch (NoSuchMethodException e) {
-      throw new RuntimeException(e);
-    } catch (InvocationTargetException e) {
-      throw new RuntimeException(e);
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    }
+    ReflectionHelpers.callInstanceMethodReflectively(component, "attach",
+        new ReflectionHelpers.ClassParameter(Context.class, baseContext),
+        new ReflectionHelpers.ClassParameter(activityThreadClass, null),
+        new ReflectionHelpers.ClassParameter(Instrumentation.class, new RoboInstrumentation()),
+        new ReflectionHelpers.ClassParameter(IBinder.class, null),
+        new ReflectionHelpers.ClassParameter(int.class, 0),
+        new ReflectionHelpers.ClassParameter(Application.class, application),
+        new ReflectionHelpers.ClassParameter(Intent.class, intent),
+        new ReflectionHelpers.ClassParameter(ActivityInfo.class, activityInfo),
+        new ReflectionHelpers.ClassParameter(CharSequence.class, activityTitle),
+        new ReflectionHelpers.ClassParameter(Activity.class, null),
+        new ReflectionHelpers.ClassParameter(String.class, "id"),
+        new ReflectionHelpers.ClassParameter(nonConfigurationInstancesClass, null),
+        new ReflectionHelpers.ClassParameter(Configuration.class, application.getResources().getConfiguration()));
 
     shadow.setThemeFromManifest();
     attached = true;
@@ -107,7 +87,7 @@ public class ActivityController<T extends Activity>
     String labelRef = appManifest.getActivityLabel(component.getClass());
 
     if (labelRef != null) {
-      if(labelRef.startsWith("@")){
+      if (labelRef.startsWith("@")) {
         /* Label refers to a string value, get the resource identifier */
         ResName style = ResName.qualifyResName(labelRef.replace("@", ""), appManifest.getPackageName(), "string");
         Integer labelRes = shadowApplication.getResourceLoader().getResourceIndex().getResourceId(style);
@@ -129,17 +109,10 @@ public class ActivityController<T extends Activity>
 
   public ActivityController<T> create(final Bundle bundle) {
     shadowMainLooper.runPaused(new Runnable() {
-      @Override public void run() {
+      @Override
+      public void run() {
         if (!attached) attach();
-        try {
-          component.getClass().getMethod("performCreate", Bundle.class).invoke(component, bundle);
-        } catch (IllegalAccessException e) {
-          throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
-          throw new RuntimeException(e);
-        } catch (NoSuchMethodException e) {
-          throw new RuntimeException(e);
-        }
+        ReflectionHelpers.callInstanceMethodReflectively(component, "performCreate", new ReflectionHelpers.ClassParameter(Bundle.class, bundle));
       }
     });
     return this;
@@ -191,25 +164,10 @@ public class ActivityController<T extends Activity>
 
   public ActivityController<T> visible() {
     shadowMainLooper.runPaused(new Runnable() {
-      @Override public void run() {
-        try {
-          Field mDecor = Activity.class.getDeclaredField("mDecor");
-          mDecor.setAccessible(true);
-          mDecor.set(component, component.getWindow().getDecorView());
-        } catch (NoSuchFieldException e) {
-          throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-          throw new RuntimeException(e);
-        }
-        try {
-          component.getClass().getMethod("makeVisible").invoke(component);
-        } catch (IllegalAccessException e) {
-          throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
-          throw new RuntimeException(e);
-        } catch (NoSuchMethodException e) {
-          throw new RuntimeException(e);
-        }
+      @Override
+      public void run() {
+        ReflectionHelpers.setFieldReflectively(component, "mDecor", component.getWindow().getDecorView());
+        ReflectionHelpers.callInstanceMethodReflectively(component, "makeVisible");
       }
     });
 

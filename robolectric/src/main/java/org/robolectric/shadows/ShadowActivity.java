@@ -21,6 +21,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.bytecode.RobolectricInternals;
 import org.robolectric.internal.HiddenApi;
+import org.robolectric.internal.ReflectionHelpers;
 import org.robolectric.res.ResName;
 
 import java.lang.reflect.Field;
@@ -68,15 +69,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   public void setApplication(Application application) {
-    try {
-      Field mApplication = Application.class.getDeclaredField("mApplication");
-      mApplication.setAccessible(true);
-      mApplication.set(realActivity, application);
-    } catch (NoSuchFieldException e) {
-      throw new RuntimeException(e);
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    }
+    ReflectionHelpers.setFieldReflectively(realActivity, "mApplication", application);
   }
 
   public boolean setThemeFromManifest() {
@@ -232,15 +225,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   public void setWindow(Window window) {
-    try {
-      Field mWindow = realActivity.getClass().getDeclaredField("mWindow");
-      mWindow.setAccessible(true);
-      mWindow.set(realActivity, window);
-    } catch (NoSuchFieldException e) {
-      throw new RuntimeException(e);
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    }
+    ReflectionHelpers.setFieldReflectively(realActivity, "mWindow", window);
   }
 
   @Implementation

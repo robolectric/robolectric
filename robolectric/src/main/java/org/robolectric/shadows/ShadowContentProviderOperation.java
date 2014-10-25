@@ -6,6 +6,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.internal.HiddenApi;
+import org.robolectric.internal.ReflectionHelpers;
 
 import java.lang.reflect.Field;
 import java.util.Map;
@@ -54,14 +55,6 @@ public class ShadowContentProviderOperation {
   }
 
   private <T> T getFieldReflectively(String fieldName) {
-    try {
-      Field declaredField = ContentProviderOperation.class.getDeclaredField(fieldName);
-      declaredField.setAccessible(true);
-      return (T) declaredField.get(realOperation);
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    } catch (NoSuchFieldException e) {
-      throw new RuntimeException(e);
-    }
+    return ReflectionHelpers.getFieldReflectively(realOperation, fieldName);
   }
 }
