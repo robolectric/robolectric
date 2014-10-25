@@ -36,7 +36,10 @@ public class ShadowValueAnimator extends ShadowAnimator {
 
   @Implementation
   public static ValueAnimator ofInt (int... values){
-    return new ValueAnimator();
+    ValueAnimator valueAnimator = new ValueAnimator();
+    valueAnimator.setIntValues(values);
+
+    return valueAnimator;
   }
 
   @Implementation
