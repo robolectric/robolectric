@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import android.accounts.AccountManager;
 import android.app.ActivityManager;
 import android.app.SearchManager;
 import android.app.admin.DevicePolicyManager;
@@ -57,6 +58,7 @@ public class ShadowContextImpl extends ShadowContext {
     SYSTEM_SERVICE_MAP.put(Context.MEDIA_ROUTER_SERVICE, "android.media.MediaRouter");
     SYSTEM_SERVICE_MAP.put(Context.DISPLAY_SERVICE, "android.hardware.display.DisplayManager");
     SYSTEM_SERVICE_MAP.put(Context.ACCESSIBILITY_SERVICE, "android.view.accessibility.AccessibilityManager");
+    SYSTEM_SERVICE_MAP.put(Context.ACCOUNT_SERVICE, "android.accounts.AccountManager");
   }
 
   @RealObject private Context realContextImpl;
@@ -103,6 +105,8 @@ public class ShadowContextImpl extends ShadowContext {
         } else if ((sdkConfig.getApiLevel() >= Build.VERSION_CODES.JELLY_BEAN_MR1) && (serviceClassName.equals("android.view.WindowManagerImpl"))) {
           Display display = newInstanceOf(Display.class);
           service = constructor().withParameterTypes(Display.class).in(Class.forName("android.view.WindowManagerImpl")).newInstance(display);
+        } else if (serviceClassName.equals("android.accounts.AccountManager")) {
+          service = AccountManager.get(null);
         } else {
           service = newInstanceOf(Class.forName(serviceClassName));
         }

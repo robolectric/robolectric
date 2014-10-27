@@ -9,6 +9,7 @@ import android.accounts.OnAccountsUpdateListener;
 import android.accounts.OperationCanceledException;
 import android.app.Activity;
 import android.app.Application;
+import android.content.Context;
 import android.os.Bundle;
 
 import org.junit.Before;
@@ -452,5 +453,12 @@ public class AccountManagerTest {
     } catch(AuthenticatorException e) {
       // Expected
     }
+  }
+
+  @Test
+  public void testGetAsSystemService() throws Exception {
+      AccountManager systemService = (AccountManager) app.getSystemService(Context.ACCOUNT_SERVICE);
+      assertThat(systemService).isNotNull();
+      assertThat(am).isEqualTo(systemService);
   }
 }
