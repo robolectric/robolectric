@@ -67,6 +67,14 @@ public class TelephonyManagerTest {
     assertEquals("SomeOperator", telephonyManager.getNetworkOperator());
   }
 
+  @Test
+  public void shouldGiveLine1Number() {
+    TelephonyManager telephonyManager = (TelephonyManager) application.getSystemService(TELEPHONY_SERVICE);
+    ShadowTelephonyManager shadowTelephonyManager = shadowOf(telephonyManager);
+    shadowTelephonyManager.setLine1Number("123-244-2222");
+    assertEquals("123-244-2222", telephonyManager.getLine1Number());
+  }
+  
   @Test(expected = SecurityException.class)
   public void getDeviceId_shouldThrowSecurityExceptionWhenReadPhoneStatePermissionNotGranted() throws Exception {
     shadowManager.setReadPhoneStatePermission(false);

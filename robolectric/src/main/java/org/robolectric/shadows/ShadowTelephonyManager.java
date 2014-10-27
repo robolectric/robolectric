@@ -19,6 +19,7 @@ public class ShadowTelephonyManager {
   private int phoneType = TelephonyManager.PHONE_TYPE_GSM;
   private String simCountryIso;
   private int simState = TelephonyManager.SIM_STATE_READY;
+  private String line1Number;
 
   @Implementation
   public void listen(PhoneStateListener listener, int events) {
@@ -126,5 +127,14 @@ public class ShadowTelephonyManager {
 
   public void setPhoneType(int phoneType) {
     this.phoneType = phoneType;
+  }
+
+  @Implementation
+  public String getLine1Number() {
+    return line1Number;
+  }
+
+  public void setLine1Number(String line1Number) {
+    this.line1Number = line1Number;
   }
 }
