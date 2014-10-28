@@ -34,6 +34,7 @@ public class WebSettingsTest {
     assertThat(webSettings.getJavaScriptEnabled()).isFalse();
     assertThat(webSettings.getLightTouchEnabled()).isFalse();
     assertThat(webSettings.getLoadWithOverviewMode()).isFalse();
+    assertThat(webSettings.getMediaPlaybackRequiresUserGesture()).isTrue();
     assertThat(webSettings.getPluginState()).isEqualTo(WebSettings.PluginState.OFF);
     assertThat(webSettings.getSaveFormData()).isFalse();
     assertThat(webSettings.getTextZoom()).isEqualTo(100);
@@ -132,6 +133,14 @@ public class WebSettingsTest {
     for (boolean value : trueAndFalse) {
       webSettings.setLoadWithOverviewMode(value);
       assertThat(webSettings.getLoadWithOverviewMode()).isEqualTo(value);
+    }
+  }
+
+  @Test
+  public void testMediaPlaybackRequiresUserGesture() throws Exception {
+    for (boolean value : trueAndFalse) {
+      webSettings.setMediaPlaybackRequiresUserGesture(value);
+      assertThat(webSettings.getMediaPlaybackRequiresUserGesture()).isEqualTo(value);
     }
   }
 
