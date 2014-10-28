@@ -11,6 +11,7 @@ public class Scheduler {
   private boolean paused = false;
   private Thread associatedThread = Thread.currentThread();
   private boolean isConstantlyIdling = false;
+  private boolean isExecutingRunnable = false;
 
   public synchronized long getCurrentTime() {
     return currentTime;
@@ -31,11 +32,25 @@ public class Scheduler {
 
   public synchronized void postDelayed(Runnable runnable, long delayMillis) {
     if ((!isConstantlyIdling && (paused || delayMillis > 0)) || Thread.currentThread() != associatedThread) {
-      postedRunnables.add(new PostedRunnable(runnable, currentTime + delayMillis));
-      Collections.sort(postedRunnables);
+      queueRunnableAndSort(runnable, currentTime + delayMillis);
     } else {
-      runnable.run();
+      runOrQueueRunnable(runnable, currentTime + delayMillis);
     }
+  }
+
+  private void runOrQueueRunnable(Runnable runnable, long scheduledTime) {
+    if(isExecutingRunnable) {
+      queueRunnableAndSort(runnable, scheduledTime);
+      return;
+    }
+    isExecutingRunnable = true;
+    runnable.run();
+    isExecutingRunnable = false;
+  }
+
+  private void queueRunnableAndSort(Runnable runnable, long scheduledTime) {
+    postedRunnables.add(new PostedRunnable(runnable, scheduledTime));
+    Collections.sort(postedRunnables);
   }
 
   public synchronized void post(Runnable runnable) {
@@ -46,7 +61,7 @@ public class Scheduler {
     if (paused || Thread.currentThread() != associatedThread) {
       postedRunnables.add(0, new PostedRunnable(runnable, currentTime));
     } else {
-      runnable.run();
+      runOrQueueRunnable(runnable, currentTime);
     }
   }
 
@@ -159,7 +174,9 @@ public class Scheduler {
     }
 
     public void run() {
+      isExecutingRunnable = true;
       runnable.run();
+      isExecutingRunnable = false;
     }
   }
 
