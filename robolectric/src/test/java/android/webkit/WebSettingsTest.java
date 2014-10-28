@@ -162,13 +162,8 @@ public class WebSettingsTest {
 
   @Test
   public void testPluginState() {
-    WebSettings.PluginState[] states = {
-        WebSettings.PluginState.OFF,
-        WebSettings.PluginState.ON,
-        WebSettings.PluginState.ON_DEMAND
-    };
 
-    for (WebSettings.PluginState state : states) {
+    for (WebSettings.PluginState state : WebSettings.PluginState.values()) {
       webSettings.setPluginState(state);
       assertThat(webSettings.getPluginState()).isEqualTo(state);
     }
