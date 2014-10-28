@@ -37,8 +37,10 @@ public class ShadowUriMatcher {
       rootNode.map.put(authority, authNode);
     }
 
-    String[] segments = path.split("/");
-    addNodes(authNode, Arrays.asList(segments), code);
+    if (path != null){
+	String[] segments = path.split("/");
+	addNodes(authNode, Arrays.asList(segments), code);
+    }
   }
 
   @Implementation
