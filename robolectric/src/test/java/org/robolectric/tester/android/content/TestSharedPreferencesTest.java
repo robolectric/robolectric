@@ -1,9 +1,13 @@
 package org.robolectric.tester.android.content;
 
+import android.content.Context;
 import android.content.SharedPreferences;
+import org.assertj.core.api.Assertions;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.util.Transcript;
 
@@ -13,6 +17,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -60,6 +65,20 @@ public class TestSharedPreferencesTest {
     assertThat(anotherSharedPreferences.getLong("long", 666l)).isEqualTo(3l);
     assertThat(anotherSharedPreferences.getString("string", "wacka wa")).isEqualTo("foobar");
     assertThat(anotherSharedPreferences.getStringSet("stringSet", null)).isEqualTo(stringSet);
+  }
+
+  @Test
+  public void commit_shouldClearEditsThatNeedRemoveAndEditsThatNeedCommit() throws Exception {
+    editor.commit();
+    editor.remove("string").commit();
+
+    assertThat(sharedPreferences.getString("string", "no value for key")).isEqualTo("no value for key");
+
+    TestSharedPreferences anotherSharedPreferences = new TestSharedPreferences(content, FILENAME, 3);
+    anotherSharedPreferences.edit().putString("string", "value for key").commit();
+
+    editor.commit();
+    assertThat(sharedPreferences.getString("string", "no value for key")).isEqualTo("value for key");
   }
 
   @Test
