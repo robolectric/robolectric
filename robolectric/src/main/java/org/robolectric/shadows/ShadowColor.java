@@ -45,4 +45,10 @@ public class ShadowColor {
     java.awt.Color.RGBtoHSB(red, green, blue, hsv);
     hsv[0] = hsv[0] * 360;
   }
+
+  @Implementation
+  public static int HSVToColor(int alpha, float hsv[]) {
+    int rgb = java.awt.Color.HSBtoRGB(hsv[0] / 360, hsv[1], hsv[2]);
+    return Color.argb(alpha, Color.red(rgb), Color.green(rgb), Color.blue(rgb));
+  }
 }
