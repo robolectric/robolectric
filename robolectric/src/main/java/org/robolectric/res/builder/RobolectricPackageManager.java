@@ -178,6 +178,14 @@ public class RobolectricPackageManager extends StubPackageManager {
   }
 
   @Override
+  public List<ApplicationInfo> getInstalledApplications(int flags) {
+    List<ApplicationInfo> appInfos = new ArrayList<ApplicationInfo>();
+    for (PackageInfo packageInfo : packageInfos.values())
+      appInfos.add(packageInfo.applicationInfo);
+    return appInfos;
+  }
+
+  @Override
   public List<ResolveInfo> queryIntentActivities(Intent intent, int flags) {
     List<ResolveInfo> resolveInfoList = queryIntent(intent, flags);
 
