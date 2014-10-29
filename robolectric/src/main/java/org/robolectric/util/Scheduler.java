@@ -1,5 +1,7 @@
 package org.robolectric.util;
 
+import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -39,13 +41,16 @@ public class Scheduler {
   }
 
   private void runOrQueueRunnable(Runnable runnable, long scheduledTime) {
-    if(isExecutingRunnable) {
+    if (isExecutingRunnable) {
       queueRunnableAndSort(runnable, scheduledTime);
       return;
     }
     isExecutingRunnable = true;
-    runnable.run();
-    isExecutingRunnable = false;
+    try {
+      runnable.run();
+    } finally {
+      isExecutingRunnable = false;
+    }
   }
 
   private void queueRunnableAndSort(Runnable runnable, long scheduledTime) {
@@ -175,8 +180,11 @@ public class Scheduler {
 
     public void run() {
       isExecutingRunnable = true;
-      runnable.run();
-      isExecutingRunnable = false;
+      try {
+        runnable.run();
+      } finally {
+        isExecutingRunnable = false;
+      }
     }
   }
 

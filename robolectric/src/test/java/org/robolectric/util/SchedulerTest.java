@@ -19,7 +19,8 @@ public class SchedulerTest {
     transcript = new Transcript();
   }
 
-  @Test public void shouldAdvanceTimeEvenIfThereIsNoWork() throws Exception {
+  @Test
+  public void shouldAdvanceTimeEvenIfThereIsNoWork() throws Exception {
     scheduler.advanceTo(1000);
     assertThat(scheduler.getCurrentTime()).isEqualTo(1000);
   }
@@ -186,10 +187,10 @@ public class SchedulerTest {
       public void run() {
         order.add(1);
         scheduler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-              order.add(3);
-            }
+          @Override
+          public void run() {
+            order.add(3);
+          }
         }, 0);
         order.add(2);
       }
@@ -198,6 +199,31 @@ public class SchedulerTest {
 
     assertThat(order).containsExactly(1, 2, 3);
     assertThat(scheduler.size()).isEqualTo(0);
+  }
+
+  @Test
+  public void post_whenTheRunnableThrows_executesSubsequentRunnables() throws Exception {
+    final List<Integer> runnablesThatWereRun = new ArrayList<Integer>();
+    scheduler.post(new Runnable() {
+      @Override
+      public void run() {
+        runnablesThatWereRun.add(1);
+        throw new RuntimeException("foo");
+      }
+    });
+
+    try {
+      scheduler.unPause();
+    } catch (RuntimeException e) { }
+
+    scheduler.post(new Runnable() {
+      @Override
+      public void run() {
+        runnablesThatWereRun.add(2);
+      }
+    });
+
+    assertThat(runnablesThatWereRun).containsExactly(1, 2);
   }
 
   private class AddToTranscript implements Runnable {
