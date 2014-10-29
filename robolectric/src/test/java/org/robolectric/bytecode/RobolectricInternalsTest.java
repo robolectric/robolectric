@@ -2,14 +2,15 @@ package org.robolectric.bytecode;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
-import org.robolectric.internal.Instrument;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.internal.Instrument;
+import org.robolectric.internal.ReflectionHelpers;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.Robolectric.*;
 
 @Config(shadows={ RobolectricInternalsTest.ShadowConstructors.class })
 @RunWith(TestRunners.WithDefaults.class)
@@ -27,7 +28,7 @@ public class RobolectricInternalsTest {
     assertThat(a.constructorCalled).isFalse();
     assertThat(sa.shadowConstructorCalled).isTrue();
 
-    RobolectricInternals.getConstructor(Constructors.class, a).invoke();
+    RobolectricInternals.invokeConstructor(Constructors.class, a);
     assertThat(a.constructorCalled).isTrue();
   }
 
@@ -39,7 +40,7 @@ public class RobolectricInternalsTest {
     assertThat(a.param11).isNull();
     assertThat(sa.shadowParam11).isEqualTo(PARAM1);
     
-    RobolectricInternals.getConstructor(Constructors.class, a, "java.lang.String").invoke(PARAM1);
+    RobolectricInternals.invokeConstructor(Constructors.class, a, new ReflectionHelpers.StringParameter("java.lang.String", PARAM1));
     assertThat(a.param11).isEqualTo(PARAM1);
   }
 
@@ -53,8 +54,8 @@ public class RobolectricInternalsTest {
     assertThat(sa.shadowParam21).isEqualTo(PARAM1);
     assertThat(sa.shadowParam22).isEqualTo(PARAM2);
 
-    RobolectricInternals.getConstructor(Constructors.class, a, "java.lang.String", "java.lang.Byte")
-      .invoke(PARAM1, PARAM2);
+    RobolectricInternals.invokeConstructor(Constructors.class, a, new ReflectionHelpers.StringParameter("java.lang.String", PARAM1),
+        new ReflectionHelpers.StringParameter("java.lang.Byte", PARAM2));
     assertThat(a.param21).isEqualTo(PARAM1);
     assertThat(a.param22).isEqualTo(PARAM2);
   }
@@ -70,9 +71,9 @@ public class RobolectricInternalsTest {
     assertThat(sa.shadowParam31).isEqualTo(PARAM1);
     assertThat(sa.shadowParam32).isEqualTo(PARAM2);
     assertThat(sa.shadowParam33).isEqualTo(PARAM3);
-    
-    RobolectricInternals.getConstructor(Constructors.class, a, "java.lang.String", "java.lang.Byte", "java.lang.Long")
-      .invoke(PARAM1, PARAM2, PARAM3);
+
+    RobolectricInternals.invokeConstructor(Constructors.class, a, new ReflectionHelpers.StringParameter("java.lang.String", PARAM1),
+        new ReflectionHelpers.StringParameter("java.lang.Byte", PARAM2), new ReflectionHelpers.StringParameter("java.lang.Long", PARAM3));
     assertThat(a.param31).isEqualTo(PARAM1);
     assertThat(a.param32).isEqualTo(PARAM2);
     assertThat(a.param33).isEqualTo(PARAM3);
@@ -85,9 +86,8 @@ public class RobolectricInternalsTest {
 
     assertThat(a.param11).isNull();
     assertThat(sa.shadowParam11).isEqualTo(PARAM1);
-    
-    RobolectricInternals.getConstructor(Constructors.class, a, String.class)
-      .invoke(PARAM1);
+
+    RobolectricInternals.invokeConstructor(Constructors.class, a, new ReflectionHelpers.ClassParameter(String.class, PARAM1));
     assertThat(a.param11).isEqualTo(PARAM1);
   }
 
@@ -100,9 +100,9 @@ public class RobolectricInternalsTest {
     assertThat(a.param22).isNull();
     assertThat(sa.shadowParam21).isEqualTo(PARAM1);
     assertThat(sa.shadowParam22).isEqualTo(PARAM2);
-    
-    RobolectricInternals.getConstructor(Constructors.class, a, String.class, Byte.class)
-      .invoke(PARAM1, PARAM2);
+
+    RobolectricInternals.invokeConstructor(Constructors.class, a, new ReflectionHelpers.ClassParameter(String.class, PARAM1),
+        new ReflectionHelpers.ClassParameter(Byte.class, PARAM2));
     assertThat(a.param21).isEqualTo(PARAM1);
     assertThat(a.param22).isEqualTo(PARAM2);
   }
@@ -119,15 +119,15 @@ public class RobolectricInternalsTest {
     assertThat(sa.shadowParam32).isEqualTo(PARAM2);
     assertThat(sa.shadowParam33).isEqualTo(PARAM3);
     
-    RobolectricInternals.getConstructor(Constructors.class, a, String.class, Byte.class, Long.class)
-      .invoke(PARAM1, PARAM2, PARAM3);
+    RobolectricInternals.invokeConstructor(Constructors.class, a, new ReflectionHelpers.ClassParameter(String.class, PARAM1),
+        new ReflectionHelpers.ClassParameter(Byte.class, PARAM2), new ReflectionHelpers.ClassParameter(Long.class, PARAM3));
     assertThat(a.param31).isEqualTo(PARAM1);
     assertThat(a.param32).isEqualTo(PARAM2);
     assertThat(a.param33).isEqualTo(PARAM3);
   }
 
   private static ShadowConstructors shadowOf(Constructors realObject) {
-    Object shadow = Robolectric.shadowOf_(realObject);
+    Object shadow = shadowOf_(realObject);
     assertThat(shadow)
       .isNotNull()
       .isInstanceOf(ShadowConstructors.class);

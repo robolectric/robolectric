@@ -26,7 +26,7 @@ import java.util.Set;
 import static android.location.LocationManager.GPS_PROVIDER;
 import static android.location.LocationManager.NETWORK_PROVIDER;
 import static junit.framework.Assert.*;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertSame;
 import static org.robolectric.Robolectric.shadowOf;
 

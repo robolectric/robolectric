@@ -12,7 +12,7 @@ import org.robolectric.util.Scheduler;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 import static org.robolectric.Robolectric.shadowOf;
 

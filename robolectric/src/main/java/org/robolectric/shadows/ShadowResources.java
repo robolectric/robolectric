@@ -1,11 +1,6 @@
 package org.robolectric.shadows;
 
-import android.content.res.AssetFileDescriptor;
-import android.content.res.AssetManager;
-import android.content.res.Configuration;
-import android.content.res.Resources;
-import android.content.res.TypedArray;
-import android.content.res.XmlResourceParser;
+import android.content.res.*;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -22,20 +17,20 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.internal.HiddenApi;
+import org.robolectric.internal.ReflectionHelpers;
 import org.robolectric.res.*;
 import org.robolectric.res.builder.XmlFileBuilder;
 import org.robolectric.util.Util;
 import org.w3c.dom.Document;
 
-import java.io.InputStream;
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import static org.fest.reflect.core.Reflection.field;
 import static org.robolectric.Robolectric.directlyOn;
 import static org.robolectric.Robolectric.shadowOf;
 
@@ -498,14 +493,14 @@ public class ShadowResources {
 
     Resources getResources() {
       // ugh
-      return field("this$0").ofType(Resources.class).in(realTheme).get();
+      return ReflectionHelpers.getFieldReflectively(realTheme, "this$0");
     }
   }
 
   @Implementation
   public final Resources.Theme newTheme() {
     Resources.Theme theme = directlyOn(realResources, Resources.class).newTheme();
-    int themeId = field("mTheme").ofType(int.class).in(theme).get();
+    int themeId = ReflectionHelpers.getFieldReflectively(theme, "mTheme");
     shadowOf(realResources.getAssets()).setTheme(themeId, theme);
     return theme;
   }
@@ -513,7 +508,8 @@ public class ShadowResources {
   @HiddenApi @Implementation
   public Drawable loadDrawable(TypedValue value, int id) {
     ResName resName = tryResName(id);
-    Drawable drawable = (Drawable) directlyOn(realResources, Resources.class, "loadDrawable", TypedValue.class, int.class).invoke(value, id);
+    Drawable drawable = directlyOn(realResources, Resources.class, "loadDrawable", new ReflectionHelpers.ClassParameter(TypedValue.class, value),
+        new ReflectionHelpers.ClassParameter(int.class, id));
     // todo: this kinda sucks, find some better way...
     if (drawable != null) {
       shadowOf(drawable).createdFromResId = id;

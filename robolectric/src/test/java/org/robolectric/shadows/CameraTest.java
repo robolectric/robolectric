@@ -14,8 +14,8 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.fest.assertions.api.Fail.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Fail.fail;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class CameraTest {

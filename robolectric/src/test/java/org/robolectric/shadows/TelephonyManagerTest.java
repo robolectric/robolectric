@@ -8,7 +8,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
 
 import static android.content.Context.TELEPHONY_SERVICE;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.robolectric.Robolectric.*;
 

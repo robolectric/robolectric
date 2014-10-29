@@ -14,7 +14,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class MergeCursorTest {

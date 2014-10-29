@@ -6,7 +6,7 @@ import org.robolectric.TestRunners;
 
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
-import static org.fest.assertions.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ResBunchTest extends ResBunch {

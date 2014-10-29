@@ -8,9 +8,7 @@ import android.nfc.NfcAdapter;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
+import org.robolectric.internal.ReflectionHelpers;
 
 @Implements(NfcAdapter.class)
 public class ShadowNfcAdapter {
@@ -23,19 +21,7 @@ public class ShadowNfcAdapter {
 
   @Implementation
   public static NfcAdapter getDefaultAdapter(Context context) {
-    try {
-      Constructor<NfcAdapter> constructor = NfcAdapter.class.getDeclaredConstructor();
-      constructor.setAccessible(true);
-      return constructor.newInstance();
-    } catch (InstantiationException e) {
-      throw new RuntimeException(e);
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    } catch (InvocationTargetException e) {
-      throw new RuntimeException(e);
-    } catch (NoSuchMethodException e) {
-      throw new RuntimeException(e);
-    }
+    return ReflectionHelpers.callConstructorReflectively(NfcAdapter.class);
   }
 
   @Implementation

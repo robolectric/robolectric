@@ -6,8 +6,8 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.internal.HiddenApi;
+import org.robolectric.internal.ReflectionHelpers;
 
-import static org.fest.reflect.core.Reflection.constructor;
 import static org.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -18,10 +18,9 @@ public class ShadowTypedArray {
   public String positionDescription;
 
   public static TypedArray create(Resources realResources, int[] attrs, int[] data, int[] indices, int len, CharSequence[] stringData) {
-    TypedArray typedArray = constructor()
-        .withParameterTypes(Resources.class, int[].class, int[].class, int.class)
-        .in(TypedArray.class)
-        .newInstance(realResources, data, indices, len);
+    TypedArray typedArray = ReflectionHelpers.callConstructorReflectively(TypedArray.class, new ReflectionHelpers.ClassParameter(Resources.class, realResources),
+        new ReflectionHelpers.ClassParameter(int[].class, data), new ReflectionHelpers.ClassParameter(int[].class, indices),
+        new ReflectionHelpers.ClassParameter(int.class, len));
     shadowOf(typedArray).stringData = stringData;
     return typedArray;
   }

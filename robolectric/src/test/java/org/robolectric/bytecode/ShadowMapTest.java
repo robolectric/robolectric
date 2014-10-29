@@ -4,7 +4,7 @@ import android.widget.CursorAdapter;
 import org.junit.Test;
 import org.robolectric.shadows.ShadowCursorAdapter;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ShadowMapTest {
   @Test public void shouldLookUpShadowClassesByNamingConvention() throws Exception {

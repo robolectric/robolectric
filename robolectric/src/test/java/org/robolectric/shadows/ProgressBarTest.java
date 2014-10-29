@@ -11,7 +11,7 @@ import org.robolectric.res.ResName;
 import org.robolectric.util.TestUtil;
 
 import static java.util.Arrays.asList;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 
 @RunWith(TestRunners.WithDefaults.class)

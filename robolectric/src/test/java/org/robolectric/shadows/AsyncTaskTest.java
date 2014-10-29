@@ -12,8 +12,8 @@ import org.robolectric.util.Transcript;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.fest.assertions.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;

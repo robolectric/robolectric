@@ -17,7 +17,7 @@ import org.robolectric.util.TestUtil;
 import java.util.Arrays;
 
 import static java.util.Arrays.asList;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.robolectric.Robolectric.shadowOf;

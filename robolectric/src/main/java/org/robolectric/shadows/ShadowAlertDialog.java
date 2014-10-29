@@ -5,16 +5,15 @@ import android.content.DialogInterface;
 import android.view.View;
 import android.widget.Adapter;
 import android.widget.FrameLayout;
-import com.android.internal.app.AlertController;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.internal.ReflectionHelpers;
 
-import static org.fest.reflect.core.Reflection.field;
-import static org.robolectric.Robolectric.getShadowApplication;
-import static org.robolectric.Robolectric.shadowOf;
-import static org.robolectric.Robolectric.shadowOf_;
+import java.lang.reflect.Field;
+
+import static org.robolectric.Robolectric.*;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AlertDialog.class)
@@ -120,10 +119,7 @@ public class ShadowAlertDialog extends ShadowDialog {
   }
 
   public ShadowAlertController getShadowAlertController() {
-    return shadowOf_(
-        field("mAlert")
-            .ofType(AlertController.class)
-            .in(realAlertDialog).get());
+    return shadowOf_(ReflectionHelpers.getFieldReflectively(realAlertDialog, "mAlert"));
   }
 
   /**

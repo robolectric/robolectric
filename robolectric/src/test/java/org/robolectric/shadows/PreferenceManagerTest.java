@@ -12,7 +12,7 @@ import org.robolectric.tester.android.content.TestSharedPreferences;
 
 import java.util.Map;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 
 @RunWith(TestRunners.WithDefaults.class)

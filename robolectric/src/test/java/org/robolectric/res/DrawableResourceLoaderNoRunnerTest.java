@@ -5,13 +5,11 @@ import org.junit.Test;
 import org.robolectric.Robolectric;
 
 import java.io.File;
+import java.lang.reflect.Field;
 
-import static org.fest.reflect.core.Reflection.field;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class DrawableResourceLoaderNoRunnerTest {
   private static final String JAR_SEPARATOR = "/";
@@ -58,7 +56,7 @@ public class DrawableResourceLoaderNoRunnerTest {
     FsFile mockTestBaseDir = mock(FsFile.class);
     when(mockTestBaseDir.listFiles()).thenReturn(new FsFile[]{mockTestDir});
     ResourcePath mockResourcePath = mock(ResourcePath.class);
-    field("resourceBase").ofType(FsFile.class).in(mockResourcePath).set(mockTestBaseDir);
+    setResourceBase(mockTestBaseDir, mockResourcePath);
 
     ResBundle<DrawableNode> bundle = mock(ResBundle.class);
     DrawableResourceLoader testLoader = new DrawableResourceLoader(bundle);
@@ -83,7 +81,7 @@ public class DrawableResourceLoaderNoRunnerTest {
     FsFile mockTestBaseDir = mock(FsFile.class);
     when(mockTestBaseDir.listFiles()).thenReturn(new FsFile[]{mockTestDir});
     ResourcePath mockResourcePath = mock(ResourcePath.class);
-    field("resourceBase").ofType(FsFile.class).in(mockResourcePath).set(mockTestBaseDir);
+    setResourceBase(mockTestBaseDir, mockResourcePath);
 
     ResBundle<DrawableNode> bundle = mock(ResBundle.class);
     DrawableResourceLoader testLoader = new DrawableResourceLoader(bundle);
@@ -108,7 +106,7 @@ public class DrawableResourceLoaderNoRunnerTest {
     FsFile mockTestBaseDir = mock(FsFile.class);
     when(mockTestBaseDir.listFiles()).thenReturn(new FsFile[]{mockTestDir});
     ResourcePath mockResourcePath = mock(ResourcePath.class);
-    field("resourceBase").ofType(FsFile.class).in(mockResourcePath).set(mockTestBaseDir);
+    setResourceBase(mockTestBaseDir, mockResourcePath);
 
     ResBundle<DrawableNode> bundle = mock(ResBundle.class);
     DrawableResourceLoader testLoader = new DrawableResourceLoader(bundle);
@@ -133,7 +131,7 @@ public class DrawableResourceLoaderNoRunnerTest {
     FsFile mockTestBaseDir = mock(FsFile.class);
     when(mockTestBaseDir.listFiles()).thenReturn(new FsFile[]{mockTestDir});
     ResourcePath mockResourcePath = mock(ResourcePath.class);
-    field("resourceBase").ofType(FsFile.class).in(mockResourcePath).set(mockTestBaseDir);
+    setResourceBase(mockTestBaseDir, mockResourcePath);
 
     ResBundle<DrawableNode> bundle = mock(ResBundle.class);
     DrawableResourceLoader testLoader = new DrawableResourceLoader(bundle);
@@ -144,5 +142,11 @@ public class DrawableResourceLoaderNoRunnerTest {
 
   private void setFileSeparator(String separator) throws Exception {
     originalSeparator = (String) Robolectric.Reflection.setFinalStaticField(File.class.getDeclaredField("separator"), separator);
+  }
+
+  private void setResourceBase(FsFile mockTestBaseDir, ResourcePath mockResourcePath) throws NoSuchFieldException, IllegalAccessException {
+    Field resourceBase = ResourcePath.class.getDeclaredField("resourceBase");
+    resourceBase.setAccessible(true);
+    resourceBase.set(mockResourcePath, mockTestBaseDir);
   }
 }

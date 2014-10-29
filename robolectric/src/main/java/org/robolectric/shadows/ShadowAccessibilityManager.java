@@ -8,18 +8,15 @@ import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 import android.view.accessibility.AccessibilityManager;
-import org.fest.reflect.field.Invoker;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.internal.HiddenApi;
+import org.robolectric.internal.ReflectionHelpers;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.List;
-
-import static org.fest.reflect.core.Reflection.field;
-import static org.fest.reflect.core.Reflection.method;
 
 @Implements(AccessibilityManager.class)
 public class ShadowAccessibilityManager {
@@ -34,8 +31,8 @@ public class ShadowAccessibilityManager {
   public static AccessibilityManager getInstance(Context context) throws Exception {
     AccessibilityManager accessibilityManager = Robolectric.newInstance(AccessibilityManager.class, new Class[0], new Object[0]);
     Handler handler = new MyHandler(context.getMainLooper(), accessibilityManager);
-    Invoker<Handler> mHandlerField = field("mHandler").ofType(Handler.class).in(AccessibilityManager.class);
-    makeNonFinal(mHandlerField.info()).set(accessibilityManager, handler);
+    Field mHandlerField = AccessibilityManager.class.getDeclaredField("mHandler");
+    makeNonFinal(mHandlerField).set(accessibilityManager, handler);
     return accessibilityManager;
   }
 
@@ -121,7 +118,7 @@ public class ShadowAccessibilityManager {
     public void handleMessage(Message message) {
       switch (message.what) {
         case DO_SET_STATE:
-          method("setState").withParameterTypes(int.class).in(accessibilityManager).invoke(message.arg1);
+          ReflectionHelpers.callInstanceMethodReflectively(accessibilityManager, "setState", new ReflectionHelpers.ClassParameter(int.class, message.arg1));
           return;
         default:
           Log.w("AccessibilityManager", "Unknown message type: " + message.what);

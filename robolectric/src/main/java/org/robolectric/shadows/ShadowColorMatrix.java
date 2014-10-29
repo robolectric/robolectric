@@ -1,16 +1,15 @@
 package org.robolectric.shadows;
 
 import android.graphics.ColorMatrix;
-
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.internal.ReflectionHelpers;
 import org.robolectric.util.Join;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.fest.reflect.core.Reflection.field;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ColorMatrix.class)
@@ -30,6 +29,6 @@ public class ShadowColorMatrix {
   }
   
   private float[] getMatrix() {
-    return field("mArray").ofType(float[].class).in(realColorMatrix).get();
+    return ReflectionHelpers.getFieldReflectively(realColorMatrix, "mArray");
   }
 }

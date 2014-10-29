@@ -31,7 +31,7 @@ import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowDrawable;
 import org.robolectric.test.TemporaryFolder;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 

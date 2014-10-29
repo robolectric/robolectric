@@ -9,18 +9,16 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.internal.ReflectionHelpers;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.fest.reflect.core.Reflection.field;
-import static org.fest.reflect.core.Reflection.method;
 import static org.robolectric.Robolectric.directlyOn;
 import static org.robolectric.Robolectric.shadowOf;
 
@@ -84,7 +82,7 @@ public class ShadowDialog {
   }
 
   public boolean isCancelable() {
-    return field("mCancelable").ofType(boolean.class).in(realDialog).get();
+    return ReflectionHelpers.getFieldReflectively(realDialog, "mCancelable");
   }
 
   public boolean isCancelableOnTouchOutside() {
@@ -141,6 +139,6 @@ public class ShadowDialog {
   }
 
   public void callOnCreate(Bundle bundle) {
-    method("onCreate").withParameterTypes(Bundle.class).in(realDialog).invoke(bundle);
+    ReflectionHelpers.callInstanceMethodReflectively(realDialog, "onCreate", new ReflectionHelpers.ClassParameter(Bundle.class, bundle));
   }
 }

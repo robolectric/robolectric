@@ -11,7 +11,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class SQLiteLibraryLoaderTest {

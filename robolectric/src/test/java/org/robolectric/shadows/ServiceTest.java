@@ -17,7 +17,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
 import static org.robolectric.Robolectric.*;
-import static org.fest.assertions.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ServiceTest {

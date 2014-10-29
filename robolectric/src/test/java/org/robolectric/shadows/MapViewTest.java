@@ -14,7 +14,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.bytecode.ShadowingTest;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.shadows.ShadowMapView.toE6;
 
 @RunWith(TestRunners.WithDefaults.class)

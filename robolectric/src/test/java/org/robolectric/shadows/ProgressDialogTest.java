@@ -15,7 +15,7 @@ import org.robolectric.TestRunners;
 import java.util.concurrent.Callable;
 
 import static junit.framework.Assert.assertNull;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Robolectric.shadowOf;

@@ -7,7 +7,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadows.ShadowView;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)

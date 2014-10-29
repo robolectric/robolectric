@@ -12,7 +12,7 @@ import org.robolectric.TestRunners;
 import org.robolectric.shadows.ShadowNotification.Progress;
 
 import static org.robolectric.Robolectric.*;
-import static org.fest.assertions.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class NotificationBuilderTest {

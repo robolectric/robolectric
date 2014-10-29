@@ -1,6 +1,6 @@
 package org.robolectric.util;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.util.FragmentTestUtil.startFragment;
 import static org.robolectric.util.FragmentTestUtil.startVisibleFragment;
 

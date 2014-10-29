@@ -1,18 +1,13 @@
 package org.robolectric.shadows;
 
 import android.content.Context;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.SubMenu;
-import android.view.View;
+import android.view.*;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.res.MenuNode;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.util.I18nException;
 
-import static org.fest.reflect.core.Reflection.type;
 import static org.robolectric.Robolectric.shadowOf;
 import static org.robolectric.res.ResourceLoader.ANDROID_NS;
 
@@ -92,7 +87,7 @@ public class ShadowMenuInflater {
     String actionViewClassName = attributes.getAttributeValue(ANDROID_NS, "actionViewClass");
     if (actionViewClassName != null) {
       try {
-        View actionView = (View) type(actionViewClassName).load().getConstructor(Context.class).newInstance(context);
+        View actionView = (View) Class.forName(actionViewClassName).getConstructor(Context.class).newInstance(context);
         item.setActionView(actionView);
       } catch (Exception e) {
         throw new RuntimeException("Action View class not found!", e);
