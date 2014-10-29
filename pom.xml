@@ -121,9 +121,9 @@
           <artifactId>maven-surefire-plugin</artifactId>
           <version>2.13</version>
           <configuration>
-            <excludes>
-              <exclude>**/Test*.java</exclude>
-            </excludes>
+            <includes>
+              <include>**/*Test.java</include>
+            </includes>
             <argLine>-Xms512m -Xmx1024m -XX:MaxPermSize=256m</argLine>
           </configuration>
         </plugin>
