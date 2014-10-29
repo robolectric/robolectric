@@ -23,6 +23,13 @@ public class MediaPlayerTest {
   }
 
   @Test
+  public void isPlaying_shouldBeFalseUntilPlayIsCalled() {
+    assertThat(mediaPlayer.isPlaying()).isFalse();
+    mediaPlayer.start();
+    assertThat(mediaPlayer.isPlaying()).isTrue();
+  }
+
+  @Test
   public void testCurrentPosition() {
     int[] positions = {0, 1, 2, 1024};
 

@@ -53,7 +53,7 @@ public class ShadowMediaPlayer {
   }
 
   public void __constructor__() {
-    playing = true;
+    playing = false;
   }
 
   @Implementation
