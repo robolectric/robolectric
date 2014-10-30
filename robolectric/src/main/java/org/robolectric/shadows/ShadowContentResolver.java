@@ -285,7 +285,7 @@ public class ShadowContentResolver {
 
   @Implementation
   public ContentProviderResult[] applyBatch(String authority, ArrayList<ContentProviderOperation> operations) throws OperationApplicationException {
-    ContentProvider provider = providers.get(authority);
+    ContentProvider provider = getProvider(authority);
     if (provider != null) {
       return provider.applyBatch(operations);
     } else {
