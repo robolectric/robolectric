@@ -61,6 +61,10 @@ public class ShadowTextView extends ShadowView {
   private List<KeyEvent> previousKeyEvents = new ArrayList<KeyEvent>();
   private Layout layout;
   private int paintFlags;
+  private int compoundDrawablesWithIntrinsicBoundsLeft;
+  private int compoundDrawablesWithIntrinsicBoundsTop;
+  private int compoundDrawablesWithIntrinsicBoundsRight;
+  private int compoundDrawablesWithIntrinsicBoundsBottom;
 
   @Implementation
   public void setTextAppearance(Context context, int resid) {
@@ -160,5 +164,30 @@ public class ShadowTextView extends ShadowView {
 
   public TextView.OnEditorActionListener getOnEditorActionListener() {
     return onEditorActionListener;
+  }
+
+  @Implementation
+  public void setCompoundDrawablesWithIntrinsicBounds(int left, int top, int right, int bottom) {
+    this.compoundDrawablesWithIntrinsicBoundsLeft = left;
+    this.compoundDrawablesWithIntrinsicBoundsTop = top;
+    this.compoundDrawablesWithIntrinsicBoundsRight = right;
+    this.compoundDrawablesWithIntrinsicBoundsBottom = bottom;
+    directlyOn(realTextView, TextView.class).setCompoundDrawablesWithIntrinsicBounds(left, top, right, bottom);
+  }
+
+  public int getCompoundDrawablesWithIntrinsicBoundsLeft() {
+    return compoundDrawablesWithIntrinsicBoundsLeft;
+  }
+
+  public int getCompoundDrawablesWithIntrinsicBoundsTop() {
+    return compoundDrawablesWithIntrinsicBoundsTop;
+  }
+
+  public int getCompoundDrawablesWithIntrinsicBoundsRight() {
+    return compoundDrawablesWithIntrinsicBoundsRight;
+  }
+
+  public int getCompoundDrawablesWithIntrinsicBoundsBottom() {
+    return compoundDrawablesWithIntrinsicBoundsBottom;
   }
 }

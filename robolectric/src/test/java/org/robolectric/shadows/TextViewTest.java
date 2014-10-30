@@ -471,6 +471,15 @@ public class TextViewTest {
     assertThat(textView.getPaintFlags()).isEqualTo(100);
   }
 
+  @Test
+  public void setCompoundDrawablesWithIntrinsicBounds_setsValues() {
+    textView.setCompoundDrawablesWithIntrinsicBounds(R.drawable.l0_red, R.drawable.l1_orange, R.drawable.l2_yellow, R.drawable.l3_green);
+    assertThat(shadowOf(textView).getCompoundDrawablesWithIntrinsicBoundsLeft()).isEqualTo(R.drawable.l0_red);
+    assertThat(shadowOf(textView).getCompoundDrawablesWithIntrinsicBoundsTop()).isEqualTo(R.drawable.l1_orange);
+    assertThat(shadowOf(textView).getCompoundDrawablesWithIntrinsicBoundsRight()).isEqualTo(R.drawable.l2_yellow);
+    assertThat(shadowOf(textView).getCompoundDrawablesWithIntrinsicBoundsBottom()).isEqualTo(R.drawable.l3_green);
+  }
+
   private List<MockTextWatcher> anyNumberOfTextWatchers() {
     List<MockTextWatcher> mockTextWatchers = new ArrayList<MockTextWatcher>();
     int numberBetweenOneAndTen = new Random().nextInt(10) + 1;
