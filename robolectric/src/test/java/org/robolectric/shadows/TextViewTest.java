@@ -71,6 +71,16 @@ public class TextViewTest {
   }
 
   @Test
+  public void shouldCreateGetterForEditorActionListener() {
+    TextView textView = new TextView(Robolectric.application);
+    TestOnEditorActionListener actionListener = new TestOnEditorActionListener();
+
+    textView.setOnEditorActionListener(actionListener);
+
+    assertThat(shadowOf(textView).getOnEditorActionListener()).isSameAs(actionListener);
+  }
+
+  @Test
   public void testGetUrls() throws Exception {
     textView.setAutoLinkMask(Linkify.ALL);
     textView.setText("here's some text http://google.com/\nblah\thttp://another.com/123?456 blah");
