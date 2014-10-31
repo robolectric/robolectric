@@ -6,7 +6,6 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.maven.model.Dependency;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -27,18 +26,18 @@ public class CachedDependencyResolverTest {
   private DependencyResolver internalResolver = mock(DependencyResolver.class);
   private CacheNamingStrategy cacheNamingStrategy = new CacheNamingStrategy() {
     @Override
-    public String getName(String prefix, Dependency... dependencies) {
+    public String getName(String prefix, DependencyJar... dependencies) {
       return CACHE_NAME;
     }
   };
 
   private URL[] urls;
   private Cache cache = new CacheStub();
-  private Dependency[] dependencies = new Dependency[]{
+  private DependencyJar[] dependencies = new DependencyJar[]{
       createDependency("group1", "artifact1"),
       createDependency("group2", "artifact2"),
   };
-  private Dependency dependency = dependencies[0];
+  private DependencyJar dependency = dependencies[0];
   private URL url;
 
   @Before
@@ -110,18 +109,14 @@ public class CachedDependencyResolverTest {
     return new CachedDependencyResolver(internalResolver, cache, cacheNamingStrategy);
   }
 
-  private Dependency createDependency(final String groupId, final String artifactId) {
-    return new Dependency(){
-      {
-        setGroupId(groupId);
-        setArtifactId(artifactId);
-      }
+  private DependencyJar createDependency(final String groupId, final String artifactId) {
+    return new DependencyJar(groupId, artifactId, null) {
 
       @Override
       public boolean equals(Object o) {
-        if(!(o instanceof Dependency)) return false;
+        if(!(o instanceof DependencyJar)) return false;
 
-        Dependency d = (Dependency) o;
+        DependencyJar d = (DependencyJar) o;
 
         return this.getArtifactId().equals(d.getArtifactId()) && this.getGroupId().equals(groupId);
       }

@@ -12,8 +12,6 @@ import java.net.URL;
 import java.util.Date;
 import java.util.zip.CRC32;
 
-import org.apache.maven.model.Dependency;
-
 class CachedDependencyResolver implements DependencyResolver {
 
   private final static String CACHE_PREFIX_1 = "localArtifactUrls";
@@ -34,7 +32,7 @@ class CachedDependencyResolver implements DependencyResolver {
   }
 
   @Override
-  public URL[] getLocalArtifactUrls(Dependency... dependencies) {
+  public URL[] getLocalArtifactUrls(DependencyJar... dependencies) {
 
     String cacheName = cacheNamingStrategy.getName(CACHE_PREFIX_1, dependencies);
 
@@ -52,7 +50,7 @@ class CachedDependencyResolver implements DependencyResolver {
   }
 
   @Override
-  public URL getLocalArtifactUrl(Dependency dependency) {
+  public URL getLocalArtifactUrl(DependencyJar dependency) {
 
     String cacheName = cacheNamingStrategy.getName(CACHE_PREFIX_2, dependency);
 
@@ -69,17 +67,17 @@ class CachedDependencyResolver implements DependencyResolver {
   }
 
   interface CacheNamingStrategy {
-    String getName(String prefix, Dependency... dependencies);
+    String getName(String prefix, DependencyJar... dependencies);
   }
 
   static class DefaultCacheNamingStrategy implements CacheNamingStrategy {
-    public String getName(String prefix, Dependency... dependencies) {
+    public String getName(String prefix, DependencyJar... dependencies) {
       StringBuilder sb = new StringBuilder();
 
       sb.append(prefix)
         .append("#");
 
-      for(Dependency dependency : dependencies) {
+      for(DependencyJar dependency : dependencies) {
         sb.append(dependency.getGroupId())
           .append(":")
           .append(dependency.getArtifactId())

@@ -1,7 +1,6 @@
 package org.robolectric;
 
 import android.os.Build;
-import org.apache.maven.model.Dependency;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -48,30 +47,24 @@ public class SdkConfig {
     return artifactVersionString.hashCode();
   }
 
-  public Dependency getSystemResourceDependency() {
+  public DependencyJar getSystemResourceDependency() {
     return realAndroidDependency("android-all"); // TODO: remove me?
   }
 
-  public Dependency[] getSdkClasspathDependencies() {
-    return new Dependency[] {
+  public DependencyJar[] getSdkClasspathDependencies() {
+    return new DependencyJar[] {
         realAndroidDependency("android-all"),
-        createDependency("org.json", "json", "20080701", "jar", null),
-        createDependency("org.ccil.cowan.tagsoup", "tagsoup", "1.2", "jar", null)
+        createDependency("org.json", "json", "20080701"),
+        createDependency("org.ccil.cowan.tagsoup", "tagsoup", "1.2")
     };
   }
 
-  public Dependency realAndroidDependency(String artifactId) {
-    return createDependency("org.robolectric", artifactId, getArtifactVersionString(), "jar", null);
+  private DependencyJar realAndroidDependency(String artifactId) {
+    return createDependency("org.robolectric", artifactId, getArtifactVersionString());
   }
 
-  public Dependency createDependency(String groupId, String artifactId, String version, String type, String classifier) {
-    Dependency dependency = new Dependency();
-    dependency.setGroupId(groupId);
-    dependency.setArtifactId(artifactId);
-    dependency.setVersion(version);
-    dependency.setType(type);
-    dependency.setClassifier(classifier);
-    return dependency;
+  private DependencyJar createDependency(String groupId, String artifactId, String version) {
+    return new DependencyJar(groupId, artifactId, version);
   }
 
   public static SdkConfig getDefaultSdk() {
@@ -96,4 +89,5 @@ public class SdkConfig {
       return androidVersion + "-robolectric-" + robolectricVersion;
     }
   }
+
 }

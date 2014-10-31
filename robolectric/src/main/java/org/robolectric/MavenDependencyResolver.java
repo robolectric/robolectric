@@ -18,7 +18,7 @@ public class MavenDependencyResolver implements DependencyResolver {
    * same as the input order of dependencies, i.e., urls[i] is the local artifact URL for dependencies[i].
    */
   @Override
-  public URL[] getLocalArtifactUrls(Dependency... dependencies) {
+  public URL[] getLocalArtifactUrls(DependencyJar... dependencies) {
     DependenciesTask dependenciesTask = new DependenciesTask();
     configureMaven(dependenciesTask);
     RemoteRepository sonatypeRepository = new RemoteRepository();
@@ -26,7 +26,12 @@ public class MavenDependencyResolver implements DependencyResolver {
     sonatypeRepository.setId("sonatype");
     dependenciesTask.addConfiguredRemoteRepository(sonatypeRepository);
     dependenciesTask.setProject(project);
-    for (Dependency dependency : dependencies) {
+    for (DependencyJar dependencyJar : dependencies) {
+      Dependency dependency = new Dependency();
+      dependency.setArtifactId(dependencyJar.getArtifactId());
+      dependency.setGroupId(dependencyJar.getGroupId());
+      dependency.setType(dependencyJar.getType());
+      dependency.setVersion(dependencyJar.getVersion());
       dependenciesTask.addDependency(dependency);
     }
     dependenciesTask.execute();
@@ -45,7 +50,7 @@ public class MavenDependencyResolver implements DependencyResolver {
   }
 
   @Override
-  public URL getLocalArtifactUrl(Dependency dependency) {
+  public URL getLocalArtifactUrl(DependencyJar dependency) {
     URL[] urls = getLocalArtifactUrls(dependency);
     if (urls.length > 0) {
       return urls[0];
@@ -53,7 +58,7 @@ public class MavenDependencyResolver implements DependencyResolver {
     return null;
   }
 
-  private String key(Dependency dependency) {
+  private String key(DependencyJar dependency) {
     return dependency.getGroupId() + ":" + dependency.getArtifactId() + ":" + dependency.getType();
   }
 

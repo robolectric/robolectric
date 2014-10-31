@@ -2,6 +2,7 @@ package org.robolectric.bytecode;
 
 import android.R;
 import org.robolectric.AndroidManifest;
+import org.robolectric.DependencyJar;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.SdkConfig;
 import org.robolectric.SdkEnvironment;
@@ -62,7 +63,7 @@ public class Setup {
       I18nException.class,
       Transcript.class,
       org.robolectric.bytecode.DirectObjectMarker.class,
-      org.apache.maven.model.Dependency.class,
+      DependencyJar.class,
       ParallelUniverseInterface.class
   );
 

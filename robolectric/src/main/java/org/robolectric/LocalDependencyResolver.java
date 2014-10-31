@@ -1,7 +1,5 @@
 package org.robolectric;
 
-import org.apache.maven.model.Dependency;
-
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -15,7 +13,7 @@ public class LocalDependencyResolver implements DependencyResolver {
   }
 
   @Override
-  public URL getLocalArtifactUrl(Dependency dependency) {
+  public URL getLocalArtifactUrl(DependencyJar dependency) {
     String filename = dependency.getArtifactId() + "-" +
         dependency.getVersion() + "." +
         dependency.getType();
@@ -24,7 +22,7 @@ public class LocalDependencyResolver implements DependencyResolver {
   }
 
   @Override
-  public URL[] getLocalArtifactUrls(Dependency... dependencies) {
+  public URL[] getLocalArtifactUrls(DependencyJar... dependencies) {
     URL[] urls = new URL[dependencies.length];
 
     for (int i=0; i<dependencies.length; i++) {
