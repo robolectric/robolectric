@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import android.content.pm.PackageManager;
+
 import org.jetbrains.annotations.NotNull;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
@@ -22,12 +24,17 @@ public class ShadowActivityThread {
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);
     }
-    return Proxy.newProxyInstance(classLoader, new Class[] {iPackageManagerClass}, new InvocationHandler() {
-      @Override public Object invoke(Object proxy, @NotNull Method method, Object[] args) throws Throwable {
+    return Proxy.newProxyInstance(classLoader, new Class[]{iPackageManagerClass}, new InvocationHandler() {
+      @Override
+      public Object invoke(Object proxy, @NotNull Method method, Object[] args) throws Exception {
         if (method.getName().equals("getApplicationInfo")) {
           String packageName = (String) args[0];
           int flags = (Integer) args[1];
-          return Robolectric.packageManager.getApplicationInfo(packageName, flags);
+          try {
+            return Robolectric.packageManager.getApplicationInfo(packageName, flags);
+          } catch (PackageManager.NameNotFoundException e) {
+            return null;
+          }
         }
         throw new UnsupportedOperationException("sorry, not supporting " + method + " yet!");
       }
