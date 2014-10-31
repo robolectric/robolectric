@@ -3,8 +3,9 @@ package org.robolectric.shadows;
 import android.widget.ArrayAdapter;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.internal.ReflectionHelpers;
 
-import static org.fest.reflect.core.Reflection.field;
+import java.lang.reflect.Field;
 
 @SuppressWarnings( { "UnusedDeclaration" })
 @Implements(ArrayAdapter.class)
@@ -12,10 +13,10 @@ public class ShadowArrayAdapter<T> extends ShadowBaseAdapter {
   @RealObject private ArrayAdapter realArrayAdapter;
 
   public int getTextViewResourceId() {
-    return field("mFieldId").ofType(int.class).in(realArrayAdapter).get();
+    return ReflectionHelpers.getFieldReflectively(realArrayAdapter, "mFieldId");
   }
 
   public int getResourceId() {
-    return field("mResource").ofType(int.class).in(realArrayAdapter).get();
+    return ReflectionHelpers.getFieldReflectively(realArrayAdapter, "mResource");
   }
 }

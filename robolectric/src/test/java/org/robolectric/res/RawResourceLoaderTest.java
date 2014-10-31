@@ -6,7 +6,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.TestRunners;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.util.TestUtil.TEST_RESOURCE_PATH;
 import static org.robolectric.util.TestUtil.testResources;
 

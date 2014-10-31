@@ -5,9 +5,9 @@ import android.os.ResultReceiver;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import org.robolectric.Robolectric;
-import org.robolectric.internal.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.internal.HiddenApi;
 
 @Implements(value = InputMethodManager.class, callThroughByDefault = false)
 public class ShadowInputMethodManager {

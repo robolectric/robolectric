@@ -13,7 +13,7 @@ import org.robolectric.TestRunners;
 import org.robolectric.res.Attribute;
 
 import static java.util.Arrays.asList;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 import static org.robolectric.util.TestUtil.TEST_PACKAGE;
 

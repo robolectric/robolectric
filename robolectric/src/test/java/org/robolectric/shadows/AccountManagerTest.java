@@ -20,8 +20,8 @@ import org.robolectric.TestRunners;
 
 import java.io.IOException;
 
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.fest.assertions.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class AccountManagerTest {

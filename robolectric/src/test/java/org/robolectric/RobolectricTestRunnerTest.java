@@ -13,11 +13,11 @@ import org.robolectric.shadows.ShadowViewGroup;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Properties;
 
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.fest.reflect.core.Reflection.method;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class RobolectricTestRunnerTest {
   @Test public void whenClassHasConfigAnnotation_getConfig_shouldMergeClassAndMethodConfig() throws Exception {
@@ -105,16 +105,27 @@ public class RobolectricTestRunnerTest {
   }
 
   private Config configFor(Class<?> testClass, String methodName, final Properties configProperties) throws InitializationError {
+    Method info;
+    try {
+      info = testClass.getMethod(methodName);
+    } catch (NoSuchMethodException e) {
+      throw new RuntimeException(e);
+    }
     return new RobolectricTestRunner(testClass) {
       @Override protected Properties getConfigProperties() {
         return configProperties;
       }
-    }.getConfig(method(methodName).withParameterTypes().in(testClass).info());
+    }.getConfig(info);
   }
 
   private Config configFor(Class<?> testClass, String methodName) throws InitializationError {
-    return new RobolectricTestRunner(testClass)
-          .getConfig(method(methodName).withParameterTypes().in(testClass).info());
+    Method info;
+    try {
+      info = testClass.getMethod(methodName);
+    } catch (NoSuchMethodException e) {
+      throw new RuntimeException(e);
+    }
+    return new RobolectricTestRunner(testClass).getConfig(info);
   }
 
   private void assertConfig(Config config, int emulateSdk, String manifest, String qualifiers, String resourceDir, int reportSdk, Class[] shadows, Class<? extends Application> applicationClass) {

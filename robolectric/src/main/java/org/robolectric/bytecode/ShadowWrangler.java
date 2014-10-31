@@ -4,23 +4,12 @@ import android.content.Context;
 import org.robolectric.SdkConfig;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.internal.ReflectionHelpers;
 import org.robolectric.shadows.ShadowWindow;
 import org.robolectric.util.Function;
 
-import java.lang.reflect.Array;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-import static org.fest.reflect.core.Reflection.method;
-import static org.fest.reflect.core.Reflection.type;
+import java.lang.reflect.*;
+import java.util.*;
 
 public class ShadowWrangler implements ClassHandler {
   public static final Function<Object, Object> DO_NOTHING_HANDLER = new Function<Object, Object>() {
@@ -30,7 +19,8 @@ public class ShadowWrangler implements ClassHandler {
     }
   };
   public static final Plan DO_NOTHING_PLAN = new Plan() {
-    @Override public Object run(Object instance, Object roboData, Object[] params) throws Exception {
+    @Override
+    public Object run(Object instance, Object roboData, Object[] params) throws Exception {
       return null;
     }
   };
@@ -42,7 +32,8 @@ public class ShadowWrangler implements ClassHandler {
   private final ShadowMap shadowMap;
   private final Map<Class, MetaShadow> metaShadowMap = new HashMap<Class, MetaShadow>();
   private final Map<String, Plan> planCache = new LinkedHashMap<String, Plan>() {
-    @Override protected boolean removeEldestEntry(Map.Entry<String, Plan> eldest) {
+    @Override
+    protected boolean removeEldestEntry(Map.Entry<String, Plan> eldest) {
       return size() > 500;
     }
   };
@@ -77,7 +68,8 @@ public class ShadowWrangler implements ClassHandler {
     }
   }
 
-  @Override public Object initializing(Object instance) {
+  @Override
+  public Object initializing(Object instance) {
     return createShadowFor(instance);
   }
 
@@ -122,7 +114,8 @@ public class ShadowWrangler implements ClassHandler {
         }
 
         if (shadowMethod == null) {
-          if (debug) System.out.println("[DEBUG] no shadow for " + signature + " found on " + shadowConfig.shadowClassName + "; " + describePlan(strict(invocationProfile)));
+          if (debug)
+            System.out.println("[DEBUG] no shadow for " + signature + " found on " + shadowConfig.shadowClassName + "; " + describePlan(strict(invocationProfile)));
           return shadowConfig.callThroughByDefault ? CALL_REAL_CODE_PLAN : strict(invocationProfile) ? CALL_REAL_CODE_PLAN : DO_NOTHING_PLAN;
         }
 
@@ -170,7 +163,7 @@ public class ShadowWrangler implements ClassHandler {
   }
 
   private Method getShadowedMethod(InvocationProfile invocationProfile, ClassLoader classLoader,
-      Class<?> shadowClass) throws ClassNotFoundException {
+                                   Class<?> shadowClass) throws ClassNotFoundException {
     return getMethod(shadowClass, invocationProfile.methodName, invocationProfile.getParamClasses(classLoader));
   }
 
@@ -231,27 +224,43 @@ public class ShadowWrangler implements ClassHandler {
       };
     } else if (methodSignature.matches("com.android.internal.policy.PolicyManager", "makeNewWindow")) {
       return new Function<Object, Object>() {
-        @Override public Object call(Class<?> theClass, Object value, Object[] params) {
+        @Override
+        public Object call(Class<?> theClass, Object value, Object[] params) {
           ClassLoader cl = theClass.getClassLoader();
-          Class<?> shadowWindowClass = type(ShadowWindow.class.getName()).withClassLoader(cl).load();
-          Class<?> activityClass = type(Context.class.getName()).withClassLoader(cl).load();
+          Class<?> shadowWindowClass;
+
+          try {
+            shadowWindowClass = cl.loadClass(ShadowWindow.class.getName());
+          } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+          }
+
+          Class<?> activityClass;
+
+          try {
+            activityClass = cl.loadClass(Context.class.getName());
+          } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+          }
 
           Object context = params[0];
-          return method("create")
-              .withParameterTypes(activityClass)
-              .in(shadowWindowClass)
-              .invoke(context);
+          return ReflectionHelpers.callStaticMethodReflectively(shadowWindowClass, "create", new ReflectionHelpers.ClassParameter(activityClass, context));
         }
       };
     } else if (methodSignature.matches("java.lang.System", "nanoTime")
-	    || methodSignature.matches("java.lang.System", "currentTimeMillis")) {
+        || methodSignature.matches("java.lang.System", "currentTimeMillis")) {
       return new Function<Object, Object>() {
-        @Override public Object call(Class<?> theClass, Object value, Object[] params) {
+        @Override
+        public Object call(Class<?> theClass, Object value, Object[] params) {
           ClassLoader cl = theClass.getClassLoader();
-          Class<?> shadowSystemClockClass = type("org.robolectric.shadows.ShadowSystemClock").withClassLoader(cl).load();
-          return method(methodSignature.methodName)
-              .in(shadowSystemClockClass)
-              .invoke();
+          Class<?> shadowSystemClockClass;
+          try {
+            shadowSystemClockClass = cl.loadClass("org.robolectric.shadows.ShadowSystemClock");
+          } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+          }
+
+          return ReflectionHelpers.callStaticMethodReflectively(shadowSystemClockClass, methodSignature.methodName);
         }
       };
     }
@@ -432,7 +441,30 @@ public class ShadowWrangler implements ClassHandler {
     if (instance == null) {
       throw new NullPointerException("can't get a shadow for null");
     }
-    return method(AsmInstrumentingClassLoader.GET_ROBO_DATA_METHOD_NAME).withReturnType(Object.class).in(instance).invoke();
+
+    Object roboData;
+    try {
+      Method getRoboData = null;
+      Class<?> clazz = instance.getClass();
+      while (clazz != null) {
+        try {
+          getRoboData = clazz.getDeclaredMethod(AsmInstrumentingClassLoader.GET_ROBO_DATA_METHOD_NAME);
+          break;
+        } catch (NoSuchMethodException e) { }
+        clazz = clazz.getSuperclass();
+      }
+      if (getRoboData == null) {
+        throw new RuntimeException("can't get a shadow for " + instance);
+      }
+      getRoboData.setAccessible(true);
+      roboData = getRoboData.invoke(instance);
+    } catch (InvocationTargetException e) {
+      throw new RuntimeException(e);
+    } catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
+
+    return roboData;
   }
 
   private void writeField(Object target, Object value, Field realObjectField) {
@@ -467,7 +499,8 @@ public class ShadowWrangler implements ClassHandler {
       this.shadowMethod = shadowMethod;
     }
 
-    @Override public Object run(Object instance, Object roboData, Object[] params) throws Throwable {
+    @Override
+    public Object run(Object instance, Object roboData, Object[] params) throws Throwable {
       //noinspection UnnecessaryLocalVariable
       Object shadow = roboData;
       try {

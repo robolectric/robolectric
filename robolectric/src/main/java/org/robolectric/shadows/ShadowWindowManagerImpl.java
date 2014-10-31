@@ -6,6 +6,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.internal.ReflectionHelpers;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +24,7 @@ public class ShadowWindowManagerImpl extends ShadowWindowManager {
   public void addView(View view, android.view.ViewGroup.LayoutParams layoutParams) {
     views.add(view);
     directlyOn(realObject, WINDOW_MANAGER_IMPL_CLASS_NAME, "addView",
-        View.class, ViewGroup.LayoutParams.class).invoke(view, layoutParams);
+        new ReflectionHelpers.ClassParameter(View.class, view), new ReflectionHelpers.ClassParameter(ViewGroup.LayoutParams.class, layoutParams));
   }
 
   @Implementation
@@ -31,7 +32,7 @@ public class ShadowWindowManagerImpl extends ShadowWindowManager {
     views.remove(view);
 
     directlyOn(realObject, WINDOW_MANAGER_IMPL_CLASS_NAME, "removeView",
-        View.class).invoke(view);
+        new ReflectionHelpers.ClassParameter(View.class, view));
   }
 
   public List<View> getViews() {

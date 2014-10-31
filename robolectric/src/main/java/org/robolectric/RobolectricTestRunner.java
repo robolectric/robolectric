@@ -2,22 +2,6 @@ package org.robolectric;
 
 import android.app.Application;
 import android.os.Build;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.net.URL;
-import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
 import org.jetbrains.annotations.TestOnly;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -27,33 +11,23 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
-import org.robolectric.annotation.Config;
-import org.robolectric.annotation.DisableStrictI18n;
-import org.robolectric.annotation.EnableStrictI18n;
-import org.robolectric.annotation.WithConstantInt;
-import org.robolectric.annotation.WithConstantString;
-import org.robolectric.bytecode.AsmInstrumentingClassLoader;
-import org.robolectric.bytecode.ClassHandler;
-import org.robolectric.bytecode.RobolectricInternals;
-import org.robolectric.bytecode.Setup;
-import org.robolectric.bytecode.ShadowMap;
-import org.robolectric.bytecode.ShadowWrangler;
+import org.robolectric.annotation.*;
+import org.robolectric.bytecode.*;
 import org.robolectric.internal.ParallelUniverse;
 import org.robolectric.internal.ParallelUniverseInterface;
-import org.robolectric.res.DocumentLoader;
-import org.robolectric.res.Fs;
-import org.robolectric.res.FsFile;
-import org.robolectric.res.OverlayResourceLoader;
-import org.robolectric.res.PackageResourceLoader;
-import org.robolectric.res.ResourceLoader;
-import org.robolectric.res.ResourcePath;
-import org.robolectric.res.RoutingResourceLoader;
+import org.robolectric.internal.ReflectionHelpers;
+import org.robolectric.res.*;
 import org.robolectric.util.AnnotationUtil;
 import org.robolectric.util.Pair;
 
-import static org.fest.reflect.core.Reflection.constructor;
-import static org.fest.reflect.core.Reflection.staticField;
-import static org.fest.reflect.core.Reflection.type;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.*;
+import java.net.URL;
+import java.security.SecureRandom;
+import java.util.*;
 
 /**
  * Installs a {@link org.robolectric.bytecode.InstrumentingClassLoader} and
@@ -169,19 +143,9 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   }
 
   public static void injectClassHandler(ClassLoader robolectricClassLoader, ClassHandler classHandler) {
-    try {
-      String className = RobolectricInternals.class.getName();
-      Class<?> robolectricInternalsClass = robolectricClassLoader.loadClass(className);
-      Field field = robolectricInternalsClass.getDeclaredField("classHandler");
-      field.setAccessible(true);
-      field.set(null, classHandler);
-    } catch (NoSuchFieldException e) {
-      throw new RuntimeException(e);
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e);
-    }
+    String className = RobolectricInternals.class.getName();
+    Class<?> robolectricInternalsClass = ReflectionHelpers.loadClassReflectively(robolectricClassLoader, className);
+    ReflectionHelpers.setStaticFieldReflectively(robolectricInternalsClass, "classHandler", classHandler);
   }
 
   @Override
@@ -247,7 +211,12 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
           int sdkVersion = pickReportedSdkVersion(config, appManifest);
           Class<?> versionClass = sdkEnvironment.bootstrappedClass(Build.VERSION.class);
-          staticField("SDK_INT").ofType(int.class).in(versionClass).set(sdkVersion);
+          Field sdk_int = versionClass.getDeclaredField("SDK_INT");
+          sdk_int.setAccessible(true);
+          Field modifiers = Field.class.getDeclaredField("modifiers");
+          modifiers.setAccessible(true);
+          modifiers.setInt(sdk_int, sdk_int.getModifiers() & ~Modifier.FINAL);
+          sdk_int.setInt(null, sdkVersion);
 
           ResourceLoader systemResourceLoader = sdkEnvironment.getSystemResourceLoader(getJarResolver(), RobolectricTestRunner.this);
           setUpApplicationState(bootstrappedMethod, parallelUniverseInterface, strictI18n, systemResourceLoader, appManifest, config);
@@ -491,15 +460,22 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
   private ParallelUniverseInterface getHooksInterface(SdkEnvironment sdkEnvironment) {
     ClassLoader robolectricClassLoader = sdkEnvironment.getRobolectricClassLoader();
-    Class<? extends ParallelUniverseInterface> parallelUniverseClass =
-        type(ParallelUniverse.class.getName())
-            .withClassLoader(robolectricClassLoader)
-            .loadAs(ParallelUniverseInterface.class);
-
-    return constructor()
-        .withParameterTypes(RobolectricTestRunner.class)
-        .in(parallelUniverseClass)
-        .newInstance(this);
+    try {
+      Class<?> clazz = robolectricClassLoader.loadClass(ParallelUniverse.class.getName());
+      Class<? extends ParallelUniverseInterface> typedClazz = clazz.asSubclass(ParallelUniverseInterface.class);
+      Constructor<? extends ParallelUniverseInterface> constructor = typedClazz.getConstructor(RobolectricTestRunner.class);
+      return constructor.newInstance(this);
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(e);
+    } catch (NoSuchMethodException e) {
+      throw new RuntimeException(e);
+    } catch (InvocationTargetException e) {
+      throw new RuntimeException(e);
+    } catch (InstantiationException e) {
+      throw new RuntimeException(e);
+    } catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public void internalAfterTest(final Method method) {

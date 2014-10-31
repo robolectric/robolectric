@@ -6,24 +6,19 @@ import android.content.res.Resources;
 import android.database.DatabaseErrorHandler;
 import android.database.sqlite.SQLiteDatabase;
 import android.view.View;
-
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.internal.ReflectionHelpers;
 import org.robolectric.res.Attribute;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceLoader;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.List;
 import java.util.UUID;
 
-import static org.fest.reflect.core.Reflection.method;
 import static org.robolectric.Robolectric.shadowOf;
 
 /**
@@ -206,9 +201,6 @@ abstract public class ShadowContext {
   }
 
   public void callAttachBaseContext(Context context) {
-    method("attachBaseContext")
-        .withParameterTypes(Context.class)
-        .in(realContext)
-        .invoke(context);
+    ReflectionHelpers.callInstanceMethodReflectively(realContext, "attachBaseContext", new ReflectionHelpers.ClassParameter(Context.class, context));
   }
 }

@@ -1,13 +1,6 @@
 package org.robolectric.bytecode;
 
-import org.fest.reflect.method.Invoker;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Arrays;
-
-import static org.fest.reflect.core.Reflection.method;
+import org.robolectric.internal.ReflectionHelpers;
 
 public class RobolectricInternals {
   public static final String ROBO_PREFIX = "$$robo$$";
@@ -20,35 +13,11 @@ public class RobolectricInternals {
   }
 
   public static <T> T newInstanceOf(Class<T> clazz) {
-    try {
-      Constructor<T> defaultConstructor = clazz.getDeclaredConstructor();
-      defaultConstructor.setAccessible(true);
-      return defaultConstructor.newInstance();
-    } catch (InstantiationException e) {
-      throw new RuntimeException(e);
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    } catch (NoSuchMethodException e) {
-      throw new RuntimeException(e);
-    } catch (InvocationTargetException e) {
-      throw new RuntimeException(e);
-    }
+    return ReflectionHelpers.callConstructorReflectively(clazz);
   }
 
   public static <T> T newInstance(Class<T> clazz, Class[] parameterTypes, Object[] params) {
-    try {
-      Constructor<T> declaredConstructor = clazz.getDeclaredConstructor(parameterTypes);
-      declaredConstructor.setAccessible(true);
-      return declaredConstructor.newInstance(params);
-    } catch (InstantiationException e) {
-      throw new RuntimeException("error instantiating " + clazz.getName(), e);
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    } catch (NoSuchMethodException e) {
-      throw new RuntimeException(e);
-    } catch (InvocationTargetException e) {
-      throw new RuntimeException(e);
-    }
+    return ReflectionHelpers.callConstructorReflectively(clazz, ReflectionHelpers.ClassParameter.fromComponentLists(parameterTypes, params));
   }
 
   public static <T> T directlyOn(T shadowedObject, Class<T> clazz) {
@@ -82,7 +51,7 @@ public class RobolectricInternals {
   public static Object intercept(String signature, Object instance, Object[] params, Class theClass) throws Throwable {
     try {
       return classHandler.intercept(signature, instance, params, theClass);
-    } catch(java.lang.LinkageError e) {
+    } catch (java.lang.LinkageError e) {
       throw new Exception(e);
     }
   }
@@ -152,38 +121,30 @@ public class RobolectricInternals {
 
   // we need a better spot for these methods that don't rely on being in the same classloader as their operands
   public static void performStaticInitialization(Class<?> clazz) {
-    try {
-      Method originalStaticInitializer = clazz.getDeclaredMethod(InstrumentingClassLoader.STATIC_INITIALIZER_METHOD_NAME);
-      originalStaticInitializer.setAccessible(true);
-      originalStaticInitializer.invoke(null);
-    } catch (NoSuchMethodException e) {
-      throw new RuntimeException(e);
-    } catch (InvocationTargetException e) {
-      throw new RuntimeException(e);
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    }
+    ReflectionHelpers.callStaticMethodReflectively(clazz, InstrumentingClassLoader.STATIC_INITIALIZER_METHOD_NAME);
   }
 
-  public static Invoker<Void> getConstructor(Class<?> clazz, Object instance, String parameterType0, String... parameterTypes) {
-    Class<?>[] parameterClasses = new Class<?>[parameterTypes.length + 1];
+  public static <R> R invokeConstructor(Class<? extends R> clazz, R instance, ReflectionHelpers.StringParameter paramValue0, ReflectionHelpers.StringParameter... paramValues) {
+    ReflectionHelpers.ClassParameter[] classParamValues = new ReflectionHelpers.ClassParameter[paramValues.length + 1];
     try {
-      parameterClasses[0] = clazz.getClassLoader().loadClass(parameterType0);
+      Class<?> paramClass = clazz.getClassLoader().loadClass(paramValue0.className);
+      classParamValues[0] = new ReflectionHelpers.ClassParameter(paramClass, paramValue0.val);
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);
     }
-    for (int i = 0; i < parameterTypes.length; i++) {
+    for (int i = 0; i < paramValues.length; i++) {
       try {
-        parameterClasses[i + 1] = clazz.getClassLoader().loadClass(parameterTypes[i]);
+        Class<?> paramClass = clazz.getClassLoader().loadClass(paramValues[i].className);
+        classParamValues[i + 1] = new ReflectionHelpers.ClassParameter(paramClass, paramValues[i].val);
       } catch (ClassNotFoundException e) {
         throw new RuntimeException(e);
       }
     }
-    return getConstructor(clazz, instance, parameterClasses);
+    return invokeConstructor(clazz, instance, classParamValues);
   }
 
-  public static Invoker<Void> getConstructor(Class<?> clazz, Object instance, Class<?>... parameterTypes) {
-    String name = directMethodName(clazz.getName(), InstrumentingClassLoader.CONSTRUCTOR_METHOD_NAME);
-    return method(name).withParameterTypes(parameterTypes).in(instance);
+  public static <R> R invokeConstructor(Class<? extends R> clazz, R instance, ReflectionHelpers.ClassParameter... paramValues) {
+    String directMethodName = directMethodName(clazz.getName(), InstrumentingClassLoader.CONSTRUCTOR_METHOD_NAME);
+    return ReflectionHelpers.callInstanceMethodReflectively(instance, directMethodName, paramValues);
   }
 }

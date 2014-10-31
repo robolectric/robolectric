@@ -3,48 +3,14 @@ package org.robolectric.bytecode;
 import android.os.Build;
 import org.junit.Test;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.bytecode.testing.AChild;
-import org.robolectric.bytecode.testing.AClassThatCallsAMethodReturningAForgettableClass;
-import org.robolectric.bytecode.testing.AClassThatRefersToAForgettableClass;
-import org.robolectric.bytecode.testing.AClassThatRefersToAForgettableClassInItsConstructor;
-import org.robolectric.bytecode.testing.AClassThatRefersToAForgettableClassInMethodCalls;
-import org.robolectric.bytecode.testing.AClassThatRefersToAForgettableClassInMethodCallsReturningPrimitive;
-import org.robolectric.bytecode.testing.AClassToForget;
-import org.robolectric.bytecode.testing.AClassToRemember;
-import org.robolectric.bytecode.testing.AClassWithEqualsHashCodeToString;
-import org.robolectric.bytecode.testing.AClassWithFunnyConstructors;
-import org.robolectric.bytecode.testing.AClassWithMethodReturningArray;
-import org.robolectric.bytecode.testing.AClassWithMethodReturningBoolean;
-import org.robolectric.bytecode.testing.AClassWithMethodReturningDouble;
-import org.robolectric.bytecode.testing.AClassWithMethodReturningInteger;
-import org.robolectric.bytecode.testing.AClassWithNativeMethod;
-import org.robolectric.bytecode.testing.AClassWithNativeMethodReturningPrimitive;
-import org.robolectric.bytecode.testing.AClassWithNoDefaultConstructor;
-import org.robolectric.bytecode.testing.AClassWithStaticMethod;
-import org.robolectric.bytecode.testing.AClassWithoutEqualsHashCodeToString;
-import org.robolectric.bytecode.testing.AFinalClass;
-import org.robolectric.bytecode.testing.AnEnum;
-import org.robolectric.bytecode.testing.AnExampleClass;
-import org.robolectric.bytecode.testing.AnInstrumentedChild;
-import org.robolectric.bytecode.testing.AnInstrumentedClassWithoutToStringWithSuperToString;
-import org.robolectric.bytecode.testing.AnUninstrumentedClass;
-import org.robolectric.bytecode.testing.AnUninstrumentedParent;
+import org.robolectric.bytecode.testing.*;
 import org.robolectric.util.Transcript;
 import org.robolectric.util.Util;
 
-import java.lang.reflect.Array;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.lang.reflect.*;
+import java.util.*;
 
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.fest.reflect.core.Reflection.staticField;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 import static org.robolectric.Robolectric.directlyOn;
 import static org.robolectric.Robolectric.shadowOf_;
@@ -460,7 +426,7 @@ abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" 
     setClassLoader(createClassLoader(new MethodInterceptingSetup(new Setup.MethodRef(AClassToForget.class, "*"))));
     Class<?> theClass = loadClass(AClassThatRefersToAForgettableClassInMethodCallsReturningPrimitive.class);
     Object instance = theClass.newInstance();
-    directlyOn(instance, (Class<Object>) theClass, "longMethod").invoke();
+    directlyOn(instance, (Class<Object>) theClass, "longMethod");
     transcript.assertEventsSoFar(
         "methodInvoked: AClassThatRefersToAForgettableClassInMethodCallsReturningPrimitive.__constructor__()",
         "intercept: org/robolectric/bytecode/testing/AClassToForget/longReturningMethod(Ljava/lang/String;IJ)J with params (str str, 123 123, 456 456)");
@@ -494,7 +460,7 @@ abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" 
 
   @Test public void shouldMakeBuildVersionIntsNonFinal() throws Exception {
     Class<?> versionClass = loadClass(Build.VERSION.class);
-    int modifiers = staticField("SDK_INT").ofType(int.class).in(versionClass).info().getModifiers();
+    int modifiers = versionClass.getDeclaredField("SDK_INT").getModifiers();
     assertThat(Modifier.isFinal(modifiers)).as("SDK_INT should be non-final").isFalse();
   }
 

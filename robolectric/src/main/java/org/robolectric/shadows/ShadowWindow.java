@@ -10,13 +10,13 @@ import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.internal.ReflectionHelpers;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceLoader;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 
-import static org.fest.reflect.core.Reflection.field;
-import static org.fest.reflect.core.Reflection.type;
 import static org.robolectric.Robolectric.directlyOn;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -29,7 +29,7 @@ public class ShadowWindow {
   private int softInputMode;
 
   public static Window create(Context context) throws Exception {
-    Class<?> phoneWindowClass = type(ShadowPhoneWindow.PHONE_WINDOW_CLASS_NAME).load();
+    Class<?> phoneWindowClass = ShadowWindow.class.getClassLoader().loadClass(ShadowPhoneWindow.PHONE_WINDOW_CLASS_NAME);
     Constructor<?> constructor = phoneWindowClass.getConstructor(Context.class);
     return (Window) constructor.newInstance(context);
   }
@@ -37,13 +37,13 @@ public class ShadowWindow {
   @Implementation
   public void setFlags(int flags, int mask) {
     this.flags = (this.flags & ~mask) | (flags & mask);
-    directlyOn(realWindow, Window.class, "setFlags", int.class, int.class).invoke(flags, mask);
+    directlyOn(realWindow, Window.class, "setFlags", new ReflectionHelpers.ClassParameter(int.class, flags), new ReflectionHelpers.ClassParameter(int.class, mask));
   }
 
   @Implementation
   public void setSoftInputMode(int softInputMode) {
     this.softInputMode = softInputMode;
-    directlyOn(realWindow, Window.class, "setSoftInputMode", int.class).invoke(softInputMode);
+    directlyOn(realWindow, Window.class, "setSoftInputMode", new ReflectionHelpers.ClassParameter(int.class, softInputMode));
   }
 
   public boolean getFlag(int flag) {
@@ -60,7 +60,8 @@ public class ShadowWindow {
     Integer resId = resourceLoader.getResourceIndex().getResourceId(internalResource);
     try {
       Class<?> actionBarViewClass = Class.forName("com.android.internal.widget.ActionBarView");
-      ViewGroup actionBarView = (ViewGroup) field("mActionBar").ofType(actionBarViewClass).in(realWindow).get();
+      ViewGroup actionBarView;
+      actionBarView = ReflectionHelpers.getFieldReflectively(realWindow, "mActionBar");
       return (ImageView) actionBarView.findViewById(resId);
     } catch (ClassNotFoundException e) {
       throw new RuntimeException("could not resolve ActionBarView");

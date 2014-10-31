@@ -16,7 +16,7 @@ import org.robolectric.TestRunners;
 import java.util.Date;
 
 import static junit.framework.Assert.assertEquals;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class AlarmManagerTest {

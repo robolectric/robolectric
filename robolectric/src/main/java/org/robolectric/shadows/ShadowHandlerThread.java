@@ -5,9 +5,7 @@ import android.os.Looper;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import org.robolectric.internal.ReflectionHelpers;
 
 @Implements(HandlerThread.class)
 public class ShadowHandlerThread {
@@ -35,15 +33,7 @@ public class ShadowHandlerThread {
   }
 
   private void callOnLooperPrepared() {
-    Method prepared;
-    try {
-      prepared = HandlerThread.class.getDeclaredMethod("onLooperPrepared");
-      prepared.setAccessible(true);
-      prepared.invoke(realObject);
-    } catch (NoSuchMethodException ignored) {
-    } catch (InvocationTargetException ignored) {
-    } catch (IllegalAccessException ignored) {
-    }
+    ReflectionHelpers.callInstanceMethodReflectively(realObject, "onLooperPrepared");
   }
 
   @Implementation

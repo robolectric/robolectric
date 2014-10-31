@@ -1,7 +1,7 @@
 // Not in master, can maybe be deleted
 package org.robolectric.shadows;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Robolectric.shadowOf;
 
 import java.io.File;

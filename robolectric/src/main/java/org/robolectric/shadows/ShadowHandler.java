@@ -3,15 +3,17 @@ package org.robolectric.shadows;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.internal.ReflectionHelpers;
 
-import static org.fest.reflect.core.Reflection.field;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import static org.robolectric.Robolectric.shadowOf;
 
 /**
@@ -115,7 +117,7 @@ public class ShadowHandler {
   }
 
   private void setMessageWhen(Message msg, long when) {
-    field("when").ofType(long.class).in(msg).set(when);
+    ReflectionHelpers.setFieldReflectively(msg, "when", when);
   }
 
   private void routeMessage(Message msg) {

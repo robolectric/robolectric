@@ -18,7 +18,7 @@ import org.robolectric.TestRunners;
 import org.robolectric.res.builder.PreferenceBuilder;
 import org.robolectric.util.I18nException;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.util.TestUtil.TEST_PACKAGE;
 import static org.robolectric.util.TestUtil.testResources;
 

@@ -7,10 +7,10 @@ import com.android.internal.app.AlertController;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.internal.ReflectionHelpers;
 
 import java.lang.reflect.InvocationTargetException;
 
-import static org.fest.reflect.core.Reflection.method;
 import static org.robolectric.Robolectric.directlyOn;
 
 @Implements(AlertController.class)
@@ -75,10 +75,6 @@ public class ShadowAlertController {
   }
 
   public Adapter getAdapter() {
-    return method("getListView")
-        .withReturnType(ListView.class)
-        .in(realAlertController)
-        .invoke()
-        .getAdapter();
+    return ReflectionHelpers.<ListView>callInstanceMethodReflectively(realAlertController, "getListView").getAdapter();
   }
 }

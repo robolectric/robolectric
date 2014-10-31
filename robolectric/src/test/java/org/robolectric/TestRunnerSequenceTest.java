@@ -13,7 +13,7 @@ import org.robolectric.util.Transcript;
 
 import java.lang.reflect.Method;
 
-import static org.fest.assertions.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.util.TestUtil.resourceFile;
 

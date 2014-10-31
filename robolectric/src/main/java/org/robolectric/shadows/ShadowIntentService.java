@@ -1,10 +1,10 @@
 package org.robolectric.shadows;
 
 import android.app.IntentService;
-
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.internal.ReflectionHelpers;
 
 import static org.robolectric.Robolectric.directlyOn;
 
@@ -22,7 +22,6 @@ public class ShadowIntentService extends ShadowService {
   @Implementation
   public void setIntentRedelivery(boolean enabled) {
     mRedelivery = enabled;
-    directlyOn(realIntentService, IntentService.class, "setIntentRedelivery", boolean.class)
-        .invoke(enabled);
+    directlyOn(realIntentService, IntentService.class, "setIntentRedelivery", new ReflectionHelpers.ClassParameter(boolean.class, enabled));
   }
 }

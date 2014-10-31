@@ -7,16 +7,15 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.util.TypedValue;
-
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.internal.NamedStream;
+import org.robolectric.internal.ReflectionHelpers;
 import org.robolectric.util.Join;
 
 import javax.imageio.ImageIO;
-
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,7 +27,6 @@ import java.util.Map;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
-import static org.fest.reflect.core.Reflection.method;
 import static org.robolectric.Robolectric.directlyOn;
 import static org.robolectric.Robolectric.shadowOf;
 
@@ -40,14 +38,12 @@ public class ShadowBitmapFactory {
   @Implementation
   public static Bitmap decodeResourceStream(Resources res, TypedValue value,
                         InputStream is, Rect pad, BitmapFactory.Options opts) {
-    Bitmap bitmap = (Bitmap) directlyOn(BitmapFactory.class, "decodeResourceStream",
-        Resources.class, TypedValue.class,
-        InputStream.class, Rect.class, BitmapFactory.Options.class)
-        .invoke(res, value, is, pad, opts);
-
+    Bitmap bitmap = directlyOn(BitmapFactory.class, "decodeResourceStream", new ReflectionHelpers.ClassParameter(Resources.class, res),
+        new ReflectionHelpers.ClassParameter(TypedValue.class, value), new ReflectionHelpers.ClassParameter(InputStream.class, is),
+        new ReflectionHelpers.ClassParameter(Rect.class, pad), new ReflectionHelpers.ClassParameter(BitmapFactory.Options.class, opts));
     if (value != null && value.string != null && value.string.toString().contains(".9.")) {
       // todo: better support for nine-patches
-      method("setNinePatchChunk").withParameterTypes(byte[].class).in(bitmap).invoke(new byte[0]);
+      ReflectionHelpers.callInstanceMethodReflectively(bitmap, "setNinePatchChunk", new ReflectionHelpers.ClassParameter(byte[].class, new byte[0]));
     }
     return bitmap;
   }

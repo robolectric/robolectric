@@ -29,7 +29,7 @@ import org.robolectric.util.Strings;
 import java.io.*;
 import java.net.URI;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 import static org.robolectric.Robolectric.shadowOf;
 

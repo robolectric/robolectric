@@ -3,35 +3,13 @@ package org.robolectric;
 import android.accounts.AccountManager;
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
-import android.app.Activity;
-import android.app.ActivityGroup;
-import android.app.ActivityManager;
-import android.app.AlarmManager;
-import android.app.AlertDialog;
-import android.app.Application;
-import android.app.DatePickerDialog;
-import android.app.Dialog;
-import android.app.DownloadManager;
-import android.app.IntentService;
-import android.app.KeyguardManager;
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.app.ProgressDialog;
-import android.app.Service;
-import android.app.TimePickerDialog;
+import android.app.*;
 import android.appwidget.AppWidgetHost;
 import android.appwidget.AppWidgetHostView;
 import android.appwidget.AppWidgetManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.content.ContentProviderClient;
-import android.content.ContentProviderOperation;
-import android.content.ContentProviderResult;
-import android.content.ContentResolver;
-import android.content.Context;
-import android.content.ContextWrapper;
-import android.content.Intent;
+import android.content.*;
 import android.content.pm.ResolveInfo;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
@@ -39,19 +17,10 @@ import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.database.ContentObserver;
 import android.database.CursorWrapper;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.ColorMatrix;
-import android.graphics.CornerPathEffect;
-import android.graphics.drawable.GradientDrawable;
-import android.graphics.LinearGradient;
-import android.graphics.Matrix;
-import android.graphics.Paint;
-import android.graphics.Path;
-import android.graphics.Typeface;
+import android.graphics.*;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.StateListDrawable;
 import android.hardware.Camera;
 import android.hardware.SensorManager;
@@ -94,299 +63,24 @@ import android.telephony.TelephonyManager;
 import android.text.ClipboardManager;
 import android.text.TextPaint;
 import android.text.format.DateFormat;
-import android.view.Display;
-import android.view.GestureDetector;
-import android.view.InputDevice;
-import android.view.KeyEvent;
-import android.view.MenuInflater;
-import android.view.MotionEvent;
-import android.view.ScaleGestureDetector;
-import android.view.Surface;
-import android.view.TouchDelegate;
-import android.view.View;
-import android.view.ViewConfiguration;
-import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
-import android.view.Window;
-import android.view.WindowManager;
+import android.view.*;
 import android.view.accessibility.AccessibilityManager;
-import android.view.animation.AlphaAnimation;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
-import android.view.animation.LayoutAnimationController;
-import android.view.animation.TranslateAnimation;
+import android.view.animation.*;
 import android.view.inputmethod.InputMethodManager;
-import android.webkit.CookieManager;
-import android.webkit.CookieSyncManager;
-import android.webkit.JsPromptResult;
-import android.webkit.JsResult;
-import android.webkit.MimeTypeMap;
-import android.webkit.SslErrorHandler;
-import android.webkit.WebView;
-import android.webkit.WebViewDatabase;
-import android.widget.AbsListView;
-import android.widget.AbsSeekBar;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.BaseAdapter;
-import android.widget.CursorAdapter;
-import android.widget.ExpandableListView;
-import android.widget.Filter;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.NumberPicker;
-import android.widget.PopupMenu;
-import android.widget.PopupWindow;
-import android.widget.ProgressBar;
-import android.widget.RemoteViews;
-import android.widget.ResourceCursorAdapter;
-import android.widget.ScrollView;
-import android.widget.Scroller;
-import android.widget.SeekBar;
-import android.widget.SimpleCursorAdapter;
-import android.widget.TabHost;
-import android.widget.TextView;
-import android.widget.Toast;
-import android.widget.VideoView;
-import android.widget.ViewAnimator;
-import android.widget.ZoomButtonsController;
-
-import com.google.android.collect.Lists;
+import android.webkit.*;
+import android.widget.*;
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.impl.client.DefaultRequestDirector;
-import org.fest.reflect.method.Invoker;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implements;
 import org.robolectric.bytecode.RobolectricInternals;
 import org.robolectric.bytecode.ShadowWrangler;
+import org.robolectric.internal.ReflectionHelpers;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.builder.RobolectricPackageManager;
-import org.robolectric.shadows.HttpResponseGenerator;
-import org.robolectric.shadows.ShadowAbsListView;
-import org.robolectric.shadows.ShadowAbsSeekBar;
-import org.robolectric.shadows.ShadowAbsSpinner;
-import org.robolectric.shadows.ShadowAbsoluteLayout;
-import org.robolectric.shadows.ShadowAccessibilityManager;
-import org.robolectric.shadows.ShadowAccountManager;
-import org.robolectric.shadows.ShadowActivity;
-import org.robolectric.shadows.ShadowActivityGroup;
-import org.robolectric.shadows.ShadowActivityManager;
-import org.robolectric.shadows.ShadowActivityThread;
-import org.robolectric.shadows.ShadowAdapterView;
-import org.robolectric.shadows.ShadowAddress;
-import org.robolectric.shadows.ShadowAlarmManager;
-import org.robolectric.shadows.ShadowAlertController;
-import org.robolectric.shadows.ShadowAlertDialog;
-import org.robolectric.shadows.ShadowAlphaAnimation;
-import org.robolectric.shadows.ShadowAndroidBidi;
-import org.robolectric.shadows.ShadowAndroidHttpClient;
-import org.robolectric.shadows.ShadowAnimation;
-import org.robolectric.shadows.ShadowAnimationUtils;
-import org.robolectric.shadows.ShadowAnimator;
-import org.robolectric.shadows.ShadowAppWidgetHost;
-import org.robolectric.shadows.ShadowAppWidgetHostView;
-import org.robolectric.shadows.ShadowAppWidgetManager;
-import org.robolectric.shadows.ShadowApplication;
-import org.robolectric.shadows.ShadowArrayAdapter;
-import org.robolectric.shadows.ShadowAssetManager;
-import org.robolectric.shadows.ShadowAsyncTask;
-import org.robolectric.shadows.ShadowAsyncTaskLoader;
-import org.robolectric.shadows.ShadowAudioManager;
-import org.robolectric.shadows.ShadowBaseAdapter;
-import org.robolectric.shadows.ShadowBinder;
-import org.robolectric.shadows.ShadowBitmap;
-import org.robolectric.shadows.ShadowBitmapDrawable;
-import org.robolectric.shadows.ShadowBitmapFactory;
-import org.robolectric.shadows.ShadowBitmapShader;
-import org.robolectric.shadows.ShadowBluetoothAdapter;
-import org.robolectric.shadows.ShadowBluetoothDevice;
-import org.robolectric.shadows.ShadowBundle;
-import org.robolectric.shadows.ShadowCamera;
-import org.robolectric.shadows.ShadowCanvas;
-import org.robolectric.shadows.ShadowChoreographer;
-import org.robolectric.shadows.ShadowClipboardManager;
-import org.robolectric.shadows.ShadowColor;
-import org.robolectric.shadows.ShadowColorMatrix;
-import org.robolectric.shadows.ShadowColorMatrixColorFilter;
-import org.robolectric.shadows.ShadowConfiguration;
-import org.robolectric.shadows.ShadowConnectivityManager;
-import org.robolectric.shadows.ShadowContentObserver;
-import org.robolectric.shadows.ShadowContentProvider;
-import org.robolectric.shadows.ShadowContentProviderClient;
-import org.robolectric.shadows.ShadowContentProviderOperation;
-import org.robolectric.shadows.ShadowContentProviderResult;
-import org.robolectric.shadows.ShadowContentResolver;
-import org.robolectric.shadows.ShadowContentUris;
-import org.robolectric.shadows.ShadowContext;
-import org.robolectric.shadows.ShadowContextImpl;
-import org.robolectric.shadows.ShadowContextThemeWrapper;
-import org.robolectric.shadows.ShadowContextWrapper;
-import org.robolectric.shadows.ShadowCookieManager;
-import org.robolectric.shadows.ShadowCookieSyncManager;
-import org.robolectric.shadows.ShadowCornerPathEffect;
-import org.robolectric.shadows.ShadowCountDownTimer;
-import org.robolectric.shadows.ShadowCursorAdapter;
-import org.robolectric.shadows.ShadowCursorLoader;
-import org.robolectric.shadows.ShadowCursorWindow;
-import org.robolectric.shadows.ShadowCursorWrapper;
-import org.robolectric.shadows.ShadowDashPathEffect;
-import org.robolectric.shadows.ShadowDateFormat;
-import org.robolectric.shadows.ShadowDatePickerDialog;
-import org.robolectric.shadows.ShadowDebug;
-import org.robolectric.shadows.ShadowDefaultRequestDirector;
-import org.robolectric.shadows.ShadowDialog;
-import org.robolectric.shadows.ShadowDialogPreference;
-import org.robolectric.shadows.ShadowDisplay;
-import org.robolectric.shadows.ShadowDownloadManager;
-import org.robolectric.shadows.ShadowDrawable;
-import org.robolectric.shadows.ShadowDrawerLayout;
-import org.robolectric.shadows.ShadowEdgeEffect;
-import org.robolectric.shadows.ShadowEmojiFactory;
-import org.robolectric.shadows.ShadowEnvironment;
-import org.robolectric.shadows.ShadowExifInterface;
-import org.robolectric.shadows.ShadowExpandableListView;
-import org.robolectric.shadows.ShadowFilter;
-import org.robolectric.shadows.ShadowFloatMath;
-import org.robolectric.shadows.ShadowFrameLayout;
-import org.robolectric.shadows.ShadowGeoPoint;
-import org.robolectric.shadows.ShadowGeocoder;
-import org.robolectric.shadows.ShadowGestureDetector;
-import org.robolectric.shadows.ShadowGradientDrawable;
-import org.robolectric.shadows.ShadowHandler;
-import org.robolectric.shadows.ShadowHandlerThread;
-import org.robolectric.shadows.ShadowHttpResponseCache;
-import org.robolectric.shadows.ShadowImageView;
-import org.robolectric.shadows.ShadowInputDevice;
-import org.robolectric.shadows.ShadowInputEvent;
-import org.robolectric.shadows.ShadowInputMethodManager;
-import org.robolectric.shadows.ShadowIntent;
-import org.robolectric.shadows.ShadowIntentFilter;
-import org.robolectric.shadows.ShadowIntentSender;
-import org.robolectric.shadows.ShadowIntentService;
-import org.robolectric.shadows.ShadowItemizedOverlay;
-import org.robolectric.shadows.ShadowJsPromptResult;
-import org.robolectric.shadows.ShadowJsResult;
-import org.robolectric.shadows.ShadowKeyCharacterMap;
-import org.robolectric.shadows.ShadowKeyEvent;
-import org.robolectric.shadows.ShadowKeyguardManager;
-import org.robolectric.shadows.ShadowLayoutAnimationController;
-import org.robolectric.shadows.ShadowLinearGradient;
-import org.robolectric.shadows.ShadowLinearLayout;
-import org.robolectric.shadows.ShadowLinkMovementMethod;
-import org.robolectric.shadows.ShadowListPreference;
-import org.robolectric.shadows.ShadowListView;
-import org.robolectric.shadows.ShadowLocalActivityManager;
-import org.robolectric.shadows.ShadowLocalBroadcastManager;
-import org.robolectric.shadows.ShadowLocation;
-import org.robolectric.shadows.ShadowLocationManager;
-import org.robolectric.shadows.ShadowLog;
-import org.robolectric.shadows.ShadowLooper;
-import org.robolectric.shadows.ShadowMapActivity;
-import org.robolectric.shadows.ShadowMapController;
-import org.robolectric.shadows.ShadowMapView;
-import org.robolectric.shadows.ShadowMatrix;
-import org.robolectric.shadows.ShadowMediaMetadataRetriever;
-import org.robolectric.shadows.ShadowMediaPlayer;
-import org.robolectric.shadows.ShadowMediaRecorder;
-import org.robolectric.shadows.ShadowMediaScannerConnection;
-import org.robolectric.shadows.ShadowMediaStore;
-import org.robolectric.shadows.ShadowMenuInflater;
-import org.robolectric.shadows.ShadowMessenger;
-import org.robolectric.shadows.ShadowMimeTypeMap;
-import org.robolectric.shadows.ShadowMockPackageManager;
-import org.robolectric.shadows.ShadowMotionEvent;
-import org.robolectric.shadows.ShadowNetworkInfo;
-import org.robolectric.shadows.ShadowNfcAdapter;
-import org.robolectric.shadows.ShadowNinePatch;
-import org.robolectric.shadows.ShadowNotification;
-import org.robolectric.shadows.ShadowNotificationManager;
-import org.robolectric.shadows.ShadowNumberPicker;
-import org.robolectric.shadows.ShadowObjectAnimator;
-import org.robolectric.shadows.ShadowOverlayItem;
-import org.robolectric.shadows.ShadowPaint;
-import org.robolectric.shadows.ShadowParcel;
-import org.robolectric.shadows.ShadowPath;
-import org.robolectric.shadows.ShadowPendingIntent;
-import org.robolectric.shadows.ShadowPhoneWindow;
-import org.robolectric.shadows.ShadowPopupMenu;
-import org.robolectric.shadows.ShadowPopupWindow;
-import org.robolectric.shadows.ShadowPorterDuffXfermode;
-import org.robolectric.shadows.ShadowPowerManager;
-import org.robolectric.shadows.ShadowPreference;
-import org.robolectric.shadows.ShadowPreferenceActivity;
-import org.robolectric.shadows.ShadowPreferenceCategory;
-import org.robolectric.shadows.ShadowPreferenceGroup;
-import org.robolectric.shadows.ShadowPreferenceManager;
-import org.robolectric.shadows.ShadowPreferenceScreen;
-import org.robolectric.shadows.ShadowProgressBar;
-import org.robolectric.shadows.ShadowProgressDialog;
-import org.robolectric.shadows.ShadowRegion;
-import org.robolectric.shadows.ShadowRelativeLayout;
-import org.robolectric.shadows.ShadowRemoteCallbackList;
-import org.robolectric.shadows.ShadowRemoteViews;
-import org.robolectric.shadows.ShadowResolveInfo;
-import org.robolectric.shadows.ShadowResourceCursorAdapter;
-import org.robolectric.shadows.ShadowResources;
-import org.robolectric.shadows.ShadowResultReceiver;
-import org.robolectric.shadows.ShadowSQLiteConnection;
-import org.robolectric.shadows.ShadowScaleGestureDetector;
-import org.robolectric.shadows.ShadowScanResult;
-import org.robolectric.shadows.ShadowScrollView;
-import org.robolectric.shadows.ShadowScroller;
-import org.robolectric.shadows.ShadowSeekBar;
-import org.robolectric.shadows.ShadowSensorManager;
-import org.robolectric.shadows.ShadowService;
-import org.robolectric.shadows.ShadowServiceManager;
-import org.robolectric.shadows.ShadowSettings;
-import org.robolectric.shadows.ShadowSimpleCursorAdapter;
-import org.robolectric.shadows.ShadowSmsManager;
-import org.robolectric.shadows.ShadowSpannableStringBuilder;
-import org.robolectric.shadows.ShadowSpellChecker;
-import org.robolectric.shadows.ShadowSslErrorHandler;
-import org.robolectric.shadows.ShadowStatFs;
-import org.robolectric.shadows.ShadowStateListDrawable;
-import org.robolectric.shadows.ShadowSurface;
-import org.robolectric.shadows.ShadowSurfaceView;
-import org.robolectric.shadows.ShadowSystemClock;
-import org.robolectric.shadows.ShadowSystemProperties;
-import org.robolectric.shadows.ShadowTabActivity;
-import org.robolectric.shadows.ShadowTabHost;
-import org.robolectric.shadows.ShadowTabWidget;
-import org.robolectric.shadows.ShadowTelephonyManager;
-import org.robolectric.shadows.ShadowTextPaint;
-import org.robolectric.shadows.ShadowTextToSpeech;
-import org.robolectric.shadows.ShadowTextView;
-import org.robolectric.shadows.ShadowTime;
-import org.robolectric.shadows.ShadowTimePickerDialog;
-import org.robolectric.shadows.ShadowToast;
-import org.robolectric.shadows.ShadowTouchDelegate;
-import org.robolectric.shadows.ShadowTranslateAnimation;
-import org.robolectric.shadows.ShadowTypedArray;
-import org.robolectric.shadows.ShadowTypeface;
-import org.robolectric.shadows.ShadowUri;
-import org.robolectric.shadows.ShadowValueAnimator;
-import org.robolectric.shadows.ShadowVideoView;
-import org.robolectric.shadows.ShadowView;
-import org.robolectric.shadows.ShadowViewAnimator;
-import org.robolectric.shadows.ShadowViewConfiguration;
-import org.robolectric.shadows.ShadowViewGroup;
-import org.robolectric.shadows.ShadowViewRootImpl;
-import org.robolectric.shadows.ShadowViewTreeObserver;
-import org.robolectric.shadows.ShadowWebSyncManager;
-import org.robolectric.shadows.ShadowWebView;
-import org.robolectric.shadows.ShadowWebViewDatabase;
-import org.robolectric.shadows.ShadowWifiConfiguration;
-import org.robolectric.shadows.ShadowWifiInfo;
-import org.robolectric.shadows.ShadowWifiManager;
-import org.robolectric.shadows.ShadowWindow;
-import org.robolectric.shadows.ShadowWindowManager;
-import org.robolectric.shadows.ShadowWindowManagerImpl;
-import org.robolectric.shadows.ShadowZoomButtonsController;
-import org.robolectric.shadows.ShadowProcess;
+import org.robolectric.shadows.*;
 import org.robolectric.tester.org.apache.http.FakeHttpLayer;
 import org.robolectric.tester.org.apache.http.HttpRequestInfo;
 import org.robolectric.tester.org.apache.http.RequestMatcher;
@@ -395,12 +89,10 @@ import org.robolectric.util.Scheduler;
 import org.robolectric.util.ServiceController;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
 import java.util.List;
-
-import static org.fest.reflect.core.Reflection.method;
-import static org.fest.reflect.core.Reflection.staticMethod;
 
 public class Robolectric {
   public static Application application;
@@ -676,22 +368,43 @@ public class Robolectric {
     return RobolectricInternals.directlyOn(shadowedObject, clazz);
   }
 
-  public static <T> Invoker directlyOn(T shadowedObject, Class<T> clazz, String methodName, Class<?>... paramTypes) {
-    String directMethodName = RobolectricInternals.directMethodName(clazz.getName(), methodName);
-    return method(directMethodName).withReturnType(Object.class).withParameterTypes(paramTypes).in(
-        shadowedObject);
-  }
-
-  public static <T> Invoker directlyOn(Class<T> clazz, String methodName, Class<?>... paramTypes) {
-    String directMethodName = RobolectricInternals.directMethodName(clazz.getName(), methodName);
-    return method(directMethodName).withReturnType(Object.class).withParameterTypes(paramTypes).in(clazz);
-  }
-
-  public static <T> Invoker directlyOn(Object shadowedObject, String clazzName, String methodName, Class<?>... paramTypes) {
+  public static <R> R directlyOn(Object shadowedObject, String clazzName, String methodName, ReflectionHelpers.ClassParameter... paramValues) {
     try {
       Class<Object> aClass = (Class<Object>) shadowedObject.getClass().getClassLoader().loadClass(clazzName);
-      return directlyOn(shadowedObject, aClass, methodName, paramTypes);
+      return directlyOn(shadowedObject, aClass, methodName, paramValues);
     } catch (ClassNotFoundException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static <R, T> R directlyOn(T shadowedObject, Class<T> clazz, String methodName, ReflectionHelpers.ClassParameter... paramValues) {
+    return directlyOnInternal(shadowedObject, clazz, methodName, shadowedObject.getClass(), paramValues);
+  }
+
+  public static <R, T> R directlyOn(Class<T> clazz, String methodName, ReflectionHelpers.ClassParameter... paramValues) {
+    return directlyOnInternal(null, clazz, methodName, clazz, paramValues);
+  }
+
+  private static <R, T> R directlyOnInternal(Object shadowedObject, Class<T> clazz, String methodName, Class classHierarchyStart, ReflectionHelpers.ClassParameter... paramValues) {
+    String directMethodName = RobolectricInternals.directMethodName(clazz.getName(), methodName);
+    try {
+      Class[] classes = ReflectionHelpers.ClassParameter.getClasses(paramValues);
+      Object[] values = ReflectionHelpers.ClassParameter.getValues(paramValues);
+
+      Class hierarchyTraversalClass = classHierarchyStart;
+      while(hierarchyTraversalClass != null) {
+        try {
+          Method declaredMethod = hierarchyTraversalClass.getDeclaredMethod(directMethodName, classes);
+          declaredMethod.setAccessible(true);
+          return (R) declaredMethod.invoke(shadowedObject, values);
+        } catch (NoSuchMethodException e) {
+          hierarchyTraversalClass = hierarchyTraversalClass.getSuperclass();
+        }
+      }
+      throw new RuntimeException(new NoSuchMethodException());
+    } catch (InvocationTargetException e) {
+      throw (RuntimeException) e.getTargetException();
+    } catch (IllegalAccessException e) {
       throw new RuntimeException(e);
     }
   }
@@ -1659,25 +1372,25 @@ public class Robolectric {
     RobolectricBase.reset();
     for (Class<?> klass : config.shadows()) {
       if (klass.getAnnotation(Implements.class).resetStaticState()) {
-        staticMethod("reset").in(klass).invoke();
+        ReflectionHelpers.callStaticMethodReflectively(klass, "reset");
       }
     }
   }
 
   public static <T extends Service> ServiceController<T> buildService(Class<T> serviceClass) {
-    return new ServiceController<T>(serviceClass);
+    return ServiceController.of(serviceClass);
   }
 
   public static <T extends Service> T setupService(Class<T> serviceClass) {
-    return new ServiceController<T>(serviceClass).attach().create().get();
+    return ServiceController.of(serviceClass).attach().create().get();
   }
 
   public static <T extends Activity> ActivityController<T> buildActivity(Class<T> activityClass) {
-    return new ActivityController<T>(activityClass);
+    return ActivityController.of(activityClass);
   }
 
   public static <T extends Activity> T setupActivity(Class<T> activityClass) {
-    return new ActivityController<T>(activityClass).setup().get();
+    return ActivityController.of(activityClass).setup().get();
   }
 
   /**
@@ -1707,12 +1420,7 @@ public class Robolectric {
     }
 
     public static void setFinalStaticField(Class classWhichContainsField, String fieldName, Object newValue) {
-      try {
-        Field field = classWhichContainsField.getDeclaredField(fieldName);
-        setFinalStaticField(field, newValue);
-      } catch (NoSuchFieldException e) {
-        throw new RuntimeException(e);
-      }
+      ReflectionHelpers.setStaticFieldReflectively(classWhichContainsField, fieldName, newValue);
     }
 
     public static Object setFinalStaticField(Field field, Object newValue) {

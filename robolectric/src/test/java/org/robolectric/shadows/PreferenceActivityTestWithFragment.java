@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import android.app.Activity;
 import android.app.FragmentManager;

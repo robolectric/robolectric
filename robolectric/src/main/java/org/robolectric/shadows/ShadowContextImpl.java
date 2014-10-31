@@ -14,11 +14,11 @@ import org.robolectric.SdkConfig;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.internal.ReflectionHelpers;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.fest.reflect.core.Reflection.constructor;
 import static org.robolectric.Robolectric.newInstanceOf;
 
 @Implements(value = Robolectric.Anything.class, className = ShadowContextImpl.CLASS_NAME)
@@ -95,16 +95,19 @@ public class ShadowContextImpl extends ShadowContext {
 
       try {
         if (serviceClassName.equals("android.app.SearchManager")) {
-          service = constructor().withParameterTypes(Context.class, Handler.class).in(SearchManager.class).newInstance(realContextImpl, null);
+          service = ReflectionHelpers.callConstructorReflectively(SearchManager.class, new ReflectionHelpers.ClassParameter(Context.class, realContextImpl),
+              new ReflectionHelpers.ClassParameter(Handler.class, null));
         } else if (serviceClassName.equals("android.app.ActivityManager")) {
-          service = constructor().withParameterTypes(Context.class, Handler.class).in(ActivityManager.class).newInstance(realContextImpl, null);
+          service = ReflectionHelpers.callConstructorReflectively(ActivityManager.class, new ReflectionHelpers.ClassParameter(Context.class, realContextImpl),
+              new ReflectionHelpers.ClassParameter(Handler.class, null));
         } else if (serviceClassName.equals("android.app.admin.DevicePolicyManager")) {
-          service = constructor().withParameterTypes(Context.class, Handler.class).in(DevicePolicyManager.class).newInstance(realContextImpl, null);
+          service = ReflectionHelpers.callConstructorReflectively(DevicePolicyManager.class, new ReflectionHelpers.ClassParameter(Context.class, realContextImpl),
+              new ReflectionHelpers.ClassParameter(Handler.class, null));
         } else if (serviceClassName.equals("android.os.storage.StorageManager")) {
-          service = constructor().in(StorageManager.class).newInstance();
+          service = ReflectionHelpers.callConstructorReflectively(StorageManager.class);
         } else if ((sdkConfig.getApiLevel() >= Build.VERSION_CODES.JELLY_BEAN_MR1) && (serviceClassName.equals("android.view.WindowManagerImpl"))) {
           Display display = newInstanceOf(Display.class);
-          service = constructor().withParameterTypes(Display.class).in(Class.forName("android.view.WindowManagerImpl")).newInstance(display);
+          service = ReflectionHelpers.callConstructorReflectively(Class.forName("android.view.WindowManagerImpl"), new ReflectionHelpers.ClassParameter(Display.class, display));
         } else if (serviceClassName.equals("android.accounts.AccountManager")) {
           service = AccountManager.get(null);
         } else {

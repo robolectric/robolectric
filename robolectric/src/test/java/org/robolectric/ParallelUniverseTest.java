@@ -9,7 +9,7 @@ import android.content.res.Resources;
 import android.content.res.Configuration;
 import org.robolectric.internal.ParallelUniverse;
 import static org.mockito.Mockito.*;
-import static org.fest.assertions.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ParallelUniverseTest {

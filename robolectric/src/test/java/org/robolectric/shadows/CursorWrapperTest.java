@@ -17,7 +17,7 @@ import org.robolectric.TestRunners;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.matchers.JUnitMatchers.hasItem;
 import static org.mockito.Mockito.*;
 

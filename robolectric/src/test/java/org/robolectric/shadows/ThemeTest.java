@@ -20,7 +20,7 @@ import org.robolectric.res.Style;
 import org.robolectric.util.ActivityController;
 import org.robolectric.util.TestUtil;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Robolectric.buildActivity;
 
 @RunWith(TestRunners.WithDefaults.class)

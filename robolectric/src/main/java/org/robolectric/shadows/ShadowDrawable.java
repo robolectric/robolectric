@@ -10,18 +10,16 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.NinePatchDrawable;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
-
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.internal.ReflectionHelpers;
 
-import static org.fest.reflect.core.Reflection.method;
 import static org.robolectric.Robolectric.directlyOn;
 import static org.robolectric.Robolectric.shadowOf;
 
@@ -68,23 +66,17 @@ public class ShadowDrawable {
     if (bm != null) {
       boolean isNinePatch = srcName != null && srcName.contains(".9.");
       if (isNinePatch) {
-        method("setNinePatchChunk").withParameterTypes(byte[].class).in(bm).invoke(new byte[0]);
+        ReflectionHelpers.callInstanceMethodReflectively(bm, "setNinePatchChunk", new ReflectionHelpers.ClassParameter(byte[].class, new byte[0]));
       }
-
       byte[] np = bm.getNinePatchChunk();
       if (np == null || !NinePatch.isNinePatchChunk(np)) {
         np = null;
         pad = null;
       }
-      int[] layoutBounds = method("getLayoutBounds").withReturnType(int[].class).in(bm).invoke();
-      Rect layoutBoundsRect = null;
-      if (layoutBounds != null) {
-        layoutBoundsRect = new Rect(layoutBounds[0], layoutBounds[1],
-            layoutBounds[2], layoutBounds[3]);
-      }
+
       if (np != null) {
         // todo: wrong
-        return new NinePatchDrawable(res, bm, np, pad, /*layoutBoundsRect,*/ srcName);
+        return new NinePatchDrawable(res, bm, np, pad, srcName);
       }
 
       return new BitmapDrawable(res, bm);
@@ -182,7 +174,7 @@ public class ShadowDrawable {
   @Implementation
   public void invalidateSelf() {
     wasInvalidated = true;
-    directlyOn(realDrawable, Drawable.class, "invalidateSelf").invoke();
+    directlyOn(realDrawable, Drawable.class, "invalidateSelf");
   }
 
   public int getAlpha() {

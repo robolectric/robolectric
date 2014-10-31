@@ -35,7 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 import static org.robolectric.Robolectric.shadowOf;

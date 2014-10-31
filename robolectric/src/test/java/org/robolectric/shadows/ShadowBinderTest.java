@@ -8,7 +8,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
 
 import static junit.framework.Assert.assertTrue;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ShadowBinderTest {

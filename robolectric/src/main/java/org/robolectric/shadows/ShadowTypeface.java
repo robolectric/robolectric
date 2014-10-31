@@ -2,13 +2,11 @@ package org.robolectric.shadows;
 
 import android.content.res.AssetManager;
 import android.graphics.Typeface;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.robolectric.AndroidManifest;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
@@ -17,6 +15,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.bytecode.RobolectricInternals;
 import org.robolectric.internal.HiddenApi;
+import org.robolectric.internal.ReflectionHelpers;
 
 import static org.robolectric.Robolectric.shadowOf;
 
@@ -31,7 +30,7 @@ public class ShadowTypeface {
   @HiddenApi
   public void __constructor__(int fontId) {
     fontDesc = findById(fontId);
-    RobolectricInternals.getConstructor(Typeface.class, realTypeface, int.class).invoke(fontId);
+    RobolectricInternals.invokeConstructor(Typeface.class, realTypeface, new ReflectionHelpers.ClassParameter(int.class, fontId));
   }
 
   public String getAssetPath() {

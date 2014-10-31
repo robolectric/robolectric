@@ -11,7 +11,7 @@ import org.robolectric.Robolectric;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.robolectric.Robolectric.shadowOf;
