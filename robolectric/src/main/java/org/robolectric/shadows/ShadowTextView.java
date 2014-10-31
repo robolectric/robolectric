@@ -12,6 +12,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
+import org.robolectric.Robolectric;
 import org.robolectric.internal.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -60,7 +61,6 @@ public class ShadowTextView extends ShadowView {
   private List<KeyEvent> previousKeyEvents = new ArrayList<KeyEvent>();
   private Layout layout;
   private int paintFlags;
-
 
   @Implementation
   public void setTextAppearance(Context context, int resid) {
@@ -150,5 +150,15 @@ public class ShadowTextView extends ShadowView {
   @Implementation
   public void setPaintFlags(int paintFlags) {
     this.paintFlags = paintFlags;
+  }
+
+  @Implementation
+  public void setOnEditorActionListener(TextView.OnEditorActionListener l) {
+    this.onEditorActionListener = l;
+    directlyOn(realTextView, TextView.class).setOnEditorActionListener(l);
+  }
+
+  public TextView.OnEditorActionListener getOnEditorActionListener() {
+    return onEditorActionListener;
   }
 }
