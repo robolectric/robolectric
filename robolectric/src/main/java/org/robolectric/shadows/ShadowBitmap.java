@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
+import android.util.DisplayMetrics;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -39,6 +40,7 @@ public class ShadowBitmap {
   private boolean mutable;
   private String description = "";
   private boolean recycled = false;
+  private int density;
 
   /**
    * Reference to original Bitmap from which this Bitmap was created. {@code null} if this Bitmap
@@ -148,6 +150,27 @@ public class ShadowBitmap {
     shadowBitmap.height = height;
     shadowBitmap.config = config;
     return scaledBitmap;
+  }
+
+  @Implementation
+  public static Bitmap createBitmap(DisplayMetrics display, int width, int height,
+                                      Bitmap.Config config, boolean hasAlpha) {
+    if (width <= 0 || height <= 0) {
+      throw new IllegalArgumentException("width and height must be > 0");
+    }
+    Bitmap mutableBitmap = Robolectric.newInstanceOf(Bitmap.class);
+    ShadowBitmap shadowBitmap = shadowOf(mutableBitmap);
+
+    shadowBitmap.setDescription("Bitmap (" + width + " x " + height + ")");
+
+    shadowBitmap.width = width;
+    shadowBitmap.height = height;
+    shadowBitmap.config = config;
+    shadowBitmap.mutable = true;
+    if (display != null) {
+      shadowBitmap.density = display.densityDpi;
+    }
+    return mutableBitmap;
   }
 
   @Implementation
@@ -360,6 +383,17 @@ public class ShadowBitmap {
   public int getHeight() {
     return height;
   }
+
+  @Implementation
+  public int getDensity() {
+    return density;
+  }
+
+  @Implementation
+  public void setDensity(int density) {
+    this.density = density;
+  }
+
 
   @Override @Implementation
   public boolean equals(Object o) {
