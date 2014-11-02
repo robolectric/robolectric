@@ -81,8 +81,7 @@ public class TestSharedPreferences implements SharedPreferences {
   }
 
   @Override
-  public void registerOnSharedPreferenceChangeListener(
-      OnSharedPreferenceChangeListener listener) {
+  public void registerOnSharedPreferenceChangeListener(OnSharedPreferenceChangeListener listener) {
     if(!listeners.contains(listener))
       listeners.add(listener);
   }
@@ -178,6 +177,7 @@ public class TestSharedPreferences implements SharedPreferences {
           previousContent.remove(key);
           keysToPassToListeners.add(key);
         }
+        editsThatNeedRemove.clear();
       }
 
       for (String key : editsThatNeedCommit.keySet()) {
@@ -186,6 +186,7 @@ public class TestSharedPreferences implements SharedPreferences {
           keysToPassToListeners.add(key);
         }
       }
+      editsThatNeedCommit.clear();
 
       for (OnSharedPreferenceChangeListener listener : listeners) {
         for (String key : keysToPassToListeners) {
