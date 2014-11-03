@@ -33,10 +33,16 @@ public class RobolectricWiringTest {
     Assert.assertEquals("@Implementation method mismatch: " + Join.join("\n", mismatches), 0, mismatches.size());
   }
 
+  @SuppressWarnings("deprecation")
   private void verifyClass(final Class<?> shadowClass) {
     Implements annotation = shadowClass.getAnnotation(Implements.class);
-    Class implementedClass = annotation.value();
-    if (implementedClass.getName().equals(Robolectric.Anything.class.getName())) return;
+    Class<?> implementedClass = annotation.value();
+    String implementedClassName = implementedClass.getName();
+    
+    if (implementedClassName.equals(Robolectric.Anything.class.getName()) ||
+        implementedClassName.equals(void.class.getName())) {
+      return;
+    }
 
     try {
       shadowClass.getConstructor(implementedClass);
@@ -59,7 +65,7 @@ public class RobolectricWiringTest {
     }
   }
 
-  private void verifyMethod(Class implementedClass, Method shadowMethod) {
+  private void verifyMethod(Class<?> implementedClass, Method shadowMethod) {
     Member implementedMember;
 
     boolean isConstructor = shadowMethod.getName().equals("__constructor__");
@@ -109,7 +115,7 @@ public class RobolectricWiringTest {
     }
   }
 
-  private Member findConstructor(Class implementedClass, Method shadowMethod) {
+  private Member findConstructor(Class<?> implementedClass, Method shadowMethod) {
     Class<?>[] parameterTypes = shadowMethod.getParameterTypes();
     try {
       return implementedClass.getConstructor(parameterTypes);
@@ -122,7 +128,7 @@ public class RobolectricWiringTest {
     }
   }
 
-  private Member findMethod(Class implementedClass, Method shadowMethod) {
+  private Member findMethod(Class<?> implementedClass, Method shadowMethod) {
     Class<?>[] parameterTypes = shadowMethod.getParameterTypes();
     String methodName = shadowMethod.getName();
     try {

@@ -128,35 +128,45 @@ public class RoboModel {
     return getAnnotationMirror(elem, IMPLEMENTS);
   }
   
+  private TypeMirror getImplementedClassName(AnnotationMirror am) {
+    AnnotationValue className = getAnnotationValue(am, "className");
+    if (className == null) {
+      return null;
+    }
+    String classNameString = classNameVisitor.visit(className);
+    if (classNameString == null) {
+      return null;
+    }
+    TypeElement impElement = elements.getTypeElement(classNameString.replace('$', '.'));
+    if (impElement == null) {
+      return null;
+    }
+    return impElement.asType();
+  }
+  
   public TypeMirror getImplementedClass(AnnotationMirror am) {
     if (am == null) {
       return null;
     }
+    // RobolectricWiringTest prefers className (if provided) to value, so we do the same here.
+    TypeMirror impType = getImplementedClassName(am);
+    if (impType != null) {
+      return impType;
+    }
     AnnotationValue av = getAnnotationValue(am, "value");
     if (av == null) {
       return null;
-    } else {
-      TypeMirror type = valueVisitor.visit(av);
-      if (type == null) {
-        return null;
-      }
-      if (types.isSameType(type, ANYTHING_MIRROR)) {
-        AnnotationValue className = getAnnotationValue(am, "className");
-        if (className == null) {
-          return null;
-        }
-        String classNameString = classNameVisitor.visit(className);
-        if (classNameString == null) {
-          return null;
-        }
-        TypeElement impElement = elements.getTypeElement(classNameString.replace('$', '.'));
-        if (impElement == null) {
-          return null;
-        }
-        return impElement.asType();
-      }
-      return type;
     }
+    TypeMirror type = valueVisitor.visit(av);
+    if (type == null) {
+      return null;
+    }
+    // If the class is Robolectric.Anything, treat as if it wasn't specified at all.
+    if (ANYTHING_MIRROR != null && types.isSameType(type, ANYTHING_MIRROR)) {
+      return null;
+    }
+    
+    return type;
   }
   
   /**

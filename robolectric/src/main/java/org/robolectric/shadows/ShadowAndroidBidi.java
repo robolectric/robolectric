@@ -1,11 +1,10 @@
 package org.robolectric.shadows;
 
 import android.text.Layout;
-import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-@Implements(value = Robolectric.Anything.class, className = "android.text.AndroidBidi")
+@Implements(className = "android.text.AndroidBidi")
 public class ShadowAndroidBidi {
   @Implementation
   public static int bidi(int dir, char[] chs, byte[] chInfo, int n, boolean haveInfo) {

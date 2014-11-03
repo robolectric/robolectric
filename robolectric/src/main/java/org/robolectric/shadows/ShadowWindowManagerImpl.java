@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import android.view.View;
 import android.view.ViewGroup;
-import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -13,7 +12,7 @@ import java.util.List;
 
 import static org.robolectric.Robolectric.directlyOn;
 
-@Implements(value = Robolectric.Anything.class, className = ShadowWindowManagerImpl.WINDOW_MANAGER_IMPL_CLASS_NAME)
+@Implements(className = ShadowWindowManagerImpl.WINDOW_MANAGER_IMPL_CLASS_NAME)
 public class ShadowWindowManagerImpl extends ShadowWindowManager {
   public static final String WINDOW_MANAGER_IMPL_CLASS_NAME = "android.view.WindowManagerImpl";
 

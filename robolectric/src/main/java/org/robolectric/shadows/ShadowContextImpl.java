@@ -9,7 +9,6 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.storage.StorageManager;
 import android.view.Display;
-import org.robolectric.Robolectric;
 import org.robolectric.SdkConfig;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -21,7 +20,7 @@ import java.util.Map;
 
 import static org.robolectric.Robolectric.newInstanceOf;
 
-@Implements(value = Robolectric.Anything.class, className = ShadowContextImpl.CLASS_NAME)
+@Implements(className = ShadowContextImpl.CLASS_NAME)
 public class ShadowContextImpl extends ShadowContext {
   public static final String CLASS_NAME = "android.app.ContextImpl";
 
@@ -69,7 +68,7 @@ public class ShadowContextImpl extends ShadowContext {
     this.sdkConfig = sdkConfig;
   }
 
-  @Implements(value = Robolectric.Anything.class, className = ShadowServiceFetcher.CLASS_NAME, looseSignatures = true)
+  @Implements(className = ShadowServiceFetcher.CLASS_NAME, looseSignatures = true)
   public static class ShadowServiceFetcher {
     public static final String CLASS_NAME = "android.app.ContextImpl$ServiceFetcher";
 

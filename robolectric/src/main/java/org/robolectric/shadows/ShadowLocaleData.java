@@ -2,12 +2,11 @@ package org.robolectric.shadows;
 
 import java.util.Locale;
 import libcore.icu.LocaleData;
-import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Implementation;
 import static org.robolectric.Robolectric.*;
 
-@Implements(value = Robolectric.Anything.class, className = ShadowLocaleData.REAL_CLASS_NAME)
+@Implements(className = ShadowLocaleData.REAL_CLASS_NAME)
 public class ShadowLocaleData {
   public static final String REAL_CLASS_NAME = "libcore.icu.LocaleData";
 
