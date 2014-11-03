@@ -60,4 +60,12 @@ public class ColorTest {
     assertThat(hsv[1]).isEqualTo(1.0f);
     assertThat(hsv[2]).isEqualTo(1.0f);
   }
+
+  @Test
+  public void HSVToColorShouldReverseColorToHSV() {
+      float[] hsv = new float[3];
+      Color.colorToHSV(Color.RED, hsv);
+
+      assertThat(Color.HSVToColor(hsv)).isEqualTo(Color.RED);
+  }
 }
