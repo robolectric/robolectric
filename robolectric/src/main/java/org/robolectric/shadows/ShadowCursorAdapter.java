@@ -286,20 +286,24 @@ public class ShadowCursorAdapter extends ShadowBaseAdapter {
 //  public abstract void bindView(View view, Context context, Cursor cursor);
 
   /**
-   * Change the underlying cursor to a new cursor. If there is an existing cursor it will be
+   * Swap in a new Cursor, returning the old Cursor. Unlike
+   * {@link #changeCursor(Cursor)}, the returned old Cursor is <em>not</em>
    * closed.
    *
-   * @param cursor the new cursor to be used
+   * @param newCursor The new cursor to be used.
+   * @return Returns the previously set Cursor, or null if there wasa not one.
+   * If the given new Cursor is the same instance is the previously set
+   * Cursor, null is also returned.
    */
   @Implementation
-  public void changeCursor(Cursor cursor) {
+  public Cursor swapCursor(Cursor cursor) {
     if (cursor == mCursor) {
-      return;
+      return null;
     }
+    Cursor old = mCursor;
     if (mCursor != null) {
       if (mChangeObserver != null) mCursor.unregisterContentObserver(mChangeObserver);
       if (mDataSetObserver != null) mCursor.unregisterDataSetObserver(mDataSetObserver);
-      mCursor.close();
     }
     mCursor = cursor;
     if (cursor != null) {
@@ -314,6 +318,21 @@ public class ShadowCursorAdapter extends ShadowBaseAdapter {
       mDataValid = false;
       // notify the observers about the lack of a data set
       realCursorAdapter.notifyDataSetInvalidated();
+    }
+    return old;
+  }
+
+  /**
+   * Change the underlying cursor to a new cursor. If there is an existing cursor it will be
+   * closed.
+   *
+   * @param cursor the new cursor to be used
+   */
+  @Implementation
+  public void changeCursor(Cursor newCursor) {
+    Cursor old = swapCursor(newCursor);
+    if (old != null) {
+      old.close();
     }
   }
 

@@ -60,6 +60,18 @@ public class CursorAdapterTest {
   }
 
   @Test
+  public void testSwapCursor() {
+    assertThat(adapter.getCursor()).isNotNull();
+    assertThat(adapter.getCursor()).isSameAs(curs);
+
+    Cursor oldCursor = adapter.swapCursor(null);
+
+    assertThat(oldCursor).isSameAs(curs);
+    assertThat(curs.isClosed()).isFalse();
+    assertThat(adapter.getCursor()).isNull();
+  }
+
+  @Test
   public void testCount() {
     assertThat(adapter.getCount()).isEqualTo(curs.getCount());
     adapter.changeCursor(null);
