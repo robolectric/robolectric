@@ -19,6 +19,7 @@ public class TestWebSettings extends WebSettings {
   private boolean javaScriptCanOpenWindowAutomatically = false;
   private boolean lightTouchEnabled = false;
   private boolean loadWithOverviewMode = false;
+  private boolean mediaPlaybackRequiresUserGesture = true;
   private boolean needInitialFocus = false;
   private RenderPriority renderPriority = RenderPriority.NORMAL;
   private boolean pluginsEnabled = false;
@@ -147,6 +148,16 @@ public class TestWebSettings extends WebSettings {
   @Override
   public void setLoadWithOverviewMode(boolean flag) {
     loadWithOverviewMode = flag;
+  }
+
+  @Implementation
+  public boolean getMediaPlaybackRequiresUserGesture() {
+    return mediaPlaybackRequiresUserGesture;
+  }
+
+  @Implementation
+  public void setMediaPlaybackRequiresUserGesture(boolean require) {
+    mediaPlaybackRequiresUserGesture = require;
   }
 
   public boolean getNeedInitialFocus() {

@@ -34,6 +34,7 @@ public class WebSettingsTest {
     assertThat(webSettings.getJavaScriptEnabled()).isFalse();
     assertThat(webSettings.getLightTouchEnabled()).isFalse();
     assertThat(webSettings.getLoadWithOverviewMode()).isFalse();
+    assertThat(webSettings.getMediaPlaybackRequiresUserGesture()).isTrue();
     assertThat(webSettings.getPluginState()).isEqualTo(WebSettings.PluginState.OFF);
     assertThat(webSettings.getSaveFormData()).isFalse();
     assertThat(webSettings.getTextZoom()).isEqualTo(100);
@@ -136,6 +137,14 @@ public class WebSettingsTest {
   }
 
   @Test
+  public void testMediaPlaybackRequiresUserGesture() throws Exception {
+    for (boolean value : trueAndFalse) {
+      webSettings.setMediaPlaybackRequiresUserGesture(value);
+      assertThat(webSettings.getMediaPlaybackRequiresUserGesture()).isEqualTo(value);
+    }
+  }
+
+  @Test
   public void testNeedInitialFocus() {
     for (boolean value : trueAndFalse) {
       webSettings.setNeedInitialFocus(value);
@@ -153,13 +162,8 @@ public class WebSettingsTest {
 
   @Test
   public void testPluginState() {
-    WebSettings.PluginState[] states = {
-        WebSettings.PluginState.OFF,
-        WebSettings.PluginState.ON,
-        WebSettings.PluginState.ON_DEMAND
-    };
 
-    for (WebSettings.PluginState state : states) {
+    for (WebSettings.PluginState state : WebSettings.PluginState.values()) {
       webSettings.setPluginState(state);
       assertThat(webSettings.getPluginState()).isEqualTo(state);
     }
