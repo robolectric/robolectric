@@ -4,6 +4,9 @@ import static org.truth0.Truth.ASSERT;
 import static com.google.testing.compile.JavaFileObjects.*;
 import static com.google.testing.compile.JavaSourceSubjectFactory.javaSource;
 import static com.google.testing.compile.JavaSourcesSubjectFactory.javaSources;
+import static org.robolectric.annotation.processing.Utils.ROBO_SOURCE;
+import static org.robolectric.annotation.processing.Utils.ROBO_INTERNALS_SOURCE;
+import static org.robolectric.annotation.processing.Utils.SHADOW_WRANGLER_SOURCE;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -17,9 +20,9 @@ public class ProcessorTest {
   public void unannotatedSource_shouldCompile() {
     ASSERT.about(javaSources())
       .that(ImmutableList.of(
-          forResource("mock-source/org/robolectric/Robolectric.java"),
-          forResource("mock-source/org/robolectric/bytecode/RobolectricInternals.java"),
-          forResource("mock-source/org/robolectric/bytecode/ShadowWrangler.java"),
+          ROBO_SOURCE,
+          ROBO_INTERNALS_SOURCE,
+          SHADOW_WRANGLER_SOURCE,
           forSourceString("HelloWorld", "final class HelloWorld {}")))
       .processedWith(new RoboProcessor())
       .compilesWithoutError();
@@ -31,9 +34,9 @@ public class ProcessorTest {
     // be tested by a unit test - must run a source-level test.
     ASSERT.about(javaSources())
       .that(ImmutableList.of(
-          forResource("mock-source/org/robolectric/Robolectric.java"),
-          forResource("mock-source/org/robolectric/bytecode/RobolectricInternals.java"),
-          forResource("mock-source/org/robolectric/bytecode/ShadowWrangler.java"),
+          ROBO_SOURCE,
+          ROBO_INTERNALS_SOURCE,
+          SHADOW_WRANGLER_SOURCE,
           forResource("org/robolectric/annotation/processing/shadows/ShadowDummy.java"),
           forResource("org/robolectric/annotation/processing/shadows/ShadowOuterDummy.java"),
           forResource("org/robolectric/annotation/processing/shadows/ShadowUniqueDummy.java")))
@@ -47,9 +50,9 @@ public class ProcessorTest {
   public void generatedFile_shouldSkipNonPublicClasses() {
     ASSERT.about(javaSources())
       .that(ImmutableList.of(
-          forResource("mock-source/org/robolectric/Robolectric.java"),
-          forResource("mock-source/org/robolectric/bytecode/RobolectricInternals.java"),
-          forResource("mock-source/org/robolectric/bytecode/ShadowWrangler.java"),
+          ROBO_SOURCE,
+          ROBO_INTERNALS_SOURCE,
+          SHADOW_WRANGLER_SOURCE,
           forResource("org/robolectric/annotation/processing/shadows/ShadowPrivate.java"),
           forResource("org/robolectric/annotation/processing/shadows/ShadowOuterDummy2.java"),
           forResource("org/robolectric/annotation/processing/shadows/ShadowDummy.java")))
@@ -63,9 +66,9 @@ public class ProcessorTest {
   public void generatedFile_shouldHandleAnythingShadows() {
     ASSERT.about(javaSources())
       .that(ImmutableList.of(
-          forResource("mock-source/org/robolectric/Robolectric.java"),
-          forResource("mock-source/org/robolectric/bytecode/RobolectricInternals.java"),
-          forResource("mock-source/org/robolectric/bytecode/ShadowWrangler.java"),
+          ROBO_SOURCE,
+          ROBO_INTERNALS_SOURCE,
+          SHADOW_WRANGLER_SOURCE,
           forResource("org/robolectric/annotation/processing/shadows/ShadowAnything.java"),
           forResource("org/robolectric/annotation/processing/shadows/ShadowDummy.java")))
       .processedWith(new RoboProcessor())
@@ -75,12 +78,26 @@ public class ProcessorTest {
   }
   
   @Test
+  public void generatedFile_shouldHandleClassNameOnlyShadows() {
+    ASSERT.about(javaSources())
+      .that(ImmutableList.of(
+          ROBO_INTERNALS_SOURCE,
+          SHADOW_WRANGLER_SOURCE,
+          forResource("org/robolectric/annotation/processing/shadows/ShadowClassNameOnly.java"),
+          forResource("org/robolectric/annotation/processing/shadows/ShadowDummy.java")))
+      .processedWith(new RoboProcessor())
+      .compilesWithoutError()
+      .and()
+      .generatesSources(forResource("org/robolectric/Robolectric_ClassNameOnly.java"));
+  }
+  
+  @Test
   public void shouldGracefullyHandleUnrecognisedAnnotation() {
     ASSERT.about(javaSources())
       .that(ImmutableList.of(
-          forResource("mock-source/org/robolectric/Robolectric.java"),
-          forResource("mock-source/org/robolectric/bytecode/RobolectricInternals.java"),
-          forResource("mock-source/org/robolectric/bytecode/ShadowWrangler.java"),
+          ROBO_SOURCE,
+          ROBO_INTERNALS_SOURCE,
+          SHADOW_WRANGLER_SOURCE,
           forResource("org/robolectric/annotation/TestWithUnrecognizedAnnotation.java")))
       .processedWith(new RoboProcessor())
       .compilesWithoutError();
@@ -96,8 +113,11 @@ public class ProcessorTest {
 
   @Test
   public void shouldGracefullyHandleNoAnythingClass_withFoundOnImplementsAnnotation() {
-    ASSERT.about(javaSource())
-      .that(forResource("org/robolectric/annotation/processing/shadows/ShadowRealObjectWithCorrectAnything.java"))
+    ASSERT.about(javaSources())
+      .that(ImmutableList.of(
+          ROBO_INTERNALS_SOURCE,
+          SHADOW_WRANGLER_SOURCE,
+          forResource("org/robolectric/annotation/processing/shadows/ShadowRealObjectWithCorrectAnything.java")))
       .processedWith(new RoboProcessor())
       .failsToCompile();
   }
@@ -107,9 +127,9 @@ public class ProcessorTest {
   public void shouldGenerateGenericShadowOf() {
     ASSERT.about(javaSources())
       .that(ImmutableList.of(
-          forResource("mock-source/org/robolectric/Robolectric.java"),
-          forResource("mock-source/org/robolectric/bytecode/RobolectricInternals.java"),
-          forResource("mock-source/org/robolectric/bytecode/ShadowWrangler.java"),
+          ROBO_SOURCE,
+          ROBO_INTERNALS_SOURCE,
+          SHADOW_WRANGLER_SOURCE,
           forResource("org/robolectric/annotation/processing/shadows/ShadowDummy.java"),
           forResource("org/robolectric/annotation/processing/shadows/ShadowParameterizedDummy.java")))
       .processedWith(new RoboProcessor())

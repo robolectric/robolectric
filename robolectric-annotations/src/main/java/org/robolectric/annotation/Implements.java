@@ -12,7 +12,7 @@ public @interface Implements {
   /**
    * The Android class to be shadowed.
    */
-  Class<?> value();
+  Class<?> value() default void.class;
 
   String className() default "";
 

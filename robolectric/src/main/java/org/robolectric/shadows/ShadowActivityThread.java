@@ -9,7 +9,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
-@Implements(value = Robolectric.Anything.class, className = ShadowActivityThread.CLASS_NAME)
+@Implements(className = ShadowActivityThread.CLASS_NAME)
 public class ShadowActivityThread {
   public static final String CLASS_NAME = "android.app.ActivityThread";
 

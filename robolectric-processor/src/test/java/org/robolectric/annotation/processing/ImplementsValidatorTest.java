@@ -7,14 +7,13 @@ import org.junit.Test;
 
 public class ImplementsValidatorTest {
   @Test
-  public void implementsWithoutClass_shouldNotCompile() {
+  public void implementsWithoutClassOrClassName_shouldNotCompile() {
     final String testClass = "org.robolectric.annotation.processing.shadows.ShadowImplementsWithoutClass";
     ASSERT.about(singleClass())
       .that(testClass)
       .failsToCompile()
-      .withErrorContaining("Implements");
-      // Error message is provided by the compiler in this case; we don't want
-      // or need to unit test the tool's implementation.
+      .withErrorContaining("@Implements: must specify <value> or <className>")
+      .onLine(5);
   }
 
   @Test
@@ -23,7 +22,7 @@ public class ImplementsValidatorTest {
     ASSERT.about(singleClass())
       .that(testClass)
       .failsToCompile()
-      .withErrorContaining("@Implements: Anything class specified but no className attribute")
+      .withErrorContaining("@Implements: Anything class specified but no <className> attribute")
       .onLine(6);
   }
 
@@ -35,5 +34,15 @@ public class ImplementsValidatorTest {
       .failsToCompile()
       .withErrorContaining("@Implements: could not resolve class <some.Stuff>")
       .onLine(6);
+  }
+  
+  @Test
+  public void value_withClassName_shouldNotCompile() {
+    final String testClass = "org.robolectric.annotation.processing.shadows.ShadowImplementsDummyWithOuterDummyClassName";
+    ASSERT.about(singleClass())
+      .that(testClass)
+      .failsToCompile()
+      .withErrorContaining("@Implements: cannot specify both <value> and <className> attributes")
+      .onLine(7);
   }
 }

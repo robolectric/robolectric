@@ -2,12 +2,11 @@ package org.robolectric.shadows;
 
 import android.os.IBinder;
 import android.os.RemoteException;
-import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implements;
 
 import java.util.Map;
 
-@Implements(value = Robolectric.Anything.class, className = "android.os.ServiceManager")
+@Implements(className = "android.os.ServiceManager")
 public class ShadowServiceManager {
   public static IBinder getService(String name) {
     return null;

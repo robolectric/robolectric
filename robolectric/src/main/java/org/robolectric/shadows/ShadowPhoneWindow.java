@@ -2,14 +2,13 @@ package org.robolectric.shadows;
 
 import android.graphics.drawable.Drawable;
 import android.widget.ProgressBar;
-import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.internal.ReflectionHelpers;
 
 import static org.robolectric.Robolectric.directlyOn;
 
-@Implements(value = Robolectric.Anything.class, className = ShadowPhoneWindow.PHONE_WINDOW_CLASS_NAME)
+@Implements(className = ShadowPhoneWindow.PHONE_WINDOW_CLASS_NAME)
 public class ShadowPhoneWindow extends ShadowWindow {
   public static final String PHONE_WINDOW_CLASS_NAME = "com.android.internal.policy.impl.PhoneWindow";
 
