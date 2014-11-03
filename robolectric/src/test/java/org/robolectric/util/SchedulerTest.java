@@ -3,6 +3,9 @@ package org.robolectric.util;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class SchedulerTest {
@@ -16,7 +19,8 @@ public class SchedulerTest {
     transcript = new Transcript();
   }
 
-  @Test public void shouldAdvanceTimeEvenIfThereIsNoWork() throws Exception {
+  @Test
+  public void shouldAdvanceTimeEvenIfThereIsNoWork() throws Exception {
     scheduler.advanceTo(1000);
     assertThat(scheduler.getCurrentTime()).isEqualTo(1000);
   }
@@ -151,6 +155,75 @@ public class SchedulerTest {
 
     assertThat(runnable1.wasRun).isFalse();
     assertThat(runnable2.wasRun).isTrue();
+  }
+
+  @Test
+  public void postDelayed_whenAnotherPostDelayedIsEnqueued_runsInCorrectSequence() {
+    final List<Integer> order = new ArrayList<Integer>();
+    scheduler.unPause();
+    scheduler.postDelayed(new Runnable() {
+      @Override
+      public void run() {
+        order.add(1);
+        scheduler.postDelayed(new Runnable() {
+          @Override
+          public void run() {
+            order.add(3);
+          }
+        }, 0);
+        order.add(2);
+      }
+    }, 0);
+
+    assertThat(order).containsExactly(1, 2);
+    assertThat(scheduler.size()).isEqualTo(1);
+  }
+
+  @Test
+  public void postDelayed_whenAnotherPostDelayedIsEnqueued_runsInCorrectSequence2() {
+    final List<Integer> order = new ArrayList<Integer>();
+    scheduler.postDelayed(new Runnable() {
+      @Override
+      public void run() {
+        order.add(1);
+        scheduler.postDelayed(new Runnable() {
+          @Override
+          public void run() {
+            order.add(3);
+          }
+        }, 0);
+        order.add(2);
+      }
+    }, 0);
+    scheduler.unPause();
+
+    assertThat(order).containsExactly(1, 2, 3);
+    assertThat(scheduler.size()).isEqualTo(0);
+  }
+
+  @Test
+  public void post_whenTheRunnableThrows_executesSubsequentRunnables() throws Exception {
+    final List<Integer> runnablesThatWereRun = new ArrayList<Integer>();
+    scheduler.post(new Runnable() {
+      @Override
+      public void run() {
+        runnablesThatWereRun.add(1);
+        throw new RuntimeException("foo");
+      }
+    });
+
+    try {
+      scheduler.unPause();
+    } catch (RuntimeException e) { }
+
+    scheduler.post(new Runnable() {
+      @Override
+      public void run() {
+        runnablesThatWereRun.add(2);
+      }
+    });
+
+    assertThat(runnablesThatWereRun).containsExactly(1, 2);
   }
 
   private class AddToTranscript implements Runnable {
