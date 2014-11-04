@@ -1370,11 +1370,6 @@ public class Robolectric {
     Robolectric.activityThread = null;
 
     RobolectricBase.reset();
-    for (Class<?> klass : config.shadows()) {
-      if (klass.getAnnotation(Implements.class).resetStaticState()) {
-        ReflectionHelpers.callStaticMethodReflectively(klass, "reset");
-      }
-    }
   }
 
   public static <T extends Service> ServiceController<T> buildService(Class<T> serviceClass) {
