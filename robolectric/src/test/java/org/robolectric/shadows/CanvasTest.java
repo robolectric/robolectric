@@ -339,4 +339,4 @@ public class CanvasTest {
     assertThat(shadowCanvas.getDrawnRect(0).rect).isEqualTo(rect1);
     assertThat(shadowCanvas.getDrawnRect(1).paint).isSameAs(paint1);
   }
-
+}
