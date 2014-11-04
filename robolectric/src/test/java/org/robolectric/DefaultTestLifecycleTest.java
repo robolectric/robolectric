@@ -62,7 +62,7 @@ public class DefaultTestLifecycleTest {
     shadowOf(application).bind(appManifest, null);
 
     List<ShadowApplication.Wrapper> receivers = shadowOf(application).getRegisteredReceivers();
-    assertThat(receivers.size()).isEqualTo(6);
+    assertThat(receivers.size()).isEqualTo(5);
     assertTrue(receivers.get(0).intentFilter.matchAction("org.robolectric.ACTION1"));
   }
 

@@ -62,7 +62,7 @@ public class AndroidManifest {
   private String versionName;
   private int applicationFlags;
   private final List<ContentProviderData> providers = new ArrayList<ContentProviderData>();
-  private final List<ReceiverAndIntentFilter> receivers = new ArrayList<ReceiverAndIntentFilter>();
+  private final List<BroadcastReceiverData> receivers = new ArrayList<BroadcastReceiverData>();
   private final Map<String, ActivityData> activityDatas = new LinkedHashMap<String, ActivityData>();
   private final List<String> usedPermissions = new ArrayList<String>();
   private MetaData applicationMetaData;
@@ -216,16 +216,17 @@ public class AndroidManifest {
       String receiverName = resolveClassRef(namedItem.getTextContent());
       MetaData metaData = new MetaData(getChildrenTags(receiverNode, "meta-data"));
 
-      for (Node intentFilterNode : getChildrenTags(receiverNode, "intent-filter")) {
-        List<String> actions = new ArrayList<String>();
+      BroadcastReceiverData receiver = new BroadcastReceiverData(receiverName, metaData);
+      List<Node> intentFilters = getChildrenTags(receiverNode, "intent-filter");
+      for (Node intentFilterNode : intentFilters) {
         for (Node actionNode : getChildrenTags(intentFilterNode, "action")) {
           Node nameNode = actionNode.getAttributes().getNamedItem("android:name");
           if (nameNode != null) {
-            actions.add(nameNode.getTextContent());
+            receiver.addAction(nameNode.getTextContent());
           }
         }
-        receivers.add(new ReceiverAndIntentFilter(receiverName, actions, metaData));
       }
+      receivers.add(receiver);
     }
   }
 
@@ -394,8 +395,8 @@ public class AndroidManifest {
   public void initMetaData(ResourceLoader resLoader) {
     applicationMetaData.init(resLoader, packageName);
 
-    for (ReceiverAndIntentFilter receiver : receivers) {
-      receiver.metaData.init(resLoader, packageName);
+    for (BroadcastReceiverData receiver : receivers) {
+      receiver.getMetaData().init(resLoader, packageName);
     }
   }
 
@@ -626,17 +627,22 @@ public class AndroidManifest {
 
   public String getReceiverClassName(final int receiverIndex) {
     parseAndroidManifest();
-    return receivers.get(receiverIndex).getBroadcastReceiverClassName();
+    return receivers.get(receiverIndex).getClassName();
   }
 
   public List<String> getReceiverIntentFilterActions(final int receiverIndex) {
     parseAndroidManifest();
-    return receivers.get(receiverIndex).getIntentFilterActions();
+    return receivers.get(receiverIndex).getActions();
   }
 
   public Map<String, Object> getReceiverMetaData(final int receiverIndex) {
     parseAndroidManifest();
     return receivers.get(receiverIndex).getMetaData().valueMap;
+  }
+
+  public List<BroadcastReceiverData> getBroadcastReceivers() {
+    parseAndroidManifest();
+    return receivers;
   }
 
   private static String getTagAttributeText(final Document doc, final String tag, final String attribute) {
@@ -693,7 +699,7 @@ public class AndroidManifest {
     return usedPermissions;
   }
 
-  private static final class MetaData {
+  public static final class MetaData {
     private final Map<String, Object> valueMap = new LinkedHashMap<String, Object>();
     private final Map<String, VALUE_TYPE> typeMap = new LinkedHashMap<String, VALUE_TYPE>();
     private boolean initialised;
@@ -755,30 +761,6 @@ public class AndroidManifest {
     private enum VALUE_TYPE {
       RESOURCE,
       VALUE
-    }
-  }
-
-  private static class ReceiverAndIntentFilter {
-    private final List<String> intentFilterActions;
-    private final String broadcastReceiverClassName;
-    private final MetaData metaData;
-
-    public ReceiverAndIntentFilter(final String broadcastReceiverClassName, final List<String> intentFilterActions, final MetaData metaData) {
-      this.broadcastReceiverClassName = broadcastReceiverClassName;
-      this.intentFilterActions = intentFilterActions;
-      this.metaData = metaData;
-    }
-
-    public String getBroadcastReceiverClassName() {
-      return broadcastReceiverClassName;
-    }
-
-    public List<String> getIntentFilterActions() {
-      return intentFilterActions;
-    }
-
-    public MetaData getMetaData() {
-      return metaData;
     }
   }
 }
