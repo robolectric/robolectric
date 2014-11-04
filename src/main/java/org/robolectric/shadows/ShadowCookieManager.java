@@ -1,7 +1,9 @@
 package org.robolectric.shadows;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -53,7 +55,13 @@ public class ShadowCookieManager {
   @Implementation
   public String getCookie(String url) {
     final List<Cookie> matchedCookies;
-    if( url.startsWith(".")) {
+    try {
+      url = URLDecoder.decode(url, "UTF-8");
+    } catch (UnsupportedEncodingException e) {
+      throw new RuntimeException(e);
+    }
+
+      if( url.startsWith(".")) {
         matchedCookies = filter(url.substring(1));
     } else if( url.contains("//.")) {
         matchedCookies = filter(url.substring(url.indexOf("//.")+3));
