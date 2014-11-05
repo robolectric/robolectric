@@ -299,10 +299,12 @@ public class CanvasTest {
   @Test
   public void drawOval_shouldRecordOvalHistoryEvents() throws Exception {
     Canvas canvas = new Canvas();
-    Paint oval0 = new Paint();
-    oval0.setColor(Color.RED);
-    Paint oval1 = new Paint();
-    oval1.setColor(Color.WHITE);
+    RectF oval0 = new RectF();
+    RectF oval1 = new RectF();
+    Paint paint0 = new Paint();
+    paint0.setColor(Color.RED);
+    Paint paint1 = new Paint();
+    paint1.setColor(Color.WHITE);
 
     canvas.drawOval(oval0, paint0);
     canvas.drawOval(oval1, paint1);
