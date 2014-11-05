@@ -340,6 +340,7 @@ public class ShadowCanvas {
       this.right = right;
       this.bottom = bottom;
     }
+  }
 
   private static class PathPaintHistoryEvent {
     private final Path drawnPath;
