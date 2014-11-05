@@ -289,15 +289,16 @@ public class ShadowCanvas {
   }
 
   public static class LinePaintHistoryEvent {
-    public final Paint paint;
-    public final float startX;
-    public final float startY;
-    public final float stopX;
-    public final float stopY;
+    public Paint paint;
+    public float startX;
+    public float startY;
+    public float stopX;
+    public float stopY;
 
     private LinePaintHistoryEvent(
         float startX, float startY, float stopX, float stopY, Paint paint) {
-      this.paint = paint;
+      // deepcopy of the paint
+      this.paint = new Paint(paint);
       this.paint.setColor(paint.getColor());
       this.paint.setStrokeWidth(paint.getStrokeWidth());
       this.startX = startX;
@@ -312,8 +313,9 @@ public class ShadowCanvas {
     public final Paint paint;
 
     private OvalPaintHistoryEvent(RectF oval, Paint paint) {
-      this.oval = oval;
-      this.paint = paint;
+      // Deepcopy
+      this.oval = new RectF(oval);
+      this.paint = new RectF(paint);
       this.paint.setColor(paint.getColor());
       this.paint.setStrokeWidth(paint.getStrokeWidth());
     }
@@ -330,7 +332,7 @@ public class ShadowCanvas {
     private RectPaintHistoryEvent(
         float left, float top, float right, float bottom, Paint paint){
       this.rect = new RectF(left, top, right, bottom);
-      this.paint = paint;
+      this.paint = new RectF(paint);
       this.paint.setColor(paint.getColor());
       this.paint.setStrokeWidth(paint.getStrokeWidth());
       this.paint.setTextSize(paint.getTextSize());
