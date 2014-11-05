@@ -315,7 +315,7 @@ public class ShadowCanvas {
     private OvalPaintHistoryEvent(RectF oval, Paint paint) {
       // Deepcopy
       this.oval = new RectF(oval);
-      this.paint = new RectF(paint);
+      this.paint = new Paint(paint);
       this.paint.setColor(paint.getColor());
       this.paint.setStrokeWidth(paint.getStrokeWidth());
     }
@@ -332,7 +332,7 @@ public class ShadowCanvas {
     private RectPaintHistoryEvent(
         float left, float top, float right, float bottom, Paint paint){
       this.rect = new RectF(left, top, right, bottom);
-      this.paint = new RectF(paint);
+      this.paint = new Paint(paint);
       this.paint.setColor(paint.getColor());
       this.paint.setStrokeWidth(paint.getStrokeWidth());
       this.paint.setTextSize(paint.getTextSize());
