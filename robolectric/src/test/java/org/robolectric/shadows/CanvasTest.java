@@ -265,8 +265,8 @@ F    assertThat(shadowCanvas.getDrawnArc(1).paint).isSameAs(paint1);
   @Test
   public void getLineHistoryCount_shouldReturnTotalNumberOfDrawLineEvents() throws Exception {
     Canvas canvas = new Canvas();
-    canvas.drawOval(0f, 1f, 2f, 3f, new Paint());
-    canvas.drawOval(0f, 1f, 2f, 3f, new Paint());
+    canvas.drawLine(0f, 1f, 2f, 3f, new Paint());
+    canvas.drawLine(0f, 1f, 2f, 3f, new Paint());
     ShadowCanvas shadowCanvas = shadowOf(canvas);
     assertThat(shadowCanvas.getOvalPaintHistoryCount()).isEqualTo(2);
   }
@@ -302,8 +302,8 @@ F    assertThat(shadowCanvas.getDrawnArc(1).paint).isSameAs(paint1);
     RectF oval0 = new RectF();
     RectF oval1 = new RectF();
 
-    canvas.drawArc(oval0, paint0);
-    canvas.drawArc(oval1, paint1);
+    canvas.drawOval(oval0, paint0);
+    canvas.drawOval(oval1, paint1);
     ShadowCanvas shadowCanvas = shadowOf(canvas);
 
     assertThat(shadowCanvas.getDrawnOval(0).oval).isEqualTo(oval0);
