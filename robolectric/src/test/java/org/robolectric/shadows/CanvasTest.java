@@ -284,13 +284,13 @@ public class CanvasTest {
     assertThat(shadowCanvas.getDrawnLine(0).startX).isEqualTo(0f);
     assertThat(shadowCanvas.getDrawnLine(0).startY).isEqualTo(2f);
     assertThat(shadowCanvas.getDrawnLine(0).stopX).isEqualTo(3f);
-    assertThat(shadowCanvas.getDrawnLine(0).stopX).isEqualTo(4f);
+    assertThat(shadowCanvas.getDrawnLine(0).stopY).isEqualTo(4f);
     assertThat(shadowCanvas.getDrawnLine(0).paint).isSameAs(paint0);
 
     assertThat(shadowCanvas.getDrawnLine(1).startX).isEqualTo(5f);
     assertThat(shadowCanvas.getDrawnLine(1).startY).isEqualTo(6f);
     assertThat(shadowCanvas.getDrawnLine(1).stopX).isEqualTo(7f);
-    assertThat(shadowCanvas.getDrawnLine(1).stopX).isEqualTo(8f);
+    assertThat(shadowCanvas.getDrawnLine(1).stopY).isEqualTo(8f);
     assertThat(shadowCanvas.getDrawnLine(1).paint).isSameAs(paint1);
   }
 
@@ -336,7 +336,7 @@ public class CanvasTest {
     assertThat(shadowCanvas.getDrawnRect(1).top).isEqualTo(6f);
     assertThat(shadowCanvas.getDrawnRect(1).right).isEqualTo(7f);
     assertThat(shadowCanvas.getDrawnRect(1).bottom).isEqualTo(8f);
-    assertThat(shadowCanvas.getDrawnRect(0).rect).isEqualTo(rect1);
+    assertThat(shadowCanvas.getDrawnRect(1).rect).isEqualTo(rect1);
     assertThat(shadowCanvas.getDrawnRect(1).paint).isSameAs(paint1);
   }
 }

@@ -289,15 +289,15 @@ public class ShadowCanvas {
   }
 
   public static class LinePaintHistoryEvent {
-    public Paint paint;
-    public float startX;
-    public float startY;
-    public float stopX;
-    public float stopY;
+    public final Paint paint;
+    public final float startX;
+    public final float startY;
+    public final float stopX;
+    public final float stopY;
 
     private LinePaintHistoryEvent(
         float startX, float startY, float stopX, float stopY, Paint paint) {
-      this.paint = new Paint(paint);
+      this.paint = paint;
       this.paint.setColor(paint.getColor());
       this.paint.setStrokeWidth(paint.getStrokeWidth());
       this.startX = startX;
@@ -308,29 +308,29 @@ public class ShadowCanvas {
   }
 
   public static class OvalPaintHistoryEvent {
-    public RectF oval;
-    public Paint paint;
+    public final RectF oval;
+    public final Paint paint;
 
     private OvalPaintHistoryEvent(RectF oval, Paint paint) {
-      this.oval = new RectF(oval);
-      this.paint = new Paint(paint);
+      this.oval = oval;
+      this.paint = paint;
       this.paint.setColor(paint.getColor());
       this.paint.setStrokeWidth(paint.getStrokeWidth());
     }
   }
 
   public static class RectPaintHistoryEvent {
-    public Paint paint;
-    public RectF rect;
-    public float left;
-    public float top;
-    public float right;
-    public float bottom;
+    public final Paint paint;
+    public final RectF rect;
+    public final float left;
+    public final float top;
+    public final float right;
+    public final float bottom;
 
     private RectPaintHistoryEvent(
         float left, float top, float right, float bottom, Paint paint){
       this.rect = new RectF(left, top, right, bottom);
-      this.paint = new Paint(paint);
+      this.paint = paint;
       this.paint.setColor(paint.getColor());
       this.paint.setStrokeWidth(paint.getStrokeWidth());
       this.paint.setTextSize(paint.getTextSize());
