@@ -232,7 +232,7 @@ public class CanvasTest {
     assertThat(shadowCanvas.getDrawnArc(1).startAngle).isEqualTo(3f);
     assertThat(shadowCanvas.getDrawnArc(1).sweepAngle).isEqualTo(4f);
     assertThat(shadowCanvas.getDrawnArc(1).useCenter).isFalse();
-F    assertThat(shadowCanvas.getDrawnArc(1).paint).isSameAs(paint1);
+    assertThat(shadowCanvas.getDrawnArc(1).paint).isSameAs(paint1);
   }
 
   @Test
