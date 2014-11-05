@@ -245,7 +245,7 @@ public class CanvasTest {
   }
 
   @Test
-  public void getRectHistoryCount_shouldReturnTotalNumberOfDrawRectEvents throws Exception {
+  public void getRectHistoryCount_shouldReturnTotalNumberOfDrawRectEvents() throws Exception {
     Canvas canvas = new Canvas();
     canvas.drawRect(1f, 2f, 3f, 4f, new Paint());
     canvas.drawRect(1f, 2f, 3f, 4f, new Paint());
@@ -254,7 +254,7 @@ public class CanvasTest {
   }
 
   @Test
-  public void getOvalHistoryCount_shouldReturnTotalNumberOfDrawOvalEvents throws Exception {
+  public void getOvalHistoryCount_shouldReturnTotalNumberOfDrawOvalEvents() throws Exception {
     Canvas canvas = new Canvas();
     canvas.drawOval(new rect(), new Paint());
     canvas.drawOval(new rect(), new Paint());
@@ -263,7 +263,7 @@ public class CanvasTest {
   }
 
   @Test
-  public void getLineHistoryCount_shouldReturnTotalNumberOfDrawLineEvents throws Exception {
+  public void getLineHistoryCount_shouldReturnTotalNumberOfDrawLineEvents() throws Exception {
     Canvas canvas = new Canvas();
     canvas.drawOval(0f, 1f, 2f, 3f, new Paint());
     canvas.drawOval(0f, 1f, 2f, 3f, new Paint());
