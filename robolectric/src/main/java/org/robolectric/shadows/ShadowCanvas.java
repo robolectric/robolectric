@@ -329,7 +329,7 @@ public class ShadowCanvas {
 
     private RectPaintHistoryEvent(
         float left, float top, float right, float bottom, Paint paint){
-      this.rect = new RectF(elft, top, right, bottom);
+      this.rect = new RectF(left, top, right, bottom);
       this.paint = new Paint(paint);
       this.paint.setColor(paint.getColor());
       this.paint.setStrokeWidth(paint.getStrokeWidth());
