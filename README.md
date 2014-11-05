@@ -51,8 +51,7 @@ Alternatively, you can install Robolectric for your current project by adding th
 </dependency>
 ```
 
-Robolectric requires the Google APIs for Android (specifically, the maps JAR) and Android support-v4 library. To download this onto your development
-machine use the Android SDK tools and then run the following to install them to your local Maven repository:
+Robolectric requires the Google APIs for Android (specifically, the maps JAR) and Android support-v4 library. To download this onto your development machine use the Android SDK tools and then run the following to install them to your local Maven repository (you will need to have the 'Android Support Repository' installed):
 
 ```
 mvn install:install-file -DgroupId=com.google.android.maps \
@@ -65,7 +64,7 @@ mvn install:install-file -DgroupId=com.android.support \
   -DartifactId=support-v4 \
   -Dversion=19.0.1 \
   -Dpackaging=jar \
-  -Dfile="$ANDROID_HOME/extras/android/support/v4/android-support-v4.jar"
+  -Dfile="$ANDROID_HOME/extras/android/m2repository/com/android/support/support-v4/19.0.1/support-v4-19.0.1.jar"
 ```
 
 You will need to either replace or have `ANDROID_HOME` set to your local Android SDK for Maven to be able to install the jar.
