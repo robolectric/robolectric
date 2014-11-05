@@ -29,6 +29,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.res.BroadcastReceiverData;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.tester.org.apache.http.FakeHttpLayer;
 import org.robolectric.util.Scheduler;
@@ -115,12 +116,12 @@ public class ShadowApplication extends ShadowContextWrapper {
   }
 
   private void registerBroadcastReceivers(AndroidManifest androidManifest) {
-    for (int i = 0; i < androidManifest.getReceiverCount(); i++) {
+    for (BroadcastReceiverData receiver : androidManifest.getBroadcastReceivers()) {
       IntentFilter filter = new IntentFilter();
-      for (String action : androidManifest.getReceiverIntentFilterActions(i)) {
+      for (String action : receiver.getActions()) {
         filter.addAction(action);
       }
-      String receiverClassName = replaceLastDotWith$IfInnerStaticClass(androidManifest.getReceiverClassName(i));
+      String receiverClassName = replaceLastDotWith$IfInnerStaticClass(receiver.getClassName());
       registerReceiver((BroadcastReceiver) newInstanceOf(receiverClassName), filter);
     }
   }

@@ -1,16 +1,14 @@
 package org.robolectric.res;
 
-import com.google.android.collect.Lists;
-import org.robolectric.AndroidManifest;
-
 import java.util.List;
+import com.google.android.collect.Lists;
 
 public class BroadcastReceiverData {
-  private final List<String> actions;
   private final String className;
-  private final AndroidManifest.MetaData metaData;
+  private final MetaData metaData;
+  private final List<String> actions;
 
-  public BroadcastReceiverData(String className, AndroidManifest.MetaData metaData) {
+  public BroadcastReceiverData(String className, MetaData metaData) {
     this.actions = Lists.newArrayList();
     this.className = className;
     this.metaData = metaData;
@@ -24,7 +22,7 @@ public class BroadcastReceiverData {
     return actions;
   }
 
-  public AndroidManifest.MetaData getMetaData() {
+  public MetaData getMetaData() {
     return metaData;
   }
 

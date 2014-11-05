@@ -26,6 +26,7 @@ import java.util.TreeMap;
 import org.robolectric.AndroidManifest;
 import org.robolectric.Robolectric;
 import org.robolectric.res.ActivityData;
+import org.robolectric.res.BroadcastReceiverData;
 import org.robolectric.res.ContentProviderData;
 import org.robolectric.res.IntentFilterData;
 import org.robolectric.res.ResName;
@@ -162,9 +163,9 @@ public class RobolectricPackageManager extends StubPackageManager {
     activityInfo.packageName = packageName;
     activityInfo.name = classString;
     if ((flags & GET_META_DATA) != 0) {
-      for (int i = 0; i < androidManifest.getReceiverCount(); ++i) {
-        if (androidManifest.getReceiverClassName(i).equals(classString)) {
-          activityInfo.metaData = metaDataToBundle(androidManifest.getReceiverMetaData(i));
+      for (BroadcastReceiverData receiver : androidManifest.getBroadcastReceivers()) {
+        if (receiver.getClassName().equals(classString)) {
+          activityInfo.metaData = metaDataToBundle(receiver.getMetaData().getValueMap());
           break;
         }
       }

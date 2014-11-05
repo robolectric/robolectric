@@ -100,10 +100,10 @@ public class AndroidManifestTest {
   public void parseManifest_shouldReadBroadcastReceiversWithMetaData() throws Exception {
     AndroidManifest config = newConfig("TestAndroidManifestWithReceivers.xml");
 
-    assertEquals("org.robolectric.test.ConfigTestReceiver", config.getReceiverClassName(4));
-    assertEquals("org.robolectric.ACTION_DOT_SUBPACKAGE", config.getReceiverIntentFilterActions(4).get(0));
+    assertThat(config.getBroadcastReceivers().get(4).getClassName()).isEqualTo("org.robolectric.test.ConfigTestReceiver");
+    assertThat(config.getBroadcastReceivers().get(4).getActions()).contains("org.robolectric.ACTION_DOT_SUBPACKAGE");
 
-    Map<String, Object> meta = config.getReceiverMetaData(4);
+    Map<String, Object> meta = config.getBroadcastReceivers().get(4).getMetaData().getValueMap();
     Object metaValue = meta.get("org.robolectric.metaName1");
     assertEquals("metaValue1", metaValue);
 
