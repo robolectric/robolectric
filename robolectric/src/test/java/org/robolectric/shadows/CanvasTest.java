@@ -301,7 +301,7 @@ public class CanvasTest {
     Canvas canvas = new Canvas();
     Paint oval0 = new Paint();
     oval0.setColor(Color.RED);
-    Paint paint1 = new Paint();
+    Paint oval1 = new Paint();
     oval1.setColor(Color.WHITE);
 
     canvas.drawOval(oval0, paint0);
