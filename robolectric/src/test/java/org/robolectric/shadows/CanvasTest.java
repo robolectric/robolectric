@@ -330,7 +330,7 @@ public class CanvasTest {
     assertThat(shadowCanvas.getDrawnRect(0).right).isEqualTo(3f);
     assertThat(shadowCanvas.getDrawnRect(0).bottom).isEqualTo(4f);
     assertThat(shadowCanvas.getDrawnRect(0).rect).isEqualTo(rect0);
-    assertThat(shadowCanvas.getDrawnRect(0).paint.isSameAs(paint0);
+    assertThat(shadowCanvas.getDrawnRect(0).paint).isSameAs(paint0);
 
     assertThat(shadowCanvas.getDrawnRect(1).left).isEqualTo(5f);
     assertThat(shadowCanvas.getDrawnRect(1).top).isEqualTo(6f);
