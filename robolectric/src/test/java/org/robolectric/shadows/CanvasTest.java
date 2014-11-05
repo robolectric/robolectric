@@ -318,8 +318,8 @@ public class CanvasTest {
     Canvas canvas = new Canvas();
     Paint paint0 = new Paint();
     Paint paint1 = new Paint();
-    RectF rect0 = New RectF(0f, 2f, 3f, 4f);
-    RectF rect1 = New RectF(5f, 6f, 7f, 8f);
+    RectF rect0 = new RectF(0f, 2f, 3f, 4f);
+    RectF rect1 = new RectF(5f, 6f, 7f, 8f);
 
     canvas.drawRect(0f, 2f, 3f, 4f, paint0);
     canvas.drawRect(5f, 6f, 7f, 8f, paint1);
