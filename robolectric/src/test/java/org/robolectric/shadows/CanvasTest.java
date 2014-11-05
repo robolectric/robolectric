@@ -232,7 +232,7 @@ public class CanvasTest {
     assertThat(shadowCanvas.getDrawnArc(1).startAngle).isEqualTo(3f);
     assertThat(shadowCanvas.getDrawnArc(1).sweepAngle).isEqualTo(4f);
     assertThat(shadowCanvas.getDrawnArc(1).useCenter).isFalse();
-    assertThat(shadowCanvas.getDrawnArc(1).paint).isSameAs(paint1);
+F    assertThat(shadowCanvas.getDrawnArc(1).paint).isSameAs(paint1);
   }
 
   @Test
@@ -256,8 +256,8 @@ public class CanvasTest {
   @Test
   public void getOvalHistoryCount_shouldReturnTotalNumberOfDrawOvalEvents() throws Exception {
     Canvas canvas = new Canvas();
-    canvas.drawOval(new rect(), new Paint());
-    canvas.drawOval(new rect(), new Paint());
+    canvas.drawOval(new RectF(), new Paint());
+    canvas.drawOval(new RectF(), new Paint());
     ShadowCanvas shadowCanvas = shadowOf(canvas);
     assertThat(shadowCanvas.getOvalPaintHistoryCount()).isEqualTo(2);
   }
