@@ -268,7 +268,7 @@ public class CanvasTest {
     canvas.drawLine(0f, 1f, 2f, 3f, new Paint());
     canvas.drawLine(0f, 1f, 2f, 3f, new Paint());
     ShadowCanvas shadowCanvas = shadowOf(canvas);
-    assertThat(shadowCanvas.getOvalPaintHistoryCount()).isEqualTo(2);
+    assertThat(shadowCanvas.getLinePaintHistoryCount()).isEqualTo(2);
   }
 
   @Test
