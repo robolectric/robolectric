@@ -29,7 +29,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.res.BroadcastReceiverData;
+import org.robolectric.manifest.BroadcastReceiverData;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.tester.org.apache.http.FakeHttpLayer;
 import org.robolectric.util.Scheduler;

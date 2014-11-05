@@ -5,7 +5,7 @@ import android.content.Intent;
 import android.content.pm.ResolveInfo;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.ClassNameResolver;
-import org.robolectric.res.ActivityData;
+import org.robolectric.manifest.ActivityData;
 import org.robolectric.res.builder.RobolectricPackageManager;
 
 import java.lang.reflect.Method;

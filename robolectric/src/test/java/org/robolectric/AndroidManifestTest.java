@@ -9,10 +9,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
-import org.robolectric.res.ActivityData;
+import org.robolectric.manifest.ActivityData;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
-import org.robolectric.res.IntentFilterData;
+import org.robolectric.manifest.IntentFilterData;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.test.TemporaryFolder;
 
@@ -40,10 +40,8 @@ import static android.content.pm.ApplicationInfo.FLAG_TEST_ONLY;
 import static android.content.pm.ApplicationInfo.FLAG_VM_SAFE_MODE;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.contentOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.robolectric.util.TestUtil.*;
 
 @RunWith(RobolectricTestRunner.class)

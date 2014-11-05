@@ -1,4 +1,4 @@
-package org.robolectric.res;
+package org.robolectric.manifest;
 
 import java.util.List;
 import com.google.android.collect.Lists;

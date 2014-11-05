@@ -1,4 +1,4 @@
-package org.robolectric.res;
+package org.robolectric.manifest;
 
 import java.util.ArrayList;
 import java.util.List;

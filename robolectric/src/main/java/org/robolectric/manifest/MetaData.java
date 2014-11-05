@@ -1,6 +1,10 @@
-package org.robolectric.res;
+package org.robolectric.manifest;
 
 import android.graphics.Color;
+import org.robolectric.res.ResName;
+import org.robolectric.res.ResourceIndex;
+import org.robolectric.res.ResourceLoader;
+import org.robolectric.res.TypedResource;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 

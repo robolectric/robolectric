@@ -1,4 +1,4 @@
-package org.robolectric.res;
+package org.robolectric.manifest;
 
 public class ContentProviderData {
   private final String className;

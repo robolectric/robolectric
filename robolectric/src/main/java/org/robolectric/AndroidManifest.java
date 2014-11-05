@@ -2,6 +2,11 @@ package org.robolectric;
 
 import android.app.Activity;
 import android.graphics.Color;
+import org.robolectric.manifest.ActivityData;
+import org.robolectric.manifest.BroadcastReceiverData;
+import org.robolectric.manifest.ContentProviderData;
+import org.robolectric.manifest.IntentFilterData;
+import org.robolectric.manifest.MetaData;
 import org.robolectric.res.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
