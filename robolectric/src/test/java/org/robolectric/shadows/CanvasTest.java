@@ -276,8 +276,10 @@ public class CanvasTest {
     Canvas canvas = new Canvas();
     Paint paint0 = new Paint();
     paint0.setColor(Color.RED);
+    paint0.setStrokeWidth(1.0f);
     Paint paint1 = new Paint();
     paint1.setColor(Color.WHITE);
+    paint1.setStrokeWidth(2.0f);
 
     canvas.drawLine(0f, 2f, 3f, 4f, paint0);
     canvas.drawLine(5f, 6f, 7f, 8f, paint1);
@@ -288,12 +290,14 @@ public class CanvasTest {
     assertThat(shadowCanvas.getDrawnLine(0).stopX).isEqualTo(3f);
     assertThat(shadowCanvas.getDrawnLine(0).stopY).isEqualTo(4f);
     assertThat(shadowCanvas.getDrawnLine(0).paint.getColor()).isEqualTo(Color.RED);
+    assertThat(shadowCanvas.getDrawnLine(0).paint.getStrokeWidth()).isEqualTo(1.0f);
 
     assertThat(shadowCanvas.getDrawnLine(1).startX).isEqualTo(5f);
     assertThat(shadowCanvas.getDrawnLine(1).startY).isEqualTo(6f);
     assertThat(shadowCanvas.getDrawnLine(1).stopX).isEqualTo(7f);
     assertThat(shadowCanvas.getDrawnLine(1).stopY).isEqualTo(8f);
     assertThat(shadowCanvas.getDrawnLine(1).paint.getColor()).isEqualTo(Color.WHITE);
+    assertThat(shadowCanvas.getDrawnLine(1).paint.getStrokeWidth()).isEqualTo(2.0f);
   }
 
   @Test
@@ -323,7 +327,7 @@ public class CanvasTest {
     Paint paint0 = new Paint();
     paint0.setColor(Color.WHITE);
     Paint paint1 = new Paint();
-    paint1.setColor(Color.WHITE);
+    paint1.setColor(Color.BLACK);
     RectF rect0 = new RectF(0f, 2f, 3f, 4f);
     RectF rect1 = new RectF(5f, 6f, 7f, 8f);
 
@@ -343,6 +347,6 @@ public class CanvasTest {
     assertThat(shadowCanvas.getDrawnRect(1).right).isEqualTo(7f);
     assertThat(shadowCanvas.getDrawnRect(1).bottom).isEqualTo(8f);
     assertThat(shadowCanvas.getDrawnRect(1).rect).isEqualTo(rect1);
-    assertThat(shadowCanvas.getDrawnRect(1).paint.getColor()).isEqualTo(Color.WHITE);
+    assertThat(shadowCanvas.getDrawnRect(1).paint.getColor()).isEqualTo(Color.BLACK);
   }
 }
