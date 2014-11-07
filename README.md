@@ -46,7 +46,7 @@ Alternatively, you can install Robolectric for your current project by adding th
 <dependency>
    <groupId>org.robolectric</groupId>
    <artifactId>robolectric</artifactId>
-   <version>2.3</version>
+   <version>2.4</version>
    <scope>test</scope>
 </dependency>
 ```
