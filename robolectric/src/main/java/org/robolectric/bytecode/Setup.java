@@ -97,10 +97,10 @@ public class Setup {
   }
 
   public boolean shouldAcquire(String name) {
-    // the org.robolectric.res package lives in the base classloader, but not its tests; yuck.
+    // the org.robolectric.res and org.robolectric.manifest packages live in the base classloader, but not its tests; yuck.
     int lastDot = name.lastIndexOf('.');
     String pkgName = name.substring(0, lastDot == -1 ? 0 : lastDot);
-    if (pkgName.equals("org.robolectric.res")) {
+    if (pkgName.equals("org.robolectric.res") || (pkgName.equals("org.robolectric.manifest"))) {
       return name.contains("Test");
     }
 

@@ -25,7 +25,7 @@ import org.robolectric.AndroidManifest;
 import org.robolectric.DefaultTestLifecycle;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
-import org.robolectric.res.ContentProviderData;
+import org.robolectric.manifest.ContentProviderData;
 import org.robolectric.tester.android.database.TestCursor;
 
 import java.io.ByteArrayInputStream;

@@ -5,15 +5,14 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
-import org.robolectric.res.ActivityData;
+import org.robolectric.manifest.ActivityData;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
-import org.robolectric.res.IntentFilterData;
+import org.robolectric.manifest.IntentFilterData;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.test.TemporaryFolder;
 
@@ -43,7 +42,6 @@ import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.robolectric.util.TestUtil.*;
 
 @RunWith(RobolectricTestRunner.class)
@@ -51,8 +49,14 @@ import static org.robolectric.util.TestUtil.*;
 public class AndroidManifestTest {
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
+  @Test(expected = IllegalArgumentException.class)
+  public void parseManifest_shouldHandleMissingApplicationElement() throws Exception {
+    AndroidManifest config = newConfig("TestAndroidManifestNoApplicationElement.xml");
+    config.parseAndroidManifest();
+  }
+
   @Test
-  public void shouldReadContentProviders() throws Exception {
+  public void parseManifest_shouldReadContentProviders() throws Exception {
     AndroidManifest config = newConfig("TestAndroidManifestWithContentProviders.xml");
     assertThat(config.getContentProviders()).hasSize(2);
 
@@ -64,47 +68,40 @@ public class AndroidManifestTest {
   }
 
   @Test
-  public void shouldReadBroadcastReceivers() throws Exception {
+  public void parseManifest_shouldReadBroadcastReceivers() throws Exception {
     AndroidManifest config = newConfig("TestAndroidManifestWithReceivers.xml");
+    assertThat(config.getBroadcastReceivers()).hasSize(7);
 
-    assertEquals(7, config.getReceiverCount());
+    assertThat(config.getBroadcastReceivers().get(0).getClassName()).isEqualTo("org.robolectric.AndroidManifestTest.ConfigTestReceiver");
+    assertThat(config.getBroadcastReceivers().get(0).getActions()).contains("org.robolectric.ACTION1", "org.robolectric.ACTION2");
 
-    assertEquals("org.robolectric.AndroidManifestTest.ConfigTestReceiver", config.getReceiverClassName(0));
-    assertEquals("org.robolectric.ACTION1", config.getReceiverIntentFilterActions(0).get(0));
+    assertThat(config.getBroadcastReceivers().get(1).getClassName()).isEqualTo("org.robolectric.tester.ConfigTestReceiver");
+    assertThat(config.getBroadcastReceivers().get(1).getActions()).contains("org.robolectric.ACTION_SUPERSET_PACKAGE");
 
-    assertEquals("org.robolectric.AndroidManifestTest.ConfigTestReceiver", config.getReceiverClassName(1));
-    assertEquals("org.robolectric.ACTION2", config.getReceiverIntentFilterActions(1).get(0));
+    assertThat(config.getBroadcastReceivers().get(2).getClassName()).isEqualTo("org.robolectric.ConfigTestReceiver");
+    assertThat(config.getBroadcastReceivers().get(2).getActions()).contains("org.robolectric.ACTION_SUBSET_PACKAGE");
 
-    assertEquals("org.robolectric.tester.ConfigTestReceiver", config.getReceiverClassName(2));
-    assertEquals("org.robolectric.ACTION_SUPERSET_PACKAGE", config.getReceiverIntentFilterActions(2).get(0));
+    assertThat(config.getBroadcastReceivers().get(3).getClassName()).isEqualTo("org.robolectric.DotConfigTestReceiver");
+    assertThat(config.getBroadcastReceivers().get(3).getActions()).contains("org.robolectric.ACTION_DOT_PACKAGE");
 
-    assertEquals("org.robolectric.ConfigTestReceiver", config.getReceiverClassName(3));
-    assertEquals("org.robolectric.ACTION_SUBSET_PACKAGE", config.getReceiverIntentFilterActions(3).get(0));
+    assertThat(config.getBroadcastReceivers().get(4).getClassName()).isEqualTo("org.robolectric.test.ConfigTestReceiver");
+    assertThat(config.getBroadcastReceivers().get(4).getActions()).contains("org.robolectric.ACTION_DOT_SUBPACKAGE");
 
-    assertEquals("org.robolectric.DotConfigTestReceiver", config.getReceiverClassName(4));
-    assertEquals("org.robolectric.ACTION_DOT_PACKAGE", config.getReceiverIntentFilterActions(4).get(0));
+    assertThat(config.getBroadcastReceivers().get(5).getClassName()).isEqualTo("com.foo.Receiver");
+    assertThat(config.getBroadcastReceivers().get(5).getActions()).contains("org.robolectric.ACTION_DIFFERENT_PACKAGE");
 
-    assertEquals("org.robolectric.test.ConfigTestReceiver", config.getReceiverClassName(5));
-    assertEquals("org.robolectric.ACTION_DOT_SUBPACKAGE", config.getReceiverIntentFilterActions(5).get(0));
-
-    assertEquals("com.foo.Receiver", config.getReceiverClassName(6));
-    assertEquals("org.robolectric.ACTION_DIFFERENT_PACKAGE", config.getReceiverIntentFilterActions(6).get(0));
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void testManifestWithNoApplicationElement() throws Exception {
-    AndroidManifest config = newConfig("TestAndroidManifestNoApplicationElement.xml");
-    config.parseAndroidManifest();
+    assertThat(config.getBroadcastReceivers().get(6).getClassName()).isEqualTo("com.bar.ReceiverWithoutIntentFilter");
+    assertThat(config.getBroadcastReceivers().get(6).getActions()).isEmpty();
   }
 
   @Test
-  public void testBroadcastReceiversWithMetaData() throws Exception {
+  public void parseManifest_shouldReadBroadcastReceiversWithMetaData() throws Exception {
     AndroidManifest config = newConfig("TestAndroidManifestWithReceivers.xml");
 
-    assertEquals("org.robolectric.test.ConfigTestReceiver", config.getReceiverClassName(5));
-    assertEquals("org.robolectric.ACTION_DOT_SUBPACKAGE", config.getReceiverIntentFilterActions(5).get(0));
+    assertThat(config.getBroadcastReceivers().get(4).getClassName()).isEqualTo("org.robolectric.test.ConfigTestReceiver");
+    assertThat(config.getBroadcastReceivers().get(4).getActions()).contains("org.robolectric.ACTION_DOT_SUBPACKAGE");
 
-    Map<String, Object> meta = config.getReceiverMetaData(5);
+    Map<String, Object> meta = config.getBroadcastReceivers().get(4).getMetaData().getValueMap();
     Object metaValue = meta.get("org.robolectric.metaName1");
     assertEquals("metaValue1", metaValue);
 

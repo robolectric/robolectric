@@ -1,4 +1,4 @@
-package org.robolectric.res;
+package org.robolectric.manifest;
 
 import android.content.pm.ActivityInfo;
 

@@ -57,5 +57,7 @@
         <action android:name="org.robolectric.ACTION_DIFFERENT_PACKAGE"/>
       </intent-filter>
     </receiver>
+
+    <receiver android:name="com.bar.ReceiverWithoutIntentFilter"/>
   </application>
 </manifest>

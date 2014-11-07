@@ -2,6 +2,11 @@ package org.robolectric;
 
 import android.app.Activity;
 import android.graphics.Color;
+import org.robolectric.manifest.ActivityData;
+import org.robolectric.manifest.BroadcastReceiverData;
+import org.robolectric.manifest.ContentProviderData;
+import org.robolectric.manifest.IntentFilterData;
+import org.robolectric.manifest.MetaData;
 import org.robolectric.res.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -62,7 +67,7 @@ public class AndroidManifest {
   private String versionName;
   private int applicationFlags;
   private final List<ContentProviderData> providers = new ArrayList<ContentProviderData>();
-  private final List<ReceiverAndIntentFilter> receivers = new ArrayList<ReceiverAndIntentFilter>();
+  private final List<BroadcastReceiverData> receivers = new ArrayList<BroadcastReceiverData>();
   private final Map<String, ActivityData> activityDatas = new LinkedHashMap<String, ActivityData>();
   private final List<String> usedPermissions = new ArrayList<String>();
   private MetaData applicationMetaData;
@@ -216,16 +221,17 @@ public class AndroidManifest {
       String receiverName = resolveClassRef(namedItem.getTextContent());
       MetaData metaData = new MetaData(getChildrenTags(receiverNode, "meta-data"));
 
-      for (Node intentFilterNode : getChildrenTags(receiverNode, "intent-filter")) {
-        List<String> actions = new ArrayList<String>();
+      BroadcastReceiverData receiver = new BroadcastReceiverData(receiverName, metaData);
+      List<Node> intentFilters = getChildrenTags(receiverNode, "intent-filter");
+      for (Node intentFilterNode : intentFilters) {
         for (Node actionNode : getChildrenTags(intentFilterNode, "action")) {
           Node nameNode = actionNode.getAttributes().getNamedItem("android:name");
           if (nameNode != null) {
-            actions.add(nameNode.getTextContent());
+            receiver.addAction(nameNode.getTextContent());
           }
         }
-        receivers.add(new ReceiverAndIntentFilter(receiverName, actions, metaData));
       }
+      receivers.add(receiver);
     }
   }
 
@@ -394,8 +400,8 @@ public class AndroidManifest {
   public void initMetaData(ResourceLoader resLoader) {
     applicationMetaData.init(resLoader, packageName);
 
-    for (ReceiverAndIntentFilter receiver : receivers) {
-      receiver.metaData.init(resLoader, packageName);
+    for (BroadcastReceiverData receiver : receivers) {
+      receiver.getMetaData().init(resLoader, packageName);
     }
   }
 
@@ -509,7 +515,7 @@ public class AndroidManifest {
 
   public Map<String, Object> getApplicationMetaData() {
     parseAndroidManifest();
-    return applicationMetaData.valueMap;
+    return applicationMetaData.getValueMap();
   }
 
   public ResourcePath getResourcePath() {
@@ -619,24 +625,9 @@ public class AndroidManifest {
     return assetsDirectory;
   }
 
-  public int getReceiverCount() {
+  public List<BroadcastReceiverData> getBroadcastReceivers() {
     parseAndroidManifest();
-    return receivers.size();
-  }
-
-  public String getReceiverClassName(final int receiverIndex) {
-    parseAndroidManifest();
-    return receivers.get(receiverIndex).getBroadcastReceiverClassName();
-  }
-
-  public List<String> getReceiverIntentFilterActions(final int receiverIndex) {
-    parseAndroidManifest();
-    return receivers.get(receiverIndex).getIntentFilterActions();
-  }
-
-  public Map<String, Object> getReceiverMetaData(final int receiverIndex) {
-    parseAndroidManifest();
-    return receivers.get(receiverIndex).getMetaData().valueMap;
+    return receivers;
   }
 
   private static String getTagAttributeText(final Document doc, final String tag, final String attribute) {
@@ -691,94 +682,5 @@ public class AndroidManifest {
   public List<String> getUsedPermissions() {
     parseAndroidManifest();
     return usedPermissions;
-  }
-
-  private static final class MetaData {
-    private final Map<String, Object> valueMap = new LinkedHashMap<String, Object>();
-    private final Map<String, VALUE_TYPE> typeMap = new LinkedHashMap<String, VALUE_TYPE>();
-    private boolean initialised;
-
-    public MetaData(List<Node> nodes) {
-      for (Node metaNode : nodes) {
-        NamedNodeMap attributes = metaNode.getAttributes();
-        Node nameAttr = attributes.getNamedItem("android:name");
-        Node valueAttr = attributes.getNamedItem("android:value");
-        Node resourceAttr = attributes.getNamedItem("android:resource");
-
-        if (valueAttr != null) {
-          valueMap.put(nameAttr.getNodeValue(), valueAttr.getNodeValue());
-          typeMap.put(nameAttr.getNodeValue(), VALUE_TYPE.VALUE);
-        } else if (resourceAttr != null) {
-          valueMap.put(nameAttr.getNodeValue(), resourceAttr.getNodeValue());
-          typeMap.put(nameAttr.getNodeValue(), VALUE_TYPE.RESOURCE);
-        }
-      }
-    }
-
-    public void init(ResourceLoader resLoader, String packageName) {
-      ResourceIndex resIndex = resLoader.getResourceIndex();
-
-      if (!initialised) {
-        for (Map.Entry<String,MetaData.VALUE_TYPE> entry : typeMap.entrySet()) {
-          String value = valueMap.get(entry.getKey()).toString();
-          if (value.startsWith("@")) {
-            ResName resName = ResName.qualifyResName(value.substring(1), packageName, null);
-
-            switch (entry.getValue()) {
-              case RESOURCE:
-                // Was provided by resource attribute, store resource ID
-                valueMap.put(entry.getKey(), resIndex.getResourceId(resName));
-                break;
-              case VALUE:
-                // Was provided by value attribute, need to parse it
-                TypedResource<?> typedRes = resLoader.getValue(resName, "");
-                // The typed resource's data is always a String, so need to parse the value.
-                switch (typedRes.getResType()) {
-                  case BOOLEAN: case COLOR: case INTEGER: case FLOAT:
-                    valueMap.put(entry.getKey(),parseValue(typedRes.getData().toString()));
-                    break;
-                  default:
-                    valueMap.put(entry.getKey(),typedRes.getData());
-                }
-                break;
-            }
-          } else if (entry.getValue() == MetaData.VALUE_TYPE.VALUE) {
-            // Raw value, so parse it in to the appropriate type and store it
-            valueMap.put(entry.getKey(), parseValue(value));
-          }
-        }
-        // Finished parsing, mark as initialised
-        initialised = true;
-      }
-    }
-
-    private enum VALUE_TYPE {
-      RESOURCE,
-      VALUE
-    }
-  }
-
-  private static class ReceiverAndIntentFilter {
-    private final List<String> intentFilterActions;
-    private final String broadcastReceiverClassName;
-    private final MetaData metaData;
-
-    public ReceiverAndIntentFilter(final String broadcastReceiverClassName, final List<String> intentFilterActions, final MetaData metaData) {
-      this.broadcastReceiverClassName = broadcastReceiverClassName;
-      this.intentFilterActions = intentFilterActions;
-      this.metaData = metaData;
-    }
-
-    public String getBroadcastReceiverClassName() {
-      return broadcastReceiverClassName;
-    }
-
-    public List<String> getIntentFilterActions() {
-      return intentFilterActions;
-    }
-
-    public MetaData getMetaData() {
-      return metaData;
-    }
   }
 }

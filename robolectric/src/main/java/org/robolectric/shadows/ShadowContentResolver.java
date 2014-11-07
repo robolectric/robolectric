@@ -22,7 +22,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.internal.NamedStream;
-import org.robolectric.res.ContentProviderData;
+import org.robolectric.manifest.ContentProviderData;
 import org.robolectric.tester.android.database.TestCursor;
 
 import java.io.IOException;
