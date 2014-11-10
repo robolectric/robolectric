@@ -30,6 +30,9 @@ public class ShadowCanvas {
   private List<PathPaintHistoryEvent> pathPaintEvents = new ArrayList<PathPaintHistoryEvent>();
   private List<CirclePaintHistoryEvent> circlePaintEvents = new ArrayList<CirclePaintHistoryEvent>();
   private List<ArcPaintHistoryEvent> arcPaintEvents = new ArrayList<ArcPaintHistoryEvent>();
+  private List<RectPaintHistoryEvent> rectPaintEvents = new ArrayList<RectPaintHistoryEvent>();
+  private List<LinePaintHistoryEvent> linePaintEvents = new ArrayList<LinePaintHistoryEvent>();
+  private List<OvalPaintHistoryEvent> ovalPaintEvents = new ArrayList<OvalPaintHistoryEvent>();
   private List<TextHistoryEvent> drawnTextEventHistory = new ArrayList<TextHistoryEvent>();
   private Paint drawnPaint;
   private Bitmap targetBitmap = newInstanceOf(Bitmap.class);
@@ -147,6 +150,21 @@ public class ShadowCanvas {
     arcPaintEvents.add(new ArcPaintHistoryEvent(oval, startAngle, sweepAngle, useCenter, paint));
   }
 
+  @Implementation
+  public void drawRect(float left, float top, float right, float bottom, Paint paint) {
+    rectPaintEvents.add(new RectPaintHistoryEvent(left, top, right, bottom, paint));
+  }
+
+  @Implementation
+  public void drawLine(float startX, float startY, float stopX, float stopY, Paint paint) {
+    linePaintEvents.add(new LinePaintHistoryEvent(startX, startY, stopX, stopY, paint));
+  }
+
+  @Implementation
+  public void drawOval(RectF oval, Paint paint) {
+    ovalPaintEvents.add(new OvalPaintHistoryEvent(oval, paint));
+  }
+
   private void describeBitmap(Bitmap bitmap, Paint paint) {
     separateLines();
 
@@ -206,6 +224,9 @@ public class ShadowCanvas {
     drawnTextEventHistory.clear();
     pathPaintEvents.clear();
     circlePaintEvents.clear();
+    rectPaintEvents.clear();
+    linePaintEvents.clear();
+    ovalPaintEvents.clear();
     shadowOf(targetBitmap).setDescription("");
   }
 
@@ -237,6 +258,88 @@ public class ShadowCanvas {
 
   public int getTextHistoryCount() {
     return drawnTextEventHistory.size();
+  }
+
+  public RectPaintHistoryEvent getDrawnRect(int i) {
+    return rectPaintEvents.get(i);
+  }
+
+  public RectPaintHistoryEvent getLastDrawnRect() {
+    return rectPaintEvents.get(rectPaintEvents.size() - 1);
+  }
+
+  public int getRectPaintHistoryCount() {
+    return rectPaintEvents.size();
+  }
+
+  public LinePaintHistoryEvent getDrawnLine(int i) {
+    return linePaintEvents.get(i);
+  }
+
+  public int getLinePaintHistoryCount() {
+    return linePaintEvents.size();
+  }
+
+  public int getOvalPaintHistoryCount() {
+    return ovalPaintEvents.size();
+  }
+
+  public OvalPaintHistoryEvent getDrawnOval(int i) {
+    return ovalPaintEvents.get(i);
+  }
+
+  public static class LinePaintHistoryEvent {
+    public Paint paint;
+    public float startX;
+    public float startY;
+    public float stopX;
+    public float stopY;
+
+    private LinePaintHistoryEvent(
+        float startX, float startY, float stopX, float stopY, Paint paint) {
+      this.paint = new Paint(paint);
+      this.paint.setColor(paint.getColor());
+      this.paint.setStrokeWidth(paint.getStrokeWidth());
+      this.startX = startX;
+      this.startY = startY;
+      this.stopX = stopX;
+      this.stopY = stopY;
+    }
+  }
+
+  public static class OvalPaintHistoryEvent {
+    public final RectF oval;
+    public final Paint paint;
+
+    private OvalPaintHistoryEvent(RectF oval, Paint paint) {
+      this.oval = new RectF(oval);
+      this.paint = new Paint(paint);
+      this.paint.setColor(paint.getColor());
+      this.paint.setStrokeWidth(paint.getStrokeWidth());
+    }
+  }
+
+  public static class RectPaintHistoryEvent {
+    public final Paint paint;
+    public final RectF rect;
+    public final float left;
+    public final float top;
+    public final float right;
+    public final float bottom;
+
+    private RectPaintHistoryEvent(
+        float left, float top, float right, float bottom, Paint paint){
+      this.rect = new RectF(left, top, right, bottom);
+      this.paint = new Paint(paint);
+      this.paint.setColor(paint.getColor());
+      this.paint.setStrokeWidth(paint.getStrokeWidth());
+      this.paint.setTextSize(paint.getTextSize());
+      this.paint.setStyle(paint.getStyle());
+      this.left = left;
+      this.top = top;
+      this.right = right;
+      this.bottom = bottom;
+    }
   }
 
   private static class PathPaintHistoryEvent {
