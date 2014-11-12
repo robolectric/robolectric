@@ -13,7 +13,7 @@ import android.content.pm.ServiceInfo;
 import android.view.accessibility.AccessibilityManager;
 import android.accessibilityservice.AccessibilityServiceInfo;
 import static android.content.Context.ACCESSIBILITY_SERVICE;
-import static org.robolectric.RobolectricBase.shadowOf;
+import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class AccessibilityManagerTest {

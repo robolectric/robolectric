@@ -45,7 +45,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Robolectric.buildActivity;
-import static org.robolectric.RobolectricBase.shadowOf;
+import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.test.Assertions.assertThat;
 import static org.robolectric.util.TestUtil.TEST_PACKAGE;
 import static org.robolectric.util.TestUtil.assertInstanceOf;

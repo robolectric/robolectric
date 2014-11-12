@@ -7,7 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricBase;
+import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -23,7 +23,7 @@ public class SmsManagerTest {
   @Before
   public void setup() {
     smsManager = SmsManager.getDefault();
-    shadowSmsManager = RobolectricBase.shadowOf(smsManager);
+    shadowSmsManager = Shadows.shadowOf(smsManager);
   }
 
   @After

@@ -8,7 +8,7 @@ import org.robolectric.res.MenuNode;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.util.I18nException;
 
-import static org.robolectric.RobolectricBase.shadowOf;
+import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.res.ResourceLoader.ANDROID_NS;
 
 /**

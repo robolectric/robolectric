@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import static org.robolectric.RobolectricBase.shadowOf;
+import static org.robolectric.Shadows.shadowOf;
 
 /**
  * A shadow for Geocoder that supports simulated responses and failures

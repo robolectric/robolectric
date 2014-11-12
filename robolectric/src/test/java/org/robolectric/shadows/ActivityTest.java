@@ -51,7 +51,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.robolectric.Robolectric.application;
 import static org.robolectric.Robolectric.buildActivity;
-import static org.robolectric.RobolectricBase.shadowOf;
+import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = "src/test/resources/TestAndroidManifest.xml")
@@ -175,7 +175,7 @@ public class ActivityTest {
   @Test
   public void shouldSupportStartActivityForResult() throws Exception {
     activity = create(DialogLifeCycleActivity.class);
-    ShadowActivity shadowActivity = RobolectricBase.shadowOf(activity);
+    ShadowActivity shadowActivity = Shadows.shadowOf(activity);
     Intent intent = new Intent().setClass(activity, DialogLifeCycleActivity.class);
     assertThat(shadowActivity.getNextStartedActivity()).isNull();
 
@@ -189,7 +189,7 @@ public class ActivityTest {
   @Test
   public void shouldSupportGetStartedActivitiesForResult() throws Exception {
     activity = create(DialogLifeCycleActivity.class);
-    ShadowActivity shadowActivity = RobolectricBase.shadowOf(activity);
+    ShadowActivity shadowActivity = Shadows.shadowOf(activity);
     Intent intent = new Intent().setClass(activity, DialogLifeCycleActivity.class);
 
     activity.startActivityForResult(intent, 142);
@@ -205,7 +205,7 @@ public class ActivityTest {
   @Test
   public void shouldSupportPeekStartedActivitiesForResult() throws Exception {
     activity = create(DialogLifeCycleActivity.class);
-    ShadowActivity shadowActivity = RobolectricBase.shadowOf(activity);
+    ShadowActivity shadowActivity = Shadows.shadowOf(activity);
     Intent intent = new Intent().setClass(activity, DialogLifeCycleActivity.class);
 
     activity.startActivityForResult(intent, 142);
@@ -344,7 +344,7 @@ public class ActivityTest {
     Dialog firstDialog = ShadowDialog.getLatestDialog();
 
     activity.removeDialog(1);
-    assertNull(RobolectricBase.shadowOf(activity).getDialogById(1));
+    assertNull(Shadows.shadowOf(activity).getDialogById(1));
 
     activity.showDialog(1);
     Dialog secondDialog = ShadowDialog.getLatestDialog();

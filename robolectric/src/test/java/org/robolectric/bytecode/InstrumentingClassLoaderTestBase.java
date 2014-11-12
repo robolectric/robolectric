@@ -13,7 +13,7 @@ import java.util.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 import static org.robolectric.Robolectric.directlyOn;
-import static org.robolectric.RobolectricBase.shadowOf_;
+import static org.robolectric.Shadows.shadowOf_;
 
 abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" or ant will try to run this as a test
 

@@ -5,7 +5,7 @@ import android.graphics.drawable.Drawable;
 import org.assertj.core.api.AbstractAssert;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.RobolectricBase.shadowOf;
+import static org.robolectric.Shadows.shadowOf;
 
 public class DrawableAssert<T extends Drawable> extends AbstractAssert<DrawableAssert<T>, T> {
   public DrawableAssert(T actual) {

@@ -30,7 +30,7 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 import static org.robolectric.Robolectric.directlyOn;
-import static org.robolectric.RobolectricBase.shadowOf;
+import static org.robolectric.Shadows.shadowOf;
 
 @Implements(Activity.class)
 public class ShadowActivity extends ShadowContextThemeWrapper {

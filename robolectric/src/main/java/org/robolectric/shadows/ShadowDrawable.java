@@ -21,7 +21,7 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.internal.ReflectionHelpers;
 
 import static org.robolectric.Robolectric.directlyOn;
-import static org.robolectric.RobolectricBase.shadowOf;
+import static org.robolectric.Shadows.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Drawable.class)

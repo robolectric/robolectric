@@ -4,7 +4,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricBase;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import static org.robolectric.RobolectricBase.shadowOf;
+import static org.robolectric.Shadows.shadowOf;
 
 /**
  * Shadow for Handler that puts posted {@link Runnable}s into a queue instead of sending them to be handled on a
@@ -257,6 +257,6 @@ public class ShadowHandler {
   }
 
   private long getCurrentUptimeMillis() {
-    return RobolectricBase.shadowOf(looper).getScheduler().getCurrentTime();
+    return Shadows.shadowOf(looper).getScheduler().getCurrentTime();
   }
 }

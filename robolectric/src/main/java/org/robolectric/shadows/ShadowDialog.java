@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.robolectric.Robolectric.directlyOn;
-import static org.robolectric.RobolectricBase.shadowOf;
+import static org.robolectric.Shadows.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Dialog.class)

@@ -7,7 +7,7 @@ import org.robolectric.annotation.Implements;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.robolectric.RobolectricBase.shadowOf;
+import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowPath.Point.Type.LINE_TO;
 import static org.robolectric.shadows.ShadowPath.Point.Type.MOVE_TO;
 

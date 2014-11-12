@@ -5,7 +5,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricBase;
+import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.util.Transcript;
 
@@ -22,7 +22,7 @@ public class SeekBarTest {
   @Before
   public void setup() {
     seekBar = new SeekBar(Robolectric.application);
-    shadow = RobolectricBase.shadowOf(seekBar);
+    shadow = Shadows.shadowOf(seekBar);
     listener = new TestSeekBarChangedListener();
     transcript = new Transcript();
     seekBar.setOnSeekBarChangeListener(listener);

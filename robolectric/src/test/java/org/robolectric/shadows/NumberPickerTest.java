@@ -4,7 +4,7 @@ import android.widget.NumberPicker;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricBase;
+import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 
 import static junit.framework.Assert.fail;
@@ -44,7 +44,7 @@ public class NumberPickerTest {
     NumberPicker.OnValueChangeListener listener = mock(NumberPicker.OnValueChangeListener.class);
     picker.setOnValueChangedListener(listener);
 
-    ShadowNumberPicker shadowNumberPicker = RobolectricBase.shadowOf(picker);
+    ShadowNumberPicker shadowNumberPicker = Shadows.shadowOf(picker);
     shadowNumberPicker.getOnValueChangeListener().onValueChange(picker, 5, 10);
 
     verify(listener).onValueChange(picker, 5, 10);

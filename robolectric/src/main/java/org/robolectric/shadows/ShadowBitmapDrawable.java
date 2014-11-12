@@ -12,7 +12,7 @@ import org.robolectric.annotation.RealObject;
 
 import static org.robolectric.Robolectric.directlyOn;
 import static org.robolectric.Robolectric.newInstance;
-import static org.robolectric.RobolectricBase.shadowOf;
+import static org.robolectric.Shadows.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(BitmapDrawable.class)

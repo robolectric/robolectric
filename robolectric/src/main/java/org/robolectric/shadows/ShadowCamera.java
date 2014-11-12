@@ -4,7 +4,7 @@ import android.graphics.ImageFormat;
 import android.hardware.Camera;
 import android.view.SurfaceHolder;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricBase;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -48,7 +48,7 @@ public class ShadowCamera {
   public static Camera open() {
     lastOpenedCameraId = 0;
     Camera camera = Robolectric.newInstanceOf(Camera.class);
-    RobolectricBase.shadowOf(camera).id = 0;
+    Shadows.shadowOf(camera).id = 0;
     return camera;
   }
 
@@ -56,7 +56,7 @@ public class ShadowCamera {
   public static Camera open(int cameraId) {
     lastOpenedCameraId = cameraId;
     Camera camera = Robolectric.newInstanceOf(Camera.class);
-    RobolectricBase.shadowOf(camera).id = cameraId;
+    Shadows.shadowOf(camera).id = cameraId;
     return camera;
   }
 

@@ -10,7 +10,7 @@ import org.robolectric.annotation.Resetter;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.robolectric.RobolectricBase.shadowOf;
+import static org.robolectric.Shadows.shadowOf;
 
 /**
  * Shadow for {@code MimeTypeMap} that allows custom extension <-> mimetype mapping to be set up by tests.

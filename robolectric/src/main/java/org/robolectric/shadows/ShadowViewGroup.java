@@ -14,7 +14,7 @@ import org.robolectric.internal.ReflectionHelpers;
 import java.io.PrintStream;
 
 import static org.robolectric.Robolectric.directlyOn;
-import static org.robolectric.RobolectricBase.shadowOf;
+import static org.robolectric.Shadows.shadowOf;
 
 /**
  * Shadow for {@code ViewGroup} that simulates its implementation

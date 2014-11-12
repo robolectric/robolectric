@@ -17,7 +17,7 @@ import android.os.Bundle;
 
 import org.robolectric.AndroidManifest;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricBase;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -211,7 +211,7 @@ public class ShadowContentResolver {
         Robolectric.newInstance(ContentProviderClient.class,
             new Class[] {ContentResolver.class, IContentProvider.class, boolean.class},
             new Object[] {realContentResolver, provider.getIContentProvider(), stable});
-    RobolectricBase.shadowOf(client).setContentProvider(provider);
+    Shadows.shadowOf(client).setContentProvider(provider);
     return client;
   }
 

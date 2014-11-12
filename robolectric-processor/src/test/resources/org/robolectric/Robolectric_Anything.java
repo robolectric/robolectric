@@ -6,10 +6,10 @@ import org.robolectric.annotation.processing.objects.AnyObject;
 import org.robolectric.annotation.processing.objects.Dummy;
 import org.robolectric.annotation.processing.shadows.ShadowAnything;
 import org.robolectric.annotation.processing.shadows.ShadowDummy;
-import org.robolectric.util.Shadows;
+import org.robolectric.util.ShadowExtractor;
 
 @Generated("org.robolectric.annotation.processing.RoboProcessor")
-public class RobolectricBase {
+public class Shadows {
 
   public static final Class<?>[] DEFAULT_SHADOW_CLASSES = {
     ShadowAnything.class,
@@ -31,6 +31,6 @@ public class RobolectricBase {
   
   @SuppressWarnings({"unchecked"})
   public static <P, R> P shadowOf_(R instance) {
-    return (P) Shadows.shadowOf(instance);
+    return (P) ShadowExtractor.extract(instance);
   }
 }

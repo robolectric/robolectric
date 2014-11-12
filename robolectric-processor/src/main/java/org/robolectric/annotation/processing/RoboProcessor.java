@@ -74,7 +74,7 @@ public class RoboProcessor extends AbstractProcessor {
   }
   
   private static final String GEN_PACKAGE = "org.robolectric";
-  private static final String GEN_CLASS   = "RobolectricBase";
+  private static final String GEN_CLASS   = "Shadows";
   private static final String GEN_FQ      = GEN_PACKAGE + '.' + GEN_CLASS;
   
   private void render() {
@@ -148,7 +148,7 @@ public class RoboProcessor extends AbstractProcessor {
 
       writer.println("  @SuppressWarnings({\"unchecked\"})");
       writer.println("  public static <P, R> P shadowOf_(R instance) {");
-      writer.println("    return (P) Shadows.shadowOf(instance);");
+      writer.println("    return (P) ShadowExtractor.extract(instance);");
       writer.println("  }");
       
       writer.println('}');

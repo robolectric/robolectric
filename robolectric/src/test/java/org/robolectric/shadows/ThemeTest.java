@@ -13,7 +13,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricBase;
+import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceLoader;
@@ -105,7 +105,7 @@ public class ThemeTest {
 
   @Test public void shouldInheritThemeValuesFromImplicitParents() throws Exception {
     TestActivity activity = buildActivity(TestActivityWithAnotherTheme.class).create().get();
-    ResourceLoader resourceLoader = RobolectricBase.shadowOf(activity.getResources()).getResourceLoader();
+    ResourceLoader resourceLoader = Shadows.shadowOf(activity.getResources()).getResourceLoader();
     Style style = ShadowAssetManager.resolveStyle(resourceLoader,
         null,
         new ResName(TestUtil.TEST_PACKAGE, "style", "Widget.AnotherTheme.Button.Blarf"), "");
@@ -115,7 +115,7 @@ public class ThemeTest {
 
   @Test public void whenAThemeHasExplicitlyEmptyParentAttr_shouldHaveNoParent() throws Exception {
     TestActivity activity = buildActivity(TestActivityWithAnotherTheme.class).create().get();
-    ResourceLoader resourceLoader = RobolectricBase.shadowOf(activity.getResources()).getResourceLoader();
+    ResourceLoader resourceLoader = Shadows.shadowOf(activity.getResources()).getResourceLoader();
     Style style = ShadowAssetManager.resolveStyle(resourceLoader,
         null,
         new ResName(TestUtil.TEST_PACKAGE, "style", "Theme.MyTheme"), "");
@@ -125,7 +125,7 @@ public class ThemeTest {
 
   @Test public void shouldApplyParentStylesFromAttrs() throws Exception {
     TestActivity activity = buildActivity(TestActivityWithAnotherTheme.class).create().get();
-    ResourceLoader resourceLoader = RobolectricBase.shadowOf(activity.getResources()).getResourceLoader();
+    ResourceLoader resourceLoader = Shadows.shadowOf(activity.getResources()).getResourceLoader();
     Style theme = ShadowAssetManager.resolveStyle(resourceLoader, null,
         new ResName(TestUtil.TEST_PACKAGE, "style", "Theme.AnotherTheme"), "");
     Style style = ShadowAssetManager.resolveStyle(resourceLoader, theme,

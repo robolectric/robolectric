@@ -2,7 +2,7 @@ package org.robolectric.bytecode;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricBase;
+import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
@@ -128,7 +128,7 @@ public class RobolectricInternalsTest {
   }
 
   private static ShadowConstructors shadowOf(Constructors realObject) {
-    Object shadow = RobolectricBase.shadowOf_(realObject);
+    Object shadow = Shadows.shadowOf_(realObject);
     assertThat(shadow)
       .isNotNull()
       .isInstanceOf(ShadowConstructors.class);

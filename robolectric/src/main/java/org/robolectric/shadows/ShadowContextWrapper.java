@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Map;
 
 import static android.database.sqlite.SQLiteDatabase.CursorFactory;
-import static org.robolectric.RobolectricBase.shadowOf;
+import static org.robolectric.Shadows.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ContextWrapper.class)

@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import org.jetbrains.annotations.NotNull;
 import org.robolectric.AndroidManifest;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricBase;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.internal.HiddenApi;
@@ -34,7 +34,7 @@ import org.robolectric.res.StyleData;
 import org.robolectric.res.TypedResource;
 import org.robolectric.res.builder.XmlFileBuilder;
 
-import static org.robolectric.RobolectricBase.shadowOf;
+import static org.robolectric.Shadows.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AssetManager.class)
@@ -135,7 +135,7 @@ public final class ShadowAssetManager {
     //ResName defStyleResName = new ResName(defStyleName.packageName, "style", defStyleName.name);
     //Style style = resolveStyle(resourceLoader, defStyleResName, getQualifiers());
     if (themeStyle != null) {
-      int styleResourceId = RobolectricBase.shadowOf(theTheme).getStyleResourceId();
+      int styleResourceId = Shadows.shadowOf(theTheme).getStyleResourceId();
       List<OverlayedStyle> overlayThemeStyles = getOverlayThemeStyles(styleResourceId);
       Attribute attrValue = ShadowResources.getOverlayedThemeValue(resName, themeStyle, overlayThemeStyles);
       while(resolveRefs && attrValue != null && attrValue.isStyleReference()) {
@@ -261,7 +261,7 @@ public final class ShadowAssetManager {
     }
 
     ResourceLoader resourceLoader = Robolectric.getShadowApplication().getResourceLoader();
-    ShadowAssetManager assertManager = RobolectricBase.shadowOf(Robolectric.getShadowApplication().getAssets());
+    ShadowAssetManager assertManager = Shadows.shadowOf(Robolectric.getShadowApplication().getAssets());
 
     ResourceIndex resourceIndex = resourceLoader.getResourceIndex();
     ResName resName = resourceIndex.getResName(styleRes);

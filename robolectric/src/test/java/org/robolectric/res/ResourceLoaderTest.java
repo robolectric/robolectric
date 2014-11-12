@@ -8,13 +8,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricBase;
+import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.I18nException;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.RobolectricBase.shadowOf;
+import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ResourceLoaderTest {
@@ -59,7 +59,7 @@ public class ResourceLoaderTest {
     View view = LayoutInflater.from(Robolectric.application).inflate(R.layout.different_screen_sizes, null);
     TextView textView = (TextView) view.findViewById(android.R.id.text1);
     assertThat(textView.getText().toString()).isEqualTo("default");
-    RobolectricBase.shadowOf(Robolectric.getShadowApplication().getResources().getConfiguration()).overrideQualifiers("land"); // testing if this pollutes the other test
+    Shadows.shadowOf(Robolectric.getShadowApplication().getResources().getConfiguration()).overrideQualifiers("land"); // testing if this pollutes the other test
   }
 
   @Test

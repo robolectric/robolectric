@@ -9,7 +9,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.internal.ReflectionHelpers;
 import org.robolectric.shadows.ShadowLooper;
 
-import static org.robolectric.RobolectricBase.shadowOf_;
+import static org.robolectric.Shadows.shadowOf_;
 
 abstract class ComponentController<C extends ComponentController<C, T, S>, T, S> {
   protected final C myself;

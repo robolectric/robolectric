@@ -8,7 +8,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricBase;
+import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.res.Attribute;
 import org.robolectric.util.TestUtil;
@@ -36,7 +36,7 @@ public class DialogPreferenceTest {
     context = Robolectric.application;
     attrs = new RoboAttributeSet(attributes, TestUtil.emptyResources(), null);
     preference = new TestDialogPreference(context, attrs);
-    shadow = RobolectricBase.shadowOf(preference);
+    shadow = Shadows.shadowOf(preference);
   }
 
   @Test
@@ -44,13 +44,13 @@ public class DialogPreferenceTest {
     int defStyle = android.R.attr.buttonStyle;
 
     preference = new TestDialogPreference(context, attrs, defStyle);
-    shadow = RobolectricBase.shadowOf(preference);
+    shadow = Shadows.shadowOf(preference);
     assertThat(shadow.getContext()).isSameAs(context);
     assertThat(shadow.getAttrs()).isSameAs(attrs);
     assertThat(shadow.getDefStyle()).isEqualTo(defStyle);
 
     preference = new TestDialogPreference(context, attrs);
-    shadow = RobolectricBase.shadowOf(preference);
+    shadow = Shadows.shadowOf(preference);
     assertThat(shadow.getContext()).isSameAs(context);
     assertThat(shadow.getAttrs()).isSameAs(attrs);
     assertThat(shadow.getDefStyle()).isGreaterThan(7);

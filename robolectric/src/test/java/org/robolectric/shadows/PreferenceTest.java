@@ -11,7 +11,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricBase;
+import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.res.Attribute;
 import org.robolectric.util.TestUtil;
@@ -21,7 +21,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
-import static org.robolectric.RobolectricBase.*;
+import static org.robolectric.Shadows.*;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class PreferenceTest {

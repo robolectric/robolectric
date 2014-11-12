@@ -7,7 +7,7 @@ import android.graphics.PorterDuffColorFilter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricBase;
+import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,7 +17,7 @@ public class PorterDuffColorFilterTest {
   @Test
   public void testConstructor() {
     PorterDuffColorFilter colorFilter = new PorterDuffColorFilter(Color.RED, PorterDuff.Mode.ADD);
-    ShadowPorterDuffColorFilter shadow = RobolectricBase.shadowOf_(colorFilter);
+    ShadowPorterDuffColorFilter shadow = Shadows.shadowOf_(colorFilter);
 
     assertThat(shadow.getSrcColor()).isEqualTo(Color.RED);
     assertThat(shadow.getMode()).isEqualTo(PorterDuff.Mode.ADD);

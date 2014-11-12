@@ -6,7 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricBase;
+import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 
 import java.util.ArrayList;
@@ -207,7 +207,7 @@ public class AbstractCursorTest {
   @Test
   public void testGetNotificationUri() {
     Uri uri = Uri.parse("content://foo.com");
-    ShadowAbstractCursor shadow = RobolectricBase.shadowOf_(cursor);
+    ShadowAbstractCursor shadow = Shadows.shadowOf_(cursor);
     assertThat(shadow.getNotificationUri_Compatibility()).isNull();
     cursor.setNotificationUri(Robolectric.application.getContentResolver(), uri);
     assertThat(shadow.getNotificationUri_Compatibility()).isEqualTo(uri);

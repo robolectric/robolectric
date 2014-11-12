@@ -7,6 +7,6 @@ public class RobolectricShadowOfLevel9 {
   private RobolectricShadowOfLevel9() { }
 
   public static ShadowNfcAdapter shadowOf(NfcAdapter instance) {
-    return (ShadowNfcAdapter) RobolectricBase.shadowOf_(instance);
+    return (ShadowNfcAdapter) Shadows.shadowOf_(instance);
   }
 }

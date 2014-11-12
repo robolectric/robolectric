@@ -4,14 +4,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import android.media.AudioManager;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricBase;
+import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class AudioManagerTest {
   private final AudioManager audioManager = new AudioManager(Robolectric.application);
-  private final ShadowAudioManager shadowAudioManager = RobolectricBase.shadowOf(audioManager);
+  private final ShadowAudioManager shadowAudioManager = Shadows.shadowOf(audioManager);
   private final AudioManager.OnAudioFocusChangeListener listener = new AudioManager.OnAudioFocusChangeListener() {
     @Override
     public void onAudioFocusChange(int focusChange) {

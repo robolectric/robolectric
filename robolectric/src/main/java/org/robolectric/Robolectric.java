@@ -37,7 +37,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.List;
 
-import static org.robolectric.RobolectricBase.shadowOf;
+import static org.robolectric.Shadows.shadowOf;
 
 public class Robolectric {
   public static Application application;
@@ -418,7 +418,7 @@ public class Robolectric {
     Robolectric.packageManager = null;
     Robolectric.activityThread = null;
 
-    RobolectricBase.reset();
+    Shadows.reset();
   }
 
   public static <T extends Service> ServiceController<T> buildService(Class<T> serviceClass) {

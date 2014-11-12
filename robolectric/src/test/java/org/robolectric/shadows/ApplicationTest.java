@@ -43,7 +43,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
-import static org.robolectric.RobolectricBase.shadowOf;
+import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ApplicationTest {
@@ -139,7 +139,7 @@ public class ApplicationTest {
     Robolectric.pauseMainLooper();
     ComponentName expectedComponentName = new ComponentName("", "");
     NullBinder expectedBinder = new NullBinder();
-    RobolectricBase.shadowOf(Robolectric.application).setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
+    Shadows.shadowOf(Robolectric.application).setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
 
     TestService service = new TestService();
     assertTrue(Robolectric.application.bindService(new Intent(""), service, Context.BIND_AUTO_CREATE));
@@ -158,7 +158,7 @@ public class ApplicationTest {
     TestService service = new TestService();
     ComponentName expectedComponentName = new ComponentName("", "");
     NullBinder expectedBinder = new NullBinder();
-    RobolectricBase.shadowOf(Robolectric.application).setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
+    Shadows.shadowOf(Robolectric.application).setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
     Robolectric.application.bindService(new Intent(""), service, Context.BIND_AUTO_CREATE);
     Robolectric.pauseMainLooper();
 
@@ -173,7 +173,7 @@ public class ApplicationTest {
     TestService service = new TestService();
     ComponentName expectedComponentName = new ComponentName("", "");
     NullBinder expectedBinder = new NullBinder();
-    final ShadowApplication shadowApplication = RobolectricBase.shadowOf(Robolectric.application);
+    final ShadowApplication shadowApplication = Shadows.shadowOf(Robolectric.application);
     shadowApplication.setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
     Robolectric.application.bindService(new Intent(""), service, Context.BIND_AUTO_CREATE);
     Robolectric.application.unbindService(service);
@@ -187,7 +187,7 @@ public class ApplicationTest {
     TestService service = new TestService();
     ComponentName expectedComponentName = new ComponentName("", "");
     NullBinder expectedBinder = new NullBinder();
-    final ShadowApplication shadowApplication = RobolectricBase.shadowOf(Robolectric.application);
+    final ShadowApplication shadowApplication = Shadows.shadowOf(Robolectric.application);
     shadowApplication.setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
     shadowApplication.declareActionUnbindable("refuseToBind");
     assertFalse(Robolectric.application.bindService(new Intent("refuseToBind"), service, Context.BIND_AUTO_CREATE));
@@ -199,7 +199,7 @@ public class ApplicationTest {
 
   @Test
   public void shouldHaveStoppedServiceIntentAndIndicateServiceWasntRunning() {
-    ShadowApplication shadowApplication = RobolectricBase.shadowOf(Robolectric.application);
+    ShadowApplication shadowApplication = Shadows.shadowOf(Robolectric.application);
 
     Activity activity = new Activity();
 

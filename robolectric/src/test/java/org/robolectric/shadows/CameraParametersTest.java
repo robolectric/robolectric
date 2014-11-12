@@ -8,7 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricBase;
+import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 
 import java.util.List;
@@ -24,7 +24,7 @@ public class CameraParametersTest {
   @Before
   public void setUp() throws Exception {
     parameters = Robolectric.newInstanceOf(Camera.Parameters.class);
-    shadowParameters = RobolectricBase.shadowOf(parameters);
+    shadowParameters = Shadows.shadowOf(parameters);
   }
 
   @Test

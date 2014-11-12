@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Locale;
 
 import static org.robolectric.Robolectric.directlyOn;
-import static org.robolectric.RobolectricBase.shadowOf;
+import static org.robolectric.Shadows.shadowOf;
 
 /**
  * Shadow of {@code Resources} that simulates the loading of resources

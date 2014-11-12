@@ -12,7 +12,7 @@ import org.robolectric.annotation.EnableStrictI18n;
 import java.lang.reflect.Method;
 
 import static org.junit.Assert.*;
-import static org.robolectric.RobolectricBase.shadowOf;
+import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(RobolectricTestRunnerSelfTest.RunnerForTesting.class)
 public class RobolectricTestRunnerSelfTest {
@@ -61,12 +61,12 @@ public class RobolectricTestRunnerSelfTest {
   @Config(qualifiers = "fr")
   public void internalBeforeTest_testValuesResQualifiers() {
     String expectedQualifiers = "fr" + TestRunners.WithDefaults.SDK_TARGETED_BY_MANIFEST;
-    assertEquals(expectedQualifiers, RobolectricBase.shadowOf(Robolectric.getShadowApplication().getResources().getAssets()).getQualifiers());
+    assertEquals(expectedQualifiers, Shadows.shadowOf(Robolectric.getShadowApplication().getResources().getAssets()).getQualifiers());
   }
 
   @Test
   public void internalBeforeTest_resetsValuesResQualifiers() {
-    assertEquals("", RobolectricBase.shadowOf(Robolectric.getShadowApplication().getResources().getConfiguration()).getQualifiers());
+    assertEquals("", Shadows.shadowOf(Robolectric.getShadowApplication().getResources().getConfiguration()).getQualifiers());
   }
 
   @Test

@@ -7,7 +7,7 @@ import java.util.Collections;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricBase;
+import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 
 import android.content.ContentProviderOperation;
@@ -30,7 +30,7 @@ public class ContentProviderOperationTest {
 
     // insert and values back references
     assertThat(op.getUri()).isEqualTo(uri);
-    ShadowContentProviderOperation shadow = RobolectricBase.shadowOf(op);
+    ShadowContentProviderOperation shadow = Shadows.shadowOf(op);
     assertThat(shadow.getType()).isEqualTo(ShadowContentProviderOperation.TYPE_INSERT);
     assertThat(shadow.getContentValues().getAsString("insertKey")).isEqualTo("insertValue");
     assertThat(shadow.getValuesBackReferences().getAsInteger("backKey")).isEqualTo(2);
@@ -42,7 +42,7 @@ public class ContentProviderOperationTest {
         .withSelectionBackReference(1, 3)
         .build();
     assertThat(op.getUri()).isEqualTo(uri);
-    shadow = RobolectricBase.shadowOf(op);
+    shadow = Shadows.shadowOf(op);
     assertThat(shadow.getType()).isEqualTo(ShadowContentProviderOperation.TYPE_UPDATE);
     assertThat(shadow.getContentValues().getAsString("updateKey")).isEqualTo("updateValue");
     assertThat(shadow.getSelection()).isEqualTo("a=? and b=?");
@@ -54,7 +54,7 @@ public class ContentProviderOperationTest {
         .withExpectedCount(1)
         .build();
     assertThat(op.getUri()).isEqualTo(uri);
-    shadow = RobolectricBase.shadowOf(op);
+    shadow = Shadows.shadowOf(op);
     assertThat(shadow.getType()).isEqualTo(ShadowContentProviderOperation.TYPE_DELETE);
     assertThat(shadow.getExpectedCount()).isEqualTo(1);
   }

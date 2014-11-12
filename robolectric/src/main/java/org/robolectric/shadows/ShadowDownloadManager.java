@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.robolectric.RobolectricBase.shadowOf_;
+import static org.robolectric.Shadows.shadowOf_;
 
 /**
  * Shadows Androids DownloadManager

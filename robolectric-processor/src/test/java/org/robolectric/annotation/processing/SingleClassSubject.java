@@ -4,7 +4,7 @@ import static com.google.testing.compile.JavaFileObjects.forResource;
 import static com.google.testing.compile.JavaSourcesSubjectFactory.javaSources;
 import static org.robolectric.annotation.processing.Utils.toResourcePath;
 import static org.robolectric.annotation.processing.Utils.ROBO_SOURCE;
-import static org.robolectric.annotation.processing.Utils.SHADOWS_SOURCE;
+import static org.robolectric.annotation.processing.Utils.SHADOW_EXTRACTOR_SOURCE;
 import static org.truth0.Truth.ASSERT;
 
 import javax.tools.JavaFileObject;
@@ -40,7 +40,7 @@ public final class SingleClassSubject extends Subject<SingleClassSubject, String
     super(failureStrategy, subject);
     source = forResource(toResourcePath(subject));
     tester = ASSERT.about(javaSources())
-      .that(ImmutableList.of(source, ROBO_SOURCE, SHADOWS_SOURCE))
+      .that(ImmutableList.of(source, ROBO_SOURCE, SHADOW_EXTRACTOR_SOURCE))
       .processedWith(new RoboProcessor());
   }
 

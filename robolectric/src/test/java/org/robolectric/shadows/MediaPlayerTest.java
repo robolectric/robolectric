@@ -6,7 +6,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricBase;
+import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -20,7 +20,7 @@ public class MediaPlayerTest {
   @Before
   public void setUp() throws Exception {
     mediaPlayer = Robolectric.newInstanceOf(MediaPlayer.class);
-    shadowMediaPlayer = RobolectricBase.shadowOf(mediaPlayer);
+    shadowMediaPlayer = Shadows.shadowOf(mediaPlayer);
   }
 
   @Test

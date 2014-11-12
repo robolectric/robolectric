@@ -4,7 +4,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricBase;
+import org.robolectric.Shadows;
 import org.robolectric.internal.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -28,7 +28,7 @@ public class RobolectricWiringTest {
 
   @Test
   public void testAllImplementationMethodsHaveCorrectSignature() throws Exception {
-    for (Class<?> shadowClass : RobolectricBase.DEFAULT_SHADOW_CLASSES) {
+    for (Class<?> shadowClass : Shadows.DEFAULT_SHADOW_CLASSES) {
       if (!shadowClass.equals(ShadowHttpResponseCache.class)) {
         verifyClass(shadowClass);
       }

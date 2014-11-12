@@ -7,7 +7,7 @@ import android.view.Surface;
 import android.graphics.SurfaceTexture;
 import static org.robolectric.Robolectric.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.RobolectricBase.shadowOf;
+import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class SurfaceTest {

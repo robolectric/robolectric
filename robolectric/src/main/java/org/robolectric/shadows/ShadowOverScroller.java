@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.RobolectricBase.shadowOf;
+import static org.robolectric.Shadows.shadowOf;
 
 import android.os.Looper;
 import android.widget.OverScroller;

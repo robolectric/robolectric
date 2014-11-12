@@ -3,7 +3,7 @@ package org.robolectric.annotation.processing;
 import static com.google.testing.compile.JavaFileObjects.forResource;
 import static com.google.testing.compile.JavaSourcesSubjectFactory.javaSources;
 import static org.truth0.Truth.ASSERT;
-import static org.robolectric.annotation.processing.Utils.SHADOWS_SOURCE;
+import static org.robolectric.annotation.processing.Utils.SHADOW_EXTRACTOR_SOURCE;
 import static org.robolectric.annotation.processing.SingleClassSubject.singleClass;
 
 import org.junit.Test;
@@ -80,7 +80,7 @@ public class RealObjectValidatorTest {
   public void realObjectWithCorrectType_withoutAnything_shouldCompile() {
     ASSERT.about(javaSources())
     .that(ImmutableList.of(
-        SHADOWS_SOURCE,
+        SHADOW_EXTRACTOR_SOURCE,
         forResource("org/robolectric/annotation/processing/shadows/ShadowRealObjectWithCorrectType.java")))
     .processedWith(new RoboProcessor())
       .compilesWithoutError();
@@ -102,7 +102,7 @@ public class RealObjectValidatorTest {
   public void realObjectWithCorrectClassName_shouldCompile() {
     ASSERT.about(javaSources())
       .that(ImmutableList.of(
-          SHADOWS_SOURCE,
+          SHADOW_EXTRACTOR_SOURCE,
           forResource("org/robolectric/annotation/processing/shadows/ShadowRealObjectWithCorrectClassName.java")))
       .processedWith(new RoboProcessor())
       .compilesWithoutError();

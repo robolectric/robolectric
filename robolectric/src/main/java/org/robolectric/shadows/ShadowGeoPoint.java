@@ -4,7 +4,7 @@ import com.google.android.maps.GeoPoint;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-import static org.robolectric.RobolectricBase.shadowOf_;
+import static org.robolectric.Shadows.shadowOf_;
 import static org.robolectric.shadows.ShadowMapView.fromE6;
 
 @SuppressWarnings({"UnusedDeclaration"})

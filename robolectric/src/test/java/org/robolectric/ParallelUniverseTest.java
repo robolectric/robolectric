@@ -55,14 +55,14 @@ public class ParallelUniverseTest {
   private String getQualifiersfromSystemResources() {
     Resources systemResources = Resources.getSystem();
     Configuration configuration = systemResources.getConfiguration();
-    return RobolectricBase.shadowOf(configuration).getQualifiers();
+    return Shadows.shadowOf(configuration).getQualifiers();
   }
 
   private String getQualifiersFromAppAssetManager() {
-    return RobolectricBase.shadowOf(Robolectric.application.getResources().getAssets()).getQualifiers();
+    return Shadows.shadowOf(Robolectric.application.getResources().getAssets()).getQualifiers();
   }
 
   private String getQualifiersFromSystemAssetManager() {
-    return RobolectricBase.shadowOf(Resources.getSystem().getAssets()).getQualifiers();
+    return Shadows.shadowOf(Resources.getSystem().getAssets()).getQualifiers();
   }
 }

@@ -229,7 +229,7 @@ public class RoboModel {
 
     // Other imports that the generated class needs
     imports.add("javax.annotation.Generated");
-    imports.add("org.robolectric.util.Shadows");
+    imports.add("org.robolectric.util.ShadowExtractor");
   }
 
   public NavigableMap<TypeElement, TypeElement> getShadowMap() {

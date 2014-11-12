@@ -5,7 +5,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricBase;
+import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -20,7 +20,7 @@ public class SslErrorHandlerTest {
   @Before
   public void setUp() throws Exception {
     handler = Robolectric.newInstanceOf(SslErrorHandler.class);
-    shadow = RobolectricBase.shadowOf(handler);
+    shadow = Shadows.shadowOf(handler);
   }
 
   @Test

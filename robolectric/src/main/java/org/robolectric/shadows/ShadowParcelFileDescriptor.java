@@ -2,7 +2,7 @@ package org.robolectric.shadows;
 
 import android.os.ParcelFileDescriptor;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricBase;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
@@ -26,7 +26,7 @@ public class ShadowParcelFileDescriptor {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-    ((ShadowParcelFileDescriptor) RobolectricBase.shadowOf_(pfd)).file = new RandomAccessFile(file, "rw");
+    ((ShadowParcelFileDescriptor) Shadows.shadowOf_(pfd)).file = new RandomAccessFile(file, "rw");
     return pfd;
   }
 
