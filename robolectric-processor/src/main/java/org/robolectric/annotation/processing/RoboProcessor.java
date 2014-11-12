@@ -146,13 +146,9 @@ public class RoboProcessor extends AbstractProcessor {
       }
       writer.println("  }\n");
 
-      writer.println("  public static ShadowWrangler getShadowWrangler() {");
-      writer.println("    return ((ShadowWrangler) RobolectricInternals.getClassHandler());");
-      writer.println("  }\n");
-      
       writer.println("  @SuppressWarnings({\"unchecked\"})");
       writer.println("  public static <P, R> P shadowOf_(R instance) {");
-      writer.println("    return (P) getShadowWrangler().shadowOf(instance);");
+      writer.println("    return (P) Shadows.shadowOf(instance);");
       writer.println("  }");
       
       writer.println('}');

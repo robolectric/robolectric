@@ -36,7 +36,6 @@ public class ClassicSuperHandlingTest {
   @Test
   @Config(shadows = {ParentShadow.class, GrandparentShadow.class})
   public void shadowInvocationWhenChildIsInstrumentedButUnshadowed() throws Exception {
-    System.out.println("ShadowWrangler is " + Robolectric.getShadowWrangler() + " from " + RobolectricInternals.class.getClassLoader());
     assertEquals("2s-1s-boof", new Child().method("boof"));
     assertEquals("2s-1s-boof", new Parent().method("boof"));
     assertEquals("1s-boof", new Grandparent().method("boof"));

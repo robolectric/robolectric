@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
+import org.robolectric.bytecode.RobolectricInternals;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
@@ -39,10 +40,10 @@ public class SystemClockTest {
   @Test
   public void shouldInterceptSystemTimeCalls() throws Throwable {
     ShadowSystemClock.setNanoTime(3141592L);
-    long systemNanoTime = (Long) Robolectric.getShadowWrangler().intercept(
+    long systemNanoTime = (Long) RobolectricInternals.intercept(
         "java/lang/System/nanoTime()", null, null, getClass());
     assertThat(systemNanoTime).isEqualTo(3141592L);
-    long systemMilliTime = (Long) Robolectric.getShadowWrangler().intercept(
+    long systemMilliTime = (Long) RobolectricInternals.intercept(
         "java/lang/System/currentTimeMillis()", null, null, getClass());
     assertThat(systemMilliTime).isEqualTo(3L);
   }

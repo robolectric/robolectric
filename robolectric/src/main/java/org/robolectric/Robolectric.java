@@ -63,11 +63,6 @@ public class Robolectric {
     return RobolectricInternals.newInstance(clazz, parameterTypes, params);
   }
 
-  // todo: make private
-  public static ShadowWrangler getShadowWrangler() {
-    return ((ShadowWrangler) RobolectricInternals.getClassHandler());
-  }
-
   public static <T> T directlyOn(T shadowedObject, Class<T> clazz) {
     return RobolectricInternals.directlyOn(shadowedObject, clazz);
   }
