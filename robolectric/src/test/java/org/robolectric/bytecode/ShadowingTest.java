@@ -16,6 +16,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RobolectricBase;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
@@ -116,8 +117,8 @@ public class ShadowingTest {
     Constructor<ClassWithNoDefaultConstructor> ctor = ClassWithNoDefaultConstructor.class.getDeclaredConstructor();
     ctor.setAccessible(true);
     ClassWithNoDefaultConstructor instance = ctor.newInstance();
-    assertThat(Robolectric.shadowOf_(instance)).isNotNull();
-    assertThat(Robolectric.shadowOf_(instance)).isInstanceOf(ShadowForClassWithNoDefaultConstructor.class);
+    assertThat(RobolectricBase.shadowOf_(instance)).isNotNull();
+    assertThat(RobolectricBase.shadowOf_(instance)).isInstanceOf(ShadowForClassWithNoDefaultConstructor.class);
     assertTrue(ShadowForClassWithNoDefaultConstructor.shadowDefaultConstructorCalled);
     assertFalse(ShadowForClassWithNoDefaultConstructor.shadowDefaultConstructorImplementorCalled);
   }

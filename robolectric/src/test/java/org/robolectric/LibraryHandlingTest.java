@@ -42,7 +42,7 @@ public class LibraryHandlingTest {
   @Test
   @Config(manifest="src/test/resources/TestAndroidManifest.xml", libraries="lib1")
   public void libraryConfigShouldOverrideProjectProperties() throws Exception {
-    AndroidManifest manifest = Robolectric.shadowOf(Robolectric.application).getAppManifest();
+    AndroidManifest manifest = RobolectricBase.shadowOf(Robolectric.application).getAppManifest();
     List<AndroidManifest> libraryManifests = manifest.getLibraryManifests();
     assertEquals(1, libraryManifests.size());
     assertEquals("org.robolectric.lib1", libraryManifests.get(0).getPackageName());

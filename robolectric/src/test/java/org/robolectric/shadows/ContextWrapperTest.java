@@ -33,7 +33,7 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Robolectric.getShadowApplication;
-import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.RobolectricBase.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ContextWrapperTest {

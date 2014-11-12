@@ -6,6 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RobolectricBase;
 import org.robolectric.TestRunners;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -19,7 +20,7 @@ public class InputMethodManagerTest {
   @Before
   public void setUp() throws Exception {
     manager = (InputMethodManager) Robolectric.application.getSystemService(Activity.INPUT_METHOD_SERVICE);
-    shadow = Robolectric.shadowOf(manager);
+    shadow = RobolectricBase.shadowOf(manager);
   }
 
   @Test

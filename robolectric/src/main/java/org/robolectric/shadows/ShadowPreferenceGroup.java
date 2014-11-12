@@ -9,7 +9,7 @@ import org.robolectric.annotation.RealObject;
 
 import java.util.ArrayList;
 
-import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.RobolectricBase.shadowOf;
 
 /**
  * See: http://android.git.kernel.org/?p=platform/frameworks/base.git;a=blob_plain;f=core/java/android/preference/PreferenceGroup.java;hb=HEAD

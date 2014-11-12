@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
+import org.robolectric.RobolectricBase;
 import org.robolectric.TestRunners;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -20,7 +21,7 @@ public class PreferenceActivityTest {
   @Before
   public void setUp() throws Exception {
     activity = Robolectric.buildActivity(TestPreferenceActivity.class).create().get();
-    shadow = Robolectric.shadowOf(activity);
+    shadow = RobolectricBase.shadowOf(activity);
   }
 
   @Test

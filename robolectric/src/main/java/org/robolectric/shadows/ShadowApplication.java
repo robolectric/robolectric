@@ -26,6 +26,7 @@ import android.widget.Toast;
 import libcore.util.MutableBoolean;
 import org.robolectric.AndroidManifest;
 import org.robolectric.Robolectric;
+import org.robolectric.RobolectricBase;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -48,7 +49,7 @@ import java.util.Set;
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static org.robolectric.Robolectric.newInstanceOf;
-import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.RobolectricBase.shadowOf;
 
 /**
  * Shadows the {@code android.app.Application} class.
@@ -409,7 +410,7 @@ public class ShadowApplication extends ShadowContextWrapper {
   private void postIntent(Intent intent, Wrapper wrapper, final MutableBoolean abort) {
     final Handler scheduler = (wrapper.scheduler != null) ? wrapper.scheduler : this.mainHandler;
     final BroadcastReceiver receiver = wrapper.broadcastReceiver;
-    final ShadowBroadcastReceiver shReceiver = Robolectric.shadowOf_(receiver);
+    final ShadowBroadcastReceiver shReceiver = RobolectricBase.shadowOf_(receiver);
     final Intent broadcastIntent = intent;
     scheduler.post(new Runnable() {
       @Override

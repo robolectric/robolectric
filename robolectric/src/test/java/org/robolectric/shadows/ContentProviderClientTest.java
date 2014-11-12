@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.initMocks;
-import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.RobolectricBase.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ContentProviderClientTest {

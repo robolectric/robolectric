@@ -11,6 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RobolectricBase;
 import org.robolectric.TestRunners;
 
 import java.util.Date;
@@ -29,7 +30,7 @@ public class AlarmManagerTest {
   public void setUp() throws Exception {
     activity = new MyActivity();
     alarmManager = (AlarmManager) Robolectric.application.getSystemService(Context.ALARM_SERVICE);
-    shadowAlarmManager = Robolectric.shadowOf(alarmManager);
+    shadowAlarmManager = RobolectricBase.shadowOf(alarmManager);
   }
 
   @After

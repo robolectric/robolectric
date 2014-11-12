@@ -2,7 +2,7 @@ package org.robolectric.shadows;
 
 import android.content.IntentFilter;
 import android.net.Uri;
-import org.robolectric.Robolectric;
+import org.robolectric.RobolectricBase;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
@@ -11,7 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import static org.robolectric.Robolectric.shadowOf_;
+import static org.robolectric.RobolectricBase.shadowOf_;
 
 /**
  * Shadow of {@code IntentFilter} implemented with a {@link java.util.List}
@@ -44,7 +44,7 @@ public class ShadowIntentFilter {
   }
 
   public void __constructor__(IntentFilter filter) {
-    ShadowIntentFilter shadow = Robolectric.shadowOf_(filter);
+    ShadowIntentFilter shadow = RobolectricBase.shadowOf_(filter);
     actions = new ArrayList<String>(shadow.actions);
     schemes = new ArrayList<String>(shadow.schemes);
     types = new ArrayList<String>(shadow.types);

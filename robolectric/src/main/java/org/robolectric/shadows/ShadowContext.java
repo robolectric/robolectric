@@ -19,7 +19,7 @@ import java.io.*;
 import java.util.List;
 import java.util.UUID;
 
-import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.RobolectricBase.shadowOf;
 
 /**
  * Calls through to the {@code resourceLoader} to actually load resources.

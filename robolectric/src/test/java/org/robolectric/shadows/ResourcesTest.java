@@ -11,6 +11,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
+import org.robolectric.RobolectricBase;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.ReflectionHelpers;
@@ -21,7 +22,7 @@ import java.io.File;
 import java.io.InputStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.RobolectricBase.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ResourcesTest {
@@ -413,7 +414,7 @@ public class ResourcesTest {
     theme.applyStyle(R.style.MyBlackTheme, false);
     int internalId = getInternalId(theme);
 
-    ShadowAssetManager shadow = Robolectric.shadowOf(resources.getAssets());
+    ShadowAssetManager shadow = RobolectricBase.shadowOf(resources.getAssets());
     shadow.getThemeValue(internalId, android.R.attr.windowBackground, out, true);
     assertThat(out.type).isNotEqualTo(TypedValue.TYPE_REFERENCE);
     assertThat(out.type).isGreaterThanOrEqualTo(TypedValue.TYPE_FIRST_COLOR_INT);
@@ -433,7 +434,7 @@ public class ResourcesTest {
     theme.applyStyle(R.style.MyBlackTheme, false);
     int internalId = getInternalId(theme);
 
-    ShadowAssetManager shadow = Robolectric.shadowOf(resources.getAssets());
+    ShadowAssetManager shadow = RobolectricBase.shadowOf(resources.getAssets());
     shadow.getThemeValue(internalId, android.R.attr.windowBackground, out, false);
     assertThat(out.type).isEqualTo(TypedValue.TYPE_REFERENCE);
     assertThat(out.resourceId).isEqualTo(android.R.color.black);

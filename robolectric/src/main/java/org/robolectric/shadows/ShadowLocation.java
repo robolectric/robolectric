@@ -6,7 +6,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.internal.HiddenApi;
 
-import static org.robolectric.Robolectric.shadowOf_;
+import static org.robolectric.RobolectricBase.shadowOf_;
 
 /**
  * Shadow of {@code Location} that treats it primarily as a data-holder

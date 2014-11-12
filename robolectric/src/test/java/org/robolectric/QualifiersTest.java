@@ -5,6 +5,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import static org.robolectric.Robolectric.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.RobolectricBase.shadowOf;
 
 @Config(qualifiers = "en")
 @RunWith(TestRunners.WithDefaults.class)

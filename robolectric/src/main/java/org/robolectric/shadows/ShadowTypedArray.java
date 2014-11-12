@@ -8,7 +8,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.internal.HiddenApi;
 import org.robolectric.internal.ReflectionHelpers;
 
-import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.RobolectricBase.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(TypedArray.class)

@@ -1,7 +1,7 @@
 package org.robolectric.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.RobolectricBase.shadowOf;
 
 import org.junit.Before;
 import org.junit.Test;

@@ -6,6 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RobolectricBase;
 import org.robolectric.TestRunners;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -19,7 +20,7 @@ public class PreferenceScreenTest {
   @Before
   public void setUp() throws Exception {
     screen = Robolectric.newInstanceOf(PreferenceScreen.class);
-    shadow = Robolectric.shadowOf(screen);
+    shadow = RobolectricBase.shadowOf(screen);
   }
 
   @Test

@@ -10,6 +10,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RobolectricBase;
 import org.robolectric.TestRunners;
 
 import java.util.ArrayList;
@@ -92,7 +93,7 @@ public class CursorAdapterTest {
       views.add(new View(Robolectric.application));
     }
 
-    Robolectric.shadowOf(adapter).setViews(views);
+    RobolectricBase.shadowOf(adapter).setViews(views);
 
     for (int i = 0; i < 5; i++) {
       assertThat(adapter.getView(i, null, null)).isSameAs(views.get(i));
@@ -101,20 +102,20 @@ public class CursorAdapterTest {
 
   @Test public void shouldNotRegisterObserversIfNoFlagsAreSet() throws Exception {
     adapter = new TestAdapterWithFlags(curs, 0);
-    assertThat(Robolectric.shadowOf(adapter).mChangeObserver).isNull();
-    assertThat(Robolectric.shadowOf(adapter).mDataSetObserver).isNull();
+    assertThat(RobolectricBase.shadowOf(adapter).mChangeObserver).isNull();
+    assertThat(RobolectricBase.shadowOf(adapter).mDataSetObserver).isNull();
   }
 
   @Test public void shouldRegisterObserversWhenRegisterObserverFlagIsSet() throws Exception {
     adapter = new TestAdapterWithFlags(curs, FLAG_REGISTER_CONTENT_OBSERVER);
-    assertThat(Robolectric.shadowOf(adapter).mChangeObserver).isNotNull();
-    assertThat(Robolectric.shadowOf(adapter).mDataSetObserver).isNotNull();
+    assertThat(RobolectricBase.shadowOf(adapter).mChangeObserver).isNotNull();
+    assertThat(RobolectricBase.shadowOf(adapter).mDataSetObserver).isNotNull();
   }
 
   @Test public void shouldRegisterObserversWhenAutoRequeryFlagIsSet() throws Exception {
     adapter = new TestAdapterWithFlags(curs, FLAG_AUTO_REQUERY);
-    assertThat(Robolectric.shadowOf(adapter).mChangeObserver).isNotNull();
-    assertThat(Robolectric.shadowOf(adapter).mDataSetObserver).isNotNull();
+    assertThat(RobolectricBase.shadowOf(adapter).mChangeObserver).isNotNull();
+    assertThat(RobolectricBase.shadowOf(adapter).mDataSetObserver).isNotNull();
   }
 
   @Test public void shouldNotErrorOnCursorChangeWhenNoFlagsAreSet() throws Exception {

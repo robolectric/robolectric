@@ -4,10 +4,11 @@ import android.webkit.MimeTypeMap;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RobolectricBase;
 import org.robolectric.TestRunners;
 
 import static org.junit.Assert.*;
-import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.RobolectricBase.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class MimeTypeMapTest {
@@ -45,7 +46,7 @@ public class MimeTypeMapTest {
 
   @Test
   public void addingMappingShouldWorkCorrectly() {
-    ShadowMimeTypeMap shadowMimeTypeMap = Robolectric.shadowOf(MimeTypeMap.getSingleton());
+    ShadowMimeTypeMap shadowMimeTypeMap = RobolectricBase.shadowOf(MimeTypeMap.getSingleton());
     shadowMimeTypeMap.addExtensionMimeTypMapping(VIDEO_EXTENSION, VIDEO_MIMETYPE);
     shadowMimeTypeMap.addExtensionMimeTypMapping(IMAGE_EXTENSION, IMAGE_MIMETYPE);
 
@@ -63,7 +64,7 @@ public class MimeTypeMapTest {
 
   @Test
   public void clearMappingsShouldRemoveAllMappings() {
-    ShadowMimeTypeMap shadowMimeTypeMap = Robolectric.shadowOf(MimeTypeMap.getSingleton());
+    ShadowMimeTypeMap shadowMimeTypeMap = RobolectricBase.shadowOf(MimeTypeMap.getSingleton());
     shadowMimeTypeMap.addExtensionMimeTypMapping(VIDEO_EXTENSION, VIDEO_MIMETYPE);
     shadowMimeTypeMap.addExtensionMimeTypMapping(IMAGE_EXTENSION, IMAGE_MIMETYPE);
 
@@ -77,7 +78,7 @@ public class MimeTypeMapTest {
 
   @Test
   public void unknownExtensionShouldProvideNothing() {
-    ShadowMimeTypeMap shadowMimeTypeMap = Robolectric.shadowOf(MimeTypeMap.getSingleton());
+    ShadowMimeTypeMap shadowMimeTypeMap = RobolectricBase.shadowOf(MimeTypeMap.getSingleton());
     shadowMimeTypeMap.addExtensionMimeTypMapping(VIDEO_EXTENSION, VIDEO_MIMETYPE);
     shadowMimeTypeMap.addExtensionMimeTypMapping(IMAGE_EXTENSION, IMAGE_MIMETYPE);
 
@@ -87,7 +88,7 @@ public class MimeTypeMapTest {
 
   @Test
   public void unknownMimeTypeShouldProvideNothing() {
-    ShadowMimeTypeMap shadowMimeTypeMap = Robolectric.shadowOf(MimeTypeMap.getSingleton());
+    ShadowMimeTypeMap shadowMimeTypeMap = RobolectricBase.shadowOf(MimeTypeMap.getSingleton());
     shadowMimeTypeMap.addExtensionMimeTypMapping(VIDEO_EXTENSION, VIDEO_MIMETYPE);
     shadowMimeTypeMap.addExtensionMimeTypMapping(IMAGE_EXTENSION, IMAGE_MIMETYPE);
 

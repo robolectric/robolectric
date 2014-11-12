@@ -14,6 +14,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
+import org.robolectric.RobolectricBase;
 import org.robolectric.TestRunners;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -22,7 +23,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Robolectric.application;
-import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.RobolectricBase.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ImageViewTest {
@@ -108,7 +109,7 @@ public class ImageViewTest {
   @Test
   public void testCallingLayoutOnParent(){
     imageView.layout(1,2,3,4);
-    ShadowImageView shadowImageView = Robolectric.shadowOf(imageView);
+    ShadowImageView shadowImageView = RobolectricBase.shadowOf(imageView);
     assertTrue(shadowImageView.onLayoutWasCalled());
   }
 

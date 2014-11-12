@@ -10,6 +10,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RobolectricBase;
 import org.robolectric.TestRunners;
 
 import java.util.concurrent.Callable;
@@ -18,7 +19,7 @@ import static junit.framework.Assert.assertNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.RobolectricBase.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ProgressDialogTest {
@@ -29,7 +30,7 @@ public class ProgressDialogTest {
   @Before
   public void setUp() {
     dialog = new ProgressDialog(Robolectric.application);
-    shadow = Robolectric.shadowOf(dialog);
+    shadow = RobolectricBase.shadowOf(dialog);
   }
 
   @Test

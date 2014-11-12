@@ -18,7 +18,7 @@ import org.robolectric.shadows.ShadowResources;
 
 import java.lang.reflect.Method;
 
-import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.RobolectricBase.shadowOf;
 import static org.robolectric.internal.ReflectionHelpers.ClassParameter;
 
 public class ParallelUniverse implements ParallelUniverseInterface {

@@ -7,9 +7,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RobolectricBase;
 import org.robolectric.TestRunners;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.RobolectricBase.*;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class VideoViewTest {
@@ -24,7 +26,7 @@ public class VideoViewTest {
   public void shouldSetOnPreparedListener() throws Exception {
     TestPreparedListener l = new TestPreparedListener();
     view.setOnPreparedListener(l);
-    ShadowVideoView shadowVideoView = Robolectric.shadowOf(view);
+    ShadowVideoView shadowVideoView = shadowOf(view);
     assertThat((TestPreparedListener) (shadowVideoView.getOnPreparedListener())).isSameAs(l);
   }
 
@@ -32,7 +34,7 @@ public class VideoViewTest {
   public void shouldSetOnErrorListener() throws Exception {
     TestErrorListener l = new TestErrorListener();
     view.setOnErrorListener(l);
-    ShadowVideoView shadowVideoView = Robolectric.shadowOf(view);
+    ShadowVideoView shadowVideoView = shadowOf(view);
     assertThat((TestErrorListener) (shadowVideoView.getOnErrorListener())).isSameAs(l);
   }
 
@@ -40,14 +42,14 @@ public class VideoViewTest {
   public void shouldSetOnCompletionListener() throws Exception {
     TestCompletionListener l = new TestCompletionListener();
     view.setOnCompletionListener(l);
-    ShadowVideoView shadowVideoView = Robolectric.shadowOf(view);
+    ShadowVideoView shadowVideoView = shadowOf(view);
     assertThat((TestCompletionListener) (shadowVideoView.getOnCompletionListener())).isSameAs(l);
   }
 
   @Test
   public void shouldSetVideoPath() throws Exception {
     view.setVideoPath("video.mp4");
-    ShadowVideoView shadowVideoView = Robolectric.shadowOf(view);
+    ShadowVideoView shadowVideoView = shadowOf(view);
     assertThat(shadowVideoView.getVideoPath()).isEqualTo("video.mp4");
     view.setVideoPath(null);
     assertThat(shadowVideoView.getVideoPath()).isNull();
@@ -56,7 +58,7 @@ public class VideoViewTest {
   @Test
   public void shouldSetVideoURI() throws Exception {
     view.setVideoURI(Uri.parse("video.mp4"));
-    ShadowVideoView shadowVideoView = Robolectric.shadowOf(view);
+    ShadowVideoView shadowVideoView = shadowOf(view);
     assertThat(shadowVideoView.getVideoURIString()).isEqualTo("video.mp4");
     view.setVideoURI(null);
     assertThat(shadowVideoView.getVideoURIString()).isNull();
@@ -74,14 +76,14 @@ public class VideoViewTest {
   @Test
   public void shouldStartPlaying() throws Exception {
     view.start();
-    ShadowVideoView shadowVideoView = Robolectric.shadowOf(view);
+    ShadowVideoView shadowVideoView = shadowOf(view);
     assertThat(shadowVideoView.getCurrentVideoState()).isEqualTo(ShadowVideoView.START);
   }
 
   @Test
   public void shouldStopPlayback() throws Exception {
     view.stopPlayback();
-    ShadowVideoView shadowVideoView = Robolectric.shadowOf(view);
+    ShadowVideoView shadowVideoView = shadowOf(view);
     assertThat(shadowVideoView.getCurrentVideoState()).isEqualTo(ShadowVideoView.STOP);
   }
 
@@ -89,7 +91,7 @@ public class VideoViewTest {
   public void shouldSuspendPlaying() throws Exception {
     view.start();
     view.suspend();
-    ShadowVideoView shadowVideoView = Robolectric.shadowOf(view);
+    ShadowVideoView shadowVideoView = shadowOf(view);
     assertThat(shadowVideoView.getPrevVideoState()).isEqualTo(ShadowVideoView.START);
     assertThat(shadowVideoView.getCurrentVideoState()).isEqualTo(ShadowVideoView.SUSPEND);
   }
@@ -99,7 +101,7 @@ public class VideoViewTest {
     view.start();
     view.suspend();
     view.resume();
-    ShadowVideoView shadowVideoView = Robolectric.shadowOf(view);
+    ShadowVideoView shadowVideoView = shadowOf(view);
     assertThat(shadowVideoView.getPrevVideoState()).isEqualTo(ShadowVideoView.SUSPEND);
     assertThat(shadowVideoView.getCurrentVideoState()).isEqualTo(ShadowVideoView.RESUME);
   }
@@ -108,7 +110,7 @@ public class VideoViewTest {
   public void shouldPausePlaying() throws Exception {
     view.start();
     view.pause();
-    ShadowVideoView shadowVideoView = Robolectric.shadowOf(view);
+    ShadowVideoView shadowVideoView = shadowOf(view);
     assertThat(shadowVideoView.getPrevVideoState()).isEqualTo(ShadowVideoView.START);
     assertThat(shadowVideoView.getCurrentVideoState()).isEqualTo(ShadowVideoView.PAUSE);
   }

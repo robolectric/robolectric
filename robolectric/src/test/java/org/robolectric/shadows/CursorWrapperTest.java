@@ -12,6 +12,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.robolectric.Robolectric;
+import org.robolectric.RobolectricBase;
 import org.robolectric.TestRunners;
 
 import java.lang.reflect.Method;
@@ -102,7 +103,7 @@ public class CursorWrapperTest {
   public void getWrappedCursor() {
     Cursor mockCursor = mock(Cursor.class);
     CursorWrapper cursorWrapper = new CursorWrapper(mockCursor);
-    ShadowCursorWrapper shadow = Robolectric.shadowOf(cursorWrapper);
+    ShadowCursorWrapper shadow = RobolectricBase.shadowOf(cursorWrapper);
 
     assertThat(shadow.getWrappedCursor()).isSameAs(mockCursor);
   }

@@ -8,7 +8,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.RobolectricBase.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class TranslateAnimationTest {

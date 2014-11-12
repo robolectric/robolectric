@@ -11,9 +11,9 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.internal.ReflectionHelpers;
 
-import java.lang.reflect.Field;
-
 import static org.robolectric.Robolectric.*;
+import static org.robolectric.RobolectricBase.shadowOf;
+import static org.robolectric.RobolectricBase.shadowOf_;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AlertDialog.class)

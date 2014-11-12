@@ -28,7 +28,7 @@ import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
 import static org.robolectric.Robolectric.directlyOn;
-import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.RobolectricBase.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(BitmapFactory.class)

@@ -17,7 +17,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.RobolectricBase.shadowOf;
 
 public class RoboAttributeSet implements AttributeSet {
   private static final Set<String> ALREADY_WARNED_ABOUT = new HashSet<String>();

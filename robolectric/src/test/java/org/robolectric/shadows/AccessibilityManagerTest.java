@@ -5,7 +5,6 @@ import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
-import static org.robolectric.Robolectric.*;
 import static org.assertj.core.api.Assertions.*;
 
 import java.util.List;
@@ -14,6 +13,7 @@ import android.content.pm.ServiceInfo;
 import android.view.accessibility.AccessibilityManager;
 import android.accessibilityservice.AccessibilityServiceInfo;
 import static android.content.Context.ACCESSIBILITY_SERVICE;
+import static org.robolectric.RobolectricBase.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class AccessibilityManagerTest {
