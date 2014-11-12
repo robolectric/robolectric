@@ -22,7 +22,7 @@ public class ViewTreeObserverTest {
 
   @Before
   public void setUp() throws Exception {
-    viewTreeObserver = Robolectric.Reflection.newInstanceOf(ViewTreeObserver.class);
+    viewTreeObserver = Robolectric.newInstanceOf(ViewTreeObserver.class);
     listener1 = new TestOnGlobalLayoutListener();
     listener2 = new TestOnGlobalLayoutListener();
   }

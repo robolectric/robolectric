@@ -452,44 +452,6 @@ public class Robolectric {
   }
 
   /**
-   * Reflection helper methods.
-   */
-  public static class Reflection {
-    public static <T> T newInstanceOf(Class<T> clazz) {
-      return Robolectric.newInstanceOf(clazz);
-    }
-
-    public static Object newInstanceOf(String className) {
-      return Robolectric.newInstanceOf(className);
-    }
-
-    public static void setFinalStaticField(Class classWhichContainsField, String fieldName, Object newValue) {
-      ReflectionHelpers.setStaticFieldReflectively(classWhichContainsField, fieldName, newValue);
-    }
-
-    public static Object setFinalStaticField(Field field, Object newValue) {
-      Object oldValue;
-
-      try {
-        field.setAccessible(true);
-
-        Field modifiersField = Field.class.getDeclaredField("modifiers");
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-
-        oldValue = field.get(null);
-        field.set(null, newValue);
-      } catch (NoSuchFieldException e) {
-        throw new RuntimeException(e);
-      } catch (IllegalAccessException e) {
-        throw new RuntimeException(e);
-      }
-
-      return oldValue;
-    }
-  }
-
-  /**
    * Marker for shadow classes when the implementation class is unlinkable
    * @deprecated simply use the {@link Implements#className} attribute with no
    * {@link Implements#value} set.

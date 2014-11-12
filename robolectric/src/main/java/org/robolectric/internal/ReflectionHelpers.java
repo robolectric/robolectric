@@ -38,14 +38,35 @@ public class ReflectionHelpers {
     }
   }
 
+  public static <R> R getStaticFieldReflectively(Field field) {
+    try {
+      makeFieldVeryAccessible(field);
+      return (R) field.get(null);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static <R> R getStaticFieldReflectively(Class clazz, String fieldName) {
+    try {
+      return getStaticFieldReflectively(clazz.getDeclaredField(fieldName));
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static void setStaticFieldReflectively(Field field, Object fieldNewValue) {
+    try {
+      makeFieldVeryAccessible(field);
+      field.set(null, fieldNewValue);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   public static void setStaticFieldReflectively(Class clazz, String fieldName, Object fieldNewValue) {
     try {
-      Field field = clazz.getDeclaredField(fieldName);
-      field.setAccessible(true);
-      Field modifiersField = Field.class.getDeclaredField("modifiers");
-      modifiersField.setAccessible(true);
-      modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-      field.set(null, fieldNewValue);
+      setStaticFieldReflectively(clazz.getDeclaredField(fieldName), fieldNewValue);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -122,6 +143,14 @@ public class ReflectionHelpers {
         }
       }
     }
+  }
+
+  private static void makeFieldVeryAccessible(Field field) throws NoSuchFieldException, IllegalAccessException {
+    field.setAccessible(true);
+
+    Field modifiersField = Field.class.getDeclaredField("modifiers");
+    modifiersField.setAccessible(true);
+    modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
   }
 
   public static class ClassParameter<V> {

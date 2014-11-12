@@ -5,10 +5,10 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.provider.MediaStore;
 
-import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.internal.ReflectionHelpers;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(MediaStore.class)
@@ -27,16 +27,12 @@ public class ShadowMediaStore {
 
   @Resetter
   public static void reset() {
-    Robolectric.Reflection.setFinalStaticField(MediaStore.Images.Media.class, "EXTERNAL_CONTENT_URI",
-        Uri.parse("content://media/external/images/media"));
+    ReflectionHelpers.setStaticFieldReflectively(MediaStore.Images.Media.class, "EXTERNAL_CONTENT_URI", Uri.parse("content://media/external/images/media"));
 
-    Robolectric.Reflection.setFinalStaticField(MediaStore.Images.Media.class, "INTERNAL_CONTENT_URI",
-        Uri.parse("content://media/internal/images/media"));
+    ReflectionHelpers.setStaticFieldReflectively(MediaStore.Images.Media.class, "INTERNAL_CONTENT_URI", Uri.parse("content://media/internal/images/media"));
 
-    Robolectric.Reflection.setFinalStaticField(MediaStore.Video.Media.class, "EXTERNAL_CONTENT_URI",
-        Uri.parse("content://media/external/video/media"));
+    ReflectionHelpers.setStaticFieldReflectively(MediaStore.Video.Media.class, "EXTERNAL_CONTENT_URI", Uri.parse("content://media/external/video/media"));
 
-    Robolectric.Reflection.setFinalStaticField(MediaStore.Video.Media.class, "INTERNAL_CONTENT_URI",
-        Uri.parse("content://media/internal/video/media"));
+    ReflectionHelpers.setStaticFieldReflectively(MediaStore.Video.Media.class, "INTERNAL_CONTENT_URI", Uri.parse("content://media/internal/video/media"));
   }
 }

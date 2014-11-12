@@ -52,13 +52,6 @@ public class SdkEnvironment {
     return robolectricClassLoader;
   }
 
-  /**
-   * @deprecated use {@link org.robolectric.Robolectric.Reflection#setFinalStaticField(Class, String, Object)}
-   */
-  public static void setStaticValue(Class<?> clazz, String fieldName, Object value) {
-    Robolectric.Reflection.setFinalStaticField(clazz, fieldName, value);
-  }
-
   public ClassHandler getCurrentClassHandler() {
     return currentClassHandler;
   }

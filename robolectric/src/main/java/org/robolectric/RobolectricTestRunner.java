@@ -615,7 +615,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   private void setupConstants(Map<Field, Object> constants) {
     for (Field field : constants.keySet()) {
       Object newValue = constants.get(field);
-      Object oldValue = Robolectric.Reflection.setFinalStaticField(field, newValue);
+      Object oldValue = ReflectionHelpers.getStaticFieldReflectively(field);
+      ReflectionHelpers.setStaticFieldReflectively(field, newValue);
       constants.put(field, oldValue);
     }
   }

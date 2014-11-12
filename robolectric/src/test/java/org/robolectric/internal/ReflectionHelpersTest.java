@@ -2,6 +2,8 @@ package org.robolectric.internal;
 
 import org.junit.Test;
 
+import java.lang.reflect.Field;
+
 import static org.junit.Assert.*;
 
 public class ReflectionHelpersTest {
@@ -63,15 +65,41 @@ public class ReflectionHelpersTest {
   }
 
   @Test
-  public void setStaticFieldReflectively_setsStaticFields() {
-    ReflectionHelpers.setStaticFieldReflectively(ExampleDescendant.class, "DESCENDANT", 7);
-    assertEquals(ExampleDescendant.DESCENDANT, 7);
+  public void getStaticFieldReflectively_withField_getsStaticField() throws Exception {
+    Field field = ExampleDescendant.class.getDeclaredField("DESCENDANT");
+
+    int result = ReflectionHelpers.getStaticFieldReflectively(field);
+    assertEquals(result, 6);
   }
 
   @Test
-  public void setFieldReflectively_setsPrivateFinalFields() {
-    ReflectionHelpers.setStaticFieldReflectively(ExampleBase.class, "BASE", 7);
-    assertEquals(ExampleBase.BASE, 7);
+  public void getStaticFieldReflectively_withFieldName_getsStaticField() {
+    assertEquals(ReflectionHelpers.getStaticFieldReflectively(ExampleDescendant.class, "DESCENDANT"), 6);
+  }
+
+  @Test
+  public void setStaticFieldReflectively_withField_setsStaticFields() throws Exception {
+    Field field = ExampleDescendant.class.getDeclaredField("DESCENDANT");
+    int startingValue = ReflectionHelpers.getStaticFieldReflectively(field);
+
+    ReflectionHelpers.setStaticFieldReflectively(field, 7);
+    assertEquals(startingValue, 6);
+    assertEquals(ExampleDescendant.DESCENDANT, 7);
+
+    // Reset the value to avoid test pollution
+    ReflectionHelpers.setStaticFieldReflectively(field, startingValue);
+  }
+
+  @Test
+  public void setStaticFieldReflectively_withFieldName_setsStaticFields() {
+    int startingValue = ReflectionHelpers.getStaticFieldReflectively(ExampleDescendant.class, "DESCENDANT");
+
+    ReflectionHelpers.setStaticFieldReflectively(ExampleDescendant.class, "DESCENDANT", 7);
+    assertEquals(startingValue, 6);
+    assertEquals(ExampleDescendant.DESCENDANT, 7);
+
+    // Reset the value to avoid test pollution
+    ReflectionHelpers.setStaticFieldReflectively(ExampleDescendant.class, "DESCENDANT", startingValue);
   }
 
   @Test
@@ -165,7 +193,6 @@ public class ReflectionHelpersTest {
     public int index;
 
     private ExampleClass() {
-
     }
 
     private ExampleClass(String name) {
@@ -175,6 +202,5 @@ public class ReflectionHelpersTest {
     private ExampleClass(int index) {
       this.index = index;
     }
-
   }
 }
