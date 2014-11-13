@@ -19,6 +19,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.RemoteException;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.AndroidManifest;
@@ -346,6 +347,7 @@ public class ContentResolverTest {
   }
 
   @Test
+  @Ignore("Temporarily ignore this test while we investigate")
   public void applyBatchForUnregisteredProvider() throws RemoteException, OperationApplicationException {
     ArrayList<ContentProviderOperation> resultOperations = shadowContentResolver.getContentProviderOperations(AUTHORITY);
     assertThat(resultOperations).isNotNull();
