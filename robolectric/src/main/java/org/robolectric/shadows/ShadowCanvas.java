@@ -145,8 +145,8 @@ public class ShadowCanvas {
   }
 
   @Implementation
-  public void drawArc(RectF oval, float startAngle, float sweepAngle, boolean useCenter,
-                      Paint paint) {
+  public void drawArc(RectF oval, float startAngle, float sweepAngle, boolean useCenter, 
+               Paint paint) {
     arcPaintEvents.add(new ArcPaintHistoryEvent(oval, startAngle, sweepAngle, useCenter, paint));
   }
 
