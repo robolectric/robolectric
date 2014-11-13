@@ -28,11 +28,7 @@ import android.widget.TextView;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.AndroidManifest;
-import org.robolectric.DefaultTestLifecycle;
-import org.robolectric.R;
-import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
+import org.robolectric.*;
 import org.robolectric.annotation.Config;
 import org.robolectric.res.Fs;
 import org.robolectric.test.TemporaryFolder;
@@ -55,7 +51,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.robolectric.Robolectric.application;
 import static org.robolectric.Robolectric.buildActivity;
-import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = "src/test/resources/TestAndroidManifest.xml")
@@ -179,7 +175,7 @@ public class ActivityTest {
   @Test
   public void shouldSupportStartActivityForResult() throws Exception {
     activity = create(DialogLifeCycleActivity.class);
-    ShadowActivity shadowActivity = Robolectric.shadowOf(activity);
+    ShadowActivity shadowActivity = Shadows.shadowOf(activity);
     Intent intent = new Intent().setClass(activity, DialogLifeCycleActivity.class);
     assertThat(shadowActivity.getNextStartedActivity()).isNull();
 
@@ -191,9 +187,9 @@ public class ActivityTest {
   }
 
   @Test
-  public void shouldSupportGetStartedActitivitesForResult() throws Exception {
+  public void shouldSupportGetStartedActivitiesForResult() throws Exception {
     activity = create(DialogLifeCycleActivity.class);
-    ShadowActivity shadowActivity = Robolectric.shadowOf(activity);
+    ShadowActivity shadowActivity = Shadows.shadowOf(activity);
     Intent intent = new Intent().setClass(activity, DialogLifeCycleActivity.class);
 
     activity.startActivityForResult(intent, 142);
@@ -207,9 +203,9 @@ public class ActivityTest {
   }
 
   @Test
-  public void shouldSupportPeekStartedActitivitesForResult() throws Exception {
+  public void shouldSupportPeekStartedActivitiesForResult() throws Exception {
     activity = create(DialogLifeCycleActivity.class);
-    ShadowActivity shadowActivity = Robolectric.shadowOf(activity);
+    ShadowActivity shadowActivity = Shadows.shadowOf(activity);
     Intent intent = new Intent().setClass(activity, DialogLifeCycleActivity.class);
 
     activity.startActivityForResult(intent, 142);
@@ -348,7 +344,7 @@ public class ActivityTest {
     Dialog firstDialog = ShadowDialog.getLatestDialog();
 
     activity.removeDialog(1);
-    assertNull(Robolectric.shadowOf(activity).getDialogById(1));
+    assertNull(Shadows.shadowOf(activity).getDialogById(1));
 
     activity.showDialog(1);
     Dialog secondDialog = ShadowDialog.getLatestDialog();

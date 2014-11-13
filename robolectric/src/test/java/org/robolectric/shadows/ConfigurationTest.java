@@ -5,7 +5,7 @@ import android.content.res.Configuration;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
+import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 
 import java.util.Locale;
@@ -21,7 +21,7 @@ public class ConfigurationTest {
   @Before
   public void setUp() throws Exception {
     configuration = new Configuration();
-    shConfiguration = Robolectric.shadowOf( configuration );
+    shConfiguration = Shadows.shadowOf(configuration);
   }
 
   @Test

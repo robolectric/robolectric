@@ -8,8 +8,6 @@ import org.robolectric.annotation.Implements;
 @Implements(TrafficStats.class)
 public class ShadowTrafficStats {
 
-  private ShadowTrafficStats() { }
-
   @Implementation
   public static void setThreadStatsTag(int tag) { }
 

@@ -23,7 +23,7 @@ import java.io.PrintStream;
 import java.lang.reflect.Method;
 
 import static org.robolectric.Robolectric.directlyOn;
-import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.bytecode.RobolectricInternals.invokeConstructor;
 
 /**

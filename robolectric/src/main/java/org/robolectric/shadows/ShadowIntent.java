@@ -22,7 +22,7 @@ import java.util.Set;
 
 import static android.content.Intent.*;
 import static org.robolectric.internal.ReflectionHelpers.ClassParameter;
-import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Shadows.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Intent.class)

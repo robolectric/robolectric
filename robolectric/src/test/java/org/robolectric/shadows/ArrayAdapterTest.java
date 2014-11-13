@@ -14,6 +14,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
+import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -60,25 +61,25 @@ public class ArrayAdapterTest {
 
     //this assertion may look a little backwards since R.id.title is labeled
     //textViewResourceId in the constructor parameter list, but the output is correct.
-    assertThat(Robolectric.shadowOf(arrayAdapter).getResourceId()).isEqualTo(R.id.title);
-    assertThat(Robolectric.shadowOf(arrayAdapter).getTextViewResourceId()).isNotEqualTo(R.id.title);
-    assertThat(Robolectric.shadowOf(arrayAdapter).getTextViewResourceId()).isEqualTo(0);
+    assertThat(Shadows.shadowOf(arrayAdapter).getResourceId()).isEqualTo(R.id.title);
+    assertThat(Shadows.shadowOf(arrayAdapter).getTextViewResourceId()).isNotEqualTo(R.id.title);
+    assertThat(Shadows.shadowOf(arrayAdapter).getTextViewResourceId()).isEqualTo(0);
 
     ArrayAdapter<String> arrayAdapter2 = new ArrayAdapter<String>(Robolectric.application, R.id.title);
 
     //this assertion may look a little backwards since R.id.title is labeled
     //textViewResourceId in the constructor parameter list, but the output is correct.
-    assertThat(Robolectric.shadowOf(arrayAdapter2).getResourceId()).isEqualTo(R.id.title);
-    assertThat(Robolectric.shadowOf(arrayAdapter2).getTextViewResourceId()).isNotEqualTo(R.id.title);
-    assertThat(Robolectric.shadowOf(arrayAdapter2).getTextViewResourceId()).isEqualTo(0);
+    assertThat(Shadows.shadowOf(arrayAdapter2).getResourceId()).isEqualTo(R.id.title);
+    assertThat(Shadows.shadowOf(arrayAdapter2).getTextViewResourceId()).isNotEqualTo(R.id.title);
+    assertThat(Shadows.shadowOf(arrayAdapter2).getTextViewResourceId()).isEqualTo(0);
 
     ArrayAdapter<String> arrayAdapter3 = new ArrayAdapter<String>(Robolectric.application, R.id.title, Arrays.asList(new String[] { "first value" }));
 
     //this assertion may look a little backwards since R.id.title is labeled
     //textViewResourceId in the constructor parameter list, but the output is correct.
-    assertThat(Robolectric.shadowOf(arrayAdapter3).getResourceId()).isEqualTo(R.id.title);
-    assertThat(Robolectric.shadowOf(arrayAdapter3).getTextViewResourceId()).isNotEqualTo(R.id.title);
-    assertThat(Robolectric.shadowOf(arrayAdapter3).getTextViewResourceId()).isEqualTo(0);
+    assertThat(Shadows.shadowOf(arrayAdapter3).getResourceId()).isEqualTo(R.id.title);
+    assertThat(Shadows.shadowOf(arrayAdapter3).getTextViewResourceId()).isNotEqualTo(R.id.title);
+    assertThat(Shadows.shadowOf(arrayAdapter3).getTextViewResourceId()).isEqualTo(0);
   }
 
   @Test

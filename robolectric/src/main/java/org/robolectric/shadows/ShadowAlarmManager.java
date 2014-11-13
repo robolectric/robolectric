@@ -9,7 +9,7 @@ import org.robolectric.annotation.Implements;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Shadows.shadowOf;
 
 /**
  * Shadows the {@code android.app.AlarmManager} class.

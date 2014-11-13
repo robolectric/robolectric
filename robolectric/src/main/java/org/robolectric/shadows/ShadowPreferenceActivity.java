@@ -11,7 +11,7 @@ import org.robolectric.res.ResName;
 import org.robolectric.res.builder.PreferenceBuilder;
 import org.robolectric.util.I18nException;
 
-import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Shadows.shadowOf;
 
 @Implements(PreferenceActivity.class)
 public class ShadowPreferenceActivity extends ShadowActivity {

@@ -9,6 +9,7 @@ import android.view.Window;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -22,7 +23,7 @@ public class SurfaceViewTest {
 
   private SurfaceView view = new SurfaceView(buildActivity(Activity.class).create().get());
   private SurfaceHolder surfaceHolder = view.getHolder();
-  private ShadowSurfaceView shadowSurfaceView = (ShadowSurfaceView) Robolectric.shadowOf(view);
+  private ShadowSurfaceView shadowSurfaceView = (ShadowSurfaceView) Shadows.shadowOf(view);
   private ShadowSurfaceView.FakeSurfaceHolder fakeSurfaceHolder =
       shadowSurfaceView.getFakeSurfaceHolder();
 

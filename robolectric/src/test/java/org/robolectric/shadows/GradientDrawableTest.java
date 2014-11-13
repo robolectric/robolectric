@@ -6,7 +6,7 @@ import org.robolectric.TestRunners;
 import android.graphics.drawable.GradientDrawable;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class GradientDrawableTest {

@@ -7,6 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -23,7 +24,7 @@ public class TouchDelegateTest {
     rect = new Rect( 1, 2, 3, 4 );
     view = new View( Robolectric.application );
     TouchDelegate realTD = new TouchDelegate( rect, view );
-    td = Robolectric.shadowOf( realTD );
+    td = Shadows.shadowOf(realTD);
   }
 
   @Test

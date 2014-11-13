@@ -11,7 +11,7 @@ import org.robolectric.internal.HiddenApi;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.SoftThreadLocal;
 
-import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Shadows.shadowOf;
 
 /**
  * Shadow for {@code Looper} that enqueues posted {@link Runnable}s to be run (on this thread) later. {@code Runnable}s

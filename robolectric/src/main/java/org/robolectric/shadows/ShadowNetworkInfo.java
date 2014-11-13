@@ -5,7 +5,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Shadows.shadowOf;
 
 /**
  * Shadow of {@code NetworkInfo} which is used by ShadowConnectivityManager.

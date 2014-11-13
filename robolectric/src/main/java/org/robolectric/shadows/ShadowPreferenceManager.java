@@ -7,7 +7,7 @@ import android.preference.PreferenceManager;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Shadows.shadowOf;
 
 /**
  * Shadow for {@code PreferenceManager} that returns instances of the

@@ -20,6 +20,7 @@
     <module>robolectric</module>
     <module>robolectric-annotations</module>
     <module>robolectric-processor</module>
+    <module>robolectric-utils</module>
   </modules>
 
   <properties>
@@ -33,6 +34,12 @@
       <dependency>
         <groupId>org.robolectric</groupId>
         <artifactId>robolectric-annotations</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.robolectric</groupId>
+        <artifactId>robolectric-utils</artifactId>
         <version>${project.version}</version>
       </dependency>
 

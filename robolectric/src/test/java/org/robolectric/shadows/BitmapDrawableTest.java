@@ -13,13 +13,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
+import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
 import static org.junit.Assert.*;
-import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class BitmapDrawableTest {
@@ -109,7 +110,7 @@ public class BitmapDrawableTest {
   @Test
   public void shouldStillHaveShadow() throws Exception {
     Drawable drawable = resources.getDrawable(R.drawable.an_image);
-    assertEquals(R.drawable.an_image, Robolectric.shadowOf(drawable).getCreatedFromResId());
+    assertEquals(R.drawable.an_image, Shadows.shadowOf(drawable).getCreatedFromResId());
   }
 
   @Test

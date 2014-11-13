@@ -10,11 +10,10 @@ import org.robolectric.annotation.processing.shadows.ShadowDummy;
 import org.robolectric.annotation.processing.shadows.ShadowOuterDummy;
 import org.robolectric.annotation.processing.shadows.ShadowUniqueDummy;
 import org.robolectric.annotation.processing.shadows.ShadowUniqueDummy.ShadowUniqueInnerDummy;
-import org.robolectric.bytecode.RobolectricInternals;
-import org.robolectric.bytecode.ShadowWrangler;
+import org.robolectric.util.ShadowExtractor;
 
 @Generated("org.robolectric.annotation.processing.RoboProcessor")
-public class RobolectricBase {
+public class Shadows {
 
   public static final Class<?>[] DEFAULT_SHADOW_CLASSES = {
     ShadowDummy.class,
@@ -53,12 +52,8 @@ public class RobolectricBase {
     ShadowDummy.resetter_method();
   }
 
-  public static ShadowWrangler getShadowWrangler() {
-    return ((ShadowWrangler) RobolectricInternals.getClassHandler());
-  }
-  
   @SuppressWarnings({"unchecked"})
   public static <P, R> P shadowOf_(R instance) {
-    return (P) getShadowWrangler().shadowOf(instance);
+    return (P) ShadowExtractor.extract(instance);
   }
 }

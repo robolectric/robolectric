@@ -16,7 +16,7 @@ import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
-import static org.robolectric.Robolectric.shadowOf_;
+import static org.robolectric.Shadows.shadowOf_;
 
 @RunWith(TestRunners.WithoutDefaults.class)
 public class ShadowWranglerTest {

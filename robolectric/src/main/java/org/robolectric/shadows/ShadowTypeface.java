@@ -17,7 +17,7 @@ import org.robolectric.bytecode.RobolectricInternals;
 import org.robolectric.internal.HiddenApi;
 import org.robolectric.internal.ReflectionHelpers;
 
-import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Shadows.shadowOf;
 
 @Implements(Typeface.class)
 public class ShadowTypeface {

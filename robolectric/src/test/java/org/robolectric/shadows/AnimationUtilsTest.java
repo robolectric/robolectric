@@ -7,7 +7,7 @@ import android.view.animation.AnimationUtils;
 import android.view.animation.LayoutAnimationController;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
+import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -23,7 +23,7 @@ public class AnimationUtilsTest {
   @Test
   public void testLoadAnimationResourceId() {
     Animation anim = AnimationUtils.loadAnimation(new Activity(), R.anim.fade_in);
-    assertThat(Robolectric.shadowOf(anim).getLoadedFromResourceId()).isEqualTo(R.anim.fade_in);
+    assertThat(Shadows.shadowOf(anim).getLoadedFromResourceId()).isEqualTo(R.anim.fade_in);
   }
 
   @Test
@@ -34,6 +34,6 @@ public class AnimationUtilsTest {
   @Test
   public void testLoadLayoutAnimationControllerResourceId() {
     LayoutAnimationController layoutAnim = AnimationUtils.loadLayoutAnimation(new Activity(), R.anim.fade_in);
-    assertThat(Robolectric.shadowOf(layoutAnim).getLoadedFromResourceId()).isEqualTo(R.anim.fade_in);
+    assertThat(Shadows.shadowOf(layoutAnim).getLoadedFromResourceId()).isEqualTo(R.anim.fade_in);
   }
 }

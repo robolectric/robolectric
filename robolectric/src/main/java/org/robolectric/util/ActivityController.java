@@ -19,7 +19,7 @@ import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.shadows.ShadowActivityThread;
 import org.robolectric.shadows.ShadowApplication;
 
-import static org.robolectric.Robolectric.shadowOf_;
+import static org.robolectric.Shadows.shadowOf_;
 
 public class ActivityController<T extends Activity>
     extends ComponentController<ActivityController<T>, T, ShadowActivity> {

@@ -23,7 +23,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 @RunWith(TestRunners.WithDefaults.class)
-public class SQLiteDatabaseTest extends DatabaseTestBase {
+public class SQLiteDatabaseTest {
     private static final String ANY_VALID_SQL = "SELECT 1";
 
     private SQLiteDatabase database;

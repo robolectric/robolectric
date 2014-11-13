@@ -6,7 +6,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.Strings;
 
-import static org.robolectric.Robolectric.shadowOf_;
+import static org.robolectric.Shadows.shadowOf_;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(OverlayItem.class)

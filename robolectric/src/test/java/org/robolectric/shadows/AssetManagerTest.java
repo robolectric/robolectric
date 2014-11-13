@@ -8,6 +8,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.util.Strings;
 
@@ -122,7 +123,7 @@ public class AssetManagerTest {
 
   @Test
   public void openNonAssetShouldOpenCorrectAssetBasedOnQualifierMdpi() throws IOException {
-    Robolectric.shadowOf(assetManager).setQualifiers("mdpi");
+    Shadows.shadowOf(assetManager).setQualifiers("mdpi");
 
     InputStream inputStream = assetManager.openNonAsset(0, "./res/drawable/robolectric.png", 0);
 
@@ -132,7 +133,7 @@ public class AssetManagerTest {
 
   @Test
   public void openNonAssetShouldOpenCorrectAssetBasedOnQualifierHdpi() throws IOException {
-    Robolectric.shadowOf(assetManager).setQualifiers("hdpi");
+    Shadows.shadowOf(assetManager).setQualifiers("hdpi");
 
     InputStream inputStream = assetManager.openNonAsset(0, "./res/drawable/robolectric.png", 0);
 

@@ -11,7 +11,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
+import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,7 +26,7 @@ public class CameraTest {
   @Before
   public void setUp() throws Exception {
     camera = Camera.open();
-    shadowCamera = Robolectric.shadowOf(camera);
+    shadowCamera = Shadows.shadowOf(camera);
   }
 
   @After

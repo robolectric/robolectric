@@ -9,7 +9,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.internal.ReflectionHelpers;
 
 import static org.robolectric.Robolectric.directlyOn;
-import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Shadows.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AdapterView.class)

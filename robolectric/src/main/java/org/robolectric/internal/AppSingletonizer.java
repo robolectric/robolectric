@@ -5,7 +5,7 @@ import android.content.Context;
 import org.robolectric.shadows.ShadowApplication;
 
 import static org.robolectric.Robolectric.newInstanceOf;
-import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Shadows.shadowOf;
 
 public abstract class AppSingletonizer<T> {
   private Class<T> clazz;

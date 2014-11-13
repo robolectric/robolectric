@@ -10,6 +10,7 @@ import android.widget.TabHost;
 import android.widget.TabHost.TabSpec;
 import android.widget.TabWidget;
 import org.robolectric.Robolectric;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -17,7 +18,7 @@ import org.robolectric.annotation.RealObject;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Shadows.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(TabHost.class)
@@ -92,7 +93,7 @@ public class ShadowTabHost extends ShadowFrameLayout {
 
   @Implementation
   public View getCurrentView() {
-    ShadowTabSpec ts = Robolectric.shadowOf(getCurrentTabSpec());
+    ShadowTabSpec ts = Shadows.shadowOf(getCurrentTabSpec());
     View v = ts.getContentView();
     if (v == null) {
       int viewId = ts.getContentViewId();

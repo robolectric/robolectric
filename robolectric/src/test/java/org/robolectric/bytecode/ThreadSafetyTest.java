@@ -13,7 +13,7 @@ import java.lang.reflect.Field;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Robolectric.directlyOn;
-import static org.robolectric.Robolectric.shadowOf_;
+import static org.robolectric.Shadows.shadowOf_;
 
 @RunWith(TestRunners.WithoutDefaults.class)
 public class ThreadSafetyTest {

@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
 import android.net.http.HttpResponseCache;
-import org.robolectric.Robolectric;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
@@ -31,7 +31,7 @@ public class ShadowHttpResponseCache {
   @Implementation
   public static HttpResponseCache install(File directory, long maxSize) {
     HttpResponseCache cache = newInstanceOf(HttpResponseCache.class);
-    ShadowHttpResponseCache shadowCache = Robolectric.shadowOf(cache);
+    ShadowHttpResponseCache shadowCache = Shadows.shadowOf(cache);
     shadowCache.originalObject = cache;
     shadowCache.directory = directory;
     shadowCache.maxSize = maxSize;

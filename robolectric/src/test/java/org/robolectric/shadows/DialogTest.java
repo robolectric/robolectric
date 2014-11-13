@@ -10,6 +10,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
+import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.util.Transcript;
 
@@ -71,7 +72,7 @@ public class DialogTest {
   @Test
   public void shouldSetCancelable() {
     Dialog dialog = new Dialog(Robolectric.application);
-    ShadowDialog shadow = Robolectric.shadowOf(dialog);
+    ShadowDialog shadow = Shadows.shadowOf(dialog);
 
     dialog.setCancelable(false);
     assertThat(shadow.isCancelable()).isFalse();
@@ -87,7 +88,7 @@ public class DialogTest {
   @Test
   public void shouldDefaultCancelableToTrueAsTheSDKDoes() throws Exception {
     Dialog dialog = new Dialog(Robolectric.application);
-    ShadowDialog shadow = Robolectric.shadowOf(dialog);
+    ShadowDialog shadow = Shadows.shadowOf(dialog);
 
     assertThat(shadow.isCancelable()).isTrue();
   }

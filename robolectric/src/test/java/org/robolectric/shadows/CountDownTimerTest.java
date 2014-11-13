@@ -4,7 +4,7 @@ import android.os.CountDownTimer;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
+import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -33,7 +33,7 @@ public class CountDownTimerTest {
         msg = "onTick() is called";
       }
     };
-    shadowCountDownTimer = Robolectric.shadowOf(countDownTimer);
+    shadowCountDownTimer = Shadows.shadowOf(countDownTimer);
   }
 
 

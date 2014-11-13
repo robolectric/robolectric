@@ -9,6 +9,7 @@ import android.content.TestIntentSender;
 import android.os.Bundle;
 
 import org.robolectric.Robolectric;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
@@ -162,7 +163,7 @@ public class ShadowPendingIntent {
     }
 
     PendingIntent pendingIntent = Robolectric.newInstanceOf(PendingIntent.class);
-    ShadowPendingIntent shadowPendingIntent = Robolectric.shadowOf(pendingIntent);
+    ShadowPendingIntent shadowPendingIntent = Shadows.shadowOf(pendingIntent);
     shadowPendingIntent.savedIntents = intents;
     shadowPendingIntent.isActivityIntent = isActivity;
     shadowPendingIntent.isBroadcastIntent = isBroadcast;
@@ -177,7 +178,7 @@ public class ShadowPendingIntent {
 
   private static PendingIntent getCreatedIntentFor(Intent[] intents) {
     for (PendingIntent createdIntent : createdIntents) {
-      ShadowPendingIntent shadowPendingIntent = Robolectric.shadowOf(createdIntent);
+      ShadowPendingIntent shadowPendingIntent = Shadows.shadowOf(createdIntent);
       if (shadowPendingIntent.savedIntents.length != intents.length) {
         continue;
       }

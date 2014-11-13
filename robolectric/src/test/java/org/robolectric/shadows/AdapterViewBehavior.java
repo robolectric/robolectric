@@ -9,12 +9,12 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
+import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.util.Transcript;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 abstract public class AdapterViewBehavior {
@@ -22,7 +22,7 @@ abstract public class AdapterViewBehavior {
 
   @Before
   public void setUp() throws Exception {
-    Robolectric.shadowOf(Looper.getMainLooper()).pause();
+    Shadows.shadowOf(Looper.getMainLooper()).pause();
     adapterView = createAdapterView();
   }
 

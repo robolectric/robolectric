@@ -9,6 +9,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.util.Transcript;
 
@@ -99,7 +100,7 @@ public class LocalBroadcastManagerTest {
   @Test
   public void testGetRegisteredBroadcastReceivers() throws Exception {
     LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(Robolectric.application);
-    ShadowLocalBroadcastManager shadowLocalBroadcastManager = Robolectric.shadowOf(broadcastManager);
+    ShadowLocalBroadcastManager shadowLocalBroadcastManager = Shadows.shadowOf(broadcastManager);
     assertEquals(0, shadowLocalBroadcastManager.getRegisteredBroadcastReceivers().size());
 
     BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -122,7 +123,7 @@ public class LocalBroadcastManagerTest {
   @Test
   public void testGetSentBroadcastIntents() throws Exception {
     LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(Robolectric.application);
-    ShadowLocalBroadcastManager shadowLocalBroadcastManager = Robolectric.shadowOf(broadcastManager);
+    ShadowLocalBroadcastManager shadowLocalBroadcastManager = Shadows.shadowOf(broadcastManager);
     assertEquals(0, shadowLocalBroadcastManager.getSentBroadcastIntents().size());
 
     Intent broadcastIntent = new Intent("foo");

@@ -11,7 +11,7 @@ import org.robolectric.annotation.RealObject;
 
 import java.util.List;
 
-import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Shadows.shadowOf;
 
 /**
  * Shadow of {@code Toast} that tracks {@code Toast} requests. Hear hear! (*clink*)

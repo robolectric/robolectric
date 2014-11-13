@@ -9,7 +9,7 @@ import org.robolectric.TestRunners;
 
 import static android.app.DownloadManager.Request;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowDownloadManager.ShadowRequest;
 
 @RunWith(TestRunners.WithDefaults.class)
