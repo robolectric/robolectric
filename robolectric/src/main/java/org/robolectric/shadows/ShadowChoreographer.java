@@ -3,11 +3,11 @@ package org.robolectric.shadows;
 import android.os.Looper;
 import android.view.Choreographer;
 
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.bytecode.RobolectricInternals;
 import org.robolectric.util.SoftThreadLocal;
 
 @Implements(Choreographer.class)
@@ -25,7 +25,7 @@ public class ShadowChoreographer {
         if (looper == null) {
           throw new IllegalStateException("The current thread must have a looper!");
         }
-        return RobolectricInternals.newInstance(Choreographer.class, new Class[] {Looper.class}, new Object[] {looper});
+        return Robolectric.newInstance(Choreographer.class, new Class[] {Looper.class}, new Object[] {looper});
       }
     };
   }

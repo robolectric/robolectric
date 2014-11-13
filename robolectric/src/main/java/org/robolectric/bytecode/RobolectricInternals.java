@@ -12,26 +12,6 @@ public class RobolectricInternals {
     return classHandler;
   }
 
-  public static <T> T newInstanceOf(Class<T> clazz) {
-    return ReflectionHelpers.callConstructorReflectively(clazz);
-  }
-
-  public static <T> T newInstance(Class<T> clazz, Class[] parameterTypes, Object[] params) {
-    return ReflectionHelpers.callConstructorReflectively(clazz, ReflectionHelpers.ClassParameter.fromComponentLists(parameterTypes, params));
-  }
-
-  public static <T> T directlyOn(T shadowedObject, Class<T> clazz) {
-    return newInstance(clazz, new Class[]{DirectObjectMarker.class, clazz},
-        new Object[]{DirectObjectMarker.INSTANCE, shadowedObject});
-  }
-
-  private static String desc(Object o) {
-    return o == null ? "null" : (
-        (o instanceof Class)
-            ? "class " + ((Class) o).getName()
-            : "instance 0x" + Integer.toHexString(System.identityHashCode(o)) + " of " + o.getClass().getName());
-  }
-
   @SuppressWarnings({"UnusedDeclaration"})
   public static void classInitializing(Class clazz) throws Exception {
     classHandler.classInitializing(clazz);

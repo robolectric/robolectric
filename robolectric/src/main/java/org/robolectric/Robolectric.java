@@ -15,8 +15,8 @@ import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implements;
+import org.robolectric.bytecode.DirectObjectMarker;
 import org.robolectric.bytecode.RobolectricInternals;
-import org.robolectric.bytecode.ShadowWrangler;
 import org.robolectric.internal.ReflectionHelpers;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.builder.RobolectricPackageManager;
@@ -31,10 +31,6 @@ import org.robolectric.util.ActivityController;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.ServiceController;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.List;
 
 import static org.robolectric.Shadows.shadowOf;
@@ -45,7 +41,7 @@ public class Robolectric {
   public static RobolectricPackageManager packageManager;
 
   public static <T> T newInstanceOf(Class<T> clazz) {
-    return RobolectricInternals.newInstanceOf(clazz);
+    return ReflectionHelpers.callConstructorReflectively(clazz);
   }
 
   public static Object newInstanceOf(String className) {
@@ -60,11 +56,11 @@ public class Robolectric {
   }
 
   public static <T> T newInstance(Class<T> clazz, Class[] parameterTypes, Object[] params) {
-    return RobolectricInternals.newInstance(clazz, parameterTypes, params);
+    return ReflectionHelpers.callConstructorReflectively(clazz, ReflectionHelpers.ClassParameter.fromComponentLists(parameterTypes, params));
   }
 
   public static <T> T directlyOn(T shadowedObject, Class<T> clazz) {
-    return RobolectricInternals.directlyOn(shadowedObject, clazz);
+    return ReflectionHelpers.callConstructorReflectively(clazz, ReflectionHelpers.ClassParameter.fromComponentLists(new Class[]{DirectObjectMarker.class, clazz}, new Object[]{DirectObjectMarker.INSTANCE, shadowedObject}));
   }
 
   public static <R> R directlyOn(Object shadowedObject, String clazzName, String methodName, ReflectionHelpers.ClassParameter... paramValues) {
@@ -77,35 +73,13 @@ public class Robolectric {
   }
 
   public static <R, T> R directlyOn(T shadowedObject, Class<T> clazz, String methodName, ReflectionHelpers.ClassParameter... paramValues) {
-    return directlyOnInternal(shadowedObject, clazz, methodName, shadowedObject.getClass(), paramValues);
+    String directMethodName = RobolectricInternals.directMethodName(clazz.getName(), methodName);
+    return ReflectionHelpers.callInstanceMethodReflectively(shadowedObject, directMethodName, paramValues);
   }
 
   public static <R, T> R directlyOn(Class<T> clazz, String methodName, ReflectionHelpers.ClassParameter... paramValues) {
-    return directlyOnInternal(null, clazz, methodName, clazz, paramValues);
-  }
-
-  private static <R, T> R directlyOnInternal(Object shadowedObject, Class<T> clazz, String methodName, Class classHierarchyStart, ReflectionHelpers.ClassParameter... paramValues) {
     String directMethodName = RobolectricInternals.directMethodName(clazz.getName(), methodName);
-    try {
-      Class[] classes = ReflectionHelpers.ClassParameter.getClasses(paramValues);
-      Object[] values = ReflectionHelpers.ClassParameter.getValues(paramValues);
-
-      Class hierarchyTraversalClass = classHierarchyStart;
-      while(hierarchyTraversalClass != null) {
-        try {
-          Method declaredMethod = hierarchyTraversalClass.getDeclaredMethod(directMethodName, classes);
-          declaredMethod.setAccessible(true);
-          return (R) declaredMethod.invoke(shadowedObject, values);
-        } catch (NoSuchMethodException e) {
-          hierarchyTraversalClass = hierarchyTraversalClass.getSuperclass();
-        }
-      }
-      throw new RuntimeException(new NoSuchMethodException());
-    } catch (InvocationTargetException e) {
-      throw (RuntimeException) e.getTargetException();
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    }
+    return ReflectionHelpers.callStaticMethodReflectively(clazz, directMethodName, paramValues);
   }
 
   /**
