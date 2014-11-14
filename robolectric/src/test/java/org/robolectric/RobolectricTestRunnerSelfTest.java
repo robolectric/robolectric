@@ -6,8 +6,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
-import org.robolectric.annotation.DisableStrictI18n;
-import org.robolectric.annotation.EnableStrictI18n;
 import org.robolectric.util.ReflectionHelpers;
 
 import java.lang.reflect.Method;
@@ -44,18 +42,6 @@ public class RobolectricTestRunnerSelfTest {
     ReflectionHelpers.setStaticFieldReflectively(android.os.Build.class, "MODEL", "expected value");
 
     assertEquals("expected value", android.os.Build.MODEL);
-  }
-
-  @Test
-  @EnableStrictI18n
-  public void internalBeforeTest_setsShadowApplicationStrictI18n() {
-    assertTrue(Robolectric.getShadowApplication().isStrictI18n());
-  }
-
-  @Test
-  @DisableStrictI18n
-  public void internalBeforeTest_clearsShadowApplicationStrictI18n() {
-    assertFalse(Robolectric.getShadowApplication().isStrictI18n());
   }
 
   @Test

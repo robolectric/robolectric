@@ -11,36 +11,19 @@ import org.robolectric.res.ResType;
 import org.robolectric.res.ResourceIndex;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.TypedResource;
-import org.robolectric.util.I18nException;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import static org.robolectric.Shadows.shadowOf;
 
 public class RoboAttributeSet implements AttributeSet {
-  private static final Set<String> ALREADY_WARNED_ABOUT = new HashSet<String>();
-
   private final List<Attribute> attributes;
   private final Resources resources;
-  private Class<? extends View> viewClass;
   private final ResourceLoader resourceLoader;
-
-  /**
-   * Names of attributes to be validated for i18n-safe values.
-   */
-  private static final ResName strictI18nAttrs[] = {
-      new ResName("android:attr/text"),
-      new ResName("android:attr/title"),
-      new ResName("android:attr/titleCondensed"),
-      new ResName("android:attr/summary")
-  };
 
   public RoboAttributeSet(List<Attribute> attributes, Resources resources, Class<? extends View> viewClass) {
     this.attributes = attributes;
     this.resources = resources;
-    this.viewClass = viewClass;
     this.resourceLoader = shadowOf(resources).getResourceLoader();
   }
 
@@ -213,18 +196,6 @@ public class RoboAttributeSet implements AttributeSet {
     return i != null ? i : 0;
   }
 
-
-  public void validateStrictI18n() {
-    for (ResName key : strictI18nAttrs) {
-      Attribute attribute = findByName(key);
-      if (attribute != null) {
-        if (!attribute.value.startsWith("@string/")) {
-          throw new I18nException("View class: " + (viewClass != null ? viewClass.getName() : "") +
-              " has attribute: " + key + " with hardcoded value: \"" + attribute.value + "\" and is not i18n-safe.");
-        }
-      }
-    }
-  }
 
   private ResName getAttrResName(String namespace, String attrName) {
     String packageName = Attribute.extractPackageName(namespace);

@@ -1,8 +1,6 @@
 package org.robolectric;
 
-import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.InitializationError;
-import org.junit.runners.model.Statement;
 import org.robolectric.annotation.Config;
 import org.robolectric.bytecode.AndroidTranslatorClassInstrumentedTest;
 import org.robolectric.bytecode.ClassInfo;
@@ -62,7 +60,7 @@ public class TestRunners {
     }
 
     @Override
-    protected void setUpApplicationState(Method method, ParallelUniverseInterface parallelUniverseInterface, boolean strictI18n, ResourceLoader systemResourceLoader, AndroidManifest appManifest, Config config) {
+    protected void setUpApplicationState(Method method, ParallelUniverseInterface parallelUniverseInterface, ResourceLoader systemResourceLoader, AndroidManifest appManifest, Config config) {
       // Don't do any resource loading or app init, because that's what we're trying to test here.
     }
   }
@@ -108,8 +106,8 @@ public class TestRunners {
 
     @Override
     protected void setUpApplicationState(Method method,
-        ParallelUniverseInterface parallelUniverseInterface, boolean strictI18n,
-        ResourceLoader systemResourceLoader, AndroidManifest appManifest, Config config) {
+                                         ParallelUniverseInterface parallelUniverseInterface,
+                                         ResourceLoader systemResourceLoader, AndroidManifest appManifest, Config config) {
       // Don't do any resource loading or app init, because that's what we're trying to test here.
     }
   }

@@ -207,8 +207,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
           parallelUniverseInterface.resetStaticState(config);
           parallelUniverseInterface.setSdkConfig(sdkEnvironment.getSdkConfig());
 
-          boolean strictI18n = determineI18nStrictState(bootstrappedMethod);
-
           int sdkVersion = pickReportedSdkVersion(config, appManifest);
           Class<?> versionClass = sdkEnvironment.bootstrappedClass(Build.VERSION.class);
           Field sdk_int = versionClass.getDeclaredField("SDK_INT");
@@ -219,7 +217,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
           sdk_int.setInt(null, sdkVersion);
 
           ResourceLoader systemResourceLoader = sdkEnvironment.getSystemResourceLoader(getJarResolver());
-          setUpApplicationState(bootstrappedMethod, parallelUniverseInterface, strictI18n, systemResourceLoader, appManifest, config);
+          setUpApplicationState(bootstrappedMethod, parallelUniverseInterface, systemResourceLoader, appManifest, config);
           testLifecycle.beforeTest(bootstrappedMethod);
         } catch (Exception e) {
           e.printStackTrace();
@@ -435,8 +433,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     return classHandler;
   }
 
-  protected void setUpApplicationState(Method method, ParallelUniverseInterface parallelUniverseInterface, boolean strictI18n, ResourceLoader systemResourceLoader, AndroidManifest appManifest, Config config) {
-    parallelUniverseInterface.setUpApplicationState(method, testLifecycle, strictI18n, systemResourceLoader, appManifest, config);
+  protected void setUpApplicationState(Method method, ParallelUniverseInterface parallelUniverseInterface, ResourceLoader systemResourceLoader, AndroidManifest appManifest, Config config) {
+    parallelUniverseInterface.setUpApplicationState(method, testLifecycle, systemResourceLoader, appManifest, config);
   }
 
   private int getTargetSdkVersion(AndroidManifest appManifest) {
@@ -493,60 +491,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   @Override
   public Object createTest() throws Exception {
     throw new UnsupportedOperationException("this should always be invoked on the HelperTestRunner!");
-  }
-
-  /**
-   * Sets Robolectric config to determine if Robolectric should blacklist API calls that are not
-   * I18N/L10N-safe.
-   * <p/>
-   * I18n-strict mode affects suitably annotated shadow methods. Robolectric will throw exceptions
-   * if these methods are invoked by application code. Additionally, Robolectric's ResourceLoader
-   * will throw exceptions if layout resources use bare string literals instead of string resource IDs.
-   * <p/>
-   * To enable or disable i18n-strict mode for specific test cases, annotate them with
-   * {@link org.robolectric.annotation.EnableStrictI18n} or
-   * {@link org.robolectric.annotation.DisableStrictI18n}.
-   * <p/>
-   * <p/>
-   * By default, I18n-strict mode is disabled.
-   *
-   * @param method
-   */
-  public static boolean determineI18nStrictState(Method method) {
-    // Global
-    boolean strictI18n = globalI18nStrictEnabled();
-
-    // Test case class
-    Class<?> testClass = method.getDeclaringClass();
-    if (testClass.getAnnotation(EnableStrictI18n.class) != null) {
-      strictI18n = true;
-    } else if (testClass.getAnnotation(DisableStrictI18n.class) != null) {
-      strictI18n = false;
-    }
-
-    // Test case method
-    if (method.getAnnotation(EnableStrictI18n.class) != null) {
-      strictI18n = true;
-    } else if (method.getAnnotation(DisableStrictI18n.class) != null) {
-      strictI18n = false;
-    }
-
-    return strictI18n;
-  }
-
-  /**
-   * Default implementation of global switch for i18n-strict mode.
-   * To enable i18n-strict mode globally, set the system property
-   * "robolectric.strictI18n" to true. This can be done via java
-   * system properties in either Ant or Maven.
-   * <p/>
-   * Subclasses can override this method and establish their own policy
-   * for enabling i18n-strict mode.
-   *
-   * @return
-   */
-  protected static boolean globalI18nStrictEnabled() {
-    return Boolean.valueOf(System.getProperty("robolectric.strictI18n"));
   }
 
   /**

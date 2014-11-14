@@ -6,7 +6,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.res.MenuNode;
 import org.robolectric.res.ResourceLoader;
-import org.robolectric.util.I18nException;
 
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.res.ResourceLoader.ANDROID_NS;
@@ -19,12 +18,10 @@ import static org.robolectric.res.ResourceLoader.ANDROID_NS;
 public class ShadowMenuInflater {
   private Context context;
   private ResourceLoader resourceLoader;
-  private boolean strictI18n;
 
   public void __constructor__(Context context) {
     this.context = context;
     resourceLoader = shadowOf(context).getResourceLoader();
-    strictI18n = shadowOf(context).isStrictI18n();
   }
 
   @Implementation
@@ -34,8 +31,6 @@ public class ShadowMenuInflater {
 
     try {
       addChildrenInGroup(menuNode, 0, root);
-    } catch (I18nException e) {
-      throw e;
     } catch (Exception e) {
       throw new RuntimeException("error inflating " + shadowOf(context).getResName(resource), e);
     }
@@ -45,9 +40,6 @@ public class ShadowMenuInflater {
     for (MenuNode child : source.getChildren()) {
       String name = child.getName();
       RoboAttributeSet attributes = shadowOf(context).createAttributeSet(child.getAttributes(), null);
-      if (strictI18n) {
-        attributes.validateStrictI18n();
-      }
       if (name.equals("item")) {
         if (child.isSubMenuItem()) {
           SubMenu sub = root.addSubMenu(groupId,
