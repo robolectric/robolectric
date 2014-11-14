@@ -544,8 +544,13 @@ public class ContentResolverTest {
   @Test
   public void getProvider_shouldCreateProviderFromManifest() {
     AndroidManifest manifest = Robolectric.getShadowApplication().getAppManifest();
-    manifest.getContentProviders().add(new ContentProviderData("org.robolectric.shadows.ContentResolverTest$TestContentProvider", AUTHORITY));
-    assertThat(ShadowContentResolver.getProvider(Uri.parse("content://" + AUTHORITY + "/shadows"))).isNotNull();
+    ContentProviderData testProviderData = new ContentProviderData("org.robolectric.shadows.ContentResolverTest$TestContentProvider", AUTHORITY);
+    try {
+      manifest.getContentProviders().add(testProviderData);
+      assertThat(ShadowContentResolver.getProvider(Uri.parse("content://" + AUTHORITY + "/shadows"))).isNotNull();
+    } finally {
+      manifest.getContentProviders().remove(testProviderData);
+    }
   }
 
   @Test
