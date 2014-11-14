@@ -23,7 +23,6 @@ import org.robolectric.util.Pair;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.net.URL;
 import java.security.SecureRandom;
@@ -226,19 +225,9 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
         final Statement statement = helperTestRunner.methodBlock(new FrameworkMethod(bootstrappedMethod));
 
-        Map<Field, Object> withConstantAnnos = getWithConstantAnnotations(bootstrappedMethod);
-
         // todo: this try/finally probably isn't right -- should mimic RunAfters? [xw]
         try {
-          if (withConstantAnnos.isEmpty()) {
-            statement.evaluate();
-          } else {
-            synchronized (this) {
-              setupConstants(withConstantAnnos);
-              statement.evaluate();
-              setupConstants(withConstantAnnos);
-            }
-          }
+          statement.evaluate();
         } finally {
           try {
             parallelUniverseInterface.tearDownApplication();
@@ -491,77 +480,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   @Override
   public Object createTest() throws Exception {
     throw new UnsupportedOperationException("this should always be invoked on the HelperTestRunner!");
-  }
-
-  /**
-   * Find all the class and method annotations and pass them to
-   * addConstantFromAnnotation() for evaluation.
-   * <p/>
-   * TODO: Add compound annotations to support defining more than one int and string at a time
-   * TODO: See http://stackoverflow.com/questions/1554112/multiple-annotations-of-the-same-type-on-one-element
-   *
-   * @param method
-   * @return
-   */
-  private Map<Field, Object> getWithConstantAnnotations(Method method) {
-    Map<Field, Object> constants = new HashMap<Field, Object>();
-
-    for (Annotation anno : method.getDeclaringClass().getAnnotations()) {
-      addConstantFromAnnotation(constants, anno);
-    }
-
-    for (Annotation anno : method.getAnnotations()) {
-      addConstantFromAnnotation(constants, anno);
-    }
-
-    return constants;
-  }
-
-
-  /**
-   * If the annotation is a constant redefinition, add it to the provided hash
-   *
-   * @param constants
-   * @param anno
-   */
-  private void addConstantFromAnnotation(Map<Field, Object> constants, Annotation anno) {
-    try {
-      String name = anno.annotationType().getName();
-      Object newValue = null;
-
-      if (name.equals(WithConstantString.class.getName())) {
-        newValue = anno.annotationType().getMethod("newValue").invoke(anno);
-      } else if (name.equals(WithConstantInt.class.getName())) {
-        newValue = anno.annotationType().getMethod("newValue").invoke(anno);
-      } else {
-        return;
-      }
-
-      @SuppressWarnings("rawtypes")
-      Class classWithField = (Class) anno.annotationType().getMethod("classWithField").invoke(anno);
-      String fieldName = (String) anno.annotationType().getMethod("fieldName").invoke(anno);
-      Field field = classWithField.getDeclaredField(fieldName);
-      constants.put(field, newValue);
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  /**
-   * Defines static finals from the provided hash and stores the old values back
-   * into the hash.
-   * <p/>
-   * Call it twice with the same hash, and it puts everything back the way it was originally.
-   *
-   * @param constants
-   */
-  private void setupConstants(Map<Field, Object> constants) {
-    for (Field field : constants.keySet()) {
-      Object newValue = constants.get(field);
-      Object oldValue = ReflectionHelpers.getStaticFieldReflectively(field);
-      ReflectionHelpers.setStaticFieldReflectively(field, newValue);
-      constants.put(field, oldValue);
-    }
   }
 
   public final ResourceLoader getAppResourceLoader(SdkConfig sdkConfig, ResourceLoader systemResourceLoader, final AndroidManifest appManifest) {
