@@ -13,6 +13,14 @@
   <description>Robolectric utility classes shared amongst other modules.</description>
   <url>http://robolectric.org</url>
 
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit-dep</artifactId>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
+
   <build>
     <plugins>
       <plugin>

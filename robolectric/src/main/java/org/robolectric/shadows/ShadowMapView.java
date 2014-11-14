@@ -12,17 +12,16 @@ import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.internal.HiddenApi;
-import org.robolectric.internal.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.res.Attribute;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.robolectric.internal.ReflectionHelpers.ClassParameter;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 import static org.robolectric.Robolectric.directlyOn;
 import static org.robolectric.RobolectricForMaps.shadowOf;
-import static org.robolectric.bytecode.RobolectricInternals.invokeConstructor;
+import static org.robolectric.Robolectric.invokeConstructor;
 
 /**
  * Shadow of {@code MapView} that simulates the internal state of a {@code MapView}. Supports {@code Projection}s,

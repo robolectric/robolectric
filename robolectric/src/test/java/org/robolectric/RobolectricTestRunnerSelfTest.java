@@ -8,6 +8,7 @@ import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.DisableStrictI18n;
 import org.robolectric.annotation.EnableStrictI18n;
+import org.robolectric.util.ReflectionHelpers;
 
 import java.lang.reflect.Method;
 
@@ -40,7 +41,7 @@ public class RobolectricTestRunnerSelfTest {
 
   @Test
   public void setStaticValue_shouldIgnoreFinalModifier() {
-    SdkEnvironment.setStaticValue(android.os.Build.class, "MODEL", "expected value");
+    ReflectionHelpers.setStaticFieldReflectively(android.os.Build.class, "MODEL", "expected value");
 
     assertEquals("expected value", android.os.Build.MODEL);
   }

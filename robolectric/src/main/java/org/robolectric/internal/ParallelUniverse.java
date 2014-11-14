@@ -15,11 +15,12 @@ import org.robolectric.shadows.ShadowActivityThread;
 import org.robolectric.shadows.ShadowContextImpl;
 import org.robolectric.shadows.ShadowLog;
 import org.robolectric.shadows.ShadowResources;
+import org.robolectric.util.ReflectionHelpers;
 
 import java.lang.reflect.Method;
 
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.internal.ReflectionHelpers.ClassParameter;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 public class ParallelUniverse implements ParallelUniverseInterface {
   private static final String DEFAULT_PACKAGE_NAME = "org.robolectric.default";

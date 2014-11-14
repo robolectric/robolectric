@@ -5,7 +5,7 @@ import android.os.ResultReceiver;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.internal.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers;
 
 @Implements(ResultReceiver.class)
 public class ShadowResultReceiver {

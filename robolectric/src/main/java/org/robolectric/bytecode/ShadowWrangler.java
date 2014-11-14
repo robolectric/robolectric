@@ -4,7 +4,7 @@ import android.content.Context;
 import org.robolectric.SdkConfig;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.internal.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.shadows.ShadowWindow;
 import org.robolectric.util.Function;
 

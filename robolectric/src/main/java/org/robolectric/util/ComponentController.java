@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Looper;
 import org.robolectric.Robolectric;
-import org.robolectric.internal.ReflectionHelpers;
 import org.robolectric.shadows.ShadowLooper;
 
 import static org.robolectric.Shadows.shadowOf_;

@@ -14,7 +14,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.TestUtil;
 import org.xmlpull.v1.XmlPullParser;
 

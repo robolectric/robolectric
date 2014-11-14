@@ -17,14 +17,14 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.internal.HiddenApi;
-import org.robolectric.internal.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers;
 
 import java.io.PrintStream;
 import java.lang.reflect.Method;
 
 import static org.robolectric.Robolectric.directlyOn;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.bytecode.RobolectricInternals.invokeConstructor;
+import static org.robolectric.Robolectric.invokeConstructor;
 
 /**
  * Shadow implementation of {@code View} that simulates the behavior of this

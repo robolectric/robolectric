@@ -19,12 +19,10 @@ import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.bytecode.RobolectricInternals;
 import org.robolectric.internal.HiddenApi;
-import org.robolectric.internal.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.res.ResName;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -65,7 +63,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   private Menu optionsMenu;
 
   public void __constructor__() {
-    RobolectricInternals.invokeConstructor(Activity.class, realActivity);
+    Robolectric.invokeConstructor(Activity.class, realActivity);
   }
 
   public void setApplication(Application application) {

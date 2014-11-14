@@ -2,7 +2,7 @@ package org.robolectric.res;
 
 import org.junit.After;
 import org.junit.Test;
-import org.robolectric.Robolectric;
+import org.robolectric.util.ReflectionHelpers;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -35,7 +35,8 @@ public class DrawableResourceLoaderNoRunnerTest {
   @After
   public void tearDown() throws Exception {
     if (originalSeparator != null) {
-      Robolectric.Reflection.setFinalStaticField(File.class.getDeclaredField("separator"), originalSeparator);
+      Field field = File.class.getDeclaredField("separator");
+      ReflectionHelpers.setStaticFieldReflectively(field, originalSeparator);
       originalSeparator = null;
     }
   }
@@ -141,7 +142,9 @@ public class DrawableResourceLoaderNoRunnerTest {
   }
 
   private void setFileSeparator(String separator) throws Exception {
-    originalSeparator = (String) Robolectric.Reflection.setFinalStaticField(File.class.getDeclaredField("separator"), separator);
+    Field field = File.class.getDeclaredField("separator");
+    originalSeparator = ReflectionHelpers.getStaticFieldReflectively(field);
+    ReflectionHelpers.setStaticFieldReflectively(field, separator);
   }
 
   private void setResourceBase(FsFile mockTestBaseDir, ResourcePath mockResourcePath) throws NoSuchFieldException, IllegalAccessException {

@@ -39,7 +39,7 @@ public class ShadowLooper {
   }
 
   private static Looper createLooper() {
-    return Robolectric.Reflection.newInstanceOf(Looper.class);
+    return Robolectric.newInstanceOf(Looper.class);
   }
 
   @Resetter

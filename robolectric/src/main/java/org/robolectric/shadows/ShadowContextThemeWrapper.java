@@ -3,7 +3,7 @@ package org.robolectric.shadows;
 import android.view.ContextThemeWrapper;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.internal.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ContextThemeWrapper.class)
