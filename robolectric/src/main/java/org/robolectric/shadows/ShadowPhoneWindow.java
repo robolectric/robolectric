@@ -4,7 +4,7 @@ import android.graphics.drawable.Drawable;
 import android.widget.ProgressBar;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.internal.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers;
 
 import static org.robolectric.Robolectric.directlyOn;
 

@@ -10,12 +10,11 @@ import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.internal.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceLoader;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 
 import static org.robolectric.Robolectric.directlyOn;
 

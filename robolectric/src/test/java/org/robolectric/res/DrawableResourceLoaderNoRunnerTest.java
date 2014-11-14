@@ -2,7 +2,7 @@ package org.robolectric.res;
 
 import org.junit.After;
 import org.junit.Test;
-import org.robolectric.internal.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers;
 
 import java.io.File;
 import java.lang.reflect.Field;

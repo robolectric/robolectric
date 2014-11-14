@@ -13,9 +13,8 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.bytecode.RobolectricInternals;
 import org.robolectric.internal.HiddenApi;
-import org.robolectric.internal.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers;
 
 import static org.robolectric.Shadows.shadowOf;
 
@@ -30,7 +29,7 @@ public class ShadowTypeface {
   @HiddenApi
   public void __constructor__(int fontId) {
     fontDesc = findById(fontId);
-    RobolectricInternals.invokeConstructor(Typeface.class, realTypeface, new ReflectionHelpers.ClassParameter(int.class, fontId));
+    Robolectric.invokeConstructor(Typeface.class, realTypeface, new ReflectionHelpers.ClassParameter(int.class, fontId));
   }
 
   public String getAssetPath() {

@@ -1,10 +1,8 @@
-package org.robolectric.internal;
+package org.robolectric.util;
 
+import org.junit.Assert;
 import org.junit.Test;
-
 import java.lang.reflect.Field;
-
-import static org.junit.Assert.*;
 
 public class ReflectionHelpersTest {
 
@@ -12,14 +10,14 @@ public class ReflectionHelpersTest {
   public void getFieldReflectively_getsPrivateFields() {
     ExampleDescendant example = new ExampleDescendant();
     example.overridden = 5;
-    assertEquals(ReflectionHelpers.getFieldReflectively(example, "overridden"), 5);
+    Assert.assertEquals(ReflectionHelpers.getFieldReflectively(example, "overridden"), 5);
   }
 
   @Test
   public void getFieldReflectively_getsInheritedFields() {
     ExampleDescendant example = new ExampleDescendant();
     example.setNotOverridden(6);
-    assertEquals(ReflectionHelpers.getFieldReflectively(example, "notOverridden"), 6);
+    Assert.assertEquals(ReflectionHelpers.getFieldReflectively(example, "notOverridden"), 6);
   }
 
   @Test
@@ -27,10 +25,10 @@ public class ReflectionHelpersTest {
     ExampleDescendant example = new ExampleDescendant();
     try {
       ReflectionHelpers.getFieldReflectively(example, "nonExistant");
-      fail("no Exception thrown");
+      Assert.fail("no Exception thrown");
     } catch (RuntimeException e) {
       if (!e.getMessage().contains("nonExistant")) {
-        fail("poorly specified exception thrown: " + e.getMessage());
+        Assert.fail("poorly specified exception thrown: " + e.getMessage());
       }
     }
   }
@@ -40,7 +38,7 @@ public class ReflectionHelpersTest {
     ExampleDescendant example = new ExampleDescendant();
     example.overridden = 5;
     ReflectionHelpers.setFieldReflectively(example, "overridden", 10);
-    assertEquals(example.overridden, 10);
+    Assert.assertEquals(example.overridden, 10);
   }
 
   @Test
@@ -48,7 +46,7 @@ public class ReflectionHelpersTest {
     ExampleDescendant example = new ExampleDescendant();
     example.setNotOverridden(5);
     ReflectionHelpers.setFieldReflectively(example, "notOverridden", 10);
-    assertEquals(example.getNotOverridden(), 10);
+    Assert.assertEquals(example.getNotOverridden(), 10);
   }
 
   @Test
@@ -56,10 +54,10 @@ public class ReflectionHelpersTest {
     ExampleDescendant example = new ExampleDescendant();
     try {
       ReflectionHelpers.setFieldReflectively(example, "nonExistant", 6);
-      fail("no Exception thrown");
+      Assert.fail("no Exception thrown");
     } catch (RuntimeException e) {
       if (!e.getMessage().contains("nonExistant")) {
-        fail("poorly specified exception thrown: " + e.getMessage());
+        Assert.fail("poorly specified exception thrown: " + e.getMessage());
       }
     }
   }
@@ -69,12 +67,12 @@ public class ReflectionHelpersTest {
     Field field = ExampleDescendant.class.getDeclaredField("DESCENDANT");
 
     int result = ReflectionHelpers.getStaticFieldReflectively(field);
-    assertEquals(result, 6);
+    Assert.assertEquals(result, 6);
   }
 
   @Test
   public void getStaticFieldReflectively_withFieldName_getsStaticField() {
-    assertEquals(ReflectionHelpers.getStaticFieldReflectively(ExampleDescendant.class, "DESCENDANT"), 6);
+    Assert.assertEquals(ReflectionHelpers.getStaticFieldReflectively(ExampleDescendant.class, "DESCENDANT"), 6);
   }
 
   @Test
@@ -83,8 +81,8 @@ public class ReflectionHelpersTest {
     int startingValue = ReflectionHelpers.getStaticFieldReflectively(field);
 
     ReflectionHelpers.setStaticFieldReflectively(field, 7);
-    assertEquals(startingValue, 6);
-    assertEquals(ExampleDescendant.DESCENDANT, 7);
+    Assert.assertEquals(startingValue, 6);
+    Assert.assertEquals(ExampleDescendant.DESCENDANT, 7);
 
     // Reset the value to avoid test pollution
     ReflectionHelpers.setStaticFieldReflectively(field, startingValue);
@@ -95,8 +93,8 @@ public class ReflectionHelpersTest {
     int startingValue = ReflectionHelpers.getStaticFieldReflectively(ExampleDescendant.class, "DESCENDANT");
 
     ReflectionHelpers.setStaticFieldReflectively(ExampleDescendant.class, "DESCENDANT", 7);
-    assertEquals(startingValue, 6);
-    assertEquals(ExampleDescendant.DESCENDANT, 7);
+    Assert.assertEquals(startingValue, 6);
+    Assert.assertEquals(ExampleDescendant.DESCENDANT, 7);
 
     // Reset the value to avoid test pollution
     ReflectionHelpers.setStaticFieldReflectively(ExampleDescendant.class, "DESCENDANT", startingValue);
@@ -105,19 +103,19 @@ public class ReflectionHelpersTest {
   @Test
   public void callInstanceMethodReflectively_callsPrivateMethods() {
     ExampleDescendant example = new ExampleDescendant();
-    assertEquals(ReflectionHelpers.callInstanceMethodReflectively(example, "returnNumber"), 1337);
+    Assert.assertEquals(ReflectionHelpers.callInstanceMethodReflectively(example, "returnNumber"), 1337);
   }
 
   @Test
   public void callInstanceMethodReflectively_whenMultipleSignaturesExistForAMethodName_callsMethodWithCorrectSignature() {
     ExampleDescendant example = new ExampleDescendant();
-    assertEquals(ReflectionHelpers.callInstanceMethodReflectively(example, "returnNumber", new ReflectionHelpers.ClassParameter(int.class, 5)), 5);
+    Assert.assertEquals(ReflectionHelpers.callInstanceMethodReflectively(example, "returnNumber", new ReflectionHelpers.ClassParameter(int.class, 5)), 5);
   }
 
   @Test
   public void callInstanceMethodReflectively_callsInheritedMethods() {
     ExampleDescendant example = new ExampleDescendant();
-    assertEquals(ReflectionHelpers.callInstanceMethodReflectively(example, "returnNegativeNumber"), -46);
+    Assert.assertEquals(ReflectionHelpers.callInstanceMethodReflectively(example, "returnNegativeNumber"), -46);
   }
 
   @Test
@@ -125,30 +123,30 @@ public class ReflectionHelpersTest {
     ExampleDescendant example = new ExampleDescendant();
     try {
       ReflectionHelpers.callInstanceMethodReflectively(example, "nonExistant");
-      fail("no Exception thrown");
+      Assert.fail("no Exception thrown");
     } catch (RuntimeException e) {
       if (!e.getMessage().contains("nonExistant")) {
-        fail("poorly specified exception thrown: " + e.getMessage());
+        Assert.fail("poorly specified exception thrown: " + e.getMessage());
       }
     }
   }
 
   @Test
   public void callStaticMethodReflectively_callsPrivateStaticMethodsReflectively() {
-    assertEquals(ReflectionHelpers.callStaticMethodReflectively(ExampleDescendant.class, "getConstantNumber"), 1);
+    Assert.assertEquals(ReflectionHelpers.callStaticMethodReflectively(ExampleDescendant.class, "getConstantNumber"), 1);
   }
 
   @Test
   public void callConstructorReflectively_callsPrivateConstructors() {
     Object o = ReflectionHelpers.callConstructorReflectively(ExampleClass.class);
-    assertTrue(ExampleClass.class.isInstance(o));
+    Assert.assertTrue(ExampleClass.class.isInstance(o));
   }
 
   @Test
   public void callConstructorReflectively_whenMultipleSignaturesExistForTheConstructor_callsConstructorWithCorrectSignature() {
     ExampleClass ec = ReflectionHelpers.callConstructorReflectively(ExampleClass.class, new ReflectionHelpers.ClassParameter(int.class, 16));
-    assertEquals(ec.index, 16);
-    assertNull(ec.name);
+    Assert.assertEquals(ec.index, 16);
+    Assert.assertNull(ec.name);
   }
 
   private static class ExampleBase {

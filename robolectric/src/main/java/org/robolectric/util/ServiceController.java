@@ -5,7 +5,6 @@ import android.app.Service;
 import android.content.Context;
 import android.os.IBinder;
 import org.robolectric.Robolectric;
-import org.robolectric.internal.ReflectionHelpers;
 import org.robolectric.shadows.ShadowActivityThread;
 import org.robolectric.shadows.ShadowService;
 

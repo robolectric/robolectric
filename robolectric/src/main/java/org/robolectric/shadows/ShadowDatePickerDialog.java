@@ -5,8 +5,8 @@ import android.content.Context;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
-import static org.robolectric.bytecode.RobolectricInternals.invokeConstructor;
-import static org.robolectric.internal.ReflectionHelpers.ClassParameter;
+import static org.robolectric.Robolectric.invokeConstructor;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @Implements(DatePickerDialog.class)
 public class ShadowDatePickerDialog extends ShadowAlertDialog {

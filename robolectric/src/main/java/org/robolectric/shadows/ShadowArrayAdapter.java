@@ -3,9 +3,7 @@ package org.robolectric.shadows;
 import android.widget.ArrayAdapter;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.internal.ReflectionHelpers;
-
-import java.lang.reflect.Field;
+import org.robolectric.util.ReflectionHelpers;
 
 @SuppressWarnings( { "UnusedDeclaration" })
 @Implements(ArrayAdapter.class)

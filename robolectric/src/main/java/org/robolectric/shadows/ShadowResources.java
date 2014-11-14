@@ -17,7 +17,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.internal.HiddenApi;
-import org.robolectric.internal.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.res.*;
 import org.robolectric.res.builder.XmlFileBuilder;
 import org.robolectric.util.Util;

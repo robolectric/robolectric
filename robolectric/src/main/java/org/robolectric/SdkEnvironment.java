@@ -1,6 +1,5 @@
 package org.robolectric;
 
-import org.robolectric.bytecode.ClassHandler;
 import org.robolectric.bytecode.ShadowMap;
 import org.robolectric.bytecode.ShadowWrangler;
 import org.robolectric.res.Fs;
@@ -17,7 +16,6 @@ public class SdkEnvironment {
   private final SdkConfig sdkConfig;
   private final ClassLoader robolectricClassLoader;
   public final Map<ShadowMap, ShadowWrangler> classHandlersByShadowMap = new HashMap<ShadowMap, ShadowWrangler>();
-  private ClassHandler currentClassHandler;
   private ResourceLoader systemResourceLoader;
 
   public SdkEnvironment(SdkConfig sdkConfig, ClassLoader robolectricClassLoader) {
@@ -25,7 +23,7 @@ public class SdkEnvironment {
     this.robolectricClassLoader = robolectricClassLoader;
   }
 
-  public PackageResourceLoader createSystemResourceLoader(DependencyResolver dependencyResolver, RobolectricTestRunner robolectricTestRunner) {
+  public PackageResourceLoader createSystemResourceLoader(DependencyResolver dependencyResolver) {
     URL url = dependencyResolver.getLocalArtifactUrl(sdkConfig.getSystemResourceDependency());
     Fs systemResFs = Fs.fromJar(url);
     ResourceExtractor resourceExtractor = new ResourceExtractor(getRobolectricClassLoader());
@@ -33,9 +31,9 @@ public class SdkEnvironment {
     return new PackageResourceLoader(resourcePath, resourceExtractor);
   }
 
-  public synchronized ResourceLoader getSystemResourceLoader(DependencyResolver dependencyResolver, RobolectricTestRunner robolectricTestRunner) {
+  public synchronized ResourceLoader getSystemResourceLoader(DependencyResolver dependencyResolver) {
     if (systemResourceLoader == null) {
-      systemResourceLoader = createSystemResourceLoader(dependencyResolver, robolectricTestRunner);
+      systemResourceLoader = createSystemResourceLoader(dependencyResolver);
     }
     return systemResourceLoader;
   }
@@ -50,14 +48,6 @@ public class SdkEnvironment {
 
   public ClassLoader getRobolectricClassLoader() {
     return robolectricClassLoader;
-  }
-
-  public ClassHandler getCurrentClassHandler() {
-    return currentClassHandler;
-  }
-
-  public void setCurrentClassHandler(ClassHandler currentClassHandler) {
-    this.currentClassHandler = currentClassHandler;
   }
 
   public SdkConfig getSdkConfig() {

@@ -15,7 +15,7 @@ import org.robolectric.annotation.*;
 import org.robolectric.bytecode.*;
 import org.robolectric.internal.ParallelUniverse;
 import org.robolectric.internal.ParallelUniverseInterface;
-import org.robolectric.internal.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.res.*;
 import org.robolectric.util.AnnotationUtil;
 import org.robolectric.util.Pair;
@@ -218,7 +218,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
           modifiers.setInt(sdk_int, sdk_int.getModifiers() & ~Modifier.FINAL);
           sdk_int.setInt(null, sdkVersion);
 
-          ResourceLoader systemResourceLoader = sdkEnvironment.getSystemResourceLoader(getJarResolver(), RobolectricTestRunner.this);
+          ResourceLoader systemResourceLoader = sdkEnvironment.getSystemResourceLoader(getJarResolver());
           setUpApplicationState(bootstrappedMethod, parallelUniverseInterface, strictI18n, systemResourceLoader, appManifest, config);
           testLifecycle.beforeTest(bootstrappedMethod);
         } catch (Exception e) {
@@ -431,7 +431,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       if (classHandler == null) {
         classHandler = createClassHandler(shadowMap, sdkEnvironment.getSdkConfig());
       }
-      sdkEnvironment.setCurrentClassHandler(classHandler);
     }
     return classHandler;
   }

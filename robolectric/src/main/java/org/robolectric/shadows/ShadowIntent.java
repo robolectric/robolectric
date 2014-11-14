@@ -11,7 +11,6 @@ import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.bytecode.RobolectricInternals;
 import org.robolectric.util.Join;
 
 import java.io.Serializable;
@@ -21,7 +20,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static android.content.Intent.*;
-import static org.robolectric.internal.ReflectionHelpers.ClassParameter;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 import static org.robolectric.Shadows.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -43,27 +42,27 @@ public class ShadowIntent {
     componentName = new ComponentName(packageContext, cls);
     data = uri;
     intentClass = cls;
-    RobolectricInternals.invokeConstructor(Intent.class, realIntent, new ClassParameter(String.class, action),
+    Robolectric.invokeConstructor(Intent.class, realIntent, new ClassParameter(String.class, action),
         new ClassParameter(Uri.class, uri), new ClassParameter(Context.class, packageContext), new ClassParameter(Class.class, cls));
   }
 
   public void __constructor__(Context packageContext, Class cls) {
     componentName = new ComponentName(packageContext, cls);
     intentClass = cls;
-    RobolectricInternals.invokeConstructor(Intent.class, realIntent, new ClassParameter(Context.class, packageContext),
+    Robolectric.invokeConstructor(Intent.class, realIntent, new ClassParameter(Context.class, packageContext),
         new ClassParameter(Class.class, cls));
   }
 
   public void __constructor__(String action, Uri uri) {
     this.action = action;
     data = uri;
-    RobolectricInternals.invokeConstructor(Intent.class, realIntent, new ClassParameter(String.class, action),
+    Robolectric.invokeConstructor(Intent.class, realIntent, new ClassParameter(String.class, action),
         new ClassParameter(Uri.class, uri));
   }
 
   public void __constructor__(String action) {
     __constructor__(action, null);
-    RobolectricInternals.invokeConstructor(Intent.class, realIntent, new ClassParameter(String.class, action));
+    Robolectric.invokeConstructor(Intent.class, realIntent, new ClassParameter(String.class, action));
   }
 
   public void __constructor__(Parcel in) {
@@ -118,7 +117,7 @@ public class ShadowIntent {
     intentClass = other.intentClass;
     packageName = other.packageName;
     categories.addAll(other.categories);
-    RobolectricInternals.invokeConstructor(Intent.class, realIntent, new ClassParameter(Intent.class, intent));
+    Robolectric.invokeConstructor(Intent.class, realIntent, new ClassParameter(Intent.class, intent));
   }
 
   @Implementation

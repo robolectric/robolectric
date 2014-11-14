@@ -13,7 +13,6 @@ import android.os.IBinder;
 import org.robolectric.AndroidManifest;
 import org.robolectric.RoboInstrumentation;
 import org.robolectric.Robolectric;
-import org.robolectric.internal.ReflectionHelpers;
 import org.robolectric.res.ResName;
 import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.shadows.ShadowActivityThread;
