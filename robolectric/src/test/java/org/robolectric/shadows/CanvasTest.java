@@ -243,4 +243,110 @@ public class CanvasTest {
     ShadowCanvas shadowCanvas = shadowOf(canvas);
     assertThat(shadowCanvas.getArcPaintHistoryCount()).isEqualTo(2);
   }
+
+  @Test
+  public void getRectHistoryCount_shouldReturnTotalNumberOfDrawRectEvents() throws Exception {
+    Canvas canvas = new Canvas();
+    canvas.drawRect(1f, 2f, 3f, 4f, new Paint());
+    canvas.drawRect(1f, 2f, 3f, 4f, new Paint());
+    ShadowCanvas shadowCanvas = shadowOf(canvas);
+    assertThat(shadowCanvas.getRectPaintHistoryCount()).isEqualTo(2);
+  }
+
+  @Test
+  public void getOvalHistoryCount_shouldReturnTotalNumberOfDrawOvalEvents() throws Exception {
+    Canvas canvas = new Canvas();
+    canvas.drawOval(new RectF(), new Paint());
+    canvas.drawOval(new RectF(), new Paint());
+    ShadowCanvas shadowCanvas = shadowOf(canvas);
+    assertThat(shadowCanvas.getOvalPaintHistoryCount()).isEqualTo(2);
+  }
+
+  @Test
+  public void getLineHistoryCount_shouldReturnTotalNumberOfDrawLineEvents() throws Exception {
+    Canvas canvas = new Canvas();
+    canvas.drawLine(0f, 1f, 2f, 3f, new Paint());
+    canvas.drawLine(0f, 1f, 2f, 3f, new Paint());
+    ShadowCanvas shadowCanvas = shadowOf(canvas);
+    assertThat(shadowCanvas.getLinePaintHistoryCount()).isEqualTo(2);
+  }
+
+  @Test
+  public void drawLine_shouldRecordLineHistoryEvents() throws Exception {
+    Canvas canvas = new Canvas();
+    Paint paint0 = new Paint();
+    paint0.setColor(Color.RED);
+    paint0.setStrokeWidth(1.0f);
+    Paint paint1 = new Paint();
+    paint1.setColor(Color.WHITE);
+    paint1.setStrokeWidth(2.0f);
+
+    canvas.drawLine(0f, 2f, 3f, 4f, paint0);
+    canvas.drawLine(5f, 6f, 7f, 8f, paint1);
+    ShadowCanvas shadowCanvas = shadowOf(canvas);
+
+    assertThat(shadowCanvas.getDrawnLine(0).startX).isEqualTo(0f);
+    assertThat(shadowCanvas.getDrawnLine(0).startY).isEqualTo(2f);
+    assertThat(shadowCanvas.getDrawnLine(0).stopX).isEqualTo(3f);
+    assertThat(shadowCanvas.getDrawnLine(0).stopY).isEqualTo(4f);
+    assertThat(shadowCanvas.getDrawnLine(0).paint.getColor()).isEqualTo(Color.RED);
+    assertThat(shadowCanvas.getDrawnLine(0).paint.getStrokeWidth()).isEqualTo(1.0f);
+
+    assertThat(shadowCanvas.getDrawnLine(1).startX).isEqualTo(5f);
+    assertThat(shadowCanvas.getDrawnLine(1).startY).isEqualTo(6f);
+    assertThat(shadowCanvas.getDrawnLine(1).stopX).isEqualTo(7f);
+    assertThat(shadowCanvas.getDrawnLine(1).stopY).isEqualTo(8f);
+    assertThat(shadowCanvas.getDrawnLine(1).paint.getColor()).isEqualTo(Color.WHITE);
+    assertThat(shadowCanvas.getDrawnLine(1).paint.getStrokeWidth()).isEqualTo(2.0f);
+  }
+
+  @Test
+  public void drawOval_shouldRecordOvalHistoryEvents() throws Exception {
+    Canvas canvas = new Canvas();
+    RectF oval0 = new RectF();
+    RectF oval1 = new RectF();
+    Paint paint0 = new Paint();
+    paint0.setColor(Color.RED);
+    Paint paint1 = new Paint();
+    paint1.setColor(Color.WHITE);
+
+    canvas.drawOval(oval0, paint0);
+    canvas.drawOval(oval1, paint1);
+    ShadowCanvas shadowCanvas = shadowOf(canvas);
+
+    assertThat(shadowCanvas.getDrawnOval(0).oval).isEqualTo(oval0);
+    assertThat(shadowCanvas.getDrawnOval(0).paint.getColor()).isEqualTo(Color.RED);
+
+    assertThat(shadowCanvas.getDrawnOval(1).oval).isEqualTo(oval1);
+    assertThat(shadowCanvas.getDrawnOval(1).paint.getColor()).isEqualTo(Color.WHITE);
+  }
+
+  @Test
+  public void drawRect_shouldRecordRectHistoryEvents() throws Exception {
+    Canvas canvas = new Canvas();
+    Paint paint0 = new Paint();
+    paint0.setColor(Color.WHITE);
+    Paint paint1 = new Paint();
+    paint1.setColor(Color.BLACK);
+    RectF rect0 = new RectF(0f, 2f, 3f, 4f);
+    RectF rect1 = new RectF(5f, 6f, 7f, 8f);
+
+    canvas.drawRect(0f, 2f, 3f, 4f, paint0);
+    canvas.drawRect(5f, 6f, 7f, 8f, paint1);
+    ShadowCanvas shadowCanvas = shadowOf(canvas);
+
+    assertThat(shadowCanvas.getDrawnRect(0).left).isEqualTo(0f);
+    assertThat(shadowCanvas.getDrawnRect(0).top).isEqualTo(2f);
+    assertThat(shadowCanvas.getDrawnRect(0).right).isEqualTo(3f);
+    assertThat(shadowCanvas.getDrawnRect(0).bottom).isEqualTo(4f);
+    assertThat(shadowCanvas.getDrawnRect(0).rect).isEqualTo(rect0);
+    assertThat(shadowCanvas.getDrawnRect(0).paint.getColor()).isEqualTo(Color.WHITE);
+
+    assertThat(shadowCanvas.getDrawnRect(1).left).isEqualTo(5f);
+    assertThat(shadowCanvas.getDrawnRect(1).top).isEqualTo(6f);
+    assertThat(shadowCanvas.getDrawnRect(1).right).isEqualTo(7f);
+    assertThat(shadowCanvas.getDrawnRect(1).bottom).isEqualTo(8f);
+    assertThat(shadowCanvas.getDrawnRect(1).rect).isEqualTo(rect1);
+    assertThat(shadowCanvas.getDrawnRect(1).paint.getColor()).isEqualTo(Color.BLACK);
+  }
 }
