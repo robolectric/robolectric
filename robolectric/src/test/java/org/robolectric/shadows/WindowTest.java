@@ -9,11 +9,11 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
+import org.robolectric.util.ActivityController;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
@@ -21,7 +21,7 @@ import static org.robolectric.Shadows.shadowOf;
 @RunWith(TestRunners.WithDefaults.class)
 public class WindowTest {
   @Test
-  public void testGetFlag() throws Exception {
+  public void getFlag_shouldReturnWindowFlags() throws Exception {
     Activity activity = Robolectric.buildActivity(Activity.class).create().get();
     Window window = activity.getWindow();
 
@@ -33,7 +33,7 @@ public class WindowTest {
   }
 
   @Test
-  public void testGetTitle() throws Exception {
+  public void getTitle_shouldReturnWindowTitle() throws Exception {
     Activity activity = Robolectric.buildActivity(Activity.class).create().get();
     Window window = activity.getWindow();
     window.setTitle("My Window Title");
@@ -77,7 +77,6 @@ public class WindowTest {
   }
 
   @Test
-  @Ignore("Temporarily ignore this test while we investigate")
   public void getProgressBar_returnsTheProgressBar() {
     Activity activity = Robolectric.buildActivity(TestActivity.class).create().get();
 
@@ -92,8 +91,10 @@ public class WindowTest {
 
   @Test
   public void getIndeterminateProgressBar_returnsTheIndeterminateProgressBar() {
-    TestActivity.requestFeature = Window.FEATURE_INDETERMINATE_PROGRESS;
-    Activity activity = Robolectric.buildActivity(TestActivity.class).create().get();
+    ActivityController<TestActivity> testActivityActivityController = Robolectric.buildActivity(TestActivity.class);
+    TestActivity activity = testActivityActivityController.get();
+    activity.requestFeature = Window.FEATURE_INDETERMINATE_PROGRESS;
+    testActivityActivityController.create();
 
     ProgressBar indeterminate = shadowOf(activity.getWindow()).getIndeterminateProgressBar();
 
@@ -105,7 +106,7 @@ public class WindowTest {
   }
 
   public static class TestActivity extends Activity {
-    public static int requestFeature = Window.FEATURE_PROGRESS;
+    public int requestFeature = Window.FEATURE_PROGRESS;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

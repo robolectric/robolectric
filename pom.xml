@@ -132,6 +132,7 @@
               <include>**/*Test.java</include>
             </includes>
             <argLine>-Xms512m -Xmx1024m -XX:MaxPermSize=256m</argLine>
+            <runOrder>random</runOrder>
           </configuration>
         </plugin>
 
