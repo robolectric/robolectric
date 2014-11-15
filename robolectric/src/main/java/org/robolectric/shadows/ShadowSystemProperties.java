@@ -15,6 +15,7 @@ public class ShadowSystemProperties {
 
   static {
     VALUES.put("ro.build.version.sdk", 8);
+    VALUES.put("ro.build.date.utc", 1277708400000L);  // Jun 28, 2010
     VALUES.put("ro.debuggable", 0);
     VALUES.put("ro.secure", 1);
     VALUES.put("log.closeguard.Animation", false);
