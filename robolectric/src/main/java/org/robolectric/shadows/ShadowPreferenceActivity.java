@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceScreen;
@@ -9,7 +8,6 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.res.PreferenceNode;
 import org.robolectric.res.ResName;
 import org.robolectric.res.builder.PreferenceBuilder;
-import org.robolectric.util.I18nException;
 
 import static org.robolectric.Shadows.shadowOf;
 
@@ -30,8 +28,6 @@ public class ShadowPreferenceActivity extends ShadowActivity {
     PreferenceNode preferenceNode = getResourceLoader().getPreferenceNode(resName, qualifiers);
     try {
       return (PreferenceScreen) new PreferenceBuilder().inflate(preferenceNode, realActivity, null);
-    } catch (I18nException e) {
-      throw e;
     } catch (Exception e) {
       throw new RuntimeException("error inflating " + resName, e);
     }

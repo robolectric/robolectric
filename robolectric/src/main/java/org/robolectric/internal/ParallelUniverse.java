@@ -59,7 +59,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   }
 
   @Override
-  public void setUpApplicationState(Method method, TestLifecycle testLifecycle, boolean strictI18n, ResourceLoader systemResourceLoader, AndroidManifest appManifest, Config config) {
+  public void setUpApplicationState(Method method, TestLifecycle testLifecycle, ResourceLoader systemResourceLoader, AndroidManifest appManifest, Config config) {
     Robolectric.application = null;
     Robolectric.packageManager = new RobolectricPackageManager();
     Robolectric.packageManager.addPackage(DEFAULT_PACKAGE_NAME);
@@ -121,7 +121,6 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
       appResources.updateConfiguration(configuration, appResources.getDisplayMetrics());
       shadowOf(appResources.getAssets()).setQualifiers(qualifiers);
-      shadowOf(application).setStrictI18n(strictI18n);
 
       Robolectric.application = application;
       application.onCreate();

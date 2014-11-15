@@ -11,20 +11,11 @@ import org.robolectric.Robolectric;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
-import org.robolectric.util.I18nException;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ResourceLoaderTest {
-
-  @Test(expected = I18nException.class)
-  public void shouldThrowExceptionOnI18nStrictModeInflatePreferences() throws Exception {
-    shadowOf(Robolectric.application).setStrictI18n(true);
-    PreferenceActivity preferenceActivity = Robolectric.buildActivity(TestPreferenceActivity.class).create().get();
-    preferenceActivity.addPreferencesFromResource(R.xml.preferences);
-  }
 
   @Test
   @Config(qualifiers = "doesnotexist-land-xlarge")

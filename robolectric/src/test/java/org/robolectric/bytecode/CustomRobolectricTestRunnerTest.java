@@ -126,8 +126,8 @@ public class CustomRobolectricTestRunnerTest {
     }
 
     @Override
-    protected void setUpApplicationState(Method method, ParallelUniverseInterface parallelUniverseInterface, boolean strictI18n, ResourceLoader systemResourceLoader, AndroidManifest appManifest, Config config) {
-      super.setUpApplicationState(method, parallelUniverseInterface, strictI18n, systemResourceLoader, appManifest, config);
+    protected void setUpApplicationState(Method method, ParallelUniverseInterface parallelUniverseInterface, ResourceLoader systemResourceLoader, AndroidManifest appManifest, Config config) {
+      super.setUpApplicationState(method, parallelUniverseInterface, systemResourceLoader, appManifest, config);
       this.application = parallelUniverseInterface.getCurrentApplication();
     }
 

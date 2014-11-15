@@ -8,8 +8,6 @@ import org.robolectric.SdkConfig;
 import org.robolectric.SdkEnvironment;
 import org.robolectric.TestLifecycle;
 import org.robolectric.annotation.Config;
-import org.robolectric.annotation.DisableStrictI18n;
-import org.robolectric.annotation.EnableStrictI18n;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -21,7 +19,6 @@ import org.robolectric.internal.Instrument;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.ResourcePath;
-import org.robolectric.util.I18nException;
 import org.robolectric.util.Transcript;
 
 import java.util.ArrayList;
@@ -58,9 +55,6 @@ public class Setup {
       Instrument.class,
       DoNotInstrument.class,
       Config.class,
-      EnableStrictI18n.class,
-      DisableStrictI18n.class,
-      I18nException.class,
       Transcript.class,
       org.robolectric.bytecode.DirectObjectMarker.class,
       DependencyJar.class,

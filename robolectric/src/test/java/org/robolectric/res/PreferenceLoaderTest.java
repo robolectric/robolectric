@@ -16,7 +16,6 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.res.builder.PreferenceBuilder;
-import org.robolectric.util.I18nException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.util.TestUtil.TEST_PACKAGE;
@@ -54,13 +53,6 @@ public class PreferenceLoaderTest {
 
     PreferenceScreen innerScreen = (PreferenceScreen) screen.getPreference(1);
     assertThat(innerScreen.getContext()).isEqualTo(activity);
-  }
-
-  @Test(expected = I18nException.class)
-  public void shouldThrowI18nExceptionOnPrefsWithBareStrings() throws Exception {
-    Robolectric.getShadowApplication().setStrictI18n(true);
-    PreferenceNode preferenceNode = resBundle.get(new ResName(TEST_PACKAGE + ":xml/preferences"), "");
-    preferenceBuilder.inflate(preferenceNode, Robolectric.setupActivity(Activity.class), null);
   }
 
   @Test
