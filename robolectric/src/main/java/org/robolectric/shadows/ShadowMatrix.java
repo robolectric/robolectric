@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.graphics.Matrix;
+import android.graphics.RectF;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -202,5 +203,11 @@ public class ShadowMatrix {
   @Implementation
   public String toString() {
     return "Matrix[pre=" + preOps + ", set=" + setOps + ", post=" + postOps + "]";
+  }
+  
+  @Implementation
+  public boolean mapRect(RectF destination, RectF source) {
+    destination.set(source);
+    return true;
   }
 }
