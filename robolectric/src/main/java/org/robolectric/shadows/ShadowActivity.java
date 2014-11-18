@@ -61,6 +61,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   private int streamType = -1;
   private boolean mIsTaskRoot = true;
   private Menu optionsMenu;
+  private Application testApplication;
 
   public void __constructor__() {
     Robolectric.invokeConstructor(Activity.class, realActivity);
@@ -88,9 +89,17 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     return false;
   }
 
+  public void setTestApplication(Application testApplication) {
+    this.testApplication = testApplication;
+  }
+
+  public Application getTestApplication() {
+    return testApplication;
+  }
+
   @Implementation
   public final Application getApplication() {
-    return Robolectric.application;
+    return testApplication != null ? testApplication : Robolectric.application;
   }
 
   @Override

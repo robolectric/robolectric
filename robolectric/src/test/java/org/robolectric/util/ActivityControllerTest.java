@@ -1,6 +1,7 @@
 package org.robolectric.util;
 
 import android.app.Activity;
+import android.app.Application;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Bundle;
@@ -63,6 +64,28 @@ public class ActivityControllerTest {
 
     Robolectric.unPauseMainLooper();
     transcript.assertEventsInclude("onCreate");
+  }
+
+  @Test
+  public void withApplication_attachesTestApplicationToActivity() {
+    Application application = new Application();
+    MyActivity activity = controller.withApplication(application).create().get();
+    assertThat(activity.getApplication()).isEqualTo(application);
+  }
+
+  @Test
+  public void withApplication_setsBaseContext() {
+    Application application = new Application();
+    controller.withApplication(application).create().get();
+    assertThat(application.getBaseContext()).isNotNull();
+  }
+
+  @Test
+  public void withApplication_bindsResourcesAndAssets() {
+    Application application = new Application();
+    controller.withApplication(application).create().get();
+    assertThat(application.getBaseContext().getAssets()).isNotNull();
+    assertThat(application.getBaseContext().getResources()).isNotNull();
   }
 
   @Test

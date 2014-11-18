@@ -37,6 +37,14 @@ public class ActivityController<T extends Activity>
 
   public ActivityController<T> attach() {
     Application application = this.application == null ? Robolectric.application : this.application;
+    if (this.application != null) {
+      ShadowApplication roboShadow = shadowOf_(Robolectric.application);
+      ShadowApplication testShadow = shadowOf_(this.application);
+      testShadow.bind(roboShadow.getAppManifest(), roboShadow.getResourceLoader());
+      testShadow.callAttachBaseContext(Robolectric.application.getBaseContext());
+      this.application.onCreate();
+      shadow.setTestApplication(this.application);
+    }
     Context baseContext = this.baseContext == null ? application : this.baseContext;
     Intent intent = getIntent();
     ActivityInfo activityInfo = new ActivityInfo();
