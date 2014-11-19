@@ -21,9 +21,10 @@ import java.util.Set;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
 public @interface Config {
-  @SuppressWarnings("UnusedDeclaration")
   public static final String NONE = "--none";
   public static final String DEFAULT = "--default";
+  public static final String DEFAULT_RES_FOLDER = "res";
+  public static final String DEFAULT_ASSET_FOLDER = "assets";
 
   /**
    * The Android SDK level to emulate. If not specified, Robolectric defaults to API 16.
@@ -54,11 +55,18 @@ public @interface Config {
   String qualifiers() default "";
 
   /**
-   * The Directory from which to load resources.  This should be relative from the directory containing the AndroidManifest.
-   *
+   * The directory from which to load resources.  This should be relative to the directory containing AndroidManifest.xml.
+   * <p>
    * If not specified, Robolectric defaults to {@code res}.
    */
-  String resourceDir() default "res";
+  String resourceDir() default DEFAULT_RES_FOLDER;
+
+  /**
+   * The directory from which to load assets. This should be relative to the directory containing AndroidManifest.xml.
+   * <p>
+   * If not specified, Robolectric defaults to {@code assets}.
+   */
+  String assetDir() default DEFAULT_ASSET_FOLDER;
 
   /**
    * The Android SDK level to report in Build.VERSION.SDK_INT.
@@ -82,6 +90,7 @@ public @interface Config {
     private final String manifest;
     private final String qualifiers;
     private final String resourceDir;
+    private final String assetDir;
     private final int reportSdk;
     private final Class<?>[] shadows;
     private final Class<? extends Application> application;
@@ -93,7 +102,8 @@ public @interface Config {
           Integer.parseInt(configProperties.getProperty("emulateSdk", "-1")),
           configProperties.getProperty("manifest", DEFAULT),
           configProperties.getProperty("qualifiers", ""),
-          configProperties.getProperty("resourceDir", "res"),
+          configProperties.getProperty("resourceDir", Config.DEFAULT_RES_FOLDER),
+          configProperties.getProperty("assetDir", Config.DEFAULT_ASSET_FOLDER),
           Integer.parseInt(configProperties.getProperty("reportSdk", "-1")),
           parseClasses(configProperties.getProperty("shadows", "")),
           parseApplication(configProperties.getProperty("application", "android.app.Application")),
@@ -129,11 +139,12 @@ public @interface Config {
       return pathList.split("[, ]+");
     }
 
-    public Implementation(int emulateSdk, String manifest, String qualifiers, String resourceDir, int reportSdk, Class<?>[] shadows, Class<? extends Application> application, String[] libraries) {
+    public Implementation(int emulateSdk, String manifest, String qualifiers, String resourceDir, String assetDir, int reportSdk, Class<?>[] shadows, Class<? extends Application> application, String[] libraries) {
       this.emulateSdk = emulateSdk;
       this.manifest = manifest;
       this.qualifiers = qualifiers;
       this.resourceDir = resourceDir;
+      this.assetDir = assetDir;
       this.reportSdk = reportSdk;
       this.shadows = shadows;
       this.application = application;
@@ -144,7 +155,8 @@ public @interface Config {
       this.emulateSdk = pick(baseConfig.emulateSdk(), overlayConfig.emulateSdk(), -1);
       this.manifest = pick(baseConfig.manifest(), overlayConfig.manifest(), DEFAULT);
       this.qualifiers = pick(baseConfig.qualifiers(), overlayConfig.qualifiers(), "");
-      this.resourceDir = pick(baseConfig.resourceDir(), overlayConfig.resourceDir(), "res");
+      this.resourceDir = pick(baseConfig.resourceDir(), overlayConfig.resourceDir(), Config.DEFAULT_RES_FOLDER);
+      this.assetDir = pick(baseConfig.assetDir(), overlayConfig.assetDir(), Config.DEFAULT_ASSET_FOLDER);
       this.reportSdk = pick(baseConfig.reportSdk(), overlayConfig.reportSdk(), -1);
 
       Set<Class<?>> shadows = new HashSet<Class<?>>();
@@ -164,11 +176,13 @@ public @interface Config {
       return overlayValue.equals(nullValue) ? baseValue : overlayValue;
     }
 
-    @Override public int emulateSdk() {
+    @Override
+    public int emulateSdk() {
       return emulateSdk;
     }
 
-    @Override public String manifest() {
+    @Override
+    public String manifest() {
       return manifest;
     }
 
@@ -177,7 +191,8 @@ public @interface Config {
       return application;
     }
 
-    @Override public String qualifiers() {
+    @Override
+    public String qualifiers() {
       return qualifiers;
     }
 
@@ -186,19 +201,28 @@ public @interface Config {
       return resourceDir;
     }
 
-    @Override public int reportSdk() {
+    @Override
+    public String assetDir() {
+      return assetDir;
+    }
+
+    @Override
+    public int reportSdk() {
       return reportSdk;
     }
 
-    @Override public Class<?>[] shadows() {
+    @Override
+    public Class<?>[] shadows() {
       return shadows;
     }
 
-    @Override public String[] libraries() {
+    @Override
+    public String[] libraries() {
       return libraries;
     }
 
-    @NotNull @Override public Class<? extends Annotation> annotationType() {
+    @NotNull @Override
+    public Class<? extends Annotation> annotationType() {
       return Config.class;
     }
 

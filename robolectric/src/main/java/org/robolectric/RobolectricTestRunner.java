@@ -115,16 +115,15 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     return new ShadowWrangler(shadowMap, sdkConfig);
   }
 
-  protected AndroidManifest createAppManifest(FsFile manifestFile, FsFile resDir, FsFile assetsDir) {
+  protected AndroidManifest createAppManifest(FsFile manifestFile, FsFile resDir, FsFile assetDir) {
     if (!manifestFile.exists()) {
       System.out.print("WARNING: No manifest file found at " + manifestFile.getPath() + ".");
       System.out.println("Falling back to the Android OS resources only.");
       System.out.println("To remove this warning, annotate your test class with @Config(manifest=Config.NONE).");
       return null;
     }
-    AndroidManifest manifest = new AndroidManifest(manifestFile, resDir, assetsDir);
-    String packageName = System.getProperty("android.package");
-    manifest.setPackageName(packageName);
+    AndroidManifest manifest = new AndroidManifest(manifestFile, resDir, assetDir);
+    manifest.setPackageName(System.getProperty("android.package"));
     return manifest;
   }
 
@@ -309,19 +308,19 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     FsFile baseDir;
     FsFile manifestFile;
     FsFile resDir;
-    FsFile assetsDir;
+    FsFile assetDir;
 
     boolean defaultManifest = config.manifest().equals(Config.DEFAULT);
     if (defaultManifest && manifestProperty != null) {
       manifestFile = Fs.fileFromPath(manifestProperty);
       baseDir = manifestFile.getParent();
       resDir = Fs.fileFromPath(resourcesProperty);
-      assetsDir = Fs.fileFromPath(assetsProperty);
+      assetDir = Fs.fileFromPath(assetsProperty);
     } else {
       manifestFile = getBaseDir().join(defaultManifest ? AndroidManifest.DEFAULT_MANIFEST_NAME : config.manifest());
       baseDir = manifestFile.getParent();
       resDir = baseDir.join(config.resourceDir());
-      assetsDir = baseDir.join(AndroidManifest.DEFAULT_ASSETS_FOLDER);
+      assetDir = baseDir.join(config.assetDir());
     }
 
     List<FsFile> libraryDirs = null;
@@ -337,7 +336,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       appManifest = envHolder.appManifestsByFile.get(manifestFile);
       if (appManifest == null) {
         long startTime = System.currentTimeMillis();
-        appManifest = createAppManifest(manifestFile, resDir, assetsDir);
+        appManifest = createAppManifest(manifestFile, resDir, assetDir);
 
         if (libraryDirs != null) {
           appManifest.setLibraryDirectories(libraryDirs);
