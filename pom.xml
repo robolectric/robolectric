@@ -103,7 +103,7 @@
           <artifactId>maven-processor-plugin</artifactId>
           <version>2.2.1</version>
           <configuration>
-            <compilerArguments>-source ${maven.compiler.source} -target ${maven.compiler.target}</compilerArguments>
+            <compilerArguments>-source ${maven.compiler.source} -target ${maven.compiler.target} -Aorg.robolectric.annotation.processing.shadowPackage=org.robolectric</compilerArguments>
           </configuration>
           <executions>
             <execution>
