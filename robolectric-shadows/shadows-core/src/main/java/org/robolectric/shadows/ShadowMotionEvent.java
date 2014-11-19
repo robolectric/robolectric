@@ -23,7 +23,7 @@ public class ShadowMotionEvent {
   private int pointerCount = 1;
   private long downTime;
   private long eventTime;
-  private int[] pointerIds = new int[2];
+  private int[] pointerIds = {0, 1};
   private int pointerIndex;
   private int source;
 
@@ -108,6 +108,15 @@ public class ShadowMotionEvent {
   @Implementation
   public final int getPointerId(int index) {
     return pointerIds[index];
+  }
+
+  @Implementation
+  public final int getPointerIdBits() {
+    int idBits = 0;
+    for (int i = 0; i < pointerCount; i++) {
+      idBits |= 1 << pointerIds[i];
+    }
+    return idBits;
   }
 
   @Implementation
