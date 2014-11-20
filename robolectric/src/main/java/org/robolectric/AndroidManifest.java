@@ -2,6 +2,7 @@ package org.robolectric;
 
 import android.app.Activity;
 import android.graphics.Color;
+import org.robolectric.annotation.Config;
 import org.robolectric.manifest.ActivityData;
 import org.robolectric.manifest.BroadcastReceiverData;
 import org.robolectric.manifest.ContentProviderData;
@@ -15,7 +16,6 @@ import org.w3c.dom.NodeList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -46,8 +46,6 @@ import static android.content.pm.ApplicationInfo.FLAG_VM_SAFE_MODE;
 
 public class AndroidManifest {
   public static final String DEFAULT_MANIFEST_NAME = "AndroidManifest.xml";
-  public static final String DEFAULT_RES_FOLDER = "res";
-  public static final String DEFAULT_ASSETS_FOLDER = "assets";
 
   private final FsFile androidManifestFile;
   private final FsFile resDirectory;
@@ -75,35 +73,11 @@ public class AndroidManifest {
   private List<AndroidManifest> libraryManifests;
 
   /**
-   * Creates a Robolectric configuration using default Android files relative to the specified base directory.
-   * <p/>
-   * The manifest will be baseDir/AndroidManifest.xml, res will be baseDir/res, and assets in baseDir/assets.
-   *
-   * @param baseDir the base directory of your Android project
-   * @deprecated Use {@link #AndroidManifest(org.robolectric.res.FsFile, org.robolectric.res.FsFile, org.robolectric.res.FsFile)} instead.}
-   */
-  public AndroidManifest(final File baseDir) {
-    this(Fs.newFile(baseDir));
-  }
-
-  public AndroidManifest(final FsFile androidManifestFile, final FsFile resDirectory) {
-    this(androidManifestFile, resDirectory, resDirectory.getParent().join(DEFAULT_ASSETS_FOLDER));
-  }
-
-  /**
-   * @deprecated Use {@link #AndroidManifest(org.robolectric.res.FsFile, org.robolectric.res.FsFile, org.robolectric.res.FsFile)} instead.}
-   */
-  public AndroidManifest(final FsFile baseDir) {
-    this(baseDir.join(DEFAULT_MANIFEST_NAME), baseDir.join(DEFAULT_RES_FOLDER),
-        baseDir.join(DEFAULT_ASSETS_FOLDER));
-  }
-
-  /**
    * Creates a Robolectric configuration using specified locations.
    *
-   * @param androidManifestFile location of the AndroidManifest.xml file
-   * @param resDirectory        location of the res directory
-   * @param assetsDirectory     location of the assets directory
+   * @param androidManifestFile Location of the AndroidManifest.xml file.
+   * @param resDirectory        Location of the res directory.
+   * @param assetsDirectory     Location of the assets directory.
    */
   public AndroidManifest(FsFile androidManifestFile, FsFile resDirectory, FsFile assetsDirectory) {
     this.androidManifestFile = androidManifestFile;
@@ -586,7 +560,7 @@ public class AndroidManifest {
   }
 
   protected AndroidManifest createLibraryAndroidManifest(FsFile libraryBaseDir) {
-    return new AndroidManifest(libraryBaseDir);
+    return new AndroidManifest(libraryBaseDir.join(DEFAULT_MANIFEST_NAME), libraryBaseDir.join(Config.DEFAULT_RES_FOLDER), libraryBaseDir.join(Config.DEFAULT_ASSET_FOLDER));
   }
 
   public List<AndroidManifest> getLibraryManifests() {

@@ -212,7 +212,7 @@ public class AndroidManifestTest {
 
   @Test
   public void shouldLoadAllResourcesForExistingLibraries() {
-    AndroidManifest appManifest = new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"));
+    AndroidManifest appManifest = new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"), resourceFile("assets"));
 
     // This intentionally loads from the non standard resources/project.properties
     List<String> resourcePaths = stringify(appManifest.getIncludedResourcePaths());
@@ -226,7 +226,7 @@ public class AndroidManifestTest {
 
   @Test
   public void shouldTolerateMissingRFile() throws Exception {
-    AndroidManifest appManifest = new AndroidManifest(resourceFile("TestAndroidManifestWithNoRFile.xml"), resourceFile("res"));
+    AndroidManifest appManifest = new AndroidManifest(resourceFile("TestAndroidManifestWithNoRFile.xml"), resourceFile("res"), resourceFile("assets"));
     assertEquals(appManifest.getPackageName(), "org.no.resources.for.me");
     assertThat(appManifest.getRClass()).isNull();
     assertEquals(appManifest.getResourcePath().getPackageName(), "org.no.resources.for.me");
