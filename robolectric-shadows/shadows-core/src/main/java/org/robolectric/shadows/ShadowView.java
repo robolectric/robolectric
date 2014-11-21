@@ -13,11 +13,13 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewParent;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.AccessibilityUtil;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import java.io.PrintStream;
@@ -340,7 +342,10 @@ public class ShadowView {
     if (!realView.isEnabled()) {
       throw new RuntimeException("View is not enabled and cannot be clicked");
     }
-
+    if (!AccessibilityUtil.passesAccessibilityChecksIfEnabled(realView)) {
+      throw new RuntimeException("View has accessibility issues.");
+    }
+    
     return realView.performClick();
   }
 
