@@ -4,16 +4,15 @@ import android.support.v4.content.Loader;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
+import org.robolectric.util.TestRunnerWithManifest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Tests for support loaders.
  */
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunnerWithManifest.class)
 public class SupportLoaderTest {
   private Loader<String> loader;
   private boolean onForceLoadCalled;
@@ -34,5 +33,4 @@ public class SupportLoaderTest {
     loader.forceLoad();
     assertThat(onForceLoadCalled).isTrue();
   }
-
 }

@@ -4,11 +4,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
 import org.robolectric.util.Transcript;
+import org.robolectric.util.TestRunnerWithManifest;
 import android.support.v4.content.AsyncTaskLoader;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunnerWithManifest.class)
 public class AsyncTaskLoaderTest {
   private Transcript transcript;
 

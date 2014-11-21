@@ -6,9 +6,6 @@ import android.content.pm.ActivityInfo;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -309,20 +306,9 @@ public class LayoutInflaterTest {
     assertThat(mainView.findViewById(R.id.map_view)).isInstanceOf(MapView.class);
   }
 
-  @Test @Ignore("should this work?")
-  public void testFragment() throws Exception {
-    FragmentActivity fragmentActivity = new FragmentActivity();
-    context = fragmentActivity;
-    View v = inflate("fragment");
-    TestUtil.assertInstanceOf(TextView.class, v);
-    final FragmentManager fragmentManager = fragmentActivity.getSupportFragmentManager();
-    Fragment fragment = fragmentManager.findFragmentById(R.id.my_fragment);
-    assertNotNull(fragment);
-  }
-
   @Test
   public void testMultiOrientation() throws Exception {
-    context = buildActivity(FragmentActivity.class).create().start().resume().get();
+    context = buildActivity(Activity.class).create().start().resume().get();
 
     // Default screen orientation should be portrait.
     ViewGroup view = (ViewGroup) inflate("multi_orientation");
@@ -492,7 +478,7 @@ public class LayoutInflaterTest {
     return drawable;
   }
 
-  public static class ClickActivity extends FragmentActivity {
+  public static class ClickActivity extends Activity {
     public boolean clicked = false;
 
     @Override protected void onCreate(Bundle savedInstanceState) {

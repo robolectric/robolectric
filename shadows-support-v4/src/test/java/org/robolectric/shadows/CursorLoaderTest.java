@@ -5,11 +5,11 @@ import android.net.Uri;
 import android.support.v4.content.CursorLoader;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
+import org.robolectric.util.TestRunnerWithManifest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunnerWithManifest.class)
 public class CursorLoaderTest {
   @Test
   public void testGetters() {

@@ -24,6 +24,7 @@
     <module>robolectric-resources</module>
     <module>robolectric-shadows</module>
     <module>robolectric-utils</module>
+    <module>shadows-support-v4</module>
   </modules>
 
   <properties>
@@ -35,6 +36,12 @@
 
   <dependencyManagement>
     <dependencies>
+      <dependency>
+        <groupId>org.robolectric</groupId>
+        <artifactId>robolectric</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
       <dependency>
         <groupId>org.robolectric</groupId>
         <artifactId>robolectric-annotations</artifactId>

@@ -1,6 +1,5 @@
 package org.robolectric.bytecode;
 
-import android.widget.CursorAdapter;
 import org.junit.Test;
 import org.robolectric.shadows.ShadowCursorAdapter;
 
@@ -9,12 +8,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ShadowMapTest {
   @Test public void shouldLookUpShadowClassesByNamingConvention() throws Exception {
     ShadowMap map = new ShadowMap.Builder().build();
-    assertThat(map.get(android.support.v4.widget.CursorAdapter.class)).isNull();
+    assertThat(map.get(CursorAdapter.class)).isNull();
   }
 
   @Test public void shouldNotReturnMismatchedClassesJustBecauseTheSimpleNameMatches() throws Exception {
     ShadowMap map = new ShadowMap.Builder().build();
-    assertThat(map.get(CursorAdapter.class).shadowClassName).isEqualTo(ShadowCursorAdapter.class.getName());
+    assertThat(map.get(android.widget.CursorAdapter.class).shadowClassName).isEqualTo(ShadowCursorAdapter.class.getName());
   }
 
   @Test public void equalsHashCode() throws Exception {
@@ -31,4 +30,8 @@ public class ShadowMapTest {
     assertThat(d).isNotEqualTo(a);
     assertThat(d.hashCode()).isNotEqualTo(b.hashCode());
   }
+}
+
+class CursorAdapter {
+
 }

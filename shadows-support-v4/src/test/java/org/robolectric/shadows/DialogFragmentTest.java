@@ -16,7 +16,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
-import org.robolectric.TestRunners;
+import org.robolectric.internal.ShadowExtractor;
+import org.robolectric.util.TestRunnerWithManifest;
 import org.robolectric.util.Transcript;
 
 import static org.junit.Assert.assertFalse;
@@ -24,9 +25,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
-import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunnerWithManifest.class)
 public class DialogFragmentTest {
 
   private FragmentActivity activity;
@@ -156,7 +156,7 @@ public class DialogFragmentTest {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
       transcript.add("onCreateView");
-      return inflater.inflate(R.layout.main, null);
+      return inflater.inflate(R.layout.dialog_fragment, null);
     }
 
     @Override
@@ -186,5 +186,9 @@ public class DialogFragmentTest {
     public void returnThisDialogFromOnCreateDialog(Dialog dialog) {
       returnThisDialogFromOnCreateDialog = dialog;
     }
+  }
+
+  private static ShadowDialog shadowOf(Dialog dialog) {
+    return (ShadowDialog) ShadowExtractor.extract(dialog);
   }
 }

@@ -1,10 +1,9 @@
 package org.robolectric.shadows;
 
 import android.support.v4.widget.DrawerLayout;
-
-import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Implementation;
 
 import static org.robolectric.internal.Shadow.directlyOn;
 

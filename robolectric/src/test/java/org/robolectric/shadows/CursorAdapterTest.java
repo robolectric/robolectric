@@ -125,17 +125,6 @@ public class CursorAdapterTest {
     assertThat(adapter.getCursor()).isNotSameAs(curs);
   }
 
-  @Test public void shouldNotInterfereWithSupportCursorAdapter() throws Exception {
-    new android.support.v4.widget.CursorAdapter(RuntimeEnvironment.application, curs, false) {
-      @Override public View newView(Context context, Cursor cursor, ViewGroup parent) {
-        return null;
-      }
-
-      @Override public void bindView(View view, Context context, Cursor cursor) {
-      }
-    };
-  }
-
   private class TestAdapter extends CursorAdapter {
 
     public TestAdapter(Cursor curs) {

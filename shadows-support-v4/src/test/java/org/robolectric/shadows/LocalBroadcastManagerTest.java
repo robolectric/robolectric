@@ -8,15 +8,14 @@ import android.net.Uri;
 import android.support.v4.content.LocalBroadcastManager;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.Shadows;
-import org.robolectric.TestRunners;
+import org.robolectric.internal.ShadowExtractor;
+import org.robolectric.util.TestRunnerWithManifest;
 import org.robolectric.util.Transcript;
 
 import static junit.framework.Assert.*;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunnerWithManifest.class)
 public class LocalBroadcastManagerTest {
   private Transcript transcript = new Transcript();
 
@@ -101,7 +100,7 @@ public class LocalBroadcastManagerTest {
   @Test
   public void testGetRegisteredBroadcastReceivers() throws Exception {
     LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(RuntimeEnvironment.application);
-    ShadowLocalBroadcastManager shadowLocalBroadcastManager = Shadows.shadowOf(broadcastManager);
+    ShadowLocalBroadcastManager shadowLocalBroadcastManager = shadowOf(broadcastManager);
     assertEquals(0, shadowLocalBroadcastManager.getRegisteredBroadcastReceivers().size());
 
     BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -124,7 +123,7 @@ public class LocalBroadcastManagerTest {
   @Test
   public void testGetSentBroadcastIntents() throws Exception {
     LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(RuntimeEnvironment.application);
-    ShadowLocalBroadcastManager shadowLocalBroadcastManager = Shadows.shadowOf(broadcastManager);
+    ShadowLocalBroadcastManager shadowLocalBroadcastManager = shadowOf(broadcastManager);
     assertEquals(0, shadowLocalBroadcastManager.getSentBroadcastIntents().size());
 
     Intent broadcastIntent = new Intent("foo");
@@ -132,5 +131,9 @@ public class LocalBroadcastManagerTest {
 
     assertEquals(1, shadowLocalBroadcastManager.getSentBroadcastIntents().size());
     assertEquals(broadcastIntent, shadowLocalBroadcastManager.getSentBroadcastIntents().get(0));
+  }
+
+  private ShadowLocalBroadcastManager shadowOf(LocalBroadcastManager localBroadcastManager) {
+    return (ShadowLocalBroadcastManager) ShadowExtractor.extract(localBroadcastManager);
   }
 }

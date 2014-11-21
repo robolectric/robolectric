@@ -15,7 +15,6 @@
       />
 
   <TextView
-      android:name="org.robolectric.util.CustomFragment"
       android:id="@+id/my_landscape_text"
       android:text="Landscape!"
       android:layout_width="match_parent"

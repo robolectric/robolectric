@@ -5,13 +5,13 @@ import android.support.v4.view.PagerAdapter;
 import android.view.View;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
+import org.robolectric.util.TestRunnerWithManifest;
 
 import java.lang.reflect.Method;
 
 import static junit.framework.Assert.assertTrue;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunnerWithManifest.class)
 public class PagerAdapterTest {
   @Test
   public void shouldNotifyDataSetChanged() throws Exception {
