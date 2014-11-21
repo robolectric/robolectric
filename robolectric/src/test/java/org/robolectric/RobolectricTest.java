@@ -22,6 +22,8 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadows.ShadowDisplay;
 import org.robolectric.shadows.StubViewRoot;
+import org.robolectric.shadows.util.MagicObject;
+import org.robolectric.util.ShadowThingy;
 import org.robolectric.util.TestOnClickListener;
 
 import java.io.ByteArrayOutputStream;
@@ -32,6 +34,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.Shadows.shadowOf_;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class RobolectricTest {
@@ -59,21 +62,21 @@ public class RobolectricTest {
 
   @Test(expected = RuntimeException.class)
   public void clickOn_shouldThrowIfViewIsDisabled() throws Exception {
-    View view = new View(Robolectric.application);
+    View view = new View(RuntimeEnvironment.application);
     view.setEnabled(false);
     Robolectric.clickOn(view);
   }
 
   @Test
   public void shouldResetBackgroundSchedulerBeforeTests() throws Exception {
-    assertThat(Robolectric.getBackgroundScheduler().isPaused()).isFalse();
-    Robolectric.getBackgroundScheduler().pause();
+    assertThat(MagicObject.getBackgroundScheduler().isPaused()).isFalse();
+    MagicObject.getBackgroundScheduler().pause();
   }
 
   @Test
   public void shouldResetBackgroundSchedulerAfterTests() throws Exception {
-    assertThat(Robolectric.getBackgroundScheduler().isPaused()).isFalse();
-    Robolectric.getBackgroundScheduler().pause();
+    assertThat(MagicObject.getBackgroundScheduler().isPaused()).isFalse();
+    MagicObject.getBackgroundScheduler().pause();
   }
 
   @Test
@@ -129,8 +132,8 @@ public class RobolectricTest {
     assertThat(new Activity().getResources().getDisplayMetrics().widthPixels).isEqualTo(480);
     assertThat(new Activity().getResources().getDisplayMetrics().heightPixels).isEqualTo(800);
 
-    Display display = Robolectric.newInstanceOf(Display.class);
-    ShadowDisplay shadowDisplay = shadowOf(display);
+    Display display = ShadowThingy.newInstanceOf(Display.class);
+    ShadowDisplay shadowDisplay = shadowOf_(display);
     shadowDisplay.setWidth(100);
     shadowDisplay.setHeight(200);
     Robolectric.setDefaultDisplay(display);
@@ -141,7 +144,7 @@ public class RobolectricTest {
 
   @Test
   public void clickOn_shouldCallClickListener() throws Exception {
-    View view = new View(Robolectric.application);
+    View view = new View(RuntimeEnvironment.application);
     shadowOf(view).setMyParent(new StubViewRoot());
     TestOnClickListener testOnClickListener = new TestOnClickListener();
     view.setOnClickListener(testOnClickListener);
@@ -152,7 +155,7 @@ public class RobolectricTest {
   @Test(expected=ActivityNotFoundException.class)
   public void checkActivities_shouldSetValueOnShadowApplication() throws Exception {
     Robolectric.checkActivities(true);
-    Robolectric.application.startActivity(new Intent("i.dont.exist.activity"));
+    RuntimeEnvironment.application.startActivity(new Intent("i.dont.exist.activity"));
   }
 
   @Test

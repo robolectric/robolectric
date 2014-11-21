@@ -9,6 +9,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
 import java.io.InputStream;
@@ -21,7 +22,7 @@ import static org.robolectric.Shadows.shadowOf;
 public class BitmapFactoryTest {
   @Test
   public void decodeResource_shouldSetDescriptionAndCreatedFrom() throws Exception {
-    Bitmap bitmap = BitmapFactory.decodeResource(Robolectric.application.getResources(), R.drawable.an_image);
+    Bitmap bitmap = BitmapFactory.decodeResource(RuntimeEnvironment.application.getResources(), R.drawable.an_image);
     ShadowBitmap shadowBitmap = shadowOf(bitmap);
     assertEquals("Bitmap for resource:org.robolectric:drawable/an_image", shadowBitmap.getDescription());
     assertEquals(R.drawable.an_image, shadowBitmap.getCreatedFromResId());
@@ -31,7 +32,7 @@ public class BitmapFactoryTest {
 
   @Test
   public void decodeResource_shouldSetDefaultBitmapConfig() throws Exception {
-    Bitmap bitmap = BitmapFactory.decodeResource(Robolectric.application.getResources(), R.drawable.an_image);
+    Bitmap bitmap = BitmapFactory.decodeResource(RuntimeEnvironment.application.getResources(), R.drawable.an_image);
     assertThat(bitmap.getConfig()).isEqualTo(Bitmap.Config.ARGB_8888);
     assertThat(bitmap.getRowBytes()).isNotZero();
   }
@@ -40,7 +41,7 @@ public class BitmapFactoryTest {
   public void decodeResource_shouldPassABitmapConfig() throws Exception {
     BitmapFactory.Options options = new BitmapFactory.Options();
     options.inPreferredConfig = Bitmap.Config.ALPHA_8;
-    Bitmap bitmap = BitmapFactory.decodeResource(Robolectric.application.getResources(), R.drawable.an_image, options);
+    Bitmap bitmap = BitmapFactory.decodeResource(RuntimeEnvironment.application.getResources(), R.drawable.an_image, options);
     assertThat(bitmap.getConfig()).isEqualTo(Bitmap.Config.ALPHA_8);
   }
 
@@ -56,7 +57,7 @@ public class BitmapFactoryTest {
 
   @Test
   public void decodeStream_shouldSetDescriptionAndCreatedFrom() throws Exception {
-    InputStream inputStream = Robolectric.application.getContentResolver().openInputStream(Uri.parse("content:/path"));
+    InputStream inputStream = RuntimeEnvironment.application.getContentResolver().openInputStream(Uri.parse("content:/path"));
     Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
     ShadowBitmap shadowBitmap = shadowOf(bitmap);
     assertEquals("Bitmap for content:/path", shadowBitmap.getDescription());
@@ -78,7 +79,7 @@ public class BitmapFactoryTest {
 
   @Test
   public void decodeStream_shouldSetDescriptionWithNullOptions() throws Exception {
-    InputStream inputStream = Robolectric.application.getContentResolver().openInputStream(Uri.parse("content:/path"));
+    InputStream inputStream = RuntimeEnvironment.application.getContentResolver().openInputStream(Uri.parse("content:/path"));
     Bitmap bitmap = BitmapFactory.decodeStream(inputStream, null, null);
     assertEquals("Bitmap for content:/path", shadowOf(bitmap).getDescription());
     assertEquals(100, bitmap.getWidth());
@@ -89,7 +90,7 @@ public class BitmapFactoryTest {
   public void decodeResource_shouldGetWidthAndHeightFromHints() throws Exception {
     ShadowBitmapFactory.provideWidthAndHeightHints(R.drawable.an_image, 123, 456);
 
-    Bitmap bitmap = BitmapFactory.decodeResource(Robolectric.application.getResources(), R.drawable.an_image);
+    Bitmap bitmap = BitmapFactory.decodeResource(RuntimeEnvironment.application.getResources(), R.drawable.an_image);
     assertEquals("Bitmap for resource:org.robolectric:drawable/an_image", shadowOf(bitmap).getDescription());
     assertEquals(123, bitmap.getWidth());
     assertEquals(456, bitmap.getHeight());
@@ -99,16 +100,16 @@ public class BitmapFactoryTest {
   public void decodeResource_canTakeOptions() throws Exception {
     BitmapFactory.Options options = new BitmapFactory.Options();
     options.inSampleSize = 100;
-    Bitmap bitmap = BitmapFactory.decodeResource(Robolectric.application.getResources(), R.drawable.an_image, options);
+    Bitmap bitmap = BitmapFactory.decodeResource(RuntimeEnvironment.application.getResources(), R.drawable.an_image, options);
     assertEquals(true, shadowOf(bitmap).getDescription().contains("inSampleSize=100"));
   }
 
   @Test
   public void decodeResourceStream_canTakeOptions() throws Exception {
     BitmapFactory.Options options = new BitmapFactory.Options();
-    InputStream inputStream = Robolectric.application.getContentResolver().openInputStream(Uri.parse("content:/path"));
+    InputStream inputStream = RuntimeEnvironment.application.getContentResolver().openInputStream(Uri.parse("content:/path"));
     options.inSampleSize = 100;
-    Bitmap bitmap = BitmapFactory.decodeResourceStream(Robolectric.application.getResources(), null, inputStream, null, options);
+    Bitmap bitmap = BitmapFactory.decodeResourceStream(RuntimeEnvironment.application.getResources(), null, inputStream, null, options);
     assertEquals(true, shadowOf(bitmap).getDescription().contains("inSampleSize=100"));
   }
 
@@ -136,7 +137,7 @@ public class BitmapFactoryTest {
   public void decodeUri_shouldGetWidthAndHeightFromHints() throws Exception {
     ShadowBitmapFactory.provideWidthAndHeightHints(Uri.parse("content:/path"), 123, 456);
 
-    Bitmap bitmap = MediaStore.Images.Media.getBitmap(Robolectric.application.getContentResolver(), Uri.parse("content:/path"));
+    Bitmap bitmap = MediaStore.Images.Media.getBitmap(RuntimeEnvironment.application.getContentResolver(), Uri.parse("content:/path"));
     assertEquals("Bitmap for content:/path", shadowOf(bitmap).getDescription());
     assertEquals(123, bitmap.getWidth());
     assertEquals(456, bitmap.getHeight());
@@ -168,7 +169,7 @@ public class BitmapFactoryTest {
   public void decodeStream_shouldGetWidthAndHeightFromHints() throws Exception {
     ShadowBitmapFactory.provideWidthAndHeightHints(Uri.parse("content:/path"), 123, 456);
 
-    InputStream inputStream = Robolectric.application.getContentResolver().openInputStream(Uri.parse("content:/path"));
+    InputStream inputStream = RuntimeEnvironment.application.getContentResolver().openInputStream(Uri.parse("content:/path"));
     Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
     assertEquals("Bitmap for content:/path", shadowOf(bitmap).getDescription());
     assertEquals(123, bitmap.getWidth());

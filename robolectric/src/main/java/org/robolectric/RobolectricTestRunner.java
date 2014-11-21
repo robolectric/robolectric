@@ -15,8 +15,16 @@ import org.robolectric.annotation.*;
 import org.robolectric.bytecode.*;
 import org.robolectric.internal.ParallelUniverse;
 import org.robolectric.internal.ParallelUniverseInterface;
+import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.res.DocumentLoader;
+import org.robolectric.res.Fs;
+import org.robolectric.res.FsFile;
+import org.robolectric.res.OverlayResourceLoader;
+import org.robolectric.res.PackageResourceLoader;
+import org.robolectric.res.ResourceLoader;
+import org.robolectric.res.ResourcePath;
+import org.robolectric.res.RoutingResourceLoader;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.res.*;
 import org.robolectric.util.AnnotationUtil;
 import org.robolectric.util.Pair;
 
@@ -206,13 +214,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
           parallelUniverseInterface.setSdkConfig(sdkEnvironment.getSdkConfig());
 
           int sdkVersion = pickReportedSdkVersion(config, appManifest);
-          Class<?> versionClass = sdkEnvironment.bootstrappedClass(Build.VERSION.class);
-          Field sdk_int = versionClass.getDeclaredField("SDK_INT");
-          sdk_int.setAccessible(true);
-          Field modifiers = Field.class.getDeclaredField("modifiers");
-          modifiers.setAccessible(true);
-          modifiers.setInt(sdk_int, sdk_int.getModifiers() & ~Modifier.FINAL);
-          sdk_int.setInt(null, sdkVersion);
+          ReflectionHelpers.setStaticFieldReflectively(sdkEnvironment.bootstrappedClass(Build.VERSION.class), "SDK_INT", sdkVersion);
 
           ResourceLoader systemResourceLoader = sdkEnvironment.getSystemResourceLoader(getJarResolver());
           setUpApplicationState(bootstrappedMethod, parallelUniverseInterface, systemResourceLoader, appManifest, config);

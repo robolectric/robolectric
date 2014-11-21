@@ -7,6 +7,7 @@ import org.robolectric.bytecode.ClassInfo;
 import org.robolectric.bytecode.Setup;
 import org.robolectric.bytecode.ShadowMap;
 import org.robolectric.internal.ParallelUniverseInterface;
+import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.FsFile;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.shadows.ShadowSystemProperties;

@@ -4,7 +4,7 @@ import android.animation.Animator;
 import android.animation.TimeInterpolator;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricShadowOfLevel16;
+import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -20,7 +20,7 @@ public class AnimatorTest {
     animator.addListener(startListener);
     animator.addListener(endListener);
 
-    RobolectricShadowOfLevel16.shadowOf(animator).start();
+    Shadows.shadowOf(animator).start();
     assertThat(startListener.startWasCalled).isTrue();
 
     assertThat(endListener.endWasCalled).isTrue();
@@ -34,10 +34,10 @@ public class AnimatorTest {
     animator.addListener(startListener);
     animator.addListener(endListener);
 
-    RobolectricShadowOfLevel16.shadowOf(animator).notifyStart();
+    Shadows.shadowOf(animator).notifyStart();
     assertThat(startListener.startWasCalled).isTrue();
 
-    RobolectricShadowOfLevel16.shadowOf(animator).notifyEnd();
+    Shadows.shadowOf(animator).notifyEnd();
     assertThat(endListener.endWasCalled).isTrue();
   }
 

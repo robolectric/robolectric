@@ -7,6 +7,7 @@ import android.content.pm.PackageInfo;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 
@@ -16,15 +17,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(TestRunners.WithDefaults.class)
 public class NonAppLibraryTest {
   @Test public void shouldStillCreateAnApplication() throws Exception {
-    assertThat(Robolectric.application).isExactlyInstanceOf(Application.class);
+    assertThat(RuntimeEnvironment.application).isExactlyInstanceOf(Application.class);
   }
 
   @Test public void applicationShouldHaveSomeReasonableConfig() throws Exception {
-    assertThat(Robolectric.application.getPackageName()).isEqualTo("org.robolectric.default");
+    assertThat(RuntimeEnvironment.application.getPackageName()).isEqualTo("org.robolectric.default");
   }
 
   @Test public void shouldHaveDefaultPackageInfo() throws Exception {
-    PackageInfo packageInfo = Robolectric.packageManager.getPackageInfo("org.robolectric.default", 0);
+    PackageInfo packageInfo = RuntimeEnvironment.getPackageManager().getPackageInfo("org.robolectric.default", 0);
     assertThat(packageInfo).isNotNull();
 
     ApplicationInfo applicationInfo = packageInfo.applicationInfo;
@@ -33,7 +34,7 @@ public class NonAppLibraryTest {
   }
   
   @Test public void shouldCreatePackageContext() throws Exception {
-    Context packageContext = Robolectric.application.createPackageContext("org.robolectric.default", 0);
+    Context packageContext = RuntimeEnvironment.application.createPackageContext("org.robolectric.default", 0);
     assertThat(packageContext).isNotNull();
   }
 }

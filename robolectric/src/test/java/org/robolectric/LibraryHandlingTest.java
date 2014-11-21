@@ -5,6 +5,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.manifest.AndroidManifest;
 
 import java.util.List;
 
@@ -12,7 +13,7 @@ import static org.junit.Assert.assertEquals;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class LibraryHandlingTest {
-  private final Resources resources = Robolectric.application.getResources();
+  private final Resources resources = RuntimeEnvironment.application.getResources();
 
   @Ignore("this seems to be unsupported behavior after Android's library scheme changes") @Test
   public void shouldFetchResourcesFromExplicitlyIndicatedLibrary() throws Exception {
@@ -42,7 +43,7 @@ public class LibraryHandlingTest {
   @Test
   @Config(manifest="src/test/resources/TestAndroidManifest.xml", libraries="lib1")
   public void libraryConfigShouldOverrideProjectProperties() throws Exception {
-    AndroidManifest manifest = Shadows.shadowOf(Robolectric.application).getAppManifest();
+    AndroidManifest manifest = Shadows.shadowOf(RuntimeEnvironment.application).getAppManifest();
     List<AndroidManifest> libraryManifests = manifest.getLibraryManifests();
     assertEquals(1, libraryManifests.size());
     assertEquals("org.robolectric.lib1", libraryManifests.get(0).getPackageName());

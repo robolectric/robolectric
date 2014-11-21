@@ -8,6 +8,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
@@ -20,20 +21,20 @@ public class ResourceLoaderTest {
   @Test
   @Config(qualifiers = "doesnotexist-land-xlarge")
   public void testChoosesLayoutBasedOnSearchPath_respectsOrderOfPath() throws Exception {
-    View view = LayoutInflater.from(Robolectric.application).inflate(R.layout.different_screen_sizes, null);
+    View view = LayoutInflater.from(RuntimeEnvironment.application).inflate(R.layout.different_screen_sizes, null);
     TextView textView = (TextView) view.findViewById(android.R.id.text1);
     assertThat(textView.getText().toString()).isEqualTo("land");
   }
 
   @Test 
   public void checkDefaultBooleanValue() throws Exception {
-	  assertThat(Robolectric.application.getResources().getBoolean(R.bool.different_resource_boolean)).isEqualTo(false);
+	  assertThat(RuntimeEnvironment.application.getResources().getBoolean(R.bool.different_resource_boolean)).isEqualTo(false);
   }
 
   @Test
   @Config(qualifiers="w820dp")
   public void checkQualifiedBooleanValue() throws Exception {
-	  assertThat(Robolectric.application.getResources().getBoolean(R.bool.different_resource_boolean)).isEqualTo(true);
+	  assertThat(RuntimeEnvironment.application.getResources().getBoolean(R.bool.different_resource_boolean)).isEqualTo(true);
   }
   
   @Test
@@ -47,7 +48,7 @@ public class ResourceLoaderTest {
   }
 
   private void checkForPollutionHelper() {
-    View view = LayoutInflater.from(Robolectric.application).inflate(R.layout.different_screen_sizes, null);
+    View view = LayoutInflater.from(RuntimeEnvironment.application).inflate(R.layout.different_screen_sizes, null);
     TextView textView = (TextView) view.findViewById(android.R.id.text1);
     assertThat(textView.getText().toString()).isEqualTo("default");
     Shadows.shadowOf(Robolectric.getShadowApplication().getResources().getConfiguration()).overrideQualifiers("land"); // testing if this pollutes the other test
@@ -66,7 +67,7 @@ public class ResourceLoaderTest {
     internalResourceId = (Integer) internalRIdClass.getDeclaredField(internalResource.name).get(null);
     assertThat(resId).isEqualTo(internalResourceId);
 
-    assertThat(Robolectric.application.getResources().getString(resId)).isEqualTo("The old PIN you typed isn't correct.");
+    assertThat(RuntimeEnvironment.application.getResources().getString(resId)).isEqualTo("The old PIN you typed isn't correct.");
   }
 
   private static class TestPreferenceActivity extends PreferenceActivity { }

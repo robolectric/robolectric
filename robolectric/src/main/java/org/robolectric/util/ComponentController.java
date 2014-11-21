@@ -5,7 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Looper;
-import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.shadows.ShadowLooper;
 
 import static org.robolectric.Shadows.shadowOf_;
@@ -60,7 +60,7 @@ abstract class ComponentController<C extends ComponentController<C, T, S>, T, S>
   public abstract C destroy();
 
   public Intent getIntent() {
-    Application application = this.application == null ? Robolectric.application : this.application;
+    Application application = this.application == null ? RuntimeEnvironment.application : this.application;
     Intent intent = this.intent == null ? new Intent(application, component.getClass()) : this.intent;
     if (intent.getComponent() == null) {
       intent.setClass(application, component.getClass());

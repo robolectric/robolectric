@@ -30,9 +30,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.*;
 import org.robolectric.annotation.Config;
+import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
 import org.robolectric.test.TemporaryFolder;
 import org.robolectric.util.ActivityController;
+import org.robolectric.util.ShadowThingy;
 import org.robolectric.util.TestRunnable;
 import org.robolectric.util.Transcript;
 
@@ -49,7 +51,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.robolectric.Robolectric.application;
+import static org.robolectric.RuntimeEnvironment.application;
 import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -230,7 +232,7 @@ public class ActivityTest {
   @Test
   public void shouldRetrievePackageNameFromTheManifest() throws Exception {
     AndroidManifest appManifest = newConfigWith("com.wacka.wa", "");
-    Robolectric.application = new DefaultTestLifecycle().createApplication(null, appManifest, null);
+    RuntimeEnvironment.application = new DefaultTestLifecycle().createApplication(null, appManifest, null);
     shadowOf(application).bind(appManifest, null);
 
     assertThat("com.wacka.wa").isEqualTo(new Activity().getPackageName());
@@ -547,7 +549,7 @@ public class ActivityTest {
     assertThat(shadow.getManagedCursors()).isNotNull();
     assertThat(shadow.getManagedCursors().size()).isEqualTo(0);
 
-    Cursor c = Robolectric.newInstanceOf(SQLiteCursor.class);
+    Cursor c = ShadowThingy.newInstanceOf(SQLiteCursor.class);
     activity.startManagingCursor(c);
 
     assertThat(shadow.getManagedCursors()).isNotNull();

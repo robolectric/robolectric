@@ -6,6 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -16,7 +17,7 @@ public class ScrollerTest {
 
   @Before
   public void setup() throws Exception {
-    scroller = new Scroller(Robolectric.application, new BounceInterpolator());
+    scroller = new Scroller(RuntimeEnvironment.application, new BounceInterpolator());
   }
 
   @Test

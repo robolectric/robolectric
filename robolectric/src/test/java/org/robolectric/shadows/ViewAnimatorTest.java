@@ -7,6 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
 import static org.junit.Assert.assertEquals;
@@ -16,7 +17,7 @@ import static org.junit.Assert.assertSame;
 public class ViewAnimatorTest {
 
   ViewAnimator viewAnimator;
-  final Application application = Robolectric.application;
+  final Application application = RuntimeEnvironment.application;
 
   @Before
   public void setUp() {

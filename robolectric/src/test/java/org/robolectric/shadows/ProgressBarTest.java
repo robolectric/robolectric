@@ -4,7 +4,6 @@ import android.widget.ProgressBar;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.res.Attribute;
 import org.robolectric.res.ResName;
@@ -13,6 +12,8 @@ import org.robolectric.util.TestUtil;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
+import static org.robolectric.RuntimeEnvironment.application;
+import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ProgressBarTest {
@@ -22,11 +23,13 @@ public class ProgressBarTest {
 
   @Before
   public void setUp() {
-    progressBar = new ProgressBar(Robolectric.application, new RoboAttributeSet(asList(
+    RoboAttributeSet attrs = new RoboAttributeSet(asList(
         new Attribute(new ResName(TestUtil.SYSTEM_PACKAGE, "attr", "max"), "100", TestUtil.TEST_PACKAGE),
         new Attribute(new ResName(TestUtil.SYSTEM_PACKAGE, "attr", "indeterminate"), "false", TestUtil.TEST_PACKAGE),
         new Attribute(new ResName(TestUtil.SYSTEM_PACKAGE, "attr", "indeterminateOnly"), "false", TestUtil.TEST_PACKAGE)
-    ), Robolectric.application.getResources(), null));
+    ), shadowOf(application.getResources()).getResourceLoader());
+
+    progressBar = new ProgressBar(application, attrs);
   }
 
   @Test

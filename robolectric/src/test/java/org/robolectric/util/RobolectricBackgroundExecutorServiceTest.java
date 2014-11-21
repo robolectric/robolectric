@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
+import org.robolectric.shadows.util.MagicObject;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -21,7 +22,7 @@ public class RobolectricBackgroundExecutorServiceTest {
     transcript = new Transcript();
     executorService = new RobolectricBackgroundExecutorService();
 
-    Robolectric.getBackgroundScheduler().pause();
+    MagicObject.getBackgroundScheduler().pause();
 
     runnable = new Runnable() {
       @Override public void run() {

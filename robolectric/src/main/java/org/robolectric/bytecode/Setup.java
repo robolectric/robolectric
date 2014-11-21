@@ -1,7 +1,7 @@
 package org.robolectric.bytecode;
 
 import android.R;
-import org.robolectric.AndroidManifest;
+import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.DependencyJar;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.SdkConfig;
@@ -14,7 +14,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.impl.ExtendedResponseCache;
 import org.robolectric.impl.FakeCharsets;
 import org.robolectric.impl.ResponseSource;
-import org.robolectric.internal.DoNotInstrument;
+import org.robolectric.annotation.DoNotInstrument;
 import org.robolectric.internal.Instrument;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.res.ResourceLoader;
@@ -40,7 +40,6 @@ public class Setup {
       AndroidManifest.class,
       R.class,
 
-      org.robolectric.bytecode.InstrumentingClassLoader.class,
       org.robolectric.bytecode.AsmInstrumentingClassLoader.class,
       SdkEnvironment.class,
       SdkConfig.class,

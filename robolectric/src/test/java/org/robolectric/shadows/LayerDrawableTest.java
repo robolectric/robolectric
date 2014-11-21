@@ -8,6 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
 import static org.junit.Assert.*;
@@ -31,13 +32,13 @@ public class LayerDrawableTest {
   @Before
   public void setUp() {
     drawable1000 = new BitmapDrawable(BitmapFactory.decodeResource(
-        Robolectric.application.getResources(), 0x00001000));
+        RuntimeEnvironment.application.getResources(), 0x00001000));
     drawable2000 = new BitmapDrawable(BitmapFactory.decodeResource(
-        Robolectric.application.getResources(), 0x00002000));
+        RuntimeEnvironment.application.getResources(), 0x00002000));
     drawable3000 = new BitmapDrawable(BitmapFactory.decodeResource(
-        Robolectric.application.getResources(), 0x00003000));
+        RuntimeEnvironment.application.getResources(), 0x00003000));
     drawable4000 = new BitmapDrawable(BitmapFactory.decodeResource(
-        Robolectric.application.getResources(), 0x00004000));
+        RuntimeEnvironment.application.getResources(), 0x00004000));
 
     drawables = new Drawable[]{drawable1000, drawable2000, drawable3000};
   }

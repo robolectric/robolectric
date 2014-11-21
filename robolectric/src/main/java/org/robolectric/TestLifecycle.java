@@ -1,6 +1,7 @@
 package org.robolectric;
 
 import org.robolectric.annotation.Config;
+import org.robolectric.manifest.AndroidManifest;
 
 import java.lang.reflect.Method;
 

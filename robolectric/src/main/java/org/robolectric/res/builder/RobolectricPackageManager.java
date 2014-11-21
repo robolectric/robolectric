@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import org.robolectric.AndroidManifest;
+import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.Robolectric;
 import org.robolectric.manifest.ActivityData;
 import org.robolectric.manifest.BroadcastReceiverData;
@@ -33,9 +33,10 @@ import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceIndex;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.shadows.ShadowContext;
+import org.robolectric.shadows.util.MagicObject;
 import org.robolectric.tester.android.content.pm.StubPackageManager;
 
-public class RobolectricPackageManager extends StubPackageManager {
+public class RobolectricPackageManager extends StubPackageManager implements IRobolectricPackageManager {
 
   private static class IntentComparator implements Comparator<Intent> {
 
@@ -129,7 +130,7 @@ public class RobolectricPackageManager extends StubPackageManager {
     activityInfo.packageName = packageName;
     activityInfo.name = activityName;
     if (activityData != null) {
-      ResourceIndex resourceIndex = Robolectric.getShadowApplication().getResourceLoader().getResourceIndex();
+      ResourceIndex resourceIndex = Robolectric.getResourceLoader().getResourceIndex();
       String themeRef;
 
       // Based on ShadowActivity
@@ -210,15 +211,18 @@ public class RobolectricPackageManager extends StubPackageManager {
     return resolveActivity(intent, flags);
   }
 
+  @Override
   public void addResolveInfoForIntent(Intent intent, List<ResolveInfo> info) {
     resolveInfoForIntent.put(intent, info);
   }
 
+  @Override
   public void addResolveInfoForIntent(Intent intent, ResolveInfo info) {
     List<ResolveInfo> infoList = findOrCreateInfoList(intent);
     infoList.add(info);
   }
 
+  @Override
   public void removeResolveInfosForIntent(Intent intent, String packageName) {
     List<ResolveInfo> infoList = findOrCreateInfoList(intent);
     for (Iterator<ResolveInfo> iterator = infoList.iterator(); iterator.hasNext(); ) {
@@ -239,10 +243,12 @@ public class RobolectricPackageManager extends StubPackageManager {
     return drawableList.get(componentName);
   }
 
+  @Override
   public void addActivityIcon(ComponentName component, Drawable d) {
     drawableList.put(component, d);
   }
 
+  @Override
   public void addActivityIcon(Intent intent, Drawable d) {
     drawableList.put(intent.getComponent(), d);
   }
@@ -279,6 +285,7 @@ public class RobolectricPackageManager extends StubPackageManager {
     componentList.put(componentName, new ComponentState(newState, flags));
   }
 
+  @Override
   public void addPreferredActivity(IntentFilter filter, int match, ComponentName[] set, ComponentName activity) {
     preferredActivities.put(filter, activity);
   }
@@ -332,6 +339,7 @@ public class RobolectricPackageManager extends StubPackageManager {
    * @param componentName
    * @return
    */
+  @Override
   public ComponentState getComponentState(ComponentName componentName) {
     return componentList.get(componentName);
   }
@@ -342,10 +350,12 @@ public class RobolectricPackageManager extends StubPackageManager {
    *
    * @param packageInfo
    */
+  @Override
   public void addPackage(PackageInfo packageInfo) {
     packageInfos.put(packageInfo.packageName, packageInfo);
   }
 
+  @Override
   public void addPackage(String packageName) {
     PackageInfo packageInfo = new PackageInfo();
     packageInfo.packageName = packageName;
@@ -359,6 +369,7 @@ public class RobolectricPackageManager extends StubPackageManager {
     addPackage(packageInfo);
   }
 
+  @Override
   public void addManifest(AndroidManifest androidManifest, ResourceLoader loader) {
     androidManifests.put(androidManifest.getPackageName(), androidManifest);
     ResourceIndex resourceIndex = loader.getResourceIndex();
@@ -415,6 +426,7 @@ public class RobolectricPackageManager extends StubPackageManager {
     applicationInfo.dataDir = ShadowContext.FILES_DIR.getAbsolutePath();
   }
 
+  @Override
   public void removePackage(String packageName) {
     packageInfos.remove(packageName);
   }
@@ -431,22 +443,14 @@ public class RobolectricPackageManager extends StubPackageManager {
    * @param name
    * @param supported
    */
+  @Override
   public void setSystemFeature(String name, boolean supported) {
     systemFeatureList.put(name, supported);
   }
 
+  @Override
   public void addDrawableResolution(String packageName, int resourceId, Drawable drawable) {
     drawables.put(new Pair(packageName, resourceId), drawable);
-  }
-
-  public class ComponentState {
-    public int newState;
-    public int flags;
-
-    public ComponentState(int newState, int flags) {
-      this.newState = newState;
-      this.flags = flags;
-    }
   }
 
   @Override
@@ -559,10 +563,12 @@ public class RobolectricPackageManager extends StubPackageManager {
     return false;
   }
 
+  @Override
   public boolean isQueryIntentImplicitly() {
     return queryIntentImplicitly;
   }
 
+  @Override
   public void setQueryIntentImplicitly(boolean queryIntentImplicitly) {
     this.queryIntentImplicitly = queryIntentImplicitly;
   }

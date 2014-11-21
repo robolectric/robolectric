@@ -13,6 +13,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,8 +30,8 @@ public class TabSpecTest {
 
   @Test
   public void shouldGetAndSetTheIndicator() throws Exception {
-    TabHost.TabSpec spec = new TabHost(Robolectric.application).newTabSpec("foo");
-    View view = new View(Robolectric.application);
+    TabHost.TabSpec spec = new TabHost(RuntimeEnvironment.application).newTabSpec("foo");
+    View view = new View(RuntimeEnvironment.application);
     TabHost.TabSpec self = spec.setIndicator(view);
     assertThat(self).isSameAs(spec);
     assertThat(shadowOf(spec).getIndicatorAsView()).isSameAs(view);
@@ -38,7 +39,7 @@ public class TabSpecTest {
 
   @Test
   public void shouldGetAndSetTheIntentContent() throws Exception {
-    TabHost.TabSpec spec = new TabHost(Robolectric.application).newTabSpec("foo");
+    TabHost.TabSpec spec = new TabHost(RuntimeEnvironment.application).newTabSpec("foo");
     Intent intent = new Intent();
     TabHost.TabSpec self = spec.setContent(intent);
     assertThat(self).isSameAs(spec);
@@ -47,7 +48,7 @@ public class TabSpecTest {
 
   @Test
   public void shouldGetAndSetTheIndicatorLabel() throws Exception {
-    TabHost.TabSpec spec = new TabHost(Robolectric.application).newTabSpec("foo")
+    TabHost.TabSpec spec = new TabHost(RuntimeEnvironment.application).newTabSpec("foo")
         .setContent(R.layout.main).setIndicator("labelText");
 
     assertThat(shadowOf(spec).getIndicatorLabel()).isEqualTo("labelText");
@@ -56,7 +57,7 @@ public class TabSpecTest {
 
   @Test
   public void shouldGetAndSetTheIndicatorLabelAndIcon() throws Exception {
-    TabHost.TabSpec spec = new TabHost(Robolectric.application).newTabSpec("foo")
+    TabHost.TabSpec spec = new TabHost(RuntimeEnvironment.application).newTabSpec("foo")
         .setContent(R.layout.main).setIndicator("labelText", icon1);
 
     assertThat(shadowOf(spec).getIndicatorLabel()).isEqualTo("labelText");
@@ -66,10 +67,10 @@ public class TabSpecTest {
 
   @Test
   public void shouldSetTheContentView() throws Exception {
-    TabHost.TabSpec foo = new TabHost(Robolectric.application).newTabSpec("Foo").setContent(
+    TabHost.TabSpec foo = new TabHost(RuntimeEnvironment.application).newTabSpec("Foo").setContent(
         new TabContentFactory() {
           public View createTabContent(String tag) {
-            TextView tv = new TextView(Robolectric.application);
+            TextView tv = new TextView(RuntimeEnvironment.application);
             tv.setText("The Text of " + tag);
             return tv;
           }
@@ -84,7 +85,7 @@ public class TabSpecTest {
 
   @Test
   public void shouldSetTheContentViewId() throws Exception {
-    TabHost.TabSpec foo = new TabHost(Robolectric.application).newTabSpec("Foo")
+    TabHost.TabSpec foo = new TabHost(RuntimeEnvironment.application).newTabSpec("Foo")
         .setContent(R.id.title);
 
     ShadowTabHost.ShadowTabSpec shadowFoo = shadowOf(foo);

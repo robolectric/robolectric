@@ -9,6 +9,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.tester.android.view.TestMenu;
 import org.robolectric.tester.android.view.TestMenuItem;
@@ -24,7 +25,7 @@ public class MenuInflaterTest {
 
   @Before
   public void setUp() throws Exception {
-    context = Robolectric.application;
+    context = RuntimeEnvironment.application;
   }
 
   @Test

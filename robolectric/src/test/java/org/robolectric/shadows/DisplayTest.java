@@ -7,18 +7,18 @@ import android.view.Display;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
+import org.robolectric.shadows.ShadowDisplay;
+import org.robolectric.util.ShadowThingy;
 
 import static org.junit.Assert.assertEquals;
-import static org.robolectric.Robolectric.newInstanceOf;
-import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.Shadows.shadowOf_;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class DisplayTest {
   @Test
   public void shouldProvideDisplayMetrics() throws Exception {
-
-    Display display = newInstanceOf(Display.class);
-    ShadowDisplay shadow = shadowOf(display);
+    Display display = ShadowThingy.newInstanceOf(Display.class);
+    ShadowDisplay shadow = shadowOf_(display);
 
     shadow.setDensity(1.5f);
     shadow.setDensityDpi(DisplayMetrics.DENSITY_MEDIUM);
@@ -62,8 +62,8 @@ public class DisplayTest {
     Point outSize = new Point();
     Rect outRect = new Rect();
 
-    Display display = newInstanceOf(Display.class);
-    ShadowDisplay shadow = shadowOf(display);
+    Display display = ShadowThingy.newInstanceOf(Display.class);
+    ShadowDisplay shadow = shadowOf_(display);
 
     shadow.setWidth(400);
     shadow.setHeight(600);
@@ -91,8 +91,8 @@ public class DisplayTest {
 
   @Test
   public void shouldProvideDisplayInformation() {
-    Display display = newInstanceOf(Display.class);
-    ShadowDisplay shadow = shadowOf(display);
+    Display display = ShadowThingy.newInstanceOf(Display.class);
+    ShadowDisplay shadow = shadowOf_(display);
 
     shadow.setDisplayId(42);
     shadow.setName("foo");
@@ -109,10 +109,9 @@ public class DisplayTest {
    */
   @Test
   public void deprecatedGetOrientation_returnsGetRotation() {
-    Display display = newInstanceOf(Display.class);
+    Display display = ShadowThingy.newInstanceOf(Display.class);
     int testValue = 33;
-    shadowOf(display).setRotation(testValue);
+    ((ShadowDisplay) shadowOf_(display)).setRotation(testValue);
     assertEquals(testValue, display.getOrientation());
   }
-
 }

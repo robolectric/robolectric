@@ -8,6 +8,7 @@ import android.net.Uri;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
 import java.io.FileDescriptor;
@@ -77,7 +78,7 @@ public class MediaMetadataRetrieverTest {
 
   @Test
   public void getFrameAtTime_shouldDependOnTime() {
-    Context context = Robolectric.application;
+    Context context = RuntimeEnvironment.application;
     Uri uri = Uri.parse(path);
     addFrame(context, uri, 12, bitmap);
     addFrame(context, uri, 13, bitmap2);
@@ -90,7 +91,7 @@ public class MediaMetadataRetrieverTest {
 
   @Test
   public void setDataSource_ignoresHeadersWhenShadowed() {
-    Context context = Robolectric.application;
+    Context context = RuntimeEnvironment.application;
     Uri uri = Uri.parse(path);
     Map<String, String> headers = new HashMap<String, String>();
     headers.put("cookie", "nomnomnom");

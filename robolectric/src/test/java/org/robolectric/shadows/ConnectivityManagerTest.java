@@ -8,6 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -22,7 +23,7 @@ public class ConnectivityManagerTest {
 
   @Before
   public void setUp() throws Exception {
-    connectivityManager = (ConnectivityManager) Robolectric.application.getSystemService(Context.CONNECTIVITY_SERVICE);
+    connectivityManager = (ConnectivityManager) RuntimeEnvironment.application.getSystemService(Context.CONNECTIVITY_SERVICE);
     shadowConnectivityManager = shadowOf(connectivityManager);
     shadowOfActiveNetworkInfo = shadowOf(connectivityManager.getActiveNetworkInfo());
   }

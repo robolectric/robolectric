@@ -11,6 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 
@@ -29,7 +30,7 @@ public class AlarmManagerTest {
   @Before
   public void setUp() throws Exception {
     activity = new MyActivity();
-    alarmManager = (AlarmManager) Robolectric.application.getSystemService(Context.ALARM_SERVICE);
+    alarmManager = (AlarmManager) RuntimeEnvironment.application.getSystemService(Context.ALARM_SERVICE);
     shadowAlarmManager = Shadows.shadowOf(alarmManager);
   }
 
@@ -109,18 +110,18 @@ public class AlarmManagerTest {
 
   @Test
   public void cancel_removesMatchingPendingIntents() {
-    Intent newIntent = new Intent(Robolectric.application.getApplicationContext(), String.class);
-    PendingIntent pendingIntent = PendingIntent.getBroadcast(Robolectric.application.getApplicationContext(), 0, newIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+    Intent newIntent = new Intent(RuntimeEnvironment.application.getApplicationContext(), String.class);
+    PendingIntent pendingIntent = PendingIntent.getBroadcast(RuntimeEnvironment.application.getApplicationContext(), 0, newIntent, PendingIntent.FLAG_UPDATE_CURRENT);
     alarmManager.set(AlarmManager.RTC, 1337, pendingIntent);
 
-    Intent newIntent2 = new Intent(Robolectric.application.getApplicationContext(), Integer.class);
-    PendingIntent pendingIntent2 = PendingIntent.getBroadcast(Robolectric.application.getApplicationContext(), 0, newIntent2, PendingIntent.FLAG_UPDATE_CURRENT);
+    Intent newIntent2 = new Intent(RuntimeEnvironment.application.getApplicationContext(), Integer.class);
+    PendingIntent pendingIntent2 = PendingIntent.getBroadcast(RuntimeEnvironment.application.getApplicationContext(), 0, newIntent2, PendingIntent.FLAG_UPDATE_CURRENT);
     alarmManager.set(AlarmManager.RTC, 1337, pendingIntent2);
 
     assertEquals(2, shadowAlarmManager.getScheduledAlarms().size());
 
-    Intent newIntent3 = new Intent(Robolectric.application.getApplicationContext(), String.class);
-    PendingIntent newPendingIntent = PendingIntent.getBroadcast(Robolectric.application.getApplicationContext(), 0, newIntent3, PendingIntent.FLAG_UPDATE_CURRENT);
+    Intent newIntent3 = new Intent(RuntimeEnvironment.application.getApplicationContext(), String.class);
+    PendingIntent newPendingIntent = PendingIntent.getBroadcast(RuntimeEnvironment.application.getApplicationContext(), 0, newIntent3, PendingIntent.FLAG_UPDATE_CURRENT);
     alarmManager.cancel(newPendingIntent);
     assertEquals(1, shadowAlarmManager.getScheduledAlarms().size());
   }
@@ -128,12 +129,12 @@ public class AlarmManagerTest {
   @Test
   public void cancel_removesMatchingPendingIntentsWithActions() {
     Intent newIntent = new Intent("someAction");
-    PendingIntent pendingIntent = PendingIntent.getBroadcast(Robolectric.application.getApplicationContext(), 0, newIntent, 0);
+    PendingIntent pendingIntent = PendingIntent.getBroadcast(RuntimeEnvironment.application.getApplicationContext(), 0, newIntent, 0);
     alarmManager.set(AlarmManager.RTC, 1337, pendingIntent);
     assertEquals(1, shadowAlarmManager.getScheduledAlarms().size());
-    alarmManager.cancel(PendingIntent.getBroadcast(Robolectric.application, 0, new Intent("anotherAction"), 0));
+    alarmManager.cancel(PendingIntent.getBroadcast(RuntimeEnvironment.application, 0, new Intent("anotherAction"), 0));
     assertEquals(1, shadowAlarmManager.getScheduledAlarms().size());
-    alarmManager.cancel(PendingIntent.getBroadcast(Robolectric.application, 0, new Intent("someAction"), 0));
+    alarmManager.cancel(PendingIntent.getBroadcast(RuntimeEnvironment.application, 0, new Intent("someAction"), 0));
     assertEquals(0, shadowAlarmManager.getScheduledAlarms().size());
   }
 

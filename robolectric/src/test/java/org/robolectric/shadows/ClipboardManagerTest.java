@@ -7,6 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
 import static android.content.ClipboardManager.OnPrimaryClipChangedListener;
@@ -19,7 +20,7 @@ public class ClipboardManagerTest {
   private ClipboardManager clipboardManager;
 
   @Before public void setUp() throws Exception {
-    clipboardManager = (ClipboardManager) Robolectric.application.getSystemService(Context.CLIPBOARD_SERVICE);
+    clipboardManager = (ClipboardManager) RuntimeEnvironment.application.getSystemService(Context.CLIPBOARD_SERVICE);
   }
 
   @Test

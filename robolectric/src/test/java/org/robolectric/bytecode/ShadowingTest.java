@@ -16,6 +16,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
@@ -23,6 +24,8 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.bytecode.testing.Pony;
 import org.robolectric.internal.Instrument;
+import org.robolectric.util.ShadowConstants;
+import org.robolectric.util.ShadowThingy;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -33,7 +36,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
-import static org.robolectric.Robolectric.directlyOn;
+import static org.robolectric.util.ShadowThingy.directlyOn;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ShadowingTest {
@@ -149,7 +152,7 @@ public class ShadowingTest {
     Pony pony = new Pony();
 
     assertEquals("Fake whinny! You're on my neck!", pony.ride("neck"));
-    assertEquals("Whinny! You're on my neck!", directlyOn(pony, Pony.class).ride("neck"));
+    assertEquals("Whinny! You're on my neck!", ShadowThingy.directlyOn(pony, Pony.class).ride("neck"));
 
     assertEquals("Fake whinny! You're on my haunches!", pony.ride("haunches"));
   }
@@ -173,7 +176,7 @@ public class ShadowingTest {
     ClassWithSomeConstructors o = new ClassWithSomeConstructors("my name");
     assertNull(o.name);
 
-    Method realConstructor = o.getClass().getDeclaredMethod(InstrumentingClassLoader.CONSTRUCTOR_METHOD_NAME, String.class);
+    Method realConstructor = o.getClass().getDeclaredMethod(ShadowConstants.CONSTRUCTOR_METHOD_NAME, String.class);
     realConstructor.setAccessible(true);
     realConstructor.invoke(o, "my name");
     assertEquals("my name", o.name);
@@ -197,17 +200,17 @@ public class ShadowingTest {
 
   @Test
   public void shouldDelegateToObjectToStringIfShadowHasNone() throws Exception {
-    assertThat(new Toast(Robolectric.application).toString()).startsWith("android.widget.Toast@");
+    assertThat(new Toast(RuntimeEnvironment.application).toString()).startsWith("android.widget.Toast@");
   }
 
   @Test
   public void shouldDelegateToObjectHashCodeIfShadowHasNone() throws Exception {
-    assertFalse(new View(Robolectric.application).hashCode() == 0);
+    assertFalse(new View(RuntimeEnvironment.application).hashCode() == 0);
   }
 
   @Test
   public void shouldDelegateToObjectEqualsIfShadowHasNone() throws Exception {
-    View view = new View(Robolectric.application);
+    View view = new View(RuntimeEnvironment.application);
     assertEquals(view, view);
   }
 

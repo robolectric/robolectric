@@ -10,7 +10,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
+import org.robolectric.util.ShadowThingy;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
@@ -23,7 +25,7 @@ public class SensorManagerTest {
 
   @Before
   public void setup() {
-    sensorManager = (SensorManager) Robolectric.application.getSystemService(Context.SENSOR_SERVICE);
+    sensorManager = (SensorManager) RuntimeEnvironment.application.getSystemService(Context.SENSOR_SERVICE);
     shadow = shadowOf(sensorManager);
   }
 
@@ -78,7 +80,7 @@ public class SensorManagerTest {
 
   @Test
   public void getSensor_shouldBeConfigurable() {
-    Sensor sensor = Robolectric.newInstanceOf(Sensor.class);
+    Sensor sensor = ShadowThingy.newInstanceOf(Sensor.class);
     shadowOf(sensorManager).addSensor(Sensor.TYPE_ACCELEROMETER, sensor);
     assertThat(sensor).isSameAs(sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER));
   }

@@ -1,7 +1,7 @@
 package org.robolectric.internal;
 
 import java.lang.reflect.Method;
-import org.robolectric.AndroidManifest;
+import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.SdkConfig;
 import org.robolectric.TestLifecycle;
 import org.robolectric.annotation.Config;

@@ -1,0 +1,228 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.robolectric</groupId>
+    <artifactId>robolectric-parent</artifactId>
+    <version>3.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>robolectric-shadows</artifactId>
+  <packaging>jar</packaging>
+  <name>Robolectric Shadows</name>
+
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit-dep</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
+      <version>4.0.3</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>annotations</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.robolectric</groupId>
+      <artifactId>robolectric-annotations</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.robolectric</groupId>
+      <artifactId>robolectric-utils</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.robolectric</groupId>
+      <artifactId>robolectric-res</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.robolectric</groupId>
+      <artifactId>android-all</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.android.maps</groupId>
+      <artifactId>maps</artifactId>
+      <version>18_r3</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.android.support</groupId>
+      <artifactId>support-v4</artifactId>
+      <version>19.0.1</version>
+      <scope>compile</scope>
+      <optional>true</optional>
+    </dependency>
+
+    <dependency>
+      <groupId>com.almworks.sqlite4java</groupId>
+      <artifactId>sqlite4java</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.github.axet.litedb</groupId>
+      <artifactId>libsqlite</artifactId>
+      <classifier>natives-windows-x86</classifier>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.github.axet.litedb</groupId>
+      <artifactId>libsqlite</artifactId>
+      <classifier>natives-windows-x86_64</classifier>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.github.axet.litedb</groupId>
+      <artifactId>libsqlite</artifactId>
+      <classifier>natives-mac-x86_64</classifier>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.github.axet.litedb</groupId>
+      <artifactId>libsqlite</artifactId>
+      <classifier>natives-linux-x86</classifier>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.github.axet.litedb</groupId>
+      <artifactId>libsqlite</artifactId>
+      <classifier>natives-linux-x86_64</classifier>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <excludes>
+          <exclude>**/*.vm</exclude>
+        </excludes>
+      </resource>
+    </resources>
+
+    <plugins>
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <classifier>${api}</classifier>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>2.3.2</version>
+        <configuration>
+          <generatedSourcesDirectory>target/generated-sources</generatedSourcesDirectory>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>1.9.1</version>
+        <executions>
+          <execution>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>target/generated-sources</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.bsc.maven</groupId>
+        <artifactId>maven-processor-plugin</artifactId>
+      </plugin>
+
+      <plugin>
+        <groupId>com.googlecode.velocity-maven-plugin</groupId>
+        <artifactId>velocity-maven-plugin</artifactId>
+        <version>1.0.0</version>
+        <configuration>
+          <templateFiles>
+            <directory>src/main/resources</directory>
+            <includes>
+              <include>**/*.vm</include>
+            </includes>
+          </templateFiles>
+          <outputDirectory>target/generated-sources</outputDirectory>
+          <removeExtension>.vm</removeExtension>
+          <templateValues>
+            <apiLevel>${api}</apiLevel>
+          </templateValues>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>velocity</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>android-15</id>
+      <properties>
+        <api>15</api>
+      </properties>
+    </profile>
+    <profile>
+      <id>android-16</id>
+      <properties>
+        <api>16</api>
+      </properties>
+    </profile>
+    <profile>
+      <id>android-17</id>
+      <properties>
+        <api>17</api>
+      </properties>
+    </profile>
+    <profile>
+      <id>android-18</id>
+      <properties>
+        <api>18</api>
+      </properties>
+    </profile>
+    <profile>
+      <id>android-19</id>
+      <properties>
+        <api>19</api>
+      </properties>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+    </profile>
+  </profiles>
+</project>

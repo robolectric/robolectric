@@ -49,23 +49,22 @@ public class SdkConfig {
   }
 
   public DependencyJar getSystemResourceDependency() {
-    return realAndroidDependency("android-all"); // TODO: remove me?
+    return createDependency("org.robolectric", "android-all", artifactVersionString, "");
   }
 
   public DependencyJar[] getSdkClasspathDependencies() {
     return new DependencyJar[] {
-        realAndroidDependency("android-all"),
-        createDependency("org.json", "json", "20080701"),
-        createDependency("org.ccil.cowan.tagsoup", "tagsoup", "1.2")
+        createDependency("org.robolectric", "android-all", artifactVersionString, ""),
+//        createDependency("org.robolectric", "robolectric-utils", "3.0-SNAPSHOT", ""),
+//        createDependency("org.robolectric", "robolectric-res", "3.0-SNAPSHOT", ""),
+        createDependency("org.robolectric", "robolectric-shadows", "3.0-SNAPSHOT", Integer.toString(apiLevel)),
+        createDependency("org.json", "json", "20080701", ""),
+        createDependency("org.ccil.cowan.tagsoup", "tagsoup", "1.2", "")
     };
   }
 
-  private DependencyJar realAndroidDependency(String artifactId) {
-    return createDependency("org.robolectric", artifactId, getArtifactVersionString());
-  }
-
-  private DependencyJar createDependency(String groupId, String artifactId, String version) {
-    return new DependencyJar(groupId, artifactId, version);
+  private DependencyJar createDependency(String groupId, String artifactId, String version, String classifier) {
+    return new DependencyJar(groupId, artifactId, version, classifier);
   }
 
   public static SdkConfig getDefaultSdk() {
@@ -90,5 +89,4 @@ public class SdkConfig {
       return androidVersion + "-robolectric-" + robolectricVersion;
     }
   }
-
 }

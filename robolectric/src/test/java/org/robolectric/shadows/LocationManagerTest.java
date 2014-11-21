@@ -14,6 +14,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
 import java.util.ArrayList;
@@ -37,7 +38,7 @@ public class LocationManagerTest {
 
   @Before
   public void setUp() {
-    locationManager = (LocationManager) Robolectric.application.getSystemService(Context.LOCATION_SERVICE);
+    locationManager = (LocationManager) RuntimeEnvironment.application.getSystemService(Context.LOCATION_SERVICE);
     shadowLocationManager = shadowOf(locationManager);
   }
 

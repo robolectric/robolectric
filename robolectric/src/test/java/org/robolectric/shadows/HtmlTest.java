@@ -10,6 +10,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -20,7 +21,7 @@ public class HtmlTest {
 
   @Before
   public void setUp() throws Exception {
-    context = Robolectric.application;
+    context = RuntimeEnvironment.application;
   }
 
   @Test

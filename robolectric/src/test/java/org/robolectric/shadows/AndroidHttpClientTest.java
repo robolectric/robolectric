@@ -6,6 +6,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.util.Strings;
 
@@ -24,7 +25,7 @@ public class AndroidHttpClientTest {
 
   @Test
   public void testNewInstanceWithContext() throws Exception {
-    AndroidHttpClient client = AndroidHttpClient.newInstance("foo", Robolectric.application);
+    AndroidHttpClient client = AndroidHttpClient.newInstance("foo", RuntimeEnvironment.application);
     assertThat(client).isNotNull();
   }
 

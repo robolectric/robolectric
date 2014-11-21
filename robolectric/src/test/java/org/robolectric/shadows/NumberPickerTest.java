@@ -4,6 +4,7 @@ import android.widget.NumberPicker;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 
@@ -16,7 +17,7 @@ public class NumberPickerTest {
 
   @Test
   public void setDisplayedValues_shouldCheckArraySize() throws Exception {
-    NumberPicker picker = new NumberPicker(Robolectric.application);
+    NumberPicker picker = new NumberPicker(RuntimeEnvironment.application);
     picker.setMaxValue(2);
     picker.setDisplayedValues(null);
 
@@ -39,7 +40,7 @@ public class NumberPickerTest {
 
   @Test
   public void shouldFireListeners() {
-    NumberPicker picker = new NumberPicker(Robolectric.application);
+    NumberPicker picker = new NumberPicker(RuntimeEnvironment.application);
 
     NumberPicker.OnValueChangeListener listener = mock(NumberPicker.OnValueChangeListener.class);
     picker.setOnValueChangedListener(listener);

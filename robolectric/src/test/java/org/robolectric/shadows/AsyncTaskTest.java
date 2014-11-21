@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
+import org.robolectric.shadows.util.MagicObject;
 import org.robolectric.util.Join;
 import org.robolectric.util.Transcript;
 
@@ -25,8 +26,8 @@ public class AsyncTaskTest {
   @Before
   public void setUp() throws Exception {
     transcript = new Transcript();
-    Robolectric.getBackgroundScheduler().pause();
-    Robolectric.getUiThreadScheduler().pause();
+    MagicObject.getBackgroundScheduler().pause();
+    MagicObject.getUiThreadScheduler().pause();
   }
 
   @Test
@@ -108,7 +109,7 @@ public class AsyncTaskTest {
 
   @Test
   public void executeReturnsAsyncTask() throws Exception {
-    Robolectric.getBackgroundScheduler().unPause();
+    MagicObject.getBackgroundScheduler().unPause();
     AsyncTask<String, String, String> asyncTask = new MyAsyncTask();
     assertThat(asyncTask.execute("a", "b").get()).isEqualTo("c");
   }
@@ -119,14 +120,14 @@ public class AsyncTaskTest {
     assertThat(asyncTask.getStatus()).isEqualTo(AsyncTask.Status.PENDING);
     asyncTask.execute("a");
     assertThat(asyncTask.getStatus()).isEqualTo(AsyncTask.Status.RUNNING);
-    Robolectric.getBackgroundScheduler().unPause();
+    MagicObject.getBackgroundScheduler().unPause();
     assertThat(asyncTask.getStatus()).isEqualTo(AsyncTask.Status.FINISHED);
   }
 
   @Test
   public void onPostExecute_doesNotSwallowExceptions() throws Exception {
-    Robolectric.getBackgroundScheduler().unPause();
-    Robolectric.getUiThreadScheduler().unPause();
+    MagicObject.getBackgroundScheduler().unPause();
+    MagicObject.getUiThreadScheduler().unPause();
 
     AsyncTask<Void, Void, Void> asyncTask = new AsyncTask<Void, Void, Void>() {
       @Override

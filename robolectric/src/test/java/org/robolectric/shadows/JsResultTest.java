@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
+import org.robolectric.util.ShadowThingy;
 
 import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
@@ -15,7 +16,7 @@ public class JsResultTest {
 
   @Test
   public void shouldRecordCanceled() throws Exception {
-    JsResult jsResult = Robolectric.newInstanceOf(JsResult.class);
+    JsResult jsResult = ShadowThingy.newInstanceOf(JsResult.class);
 
     assertFalse(shadowOf(jsResult).wasCancelled());
 

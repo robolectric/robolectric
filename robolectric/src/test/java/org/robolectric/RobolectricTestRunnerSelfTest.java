@@ -5,31 +5,31 @@ import android.content.res.Resources;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.model.InitializationError;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
+import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.util.ReflectionHelpers;
-
 import java.lang.reflect.Method;
 
 import static org.junit.Assert.*;
-import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(RobolectricTestRunnerSelfTest.RunnerForTesting.class)
 public class RobolectricTestRunnerSelfTest {
 
   @Test
   public void shouldInitializeAndBindApplicationButNotCallOnCreate() throws Exception {
-    assertNotNull(Robolectric.application);
-    assertEquals(MyTestApplication.class, Robolectric.application.getClass());
-    assertTrue(((MyTestApplication) Robolectric.application).onCreateWasCalled);
-    assertNotNull(shadowOf(Robolectric.application).getResourceLoader());
+    assertNotNull(RuntimeEnvironment.application);
+    assertEquals(MyTestApplication.class, RuntimeEnvironment.application.getClass());
+    assertTrue(((MyTestApplication) RuntimeEnvironment.application).onCreateWasCalled);
+    assertNotNull(Robolectric.getResourceLoader());
   }
 
   @Test public void shouldSetUpSystemResources() throws Exception {
     assertNotNull(Resources.getSystem());
-    assertEquals(Robolectric.application.getResources().getString(android.R.string.copy),
+    assertEquals(RuntimeEnvironment.application.getResources().getString(android.R.string.copy),
         Resources.getSystem().getString(android.R.string.copy));
 
-    assertNotNull(Robolectric.application.getResources().getString(R.string.howdy));
+    assertNotNull(RuntimeEnvironment.application.getResources().getString(R.string.howdy));
     try {
       Resources.getSystem().getString(R.string.howdy);
       fail("should have thrown");

@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 
@@ -195,7 +196,7 @@ public class ActivityControllerTest {
     protected void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
       getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
-      setContentView(new LinearLayout(Robolectric.application));
+      setContentView(new LinearLayout(RuntimeEnvironment.application));
       transcribeWhilePaused("onCreate");
       transcript.add("finishedOnCreate");
     }

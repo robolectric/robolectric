@@ -20,13 +20,16 @@
     <module>robolectric</module>
     <module>robolectric-annotations</module>
     <module>robolectric-processor</module>
+    <module>robolectric-shadows</module>
     <module>robolectric-utils</module>
+    <module>robolectric-res</module>
   </modules>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.7</maven.compiler.source>
     <maven.compiler.target>1.7</maven.compiler.target>
+    <libsqlite.version>0.282-3</libsqlite.version>
   </properties>
 
   <dependencyManagement>
@@ -41,6 +44,26 @@
         <groupId>org.robolectric</groupId>
         <artifactId>robolectric-utils</artifactId>
         <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.robolectric</groupId>
+        <artifactId>robolectric-res</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.robolectric</groupId>
+        <artifactId>robolectric-shadows</artifactId>
+        <version>${project.version}</version>
+        <classifier>19</classifier>
+      </dependency>
+
+      <dependency>
+        <groupId>org.assertj</groupId>
+        <artifactId>assertj-core</artifactId>
+        <version>1.7.0</version>
+        <scope>test</scope>
       </dependency>
 
       <dependency>
@@ -80,6 +103,53 @@
         <groupId>com.intellij</groupId>
         <artifactId>annotations</artifactId>
         <version>12.0</version>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>com.almworks.sqlite4java</groupId>
+        <artifactId>sqlite4java</artifactId>
+        <version>0.282</version>
+      </dependency>
+
+      <!-- sqlite native dependencies -->
+      <dependency>
+        <groupId>com.github.axet.litedb</groupId>
+        <artifactId>libsqlite</artifactId>
+        <version>${libsqlite.version}</version>
+        <classifier>natives-windows-x86</classifier>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>com.github.axet.litedb</groupId>
+        <artifactId>libsqlite</artifactId>
+        <version>${libsqlite.version}</version>
+        <classifier>natives-windows-x86_64</classifier>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>com.github.axet.litedb</groupId>
+        <artifactId>libsqlite</artifactId>
+        <version>${libsqlite.version}</version>
+        <classifier>natives-mac-x86_64</classifier>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>com.github.axet.litedb</groupId>
+        <artifactId>libsqlite</artifactId>
+        <version>${libsqlite.version}</version>
+        <classifier>natives-linux-x86</classifier>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>com.github.axet.litedb</groupId>
+        <artifactId>libsqlite</artifactId>
+        <classifier>natives-linux-x86_64</classifier>
+        <version>${libsqlite.version}</version>
         <scope>provided</scope>
       </dependency>
     </dependencies>

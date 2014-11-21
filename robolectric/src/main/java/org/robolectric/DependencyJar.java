@@ -10,11 +10,13 @@ public class DependencyJar {
   private final String groupId;
   private final String artifactId;
   private final String version;
+  private final String classifier;
 
-  DependencyJar(String groupId, String artifactId, String version) {
+  DependencyJar(String groupId, String artifactId, String version, String classifier) {
     this.groupId = groupId;
     this.artifactId = artifactId;
     this.version = version;
+    this.classifier = classifier;
   }
 
   public String getGroupId() {
@@ -31,5 +33,9 @@ public class DependencyJar {
 
   public String getType() {
     return "jar";
+  }
+
+  public String getClassifier() {
+    return classifier;
   }
 }

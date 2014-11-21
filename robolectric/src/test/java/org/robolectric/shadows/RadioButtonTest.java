@@ -5,6 +5,7 @@ import android.widget.RadioGroup;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -15,7 +16,7 @@ import static org.junit.Assert.assertTrue;
 public class RadioButtonTest {
   @Test
   public void canBeExplicitlyChecked() throws Exception {
-    RadioButton radioButton = new RadioButton(Robolectric.application);
+    RadioButton radioButton = new RadioButton(RuntimeEnvironment.application);
     assertFalse(radioButton.isChecked());
 
     radioButton.setChecked(true);
@@ -27,7 +28,7 @@ public class RadioButtonTest {
 
   @Test
   public void canBeToggledBetweenCheckedState() throws Exception {
-    RadioButton radioButton = new RadioButton(Robolectric.application);
+    RadioButton radioButton = new RadioButton(RuntimeEnvironment.application);
     assertFalse(radioButton.isChecked());
 
     radioButton.toggle();
@@ -39,7 +40,7 @@ public class RadioButtonTest {
 
   @Test
   public void canBeClickedToToggleCheckedState() throws Exception {
-    RadioButton radioButton = new RadioButton(Robolectric.application);
+    RadioButton radioButton = new RadioButton(RuntimeEnvironment.application);
     assertFalse(radioButton.isChecked());
 
     radioButton.performClick();
@@ -51,12 +52,12 @@ public class RadioButtonTest {
 
   @Test
   public void shouldInformRadioGroupThatItIsChecked() throws Exception {
-    RadioButton radioButton1 = new RadioButton(Robolectric.application);
+    RadioButton radioButton1 = new RadioButton(RuntimeEnvironment.application);
     radioButton1.setId(99);
-    RadioButton radioButton2 = new RadioButton(Robolectric.application);
+    RadioButton radioButton2 = new RadioButton(RuntimeEnvironment.application);
     radioButton2.setId(100);
 
-    RadioGroup radioGroup = new RadioGroup(Robolectric.application);
+    RadioGroup radioGroup = new RadioGroup(RuntimeEnvironment.application);
     radioGroup.addView(radioButton1);
     radioGroup.addView(radioButton2);
 

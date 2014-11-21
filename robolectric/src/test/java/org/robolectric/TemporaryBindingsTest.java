@@ -16,16 +16,16 @@ public class TemporaryBindingsTest {
   @Test
   @Config(shadows = TemporaryShadowView.class)
   public void overridingShadowBindingsShouldNotAffectBindingsInLaterTests() throws Exception {
-//        assertThat(shadowOf(new View(Robolectric.application)).getClass().getSimpleName()).isEqualTo(ShadowView.class.getSimpleName());
-    assertThat(Shadows.shadowOf_(new View(Robolectric.application)).getClass().getSimpleName()).isEqualTo(TemporaryShadowView.class.getSimpleName());
+//        assertThat(shadowOf(new View(RuntimeEnvironment.application)).getClass().getSimpleName()).isEqualTo(ShadowView.class.getSimpleName());
+    assertThat(Shadows.shadowOf_(new View(RuntimeEnvironment.application)).getClass().getSimpleName()).isEqualTo(TemporaryShadowView.class.getSimpleName());
   }
 
   @Test
 //    @Values(shadows = TemporaryShadowView.class)
   public void overridingShadowBindingsShouldNotAffectBindingsInLaterTestsAgain() throws Exception {
 // todo test this properly
-    assertThat(shadowOf(new View(Robolectric.application)).getClass().getSimpleName()).isEqualTo(ShadowView.class.getSimpleName());
-//        assertThat(Shadows.shadowOf_(new View(Robolectric.application)).getClass().getSimpleName()).isEqualTo(TemporaryShadowView.class.getSimpleName());
+    assertThat(shadowOf(new View(RuntimeEnvironment.application)).getClass().getSimpleName()).isEqualTo(ShadowView.class.getSimpleName());
+//        assertThat(Shadows.shadowOf_(new View(RuntimeEnvironment.application)).getClass().getSimpleName()).isEqualTo(TemporaryShadowView.class.getSimpleName());
   }
 
   @Implements(View.class)

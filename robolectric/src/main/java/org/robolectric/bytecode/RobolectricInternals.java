@@ -1,9 +1,9 @@
 package org.robolectric.bytecode;
 
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ShadowConstants;
 
 public class RobolectricInternals {
-  public static final String ROBO_PREFIX = "$$robo$$";
 
   @SuppressWarnings("UnusedDeclaration")
   private static ClassHandler classHandler; // initialized via magic by SdkEnvironment
@@ -36,20 +36,7 @@ public class RobolectricInternals {
     }
   }
 
-  public static String directMethodName(String methodName) {
-    return String.format(ROBO_PREFIX + "%s", methodName);
-  }
-
-  public static String directMethodName(String className, String methodName) {
-    String simpleName = className;
-    int lastDotIndex = simpleName.lastIndexOf(".");
-    if (lastDotIndex != -1) simpleName = simpleName.substring(lastDotIndex + 1);
-    int lastDollarIndex = simpleName.lastIndexOf("$");
-    if (lastDollarIndex != -1) simpleName = simpleName.substring(lastDollarIndex + 1);
-    return String.format(ROBO_PREFIX + "%s_%04x_%s", simpleName, className.hashCode() & 0xffff, methodName);
-  }
-
   public static void performStaticInitialization(Class<?> clazz) {
-    ReflectionHelpers.callStaticMethodReflectively(clazz, InstrumentingClassLoader.STATIC_INITIALIZER_METHOD_NAME);
+    ReflectionHelpers.callStaticMethodReflectively(clazz, ShadowConstants.STATIC_INITIALIZER_METHOD_NAME);
   }
 }

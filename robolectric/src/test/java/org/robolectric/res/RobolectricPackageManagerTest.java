@@ -20,12 +20,13 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.Before;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.*;
 import org.robolectric.annotation.Config;
+import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowDrawable;
@@ -40,14 +41,14 @@ import static org.junit.Assert.assertTrue;
 public class RobolectricPackageManagerTest {
   private static final String TEST_PACKAGE_NAME = "com.some.other.package";
   private static final String TEST_PACKAGE_LABEL = "My Little App";
-  private final RobolectricPackageManager rpm = (RobolectricPackageManager) Robolectric.application.getPackageManager();
+  private final RobolectricPackageManager rpm = (RobolectricPackageManager) RuntimeEnvironment.application.getPackageManager();
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Test
   public void getApplicationInfo_ThisApplication() throws Exception {
-    ApplicationInfo info = rpm.getApplicationInfo(Robolectric.application.getPackageName(), 0);
+    ApplicationInfo info = rpm.getApplicationInfo(RuntimeEnvironment.application.getPackageName(), 0);
     assertThat(info).isNotNull();
-    assertThat(info.packageName).isEqualTo(Robolectric.application.getPackageName());
+    assertThat(info.packageName).isEqualTo(RuntimeEnvironment.application.getPackageName());
   }
 
   @Test
@@ -269,7 +270,7 @@ public class RobolectricPackageManagerTest {
   @Test
   @Config(manifest = "src/test/resources/TestAndroidManifestWithContentProviders.xml")
   public void getPackageInfo_getProvidersShouldReturnProviderInfos() throws Exception {
-    PackageInfo packageInfo = rpm.getPackageInfo(Robolectric.application.getPackageName(), PackageManager.GET_PROVIDERS);
+    PackageInfo packageInfo = rpm.getPackageInfo(RuntimeEnvironment.application.getPackageName(), PackageManager.GET_PROVIDERS);
     ProviderInfo[] providers = packageInfo.providers;
     assertThat(providers).isNotEmpty();
     assertThat(providers.length).isEqualTo(2);
@@ -280,7 +281,7 @@ public class RobolectricPackageManagerTest {
   @Test
   @Config(manifest = "src/test/resources/TestAndroidManifestWithNoContentProviders.xml")
   public void getPackageInfo_getProvidersShouldReturnNullOnNoProviders() throws Exception {
-    PackageInfo packageInfo = rpm.getPackageInfo(Robolectric.application.getPackageName(), PackageManager.GET_PROVIDERS);
+    PackageInfo packageInfo = rpm.getPackageInfo(RuntimeEnvironment.application.getPackageName(), PackageManager.GET_PROVIDERS);
     ProviderInfo[] providers = packageInfo.providers;
     assertThat(providers).isNull();
   }
@@ -348,7 +349,7 @@ public class RobolectricPackageManagerTest {
   @Test
   @Config(manifest = "src/test/resources/TestAndroidManifestWithPermissions.xml")
   public void getPackageInfo_shouldReturnRequestedPermissions() throws Exception {
-    PackageInfo packageInfo = rpm.getPackageInfo(Robolectric.application.getPackageName(), PackageManager.GET_PERMISSIONS);
+    PackageInfo packageInfo = rpm.getPackageInfo(RuntimeEnvironment.application.getPackageName(), PackageManager.GET_PERMISSIONS);
     String[] permissions = packageInfo.requestedPermissions;
     assertThat(permissions).isNotNull();
     assertThat(permissions.length).isEqualTo(3);
@@ -357,7 +358,7 @@ public class RobolectricPackageManagerTest {
   @Test
   @Config(manifest = "src/test/resources/TestAndroidManifestWithoutPermissions.xml")
   public void getPackageInfo_shouldReturnNullOnNoRequestedPermissions() throws Exception {
-    PackageInfo packageInfo = rpm.getPackageInfo(Robolectric.application.getPackageName(), PackageManager.GET_PERMISSIONS);
+    PackageInfo packageInfo = rpm.getPackageInfo(RuntimeEnvironment.application.getPackageName(), PackageManager.GET_PERMISSIONS);
     String[] permissions = packageInfo.requestedPermissions;
     assertThat(permissions).isNull();
   }
@@ -421,7 +422,7 @@ public class RobolectricPackageManagerTest {
     resolveInfo.activityInfo = new ActivityInfo();
     resolveInfo.activityInfo.packageName = TEST_PACKAGE_LABEL;
     resolveInfo.activityInfo.name = "LauncherActivity";
-    Robolectric.packageManager.addResolveInfoForIntent(launchIntent, resolveInfo);
+    RuntimeEnvironment.packageManager.addResolveInfoForIntent(launchIntent, resolveInfo);
 
     intent = rpm.getLaunchIntentForPackage(TEST_PACKAGE_LABEL);
     assertThat(intent).isNotNull();
@@ -501,7 +502,7 @@ public class RobolectricPackageManagerTest {
     resolveInfo.activityInfo = new ActivityInfo();
     resolveInfo.activityInfo.packageName = TEST_PACKAGE_LABEL;
     resolveInfo.activityInfo.name = "LauncherActivity";
-    Robolectric.packageManager.addResolveInfoForIntent(intent1, resolveInfo);
+    RuntimeEnvironment.packageManager.addResolveInfoForIntent(intent1, resolveInfo);
     
     // the original intent object should yield a result
     ResolveInfo result  = rpm.resolveActivity(intent1, -1);
@@ -527,7 +528,7 @@ public class RobolectricPackageManagerTest {
     resolveInfo.activityInfo = new ActivityInfo();
     resolveInfo.activityInfo.packageName = TEST_PACKAGE_LABEL;
     resolveInfo.activityInfo.name = "LauncherActivity";
-    Robolectric.packageManager.addResolveInfoForIntent(intent1, resolveInfo);
+    RuntimeEnvironment.packageManager.addResolveInfoForIntent(intent1, resolveInfo);
 
     // the original intent object should yield a result
     ResolveInfo result  = rpm.resolveActivity(intent1, -1);

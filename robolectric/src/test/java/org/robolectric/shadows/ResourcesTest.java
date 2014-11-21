@@ -11,6 +11,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
@@ -284,7 +285,7 @@ public class ResourcesTest {
   public void testGetIdentifier() throws Exception {
 
     final String resourceType = "string";
-    final String packageName = Robolectric.application.getPackageName();
+    final String packageName = RuntimeEnvironment.application.getPackageName();
 
     final String resourceName = "hello";
     final int resId1 = resources.getIdentifier(resourceName, resourceType, packageName);

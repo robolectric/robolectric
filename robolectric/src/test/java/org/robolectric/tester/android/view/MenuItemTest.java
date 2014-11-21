@@ -8,6 +8,7 @@ import android.view.MenuItem;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -53,14 +54,14 @@ public class MenuItemTest {
 
   @Test
   public void expandActionView_shouldSetExpandedTrue() throws Exception {
-    item.setActionView(new View(Robolectric.application));
+    item.setActionView(new View(RuntimeEnvironment.application));
     assertThat(item.expandActionView()).isTrue();
     assertThat(item.isActionViewExpanded()).isTrue();
   }
 
   @Test
   public void expandActionView_shouldInvokeListener() throws Exception {
-    item.setActionView(new View(Robolectric.application));
+    item.setActionView(new View(RuntimeEnvironment.application));
     item.expandActionView();
     assertThat(listener.expanded).isTrue();
   }
@@ -73,7 +74,7 @@ public class MenuItemTest {
 
   @Test
   public void collapseActionView_shouldSetExpandedFalse() throws Exception {
-    item.setActionView(new View(Robolectric.application));
+    item.setActionView(new View(RuntimeEnvironment.application));
     item.expandActionView();
     assertThat(item.collapseActionView()).isTrue();
     assertThat(item.isActionViewExpanded()).isFalse();
@@ -81,7 +82,7 @@ public class MenuItemTest {
 
   @Test
   public void collapseActionView_shouldInvokeListener() throws Exception {
-    item.setActionView(new View(Robolectric.application));
+    item.setActionView(new View(RuntimeEnvironment.application));
     listener.expanded = true;
     item.collapseActionView();
     assertThat(listener.expanded).isFalse();
@@ -131,7 +132,7 @@ public class MenuItemTest {
 
   @Test
   public void setIcon_shouldNullifyOnZero() throws Exception {
-    Drawable expectedDrawable = Robolectric.application.getResources().getDrawable(R.drawable.an_image);
+    Drawable expectedDrawable = RuntimeEnvironment.application.getResources().getDrawable(R.drawable.an_image);
     assertThat(expectedDrawable).isNotNull();
     assertThat(item.getIcon()).isNull();
     item.setIcon(R.drawable.an_image);
@@ -142,7 +143,7 @@ public class MenuItemTest {
 
   @Test
   public void getIcon_shouldReturnDrawableFromSetIconDrawable() throws Exception {
-    Drawable testDrawable = Robolectric.application.getResources().getDrawable(R.drawable.an_image);
+    Drawable testDrawable = RuntimeEnvironment.application.getResources().getDrawable(R.drawable.an_image);
     assertThat(testDrawable).isNotNull();
     assertThat(item.getIcon()).isNull();
     item.setIcon(testDrawable);
@@ -153,7 +154,7 @@ public class MenuItemTest {
   public void getIcon_shouldReturnDrawableFromSetIconResourceId() throws Exception {
     assertThat(item.getIcon()).isNull();
     item.setIcon(R.drawable.an_other_image);
-    Drawable expectedDrawable = Robolectric.application.getResources().getDrawable(R.drawable.an_other_image);
+    Drawable expectedDrawable = RuntimeEnvironment.application.getResources().getDrawable(R.drawable.an_other_image);
     assertThat(item.getIcon()).isEqualTo(expectedDrawable);
   }
 

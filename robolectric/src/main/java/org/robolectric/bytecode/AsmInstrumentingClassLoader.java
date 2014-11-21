@@ -23,6 +23,9 @@ import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
 import org.objectweb.asm.util.CheckClassAdapter;
 import org.objectweb.asm.util.TraceClassVisitor;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ShadowConstants;
+import org.robolectric.util.ShadowThingy;
 
 import java.io.FileOutputStream;
 import java.io.FileWriter;
@@ -47,7 +50,7 @@ import static org.objectweb.asm.Type.VOID;
 import static org.objectweb.asm.Type.getType;
 import static org.robolectric.util.Util.readBytes;
 
-public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes, InstrumentingClassLoader {
+public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes {
   private static final String OBJECT_DESC = Type.getDescriptor(Object.class);
   private static final Type OBJECT_TYPE = getType(Object.class);
   private static final Type STRING_TYPE = getType(String.class);
@@ -77,10 +80,22 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
     this.urls = new URLClassLoader(urls, null);
     classesToRemap = convertToSlashes(setup.classNameTranslations());
     methodsToIntercept = convertToSlashes(setup.methodsToIntercept());
+    for (URL url : urls) {
+      System.out.println("Loading classes from: " + url.toString());
+    }
   }
 
   @Override
   synchronized public Class loadClass(String name) throws ClassNotFoundException {
+
+//    boolean shouldLog = false;
+//    try {
+//      ReflectionHelpers.callInstanceMethodReflectively(getParent(), "findClass", new ReflectionHelpers.ClassParameter(String.class, "org.robolectric.shadows.RoboLayoutInflater"));
+//    } catch (Exception e) {
+//      shouldLog = true;
+//      System.out.println("not loaded still");
+//    }
+//
     Class<?> theClass = classes.get(name);
     if (theClass != null) {
       if (theClass == MissingClassMarker.class) {
@@ -102,6 +117,14 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
     }
 
     classes.put(name, theClass);
+//    try {
+//      ReflectionHelpers.callInstanceMethodReflectively(getParent(), "findClass", new ReflectionHelpers.ClassParameter(String.class, "org.robolectric.shadows.RoboLayoutInflater"));
+//      if(shouldLog) {
+//        System.out.println("class that loaded thing is " + name);
+//      }
+//    } catch (Exception e) {
+//    }
+
     return theClass;
   }
 
@@ -430,7 +453,7 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
         filterNasties(method);
 
         if (method.name.equals("<clinit>")) {
-          method.name = STATIC_INITIALIZER_METHOD_NAME;
+          method.name = ShadowConstants.STATIC_INITIALIZER_METHOD_NAME;
           classNode.methods.add(generateStaticInitializerNotifierMethod());
         } else if (method.name.equals("<init>")) {
           instrumentConstructor(method);
@@ -439,7 +462,7 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
         }
       }
 
-      classNode.fields.add(0, new FieldNode(ACC_PUBLIC, CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_DESC, OBJECT_DESC, null));
+      classNode.fields.add(0, new FieldNode(ACC_PUBLIC, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_DESC, OBJECT_DESC, null));
 
       if (!foundMethods.contains("<init>()V")) {
         MethodNode defaultConstructor = new MethodNode(ACC_PUBLIC, "<init>", "()V", "()V", null);
@@ -466,7 +489,7 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
         }
         m.loadThis();
         m.loadArg(1);
-        m.putField(classType, InstrumentingClassLoader.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);
+        m.putField(classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);
         m.returnValue();
         classNode.methods.add(directCallConstructor);
       }
@@ -482,12 +505,12 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
         MyGenerator m = new MyGenerator(initMethodNode);
         Label alreadyInitialized = new Label();
         m.loadThis();                                         // this
-        m.getField(classType, CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);  // contents of __robo_data__
+        m.getField(classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);  // contents of __robo_data__
         m.ifNonNull(alreadyInitialized);
         m.loadThis();                                         // this
         m.loadThis();                                         // this, this
         m.invokeStatic(ROBOLECTRIC_INTERNALS_TYPE, INITIALIZING_METHOD); // this, __robo_data__
-        m.putField(classType, CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);
+        m.putField(classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);
         m.mark(alreadyInitialized);
         m.returnValue();
         classNode.methods.add(initMethodNode);
@@ -497,7 +520,7 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
         MethodNode initMethodNode = new MethodNode(ACC_PROTECTED, GET_ROBO_DATA_METHOD_NAME, GET_ROBO_DATA_SIGNATURE, null, null);
         MyGenerator m = new MyGenerator(initMethodNode);
         m.loadThis();                                         // this
-        m.getField(classType, CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);  // contents of __robo_data__
+        m.getField(classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);  // contents of __robo_data__
         m.returnValue();
         m.endMethod();
         classNode.methods.add(initMethodNode);
@@ -541,8 +564,8 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
       }
 
       InsnList removedInstructions = extractCallToSuperConstructor(method);
-      method.name = RobolectricInternals.directMethodName(className, CONSTRUCTOR_METHOD_NAME);
-      classNode.methods.add(redirectorMethod(method, CONSTRUCTOR_METHOD_NAME));
+      method.name = ShadowThingy.directMethodName(className, ShadowConstants.CONSTRUCTOR_METHOD_NAME);
+      classNode.methods.add(redirectorMethod(method, ShadowConstants.CONSTRUCTOR_METHOD_NAME));
 
       String[] exceptions = exceptionArray(method);
       MethodNode methodNode = new MethodNode(method.access, "<init>", method.desc, method.signature, exceptions);
@@ -553,7 +576,7 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
 
       m.loadThis();
       m.invokeVirtual(classType, new Method(ROBO_INIT_METHOD_NAME, "()V"));
-      generateCallToClassHandler(method, CONSTRUCTOR_METHOD_NAME, m);
+      generateCallToClassHandler(method, ShadowConstants.CONSTRUCTOR_METHOD_NAME, m);
 
       m.endMethod();
       classNode.methods.add(methodNode);
@@ -605,8 +628,8 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
       }
 
       String originalName = method.name;
-      method.name = RobolectricInternals.directMethodName(className, originalName);
-      classNode.methods.add(redirectorMethod(method, RobolectricInternals.directMethodName(originalName)));
+      method.name = ShadowThingy.directMethodName(className, originalName);
+      classNode.methods.add(redirectorMethod(method, ShadowThingy.directMethodName(originalName)));
 
       MethodNode delegatorMethodNode = new MethodNode(method.access, originalName, method.desc, method.signature, exceptionArray(method));
       delegatorMethodNode.access &= ~(ACC_NATIVE | ACC_ABSTRACT | ACC_FINAL);
@@ -785,20 +808,20 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
       Label directCall = new Label();
       Label doReturn = new Label();
 
-      boolean isNormalInstanceMethod = !m.isStatic && !originalMethodName.equals(InstrumentingClassLoader.CONSTRUCTOR_METHOD_NAME);
+      boolean isNormalInstanceMethod = !m.isStatic && !originalMethodName.equals(ShadowConstants.CONSTRUCTOR_METHOD_NAME);
 
       // maybe perform proxy call...
       if (isNormalInstanceMethod) {
         Label notInstanceOfThis = new Label();
 
         m.loadThis();                                         // this
-        m.getField(classType, CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);  // contents of __robo_data__
+        m.getField(classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);  // contents of __robo_data__
         m.instanceOf(classType);                              // __robo_data__, is instance of same class?
         m.visitJumpInsn(IFEQ, notInstanceOfThis);             // jump if no (is not instance)
 
         TryCatch tryCatchForProxyCall = m.tryStart(THROWABLE_TYPE);
         m.loadThis();                                         // this
-        m.getField(classType, CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);  // contents of __robo_data__
+        m.getField(classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);  // contents of __robo_data__
         m.checkCast(classType);                               // __robo_data__ but cast to my class
         m.loadArgs();                                         // __robo_data__ instance, [args]
 

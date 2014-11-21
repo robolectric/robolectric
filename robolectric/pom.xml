@@ -14,10 +14,6 @@
   <description>An alternative Android testing framework - core libraries.</description>
   <url>http://robolectric.org/</url>
 
-  <properties>
-      <libsqlite.version>0.282-3</libsqlite.version>
-  </properties>
-
   <dependencies>
     <dependency>
       <groupId>org.robolectric</groupId>
@@ -30,6 +26,24 @@
     </dependency>
 
     <dependency>
+      <groupId>org.robolectric</groupId>
+      <artifactId>robolectric-res</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.robolectric</groupId>
+      <artifactId>robolectric-shadows</artifactId>
+      <scope>provided</scope>
+      <classifier>19</classifier>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
+      <version>4.0.3</version>
+    </dependency>
+
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit-dep</artifactId>
       <scope>provided</scope>
@@ -39,53 +53,6 @@
       <groupId>org.objenesis</groupId>
       <artifactId>objenesis</artifactId>
       <version>1.3</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.almworks.sqlite4java</groupId>
-      <artifactId>sqlite4java</artifactId>
-      <version>0.282</version>
-    </dependency>
-
-    <!-- sqlite native dependencies -->
-    <dependency>
-      <groupId>com.github.axet.litedb</groupId>
-      <artifactId>libsqlite</artifactId>
-      <version>${libsqlite.version}</version>
-      <classifier>natives-windows-x86</classifier>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>com.github.axet.litedb</groupId>
-      <artifactId>libsqlite</artifactId>
-      <version>${libsqlite.version}</version>
-      <classifier>natives-windows-x86_64</classifier>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>com.github.axet.litedb</groupId>
-      <artifactId>libsqlite</artifactId>
-      <version>${libsqlite.version}</version>
-      <classifier>natives-mac-x86_64</classifier>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>com.github.axet.litedb</groupId>
-      <artifactId>libsqlite</artifactId>
-      <version>${libsqlite.version}</version>
-      <classifier>natives-linux-x86</classifier>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>com.github.axet.litedb</groupId>
-      <artifactId>libsqlite</artifactId>
-      <classifier>natives-linux-x86_64</classifier>
-      <version>${libsqlite.version}</version>
-      <scope>provided</scope>
     </dependency>
 
     <dependency>
@@ -125,12 +92,6 @@
     </dependency>
 
     <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpclient</artifactId>
-      <version>4.0.3</version>
-    </dependency>
-
-    <dependency>
       <groupId>com.ximpleware</groupId>
       <artifactId>vtd-xml</artifactId>
       <version>2.11</version>
@@ -159,7 +120,6 @@
     <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
-      <version>1.7.0</version>
       <scope>test</scope>
     </dependency>
 
@@ -177,8 +137,6 @@
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-ant-tasks</artifactId>
       <version>2.1.3</version>
-     <!-- This artefact is a kind of jar-with-dependencies already,
-          we don't need any of its dependencies -->
       <exclusions>
          <exclusion>
           <groupId>*</groupId>
@@ -190,6 +148,47 @@
       <groupId>org.apache.ant</groupId>
       <artifactId>ant</artifactId>
       <version>1.8.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.almworks.sqlite4java</groupId>
+      <artifactId>sqlite4java</artifactId>
+    </dependency>
+
+    <!-- sqlite native dependencies -->
+    <dependency>
+      <groupId>com.github.axet.litedb</groupId>
+      <artifactId>libsqlite</artifactId>
+      <classifier>natives-windows-x86</classifier>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.github.axet.litedb</groupId>
+      <artifactId>libsqlite</artifactId>
+      <classifier>natives-windows-x86_64</classifier>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.github.axet.litedb</groupId>
+      <artifactId>libsqlite</artifactId>
+      <classifier>natives-mac-x86_64</classifier>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.github.axet.litedb</groupId>
+      <artifactId>libsqlite</artifactId>
+      <classifier>natives-linux-x86</classifier>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.github.axet.litedb</groupId>
+      <artifactId>libsqlite</artifactId>
+      <classifier>natives-linux-x86_64</classifier>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
 

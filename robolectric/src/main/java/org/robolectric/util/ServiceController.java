@@ -4,7 +4,7 @@ import android.app.Application;
 import android.app.Service;
 import android.content.Context;
 import android.os.IBinder;
-import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.shadows.ShadowActivityThread;
 import org.robolectric.shadows.ShadowService;
 
@@ -33,7 +33,7 @@ public class ServiceController<T extends Service> extends ComponentController<Se
   }
 
   public ServiceController<T> attach() {
-    Application application = this.application == null ? Robolectric.application : this.application;
+    Application application = this.application == null ? RuntimeEnvironment.application : this.application;
     Context baseContext = this.baseContext == null ? application : this.baseContext;
 
     ClassLoader cl = baseContext.getClassLoader();

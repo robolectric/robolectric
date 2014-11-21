@@ -11,9 +11,9 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.IBinder;
-import org.robolectric.AndroidManifest;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.RoboInstrumentation;
-import org.robolectric.Robolectric;
 import org.robolectric.res.ResName;
 import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.shadows.ShadowActivityThread;
@@ -37,12 +37,12 @@ public class ActivityController<T extends Activity>
   }
 
   public ActivityController<T> attach() {
-    Application application = this.application == null ? Robolectric.application : this.application;
+    Application application = this.application == null ? RuntimeEnvironment.application : this.application;
     if (this.application != null) {
-      ShadowApplication roboShadow = shadowOf_(Robolectric.application);
+      ShadowApplication roboShadow = shadowOf_(RuntimeEnvironment.application);
       ShadowApplication testShadow = shadowOf_(this.application);
       testShadow.bind(roboShadow.getAppManifest(), roboShadow.getResourceLoader());
-      testShadow.callAttachBaseContext(Robolectric.application.getBaseContext());
+      testShadow.callAttachBaseContext(RuntimeEnvironment.application.getBaseContext());
       this.application.onCreate();
       shadow.setTestApplication(this.application);
     }

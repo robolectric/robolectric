@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
+import org.robolectric.util.ShadowThingy;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
@@ -15,7 +16,7 @@ public class CookieManagerTest {
   String url = "robolectric.org/";
   String httpUrl = "http://robolectric.org/";
   String httpsUrl = "https://robolectric.org/";
-  CookieManager cookieManager = Robolectric.newInstanceOf(CookieManager.class);;
+  CookieManager cookieManager = ShadowThingy.newInstanceOf(CookieManager.class);
   
   @Test
   public void shouldGetASingletonInstance() {
