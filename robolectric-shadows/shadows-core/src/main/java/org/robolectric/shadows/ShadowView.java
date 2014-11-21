@@ -13,6 +13,16 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewParent;
+
+import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheck;
+import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheckPreset;
+import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheckResult.AccessibilityCheckResultType;
+import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheckResultUtils;
+import com.google.android.apps.common.testing.accessibility.framework.AccessibilityViewCheck;
+import com.google.android.apps.common.testing.accessibility.framework.AccessibilityViewCheckResult;
+import com.google.android.apps.common.testing.accessibility.framework.AccessibilityViewHierarchyCheck;
+
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -22,6 +32,9 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import java.io.PrintStream;
 import java.lang.reflect.Method;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.internal.Shadow.directlyOn;
@@ -340,7 +353,29 @@ public class ShadowView {
     if (!realView.isEnabled()) {
       throw new RuntimeException("View is not enabled and cannot be clicked");
     }
+    List<AccessibilityViewCheckResult> results = new LinkedList<AccessibilityViewCheckResult>();
 
+    Set<AccessibilityCheck> checks = AccessibilityCheckPreset
+        .getAllChecksForPreset(AccessibilityCheckPreset.VIEW_CHECKS);
+    for (AccessibilityCheck check : checks) {
+      results.addAll(((AccessibilityViewCheck) check).runCheckOnView(realView));
+    }
+
+    checks = AccessibilityCheckPreset
+        .getAllChecksForPreset(AccessibilityCheckPreset.VIEW_HIERARCHY_CHECKS);
+    for (AccessibilityCheck check : checks) {
+      results.addAll(((AccessibilityViewHierarchyCheck) check)
+          .runCheckOnViewHierarchy(realView));
+    }
+    
+    // Throw an exception for the first error
+    List<AccessibilityViewCheckResult> errors = AccessibilityCheckResultUtils.getResultsForType(
+            results, AccessibilityCheckResultType.ERROR);
+    if (errors.size() > 0) {
+      throw new RuntimeException(errors.get(0).getMessage().toString());
+    }
+    
+    
     return realView.performClick();
   }
 
