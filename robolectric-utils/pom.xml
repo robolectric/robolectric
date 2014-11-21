@@ -29,6 +29,18 @@
       <groupId>org.robolectric</groupId>
       <artifactId>android-all</artifactId>
     </dependency>
+
+    <dependency>
+      <groupId>org.robolectric</groupId>
+      <artifactId>robolectric-annotations</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.android.apps.common.testing.accessibility.framework</groupId>
+      <artifactId>accessibility-test-framework</artifactId>
+      <version>1.0</version>
+      <scope>compile</scope>
+    </dependency>
   </dependencies>
 
   <build>
