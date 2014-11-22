@@ -33,7 +33,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
   @Override
   public void resetStaticState(Config config) {
-    Robolectric.reset(config);
+    Robolectric.reset();
 
     if (!loggingInitialized) {
       shadowsAdapter.setupLogging();

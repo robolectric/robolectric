@@ -37,8 +37,6 @@ public interface ShadowsAdapter {
 
   void setAssetsQualifiers(AssetManager assets, String qualifiers);
 
-  void reset();
-
   ResourceLoader getResourceLoader();
 
   File getFilesDir();

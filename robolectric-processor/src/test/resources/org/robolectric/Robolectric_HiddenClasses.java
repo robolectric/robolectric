@@ -11,9 +11,10 @@ import org.robolectric.annotation.processing.shadows.ShadowOuterDummy2.ShadowInn
 import org.robolectric.annotation.processing.shadows.ShadowOuterDummy2.ShadowInnerProtected;
 import org.robolectric.annotation.processing.shadows.ShadowPrivate;
 import org.robolectric.internal.ShadowExtractor;
+import org.robolectric.util.ShadowProvider;
 
 @Generated("org.robolectric.annotation.processing.RoboProcessor")
-public class Shadows {
+public class Shadows implements ShadowProvider {
 
   public static final Class<?>[] DEFAULT_SHADOW_CLASSES = {
     ShadowDummy.class,
@@ -32,7 +33,7 @@ public class Shadows {
     return (ShadowOuterDummy2) ShadowExtractor.extract(actual);
   }
   
-  public static void reset() {
+  public void reset() {
     ShadowDummy.resetter_method();
     ShadowPrivate.resetMethod();
   }

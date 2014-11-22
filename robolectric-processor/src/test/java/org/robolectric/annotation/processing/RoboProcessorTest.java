@@ -6,6 +6,7 @@ import static com.google.testing.compile.JavaSourceSubjectFactory.javaSource;
 import static com.google.testing.compile.JavaSourcesSubjectFactory.javaSources;
 import static org.robolectric.annotation.processing.RoboProcessor.PACKAGE_OPT;
 import static org.robolectric.annotation.processing.Utils.ROBO_SOURCE;
+import static org.robolectric.annotation.processing.Utils.SHADOW_PROVIDER_SOURCE;
 import static org.robolectric.annotation.processing.Utils.SHADOW_EXTRACTOR_SOURCE;
 
 import java.io.BufferedReader;
@@ -38,6 +39,7 @@ public class RoboProcessorTest {
     ASSERT.about(javaSources())
       .that(ImmutableList.of(
           ROBO_SOURCE,
+          SHADOW_PROVIDER_SOURCE,
           SHADOW_EXTRACTOR_SOURCE,
           forSourceString("HelloWorld", "final class HelloWorld {}")))
       .processedWith(new RoboProcessor())
@@ -53,6 +55,7 @@ public class RoboProcessorTest {
     ASSERT.about(javaSources())
       .that(ImmutableList.of(
           ROBO_SOURCE,
+          SHADOW_PROVIDER_SOURCE,
           SHADOW_EXTRACTOR_SOURCE,
           forResource("org/robolectric/annotation/processing/shadows/ShadowDummy.java"),
           forResource("org/robolectric/annotation/processing/shadows/ShadowOuterDummy.java"),
@@ -68,6 +71,7 @@ public class RoboProcessorTest {
     ASSERT.about(javaSources())
       .that(ImmutableList.of(
           ROBO_SOURCE,
+          SHADOW_PROVIDER_SOURCE,
           SHADOW_EXTRACTOR_SOURCE,
           forResource("org/robolectric/annotation/processing/shadows/ShadowPrivate.java"),
           forResource("org/robolectric/annotation/processing/shadows/ShadowOuterDummy2.java"),
@@ -83,6 +87,7 @@ public class RoboProcessorTest {
     ASSERT.about(javaSources())
       .that(ImmutableList.of(
           ROBO_SOURCE,
+          SHADOW_PROVIDER_SOURCE,
           SHADOW_EXTRACTOR_SOURCE,
           forResource("org/robolectric/annotation/processing/shadows/ShadowAnything.java"),
           forResource("org/robolectric/annotation/processing/shadows/ShadowDummy.java")))
@@ -96,6 +101,7 @@ public class RoboProcessorTest {
   public void generatedFile_shouldHandleClassNameOnlyShadows() {
     ASSERT.about(javaSources())
       .that(ImmutableList.of(
+          SHADOW_PROVIDER_SOURCE,
           SHADOW_EXTRACTOR_SOURCE,
           forResource("org/robolectric/annotation/processing/shadows/ShadowClassNameOnly.java"),
           forResource("org/robolectric/annotation/processing/shadows/ShadowDummy.java")))
@@ -122,6 +128,7 @@ public class RoboProcessorTest {
     
     ASSERT.about(javaSources())
       .that(ImmutableList.of(
+          SHADOW_PROVIDER_SOURCE,
           SHADOW_EXTRACTOR_SOURCE,
           forResource("org/robolectric/annotation/processing/shadows/ShadowClassNameOnly.java"),
           forResource("org/robolectric/annotation/processing/shadows/ShadowDummy.java")))
@@ -136,6 +143,7 @@ public class RoboProcessorTest {
     ASSERT.about(javaSources())
       .that(ImmutableList.of(
           ROBO_SOURCE,
+          SHADOW_PROVIDER_SOURCE,
           SHADOW_EXTRACTOR_SOURCE,
           forResource("org/robolectric/annotation/TestWithUnrecognizedAnnotation.java")))
       .processedWith(new RoboProcessor())
@@ -154,6 +162,7 @@ public class RoboProcessorTest {
   public void shouldGracefullyHandleNoAnythingClass_withFoundOnImplementsAnnotation() {
     ASSERT.about(javaSources())
       .that(ImmutableList.of(
+          SHADOW_PROVIDER_SOURCE,
           SHADOW_EXTRACTOR_SOURCE,
           forResource("org/robolectric/annotation/processing/shadows/ShadowRealObjectWithCorrectAnything.java")))
       .processedWith(new RoboProcessor())
@@ -166,6 +175,7 @@ public class RoboProcessorTest {
     ASSERT.about(javaSources())
       .that(ImmutableList.of(
           ROBO_SOURCE,
+          SHADOW_PROVIDER_SOURCE,
           SHADOW_EXTRACTOR_SOURCE,
           forResource("org/robolectric/annotation/processing/shadows/ShadowDummy.java"),
           forResource("org/robolectric/annotation/processing/shadows/ShadowParameterizedDummy.java")))

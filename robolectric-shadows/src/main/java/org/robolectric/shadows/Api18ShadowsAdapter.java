@@ -11,8 +11,10 @@ import org.robolectric.ShadowsAdapter;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.util.Scheduler;
+import org.robolectric.util.ShadowProvider;
 
 import java.io.File;
+import java.util.ServiceLoader;
 
 import static org.robolectric.Shadows.shadowOf;
 
@@ -110,11 +112,6 @@ public class Api18ShadowsAdapter implements ShadowsAdapter {
   @Override
   public void setAssetsQualifiers(AssetManager assets, String qualifiers) {
     shadowOf(assets).setQualifiers(qualifiers);
-  }
-
-  @Override
-  public void reset() {
-    Shadows.reset();
   }
 
   @Override

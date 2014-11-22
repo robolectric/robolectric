@@ -2,10 +2,12 @@ package org.robolectric;
 
 import android.app.Activity;
 import android.app.Service;
-import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.ActivityController;
 import org.robolectric.util.ServiceController;
+import org.robolectric.util.ShadowProvider;
+
+import java.util.ServiceLoader;
 
 public class Robolectric {
   private static final ShadowsAdapter shadowsAdapter = instantiateShadowsAdapter();
@@ -19,12 +21,14 @@ public class Robolectric {
     }
   }
 
-  public static void reset(Config config) {
+  public static void reset() {
     RuntimeEnvironment.application = null;
     RuntimeEnvironment.setRobolectricPackageManager(null);
     RuntimeEnvironment.setActivityThread(null);
 
-    shadowsAdapter.reset();
+    for (ShadowProvider provider : ServiceLoader.load(ShadowProvider.class)) {
+      provider.reset();
+    }
   }
 
   public static <T extends Service> ServiceController<T> buildService(Class<T> serviceClass) {
