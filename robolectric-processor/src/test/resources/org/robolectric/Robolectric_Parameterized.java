@@ -10,6 +10,7 @@ import org.robolectric.util.ShadowExtractor;
 import org.robolectric.util.ShadowProvider;
 
 @Generated("org.robolectric.annotation.processing.RoboProcessor")
+@SuppressWarnings({"unchecked","deprecation"})
 public class Shadows implements ShadowProvider {
 
   public static final Class<?>[] DEFAULT_SHADOW_CLASSES = {
@@ -22,8 +23,7 @@ public class Shadows implements ShadowProvider {
   }
   
   public static <T, N extends Number> ShadowParameterizedDummy<T,N> shadowOf(ParameterizedDummy<T,N> actual) {
-    return (ShadowParameterizedDummy)<T,
-    N> ShadowExtractor.extract(actual);
+    return (ShadowParameterizedDummy<T,N>) ShadowExtractor.extract(actual);
   }
 
   public void reset() {

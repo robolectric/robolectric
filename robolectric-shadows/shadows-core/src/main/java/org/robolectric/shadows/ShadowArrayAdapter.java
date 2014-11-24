@@ -8,7 +8,7 @@ import org.robolectric.util.ReflectionHelpers;
 @SuppressWarnings( { "UnusedDeclaration" })
 @Implements(ArrayAdapter.class)
 public class ShadowArrayAdapter<T> extends ShadowBaseAdapter {
-  @RealObject private ArrayAdapter realArrayAdapter;
+  @RealObject private ArrayAdapter<T> realArrayAdapter;
 
   public int getTextViewResourceId() {
     return ReflectionHelpers.getFieldReflectively(realArrayAdapter, "mFieldId");

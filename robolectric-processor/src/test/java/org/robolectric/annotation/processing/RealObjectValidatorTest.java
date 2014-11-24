@@ -6,6 +6,7 @@ import static org.truth0.Truth.ASSERT;
 import static org.robolectric.annotation.processing.Utils.SHADOW_EXTRACTOR_SOURCE;
 import static org.robolectric.annotation.processing.SingleClassSubject.singleClass;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
@@ -19,6 +20,26 @@ public class RealObjectValidatorTest {
       .failsToCompile()
       .withErrorContaining("@RealObject without @Implements")
       .onLine(7);
+  }
+
+  @Test
+  public void realObjectParameterizedMissingParameters_shouldNotCompile() {
+    final String testClass = "org.robolectric.annotation.processing.shadows.ShadowRealObjectParameterizedMissingParameters";
+    ASSERT.about(singleClass())
+      .that(testClass)
+      .failsToCompile()
+      .withErrorContaining("@RealObject is missing type parameters")
+      .onLine(11);
+  }
+
+  @Test
+  public void realObjectParameterizedMismatch_shouldNotCompile() {
+    final String testClass = "org.robolectric.annotation.processing.shadows.ShadowRealObjectParameterizedMismatch";
+    ASSERT.about(singleClass())
+      .that(testClass)
+      .failsToCompile()
+      .withErrorContaining("Parameter type mismatch: expecting <T,S>, was <S,T>")
+      .onLine(11);
   }
 
   @Test
@@ -92,10 +113,6 @@ public class RealObjectValidatorTest {
     ASSERT.about(singleClass())
       .that(testClass)
       .compilesWithoutError();
-  }
-
-  @Test
-  public void shouldGracefullyHandleNoAnythingClass_withFoundOnImplementsAnnotation() {
   }
 
   @Test

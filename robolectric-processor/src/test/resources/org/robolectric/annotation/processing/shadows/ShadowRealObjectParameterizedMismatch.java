@@ -5,7 +5,8 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.processing.objects.ParameterizedDummy;
 
 @Implements(ParameterizedDummy.class)
-public class ShadowParameterizedDummy<T, S extends Number> {
+public class ShadowRealObjectParameterizedMismatch<T,S extends Number> {
+
   @RealObject
-  ParameterizedDummy<T,S> real;
+  ParameterizedDummy<S,T> someField;
 }
