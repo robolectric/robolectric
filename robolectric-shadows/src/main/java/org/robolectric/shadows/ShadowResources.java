@@ -26,7 +26,6 @@ import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.StringResources;
 import org.robolectric.res.Style;
 import org.robolectric.res.TypedResource;
-import org.robolectric.shadows.util.MagicObject;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.res.builder.XmlFileBuilder;
 import org.robolectric.util.Util;
@@ -40,7 +39,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import static org.robolectric.util.ShadowThingy.directlyOn;
+import static org.robolectric.internal.Shadow.directlyOn;
 import static org.robolectric.Shadows.shadowOf;
 
 /**
@@ -114,7 +113,7 @@ public class ShadowResources {
     String qualifiers = shadowAssetManager.getQualifiers();
 
     if (set == null) {
-      set = new RoboAttributeSet(new ArrayList<Attribute>(), MagicObject.getResourceLoader());
+      set = new RoboAttributeSet(new ArrayList<Attribute>(), ShadowApplication.getInstance().getResourceLoader());
     }
     Style defStyleFromAttr = null;
     Style defStyleFromRes = null;

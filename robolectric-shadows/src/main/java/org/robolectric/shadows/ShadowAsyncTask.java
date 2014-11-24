@@ -5,7 +5,6 @@ import android.os.ShadowAsyncTaskBridge;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.shadows.util.MagicObject;
 import org.robolectric.util.SimpleFuture;
 
 import java.util.concurrent.Callable;
@@ -34,7 +33,7 @@ public class ShadowAsyncTask<Params, Progress, Result> {
           final Result result = get();
 
           try {
-            MagicObject.getUiThreadScheduler().post(new Runnable() {
+            ShadowLooper.getUiThreadScheduler().post(new Runnable() {
               @Override
               public void run() {
                 getBridge().onPostExecute(result);
@@ -44,7 +43,7 @@ public class ShadowAsyncTask<Params, Progress, Result> {
             throw new OnPostExecuteException(t);
           }
         } catch (CancellationException e) {
-          MagicObject.getUiThreadScheduler().post(new Runnable() {
+          ShadowLooper.getUiThreadScheduler().post(new Runnable() {
             @Override
             public void run() {
               getBridge().onCancelled();
@@ -89,7 +88,7 @@ public class ShadowAsyncTask<Params, Progress, Result> {
 
     worker.params = params;
 
-    MagicObject.getBackgroundScheduler().post(new Runnable() {
+    ShadowApplication.getInstance().getBackgroundScheduler().post(new Runnable() {
       @Override
       public void run() {
         future.run();
@@ -129,7 +128,7 @@ public class ShadowAsyncTask<Params, Progress, Result> {
    */
   @Implementation
   public void publishProgress(final Progress... values) {
-    MagicObject.getUiThreadScheduler().post(new Runnable() {
+    ShadowLooper.getUiThreadScheduler().post(new Runnable() {
       @Override
       public void run() {
         getBridge().onProgressUpdate(values);

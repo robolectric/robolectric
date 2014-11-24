@@ -11,7 +11,6 @@ import android.location.LocationManager;
 import android.os.Looper;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.shadows.util.MagicObject;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -115,7 +114,7 @@ public class ShadowLocationManager {
     // Send intent to notify about provider status
     final Intent intent = new Intent();
     intent.putExtra(LocationManager.KEY_PROVIDER_ENABLED, isEnabled);
-    MagicObject.getShadowApplication().sendBroadcast(intent);
+    ShadowApplication.getInstance().sendBroadcast(intent);
     Set<PendingIntent> requestLocationUdpatePendingIntentSet = requestLocationUdpateCriteriaPendingIntents
         .keySet();
     for (PendingIntent requestLocationUdpatePendingIntent : requestLocationUdpatePendingIntentSet) {

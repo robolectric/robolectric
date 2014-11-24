@@ -8,10 +8,8 @@ import android.widget.Filterable;
 import com.google.android.collect.Lists;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
-import org.robolectric.shadows.util.MagicObject;
 
 import java.util.List;
 
@@ -23,7 +21,7 @@ public class AutoCompleteTextViewTest {
 
   @Test
   public void shouldInvokeFilter() throws Exception {
-    MagicObject.getUiThreadScheduler().pause();
+    ShadowLooper.getUiThreadScheduler().pause();
     AutoCompleteTextView view = new AutoCompleteTextView(RuntimeEnvironment.application);
     view.setAdapter(adapter);
 

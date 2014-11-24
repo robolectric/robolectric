@@ -14,7 +14,7 @@ import org.robolectric.util.ReflectionHelpers;
 
 import java.util.ArrayList;
 
-import static org.robolectric.util.ShadowThingy.directlyOn;
+import static org.robolectric.internal.Shadow.directlyOn;
 
 @Implements(Notification.class)
 public class ShadowNotification {

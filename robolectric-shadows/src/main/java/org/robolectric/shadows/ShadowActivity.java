@@ -20,7 +20,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.HiddenApi;
-import org.robolectric.shadows.util.MagicObject;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.res.ResName;
 
@@ -29,8 +28,8 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.util.ShadowThingy.directlyOn;
-import static org.robolectric.util.ShadowThingy.invokeConstructor;
+import static org.robolectric.internal.Shadow.directlyOn;
+import static org.robolectric.internal.Shadow.invokeConstructor;
 
 @Implements(Activity.class)
 public class ShadowActivity extends ShadowContextThemeWrapper {
@@ -239,7 +238,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
   @Implementation
   public void runOnUiThread(Runnable action) {
-    MagicObject.getUiThreadScheduler().post(action);
+    ShadowLooper.getUiThreadScheduler().post(action);
   }
 
   /**

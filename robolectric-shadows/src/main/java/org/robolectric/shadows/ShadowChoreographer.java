@@ -7,7 +7,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.util.ShadowThingy;
+import org.robolectric.internal.Shadow;
 import org.robolectric.util.SoftThreadLocal;
 
 @Implements(Choreographer.class)
@@ -23,7 +23,7 @@ public class ShadowChoreographer {
         if (looper == null) {
           throw new IllegalStateException("The current thread must have a looper!");
         }
-        return ShadowThingy.newInstance(Choreographer.class, new Class[]{Looper.class}, new Object[]{looper});
+        return Shadow.newInstance(Choreographer.class, new Class[]{Looper.class}, new Object[]{looper});
       }
     };
   }

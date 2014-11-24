@@ -24,6 +24,7 @@ import android.widget.ListPopupWindow;
 import android.widget.PopupWindow;
 import android.widget.Toast;
 import libcore.util.MutableBoolean;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
@@ -48,7 +49,7 @@ import java.util.Set;
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.util.ShadowThingy.newInstanceOf;
+import static org.robolectric.internal.Shadow.newInstanceOf;
 
 /**
  * Shadows the {@code android.app.Application} class.
@@ -95,6 +96,10 @@ public class ShadowApplication extends ShadowContextWrapper {
   private boolean checkActivities;
   private PopupWindow latestPopupWindow;
   private ListPopupWindow latestListPopupWindow;
+
+  public static ShadowApplication getInstance() {
+    return RuntimeEnvironment.application == null ? null : shadowOf(RuntimeEnvironment.application);
+  }
 
   /**
    * Associates a {@code ResourceLoader} with an {@code Application} instance

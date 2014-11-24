@@ -17,7 +17,7 @@ import android.os.Handler;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.util.ShadowThingy;
+import org.robolectric.internal.Shadow;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -58,7 +58,7 @@ public class ShadowAccountManager {
   public static AccountManager get(Context context) {
     synchronized (lock) {
       if (instance == null) {
-        instance = ShadowThingy.newInstanceOf(AccountManager.class);
+        instance = Shadow.newInstanceOf(AccountManager.class);
       }
       return instance;
     }

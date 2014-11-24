@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import android.content.Context;
-import org.robolectric.shadows.util.MagicObject;
 import org.robolectric.util.SimpleFuture;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Implements;
@@ -23,7 +22,7 @@ public class ShadowAsyncTaskLoader<D> {
       @Override protected void done() {
         try {
           final D result = get();
-          MagicObject.getUiThreadScheduler().post(new Runnable() {
+          ShadowLooper.getUiThreadScheduler().post(new Runnable() {
             @Override public void run() {
               realLoader.deliverResult(result);
             }
@@ -37,8 +36,9 @@ public class ShadowAsyncTaskLoader<D> {
 
   @Implementation
   public void onForceLoad() {
-    MagicObject.getBackgroundScheduler().post(new Runnable() {
-      @Override public void run() {
+    ShadowApplication.getInstance().getBackgroundScheduler().post(new Runnable() {
+      @Override
+      public void run() {
         future.run();
       }
     });

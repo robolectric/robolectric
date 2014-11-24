@@ -6,11 +6,10 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.shadows.util.MagicObject;
-import org.robolectric.util.ShadowThingy;
+import org.robolectric.internal.Shadow;
 
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.shadows.util.MagicObject.getShadowApplication;
+import static org.robolectric.shadows.ShadowApplication.getInstance;
 
 /**
  * Shadows the {@code android.os.PowerManager} class.
@@ -22,8 +21,8 @@ public class ShadowPowerManager {
 
   @Implementation
   public PowerManager.WakeLock newWakeLock(int flags, String tag) {
-    PowerManager.WakeLock wl = ShadowThingy.newInstanceOf(PowerManager.WakeLock.class);
-    getShadowApplication().addWakeLock(wl);
+    PowerManager.WakeLock wl = Shadow.newInstanceOf(PowerManager.WakeLock.class);
+    getInstance().addWakeLock(wl);
     return wl;
   }
 
@@ -41,7 +40,7 @@ public class ShadowPowerManager {
    */
   @Resetter
   public static void reset() {
-    ShadowApplication shadowApplication = MagicObject.getShadowApplication();
+    ShadowApplication shadowApplication = ShadowApplication.getInstance();
     if (shadowApplication != null) {
       shadowApplication.clearWakeLocks();
     }

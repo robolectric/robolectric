@@ -13,7 +13,6 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
 
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.Shadows.shadowOf_;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AlertDialog.class)

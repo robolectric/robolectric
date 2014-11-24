@@ -1,12 +1,9 @@
-package org.robolectric.util;
+package org.robolectric.internal;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public class ShadowExtractor {
-  // todo: share with AsmInstrumentingClassLoader
-  private static final String GET_ROBO_DATA_METHOD_NAME = "$$robo$getData";
-
   public static Object extract(Object instance) {
     if (instance == null) {
       throw new NullPointerException("can't get a shadow for null");
@@ -18,7 +15,7 @@ public class ShadowExtractor {
       Class<?> clazz = instance.getClass();
       while (clazz != null) {
         try {
-          getRoboData = clazz.getDeclaredMethod(GET_ROBO_DATA_METHOD_NAME);
+          getRoboData = clazz.getDeclaredMethod(ShadowConstants.GET_ROBO_DATA_METHOD_NAME);
           break;
         } catch (NoSuchMethodException e) { }
         clazz = clazz.getSuperclass();

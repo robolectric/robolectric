@@ -14,7 +14,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
-import org.robolectric.util.ShadowThingy;
+import org.robolectric.internal.Shadow;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -28,7 +28,7 @@ public class CanvasTest {
 
   @Before
   public void setUp() throws Exception {
-    targetBitmap = ShadowThingy.newInstanceOf(Bitmap.class);
+    targetBitmap = Shadow.newInstanceOf(Bitmap.class);
     imageBitmap = BitmapFactory.decodeFile("/an/image.jpg");
   }
 

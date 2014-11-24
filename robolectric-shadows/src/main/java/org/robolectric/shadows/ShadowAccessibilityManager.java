@@ -12,7 +12,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ShadowThingy;
+import org.robolectric.internal.Shadow;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -29,7 +29,7 @@ public class ShadowAccessibilityManager {
 
   @HiddenApi @Implementation
   public static AccessibilityManager getInstance(Context context) throws Exception {
-    AccessibilityManager accessibilityManager = ShadowThingy.newInstance(AccessibilityManager.class, new Class[0], new Object[0]);
+    AccessibilityManager accessibilityManager = Shadow.newInstance(AccessibilityManager.class, new Class[0], new Object[0]);
     Handler handler = new MyHandler(context.getMainLooper(), accessibilityManager);
     Field mHandlerField = AccessibilityManager.class.getDeclaredField("mHandler");
     makeNonFinal(mHandlerField).set(accessibilityManager, handler);

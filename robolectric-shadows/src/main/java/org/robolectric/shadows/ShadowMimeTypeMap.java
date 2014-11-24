@@ -6,7 +6,7 @@ import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.util.ShadowThingy;
+import org.robolectric.internal.Shadow;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,7 +28,7 @@ public class ShadowMimeTypeMap {
     if (sSingleton == null) {
       synchronized (sSingletonLock) {
         if (sSingleton == null) {
-          sSingleton = ShadowThingy.newInstanceOf(MimeTypeMap.class);
+          sSingleton = Shadow.newInstanceOf(MimeTypeMap.class);
         }
       }
     }

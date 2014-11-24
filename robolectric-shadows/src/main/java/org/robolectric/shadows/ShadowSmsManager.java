@@ -6,13 +6,13 @@ import android.text.TextUtils;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.util.ShadowThingy;
+import org.robolectric.internal.Shadow;
 
 @Implements(SmsManager.class)
 public class ShadowSmsManager {
 
   @RealObject
-  private static SmsManager realManager = ShadowThingy.newInstanceOf(SmsManager.class);
+  private static SmsManager realManager = Shadow.newInstanceOf(SmsManager.class);
 
   private TextSmsParams lastTextSmsParams = null;
 

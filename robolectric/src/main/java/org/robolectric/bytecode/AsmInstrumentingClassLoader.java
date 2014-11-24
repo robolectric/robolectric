@@ -23,9 +23,8 @@ import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
 import org.objectweb.asm.util.CheckClassAdapter;
 import org.objectweb.asm.util.TraceClassVisitor;
-import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ShadowConstants;
-import org.robolectric.util.ShadowThingy;
+import org.robolectric.internal.ShadowConstants;
+import org.robolectric.internal.Shadow;
 
 import java.io.FileOutputStream;
 import java.io.FileWriter;
@@ -63,7 +62,6 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes 
   private static final Method HANDLE_EXCEPTION_METHOD = new Method("cleanStackTrace", THROWABLE_TYPE, new Type[]{THROWABLE_TYPE});
   private static final String DIRECT_OBJECT_MARKER_TYPE_DESC = Type.getObjectType(DirectObjectMarker.class.getName().replace('.', '/')).getDescriptor();
   private static final String ROBO_INIT_METHOD_NAME = "$$robo$init";
-  static final String GET_ROBO_DATA_METHOD_NAME = "$$robo$getData";
   private static final String GET_ROBO_DATA_SIGNATURE = "()Ljava/lang/Object;";
 
   private static boolean debug = false;
@@ -517,7 +515,7 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes 
       }
 
       {
-        MethodNode initMethodNode = new MethodNode(ACC_PROTECTED, GET_ROBO_DATA_METHOD_NAME, GET_ROBO_DATA_SIGNATURE, null, null);
+        MethodNode initMethodNode = new MethodNode(ACC_PROTECTED, ShadowConstants.GET_ROBO_DATA_METHOD_NAME, GET_ROBO_DATA_SIGNATURE, null, null);
         MyGenerator m = new MyGenerator(initMethodNode);
         m.loadThis();                                         // this
         m.getField(classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);  // contents of __robo_data__
@@ -564,7 +562,7 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes 
       }
 
       InsnList removedInstructions = extractCallToSuperConstructor(method);
-      method.name = ShadowThingy.directMethodName(className, ShadowConstants.CONSTRUCTOR_METHOD_NAME);
+      method.name = Shadow.directMethodName(className, ShadowConstants.CONSTRUCTOR_METHOD_NAME);
       classNode.methods.add(redirectorMethod(method, ShadowConstants.CONSTRUCTOR_METHOD_NAME));
 
       String[] exceptions = exceptionArray(method);
@@ -628,8 +626,8 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes 
       }
 
       String originalName = method.name;
-      method.name = ShadowThingy.directMethodName(className, originalName);
-      classNode.methods.add(redirectorMethod(method, ShadowThingy.directMethodName(originalName)));
+      method.name = Shadow.directMethodName(className, originalName);
+      classNode.methods.add(redirectorMethod(method, Shadow.directMethodName(originalName)));
 
       MethodNode delegatorMethodNode = new MethodNode(method.access, originalName, method.desc, method.signature, exceptionArray(method));
       delegatorMethodNode.access &= ~(ACC_NATIVE | ACC_ABSTRACT | ACC_FINAL);
@@ -859,7 +857,7 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes 
         m.loadNull();
       } else {
         m.loadThis();
-        m.invokeVirtual(classType, new Method(GET_ROBO_DATA_METHOD_NAME, GET_ROBO_DATA_SIGNATURE));
+        m.invokeVirtual(classType, new Method(ShadowConstants.GET_ROBO_DATA_METHOD_NAME, GET_ROBO_DATA_SIGNATURE));
       }
       m.loadArgArray();          // params
       m.invokeInterface(PLAN_TYPE, PLAN_RUN_METHOD);

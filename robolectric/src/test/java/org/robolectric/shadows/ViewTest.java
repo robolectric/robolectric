@@ -32,7 +32,6 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.res.Attribute;
 import org.robolectric.res.ResourceLoader;
-import org.robolectric.shadows.util.MagicObject;
 import org.robolectric.util.TestAnimationListener;
 import org.robolectric.util.TestOnClickListener;
 import org.robolectric.util.TestOnLongClickListener;
@@ -294,7 +293,7 @@ public class ViewTest {
     view.postDelayed(runnable, 1);
     assertFalse(runnable.wasRun);
 
-    MagicObject.getUiThreadScheduler().advanceBy(1);
+    ShadowLooper.getUiThreadScheduler().advanceBy(1);
     assertTrue(runnable.wasRun);
   }
 
@@ -305,7 +304,7 @@ public class ViewTest {
 
     view.removeCallbacks(runnable);
 
-    MagicObject.getUiThreadScheduler().advanceBy(1);
+    ShadowLooper.getUiThreadScheduler().advanceBy(1);
     assertThat(runnable.wasRun).isFalse();
   }
 

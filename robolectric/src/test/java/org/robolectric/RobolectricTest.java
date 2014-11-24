@@ -20,10 +20,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowDisplay;
 import org.robolectric.shadows.StubViewRoot;
-import org.robolectric.shadows.util.MagicObject;
-import org.robolectric.util.ShadowThingy;
+import org.robolectric.internal.Shadow;
 import org.robolectric.util.TestOnClickListener;
 
 import java.io.ByteArrayOutputStream;
@@ -69,14 +69,14 @@ public class RobolectricTest {
 
   @Test
   public void shouldResetBackgroundSchedulerBeforeTests() throws Exception {
-    assertThat(MagicObject.getBackgroundScheduler().isPaused()).isFalse();
-    MagicObject.getBackgroundScheduler().pause();
+    assertThat(ShadowApplication.getInstance().getBackgroundScheduler().isPaused()).isFalse();
+    ShadowApplication.getInstance().getBackgroundScheduler().pause();
   }
 
   @Test
   public void shouldResetBackgroundSchedulerAfterTests() throws Exception {
-    assertThat(MagicObject.getBackgroundScheduler().isPaused()).isFalse();
-    MagicObject.getBackgroundScheduler().pause();
+    assertThat(ShadowApplication.getInstance().getBackgroundScheduler().isPaused()).isFalse();
+    ShadowApplication.getInstance().getBackgroundScheduler().pause();
   }
 
   @Test
@@ -132,7 +132,7 @@ public class RobolectricTest {
     assertThat(new Activity().getResources().getDisplayMetrics().widthPixels).isEqualTo(480);
     assertThat(new Activity().getResources().getDisplayMetrics().heightPixels).isEqualTo(800);
 
-    Display display = ShadowThingy.newInstanceOf(Display.class);
+    Display display = Shadow.newInstanceOf(Display.class);
     ShadowDisplay shadowDisplay = shadowOf_(display);
     shadowDisplay.setWidth(100);
     shadowDisplay.setHeight(200);

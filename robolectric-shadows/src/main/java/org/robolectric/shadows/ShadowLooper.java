@@ -7,7 +7,6 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.annotation.HiddenApi;
-import org.robolectric.shadows.util.MagicObject;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.SoftThreadLocal;
@@ -19,7 +18,6 @@ import static org.robolectric.Shadows.shadowOf;
  * that are scheduled to run immediately can be triggered by calling {@link #idle()}
  * todo: provide better support for advancing the clock and running queued tasks
  */
-
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Looper.class)
 public class ShadowLooper {
@@ -60,7 +58,7 @@ public class ShadowLooper {
 
   @Implementation
   public static Looper getMainLooper() {
-    ShadowApplication shadowApplication = MagicObject.getShadowApplication();
+    ShadowApplication shadowApplication = ShadowApplication.getInstance();
     if ((shadowApplication == null) && (Thread.currentThread() == MAIN_THREAD)) {
       Looper mainLooper = looperForThread.get();
       return mainLooper;
@@ -79,6 +77,10 @@ public class ShadowLooper {
   @Implementation
   public static synchronized Looper myLooper() {
     return looperForThread.get();
+  }
+
+  public static Scheduler getUiThreadScheduler() {
+    return shadowOf(Looper.getMainLooper()).getScheduler();
   }
 
   @HiddenApi

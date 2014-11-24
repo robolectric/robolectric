@@ -1,4 +1,4 @@
-package org.robolectric.util;
+package org.robolectric.internal;
 
 public class ShadowExtractor {
 

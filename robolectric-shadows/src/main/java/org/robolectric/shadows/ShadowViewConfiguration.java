@@ -27,7 +27,7 @@ import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.util.ShadowThingy;
+import org.robolectric.internal.Shadow;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ViewConfiguration.class)
@@ -87,7 +87,7 @@ public class ShadowViewConfiguration {
 
   @Implementation
   public static ViewConfiguration get(Context context) {
-    ViewConfiguration viewConfiguration = ShadowThingy.newInstanceOf(ViewConfiguration.class);
+    ViewConfiguration viewConfiguration = Shadow.newInstanceOf(ViewConfiguration.class);
     Shadows.shadowOf(viewConfiguration).setup(context);
     return viewConfiguration;
   }

@@ -6,8 +6,8 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Function;
-import org.robolectric.util.ShadowConstants;
-import org.robolectric.util.ShadowThingy;
+import org.robolectric.internal.ShadowConstants;
+import org.robolectric.internal.Shadow;
 
 import java.lang.reflect.*;
 import java.util.*;
@@ -294,7 +294,7 @@ public class ShadowWrangler implements ClassHandler {
         }
 
         if (methodName.startsWith(ShadowConstants.ROBO_PREFIX)) {
-          String fullPrefix = ShadowThingy.directMethodName(stackTraceElement.getClassName(), "");
+          String fullPrefix = Shadow.directMethodName(stackTraceElement.getClassName(), "");
           if (methodName.startsWith(fullPrefix)) {
             methodName = methodName.substring(fullPrefix.length());
             stackTraceElement = new StackTraceElement(className, methodName,

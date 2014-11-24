@@ -8,12 +8,12 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.internal.Instrument;
-import org.robolectric.util.ShadowThingy;
+import org.robolectric.internal.Shadow;
 
 import java.lang.reflect.Field;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.util.ShadowThingy.directlyOn;
+import static org.robolectric.internal.Shadow.directlyOn;
 import static org.robolectric.Shadows.shadowOf_;
 
 @RunWith(TestRunners.WithoutDefaults.class)
@@ -50,7 +50,7 @@ public class ThreadSafetyTest {
     @RealObject InstrumentedThread realObject;
     @Implementation
     public void run() {
-      ShadowThingy.directlyOn(realObject, InstrumentedThread.class, "run");
+      Shadow.directlyOn(realObject, InstrumentedThread.class, "run");
     }
   }
 }

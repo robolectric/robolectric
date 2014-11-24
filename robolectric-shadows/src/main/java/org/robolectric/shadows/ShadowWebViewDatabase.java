@@ -4,13 +4,13 @@ import android.content.Context;
 import android.webkit.WebViewDatabase;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.util.ShadowThingy;
+import org.robolectric.internal.Shadow;
 
 @Implements(value = WebViewDatabase.class, callThroughByDefault = false)
 public class ShadowWebViewDatabase {
 
   @Implementation
   public static WebViewDatabase getInstance(Context ignored) {
-    return ShadowThingy.newInstanceOf(WebViewDatabase.class);
+    return Shadow.newInstanceOf(WebViewDatabase.class);
   }
 }

@@ -1,8 +1,10 @@
-package org.robolectric.util;
+package org.robolectric.internal;
 
 import org.robolectric.bytecode.DirectObjectMarker;
+import org.robolectric.internal.ShadowConstants;
+import org.robolectric.util.ReflectionHelpers;
 
-public class ShadowThingy {
+public class Shadow {
   public static <T> T newInstanceOf(Class<T> clazz) {
     return ReflectionHelpers.callConstructorReflectively(clazz);
   }

@@ -4,7 +4,7 @@ import android.widget.SeekBar;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.util.ShadowThingy;
+import org.robolectric.internal.Shadow;
 
 @Implements(SeekBar.class)
 public class ShadowSeekBar extends ShadowAbsSeekBar {
@@ -17,7 +17,7 @@ public class ShadowSeekBar extends ShadowAbsSeekBar {
   @Implementation
   public void setOnSeekBarChangeListener(SeekBar.OnSeekBarChangeListener listener) {
     this.listener = listener;
-    ShadowThingy.directlyOn(realSeekBar, SeekBar.class).setOnSeekBarChangeListener(listener);
+    Shadow.directlyOn(realSeekBar, SeekBar.class).setOnSeekBarChangeListener(listener);
   }
 
   public SeekBar.OnSeekBarChangeListener getOnSeekBarChangeListener() {

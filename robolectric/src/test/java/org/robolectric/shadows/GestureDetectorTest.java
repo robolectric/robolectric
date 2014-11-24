@@ -5,10 +5,9 @@ import android.view.MotionEvent;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
-import org.robolectric.util.ShadowThingy;
+import org.robolectric.internal.Shadow;
 
 import static junit.framework.Assert.*;
 import static org.robolectric.Shadows.shadowOf;
@@ -62,7 +61,7 @@ public class GestureDetectorTest {
   public void canAnswerLastGestureDetector() throws Exception {
     GestureDetector newDetector = new GestureDetector(RuntimeEnvironment.application, new TestOnGestureListener());
     assertNotSame(newDetector, ShadowGestureDetector.getLastActiveDetector());
-    newDetector.onTouchEvent(ShadowThingy.newInstanceOf(MotionEvent.class));
+    newDetector.onTouchEvent(Shadow.newInstanceOf(MotionEvent.class));
     assertSame(newDetector, ShadowGestureDetector.getLastActiveDetector());
   }
 

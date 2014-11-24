@@ -159,6 +159,27 @@
       <plugin>
         <groupId>org.bsc.maven</groupId>
         <artifactId>maven-processor-plugin</artifactId>
+        <version>2.2.1</version>
+        <configuration>
+          <outputDirectory>target/generated-sources</outputDirectory>
+          <compilerArguments>-source ${maven.compiler.source} -target ${maven.compiler.target} -Aorg.robolectric.annotation.processing.shadowPackage=org.robolectric</compilerArguments>
+        </configuration>
+        <executions>
+          <execution>
+            <id>process</id>
+            <goals>
+              <goal>process</goal>
+            </goals>
+            <phase>generate-sources</phase>
+          </execution>
+        </executions>
+        <dependencies>
+          <dependency>
+            <groupId>org.robolectric</groupId>
+            <artifactId>robolectric-processor</artifactId>
+            <version>${project.version}</version>
+          </dependency>
+        </dependencies>
       </plugin>
 
       <plugin>

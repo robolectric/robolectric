@@ -11,7 +11,7 @@ import org.robolectric.annotation.RealObject;
 import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import static org.robolectric.util.ShadowThingy.directlyOn;
+import static org.robolectric.internal.Shadow.directlyOn;
 
 @SuppressWarnings("UnusedDeclaration")
 @Implements(ClipboardManager.class)

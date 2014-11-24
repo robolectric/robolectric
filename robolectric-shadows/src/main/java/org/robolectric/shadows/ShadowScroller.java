@@ -1,10 +1,8 @@
 package org.robolectric.shadows;
 
-import android.os.Looper;
 import android.widget.Scroller;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.shadows.util.MagicObject;
 import org.robolectric.util.Scheduler;
 
 import static org.robolectric.Shadows.shadowOf;
@@ -98,7 +96,7 @@ public class ShadowScroller {
   }
 
   private Scheduler getScheduler() {
-    return MagicObject.getUiThreadScheduler();
+    return ShadowLooper.getUiThreadScheduler();
   }
 
   private int deltaX() {

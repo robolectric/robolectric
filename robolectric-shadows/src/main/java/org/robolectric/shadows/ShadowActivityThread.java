@@ -31,7 +31,7 @@ public class ShadowActivityThread {
           String packageName = (String) args[0];
           int flags = (Integer) args[1];
           try {
-            return RuntimeEnvironment.packageManager.getApplicationInfo(packageName, flags);
+            return RuntimeEnvironment.getPackageManager().getApplicationInfo(packageName, flags);
           } catch (PackageManager.NameNotFoundException e) {
             return null;
           }
@@ -43,6 +43,6 @@ public class ShadowActivityThread {
 
   @Implementation
   public static Object currentActivityThread() {
-    return RuntimeEnvironment.activityThread;
+    return RuntimeEnvironment.getActivityThread();
   }
 }

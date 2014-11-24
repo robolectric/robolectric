@@ -4,7 +4,7 @@ import android.app.KeyguardManager;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.util.ShadowThingy;
+import org.robolectric.internal.Shadow;
 
 /**
  * Shadows the {@code android.app.KeyguardManager} class.
@@ -13,7 +13,7 @@ import org.robolectric.util.ShadowThingy;
 public class ShadowKeyguardManager {
   @RealObject private KeyguardManager realKeyguardManager;
 
-  private KeyguardManager.KeyguardLock keyguardLock = ShadowThingy.newInstanceOf(KeyguardManager.KeyguardLock.class);
+  private KeyguardManager.KeyguardLock keyguardLock = Shadow.newInstanceOf(KeyguardManager.KeyguardLock.class);
 
   private boolean inRestrictedInputMode = false;
 

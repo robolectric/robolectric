@@ -10,7 +10,7 @@ import org.robolectric.res.ResourceLoader;
 
 import java.util.List;
 
-public interface IRobolectricPackageManager {
+public interface RobolectricPackageManager {
   PackageInfo getPackageInfo(String packageName, int flags) throws PackageManager.NameNotFoundException;
 
   ApplicationInfo getApplicationInfo(String packageName, int flags) throws PackageManager.NameNotFoundException;

@@ -5,7 +5,6 @@ import android.bluetooth.BluetoothAdapter.LeScanCallback;
 import android.bluetooth.BluetoothDevice;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.shadows.util.MagicObject;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -26,7 +25,7 @@ public class ShadowBluetoothAdapter {
 
   @Implementation
   public static BluetoothAdapter getDefaultAdapter() {
-    return (BluetoothAdapter) MagicObject.getShadowApplication().getBluetoothAdapter();
+    return (BluetoothAdapter) ShadowApplication.getInstance().getBluetoothAdapter();
   }
 
   @Implementation

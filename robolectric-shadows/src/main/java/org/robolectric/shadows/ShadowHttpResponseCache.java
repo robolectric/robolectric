@@ -12,7 +12,7 @@ import java.net.URLConnection;
 import java.util.List;
 import java.util.Map;
 
-import static org.robolectric.util.ShadowThingy.newInstanceOf;
+import static org.robolectric.internal.Shadow.newInstanceOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(value = HttpResponseCache.class, callThroughByDefault = false)

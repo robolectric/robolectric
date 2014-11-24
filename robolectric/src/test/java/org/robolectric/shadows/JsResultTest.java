@@ -3,9 +3,8 @@ package org.robolectric.shadows;
 import android.webkit.JsResult;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
-import org.robolectric.util.ShadowThingy;
+import org.robolectric.internal.Shadow;
 
 import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
@@ -16,7 +15,7 @@ public class JsResultTest {
 
   @Test
   public void shouldRecordCanceled() throws Exception {
-    JsResult jsResult = ShadowThingy.newInstanceOf(JsResult.class);
+    JsResult jsResult = Shadow.newInstanceOf(JsResult.class);
 
     assertFalse(shadowOf(jsResult).wasCancelled());
 

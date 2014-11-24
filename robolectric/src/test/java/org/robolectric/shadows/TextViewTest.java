@@ -26,10 +26,9 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
-import org.robolectric.util.ShadowThingy;
+import org.robolectric.internal.Shadow;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -361,7 +360,7 @@ public class TextViewTest {
 
   @Test
   public void canSetAndGetTypeface() throws Exception {
-    Typeface typeface = ShadowThingy.newInstanceOf(Typeface.class);
+    Typeface typeface = Shadow.newInstanceOf(Typeface.class);
     textView.setTypeface(typeface);
     assertSame(typeface, textView.getTypeface());
   }

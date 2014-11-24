@@ -17,7 +17,7 @@ import org.robolectric.res.ResourceLoader;
 import java.lang.reflect.Constructor;
 
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.util.ShadowThingy.directlyOn;
+import static org.robolectric.internal.Shadow.directlyOn;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Window.class)

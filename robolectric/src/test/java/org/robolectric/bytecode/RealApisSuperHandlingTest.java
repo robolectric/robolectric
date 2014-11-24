@@ -9,10 +9,10 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.internal.Instrument;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.util.ShadowThingy;
+import org.robolectric.internal.Shadow;
 
 import static org.junit.Assert.assertEquals;
-import static org.robolectric.util.ShadowThingy.directlyOn;
+import static org.robolectric.internal.Shadow.directlyOn;
 
 @RunWith(TestRunners.RealApisWithoutDefaults.class)
 public class RealApisSuperHandlingTest {
@@ -67,7 +67,7 @@ public class RealApisSuperHandlingTest {
 
     @Override @Implementation
     public String method(String value) {
-      return "3s-" + ShadowThingy.directlyOn(realObject, Child.class).method(value);
+      return "3s-" + Shadow.directlyOn(realObject, Child.class).method(value);
     }
   }
 
@@ -76,7 +76,7 @@ public class RealApisSuperHandlingTest {
     private @RealObject Parent realObject;
 
     @Override @Implementation public String method(String value) {
-      return "2s-" + ShadowThingy.directlyOn(realObject, Parent.class).method(value);
+      return "2s-" + Shadow.directlyOn(realObject, Parent.class).method(value);
     }
   }
 
@@ -89,7 +89,7 @@ public class RealApisSuperHandlingTest {
     } // todo we need to figure out a better way to deal with this...
 
     @Implementation public String method(String value) {
-      return "1s-" + ShadowThingy.directlyOn(realObject, Grandparent.class).method(value);
+      return "1s-" + Shadow.directlyOn(realObject, Grandparent.class).method(value);
     }
   }
 

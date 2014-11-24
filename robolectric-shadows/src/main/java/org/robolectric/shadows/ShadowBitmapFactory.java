@@ -15,7 +15,7 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.util.NamedStream;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Join;
-import org.robolectric.util.ShadowThingy;
+import org.robolectric.internal.Shadow;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
-import static org.robolectric.util.ShadowThingy.directlyOn;
+import static org.robolectric.internal.Shadow.directlyOn;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(BitmapFactory.class)
@@ -126,7 +126,7 @@ public class ShadowBitmapFactory {
   }
 
   public static Bitmap create(final String name, final BitmapFactory.Options options, final Point widthAndHeight) {
-    Bitmap bitmap = ShadowThingy.newInstanceOf(Bitmap.class);
+    Bitmap bitmap = Shadow.newInstanceOf(Bitmap.class);
     ShadowBitmap shadowBitmap = Shadows.shadowOf(bitmap);
     shadowBitmap.appendDescription(name == null ? "Bitmap" : "Bitmap for " + name);
 

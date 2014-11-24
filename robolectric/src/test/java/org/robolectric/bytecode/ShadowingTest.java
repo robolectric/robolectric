@@ -15,7 +15,6 @@ import com.google.android.maps.OverlayItem;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
@@ -24,8 +23,8 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.bytecode.testing.Pony;
 import org.robolectric.internal.Instrument;
-import org.robolectric.util.ShadowConstants;
-import org.robolectric.util.ShadowThingy;
+import org.robolectric.internal.ShadowConstants;
+import org.robolectric.internal.Shadow;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -36,7 +35,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
-import static org.robolectric.util.ShadowThingy.directlyOn;
+import static org.robolectric.internal.Shadow.directlyOn;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ShadowingTest {
@@ -152,7 +151,7 @@ public class ShadowingTest {
     Pony pony = new Pony();
 
     assertEquals("Fake whinny! You're on my neck!", pony.ride("neck"));
-    assertEquals("Whinny! You're on my neck!", ShadowThingy.directlyOn(pony, Pony.class).ride("neck"));
+    assertEquals("Whinny! You're on my neck!", Shadow.directlyOn(pony, Pony.class).ride("neck"));
 
     assertEquals("Fake whinny! You're on my haunches!", pony.ride("haunches"));
   }

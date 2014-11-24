@@ -7,7 +7,7 @@ import android.view.ContextMenu;
 import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
-import org.robolectric.shadows.util.MagicObject;
+import org.robolectric.shadows.ShadowApplication;
 
 public class TestMenuItem implements MenuItem {
   private int itemId;
@@ -94,7 +94,7 @@ public class TestMenuItem implements MenuItem {
 
   @Override
   public MenuItem setIcon(int iconRes) {
-    this.icon = iconRes == 0 ? null : MagicObject.getShadowApplication().getResources().getDrawable(iconRes);
+    this.icon = iconRes == 0 ? null : ShadowApplication.getInstance().getResources().getDrawable(iconRes);
     return this;
   }
 
@@ -212,7 +212,7 @@ public class TestMenuItem implements MenuItem {
     if (enabled && menuItemClickListener != null) {
       menuItemClickListener.onMenuItemClick(this);
     } else if (enabled && intent != null) {
-      MagicObject.getShadowApplication().startActivity(intent);
+      ShadowApplication.getInstance().startActivity(intent);
     }
   }
 

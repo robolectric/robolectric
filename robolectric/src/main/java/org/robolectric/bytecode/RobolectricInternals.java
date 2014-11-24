@@ -1,7 +1,7 @@
 package org.robolectric.bytecode;
 
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ShadowConstants;
+import org.robolectric.internal.ShadowConstants;
 
 public class RobolectricInternals {
 

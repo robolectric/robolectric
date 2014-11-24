@@ -6,7 +6,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;
 
-import static org.robolectric.util.ShadowThingy.directlyOn;
+import static org.robolectric.internal.Shadow.directlyOn;
 
 @Implements(className = ShadowPhoneWindow.PHONE_WINDOW_CLASS_NAME)
 public class ShadowPhoneWindow extends ShadowWindow {

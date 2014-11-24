@@ -4,7 +4,7 @@ import android.net.wifi.ScanResult;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.util.ShadowThingy;
+import org.robolectric.internal.Shadow;
 
 @Implements(ScanResult.class)
 public class ShadowScanResult {
@@ -12,7 +12,7 @@ public class ShadowScanResult {
   @RealObject ScanResult realObject;
 
   public static ScanResult newInstance(String SSID, String BSSID, String caps, int level, int frequency) {
-    ScanResult scanResult = ShadowThingy.newInstanceOf(ScanResult.class);
+    ScanResult scanResult = Shadow.newInstanceOf(ScanResult.class);
     scanResult.SSID = SSID;
     scanResult.BSSID = BSSID;
     scanResult.capabilities = caps;

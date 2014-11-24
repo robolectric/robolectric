@@ -1,6 +1,6 @@
 package org.robolectric.util;
 
-import org.robolectric.shadows.util.MagicObject;
+import org.robolectric.shadows.ShadowApplication;
 
 import java.util.Collection;
 import java.util.List;
@@ -54,7 +54,7 @@ public class RobolectricBackgroundExecutorService implements ExecutorService {
   }
 
   private <T> Future<T> schedule(final FutureTask<T> futureTask) {
-    MagicObject.getShadowApplication().getBackgroundScheduler().post(new Runnable() {
+    ShadowApplication.getInstance().getBackgroundScheduler().post(new Runnable() {
       @Override
       public void run() {
         futureTask.run();

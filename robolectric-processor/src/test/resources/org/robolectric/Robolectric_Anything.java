@@ -6,7 +6,7 @@ import org.robolectric.annotation.processing.objects.AnyObject;
 import org.robolectric.annotation.processing.objects.Dummy;
 import org.robolectric.annotation.processing.shadows.ShadowAnything;
 import org.robolectric.annotation.processing.shadows.ShadowDummy;
-import org.robolectric.util.ShadowExtractor;
+import org.robolectric.internal.ShadowExtractor;
 
 @Generated("org.robolectric.annotation.processing.RoboProcessor")
 public class Shadows {

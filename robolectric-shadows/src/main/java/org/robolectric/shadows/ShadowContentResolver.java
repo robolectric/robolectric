@@ -24,7 +24,7 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.util.NamedStream;
 import org.robolectric.manifest.ContentProviderData;
 import org.robolectric.tester.android.database.TestCursor;
-import org.robolectric.util.ShadowThingy;
+import org.robolectric.internal.Shadow;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -210,7 +210,7 @@ public class ShadowContentResolver {
 
   private ContentProviderClient getContentProviderClient(ContentProvider provider, boolean stable) {
     ContentProviderClient client =
-        ShadowThingy.newInstance(ContentProviderClient.class,
+        Shadow.newInstance(ContentProviderClient.class,
             new Class[]{ContentResolver.class, IContentProvider.class, boolean.class},
             new Object[]{realContentResolver, provider.getIContentProvider(), stable});
     shadowOf(client).setContentProvider(provider);

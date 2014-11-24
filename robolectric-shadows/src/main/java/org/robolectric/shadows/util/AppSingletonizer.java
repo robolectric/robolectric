@@ -3,7 +3,7 @@ package org.robolectric.shadows.util;
 import android.app.Application;
 import android.content.Context;
 import org.robolectric.shadows.ShadowApplication;
-import org.robolectric.util.ShadowThingy;
+import org.robolectric.internal.Shadow;
 
 import static org.robolectric.Shadows.shadowOf;
 
@@ -30,6 +30,6 @@ public abstract class AppSingletonizer<T> {
   protected abstract void set(ShadowApplication shadowApplication, T instance);
 
   protected T createInstance(Application applicationContext) {
-    return ShadowThingy.newInstanceOf(clazz);
+    return Shadow.newInstanceOf(clazz);
   }
 }

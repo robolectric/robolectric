@@ -16,15 +16,14 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.HiddenApi;
-import org.robolectric.shadows.util.MagicObject;
 import org.robolectric.util.ReflectionHelpers;
 
 import java.io.PrintStream;
 import java.lang.reflect.Method;
 
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.util.ShadowThingy.directlyOn;
-import static org.robolectric.util.ShadowThingy.invokeConstructor;
+import static org.robolectric.internal.Shadow.directlyOn;
+import static org.robolectric.internal.Shadow.invokeConstructor;
 
 /**
  * Shadow implementation of {@code View} that simulates the behavior of this
@@ -330,17 +329,17 @@ public class ShadowView {
 
   @Implementation
   public void post(Runnable action) {
-    MagicObject.getUiThreadScheduler().post(action);
+    ShadowLooper.getUiThreadScheduler().post(action);
   }
 
   @Implementation
   public void postDelayed(Runnable action, long delayMills) {
-    MagicObject.getUiThreadScheduler().postDelayed(action, delayMills);
+    ShadowLooper.getUiThreadScheduler().postDelayed(action, delayMills);
   }
 
   @Implementation
   public void postInvalidateDelayed(long delayMilliseconds) {
-    MagicObject.getUiThreadScheduler().postDelayed(new Runnable() {
+    ShadowLooper.getUiThreadScheduler().postDelayed(new Runnable() {
       @Override
       public void run() {
         realView.invalidate();

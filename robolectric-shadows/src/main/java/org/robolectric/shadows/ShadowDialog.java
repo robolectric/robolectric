@@ -14,13 +14,12 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.shadows.util.MagicObject;
 import org.robolectric.util.ReflectionHelpers;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.robolectric.util.ShadowThingy.directlyOn;
+import static org.robolectric.internal.Shadow.directlyOn;
 import static org.robolectric.Shadows.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -50,12 +49,12 @@ public class ShadowDialog {
   }
 
   public static Dialog getLatestDialog() {
-    ShadowDialog dialog = MagicObject.getShadowApplication().getLatestDialog();
+    ShadowDialog dialog = ShadowApplication.getInstance().getLatestDialog();
     return dialog == null ? null : dialog.realDialog;
   }
 
   public static void setLatestDialog(ShadowDialog latestDialog) {
-    ShadowApplication shadowApplication = MagicObject.getShadowApplication();
+    ShadowApplication shadowApplication = ShadowApplication.getInstance();
     if (shadowApplication != null) shadowApplication.setLatestDialog(latestDialog);
   }
 

@@ -9,7 +9,6 @@ import android.support.v4.content.LocalBroadcastManager;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.shadows.util.MagicObject;
 import org.robolectric.util.ReflectionHelpers;
 
 import java.util.ArrayList;
@@ -62,7 +61,7 @@ public class ShadowLocalBroadcastManager {
           sent = true;
           final BroadcastReceiver receiver = wrapper.broadcastReceiver;
           final Intent broadcastIntent = intent;
-          MagicObject.getUiThreadScheduler().post(new Runnable() {
+          ShadowLooper.getUiThreadScheduler().post(new Runnable() {
             @Override
             public void run() {
               receiver.onReceive(RuntimeEnvironment.application, broadcastIntent);

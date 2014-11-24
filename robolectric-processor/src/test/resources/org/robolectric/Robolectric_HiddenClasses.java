@@ -10,7 +10,7 @@ import org.robolectric.annotation.processing.shadows.ShadowOuterDummy2.ShadowInn
 import org.robolectric.annotation.processing.shadows.ShadowOuterDummy2.ShadowInnerPrivate;
 import org.robolectric.annotation.processing.shadows.ShadowOuterDummy2.ShadowInnerProtected;
 import org.robolectric.annotation.processing.shadows.ShadowPrivate;
-import org.robolectric.util.ShadowExtractor;
+import org.robolectric.internal.ShadowExtractor;
 
 @Generated("org.robolectric.annotation.processing.RoboProcessor")
 public class Shadows {

@@ -7,7 +7,6 @@ import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.util.ShadowThingy;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,7 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.robolectric.util.ShadowThingy.*;
+import static org.robolectric.internal.Shadow.*;
 
 /**
  * Shadows the Android {@code Camera} class.

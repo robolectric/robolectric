@@ -34,7 +34,7 @@ import org.robolectric.res.TypedResource;
 import org.robolectric.res.builder.XmlFileBuilder;
 
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.shadows.util.MagicObject.getShadowApplication;
+import static org.robolectric.shadows.ShadowApplication.getInstance;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AssetManager.class)
@@ -260,8 +260,8 @@ public final class ShadowAssetManager {
       appliedThemeStyles.put(theme, new LinkedList<OverlayedStyle>());
     }
 
-    ResourceLoader resourceLoader = getShadowApplication().getResourceLoader();
-    ShadowAssetManager assetManager = shadowOf(getShadowApplication().getAssets());
+    ResourceLoader resourceLoader = getInstance().getResourceLoader();
+    ShadowAssetManager assetManager = shadowOf(getInstance().getAssets());
 
     ResourceIndex resourceIndex = resourceLoader.getResourceIndex();
     ResName resName = resourceIndex.getResName(styleRes);

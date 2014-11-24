@@ -21,7 +21,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
-import org.robolectric.shadows.util.MagicObject;
 import org.robolectric.tester.org.apache.http.FakeHttpLayer;
 import org.robolectric.tester.org.apache.http.RequestMatcher;
 import org.robolectric.tester.org.apache.http.TestHttpResponse;
@@ -41,7 +40,7 @@ public class DefaultRequestDirectorTest {
 
   @Before
   public void setUp_EnsureStaticStateIsReset() {
-    FakeHttpLayer fakeHttpLayer = MagicObject.getFakeHttpLayer();
+    FakeHttpLayer fakeHttpLayer = ShadowApplication.getInstance().getFakeHttpLayer();
     assertFalse(fakeHttpLayer.hasPendingResponses());
     assertFalse(fakeHttpLayer.hasRequestInfos());
     assertFalse(fakeHttpLayer.hasResponseRules());
@@ -360,14 +359,14 @@ public class DefaultRequestDirectorTest {
 
   @Test(expected = IOException.class)
   public void shouldSupportRealHttpRequests() throws Exception {
-    MagicObject.getFakeHttpLayer().interceptHttpRequests(false);
+    ShadowApplication.getInstance().getFakeHttpLayer().interceptHttpRequests(false);
     DefaultHttpClient client = new DefaultHttpClient();
     client.execute(new HttpGet("http://www.this-host-should-not-exist-123456790.org:999"));
   }
 
   @Test
   public void shouldSupportRealHttpRequestsAddingRequestInfo() throws Exception {
-    MagicObject.getFakeHttpLayer().interceptHttpRequests(false);
+    ShadowApplication.getInstance().getFakeHttpLayer().interceptHttpRequests(false);
     DefaultHttpClient client = new DefaultHttpClient();
 
     // it's really bad to depend on an external server in order to get a test pass,
@@ -375,22 +374,22 @@ public class DefaultRequestDirectorTest {
     // so, I think that in this specific case, it's appropriate...
     client.execute(new HttpGet("http://google.com"));
 
-    assertNotNull(MagicObject.getFakeHttpLayer().getLastSentHttpRequestInfo());
-    assertNotNull(MagicObject.getFakeHttpLayer().getLastHttpResponse());
+    assertNotNull(ShadowApplication.getInstance().getFakeHttpLayer().getLastSentHttpRequestInfo());
+    assertNotNull(ShadowApplication.getInstance().getFakeHttpLayer().getLastHttpResponse());
   }
 
   @Test
   public void realHttpRequestsShouldMakeContentDataAvailable() throws Exception {
-    MagicObject.getFakeHttpLayer().interceptHttpRequests(false);
-    MagicObject.getFakeHttpLayer().interceptResponseContent(true);
+    ShadowApplication.getInstance().getFakeHttpLayer().interceptHttpRequests(false);
+    ShadowApplication.getInstance().getFakeHttpLayer().interceptResponseContent(true);
     DefaultHttpClient client = new DefaultHttpClient();
 
     client.execute(new HttpGet("http://google.com"));
 
-    byte[] cachedContent = MagicObject.getFakeHttpLayer().getHttpResposeContentList().get(0);
+    byte[] cachedContent = ShadowApplication.getInstance().getFakeHttpLayer().getHttpResposeContentList().get(0);
     assertThat(cachedContent.length).isNotEqualTo(0);
 
-    InputStream content = MagicObject.getFakeHttpLayer().getLastHttpResponse().getEntity().getContent();
+    InputStream content = ShadowApplication.getInstance().getFakeHttpLayer().getLastHttpResponse().getEntity().getContent();
     BufferedReader contentReader = new BufferedReader(new InputStreamReader(content));
     String firstLineOfContent = contentReader.readLine();
     assertThat(firstLineOfContent).contains("Google");

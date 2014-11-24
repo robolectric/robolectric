@@ -12,7 +12,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.Join;
-import org.robolectric.util.ShadowThingy;
+import org.robolectric.internal.Shadow;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -42,27 +42,27 @@ public class ShadowIntent {
     componentName = new ComponentName(packageContext, cls);
     data = uri;
     intentClass = cls;
-    ShadowThingy.invokeConstructor(Intent.class, realIntent, new ClassParameter(String.class, action),
-            new ClassParameter(Uri.class, uri), new ClassParameter(Context.class, packageContext), new ClassParameter(Class.class, cls));
+    Shadow.invokeConstructor(Intent.class, realIntent, new ClassParameter(String.class, action),
+        new ClassParameter(Uri.class, uri), new ClassParameter(Context.class, packageContext), new ClassParameter(Class.class, cls));
   }
 
   public void __constructor__(Context packageContext, Class cls) {
     componentName = new ComponentName(packageContext, cls);
     intentClass = cls;
-    ShadowThingy.invokeConstructor(Intent.class, realIntent, new ClassParameter(Context.class, packageContext),
+    Shadow.invokeConstructor(Intent.class, realIntent, new ClassParameter(Context.class, packageContext),
         new ClassParameter(Class.class, cls));
   }
 
   public void __constructor__(String action, Uri uri) {
     this.action = action;
     data = uri;
-    ShadowThingy.invokeConstructor(Intent.class, realIntent, new ClassParameter(String.class, action),
+    Shadow.invokeConstructor(Intent.class, realIntent, new ClassParameter(String.class, action),
         new ClassParameter(Uri.class, uri));
   }
 
   public void __constructor__(String action) {
     __constructor__(action, null);
-    ShadowThingy.invokeConstructor(Intent.class, realIntent, new ClassParameter(String.class, action));
+    Shadow.invokeConstructor(Intent.class, realIntent, new ClassParameter(String.class, action));
   }
 
   public void __constructor__(Parcel in) {
@@ -117,7 +117,7 @@ public class ShadowIntent {
     intentClass = other.intentClass;
     packageName = other.packageName;
     categories.addAll(other.categories);
-    ShadowThingy.invokeConstructor(Intent.class, realIntent, new ClassParameter(Intent.class, intent));
+    Shadow.invokeConstructor(Intent.class, realIntent, new ClassParameter(Intent.class, intent));
   }
 
   @Implementation

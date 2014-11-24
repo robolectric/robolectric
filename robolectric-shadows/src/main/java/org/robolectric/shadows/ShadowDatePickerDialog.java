@@ -6,7 +6,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
 import static org.robolectric.util.ReflectionHelpers.ClassParameter;
-import static org.robolectric.util.ShadowThingy.invokeConstructor;
+import static org.robolectric.internal.Shadow.invokeConstructor;
 
 @Implements(DatePickerDialog.class)
 public class ShadowDatePickerDialog extends ShadowAlertDialog {

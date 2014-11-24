@@ -4,7 +4,7 @@ import android.content.Context;
 import android.webkit.CookieSyncManager;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.util.ShadowThingy;
+import org.robolectric.internal.Shadow;
 
 /**
  * Shadows the {@code android.webkit.CookieSyncManager} class.
@@ -17,7 +17,7 @@ public class ShadowCookieSyncManager extends ShadowWebSyncManager {
   @Implementation
   public static synchronized CookieSyncManager createInstance(Context ctx) {
     if (sRef == null) {
-      sRef = ShadowThingy.newInstanceOf(CookieSyncManager.class);
+      sRef = Shadow.newInstanceOf(CookieSyncManager.class);
     }
     return sRef;
   }

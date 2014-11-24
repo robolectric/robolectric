@@ -4,7 +4,6 @@ import android.os.SystemClock;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.HiddenApi;
-import org.robolectric.shadows.util.MagicObject;
 
 @Implements(SystemClock.class)
 public class ShadowSystemClock {
@@ -12,12 +11,12 @@ public class ShadowSystemClock {
   private static long nanoTime = 0;
 
   static long now() {
-    return MagicObject.getUiThreadScheduler().getCurrentTime();
+    return ShadowLooper.getUiThreadScheduler().getCurrentTime();
   }
 
   @Implementation
   public static void sleep(long ms) {
-    MagicObject.getUiThreadScheduler().advanceBy(ms);
+    ShadowLooper.getUiThreadScheduler().advanceBy(ms);
   }
 
   /**
@@ -31,7 +30,7 @@ public class ShadowSystemClock {
     if (now() > millis) {
       return false;
     } 
-    MagicObject.getUiThreadScheduler().advanceTo(millis);
+    ShadowLooper.getUiThreadScheduler().advanceTo(millis);
     return true;
   }
   

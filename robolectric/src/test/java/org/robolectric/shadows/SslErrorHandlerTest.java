@@ -4,10 +4,9 @@ import android.webkit.SslErrorHandler;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
-import org.robolectric.util.ShadowThingy;
+import org.robolectric.internal.Shadow;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -20,7 +19,7 @@ public class SslErrorHandlerTest {
 
   @Before
   public void setUp() throws Exception {
-    handler = ShadowThingy.newInstanceOf(SslErrorHandler.class);
+    handler = Shadow.newInstanceOf(SslErrorHandler.class);
     shadow = Shadows.shadowOf(handler);
   }
 

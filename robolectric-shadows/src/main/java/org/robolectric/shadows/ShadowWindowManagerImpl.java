@@ -10,7 +10,7 @@ import org.robolectric.util.ReflectionHelpers;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.robolectric.util.ShadowThingy.directlyOn;
+import static org.robolectric.internal.Shadow.directlyOn;
 
 @Implements(className = ShadowWindowManagerImpl.WINDOW_MANAGER_IMPL_CLASS_NAME)
 public class ShadowWindowManagerImpl extends ShadowWindowManager {

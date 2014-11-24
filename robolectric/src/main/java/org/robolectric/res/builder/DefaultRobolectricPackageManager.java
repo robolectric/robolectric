@@ -33,10 +33,9 @@ import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceIndex;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.shadows.ShadowContext;
-import org.robolectric.shadows.util.MagicObject;
 import org.robolectric.tester.android.content.pm.StubPackageManager;
 
-public class RobolectricPackageManager extends StubPackageManager implements IRobolectricPackageManager {
+public class DefaultRobolectricPackageManager extends StubPackageManager implements RobolectricPackageManager {
 
   private static class IntentComparator implements Comparator<Intent> {
 

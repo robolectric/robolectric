@@ -17,7 +17,7 @@ import org.robolectric.util.ReflectionHelpers;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.robolectric.util.ShadowThingy.newInstanceOf;
+import static org.robolectric.internal.Shadow.newInstanceOf;
 
 @Implements(className = ShadowContextImpl.CLASS_NAME)
 public class ShadowContextImpl extends ShadowContext {

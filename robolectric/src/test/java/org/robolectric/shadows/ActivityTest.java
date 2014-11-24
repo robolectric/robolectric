@@ -34,7 +34,7 @@ import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
 import org.robolectric.test.TemporaryFolder;
 import org.robolectric.util.ActivityController;
-import org.robolectric.util.ShadowThingy;
+import org.robolectric.internal.Shadow;
 import org.robolectric.util.TestRunnable;
 import org.robolectric.util.Transcript;
 
@@ -177,7 +177,7 @@ public class ActivityTest {
   @Test
   public void shouldSupportStartActivityForResult() throws Exception {
     activity = create(DialogLifeCycleActivity.class);
-    ShadowActivity shadowActivity = Shadows.shadowOf(activity);
+    ShadowActivity shadowActivity = shadowOf(activity);
     Intent intent = new Intent().setClass(activity, DialogLifeCycleActivity.class);
     assertThat(shadowActivity.getNextStartedActivity()).isNull();
 
@@ -191,7 +191,7 @@ public class ActivityTest {
   @Test
   public void shouldSupportGetStartedActivitiesForResult() throws Exception {
     activity = create(DialogLifeCycleActivity.class);
-    ShadowActivity shadowActivity = Shadows.shadowOf(activity);
+    ShadowActivity shadowActivity = shadowOf(activity);
     Intent intent = new Intent().setClass(activity, DialogLifeCycleActivity.class);
 
     activity.startActivityForResult(intent, 142);
@@ -207,7 +207,7 @@ public class ActivityTest {
   @Test
   public void shouldSupportPeekStartedActivitiesForResult() throws Exception {
     activity = create(DialogLifeCycleActivity.class);
-    ShadowActivity shadowActivity = Shadows.shadowOf(activity);
+    ShadowActivity shadowActivity = shadowOf(activity);
     Intent intent = new Intent().setClass(activity, DialogLifeCycleActivity.class);
 
     activity.startActivityForResult(intent, 142);
@@ -346,7 +346,7 @@ public class ActivityTest {
     Dialog firstDialog = ShadowDialog.getLatestDialog();
 
     activity.removeDialog(1);
-    assertNull(Shadows.shadowOf(activity).getDialogById(1));
+    assertNull(shadowOf(activity).getDialogById(1));
 
     activity.showDialog(1);
     Dialog secondDialog = ShadowDialog.getLatestDialog();
@@ -549,7 +549,7 @@ public class ActivityTest {
     assertThat(shadow.getManagedCursors()).isNotNull();
     assertThat(shadow.getManagedCursors().size()).isEqualTo(0);
 
-    Cursor c = ShadowThingy.newInstanceOf(SQLiteCursor.class);
+    Cursor c = Shadow.newInstanceOf(SQLiteCursor.class);
     activity.startManagingCursor(c);
 
     assertThat(shadow.getManagedCursors()).isNotNull();

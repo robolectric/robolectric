@@ -18,7 +18,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ShadowThingy;
+import org.robolectric.internal.Shadow;
 
 import static org.robolectric.Shadows.shadowOf;
 
@@ -167,13 +167,13 @@ public class ShadowDrawable {
   @Implementation
   public void setAlpha(int alpha) {
     this.alpha = alpha;
-    ShadowThingy.directlyOn(realDrawable, Drawable.class).setAlpha(alpha);
+    Shadow.directlyOn(realDrawable, Drawable.class).setAlpha(alpha);
   }
 
   @Implementation
   public void invalidateSelf() {
     wasInvalidated = true;
-    ShadowThingy.directlyOn(realDrawable, Drawable.class, "invalidateSelf");
+    Shadow.directlyOn(realDrawable, Drawable.class, "invalidateSelf");
   }
 
   @Implementation

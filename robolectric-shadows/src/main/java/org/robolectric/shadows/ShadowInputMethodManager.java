@@ -7,7 +7,7 @@ import android.view.inputmethod.InputMethodManager;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.HiddenApi;
-import org.robolectric.util.ShadowThingy;
+import org.robolectric.internal.Shadow;
 
 @Implements(value = InputMethodManager.class, callThroughByDefault = false)
 public class ShadowInputMethodManager {
@@ -16,7 +16,7 @@ public class ShadowInputMethodManager {
 
   @HiddenApi @Implementation
   static public InputMethodManager peekInstance() {
-    return ShadowThingy.newInstanceOf(InputMethodManager.class);
+    return Shadow.newInstanceOf(InputMethodManager.class);
   }
 
   @Implementation

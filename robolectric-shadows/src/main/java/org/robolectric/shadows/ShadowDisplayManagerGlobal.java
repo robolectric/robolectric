@@ -2,7 +2,7 @@ package org.robolectric.shadows;
 
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.util.ShadowThingy;
+import org.robolectric.internal.Shadow;
 
 @Implements(className = ShadowDisplayManagerGlobal.REAL_CLASS_NAME)
 public class ShadowDisplayManagerGlobal {
@@ -11,11 +11,11 @@ public class ShadowDisplayManagerGlobal {
 
   @Implementation
   public static Object getInstance() {
-    return ShadowThingy.newInstanceOf(REAL_CLASS_NAME);
+    return Shadow.newInstanceOf(REAL_CLASS_NAME);
   }
 
   @Implementation
   public Object getDisplayInfo(int displayId) {
-    return ShadowThingy.newInstanceOf("android.view.DisplayInfo");
+    return Shadow.newInstanceOf("android.view.DisplayInfo");
   }
 }

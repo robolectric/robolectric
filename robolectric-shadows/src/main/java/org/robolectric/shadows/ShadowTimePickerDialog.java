@@ -4,7 +4,7 @@ import android.app.TimePickerDialog;
 import android.content.Context;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.util.ShadowThingy;
+import org.robolectric.internal.Shadow;
 
 import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -20,7 +20,7 @@ public class ShadowTimePickerDialog extends ShadowAlertDialog {
     this.hourOfDay = hourOfDay;
     this.minute = minute;
 
-    ShadowThingy.invokeConstructor(TimePickerDialog.class, realTimePickerDialog, new ClassParameter(Context.class, context),
+    Shadow.invokeConstructor(TimePickerDialog.class, realTimePickerDialog, new ClassParameter(Context.class, context),
         new ClassParameter(int.class, theme), new ClassParameter(TimePickerDialog.OnTimeSetListener.class, callBack),
         new ClassParameter(int.class, hourOfDay), new ClassParameter(int.class, minute), new ClassParameter(boolean.class, is24HourView));
   }

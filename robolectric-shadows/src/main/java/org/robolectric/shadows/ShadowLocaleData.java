@@ -4,7 +4,7 @@ import java.util.Locale;
 import libcore.icu.LocaleData;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Implementation;
-import org.robolectric.util.ShadowThingy;
+import org.robolectric.internal.Shadow;
 
 @Implements(className = ShadowLocaleData.REAL_CLASS_NAME)
 public class ShadowLocaleData {
@@ -12,7 +12,7 @@ public class ShadowLocaleData {
 
   @Implementation
   public static Object get(Locale locale) {
-    LocaleData localeData = (LocaleData) ShadowThingy.newInstanceOf(REAL_CLASS_NAME);
+    LocaleData localeData = (LocaleData) Shadow.newInstanceOf(REAL_CLASS_NAME);
 
     if (locale == null) {
       locale = Locale.getDefault();

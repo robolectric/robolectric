@@ -212,7 +212,7 @@ public class ShadowContextWrapper extends ShadowContext {
    */
   @Implementation
   public PackageManager getPackageManager() {
-    return (PackageManager) RuntimeEnvironment.packageManager;
+    return RuntimeEnvironment.getPackageManager();
   }
 
   @Implementation

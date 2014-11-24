@@ -11,7 +11,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResBunch;
 import org.robolectric.res.ResourceLoader;
-import org.robolectric.res.builder.RobolectricPackageManager;
+import org.robolectric.res.builder.DefaultRobolectricPackageManager;
 import org.robolectric.shadows.ShadowActivityThread;
 import org.robolectric.shadows.ShadowContextImpl;
 import org.robolectric.shadows.ShadowLog;
@@ -62,12 +62,12 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   @Override
   public void setUpApplicationState(Method method, TestLifecycle testLifecycle, ResourceLoader systemResourceLoader, AndroidManifest appManifest, Config config) {
     RuntimeEnvironment.application = null;
-    RuntimeEnvironment.packageManager = new RobolectricPackageManager();
-    RuntimeEnvironment.packageManager.addPackage(DEFAULT_PACKAGE_NAME);
+    RuntimeEnvironment.setRobolectricPackageManager(new DefaultRobolectricPackageManager());
+    RuntimeEnvironment.getRobolectricPackageManager().addPackage(DEFAULT_PACKAGE_NAME);
     ResourceLoader resourceLoader;
     if (appManifest != null) {
       resourceLoader = robolectricTestRunner.getAppResourceLoader(sdkConfig, systemResourceLoader, appManifest);
-      RuntimeEnvironment.packageManager.addManifest(appManifest, resourceLoader);
+      RuntimeEnvironment.getRobolectricPackageManager().addManifest(appManifest, resourceLoader);
     } else {
       resourceLoader = systemResourceLoader;
     }
@@ -78,14 +78,13 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     Configuration configuration = systemResources.getConfiguration();
     shadowOf(configuration).overrideQualifiers(qualifiers);
     systemResources.updateConfiguration(configuration, systemResources.getDisplayMetrics());
-//    shadowOf(systemResources.getAssets()).setQualifiers(qualifiers);
     RuntimeEnvironment.setQualifiers(qualifiers);
 
     Class<?> contextImplClass = ReflectionHelpers.loadClassReflectively(getClass().getClassLoader(), ShadowContextImpl.CLASS_NAME);
 
     Class<?> activityThreadClass = ReflectionHelpers.loadClassReflectively(getClass().getClassLoader(), ShadowActivityThread.CLASS_NAME);
     Object activityThread = ReflectionHelpers.callConstructorReflectively(activityThreadClass);
-    RuntimeEnvironment.activityThread = activityThread;
+    RuntimeEnvironment.setActivityThread(activityThread);
 
     ReflectionHelpers.setFieldReflectively(activityThread, "mInstrumentation", new RoboInstrumentation());
     ReflectionHelpers.setFieldReflectively(activityThread, "mCompatConfiguration", configuration);
@@ -99,7 +98,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
       ApplicationInfo applicationInfo;
       try {
-        applicationInfo = RuntimeEnvironment.packageManager.getApplicationInfo(packageName, 0);
+        applicationInfo = RuntimeEnvironment.getPackageManager().getApplicationInfo(packageName, 0);
       } catch (PackageManager.NameNotFoundException e) {
         throw new RuntimeException(e);
       }

@@ -12,7 +12,6 @@ import android.view.View;
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
-import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implements;
 import org.robolectric.res.ResourceLoader;
@@ -20,7 +19,6 @@ import org.robolectric.shadows.HttpResponseGenerator;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowDefaultRequestDirector;
 import org.robolectric.shadows.ShadowLooper;
-import org.robolectric.shadows.util.MagicObject;
 import org.robolectric.tester.org.apache.http.FakeHttpLayer;
 import org.robolectric.tester.org.apache.http.HttpRequestInfo;
 import org.robolectric.tester.org.apache.http.RequestMatcher;
@@ -209,7 +207,7 @@ public class Robolectric {
   }
 
   public static FakeHttpLayer getFakeHttpLayer() {
-    return MagicObject.getFakeHttpLayer();
+    return ShadowApplication.getInstance().getFakeHttpLayer();
   }
 
   public static void setDefaultHttpResponse(int statusCode, String responseBody) {
@@ -253,15 +251,15 @@ public class Robolectric {
   }
 
   public static Scheduler getUiThreadScheduler() {
-    return MagicObject.getUiThreadScheduler();
+    return ShadowLooper.getUiThreadScheduler();
   }
 
   public static Scheduler getBackgroundScheduler() {
-    return MagicObject.getBackgroundScheduler();
+    return ShadowApplication.getInstance().getBackgroundScheduler();
   }
 
   public static ShadowApplication getShadowApplication() {
-    return MagicObject.getShadowApplication();
+    return ShadowApplication.getInstance();
   }
 
   public static void setDisplayMetricsDensity(float densityMultiplier) {
@@ -334,13 +332,13 @@ public class Robolectric {
   }
 
   public static ResourceLoader getResourceLoader() {
-    return MagicObject.getResourceLoader();
+    return ShadowApplication.getInstance().getResourceLoader();
   }
 
   public static void reset(Config config) {
     RuntimeEnvironment.application = null;
-    RuntimeEnvironment.packageManager = null;
-    RuntimeEnvironment.activityThread = null;
+    RuntimeEnvironment.setRobolectricPackageManager(null);
+    RuntimeEnvironment.setActivityThread(null);
 
     Shadows.reset();
   }

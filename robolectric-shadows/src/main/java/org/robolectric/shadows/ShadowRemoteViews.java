@@ -11,7 +11,6 @@ import android.widget.RemoteViews;
 import android.widget.TextView;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.shadows.util.MagicObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -124,7 +123,7 @@ public class ShadowRemoteViews {
       View view = parent.findViewById(viewId);
       if (view == null) {
         throw new NullPointerException("couldn't find view " + viewId
-            + " (" + MagicObject.getResourceLoader().getNameForId(viewId) + ")");
+            + " (" + ShadowApplication.getInstance().getResourceLoader().getNameForId(viewId) + ")");
       }
       doUpdate(view);
     }

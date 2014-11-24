@@ -12,17 +12,16 @@ import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.HiddenApi;
-import org.robolectric.shadows.util.MagicObject;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.res.Attribute;
-import org.robolectric.util.ShadowThingy;
+import org.robolectric.internal.Shadow;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.robolectric.util.ReflectionHelpers.ClassParameter;
-import static org.robolectric.util.ShadowThingy.directlyOn;
-import static org.robolectric.util.ShadowThingy.invokeConstructor;
+import static org.robolectric.internal.Shadow.directlyOn;
+import static org.robolectric.internal.Shadow.invokeConstructor;
 
 /**
  * Shadow of {@code MapView} that simulates the internal state of a {@code MapView}. Supports {@code Projection}s,
@@ -57,7 +56,7 @@ public class ShadowMapView extends ShadowViewGroup {
   @HiddenApi
   public void __constructor__(Context context) {
     setContextOnRealView(context);
-    this.attributeSet = new RoboAttributeSet(new ArrayList<Attribute>(), MagicObject.getResourceLoader());
+    this.attributeSet = new RoboAttributeSet(new ArrayList<Attribute>(), ShadowApplication.getInstance().getResourceLoader());
     invokeConstructor(View.class, realView, new ClassParameter(Context.class, context));
     invokeConstructor(ViewGroup.class, realView, new ClassParameter(Context.class, context));
   }
@@ -122,7 +121,7 @@ public class ShadowMapView extends ShadowViewGroup {
   public MapController getController() {
     if (mapController == null) {
       try {
-        mapController = ShadowThingy.newInstanceOf(MapController.class);
+        mapController = Shadow.newInstanceOf(MapController.class);
         shadowMapController = Shadows.shadowOf(mapController);
         shadowMapController.setShadowMapView(this);
       } catch (Exception e) {

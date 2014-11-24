@@ -11,7 +11,7 @@ import org.robolectric.util.ReflectionHelpers;
 
 import java.lang.reflect.InvocationTargetException;
 
-import static org.robolectric.util.ShadowThingy.directlyOn;
+import static org.robolectric.internal.Shadow.directlyOn;
 
 @Implements(AlertController.class)
 public class ShadowAlertController {

@@ -3,7 +3,7 @@ package org.robolectric.shadows;
 import android.graphics.Color;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.util.ShadowThingy;
+import org.robolectric.internal.Shadow;
 
 import java.lang.reflect.Method;
 
@@ -22,7 +22,7 @@ public class ShadowColor {
       colorString = buf.toString();
     }
     try {
-      Method parseColor = Color.class.getDeclaredMethod(ShadowThingy.directMethodName(Color.class.getName(), "parseColor"), String.class);
+      Method parseColor = Color.class.getDeclaredMethod(Shadow.directMethodName(Color.class.getName(), "parseColor"), String.class);
       parseColor.setAccessible(true);
       return (Integer) parseColor.invoke(null, colorString);
     } catch (Exception e) {

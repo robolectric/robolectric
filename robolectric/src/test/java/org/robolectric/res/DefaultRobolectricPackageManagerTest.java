@@ -38,10 +38,10 @@ import static org.junit.Assert.assertTrue;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-public class RobolectricPackageManagerTest {
+public class DefaultRobolectricPackageManagerTest {
   private static final String TEST_PACKAGE_NAME = "com.some.other.package";
   private static final String TEST_PACKAGE_LABEL = "My Little App";
-  private final RobolectricPackageManager rpm = (RobolectricPackageManager) RuntimeEnvironment.application.getPackageManager();
+  private final RobolectricPackageManager rpm = RuntimeEnvironment.getRobolectricPackageManager();
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Test
@@ -422,7 +422,7 @@ public class RobolectricPackageManagerTest {
     resolveInfo.activityInfo = new ActivityInfo();
     resolveInfo.activityInfo.packageName = TEST_PACKAGE_LABEL;
     resolveInfo.activityInfo.name = "LauncherActivity";
-    RuntimeEnvironment.packageManager.addResolveInfoForIntent(launchIntent, resolveInfo);
+    RuntimeEnvironment.getRobolectricPackageManager().addResolveInfoForIntent(launchIntent, resolveInfo);
 
     intent = rpm.getLaunchIntentForPackage(TEST_PACKAGE_LABEL);
     assertThat(intent).isNotNull();
@@ -502,7 +502,7 @@ public class RobolectricPackageManagerTest {
     resolveInfo.activityInfo = new ActivityInfo();
     resolveInfo.activityInfo.packageName = TEST_PACKAGE_LABEL;
     resolveInfo.activityInfo.name = "LauncherActivity";
-    RuntimeEnvironment.packageManager.addResolveInfoForIntent(intent1, resolveInfo);
+    RuntimeEnvironment.getRobolectricPackageManager().addResolveInfoForIntent(intent1, resolveInfo);
     
     // the original intent object should yield a result
     ResolveInfo result  = rpm.resolveActivity(intent1, -1);
@@ -528,7 +528,7 @@ public class RobolectricPackageManagerTest {
     resolveInfo.activityInfo = new ActivityInfo();
     resolveInfo.activityInfo.packageName = TEST_PACKAGE_LABEL;
     resolveInfo.activityInfo.name = "LauncherActivity";
-    RuntimeEnvironment.packageManager.addResolveInfoForIntent(intent1, resolveInfo);
+    RuntimeEnvironment.getRobolectricPackageManager().addResolveInfoForIntent(intent1, resolveInfo);
 
     // the original intent object should yield a result
     ResolveInfo result  = rpm.resolveActivity(intent1, -1);

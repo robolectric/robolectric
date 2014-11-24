@@ -13,7 +13,7 @@ import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HttpContext;
 import org.robolectric.shadows.HttpResponseGenerator;
-import org.robolectric.shadows.util.MagicObject;
+import org.robolectric.shadows.ShadowApplication;
 
 import java.io.IOException;
 import java.net.URI;
@@ -36,7 +36,7 @@ public class FakeHttpLayer {
   private boolean interceptResponseContent;
 
   public HttpRequestInfo getLastSentHttpRequestInfo() {
-    List<HttpRequestInfo> requestInfos = MagicObject.getFakeHttpLayer().getSentHttpRequestInfos();
+    List<HttpRequestInfo> requestInfos = ShadowApplication.getInstance().getFakeHttpLayer().getSentHttpRequestInfos();
     if (requestInfos.isEmpty()) {
       return null;
     }
