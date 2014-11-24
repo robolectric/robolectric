@@ -8,23 +8,16 @@
   </parent>
 
   <artifactId>robolectric-resources</artifactId>
-  <packaging>jar</packaging>
-  <name>Robolectric Resources</name>
-  <description>Robolectric classes used in parsing and managing Resources.</description>
-  <url>http://robolectric.org</url>
 
   <dependencies>
+    <!-- Test Dependencies -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit-dep</artifactId>
       <scope>provided</scope>
     </dependency>
 
-    <dependency>
-      <groupId>com.intellij</groupId>
-      <artifactId>annotations</artifactId>
-    </dependency>
-
+    <!-- Robolectric Dependencies -->
     <dependency>
       <groupId>org.robolectric</groupId>
       <artifactId>robolectric-utils</artifactId>
@@ -35,10 +28,16 @@
       <artifactId>robolectric-annotations</artifactId>
     </dependency>
 
+    <!-- Project Dependencies -->
     <dependency>
       <groupId>com.ximpleware</groupId>
       <artifactId>vtd-xml</artifactId>
       <version>2.11</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>annotations</artifactId>
     </dependency>
 
     <dependency>
@@ -50,6 +49,7 @@
   <build>
     <plugins>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
      </plugin>
     </plugins>

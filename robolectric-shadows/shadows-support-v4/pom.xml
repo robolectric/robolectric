@@ -3,13 +3,14 @@
 
   <parent>
     <groupId>org.robolectric</groupId>
-    <artifactId>robolectric-parent</artifactId>
+    <artifactId>robolectric-shadows</artifactId>
     <version>3.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>shadows-support-v4</artifactId>
 
   <dependencies>
+    <!-- Test Dependencies -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit-dep</artifactId>
@@ -28,13 +29,7 @@
       <scope>test</scope>
     </dependency>
 
-    <dependency>
-      <groupId>org.robolectric</groupId>
-      <artifactId>robolectric-shadows</artifactId>
-      <classifier>19</classifier>
-      <scope>provided</scope>
-    </dependency>
-
+    <!-- Robolectric Dependencies -->
     <dependency>
       <groupId>org.robolectric</groupId>
       <artifactId>robolectric</artifactId>
@@ -50,6 +45,19 @@
       <artifactId>robolectric-utils</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>org.robolectric</groupId>
+      <artifactId>robolectric-resources</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.robolectric</groupId>
+      <artifactId>shadows-core</artifactId>
+      <classifier>19</classifier>
+      <scope>provided</scope>
+    </dependency>
+
+    <!-- Project Dependencies -->
     <dependency>
       <groupId>org.robolectric</groupId>
       <artifactId>android-all</artifactId>

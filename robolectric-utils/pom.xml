@@ -8,18 +8,16 @@
   </parent>
 
   <artifactId>robolectric-utils</artifactId>
-  <packaging>jar</packaging>
-  <name>Robolectric Utilities</name>
-  <description>Robolectric utility classes shared amongst other modules.</description>
-  <url>http://robolectric.org</url>
 
   <dependencies>
+    <!-- Test Dependencies -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit-dep</artifactId>
       <scope>provided</scope>
     </dependency>
 
+    <!-- Project Dependencies -->
     <dependency>
       <groupId>org.robolectric</groupId>
       <artifactId>android-all</artifactId>
@@ -29,6 +27,7 @@
   <build>
     <plugins>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
      </plugin>
     </plugins>

@@ -8,24 +8,23 @@
   </parent>
 
   <artifactId>robolectric-annotations</artifactId>
-  <packaging>jar</packaging>
-  <name>Robolectric Annotations</name>
-  <description>Annotations used by the Robolectric testing framework.</description>
-  <url>http://robolectric.org</url>
 
   <dependencies>
     <dependency>
       <groupId>com.intellij</groupId>
       <artifactId>annotations</artifactId>
     </dependency>
+
     <dependency>
       <groupId>org.robolectric</groupId>
       <artifactId>android-all</artifactId>
     </dependency>
   </dependencies>
+
   <build>
     <plugins>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
      </plugin>
     </plugins>

@@ -8,35 +8,39 @@
   </parent>
   
   <artifactId>robolectric-processor</artifactId>
-  <packaging>jar</packaging>
-  <name>Robolectric Annotation Processor</name>
-  <description>Annotation processor for Robolectric.</description>
-  <url>http://robolectric.org</url>
 
   <dependencies>
-    <dependency>
-      <groupId>org.robolectric</groupId>
-      <artifactId>robolectric-annotations</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-    </dependency>
+    <!-- Test Dependencies -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit-dep</artifactId>
       <scope>test</scope>
     </dependency>
+
     <dependency>
       <groupId>com.google.testing.compile</groupId>
       <artifactId>compile-testing</artifactId>
       <version>0.6</version>
       <scope>test</scope>
     </dependency>
+
+    <!-- Robolectric Dependencies -->
+    <dependency>
+      <groupId>org.robolectric</groupId>
+      <artifactId>robolectric-annotations</artifactId>
+    </dependency>
+
+    <!-- Project Dependencies -->
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+    </dependency>
+
     <dependency>
       <groupId>com.intellij</groupId>
       <artifactId>annotations</artifactId>
     </dependency>
+
     <dependency>
       <groupId>com.sun</groupId>
       <artifactId>tools</artifactId>
@@ -45,9 +49,11 @@
       <systemPath>${java.home}/../lib/tools.jar</systemPath>
     </dependency>
   </dependencies>
+
   <build>
     <plugins>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
       </plugin>
     </plugins>
