@@ -1,11 +1,15 @@
 package org.robolectric.annotation.processing;
 
+import java.util.List;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.TypeMirror;
+import javax.tools.Diagnostic.Kind;
 
 public class ImplementsValidator extends Validator {
 
@@ -61,9 +65,30 @@ public class ImplementsValidator extends Validator {
         type = RoboModel.typeVisitor.visit(types.asElement(value));
       }
     }
-    if (type != null) {
-      model.shadowTypes.put(elem, type);
+    if (type == null) {
+      return null;
     }
+    final List<? extends TypeParameterElement> typeTP = type.getTypeParameters();
+    final List<? extends TypeParameterElement> elemTP = elem.getTypeParameters();
+    if (!model.isSameParameterList(typeTP, elemTP)) {
+      StringBuilder message = new StringBuilder();
+      if (elemTP.isEmpty()) {
+        message.append("Shadow type is missing type parameters, expected <");
+        model.appendParameterList(message, type.getTypeParameters());
+        message.append('>');
+      } else if (typeTP.isEmpty()) {
+        message.append("Shadow type has type parameters but real type does not");
+      } else {
+        message.append("Shadow type must have same type parameters as its real counterpart: expected <");
+        model.appendParameterList(message, type.getTypeParameters());
+        message.append(">, was <");
+        model.appendParameterList(message, elem.getTypeParameters());
+        message.append('>');
+      }
+      messager.printMessage(Kind.ERROR, message, elem);
+      return null;
+    }
+    model.shadowTypes.put(elem, type);
     return null;
   }
 }

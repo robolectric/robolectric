@@ -1,10 +1,12 @@
 package org.robolectric.annotation.processing;
 
+import static com.google.common.collect.Lists.*;
 import static com.google.common.collect.Maps.*;
 import static com.google.common.collect.Sets.*;
 
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
@@ -21,15 +23,21 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVisitor;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.SimpleAnnotationValueVisitor6;
 import javax.lang.model.util.SimpleElementVisitor6;
+import javax.lang.model.util.SimpleTypeVisitor6;
 import javax.lang.model.util.Types;
 
+import com.google.common.base.Equivalence;
 import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
 
@@ -44,8 +52,13 @@ public class RoboModel {
   final TypeElement ANYTHING;
   /** TypeMirror representing the Robolectric.Anything interface, or null if the element isn't found. */
   final TypeMirror ANYTHING_MIRROR;
-    /** TypeElement representing the @Implements annotation. */
+  /** TypeMirror representing the Object class. */
+  final TypeMirror OBJECT_MIRROR;
+  /** TypeElement representing the @Implements annotation. */
   final TypeElement IMPLEMENTS;
+
+  /** PackageElement representing the java.lang package. */
+  final PackageElement JAVA_LANG;
 
   /** Convenience reference for the processing environment's elements utilities. */
   private final Elements elements;
@@ -54,6 +67,7 @@ public class RoboModel {
   
   HashMap<TypeElement,String> referentMap = newHashMap();
   HashMultimap<String,TypeElement> typeMap = HashMultimap.create();
+  HashMap<TypeElement,TypeElement> importMap = newHashMap();
   TreeMap<TypeElement,TypeElement> shadowTypes = newTreeMap(fqComparator);
   TreeSet<String> imports = newTreeSet();
   TreeMap<TypeElement,ExecutableElement> resetterMap = newTreeMap(comparator);
@@ -80,6 +94,14 @@ public class RoboModel {
     // FIXME: check this type lookup for NPEs (and also the ones in the
     // validators)
     IMPLEMENTS = elements.getTypeElement(ImplementsValidator.IMPLEMENTS_CLASS);
+    JAVA_LANG = elements.getPackageElement("java.lang");
+    OBJECT_MIRROR = elements.getTypeElement(Object.class.getCanonicalName()).asType();
+    notObject = new Predicate<TypeMirror>() {
+      @Override
+      public boolean apply(TypeMirror t) {
+        return !RoboModel.this.types.isSameType(t, OBJECT_MIRROR);
+      }
+    };
   }
 
   public AnnotationMirror getAnnotationMirror(Element element, TypeElement annotation) {
@@ -169,24 +191,39 @@ public class RoboModel {
     return type;
   }
   
+  private static ElementVisitor<TypeElement,Void> typeElementVisitor = new SimpleElementVisitor6<TypeElement,Void>() {
+
+    @Override
+    public TypeElement visitType(TypeElement e, Void p) {
+      return e;
+    }
+  };
+  
+  private void registerType(TypeElement type) {
+    if (!Objects.equal(ANYTHING, type) && !importMap.containsKey(type)) {
+      typeMap.put(type.getSimpleName().toString(), type);
+      importMap.put(type, type);
+      for (TypeParameterElement typeParam : type.getTypeParameters()) {
+        for (TypeMirror bound : typeParam.getBounds()) {
+          // FIXME: get rid of cast using a visitor
+          TypeElement boundElement = typeElementVisitor.visit(types.asElement(bound));
+          registerType(boundElement);
+        }
+      }
+    }
+  }
+  
   /**
    * Prepares the various derived parts of the model based on the class mappings
    * that have been registered to date.
    */
   public void prepare() {
-    HashMultimap<String,TypeElement> typeMap = HashMultimap.create();
-    final HashMap<TypeElement,TypeElement> importMap = newHashMap();
-    
     for (Map.Entry<TypeElement,TypeElement> entry : shadowTypes.entrySet()) {
       final TypeElement shadowType = entry.getKey();
-      typeMap.put(shadowType.getSimpleName().toString(), shadowType);
-      importMap.put(shadowType, shadowType);
+      registerType(shadowType);
 
       final TypeElement solidType = entry.getValue();
-      if (!Objects.equal(ANYTHING, solidType)) {
-        typeMap.put(solidType.getSimpleName().toString(), solidType);
-        importMap.put(solidType, solidType);
-      }
+      registerType(solidType);
     }
 
     while (!typeMap.isEmpty()) {
@@ -222,7 +259,8 @@ public class RoboModel {
       typeMap = nextRound;
     }
     for (TypeElement imp: importMap.values()) {
-      if (imp.getModifiers().contains(Modifier.PUBLIC)) {
+      if (imp.getModifiers().contains(Modifier.PUBLIC)
+          && !JAVA_LANG.equals(imp.getEnclosingElement())) {
         imports.add(imp.getQualifiedName().toString());
       }
     }
@@ -241,6 +279,11 @@ public class RoboModel {
       }
     });
   }
+
+  private Predicate<TypeMirror> notObject;
+  public List<TypeMirror> getExplicitBounds(TypeParameterElement typeParam) {
+    return newArrayList(Iterables.filter(typeParam.getBounds(), notObject));    
+  }
   
   /**
    * Returns a plain string to be used in the generated source
@@ -252,5 +295,79 @@ public class RoboModel {
    */
   public String getReferentFor(TypeElement type) {
     return referentMap.get(type);
+  }
+  
+  private TypeVisitor<String,Void> findReferent = new SimpleTypeVisitor6<String,Void>() {
+    @Override
+    public String visitDeclared(DeclaredType t, Void p) {
+      return referentMap.get(t.asElement());
+    }
+  };
+  
+  public String getReferentFor(TypeMirror type) {
+    return findReferent.visit(type);
+  }
+
+  private Equivalence<TypeMirror> typeMirrorEq = new Equivalence<TypeMirror>() {
+    @Override
+    protected boolean doEquivalent(TypeMirror a, TypeMirror b) {
+      return types.isSameType(a, b);
+    }
+
+    @Override
+    protected int doHash(TypeMirror t) {
+      // We're not using the hash.
+      return 0;
+    }
+  };
+  
+  
+  private Equivalence<TypeParameterElement> typeEq = new Equivalence<TypeParameterElement>() {
+    @Override
+    @SuppressWarnings({"unchecked"})
+    protected boolean doEquivalent(TypeParameterElement arg0,
+        TypeParameterElement arg1) {
+      // Casts are necessary due to flaw in pairwise equivalence implementation.
+      return typeMirrorEq.pairwise().equivalent((List<TypeMirror>)arg0.getBounds(),
+                                                (List<TypeMirror>)arg1.getBounds());
+    }
+
+    @Override
+    protected int doHash(TypeParameterElement arg0) {
+      // We don't use the hash code.
+      return 0;
+    }
+  };
+  
+  public void appendParameterList(StringBuilder message, List<? extends TypeParameterElement> tpeList) {
+    boolean first = true;
+    for (TypeParameterElement tpe : tpeList) {
+      if (first) {
+        first = false;
+      } else {
+        message.append(',');
+      }
+      message.append(tpe.toString());
+      boolean iFirst = true;
+      for (TypeMirror bound : getExplicitBounds(tpe)) {
+        if (iFirst) {
+          message.append(" extends ");
+          iFirst = false;
+        } else {
+          message.append(',');
+        }
+        message.append(bound);
+      }
+    }
+  }
+  
+  @SuppressWarnings({"unchecked"})
+  public boolean isSameParameterList(List<? extends TypeParameterElement> l1, List<? extends TypeParameterElement> l2) {
+    // Cast is necessary because of a flaw in the API design of "PairwiseEquivalent",
+    // a flaw that is even acknowledged in the source.
+    // Our casts are safe because we're not trying to add elements to the list
+    // and therefore can't violate the constraint.
+    return typeEq.pairwise().equivalent((List<TypeParameterElement>)l1,
+                                        (List<TypeParameterElement>)l2);
   }
 }

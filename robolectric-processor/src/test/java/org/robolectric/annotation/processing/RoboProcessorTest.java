@@ -15,7 +15,6 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
@@ -181,7 +180,6 @@ public class RoboProcessorTest {
       .failsToCompile();
   }
 
-  @Ignore("feature not yet implemented")
   @Test
   public void shouldGenerateGenericShadowOf() {
     ASSERT.about(javaSources())
@@ -191,7 +189,7 @@ public class RoboProcessorTest {
           SHADOW_EXTRACTOR_SOURCE,
           forResource("org/robolectric/annotation/processing/shadows/ShadowDummy.java"),
           forResource("org/robolectric/annotation/processing/shadows/ShadowParameterizedDummy.java")))
-      .processedWith(new RoboProcessor())
+      .processedWith(new RoboProcessor(DEFAULT_OPTS))
       .compilesWithoutError()
       .and()
       .generatesSources(forResource("org/robolectric/Robolectric_Parameterized.java"));

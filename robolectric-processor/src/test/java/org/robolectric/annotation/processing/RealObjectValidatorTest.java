@@ -22,6 +22,26 @@ public class RealObjectValidatorTest {
   }
 
   @Test
+  public void realObjectParameterizedMissingParameters_shouldNotCompile() {
+    final String testClass = "org.robolectric.annotation.processing.shadows.ShadowRealObjectParameterizedMissingParameters";
+    ASSERT.about(singleClass())
+      .that(testClass)
+      .failsToCompile()
+      .withErrorContaining("@RealObject is missing type parameters")
+      .onLine(11);
+  }
+
+  @Test
+  public void realObjectParameterizedMismatch_shouldNotCompile() {
+    final String testClass = "org.robolectric.annotation.processing.shadows.ShadowRealObjectParameterizedMismatch";
+    ASSERT.about(singleClass())
+      .that(testClass)
+      .failsToCompile()
+      .withErrorContaining("Parameter type mismatch: expecting <T,S>, was <S,T>")
+      .onLine(11);
+  }
+
+  @Test
   public void realObjectWithEmptyImplements_shouldNotRaiseOwnError() {
     final String testClass = "org.robolectric.annotation.processing.shadows.ShadowRealObjectWithEmptyImplements";
     ASSERT.about(singleClass())
@@ -92,10 +112,6 @@ public class RealObjectValidatorTest {
     ASSERT.about(singleClass())
       .that(testClass)
       .compilesWithoutError();
-  }
-
-  @Test
-  public void shouldGracefullyHandleNoAnythingClass_withFoundOnImplementsAnnotation() {
   }
 
   @Test

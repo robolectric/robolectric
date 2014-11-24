@@ -1,8 +1,10 @@
 package org.robolectric.shadows;
 
 import android.view.View;
+import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.FrameLayout;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -13,12 +15,12 @@ import static org.robolectric.Shadows.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AdapterView.class)
-public class ShadowAdapterView extends ShadowViewGroup {
+public class ShadowAdapterView<T extends Adapter> extends ShadowViewGroup {
   private static int ignoreRowsAtEndOfList = 0;
   private static boolean automaticallyUpdateRowViews = true;
 
   @RealObject
-  private AdapterView realAdapterView;
+  private AdapterView<T> realAdapterView;
 
   private AdapterView.OnItemSelectedListener itemSelectedListener;
 
