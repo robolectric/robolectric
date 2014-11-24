@@ -21,9 +21,7 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableList;
 
 public class RoboProcessorTest {
-
-  private static final Map<String,String> DEFAULT_OPTS =
-      new HashMap<String,String>();
+  private static final Map<String,String> DEFAULT_OPTS = new HashMap<String,String>();
   
   static {
     DEFAULT_OPTS.put(PACKAGE_OPT, "org.robolectric");
@@ -136,6 +134,20 @@ public class RoboProcessorTest {
       .compilesWithoutError()
       .and()
       .generatesSources(forSourceString("Shadows", line));
+  }
+
+  @Test
+  public void shouldGenerateMetaInfServicesFile() {
+    ASSERT.about(javaSources())
+        .that(ImmutableList.of(
+            SHADOW_PROVIDER_SOURCE,
+            SHADOW_EXTRACTOR_SOURCE,
+            forResource("org/robolectric/annotation/processing/shadows/ShadowClassNameOnly.java"),
+            forResource("org/robolectric/annotation/processing/shadows/ShadowDummy.java")))
+        .processedWith(new RoboProcessor(DEFAULT_OPTS))
+        .compilesWithoutError()
+        .and()
+        .generatesFiles(forResource("META-INF/services/org.robolectric.util.ShadowProvider"));
   }
   
   @Test

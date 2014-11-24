@@ -1,6 +1,7 @@
 package org.robolectric.annotation.processing;
 
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,7 +22,9 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.SourceVersion;
 import javax.tools.Diagnostic.Kind;
+import javax.tools.FileObject;
 import javax.tools.JavaFileObject;
+import javax.tools.StandardLocation;
 
 /**
  * Annotation processor entry point for Robolectric annotations.
@@ -32,43 +35,43 @@ import javax.tools.JavaFileObject;
 public class RoboProcessor extends AbstractProcessor {
 
   static final String PACKAGE_OPT = "org.robolectric.annotation.processing.shadowPackage";
-  
+
   RoboModel model;
   private Messager messager;
   private Map<TypeElement,Validator> elementValidators =
       new HashMap<TypeElement,Validator>(13);
-  
+
   private void addValidator(Validator v) {
     elementValidators.put(v.annotationType, v);
   }
-  
+
   /**
    * Default constructor - necessary for the tooling environment.
    */
   public RoboProcessor() {}
-  
+
   /**
    * Constructor to use for testing passing options in. Only
    * necessary until compile-testing supports passing options
    * in.
-   * 
+   *
    * @param options simulated options that would ordinarily
    * be passed in the {@link ProcessingEnvironment}.
    */
   RoboProcessor(Map<String,String> options) {
 	processOptions(options);
   }
-  
+
   private Map<String,String> options;
   private String shadowPackage;
-  
+
   private void processOptions(Map<String,String> options) {
     if (this.options == null) {
       this.options = options;
       shadowPackage = options.get(PACKAGE_OPT);
     }
   }
-  
+
   @Override
   public void init(ProcessingEnvironment env) {
     super.init(env);
@@ -84,7 +87,7 @@ public class RoboProcessor extends AbstractProcessor {
   }
 
   private boolean generated = false;
-  
+
   @Override
   public boolean process(Set<? extends TypeElement> annotations,
       RoundEnvironment roundEnv) {
@@ -96,7 +99,7 @@ public class RoboProcessor extends AbstractProcessor {
         }
       }
     }
-    
+
     if (!generated && shadowPackage != null) {
       model.prepare();
       render();
@@ -104,9 +107,9 @@ public class RoboProcessor extends AbstractProcessor {
     }
     return true;
   }
-  
+
   private static final String GEN_CLASS = "Shadows";
-  
+
   private void render() {
     // TODO: Because this was fairly simple to begin with I haven't
     // included a templating engine like Velocity but simply used
@@ -115,7 +118,7 @@ public class RoboProcessor extends AbstractProcessor {
     // then using Velocity might be a good idea.
 
     String genFQ = shadowPackage + '.' + GEN_CLASS;
-    
+
     messager.printMessage(Kind.NOTE, "Generating output file " + genFQ);
     final Filer filer = processingEnv.getFiler();
     try {
@@ -182,9 +185,24 @@ public class RoboProcessor extends AbstractProcessor {
       } finally {
         writer.close();
       }
+
+      generateServiceLoaderMetadata(genFQ, filer);
     } catch (IOException e) {
       // TODO: Better error handling?
       throw new RuntimeException(e);
+    }
+  }
+
+  private void generateServiceLoaderMetadata(String shadowClassName, Filer filer) {
+    try {
+      String fileName = "org.robolectric.util.ShadowProvider";
+      processingEnv.getMessager().printMessage(Kind.NOTE, "Writing META-INF/services/" + fileName);
+      FileObject file = filer.createResource(StandardLocation.CLASS_OUTPUT, "", "META-INF/services/" + fileName);
+      PrintWriter pw = new PrintWriter(new OutputStreamWriter(file.openOutputStream(), "UTF-8"));
+      pw.println(shadowClassName);
+      pw.close();
+    } catch (IOException e) {
+      processingEnv.getMessager().printMessage(Kind.ERROR, " Failed to write service loader metadata file: " + e);
     }
   }
 }
