@@ -20,9 +20,9 @@
     <module>robolectric</module>
     <module>robolectric-annotations</module>
     <module>robolectric-processor</module>
+    <module>robolectric-resources</module>
     <module>robolectric-shadows</module>
     <module>robolectric-utils</module>
-    <module>robolectric-res</module>
   </modules>
 
   <properties>
@@ -48,7 +48,7 @@
 
       <dependency>
         <groupId>org.robolectric</groupId>
-        <artifactId>robolectric-res</artifactId>
+        <artifactId>robolectric-resources</artifactId>
         <version>${project.version}</version>
       </dependency>
 

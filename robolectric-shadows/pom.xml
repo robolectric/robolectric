@@ -47,7 +47,7 @@
 
     <dependency>
       <groupId>org.robolectric</groupId>
-      <artifactId>robolectric-res</artifactId>
+      <artifactId>robolectric-resources</artifactId>
     </dependency>
 
     <dependency>
