@@ -314,12 +314,22 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     if (defaultManifest && manifestProperty != null) {
       manifestFile = Fs.fileFromPath(manifestProperty);
       baseDir = manifestFile.getParent();
-      resDir = Fs.fileFromPath(resourcesProperty);
-      assetDir = Fs.fileFromPath(assetsProperty);
     } else {
       manifestFile = getBaseDir().join(defaultManifest ? AndroidManifest.DEFAULT_MANIFEST_NAME : config.manifest());
       baseDir = manifestFile.getParent();
+    }
+
+    boolean defaultRes = Config.DEFAULT_RES_FOLDER.equals(config.resourceDir());
+    if (defaultRes && resourcesProperty != null) {
+      resDir = Fs.fileFromPath(resourcesProperty);
+    } else {
       resDir = baseDir.join(config.resourceDir());
+    }
+
+    boolean defaultAssets = Config.DEFAULT_ASSET_FOLDER.equals(config.assetDir());
+    if (defaultAssets && assetsProperty != null) {
+      assetDir = Fs.fileFromPath(assetsProperty);
+    } else {
       assetDir = baseDir.join(config.assetDir());
     }
 
