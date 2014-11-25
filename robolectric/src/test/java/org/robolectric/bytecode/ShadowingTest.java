@@ -16,7 +16,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
@@ -25,6 +24,7 @@ import org.robolectric.bytecode.testing.Pony;
 import org.robolectric.internal.Instrument;
 import org.robolectric.internal.ShadowConstants;
 import org.robolectric.internal.Shadow;
+import org.robolectric.internal.ShadowExtractor;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -35,7 +35,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
-import static org.robolectric.internal.Shadow.directlyOn;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ShadowingTest {
@@ -119,8 +118,8 @@ public class ShadowingTest {
     Constructor<ClassWithNoDefaultConstructor> ctor = ClassWithNoDefaultConstructor.class.getDeclaredConstructor();
     ctor.setAccessible(true);
     ClassWithNoDefaultConstructor instance = ctor.newInstance();
-    assertThat(Shadows.shadowOf_(instance)).isNotNull();
-    assertThat(Shadows.shadowOf_(instance)).isInstanceOf(ShadowForClassWithNoDefaultConstructor.class);
+    assertThat(ShadowExtractor.extract(instance)).isNotNull();
+    assertThat(ShadowExtractor.extract(instance)).isInstanceOf(ShadowForClassWithNoDefaultConstructor.class);
     assertTrue(ShadowForClassWithNoDefaultConstructor.shadowDefaultConstructorCalled);
     assertFalse(ShadowForClassWithNoDefaultConstructor.shadowDefaultConstructorImplementorCalled);
   }

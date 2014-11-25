@@ -2,12 +2,12 @@ package org.robolectric.bytecode;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.internal.Instrument;
+import org.robolectric.internal.ShadowExtractor;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.internal.Shadow;
 
@@ -128,11 +128,9 @@ public class RobolectricInternalsTest {
   }
 
   private static ShadowConstructors shadowOf(Constructors realObject) {
-    Object shadow = Shadows.shadowOf_(realObject);
-    assertThat(shadow)
-      .isNotNull()
-      .isInstanceOf(ShadowConstructors.class);
-    return (ShadowConstructors)shadow;
+    Object shadow = ShadowExtractor.extract(realObject);
+    assertThat(shadow).isNotNull().isInstanceOf(ShadowConstructors.class);
+    return (ShadowConstructors) shadow;
   }
 
   @Instrument

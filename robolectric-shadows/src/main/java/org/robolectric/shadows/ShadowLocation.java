@@ -2,10 +2,10 @@ package org.robolectric.shadows;
 
 import android.location.Location;
 import android.os.Bundle;
-import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.HiddenApi;
+import org.robolectric.internal.ShadowExtractor;
 
 /**
  * Shadow of {@code Location} that treats it primarily as a data-holder
@@ -198,7 +198,7 @@ public class ShadowLocation {
   @Override @Implementation
   public boolean equals(Object o) {
     if (o == null) return false;
-    o = Shadows.shadowOf_(o);
+    o = ShadowExtractor.extract(o);
     if (o == null) return false;
     if (getClass() != o.getClass()) return false;
     if (this == o) return true;

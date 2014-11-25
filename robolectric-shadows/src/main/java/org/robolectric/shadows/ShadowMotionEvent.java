@@ -33,7 +33,7 @@ public class ShadowMotionEvent {
       Constructor<MotionEvent> constructor = MotionEvent.class.getDeclaredConstructor();
       constructor.setAccessible(true);
       MotionEvent motionEvent = constructor.newInstance();
-      ShadowMotionEvent shadowMotionEvent = Shadows.shadowOf_(motionEvent);
+      ShadowMotionEvent shadowMotionEvent = Shadows.shadowOf(motionEvent);
       shadowMotionEvent.x[0] = x;
       shadowMotionEvent.y[0] = y;
       shadowMotionEvent.action = action;

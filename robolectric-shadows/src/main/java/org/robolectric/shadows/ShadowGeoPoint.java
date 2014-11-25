@@ -1,11 +1,10 @@
 package org.robolectric.shadows;
 
 import com.google.android.maps.GeoPoint;
-import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.internal.ShadowExtractor;
 
-import static org.robolectric.Shadows.shadowOf_;
 import static org.robolectric.shadows.ShadowMapView.fromE6;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -32,7 +31,7 @@ public class ShadowGeoPoint {
   @Override @Implementation
   public boolean equals(Object o) {
     if (o == null) return false;
-    o = Shadows.shadowOf_(o);
+    o = ShadowExtractor.extract(o);
     if (o == null) return false;
     if (this == o) return true;
     if (getClass() != o.getClass()) return false;

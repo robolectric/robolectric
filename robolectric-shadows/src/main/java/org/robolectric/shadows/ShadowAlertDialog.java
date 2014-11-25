@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.view.View;
 import android.widget.Adapter;
 import android.widget.FrameLayout;
+import com.android.internal.app.AlertController;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
@@ -118,7 +119,8 @@ public class ShadowAlertDialog extends ShadowDialog {
   }
 
   public ShadowAlertController getShadowAlertController() {
-    return Shadows.shadowOf_(ReflectionHelpers.getFieldReflectively(realAlertDialog, "mAlert"));
+    AlertController alert = ReflectionHelpers.getFieldReflectively(realAlertDialog, "mAlert");
+    return Shadows.shadowOf(alert);
   }
 
   /**

@@ -414,7 +414,7 @@ public class ShadowApplication extends ShadowContextWrapper {
   private void postIntent(Intent intent, Wrapper wrapper, final MutableBoolean abort) {
     final Handler scheduler = (wrapper.scheduler != null) ? wrapper.scheduler : this.mainHandler;
     final BroadcastReceiver receiver = wrapper.broadcastReceiver;
-    final ShadowBroadcastReceiver shReceiver = Shadows.shadowOf_(receiver);
+    final ShadowBroadcastReceiver shReceiver = Shadows.shadowOf(receiver);
     final Intent broadcastIntent = intent;
     scheduler.post(new Runnable() {
       @Override

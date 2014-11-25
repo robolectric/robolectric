@@ -5,6 +5,7 @@ import android.net.Uri;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.internal.ShadowExtractor;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -42,7 +43,7 @@ public class ShadowIntentFilter {
   }
 
   public void __constructor__(IntentFilter filter) {
-    ShadowIntentFilter shadow = Shadows.shadowOf_(filter);
+    ShadowIntentFilter shadow = Shadows.shadowOf(filter);
     actions = new ArrayList<String>(shadow.actions);
     schemes = new ArrayList<String>(shadow.schemes);
     types = new ArrayList<String>(shadow.types);
@@ -196,7 +197,7 @@ public class ShadowIntentFilter {
 
   @Implementation
   public String getCategory( int index ) {
-    return categories.get( index );
+    return categories.get(index);
   }
 
   @Implementation
@@ -284,20 +285,20 @@ public class ShadowIntentFilter {
     return IntentFilter.NO_MATCH_DATA;
   }
 
-  @Override @Implementation
-  public boolean equals(Object o) {
-    if (o == null) return false;
-    o = Shadows.shadowOf_(o);
-    if (o == null) return false;
-    if (this == o) return true;
-    if (getClass() != o.getClass()) return false;
-
-    ShadowIntentFilter that = (ShadowIntentFilter) o;
-
-    return actions.equals( that.actions ) && categories.equals( that.categories )
-        && schemes.equals( that.schemes ) && authoritites.equals( that.authoritites )
-        && types.equals( that.types );
-  }
+//  @Override @Implementation
+//  public boolean equals(Object o) {
+//    if (o == null) return false;
+//    o = ShadowExtractor.extract(o);
+//    if (o == null) return false;
+//    if (this == o) return true;
+//    if (getClass() != o.getClass()) return false;
+//
+//    ShadowIntentFilter that = (ShadowIntentFilter) o;
+//
+//    return actions.equals( that.actions ) && categories.equals( that.categories )
+//        && schemes.equals( that.schemes ) && authoritites.equals( that.authoritites )
+//        && types.equals( that.types );
+//  }
 
   @Override @Implementation
   public int hashCode() {

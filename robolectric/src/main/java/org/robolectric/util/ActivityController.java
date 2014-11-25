@@ -12,14 +12,13 @@ import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.IBinder;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.Shadows;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.RoboInstrumentation;
 import org.robolectric.res.ResName;
 import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.shadows.ShadowActivityThread;
 import org.robolectric.shadows.ShadowApplication;
-
-import static org.robolectric.Shadows.shadowOf_;
 
 public class ActivityController<T extends Activity>
     extends ComponentController<ActivityController<T>, T, ShadowActivity> {
@@ -39,8 +38,8 @@ public class ActivityController<T extends Activity>
   public ActivityController<T> attach() {
     Application application = this.application == null ? RuntimeEnvironment.application : this.application;
     if (this.application != null) {
-      ShadowApplication roboShadow = shadowOf_(RuntimeEnvironment.application);
-      ShadowApplication testShadow = shadowOf_(this.application);
+      ShadowApplication roboShadow = Shadows.shadowOf(RuntimeEnvironment.application);
+      ShadowApplication testShadow = Shadows.shadowOf(this.application);
       testShadow.bind(roboShadow.getAppManifest(), roboShadow.getResourceLoader());
       testShadow.callAttachBaseContext(RuntimeEnvironment.application.getBaseContext());
       this.application.onCreate();
@@ -90,7 +89,7 @@ public class ActivityController<T extends Activity>
     String title = null;
 
     /* Get the label for the activity from the manifest */
-    ShadowApplication shadowApplication = shadowOf_(component.getApplication());
+    ShadowApplication shadowApplication = Shadows.shadowOf(component.getApplication());
     AndroidManifest appManifest = shadowApplication.getAppManifest();
     if (appManifest == null) return null;
     String labelRef = appManifest.getActivityLabel(component.getClass());

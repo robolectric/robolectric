@@ -44,7 +44,7 @@ public class ShadowDownloadManager {
 
   @Implementation
   public Cursor query(DownloadManager.Query query) {
-    ShadowQuery shadow = Shadows.shadowOf_(query);
+    ShadowQuery shadow = Shadows.shadowOf(query);
     long[] ids = shadow.getIds();
 
     ResultCursor result = new ResultCursor();
@@ -200,7 +200,7 @@ public class ShadowDownloadManager {
     @Override
     public String getString(int columnIndex) {
       checkClosed();
-      ShadowRequest request = Shadows.shadowOf_(requests.get(positionIndex));
+      ShadowRequest request = Shadows.shadowOf(requests.get(positionIndex));
       switch (columnIndex) {
         case COLUMN_INDEX_LOCAL_FILENAME:
           return "local file name not implemented";
@@ -224,7 +224,7 @@ public class ShadowDownloadManager {
     @Override
     public int getInt(int columnIndex) {
       checkClosed();
-      ShadowRequest request = Shadows.shadowOf_(requests.get(positionIndex));
+      ShadowRequest request = Shadows.shadowOf(requests.get(positionIndex));
       if (columnIndex == COLUMN_INDEX_STATUS) {
         return request.getStatus();
       }

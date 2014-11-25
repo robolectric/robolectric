@@ -34,7 +34,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.Shadows.shadowOf_;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class RobolectricTest {
@@ -133,7 +132,7 @@ public class RobolectricTest {
     assertThat(new Activity().getResources().getDisplayMetrics().heightPixels).isEqualTo(800);
 
     Display display = Shadow.newInstanceOf(Display.class);
-    ShadowDisplay shadowDisplay = shadowOf_(display);
+    ShadowDisplay shadowDisplay = Shadows.shadowOf(display);
     shadowDisplay.setWidth(100);
     shadowDisplay.setHeight(200);
     Robolectric.setDefaultDisplay(display);

@@ -208,7 +208,7 @@ public class AbstractCursorTest {
   @Test
   public void testGetNotificationUri() {
     Uri uri = Uri.parse("content://foo.com");
-    ShadowAbstractCursor shadow = Shadows.shadowOf_(cursor);
+    ShadowAbstractCursor shadow = Shadows.shadowOf(cursor);
     assertThat(shadow.getNotificationUri_Compatibility()).isNull();
     cursor.setNotificationUri(RuntimeEnvironment.application.getContentResolver(), uri);
     assertThat(shadow.getNotificationUri_Compatibility()).isEqualTo(uri);

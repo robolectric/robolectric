@@ -6,9 +6,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Looper;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.Shadows;
+import org.robolectric.internal.ShadowExtractor;
 import org.robolectric.shadows.ShadowLooper;
-
-import static org.robolectric.Shadows.shadowOf_;
 
 abstract class ComponentController<C extends ComponentController<C, T, S>, T, S> {
   protected final C myself;
@@ -30,8 +30,8 @@ abstract class ComponentController<C extends ComponentController<C, T, S>, T, S>
   public ComponentController(T component) {
     myself = (C) this;
     this.component = component;
-    shadow = shadowOf_(component);
-    shadowMainLooper = shadowOf_(Looper.getMainLooper());
+    shadow = (S) ShadowExtractor.extract(component);
+    shadowMainLooper = Shadows.shadowOf(Looper.getMainLooper());
   }
 
   public T get() {

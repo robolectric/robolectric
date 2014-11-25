@@ -6,18 +6,18 @@ import android.util.DisplayMetrics;
 import android.view.Display;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.internal.Shadow;
 
 import static org.junit.Assert.assertEquals;
-import static org.robolectric.Shadows.shadowOf_;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class DisplayTest {
   @Test
   public void shouldProvideDisplayMetrics() throws Exception {
     Display display = Shadow.newInstanceOf(Display.class);
-    ShadowDisplay shadow = shadowOf_(display);
+    ShadowDisplay shadow = Shadows.shadowOf(display);
 
     shadow.setDensity(1.5f);
     shadow.setDensityDpi(DisplayMetrics.DENSITY_MEDIUM);
@@ -62,7 +62,7 @@ public class DisplayTest {
     Rect outRect = new Rect();
 
     Display display = Shadow.newInstanceOf(Display.class);
-    ShadowDisplay shadow = shadowOf_(display);
+    ShadowDisplay shadow = Shadows.shadowOf(display);
 
     shadow.setWidth(400);
     shadow.setHeight(600);
@@ -91,7 +91,7 @@ public class DisplayTest {
   @Test
   public void shouldProvideDisplayInformation() {
     Display display = Shadow.newInstanceOf(Display.class);
-    ShadowDisplay shadow = shadowOf_(display);
+    ShadowDisplay shadow = Shadows.shadowOf(display);
 
     shadow.setDisplayId(42);
     shadow.setName("foo");
@@ -110,7 +110,7 @@ public class DisplayTest {
   public void deprecatedGetOrientation_returnsGetRotation() {
     Display display = Shadow.newInstanceOf(Display.class);
     int testValue = 33;
-    ((ShadowDisplay) shadowOf_(display)).setRotation(testValue);
+    Shadows.shadowOf(display).setRotation(testValue);
     assertEquals(testValue, display.getOrientation());
   }
 }

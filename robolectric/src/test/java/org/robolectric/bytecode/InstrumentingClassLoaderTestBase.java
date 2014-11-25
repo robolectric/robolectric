@@ -6,6 +6,7 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.bytecode.testing.*;
 import org.robolectric.internal.ShadowConstants;
 import org.robolectric.internal.Shadow;
+import org.robolectric.internal.ShadowExtractor;
 import org.robolectric.util.Transcript;
 import org.robolectric.util.Util;
 
@@ -14,8 +15,6 @@ import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
-import static org.robolectric.internal.Shadow.directlyOn;
-import static org.robolectric.Shadows.shadowOf_;
 
 abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" or ant will try to run this as a test
 
@@ -37,7 +36,7 @@ abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" 
     assertTrue(Modifier.isPublic(defaultCtor.getModifiers()));
     defaultCtor.setAccessible(true);
     Object instance = defaultCtor.newInstance();
-    assertThat(shadowOf_(instance)).isNotNull();
+    assertThat(ShadowExtractor.extract(instance)).isNotNull();
     transcript.assertNoEventsSoFar();
   }
 

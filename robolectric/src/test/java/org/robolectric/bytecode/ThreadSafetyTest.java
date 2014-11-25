@@ -9,12 +9,10 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.internal.Instrument;
 import org.robolectric.internal.Shadow;
-
+import org.robolectric.internal.ShadowExtractor;
 import java.lang.reflect.Field;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.internal.Shadow.directlyOn;
-import static org.robolectric.Shadows.shadowOf_;
 
 @RunWith(TestRunners.WithoutDefaults.class)
 public class ThreadSafetyTest {
@@ -27,7 +25,7 @@ public class ThreadSafetyTest {
     for (int i = 0; i < 100; i++) { // :-(
       InstrumentedThread instrumentedThread = new InstrumentedThread();
       instrumentedThread.start();
-      Object shadowFromThisThread = shadowOf_(instrumentedThread);
+      Object shadowFromThisThread = ShadowExtractor.extract(instrumentedThread);
 
       instrumentedThread.join();
       Object shadowFromOtherThread = field.get(instrumentedThread);
@@ -41,7 +39,7 @@ public class ThreadSafetyTest {
 
     @Override
     public void run() {
-      shadowFromOtherThread = shadowOf_(this);
+      shadowFromOtherThread = (InstrumentedThreadShadow) ShadowExtractor.extract(this);
     }
   }
 

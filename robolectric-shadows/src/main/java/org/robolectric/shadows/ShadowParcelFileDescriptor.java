@@ -25,7 +25,7 @@ public class ShadowParcelFileDescriptor {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-    ((ShadowParcelFileDescriptor) Shadows.shadowOf_(pfd)).file = new RandomAccessFile(file, "rw");
+    Shadows.shadowOf(pfd).file = new RandomAccessFile(file, "rw");
     return pfd;
   }
 
