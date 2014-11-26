@@ -185,7 +185,7 @@ public class Converter<T> {
         return new FromInt();
       case FRACTION:
         return new FromFraction();
-      case LAYOUT:
+      case LAYOUT: // TODO: LOLLIPOP: should we rename this?  it's also used for drawables
         return new FromFilePath();
 
       case CHAR_SEQUENCE_ARRAY:
