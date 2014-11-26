@@ -23,6 +23,11 @@ import org.robolectric.shadows.ShadowApplication;
 
 public class ActivityController<T extends Activity> extends ComponentController<ActivityController<T>, T, ShadowActivity> {
 
+  // TODO: LOLLIPOP: this should be injected in some better way where it can be configured in a centrallized place
+  // TODO: LOLLIPOP: (ideally in SdkConfig), but there a classloader ordering issues to be careful of when making this
+  // TODO: LOLLIPOP: happen -AV 2014-11-16
+  private final AndroidRuntimeAdapter androidRuntimeAdapter = new Api21AndroidRuntimeAdapter();
+
   public static <T extends Activity> ActivityController<T> of(Class<T> activityClass) {
     return new ActivityController<T>(ReflectionHelpers.<T>callConstructorReflectively(activityClass));
   }
@@ -65,21 +70,8 @@ public class ActivityController<T extends Activity> extends ComponentController<
       throw new RuntimeException(e);
     }
 
-    ReflectionHelpers.callInstanceMethodReflectively(component, "attach",
-        new ReflectionHelpers.ClassParameter(Context.class, baseContext),
-        new ReflectionHelpers.ClassParameter(activityThreadClass, null),
-        new ReflectionHelpers.ClassParameter(Instrumentation.class, new RoboInstrumentation()),
-        new ReflectionHelpers.ClassParameter(IBinder.class, null),
-        new ReflectionHelpers.ClassParameter(int.class, 0),
-        new ReflectionHelpers.ClassParameter(Application.class, application),
-        new ReflectionHelpers.ClassParameter(Intent.class, intent),
-        new ReflectionHelpers.ClassParameter(ActivityInfo.class, activityInfo),
-        new ReflectionHelpers.ClassParameter(CharSequence.class, activityTitle),
-        new ReflectionHelpers.ClassParameter(Activity.class, null),
-        new ReflectionHelpers.ClassParameter(String.class, "id"),
-        new ReflectionHelpers.ClassParameter(nonConfigurationInstancesClass, null),
-        new ReflectionHelpers.ClassParameter(Configuration.class, application.getResources().getConfiguration()),
-        new ReflectionHelpers.ClassParameter(IVoiceInteractor.class, null));
+    androidRuntimeAdapter.callActivity_attach(component, baseContext, activityThreadClass, application, intent,
+        activityInfo, activityTitle, nonConfigurationInstancesClass);
 
     shadow.setThemeFromManifest();
     attached = true;
