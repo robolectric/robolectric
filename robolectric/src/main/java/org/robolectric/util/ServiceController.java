@@ -5,9 +5,10 @@ import android.app.Service;
 import android.content.Context;
 import android.os.IBinder;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.shadows.ShadowActivityThread;
 
 public class ServiceController<T extends Service> extends ComponentController<ServiceController<T>, T>{
+
+  private String shadowActivityThreadClassName;
 
   public static <T extends Service> ServiceController<T> of(ShadowsAdapter shadowsAdapter, Class<T> serviceClass) {
     try {
@@ -29,6 +30,7 @@ public class ServiceController<T extends Service> extends ComponentController<Se
 
   public ServiceController(ShadowsAdapter shadowsAdapter, T service) {
     super(shadowsAdapter, service);
+    shadowActivityThreadClassName = shadowsAdapter.getShadowActivityThreadClassName();
   }
 
   public ServiceController<T> attach() {
@@ -38,7 +40,7 @@ public class ServiceController<T extends Service> extends ComponentController<Se
     ClassLoader cl = baseContext.getClassLoader();
     Class<?> activityThreadClass;
     try {
-      activityThreadClass = cl.loadClass(ShadowActivityThread.CLASS_NAME);
+      activityThreadClass = cl.loadClass(shadowActivityThreadClassName);
     } catch (ClassNotFoundException e) {
       e.printStackTrace();
       throw new RuntimeException(e);

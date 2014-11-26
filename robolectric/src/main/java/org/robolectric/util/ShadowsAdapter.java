@@ -5,6 +5,7 @@ import android.app.Application;
 import android.os.Looper;
 import org.robolectric.Shadows;
 import org.robolectric.shadows.ShadowActivity;
+import org.robolectric.shadows.ShadowActivityThread;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowLooper;
 
@@ -23,6 +24,10 @@ public class ShadowsAdapter {
 
   public ShadowLooperAdapter getMainLooper() {
     return new ShadowLooperAdapter(Looper.getMainLooper());
+  }
+
+  public String getShadowActivityThreadClassName() {
+    return ShadowActivityThread.CLASS_NAME;
   }
 
   public static class ShadowActivityAdapter {
