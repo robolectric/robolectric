@@ -67,7 +67,7 @@ public class TestRunners {
   }
 
   public static class WithDefaults extends RobolectricTestRunner {
-    public static final String SDK_TARGETED_BY_MANIFEST = "-v18";
+    public static final String SDK_TARGETED_BY_MANIFEST = "-v21";
     
     public WithDefaults(Class<?> testClass) throws InitializationError {
       super(testClass);

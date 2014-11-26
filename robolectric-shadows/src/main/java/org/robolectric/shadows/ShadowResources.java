@@ -506,7 +506,7 @@ public class ShadowResources {
   @Implementation
   public final Resources.Theme newTheme() {
     Resources.Theme theme = directlyOn(realResources, Resources.class).newTheme();
-    int themeId = ReflectionHelpers.getFieldReflectively(theme, "mTheme");
+    int themeId = Integer.valueOf(ReflectionHelpers.getFieldReflectively(theme, "mTheme").toString()); // TODO: in Lollipop, these can be longs, which will overflow int
     shadowOf(realResources.getAssets()).setTheme(themeId, theme);
     return theme;
   }

@@ -106,8 +106,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       Class<?> compatibilityInfoClass = ReflectionHelpers.loadClassReflectively(getClass().getClassLoader(), "android.content.res.CompatibilityInfo");
 
       Object loadedApk = ReflectionHelpers.callInstanceMethodReflectively(activityThread, "getPackageInfo", new ClassParameter(ApplicationInfo.class, applicationInfo),
-          new ClassParameter(compatibilityInfoClass, null), new ClassParameter(ClassLoader.class, getClass().getClassLoader()), new ClassParameter(boolean.class, false),
-          new ClassParameter(boolean.class, true), new ClassParameter(boolean.class, false));
+          new ClassParameter(compatibilityInfoClass, null), new ClassParameter(int.class, Context.CONTEXT_INCLUDE_CODE));
 
       shadowOf(application).bind(appManifest, resourceLoader);
       if (appManifest == null) {

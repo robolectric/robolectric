@@ -11,6 +11,7 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.IBinder;
+import com.android.internal.app.IVoiceInteractor;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.manifest.AndroidManifest;
@@ -20,8 +21,7 @@ import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.shadows.ShadowActivityThread;
 import org.robolectric.shadows.ShadowApplication;
 
-public class ActivityController<T extends Activity>
-    extends ComponentController<ActivityController<T>, T, ShadowActivity> {
+public class ActivityController<T extends Activity> extends ComponentController<ActivityController<T>, T, ShadowActivity> {
 
   public static <T extends Activity> ActivityController<T> of(Class<T> activityClass) {
     return new ActivityController<T>(ReflectionHelpers.<T>callConstructorReflectively(activityClass));
@@ -78,7 +78,8 @@ public class ActivityController<T extends Activity>
         new ReflectionHelpers.ClassParameter(Activity.class, null),
         new ReflectionHelpers.ClassParameter(String.class, "id"),
         new ReflectionHelpers.ClassParameter(nonConfigurationInstancesClass, null),
-        new ReflectionHelpers.ClassParameter(Configuration.class, application.getResources().getConfiguration()));
+        new ReflectionHelpers.ClassParameter(Configuration.class, application.getResources().getConfiguration()),
+        new ReflectionHelpers.ClassParameter(IVoiceInteractor.class, null));
 
     shadow.setThemeFromManifest();
     attached = true;
