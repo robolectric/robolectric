@@ -20,9 +20,11 @@ public class RobolectricBackgroundExecutorServiceTest {
 
   @Before public void setUp() throws Exception {
     transcript = new Transcript();
-    executorService = new RobolectricBackgroundExecutorService();
+    ShadowsAdapter shadowsAdapter = new ShadowsAdapter();
+    Scheduler backgroundScheduler = shadowsAdapter.getBackgroundScheduler();
+    executorService = new RobolectricBackgroundExecutorService(shadowsAdapter);
 
-    ShadowApplication.getInstance().getBackgroundScheduler().pause();
+    backgroundScheduler.pause();
 
     runnable = new Runnable() {
       @Override public void run() {
