@@ -2,6 +2,8 @@ package org.robolectric.util;
 
 import android.app.Activity;
 import android.app.Application;
+import android.content.res.AssetManager;
+import android.content.res.Configuration;
 import android.os.Looper;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
@@ -10,7 +12,12 @@ import org.robolectric.res.ResourceLoader;
 import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.shadows.ShadowActivityThread;
 import org.robolectric.shadows.ShadowApplication;
+import org.robolectric.shadows.ShadowContextImpl;
+import org.robolectric.shadows.ShadowLog;
 import org.robolectric.shadows.ShadowLooper;
+import org.robolectric.shadows.ShadowResources;
+
+import static org.robolectric.Shadows.shadowOf;
 
 /**
  * This is the interface between the Robolectric runtime and the robolectric-shadows module.
@@ -42,6 +49,34 @@ public class ShadowsAdapter {
 
   public ShadowApplicationAdapter getApplicationAdapter(Activity component) {
     return new ShadowApplicationAdapter(component.getApplication());
+  }
+
+  public void setupLogging() {
+    ShadowLog.setupLogging();
+  }
+
+  public String getShadowContextImplClassName() {
+    return ShadowContextImpl.CLASS_NAME;
+  }
+
+  public void setSystemResources(ResourceLoader systemResourceLoader) {
+    ShadowResources.setSystemResources(systemResourceLoader);
+  }
+
+  public void overrideQualifiers(Configuration configuration, String qualifiers) {
+    shadowOf(configuration).overrideQualifiers(qualifiers);
+  }
+
+  public void bind(Application application, AndroidManifest appManifest, ResourceLoader resourceLoader) {
+    shadowOf(application).bind(appManifest, resourceLoader);
+  }
+
+  public void setPackageName(Application application, String packageName) {
+    shadowOf(application).setPackageName(packageName);
+  }
+
+  public void setAssetsQualifiers(AssetManager assets, String qualifiers) {
+    shadowOf(assets).setQualifiers(qualifiers);
   }
 
   public static class ShadowActivityAdapter {

@@ -12,20 +12,17 @@ import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResBunch;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.builder.DefaultRobolectricPackageManager;
-import org.robolectric.shadows.ShadowActivityThread;
-import org.robolectric.shadows.ShadowContextImpl;
-import org.robolectric.shadows.ShadowLog;
-import org.robolectric.shadows.ShadowResources;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ShadowsAdapter;
 
 import java.lang.reflect.Method;
 
-import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 public class ParallelUniverse implements ParallelUniverseInterface {
   private static final String DEFAULT_PACKAGE_NAME = "org.robolectric.default";
   private final RobolectricTestRunner robolectricTestRunner;
+  private final ShadowsAdapter shadowsAdapter = new ShadowsAdapter();
 
   private boolean loggingInitialized = false;
   private SdkConfig sdkConfig;
@@ -39,7 +36,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     Robolectric.reset(config);
 
     if (!loggingInitialized) {
-      ShadowLog.setupLogging();
+      shadowsAdapter.setupLogging();
       loggingInitialized = true;
     }
   }
@@ -72,17 +69,17 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       resourceLoader = systemResourceLoader;
     }
 
-    ShadowResources.setSystemResources(systemResourceLoader);
+    shadowsAdapter.setSystemResources(systemResourceLoader);
     String qualifiers = addVersionQualifierToQualifiers(config.qualifiers());
     Resources systemResources = Resources.getSystem();
     Configuration configuration = systemResources.getConfiguration();
-    shadowOf(configuration).overrideQualifiers(qualifiers);
+    shadowsAdapter.overrideQualifiers(configuration, qualifiers);
     systemResources.updateConfiguration(configuration, systemResources.getDisplayMetrics());
     RuntimeEnvironment.setQualifiers(qualifiers);
 
-    Class<?> contextImplClass = ReflectionHelpers.loadClassReflectively(getClass().getClassLoader(), ShadowContextImpl.CLASS_NAME);
+    Class<?> contextImplClass = ReflectionHelpers.loadClassReflectively(getClass().getClassLoader(), shadowsAdapter.getShadowContextImplClassName());
 
-    Class<?> activityThreadClass = ReflectionHelpers.loadClassReflectively(getClass().getClassLoader(), ShadowActivityThread.CLASS_NAME);
+    Class<?> activityThreadClass = ReflectionHelpers.loadClassReflectively(getClass().getClassLoader(), shadowsAdapter.getShadowActivityThreadClassName());
     Object activityThread = ReflectionHelpers.callConstructorReflectively(activityThreadClass);
     RuntimeEnvironment.setActivityThread(activityThread);
 
@@ -109,10 +106,10 @@ public class ParallelUniverse implements ParallelUniverseInterface {
           new ClassParameter(compatibilityInfoClass, null), new ClassParameter(ClassLoader.class, getClass().getClassLoader()), new ClassParameter(boolean.class, false),
           new ClassParameter(boolean.class, true));
 
-      shadowOf(application).bind(appManifest, resourceLoader);
+      shadowsAdapter.bind(application, appManifest, resourceLoader);
       if (appManifest == null) {
         // todo: make this cleaner...
-        shadowOf(application).setPackageName(applicationInfo.packageName);
+        shadowsAdapter.setPackageName(application, applicationInfo.packageName);
       }
       Resources appResources = application.getResources();
       ReflectionHelpers.setFieldReflectively(loadedApk, "mResources", appResources);
@@ -121,7 +118,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       ReflectionHelpers.callInstanceMethodReflectively(application, "attach", new ClassParameter(Context.class, contextImpl));
 
       appResources.updateConfiguration(configuration, appResources.getDisplayMetrics());
-      shadowOf(appResources.getAssets()).setQualifiers(qualifiers);
+      shadowsAdapter.setAssetsQualifiers(appResources.getAssets(), qualifiers);
 
       RuntimeEnvironment.application = application;
       application.onCreate();
