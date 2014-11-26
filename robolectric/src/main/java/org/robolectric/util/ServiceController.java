@@ -5,14 +5,14 @@ import android.app.Service;
 import android.content.Context;
 import android.os.IBinder;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.shadows.ShadowActivityThread;
-import org.robolectric.shadows.ShadowService;
 
-public class ServiceController<T extends Service> extends ComponentController<ServiceController<T>, T, ShadowService>{
+public class ServiceController<T extends Service> extends ComponentController<ServiceController<T>, T>{
 
-  public static <T extends Service> ServiceController<T> of(Class<T> serviceClass) {
+  private String shadowActivityThreadClassName;
+
+  public static <T extends Service> ServiceController<T> of(ShadowsAdapter shadowsAdapter, Class<T> serviceClass) {
     try {
-      return new ServiceController<T>(serviceClass);
+      return new ServiceController<T>(shadowsAdapter, serviceClass);
     } catch (IllegalAccessException e) {
       throw new RuntimeException(e);
     } catch (InstantiationException e) {
@@ -20,16 +20,17 @@ public class ServiceController<T extends Service> extends ComponentController<Se
     }
   }
 
-  public static <T extends Service> ServiceController<T> of(T service) {
-    return new ServiceController<T>(service);
+  public static <T extends Service> ServiceController<T> of(ShadowsAdapter shadowsAdapter, T service) {
+    return new ServiceController<T>(shadowsAdapter, service);
   }
 
-  public ServiceController(Class<T> serviceClass) throws IllegalAccessException, InstantiationException {
-    this(serviceClass.newInstance());
+  public ServiceController(ShadowsAdapter shadowsAdapter, Class<T> serviceClass) throws IllegalAccessException, InstantiationException {
+    this(shadowsAdapter, serviceClass.newInstance());
   }
 
-  public ServiceController(T service) {
-    super(service);
+  public ServiceController(ShadowsAdapter shadowsAdapter, T service) {
+    super(shadowsAdapter, service);
+    shadowActivityThreadClassName = shadowsAdapter.getShadowActivityThreadClassName();
   }
 
   public ServiceController<T> attach() {
@@ -39,7 +40,7 @@ public class ServiceController<T extends Service> extends ComponentController<Se
     ClassLoader cl = baseContext.getClassLoader();
     Class<?> activityThreadClass;
     try {
-      activityThreadClass = cl.loadClass(ShadowActivityThread.CLASS_NAME);
+      activityThreadClass = cl.loadClass(shadowActivityThreadClassName);
     } catch (ClassNotFoundException e) {
       e.printStackTrace();
       throw new RuntimeException(e);

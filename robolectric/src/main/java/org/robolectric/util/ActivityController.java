@@ -12,38 +12,38 @@ import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.IBinder;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.Shadows;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.RoboInstrumentation;
 import org.robolectric.res.ResName;
-import org.robolectric.shadows.ShadowActivity;
-import org.robolectric.shadows.ShadowActivityThread;
-import org.robolectric.shadows.ShadowApplication;
+import org.robolectric.util.ShadowsAdapter.ShadowActivityAdapter;
+import org.robolectric.util.ShadowsAdapter.ShadowApplicationAdapter;
 
 public class ActivityController<T extends Activity>
-    extends ComponentController<ActivityController<T>, T, ShadowActivity> {
+    extends ComponentController<ActivityController<T>, T> {
 
-  public static <T extends Activity> ActivityController<T> of(Class<T> activityClass) {
-    return new ActivityController<T>(ReflectionHelpers.<T>callConstructorReflectively(activityClass));
+  private final ShadowActivityAdapter shadowReference;
+  private final ShadowsAdapter shadowsAdapter;
+
+  public static <T extends Activity> ActivityController<T> of(ShadowsAdapter shadowsAdapter, Class<T> activityClass) {
+    return new ActivityController<T>(shadowsAdapter, ReflectionHelpers.<T>callConstructorReflectively(activityClass));
   }
 
-  public static <T extends Activity> ActivityController<T> of(T activity) {
-    return new ActivityController<T>(activity);
+  public static <T extends Activity> ActivityController<T> of(ShadowsAdapter shadowsAdapter, T activity) {
+    return new ActivityController<T>(shadowsAdapter, activity);
   }
 
-  public ActivityController(T activity) {
-    super(activity);
+  public ActivityController(ShadowsAdapter shadowsAdapter, T activity) {
+    super(shadowsAdapter, activity);
+    this.shadowsAdapter = shadowsAdapter;
+    shadowReference = shadowsAdapter.getShadowActivityAdapter(this.component);
   }
 
   public ActivityController<T> attach() {
     Application application = this.application == null ? RuntimeEnvironment.application : this.application;
     if (this.application != null) {
-      ShadowApplication roboShadow = Shadows.shadowOf(RuntimeEnvironment.application);
-      ShadowApplication testShadow = Shadows.shadowOf(this.application);
-      testShadow.bind(roboShadow.getAppManifest(), roboShadow.getResourceLoader());
-      testShadow.callAttachBaseContext(RuntimeEnvironment.application.getBaseContext());
+      shadowsAdapter.prepareShadowApplicationWithExistingApplication(this.application);
       this.application.onCreate();
-      shadow.setTestApplication(this.application);
+      shadowReference.setTestApplication(this.application);
     }
     Context baseContext = this.baseContext == null ? application : this.baseContext;
     Intent intent = getIntent();
@@ -54,7 +54,7 @@ public class ActivityController<T extends Activity>
     ClassLoader cl = baseContext.getClassLoader();
     Class<?> activityThreadClass = null;
     try {
-      activityThreadClass = cl.loadClass(ShadowActivityThread.CLASS_NAME);
+      activityThreadClass = cl.loadClass(shadowsAdapter.getShadowActivityThreadClassName());
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);
     }
@@ -80,7 +80,7 @@ public class ActivityController<T extends Activity>
         new ReflectionHelpers.ClassParameter(nonConfigurationInstancesClass, null),
         new ReflectionHelpers.ClassParameter(Configuration.class, application.getResources().getConfiguration()));
 
-    shadow.setThemeFromManifest();
+    shadowReference.setThemeFromManifest();
     attached = true;
     return this;
   }
@@ -89,8 +89,8 @@ public class ActivityController<T extends Activity>
     String title = null;
 
     /* Get the label for the activity from the manifest */
-    ShadowApplication shadowApplication = Shadows.shadowOf(component.getApplication());
-    AndroidManifest appManifest = shadowApplication.getAppManifest();
+    ShadowApplicationAdapter shadowApplicationAdapter = shadowsAdapter.getApplicationAdapter(component);
+    AndroidManifest appManifest = shadowApplicationAdapter.getAppManifest();
     if (appManifest == null) return null;
     String labelRef = appManifest.getActivityLabel(component.getClass());
 
@@ -98,7 +98,7 @@ public class ActivityController<T extends Activity>
       if (labelRef.startsWith("@")) {
         /* Label refers to a string value, get the resource identifier */
         ResName style = ResName.qualifyResName(labelRef.replace("@", ""), appManifest.getPackageName(), "string");
-        Integer labelRes = shadowApplication.getResourceLoader().getResourceIndex().getResourceId(style);
+        Integer labelRes = shadowApplicationAdapter.getResourceLoader().getResourceIndex().getResourceId(style);
 
         /* If we couldn't determine the resource ID, throw it up */
         if (labelRes == null) {

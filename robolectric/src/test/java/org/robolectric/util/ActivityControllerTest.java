@@ -47,7 +47,7 @@ public class ActivityControllerTest {
 
   @Test
   public void shouldSetIntentForGivenActivityInstance() throws Exception {
-    ActivityController<MyActivity> activityController = ActivityController.of(new MyActivity()).create();
+    ActivityController<MyActivity> activityController = ActivityController.of(new ShadowsAdapter(), new MyActivity()).create();
     assertThat(activityController.get().getIntent()).isNotNull();
   }
 

@@ -25,6 +25,7 @@ import org.robolectric.tester.org.apache.http.RequestMatcher;
 import org.robolectric.util.ActivityController;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.ServiceController;
+import org.robolectric.util.ShadowsAdapter;
 
 import java.util.List;
 
@@ -340,23 +341,23 @@ public class Robolectric {
     RuntimeEnvironment.setRobolectricPackageManager(null);
     RuntimeEnvironment.setActivityThread(null);
 
-    Shadows.reset();
+    new ShadowsAdapter().reset();
   }
 
   public static <T extends Service> ServiceController<T> buildService(Class<T> serviceClass) {
-    return ServiceController.of(serviceClass);
+    return ServiceController.of(new ShadowsAdapter(), serviceClass);
   }
 
   public static <T extends Service> T setupService(Class<T> serviceClass) {
-    return ServiceController.of(serviceClass).attach().create().get();
+    return ServiceController.of(new ShadowsAdapter(), serviceClass).attach().create().get();
   }
 
   public static <T extends Activity> ActivityController<T> buildActivity(Class<T> activityClass) {
-    return ActivityController.of(activityClass);
+    return ActivityController.of(new ShadowsAdapter(), activityClass);
   }
 
   public static <T extends Activity> T setupActivity(Class<T> activityClass) {
-    return ActivityController.of(activityClass).setup().get();
+    return ActivityController.of(new ShadowsAdapter(), activityClass).setup().get();
   }
 
   /**

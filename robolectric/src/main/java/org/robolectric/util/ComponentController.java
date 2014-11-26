@@ -4,17 +4,13 @@ import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Looper;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.Shadows;
-import org.robolectric.internal.ShadowExtractor;
-import org.robolectric.shadows.ShadowLooper;
+import org.robolectric.util.ShadowsAdapter.ShadowLooperAdapter;
 
-abstract class ComponentController<C extends ComponentController<C, T, S>, T, S> {
+abstract class ComponentController<C extends ComponentController<C, T>, T> {
   protected final C myself;
   protected final T component;
-  protected final S shadow;
-  protected final ShadowLooper shadowMainLooper;
+  protected final ShadowLooperAdapter shadowMainLooper;
 
   protected Application application;
   protected Context baseContext;
@@ -22,16 +18,15 @@ abstract class ComponentController<C extends ComponentController<C, T, S>, T, S>
 
   protected boolean attached;
 
-  public ComponentController(Class<T> componentClass) throws IllegalAccessException, InstantiationException {
-    this(componentClass.newInstance());
+  public ComponentController(ShadowsAdapter shadowsAdapter, Class<T> componentClass) throws IllegalAccessException, InstantiationException {
+    this(shadowsAdapter, componentClass.newInstance());
   }
 
   @SuppressWarnings("unchecked")
-  public ComponentController(T component) {
+  public ComponentController(ShadowsAdapter shadowsAdapter, T component) {
     myself = (C) this;
     this.component = component;
-    shadow = (S) ShadowExtractor.extract(component);
-    shadowMainLooper = Shadows.shadowOf(Looper.getMainLooper());
+    shadowMainLooper = shadowsAdapter.getMainLooper();
   }
 
   public T get() {
