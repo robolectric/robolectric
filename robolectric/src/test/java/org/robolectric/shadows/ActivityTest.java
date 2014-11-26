@@ -249,14 +249,14 @@ public class ActivityTest {
 
   @Test
   public void shouldQueueUiTasksWhenUiThreadIsPaused() throws Exception {
-    Robolectric.pauseMainLooper();
+    ShadowLooper.pauseMainLooper();
 
     activity = create(DialogLifeCycleActivity.class);
     TestRunnable runnable = new TestRunnable();
     activity.runOnUiThread(runnable);
     assertFalse(runnable.wasRun);
 
-    Robolectric.unPauseMainLooper();
+    ShadowLooper.unPauseMainLooper();
     assertTrue(runnable.wasRun);
   }
 

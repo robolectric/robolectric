@@ -22,6 +22,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowDisplay;
+import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.StubViewRoot;
 import org.robolectric.internal.Shadow;
 import org.robolectric.util.TestOnClickListener;
@@ -113,9 +114,9 @@ public class RobolectricTest {
     }, 2000);
 
     assertFalse(wasRun[0]);
-    Robolectric.idleMainLooper(1999);
+    ShadowLooper.idleMainLooper(1999);
     assertFalse(wasRun[0]);
-    Robolectric.idleMainLooper(1);
+    ShadowLooper.idleMainLooper(1);
     assertTrue(wasRun[0]);
   }
 

@@ -15,6 +15,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowLooper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -53,7 +54,7 @@ public class ActivityControllerTest {
 
   @Test
   public void whenLooperIsNotPaused_shouldCreateWithMainLooperPaused() throws Exception {
-    Robolectric.unPauseMainLooper();
+    ShadowLooper.unPauseMainLooper();
     controller.create();
     assertThat(shadowOf(Looper.getMainLooper()).isPaused()).isFalse();
     transcript.assertEventsInclude("finishedOnCreate", "onCreate");
@@ -61,12 +62,12 @@ public class ActivityControllerTest {
 
   @Test
   public void whenLooperIsAlreadyPaused_shouldCreateWithMainLooperPaused() throws Exception {
-    Robolectric.pauseMainLooper();
+    ShadowLooper.pauseMainLooper();
     controller.create();
     assertThat(shadowOf(Looper.getMainLooper()).isPaused()).isTrue();
     transcript.assertEventsInclude("finishedOnCreate");
 
-    Robolectric.unPauseMainLooper();
+    ShadowLooper.unPauseMainLooper();
     transcript.assertEventsInclude("onCreate");
   }
 

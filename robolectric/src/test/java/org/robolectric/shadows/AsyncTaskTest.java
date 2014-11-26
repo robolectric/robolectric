@@ -40,7 +40,7 @@ public class AsyncTaskTest {
     transcript.assertEventsSoFar("doInBackground a, b");
     assertEquals("Result should get stored in the AsyncTask", "c", asyncTask.get(100, TimeUnit.MILLISECONDS));
 
-    Robolectric.runUiThreadTasks();
+    ShadowLooper.runUiThreadTasks();
     transcript.assertEventsSoFar("onPostExecute c");
   }
 
@@ -57,7 +57,7 @@ public class AsyncTaskTest {
     Robolectric.runBackgroundTasks();
     transcript.assertNoEventsSoFar();
 
-    Robolectric.runUiThreadTasks();
+    ShadowLooper.runUiThreadTasks();
     transcript.assertEventsSoFar("onCancelled");
   }
 
@@ -75,7 +75,7 @@ public class AsyncTaskTest {
     assertFalse(asyncTask.cancel(true));
     assertFalse(asyncTask.isCancelled());
 
-    Robolectric.runUiThreadTasks();
+    ShadowLooper.runUiThreadTasks();
     transcript.assertEventsSoFar("onPostExecute c");
   }
 
@@ -98,7 +98,7 @@ public class AsyncTaskTest {
     transcript.assertNoEventsSoFar();
     assertEquals("Result should get stored in the AsyncTask", "done", asyncTask.get(100, TimeUnit.MILLISECONDS));
 
-    Robolectric.runUiThreadTasks();
+    ShadowLooper.runUiThreadTasks();
     transcript.assertEventsSoFar(
         "onProgressUpdate 33%",
         "onProgressUpdate 66%",
@@ -160,7 +160,7 @@ public class AsyncTaskTest {
     transcript.assertEventsSoFar("onPreExecute", "doInBackground a, b");
     assertEquals("Result should get stored in the AsyncTask", "c", asyncTask.get());
 
-    Robolectric.runUiThreadTasks();
+    ShadowLooper.runUiThreadTasks();
     transcript.assertEventsSoFar("onPostExecute c");
   }
 
