@@ -6,9 +6,8 @@ import android.content.Context;
 import android.os.IBinder;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.shadows.ShadowActivityThread;
-import org.robolectric.shadows.ShadowService;
 
-public class ServiceController<T extends Service> extends ComponentController<ServiceController<T>, T, ShadowService>{
+public class ServiceController<T extends Service> extends ComponentController<ServiceController<T>, T>{
 
   public static <T extends Service> ServiceController<T> of(Class<T> serviceClass) {
     try {

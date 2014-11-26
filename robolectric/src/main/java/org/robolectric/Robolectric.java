@@ -25,6 +25,7 @@ import org.robolectric.tester.org.apache.http.RequestMatcher;
 import org.robolectric.util.ActivityController;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.ServiceController;
+import org.robolectric.util.ShadowsAdapter;
 
 import java.util.List;
 
@@ -352,11 +353,11 @@ public class Robolectric {
   }
 
   public static <T extends Activity> ActivityController<T> buildActivity(Class<T> activityClass) {
-    return ActivityController.of(activityClass);
+    return ActivityController.of(new ShadowsAdapter(), activityClass);
   }
 
   public static <T extends Activity> T setupActivity(Class<T> activityClass) {
-    return ActivityController.of(activityClass).setup().get();
+    return ActivityController.of(new ShadowsAdapter(), activityClass).setup().get();
   }
 
   /**

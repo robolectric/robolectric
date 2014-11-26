@@ -16,23 +16,26 @@ import org.robolectric.Shadows;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.RoboInstrumentation;
 import org.robolectric.res.ResName;
-import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.shadows.ShadowActivityThread;
 import org.robolectric.shadows.ShadowApplication;
+import org.robolectric.util.ShadowsAdapter.ShadowActivityAdapter;
 
 public class ActivityController<T extends Activity>
-    extends ComponentController<ActivityController<T>, T, ShadowActivity> {
+    extends ComponentController<ActivityController<T>, T> {
 
-  public static <T extends Activity> ActivityController<T> of(Class<T> activityClass) {
-    return new ActivityController<T>(ReflectionHelpers.<T>callConstructorReflectively(activityClass));
+  private final ShadowActivityAdapter shadowReference;
+
+  public static <T extends Activity> ActivityController<T> of(ShadowsAdapter shadowsAdapter, Class<T> activityClass) {
+    return new ActivityController<T>(shadowsAdapter, ReflectionHelpers.<T>callConstructorReflectively(activityClass));
   }
 
-  public static <T extends Activity> ActivityController<T> of(T activity) {
-    return new ActivityController<T>(activity);
+  public static <T extends Activity> ActivityController<T> of(ShadowsAdapter shadowsAdapter, T activity) {
+    return new ActivityController<T>(shadowsAdapter, activity);
   }
 
-  public ActivityController(T activity) {
+  public ActivityController(ShadowsAdapter shadowsAdapter, T activity) {
     super(activity);
+    shadowReference = shadowsAdapter.getShadowActivityAdapter(this.component);
   }
 
   public ActivityController<T> attach() {
@@ -43,7 +46,7 @@ public class ActivityController<T extends Activity>
       testShadow.bind(roboShadow.getAppManifest(), roboShadow.getResourceLoader());
       testShadow.callAttachBaseContext(RuntimeEnvironment.application.getBaseContext());
       this.application.onCreate();
-      shadow.setTestApplication(this.application);
+      shadowReference.setTestApplication(this.application);
     }
     Context baseContext = this.baseContext == null ? application : this.baseContext;
     Intent intent = getIntent();
@@ -80,7 +83,7 @@ public class ActivityController<T extends Activity>
         new ReflectionHelpers.ClassParameter(nonConfigurationInstancesClass, null),
         new ReflectionHelpers.ClassParameter(Configuration.class, application.getResources().getConfiguration()));
 
-    shadow.setThemeFromManifest();
+    shadowReference.setThemeFromManifest();
     attached = true;
     return this;
   }
