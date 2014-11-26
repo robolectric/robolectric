@@ -19,6 +19,7 @@
   <modules>
     <module>robolectric</module>
     <module>robolectric-annotations</module>
+    <module>robolectric-fakehttp</module>
     <module>robolectric-processor</module>
     <module>robolectric-resources</module>
     <module>robolectric-shadows</module>
@@ -37,6 +38,12 @@
       <dependency>
         <groupId>org.robolectric</groupId>
         <artifactId>robolectric-annotations</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.robolectric</groupId>
+        <artifactId>robolectric-fakehttp</artifactId>
         <version>${project.version}</version>
       </dependency>
 

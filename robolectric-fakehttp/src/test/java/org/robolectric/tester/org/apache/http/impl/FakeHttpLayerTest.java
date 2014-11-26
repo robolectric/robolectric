@@ -9,19 +9,13 @@ import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
 import org.robolectric.tester.org.apache.http.FakeHttpLayer;
 
 import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
-@RunWith(TestRunners.WithDefaults.class)
 public class FakeHttpLayerTest {
-
   private FakeHttpLayer.RequestMatcherBuilder requestMatcherBuilder;
 
   @Before
@@ -67,9 +61,9 @@ public class FakeHttpLayerTest {
     match.setHeader(new BasicHeader("header1", "header one"));
     noMatch.setHeader(new BasicHeader("header1", "header not a match"));
 
-    assertFalse(requestMatcherBuilder.matches(new HttpGet("example.com")));
-    assertFalse(requestMatcherBuilder.matches(noMatch));
-    assertTrue(requestMatcherBuilder.matches(match));
+    assertThat(requestMatcherBuilder.matches(new HttpGet("example.com"))).isFalse();
+    assertThat(requestMatcherBuilder.matches(noMatch)).isFalse();
+    assertThat(requestMatcherBuilder.matches(match)).isTrue();
   }
 
   @Test
@@ -89,8 +83,8 @@ public class FakeHttpLayerTest {
     HttpPost noMatch = new HttpPost("example.com");
     noMatch.setEntity(new StringEntity("some text that does not match"));
 
-    assertFalse(requestMatcherBuilder.matches(new HttpGet("example.com")));
-    assertFalse(requestMatcherBuilder.matches(noMatch));
-    assertTrue(requestMatcherBuilder.matches(match));
+    assertThat(requestMatcherBuilder.matches(new HttpGet("example.com"))).isFalse();
+    assertThat(requestMatcherBuilder.matches(noMatch)).isFalse();
+    assertThat(requestMatcherBuilder.matches(match)).isTrue();
   }
 }
