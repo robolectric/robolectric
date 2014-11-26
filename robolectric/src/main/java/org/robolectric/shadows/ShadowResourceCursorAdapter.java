@@ -73,6 +73,24 @@ public class ShadowResourceCursorAdapter extends ShadowCursorAdapter {
   }
 
   /**
+   * Constructor.
+   *
+   * @param context The context where the ListView associated with this
+   *            SimpleListItemFactory is running
+   * @param layout resource identifier of a layout file that defines the views
+   *            for this list item.  Unless you override them later, this will
+   *            define both the item views and the drop down views.
+   * @param c The cursor from which to get the data.
+   * @param flags Flags used to determine the behavior of the adapter,
+   *                    as per CursorAdapter(Context, Cursor, int).
+   */
+  public void __constructor__(Context context, int layout, Cursor c, int flags) {
+    super.__constructor__(context, c, flags);
+    mLayout = mDropDownLayout = layout;
+    mInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+  }
+
+  /**
    * Inflates view(s) from the specified XML file.
    *
    * @see android.widget.CursorAdapter#newView(android.content.Context,
