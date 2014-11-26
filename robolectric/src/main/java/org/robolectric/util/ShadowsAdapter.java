@@ -3,7 +3,10 @@ package org.robolectric.util;
 import android.app.Activity;
 import android.app.Application;
 import android.os.Looper;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
+import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.res.ResourceLoader;
 import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.shadows.ShadowActivityThread;
 import org.robolectric.shadows.ShadowApplication;
@@ -28,6 +31,17 @@ public class ShadowsAdapter {
 
   public String getShadowActivityThreadClassName() {
     return ShadowActivityThread.CLASS_NAME;
+  }
+
+  public void prepareShadowApplicationWithExistingApplication(Application application) {
+    ShadowApplication roboShadow = Shadows.shadowOf(RuntimeEnvironment.application);
+    ShadowApplication testShadow = Shadows.shadowOf(application);
+    testShadow.bind(roboShadow.getAppManifest(), roboShadow.getResourceLoader());
+    testShadow.callAttachBaseContext(RuntimeEnvironment.application.getBaseContext());
+  }
+
+  public ShadowApplicationAdapter getApplicationAdapter(Activity component) {
+    return new ShadowApplicationAdapter(component.getApplication());
   }
 
   public static class ShadowActivityAdapter {
@@ -55,6 +69,22 @@ public class ShadowsAdapter {
 
     public void runPaused(Runnable runnable) {
       shadow.runPaused(runnable);
+    }
+  }
+
+  public static class ShadowApplicationAdapter {
+    private final ShadowApplication shadow;
+
+    public ShadowApplicationAdapter(Application application) {
+      this.shadow = Shadows.shadowOf(application);
+    }
+
+    public AndroidManifest getAppManifest() {
+      return shadow.getAppManifest();
+    }
+
+    public ResourceLoader getResourceLoader() {
+      return shadow.getResourceLoader();
     }
   }
 }
