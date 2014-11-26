@@ -133,7 +133,8 @@ public class Setup {
         new MethodRef("com.android.internal.policy.PolicyManager", "*"),
         new MethodRef("android.view.FallbackEventHandler", "*"),
         new MethodRef("android.view.IWindowSession", "*"),
-        new MethodRef("java.lang.System", "nanoTime")
+        new MethodRef("java.lang.System", "nanoTime"),
+        new MethodRef("java.lang.System", "arraycopy")
     )));
   }
 

@@ -263,6 +263,15 @@ public class ShadowWrangler implements ClassHandler {
           return ReflectionHelpers.callStaticMethodReflectively(shadowSystemClockClass, methodSignature.methodName);
         }
       };
+    } else if (methodSignature.matches("java.lang.System", "arraycopy")) {
+      return new Function<Object, Object>() {
+        @Override
+        public Object call(Class<?> theClass, Object value, Object[] params) {
+          //noinspection SuspiciousSystemArraycopy
+          System.arraycopy(params[0], (Integer) params[1], params[2], (Integer) params[3], (Integer) params[4]);
+          return null;
+        }
+      };
     }
 
     return ShadowWrangler.DO_NOTHING_HANDLER;
