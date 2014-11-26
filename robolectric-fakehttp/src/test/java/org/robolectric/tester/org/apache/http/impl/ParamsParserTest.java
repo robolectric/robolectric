@@ -6,15 +6,12 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
 import org.robolectric.tester.org.apache.http.ParamsParser;
 
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(TestRunners.WithDefaults.class)
 public class ParamsParserTest {
   @Test
   public void parseParams_shouldParsePostEntitiesIntoParams() throws Exception {

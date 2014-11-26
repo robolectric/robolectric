@@ -25,12 +25,6 @@
     </dependency>
 
     <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpclient</artifactId>
-      <version>4.0.3</version>
-    </dependency>
-
-    <dependency>
       <groupId>com.intellij</groupId>
       <artifactId>annotations</artifactId>
     </dependency>
@@ -38,6 +32,11 @@
     <dependency>
       <groupId>org.robolectric</groupId>
       <artifactId>robolectric-annotations</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.robolectric</groupId>
+      <artifactId>robolectric-fakehttp</artifactId>
     </dependency>
 
     <dependency>
