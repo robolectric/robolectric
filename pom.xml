@@ -76,7 +76,7 @@
       <dependency>
         <groupId>org.robolectric</groupId>
         <artifactId>android-all</artifactId>
-        <version>4.4_r1-robolectric-0</version>
+        <version>5.0.0_r2-robolectric-0</version>
         <scope>provided</scope>
       </dependency>
 

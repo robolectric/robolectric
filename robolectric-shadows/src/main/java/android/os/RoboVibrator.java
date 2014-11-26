@@ -1,5 +1,6 @@
 package android.os;
 
+import android.media.AudioAttributes;
 import org.robolectric.annotation.DoNotInstrument;
 
 @DoNotInstrument
@@ -26,11 +27,13 @@ public class RoboVibrator extends Vibrator {
   }
 
   @Override
-  public void vibrate(int owningUid, String owningPackage, long milliseconds) {
+  public void vibrate(int i, String s, long l, AudioAttributes audioAttributes) {
+
   }
 
   @Override
-  public void vibrate(int owningUid, String owningPackage, long[] pattern, int repeat) {
+  public void vibrate(int i, String s, long[] longs, int i1, AudioAttributes audioAttributes) {
+
   }
 
   public void cancel() {

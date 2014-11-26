@@ -34,7 +34,7 @@
       <groupId>org.robolectric</groupId>
       <artifactId>robolectric-shadows</artifactId>
       <scope>provided</scope>
-      <classifier>19</classifier>
+      <classifier>21</classifier>
     </dependency>
 
     <dependency>

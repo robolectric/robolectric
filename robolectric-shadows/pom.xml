@@ -221,28 +221,39 @@
         <api>15</api>
       </properties>
     </profile>
+
     <profile>
       <id>android-16</id>
       <properties>
         <api>16</api>
       </properties>
     </profile>
+
     <profile>
       <id>android-17</id>
       <properties>
         <api>17</api>
       </properties>
     </profile>
+
     <profile>
       <id>android-18</id>
       <properties>
         <api>18</api>
       </properties>
     </profile>
+
     <profile>
       <id>android-19</id>
       <properties>
         <api>19</api>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>android-21</id>
+      <properties>
+        <api>21</api>
       </properties>
       <activation>
         <activeByDefault>true</activeByDefault>

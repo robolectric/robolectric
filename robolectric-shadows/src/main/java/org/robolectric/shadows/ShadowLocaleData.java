@@ -64,7 +64,7 @@ public class ShadowLocaleData {
       localeData.percent = '%';
       localeData.perMill = '‰';
       localeData.monetarySeparator = '.';
-      localeData.minusSign = '-';
+      localeData.minusSign = "-";
 
       localeData.exponentSeparator = "E";
       localeData.infinity = "∞";

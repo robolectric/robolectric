@@ -247,6 +247,26 @@ public class TestWebSettings extends WebSettings {
   }
 
   @Override
+  public void setMixedContentMode(int i) {
+
+  }
+
+  @Override
+  public int getMixedContentMode() {
+    return 0;
+  }
+
+  @Override
+  public void setVideoOverlayForEmbeddedEncryptedVideoEnabled(boolean b) {
+
+  }
+
+  @Override
+  public boolean getVideoOverlayForEmbeddedEncryptedVideoEnabled() {
+    return false;
+  }
+
+  @Override
   public boolean getUseWideViewPort() {
     return useWideViewPort;
   }

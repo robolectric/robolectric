@@ -23,7 +23,7 @@ import android.view.LayoutInflater;
 import android.widget.ListPopupWindow;
 import android.widget.PopupWindow;
 import android.widget.Toast;
-import libcore.util.MutableBoolean;
+import android.util.MutableBoolean;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.Shadows;

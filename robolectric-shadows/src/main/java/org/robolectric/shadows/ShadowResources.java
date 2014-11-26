@@ -532,6 +532,10 @@ public class ShadowResources {
     return drawable;
   }
 
+  @HiddenApi @Implementation
+  public void updateConfiguration(Configuration config, DisplayMetrics metrics, CompatibilityInfo compat) {
+  }
+
   @Implements(Resources.NotFoundException.class)
   public static class ShadowNotFoundException {
     @RealObject Resources.NotFoundException realObject;
