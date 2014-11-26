@@ -137,7 +137,7 @@ public class ApplicationTest {
 
   @Test
   public void bindServiceShouldCallOnServiceConnectedWhenNotPaused() {
-    Robolectric.pauseMainLooper();
+    ShadowLooper.pauseMainLooper();
     ComponentName expectedComponentName = new ComponentName("", "");
     NullBinder expectedBinder = new NullBinder();
     Shadows.shadowOf(RuntimeEnvironment.application).setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
@@ -148,7 +148,7 @@ public class ApplicationTest {
     assertNull(service.name);
     assertNull(service.service);
 
-    Robolectric.unPauseMainLooper();
+    ShadowLooper.unPauseMainLooper();
 
     assertEquals(expectedComponentName, service.name);
     assertEquals(expectedBinder, service.service);
@@ -161,11 +161,11 @@ public class ApplicationTest {
     NullBinder expectedBinder = new NullBinder();
     Shadows.shadowOf(RuntimeEnvironment.application).setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
     RuntimeEnvironment.application.bindService(new Intent(""), service, Context.BIND_AUTO_CREATE);
-    Robolectric.pauseMainLooper();
+    ShadowLooper.pauseMainLooper();
 
     RuntimeEnvironment.application.unbindService(service);
     assertNull(service.nameUnbound);
-    Robolectric.unPauseMainLooper();
+    ShadowLooper.unPauseMainLooper();
     assertEquals(expectedComponentName, service.nameUnbound);
   }
 
@@ -184,7 +184,7 @@ public class ApplicationTest {
 
   @Test
   public void declaringServiceUnbindableMakesBindServiceReturnFalse() {
-    Robolectric.pauseMainLooper();
+    ShadowLooper.pauseMainLooper();
     TestService service = new TestService();
     ComponentName expectedComponentName = new ComponentName("", "");
     NullBinder expectedBinder = new NullBinder();
@@ -192,7 +192,7 @@ public class ApplicationTest {
     shadowApplication.setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
     shadowApplication.declareActionUnbindable("refuseToBind");
     assertFalse(RuntimeEnvironment.application.bindService(new Intent("refuseToBind"), service, Context.BIND_AUTO_CREATE));
-    Robolectric.unPauseMainLooper();
+    ShadowLooper.unPauseMainLooper();
     assertNull(service.name);
     assertNull(service.service);
     assertNull(shadowApplication.peekNextStartedService());

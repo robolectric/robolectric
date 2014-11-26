@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.os.Looper;
 import android.view.Display;
 import android.view.View;
 import org.apache.http.Header;
@@ -18,7 +17,6 @@ import org.robolectric.res.ResourceLoader;
 import org.robolectric.shadows.HttpResponseGenerator;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowDefaultRequestDirector;
-import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.tester.org.apache.http.FakeHttpLayer;
 import org.robolectric.tester.org.apache.http.HttpRequestInfo;
 import org.robolectric.tester.org.apache.http.RequestMatcher;
@@ -39,21 +37,6 @@ public class Robolectric {
    */
   public static void runBackgroundTasks() {
     getBackgroundScheduler().advanceBy(0);
-  }
-
-  /**
-   * Runs any immediately runnable tasks previously queued on the UI thread,
-   * e.g. by {@link Activity#runOnUiThread(Runnable)} or {@link android.os.AsyncTask#onPostExecute(Object)}.
-   * <p/>
-   * <p/>
-   * Note: calling this method does not pause or un-pause the scheduler.
-   */
-  public static void runUiThreadTasks() {
-    getUiThreadScheduler().advanceBy(0);
-  }
-
-  public static void runUiThreadTasksIncludingDelayedTasks() {
-    getUiThreadScheduler().advanceToLastPostedRunnable();
   }
 
   /**
@@ -225,34 +208,6 @@ public class Robolectric {
 
   public static void clearPendingHttpResponses() {
     getFakeHttpLayer().clearPendingHttpResponses();
-  }
-
-  public static void pauseLooper(Looper looper) {
-    ShadowLooper.pauseLooper(looper);
-  }
-
-  public static void unPauseLooper(Looper looper) {
-    ShadowLooper.unPauseLooper(looper);
-  }
-
-  public static void pauseMainLooper() {
-    ShadowLooper.pauseMainLooper();
-  }
-
-  public static void unPauseMainLooper() {
-    ShadowLooper.unPauseMainLooper();
-  }
-
-  public static void idleMainLooper(long interval) {
-    ShadowLooper.idleMainLooper(interval);
-  }
-
-  public static void idleMainLooperConstantly(boolean shouldIdleConstantly) {
-    ShadowLooper.idleMainLooperConstantly(shouldIdleConstantly);
-  }
-
-  public static Scheduler getUiThreadScheduler() {
-    return ShadowLooper.getUiThreadScheduler();
   }
 
   public static Scheduler getBackgroundScheduler() {

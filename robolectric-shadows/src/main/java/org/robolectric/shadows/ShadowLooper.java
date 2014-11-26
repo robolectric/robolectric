@@ -156,6 +156,21 @@ public class ShadowLooper {
   }
 
   /**
+   * Runs any immediately runnable tasks previously queued on the UI thread,
+   * e.g. by {@link android.app.Activity#runOnUiThread(Runnable)} or {@link android.os.AsyncTask#onPostExecute(Object)}.
+   * <p/>
+   * <p/>
+   * Note: calling this method does not pause or un-pause the scheduler.
+   */
+  public static void runUiThreadTasks() {
+    getUiThreadScheduler().advanceBy(0);
+  }
+
+  public static void runUiThreadTasksIncludingDelayedTasks() {
+    getUiThreadScheduler().advanceToLastPostedRunnable();
+  }
+
+  /**
    * Causes {@link Runnable}s that have been scheduled to run immediately to actually run. Does not advance the
    * scheduler's clock;
    */

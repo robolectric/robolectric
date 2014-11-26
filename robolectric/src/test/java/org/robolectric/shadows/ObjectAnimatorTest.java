@@ -7,7 +7,6 @@ import android.view.View;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
@@ -56,9 +55,9 @@ public class ObjectAnimatorTest {
 
     animator.start();
     assertThat(target.getTranslationX()).isEqualTo(0.5f);
-    Robolectric.idleMainLooper(999);
+    ShadowLooper.idleMainLooper(999);
     assertThat(target.getTranslationX()).isNotEqualTo(0.4f);
-    Robolectric.idleMainLooper(1);
+    ShadowLooper.idleMainLooper(1);
     assertThat(target.getTranslationX()).isEqualTo(0.4f);
   }
 
@@ -70,7 +69,7 @@ public class ObjectAnimatorTest {
 
     animator.start();
     assertThat(target.getBottom()).isEqualTo(1);
-    Robolectric.idleMainLooper(1000);
+    ShadowLooper.idleMainLooper(1000);
     assertThat(target.getBottom()).isEqualTo(4);
   }
 
@@ -92,9 +91,9 @@ public class ObjectAnimatorTest {
     animator.start();
 
     assertThat(object.getValue()).isEqualTo("human");
-    Robolectric.idleMainLooper(1000);
+    ShadowLooper.idleMainLooper(1000);
     assertThat(object.getValue()).isEqualTo("replicant");
-    Robolectric.idleMainLooper(1000);
+    ShadowLooper.idleMainLooper(1000);
     assertThat(object.getValue()).isEqualTo("unicorn");
   }
 
@@ -111,7 +110,7 @@ public class ObjectAnimatorTest {
 
     assertThat(startListener.startWasCalled).isTrue();
     assertThat(endListener.endWasCalled).isFalse();
-    Robolectric.idleMainLooper(1);
+    ShadowLooper.idleMainLooper(1);
     assertThat(endListener.endWasCalled).isTrue();
   }
 
@@ -133,7 +132,7 @@ public class ObjectAnimatorTest {
     assertThat(expectedAnimator.isRunning()).isFalse();
     expectedAnimator.start();
     assertThat(expectedAnimator.isRunning()).isTrue();
-    Robolectric.idleMainLooper(duration);
+    ShadowLooper.idleMainLooper(duration);
     assertThat(expectedAnimator.isRunning()).isFalse();
   }
 
@@ -149,7 +148,7 @@ public class ObjectAnimatorTest {
 
     assertThat(endListener.endWasCalled).isFalse();
     ShadowObjectAnimator.pauseEndNotifications();
-    Robolectric.idleMainLooper(1);
+    ShadowLooper.idleMainLooper(1);
     assertThat(endListener.endWasCalled).isFalse();
     ShadowObjectAnimator.unpauseEndNotifications();
     assertThat(endListener.endWasCalled).isTrue();
@@ -164,11 +163,11 @@ public class ObjectAnimatorTest {
     animator.start();
 
     assertThat(target.getAlpha()).isEqualTo(0f);
-    Robolectric.idleMainLooper(1000);
+    ShadowLooper.idleMainLooper(1000);
     assertThat(target.getAlpha()).isEqualTo(1f);
-    Robolectric.idleMainLooper(1000);
+    ShadowLooper.idleMainLooper(1000);
     assertThat(target.getAlpha()).isEqualTo(0.5f);
-    Robolectric.idleMainLooper(1000);
+    ShadowLooper.idleMainLooper(1000);
     assertThat(target.getAlpha()).isEqualTo(1f);
   }
 
@@ -181,7 +180,7 @@ public class ObjectAnimatorTest {
     animator.start();
 
     assertThat(target.getAlpha()).isEqualTo(1f);
-    Robolectric.idleMainLooper(100);
+    ShadowLooper.idleMainLooper(100);
     assertThat(target.getAlpha()).isEqualTo(0.4f);
   }
 

@@ -263,31 +263,31 @@ public class ViewTest {
 
   @Test
   public void shouldPostActionsToTheMessageQueue() throws Exception {
-    Robolectric.pauseMainLooper();
+    ShadowLooper.pauseMainLooper();
 
     TestRunnable runnable = new TestRunnable();
     view.post(runnable);
     assertFalse(runnable.wasRun);
 
-    Robolectric.unPauseMainLooper();
+    ShadowLooper.unPauseMainLooper();
     assertTrue(runnable.wasRun);
   }
 
   @Test
   public void shouldPostInvalidateDelayed() throws Exception {
-    Robolectric.pauseMainLooper();
+    ShadowLooper.pauseMainLooper();
 
     view.postInvalidateDelayed(100);
     ShadowView shadowView = shadowOf(view);
     assertFalse(shadowView.wasInvalidated());
 
-    Robolectric.unPauseMainLooper();
+    ShadowLooper.unPauseMainLooper();
     assertTrue(shadowView.wasInvalidated());
   }
 
   @Test
   public void shouldPostActionsToTheMessageQueueWithDelay() throws Exception {
-    Robolectric.pauseMainLooper();
+    ShadowLooper.pauseMainLooper();
 
     TestRunnable runnable = new TestRunnable();
     view.postDelayed(runnable, 1);
@@ -714,10 +714,10 @@ public class ViewTest {
 
     parent.addView(new MyView("child", transcript));
     parent.addView(new MyView("another child", transcript));
-    Robolectric.runUiThreadTasks();
+    ShadowLooper.runUiThreadTasks();
     transcript.clear();
     parent.removeAllViews();
-    Robolectric.runUiThreadTasks();
+    ShadowLooper.runUiThreadTasks();
     transcript.assertEventsSoFar("another child detached", "child detached");
   }
 

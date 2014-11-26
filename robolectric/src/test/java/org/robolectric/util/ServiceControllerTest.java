@@ -15,6 +15,7 @@ import android.content.Intent;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import org.robolectric.shadows.ShadowLooper;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ServiceControllerTest {
@@ -58,7 +59,7 @@ public class ServiceControllerTest {
 
   @Test
   public void whenLooperIsNotPaused_shouldCreateWithMainLooperPaused() throws Exception {
-    Robolectric.unPauseMainLooper();
+    ShadowLooper.unPauseMainLooper();
     controller.create();
     assertThat(shadowOf(Looper.getMainLooper()).isPaused()).isFalse();
     transcript.assertEventsInclude("finishedOnCreate", "onCreate");
@@ -66,12 +67,12 @@ public class ServiceControllerTest {
 
   @Test
   public void whenLooperIsAlreadyPaused_shouldCreateWithMainLooperPaused() throws Exception {
-    Robolectric.pauseMainLooper();
+    ShadowLooper.pauseMainLooper();
     controller.create();
     assertThat(shadowOf(Looper.getMainLooper()).isPaused()).isTrue();
     transcript.assertEventsInclude("finishedOnCreate");
 
-    Robolectric.unPauseMainLooper();
+    ShadowLooper.unPauseMainLooper();
     transcript.assertEventsInclude("onCreate");
   }
 
