@@ -345,11 +345,11 @@ public class Robolectric {
   }
 
   public static <T extends Service> ServiceController<T> buildService(Class<T> serviceClass) {
-    return ServiceController.of(serviceClass);
+    return ServiceController.of(new ShadowsAdapter(), serviceClass);
   }
 
   public static <T extends Service> T setupService(Class<T> serviceClass) {
-    return ServiceController.of(serviceClass).attach().create().get();
+    return ServiceController.of(new ShadowsAdapter(), serviceClass).attach().create().get();
   }
 
   public static <T extends Activity> ActivityController<T> buildActivity(Class<T> activityClass) {

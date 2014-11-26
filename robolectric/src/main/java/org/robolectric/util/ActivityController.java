@@ -34,7 +34,7 @@ public class ActivityController<T extends Activity>
   }
 
   public ActivityController(ShadowsAdapter shadowsAdapter, T activity) {
-    super(activity);
+    super(shadowsAdapter, activity);
     shadowReference = shadowsAdapter.getShadowActivityAdapter(this.component);
   }
 

@@ -9,9 +9,9 @@ import org.robolectric.shadows.ShadowActivityThread;
 
 public class ServiceController<T extends Service> extends ComponentController<ServiceController<T>, T>{
 
-  public static <T extends Service> ServiceController<T> of(Class<T> serviceClass) {
+  public static <T extends Service> ServiceController<T> of(ShadowsAdapter shadowsAdapter, Class<T> serviceClass) {
     try {
-      return new ServiceController<T>(serviceClass);
+      return new ServiceController<T>(shadowsAdapter, serviceClass);
     } catch (IllegalAccessException e) {
       throw new RuntimeException(e);
     } catch (InstantiationException e) {
@@ -19,16 +19,16 @@ public class ServiceController<T extends Service> extends ComponentController<Se
     }
   }
 
-  public static <T extends Service> ServiceController<T> of(T service) {
-    return new ServiceController<T>(service);
+  public static <T extends Service> ServiceController<T> of(ShadowsAdapter shadowsAdapter, T service) {
+    return new ServiceController<T>(shadowsAdapter, service);
   }
 
-  public ServiceController(Class<T> serviceClass) throws IllegalAccessException, InstantiationException {
-    this(serviceClass.newInstance());
+  public ServiceController(ShadowsAdapter shadowsAdapter, Class<T> serviceClass) throws IllegalAccessException, InstantiationException {
+    this(shadowsAdapter, serviceClass.newInstance());
   }
 
-  public ServiceController(T service) {
-    super(service);
+  public ServiceController(ShadowsAdapter shadowsAdapter, T service) {
+    super(shadowsAdapter, service);
   }
 
   public ServiceController<T> attach() {
