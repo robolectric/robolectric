@@ -56,7 +56,7 @@
         <groupId>org.robolectric</groupId>
         <artifactId>robolectric-shadows</artifactId>
         <version>${project.version}</version>
-        <classifier>19</classifier>
+        <classifier>21</classifier>
       </dependency>
 
       <dependency>
