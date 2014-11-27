@@ -1,5 +1,7 @@
 package org.robolectric.util;
 
+import org.robolectric.ShadowsAdapter;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;

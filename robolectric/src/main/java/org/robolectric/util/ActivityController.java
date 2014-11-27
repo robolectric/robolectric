@@ -12,11 +12,12 @@ import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.IBinder;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.ShadowsAdapter;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.RoboInstrumentation;
 import org.robolectric.res.ResName;
-import org.robolectric.util.ShadowsAdapter.ShadowActivityAdapter;
-import org.robolectric.util.ShadowsAdapter.ShadowApplicationAdapter;
+import org.robolectric.ShadowsAdapter.ShadowActivityAdapter;
+import org.robolectric.ShadowsAdapter.ShadowApplicationAdapter;
 
 public class ActivityController<T extends Activity>
     extends ComponentController<ActivityController<T>, T> {
