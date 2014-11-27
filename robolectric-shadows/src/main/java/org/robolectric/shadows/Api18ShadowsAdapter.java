@@ -12,6 +12,8 @@ import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.util.Scheduler;
 
+import java.io.File;
+
 import static org.robolectric.Shadows.shadowOf;
 
 /**
@@ -113,5 +115,15 @@ public class Api18ShadowsAdapter implements ShadowsAdapter {
   @Override
   public void reset() {
     Shadows.reset();
+  }
+
+  @Override
+  public ResourceLoader getResourceLoader() {
+    return ShadowApplication.getInstance().getResourceLoader();
+  }
+
+  @Override
+  public File getFilesDir() {
+    return ShadowContext.FILES_DIR;
   }
 }
