@@ -12,9 +12,9 @@ import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResBunch;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.builder.DefaultRobolectricPackageManager;
-import org.robolectric.util.Api18ShadowsAdapter;
+import org.robolectric.shadows.Api18ShadowsAdapter;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ShadowsAdapter;
+import org.robolectric.ShadowsAdapter;
 
 import java.lang.reflect.Method;
 

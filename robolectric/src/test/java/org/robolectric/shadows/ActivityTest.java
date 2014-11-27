@@ -35,7 +35,6 @@ import org.robolectric.res.Fs;
 import org.robolectric.test.TemporaryFolder;
 import org.robolectric.util.ActivityController;
 import org.robolectric.internal.Shadow;
-import org.robolectric.util.Api18ShadowsAdapter;
 import org.robolectric.util.TestRunnable;
 import org.robolectric.util.Transcript;
 

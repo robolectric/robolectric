@@ -5,6 +5,7 @@ import android.app.Service;
 import android.content.Context;
 import android.os.IBinder;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.ShadowsAdapter;
 
 public class ServiceController<T extends Service> extends ComponentController<ServiceController<T>, T>{
 

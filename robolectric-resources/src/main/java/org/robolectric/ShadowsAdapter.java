@@ -1,4 +1,4 @@
-package org.robolectric.util;
+package org.robolectric;
 
 import android.app.Activity;
 import android.app.Application;
@@ -6,6 +6,7 @@ import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResourceLoader;
+import org.robolectric.util.Scheduler;
 
 public interface ShadowsAdapter {
   Scheduler getBackgroundScheduler();

@@ -5,7 +5,7 @@ import android.app.Service;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.ActivityController;
-import org.robolectric.util.Api18ShadowsAdapter;
+import org.robolectric.shadows.Api18ShadowsAdapter;
 import org.robolectric.util.ServiceController;
 
 public class Robolectric {

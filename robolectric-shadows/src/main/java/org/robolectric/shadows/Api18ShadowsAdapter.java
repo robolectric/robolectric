@@ -1,4 +1,4 @@
-package org.robolectric.util;
+package org.robolectric.shadows;
 
 import android.app.Activity;
 import android.app.Application;
@@ -7,15 +7,10 @@ import android.content.res.Configuration;
 import android.os.Looper;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
+import org.robolectric.ShadowsAdapter;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResourceLoader;
-import org.robolectric.shadows.ShadowActivity;
-import org.robolectric.shadows.ShadowActivityThread;
-import org.robolectric.shadows.ShadowApplication;
-import org.robolectric.shadows.ShadowContextImpl;
-import org.robolectric.shadows.ShadowLog;
-import org.robolectric.shadows.ShadowLooper;
-import org.robolectric.shadows.ShadowResources;
+import org.robolectric.util.Scheduler;
 
 import static org.robolectric.Shadows.shadowOf;
 

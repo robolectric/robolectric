@@ -15,6 +15,7 @@ import android.content.Intent;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import org.robolectric.shadows.Api18ShadowsAdapter;
 import org.robolectric.shadows.ShadowLooper;
 
 @RunWith(TestRunners.WithDefaults.class)

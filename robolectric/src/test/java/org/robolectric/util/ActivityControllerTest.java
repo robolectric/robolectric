@@ -15,6 +15,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.Api18ShadowsAdapter;
 import org.robolectric.shadows.ShadowLooper;
 
 import static org.assertj.core.api.Assertions.assertThat;

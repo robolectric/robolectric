@@ -5,7 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.util.ShadowsAdapter.ShadowLooperAdapter;
+import org.robolectric.ShadowsAdapter;
+import org.robolectric.ShadowsAdapter.ShadowLooperAdapter;
 
 abstract class ComponentController<C extends ComponentController<C, T>, T> {
   protected final C myself;
