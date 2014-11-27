@@ -20,6 +20,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.shadows.FakeHttp;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowDisplay;
 import org.robolectric.shadows.ShadowLooper;
@@ -83,24 +84,24 @@ public class RobolectricTest {
   public void httpRequestWasSent_ReturnsTrueIfRequestWasSent() throws IOException, HttpException {
     makeRequest("http://example.com");
 
-    assertTrue(Robolectric.httpRequestWasMade());
+    assertTrue(FakeHttp.httpRequestWasMade());
   }
 
   @Test
   public void httpRequestWasMade_ReturnsFalseIfNoRequestWasMade() {
-    assertFalse(Robolectric.httpRequestWasMade());
+    assertFalse(FakeHttp.httpRequestWasMade());
   }
 
   @Test
   public void httpRequestWasMade_returnsTrueIfRequestMatchingGivenRuleWasMade() throws IOException, HttpException {
     makeRequest("http://example.com");
-    assertTrue(Robolectric.httpRequestWasMade("http://example.com"));
+    assertTrue(FakeHttp.httpRequestWasMade("http://example.com"));
   }
 
   @Test
   public void httpRequestWasMade_returnsFalseIfNoRequestMatchingGivenRuleWasMAde() throws IOException, HttpException {
     makeRequest("http://example.com");
-    assertFalse(Robolectric.httpRequestWasMade("http://example.org"));
+    assertFalse(FakeHttp.httpRequestWasMade("http://example.org"));
   }
 
   @Test
@@ -178,7 +179,7 @@ public class RobolectricTest {
   }
 
   private void makeRequest(String uri) throws HttpException, IOException {
-    Robolectric.addPendingHttpResponse(200, "a happy response body");
+    FakeHttp.addPendingHttpResponse(200, "a happy response body");
 
     ConnectionKeepAliveStrategy connectionKeepAliveStrategy = new ConnectionKeepAliveStrategy() {
       @Override
