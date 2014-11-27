@@ -33,7 +33,7 @@
     <dependency>
       <groupId>org.robolectric</groupId>
       <artifactId>robolectric-shadows</artifactId>
-      <scope>provided</scope>
+      <scope>test</scope>
       <classifier>19</classifier>
     </dependency>
 
