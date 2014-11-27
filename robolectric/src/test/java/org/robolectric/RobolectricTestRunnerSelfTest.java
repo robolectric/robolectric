@@ -5,9 +5,9 @@ import android.content.res.Resources;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.model.InitializationError;
-import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.util.ReflectionHelpers;
 import java.lang.reflect.Method;
 
@@ -21,7 +21,7 @@ public class RobolectricTestRunnerSelfTest {
     assertNotNull(RuntimeEnvironment.application);
     assertEquals(MyTestApplication.class, RuntimeEnvironment.application.getClass());
     assertTrue(((MyTestApplication) RuntimeEnvironment.application).onCreateWasCalled);
-    assertNotNull(Robolectric.getResourceLoader());
+    assertNotNull(ShadowApplication.getInstance().getResourceLoader());
   }
 
   @Test public void shouldSetUpSystemResources() throws Exception {
@@ -48,17 +48,17 @@ public class RobolectricTestRunnerSelfTest {
   @Config(qualifiers = "fr")
   public void internalBeforeTest_testValuesResQualifiers() {
     String expectedQualifiers = "fr" + TestRunners.WithDefaults.SDK_TARGETED_BY_MANIFEST;
-    assertEquals(expectedQualifiers, Shadows.shadowOf(Robolectric.getShadowApplication().getResources().getAssets()).getQualifiers());
+    assertEquals(expectedQualifiers, Shadows.shadowOf(ShadowApplication.getInstance().getResources().getAssets()).getQualifiers());
   }
 
   @Test
   public void internalBeforeTest_resetsValuesResQualifiers() {
-    assertEquals("", Shadows.shadowOf(Robolectric.getShadowApplication().getResources().getConfiguration()).getQualifiers());
+    assertEquals("", Shadows.shadowOf(ShadowApplication.getInstance().getResources().getConfiguration()).getQualifiers());
   }
 
   @Test
   public void internalBeforeTest_doesNotSetI18nStrictModeFromSystemIfPropertyAbsent() {
-    assertFalse(Robolectric.getShadowApplication().isStrictI18n());
+    assertFalse(ShadowApplication.getInstance().isStrictI18n());
   }
 
   public static class RunnerForTesting extends TestRunners.WithDefaults {

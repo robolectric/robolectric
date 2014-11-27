@@ -87,7 +87,7 @@ public class AlertDialogTest {
     builder.setPositiveButton("OK", null);
     AlertDialog dialog = builder.create();
     dialog.show();
-    Robolectric.clickOn(dialog.getButton(AlertDialog.BUTTON_POSITIVE));
+    ShadowView.clickOn(dialog.getButton(AlertDialog.BUTTON_POSITIVE));
   }
 
   @Test
@@ -443,7 +443,7 @@ public class AlertDialogTest {
 
   private static class ItemListener extends Transcript implements AdapterView.OnItemSelectedListener {
     @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-      add("selected " + Robolectric.innerText(view));
+      add("selected " + ShadowView.innerText(view));
     }
 
     @Override public void onNothingSelected(AdapterView<?> parent) {

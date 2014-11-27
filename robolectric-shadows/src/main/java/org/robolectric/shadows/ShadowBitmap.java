@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -39,6 +40,15 @@ public class ShadowBitmap {
   private boolean mutable;
   private String description = "";
   private boolean recycled = false;
+
+  /**
+   * Returns a textual representation of the appearance of the object.
+   *
+   * @param bitmap the bitmap to visualize
+   */
+  public static String visualize(Bitmap bitmap) {
+    return shadowOf(bitmap).getDescription();
+  }
 
   /**
    * Reference to original Bitmap from which this Bitmap was created. {@code null} if this Bitmap

@@ -24,7 +24,6 @@ import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.DefaultTestLifecycle;
-import org.robolectric.Robolectric;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.manifest.ContentProviderData;
@@ -542,7 +541,7 @@ public class ContentResolverTest {
 
   @Test
   public void getProvider_shouldCreateProviderFromManifest() {
-    AndroidManifest manifest = Robolectric.getShadowApplication().getAppManifest();
+    AndroidManifest manifest = ShadowApplication.getInstance().getAppManifest();
     ContentProviderData testProviderData = new ContentProviderData("org.robolectric.shadows.ContentResolverTest$TestContentProvider", AUTHORITY);
     try {
       manifest.getContentProviders().add(testProviderData);

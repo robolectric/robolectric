@@ -13,7 +13,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
@@ -57,7 +56,7 @@ public class ImageViewTest {
 
   @Test
   public void visualizeWithEmpty() throws Exception {
-    assertEquals("", Robolectric.visualize(new ImageView(application)));
+    assertEquals("", ShadowView.visualize(new ImageView(application)));
   }
 
   @Test

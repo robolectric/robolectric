@@ -10,7 +10,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
@@ -273,7 +272,7 @@ public class ResourcesTest {
    */
   @Test
   public void testGetNinePatchDrawable() {
-    assertThat(Robolectric.getShadowApplication().getResources().getDrawable(R.drawable.nine_patch_drawable)).isInstanceOf(NinePatchDrawable.class);
+    assertThat(ShadowApplication.getInstance().getResources().getDrawable(R.drawable.nine_patch_drawable)).isInstanceOf(NinePatchDrawable.class);
   }
 
   @Test(expected = Resources.NotFoundException.class)
@@ -459,7 +458,7 @@ public class ResourcesTest {
 
   @Test
   public void subClassInitializedOK() {
-    SubClassResources subClassResources = new SubClassResources(Robolectric.getShadowApplication().getResources());
+    SubClassResources subClassResources = new SubClassResources(ShadowApplication.getInstance().getResources());
     assertThat(subClassResources.openRawResource(R.raw.raw_resource)).isNotNull();
   }
 

@@ -107,7 +107,7 @@ public class DefaultRobolectricPackageManagerTest {
   @Test
   @Config(manifest = "src/test/resources/TestAndroidManifestForActivitiesWithIntentFilterWithData.xml")
   public void queryIntentActivities_EmptyResultWithNoMatchingImplicitIntents() throws Exception {
-    rpm.addManifest(Robolectric.getShadowApplication().getAppManifest(), Robolectric.getShadowApplication().getResourceLoader());
+    rpm.addManifest(ShadowApplication.getInstance().getAppManifest(), ShadowApplication.getInstance().getResourceLoader());
     Intent i = new Intent(Intent.ACTION_MAIN, null);
     i.addCategory(Intent.CATEGORY_LAUNCHER);
 
@@ -119,7 +119,7 @@ public class DefaultRobolectricPackageManagerTest {
   @Test
   @Config(manifest = "src/test/resources/TestAndroidManifestForActivitiesWithIntentFilterWithData.xml")
   public void queryIntentActivities_MatchWithImplicitIntents() throws Exception {
-    rpm.addManifest(Robolectric.getShadowApplication().getAppManifest(), Robolectric.getShadowApplication().getResourceLoader());
+    rpm.addManifest(ShadowApplication.getInstance().getAppManifest(), ShadowApplication.getInstance().getResourceLoader());
     Uri uri = Uri.parse("content://testhost1.com:1/testPath/test.jpeg");
     Intent i = new Intent(Intent.ACTION_VIEW);
     i.addCategory(Intent.CATEGORY_DEFAULT);
@@ -136,7 +136,7 @@ public class DefaultRobolectricPackageManagerTest {
   @Test
   @Config(manifest = "src/test/resources/TestAndroidManifestForActivityAliases.xml")
   public void queryIntentActivities_MatchWithAliasIntents() throws Exception {
-    rpm.addManifest(Robolectric.getShadowApplication().getAppManifest(), Robolectric.getShadowApplication().getResourceLoader());
+    rpm.addManifest(ShadowApplication.getInstance().getAppManifest(), ShadowApplication.getInstance().getResourceLoader());
     Intent i = new Intent(Intent.ACTION_MAIN);
     i.addCategory(Intent.CATEGORY_LAUNCHER);
 
@@ -289,8 +289,8 @@ public class DefaultRobolectricPackageManagerTest {
   @Test
   @Config(manifest = "src/test/resources/TestAndroidManifestWithReceivers.xml")
   public void testReceiverInfo() throws Exception {
-    ShadowApplication app = Robolectric.getShadowApplication();
-    rpm.addManifest(app.getAppManifest(), Robolectric.getShadowApplication().getResourceLoader());
+    ShadowApplication app = ShadowApplication.getInstance();
+    rpm.addManifest(app.getAppManifest(), ShadowApplication.getInstance().getResourceLoader());
     ActivityInfo info = rpm.getReceiverInfo(new ComponentName(app.getApplicationContext(), ".test.ConfigTestReceiver"), PackageManager.GET_META_DATA);
     Bundle meta = info.metaData;
     Object metaValue = meta.get("org.robolectric.metaName1");
@@ -405,7 +405,7 @@ public class DefaultRobolectricPackageManagerTest {
   @Test
   public void shouldAssignTheApplicationNameFromTheManifest() throws Exception {
     AndroidManifest appManifest = newConfigWith("<application android:name=\"org.robolectric.TestApplication\"/>");
-    rpm.addManifest(appManifest, Robolectric.getShadowApplication().getResourceLoader());
+    rpm.addManifest(appManifest, ShadowApplication.getInstance().getResourceLoader());
     ApplicationInfo applicationInfo = rpm.getApplicationInfo("org.robolectric", 0);
     assertThat(applicationInfo.name).isEqualTo("org.robolectric.TestApplication");
   }
@@ -431,7 +431,7 @@ public class DefaultRobolectricPackageManagerTest {
   @Test
   @Config(manifest = "src/test/resources/TestAndroidManifestWithAppMetaData.xml")
   public void shouldAssignTheAppMetaDataFromTheManifest() throws Exception {
-    ShadowApplication app = Robolectric.getShadowApplication();
+    ShadowApplication app = ShadowApplication.getInstance();
     String appName = app.getString(R.string.app_name);
     String packageName = app.getAppManifest().getPackageName();
     ApplicationInfo info = app.getPackageManager().getApplicationInfo(packageName, 0);
@@ -555,9 +555,9 @@ public class DefaultRobolectricPackageManagerTest {
   @Test
   @Config(manifest = "src/test/resources/TestAndroidManifest.xml")
   public void shouldAssignLabelResFromTheManifest() throws Exception {
-    rpm.addManifest(Robolectric.getShadowApplication().getAppManifest(), Robolectric.getShadowApplication().getResourceLoader());
+    rpm.addManifest(ShadowApplication.getInstance().getAppManifest(), ShadowApplication.getInstance().getResourceLoader());
     ApplicationInfo applicationInfo = rpm.getApplicationInfo("org.robolectric", 0);
-    String appName = Robolectric.getShadowApplication().getApplicationContext().getString(applicationInfo.labelRes);
+    String appName = ShadowApplication.getInstance().getApplicationContext().getString(applicationInfo.labelRes);
     assertThat(appName).isEqualTo("Testing App");
   }
   /////////////////////////////

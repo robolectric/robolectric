@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.Robolectric;
 import org.robolectric.manifest.ActivityData;
 import org.robolectric.manifest.BroadcastReceiverData;
 import org.robolectric.manifest.ContentProviderData;
@@ -32,6 +31,7 @@ import org.robolectric.manifest.IntentFilterData;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceIndex;
 import org.robolectric.res.ResourceLoader;
+import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowContext;
 import org.robolectric.tester.android.content.pm.StubPackageManager;
 
@@ -129,7 +129,7 @@ public class DefaultRobolectricPackageManager extends StubPackageManager impleme
     activityInfo.packageName = packageName;
     activityInfo.name = activityName;
     if (activityData != null) {
-      ResourceIndex resourceIndex = Robolectric.getResourceLoader().getResourceIndex();
+      ResourceIndex resourceIndex = ShadowApplication.getInstance().getResourceLoader().getResourceIndex();
       String themeRef;
 
       // Based on ShadowActivity

@@ -19,7 +19,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.util.Transcript;
@@ -33,7 +32,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Robolectric.buildActivity;
-import static org.robolectric.Robolectric.getShadowApplication;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -330,8 +328,8 @@ public class ContextWrapperTest {
     final Intent pick = new Intent(Intent.ACTION_PICK);
     contextWrapper.startActivities(new Intent[] {view, pick});
 
-    assertThat(getShadowApplication().getNextStartedActivity()).isEqualTo(pick);
-    assertThat(getShadowApplication().getNextStartedActivity()).isEqualTo(view);
+    assertThat(ShadowApplication.getInstance().getNextStartedActivity()).isEqualTo(pick);
+    assertThat(ShadowApplication.getInstance().getNextStartedActivity()).isEqualTo(view);
   }
 
   @Test
@@ -340,8 +338,8 @@ public class ContextWrapperTest {
     final Intent pick = new Intent(Intent.ACTION_PICK);
     contextWrapper.startActivities(new Intent[] {view, pick}, new Bundle());
 
-    assertThat(getShadowApplication().getNextStartedActivity()).isEqualTo(pick);
-    assertThat(getShadowApplication().getNextStartedActivity()).isEqualTo(view);
+    assertThat(ShadowApplication.getInstance().getNextStartedActivity()).isEqualTo(pick);
+    assertThat(ShadowApplication.getInstance().getNextStartedActivity()).isEqualTo(view);
   }
 
   private BroadcastReceiver broadcastReceiver(final String name) {

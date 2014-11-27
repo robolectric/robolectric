@@ -6,7 +6,6 @@ import android.content.SharedPreferences.Editor;
 import android.preference.PreferenceManager;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import android.content.TestSharedPreferences;
@@ -21,7 +20,7 @@ public class PreferenceManagerTest {
 
   @Test
   public void shouldProvideDefaultSharedPreferences() {
-    Map<String, Map<String, Object>> content = Robolectric.getShadowApplication().getSharedPreferenceMap();
+    Map<String, Map<String, Object>> content = ShadowApplication.getInstance().getSharedPreferenceMap();
 
     TestSharedPreferences testPrefs = new TestSharedPreferences(content, "__default__", Context.MODE_PRIVATE);
     Editor editor = testPrefs.edit();

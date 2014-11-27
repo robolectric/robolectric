@@ -24,6 +24,7 @@ import org.robolectric.shadows.FakeHttp;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowDisplay;
 import org.robolectric.shadows.ShadowLooper;
+import org.robolectric.shadows.ShadowView;
 import org.robolectric.shadows.StubViewRoot;
 import org.robolectric.internal.Shadow;
 import org.robolectric.util.TestOnClickListener;
@@ -65,7 +66,7 @@ public class RobolectricTest {
   public void clickOn_shouldThrowIfViewIsDisabled() throws Exception {
     View view = new View(RuntimeEnvironment.application);
     view.setEnabled(false);
-    Robolectric.clickOn(view);
+    ShadowView.clickOn(view);
   }
 
   @Test
@@ -124,7 +125,7 @@ public class RobolectricTest {
   @Test
   public void shouldUseSetDensityForContexts() throws Exception {
     assertThat(new Activity().getResources().getDisplayMetrics().density).isEqualTo(1.0f);
-    Robolectric.setDisplayMetricsDensity(1.5f);
+    ShadowApplication.setDisplayMetricsDensity(1.5f);
     assertThat(new Activity().getResources().getDisplayMetrics().density).isEqualTo(1.5f);
   }
 
@@ -137,7 +138,7 @@ public class RobolectricTest {
     ShadowDisplay shadowDisplay = Shadows.shadowOf(display);
     shadowDisplay.setWidth(100);
     shadowDisplay.setHeight(200);
-    Robolectric.setDefaultDisplay(display);
+    ShadowApplication.setDefaultDisplay(display);
 
     assertThat(new Activity().getResources().getDisplayMetrics().widthPixels).isEqualTo(100);
     assertThat(new Activity().getResources().getDisplayMetrics().heightPixels).isEqualTo(200);
@@ -149,13 +150,13 @@ public class RobolectricTest {
     shadowOf(view).setMyParent(new StubViewRoot());
     TestOnClickListener testOnClickListener = new TestOnClickListener();
     view.setOnClickListener(testOnClickListener);
-    Robolectric.clickOn(view);
+    ShadowView.clickOn(view);
     assertTrue(testOnClickListener.clicked);
   }
 
   @Test(expected=ActivityNotFoundException.class)
   public void checkActivities_shouldSetValueOnShadowApplication() throws Exception {
-    Robolectric.checkActivities(true);
+    ShadowApplication.getInstance().checkActivities(true);
     RuntimeEnvironment.application.startActivity(new Intent("i.dont.exist.activity"));
   }
 

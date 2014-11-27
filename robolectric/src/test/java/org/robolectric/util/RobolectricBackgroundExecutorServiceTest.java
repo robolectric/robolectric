@@ -3,7 +3,6 @@ package org.robolectric.util;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.shadows.ShadowApplication;
 
@@ -39,7 +38,7 @@ public class RobolectricBackgroundExecutorServiceTest {
 
     transcript.assertNoEventsSoFar();
 
-    Robolectric.runBackgroundTasks();
+    ShadowApplication.runBackgroundTasks();
     transcript.assertEventsSoFar("background event ran");
   }
 
@@ -50,7 +49,7 @@ public class RobolectricBackgroundExecutorServiceTest {
     transcript.assertNoEventsSoFar();
     assertFalse(future.isDone());
 
-    Robolectric.runBackgroundTasks();
+    ShadowApplication.runBackgroundTasks();
     transcript.assertEventsSoFar("background event ran");
     assertTrue(future.isDone());
 
@@ -69,7 +68,7 @@ public class RobolectricBackgroundExecutorServiceTest {
     transcript.assertNoEventsSoFar();
     assertFalse(future.isDone());
 
-    Robolectric.runBackgroundTasks();
+    ShadowApplication.runBackgroundTasks();
     transcript.assertEventsSoFar("background event ran");
     assertTrue(future.isDone());
 

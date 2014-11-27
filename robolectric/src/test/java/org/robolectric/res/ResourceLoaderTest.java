@@ -12,6 +12,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowApplication;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -51,12 +52,12 @@ public class ResourceLoaderTest {
     View view = LayoutInflater.from(RuntimeEnvironment.application).inflate(R.layout.different_screen_sizes, null);
     TextView textView = (TextView) view.findViewById(android.R.id.text1);
     assertThat(textView.getText().toString()).isEqualTo("default");
-    Shadows.shadowOf(Robolectric.getShadowApplication().getResources().getConfiguration()).overrideQualifiers("land"); // testing if this pollutes the other test
+    Shadows.shadowOf(ShadowApplication.getInstance().getResources().getConfiguration()).overrideQualifiers("land"); // testing if this pollutes the other test
   }
 
   @Test
   public void shouldMakeInternalResourcesAvailable() throws Exception {
-    ResourceLoader resourceLoader = Robolectric.getShadowApplication().getResourceLoader();
+    ResourceLoader resourceLoader = ShadowApplication.getInstance().getResourceLoader();
     ResName internalResource = new ResName("android", "string", "badPin");
     Integer resId = resourceLoader.getResourceIndex().getResourceId(internalResource);
     assertThat(resId).isNotNull();
