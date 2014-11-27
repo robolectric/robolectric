@@ -2,8 +2,6 @@ package org.robolectric;
 
 import android.app.Activity;
 import android.app.Service;
-import android.content.Context;
-import android.content.Intent;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.ActivityController;
@@ -33,20 +31,6 @@ public class Robolectric {
 
   public static <T extends Activity> T setupActivity(Class<T> activityClass) {
     return ActivityController.of(new ShadowsAdapter(), activityClass).setup().get();
-  }
-
-  /**
-   * Set to true if you'd like Robolectric to strictly simulate the real Android behavior when
-   * calling {@link Context#startActivity(android.content.Intent)}. Real Android throws a
-   * {@link android.content.ActivityNotFoundException} if given
-   * an {@link Intent} that is not known to the {@link android.content.pm.PackageManager}
-   *
-   * By default, this behavior is off (false).
-   *
-   * @param checkActivities
-   */
-  public static void checkActivities(boolean checkActivities) {
-    Shadows.shadowOf(RuntimeEnvironment.application).checkActivities(checkActivities);
   }
 
   /**

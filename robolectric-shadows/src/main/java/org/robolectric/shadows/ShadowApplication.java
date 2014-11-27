@@ -720,6 +720,16 @@ public class ShadowApplication extends ShadowContextWrapper {
     }
   }
 
+  /**
+   * Set to true if you'd like Robolectric to strictly simulate the real Android behavior when
+   * calling {@link Context#startActivity(android.content.Intent)}. Real Android throws a
+   * {@link android.content.ActivityNotFoundException} if given
+   * an {@link Intent} that is not known to the {@link android.content.pm.PackageManager}
+   *
+   * By default, this behavior is off (false).
+   *
+   * @param checkActivities
+   */
   public void checkActivities(boolean checkActivities) {
     this.checkActivities = checkActivities;
   }

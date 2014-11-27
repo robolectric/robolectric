@@ -156,7 +156,7 @@ public class RobolectricTest {
 
   @Test(expected=ActivityNotFoundException.class)
   public void checkActivities_shouldSetValueOnShadowApplication() throws Exception {
-    Robolectric.checkActivities(true);
+    ShadowApplication.getInstance().checkActivities(true);
     RuntimeEnvironment.application.startActivity(new Intent("i.dont.exist.activity"));
   }
 
