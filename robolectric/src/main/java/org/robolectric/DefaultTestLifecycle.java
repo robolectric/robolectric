@@ -6,6 +6,7 @@ import android.content.pm.ResolveInfo;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.ClassNameResolver;
 import org.robolectric.manifest.ActivityData;
+import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.builder.RobolectricPackageManager;
 
 import java.lang.reflect.Method;
@@ -101,14 +102,14 @@ public class DefaultTestLifecycle implements TestLifecycle {
    * @param method the test method about to be run
    */
   public void beforeTest(final Method method) {
-    if (Robolectric.application instanceof TestLifecycleApplication) {
-      ((TestLifecycleApplication) Robolectric.application).beforeTest(method);
+    if (RuntimeEnvironment.application instanceof TestLifecycleApplication) {
+      ((TestLifecycleApplication) RuntimeEnvironment.application).beforeTest(method);
     }
   }
 
   public void prepareTest(final Object test) {
-    if (Robolectric.application instanceof TestLifecycleApplication) {
-      ((TestLifecycleApplication) Robolectric.application).prepareTest(test);
+    if (RuntimeEnvironment.application instanceof TestLifecycleApplication) {
+      ((TestLifecycleApplication) RuntimeEnvironment.application).prepareTest(test);
     }
   }
 
@@ -118,8 +119,8 @@ public class DefaultTestLifecycle implements TestLifecycle {
    * @param method the test method that just ran.
    */
   public void afterTest(final Method method) {
-    if (Robolectric.application instanceof TestLifecycleApplication) {
-      ((TestLifecycleApplication) Robolectric.application).afterTest(method);
+    if (RuntimeEnvironment.application instanceof TestLifecycleApplication) {
+      ((TestLifecycleApplication) RuntimeEnvironment.application).afterTest(method);
     }
   }
 

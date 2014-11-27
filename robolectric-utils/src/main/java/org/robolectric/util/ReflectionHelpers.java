@@ -86,7 +86,10 @@ public class ReflectionHelpers {
         }
       });
     } catch (InvocationTargetException e) {
-      throw (RuntimeException) e.getTargetException();
+      if (e.getTargetException() instanceof RuntimeException) {
+        throw (RuntimeException) e.getTargetException();
+      }
+      throw new RuntimeException(e);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -113,7 +116,7 @@ public class ReflectionHelpers {
     }
   }
 
-  public static <R> R callConstructorReflectively(Class<?> targetClass, ClassParameter... classParameters) {
+  public static <R> R callConstructorReflectively(Class<? extends R> targetClass, ClassParameter... classParameters) {
     try {
       final Class[] classes = ClassParameter.getClasses(classParameters);
       final Object[] values = ClassParameter.getValues(classParameters);
@@ -151,6 +154,10 @@ public class ReflectionHelpers {
     Field modifiersField = Field.class.getDeclaredField("modifiers");
     modifiersField.setAccessible(true);
     modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+  }
+
+  private static interface InsideTraversal<R> {
+    public R run(Class traversalClass) throws Exception;
   }
 
   public static class ClassParameter<V> {
@@ -197,9 +204,5 @@ public class ReflectionHelpers {
       this.className = className;
       this.val = val;
     }
-  }
-
-  private static interface InsideTraversal<R> {
-    public R run(Class traversalClass) throws Exception;
   }
 }

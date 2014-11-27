@@ -5,6 +5,7 @@ import android.view.ViewConfiguration;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
 import static junit.framework.Assert.assertEquals;
@@ -71,7 +72,7 @@ public class ViewConfigurationTest {
 
   @Test
   public void testHasPermanentMenuKey() throws Exception {
-    ViewConfiguration viewConfiguration = ViewConfiguration.get(Robolectric.application);
+    ViewConfiguration viewConfiguration = ViewConfiguration.get(RuntimeEnvironment.application);
     assertThat(viewConfiguration.hasPermanentMenuKey()).isFalse();
 
     ShadowViewConfiguration shadowViewConfiguration = shadowOf(viewConfiguration);

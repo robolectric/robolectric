@@ -8,7 +8,7 @@ import org.robolectric.TestRunners;
 
 import static android.content.Context.WIFI_SERVICE;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.Robolectric.application;
+import static org.robolectric.RuntimeEnvironment.application;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)

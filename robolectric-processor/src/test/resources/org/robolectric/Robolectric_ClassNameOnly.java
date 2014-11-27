@@ -6,7 +6,7 @@ import org.robolectric.annotation.processing.objects.AnyObject;
 import org.robolectric.annotation.processing.objects.Dummy;
 import org.robolectric.annotation.processing.shadows.ShadowClassNameOnly;
 import org.robolectric.annotation.processing.shadows.ShadowDummy;
-import org.robolectric.util.ShadowExtractor;
+import org.robolectric.internal.ShadowExtractor;
 
 @Generated("org.robolectric.annotation.processing.RoboProcessor")
 public class Shadows {
@@ -17,20 +17,15 @@ public class Shadows {
   };
   
   public static ShadowClassNameOnly shadowOf(AnyObject actual) {
-    return (ShadowClassNameOnly) shadowOf_(actual);
+    return (ShadowClassNameOnly) ShadowExtractor.extract(actual);
   }
   
   public static ShadowDummy shadowOf(Dummy actual) {
-    return (ShadowDummy) shadowOf_(actual);
+    return (ShadowDummy) ShadowExtractor.extract(actual);
   }
   
   public static void reset() {
     ShadowClassNameOnly.anotherResetter();
     ShadowDummy.resetter_method();
-  }
-
-  @SuppressWarnings({"unchecked"})
-  public static <P, R> P shadowOf_(R instance) {
-    return (P) ShadowExtractor.extract(instance);
   }
 }

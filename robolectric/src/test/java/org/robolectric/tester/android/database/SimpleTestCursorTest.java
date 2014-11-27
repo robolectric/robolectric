@@ -6,6 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.shadows.ShadowContentResolver;
 
@@ -23,7 +24,7 @@ public class SimpleTestCursorTest {
 
   @Before
   public void setup() throws Exception {
-    contentResolver = Robolectric.application.getContentResolver();
+    contentResolver = RuntimeEnvironment.application.getContentResolver();
     ShadowContentResolver shadowContentResolver = shadowOf(contentResolver);
     uri = Uri.parse("http://foo");
     cursor = new SimpleTestCursor();

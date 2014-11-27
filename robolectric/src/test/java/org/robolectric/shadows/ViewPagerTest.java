@@ -7,6 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
 import static junit.framework.Assert.assertEquals;
@@ -23,7 +24,7 @@ public class ViewPagerTest {
 
   @Before
   public void setUp() throws Exception {
-    pager = new ViewPager(Robolectric.application);
+    pager = new ViewPager(RuntimeEnvironment.application);
     adapter = new TestPagerAdapter();
   }
 

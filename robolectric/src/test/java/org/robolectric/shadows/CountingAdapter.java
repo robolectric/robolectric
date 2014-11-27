@@ -5,6 +5,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 
 class CountingAdapter extends BaseAdapter {
   private int itemCount;
@@ -35,7 +36,7 @@ class CountingAdapter extends BaseAdapter {
 
   @Override
   public View getView(int position, View convertView, ViewGroup parent) {
-    TextView textView = new TextView(Robolectric.application);
+    TextView textView = new TextView(RuntimeEnvironment.application);
     textView.setText("Item " + position);
     return textView;
   }

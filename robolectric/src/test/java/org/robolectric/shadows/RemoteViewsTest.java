@@ -12,6 +12,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -20,7 +21,7 @@ import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class RemoteViewsTest {
-  private final String packageName = Robolectric.application.getPackageName();
+  private final String packageName = RuntimeEnvironment.application.getPackageName();
   private final Activity activity = buildActivity(Activity.class).create().get();
 
   @Test
@@ -62,13 +63,13 @@ public class RemoteViewsTest {
   @Test
   public void setOnClickPendingIntent_shouldFireSuppliedIntent() {
     Intent intent = new Intent(Intent.ACTION_VIEW);
-    PendingIntent pendingIntent = PendingIntent.getActivity(Robolectric.application, 0, intent, 0);
+    PendingIntent pendingIntent = PendingIntent.getActivity(RuntimeEnvironment.application, 0, intent, 0);
 
     RemoteViews views = new RemoteViews(packageName, R.layout.remote_views);
     views.setOnClickPendingIntent(R.id.remote_view_3, pendingIntent);
 
     View layout = views.apply(activity, null);
     layout.findViewById(R.id.remote_view_3).performClick();
-    assertThat(shadowOf(Robolectric.application).getNextStartedActivity()).isEqualTo(intent);
+    assertThat(shadowOf(RuntimeEnvironment.application).getNextStartedActivity()).isEqualTo(intent);
   }
 }

@@ -20,6 +20,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.util.Transcript;
 
@@ -182,12 +183,12 @@ public class ContextWrapperTest {
   public void broadcastReceivers_shouldBeSharedAcrossContextsPerApplicationContext() throws Exception {
     BroadcastReceiver receiver = broadcastReceiver("Larry");
 
-    new ContextWrapper(Robolectric.application).registerReceiver(receiver, intentFilter("foo", "baz"));
-    new ContextWrapper(Robolectric.application).sendBroadcast(new Intent("foo"));
-    Robolectric.application.sendBroadcast(new Intent("baz"));
+    new ContextWrapper(RuntimeEnvironment.application).registerReceiver(receiver, intentFilter("foo", "baz"));
+    new ContextWrapper(RuntimeEnvironment.application).sendBroadcast(new Intent("foo"));
+    RuntimeEnvironment.application.sendBroadcast(new Intent("baz"));
     transcript.assertEventsSoFar("Larry notified of foo", "Larry notified of baz");
 
-    new ContextWrapper(Robolectric.application).unregisterReceiver(receiver);
+    new ContextWrapper(RuntimeEnvironment.application).unregisterReceiver(receiver);
   }
 
   @Test
@@ -261,9 +262,9 @@ public class ContextWrapperTest {
 
   @Test
   public void shouldReturnApplicationContext_forViewContextInflatedWithApplicationContext() throws Exception {
-    View view = LayoutInflater.from(Robolectric.application).inflate(R.layout.custom_layout, null);
+    View view = LayoutInflater.from(RuntimeEnvironment.application).inflate(R.layout.custom_layout, null);
     Context viewContext = new ContextWrapper(view.getContext());
-    assertThat(viewContext.getApplicationContext()).isEqualTo(Robolectric.application);
+    assertThat(viewContext.getApplicationContext()).isEqualTo(RuntimeEnvironment.application);
   }
 
   @Test
@@ -320,7 +321,7 @@ public class ContextWrapperTest {
   @Test
   public void bindServiceDelegatesToShadowApplication() {
     contextWrapper.bindService(new Intent("foo"), new TestService(), Context.BIND_AUTO_CREATE);
-    assertEquals("foo", shadowOf(Robolectric.application).getNextStartedService().getAction());
+    assertEquals("foo", shadowOf(RuntimeEnvironment.application).getNextStartedService().getAction());
   }
 
   @Test

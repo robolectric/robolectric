@@ -10,6 +10,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 
@@ -90,7 +91,7 @@ public class CursorAdapterTest {
   public void testGetView() {
     List<View> views = new ArrayList<View>();
     for (int i = 0; i < 5; i++) {
-      views.add(new View(Robolectric.application));
+      views.add(new View(RuntimeEnvironment.application));
     }
 
     Shadows.shadowOf(adapter).setViews(views);
@@ -125,7 +126,7 @@ public class CursorAdapterTest {
   }
 
   @Test public void shouldNotInterfereWithSupportCursorAdapter() throws Exception {
-    new android.support.v4.widget.CursorAdapter(Robolectric.application, curs, false) {
+    new android.support.v4.widget.CursorAdapter(RuntimeEnvironment.application, curs, false) {
       @Override public View newView(Context context, Cursor cursor, ViewGroup parent) {
         return null;
       }
@@ -138,7 +139,7 @@ public class CursorAdapterTest {
   private class TestAdapter extends CursorAdapter {
 
     public TestAdapter(Cursor curs) {
-      super(Robolectric.application, curs, false);
+      super(RuntimeEnvironment.application, curs, false);
     }
 
     @Override
@@ -153,7 +154,7 @@ public class CursorAdapterTest {
 
   private class TestAdapterWithFlags extends CursorAdapter {
     public TestAdapterWithFlags(Cursor c, int flags) {
-      super(Robolectric.application, c, flags);
+      super(RuntimeEnvironment.application, c, flags);
     }
 
     @Override public View newView(Context context, Cursor cursor, ViewGroup parent) {

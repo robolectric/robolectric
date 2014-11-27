@@ -18,6 +18,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.*;
+import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.EmptyResourceLoader;
 import org.robolectric.res.Fs;
 import org.robolectric.res.ResName;
@@ -51,8 +52,8 @@ public class ApplicationTest {
 
   @Test
   public void shouldBeAContext() throws Exception {
-    assertThat(new Activity().getApplication()).isSameAs(Robolectric.application);
-    assertThat(new Activity().getApplication().getApplicationContext()).isSameAs(Robolectric.application);
+    assertThat(new Activity().getApplication()).isSameAs(RuntimeEnvironment.application);
+    assertThat(new Activity().getApplication().getApplicationContext()).isSameAs(RuntimeEnvironment.application);
   }
 
   @Test
@@ -112,25 +113,25 @@ public class ApplicationTest {
   }
 
   @Test public void shouldProvideLayoutInflater() throws Exception {
-    Object systemService = Robolectric.application.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+    Object systemService = RuntimeEnvironment.application.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     assertThat(systemService).isInstanceOf(RoboLayoutInflater.class);
   }
 
   private void checkSystemService(String name, Class expectedClass) {
-    Object systemService = Robolectric.application.getSystemService(name);
+    Object systemService = RuntimeEnvironment.application.getSystemService(name);
     assertThat(systemService).isInstanceOf(expectedClass);
-    assertThat(systemService).isSameAs(Robolectric.application.getSystemService(name));
+    assertThat(systemService).isSameAs(RuntimeEnvironment.application.getSystemService(name));
   }
 
   @Test
   public void packageManager_shouldKnowPackageName() throws Exception {
-    assertThat(Robolectric.application.getPackageManager().getApplicationInfo("org.robolectric", 0).packageName)
+    assertThat(RuntimeEnvironment.application.getPackageManager().getApplicationInfo("org.robolectric", 0).packageName)
         .isEqualTo("org.robolectric");
   }
 
   @Test
   public void packageManager_shouldKnowApplicationName() throws Exception {
-    assertThat(Robolectric.application.getPackageManager().getApplicationInfo("org.robolectric", 0).name)
+    assertThat(RuntimeEnvironment.application.getPackageManager().getApplicationInfo("org.robolectric", 0).name)
         .isEqualTo("org.robolectric.TestApplication");
   }
 
@@ -139,10 +140,10 @@ public class ApplicationTest {
     Robolectric.pauseMainLooper();
     ComponentName expectedComponentName = new ComponentName("", "");
     NullBinder expectedBinder = new NullBinder();
-    Shadows.shadowOf(Robolectric.application).setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
+    Shadows.shadowOf(RuntimeEnvironment.application).setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
 
     TestService service = new TestService();
-    assertTrue(Robolectric.application.bindService(new Intent(""), service, Context.BIND_AUTO_CREATE));
+    assertTrue(RuntimeEnvironment.application.bindService(new Intent(""), service, Context.BIND_AUTO_CREATE));
 
     assertNull(service.name);
     assertNull(service.service);
@@ -158,11 +159,11 @@ public class ApplicationTest {
     TestService service = new TestService();
     ComponentName expectedComponentName = new ComponentName("", "");
     NullBinder expectedBinder = new NullBinder();
-    Shadows.shadowOf(Robolectric.application).setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
-    Robolectric.application.bindService(new Intent(""), service, Context.BIND_AUTO_CREATE);
+    Shadows.shadowOf(RuntimeEnvironment.application).setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
+    RuntimeEnvironment.application.bindService(new Intent(""), service, Context.BIND_AUTO_CREATE);
     Robolectric.pauseMainLooper();
 
-    Robolectric.application.unbindService(service);
+    RuntimeEnvironment.application.unbindService(service);
     assertNull(service.nameUnbound);
     Robolectric.unPauseMainLooper();
     assertEquals(expectedComponentName, service.nameUnbound);
@@ -173,10 +174,10 @@ public class ApplicationTest {
     TestService service = new TestService();
     ComponentName expectedComponentName = new ComponentName("", "");
     NullBinder expectedBinder = new NullBinder();
-    final ShadowApplication shadowApplication = Shadows.shadowOf(Robolectric.application);
+    final ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
     shadowApplication.setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
-    Robolectric.application.bindService(new Intent(""), service, Context.BIND_AUTO_CREATE);
-    Robolectric.application.unbindService(service);
+    RuntimeEnvironment.application.bindService(new Intent(""), service, Context.BIND_AUTO_CREATE);
+    RuntimeEnvironment.application.unbindService(service);
     assertEquals(1, shadowApplication.getUnboundServiceConnections().size());
     assertEquals(service, shadowApplication.getUnboundServiceConnections().get(0));
   }
@@ -187,10 +188,10 @@ public class ApplicationTest {
     TestService service = new TestService();
     ComponentName expectedComponentName = new ComponentName("", "");
     NullBinder expectedBinder = new NullBinder();
-    final ShadowApplication shadowApplication = Shadows.shadowOf(Robolectric.application);
+    final ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
     shadowApplication.setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
     shadowApplication.declareActionUnbindable("refuseToBind");
-    assertFalse(Robolectric.application.bindService(new Intent("refuseToBind"), service, Context.BIND_AUTO_CREATE));
+    assertFalse(RuntimeEnvironment.application.bindService(new Intent("refuseToBind"), service, Context.BIND_AUTO_CREATE));
     Robolectric.unPauseMainLooper();
     assertNull(service.name);
     assertNull(service.service);
@@ -199,7 +200,7 @@ public class ApplicationTest {
 
   @Test
   public void shouldHaveStoppedServiceIntentAndIndicateServiceWasntRunning() {
-    ShadowApplication shadowApplication = Shadows.shadowOf(Robolectric.application);
+    ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
 
     Activity activity = new Activity();
 
@@ -219,7 +220,7 @@ public class ApplicationTest {
 
   @Test
   public void shouldHaveStoppedServiceIntentAndIndicateServiceWasRunning() {
-    ShadowApplication shadowApplication = shadowOf(Robolectric.application);
+    ShadowApplication shadowApplication = shadowOf(RuntimeEnvironment.application);
 
     Activity activity = new Activity();
 
@@ -235,7 +236,7 @@ public class ApplicationTest {
 
   @Test
   public void shouldHaveStoppedServiceByStartedComponent() {
-    ShadowApplication shadowApplication = shadowOf(Robolectric.application);
+    ShadowApplication shadowApplication = shadowOf(RuntimeEnvironment.application);
 
     Activity activity = new Activity();
 
@@ -255,7 +256,7 @@ public class ApplicationTest {
 
   @Test
   public void shouldClearStartedServiceIntents() {
-    ShadowApplication shadowApplication = shadowOf(Robolectric.application);
+    ShadowApplication shadowApplication = shadowOf(RuntimeEnvironment.application);
     shadowApplication.startService(getSomeActionIntent("some.action"));
     shadowApplication.startService(getSomeActionIntent("another.action"));
 
@@ -269,7 +270,7 @@ public class ApplicationTest {
     Activity activity = new Activity();
     activity.registerReceiver(new TestBroadcastReceiver(), new IntentFilter("Foo"));
 
-    shadowOf(Robolectric.application).assertNoBroadcastListenersOfActionRegistered(activity, "Foo");
+    shadowOf(RuntimeEnvironment.application).assertNoBroadcastListenersOfActionRegistered(activity, "Foo");
   }
 
   @Test
@@ -277,15 +278,15 @@ public class ApplicationTest {
     Activity activity = new Activity();
     activity.registerReceiver(new TestBroadcastReceiver(), new IntentFilter("Foo"));
 
-    shadowOf(Robolectric.application).assertNoBroadcastListenersOfActionRegistered(activity, "Bar");
+    shadowOf(RuntimeEnvironment.application).assertNoBroadcastListenersOfActionRegistered(activity, "Bar");
   }
 
   @Test
   public void canAnswerIfReceiverIsRegisteredForIntent() throws Exception {
     BroadcastReceiver expectedReceiver = new TestBroadcastReceiver();
-    ShadowApplication shadowApplication = shadowOf(Robolectric.application);
+    ShadowApplication shadowApplication = shadowOf(RuntimeEnvironment.application);
     assertFalse(shadowApplication.hasReceiverForIntent(new Intent("Foo")));
-    Robolectric.application.registerReceiver(expectedReceiver, new IntentFilter("Foo"));
+    RuntimeEnvironment.application.registerReceiver(expectedReceiver, new IntentFilter("Foo"));
 
     assertTrue(shadowApplication.hasReceiverForIntent(new Intent("Foo")));
   }
@@ -293,10 +294,10 @@ public class ApplicationTest {
   @Test
   public void canFindAllReceiversForAnIntent() throws Exception {
     BroadcastReceiver expectedReceiver = new TestBroadcastReceiver();
-    ShadowApplication shadowApplication = shadowOf(Robolectric.application);
+    ShadowApplication shadowApplication = shadowOf(RuntimeEnvironment.application);
     assertFalse(shadowApplication.hasReceiverForIntent(new Intent("Foo")));
-    Robolectric.application.registerReceiver(expectedReceiver, new IntentFilter("Foo"));
-    Robolectric.application.registerReceiver(expectedReceiver, new IntentFilter("Foo"));
+    RuntimeEnvironment.application.registerReceiver(expectedReceiver, new IntentFilter("Foo"));
+    RuntimeEnvironment.application.registerReceiver(expectedReceiver, new IntentFilter("Foo"));
 
     assertTrue(shadowApplication.getReceiversForIntent(new Intent("Foo")).size() == 2);
   }
@@ -304,9 +305,9 @@ public class ApplicationTest {
   @Test
   public void broadcasts_shouldBeLogged() {
     Intent broadcastIntent = new Intent("foo");
-    Robolectric.application.sendBroadcast(broadcastIntent);
+    RuntimeEnvironment.application.sendBroadcast(broadcastIntent);
 
-    List<Intent> broadcastIntents = shadowOf(Robolectric.application).getBroadcastIntents();
+    List<Intent> broadcastIntents = shadowOf(RuntimeEnvironment.application).getBroadcastIntents();
     assertTrue(broadcastIntents.size() == 1);
     assertEquals(broadcastIntent, broadcastIntents.get(0));
   }

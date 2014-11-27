@@ -1,10 +1,8 @@
 package org.robolectric.shadows;
 
 import android.app.Activity;
-import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.View;

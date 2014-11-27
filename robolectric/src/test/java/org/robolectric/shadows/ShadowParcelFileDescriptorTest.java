@@ -5,6 +5,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
 import java.io.File;
@@ -18,7 +19,7 @@ public class ShadowParcelFileDescriptorTest {
 
   @Before
   public void setup() throws Exception {
-    file = new File(Robolectric.application.getFilesDir(), "test");
+    file = new File(RuntimeEnvironment.application.getFilesDir(), "test");
     FileOutputStream os = new FileOutputStream(file);
     os.close();
   }
@@ -48,7 +49,7 @@ public class ShadowParcelFileDescriptorTest {
 
   @Test
   public void testAutoCloseOutputStream() throws Exception {
-    File f = new File(Robolectric.application.getFilesDir(), "outfile");
+    File f = new File(RuntimeEnvironment.application.getFilesDir(), "outfile");
     ParcelFileDescriptor pfd = ParcelFileDescriptor.open(f, -1);
     ParcelFileDescriptor.AutoCloseOutputStream os = new ParcelFileDescriptor.AutoCloseOutputStream(pfd);
     os.close();

@@ -2,7 +2,6 @@ package org.robolectric.res;
 
 import android.animation.Animator;
 import android.animation.AnimatorInflater;
-import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
@@ -11,20 +10,20 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.NinePatchDrawable;
 import android.graphics.drawable.StateListDrawable;
-import android.util.DisplayMetrics;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.shadows.ShadowStateListDrawable;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.robolectric.Robolectric.application;
+import static org.robolectric.RuntimeEnvironment.application;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.TestUtil.TEST_PACKAGE;
 import static org.robolectric.util.TestUtil.assertInstanceOf;
@@ -47,7 +46,7 @@ public class DrawableResourceLoaderTest {
 
     drawableResourceLoader.findDrawableResources(testResources());
     drawableResourceLoader.findDrawableResources(systemResources());
-    resources = Robolectric.application.getResources();
+    resources = RuntimeEnvironment.application.getResources();
   }
 
   @Test

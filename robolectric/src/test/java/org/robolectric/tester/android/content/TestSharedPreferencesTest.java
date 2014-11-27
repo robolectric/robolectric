@@ -1,13 +1,10 @@
 package org.robolectric.tester.android.content;
 
-import android.content.Context;
 import android.content.SharedPreferences;
-import org.assertj.core.api.Assertions;
-import org.junit.After;
+import android.content.TestSharedPreferences;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.util.Transcript;
 

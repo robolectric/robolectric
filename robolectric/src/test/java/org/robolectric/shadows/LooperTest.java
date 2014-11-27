@@ -7,6 +7,7 @@ import android.os.Looper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.util.Scheduler;
 
@@ -127,26 +128,26 @@ public class LooperTest {
     Looper mainLooper = Looper.getMainLooper();
     Scheduler scheduler = shadowOf(mainLooper).getScheduler();
     shadowOf(mainLooper).quit = true;
-    assertThat(Robolectric.application.getMainLooper()).isSameAs(mainLooper);
+    assertThat(RuntimeEnvironment.application.getMainLooper()).isSameAs(mainLooper);
 
     ShadowLooper.resetThreadLoopers();
-    Robolectric.application = new Application();
+    RuntimeEnvironment.application = new Application();
 
     assertThat(Looper.getMainLooper()).isSameAs(mainLooper);
-    assertThat(Robolectric.application.getMainLooper()).isSameAs(mainLooper);
+    assertThat(RuntimeEnvironment.application.getMainLooper()).isSameAs(mainLooper);
     assertThat(shadowOf(mainLooper).getScheduler()).isNotSameAs(scheduler);
     assertThat(shadowOf(mainLooper).hasQuit()).isFalse();
   }
 
   @Test
   public void getMainLooperReturnsNonNullOnMainThreadWhenRobolectricApplicationIsNull() {
-      Robolectric.application = null;
+      RuntimeEnvironment.application = null;
       assertNotNull(Looper.getMainLooper());
   }
 
   @Test
   public void getMainLooperThrowsNullPointerExceptionOnBackgroundThreadWhenRobolectricApplicationIsNull() throws Exception {
-      Robolectric.application = null;
+      RuntimeEnvironment.application = null;
       final AtomicReference<Looper> mainLooperAtomicReference = new AtomicReference<Looper>();
       final AtomicReference<NullPointerException> nullPointerExceptionAtomicReference = new AtomicReference<NullPointerException>();
 

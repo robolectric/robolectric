@@ -8,8 +8,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
+import org.robolectric.internal.Shadow;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
@@ -24,7 +24,7 @@ public class BluetoothAdapterTest {
 
   @Before
   public void setUp() throws Exception {
-    bluetoothAdapter = Robolectric.newInstanceOf(BluetoothAdapter.class);
+    bluetoothAdapter = Shadow.newInstanceOf(BluetoothAdapter.class);
     shadowBluetoothAdapter = shadowOf(bluetoothAdapter);
   }
 

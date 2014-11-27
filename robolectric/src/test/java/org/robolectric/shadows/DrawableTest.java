@@ -9,6 +9,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 
@@ -31,7 +32,7 @@ public class DrawableTest {
 
   @Test
   public void createFromResourceStream_shouldWorkWithoutSourceName() {
-    Drawable drawable = Drawable.createFromResourceStream(Robolectric.application.getResources(),
+    Drawable drawable = Drawable.createFromResourceStream(RuntimeEnvironment.application.getResources(),
         null, new ByteArrayInputStream(new byte[0]), null, new BitmapFactory.Options());
     assertNotNull(drawable);
   }
@@ -112,7 +113,7 @@ public class DrawableTest {
   }
 
   @Test public void shouldLoadNinePatchFromDrawableXml() throws Exception {
-    assertThat(Robolectric.application.getResources()
+    assertThat(RuntimeEnvironment.application.getResources()
         .getDrawable(R.drawable.drawable_with_nine_patch)).isNotNull();
   }
 
@@ -125,7 +126,7 @@ public class DrawableTest {
 
   @Test
   public void drawableIntrinsicWidthAndHeightShouldBeCorrect() {
-    final Drawable anImage = Robolectric.application.getResources().getDrawable(R.drawable.an_image);
+    final Drawable anImage = RuntimeEnvironment.application.getResources().getDrawable(R.drawable.an_image);
 
     assertThat(anImage.getIntrinsicHeight()).isEqualTo(53);
     assertThat(anImage.getIntrinsicWidth()).isEqualTo(64);
@@ -134,7 +135,7 @@ public class DrawableTest {
   @Test
   @Config(qualifiers = "mdpi")
   public void drawableShouldLoadImageOfCorrectSizeWithMdpiQualifier() {
-    final Drawable anImage = Robolectric.application.getResources().getDrawable(R.drawable.robolectric);
+    final Drawable anImage = RuntimeEnvironment.application.getResources().getDrawable(R.drawable.robolectric);
 
     assertThat(anImage.getIntrinsicHeight()).isEqualTo(167);
     assertThat(anImage.getIntrinsicWidth()).isEqualTo(198);
@@ -143,7 +144,7 @@ public class DrawableTest {
   @Test
   @Config(qualifiers = "hdpi")
   public void drawableShouldLoadImageOfCorrectSizeWithHdpiQualifier() {
-    final Drawable anImage = Robolectric.application.getResources().getDrawable(R.drawable.robolectric);
+    final Drawable anImage = RuntimeEnvironment.application.getResources().getDrawable(R.drawable.robolectric);
 
     assertThat(anImage.getIntrinsicHeight()).isEqualTo(251);
     assertThat(anImage.getIntrinsicWidth()).isEqualTo(297);

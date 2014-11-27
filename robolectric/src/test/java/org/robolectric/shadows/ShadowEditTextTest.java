@@ -5,7 +5,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.res.Attribute;
 
@@ -13,6 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.RuntimeEnvironment.application;
+import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ShadowEditTextTest {
@@ -22,8 +23,8 @@ public class ShadowEditTextTest {
   public void setup() {
     List<Attribute> attributes = new ArrayList<Attribute>();
     attributes.add(new Attribute("android:attr/maxLength", "5", R.class.getPackage().getName()));
-    RoboAttributeSet attributeSet = new RoboAttributeSet(attributes, Robolectric.application.getResources(), null);
-    editText = new EditText(Robolectric.application, attributeSet);
+    RoboAttributeSet attributeSet = new RoboAttributeSet(attributes, shadowOf(application.getResources()).getResourceLoader());
+    editText = new EditText(application, attributeSet);
   }
 
   @Test

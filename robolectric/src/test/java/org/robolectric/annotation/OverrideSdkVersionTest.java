@@ -3,7 +3,7 @@ package org.robolectric.annotation;
 import android.os.Build;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.AndroidManifest;
+import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 

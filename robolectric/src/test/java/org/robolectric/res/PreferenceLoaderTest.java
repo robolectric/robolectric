@@ -15,7 +15,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
-import org.robolectric.res.builder.PreferenceBuilder;
+import org.robolectric.shadows.util.PreferenceBuilder;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.util.TestUtil.TEST_PACKAGE;

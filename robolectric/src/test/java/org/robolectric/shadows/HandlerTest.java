@@ -8,6 +8,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
+import org.robolectric.internal.Shadow;
 import org.robolectric.util.TestRunnable;
 import org.robolectric.util.Transcript;
 
@@ -17,7 +18,6 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.robolectric.Robolectric.newInstanceOf;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -42,7 +42,7 @@ public class HandlerTest {
 
   @Test
   public void testInsertsRunnablesBasedOnLooper() throws Exception {
-    Looper looper = newInstanceOf(Looper.class);
+    Looper looper = Shadow.newInstanceOf(Looper.class);
 
     Handler handler1 = new Handler(looper);
     handler1.post(new Say("first thing"));
@@ -70,10 +70,10 @@ public class HandlerTest {
 
   @Test
   public void testDifferentLoopersGetDifferentQueues() throws Exception {
-    Looper looper1 = Robolectric.newInstanceOf(Looper.class);
+    Looper looper1 = Shadow.newInstanceOf(Looper.class);
     Robolectric.pauseLooper(looper1);
 
-    Looper looper2 = Robolectric.newInstanceOf(Looper.class);
+    Looper looper2 = Shadow.newInstanceOf(Looper.class);
     Robolectric.pauseLooper(looper2);
 
     Handler handler1 = new Handler(looper1);
@@ -408,9 +408,9 @@ public class HandlerTest {
 
     h.sendEmptyMessage(0);
     h.sendEmptyMessageDelayed(0, 4000l);
-    Robolectric.getUiThreadScheduler().advanceToLastPostedRunnable();
+    ShadowLooper.getUiThreadScheduler().advanceToLastPostedRunnable();
     h.sendEmptyMessageDelayed(0, 12000l);
-    Robolectric.getUiThreadScheduler().advanceToLastPostedRunnable();
+    ShadowLooper.getUiThreadScheduler().advanceToLastPostedRunnable();
     assertThat(msgs.size()).isEqualTo(3);
 
     Message m0 = msgs.get(0);

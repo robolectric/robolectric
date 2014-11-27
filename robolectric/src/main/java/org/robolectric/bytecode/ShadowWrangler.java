@@ -5,8 +5,9 @@ import org.robolectric.SdkConfig;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.shadows.ShadowWindow;
 import org.robolectric.util.Function;
+import org.robolectric.internal.ShadowConstants;
+import org.robolectric.internal.Shadow;
 
 import java.lang.reflect.*;
 import java.util.*;
@@ -50,7 +51,7 @@ public class ShadowWrangler implements ClassHandler {
     Class<?> shadowClass = findDirectShadowClass(clazz);
     if (shadowClass != null) {
       try {
-        Method method = shadowClass.getMethod(InstrumentingClassLoader.STATIC_INITIALIZER_METHOD_NAME);
+        Method method = shadowClass.getMethod(ShadowConstants.STATIC_INITIALIZER_METHOD_NAME);
         if (!Modifier.isStatic(method.getModifiers())) {
           throw new RuntimeException(shadowClass.getName() + "." + method.getName() + " is not static");
         }
@@ -128,7 +129,7 @@ public class ShadowWrangler implements ClassHandler {
 
         boolean shadowClassMismatch = !declaredShadowedClass.equals(invocationProfile.clazz);
         if (shadowClassMismatch && (!shadowConfig.inheritImplementationMethods || strict(invocationProfile))) {
-          boolean isConstructor = invocationProfile.methodName.equals(InstrumentingClassLoader.CONSTRUCTOR_METHOD_NAME);
+          boolean isConstructor = invocationProfile.methodName.equals(ShadowConstants.CONSTRUCTOR_METHOD_NAME);
           if (debug && !isConstructor) {
             System.out.println("[DEBUG] Method " + shadowMethod + " is meant to shadow " + declaredShadowedClass + ", not " + invocationProfile.clazz + "; will call real code");
           }
@@ -230,7 +231,7 @@ public class ShadowWrangler implements ClassHandler {
           Class<?> shadowWindowClass;
 
           try {
-            shadowWindowClass = cl.loadClass(ShadowWindow.class.getName());
+            shadowWindowClass = cl.loadClass("org.robolectric.shadows.ShadowWindow");
           } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
           }
@@ -247,20 +248,28 @@ public class ShadowWrangler implements ClassHandler {
           return ReflectionHelpers.callStaticMethodReflectively(shadowWindowClass, "create", new ReflectionHelpers.ClassParameter(activityClass, context));
         }
       };
-    } else if (methodSignature.matches("java.lang.System", "nanoTime")
-        || methodSignature.matches("java.lang.System", "currentTimeMillis")) {
+    } else if (methodSignature.matches("java.lang.System", "nanoTime") || methodSignature.matches("java.lang.System", "currentTimeMillis")) {
       return new Function<Object, Object>() {
         @Override
         public Object call(Class<?> theClass, Object value, Object[] params) {
           ClassLoader cl = theClass.getClassLoader();
           Class<?> shadowSystemClockClass;
           try {
-            shadowSystemClockClass = cl.loadClass("org.robolectric.shadows.ShadowSystemClock");
+              shadowSystemClockClass = cl.loadClass("org.robolectric.shadows.ShadowSystemClock");
           } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
           }
 
           return ReflectionHelpers.callStaticMethodReflectively(shadowSystemClockClass, methodSignature.methodName);
+        }
+      };
+    } else if (methodSignature.matches("java.lang.System", "arraycopy")) {
+      return new Function<Object, Object>() {
+        @Override
+        public Object call(Class<?> theClass, Object value, Object[] params) {
+          //noinspection SuspiciousSystemArraycopy
+          System.arraycopy(params[0], (Integer) params[1], params[2], (Integer) params[3], (Integer) params[4]);
+          return null;
         }
       };
     }
@@ -293,8 +302,8 @@ public class ShadowWrangler implements ClassHandler {
           continue;
         }
 
-        if (methodName.startsWith(RobolectricInternals.ROBO_PREFIX)) {
-          String fullPrefix = RobolectricInternals.directMethodName(stackTraceElement.getClassName(), "");
+        if (methodName.startsWith(ShadowConstants.ROBO_PREFIX)) {
+          String fullPrefix = Shadow.directMethodName(stackTraceElement.getClassName(), "");
           if (methodName.startsWith(fullPrefix)) {
             methodName = methodName.substring(fullPrefix.length());
             stackTraceElement = new StackTraceElement(className, methodName,

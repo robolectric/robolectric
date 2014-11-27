@@ -1,17 +1,14 @@
 package org.robolectric.shadows;
 
+import android.app.Notification;
 import android.app.Notification.Style;
 import android.app.PendingIntent;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import android.app.Notification;
-
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.shadows.ShadowNotification.Progress;
 
-import static org.robolectric.Robolectric.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -19,7 +16,7 @@ import static org.robolectric.Shadows.shadowOf;
 public class NotificationBuilderTest {
   private Notification notification;
   private ShadowNotification s;
-  private final Notification.Builder builder = new Notification.Builder(application);
+  private final Notification.Builder builder = new Notification.Builder(RuntimeEnvironment.application);
 
   @Test
   public void build_setsContentTitleOnNotification() throws Exception {
@@ -113,6 +110,11 @@ public class NotificationBuilderTest {
   public void build_setsStyleOnNotification() throws Exception {
     Style style = new Style() {
       @Override
+      public Notification buildStyled(Notification notification) {
+        return notification;
+      }
+
+      @Override
       public Notification build() {
         return new Notification();
       }
@@ -173,11 +175,10 @@ public class NotificationBuilderTest {
 
   @Test
   public void build_addsActionToNotification() throws Exception {
-    PendingIntent action = PendingIntent.getBroadcast(application, 0, null, 0);
+    PendingIntent action = PendingIntent.getBroadcast(RuntimeEnvironment.application, 0, null, 0);
     builder.addAction(0, "Action", action);
     build();
-    assertThat(s.getActions().get(0).actionIntent)
-        .isEqualsToByComparingFields(action);
+    assertThat(s.getActions().get(0).actionIntent).isEqualsToByComparingFields(action);
   }
 
   private void build() {

@@ -59,7 +59,7 @@ public class LocaleDataTest {
     assertThat(localeData.percent).isEqualTo('%');
     assertThat(localeData.perMill).isEqualTo('‰');
     assertThat(localeData.monetarySeparator).isEqualTo('.');
-    assertThat(localeData.minusSign).isEqualTo('-');
+    assertThat(localeData.minusSign).isEqualTo("-");
 
     assertThat(localeData.exponentSeparator).isEqualTo("E");
     assertThat(localeData.infinity).isEqualTo("∞");

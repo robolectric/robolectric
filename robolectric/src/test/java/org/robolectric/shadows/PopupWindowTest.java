@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import android.content.Context;
 import android.graphics.drawable.BitmapDrawable;
-import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -14,6 +13,7 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
 import static android.view.MotionEvent.ACTION_DOWN;
@@ -42,7 +42,7 @@ public class PopupWindowTest {
 
     @Test
     public void testSetContentView() {
-      View contentView = new View(Robolectric.application);
+      View contentView = new View(RuntimeEnvironment.application);
       popupWindow.setContentView(contentView);
 
       assertThat(popupWindow.getContentView()).isSameAs(contentView);
@@ -115,10 +115,10 @@ public class PopupWindowTest {
 
     @Before
     public void setUp() throws Exception {
-      windowManager = (WindowManager) Robolectric.application.getSystemService(Context.WINDOW_SERVICE);
-      contentView = new View(Robolectric.application);
+      windowManager = (WindowManager) RuntimeEnvironment.application.getSystemService(Context.WINDOW_SERVICE);
+      contentView = new View(RuntimeEnvironment.application);
       contentView.setId(R.id.content_view);
-      anchor = new View(Robolectric.application);
+      anchor = new View(RuntimeEnvironment.application);
 
       shadowWindowManager = (ShadowWindowManagerImpl) shadowOf(windowManager);
     }
@@ -153,7 +153,7 @@ public class PopupWindowTest {
     @Test
     public void showAsDropDown_setsLatestPopupWindow() throws Exception {
       PopupWindow popupWindow = new PopupWindow(contentView, 0, 0, true);
-      popupWindow.showAsDropDown(new View(Robolectric.application));
+      popupWindow.showAsDropDown(new View(RuntimeEnvironment.application));
       assertThat(ShadowPopupWindow.getLatestPopupWindow()).isSameAs(popupWindow);
     }
 

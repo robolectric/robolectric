@@ -5,6 +5,7 @@ import android.content.Context;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
@@ -13,7 +14,7 @@ import static org.robolectric.Shadows.shadowOf;
 public class ActivityManagerTest {
   @Test
   public void getMemoryInfo_canGetMemoryInfoForOurProcess() {
-    ActivityManager activityManager = (ActivityManager) Robolectric.application.getSystemService(Context.ACTIVITY_SERVICE);
+    ActivityManager activityManager = (ActivityManager) RuntimeEnvironment.application.getSystemService(Context.ACTIVITY_SERVICE);
     ShadowActivityManager shadowActivityManager = shadowOf(activityManager);
     ActivityManager.MemoryInfo memoryInfo = new ActivityManager.MemoryInfo();
     memoryInfo.lowMemory = true;
@@ -25,7 +26,7 @@ public class ActivityManagerTest {
 
   @Test
   public void getMemoryInfo_canGetMemoryInfoEvenWhenWeDidNotSetIt() {
-    ActivityManager activityManager = (ActivityManager) Robolectric.application.getSystemService(Context.ACTIVITY_SERVICE);
+    ActivityManager activityManager = (ActivityManager) RuntimeEnvironment.application.getSystemService(Context.ACTIVITY_SERVICE);
     ActivityManager.MemoryInfo fetchedMemoryInfo = new ActivityManager.MemoryInfo();
     activityManager.getMemoryInfo(fetchedMemoryInfo);
     assertThat(fetchedMemoryInfo.lowMemory).isFalse();
@@ -33,7 +34,7 @@ public class ActivityManagerTest {
 
   @Test
   public void getLauncherLargeIconDensity_shouldWork() {
-    ActivityManager activityManager = (ActivityManager) Robolectric.application.getSystemService(Context.ACTIVITY_SERVICE);
+    ActivityManager activityManager = (ActivityManager) RuntimeEnvironment.application.getSystemService(Context.ACTIVITY_SERVICE);
     assertThat(activityManager.getLauncherLargeIconDensity()).isGreaterThan(0);
   }
 

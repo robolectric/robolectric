@@ -7,6 +7,7 @@ import org.robolectric.bytecode.ClassInfo;
 import org.robolectric.bytecode.Setup;
 import org.robolectric.bytecode.ShadowMap;
 import org.robolectric.internal.ParallelUniverseInterface;
+import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.FsFile;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.shadows.ShadowSystemProperties;
@@ -66,7 +67,7 @@ public class TestRunners {
   }
 
   public static class WithDefaults extends RobolectricTestRunner {
-    public static final String SDK_TARGETED_BY_MANIFEST = "-v18";
+    public static final String SDK_TARGETED_BY_MANIFEST = "-v21";
     
     public WithDefaults(Class<?> testClass) throws InitializationError {
       super(testClass);

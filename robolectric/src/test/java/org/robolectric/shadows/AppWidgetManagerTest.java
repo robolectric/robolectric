@@ -14,6 +14,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
 import java.util.List;
@@ -33,15 +34,15 @@ public class AppWidgetManagerTest {
 
   @Before
   public void setUp() throws Exception {
-    appWidgetManager = AppWidgetManager.getInstance(Robolectric.application);
+    appWidgetManager = AppWidgetManager.getInstance(RuntimeEnvironment.application);
     shadowAppWidgetManager = shadowOf(appWidgetManager);
   }
 
   @Test
   public void getInstance_shouldReturnSameInstance() throws Exception {
     assertNotNull(appWidgetManager);
-    assertSame(AppWidgetManager.getInstance(Robolectric.application), appWidgetManager);
-    assertSame(AppWidgetManager.getInstance(new ContextWrapper(Robolectric.application)), appWidgetManager);
+    assertSame(AppWidgetManager.getInstance(RuntimeEnvironment.application), appWidgetManager);
+    assertSame(AppWidgetManager.getInstance(new ContextWrapper(RuntimeEnvironment.application)), appWidgetManager);
   }
 
   @Test

@@ -14,6 +14,7 @@ import java.util.Set;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
 import static junit.framework.Assert.assertEquals;
@@ -509,7 +510,7 @@ public class IntentTest {
 
   @Test
   public void constructor_shouldSetComponentAndActionAndData() {
-    Intent intent = new Intent("roboaction", Uri.parse("http://www.robolectric.org"), Robolectric.application, Activity.class);
+    Intent intent = new Intent("roboaction", Uri.parse("http://www.robolectric.org"), RuntimeEnvironment.application, Activity.class);
     assertThat(shadowOf(intent).getComponent()).isEqualTo(new ComponentName("org.robolectric", "android.app.Activity"));
     assertThat(shadowOf(intent).getAction()).isEqualTo("roboaction");
     assertThat(shadowOf(intent).getData()).isEqualTo(Uri.parse("http://www.robolectric.org"));

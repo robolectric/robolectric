@@ -4,6 +4,9 @@ import android.os.Build;
 import org.junit.Test;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.bytecode.testing.*;
+import org.robolectric.internal.ShadowConstants;
+import org.robolectric.internal.Shadow;
+import org.robolectric.internal.ShadowExtractor;
 import org.robolectric.util.Transcript;
 import org.robolectric.util.Util;
 
@@ -12,8 +15,6 @@ import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
-import static org.robolectric.Robolectric.directlyOn;
-import static org.robolectric.Shadows.shadowOf_;
 
 abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" or ant will try to run this as a test
 
@@ -35,7 +36,7 @@ abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" 
     assertTrue(Modifier.isPublic(defaultCtor.getModifiers()));
     defaultCtor.setAccessible(true);
     Object instance = defaultCtor.newInstance();
-    assertThat(shadowOf_(instance)).isNotNull();
+    assertThat(ShadowExtractor.extract(instance)).isNotNull();
     transcript.assertNoEventsSoFar();
   }
 
@@ -66,7 +67,7 @@ abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" 
     Class<?> exampleClass = classLoader.loadClass(AnUninstrumentedClass.class.getName());
     assertSame(classLoader, exampleClass.getClassLoader());
     try {
-      exampleClass.getField(AsmInstrumentingClassLoader.CLASS_HANDLER_DATA_FIELD_NAME);
+      exampleClass.getField(ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME);
       fail("class shouldn't be instrumented!");
     } catch (Exception e) {
       // expected
@@ -78,7 +79,7 @@ abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" 
     ClassLoader classLoader = createClassLoader(new MySetup(true, true));
     Class<?> exampleClass = classLoader.loadClass(AnExampleClass.class.getName());
     assertSame(classLoader, exampleClass.getClassLoader());
-    assertNotNull(exampleClass.getField(AsmInstrumentingClassLoader.CLASS_HANDLER_DATA_FIELD_NAME));
+    assertNotNull(exampleClass.getField(ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME));
   }
 
   @Test
@@ -96,7 +97,7 @@ abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" 
   @Test
   public void shouldGenerateClassSpecificDirectAccessMethod() throws Exception {
     Class<?> exampleClass = loadClass(AnExampleClass.class);
-    String methodName = RobolectricInternals.directMethodName(AnExampleClass.class.getName(), "normalMethod");
+    String methodName = Shadow.directMethodName(AnExampleClass.class.getName(), "normalMethod");
     Method directMethod = exampleClass.getDeclaredMethod(methodName, String.class, int.class);
     directMethod.setAccessible(true);
     Object exampleInstance = exampleClass.newInstance();
@@ -107,7 +108,7 @@ abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" 
   @Test
   public void soMockitoDoesntExplodeDueToTooManyMethods_shouldGenerateDirectAccessMethodWhichIsPrivate() throws Exception {
     Class<?> exampleClass = loadClass(AnExampleClass.class);
-    String methodName = RobolectricInternals.directMethodName("normalMethod");
+    String methodName = Shadow.directMethodName("normalMethod");
     Method directMethod = exampleClass.getDeclaredMethod(methodName, String.class, int.class);
     assertTrue(Modifier.isPrivate(directMethod.getModifiers()));
     assertFalse(Modifier.isFinal(directMethod.getModifiers()));
@@ -116,7 +117,7 @@ abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" 
   @Test
   public void soMockitoDoesntExplodeDueToTooManyMethods_shouldGenerateClassSpecificDirectAccessMethodWhichIsPrivateAndFinal() throws Exception {
     Class<?> exampleClass = loadClass(AnExampleClass.class);
-    String methodName = RobolectricInternals.directMethodName(AnExampleClass.class.getName(), "normalMethod");
+    String methodName = Shadow.directMethodName(AnExampleClass.class.getName(), "normalMethod");
     Method directMethod = exampleClass.getDeclaredMethod(methodName, String.class, int.class);
     assertTrue(Modifier.isPrivate(directMethod.getModifiers()));
     assertTrue(Modifier.isFinal(directMethod.getModifiers()));
@@ -135,7 +136,7 @@ abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" 
   @Test
   public void callingStaticDirectAccessMethodShouldWork() throws Exception {
     Class<?> exampleClass = loadClass(AClassWithStaticMethod.class);
-    String methodName = RobolectricInternals.directMethodName(
+    String methodName = Shadow.directMethodName(
         AClassWithStaticMethod.class.getName(), "staticMethod");
     Method directMethod = exampleClass.getDeclaredMethod(methodName, String.class);
     directMethod.setAccessible(true);
@@ -293,7 +294,7 @@ abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" 
   }
 
   private Method findDirectMethod(Class<?> declaringClass, String methodName, Class<?>... argClasses) throws NoSuchMethodException {
-    String directMethodName = RobolectricInternals.directMethodName(declaringClass.getName(), methodName);
+    String directMethodName = Shadow.directMethodName(declaringClass.getName(), methodName);
     Method directMethod = declaringClass.getDeclaredMethod(directMethodName, argClasses);
     directMethod.setAccessible(true);
     return directMethod;
@@ -364,7 +365,7 @@ abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" 
     setClassLoader(createClassLoader(new ClassRemappingSetup()));
     Class<?> theClass = loadClass(AClassThatRefersToAForgettableClassInItsConstructor.class);
     Object instance = theClass.newInstance();
-    Method method = theClass.getDeclaredMethod(RobolectricInternals.directMethodName(theClass.getName(), InstrumentingClassLoader.CONSTRUCTOR_METHOD_NAME));
+    Method method = theClass.getDeclaredMethod(Shadow.directMethodName(theClass.getName(), ShadowConstants.CONSTRUCTOR_METHOD_NAME));
     method.setAccessible(true);
     method.invoke(instance);
   }
@@ -381,7 +382,7 @@ abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" 
     setClassLoader(createClassLoader(new MethodInterceptingSetup(new Setup.MethodRef(AClassToForget.class, "forgettableMethod"))));
     Class<?> theClass = loadClass(AClassThatRefersToAForgettableClass.class);
     Object instance = theClass.newInstance();
-    Object output = theClass.getMethod("interactWithForgettableClass").invoke(directlyOn(instance, (Class<Object>) theClass));
+    Object output = theClass.getMethod("interactWithForgettableClass").invoke(Shadow.directlyOn(instance, (Class<Object>) theClass));
     assertEquals("null, get this!", output);
   }
 
@@ -390,7 +391,7 @@ abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" 
     setClassLoader(createClassLoader(new MethodInterceptingSetup(new Setup.MethodRef(AClassToForget.class, "forgettableStaticMethod"))));
     Class<?> theClass = loadClass(AClassThatRefersToAForgettableClass.class);
     Object instance = theClass.newInstance();
-    Object output = theClass.getMethod("interactWithForgettableStaticMethod").invoke(directlyOn(instance, (Class<Object>) theClass));
+    Object output = theClass.getMethod("interactWithForgettableStaticMethod").invoke(Shadow.directlyOn(instance, (Class<Object>) theClass));
     assertEquals("yess? forget this: null", output);
   }
 
@@ -399,8 +400,8 @@ abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" 
     setClassLoader(createClassLoader(new MethodInterceptingSetup(new Setup.MethodRef(AClassToForget.class, "*"))));
     Class<?> theClass = loadClass(AClassThatRefersToAForgettableClassInMethodCallsReturningPrimitive.class);
     Object instance = theClass.newInstance();
-    assertEquals((byte) 0, theClass.getMethod("byteMethod").invoke(directlyOn(instance, (Class<Object>) theClass)));
-    assertNull(theClass.getMethod("byteArrayMethod").invoke(directlyOn(instance, (Class<Object>) theClass)));
+    assertEquals((byte) 0, theClass.getMethod("byteMethod").invoke(Shadow.directlyOn(instance, (Class<Object>) theClass)));
+    assertNull(theClass.getMethod("byteArrayMethod").invoke(Shadow.directlyOn(instance, (Class<Object>) theClass)));
   }
 
   @Test
@@ -408,8 +409,8 @@ abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" 
     setClassLoader(createClassLoader(new MethodInterceptingSetup(new Setup.MethodRef(AClassToForget.class, "*"))));
     Class<?> theClass = loadClass(AClassThatRefersToAForgettableClassInMethodCallsReturningPrimitive.class);
     Object instance = theClass.newInstance();
-    assertEquals(0, theClass.getMethod("intMethod").invoke(directlyOn(instance, (Class<Object>) theClass)));
-    assertNull(theClass.getMethod("intArrayMethod").invoke(directlyOn(instance, (Class<Object>) theClass)));
+    assertEquals(0, theClass.getMethod("intMethod").invoke(Shadow.directlyOn(instance, (Class<Object>) theClass)));
+    assertNull(theClass.getMethod("intArrayMethod").invoke(Shadow.directlyOn(instance, (Class<Object>) theClass)));
   }
 
   @Test
@@ -417,8 +418,8 @@ abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" 
     setClassLoader(createClassLoader(new MethodInterceptingSetup(new Setup.MethodRef(AClassToForget.class, "*"))));
     Class<?> theClass = loadClass(AClassThatRefersToAForgettableClassInMethodCallsReturningPrimitive.class);
     Object instance = theClass.newInstance();
-    assertEquals(0L, theClass.getMethod("longMethod").invoke(directlyOn(instance, (Class<Object>) theClass)));
-    assertNull(theClass.getMethod("longArrayMethod").invoke(directlyOn(instance, (Class<Object>) theClass)));
+    assertEquals(0L, theClass.getMethod("longMethod").invoke(Shadow.directlyOn(instance, (Class<Object>) theClass)));
+    assertNull(theClass.getMethod("longArrayMethod").invoke(Shadow.directlyOn(instance, (Class<Object>) theClass)));
   }
 
   @Test
@@ -426,7 +427,7 @@ abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" 
     setClassLoader(createClassLoader(new MethodInterceptingSetup(new Setup.MethodRef(AClassToForget.class, "*"))));
     Class<?> theClass = loadClass(AClassThatRefersToAForgettableClassInMethodCallsReturningPrimitive.class);
     Object instance = theClass.newInstance();
-    directlyOn(instance, (Class<Object>) theClass, "longMethod");
+    Shadow.directlyOn(instance, (Class<Object>) theClass, "longMethod");
     transcript.assertEventsSoFar(
         "methodInvoked: AClassThatRefersToAForgettableClassInMethodCallsReturningPrimitive.__constructor__()",
         "intercept: org/robolectric/bytecode/testing/AClassToForget/longReturningMethod(Ljava/lang/String;IJ)J with params (str str, 123 123, 456 456)");
@@ -436,13 +437,13 @@ abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" 
   public void shouldRemapClassesWhileInterceptingMethods() throws Exception {
     setClassLoader(createClassLoader(new MethodInterceptingClassRemappingSetup(new Setup.MethodRef(AClassThatCallsAMethodReturningAForgettableClass.class, "getAForgettableClass"))));
     Class<?> theClass = loadClass(AClassThatCallsAMethodReturningAForgettableClass.class);
-    theClass.getMethod("callSomeMethod").invoke(directlyOn(theClass.newInstance(), (Class<Object>) theClass));
+    theClass.getMethod("callSomeMethod").invoke(Shadow.directlyOn(theClass.newInstance(), (Class<Object>) theClass));
   }
 
   @Test
   public void directMethodName_shouldGetSimpleName() throws Exception {
-    assertEquals("$$robo$$SomeName_5c63_method", RobolectricInternals.directMethodName("a.b.c.SomeName", "method"));
-    assertEquals("$$robo$$SomeName_3b43_method", RobolectricInternals.directMethodName("a.b.c.SomeClass$SomeName", "method"));
+    assertEquals("$$robo$$SomeName_5c63_method", Shadow.directMethodName("a.b.c.SomeName", "method"));
+    assertEquals("$$robo$$SomeName_3b43_method", Shadow.directMethodName("a.b.c.SomeClass$SomeName", "method"));
   }
 
   @Test
@@ -596,8 +597,9 @@ abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" 
 
     @Override
     public boolean shouldAcquire(String name) {
-      if (name.equals(AClassToForget.class.getName()))
+      if (name.equals(AClassToForget.class.getName())) {
         throw new RuntimeException(name + " not found (for pretend)!");
+      }
       return super.shouldAcquire(name);
     }
   }

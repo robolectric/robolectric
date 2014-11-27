@@ -16,8 +16,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
-import org.robolectric.annotation.Config;
 import org.robolectric.util.Transcript;
 
 import java.util.ArrayList;
@@ -29,13 +29,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.robolectric.Robolectric.application;
+import static org.robolectric.RuntimeEnvironment.application;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class AlertDialogTest {
 
-  @Test @Config(emulateSdk = 16)
+  @Test
   public void testBuilder() throws Exception {
     AlertDialog.Builder builder = new AlertDialog.Builder(application);
     builder.setTitle("title").setMessage("message");
@@ -225,7 +225,7 @@ public class AlertDialogTest {
 
   @Test
   public void testBuilderWithItemArrayViaResourceId() throws Exception {
-    AlertDialog.Builder builder = new AlertDialog.Builder(new ContextWrapper(Robolectric.application));
+    AlertDialog.Builder builder = new AlertDialog.Builder(new ContextWrapper(RuntimeEnvironment.application));
 
     builder.setTitle("title");
     builder.setItems(R.array.alertDialogTestItems, new TestDialogOnClickListener());
@@ -245,7 +245,7 @@ public class AlertDialogTest {
 //  @Test
 //  public void testBuilderWithItemArrayCanPerformClickOnItem() throws Exception {
 //    TestDialogOnClickListener listener = new TestDialogOnClickListener();
-//    AlertDialog alert = new AlertDialog.Builder(new ContextWrapper(Robolectric.application))
+//    AlertDialog alert = new AlertDialog.Builder(new ContextWrapper(RuntimeEnvironment.application))
 //        .setItems(R.array.alertDialogTestItems, listener)
 //        .create();
 //
@@ -262,7 +262,7 @@ public class AlertDialogTest {
     list.add(99);
     list.add(88);
     list.add(77);
-    ArrayAdapter<Integer> adapter = new ArrayAdapter<Integer>(Robolectric.application, R.layout.main, R.id.title, list);
+    ArrayAdapter<Integer> adapter = new ArrayAdapter<Integer>(RuntimeEnvironment.application, R.layout.main, R.id.title, list);
 
     AlertDialog.Builder builder = new AlertDialog.Builder(application);
     builder.setSingleChoiceItems(adapter, -1, new DialogInterface.OnClickListener() {
@@ -282,7 +282,7 @@ public class AlertDialogTest {
 
   @Test
   public void show_setsLatestAlertDialogAndLatestDialog() {
-    AlertDialog alertDialog = new AlertDialog.Builder(Robolectric.application).create();
+    AlertDialog alertDialog = new AlertDialog.Builder(RuntimeEnvironment.application).create();
     assertNull(ShadowDialog.getLatestDialog());
     assertNull(ShadowAlertDialog.getLatestAlertDialog());
 
@@ -295,7 +295,7 @@ public class AlertDialogTest {
   @Ignore("not yet working in 2.0, sorry :-(") // todo 2.0-cleanup
   @Test
   public void shouldReturnTheIndexOfTheCheckedItemInASingleChoiceDialog() throws Exception {
-    AlertDialog.Builder builder = new AlertDialog.Builder(new ContextWrapper(Robolectric.application));
+    AlertDialog.Builder builder = new AlertDialog.Builder(new ContextWrapper(RuntimeEnvironment.application));
 
     builder.setSingleChoiceItems(new String[]{"foo", "bar"}, 1, new DialogInterface.OnClickListener() {
       public void onClick(DialogInterface dialog, int item) {
@@ -316,7 +316,7 @@ public class AlertDialogTest {
   @Ignore("maybe not a valid test in the 2.0 world?") // todo 2.0-cleanup
   @Test
   public void shouldCallTheClickListenerOfTheCheckedItemInASingleChoiceDialog() throws Exception {
-    AlertDialog.Builder builder = new AlertDialog.Builder(new ContextWrapper(Robolectric.application));
+    AlertDialog.Builder builder = new AlertDialog.Builder(new ContextWrapper(RuntimeEnvironment.application));
 
     TestDialogOnClickListener listener = new TestDialogOnClickListener();
     builder.setSingleChoiceItems(new String[]{"foo", "bar"}, 1, listener);
@@ -339,14 +339,14 @@ public class AlertDialogTest {
 
   @Test
   public void shouldCallTheClickListenerOfTheCheckedAdapterInASingleChoiceDialog() throws Exception {
-    AlertDialog.Builder builder = new AlertDialog.Builder(new ContextWrapper(Robolectric.application));
+    AlertDialog.Builder builder = new AlertDialog.Builder(new ContextWrapper(RuntimeEnvironment.application));
 
     TestDialogOnClickListener listener = new TestDialogOnClickListener();
     List<Integer> list = new ArrayList<Integer>();
     list.add(1);
     list.add(2);
     list.add(3);
-    ArrayAdapter<Integer> arrayAdapter = new ArrayAdapter<Integer>(Robolectric.application, R.layout.main, R.id.title, list);
+    ArrayAdapter<Integer> arrayAdapter = new ArrayAdapter<Integer>(RuntimeEnvironment.application, R.layout.main, R.id.title, list);
     builder.setSingleChoiceItems(arrayAdapter, 1, listener);
 
     AlertDialog alert = builder.create();
@@ -378,7 +378,7 @@ public class AlertDialogTest {
 
   @Test
   public void shouldDelegateToDialogFindViewByIdIfViewIsNull() {
-    AlertDialog dialog = new AlertDialog(Robolectric.application) {
+    AlertDialog dialog = new AlertDialog(RuntimeEnvironment.application) {
     };
 
     assertThat(dialog.findViewById(99)).isNull();
@@ -390,7 +390,7 @@ public class AlertDialogTest {
   @Ignore("not yet working in 2.0, sorry :-(") // todo 2.0-cleanup
   @Test
   public void shouldReturnACustomFrameLayout() {
-    AlertDialog dialog = new AlertDialog.Builder(Robolectric.application).create();
+    AlertDialog dialog = new AlertDialog.Builder(RuntimeEnvironment.application).create();
 
     assertThat(dialog.findViewById(android.R.id.custom)).isNotNull();
     assertThat(dialog.findViewById(android.R.id.custom)).isInstanceOf(FrameLayout.class);

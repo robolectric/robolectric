@@ -5,6 +5,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.util.Transcript;
 
@@ -19,7 +20,7 @@ public class RatingBarTest {
 
   @Before
   public void setup() {
-    ratingBar = new RatingBar(Robolectric.application);
+    ratingBar = new RatingBar(RuntimeEnvironment.application);
     listener = new TestRatingBarChangedListener();
     transcript = new Transcript();
     ratingBar.setOnRatingBarChangeListener(listener);

@@ -26,8 +26,9 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
+import org.robolectric.internal.Shadow;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,7 +61,7 @@ public class TextViewTest {
 
   @Test
   public void shouldTriggerTheImeListener() {
-    TextView textView = new TextView(Robolectric.application);
+    TextView textView = new TextView(RuntimeEnvironment.application);
     TestOnEditorActionListener actionListener = new TestOnEditorActionListener();
     textView.setOnEditorActionListener(actionListener);
 
@@ -72,7 +73,7 @@ public class TextViewTest {
 
   @Test
   public void shouldCreateGetterForEditorActionListener() {
-    TextView textView = new TextView(Robolectric.application);
+    TextView textView = new TextView(RuntimeEnvironment.application);
     TestOnEditorActionListener actionListener = new TestOnEditorActionListener();
 
     textView.setOnEditorActionListener(actionListener);
@@ -120,8 +121,8 @@ public class TextViewTest {
 
   @Test
   public void testGetTextAppearanceId() throws Exception {
-    TextView textView = new TextView(Robolectric.application);
-    textView.setTextAppearance(Robolectric.application, android.R.style.TextAppearance_Small);
+    TextView textView = new TextView(RuntimeEnvironment.application);
+    textView.setTextAppearance(RuntimeEnvironment.application, android.R.style.TextAppearance_Small);
 
     assertThat(shadowOf(textView).getTextAppearanceId()).isEqualTo(android.R.style.TextAppearance_Small);
   }
@@ -164,13 +165,13 @@ public class TextViewTest {
 
   @Test
   public void shouldNotHaveTransformationMethodByDefault() {
-    TextView view = new TextView(Robolectric.application);
+    TextView view = new TextView(RuntimeEnvironment.application);
     assertThat(view.getTransformationMethod()).isNull();
   }
 
   @Test
   public void shouldAllowSettingATransformationMethod() {
-    TextView view = new TextView(Robolectric.application);
+    TextView view = new TextView(RuntimeEnvironment.application);
     view.setTransformationMethod(PasswordTransformationMethod.getInstance());
     assertThat(view.getTransformationMethod()).isInstanceOf(PasswordTransformationMethod.class);
   }
@@ -359,7 +360,7 @@ public class TextViewTest {
 
   @Test
   public void canSetAndGetTypeface() throws Exception {
-    Typeface typeface = Robolectric.newInstanceOf(Typeface.class);
+    Typeface typeface = Shadow.newInstanceOf(Typeface.class);
     textView.setTypeface(typeface);
     assertSame(typeface, textView.getTypeface());
   }
@@ -427,7 +428,7 @@ public class TextViewTest {
 
   @Test
   public void setTextSize_shouldHandleDips() throws Exception {
-    shadowOf(Robolectric.application.getResources()).setDensity(1.5f);
+    shadowOf(RuntimeEnvironment.application.getResources()).setDensity(1.5f);
     textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 10);
     assertThat(textView.getTextSize()).isEqualTo(15f);
     textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
@@ -439,7 +440,7 @@ public class TextViewTest {
     textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 10);
     assertThat(textView.getTextSize()).isEqualTo(10f);
 
-    shadowOf(Robolectric.application.getResources()).setScaledDensity(1.5f);
+    shadowOf(RuntimeEnvironment.application.getResources()).setScaledDensity(1.5f);
 
     textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 10);
     assertThat(textView.getTextSize()).isEqualTo(15f);
@@ -447,7 +448,7 @@ public class TextViewTest {
 
   @Test
   public void setTextSize_shouldHandlePixels() throws Exception {
-    shadowOf(Robolectric.application.getResources()).setDensity(1.5f);
+    shadowOf(RuntimeEnvironment.application.getResources()).setDensity(1.5f);
     textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, 10);
     assertThat(textView.getTextSize()).isEqualTo(10f);
     textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, 20);

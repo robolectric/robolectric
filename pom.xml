@@ -20,13 +20,16 @@
     <module>robolectric</module>
     <module>robolectric-annotations</module>
     <module>robolectric-processor</module>
+    <module>robolectric-resources</module>
+    <module>robolectric-shadows</module>
     <module>robolectric-utils</module>
   </modules>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>1.6</maven.compiler.source>
-    <maven.compiler.target>1.6</maven.compiler.target>
+    <maven.compiler.source>1.7</maven.compiler.source>
+    <maven.compiler.target>1.7</maven.compiler.target>
+    <libsqlite.version>0.282-3</libsqlite.version>
   </properties>
 
   <dependencyManagement>
@@ -44,6 +47,26 @@
       </dependency>
 
       <dependency>
+        <groupId>org.robolectric</groupId>
+        <artifactId>robolectric-resources</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.robolectric</groupId>
+        <artifactId>robolectric-shadows</artifactId>
+        <version>${project.version}</version>
+        <classifier>21</classifier>
+      </dependency>
+
+      <dependency>
+        <groupId>org.assertj</groupId>
+        <artifactId>assertj-core</artifactId>
+        <version>1.7.0</version>
+        <scope>test</scope>
+      </dependency>
+
+      <dependency>
         <groupId>junit</groupId>
         <artifactId>junit-dep</artifactId>
         <version>4.8.2</version>
@@ -53,7 +76,7 @@
       <dependency>
         <groupId>org.robolectric</groupId>
         <artifactId>android-all</artifactId>
-        <version>4.3_r2-robolectric-0</version>
+        <version>5.0.0_r2-robolectric-0</version>
         <scope>provided</scope>
       </dependency>
 
@@ -82,6 +105,53 @@
         <version>12.0</version>
         <scope>provided</scope>
       </dependency>
+
+      <dependency>
+        <groupId>com.almworks.sqlite4java</groupId>
+        <artifactId>sqlite4java</artifactId>
+        <version>0.282</version>
+      </dependency>
+
+      <!-- sqlite native dependencies -->
+      <dependency>
+        <groupId>com.github.axet.litedb</groupId>
+        <artifactId>libsqlite</artifactId>
+        <version>${libsqlite.version}</version>
+        <classifier>natives-windows-x86</classifier>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>com.github.axet.litedb</groupId>
+        <artifactId>libsqlite</artifactId>
+        <version>${libsqlite.version}</version>
+        <classifier>natives-windows-x86_64</classifier>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>com.github.axet.litedb</groupId>
+        <artifactId>libsqlite</artifactId>
+        <version>${libsqlite.version}</version>
+        <classifier>natives-mac-x86_64</classifier>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>com.github.axet.litedb</groupId>
+        <artifactId>libsqlite</artifactId>
+        <version>${libsqlite.version}</version>
+        <classifier>natives-linux-x86</classifier>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>com.github.axet.litedb</groupId>
+        <artifactId>libsqlite</artifactId>
+        <classifier>natives-linux-x86_64</classifier>
+        <version>${libsqlite.version}</version>
+        <scope>provided</scope>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -96,31 +166,6 @@
             <target>${maven.compiler.target}</target>
             <compilerArgument>-proc:none</compilerArgument>
           </configuration>
-        </plugin>
-
-        <plugin>
-          <groupId>org.bsc.maven</groupId>
-          <artifactId>maven-processor-plugin</artifactId>
-          <version>2.2.1</version>
-          <configuration>
-            <compilerArguments>-source ${maven.compiler.source} -target ${maven.compiler.target} -Aorg.robolectric.annotation.processing.shadowPackage=org.robolectric</compilerArguments>
-          </configuration>
-          <executions>
-            <execution>
-              <id>process</id>
-              <goals>
-                <goal>process</goal>
-              </goals>
-              <phase>generate-sources</phase>
-            </execution>
-          </executions>
-          <dependencies>
-            <dependency>
-              <groupId>org.robolectric</groupId>
-              <artifactId>robolectric-processor</artifactId>
-              <version>${project.version}</version>
-            </dependency>
-          </dependencies>
         </plugin>
 
         <plugin>

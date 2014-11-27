@@ -8,6 +8,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.util.Strings;
@@ -39,10 +40,10 @@ public class AssetManagerTest {
   public void assertGetAssetsNotNull() {
     assertNotNull(assetManager);
 
-    assetManager = Robolectric.application.getAssets();
+    assetManager = RuntimeEnvironment.application.getAssets();
     assertNotNull(assetManager);
 
-    assetManager = Robolectric.application.getResources().getAssets();
+    assetManager = RuntimeEnvironment.application.getResources().getAssets();
     assertNotNull(assetManager);
   }
 

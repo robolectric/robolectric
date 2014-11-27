@@ -14,6 +14,10 @@ public class SdkConfig {
     SUPPORTED_APIS.put(Build.VERSION_CODES.JELLY_BEAN, new SdkVersion("4.1.2_r1", "0"));
     SUPPORTED_APIS.put(Build.VERSION_CODES.JELLY_BEAN_MR1, new SdkVersion("4.2.2_r1.2", "0"));
     SUPPORTED_APIS.put(Build.VERSION_CODES.JELLY_BEAN_MR2, new SdkVersion("4.3_r2", "0"));
+    SUPPORTED_APIS.put(Build.VERSION_CODES.KITKAT, new SdkVersion("4.4_r1", "0"));
+//    SUPPORTED_APIS.put(Build.VERSION_CODES.LOLLIPOP, new SdkVersion("4.4_r1", "0")); // TODO: LOLLIPOP: XXX: for debugging--don't commit this
+    // TODO: LOLLIPOP: you also need to change the AndroidRuntimeAdapter in ActivityController
+    SUPPORTED_APIS.put(Build.VERSION_CODES.LOLLIPOP, new SdkVersion("5.0.0_r2", "0"));
   }
 
   public SdkConfig(int apiLevel) {
@@ -48,23 +52,20 @@ public class SdkConfig {
   }
 
   public DependencyJar getSystemResourceDependency() {
-    return realAndroidDependency("android-all"); // TODO: remove me?
+    return createDependency("org.robolectric", "android-all", artifactVersionString, "");
   }
 
   public DependencyJar[] getSdkClasspathDependencies() {
     return new DependencyJar[] {
-        realAndroidDependency("android-all"),
-        createDependency("org.json", "json", "20080701"),
-        createDependency("org.ccil.cowan.tagsoup", "tagsoup", "1.2")
+        createDependency("org.robolectric", "android-all", artifactVersionString, ""),
+        createDependency("org.robolectric", "robolectric-shadows", "3.0-SNAPSHOT", Integer.toString(apiLevel)),
+        createDependency("org.json", "json", "20080701", ""),
+        createDependency("org.ccil.cowan.tagsoup", "tagsoup", "1.2", "")
     };
   }
 
-  private DependencyJar realAndroidDependency(String artifactId) {
-    return createDependency("org.robolectric", artifactId, getArtifactVersionString());
-  }
-
-  private DependencyJar createDependency(String groupId, String artifactId, String version) {
-    return new DependencyJar(groupId, artifactId, version);
+  private DependencyJar createDependency(String groupId, String artifactId, String version, String classifier) {
+    return new DependencyJar(groupId, artifactId, version, classifier);
   }
 
   public static SdkConfig getDefaultSdk() {
@@ -89,5 +90,4 @@ public class SdkConfig {
       return androidVersion + "-robolectric-" + robolectricVersion;
     }
   }
-
 }

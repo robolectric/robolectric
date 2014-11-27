@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implements;
+import org.robolectric.internal.ShadowExtractor;
 import org.robolectric.shadows.ShadowView;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -16,16 +17,13 @@ public class TemporaryBindingsTest {
   @Test
   @Config(shadows = TemporaryShadowView.class)
   public void overridingShadowBindingsShouldNotAffectBindingsInLaterTests() throws Exception {
-//        assertThat(shadowOf(new View(Robolectric.application)).getClass().getSimpleName()).isEqualTo(ShadowView.class.getSimpleName());
-    assertThat(Shadows.shadowOf_(new View(Robolectric.application)).getClass().getSimpleName()).isEqualTo(TemporaryShadowView.class.getSimpleName());
+    TemporaryShadowView shadowView = (TemporaryShadowView) ShadowExtractor.extract(new View(RuntimeEnvironment.application));
+    assertThat(shadowView.getClass().getSimpleName()).isEqualTo(TemporaryShadowView.class.getSimpleName());
   }
 
   @Test
-//    @Values(shadows = TemporaryShadowView.class)
   public void overridingShadowBindingsShouldNotAffectBindingsInLaterTestsAgain() throws Exception {
-// todo test this properly
-    assertThat(shadowOf(new View(Robolectric.application)).getClass().getSimpleName()).isEqualTo(ShadowView.class.getSimpleName());
-//        assertThat(Shadows.shadowOf_(new View(Robolectric.application)).getClass().getSimpleName()).isEqualTo(TemporaryShadowView.class.getSimpleName());
+    assertThat(shadowOf(new View(RuntimeEnvironment.application)).getClass().getSimpleName()).isEqualTo(ShadowView.class.getSimpleName());
   }
 
   @Implements(View.class)

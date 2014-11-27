@@ -9,6 +9,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.util.Transcript;
@@ -21,14 +22,14 @@ public class LocalBroadcastManagerTest {
 
   @Test
   public void shouldGetInstance() throws Exception {
-    LocalBroadcastManager instance = LocalBroadcastManager.getInstance(Robolectric.application);
+    LocalBroadcastManager instance = LocalBroadcastManager.getInstance(RuntimeEnvironment.application);
     assertNotNull(instance);
-    assertSame(instance, LocalBroadcastManager.getInstance(Robolectric.application));
+    assertSame(instance, LocalBroadcastManager.getInstance(RuntimeEnvironment.application));
   }
 
   @Test
   public void shouldSendBroadcasts() throws Exception {
-    LocalBroadcastManager instance = LocalBroadcastManager.getInstance(Robolectric.application);
+    LocalBroadcastManager instance = LocalBroadcastManager.getInstance(RuntimeEnvironment.application);
     final boolean[] called = new boolean[1];
     final BroadcastReceiver receiver = new BroadcastReceiver() {
       @Override
@@ -46,7 +47,7 @@ public class LocalBroadcastManagerTest {
   
   @Test
   public void shouldSendBroadcastsWithDataScheme() throws Exception {
-    LocalBroadcastManager instance = LocalBroadcastManager.getInstance(Robolectric.application);
+    LocalBroadcastManager instance = LocalBroadcastManager.getInstance(RuntimeEnvironment.application);
     final boolean[] called = new boolean[1];
     final BroadcastReceiver receiver = new BroadcastReceiver() {
       @Override
@@ -66,7 +67,7 @@ public class LocalBroadcastManagerTest {
 
   @Test
   public void shouldUnregisterReceiver() throws Exception {
-    LocalBroadcastManager instance = LocalBroadcastManager.getInstance(Robolectric.application);
+    LocalBroadcastManager instance = LocalBroadcastManager.getInstance(RuntimeEnvironment.application);
     final boolean[] called = new boolean[1];
     final BroadcastReceiver receiver = new BroadcastReceiver() {
       @Override
@@ -82,7 +83,7 @@ public class LocalBroadcastManagerTest {
 
   @Test
   public void testGetBroadcastIntents() throws Exception {
-    LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(Robolectric.application);
+    LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(RuntimeEnvironment.application);
     broadcastManager.registerReceiver(new BroadcastReceiver() {
       @Override public void onReceive(Context context, Intent intent) {
         transcript.add("got intent " + intent.getAction());
@@ -99,7 +100,7 @@ public class LocalBroadcastManagerTest {
 
   @Test
   public void testGetRegisteredBroadcastReceivers() throws Exception {
-    LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(Robolectric.application);
+    LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(RuntimeEnvironment.application);
     ShadowLocalBroadcastManager shadowLocalBroadcastManager = Shadows.shadowOf(broadcastManager);
     assertEquals(0, shadowLocalBroadcastManager.getRegisteredBroadcastReceivers().size());
 
@@ -122,7 +123,7 @@ public class LocalBroadcastManagerTest {
 
   @Test
   public void testGetSentBroadcastIntents() throws Exception {
-    LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(Robolectric.application);
+    LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(RuntimeEnvironment.application);
     ShadowLocalBroadcastManager shadowLocalBroadcastManager = Shadows.shadowOf(broadcastManager);
     assertEquals(0, shadowLocalBroadcastManager.getSentBroadcastIntents().size());
 

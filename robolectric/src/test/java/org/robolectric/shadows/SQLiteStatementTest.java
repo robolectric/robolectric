@@ -9,6 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -19,7 +20,7 @@ public class SQLiteStatementTest {
 
   @Before
   public void setUp() throws Exception {
-    database = SQLiteDatabase.openOrCreateDatabase(Robolectric.application.getDatabasePath("path").getPath(), null);
+    database = SQLiteDatabase.openOrCreateDatabase(RuntimeEnvironment.application.getDatabasePath("path").getPath(), null);
     SQLiteStatement createStatement = database.compileStatement("CREATE TABLE `routine` (`id` INTEGER PRIMARY KEY AUTOINCREMENT , `name` VARCHAR , `lastUsed` INTEGER DEFAULT 0 ,  UNIQUE (`name`)) ;");
     createStatement.execute();
 

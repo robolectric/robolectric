@@ -6,22 +6,27 @@ import android.app.Instrumentation;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.pm.ApplicationInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.IBinder;
-import org.robolectric.AndroidManifest;
+import com.android.internal.app.IVoiceInteractor;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.Shadows;
+import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.RoboInstrumentation;
-import org.robolectric.Robolectric;
 import org.robolectric.res.ResName;
 import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.shadows.ShadowActivityThread;
 import org.robolectric.shadows.ShadowApplication;
 
-import static org.robolectric.Shadows.shadowOf_;
+public class ActivityController<T extends Activity> extends ComponentController<ActivityController<T>, T, ShadowActivity> {
 
-public class ActivityController<T extends Activity>
-    extends ComponentController<ActivityController<T>, T, ShadowActivity> {
+  // TODO: LOLLIPOP: this should be injected in some better way where it can be configured in a centrallized place
+  // TODO: LOLLIPOP: (ideally in SdkConfig), but there a classloader ordering issues to be careful of when making this
+  // TODO: LOLLIPOP: happen -AV 2014-11-16
+  private final AndroidRuntimeAdapter androidRuntimeAdapter = new Api21AndroidRuntimeAdapter();
 
   public static <T extends Activity> ActivityController<T> of(Class<T> activityClass) {
     return new ActivityController<T>(ReflectionHelpers.<T>callConstructorReflectively(activityClass));
@@ -36,18 +41,19 @@ public class ActivityController<T extends Activity>
   }
 
   public ActivityController<T> attach() {
-    Application application = this.application == null ? Robolectric.application : this.application;
+    Application application = this.application == null ? RuntimeEnvironment.application : this.application;
     if (this.application != null) {
-      ShadowApplication roboShadow = shadowOf_(Robolectric.application);
-      ShadowApplication testShadow = shadowOf_(this.application);
+      ShadowApplication roboShadow = Shadows.shadowOf(RuntimeEnvironment.application);
+      ShadowApplication testShadow = Shadows.shadowOf(this.application);
       testShadow.bind(roboShadow.getAppManifest(), roboShadow.getResourceLoader());
-      testShadow.callAttachBaseContext(Robolectric.application.getBaseContext());
+      testShadow.callAttachBaseContext(RuntimeEnvironment.application.getBaseContext());
       this.application.onCreate();
       shadow.setTestApplication(this.application);
     }
     Context baseContext = this.baseContext == null ? application : this.baseContext;
     Intent intent = getIntent();
     ActivityInfo activityInfo = new ActivityInfo();
+    ReflectionHelpers.setFieldReflectively(activityInfo, "applicationInfo", new ApplicationInfo());
     String activityTitle = getActivityTitle();
 
     ClassLoader cl = baseContext.getClassLoader();
@@ -64,20 +70,8 @@ public class ActivityController<T extends Activity>
       throw new RuntimeException(e);
     }
 
-    ReflectionHelpers.callInstanceMethodReflectively(component, "attach",
-        new ReflectionHelpers.ClassParameter(Context.class, baseContext),
-        new ReflectionHelpers.ClassParameter(activityThreadClass, null),
-        new ReflectionHelpers.ClassParameter(Instrumentation.class, new RoboInstrumentation()),
-        new ReflectionHelpers.ClassParameter(IBinder.class, null),
-        new ReflectionHelpers.ClassParameter(int.class, 0),
-        new ReflectionHelpers.ClassParameter(Application.class, application),
-        new ReflectionHelpers.ClassParameter(Intent.class, intent),
-        new ReflectionHelpers.ClassParameter(ActivityInfo.class, activityInfo),
-        new ReflectionHelpers.ClassParameter(CharSequence.class, activityTitle),
-        new ReflectionHelpers.ClassParameter(Activity.class, null),
-        new ReflectionHelpers.ClassParameter(String.class, "id"),
-        new ReflectionHelpers.ClassParameter(nonConfigurationInstancesClass, null),
-        new ReflectionHelpers.ClassParameter(Configuration.class, application.getResources().getConfiguration()));
+    androidRuntimeAdapter.callActivity_attach(component, baseContext, activityThreadClass, application, intent,
+        activityInfo, activityTitle, nonConfigurationInstancesClass);
 
     shadow.setThemeFromManifest();
     attached = true;
@@ -88,7 +82,7 @@ public class ActivityController<T extends Activity>
     String title = null;
 
     /* Get the label for the activity from the manifest */
-    ShadowApplication shadowApplication = shadowOf_(component.getApplication());
+    ShadowApplication shadowApplication = Shadows.shadowOf(component.getApplication());
     AndroidManifest appManifest = shadowApplication.getAppManifest();
     if (appManifest == null) return null;
     String labelRef = appManifest.getActivityLabel(component.getClass());

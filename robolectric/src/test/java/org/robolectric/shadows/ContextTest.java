@@ -8,12 +8,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.res.Attribute;
 import org.robolectric.res.PackageResourceLoader;
 import org.robolectric.res.ResourceLoader;
-import org.robolectric.util.CustomView;
 import org.robolectric.util.TestUtil;
 
 import java.io.File;
@@ -37,7 +36,7 @@ public class ContextTest {
 
   @Before
   public void setUp() throws Exception {
-    context = Robolectric.application;
+    context = RuntimeEnvironment.application;
     deleteDir(context.getFilesDir());
     deleteDir(context.getCacheDir());
     deleteDir(ShadowContext.DATABASE_DIR);
@@ -357,7 +356,7 @@ public class ContextTest {
         new Attribute(TEST_PACKAGE + ":attr/quitKeyCombo", "^q", TEST_PACKAGE),
         new Attribute(TEST_PACKAGE + ":attr/aspectRatio", "1.5", TEST_PACKAGE),
         new Attribute(TEST_PACKAGE + ":attr/aspectRatioEnabled", "true", TEST_PACKAGE)
-    ), resources, CustomView.class);
+    ), resourceLoader);
 
     TypedArray a = context.obtainStyledAttributes(roboAttributeSet, R.styleable.CustomView);
     assertThat(a.getInt(R.styleable.CustomView_itemType, -1234)).isEqualTo(1 /* ungulate */);

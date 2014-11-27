@@ -6,7 +6,6 @@ import android.view.MenuItem;
 import junit.framework.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.shadows.ShadowActivity;

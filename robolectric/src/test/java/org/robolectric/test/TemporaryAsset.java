@@ -5,7 +5,7 @@ import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.rules.ExternalResource;
-import org.robolectric.AndroidManifest;
+import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.FileFsFile;
 
 /**
@@ -19,7 +19,7 @@ import org.robolectric.res.FileFsFile;
  *
  *   &#064;Test
  *   public void testUsingTempFolder() throws IOException {
- *     AndroidManifest appManifest = shadowOf(Robolectric.application).getAppManifest();
+ *     AndroidManifest appManifest = shadowOf(RuntimeEnvironment.application).getAppManifest();
  *     fontFile = temporaryAsset.createFile(appManifest, &quot;myFont.ttf&quot;, &quot;myFontData&quot;);
  *     // ...
  *   }

@@ -11,6 +11,7 @@ import org.junit.runners.model.InitializationError;
 import org.robolectric.*;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.ParallelUniverseInterface;
+import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResourceLoader;
 
 import java.lang.reflect.Field;
@@ -43,8 +44,8 @@ public class CustomRobolectricTestRunnerTest {
   @Ignore("should only be run by custom test runner")
   public static class TestApplicationIsInitialized {
     @Test public void shouldPass() throws Exception {
-      assertNotNull(Robolectric.application);
-      assertEquals(CustomApplication.class, Robolectric.application.getClass());
+      assertNotNull(RuntimeEnvironment.application);
+      assertEquals(CustomApplication.class, RuntimeEnvironment.application.getClass());
     }
   }
 

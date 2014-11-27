@@ -5,6 +5,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 
@@ -16,7 +17,7 @@ public class LayoutAnimationControllerTest {
 
   @Before
   public void setup() {
-    LayoutAnimationController controller = new LayoutAnimationController(Robolectric.application, null);
+    LayoutAnimationController controller = new LayoutAnimationController(RuntimeEnvironment.application, null);
     shadow = Shadows.shadowOf(controller);
   }
 

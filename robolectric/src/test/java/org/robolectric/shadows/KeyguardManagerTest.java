@@ -5,6 +5,7 @@ import android.content.Context;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
 import static android.content.Context.KEYGUARD_SERVICE;
@@ -18,7 +19,7 @@ public class KeyguardManagerTest {
 
   @Test
   public void testIsInRestrcitedInputMode() {
-    Context context = Robolectric.application;
+    Context context = RuntimeEnvironment.application;
     KeyguardManager mgr = ( KeyguardManager ) context.getSystemService( KEYGUARD_SERVICE );
     assertThat(mgr.inKeyguardRestrictedInputMode()).isFalse();
     ShadowKeyguardManager shadowMgr = shadowOf(mgr);
@@ -28,7 +29,7 @@ public class KeyguardManagerTest {
 
   @Test
   public void testShouldBeAbleToDisableTheKeyguardLock() throws Exception {
-    Context context = Robolectric.application;
+    Context context = RuntimeEnvironment.application;
     KeyguardManager mgr = ( KeyguardManager ) context.getSystemService( KEYGUARD_SERVICE );
     KeyguardManager.KeyguardLock lock = mgr.newKeyguardLock(KEYGUARD_SERVICE);
     assertTrue(shadowOf(lock).isEnabled());

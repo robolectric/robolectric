@@ -12,6 +12,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
+import org.robolectric.internal.Shadow;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -135,7 +136,7 @@ public class BitmapTest {
 
   @Test
   public void shouldCopyBitmap() {
-    Bitmap bitmap = Robolectric.newInstanceOf(Bitmap.class);
+    Bitmap bitmap = Shadow.newInstanceOf(Bitmap.class);
     Bitmap bitmapCopy = bitmap.copy(Config.ARGB_8888, true);
     assertEquals(shadowOf(bitmapCopy).getConfig(), Config.ARGB_8888);
     assertTrue(shadowOf(bitmapCopy).isMutable());
@@ -234,7 +235,7 @@ public class BitmapTest {
   }
 
   private static Bitmap create(String name) {
-    Bitmap bitmap = Robolectric.newInstanceOf(Bitmap.class);
+    Bitmap bitmap = Shadow.newInstanceOf(Bitmap.class);
     shadowOf(bitmap).appendDescription(name);
     return bitmap;
   }
