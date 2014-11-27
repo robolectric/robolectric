@@ -15,9 +15,9 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
+import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowStateListDrawable;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -63,7 +63,7 @@ public class DrawableResourceLoaderTest {
 
   @Test
   public void testGetDrawable_rainbow() throws Exception {
-    assertNotNull(Robolectric.getShadowApplication().getResources().getDrawable(R.drawable.rainbow));
+    assertNotNull(ShadowApplication.getInstance().getResources().getDrawable(R.drawable.rainbow));
   }
 
   @Test
@@ -86,7 +86,7 @@ public class DrawableResourceLoaderTest {
 
   @Test
   public void testLayerDrawable() {
-    Resources resources = Robolectric.getShadowApplication().getResources();
+    Resources resources = ShadowApplication.getInstance().getResources();
     Drawable drawable = resources.getDrawable(R.drawable.rainbow);
     assertThat(drawable).isInstanceOf(LayerDrawable.class);
     assertEquals(8, ((LayerDrawable) drawable).getNumberOfLayers());

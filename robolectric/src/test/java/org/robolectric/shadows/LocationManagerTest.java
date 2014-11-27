@@ -13,7 +13,6 @@ import junit.framework.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
@@ -173,12 +172,11 @@ public class LocationManagerTest {
   @Test
   public void shouldRemovePendingIntentsWhenRequestingLocationUpdatesUsingCriteria() throws Exception {
     Intent someIntent = new Intent("some_action");
-    PendingIntent someLocationListenerPendingIntent = PendingIntent.getBroadcast(Robolectric
-        .getShadowApplication().getApplicationContext(), 0, someIntent,
+    PendingIntent someLocationListenerPendingIntent = PendingIntent.getBroadcast(ShadowApplication.getInstance().getApplicationContext(), 0, someIntent,
         PendingIntent.FLAG_UPDATE_CURRENT);
     Intent someOtherIntent = new Intent("some_other_action");
     PendingIntent someOtherLocationListenerPendingIntent = PendingIntent.getBroadcast(
-        Robolectric.getShadowApplication().getApplicationContext(), 0, someOtherIntent,
+        ShadowApplication.getInstance().getApplicationContext(), 0, someOtherIntent,
         PendingIntent.FLAG_UPDATE_CURRENT);
 
     shadowLocationManager.setProviderEnabled(GPS_PROVIDER, true);
@@ -211,10 +209,10 @@ public class LocationManagerTest {
   @Test
   public void shouldRemovePendingIntentsWhenRequestingLocationUpdatesUsingLocationListeners() throws Exception {
     Intent someIntent = new Intent("some_action");
-    PendingIntent someLocationListenerPendingIntent = PendingIntent.getBroadcast(Robolectric.getShadowApplication().getApplicationContext(), 0,
+    PendingIntent someLocationListenerPendingIntent = PendingIntent.getBroadcast(ShadowApplication.getInstance().getApplicationContext(), 0,
         someIntent, PendingIntent.FLAG_UPDATE_CURRENT);
     Intent someOtherIntent = new Intent("some_other_action");
-    PendingIntent someOtherLocationListenerPendingIntent = PendingIntent.getBroadcast(Robolectric.getShadowApplication().getApplicationContext(),
+    PendingIntent someOtherLocationListenerPendingIntent = PendingIntent.getBroadcast(ShadowApplication.getInstance().getApplicationContext(),
         0, someOtherIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
     shadowLocationManager.setProviderEnabled(GPS_PROVIDER, true);
@@ -262,7 +260,7 @@ public class LocationManagerTest {
   @Test
   public void shouldThrowExceptionWhenRequestingLocationUpdatesAndNoProviderIsFound() throws Exception {
     Intent someIntent = new Intent("some_action");
-    PendingIntent someLocationListenerPendingIntent = PendingIntent.getBroadcast(Robolectric.getShadowApplication().getApplicationContext(), 0,
+    PendingIntent someLocationListenerPendingIntent = PendingIntent.getBroadcast(ShadowApplication.getInstance().getApplicationContext(), 0,
         someIntent, PendingIntent.FLAG_UPDATE_CURRENT);
     Criteria criteria = new Criteria();
     criteria.setAccuracy(Criteria.ACCURACY_FINE);
@@ -360,7 +358,7 @@ public class LocationManagerTest {
     shadowLocationManager.setBestProvider(LocationManager.GPS_PROVIDER, true);
 
     Intent someIntent = new Intent("some_action");
-    PendingIntent someLocationListenerPendingIntent = PendingIntent.getBroadcast(Robolectric.getShadowApplication().getApplicationContext(), 0,
+    PendingIntent someLocationListenerPendingIntent = PendingIntent.getBroadcast(ShadowApplication.getInstance().getApplicationContext(), 0,
         someIntent, PendingIntent.FLAG_UPDATE_CURRENT);
     locationManager.requestLocationUpdates(GPS_PROVIDER, 0, 0, someLocationListenerPendingIntent);
 
@@ -375,7 +373,7 @@ public class LocationManagerTest {
     criteria.setAccuracy(Criteria.ACCURACY_COARSE);
 
     Intent someIntent = new Intent("some_action");
-    PendingIntent someLocationListenerPendingIntent = PendingIntent.getBroadcast(Robolectric.getShadowApplication().getApplicationContext(), 0,
+    PendingIntent someLocationListenerPendingIntent = PendingIntent.getBroadcast(ShadowApplication.getInstance().getApplicationContext(), 0,
         someIntent, PendingIntent.FLAG_UPDATE_CURRENT);
     Criteria someCriteria = new Criteria();
     someCriteria.setAccuracy(Criteria.ACCURACY_COARSE);

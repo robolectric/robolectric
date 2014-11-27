@@ -8,6 +8,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;
@@ -42,6 +43,15 @@ public class ShadowCanvas {
   private float scaleY = 1;
   private int height;
   private int width;
+
+  /**
+   * Returns a textual representation of the appearance of the object.
+   *
+   * @param canvas the canvas to visualize
+   */
+  public static String visualize(Canvas canvas) {
+    return shadowOf(canvas).getDescription();
+  }
 
   public void __constructor__(Bitmap bitmap) {
     this.targetBitmap = bitmap;

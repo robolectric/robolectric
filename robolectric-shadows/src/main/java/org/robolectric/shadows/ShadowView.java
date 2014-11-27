@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
@@ -12,6 +13,7 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewParent;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -54,6 +56,49 @@ public class ShadowView {
   private int hapticFeedbackPerformed = -1;
   private boolean onLayoutWasCalled;
   private View.OnCreateContextMenuListener onCreateContextMenuListener;
+
+  /**
+   * Calls {@code performClick()} on a {@code View} after ensuring that it and its ancestors are visible and that it
+   * is enabled.
+   *
+   * @param view the view to click on
+   * @return true if {@code View.OnClickListener}s were found and fired, false otherwise.
+   * @throws RuntimeException if the preconditions are not met.
+   */
+  public static boolean clickOn(View view) {
+    return shadowOf(view).checkedPerformClick();
+  }
+
+  /**
+   * Returns a textual representation of the appearance of the object.
+   *
+   * @param view the view to visualize
+   */
+  public static String visualize(View view) {
+    Canvas canvas = new Canvas();
+    view.draw(canvas);
+    return shadowOf(canvas).getDescription();
+  }
+
+  /**
+   * Emits an xml-like representation of the view to System.out.
+   *
+   * @param view the view to dump
+   */
+  @SuppressWarnings("UnusedDeclaration")
+  public static void dump(View view) {
+    shadowOf(view).dump();
+  }
+
+  /**
+   * Returns the text contained within this view.
+   *
+   * @param view the view to scan for text
+   */
+  @SuppressWarnings("UnusedDeclaration")
+  public static String innerText(View view) {
+    return shadowOf(view).innerText();
+  }
 
   public void __constructor__(Context context, AttributeSet attributeSet, int defStyle) {
     if (context == null) throw new NullPointerException("no context");

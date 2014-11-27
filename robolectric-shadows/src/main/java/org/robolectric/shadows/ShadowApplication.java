@@ -19,6 +19,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.PowerManager;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.widget.ListPopupWindow;
 import android.widget.PopupWindow;
@@ -99,6 +100,24 @@ public class ShadowApplication extends ShadowContextWrapper {
 
   public static ShadowApplication getInstance() {
     return RuntimeEnvironment.application == null ? null : shadowOf(RuntimeEnvironment.application);
+  }
+
+  /**
+   * Runs any background tasks previously queued by {@link android.os.AsyncTask#execute(Object[])}.
+   * <p/>
+   * <p/>
+   * Note: calling this method does not pause or un-pause the scheduler.
+   */
+  public static void runBackgroundTasks() {
+    getInstance().getBackgroundScheduler().advanceBy(0);
+  }
+
+  public static void setDisplayMetricsDensity(float densityMultiplier) {
+    shadowOf(getInstance().getResources()).setDensity(densityMultiplier);
+  }
+
+  public static void setDefaultDisplay(Display display) {
+    shadowOf(getInstance().getResources()).setDisplay(display);
   }
 
   /**

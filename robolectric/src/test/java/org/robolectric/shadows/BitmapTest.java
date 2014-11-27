@@ -10,7 +10,6 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.internal.Shadow;
 
@@ -131,7 +130,7 @@ public class BitmapTest {
   @Test
   public void visualize_shouldReturnDescription() throws Exception {
     Bitmap bitmap = create("Bitmap One");
-    assertEquals("Bitmap One", Robolectric.visualize(bitmap));
+    assertEquals("Bitmap One", ShadowBitmap.visualize(bitmap));
   }
 
   @Test

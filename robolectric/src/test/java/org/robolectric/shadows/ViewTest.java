@@ -49,7 +49,6 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.Robolectric.visualize;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ViewTest {
@@ -258,7 +257,7 @@ public class ViewTest {
     Drawable drawable = new BitmapDrawable(BitmapFactory.decodeFile("some/fake/file"));
     view.setBackgroundDrawable(drawable);
     assertThat(view.getBackground()).isSameAs(drawable);
-    assertThat(visualize(view)).isEqualTo("background:\nBitmap for file:some/fake/file");
+    assertThat(ShadowView.visualize(view)).isEqualTo("background:\nBitmap for file:some/fake/file");
   }
 
   @Test
