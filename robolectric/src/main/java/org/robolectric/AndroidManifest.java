@@ -535,22 +535,21 @@ public class AndroidManifest {
     Properties properties = getProperties(baseDir.join("project.properties"));
     // get the project.properties overrides and apply them (if any)
     Properties overrideProperties = getProperties(baseDir.join("test-project.properties"));
-    if (overrideProperties!=null) properties.putAll(overrideProperties);
-    if (properties != null) {
-      int libRef = 1;
-      String lib;
-      while ((lib = properties.getProperty("android.library.reference." + libRef)) != null) {
-        FsFile libraryBaseDir = baseDir.join(lib);
-        if (libraryBaseDir.isDirectory()) {
-          // Ignore directories without any files
-          FsFile[] libraryBaseDirFiles = libraryBaseDir.listFiles();
-          if (libraryBaseDirFiles != null && libraryBaseDirFiles.length > 0) {
-            libraryBaseDirs.add(libraryBaseDir);
-          }
-        }
+    properties.putAll(overrideProperties);
 
-        libRef++;
+    int libRef = 1;
+    String lib;
+    while ((lib = properties.getProperty("android.library.reference." + libRef)) != null) {
+      FsFile libraryBaseDir = baseDir.join(lib);
+      if (libraryBaseDir.isDirectory()) {
+        // Ignore directories without any files
+        FsFile[] libraryBaseDirFiles = libraryBaseDir.listFiles();
+        if (libraryBaseDirFiles != null && libraryBaseDirFiles.length > 0) {
+          libraryBaseDirs.add(libraryBaseDir);
+        }
       }
+
+      libRef++;
     }
     return libraryBaseDirs;
   }
@@ -569,9 +568,11 @@ public class AndroidManifest {
   }
 
   private static Properties getProperties(FsFile propertiesFile) {
-    if (!propertiesFile.exists()) return null;
-
     Properties properties = new Properties();
+
+    // return an empty Properties object if the propertiesFile does not exist
+    if (!propertiesFile.exists()) return properties;
+
     InputStream stream;
     try {
       stream = propertiesFile.getInputStream();
@@ -658,3 +659,5 @@ public class AndroidManifest {
     return usedPermissions;
   }
 }
+
+
