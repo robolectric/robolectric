@@ -14,7 +14,7 @@ public class Robolectric {
     RuntimeEnvironment.setRobolectricPackageManager(null);
     RuntimeEnvironment.setActivityThread(null);
 
-    Shadows.reset();
+    new ShadowsAdapter().reset();
   }
 
   public static <T extends Service> ServiceController<T> buildService(Class<T> serviceClass) {

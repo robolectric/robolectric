@@ -79,6 +79,10 @@ public class ShadowsAdapter {
     shadowOf(assets).setQualifiers(qualifiers);
   }
 
+  public void reset() {
+    Shadows.reset();
+  }
+
   public static class ShadowActivityAdapter {
     private final ShadowActivity shadow;
 
