@@ -12,7 +12,6 @@ import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResBunch;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.builder.DefaultRobolectricPackageManager;
-import org.robolectric.shadows.Api18ShadowsAdapter;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.ShadowsAdapter;
 
@@ -23,7 +22,7 @@ import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 public class ParallelUniverse implements ParallelUniverseInterface {
   private static final String DEFAULT_PACKAGE_NAME = "org.robolectric.default";
   private final RobolectricTestRunner robolectricTestRunner;
-  private final ShadowsAdapter shadowsAdapter = new Api18ShadowsAdapter();
+  private final ShadowsAdapter shadowsAdapter = Robolectric.instantiateShadowsAdapter();
 
   private boolean loggingInitialized = false;
   private SdkConfig sdkConfig;

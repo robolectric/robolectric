@@ -5,32 +5,42 @@ import android.app.Service;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.ActivityController;
-import org.robolectric.shadows.Api18ShadowsAdapter;
 import org.robolectric.util.ServiceController;
 
 public class Robolectric {
+  private static final ShadowsAdapter shadowsAdapter = instantiateShadowsAdapter();
+
+  public static ShadowsAdapter instantiateShadowsAdapter() {
+    try {
+      // TODO: probably should use ServiceLoader instead of hard-coding the implementation name. https://docs.oracle.com/javase/7/docs/api/java/util/ServiceLoader.html
+      return (ShadowsAdapter) Class.forName("org.robolectric.shadows.Api18ShadowsAdapter").newInstance();
+    } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+      throw new RuntimeException("Shadows module did not contain a ShadowsAdapter", e);
+    }
+  }
+
   public static void reset(Config config) {
     RuntimeEnvironment.application = null;
     RuntimeEnvironment.setRobolectricPackageManager(null);
     RuntimeEnvironment.setActivityThread(null);
 
-    new Api18ShadowsAdapter().reset();
+    shadowsAdapter.reset();
   }
 
   public static <T extends Service> ServiceController<T> buildService(Class<T> serviceClass) {
-    return ServiceController.of(new Api18ShadowsAdapter(), serviceClass);
+    return ServiceController.of(shadowsAdapter, serviceClass);
   }
 
   public static <T extends Service> T setupService(Class<T> serviceClass) {
-    return ServiceController.of(new Api18ShadowsAdapter(), serviceClass).attach().create().get();
+    return ServiceController.of(shadowsAdapter, serviceClass).attach().create().get();
   }
 
   public static <T extends Activity> ActivityController<T> buildActivity(Class<T> activityClass) {
-    return ActivityController.of(new Api18ShadowsAdapter(), activityClass);
+    return ActivityController.of(shadowsAdapter, activityClass);
   }
 
   public static <T extends Activity> T setupActivity(Class<T> activityClass) {
-    return ActivityController.of(new Api18ShadowsAdapter(), activityClass).setup().get();
+    return ActivityController.of(shadowsAdapter, activityClass).setup().get();
   }
 
   /**
