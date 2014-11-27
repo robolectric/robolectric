@@ -59,7 +59,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   @Override
   public void setUpApplicationState(Method method, TestLifecycle testLifecycle, ResourceLoader systemResourceLoader, AndroidManifest appManifest, Config config) {
     RuntimeEnvironment.application = null;
-    RuntimeEnvironment.setRobolectricPackageManager(new DefaultRobolectricPackageManager());
+    RuntimeEnvironment.setRobolectricPackageManager(new DefaultRobolectricPackageManager(shadowsAdapter));
     RuntimeEnvironment.getRobolectricPackageManager().addPackage(DEFAULT_PACKAGE_NAME);
     ResourceLoader resourceLoader;
     if (appManifest != null) {

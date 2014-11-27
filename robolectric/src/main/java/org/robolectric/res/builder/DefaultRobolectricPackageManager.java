@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+
+import org.robolectric.ShadowsAdapter;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.ActivityData;
 import org.robolectric.manifest.BroadcastReceiverData;
@@ -31,11 +33,13 @@ import org.robolectric.manifest.IntentFilterData;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceIndex;
 import org.robolectric.res.ResourceLoader;
-import org.robolectric.shadows.ShadowApplication;
-import org.robolectric.shadows.ShadowContext;
 import org.robolectric.tester.android.content.pm.StubPackageManager;
 
 public class DefaultRobolectricPackageManager extends StubPackageManager implements RobolectricPackageManager {
+
+  public DefaultRobolectricPackageManager(ShadowsAdapter shadowsAdapter) {
+    this.shadowsAdapter = shadowsAdapter;
+  }
 
   private static class IntentComparator implements Comparator<Intent> {
 
@@ -91,6 +95,7 @@ public class DefaultRobolectricPackageManager extends StubPackageManager impleme
     }
   }
 
+  private final ShadowsAdapter shadowsAdapter;
   private final Map<String, AndroidManifest> androidManifests = new LinkedHashMap<String, AndroidManifest>();
   private final Map<String, PackageInfo> packageInfos = new LinkedHashMap<String, PackageInfo>();
   private Map<Intent, List<ResolveInfo>> resolveInfoForIntent = new TreeMap<Intent, List<ResolveInfo>>(new IntentComparator());
@@ -129,7 +134,7 @@ public class DefaultRobolectricPackageManager extends StubPackageManager impleme
     activityInfo.packageName = packageName;
     activityInfo.name = activityName;
     if (activityData != null) {
-      ResourceIndex resourceIndex = ShadowApplication.getInstance().getResourceLoader().getResourceIndex();
+      ResourceIndex resourceIndex = shadowsAdapter.getResourceLoader().getResourceIndex();
       String themeRef;
 
       // Based on ShadowActivity
@@ -422,7 +427,7 @@ public class DefaultRobolectricPackageManager extends StubPackageManager impleme
 
   private void initApplicationInfo(ApplicationInfo applicationInfo) {
     applicationInfo.sourceDir = new File(".").getAbsolutePath();
-    applicationInfo.dataDir = ShadowContext.FILES_DIR.getAbsolutePath();
+    applicationInfo.dataDir = shadowsAdapter.getFilesDir().getAbsolutePath();
   }
 
   @Override

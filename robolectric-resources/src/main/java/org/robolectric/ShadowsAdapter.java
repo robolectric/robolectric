@@ -8,6 +8,8 @@ import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.util.Scheduler;
 
+import java.io.File;
+
 public interface ShadowsAdapter {
   Scheduler getBackgroundScheduler();
 
@@ -36,6 +38,10 @@ public interface ShadowsAdapter {
   void setAssetsQualifiers(AssetManager assets, String qualifiers);
 
   void reset();
+
+  ResourceLoader getResourceLoader();
+
+  File getFilesDir();
 
   public interface ShadowActivityAdapter {
     public void setTestApplication(Application application);
