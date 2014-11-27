@@ -35,7 +35,7 @@ import org.robolectric.res.Fs;
 import org.robolectric.test.TemporaryFolder;
 import org.robolectric.util.ActivityController;
 import org.robolectric.internal.Shadow;
-import org.robolectric.util.ShadowsAdapter;
+import org.robolectric.util.Api18ShadowsAdapter;
 import org.robolectric.util.TestRunnable;
 import org.robolectric.util.Transcript;
 
@@ -777,7 +777,7 @@ public class ActivityTest {
   /////////////////////////////
 
   private void destroy(Activity activity) {
-    new ActivityController(new ShadowsAdapter(), activity).destroy();
+    new ActivityController(new Api18ShadowsAdapter(), activity).destroy();
   }
 
   private <T extends Activity> T create(Class<T> activityClass) {

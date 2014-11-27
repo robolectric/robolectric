@@ -53,7 +53,7 @@ public class ServiceControllerTest {
 
   @Test
   public void shouldSetIntentForGivenServiceInstance() throws Exception {
-    ServiceController<MyService> serviceController = ServiceController.of(new ShadowsAdapter(), new MyService()).bind();
+    ServiceController<MyService> serviceController = ServiceController.of(new Api18ShadowsAdapter(), new MyService()).bind();
     assertThat(serviceController.get().boundIntent).isNotNull();
   }
 

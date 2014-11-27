@@ -19,7 +19,7 @@ public class RobolectricBackgroundExecutorServiceTest {
 
   @Before public void setUp() throws Exception {
     transcript = new Transcript();
-    ShadowsAdapter shadowsAdapter = new ShadowsAdapter();
+    ShadowsAdapter shadowsAdapter = new Api18ShadowsAdapter();
     Scheduler backgroundScheduler = shadowsAdapter.getBackgroundScheduler();
     executorService = new RobolectricBackgroundExecutorService(shadowsAdapter);
 
