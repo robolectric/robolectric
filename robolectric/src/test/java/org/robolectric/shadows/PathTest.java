@@ -3,8 +3,8 @@ package org.robolectric.shadows;
 import android.graphics.Path;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
+import org.robolectric.internal.Shadow;
 
 import java.util.List;
 
@@ -20,7 +20,7 @@ public class PathTest {
 
   @Test
   public void testGradTo() {
-    Path path = Robolectric.newInstanceOf(Path.class);
+    Path path = Shadow.newInstanceOf(Path.class);
     path.quadTo(0, 5, 10, 15);
     ShadowPath shadowPath = shadowOf(path);
     assertEquals(shadowPath.getQuadDescription(), "Add a quadratic bezier from last point, approaching (0.0,5.0), ending at (10.0,15.0)");
@@ -28,7 +28,7 @@ public class PathTest {
 
   @Test
   public void testMoveTo() throws Exception {
-    Path path = Robolectric.newInstanceOf(Path.class);
+    Path path = Shadow.newInstanceOf(Path.class);
     path.moveTo(2, 3);
     path.moveTo(3, 4);
 
@@ -40,7 +40,7 @@ public class PathTest {
 
   @Test
   public void testLineTo() throws Exception {
-    Path path = Robolectric.newInstanceOf(Path.class);
+    Path path = Shadow.newInstanceOf(Path.class);
     path.lineTo(2, 3);
     path.lineTo(3, 4);
 
@@ -52,7 +52,7 @@ public class PathTest {
 
   @Test
   public void testReset() throws Exception {
-    Path path = Robolectric.newInstanceOf(Path.class);
+    Path path = Shadow.newInstanceOf(Path.class);
     path.moveTo(0, 3);
     path.lineTo(2, 3);
     path.quadTo(2, 3, 4, 5);
@@ -67,7 +67,7 @@ public class PathTest {
 
   @Test
   public void test_copyConstructor() throws Exception {
-    Path path = Robolectric.newInstanceOf(Path.class);
+    Path path = Shadow.newInstanceOf(Path.class);
     path.moveTo(0, 3);
     path.lineTo(2, 3);
     path.quadTo(2, 3, 4, 5);

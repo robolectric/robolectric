@@ -2,31 +2,31 @@ package org.robolectric.res;
 
 import android.content.res.Resources;
 import android.view.Gravity;
-import android.view.View;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.shadows.RoboAttributeSet;
-import org.robolectric.util.CustomView;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.res.ResourceLoader.ANDROID_NS;
 import static org.robolectric.res.Attribute.ANDROID_RES_NS_PREFIX;
 import static org.robolectric.util.TestUtil.*;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class RoboAttributeSetTest {
-
   private RoboAttributeSet roboAttributeSet;
   private Resources resources;
+  private ResourceLoader resourceLoader;
 
   @Before
   public void setUp() throws Exception {
-    resources = Robolectric.application.getResources();
+    resources = RuntimeEnvironment.application.getResources();
+    resourceLoader = shadowOf(resources).getResourceLoader();
   }
 
   @Test
@@ -146,14 +146,14 @@ public class RoboAttributeSetTest {
   @Test
   public void getAttributeIntValue_shouldReturnValueFromAttribute() throws Exception {
     roboAttributeSet = new RoboAttributeSet(asList(new Attribute(TEST_PACKAGE + ":attr/sugarinessPercent", "100", TEST_PACKAGE)),
-        resources, null);
+        shadowOf(resources).getResourceLoader());
     assertThat(roboAttributeSet.getAttributeIntValue(TEST_PACKAGE_NS, "sugarinessPercent", 0)).isEqualTo(100);
   }
 
   @Test
   public void getAttributeIntValue_shouldReturnHexValueFromAttribute() throws Exception {
     roboAttributeSet = new RoboAttributeSet(asList(new Attribute(TEST_PACKAGE + ":attr/sugarinessPercent", "0x10", TEST_PACKAGE)),
-        resources, null);
+        resourceLoader);
     assertThat(roboAttributeSet.getAttributeIntValue(TEST_PACKAGE_NS, "sugarinessPercent", 0)).isEqualTo(16);
   }
 
@@ -162,7 +162,7 @@ public class RoboAttributeSetTest {
     roboAttributeSet = new RoboAttributeSet(asList(
         new Attribute(TEST_PACKAGE + ":attr/gravity", "center|fill_vertical", TEST_PACKAGE),
         new Attribute("android:attr/orientation", "vertical", TEST_PACKAGE)
-    ), resources, CustomView.class);
+    ), resourceLoader);
     assertThat(roboAttributeSet.getAttributeIntValue(TEST_PACKAGE_NS, "gravity", 0)).isEqualTo(0x11 | 0x70);
     assertThat(roboAttributeSet.getAttributeIntValue(ANDROID_NS, "orientation", -1)).isEqualTo(1); // style from LinearLayout
   }
@@ -170,14 +170,14 @@ public class RoboAttributeSetTest {
   @Test
   public void getAttributeIntValue_shouldNotReturnStyledValueFromAttributeForSuperclass() throws Exception {
     roboAttributeSet = new RoboAttributeSet(asList(new Attribute(TEST_PACKAGE + ":attr/gravity", "center|fill_vertical", TEST_PACKAGE)),
-        resources, View.class);
+        resourceLoader);
     assertThat(roboAttributeSet.getAttributeIntValue(TEST_PACKAGE_NS, "gravity", 0)).isEqualTo(Gravity.CENTER | Gravity.FILL_VERTICAL);
   }
 
   @Test
   public void getAttributeIntValue_shouldReturnEnumValuesForEnumAttributes() throws Exception {
     roboAttributeSet = new RoboAttributeSet(asList(new Attribute(TEST_PACKAGE + ":attr/itemType", "ungulate", TEST_PACKAGE)),
-        resources, CustomView.class);
+        resourceLoader);
     assertThat(roboAttributeSet.getAttributeIntValue(TEST_PACKAGE_NS, "itemType", 0)).isEqualTo(1);
   }
 
@@ -185,7 +185,7 @@ public class RoboAttributeSetTest {
   public void getAttributeIntValue_whenTypeAllowsIntOrEnum_withInt_shouldReturnInt() throws Exception {
     roboAttributeSet = new RoboAttributeSet(asList(
         new Attribute(TEST_PACKAGE + ":attr/numColumns", "3", TEST_PACKAGE)
-    ), resources, CustomView.class);
+    ), resourceLoader);
     assertThat(roboAttributeSet.getAttributeIntValue(TEST_PACKAGE_NS, "numColumns", 0)).isEqualTo(3);
   }
 
@@ -193,7 +193,7 @@ public class RoboAttributeSetTest {
   public void getAttributeIntValue_whenTypeAllowsIntOrEnum_withEnum_shouldReturnInt() throws Exception {
     roboAttributeSet = new RoboAttributeSet(asList(
         new Attribute(TEST_PACKAGE + ":attr/numColumns", "auto_fit", TEST_PACKAGE)
-    ), resources, CustomView.class);
+    ), resourceLoader);
     assertThat(roboAttributeSet.getAttributeIntValue(TEST_PACKAGE_NS, "numColumns", 0)).isEqualTo(-1);
   }
 
@@ -280,7 +280,6 @@ public class RoboAttributeSetTest {
   }
 
   private void createTestAttributeSet(Attribute... attributes) {
-    roboAttributeSet = new RoboAttributeSet(asList(attributes), resources, null);
+    roboAttributeSet = new RoboAttributeSet(asList(attributes), resourceLoader);
   }
-
 }

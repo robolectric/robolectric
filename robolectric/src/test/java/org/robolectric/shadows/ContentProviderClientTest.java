@@ -8,13 +8,14 @@ import android.content.ContentValues;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.CancellationSignal;
-import java.util.ArrayList;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
+
+import java.util.ArrayList;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
@@ -35,7 +36,7 @@ public class ContentProviderClientTest {
   static final String MIME_TYPE = "application/octet-stream";
 
   @Mock ContentProvider provider;
-  ContentResolver contentResolver = Robolectric.application.getContentResolver();
+  ContentResolver contentResolver = RuntimeEnvironment.application.getContentResolver();
 
   @Before
   public void setUp() {

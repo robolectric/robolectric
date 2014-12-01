@@ -5,9 +5,10 @@ import android.preference.PreferenceScreen;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
+import org.robolectric.internal.Shadow;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -19,7 +20,7 @@ public class PreferenceScreenTest {
 
   @Before
   public void setUp() throws Exception {
-    screen = Robolectric.newInstanceOf(PreferenceScreen.class);
+    screen = Shadow.newInstanceOf(PreferenceScreen.class);
     shadow = Shadows.shadowOf(screen);
   }
 
@@ -30,7 +31,7 @@ public class PreferenceScreenTest {
 
   @Test
   public void shouldSetDialog() {
-    Dialog dialog = new Dialog(Robolectric.application);
+    Dialog dialog = new Dialog(RuntimeEnvironment.application);
 
     assertThat(screen.getDialog()).isNull();
     shadow.setDialog(dialog);

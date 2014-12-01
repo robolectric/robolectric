@@ -15,7 +15,7 @@ import java.util.Properties;
 import java.util.Set;
 
 /**
- * Indicate that robolectric should look for values that is specific by those qualifiers
+ * Indicate that robolectric should look for values that is specific by those qualifiers.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
@@ -28,6 +28,8 @@ public @interface Config {
 
   /**
    * The Android SDK level to emulate. If not specified, Robolectric defaults to API 16.
+   *
+   * @return The Android SDK level to emulate.
    */
   int emulateSdk() default -1;
 
@@ -38,50 +40,64 @@ public @interface Config {
    * If not specified, Robolectric defaults to {@code AndroidManifest.xml}.
    *
    * If your project has no manifest or resources, use {@link Config#NONE}.
+   *
+   * @return The Android manifest file to load.
    */
   String manifest() default DEFAULT;
 
   /**
    * The {@link android.app.Application} class to use in the test, this takes precedence over any application
    * specified in the AndroidManifest.xml.
+   *
+   * @return The {@link android.app.Application} class to use in the test.
    */
   Class<? extends Application> application() default Application.class;
 
   /**
    * Qualifiers for the resource resolution, such as "fr-normal-port-hdpi".
    *
-   * @see <a href="http://developer.android.com/guide/topics/resources/providing-resources.html">Providing Resources</a> in the Android Developer docs for more information.
+   * @return Qualifiers used for resource resolution.
    */
   String qualifiers() default "";
 
   /**
    * The directory from which to load resources.  This should be relative to the directory containing AndroidManifest.xml.
+   *
    * <p>
    * If not specified, Robolectric defaults to {@code res}.
+   *
+   * @return Android resource directory.
    */
   String resourceDir() default DEFAULT_RES_FOLDER;
 
   /**
    * The directory from which to load assets. This should be relative to the directory containing AndroidManifest.xml.
+   *
    * <p>
    * If not specified, Robolectric defaults to {@code assets}.
+   *
+   * @return Android asset directory.
    */
   String assetDir() default DEFAULT_ASSET_FOLDER;
 
   /**
    * The Android SDK level to report in Build.VERSION.SDK_INT.
    *
-   * @see <a href="http://en.wikipedia.org/wiki/Android_version_history">Android Version History</a>.
+   * @return The Android SDK level to report.
    */
   int reportSdk() default -1;
 
   /**
    * A list of shadow classes to enable, in addition to those that are already present.
+   *
+   * @return A list of additional shadow classes to enable.
    */
   Class<?>[] shadows() default {};
 
   /**
    * A list of folders containing Android Libraries on which this project depends.
+   *
+   * @return A list of Android Libraries.
    */
   String[] libraries() default {};
 

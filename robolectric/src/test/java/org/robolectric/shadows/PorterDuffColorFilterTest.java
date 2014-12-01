@@ -6,7 +6,6 @@ import android.graphics.PorterDuffColorFilter;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 
@@ -17,7 +16,7 @@ public class PorterDuffColorFilterTest {
   @Test
   public void testConstructor() {
     PorterDuffColorFilter colorFilter = new PorterDuffColorFilter(Color.RED, PorterDuff.Mode.ADD);
-    ShadowPorterDuffColorFilter shadow = Shadows.shadowOf_(colorFilter);
+    ShadowPorterDuffColorFilter shadow = Shadows.shadowOf(colorFilter);
 
     assertThat(shadow.getSrcColor()).isEqualTo(Color.RED);
     assertThat(shadow.getMode()).isEqualTo(PorterDuff.Mode.ADD);

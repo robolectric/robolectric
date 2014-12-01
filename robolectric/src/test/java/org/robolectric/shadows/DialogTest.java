@@ -10,8 +10,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
 import org.robolectric.util.Transcript;
 
 import static junit.framework.Assert.assertEquals;
@@ -28,7 +30,7 @@ public class DialogTest {
   public void shouldCallOnDismissListener() throws Exception {
     final Transcript transcript = new Transcript();
 
-    final Dialog dialog = new Dialog(Robolectric.application);
+    final Dialog dialog = new Dialog(RuntimeEnvironment.application);
     dialog.show();
     dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
       @Override
@@ -46,7 +48,7 @@ public class DialogTest {
   @Test
   public void setContentViewWithViewAllowsFindById() throws Exception {
     final int viewId = 1234;
-    Context context = Robolectric.application;
+    Context context = RuntimeEnvironment.application;
     final Dialog dialog = new Dialog(context);
     final View view = new View(context);
     view.setId(viewId);
@@ -57,13 +59,13 @@ public class DialogTest {
 
   @Test
   public void shouldGetLayoutInflater() {
-    Dialog dialog = new Dialog(Robolectric.application);
+    Dialog dialog = new Dialog(RuntimeEnvironment.application);
     assertNotNull(dialog.getLayoutInflater());
   }
 
   @Test
   public void shouldCallOnStartFromShow() {
-    TestDialog dialog = new TestDialog(Robolectric.application);
+    TestDialog dialog = new TestDialog(RuntimeEnvironment.application);
     dialog.show();
 
     assertTrue(dialog.onStartCalled);
@@ -71,7 +73,7 @@ public class DialogTest {
 
   @Test
   public void shouldSetCancelable() {
-    Dialog dialog = new Dialog(Robolectric.application);
+    Dialog dialog = new Dialog(RuntimeEnvironment.application);
     ShadowDialog shadow = Shadows.shadowOf(dialog);
 
     dialog.setCancelable(false);
@@ -80,14 +82,14 @@ public class DialogTest {
 
   @Test
   public void shouldDismissTheRealDialogWhenCancelled() throws Exception {
-    TestDialog dialog = new TestDialog(Robolectric.application);
+    TestDialog dialog = new TestDialog(RuntimeEnvironment.application);
     dialog.cancel();
     assertThat(dialog.wasDismissed).isTrue();
   }
 
   @Test
   public void shouldDefaultCancelableToTrueAsTheSDKDoes() throws Exception {
-    Dialog dialog = new Dialog(Robolectric.application);
+    Dialog dialog = new Dialog(RuntimeEnvironment.application);
     ShadowDialog shadow = Shadows.shadowOf(dialog);
 
     assertThat(shadow.isCancelable()).isTrue();
@@ -97,7 +99,7 @@ public class DialogTest {
   public void shouldOnlyCallOnCreateOnce() {
     final Transcript transcript = new Transcript();
 
-    Dialog dialog = new Dialog(Robolectric.application) {
+    Dialog dialog = new Dialog(RuntimeEnvironment.application) {
       @Override
       protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -115,7 +117,7 @@ public class DialogTest {
 
   @Test
   public void show_setsLatestDialog() {
-    Dialog dialog = new Dialog(Robolectric.application);
+    Dialog dialog = new Dialog(RuntimeEnvironment.application);
     assertNull(ShadowDialog.getLatestDialog());
 
     dialog.show();
@@ -128,7 +130,7 @@ public class DialogTest {
   public void getLatestDialog_shouldReturnARealDialog() throws Exception {
     assertThat(ShadowDialog.getLatestDialog()).isNull();
 
-    Dialog dialog = new Dialog(Robolectric.application);
+    Dialog dialog = new Dialog(RuntimeEnvironment.application);
     dialog.show();
     assertThat(ShadowDialog.getLatestDialog()).isSameAs(dialog);
   }
@@ -137,13 +139,13 @@ public class DialogTest {
   public void shouldKeepListOfOpenedDialogs() throws Exception {
     assertEquals(0, ShadowDialog.getShownDialogs().size());
 
-    TestDialog dialog = new TestDialog(Robolectric.application);
+    TestDialog dialog = new TestDialog(RuntimeEnvironment.application);
     dialog.show();
 
     assertEquals(1, ShadowDialog.getShownDialogs().size());
     assertEquals(dialog, ShadowDialog.getShownDialogs().get(0));
 
-    TestDialog dialog2 = new TestDialog(Robolectric.application);
+    TestDialog dialog2 = new TestDialog(RuntimeEnvironment.application);
     dialog2.show();
 
     assertEquals(2, ShadowDialog.getShownDialogs().size());
@@ -167,9 +169,15 @@ public class DialogTest {
 
   @Test
   public void shouldFindViewsWithinAContentViewThatWasPreviouslySet() throws Exception {
-    Dialog dialog = new Dialog(Robolectric.application);
+    Dialog dialog = new Dialog(RuntimeEnvironment.application);
     dialog.setContentView(dialog.getLayoutInflater().inflate(R.layout.main, null));
     assertInstanceOf(TextView.class, dialog.findViewById(R.id.title));
+  }
+
+  @Test @Config(emulateSdk = 19)
+  public void show_shouldWorkWithAPI19() {
+    Dialog dialog = new Dialog(RuntimeEnvironment.application);
+    dialog.show();
   }
 
   private static class TestDialog extends Dialog {
@@ -193,7 +201,7 @@ public class DialogTest {
 
   private static class NestingTestDialog extends Dialog {
     public NestingTestDialog() {
-      super(Robolectric.application);
+      super(RuntimeEnvironment.application);
     }
 
     @Override

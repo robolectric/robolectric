@@ -12,9 +12,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
+import org.robolectric.internal.Shadow;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -28,12 +29,12 @@ public class BitmapDrawableTest {
 
   @Before
   public void setUp() throws Exception {
-    resources = Robolectric.application.getResources();
+    resources = RuntimeEnvironment.application.getResources();
   }
 
   @Test
   public void constructors_shouldSetBitmap() throws Exception {
-    Bitmap bitmap = Robolectric.newInstanceOf(Bitmap.class);
+    Bitmap bitmap = Shadow.newInstanceOf(Bitmap.class);
     BitmapDrawable drawable = new BitmapDrawable(bitmap);
     assertEquals(bitmap, drawable.getBitmap());
 
@@ -124,14 +125,14 @@ public class BitmapDrawableTest {
   @Test
   public void constructor_shouldSetTheIntrinsicWidthAndHeightToTheWidthAndHeightOfTheBitmap() throws Exception {
     Bitmap bitmap = Bitmap.createBitmap(5, 10, Bitmap.Config.ARGB_8888);
-    BitmapDrawable drawable = new BitmapDrawable(Robolectric.application.getResources(), bitmap);
+    BitmapDrawable drawable = new BitmapDrawable(RuntimeEnvironment.application.getResources(), bitmap);
     assertEquals(5, drawable.getIntrinsicWidth());
     assertEquals(10, drawable.getIntrinsicHeight());
   }
 
   @Test
   public void constructor_shouldAcceptNullBitmap() throws Exception {
-    BitmapDrawable drawable = new BitmapDrawable(Robolectric.application.getResources(), (Bitmap) null);
+    BitmapDrawable drawable = new BitmapDrawable(RuntimeEnvironment.application.getResources(), (Bitmap) null);
     assertNotNull(drawable);
   }
 }

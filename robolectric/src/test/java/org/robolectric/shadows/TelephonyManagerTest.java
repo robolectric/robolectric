@@ -10,8 +10,9 @@ import org.robolectric.TestRunners;
 import static android.content.Context.TELEPHONY_SERVICE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.robolectric.Robolectric.*;
+import static org.robolectric.RuntimeEnvironment.*;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.internal.Shadow.newInstanceOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class TelephonyManagerTest {

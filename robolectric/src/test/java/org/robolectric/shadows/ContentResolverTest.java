@@ -21,9 +21,9 @@ import android.os.RemoteException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.AndroidManifest;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.DefaultTestLifecycle;
-import org.robolectric.Robolectric;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.manifest.ContentProviderData;
@@ -541,7 +541,7 @@ public class ContentResolverTest {
 
   @Test
   public void getProvider_shouldCreateProviderFromManifest() {
-    AndroidManifest manifest = Robolectric.getShadowApplication().getAppManifest();
+    AndroidManifest manifest = ShadowApplication.getInstance().getAppManifest();
     ContentProviderData testProviderData = new ContentProviderData("org.robolectric.shadows.ContentResolverTest$TestContentProvider", AUTHORITY);
     try {
       manifest.getContentProviders().add(testProviderData);
@@ -553,7 +553,7 @@ public class ContentResolverTest {
 
   @Test
   public void getProvider_shouldNotReturnAnyProviderWhenManifestIsNull() {
-    Robolectric.application = new DefaultTestLifecycle().createApplication(null, null, null);
+    RuntimeEnvironment.application = new DefaultTestLifecycle().createApplication(null, null, null);
     assertThat(ShadowContentResolver.getProvider(Uri.parse("content://"))).isNull();
   }
 

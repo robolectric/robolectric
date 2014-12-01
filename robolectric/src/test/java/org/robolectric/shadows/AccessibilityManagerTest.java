@@ -4,6 +4,7 @@ import org.junit.Test;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import static org.assertj.core.api.Assertions.*;
 
@@ -23,7 +24,7 @@ public class AccessibilityManagerTest {
 
   @Before
   public void setUp() throws Exception {
-    accessibilityManager = (AccessibilityManager) Robolectric.application.getSystemService(ACCESSIBILITY_SERVICE);
+    accessibilityManager = (AccessibilityManager) RuntimeEnvironment.application.getSystemService(ACCESSIBILITY_SERVICE);
     shadowAccessibilityManager = shadowOf(accessibilityManager);
   }
 

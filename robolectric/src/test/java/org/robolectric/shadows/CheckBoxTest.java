@@ -4,6 +4,7 @@ import android.widget.CheckBox;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -12,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class CheckBoxTest {
   @Test
   public void testWorks() throws Exception {
-    CheckBox checkBox = new CheckBox(Robolectric.application);
+    CheckBox checkBox = new CheckBox(RuntimeEnvironment.application);
     assertThat(checkBox.isChecked()).isFalse();
 
     checkBox.setChecked(true);

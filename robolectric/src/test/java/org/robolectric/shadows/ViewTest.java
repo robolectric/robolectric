@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
@@ -27,8 +28,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.res.Attribute;
+import org.robolectric.res.ResourceLoader;
 import org.robolectric.util.TestAnimationListener;
 import org.robolectric.util.TestOnClickListener;
 import org.robolectric.util.TestOnLongClickListener;
@@ -44,26 +47,28 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
-import static org.robolectric.Robolectric.application;
 import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.Robolectric.visualize;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ViewTest {
   private View view;
   private Transcript transcript;
+  private Resources resources;
+  private ResourceLoader resourceLoader;
 
   @Before
   public void setUp() throws Exception {
     transcript = new Transcript();
-    view = new View(application);
+    view = new View(RuntimeEnvironment.application);
+    resources = RuntimeEnvironment.application.getResources();
+    resourceLoader = shadowOf(resources).getResourceLoader();
   }
 
   @Test
   public void testHasNullLayoutParamsUntilAddedToParent() throws Exception {
     assertThat(view.getLayoutParams()).isNull();
-    new LinearLayout(application).addView(view);
+    new LinearLayout(RuntimeEnvironment.application).addView(view);
     assertThat(view.getLayoutParams()).isNotNull();
   }
 
@@ -79,7 +84,7 @@ public class ViewTest {
 
   @Test
   public void measuredDimensions() throws Exception {
-    View view1 = new View(Robolectric.application) {
+    View view1 = new View(RuntimeEnvironment.application) {
       {
         setMeasuredDimension(123, 456);
       }
@@ -90,7 +95,7 @@ public class ViewTest {
 
   @Test
   public void layout_shouldCallOnLayoutOnlyIfChanged() throws Exception {
-    View view1 = new View(Robolectric.application) {
+    View view1 = new View(RuntimeEnvironment.application) {
       @Override
       protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         transcript.add("onLayout " + changed + " " + left + " " + top + " " + right + " " + bottom);
@@ -130,7 +135,7 @@ public class ViewTest {
     assertTrue(view.hasFocus());
     transcript.assertEventsSoFar("Gained focus");
 
-    shadowOf(view).setMyParent(new LinearLayout(application)); // we can never lose focus unless a parent can take it
+    shadowOf(view).setMyParent(new LinearLayout(RuntimeEnvironment.application)); // we can never lose focus unless a parent can take it
 
     view.clearFocus();
     assertFalse(view.isFocused());
@@ -153,10 +158,10 @@ public class ViewTest {
     assertThat(view.isShown()).isTrue();
     shadowOf(view).setMyParent(null);
 
-    ViewGroup parent = new LinearLayout(Robolectric.application);
+    ViewGroup parent = new LinearLayout(RuntimeEnvironment.application);
     parent.addView(view);
 
-    ViewGroup grandParent = new LinearLayout(Robolectric.application);
+    ViewGroup grandParent = new LinearLayout(RuntimeEnvironment.application);
     grandParent.addView(parent);
 
     grandParent.setVisibility(View.GONE);
@@ -166,8 +171,8 @@ public class ViewTest {
 
   @Test
   public void shouldInflateMergeRootedLayoutAndNotCreateReferentialLoops() throws Exception {
-    LinearLayout root = new LinearLayout(Robolectric.application);
-    LinearLayout.inflate(Robolectric.application, R.layout.inner_merge, root);
+    LinearLayout root = new LinearLayout(RuntimeEnvironment.application);
+    LinearLayout.inflate(RuntimeEnvironment.application, R.layout.inner_merge, root);
     for (int i = 0; i < root.getChildCount(); i++) {
       View child = root.getChildAt(i);
       assertNotSame(root, child);
@@ -195,8 +200,8 @@ public class ViewTest {
 
   @Test(expected = RuntimeException.class)
   public void checkedClick_shouldThrowIfViewIsNotVisible() throws Exception {
-    ViewGroup grandParent = new LinearLayout(Robolectric.application);
-    ViewGroup parent = new LinearLayout(Robolectric.application);
+    ViewGroup grandParent = new LinearLayout(RuntimeEnvironment.application);
+    ViewGroup parent = new LinearLayout(RuntimeEnvironment.application);
     grandParent.addView(parent);
     parent.addView(view);
     grandParent.setVisibility(View.GONE);
@@ -252,42 +257,42 @@ public class ViewTest {
     Drawable drawable = new BitmapDrawable(BitmapFactory.decodeFile("some/fake/file"));
     view.setBackgroundDrawable(drawable);
     assertThat(view.getBackground()).isSameAs(drawable);
-    assertThat(visualize(view)).isEqualTo("background:\nBitmap for file:some/fake/file");
+    assertThat(ShadowView.visualize(view)).isEqualTo("background:\nBitmap for file:some/fake/file");
   }
 
   @Test
   public void shouldPostActionsToTheMessageQueue() throws Exception {
-    Robolectric.pauseMainLooper();
+    ShadowLooper.pauseMainLooper();
 
     TestRunnable runnable = new TestRunnable();
     view.post(runnable);
     assertFalse(runnable.wasRun);
 
-    Robolectric.unPauseMainLooper();
+    ShadowLooper.unPauseMainLooper();
     assertTrue(runnable.wasRun);
   }
 
   @Test
   public void shouldPostInvalidateDelayed() throws Exception {
-    Robolectric.pauseMainLooper();
+    ShadowLooper.pauseMainLooper();
 
     view.postInvalidateDelayed(100);
     ShadowView shadowView = shadowOf(view);
     assertFalse(shadowView.wasInvalidated());
 
-    Robolectric.unPauseMainLooper();
+    ShadowLooper.unPauseMainLooper();
     assertTrue(shadowView.wasInvalidated());
   }
 
   @Test
   public void shouldPostActionsToTheMessageQueueWithDelay() throws Exception {
-    Robolectric.pauseMainLooper();
+    ShadowLooper.pauseMainLooper();
 
     TestRunnable runnable = new TestRunnable();
     view.postDelayed(runnable, 1);
     assertFalse(runnable.wasRun);
 
-    Robolectric.getUiThreadScheduler().advanceBy(1);
+    ShadowLooper.getUiThreadScheduler().advanceBy(1);
     assertTrue(runnable.wasRun);
   }
 
@@ -298,15 +303,15 @@ public class ViewTest {
 
     view.removeCallbacks(runnable);
 
-    Robolectric.getUiThreadScheduler().advanceBy(1);
+    ShadowLooper.getUiThreadScheduler().advanceBy(1);
     assertThat(runnable.wasRun).isFalse();
   }
 
   @Test
   public void shouldSupportAllConstructors() throws Exception {
-    new View(Robolectric.application);
-    new View(Robolectric.application, null);
-    new View(Robolectric.application, null, 0);
+    new View(RuntimeEnvironment.application);
+    new View(RuntimeEnvironment.application, null);
+    new View(RuntimeEnvironment.application, null, 0);
   }
 
   @Test
@@ -319,17 +324,17 @@ public class ViewTest {
 
   @Test
   public void shouldAddOnClickListenerFromAttribute() throws Exception {
-    RoboAttributeSet attrs = new RoboAttributeSet(new ArrayList<Attribute>(), Robolectric.application.getResources(), null);
+    RoboAttributeSet attrs = new RoboAttributeSet(new ArrayList<Attribute>(), resourceLoader);
     attrs.put("android:attr/onClick", "clickMe", R.class.getPackage().getName());
 
-    view = new View(Robolectric.application, attrs);
+    view = new View(RuntimeEnvironment.application, attrs);
     assertNotNull(shadowOf(view).getOnClickListener());
   }
 
   @Test
   public void shouldCallOnClickWithAttribute() throws Exception {
     MyActivity myActivity = buildActivity(MyActivity.class).create().get();
-    RoboAttributeSet attrs = new RoboAttributeSet(new ArrayList<Attribute>(), Robolectric.application.getResources(), null);
+    RoboAttributeSet attrs = new RoboAttributeSet(new ArrayList<Attribute>(), resourceLoader);
     attrs.put("android:attr/onClick", "clickMe", R.class.getPackage().getName());
 
     view = new View(myActivity, attrs);
@@ -340,7 +345,7 @@ public class ViewTest {
   @Test(expected = RuntimeException.class)
   public void shouldThrowExceptionWithBadMethodName() throws Exception {
     MyActivity myActivity = buildActivity(MyActivity.class).create().get();
-    RoboAttributeSet attrs = new RoboAttributeSet(new ArrayList<Attribute>(), Robolectric.application.getResources(), null);
+    RoboAttributeSet attrs = new RoboAttributeSet(new ArrayList<Attribute>(), resourceLoader);
     attrs.put("android:onClick", "clickYou", R.class.getPackage().getName());
 
     view = new View(myActivity, attrs);
@@ -407,7 +412,7 @@ public class ViewTest {
 
   @Test
   public void dispatchTouchEvent_sendsMotionEventToOnTouchEvent() throws Exception {
-    TouchableView touchableView = new TouchableView(Robolectric.application);
+    TouchableView touchableView = new TouchableView(RuntimeEnvironment.application);
     MotionEvent event = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 12f, 34f, 0);
     touchableView.dispatchTouchEvent(event);
     assertThat(touchableView.event).isSameAs(event);
@@ -708,10 +713,10 @@ public class ViewTest {
 
     parent.addView(new MyView("child", transcript));
     parent.addView(new MyView("another child", transcript));
-    Robolectric.runUiThreadTasks();
+    ShadowLooper.runUiThreadTasks();
     transcript.clear();
     parent.removeAllViews();
-    Robolectric.runUiThreadTasks();
+    ShadowLooper.runUiThreadTasks();
     transcript.assertEventsSoFar("another child detached", "child detached");
   }
 
@@ -758,7 +763,7 @@ public class ViewTest {
     private Transcript transcript;
 
     public MyView(String name, Transcript transcript) {
-      super(Robolectric.application);
+      super(RuntimeEnvironment.application);
       this.name = name;
       this.transcript = transcript;
     }

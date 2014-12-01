@@ -59,7 +59,7 @@ public class ParallelUniverseTest {
   }
 
   private String getQualifiersFromAppAssetManager() {
-    return Shadows.shadowOf(Robolectric.application.getResources().getAssets()).getQualifiers();
+    return Shadows.shadowOf(RuntimeEnvironment.application.getResources().getAssets()).getQualifiers();
   }
 
   private String getQualifiersFromSystemAssetManager() {

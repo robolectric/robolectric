@@ -11,6 +11,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -22,19 +23,19 @@ public class TabHostTest {
 
   @Test
   public void newTabSpec_shouldMakeATabSpec() throws Exception {
-    TabHost tabHost = new TabHost(Robolectric.application);
+    TabHost tabHost = new TabHost(RuntimeEnvironment.application);
     TabHost.TabSpec tabSpec = tabHost.newTabSpec("Foo");
     assertThat(tabSpec.getTag()).isEqualTo("Foo");
   }
 
   @Test
   public void shouldAddTabsToLayoutWhenAddedToHost() {
-    TabHost tabHost = new TabHost(Robolectric.application);
+    TabHost tabHost = new TabHost(RuntimeEnvironment.application);
 
-    View fooView = new View(Robolectric.application);
+    View fooView = new View(RuntimeEnvironment.application);
     TabHost.TabSpec foo = tabHost.newTabSpec("Foo").setIndicator(fooView);
 
-    View barView = new View(Robolectric.application);
+    View barView = new View(RuntimeEnvironment.application);
     TabHost.TabSpec bar = tabHost.newTabSpec("Bar").setIndicator(barView);
 
     tabHost.addTab(foo);
@@ -46,7 +47,7 @@ public class TabHostTest {
 
   @Test
   public void shouldReturnTabSpecsByTag() throws Exception {
-    TabHost tabHost = new TabHost(Robolectric.application);
+    TabHost tabHost = new TabHost(RuntimeEnvironment.application);
     TabHost.TabSpec foo = tabHost.newTabSpec("Foo");
     TabHost.TabSpec bar = tabHost.newTabSpec("Bar");
     TabHost.TabSpec baz = tabHost.newTabSpec("Baz");
@@ -62,7 +63,7 @@ public class TabHostTest {
 
   @Test
   public void shouldFireTheTabChangeListenerWhenCurrentTabIsSet() throws Exception {
-    TabHost tabHost = new TabHost(Robolectric.application);
+    TabHost tabHost = new TabHost(RuntimeEnvironment.application);
 
     TabHost.TabSpec foo = tabHost.newTabSpec("Foo");
     TabHost.TabSpec bar = tabHost.newTabSpec("Bar");
@@ -82,7 +83,7 @@ public class TabHostTest {
 
   @Test
   public void shouldFireTheTabChangeListenerWhenTheCurrentTabIsSetByTag() throws Exception {
-    TabHost tabHost = new TabHost(Robolectric.application);
+    TabHost tabHost = new TabHost(RuntimeEnvironment.application);
 
     TabHost.TabSpec foo = tabHost.newTabSpec("Foo");
     TabHost.TabSpec bar = tabHost.newTabSpec("Bar");
@@ -102,12 +103,12 @@ public class TabHostTest {
 
   @Test
   public void shouldRetrieveTheCurrentViewFromTabContentFactory() {
-    TabHost tabHost = new TabHost(Robolectric.application);
+    TabHost tabHost = new TabHost(RuntimeEnvironment.application);
 
     TabHost.TabSpec foo = tabHost.newTabSpec("Foo").setContent(
     new TabContentFactory() {
       public View createTabContent(String tag) {
-        TextView tv = new TextView(Robolectric.application);
+        TextView tv = new TextView(RuntimeEnvironment.application);
         tv.setText("The Text of " + tag);
         return tv;
       }
@@ -145,7 +146,7 @@ public class TabHostTest {
 
   @Test
   public void canGetCurrentTabTag() throws Exception {
-    TabHost tabHost = new TabHost(Robolectric.application);
+    TabHost tabHost = new TabHost(RuntimeEnvironment.application);
 
     TabHost.TabSpec foo = tabHost.newTabSpec("Foo");
     TabHost.TabSpec bar = tabHost.newTabSpec("Bar");
@@ -162,7 +163,7 @@ public class TabHostTest {
 
   @Test
   public void canGetCurrentTab() throws Exception {
-    TabHost tabHost = new TabHost(Robolectric.application);
+    TabHost tabHost = new TabHost(RuntimeEnvironment.application);
 
     TabHost.TabSpec foo = tabHost.newTabSpec("Foo");
     TabHost.TabSpec bar = tabHost.newTabSpec("Bar");
@@ -186,7 +187,7 @@ public class TabHostTest {
 
   @Test
   public void setCurrentTabByTagShouldAcceptNullAsParameter() throws Exception {
-    TabHost tabHost = new TabHost(Robolectric.application);
+    TabHost tabHost = new TabHost(RuntimeEnvironment.application);
     TabHost.TabSpec foo = tabHost.newTabSpec("Foo");
     tabHost.addTab(foo);
 

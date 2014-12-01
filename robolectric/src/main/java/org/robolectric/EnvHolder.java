@@ -1,5 +1,6 @@
 package org.robolectric;
 
+import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.FsFile;
 
 import java.lang.ref.SoftReference;

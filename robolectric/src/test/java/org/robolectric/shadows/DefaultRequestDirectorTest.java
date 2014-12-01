@@ -19,7 +19,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.tester.org.apache.http.FakeHttpLayer;
 import org.robolectric.tester.org.apache.http.RequestMatcher;
@@ -40,7 +39,7 @@ public class DefaultRequestDirectorTest {
 
   @Before
   public void setUp_EnsureStaticStateIsReset() {
-    FakeHttpLayer fakeHttpLayer = Robolectric.getFakeHttpLayer();
+    FakeHttpLayer fakeHttpLayer = ShadowApplication.getInstance().getFakeHttpLayer();
     assertFalse(fakeHttpLayer.hasPendingResponses());
     assertFalse(fakeHttpLayer.hasRequestInfos());
     assertFalse(fakeHttpLayer.hasResponseRules());
@@ -56,12 +55,12 @@ public class DefaultRequestDirectorTest {
 
   @After
   public void tearDown_EnsureStaticStateIsReset() throws Exception {
-    Robolectric.addPendingHttpResponse(200, "a happy response body");
+    FakeHttp.addPendingHttpResponse(200, "a happy response body");
   }
 
   @Test
   public void shouldGetHttpResponseFromExecute() throws Exception {
-    Robolectric.addPendingHttpResponse(new TestHttpResponse(200, "a happy response body"));
+    FakeHttp.addPendingHttpResponse(new TestHttpResponse(200, "a happy response body"));
     HttpResponse response = requestDirector.execute(null, new HttpGet("http://example.com"), null);
 
     assertNotNull(response);
@@ -71,9 +70,9 @@ public class DefaultRequestDirectorTest {
 
   @Test
   public void shouldPreferPendingResponses() throws Exception {
-    Robolectric.addPendingHttpResponse(new TestHttpResponse(200, "a happy response body"));
+    FakeHttp.addPendingHttpResponse(new TestHttpResponse(200, "a happy response body"));
 
-    Robolectric.addHttpResponseRule(HttpGet.METHOD_NAME, "http://some.uri",
+    FakeHttp.addHttpResponseRule(HttpGet.METHOD_NAME, "http://some.uri",
         new TestHttpResponse(200, "a cheery response body"));
 
     HttpResponse response = requestDirector.execute(null, new HttpGet("http://some.uri"), null);
@@ -85,7 +84,7 @@ public class DefaultRequestDirectorTest {
 
   @Test
   public void shouldReturnRequestsByRule() throws Exception {
-    Robolectric.addHttpResponseRule(HttpGet.METHOD_NAME, "http://some.uri",
+    FakeHttp.addHttpResponseRule(HttpGet.METHOD_NAME, "http://some.uri",
         new TestHttpResponse(200, "a cheery response body"));
 
     HttpResponse response = requestDirector.execute(null, new HttpGet("http://some.uri"), null);
@@ -97,8 +96,8 @@ public class DefaultRequestDirectorTest {
 
   @Test
   public void shouldReturnRequestsByRule_MatchingMethod() throws Exception {
-    Robolectric.setDefaultHttpResponse(404, "no such page");
-    Robolectric.addHttpResponseRule(HttpPost.METHOD_NAME, "http://some.uri",
+    FakeHttp.setDefaultHttpResponse(404, "no such page");
+    FakeHttp.addHttpResponseRule(HttpPost.METHOD_NAME, "http://some.uri",
         new TestHttpResponse(200, "a cheery response body"));
 
     HttpResponse response = requestDirector.execute(null, new HttpGet("http://some.uri"), null);
@@ -109,7 +108,7 @@ public class DefaultRequestDirectorTest {
 
   @Test
   public void shouldReturnRequestsByRule_AnyMethod() throws Exception {
-    Robolectric.addHttpResponseRule("http://some.uri", new TestHttpResponse(200, "a cheery response body"));
+    FakeHttp.addHttpResponseRule("http://some.uri", new TestHttpResponse(200, "a cheery response body"));
 
     HttpResponse getResponse = requestDirector.execute(null, new HttpGet("http://some.uri"), null);
     assertNotNull(getResponse);
@@ -125,7 +124,7 @@ public class DefaultRequestDirectorTest {
   @Test
   public void shouldReturnRequestsByRule_KeepsTrackOfOpenContentStreams() throws Exception {
     TestHttpResponse testHttpResponse = new TestHttpResponse(200, "a cheery response body");
-    Robolectric.addHttpResponseRule("http://some.uri", testHttpResponse);
+    FakeHttp.addHttpResponseRule("http://some.uri", testHttpResponse);
 
     assertThat(testHttpResponse.entityContentStreamsHaveBeenClosed()).isTrue();
 
@@ -148,7 +147,7 @@ public class DefaultRequestDirectorTest {
 
   @Test
   public void shouldReturnRequestsByRule_WithTextResponse() throws Exception {
-    Robolectric.addHttpResponseRule("http://some.uri", "a cheery response body");
+    FakeHttp.addHttpResponseRule("http://some.uri", "a cheery response body");
 
     HttpResponse response = requestDirector.execute(null, new HttpGet("http://some.uri"), null);
 
@@ -159,9 +158,9 @@ public class DefaultRequestDirectorTest {
 
   @Test
   public void clearHttpResponseRules_shouldRemoveAllRules() throws Exception {
-    Robolectric.addHttpResponseRule("http://some.uri", "a cheery response body");
-    Robolectric.clearHttpResponseRules();
-    Robolectric.addHttpResponseRule("http://some.uri", "a gloomy response body");
+    FakeHttp.addHttpResponseRule("http://some.uri", "a cheery response body");
+    FakeHttp.clearHttpResponseRules();
+    FakeHttp.addHttpResponseRule("http://some.uri", "a gloomy response body");
 
     HttpResponse response = requestDirector.execute(null, new HttpGet("http://some.uri"), null);
 
@@ -172,9 +171,9 @@ public class DefaultRequestDirectorTest {
 
   @Test
   public void clearPendingHttpResponses() throws Exception {
-    Robolectric.addPendingHttpResponse(200, "earlier");
-    Robolectric.clearPendingHttpResponses();
-    Robolectric.addPendingHttpResponse(500, "later");
+    FakeHttp.addPendingHttpResponse(200, "earlier");
+    FakeHttp.clearPendingHttpResponses();
+    FakeHttp.addPendingHttpResponse(500, "later");
 
     HttpResponse response = requestDirector.execute(null, new HttpGet("http://some.uri"), null);
 
@@ -185,10 +184,11 @@ public class DefaultRequestDirectorTest {
 
   @Test
   public void shouldReturnRequestsByRule_WithCustomRequestMatcher() throws Exception {
-    Robolectric.setDefaultHttpResponse(404, "no such page");
+    FakeHttp.setDefaultHttpResponse(404, "no such page");
 
-    Robolectric.addHttpResponseRule(new RequestMatcher() {
-      @Override public boolean matches(HttpRequest request) {
+    FakeHttp.addHttpResponseRule(new RequestMatcher() {
+      @Override
+      public boolean matches(HttpRequest request) {
         return request.getRequestLine().getUri().equals("http://matching.uri");
       }
     }, new TestHttpResponse(200, "a cheery response body"));
@@ -206,7 +206,7 @@ public class DefaultRequestDirectorTest {
 
   @Test
   public void shouldGetHttpResponseFromExecuteSimpleApi() throws Exception {
-    Robolectric.addPendingHttpResponse(200, "a happy response body");
+    FakeHttp.addPendingHttpResponse(200, "a happy response body");
     HttpResponse response = requestDirector.execute(null, new HttpGet("http://example.com"), null);
 
     assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
@@ -215,8 +215,8 @@ public class DefaultRequestDirectorTest {
 
   @Test
   public void shouldHandleMultipleInvocations() throws Exception {
-    Robolectric.addPendingHttpResponse(200, "a happy response body");
-    Robolectric.addPendingHttpResponse(201, "another happy response body");
+    FakeHttp.addPendingHttpResponse(200, "a happy response body");
+    FakeHttp.addPendingHttpResponse(201, "another happy response body");
 
     HttpResponse response1 = requestDirector.execute(null, new HttpGet("http://example.com"), null);
     HttpResponse response2 = requestDirector.execute(null, new HttpGet("www.example.com"), null);
@@ -230,17 +230,17 @@ public class DefaultRequestDirectorTest {
 
   @Test
   public void shouldHandleMultipleInvocationsOfExecute() throws Exception {
-    Robolectric.addPendingHttpResponse(200, "a happy response body");
-    Robolectric.addPendingHttpResponse(201, "another happy response body");
+    FakeHttp.addPendingHttpResponse(200, "a happy response body");
+    FakeHttp.addPendingHttpResponse(201, "another happy response body");
 
     requestDirector.execute(null, new HttpGet("http://example.com"), null);
     requestDirector.execute(null, new HttpGet("www.example.com"), null);
 
-    HttpUriRequest request1 = (HttpUriRequest) Robolectric.getSentHttpRequest(0);
+    HttpUriRequest request1 = (HttpUriRequest) FakeHttp.getSentHttpRequest(0);
     assertThat(request1.getMethod()).isEqualTo(HttpGet.METHOD_NAME);
     assertThat(request1.getURI()).isEqualTo(URI.create("http://example.com"));
 
-    HttpUriRequest request2 = (HttpUriRequest) Robolectric.getSentHttpRequest(1);
+    HttpUriRequest request2 = (HttpUriRequest) FakeHttp.getSentHttpRequest(1);
     assertThat(request2.getMethod()).isEqualTo(HttpGet.METHOD_NAME);
     assertThat(request2.getURI()).isEqualTo(URI.create("www.example.com"));
   }
@@ -257,43 +257,43 @@ public class DefaultRequestDirectorTest {
 
   @Test
   public void shouldRecordExtendedRequestData() throws Exception {
-    Robolectric.addPendingHttpResponse(200, "a happy response body");
+    FakeHttp.addPendingHttpResponse(200, "a happy response body");
     HttpGet httpGet = new HttpGet("http://example.com");
     requestDirector.execute(null, httpGet, null);
 
-    assertSame(Robolectric.getSentHttpRequestInfo(0).getHttpRequest(), httpGet);
-    ConnectionKeepAliveStrategy strategy = shadowOf((DefaultRequestDirector) Robolectric.getSentHttpRequestInfo(0).getRequestDirector()).getConnectionKeepAliveStrategy();
+    assertSame(FakeHttp.getSentHttpRequestInfo(0).getHttpRequest(), httpGet);
+    ConnectionKeepAliveStrategy strategy = shadowOf((DefaultRequestDirector) FakeHttp.getSentHttpRequestInfo(0).getRequestDirector()).getConnectionKeepAliveStrategy();
     assertSame(strategy, connectionKeepAliveStrategy);
   }
 
   @Test
   public void getNextSentHttpRequestInfo_shouldRemoveHttpRequestInfos() throws Exception {
-    Robolectric.addPendingHttpResponse(200, "a happy response body");
+    FakeHttp.addPendingHttpResponse(200, "a happy response body");
     HttpGet httpGet = new HttpGet("http://example.com");
     requestDirector.execute(null, httpGet, null);
 
-    assertSame(Robolectric.getNextSentHttpRequestInfo().getHttpRequest(), httpGet);
-    assertNull(Robolectric.getNextSentHttpRequestInfo());
+    assertSame(FakeHttp.getNextSentHttpRequestInfo().getHttpRequest(), httpGet);
+    assertNull(FakeHttp.getNextSentHttpRequestInfo());
   }
 
   @Test
   public void getNextSentHttpRequest_shouldRemoveHttpRequests() throws Exception {
-    Robolectric.addPendingHttpResponse(200, "a happy response body");
+    FakeHttp.addPendingHttpResponse(200, "a happy response body");
     HttpGet httpGet = new HttpGet("http://example.com");
     requestDirector.execute(null, httpGet, null);
 
-    assertSame(Robolectric.getNextSentHttpRequest(), httpGet);
-    assertNull(Robolectric.getNextSentHttpRequest());
+    assertSame(FakeHttp.getNextSentHttpRequest(), httpGet);
+    assertNull(FakeHttp.getNextSentHttpRequest());
   }
 
   @Test
   public void shouldSupportBasicResponseHandlerHandleResponse() throws Exception {
-    Robolectric.addPendingHttpResponse(200, "OK", new BasicHeader("Content-Type", "text/plain"));
+    FakeHttp.addPendingHttpResponse(200, "OK", new BasicHeader("Content-Type", "text/plain"));
 
     DefaultHttpClient client = new DefaultHttpClient();
     HttpResponse response = client.execute(new HttpGet("http://www.nowhere.org"));
 
-    assertThat(((HttpUriRequest) Robolectric.getSentHttpRequest(0)).getURI()).isEqualTo(URI.create("http://www.nowhere.org"));
+    assertThat(((HttpUriRequest) FakeHttp.getSentHttpRequest(0)).getURI()).isEqualTo(URI.create("http://www.nowhere.org"));
 
     Assert.assertNotNull(response);
     String responseStr = new BasicResponseHandler().handleResponse(response);
@@ -302,22 +302,22 @@ public class DefaultRequestDirectorTest {
 
   @Test
   public void shouldFindLastRequestMade() throws Exception {
-    Robolectric.addPendingHttpResponse(200, "a happy response body");
-    Robolectric.addPendingHttpResponse(200, "a happy response body");
-    Robolectric.addPendingHttpResponse(200, "a happy response body");
+    FakeHttp.addPendingHttpResponse(200, "a happy response body");
+    FakeHttp.addPendingHttpResponse(200, "a happy response body");
+    FakeHttp.addPendingHttpResponse(200, "a happy response body");
 
     DefaultHttpClient client = new DefaultHttpClient();
     client.execute(new HttpGet("http://www.first.org"));
     client.execute(new HttpGet("http://www.second.org"));
     client.execute(new HttpGet("http://www.third.org"));
 
-    assertThat(((HttpUriRequest) Robolectric.getLatestSentHttpRequest()).getURI()).isEqualTo(URI.create("http://www.third.org"));
+    assertThat(((HttpUriRequest) FakeHttp.getLatestSentHttpRequest()).getURI()).isEqualTo(URI.create("http://www.third.org"));
   }
 
 
   @Test
   public void shouldSupportConnectionTimeoutWithExceptions() throws Exception {
-    Robolectric.setDefaultHttpResponse(new TestHttpResponse() {
+    FakeHttp.setDefaultHttpResponse(new TestHttpResponse() {
       @Override
       public HttpParams getParams() {
         HttpParams httpParams = super.getParams();
@@ -338,7 +338,7 @@ public class DefaultRequestDirectorTest {
 
   @Test
   public void shouldSupportSocketTimeoutWithExceptions() throws Exception {
-    Robolectric.setDefaultHttpResponse(new TestHttpResponse() {
+    FakeHttp.setDefaultHttpResponse(new TestHttpResponse() {
       @Override
       public HttpParams getParams() {
         HttpParams httpParams = super.getParams();
@@ -359,14 +359,14 @@ public class DefaultRequestDirectorTest {
 
   @Test(expected = IOException.class)
   public void shouldSupportRealHttpRequests() throws Exception {
-    Robolectric.getFakeHttpLayer().interceptHttpRequests(false);
+    ShadowApplication.getInstance().getFakeHttpLayer().interceptHttpRequests(false);
     DefaultHttpClient client = new DefaultHttpClient();
     client.execute(new HttpGet("http://www.this-host-should-not-exist-123456790.org:999"));
   }
 
   @Test
   public void shouldSupportRealHttpRequestsAddingRequestInfo() throws Exception {
-    Robolectric.getFakeHttpLayer().interceptHttpRequests(false);
+    ShadowApplication.getInstance().getFakeHttpLayer().interceptHttpRequests(false);
     DefaultHttpClient client = new DefaultHttpClient();
 
     // it's really bad to depend on an external server in order to get a test pass,
@@ -374,22 +374,22 @@ public class DefaultRequestDirectorTest {
     // so, I think that in this specific case, it's appropriate...
     client.execute(new HttpGet("http://google.com"));
 
-    assertNotNull(Robolectric.getFakeHttpLayer().getLastSentHttpRequestInfo());
-    assertNotNull(Robolectric.getFakeHttpLayer().getLastHttpResponse());
+    assertNotNull(ShadowApplication.getInstance().getFakeHttpLayer().getLastSentHttpRequestInfo());
+    assertNotNull(ShadowApplication.getInstance().getFakeHttpLayer().getLastHttpResponse());
   }
 
   @Test
   public void realHttpRequestsShouldMakeContentDataAvailable() throws Exception {
-    Robolectric.getFakeHttpLayer().interceptHttpRequests(false);
-    Robolectric.getFakeHttpLayer().interceptResponseContent(true);
+    ShadowApplication.getInstance().getFakeHttpLayer().interceptHttpRequests(false);
+    ShadowApplication.getInstance().getFakeHttpLayer().interceptResponseContent(true);
     DefaultHttpClient client = new DefaultHttpClient();
 
     client.execute(new HttpGet("http://google.com"));
 
-    byte[] cachedContent = Robolectric.getFakeHttpLayer().getHttpResposeContentList().get(0);
+    byte[] cachedContent = ShadowApplication.getInstance().getFakeHttpLayer().getHttpResposeContentList().get(0);
     assertThat(cachedContent.length).isNotEqualTo(0);
 
-    InputStream content = Robolectric.getFakeHttpLayer().getLastHttpResponse().getEntity().getContent();
+    InputStream content = ShadowApplication.getInstance().getFakeHttpLayer().getLastHttpResponse().getEntity().getContent();
     BufferedReader contentReader = new BufferedReader(new InputStreamReader(content));
     String firstLineOfContent = contentReader.readLine();
     assertThat(firstLineOfContent).contains("Google");
@@ -401,7 +401,7 @@ public class DefaultRequestDirectorTest {
 
   @Test
   public void shouldReturnResponseFromHttpResponseGenerator() throws Exception {
-    Robolectric.addPendingHttpResponse(new HttpResponseGenerator() {
+    FakeHttp.addPendingHttpResponse(new HttpResponseGenerator() {
       @Override
       public HttpResponse getResponse(HttpRequest request) {
         return new TestHttpResponse(200, "a happy response body");

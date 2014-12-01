@@ -10,7 +10,7 @@ import org.robolectric.annotation.processing.shadows.ShadowDummy;
 import org.robolectric.annotation.processing.shadows.ShadowOuterDummy;
 import org.robolectric.annotation.processing.shadows.ShadowUniqueDummy;
 import org.robolectric.annotation.processing.shadows.ShadowUniqueDummy.ShadowUniqueInnerDummy;
-import org.robolectric.util.ShadowExtractor;
+import org.robolectric.internal.ShadowExtractor;
 
 @Generated("org.robolectric.annotation.processing.RoboProcessor")
 public class Shadows {
@@ -25,35 +25,30 @@ public class Shadows {
   };
   
   public static ShadowDummy shadowOf(Dummy actual) {
-    return (ShadowDummy) shadowOf_(actual);
+    return (ShadowDummy) ShadowExtractor.extract(actual);
   }
   
   public static ShadowOuterDummy shadowOf(OuterDummy actual) {
-    return (ShadowOuterDummy) shadowOf_(actual);
+    return (ShadowOuterDummy) ShadowExtractor.extract(actual);
   }
   
   public static ShadowOuterDummy.ShadowInnerDummy shadowOf(OuterDummy.InnerDummy actual) {
-    return (ShadowOuterDummy.ShadowInnerDummy) shadowOf_(actual);
+    return (ShadowOuterDummy.ShadowInnerDummy) ShadowExtractor.extract(actual);
   }
   
   public static ShadowUniqueDummy shadowOf(UniqueDummy actual) {
-    return (ShadowUniqueDummy) shadowOf_(actual);
+    return (ShadowUniqueDummy) ShadowExtractor.extract(actual);
   }
   
   public static ShadowUniqueDummy.ShadowInnerDummy shadowOf(UniqueDummy.InnerDummy actual) {
-    return (ShadowUniqueDummy.ShadowInnerDummy) shadowOf_(actual);
+    return (ShadowUniqueDummy.ShadowInnerDummy) ShadowExtractor.extract(actual);
   }
   
   public static ShadowUniqueInnerDummy shadowOf(UniqueInnerDummy actual) {
-    return (ShadowUniqueInnerDummy) shadowOf_(actual);
+    return (ShadowUniqueInnerDummy) ShadowExtractor.extract(actual);
   }
   
   public static void reset() {
     ShadowDummy.resetter_method();
-  }
-
-  @SuppressWarnings({"unchecked"})
-  public static <P, R> P shadowOf_(R instance) {
-    return (P) ShadowExtractor.extract(instance);
   }
 }

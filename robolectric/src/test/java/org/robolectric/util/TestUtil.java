@@ -1,7 +1,7 @@
 package org.robolectric.util;
 
 import android.content.res.Resources;
-import org.robolectric.AndroidManifest;
+import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.MavenDependencyResolver;
 import org.robolectric.R;
 import org.robolectric.SdkConfig;

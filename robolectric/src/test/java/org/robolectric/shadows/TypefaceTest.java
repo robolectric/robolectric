@@ -11,7 +11,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.AndroidManifest;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.test.TemporaryAsset;
@@ -27,7 +28,7 @@ public class TypefaceTest {
 
   @Before
   public void setup() throws Exception {
-    AndroidManifest appManifest = shadowOf(Robolectric.application).getAppManifest();
+    AndroidManifest appManifest = shadowOf(RuntimeEnvironment.application).getAppManifest();
     fontFile = temporaryAsset.createFile(appManifest, "myFont.ttf", "myFontData");
 
     List<AndroidManifest> libraryManifests = appManifest.getLibraryManifests();
@@ -36,25 +37,25 @@ public class TypefaceTest {
 
   @Test
   public void canAnswerAssetUsedDuringCreation() throws Exception {
-    AssetManager assetManager = Robolectric.application.getAssets();
+    AssetManager assetManager = RuntimeEnvironment.application.getAssets();
     Typeface typeface = Typeface.createFromAsset(assetManager, "myFont.ttf");
     assertThat(shadowOf(typeface).getAssetPath()).isEqualTo(fontFile.getPath());
   }
 
   @Test
   public void canAnswerAssetFromLibraryUsedDuringCreation() throws Exception {
-    AssetManager assetManager = Robolectric.application.getAssets();
+    AssetManager assetManager = RuntimeEnvironment.application.getAssets();
     Typeface typeface = Typeface.createFromAsset(assetManager, "libFont.ttf");
     assertThat(shadowOf(typeface).getAssetPath()).isEqualTo(libraryFontFile.getPath());
   }
 
   @Test(expected = RuntimeException.class)
   public void createFromAsset_throwsExceptionWhenFontNotFound() throws Exception {
-    Typeface.createFromAsset(Robolectric.application.getAssets(), "nonexistent.ttf");
+    Typeface.createFromAsset(RuntimeEnvironment.application.getAssets(), "nonexistent.ttf");
   }
 
   @Test public void createFromTypeface() throws Exception {
-    AssetManager assetManager = Robolectric.application.getAssets();
+    AssetManager assetManager = RuntimeEnvironment.application.getAssets();
     Typeface typeface = Typeface.createFromAsset(assetManager, "myFont.ttf");
     Typeface derivativeTypeface = Typeface.create(typeface, Typeface.BOLD_ITALIC);
     assertThat(derivativeTypeface.getStyle()).isEqualTo(Typeface.BOLD_ITALIC);

@@ -7,20 +7,45 @@
 # Usage:
 #   build-android-artifacts.sh <android version> <robolectric version>
 #
+# Signing Artifacts:
+# The end of the script will prompt you to sign the new artifacts.  You will
+# be prompted a total of 4 times (once for each artifact).  To make this
+# easier, run this command beforehand:
+#
+#   gpg-agent --daemon
+#
+# It will spit out a command that you can then run in your shell to remember
+# the password for the current session.
+#
 # Supported Versions:
 #   4.1.2_r1    - Jelly Bean
 #   4.2.2_r1.2  - Jelly Bean MR1
 #   4.3_r2      - Jelly Bean MR2
+#   4.4_r1      - Kit Kat
+#
+# Environment Variables:
+#   BUILD_ROOT        - Path to AOSP source directory
+#   SIGNING_PASSWORD  - Passphrase for GPG signing key
 #
 # Assumptions:
-#  1. You've got the full AOSP checked out on a case-sensitive file system at /Volumes/android/android-build
-#  2. repo init -u https://android.googlesource.com/platform/manifest -b <android-version>
-#  3. repo sync
-#  4. source build/envsetup.sh
-#  5. lunch aosp_x86-eng (or something like android_x86-eng)
+#   1. You've got the full AOSP checked out on a case-sensitive file system at /Volumes/android/android-build
+#   2. repo init -u https://android.googlesource.com/platform/manifest -b <android-version>
+#   3. repo sync
+#   4. source build/envsetup.sh
+#   5. lunch aosp_x86-eng (or something like android_x86-eng)
 #
 if [[ $# -eq 0 ]]; then
     echo "Usage: ${0} <android-version> <robolectric-sub-version>"
+    exit 1
+fi
+
+if [[ -z "${BUILD_ROOT}" ]]; then
+    echo "Please set the AOSP build root path as BUILD_ROOT"
+    exit 1
+fi
+
+if [[ -z "${SIGNING_PASSWORD}" ]]; then
+    echo "Please set the GPG passphrase as SIGNING_PASSWORD"
     exit 1
 fi
 
@@ -33,7 +58,7 @@ fi
 
 SCRIPT_DIR=$(cd $(dirname "$0"); pwd)
 
-ANDROID_SOURCES_BASE=/Volumes/android/android-build
+ANDROID_SOURCES_BASE=${BUILD_ROOT}
 FRAMEWORKS_BASE_DIR=${ANDROID_SOURCES_BASE}/frameworks/base
 ROBOLECTRIC_VERSION=${ANDROID_VERSION}-robolectric-${ROBOLECTRIC_SUB_VERSION}
 
@@ -56,6 +81,8 @@ build_platform() {
         ARTIFACTS=("core" "services" "telephony-common" "framework" "android.policy" "ext")
     elif [[ "${ANDROID_VERSION}" == "4.3_r2" ]]; then
         ARTIFACTS=("core" "services" "telephony-common" "framework" "android.policy" "ext")
+    elif [[ "${ANDROID_VERSION}" == "4.4_r1" ]]; then
+        ARTIFACTS=("core" "services" "telephony-common" "framework" "framework2" "framework-base" "android.policy" "ext" "webviewchromium")
     else
         echo "Robolectric: No match for version: ${ANDROID_VERSION}"
         exit 1
@@ -98,8 +125,19 @@ build_android_all_jar() {
     cd ${OUT}/android-all-classes; jar xf ${OUT}/${ANDROID_RES}
     cd ${OUT}/android-all-classes; jar xf ${OUT}/${ANDROID_EXT}
     cd ${OUT}/android-all-classes; jar xf ${OUT}/${ANDROID_CLASSES}
+
+    # Remove unused files
+    rm -rf ${OUT}/android-all-classes/Android.mk
+    rm -rf ${OUT}/android-all-classes/AndroidManifest.xml
+    rm -rf ${OUT}/android-all-classes/META-INF
+    rm -rf ${OUT}/android-all-classes/MODULE_LICENSE_APACHE2
+    rm -rf ${OUT}/android-all-classes/MakeJavaSymbols.sed
+    rm -rf ${OUT}/android-all-classes/NOTICE
+    rm -rf ${OUT}/android-all-classes/lint.xml
+    rm -rf ${OUT}/android-all-classes/java/lang
+
+    # Build the new JAR file
     cd ${OUT}/android-all-classes; jar cf ${OUT}/${ANDROID_ALL} .
-    rm -rf ${OUT}/android-all-classes
     rm ${OUT}/${ANDROID_RES} ${OUT}/${ANDROID_EXT} ${OUT}/${ANDROID_CLASSES}
 }
 
@@ -135,11 +173,11 @@ build_signed_packages() {
 
     echo "Robolectric: Signing files with gpg..."
     for ext in ".jar" "-javadoc.jar" "-sources.jar" ".pom"; do
-        ( cd ${OUT} && gpg -ab --use-agent android-all-${ROBOLECTRIC_VERSION}$ext )
+        ( cd ${OUT} && gpg -ab --passphrase ${SIGNING_PASSWORD} android-all-${ROBOLECTRIC_VERSION}$ext )
     done
 
     echo "Robolectric: Creating bundle for Sonatype upload..."
-    cd ${OUT}; jar cf ${ANDROID_BUNDLE} *
+    cd ${OUT}; jar cf ${ANDROID_BUNDLE} *.jar *.pom *.asc
 }
 
 mavenize() {
@@ -168,7 +206,13 @@ mavenize() {
       -Dclassifier=javadoc
 }
 
+# Use Java 1.6
+export JAVA_HOME=$(/usr/libexec/java_home -v 1.6)
+export PATH=$PATH:$JAVA_HOME/bin
+
 OUT=`mktemp -t mavenize-android -d`
+mkdir -p ${OUT}
+
 build_platform
 build_android_res
 build_android_ext

@@ -19,6 +19,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
 import java.io.IOException;
@@ -43,7 +44,7 @@ public class AccountManagerTest {
 
   @Before
   public void setUp() throws Exception {
-    app = Robolectric.application;
+    app = RuntimeEnvironment.application;
     am = AccountManager.get(app);
   }
 

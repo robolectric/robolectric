@@ -18,8 +18,6 @@ package org.robolectric.impl;
 
 /**
  * Where the HTTP client should look for a response.
- *
- * @hide
  */
 public enum ResponseSource {
 

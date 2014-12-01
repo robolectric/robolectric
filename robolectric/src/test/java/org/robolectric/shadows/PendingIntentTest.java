@@ -10,6 +10,7 @@ import android.os.Bundle;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,13 +31,13 @@ public class PendingIntentTest {
   @Test
   public void getBroadcast_shouldCreateIntentForBroadcast() throws Exception {
     Intent intent = new Intent();
-    PendingIntent pendingIntent = PendingIntent.getBroadcast(Robolectric.application, 99, intent, 100);
+    PendingIntent pendingIntent = PendingIntent.getBroadcast(RuntimeEnvironment.application, 99, intent, 100);
     ShadowPendingIntent shadow = shadowOf(pendingIntent);
     assertThat(shadow.isActivityIntent()).isFalse();
     assertThat(shadow.isBroadcastIntent()).isTrue();
     assertThat(shadow.isServiceIntent()).isFalse();
     assertThat(intent).isEqualTo(shadow.getSavedIntent());
-    assertThat((Context) Robolectric.application).isEqualTo(shadow.getSavedContext());
+    assertThat((Context) RuntimeEnvironment.application).isEqualTo(shadow.getSavedContext());
     assertThat(shadow.getRequestCode()).isEqualTo(99);
     assertThat(shadow.getFlags()).isEqualTo(100);
   }
@@ -44,13 +45,13 @@ public class PendingIntentTest {
   @Test
   public void getActivity_shouldCreateIntentForBroadcast() throws Exception {
     Intent intent = new Intent();
-    PendingIntent pendingIntent = PendingIntent.getActivity(Robolectric.application, 99, intent, 100);
+    PendingIntent pendingIntent = PendingIntent.getActivity(RuntimeEnvironment.application, 99, intent, 100);
     ShadowPendingIntent shadow = shadowOf(pendingIntent);
     assertThat(shadow.isActivityIntent()).isTrue();
     assertThat(shadow.isBroadcastIntent()).isFalse();
     assertThat(shadow.isServiceIntent()).isFalse();
     assertThat(intent).isEqualTo(shadow.getSavedIntent());
-    assertThat((Context) Robolectric.application).isEqualTo(shadow.getSavedContext());
+    assertThat((Context) RuntimeEnvironment.application).isEqualTo(shadow.getSavedContext());
     assertThat(shadow.getRequestCode()).isEqualTo(99);
     assertThat(shadow.getFlags()).isEqualTo(100);
   }
@@ -58,13 +59,13 @@ public class PendingIntentTest {
   @Test
   public void getActivities_shouldCreateIntentForBroadcast() throws Exception {
     Intent[] intents = new Intent[] {new Intent(Intent.ACTION_VIEW), new Intent(Intent.ACTION_PICK)};
-    PendingIntent pendingIntent = PendingIntent.getActivities(Robolectric.application, 99, intents, 100);
+    PendingIntent pendingIntent = PendingIntent.getActivities(RuntimeEnvironment.application, 99, intents, 100);
 
     ShadowPendingIntent shadow = shadowOf(pendingIntent);
     assertThat(shadow.getSavedIntents()).isEqualTo(intents);
 
     pendingIntent.send();
-    ShadowApplication application = shadowOf(Robolectric.application);
+    ShadowApplication application = shadowOf(RuntimeEnvironment.application);
     assertThat(application.getNextStartedActivity()).isEqualTo(intents[0]);
     assertThat(application.getNextStartedActivity()).isEqualTo(intents[1]);
   }
@@ -72,13 +73,13 @@ public class PendingIntentTest {
   @Test
   public void getActivities_withBundle_shouldCreateIntentForBroadcast() throws Exception {
     Intent[] intents = new Intent[] {new Intent(Intent.ACTION_VIEW), new Intent(Intent.ACTION_PICK)};
-    PendingIntent pendingIntent = PendingIntent.getActivities(Robolectric.application, 99, intents, 100, new Bundle());
+    PendingIntent pendingIntent = PendingIntent.getActivities(RuntimeEnvironment.application, 99, intents, 100, new Bundle());
 
     ShadowPendingIntent shadow = shadowOf(pendingIntent);
     assertThat(shadow.getSavedIntents()).isEqualTo(intents);
 
     pendingIntent.send();
-    ShadowApplication application = shadowOf(Robolectric.application);
+    ShadowApplication application = shadowOf(RuntimeEnvironment.application);
     assertThat(application.getNextStartedActivity()).isEqualTo(intents[0]);
     assertThat(application.getNextStartedActivity()).isEqualTo(intents[1]);
   }
@@ -86,13 +87,13 @@ public class PendingIntentTest {
   @Test
   public void getService_shouldCreateIntentForBroadcast() throws Exception {
     Intent intent = new Intent();
-    PendingIntent pendingIntent = PendingIntent.getService(Robolectric.application, 99, intent, 100);
+    PendingIntent pendingIntent = PendingIntent.getService(RuntimeEnvironment.application, 99, intent, 100);
     ShadowPendingIntent shadow = shadowOf(pendingIntent);
     assertThat(shadow.isActivityIntent()).isFalse();
     assertThat(shadow.isBroadcastIntent()).isFalse();
     assertThat(shadow.isServiceIntent()).isTrue();
     assertThat(intent).isEqualTo(shadow.getSavedIntent());
-    assertThat((Context) Robolectric.application).isEqualTo(shadow.getSavedContext());
+    assertThat((Context) RuntimeEnvironment.application).isEqualTo(shadow.getSavedContext());
     assertThat(shadow.getRequestCode()).isEqualTo(99);
     assertThat(shadow.getFlags()).isEqualTo(100);
   }
@@ -118,7 +119,7 @@ public class PendingIntentTest {
   public void getActivity_withFlagNoCreate_shouldReturnNullIfNoPendingIntentExists() {
     Intent intent = new Intent();
 
-    PendingIntent pendingIntent = PendingIntent.getActivity(Robolectric.application, 99, intent,
+    PendingIntent pendingIntent = PendingIntent.getActivity(RuntimeEnvironment.application, 99, intent,
         PendingIntent.FLAG_NO_CREATE);
 
     assertThat(pendingIntent).isNull();
@@ -128,10 +129,10 @@ public class PendingIntentTest {
   public void getActivity_withFlagNoCreate_shouldReturnExistingIntent() {
     Intent intent = new Intent();
 
-    PendingIntent.getActivity(Robolectric.application, 99, intent, 100);
+    PendingIntent.getActivity(RuntimeEnvironment.application, 99, intent, 100);
 
     Intent identical = new Intent();
-    PendingIntent saved = PendingIntent.getActivity(Robolectric.application, 99, identical,
+    PendingIntent saved = PendingIntent.getActivity(RuntimeEnvironment.application, 99, identical,
         PendingIntent.FLAG_NO_CREATE);
 
     assertThat(saved).isNotNull();
@@ -142,7 +143,7 @@ public class PendingIntentTest {
   public void getActivities_withFlagNoCreate_shouldReturnNullIfNoPendingIntentExists() {
     Intent[] intents = new Intent[] { new Intent(Intent.ACTION_VIEW), new Intent(Intent.ACTION_PICK) };
 
-    PendingIntent pendingIntent = PendingIntent.getActivities(Robolectric.application, 99, intents,
+    PendingIntent pendingIntent = PendingIntent.getActivities(RuntimeEnvironment.application, 99, intents,
         PendingIntent.FLAG_NO_CREATE);
 
     assertThat(pendingIntent).isNull();
@@ -152,10 +153,10 @@ public class PendingIntentTest {
   public void getActivities_withFlagNoCreate_shouldReturnExistingIntent() {
     Intent[] intents = new Intent[] { new Intent(Intent.ACTION_VIEW), new Intent(Intent.ACTION_PICK) };
 
-    PendingIntent.getActivities(Robolectric.application, 99, intents, 100);
+    PendingIntent.getActivities(RuntimeEnvironment.application, 99, intents, 100);
 
     Intent[] identicalIntents = new Intent[] { new Intent(Intent.ACTION_VIEW), new Intent(Intent.ACTION_PICK) };
-    PendingIntent saved = PendingIntent.getActivities(Robolectric.application, 99, identicalIntents,
+    PendingIntent saved = PendingIntent.getActivities(RuntimeEnvironment.application, 99, identicalIntents,
         PendingIntent.FLAG_NO_CREATE);
 
     assertThat(saved).isNotNull();
@@ -166,7 +167,7 @@ public class PendingIntentTest {
   public void getBroadcast_withFlagNoCreate_shouldReturnNullIfNoPendingIntentExists() {
     Intent intent = new Intent();
 
-    PendingIntent pendingIntent = PendingIntent.getBroadcast(Robolectric.application, 99, intent,
+    PendingIntent pendingIntent = PendingIntent.getBroadcast(RuntimeEnvironment.application, 99, intent,
         PendingIntent.FLAG_NO_CREATE);
 
     assertThat(pendingIntent).isNull();
@@ -176,9 +177,9 @@ public class PendingIntentTest {
   public void getBroadcast_withFlagNoCreate_shouldReturnExistingIntent() {
     Intent intent = new Intent();
 
-    PendingIntent.getBroadcast(Robolectric.application, 99, intent, 100);
+    PendingIntent.getBroadcast(RuntimeEnvironment.application, 99, intent, 100);
     Intent identical = new Intent();
-    PendingIntent saved = PendingIntent.getBroadcast(Robolectric.application, 99, identical,
+    PendingIntent saved = PendingIntent.getBroadcast(RuntimeEnvironment.application, 99, identical,
         PendingIntent.FLAG_NO_CREATE);
 
     assertThat(saved).isNotNull();
@@ -189,7 +190,7 @@ public class PendingIntentTest {
   public void getService_withFlagNoCreate_shouldReturnNullIfNoPendingIntentExists() {
     Intent intent = new Intent();
 
-    PendingIntent pendingIntent = PendingIntent.getService(Robolectric.application, 99, intent,
+    PendingIntent pendingIntent = PendingIntent.getService(RuntimeEnvironment.application, 99, intent,
         PendingIntent.FLAG_NO_CREATE);
 
     assertThat(pendingIntent).isNull();
@@ -199,11 +200,11 @@ public class PendingIntentTest {
   public void getService_withFlagNoCreate_shouldReturnExistingIntent() {
     Intent intent = new Intent();
 
-    PendingIntent.getService(Robolectric.application, 99, intent, 100);
+    PendingIntent.getService(RuntimeEnvironment.application, 99, intent, 100);
 
     Intent identical = new Intent();
 
-    PendingIntent saved = PendingIntent.getService(Robolectric.application, 99, identical,
+    PendingIntent saved = PendingIntent.getService(RuntimeEnvironment.application, 99, identical,
         PendingIntent.FLAG_NO_CREATE);
 
     assertThat(saved).isNotNull();

@@ -164,11 +164,11 @@ public class RoboProcessor extends AbstractProcessor {
 //          processingEnv.getElementUtils().printElements(writer, typeParam);
 //        }
 //        final String typeString = paramCount > 0 ? builder.append("> ").toString() : "";
-        
+
         final String actual = model.getReferentFor(actualType);
         final String shadow = model.getReferentFor(entry.getKey());
-        writer.println("  public static " + shadow + " shadowOf(" + actual + " actual) {"); 
-        writer.println("    return (" + shadow + ") shadowOf_(actual);");
+        writer.println("  public static " + shadow + " shadowOf(" + actual + " actual) {");
+        writer.println("    return (" + shadow + ") ShadowExtractor.extract(actual);");
         writer.println("  }");
         writer.println();
       }
@@ -176,13 +176,8 @@ public class RoboProcessor extends AbstractProcessor {
       for (Entry<TypeElement,ExecutableElement> entry: model.resetterMap.entrySet()) {
         writer.println("    " + model.getReferentFor(entry.getKey()) + "." + entry.getValue().getSimpleName() + "();");
       }
-      writer.println("  }\n");
-
-      writer.println("  @SuppressWarnings({\"unchecked\"})");
-      writer.println("  public static <P, R> P shadowOf_(R instance) {");
-      writer.println("    return (P) ShadowExtractor.extract(instance);");
       writer.println("  }");
-      
+
       writer.println('}');
       } finally {
         writer.close();

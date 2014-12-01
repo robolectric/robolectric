@@ -8,23 +8,21 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import org.robolectric.*;
 import org.robolectric.annotation.Config;
+import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResBunch;
 import org.robolectric.res.ResourceLoader;
-import org.robolectric.res.builder.RobolectricPackageManager;
-import org.robolectric.shadows.ShadowActivityThread;
-import org.robolectric.shadows.ShadowContextImpl;
-import org.robolectric.shadows.ShadowLog;
-import org.robolectric.shadows.ShadowResources;
+import org.robolectric.res.builder.DefaultRobolectricPackageManager;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.ShadowsAdapter;
 
 import java.lang.reflect.Method;
 
-import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 public class ParallelUniverse implements ParallelUniverseInterface {
   private static final String DEFAULT_PACKAGE_NAME = "org.robolectric.default";
   private final RobolectricTestRunner robolectricTestRunner;
+  private final ShadowsAdapter shadowsAdapter = Robolectric.instantiateShadowsAdapter();
 
   private boolean loggingInitialized = false;
   private SdkConfig sdkConfig;
@@ -38,7 +36,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     Robolectric.reset(config);
 
     if (!loggingInitialized) {
-      ShadowLog.setupLogging();
+      shadowsAdapter.setupLogging();
       loggingInitialized = true;
     }
   }
@@ -60,30 +58,30 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
   @Override
   public void setUpApplicationState(Method method, TestLifecycle testLifecycle, ResourceLoader systemResourceLoader, AndroidManifest appManifest, Config config) {
-    Robolectric.application = null;
-    Robolectric.packageManager = new RobolectricPackageManager();
-    Robolectric.packageManager.addPackage(DEFAULT_PACKAGE_NAME);
+    RuntimeEnvironment.application = null;
+    RuntimeEnvironment.setRobolectricPackageManager(new DefaultRobolectricPackageManager(shadowsAdapter));
+    RuntimeEnvironment.getRobolectricPackageManager().addPackage(DEFAULT_PACKAGE_NAME);
     ResourceLoader resourceLoader;
     if (appManifest != null) {
       resourceLoader = robolectricTestRunner.getAppResourceLoader(sdkConfig, systemResourceLoader, appManifest);
-      Robolectric.packageManager.addManifest(appManifest, resourceLoader);
+      RuntimeEnvironment.getRobolectricPackageManager().addManifest(appManifest, resourceLoader);
     } else {
       resourceLoader = systemResourceLoader;
     }
 
-    ShadowResources.setSystemResources(systemResourceLoader);
+    shadowsAdapter.setSystemResources(systemResourceLoader);
     String qualifiers = addVersionQualifierToQualifiers(config.qualifiers());
     Resources systemResources = Resources.getSystem();
     Configuration configuration = systemResources.getConfiguration();
-    shadowOf(configuration).overrideQualifiers(qualifiers);
+    shadowsAdapter.overrideQualifiers(configuration, qualifiers);
     systemResources.updateConfiguration(configuration, systemResources.getDisplayMetrics());
-    shadowOf(systemResources.getAssets()).setQualifiers(qualifiers);
+    RuntimeEnvironment.setQualifiers(qualifiers);
 
-    Class<?> contextImplClass = ReflectionHelpers.loadClassReflectively(getClass().getClassLoader(), ShadowContextImpl.CLASS_NAME);
+    Class<?> contextImplClass = ReflectionHelpers.loadClassReflectively(getClass().getClassLoader(), shadowsAdapter.getShadowContextImplClassName());
 
-    Class<?> activityThreadClass = ReflectionHelpers.loadClassReflectively(getClass().getClassLoader(), ShadowActivityThread.CLASS_NAME);
+    Class<?> activityThreadClass = ReflectionHelpers.loadClassReflectively(getClass().getClassLoader(), shadowsAdapter.getShadowActivityThreadClassName());
     Object activityThread = ReflectionHelpers.callConstructorReflectively(activityThreadClass);
-    Robolectric.activityThread = activityThread;
+    RuntimeEnvironment.setActivityThread(activityThread);
 
     ReflectionHelpers.setFieldReflectively(activityThread, "mInstrumentation", new RoboInstrumentation());
     ReflectionHelpers.setFieldReflectively(activityThread, "mCompatConfiguration", configuration);
@@ -97,7 +95,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
       ApplicationInfo applicationInfo;
       try {
-        applicationInfo = Robolectric.packageManager.getApplicationInfo(packageName, 0);
+        applicationInfo = RuntimeEnvironment.getPackageManager().getApplicationInfo(packageName, 0);
       } catch (PackageManager.NameNotFoundException e) {
         throw new RuntimeException(e);
       }
@@ -108,10 +106,10 @@ public class ParallelUniverse implements ParallelUniverseInterface {
           new ClassParameter(compatibilityInfoClass, null), new ClassParameter(ClassLoader.class, getClass().getClassLoader()), new ClassParameter(boolean.class, false),
           new ClassParameter(boolean.class, true));
 
-      shadowOf(application).bind(appManifest, resourceLoader);
+      shadowsAdapter.bind(application, appManifest, resourceLoader);
       if (appManifest == null) {
         // todo: make this cleaner...
-        shadowOf(application).setPackageName(applicationInfo.packageName);
+        shadowsAdapter.setPackageName(application, applicationInfo.packageName);
       }
       Resources appResources = application.getResources();
       ReflectionHelpers.setFieldReflectively(loadedApk, "mResources", appResources);
@@ -120,23 +118,23 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       ReflectionHelpers.callInstanceMethodReflectively(application, "attach", new ClassParameter(Context.class, contextImpl));
 
       appResources.updateConfiguration(configuration, appResources.getDisplayMetrics());
-      shadowOf(appResources.getAssets()).setQualifiers(qualifiers);
+      shadowsAdapter.setAssetsQualifiers(appResources.getAssets(), qualifiers);
 
-      Robolectric.application = application;
+      RuntimeEnvironment.application = application;
       application.onCreate();
     }
   }
 
   @Override
   public void tearDownApplication() {
-    if (Robolectric.application != null) {
-      Robolectric.application.onTerminate();
+    if (RuntimeEnvironment.application != null) {
+      RuntimeEnvironment.application.onTerminate();
     }
   }
 
   @Override
   public Object getCurrentApplication() {
-    return Robolectric.application;
+    return RuntimeEnvironment.application;
   }
 
   @Override

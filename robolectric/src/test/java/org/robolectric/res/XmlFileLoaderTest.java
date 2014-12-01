@@ -39,7 +39,7 @@ import static org.robolectric.util.TestUtil.testResources;
  * class {@link XmlResourceParserImpl}. The tests verify
  * that this implementation will behave exactly as
  * the android implementation.
- * <p/>
+ *
  * <p>Please note that this implementation uses the resource file "xml/preferences"
  * to test the parser implementation. If that file is changed
  * some test may start failing.

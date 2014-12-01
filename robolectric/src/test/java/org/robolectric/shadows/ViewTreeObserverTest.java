@@ -4,8 +4,8 @@ import android.view.ViewTreeObserver;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
+import org.robolectric.internal.Shadow;
 
 import java.util.List;
 
@@ -22,7 +22,7 @@ public class ViewTreeObserverTest {
 
   @Before
   public void setUp() throws Exception {
-    viewTreeObserver = Robolectric.newInstanceOf(ViewTreeObserver.class);
+    viewTreeObserver = Shadow.newInstanceOf(ViewTreeObserver.class);
     listener1 = new TestOnGlobalLayoutListener();
     listener2 = new TestOnGlobalLayoutListener();
   }

@@ -10,6 +10,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.res.Attribute;
 import org.robolectric.util.TestUtil;
@@ -30,7 +31,7 @@ public class TypedArrayTest {
   @Before
   public void setUp() throws Exception {
     context = Robolectric.buildActivity(Activity.class).create().get();
-    resources = Robolectric.application.getResources();
+    resources = RuntimeEnvironment.application.getResources();
   }
 
   @Test

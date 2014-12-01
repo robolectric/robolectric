@@ -7,6 +7,7 @@ import android.widget.ListPopupWindow;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -15,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ListPopupWindowTest {
   @Test
   public void show_setsLastListPopupWindow() throws Exception {
-    Context context = Robolectric.application;
+    Context context = RuntimeEnvironment.application;
     ListPopupWindow popupWindow = new ListPopupWindow(context);
     assertThat(ShadowListPopupWindow.getLatestListPopupWindow()).isNull();
     popupWindow.setAnchorView(new View(context));

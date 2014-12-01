@@ -5,8 +5,8 @@ import android.hardware.Camera;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
+import org.robolectric.internal.Shadow;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -17,7 +17,7 @@ public class CameraSizeTest {
 
   @Before
   public void setUp() throws Exception {
-    cameraSize = Robolectric.newInstanceOf(Camera.class).new Size(480, 320);
+    cameraSize = Shadow.newInstanceOf(Camera.class).new Size(480, 320);
   }
 
   @Test

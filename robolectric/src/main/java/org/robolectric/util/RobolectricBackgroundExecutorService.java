@@ -1,6 +1,6 @@
 package org.robolectric.util;
 
-import org.robolectric.Robolectric;
+import org.robolectric.ShadowsAdapter;
 
 import java.util.Collection;
 import java.util.List;
@@ -13,6 +13,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class RobolectricBackgroundExecutorService implements ExecutorService {
+  private final ShadowsAdapter shadowsAdapter;
+
+  public RobolectricBackgroundExecutorService(ShadowsAdapter shadowsAdapter) {
+    this.shadowsAdapter = shadowsAdapter;
+  }
+
   @Override
   public void shutdown() {
     throw new UnsupportedOperationException();
@@ -54,7 +60,7 @@ public class RobolectricBackgroundExecutorService implements ExecutorService {
   }
 
   private <T> Future<T> schedule(final FutureTask<T> futureTask) {
-    Robolectric.getShadowApplication().getBackgroundScheduler().post(new Runnable() {
+    shadowsAdapter.getBackgroundScheduler().post(new Runnable() {
       @Override
       public void run() {
         futureTask.run();

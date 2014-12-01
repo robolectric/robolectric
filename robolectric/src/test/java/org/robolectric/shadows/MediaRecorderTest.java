@@ -7,9 +7,9 @@ import android.view.Surface;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
+import org.robolectric.internal.Shadow;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -67,7 +67,7 @@ public class MediaRecorderTest {
   @Test
   public void testCamera() throws Exception {
     assertThat(shadowMediaRecorder.getCamera()).isNull();
-    Camera c = Robolectric.newInstanceOf(Camera.class);
+    Camera c = Shadow.newInstanceOf(Camera.class);
     mediaRecorder.setCamera(c);
     assertThat(shadowMediaRecorder.getCamera()).isNotNull();
     assertThat(shadowMediaRecorder.getCamera()).isSameAs(c);
@@ -127,7 +127,7 @@ public class MediaRecorderTest {
   public void testPreviewDisplay() throws Exception {
     assertThat(shadowMediaRecorder.getState()).isNotEqualTo(ShadowMediaRecorder.STATE_DATA_SOURCE_CONFIGURED);
     assertThat(shadowMediaRecorder.getPreviewDisplay()).isNull();
-    Surface surface = Robolectric.newInstanceOf(Surface.class);
+    Surface surface = Shadow.newInstanceOf(Surface.class);
     mediaRecorder.setPreviewDisplay(surface);
     assertThat(shadowMediaRecorder.getPreviewDisplay()).isNotNull();
     assertThat(shadowMediaRecorder.getPreviewDisplay()).isSameAs(surface);

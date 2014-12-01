@@ -9,7 +9,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 
@@ -29,7 +29,7 @@ public class ProgressDialogTest {
 
   @Before
   public void setUp() {
-    dialog = new ProgressDialog(Robolectric.application);
+    dialog = new ProgressDialog(RuntimeEnvironment.application);
     shadow = Shadows.shadowOf(dialog);
   }
 
@@ -96,7 +96,7 @@ public class ProgressDialogTest {
     assertLatestDialogsSet("Title", "Message", false, false, null, new Callable<ProgressDialog>() {
       @Override
       public ProgressDialog call() throws Exception {
-        return ProgressDialog.show(Robolectric.application, "Title", "Message");
+        return ProgressDialog.show(RuntimeEnvironment.application, "Title", "Message");
       }
     }
     );
@@ -107,7 +107,7 @@ public class ProgressDialogTest {
     assertLatestDialogsSet("Title", "Message", true, false, null, new Callable<ProgressDialog>() {
       @Override
       public ProgressDialog call() throws Exception {
-        return ProgressDialog.show(Robolectric.application, "Title", "Message", true);
+        return ProgressDialog.show(RuntimeEnvironment.application, "Title", "Message", true);
       }
     });
   }
@@ -117,7 +117,7 @@ public class ProgressDialogTest {
     assertLatestDialogsSet("Title", "Message", true, true, null, new Callable<ProgressDialog>() {
       @Override
       public ProgressDialog call() throws Exception {
-        return ProgressDialog.show(Robolectric.application, "Title", "Message", true, true);
+        return ProgressDialog.show(RuntimeEnvironment.application, "Title", "Message", true, true);
       }
     });
   }
@@ -133,7 +133,7 @@ public class ProgressDialogTest {
     assertLatestDialogsSet("Title", "Message", true, true, cancelListener, new Callable<ProgressDialog>() {
       @Override
       public ProgressDialog call() throws Exception {
-        return ProgressDialog.show(Robolectric.application, "Title", "Message", true, true, cancelListener);
+        return ProgressDialog.show(RuntimeEnvironment.application, "Title", "Message", true, true, cancelListener);
       }
     });
   }

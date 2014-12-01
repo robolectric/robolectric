@@ -6,23 +6,26 @@ import android.content.pm.ResolveInfo;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.ClassNameResolver;
 import org.robolectric.manifest.ActivityData;
+import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.builder.RobolectricPackageManager;
 
 import java.lang.reflect.Method;
 import java.util.Map;
 
 public class DefaultTestLifecycle implements TestLifecycle {
+
   /**
    * Override this method if you want to provide your own implementation of Application.
-   * <p/>
+   *
+   * <p>
    * This method attempts to instantiate an application instance as follows:-
    *
-   * <li>
-   *   <ol>If specified loads the application specified in the Config annotation</ol>
-   *   <ol>Attempt to load a test application as documented <a href="http://robolectric.blogspot.com/2013/04/the-test-lifecycle-in-20.html">here</a></ol>
-   *   <ol>Use the application as specified in the AndroidManifest.xml</ol>
-   *   <ol>Instantiate a standard {@link android.app.Application}</ol>
-   * </li>
+   * <ol>
+   *   <li>If specified loads the application specified in the Config annotation</li>
+   *   <li>Attempt to load a test application as documented <a href="http://robolectric.blogspot.com/2013/04/the-test-lifecycle-in-20.html">here</a></li>
+   *   <li>Use the application as specified in the AndroidManifest.xml</li>
+   *   <li>Instantiate a standard {@link android.app.Application}</li>
+   * </ol>
    *
    * @param method The currently-running test method.
    * @param appManifest The application manifest.
@@ -101,14 +104,14 @@ public class DefaultTestLifecycle implements TestLifecycle {
    * @param method the test method about to be run
    */
   public void beforeTest(final Method method) {
-    if (Robolectric.application instanceof TestLifecycleApplication) {
-      ((TestLifecycleApplication) Robolectric.application).beforeTest(method);
+    if (RuntimeEnvironment.application instanceof TestLifecycleApplication) {
+      ((TestLifecycleApplication) RuntimeEnvironment.application).beforeTest(method);
     }
   }
 
   public void prepareTest(final Object test) {
-    if (Robolectric.application instanceof TestLifecycleApplication) {
-      ((TestLifecycleApplication) Robolectric.application).prepareTest(test);
+    if (RuntimeEnvironment.application instanceof TestLifecycleApplication) {
+      ((TestLifecycleApplication) RuntimeEnvironment.application).prepareTest(test);
     }
   }
 
@@ -118,8 +121,8 @@ public class DefaultTestLifecycle implements TestLifecycle {
    * @param method the test method that just ran.
    */
   public void afterTest(final Method method) {
-    if (Robolectric.application instanceof TestLifecycleApplication) {
-      ((TestLifecycleApplication) Robolectric.application).afterTest(method);
+    if (RuntimeEnvironment.application instanceof TestLifecycleApplication) {
+      ((TestLifecycleApplication) RuntimeEnvironment.application).afterTest(method);
     }
   }
 

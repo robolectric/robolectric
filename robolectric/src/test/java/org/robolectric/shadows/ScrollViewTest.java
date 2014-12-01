@@ -4,6 +4,7 @@ import android.widget.ScrollView;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
 import static junit.framework.Assert.assertEquals;
@@ -12,7 +13,7 @@ import static junit.framework.Assert.assertEquals;
 public class ScrollViewTest {
   @Test
   public void shouldSmoothScrollTo() throws Exception {
-    ScrollView scrollView = new ScrollView(Robolectric.application);
+    ScrollView scrollView = new ScrollView(RuntimeEnvironment.application);
     scrollView.smoothScrollTo(7, 6);
 
     assertEquals(7, scrollView.getScrollX());

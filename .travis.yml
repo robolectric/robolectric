@@ -12,6 +12,9 @@ before_install:
     - ./scripts/install-maps-jar.sh
     - ./scripts/install-support-jar.sh
 
+script:
+    - ./scripts/install-robolectric.sh
+
 after_success:
     - ./scripts/install-snapshot.sh
 

@@ -26,9 +26,6 @@ import java.util.List;
  * test runner to extend the {@link RobolectricTestRunner}. The {@link RobolectricTestRunner#getHelperTestRunner(Class)}
  * is overridden in order to create instances of the test class with the appropriate parameters. Merged in the ability
  * to name your tests through the {@link Parameters#name()} property.
- *
- * @author John Ferlisi
- * @see Parameterized
  */
 public final class ParameterizedRobolectricTestRunner extends Suite {
 
@@ -41,9 +38,9 @@ public final class ParameterizedRobolectricTestRunner extends Suite {
   public @interface Parameters {
 
     /**
-     * <p> Optional pattern to derive the test's name from the parameters. Use numbers in braces to refer to the
-     * parameters or the additional data as follows: </p>
-     * <p/>
+     * <p>Optional pattern to derive the test's name from the parameters. Use numbers in braces to refer to the
+     * parameters or the additional data as follows:
+     *
      * <pre>
      * {index} - the current parameter index
      * {0} - the first parameter value
@@ -137,7 +134,7 @@ public final class ParameterizedRobolectricTestRunner extends Suite {
 
   private final ArrayList<Runner> runners = new ArrayList<Runner>();
 
-  /**
+  /*
    * Only called reflectively. Do not use programmatically.
    */
   public ParameterizedRobolectricTestRunner(Class<?> klass) throws Throwable {

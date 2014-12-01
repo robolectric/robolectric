@@ -5,8 +5,9 @@ import android.view.MotionEvent;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
+import org.robolectric.internal.Shadow;
 
 import static junit.framework.Assert.*;
 import static org.robolectric.Shadows.shadowOf;
@@ -58,15 +59,15 @@ public class GestureDetectorTest {
 
   @Test
   public void canAnswerLastGestureDetector() throws Exception {
-    GestureDetector newDetector = new GestureDetector(Robolectric.application, new TestOnGestureListener());
+    GestureDetector newDetector = new GestureDetector(RuntimeEnvironment.application, new TestOnGestureListener());
     assertNotSame(newDetector, ShadowGestureDetector.getLastActiveDetector());
-    newDetector.onTouchEvent(Robolectric.newInstanceOf(MotionEvent.class));
+    newDetector.onTouchEvent(Shadow.newInstanceOf(MotionEvent.class));
     assertSame(newDetector, ShadowGestureDetector.getLastActiveDetector());
   }
 
   @Test
   public void getOnDoubleTapListener_shouldReturnSetDoubleTapListener() throws Exception {
-    GestureDetector subject = new GestureDetector(Robolectric.application, new TestOnGestureListener());
+    GestureDetector subject = new GestureDetector(RuntimeEnvironment.application, new TestOnGestureListener());
     GestureDetector.OnDoubleTapListener onDoubleTapListener = new GestureDetector.OnDoubleTapListener() {
       @Override
       public boolean onSingleTapConfirmed(MotionEvent e) {
@@ -94,7 +95,7 @@ public class GestureDetectorTest {
   @Test
   public void getOnDoubleTapListener_shouldReturnOnGestureListenerFromConstructor() throws Exception {
     GestureDetector.OnGestureListener onGestureListener = new GestureDetector.SimpleOnGestureListener();
-    GestureDetector subject = new GestureDetector(Robolectric.application, onGestureListener);
+    GestureDetector subject = new GestureDetector(RuntimeEnvironment.application, onGestureListener);
     assertEquals(shadowOf(subject).getOnDoubleTapListener(), onGestureListener);
   }
 

@@ -7,10 +7,10 @@ import android.view.View;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
-import static org.robolectric.Robolectric.application;
+import static org.robolectric.RuntimeEnvironment.application;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -27,7 +27,7 @@ public class ObjectAnimatorTest {
 
   @Test
   public void shouldCreateForFloatViaInflater() {
-    View expectedTarget = new View(Robolectric.application);
+    View expectedTarget = new View(RuntimeEnvironment.application);
     ObjectAnimator animator = (ObjectAnimator) AnimatorInflater.loadAnimator(application, R.animator.fade);
     assertThat(animator).isNotNull();
     assertThat(animator.getPropertyName()).isEqualTo("alpha");
@@ -49,27 +49,27 @@ public class ObjectAnimatorTest {
 
   @Test
   public void floatAnimator_shouldSetTheStartingAndEndingValues() throws Exception {
-    View target = new View(Robolectric.application);
+    View target = new View(RuntimeEnvironment.application);
     ObjectAnimator animator = ObjectAnimator.ofFloat(target, "translationX", 0.5f, 0.4f);
     animator.setDuration(1000);
 
     animator.start();
     assertThat(target.getTranslationX()).isEqualTo(0.5f);
-    Robolectric.idleMainLooper(999);
+    ShadowLooper.idleMainLooper(999);
     assertThat(target.getTranslationX()).isNotEqualTo(0.4f);
-    Robolectric.idleMainLooper(1);
+    ShadowLooper.idleMainLooper(1);
     assertThat(target.getTranslationX()).isEqualTo(0.4f);
   }
 
   @Test
   public void intAnimator_shouldSetTheStartingAndEndingValues() throws Exception {
-    View target = new View(Robolectric.application);
+    View target = new View(RuntimeEnvironment.application);
     ObjectAnimator animator = ObjectAnimator.ofInt(target, "bottom", 1, 4);
     animator.setDuration(1000);
 
     animator.start();
     assertThat(target.getBottom()).isEqualTo(1);
-    Robolectric.idleMainLooper(1000);
+    ShadowLooper.idleMainLooper(1000);
     assertThat(target.getBottom()).isEqualTo(4);
   }
 
@@ -91,15 +91,15 @@ public class ObjectAnimatorTest {
     animator.start();
 
     assertThat(object.getValue()).isEqualTo("human");
-    Robolectric.idleMainLooper(1000);
+    ShadowLooper.idleMainLooper(1000);
     assertThat(object.getValue()).isEqualTo("replicant");
-    Robolectric.idleMainLooper(1000);
+    ShadowLooper.idleMainLooper(1000);
     assertThat(object.getValue()).isEqualTo("unicorn");
   }
 
   @Test
   public void shouldCallAnimationListenerAtStartAndEnd() throws Exception {
-    View target = new View(Robolectric.application);
+    View target = new View(RuntimeEnvironment.application);
     ObjectAnimator animator = ObjectAnimator.ofFloat(target, "translationX", 0.5f, 0.4f);
     animator.setDuration(1);
     TestAnimatorListener startListener = new TestAnimatorListener();
@@ -110,13 +110,13 @@ public class ObjectAnimatorTest {
 
     assertThat(startListener.startWasCalled).isTrue();
     assertThat(endListener.endWasCalled).isFalse();
-    Robolectric.idleMainLooper(1);
+    ShadowLooper.idleMainLooper(1);
     assertThat(endListener.endWasCalled).isTrue();
   }
 
   @Test
   public void getAnimatorsFor_shouldReturnAMapOfAnimatorsCreatedForTarget() throws Exception {
-    View target = new View(Robolectric.application);
+    View target = new View(RuntimeEnvironment.application);
     ObjectAnimator expectedAnimator = ObjectAnimator.ofFloat(target, "translationX", 0f, 1f);
 
     assertThat(ShadowObjectAnimator.getAnimatorsFor(target).get("translationX")).isSameAs(expectedAnimator);
@@ -124,7 +124,7 @@ public class ObjectAnimatorTest {
 
   @Test
   public void testIsRunning() throws Exception {
-    View target = new View(Robolectric.application);
+    View target = new View(RuntimeEnvironment.application);
     ObjectAnimator expectedAnimator = ObjectAnimator.ofFloat(target, "translationX", 0f, 1f);
     long duration = 70;
     expectedAnimator.setDuration(duration);
@@ -132,13 +132,13 @@ public class ObjectAnimatorTest {
     assertThat(expectedAnimator.isRunning()).isFalse();
     expectedAnimator.start();
     assertThat(expectedAnimator.isRunning()).isTrue();
-    Robolectric.idleMainLooper(duration);
+    ShadowLooper.idleMainLooper(duration);
     assertThat(expectedAnimator.isRunning()).isFalse();
   }
 
   @Test
   public void pauseAndRunEndNotifications() throws Exception {
-    View target = new View(Robolectric.application);
+    View target = new View(RuntimeEnvironment.application);
     ObjectAnimator animator = ObjectAnimator.ofFloat(target, "translationX", 0.5f, 0.4f);
     animator.setDuration(1);
     TestAnimatorListener endListener = new TestAnimatorListener();
@@ -148,7 +148,7 @@ public class ObjectAnimatorTest {
 
     assertThat(endListener.endWasCalled).isFalse();
     ShadowObjectAnimator.pauseEndNotifications();
-    Robolectric.idleMainLooper(1);
+    ShadowLooper.idleMainLooper(1);
     assertThat(endListener.endWasCalled).isFalse();
     ShadowObjectAnimator.unpauseEndNotifications();
     assertThat(endListener.endWasCalled).isTrue();
@@ -156,37 +156,37 @@ public class ObjectAnimatorTest {
 
   @Test
   public void animatesMultipleKeyFrames() throws Exception {
-    View target = new View(Robolectric.application);
+    View target = new View(RuntimeEnvironment.application);
     ObjectAnimator animator = ObjectAnimator.ofFloat(target, "alpha", 0f, 1f, 0.5f, 1f);
     animator.setDuration(3000);
 
     animator.start();
 
     assertThat(target.getAlpha()).isEqualTo(0f);
-    Robolectric.idleMainLooper(1000);
+    ShadowLooper.idleMainLooper(1000);
     assertThat(target.getAlpha()).isEqualTo(1f);
-    Robolectric.idleMainLooper(1000);
+    ShadowLooper.idleMainLooper(1000);
     assertThat(target.getAlpha()).isEqualTo(0.5f);
-    Robolectric.idleMainLooper(1000);
+    ShadowLooper.idleMainLooper(1000);
     assertThat(target.getAlpha()).isEqualTo(1f);
   }
 
   @Test
   public void animatesSingleKeyFrame() throws Exception {
-    View target = new View(Robolectric.application);
+    View target = new View(RuntimeEnvironment.application);
     ObjectAnimator animator = ObjectAnimator.ofFloat(target, "alpha", 0.4f);
     animator.setDuration(100);
 
     animator.start();
 
     assertThat(target.getAlpha()).isEqualTo(1f);
-    Robolectric.idleMainLooper(100);
+    ShadowLooper.idleMainLooper(100);
     assertThat(target.getAlpha()).isEqualTo(0.4f);
   }
 
   @Test
   public void cancel_cancelsAnimation() throws Exception {
-    View target = new View(Robolectric.application);
+    View target = new View(RuntimeEnvironment.application);
     ObjectAnimator animator = ObjectAnimator.ofFloat(target, "alpha", 0.4f);
     animator.setDuration(100);
 

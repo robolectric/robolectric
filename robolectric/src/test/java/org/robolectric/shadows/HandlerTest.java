@@ -6,8 +6,8 @@ import android.os.Message;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
+import org.robolectric.internal.Shadow;
 import org.robolectric.util.TestRunnable;
 import org.robolectric.util.Transcript;
 
@@ -17,7 +17,6 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.robolectric.Robolectric.newInstanceOf;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -42,7 +41,7 @@ public class HandlerTest {
 
   @Test
   public void testInsertsRunnablesBasedOnLooper() throws Exception {
-    Looper looper = newInstanceOf(Looper.class);
+    Looper looper = Shadow.newInstanceOf(Looper.class);
 
     Handler handler1 = new Handler(looper);
     handler1.post(new Say("first thing"));
@@ -70,11 +69,11 @@ public class HandlerTest {
 
   @Test
   public void testDifferentLoopersGetDifferentQueues() throws Exception {
-    Looper looper1 = Robolectric.newInstanceOf(Looper.class);
-    Robolectric.pauseLooper(looper1);
+    Looper looper1 = Shadow.newInstanceOf(Looper.class);
+    ShadowLooper.pauseLooper(looper1);
 
-    Looper looper2 = Robolectric.newInstanceOf(Looper.class);
-    Robolectric.pauseLooper(looper2);
+    Looper looper2 = Shadow.newInstanceOf(Looper.class);
+    ShadowLooper.pauseLooper(looper2);
 
     Handler handler1 = new Handler(looper1);
     handler1.post(new Say("first thing"));
@@ -220,44 +219,44 @@ public class HandlerTest {
 
   @Test
   public void sendEmptyMessage_addMessageToQueue() {
-    Robolectric.pauseMainLooper();
+    ShadowLooper.pauseMainLooper();
     Handler handler = new Handler();
     assertThat(handler.hasMessages(123)).isFalse();
     handler.sendEmptyMessage(123);
     assertThat(handler.hasMessages(456)).isFalse();
     assertThat(handler.hasMessages(123)).isTrue();
-    Robolectric.idleMainLooper(0);
+    ShadowLooper.idleMainLooper(0);
     assertThat(handler.hasMessages(123)).isFalse();
   }
 
   @Test
   public void sendEmptyMessageDelayed_sendsMessageAtCorrectTime() {
-    Robolectric.pauseMainLooper();
+    ShadowLooper.pauseMainLooper();
     Handler handler = new Handler();
     handler.sendEmptyMessageDelayed(123, 500);
     assertThat(handler.hasMessages(123)).isTrue();
-    Robolectric.idleMainLooper(100);
+    ShadowLooper.idleMainLooper(100);
     assertThat(handler.hasMessages(123)).isTrue();
-    Robolectric.idleMainLooper(400);
+    ShadowLooper.idleMainLooper(400);
     assertThat(handler.hasMessages(123)).isFalse();
   }
 
   @Test
   public void sendMessageAtTime_sendsMessageAtCorrectTime() {
-    Robolectric.pauseMainLooper();
+    ShadowLooper.pauseMainLooper();
     Handler handler = new Handler();
     Message message = handler.obtainMessage(123);
     handler.sendMessageAtTime(message, 500);
     assertThat(handler.hasMessages(123)).isTrue();
-    Robolectric.idleMainLooper(100);
+    ShadowLooper.idleMainLooper(100);
     assertThat(handler.hasMessages(123)).isTrue();
-    Robolectric.idleMainLooper(400);
+    ShadowLooper.idleMainLooper(400);
     assertThat(handler.hasMessages(123)).isFalse();
   }
 
   @Test
   public void removeMessages_takesMessageOutOfQueue() {
-    Robolectric.pauseMainLooper();
+    ShadowLooper.pauseMainLooper();
     Handler handler = new Handler();
     handler.sendEmptyMessageDelayed(123, 500);
     handler.removeMessages(123);
@@ -266,7 +265,7 @@ public class HandlerTest {
 
   @Test
   public void removeMessage_withSpecifiedObject() throws Exception {
-    Robolectric.pauseMainLooper();
+    ShadowLooper.pauseMainLooper();
     Handler handler = new Handler();
     Message.obtain(handler, 123, "foo").sendToTarget();
     Message.obtain(handler, 123, "bar").sendToTarget();
@@ -285,7 +284,7 @@ public class HandlerTest {
 
   @Test
   public void testHasMessagesWithWhatAndObject() {
-    Robolectric.pauseMainLooper();
+    ShadowLooper.pauseMainLooper();
     Object testObject = new Object();
     Handler handler = new Handler();
     Message message = handler.obtainMessage(123, testObject);
@@ -299,7 +298,7 @@ public class HandlerTest {
 
   @Test
   public void testSendToTarget() {
-    Robolectric.pauseMainLooper();
+    ShadowLooper.pauseMainLooper();
     Object testObject = new Object();
     Handler handler = new Handler();
     Message message = handler.obtainMessage(123, testObject);
@@ -314,7 +313,7 @@ public class HandlerTest {
   @Test
   public void removeMessages_removesFromLooperQueueAsWell() {
     final boolean[] wasRun = new boolean[1];
-    Robolectric.pauseMainLooper();
+    ShadowLooper.pauseMainLooper();
     Handler handler = new Handler() {
       @Override
       public void handleMessage(Message msg) {
@@ -323,14 +322,14 @@ public class HandlerTest {
     };
     handler.sendEmptyMessageDelayed(123, 500);
     handler.removeMessages(123);
-    Robolectric.unPauseMainLooper();
+    ShadowLooper.unPauseMainLooper();
     assertThat(wasRun[0]).isFalse();
   }
 
   @Test
   public void shouldRemoveAllMessages() throws Exception {
     final boolean[] wasRun = new boolean[1];
-    Robolectric.pauseMainLooper();
+    ShadowLooper.pauseMainLooper();
     Handler handler = new Handler() {
       @Override
       public void handleMessage(Message msg) {
@@ -339,14 +338,14 @@ public class HandlerTest {
     };
     handler.sendEmptyMessage(0);
     handler.removeCallbacksAndMessages(null);
-    Robolectric.unPauseMainLooper();
+    ShadowLooper.unPauseMainLooper();
     assertThat(wasRun[0]).isFalse();
   }
 
   @Test
   public void shouldRemoveSingleMessage() throws Exception {
     final List<Object> objects = new ArrayList<Object>();
-    Robolectric.pauseMainLooper();
+    ShadowLooper.pauseMainLooper();
 
     Handler handler = new Handler() {
       @Override
@@ -362,7 +361,7 @@ public class HandlerTest {
     handler.sendMessage(handler.obtainMessage(0, secondObj));
 
     handler.removeCallbacksAndMessages(secondObj);
-    Robolectric.unPauseMainLooper();
+    ShadowLooper.unPauseMainLooper();
 
     assertThat(objects.contains(firstObj)).isTrue();
     assertThat(objects.contains(secondObj)).isFalse();
@@ -408,9 +407,9 @@ public class HandlerTest {
 
     h.sendEmptyMessage(0);
     h.sendEmptyMessageDelayed(0, 4000l);
-    Robolectric.getUiThreadScheduler().advanceToLastPostedRunnable();
+    ShadowLooper.getUiThreadScheduler().advanceToLastPostedRunnable();
     h.sendEmptyMessageDelayed(0, 12000l);
-    Robolectric.getUiThreadScheduler().advanceToLastPostedRunnable();
+    ShadowLooper.getUiThreadScheduler().advanceToLastPostedRunnable();
     assertThat(msgs.size()).isEqualTo(3);
 
     Message m0 = msgs.get(0);

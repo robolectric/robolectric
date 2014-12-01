@@ -4,7 +4,6 @@ import android.os.AsyncTask;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.util.Join;
 import org.robolectric.util.Transcript;
@@ -25,8 +24,8 @@ public class AsyncTaskTest {
   @Before
   public void setUp() throws Exception {
     transcript = new Transcript();
-    Robolectric.getBackgroundScheduler().pause();
-    Robolectric.getUiThreadScheduler().pause();
+    ShadowApplication.getInstance().getBackgroundScheduler().pause();
+    ShadowLooper.getUiThreadScheduler().pause();
   }
 
   @Test
@@ -36,11 +35,11 @@ public class AsyncTaskTest {
     asyncTask.execute("a", "b");
     transcript.assertEventsSoFar("onPreExecute");
 
-    Robolectric.runBackgroundTasks();
+    ShadowApplication.runBackgroundTasks();
     transcript.assertEventsSoFar("doInBackground a, b");
     assertEquals("Result should get stored in the AsyncTask", "c", asyncTask.get(100, TimeUnit.MILLISECONDS));
 
-    Robolectric.runUiThreadTasks();
+    ShadowLooper.runUiThreadTasks();
     transcript.assertEventsSoFar("onPostExecute c");
   }
 
@@ -54,10 +53,10 @@ public class AsyncTaskTest {
     assertTrue(asyncTask.cancel(true));
     assertTrue(asyncTask.isCancelled());
 
-    Robolectric.runBackgroundTasks();
+    ShadowApplication.runBackgroundTasks();
     transcript.assertNoEventsSoFar();
 
-    Robolectric.runUiThreadTasks();
+    ShadowLooper.runUiThreadTasks();
     transcript.assertEventsSoFar("onCancelled");
   }
 
@@ -68,14 +67,14 @@ public class AsyncTaskTest {
     asyncTask.execute("a", "b");
     transcript.assertEventsSoFar("onPreExecute");
 
-    Robolectric.runBackgroundTasks();
+    ShadowApplication.runBackgroundTasks();
     transcript.assertEventsSoFar("doInBackground a, b");
     assertEquals("Result should get stored in the AsyncTask", "c", asyncTask.get(100, TimeUnit.MILLISECONDS));
 
     assertFalse(asyncTask.cancel(true));
     assertFalse(asyncTask.isCancelled());
 
-    Robolectric.runUiThreadTasks();
+    ShadowLooper.runUiThreadTasks();
     transcript.assertEventsSoFar("onPostExecute c");
   }
 
@@ -94,11 +93,11 @@ public class AsyncTaskTest {
     asyncTask.execute("a", "b");
     transcript.assertEventsSoFar("onPreExecute");
 
-    Robolectric.runBackgroundTasks();
+    ShadowApplication.runBackgroundTasks();
     transcript.assertNoEventsSoFar();
     assertEquals("Result should get stored in the AsyncTask", "done", asyncTask.get(100, TimeUnit.MILLISECONDS));
 
-    Robolectric.runUiThreadTasks();
+    ShadowLooper.runUiThreadTasks();
     transcript.assertEventsSoFar(
         "onProgressUpdate 33%",
         "onProgressUpdate 66%",
@@ -108,7 +107,7 @@ public class AsyncTaskTest {
 
   @Test
   public void executeReturnsAsyncTask() throws Exception {
-    Robolectric.getBackgroundScheduler().unPause();
+    ShadowApplication.getInstance().getBackgroundScheduler().unPause();
     AsyncTask<String, String, String> asyncTask = new MyAsyncTask();
     assertThat(asyncTask.execute("a", "b").get()).isEqualTo("c");
   }
@@ -119,14 +118,14 @@ public class AsyncTaskTest {
     assertThat(asyncTask.getStatus()).isEqualTo(AsyncTask.Status.PENDING);
     asyncTask.execute("a");
     assertThat(asyncTask.getStatus()).isEqualTo(AsyncTask.Status.RUNNING);
-    Robolectric.getBackgroundScheduler().unPause();
+    ShadowApplication.getInstance().getBackgroundScheduler().unPause();
     assertThat(asyncTask.getStatus()).isEqualTo(AsyncTask.Status.FINISHED);
   }
 
   @Test
   public void onPostExecute_doesNotSwallowExceptions() throws Exception {
-    Robolectric.getBackgroundScheduler().unPause();
-    Robolectric.getUiThreadScheduler().unPause();
+    ShadowApplication.getInstance().getBackgroundScheduler().unPause();
+    ShadowLooper.getUiThreadScheduler().unPause();
 
     AsyncTask<Void, Void, Void> asyncTask = new AsyncTask<Void, Void, Void>() {
       @Override
@@ -160,7 +159,7 @@ public class AsyncTaskTest {
     transcript.assertEventsSoFar("onPreExecute", "doInBackground a, b");
     assertEquals("Result should get stored in the AsyncTask", "c", asyncTask.get());
 
-    Robolectric.runUiThreadTasks();
+    ShadowLooper.runUiThreadTasks();
     transcript.assertEventsSoFar("onPostExecute c");
   }
 

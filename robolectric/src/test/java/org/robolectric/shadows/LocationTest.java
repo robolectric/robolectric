@@ -51,8 +51,7 @@ public class LocationTest {
   }
 
   @Test
-  public void removeFieldShouldReportHasFieldAsFalse()
-  {
+  public void removeFieldShouldReportHasFieldAsFalse() {
     assertTrue(location.hasAccuracy());
     location.removeAccuracy();
     assertFalse(location.hasAccuracy());
@@ -71,8 +70,7 @@ public class LocationTest {
   }
 
   @Test
-  public void defaultLocationShouldNotReportFieldsAsAvailable()
-  {
+  public void defaultLocationShouldNotReportFieldsAsAvailable() {
     Location defaultLocation = new Location(LocationManager.GPS_PROVIDER);
     assertFalse(defaultLocation.hasAccuracy());
     assertFalse(defaultLocation.hasBearing());
@@ -88,8 +86,7 @@ public class LocationTest {
   }
 
   @Test
-  public void settingFieldShouldMakeHasFieldReturnTrue()
-  {
+  public void settingFieldShouldMakeHasFieldReturnTrue() {
     Location l = new Location(LocationManager.GPS_PROVIDER);
     assertFalse(l.hasAccuracy());
     l.setAccuracy(0.5f);

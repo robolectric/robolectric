@@ -4,7 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
-import org.robolectric.internal.DoNotInstrument;
+import org.robolectric.annotation.DoNotInstrument;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

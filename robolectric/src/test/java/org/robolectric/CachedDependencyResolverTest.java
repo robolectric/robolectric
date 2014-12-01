@@ -110,7 +110,7 @@ public class CachedDependencyResolverTest {
   }
 
   private DependencyJar createDependency(final String groupId, final String artifactId) {
-    return new DependencyJar(groupId, artifactId, null) {
+    return new DependencyJar(groupId, artifactId, null, "") {
 
       @Override
       public boolean equals(Object o) {

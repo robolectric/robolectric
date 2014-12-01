@@ -1,20 +1,12 @@
 package org.robolectric.shadows;
 
-import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.CursorAdapter;
 import android.widget.SimpleCursorAdapter;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -23,7 +15,7 @@ public class SimpleCursorAdapterTest {
 
   @Test
   public void testChangeCursor() {
-    SimpleCursorAdapter adapter = new SimpleCursorAdapter(Robolectric.application, 1, null, new String[]{"name"}, new int[]{2}, 0);
+    SimpleCursorAdapter adapter = new SimpleCursorAdapter(RuntimeEnvironment.application, 1, null, new String[]{"name"}, new int[]{2}, 0);
 
     Cursor cursor = setUpDatabase();
 

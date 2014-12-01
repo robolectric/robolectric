@@ -19,7 +19,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.util.Transcript;
 
@@ -32,7 +32,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Robolectric.buildActivity;
-import static org.robolectric.Robolectric.getShadowApplication;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -182,12 +181,12 @@ public class ContextWrapperTest {
   public void broadcastReceivers_shouldBeSharedAcrossContextsPerApplicationContext() throws Exception {
     BroadcastReceiver receiver = broadcastReceiver("Larry");
 
-    new ContextWrapper(Robolectric.application).registerReceiver(receiver, intentFilter("foo", "baz"));
-    new ContextWrapper(Robolectric.application).sendBroadcast(new Intent("foo"));
-    Robolectric.application.sendBroadcast(new Intent("baz"));
+    new ContextWrapper(RuntimeEnvironment.application).registerReceiver(receiver, intentFilter("foo", "baz"));
+    new ContextWrapper(RuntimeEnvironment.application).sendBroadcast(new Intent("foo"));
+    RuntimeEnvironment.application.sendBroadcast(new Intent("baz"));
     transcript.assertEventsSoFar("Larry notified of foo", "Larry notified of baz");
 
-    new ContextWrapper(Robolectric.application).unregisterReceiver(receiver);
+    new ContextWrapper(RuntimeEnvironment.application).unregisterReceiver(receiver);
   }
 
   @Test
@@ -261,9 +260,9 @@ public class ContextWrapperTest {
 
   @Test
   public void shouldReturnApplicationContext_forViewContextInflatedWithApplicationContext() throws Exception {
-    View view = LayoutInflater.from(Robolectric.application).inflate(R.layout.custom_layout, null);
+    View view = LayoutInflater.from(RuntimeEnvironment.application).inflate(R.layout.custom_layout, null);
     Context viewContext = new ContextWrapper(view.getContext());
-    assertThat(viewContext.getApplicationContext()).isEqualTo(Robolectric.application);
+    assertThat(viewContext.getApplicationContext()).isEqualTo(RuntimeEnvironment.application);
   }
 
   @Test
@@ -320,7 +319,7 @@ public class ContextWrapperTest {
   @Test
   public void bindServiceDelegatesToShadowApplication() {
     contextWrapper.bindService(new Intent("foo"), new TestService(), Context.BIND_AUTO_CREATE);
-    assertEquals("foo", shadowOf(Robolectric.application).getNextStartedService().getAction());
+    assertEquals("foo", shadowOf(RuntimeEnvironment.application).getNextStartedService().getAction());
   }
 
   @Test
@@ -329,8 +328,8 @@ public class ContextWrapperTest {
     final Intent pick = new Intent(Intent.ACTION_PICK);
     contextWrapper.startActivities(new Intent[] {view, pick});
 
-    assertThat(getShadowApplication().getNextStartedActivity()).isEqualTo(pick);
-    assertThat(getShadowApplication().getNextStartedActivity()).isEqualTo(view);
+    assertThat(ShadowApplication.getInstance().getNextStartedActivity()).isEqualTo(pick);
+    assertThat(ShadowApplication.getInstance().getNextStartedActivity()).isEqualTo(view);
   }
 
   @Test
@@ -339,8 +338,8 @@ public class ContextWrapperTest {
     final Intent pick = new Intent(Intent.ACTION_PICK);
     contextWrapper.startActivities(new Intent[] {view, pick}, new Bundle());
 
-    assertThat(getShadowApplication().getNextStartedActivity()).isEqualTo(pick);
-    assertThat(getShadowApplication().getNextStartedActivity()).isEqualTo(view);
+    assertThat(ShadowApplication.getInstance().getNextStartedActivity()).isEqualTo(pick);
+    assertThat(ShadowApplication.getInstance().getNextStartedActivity()).isEqualTo(view);
   }
 
   private BroadcastReceiver broadcastReceiver(final String name) {

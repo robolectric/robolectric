@@ -18,6 +18,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
 import java.io.ByteArrayOutputStream;
@@ -40,7 +41,7 @@ public class ViewGroupTest {
 
   @Before
   public void setUp() throws Exception {
-    context = Robolectric.application;
+    context = RuntimeEnvironment.application;
 
     root = new FrameLayout(context);
 
@@ -175,7 +176,7 @@ public class ViewGroupTest {
 
   @Test @Ignore("This doesn't actually match Android's behavior, at least in Jelly Bean.")
   public void shouldFindViewWithTag_whenViewGroupOverridesGetTag() throws Exception {
-    ViewGroup viewGroup = new LinearLayout(Robolectric.application) {
+    ViewGroup viewGroup = new LinearLayout(RuntimeEnvironment.application) {
       @Override
       public Object getTag() {
         return "blarg";
@@ -254,8 +255,8 @@ public class ViewGroupTest {
   public void addViewWithLayoutParams_shouldStoreLayoutParams() throws Exception {
     FrameLayout.LayoutParams layoutParams1 = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
     FrameLayout.LayoutParams layoutParams2 = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-    View child1 = new View(Robolectric.application);
-    View child2 = new View(Robolectric.application);
+    View child1 = new View(RuntimeEnvironment.application);
+    View child2 = new View(RuntimeEnvironment.application);
     root.addView(child1, layoutParams1);
     root.addView(child2, 1, layoutParams2);
     assertSame(layoutParams1, child1.getLayoutParams());

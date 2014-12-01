@@ -5,6 +5,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
 import static org.junit.Assert.assertFalse;
@@ -17,7 +18,7 @@ public class CheckedTextViewTest {
 
   @Before
   public void beforeTests() {
-    checkedTextView = new CheckedTextView(Robolectric.application);
+    checkedTextView = new CheckedTextView(RuntimeEnvironment.application);
   }
 
   @Test
@@ -39,7 +40,7 @@ public class CheckedTextViewTest {
   }
 
   @Test public void toggle_shouldChangeCheckedness() throws Exception {
-    CheckedTextView view = new CheckedTextView(Robolectric.application);
+    CheckedTextView view = new CheckedTextView(RuntimeEnvironment.application);
     assertFalse(view.isChecked());
     view.toggle();
     assertTrue(view.isChecked());

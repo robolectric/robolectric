@@ -11,6 +11,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.bytecode.ShadowingTest;
 
@@ -110,7 +111,7 @@ public class MapViewTest {
   }
 
   private void initMapForDrag() {
-    mapView = new MapView(Robolectric.application, "");
+    mapView = new MapView(RuntimeEnvironment.application, "");
     mapView.layout(0, 0, 50, 50);
     mapView.getController().setCenter(new GeoPoint(toE6(25), toE6(25)));
     mapView.getController().zoomToSpan(toE6(50), toE6(50));

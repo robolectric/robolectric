@@ -1,7 +1,7 @@
 package org.robolectric.bytecode;
 
 import android.R;
-import org.robolectric.AndroidManifest;
+import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.DependencyJar;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.SdkConfig;
@@ -14,7 +14,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.impl.ExtendedResponseCache;
 import org.robolectric.impl.FakeCharsets;
 import org.robolectric.impl.ResponseSource;
-import org.robolectric.internal.DoNotInstrument;
+import org.robolectric.annotation.DoNotInstrument;
 import org.robolectric.internal.Instrument;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.res.ResourceLoader;
@@ -40,7 +40,6 @@ public class Setup {
       AndroidManifest.class,
       R.class,
 
-      org.robolectric.bytecode.InstrumentingClassLoader.class,
       org.robolectric.bytecode.AsmInstrumentingClassLoader.class,
       SdkEnvironment.class,
       SdkConfig.class,
@@ -141,19 +140,14 @@ public class Setup {
   /**
    * Map from a requested class to an alternate stand-in, or not.
    *
-   * @return
+   * @return Mapping of class name translations.
    */
   public Map<String, String> classNameTranslations() {
     Map<String, String> map = new HashMap<String, String>();
-    map.put("java.lang.AutoCloseable", Object.class.getName());
     map.put("java.net.ExtendedResponseCache", ExtendedResponseCache.class.getName());
     map.put("java.net.ResponseSource", ResponseSource.class.getName());
     map.put("java.nio.charset.Charsets", FakeCharsets.class.getName());
     return map;
-  }
-
-  public static class FakeClass {
-    public static class FakeInnerClass {}
   }
 
   public boolean containsStubs(ClassInfo classInfo) {
