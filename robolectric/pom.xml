@@ -29,12 +29,6 @@
       <scope>test</scope>
     </dependency>
 
-    <dependency>
-      <groupId>org.robolectric</groupId>
-      <artifactId>robolectric-fakehttp</artifactId>
-      <scope>test</scope>
-    </dependency>
-
     <!-- Robolectric Dependencies -->
     <dependency>
       <groupId>org.robolectric</groupId>
@@ -43,19 +37,17 @@
 
     <dependency>
       <groupId>org.robolectric</groupId>
-      <artifactId>robolectric-utils</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.robolectric</groupId>
       <artifactId>robolectric-resources</artifactId>
     </dependency>
 
     <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpclient</artifactId>
-      <version>4.0.3</version>
-      <scope>test</scope>
+      <groupId>org.robolectric</groupId>
+      <artifactId>robolectric-fakehttp</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.robolectric</groupId>
+      <artifactId>robolectric-utils</artifactId>
     </dependency>
 
     <dependency>
@@ -68,7 +60,6 @@
       <groupId>org.robolectric</groupId>
       <artifactId>shadows-core</artifactId>
       <classifier>19</classifier>
-      <scope>provided</scope>
     </dependency>
 
     <!-- Project Dependencies -->
