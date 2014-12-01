@@ -123,6 +123,7 @@
 
     <plugins>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
         <configuration>
           <classifier>${api}</classifier>
@@ -135,6 +136,14 @@
         <version>2.3.2</version>
         <configuration>
           <generatedSourcesDirectory>target/generated-sources</generatedSourcesDirectory>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <configuration>
+          <classifier>${api}-sources</classifier>
         </configuration>
       </plugin>
 
