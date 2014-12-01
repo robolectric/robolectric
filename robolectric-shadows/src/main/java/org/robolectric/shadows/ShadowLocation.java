@@ -365,7 +365,7 @@ public class ShadowLocation {
    * @param endLongitude the ending longitude
    * @param results an array of floats to hold the results
    *
-   * @throws IllegalArgumentException if results is null or has length < 1
+   * @throws IllegalArgumentException if results is null or has length &lt; 1
    */
   @Implementation
   public static void distanceBetween(double startLatitude, double startLongitude,

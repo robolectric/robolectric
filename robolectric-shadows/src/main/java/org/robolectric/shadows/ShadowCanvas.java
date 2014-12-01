@@ -20,7 +20,8 @@ import static org.robolectric.Shadows.shadowOf;
 
 /**
  * Shadows the {@code android.graphics.Canvas} class.
- * <p/>
+ *
+ * <p>
  * Broken.
  * This implementation is very specific to the application for which it was developed.
  * Todo: Reimplement. Consider using the same strategy of collecting a history of draw events and providing methods for writing queries based on type, number, and order of events.
@@ -48,6 +49,7 @@ public class ShadowCanvas {
    * Returns a textual representation of the appearance of the object.
    *
    * @param canvas the canvas to visualize
+   * @return The textual representation of the appearance of the object.
    */
   public static String visualize(Canvas canvas) {
     return shadowOf(canvas).getDescription();

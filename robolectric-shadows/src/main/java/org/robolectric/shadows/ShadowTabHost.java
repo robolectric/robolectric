@@ -138,7 +138,9 @@ public class ShadowTabHost extends ShadowFrameLayout {
     private Drawable icon;
 
     /**
-     * Non-Android accessor, sets the tag on the TabSpec
+     * Non-Android accessor, sets the tag on the TabSpec.
+     *
+     * @param tag The tag.
      */
     public void setTag(String tag) {
       this.tag = tag;
@@ -150,7 +152,7 @@ public class ShadowTabHost extends ShadowFrameLayout {
     }
 
     /**
-     * Non-Android accessor
+     * Non-Android accessor.
      *
      * @return the view object set in a call to {@code TabSpec#setIndicator(View)}
      */
@@ -168,11 +170,13 @@ public class ShadowTabHost extends ShadowFrameLayout {
 
     /**
      * Same as GetIndicatorLabel()
-     * @return
+     *
+     * @return Tab text.
      */
     public String getText() {
       return label.toString();
     }
+
     @Implementation
     public TabSpec setIndicator(View view) {
       this.indicatorView = view;
@@ -213,7 +217,6 @@ public class ShadowTabHost extends ShadowFrameLayout {
       return realObject;
     }
 
-
     @Implementation
     public TabSpec setContent(int viewId) {
       this.viewId = viewId;
@@ -227,6 +230,5 @@ public class ShadowTabHost extends ShadowFrameLayout {
     public View getContentView() {
       return contentView;
     }
-
   }
 }

@@ -37,7 +37,7 @@ import java.security.SecureRandom;
 import java.util.*;
 
 /**
- * Installs a {@link org.robolectric.bytecode.InstrumentingClassLoader} and
+ * Installs a {@link org.robolectric.bytecode.AsmInstrumentingClassLoader} and
  * {@link org.robolectric.res.ResourceLoader} in order to
  * provide a simulation of the Android runtime environment.
  */

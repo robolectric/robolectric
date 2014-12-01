@@ -30,7 +30,8 @@ import static org.robolectric.internal.Shadow.invokeConstructor;
 /**
  * Shadow implementation of {@code View} that simulates the behavior of this
  * class.
- * <p/>
+ *
+ * <p>
  * Supports listeners, focusability (but not focus order), resource loading,
  * visibility, onclick, tags, and tracks the size and shape of the view.
  */
@@ -73,6 +74,7 @@ public class ShadowView {
    * Returns a textual representation of the appearance of the object.
    *
    * @param view the view to visualize
+   * @return Textual representation of the appearance of the object.
    */
   public static String visualize(View view) {
     Canvas canvas = new Canvas();
@@ -94,6 +96,7 @@ public class ShadowView {
    * Returns the text contained within this view.
    *
    * @param view the view to scan for text
+   * @return Text contained within this view.
    */
   @SuppressWarnings("UnusedDeclaration")
   public static String innerText(View view) {
@@ -246,8 +249,10 @@ public class ShadowView {
 
   /**
    * Returns a string representation of this {@code View}. Unless overridden, it will be an empty string.
-   * <p/>
+   *
+   * <p>
    * Robolectric extension.
+   * @return String representation of this view.
    */
   public String innerText() {
     return "";
@@ -262,6 +267,8 @@ public class ShadowView {
 
   /**
    * Dumps the status of this {@code View} to {@code System.out} at the given indentation level
+   * @param out Output stream.
+   * @param indent Indentation level.
    */
   public void dump(PrintStream out, int indent) {
     dumpFirstPart(out, indent);
@@ -320,6 +327,7 @@ public class ShadowView {
    * Utility method for clicking on views exposing testing scenarios that are not possible when using the actual app.
    *
    * @throws RuntimeException if the view is disabled or if the view or any of its parents are not visible.
+   * @return Return value of the underlying click operation.
    */
   public boolean checkedPerformClick() {
     if (!realView.isShown()) {
@@ -333,35 +341,45 @@ public class ShadowView {
   }
 
   /**
-   * Non-android accessor.  Returns touch listener, if set.
+   * Non-android accessor.
+   *
+   * @return Touch listener, if set.
    */
   public View.OnTouchListener getOnTouchListener() {
     return onTouchListener;
   }
 
   /**
-   * Non-android accessor.  Returns click listener, if set.
+   * Non-android accessor.
+   *
+   * @return Returns click listener, if set.
    */
   public View.OnClickListener getOnClickListener() {
     return onClickListener;
   }
 
   /**
-   * Non-android accessor.  Returns long click listener, if set.
+   * Non-android accessor.
+   *
+   * @return Returns long click listener, if set.
    */
   public View.OnLongClickListener getOnLongClickListener() {
     return onLongClickListener;
   }
 
   /**
-   * Non-android accessor.  Returns long click listener, if set.
+   * Non-android accessor.
+   *
+   * @return Returns system ui visibility change listener.
    */
   public View.OnSystemUiVisibilityChangeListener getOnSystemUiVisibilityChangeListener() {
     return onSystemUiVisibilityChangeListener;
   }
 
   /**
-   * Non-android accessor.  Returns create ContextMenu listener, if set.
+   * Non-android accessor.
+   *
+   * @return Returns create ContextMenu listener, if set.
    */
   public View.OnCreateContextMenuListener getOnCreateContextMenuListener() {
     return onCreateContextMenuListener;

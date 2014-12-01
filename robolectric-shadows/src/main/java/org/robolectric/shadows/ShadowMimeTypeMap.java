@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Shadow for {@code MimeTypeMap} that allows custom extension <-> mimetype mapping to be set up by tests.
+ * Shadow for {@code MimeTypeMap} that allows custom extension to mimetype mapping to be set up by tests.
  */
 @Implements(MimeTypeMap.class)
 public class ShadowMimeTypeMap {

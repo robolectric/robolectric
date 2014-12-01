@@ -95,7 +95,8 @@ public class ShadowTextView extends ShadowView {
 
   /**
    * Returns the text string of this {@code TextView}.
-   * <p/>
+   *
+   * <p>
    * Robolectric extension.
    */
   @Override

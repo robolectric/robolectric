@@ -24,6 +24,9 @@ public class ShadowSystemClock {
    * of the UI Scheduler for consistency with previous implementations.
    * This is not ideal, since both schedulers (background and foreground),
    * can see different values for the current time.
+   *
+   * @param millis Current time in millis.
+   * @return True if the time was changed.
    */
   @Implementation
   public static boolean setCurrentTimeMillis(long millis) {
@@ -65,6 +68,8 @@ public class ShadowSystemClock {
   
   /**
    * Implements {@link System#currentTimeMillis} through ShadowWrangler.
+   *
+   * @return Current time in millis.
    */
   @SuppressWarnings("UnusedDeclaration")
   public static long currentTimeMillis() {
@@ -75,6 +80,8 @@ public class ShadowSystemClock {
 
   /**
    * Implements {@link System#nanoTime} through ShadowWrangler.
+   *
+   * @return Current time with nanos.
    */
   @SuppressWarnings("UnusedDeclaration")
   public static long nanoTime() {

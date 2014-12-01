@@ -106,6 +106,8 @@ public class ShadowVideoView extends ShadowSurfaceView {
 
   /**
    * Non-Android accessor.
+   *
+   * @return On prepared listener.
    */
   public MediaPlayer.OnPreparedListener getOnPreparedListener() {
     return preparedListener;
@@ -113,7 +115,8 @@ public class ShadowVideoView extends ShadowSurfaceView {
 
   /**
    * Non-Android accessor.
-   * @return
+   *
+   * @return On error listener.
    */
   public MediaPlayer.OnErrorListener getOnErrorListener() {
     return errorListener;
@@ -121,7 +124,8 @@ public class ShadowVideoView extends ShadowSurfaceView {
 
   /**
    * Non-Android accessor.
-   * @return
+   *
+   * @return On completion listener.
    */
   public MediaPlayer.OnCompletionListener getOnCompletionListener() {
     return completionListner;
@@ -129,7 +133,8 @@ public class ShadowVideoView extends ShadowSurfaceView {
 
   /**
    * Non-Android accessor.
-   * @return
+   *
+   * @return Video path.
    */
   public String getVideoPath() {
     return path;
@@ -137,7 +142,8 @@ public class ShadowVideoView extends ShadowSurfaceView {
 
   /**
    * Non-Android accessor.
-   * @return
+   *
+   * @return Video URI.
    */
   public String getVideoURIString() {
     return uri == null ? null : uri.toString();
@@ -145,7 +151,8 @@ public class ShadowVideoView extends ShadowSurfaceView {
 
   /**
    * Non-Android accessor.
-   * @return
+   *
+   * @return Current video state.
    */
   public int getCurrentVideoState() {
     return currentState;
@@ -153,7 +160,8 @@ public class ShadowVideoView extends ShadowSurfaceView {
 
   /**
    * Non-Android accessor.
-   * @return
+   *
+   * @return Previous video state.
    */
   public int getPrevVideoState() {
     return prevState;

@@ -25,7 +25,6 @@ import android.widget.ResourceCursorAdapter;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-
 /**
  * An easy adapter that creates views defined in an XML file. You can specify
  * the XML file that defines the appearance of the views.
@@ -46,6 +45,7 @@ public class ShadowResourceCursorAdapter extends ShadowCursorAdapter {
    * @param layout resource identifier of a layout file that defines the views
    *            for this list item.  Unless you override them later, this will
    *            define both the item views and the drop down views.
+   * @param c The cursor from which to get the data.
    */
   public void __constructor__(Context context, int layout, Cursor c) {
     super.__constructor__(context, c);
@@ -72,12 +72,6 @@ public class ShadowResourceCursorAdapter extends ShadowCursorAdapter {
     mInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
   }
 
-  /**
-   * Inflates view(s) from the specified XML file.
-   *
-   * @see android.widget.CursorAdapter#newView(android.content.Context,
-   *      android.database.Cursor, ViewGroup)
-   */
   @Implementation
   public View newView(Context context, Cursor cursor, ViewGroup parent) {
     return mInflater.inflate(mLayout, parent, false);
@@ -88,21 +82,11 @@ public class ShadowResourceCursorAdapter extends ShadowCursorAdapter {
     return mInflater.inflate(mDropDownLayout, parent, false);
   }
 
-  /**
-   * <p>Sets the layout resource of the item views.</p>
-   *
-   * @param layout the layout resources used to create item views
-   */
   @Implementation
   public void setViewResource(int layout) {
     mLayout = layout;
   }
 
-  /**
-   * <p>Sets the layout resource of the drop down views.</p>
-   *
-   * @param dropDownLayout the layout resources used to create drop down views
-   */
   @Implementation
   public void setDropDownViewResource(int dropDownLayout) {
     mDropDownLayout = dropDownLayout;

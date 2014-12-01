@@ -510,8 +510,8 @@ public class ShadowContentResolver {
   /**
    * Non-Android accessor.  Returns the content observer registered with
    * the given URI, or null if none registered.
-   * @param uri
-   * @return
+   * @param uri Given URI
+   * @return The content observer
    */
   public ContentObserver getContentObserver( Uri uri ) {
     return contentObservers.get(uri);

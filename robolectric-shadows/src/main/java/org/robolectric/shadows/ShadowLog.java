@@ -137,7 +137,7 @@ public class ShadowLog {
 
   /**
    * Non-Android accessor.  Returns ordered list of all log entries.
-   * @return
+   * @return List of log items
    */
   public static synchronized List<LogItem> getLogs() {
     return logs;
@@ -146,8 +146,8 @@ public class ShadowLog {
   /**
    * Non-Android accessor.  Returns ordered list of all log items for a specific tag.
    *
-   * @param tag
-   * @return
+   * @param tag The tag to get logs for
+   * @return The list of log items for the tag
    */
   public static synchronized List<LogItem> getLogsForTag( String tag ) {
     return logsByTag.get(tag);

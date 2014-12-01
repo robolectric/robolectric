@@ -18,7 +18,8 @@ import static org.robolectric.Shadows.shadowOf;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Bitmap.class)
 public class ShadowBitmap {
-  @RealObject private Bitmap realBitmap;
+  @RealObject
+  private Bitmap realBitmap;
 
   int createdFromResId = -1;
   String createdFromPath;
@@ -45,6 +46,7 @@ public class ShadowBitmap {
    * Returns a textual representation of the appearance of the object.
    *
    * @param bitmap the bitmap to visualize
+   * @return Textual representation of the appearance of the object.
    */
   public static String visualize(Bitmap bitmap) {
     return shadowOf(bitmap).getDescription();
@@ -53,6 +55,8 @@ public class ShadowBitmap {
   /**
    * Reference to original Bitmap from which this Bitmap was created. {@code null} if this Bitmap
    * was not copied from another instance.
+   *
+   * @return Original Bitmap from which this Bitmap was created.
    */
   public Bitmap getCreatedFromBitmap() {
     return createdFromBitmap;
@@ -61,6 +65,8 @@ public class ShadowBitmap {
   /**
    * Resource ID from which this Bitmap was created. {@code 0} if this Bitmap was not created
    * from a resource.
+   *
+   * @return Resource ID from which this Bitmap was created.
    */
   public int getCreatedFromResId() {
     return createdFromResId;
@@ -69,6 +75,8 @@ public class ShadowBitmap {
   /**
    * Path from which this Bitmap was created. {@code null} if this Bitmap was not create from a
    * path.
+   *
+   * @return Path from which this Bitmap was created.
    */
   public String getCreatedFromPath() {
     return createdFromPath;
@@ -77,6 +85,8 @@ public class ShadowBitmap {
   /**
    * {@link InputStream} from which this Bitmap was created. {@code null} if this Bitmap was not
    * created from a stream.
+   *
+   * @return InputStream from which this Bitmap was created.
    */
   public InputStream getCreatedFromStream() {
     return createdFromStream;
@@ -85,22 +95,36 @@ public class ShadowBitmap {
   /**
    * Bytes from which this Bitmap was created. {@code null} if this Bitmap was not created from
    * bytes.
+   *
+   * @return Bytes from which this Bitmap was created.
    */
   public byte[] getCreatedFromBytes() {
     return createdFromBytes;
   }
 
-  /** Horizontal offset within {@link #getCreatedFromBitmap()} of this Bitmap's content, or -1. */
+  /**
+   * Horizontal offset within {@link #getCreatedFromBitmap()} of this Bitmap's content, or -1.
+   *
+   * @return Horizontal offset within {@link #getCreatedFromBitmap()}.
+   */
   public int getCreatedFromX() {
     return createdFromX;
   }
-  /** Vertical offset within {@link #getCreatedFromBitmap()} of this Bitmap's content, or -1. */
+
+  /**
+   * Vertical offset within {@link #getCreatedFromBitmap()} of this Bitmap's content, or -1.
+   *
+   * @return Vertical offset within {@link #getCreatedFromBitmap()} of this Bitmap's content, or -1.
+   */
   public int getCreatedFromY() {
     return createdFromY;
   }
 
   /**
    * Width from {@link #getCreatedFromX()} within {@link #getCreatedFromBitmap()} of this Bitmap's
+   * content, or -1.
+   *
+   * @return Width from {@link #getCreatedFromX()} within {@link #getCreatedFromBitmap()} of this Bitmap's
    * content, or -1.
    */
   public int getCreatedFromWidth() {
@@ -110,6 +134,8 @@ public class ShadowBitmap {
   /**
    * Height from {@link #getCreatedFromX()} within {@link #getCreatedFromBitmap()} of this Bitmap's
    * content, or -1.
+   * @return Height from {@link #getCreatedFromX()} within {@link #getCreatedFromBitmap()} of this Bitmap's
+   * content, or -1.
    */
   public int getCreatedFromHeight() {
     return createdFromHeight;
@@ -118,17 +144,24 @@ public class ShadowBitmap {
   /**
    * Color array from which this Bitmap was created. {@code null} if this Bitmap was not created
    * from a color array.
+   * @return Color array from which this Bitmap was created.
    */
   public int[] getCreatedFromColors() {
     return createdFromColors;
   }
 
-  /** Matrix from which this Bitmap's content was transformed, or {@code null}. */
+  /**
+   * Matrix from which this Bitmap's content was transformed, or {@code null}.
+   * @return Matrix from which this Bitmap's content was transformed, or {@code null}.
+   */
   public Matrix getCreatedFromMatrix() {
     return createdFromMatrix;
   }
 
-  /** {@code true} if this Bitmap was created with filtering. */
+  /**
+   * {@code true} if this Bitmap was created with filtering.
+   * @return {@code true} if this Bitmap was created with filtering.
+   */
   public boolean getCreatedFromFilter() {
     return createdFromFilter;
   }
@@ -374,7 +407,8 @@ public class ShadowBitmap {
     return height;
   }
 
-  @Override @Implementation
+  @Override
+  @Implementation
   public boolean equals(Object o) {
     if (this == o) return true;
     if (!(o instanceof Bitmap)) return false;
@@ -388,7 +422,8 @@ public class ShadowBitmap {
     return true;
   }
 
-  @Override @Implementation
+  @Override
+  @Implementation
   public int hashCode() {
     int result = width;
     result = 31 * result + height;
@@ -396,7 +431,8 @@ public class ShadowBitmap {
     return result;
   }
 
-  @Override @Implementation
+  @Override
+  @Implementation
   public String toString() {
     return "Bitmap{" +
         "description='" + description + '\'' +

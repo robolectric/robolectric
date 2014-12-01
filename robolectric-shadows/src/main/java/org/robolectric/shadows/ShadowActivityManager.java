@@ -48,24 +48,23 @@ public class ShadowActivityManager {
   }
 
   /**
-   * Non-Android accessor to set the list of running tasks.
-   * @param tasks
+   * Non-Android accessor.
+   *
+   * @param tasks List of running tasks.
    */
   public void setTasks(List<ActivityManager.RunningTaskInfo> tasks) {
     this.tasks = tasks;
   }
 
   /**
-   * Non-Android accessor to set the list of running processes.
-   * @param processes
+   * Non-Android accessor.
+   *
+   * @param processes List of running processes.
    */
   public void setProcesses( List<ActivityManager.RunningAppProcessInfo> processes ) {
     this.processes = processes;
   }
 
-  /**
-   * Non-Android accessor, for use in assertions.
-   */
   public String getBackgroundPackage() {
     return backgroundPackage;
   }

@@ -166,6 +166,8 @@ public class ActivityData {
 
   /**
    * Convenience accessor for value of android:THEME attribute.
+   *
+   * @return The theme attribute.
    */
   public String getThemeRef() {
     return attrs.get(withXMLNS(THEME));

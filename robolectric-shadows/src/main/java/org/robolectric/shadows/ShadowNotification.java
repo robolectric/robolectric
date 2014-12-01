@@ -352,9 +352,6 @@ public class ShadowNotification {
       directlyOn(realStyle, Style.class, "internalSetSummaryText", new ReflectionHelpers.ClassParameter(CharSequence.class, summaryText));
     }
 
-    /**
-     * Non-Android accessors
-     */
     public CharSequence getBigContentTitle() {
       return bigContentTitle;
     }

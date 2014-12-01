@@ -31,10 +31,9 @@ public class DrawableResourceLoader extends XmlLoader {
   }
 
   /**
-   * Returns a collection of resource IDs for all nine-patch drawables
-   * in the project.
+   * Returns a collection of resource IDs for all nine-patch drawables in the project.
    *
-   * @param resourcePath
+   * @param resourcePath Resource path.
    */
   public void findDrawableResources(ResourcePath resourcePath) {
     FsFile[] files = resourcePath.resourceBase.listFiles();

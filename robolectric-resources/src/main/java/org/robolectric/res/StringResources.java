@@ -6,6 +6,9 @@ public class StringResources {
    * Provides escaping of String resources as described
    *
    * <a href="http://developer.android.com/guide/topics/resources/string-resource.html#FormattingAndStyling">here</a>
+   *
+   * @param text Text to escape.
+   * @return Escaped text.
    */
   public static String escape(String text) {
     if (text.length() > 1 && text.charAt(0) == '"' && text.charAt(text.length() - 1) == '"') {

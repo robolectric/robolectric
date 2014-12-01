@@ -137,7 +137,7 @@ public class ShadowMediaPlayer {
 
   /**
    * Non-Android accessor.  Use for assertions.
-   * @return
+   * @return The Source URI
    */
   public Uri getSourceUri() {
     return sourceUri;
@@ -145,7 +145,7 @@ public class ShadowMediaPlayer {
 
   /**
    * Non-Android accessor.  Use for assertions.
-   * @return
+   * @return The Source Res ID
    */
   public int getSourceResId() {
     return sourceResId;
@@ -153,7 +153,7 @@ public class ShadowMediaPlayer {
 
   /**
    * Non-Android accessor.  Use for assertions.
-   * @return
+   * @return Is the media player prepared
    */
   public boolean isPrepared() {
     return prepared;
@@ -161,7 +161,7 @@ public class ShadowMediaPlayer {
 
   /**
    * Non-Android accessor.  Use for assertions.
-   * @return
+   * @return the OnCompletionListener
    */
   public MediaPlayer.OnCompletionListener getOnCompletionListener() {
     return completionListener;
@@ -169,7 +169,7 @@ public class ShadowMediaPlayer {
 
   /**
    * Non-Android accessor.  Use for assertions.
-   * @return
+   * @return the OnPreparedListener
    */
   public MediaPlayer.OnPreparedListener getOnPreparedListener() {
     return preparedListener;

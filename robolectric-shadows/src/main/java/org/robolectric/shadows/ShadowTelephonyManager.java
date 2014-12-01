@@ -28,19 +28,18 @@ public class ShadowTelephonyManager {
   }
 
   /**
-   * Non-Android accessor.  Returns the most recent listener
-   * passed to #listen().
+   * Non-Android accessor.  Returns the most recent listener passed to #listen().
    *
-   * @return
+   * @return Phone state listener.
    */
   public PhoneStateListener getListener() {
     return listener;
   }
 
   /**
-   * Non-Android accessor.  Returns the most recent flags
-   * passed to #listen().
-   * @return
+   * Non-Android accessor.  Returns the most recent flags passed to #listen().
+   *
+   * @return Event flags.
    */
   public int getEventFlags() {
     return eventFlags;

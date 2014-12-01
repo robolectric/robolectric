@@ -361,9 +361,9 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   /**
-   * Non-Android accessor Sets the {@code View} for this {@code Activity}
+   * Non-Android accessor.
    *
-   * @param view
+   * @param view View to focus.
    */
   public void setCurrentFocus(View view) {
     currentFocus = view;

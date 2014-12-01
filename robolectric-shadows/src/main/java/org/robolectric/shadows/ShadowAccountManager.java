@@ -299,10 +299,9 @@ public class ShadowAccountManager {
   }
 
   /**
-   * Non-android accessor.  Allows the test case to populate the
-   * list of active accounts.
+   * Non-android accessor.
    *
-   * @param account
+   * @param account User account.
    */
   public void addAccount(Account account) {
     accounts.add(account);
@@ -372,20 +371,15 @@ public class ShadowAccountManager {
   }
 
   /**
-   * Non-android accessor.  Allows the test case to populate the
-   * list of active authenticators.
+   * Non-android accessor.
    *
-   * @param authenticator
+   * @param authenticator System authenticator.
    */
   public void addAuthenticator(AuthenticatorDescription authenticator) {
     authenticators.put(authenticator.type, authenticator);
   }
 
-  /**
-   * @see #addAuthenticator(AuthenticatorDescription)
-   */
   public void addAuthenticator(String type) {
     addAuthenticator(AuthenticatorDescription.newKey(type));
   }
-
 }

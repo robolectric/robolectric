@@ -39,6 +39,10 @@ public class ShadowColor {
    * <p>{@link java.awt.Color} represents hue as 0..1 (where 1 == 100% == 360 degrees),
    * while {@link android.graphics.Color} represents hue as 0..360 degrees. The correct hue can be calculated
    * by multiplying with 360.</p>
+   * @param red Red component
+   * @param green Green component
+   * @param blue Blue component
+   * @param hsv Array to store HSV components
    */
   @Implementation
   public static void RGBToHSV(int red, int green, int blue, float hsv[]) {

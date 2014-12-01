@@ -50,7 +50,7 @@ public class ShadowPowerManager {
    * Non-Android accessor retrieves the most recent wakelock registered
    * by the application
    *
-   * @return
+   * @return Most recent wake lock.
    */
   public static PowerManager.WakeLock getLatestWakeLock() {
     return shadowOf(RuntimeEnvironment.application).getLatestWakeLock();
@@ -94,7 +94,7 @@ public class ShadowPowerManager {
     /**
      * Non-Android accessor retrieves if the wake lock is reference counted or not
      *
-     * @return
+     * @return Is the wake lock reference counted?
      */
     public boolean isReferenceCounted() {
       return refCounted;

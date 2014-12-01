@@ -33,11 +33,6 @@ public class ShadowCountDownTimer {
   }
 
 
-  /**
-   * ******************************************************
-   * Non-implementation methods for firing abstract methods
-   * *******************************************************
-   */
   public void invokeTick(long millisUntilFinished) {
     countDownTimer.onTick(millisUntilFinished);
   }

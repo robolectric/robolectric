@@ -140,7 +140,7 @@ public class Setup {
   /**
    * Map from a requested class to an alternate stand-in, or not.
    *
-   * @return
+   * @return Mapping of class name translations.
    */
   public Map<String, String> classNameTranslations() {
     Map<String, String> map = new HashMap<String, String>();

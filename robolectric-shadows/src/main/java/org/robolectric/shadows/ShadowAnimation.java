@@ -119,9 +119,9 @@ public class ShadowAnimation {
   }
 
   /**
-   * Non-Android accessor.  Returns most recently set animation listener.
+   * Non-Android accessor.
    *
-   * @return
+   * @return Current animation listener.
    */
   public Animation.AnimationListener getAnimationListener() {
     return listener;

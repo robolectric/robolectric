@@ -305,7 +305,7 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
    *
    * Sets the value to return from {@code android.webkit.WebView#canGoBack()}
    *
-   * @param canGoBack
+   * @param canGoBack Value to return from {@code android.webkit.WebView#canGoBack()}
    */
   public void setCanGoBack(boolean canGoBack) {
     this.canGoBack = canGoBack;

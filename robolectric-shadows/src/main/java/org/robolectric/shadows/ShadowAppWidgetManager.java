@@ -128,10 +128,6 @@ public class ShadowAppWidgetManager {
     widgetInfos.get(appWidgetId).info = providerInfo;
   }
 
-  /**
-   * @deprecated Use {@link #addBoundWidget(int, android.appwidget.AppWidgetProviderInfo)}
-   *             or {@link #addInstalledProvider(android.appwidget.AppWidgetProviderInfo)} instead
-   */
   @Deprecated
   public void putWidgetInfo(int appWidgetId, AppWidgetProviderInfo expectedWidgetInfo) {
     addBoundWidget(appWidgetId, expectedWidgetInfo);

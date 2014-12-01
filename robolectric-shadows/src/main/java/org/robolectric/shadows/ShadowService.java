@@ -105,7 +105,7 @@ public class ShadowService extends ShadowContextWrapper {
 
   /**
    * Non-Android accessor, to use in assertions.
-   * @return
+   * @return Is this service stopped by self.
    */
   public boolean isStoppedBySelf() {
     return selfStopped;

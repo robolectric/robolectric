@@ -26,7 +26,8 @@ public class ResourceExtractor extends ResourceIndex {
 
   /**
    * Constructs a ResourceExtractor for the Android system resources.
-   * @param classLoader
+   *
+   * @param classLoader Class loader.
    */
   public ResourceExtractor(ClassLoader classLoader) {
     Class<?> androidRClass;

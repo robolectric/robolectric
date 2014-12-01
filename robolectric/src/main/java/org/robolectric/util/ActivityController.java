@@ -19,8 +19,7 @@ import org.robolectric.res.ResName;
 import org.robolectric.ShadowsAdapter.ShadowActivityAdapter;
 import org.robolectric.ShadowsAdapter.ShadowApplicationAdapter;
 
-public class ActivityController<T extends Activity>
-    extends ComponentController<ActivityController<T>, T> {
+public class ActivityController<T extends Activity> extends ComponentController<ActivityController<T>, T> {
 
   private final ShadowActivityAdapter shadowReference;
   private final ShadowsAdapter shadowsAdapter;
@@ -204,16 +203,19 @@ public class ActivityController<T extends Activity>
   }
 
   /**
-   * Calls the same lifecycle methods on the Activity called by
-   * Android the first time the Activity is created.
+   * Calls the same lifecycle methods on the Activity called by Android the first time the Activity is created.
+   *
+   * @return Activity controller instance.
    */
   public ActivityController<T> setup() {
     return create().start().postCreate(null).resume().visible();
   }
 
   /**
-   * Calls the same lifecycle methods on the Activity called by
-   * Android when an Activity is restored from previously saved state.
+   * Calls the same lifecycle methods on the Activity called by Android when an Activity is restored from previously saved state.
+   *
+   * @param savedInstanceState Saved instance state.
+   * @return Activity controller instance.
    */
   public ActivityController<T> setup(Bundle savedInstanceState) {
     return create(savedInstanceState)

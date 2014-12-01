@@ -16,24 +16,10 @@
 
 package org.robolectric.shadows;
 
-//import com.android.ide.common.rendering.api.DensityBasedResourceValue;
-//import com.android.ide.common.rendering.api.LayoutLog;
-//import com.android.ide.common.rendering.api.RenderResources;
-//import com.android.ide.common.rendering.api.ResourceValue;
-//import com.android.layoutlib.bridge.Bridge;
-//import com.android.layoutlib.bridge.android.BridgeContext;
-//import com.android.layoutlib.bridge.android.BridgeXmlBlockParser;
-//import com.android.ninepatch.NinePatch;
-//import com.android.ninepatch.NinePatchChunk;
-//import com.android.resources.Density;
-
 import android.util.TypedValue;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-//import android.graphics.Bitmap_Delegate;
-//import android.graphics.NinePatch_Delegate;
 
 /**
  * Helper class to provide various conversion method used in handling android resources.
@@ -49,7 +35,7 @@ public final class ResourceHelper {
    * Returns the color value represented by the given string value
    * @param value the color value
    * @return the color as an int
-   * @throw NumberFormatException if the conversion failed.
+   * @throws NumberFormatException if the conversion failed.
    */
   public static int getColor(String value) {
     if (value != null) {
@@ -324,6 +310,11 @@ public final class ResourceHelper {
   /**
    * Returns the raw value from the given attribute float-type value string.
    * This object is only valid until the next call on to {@link ResourceHelper}.
+   *
+   * @param attribute Attribute name.
+   * @param value Attribute value.
+   * @param requireUnit whether the value is expected to contain a unit.
+   * @return The typed value.
    */
   public static TypedValue getValue(String attribute, String value, boolean requireUnit) {
     if (parseFloatAttribute(attribute, value, mValue, requireUnit)) {

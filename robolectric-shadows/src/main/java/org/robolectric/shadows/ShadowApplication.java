@@ -104,8 +104,8 @@ public class ShadowApplication extends ShadowContextWrapper {
 
   /**
    * Runs any background tasks previously queued by {@link android.os.AsyncTask#execute(Object[])}.
-   * <p/>
-   * <p/>
+   *
+   * <p>
    * Note: calling this method does not pause or un-pause the scheduler.
    */
   public static void runBackgroundTasks() {
@@ -121,10 +121,10 @@ public class ShadowApplication extends ShadowContextWrapper {
   }
 
   /**
-   * Associates a {@code ResourceLoader} with an {@code Application} instance
+   * Associates a {@code ResourceLoader} with an {@code Application} instance.
    *
-   * @param appManifest
-   * @param resourceLoader resource loader
+   * @param appManifest Android manifest.
+   * @param resourceLoader Resource loader.
    */
   public void bind(AndroidManifest appManifest, ResourceLoader resourceLoader) {
     if (this.resourceLoader != null) throw new RuntimeException("ResourceLoader already set!");
@@ -728,7 +728,7 @@ public class ShadowApplication extends ShadowContextWrapper {
    *
    * By default, this behavior is off (false).
    *
-   * @param checkActivities
+   * @param checkActivities True to validate activities.
    */
   public void checkActivities(boolean checkActivities) {
     this.checkActivities = checkActivities;

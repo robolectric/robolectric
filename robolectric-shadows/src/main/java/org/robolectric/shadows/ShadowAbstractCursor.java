@@ -13,8 +13,9 @@ public class ShadowAbstractCursor {
   private AbstractCursor realAbstractCursor;
 
   /**
-   * Returns the Uri set by {@code setNotificationUri()}.  Method included for testing
-   * pre-API 11 projects.
+   * Returns the Uri set by {@code setNotificationUri()}.
+   *
+   * @return Notification URI.
    */
   public Uri getNotificationUri_Compatibility() {
     return ReflectionHelpers.getFieldReflectively(realAbstractCursor, "mNotifyUri");

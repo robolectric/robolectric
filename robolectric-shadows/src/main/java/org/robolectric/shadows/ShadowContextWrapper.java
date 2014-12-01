@@ -197,9 +197,9 @@ public class ShadowContextWrapper extends ShadowContext {
   }
 
   /**
-   * Non-Android accessor to set the application name.
+   * Non-Android accessor.
    *
-   * @param name
+   * @param name Application name.
    */
   public void setApplicationName(String name) {
     appName = name;

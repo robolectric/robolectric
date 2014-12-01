@@ -8,37 +8,31 @@ import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-@Implements( ResolveInfo.class )
+@Implements(ResolveInfo.class)
 public class ShadowResolveInfo {
 
   private String label;
 
-  @Implementation
-  public String loadLabel( PackageManager mgr ) { return label; }
-
   /**
-   * Non-Android accessor used to set the value returned by {@link loadLabel}
+   * Non-Android accessor used for creating ResolveInfo objects.
+   *
+   * @param displayName Display name.
+   * @param packageName Package name.
+   * @return Resolve info instance.
    */
-  public void setLabel( String l ) { label = l; }
-
-  /**
-   * Non-Android accessor used for creating ResolveInfo objects
-   * @param displayName
-   * @param packageName
-   * @return
-   */
-  public static ResolveInfo newResolveInfo( String displayName, String packageName ) {
-    return newResolveInfo( displayName, packageName, null);
+  public static ResolveInfo newResolveInfo(String displayName, String packageName) {
+    return newResolveInfo(displayName, packageName, null);
   }
 
   /**
    * Non-Android accessor used for creating ResolveInfo objects
-   * @param displayName
-   * @param packageName
-   * @return
+   *
+   * @param displayName Display name.
+   * @param packageName Package name.
+   * @param activityName Activity name.
+   * @return Resolve info instance.
    */
-  public static ResolveInfo newResolveInfo( String displayName, String packageName, String activityName ) {
-
+  public static ResolveInfo newResolveInfo(String displayName, String packageName, String activityName) {
     ResolveInfo resInfo = new ResolveInfo();
     ActivityInfo actInfo = new ActivityInfo();
     actInfo.applicationInfo = new ApplicationInfo();
@@ -48,7 +42,21 @@ public class ShadowResolveInfo {
     resInfo.activityInfo = actInfo;
 
     ShadowResolveInfo shResolve = Shadows.shadowOf(resInfo);
-    shResolve.setLabel( displayName );
+    shResolve.setLabel(displayName);
     return resInfo;
+  }
+
+  @Implementation
+  public String loadLabel(PackageManager mgr) {
+    return label;
+  }
+
+  /**
+   * Non-Android accessor used to set the value returned by {@link #loadLabel}.
+   *
+   * @param l Label.
+   */
+  public void setLabel(String l) {
+    label = l;
   }
 }

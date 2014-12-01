@@ -133,8 +133,11 @@ public class ShadowDefaultRequestDirector {
   }
 
   /**
-   * @deprecated Use {@link Robolectric#getSentHttpRequestInfo(int)} instead.)
+   * @param index The index
+   * @deprecated Use {@link org.robolectric.shadows.FakeHttp#getSentHttpRequestInfo(int)} instead.)
+   * @return HttpRequest
    */
+  @Deprecated
   public static HttpRequest getSentHttpRequest(int index) {
     return getSentHttpRequestInfo(index).getHttpRequest();
   }
@@ -149,8 +152,11 @@ public class ShadowDefaultRequestDirector {
   }
 
   /**
-   * @deprecated Use {@link Robolectric#getSentHttpRequest(int)} instead.)
+   * @param index The index
+   * @deprecated Use {@link org.robolectric.shadows.FakeHttp#getSentHttpRequest(int)} instead.)
+   * @return HttpRequestInfo
    */
+  @Deprecated
   public static HttpRequestInfo getSentHttpRequestInfo(int index) {
     return ShadowApplication.getInstance().getFakeHttpLayer().getSentHttpRequestInfo(index);
   }

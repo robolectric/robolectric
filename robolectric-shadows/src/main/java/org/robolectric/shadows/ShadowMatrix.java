@@ -35,6 +35,7 @@ public class ShadowMatrix {
   /**
    * A list of all 'pre' operations performed on this Matrix. The last operation performed will
    * be first in the list.
+   * @return A list of all 'pre' operations performed on this Matrix.
    */
   public List<String> getPreOperations() {
     return Collections.unmodifiableList(new ArrayList<String>(preOps));
@@ -43,12 +44,15 @@ public class ShadowMatrix {
   /**
    * A list of all 'post' operations performed on this Matrix. The last operation performed will
    * be last in the list.
+   * @return A list of all 'post' operations performed on this Matrix.
    */
   public List<String> getPostOperations() {
     return Collections.unmodifiableList(new ArrayList<String>(postOps));
   }
 
-  /** A map of all 'set' operations performed on this Matrix. */
+  /** A map of all 'set' operations performed on this Matrix.
+   * @return A map of all 'set' operations performed on this Matrix.
+   */
   public Map<String, String> getSetOperations() {
     return Collections.unmodifiableMap(new LinkedHashMap<String, String>(setOps));
   }

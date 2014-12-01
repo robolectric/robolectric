@@ -9,7 +9,8 @@ import java.net.URLDecoder;
 
 @Implements(Uri.class)
 public class ShadowUri {
-  /**
+
+  /*
    * Avoid a reference to Android's custom java.nio.charset.Charsets.
    */
   @Implementation
@@ -23,5 +24,4 @@ public class ShadowUri {
       throw new RuntimeException(e);
     }
   }
-
 }

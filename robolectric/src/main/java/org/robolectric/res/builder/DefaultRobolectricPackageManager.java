@@ -337,11 +337,10 @@ public class DefaultRobolectricPackageManager extends StubPackageManager impleme
   }
 
   /**
-   * Non-Android accessor.  Use to make assertions on values passed to
-   * setComponentEnabledSetting.
+   * Non-Android accessor.  Use to make assertions on values passed to setComponentEnabledSetting.
    *
-   * @param componentName
-   * @return
+   * @param componentName Component name.
+   * @return Component state.
    */
   @Override
   public ComponentState getComponentState(ComponentName componentName) {
@@ -349,10 +348,9 @@ public class DefaultRobolectricPackageManager extends StubPackageManager impleme
   }
 
   /**
-   * Non-Android accessor.  Used to add a package to the list of those
-   * already 'installed' on system.
+   * Non-Android accessor.  Used to add a package to the list of those already 'installed' on system.
    *
-   * @param packageInfo
+   * @param packageInfo New package info.
    */
   @Override
   public void addPackage(PackageInfo packageInfo) {
@@ -441,11 +439,10 @@ public class DefaultRobolectricPackageManager extends StubPackageManager impleme
   }
 
   /**
-   * Non-Android accessor.  Used to declare a system feature is
-   * or is not supported.
+   * Non-Android accessor.  Used to declare a system feature is or is not supported.
    *
-   * @param name
-   * @param supported
+   * @param name Feature name.
+   * @param supported Is the feature supported?
    */
   @Override
   public void setSystemFeature(String name, boolean supported) {

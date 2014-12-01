@@ -799,8 +799,10 @@ public class ShadowIntent {
   }
 
   /**
-   * @deprecated Use {@link ShadowIntent#setData(android.net.Uri).}
+   * @param uri The URI
+   * @deprecated Use {@link ShadowIntent#setData}
    */
+  @Deprecated
   public void setURI(String uri) {
     this.data = Uri.parse(uri);
   }

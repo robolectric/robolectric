@@ -10,9 +10,6 @@ import org.robolectric.annotation.RealObject;
 
 import java.util.ArrayList;
 
-/**
- * See: http://android.git.kernel.org/?p=platform/frameworks/base.git;a=blob_plain;f=core/java/android/preference/PreferenceGroup.java;hb=HEAD
- */
 @Implements(PreferenceGroup.class)
 public class ShadowPreferenceGroup extends ShadowPreference {
 
@@ -58,11 +55,6 @@ public class ShadowPreferenceGroup extends ShadowPreference {
     preferenceList.clear();
   }
 
-  /**
-   * Note: copied wholesale from Android source
-   * @param key
-   * @return
-   */
   @Implementation
   public Preference findPreference(CharSequence key) {
     if (TextUtils.equals(getKey(), key)) {
@@ -89,9 +81,6 @@ public class ShadowPreferenceGroup extends ShadowPreference {
     return null;
   }
 
-  /**
-   * Note: copied wholesale from Android source
-   */
   @Implementation
   public void setEnabled(boolean enabled) {
     super.setEnabled(enabled);

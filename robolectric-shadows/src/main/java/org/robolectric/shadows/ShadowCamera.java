@@ -196,8 +196,8 @@ public class ShadowCamera {
    * the existence of one or more cameras.  By default, no
    * cameras are defined.
    *
-   * @param id
-   * @param camInfo
+   * @param id The camera id
+   * @param camInfo The CameraInfo
    */
   public static void addCameraInfo(int id, Camera.CameraInfo camInfo) {
     cameras.put(id, camInfo);

@@ -160,16 +160,6 @@ public class ShadowLocationManager {
     gpsStatusListeners.remove(listener);
   }
 
-  /**
-   * Returns the best provider with respect to the passed criteria (if any) and its status. If no criteria are passed
-   *
-   * NB: Gps is considered the best provider for fine accuracy and high power consumption, network is considered the
-   * best provider for coarse accuracy and low power consumption.
-   *
-   * @param criteria
-   * @param enabled
-   * @return
-   */
   @Implementation
   public String getBestProvider(Criteria criteria, boolean enabled) {
     lastBestProviderCriteria = criteria;
@@ -308,7 +298,8 @@ public class ShadowLocationManager {
 
   /**
    * Non-Android accessor.
-   * <p/>
+   *
+   * <p>
    * Gets the criteria value used in the last call to {@link #getBestProvider(android.location.Criteria, boolean)}
    *
    * @return the criteria used to find the best provider
@@ -319,7 +310,8 @@ public class ShadowLocationManager {
 
   /**
    * Non-Android accessor.
-   * <p/>
+   *
+   * <p>
    * Gets the enabled value used in the last call to {@link #getBestProvider(android.location.Criteria, boolean)}
    *
    * @return the enabled value used to find the best provider
@@ -332,10 +324,11 @@ public class ShadowLocationManager {
    * Sets the value to return from {@link #getBestProvider(android.location.Criteria, boolean)} for the given
    * {@code provider}
    *
-   * @param provider
-   *            name of the provider who should be considered best
-   * @throws Exception
-   *
+   * @param provider name of the provider who should be considered best
+   * @param enabled Enabled
+   * @param criteria List of criteria
+   * @throws Exception if provider is not known
+   * @return false If provider is not enabled but it is supposed to be set as the best enabled provider don't set it, otherwise true
    */
   public boolean setBestProvider(String provider, boolean enabled, List<Criteria> criteria) throws Exception {
     if (!getAllProviders().contains(provider)) {

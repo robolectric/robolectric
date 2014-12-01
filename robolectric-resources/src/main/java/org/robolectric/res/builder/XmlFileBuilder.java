@@ -21,6 +21,7 @@ import org.w3c.dom.NodeList;
 import org.xmlpull.v1.XmlPullParserException;
 
 public class XmlFileBuilder {
+
   /**
    * All the parser features currently supported by Android.
    */
@@ -39,6 +40,9 @@ public class XmlFileBuilder {
 
   /**
    * Tell is a given feature is supported by android.
+   *
+   * @param name Feature name.
+   * @return True if the feature is supported.
    */
   public static boolean isAndroidSupportedFeature(String name) {
     if (name == null) {
@@ -99,17 +103,15 @@ public class XmlFileBuilder {
 
   /**
    * Concrete implementation of the {@link XmlResourceParser}.
-   * <p/>
+   *
    * <p>Clients expects a pull parser while the resource loader
    * initialise this object with a {@link Document}.
    * This implementation navigates the dom and emulates a pull
    * parser by raising all the opportune events.
-   * <p/>
+   *
    * <p>Note that the original android implementation is based on
    * a set of native methods calls. Here those methods are
    * re-implemented in java when possible.
-   *
-   * @see https://github.com/android/platform_frameworks_base/blob/master/core/java/android/content/res/XmlBlock.java
    */
   public static class XmlResourceParserImpl
       implements XmlResourceParser {
@@ -531,7 +533,7 @@ public class XmlFileBuilder {
     /**
      * Navigate to the next node after a node and all of his
      * children have been explored.
-     * <p/>
+     *
      * <p>If the node has unexplored siblings navigate to the
      * next sibling. Otherwise return to its parent.
      *

@@ -59,13 +59,17 @@ public class ShadowGeoPoint {
         '}';
   }
 
-  /** @deprecated Use {@link #getLatitudeE6()} */
+  /** @deprecated Use {@link #getLatitudeE6()}
+   * @return the lat
+   */
   @Deprecated
   public int getLat() {
     return lat;
   }
 
-  /** @deprecated Use {@link #getLongitudeE6()}. */
+  /** @deprecated Use {@link #getLongitudeE6()}.
+   * @return the lng
+   */
   @Deprecated
   public int getLng() {
     return lng;
