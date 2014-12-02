@@ -12,15 +12,6 @@ import java.util.ServiceLoader;
 public class Robolectric {
   private static final ShadowsAdapter shadowsAdapter = instantiateShadowsAdapter();
 
-  public static ShadowsAdapter instantiateShadowsAdapter() {
-    try {
-      // TODO: probably should use ServiceLoader instead of hard-coding the implementation name. https://docs.oracle.com/javase/7/docs/api/java/util/ServiceLoader.html
-      return (ShadowsAdapter) Class.forName("org.robolectric.shadows.Api18ShadowsAdapter").newInstance();
-    } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-      throw new RuntimeException("Shadows module did not contain a ShadowsAdapter", e);
-    }
-  }
-
   public static void reset() {
     RuntimeEnvironment.application = null;
     RuntimeEnvironment.setRobolectricPackageManager(null);
@@ -29,6 +20,10 @@ public class Robolectric {
     for (ShadowProvider provider : ServiceLoader.load(ShadowProvider.class)) {
       provider.reset();
     }
+  }
+
+  public static ShadowsAdapter getShadowsAdapter() {
+    return shadowsAdapter;
   }
 
   public static <T extends Service> ServiceController<T> buildService(Class<T> serviceClass) {
@@ -47,12 +42,29 @@ public class Robolectric {
     return ActivityController.of(shadowsAdapter, activityClass).setup().get();
   }
 
+  private static ShadowsAdapter instantiateShadowsAdapter() {
+    ShadowsAdapter result = null;
+    for (ShadowsAdapter adapter : ServiceLoader.load(ShadowsAdapter.class)) {
+      if (result == null) {
+        result = adapter;
+      } else {
+        throw new RuntimeException("Multiple " + ShadowsAdapter.class.getCanonicalName() + "s found.  Robolectric has loaded multiple core shadow modules for some reason.");
+      }
+    }
+    if (result == null) {
+      throw new RuntimeException("No shadows modules found containing a " + ShadowsAdapter.class.getCanonicalName());
+    } else {
+      return result;
+    }
+  }
+
   /**
    * Marker for shadow classes when the implementation class is unlinkable
+   *
    * @deprecated simply use the {@link Implements#className} attribute with no
    * {@link Implements#value} set.
    */
-  @Deprecated 
+  @Deprecated
   public interface Anything {
   }
 }

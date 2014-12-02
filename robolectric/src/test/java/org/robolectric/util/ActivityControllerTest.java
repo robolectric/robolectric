@@ -15,7 +15,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
-import org.robolectric.shadows.Api18ShadowsAdapter;
+import org.robolectric.shadows.CoreShadowsAdapter;
 import org.robolectric.shadows.ShadowLooper;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -49,7 +49,7 @@ public class ActivityControllerTest {
 
   @Test
   public void shouldSetIntentForGivenActivityInstance() throws Exception {
-    ActivityController<MyActivity> activityController = ActivityController.of(new Api18ShadowsAdapter(), new MyActivity()).create();
+    ActivityController<MyActivity> activityController = ActivityController.of(new CoreShadowsAdapter(), new MyActivity()).create();
     assertThat(activityController.get().getIntent()).isNotNull();
   }
 

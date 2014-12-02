@@ -11,18 +11,15 @@ import org.robolectric.ShadowsAdapter;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.util.Scheduler;
-import org.robolectric.util.ShadowProvider;
 
 import java.io.File;
-import java.util.ServiceLoader;
 
 import static org.robolectric.Shadows.shadowOf;
 
 /**
  * This is the interface between the Robolectric runtime and the robolectric-shadows module.
  */
-// TODO: this will later be moved to robolectric-shadows to eliminate the depedency of robolectric -> robolectric-shadows
-public class Api18ShadowsAdapter implements ShadowsAdapter {
+public class CoreShadowsAdapter implements ShadowsAdapter {
   @Override
   public Scheduler getBackgroundScheduler() {
     return ShadowApplication.getInstance().getBackgroundScheduler();

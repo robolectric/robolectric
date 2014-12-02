@@ -776,7 +776,7 @@ public class ActivityTest {
   /////////////////////////////
 
   private void destroy(Activity activity) {
-    new ActivityController(new Api18ShadowsAdapter(), activity).destroy();
+    new ActivityController(new CoreShadowsAdapter(), activity).destroy();
   }
 
   private <T extends Activity> T create(Class<T> activityClass) {

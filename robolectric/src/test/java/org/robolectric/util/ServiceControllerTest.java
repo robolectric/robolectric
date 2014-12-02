@@ -15,7 +15,7 @@ import android.content.Intent;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
-import org.robolectric.shadows.Api18ShadowsAdapter;
+import org.robolectric.shadows.CoreShadowsAdapter;
 import org.robolectric.shadows.ShadowLooper;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -54,7 +54,7 @@ public class ServiceControllerTest {
 
   @Test
   public void shouldSetIntentForGivenServiceInstance() throws Exception {
-    ServiceController<MyService> serviceController = ServiceController.of(new Api18ShadowsAdapter(), new MyService()).bind();
+    ServiceController<MyService> serviceController = ServiceController.of(new CoreShadowsAdapter(), new MyService()).bind();
     assertThat(serviceController.get().boundIntent).isNotNull();
   }
 

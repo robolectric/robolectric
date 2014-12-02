@@ -10,6 +10,11 @@ import org.robolectric.util.Scheduler;
 
 import java.io.File;
 
+/**
+ * Interface between robolectric and shadows-core modules.
+ *
+ * TODO: Move this interface into robolectric-utils and remove dependency on robolectric-resources.
+ */
 public interface ShadowsAdapter {
   Scheduler getBackgroundScheduler();
 
