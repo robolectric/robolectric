@@ -95,6 +95,13 @@
     <dependency>
       <groupId>com.github.axet.litedb</groupId>
       <artifactId>libsqlite</artifactId>
+      <classifier>natives-linux-x86_64</classifier>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.github.axet.litedb</groupId>
+      <artifactId>libsqlite</artifactId>
       <version>${libsqlite.version}</version>
       <scope>provided</scope>
     </dependency>
