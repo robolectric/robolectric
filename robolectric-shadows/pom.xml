@@ -14,5 +14,6 @@
   <modules>
     <module>shadows-core</module>
     <module>shadows-support-v4</module>
+    <module>shadows-httpclient</module>
   </modules>
 </project>

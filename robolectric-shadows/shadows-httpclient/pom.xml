@@ -8,7 +8,7 @@
         <version>3.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>robolectric-fakehttp</artifactId>
+    <artifactId>shadows-httpclient</artifactId>
 
     <dependencies>
         <!-- Test Dependencies -->
@@ -65,7 +65,7 @@
                         <sourceDirectory>target/generated-shadows</sourceDirectory>
                     </additionalSourceDirectories>
                     <outputDirectory>target/generated-sources</outputDirectory>
-                    <compilerArguments>-source ${maven.compiler.source} -target ${maven.compiler.target} -Aorg.robolectric.annotation.processing.shadowPackage=org.robolectric.fakehttp</compilerArguments>
+                    <compilerArguments>-source ${maven.compiler.source} -target ${maven.compiler.target} -Aorg.robolectric.annotation.processing.shadowPackage=org.robolectric.httpclient</compilerArguments>
                 </configuration>
                 <executions>
                     <execution>

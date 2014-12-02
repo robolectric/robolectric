@@ -34,7 +34,7 @@ import java.net.URI;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
-import static org.robolectric.fakehttp.Shadows.shadowOf;
+import static org.robolectric.httpclient.Shadows.shadowOf;
 
 @RunWith(TestRunnerWithManifest.class)
 public class DefaultRequestDirectorTest {

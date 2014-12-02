@@ -13,7 +13,7 @@ cd "$PROJECT"/robolectric-processor; mvn clean install
 
 cd "$PROJECT"/robolectric; mvn install -DskipTests
 
-cd "$PROJECT"/robolectric-fakehttp; mvn install -DskipTests;
+cd "$PROJECT"/robolectric-shadows/shadows-httpclient; mvn install -DskipTests;
 cd "$PROJECT"/robolectric-shadows/shadows-support-v4; mvn install -DskipTests
 
 cd "$PROJECT"/robolectric-shadows/shadows-core; mvn clean velocity:velocity javadoc:javadoc source:jar install -Pandroid-15 -DskipTests

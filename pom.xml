@@ -18,7 +18,6 @@
   <modules>
     <module>robolectric</module>
     <module>robolectric-annotations</module>
-    <module>robolectric-fakehttp</module>
     <module>robolectric-processor</module>
     <module>robolectric-resources</module>
     <module>robolectric-shadows</module>
