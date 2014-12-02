@@ -57,14 +57,4 @@ public class Robolectric {
       return result;
     }
   }
-
-  /**
-   * Marker for shadow classes when the implementation class is unlinkable
-   *
-   * @deprecated simply use the {@link Implements#className} attribute with no
-   * {@link Implements#value} set.
-   */
-  @Deprecated
-  public interface Anything {
-  }
 }

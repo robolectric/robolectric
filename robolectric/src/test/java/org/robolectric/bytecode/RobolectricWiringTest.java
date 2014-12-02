@@ -43,8 +43,7 @@ public class RobolectricWiringTest {
     Class<?> implementedClass = annotation.value();
     String implementedClassName = implementedClass.getName();
 
-    if (implementedClassName.equals(Robolectric.Anything.class.getName()) ||
-        implementedClassName.equals(void.class.getName())) {
+    if (implementedClassName.equals(void.class.getName())) {
       return;
     }
 
