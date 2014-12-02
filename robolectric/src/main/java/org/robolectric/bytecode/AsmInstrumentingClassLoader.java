@@ -85,15 +85,6 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes 
 
   @Override
   synchronized public Class loadClass(String name) throws ClassNotFoundException {
-
-//    boolean shouldLog = false;
-//    try {
-//      ReflectionHelpers.callInstanceMethodReflectively(getParent(), "findClass", new ReflectionHelpers.ClassParameter(String.class, "org.robolectric.shadows.RoboLayoutInflater"));
-//    } catch (Exception e) {
-//      shouldLog = true;
-//      System.out.println("not loaded still");
-//    }
-//
     Class<?> theClass = classes.get(name);
     if (theClass != null) {
       if (theClass == MissingClassMarker.class) {
@@ -115,14 +106,6 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes 
     }
 
     classes.put(name, theClass);
-//    try {
-//      ReflectionHelpers.callInstanceMethodReflectively(getParent(), "findClass", new ReflectionHelpers.ClassParameter(String.class, "org.robolectric.shadows.RoboLayoutInflater"));
-//      if(shouldLog) {
-//        System.out.println("class that loaded thing is " + name);
-//      }
-//    } catch (Exception e) {
-//    }
-
     return theClass;
   }
 
