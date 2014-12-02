@@ -33,7 +33,6 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.manifest.BroadcastReceiverData;
 import org.robolectric.res.ResourceLoader;
-import org.robolectric.tester.org.apache.http.FakeHttpLayer;
 import org.robolectric.util.Scheduler;
 
 import java.util.ArrayList;
@@ -70,7 +69,6 @@ public class ShadowApplication extends ShadowContextWrapper {
   private List<ServiceConnection> unboundServiceConnections = new ArrayList<ServiceConnection>();
   private List<Wrapper> registeredReceivers = new ArrayList<Wrapper>();
   private Map<String, Intent> stickyIntents = new LinkedHashMap<String, Intent>();
-  private FakeHttpLayer fakeHttpLayer = new FakeHttpLayer();
   private Looper mainLooper = ShadowLooper.myLooper();
   private Handler mainHandler = new Handler(mainLooper);
   private Scheduler backgroundScheduler = new Scheduler();
@@ -631,17 +629,6 @@ public class ShadowApplication extends ShadowContextWrapper {
    */
   public AppWidgetManager getAppWidgetManager() {
     return appWidgetManager;
-  }
-
-  public FakeHttpLayer getFakeHttpLayer() {
-    return fakeHttpLayer;
-  }
-
-  public void setFakeHttpLayer(FakeHttpLayer fakeHttpLayer) {
-    if (fakeHttpLayer == null) {
-      throw new IllegalArgumentException();
-    }
-    this.fakeHttpLayer = fakeHttpLayer;
   }
 
   @Override

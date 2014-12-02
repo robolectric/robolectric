@@ -39,11 +39,6 @@
       <artifactId>robolectric-resources</artifactId>
     </dependency>
 
-    <dependency>
-      <groupId>org.robolectric</groupId>
-      <artifactId>robolectric-fakehttp</artifactId>
-    </dependency>
-
     <!-- Project Dependencies -->
     <dependency>
       <groupId>com.intellij</groupId>
@@ -55,11 +50,6 @@
       <artifactId>maps</artifactId>
       <version>18_r3</version>
       <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpclient</artifactId>
     </dependency>
 
     <dependency>

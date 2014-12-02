@@ -10,6 +10,8 @@ import org.robolectric.tester.org.apache.http.RequestMatcher;
 import java.util.List;
 
 public class FakeHttp {
+  private static FakeHttpLayer instance = new FakeHttpLayer();
+
   /**
    * Sets up an HTTP response to be returned by calls to Apache's {@code HttpClient} implementers.
    *
@@ -71,11 +73,11 @@ public class FakeHttp {
    * @return whether a request was made.
    */
   public static boolean httpRequestWasMade() {
-    return ShadowApplication.getInstance().getFakeHttpLayer().hasRequestInfos();
+    return getFakeHttpLayer().hasRequestInfos();
   }
 
   public static boolean httpRequestWasMade(String uri) {
-    return ShadowApplication.getInstance().getFakeHttpLayer().hasRequestMatchingRule(
+    return getFakeHttpLayer().hasRequestMatchingRule(
         new FakeHttpLayer.UriRequestMatcher(uri));
   }
 
@@ -162,7 +164,7 @@ public class FakeHttp {
   }
 
   public static FakeHttpLayer getFakeHttpLayer() {
-    return ShadowApplication.getInstance().getFakeHttpLayer();
+    return instance;
   }
 
   public static void setDefaultHttpResponse(int statusCode, String responseBody) {
@@ -179,5 +181,9 @@ public class FakeHttp {
 
   public static void clearPendingHttpResponses() {
     getFakeHttpLayer().clearPendingHttpResponses();
+  }
+
+  public static void reset() {
+    instance = new FakeHttpLayer();
   }
 }

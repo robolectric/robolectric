@@ -12,6 +12,7 @@ import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HttpContext;
+import org.robolectric.shadows.FakeHttp;
 import org.robolectric.shadows.HttpResponseGenerator;
 
 import java.io.IOException;
@@ -23,12 +24,11 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 public class FakeHttpLayer {
-  List<HttpResponseGenerator> pendingHttpResponses = new ArrayList<HttpResponseGenerator>();
-  List<HttpRequestInfo> httpRequestInfos = new ArrayList<HttpRequestInfo>();
-  List<HttpResponse> httpResponses = new ArrayList<HttpResponse>();
-  List<HttpEntityStub.ResponseRule> httpResponseRules = new ArrayList<HttpEntityStub.ResponseRule>();
-  HttpResponse defaultHttpResponse;
-  private HttpResponse defaultResponse;
+  private final List<HttpResponseGenerator> pendingHttpResponses = new ArrayList<HttpResponseGenerator>();
+  private final List<HttpRequestInfo> httpRequestInfos = new ArrayList<HttpRequestInfo>();
+  private final List<HttpResponse> httpResponses = new ArrayList<HttpResponse>();
+  private final List<HttpEntityStub.ResponseRule> httpResponseRules = new ArrayList<HttpEntityStub.ResponseRule>();
+  private HttpResponse defaultHttpResponse;
   private boolean interceptHttpRequests = true;
   private boolean logHttpRequests = false;
   private List<byte[]> httpResposeContent = new ArrayList<byte[]>();
@@ -175,10 +175,6 @@ public class FakeHttpLayer {
       }
     }
     return false;
-  }
-
-  public HttpResponse getDefaultResponse() {
-    return defaultResponse;
   }
 
   public HttpRequestInfo getSentHttpRequestInfo(int index) {

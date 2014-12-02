@@ -8,19 +8,12 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.Display;
 import android.view.View;
-import org.apache.http.HttpException;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.conn.ConnectionKeepAliveStrategy;
-import org.apache.http.impl.client.DefaultRequestDirector;
-import org.apache.http.protocol.HttpContext;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.shadows.FakeHttp;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowDisplay;
 import org.robolectric.shadows.ShadowLooper;
@@ -30,7 +23,6 @@ import org.robolectric.internal.Shadow;
 import org.robolectric.util.TestOnClickListener;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.PrintStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -82,30 +74,6 @@ public class RobolectricTest {
   }
 
   @Test
-  public void httpRequestWasSent_ReturnsTrueIfRequestWasSent() throws IOException, HttpException {
-    makeRequest("http://example.com");
-
-    assertTrue(FakeHttp.httpRequestWasMade());
-  }
-
-  @Test
-  public void httpRequestWasMade_ReturnsFalseIfNoRequestWasMade() {
-    assertFalse(FakeHttp.httpRequestWasMade());
-  }
-
-  @Test
-  public void httpRequestWasMade_returnsTrueIfRequestMatchingGivenRuleWasMade() throws IOException, HttpException {
-    makeRequest("http://example.com");
-    assertTrue(FakeHttp.httpRequestWasMade("http://example.com"));
-  }
-
-  @Test
-  public void httpRequestWasMade_returnsFalseIfNoRequestMatchingGivenRuleWasMAde() throws IOException, HttpException {
-    makeRequest("http://example.com");
-    assertFalse(FakeHttp.httpRequestWasMade("http://example.org"));
-  }
-
-  @Test
   public void idleMainLooper_executesScheduledTasks() {
     final boolean[] wasRun = new boolean[]{false};
     new Handler().postDelayed(new Runnable() {
@@ -154,7 +122,7 @@ public class RobolectricTest {
     assertTrue(testOnClickListener.clicked);
   }
 
-  @Test(expected=ActivityNotFoundException.class)
+  @Test(expected = ActivityNotFoundException.class)
   public void checkActivities_shouldSetValueOnShadowApplication() throws Exception {
     ShadowApplication.getInstance().checkActivities(true);
     RuntimeEnvironment.application.startActivity(new Intent("i.dont.exist.activity"));
@@ -177,21 +145,6 @@ public class RobolectricTest {
     public Context getContext() {
       return null;
     }
-  }
-
-  private void makeRequest(String uri) throws HttpException, IOException {
-    FakeHttp.addPendingHttpResponse(200, "a happy response body");
-
-    ConnectionKeepAliveStrategy connectionKeepAliveStrategy = new ConnectionKeepAliveStrategy() {
-      @Override
-      public long getKeepAliveDuration(HttpResponse httpResponse, HttpContext httpContext) {
-        return 0;
-      }
-
-    };
-    DefaultRequestDirector requestDirector = new DefaultRequestDirector(null, null, null, connectionKeepAliveStrategy, null, null, null, null, null, null, null, null);
-
-    requestDirector.execute(null, new HttpGet(uri), null);
   }
 
   private static class LifeCycleActivity extends Activity {

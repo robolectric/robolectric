@@ -19,31 +19,34 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
 import org.robolectric.tester.org.apache.http.FakeHttpLayer;
 import org.robolectric.tester.org.apache.http.RequestMatcher;
 import org.robolectric.tester.org.apache.http.TestHttpResponse;
 import org.robolectric.util.Strings;
+import org.robolectric.util.TestRunnerWithManifest;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URI;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
-import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.fakehttp.Shadows.shadowOf;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunnerWithManifest.class)
 public class DefaultRequestDirectorTest {
   private DefaultRequestDirector requestDirector;
   private ConnectionKeepAliveStrategy connectionKeepAliveStrategy;
 
   @Before
   public void setUp_EnsureStaticStateIsReset() {
-    FakeHttpLayer fakeHttpLayer = ShadowApplication.getInstance().getFakeHttpLayer();
+    FakeHttpLayer fakeHttpLayer = FakeHttp.getFakeHttpLayer();
     assertFalse(fakeHttpLayer.hasPendingResponses());
     assertFalse(fakeHttpLayer.hasRequestInfos());
     assertFalse(fakeHttpLayer.hasResponseRules());
-    assertNull(fakeHttpLayer.getDefaultResponse());
 
     connectionKeepAliveStrategy = new ConnectionKeepAliveStrategy() {
       @Override public long getKeepAliveDuration(HttpResponse httpResponse, HttpContext httpContext) {
@@ -359,14 +362,14 @@ public class DefaultRequestDirectorTest {
 
   @Test(expected = IOException.class)
   public void shouldSupportRealHttpRequests() throws Exception {
-    ShadowApplication.getInstance().getFakeHttpLayer().interceptHttpRequests(false);
+    FakeHttp.getFakeHttpLayer().interceptHttpRequests(false);
     DefaultHttpClient client = new DefaultHttpClient();
     client.execute(new HttpGet("http://www.this-host-should-not-exist-123456790.org:999"));
   }
 
   @Test
   public void shouldSupportRealHttpRequestsAddingRequestInfo() throws Exception {
-    ShadowApplication.getInstance().getFakeHttpLayer().interceptHttpRequests(false);
+    FakeHttp.getFakeHttpLayer().interceptHttpRequests(false);
     DefaultHttpClient client = new DefaultHttpClient();
 
     // it's really bad to depend on an external server in order to get a test pass,
@@ -374,22 +377,22 @@ public class DefaultRequestDirectorTest {
     // so, I think that in this specific case, it's appropriate...
     client.execute(new HttpGet("http://google.com"));
 
-    assertNotNull(ShadowApplication.getInstance().getFakeHttpLayer().getLastSentHttpRequestInfo());
-    assertNotNull(ShadowApplication.getInstance().getFakeHttpLayer().getLastHttpResponse());
+    assertNotNull(FakeHttp.getFakeHttpLayer().getLastSentHttpRequestInfo());
+    assertNotNull(FakeHttp.getFakeHttpLayer().getLastHttpResponse());
   }
 
   @Test
   public void realHttpRequestsShouldMakeContentDataAvailable() throws Exception {
-    ShadowApplication.getInstance().getFakeHttpLayer().interceptHttpRequests(false);
-    ShadowApplication.getInstance().getFakeHttpLayer().interceptResponseContent(true);
+    FakeHttp.getFakeHttpLayer().interceptHttpRequests(false);
+    FakeHttp.getFakeHttpLayer().interceptResponseContent(true);
     DefaultHttpClient client = new DefaultHttpClient();
 
     client.execute(new HttpGet("http://google.com"));
 
-    byte[] cachedContent = ShadowApplication.getInstance().getFakeHttpLayer().getHttpResposeContentList().get(0);
+    byte[] cachedContent = FakeHttp.getFakeHttpLayer().getHttpResposeContentList().get(0);
     assertThat(cachedContent.length).isNotEqualTo(0);
 
-    InputStream content = ShadowApplication.getInstance().getFakeHttpLayer().getLastHttpResponse().getEntity().getContent();
+    InputStream content = FakeHttp.getFakeHttpLayer().getLastHttpResponse().getEntity().getContent();
     BufferedReader contentReader = new BufferedReader(new InputStreamReader(content));
     String firstLineOfContent = contentReader.readLine();
     assertThat(firstLineOfContent).contains("Google");

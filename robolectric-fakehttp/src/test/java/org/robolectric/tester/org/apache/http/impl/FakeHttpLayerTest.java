@@ -54,7 +54,7 @@ public class FakeHttpLayerTest {
   }
 
   @Test
-  public void matches__shouldMatchHeaders() throws Exception {
+  public void matches_shouldMatchHeaders() throws Exception {
     requestMatcherBuilder.header("header1", "header one");
     HttpGet match = new HttpGet("example.com");
     HttpGet noMatch = new HttpGet("example.com");
@@ -67,7 +67,7 @@ public class FakeHttpLayerTest {
   }
 
   @Test
-  public void matches__shouldMatchPostBody() throws Exception {
+  public void matches_shouldMatchPostBody() throws Exception {
     final String expectedText = "some post body text";
 
     requestMatcherBuilder.postBody(new FakeHttpLayer.RequestMatcherBuilder.PostBodyMatcher() {

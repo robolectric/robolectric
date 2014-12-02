@@ -25,6 +25,7 @@ import org.apache.http.protocol.HttpRequestExecutor;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.tester.org.apache.http.HttpRequestInfo;
 import org.robolectric.util.Util;
 
@@ -99,7 +100,7 @@ public class ShadowDefaultRequestDirector {
           params
       );
     } catch (IllegalArgumentException ignored) {
-      ShadowApplication.getInstance().getFakeHttpLayer().interceptHttpRequests(true);
+      FakeHttp.getFakeHttpLayer().interceptHttpRequests(true);
     }
   }
 
@@ -147,8 +148,8 @@ public class ShadowDefaultRequestDirector {
   }
 
   public static HttpRequestInfo getLatestSentHttpRequestInfo() {
-    int requestCount = ShadowApplication.getInstance().getFakeHttpLayer().getSentHttpRequestInfos().size();
-    return ShadowApplication.getInstance().getFakeHttpLayer().getSentHttpRequestInfo(requestCount - 1);
+    int requestCount = FakeHttp.getFakeHttpLayer().getSentHttpRequestInfos().size();
+    return FakeHttp.getFakeHttpLayer().getSentHttpRequestInfo(requestCount - 1);
   }
 
   /**
@@ -158,22 +159,22 @@ public class ShadowDefaultRequestDirector {
    */
   @Deprecated
   public static HttpRequestInfo getSentHttpRequestInfo(int index) {
-    return ShadowApplication.getInstance().getFakeHttpLayer().getSentHttpRequestInfo(index);
+    return FakeHttp.getFakeHttpLayer().getSentHttpRequestInfo(index);
   }
 
   @Implementation
   public HttpResponse execute(HttpHost httpHost, HttpRequest httpRequest, HttpContext httpContext) throws HttpException, IOException {
-    if (ShadowApplication.getInstance().getFakeHttpLayer().isInterceptingHttpRequests()) {
-      return ShadowApplication.getInstance().getFakeHttpLayer().emulateRequest(httpHost, httpRequest, httpContext, realObject);
+    if (FakeHttp.getFakeHttpLayer().isInterceptingHttpRequests()) {
+      return FakeHttp.getFakeHttpLayer().emulateRequest(httpHost, httpRequest, httpContext, realObject);
     } else {
-      ShadowApplication.getInstance().getFakeHttpLayer().addRequestInfo(new HttpRequestInfo(httpRequest, httpHost, httpContext, redirector));
+      FakeHttp.getFakeHttpLayer().addRequestInfo(new HttpRequestInfo(httpRequest, httpHost, httpContext, redirector));
       HttpResponse response = redirector.execute(httpHost, httpRequest, httpContext);
 
-      if (ShadowApplication.getInstance().getFakeHttpLayer().isInterceptingResponseContent()) {
+      if (FakeHttp.getFakeHttpLayer().isInterceptingResponseContent()) {
         interceptResponseContent(response);
       }
 
-      ShadowApplication.getInstance().getFakeHttpLayer().addHttpResponse(response);
+      FakeHttp.getFakeHttpLayer().addHttpResponse(response);
       return response;
     }
   }
@@ -230,6 +231,11 @@ public class ShadowDefaultRequestDirector {
     return httpParams;
   }
 
+  @Resetter
+  public static void reset() {
+    FakeHttp.reset();
+  }
+
   private void interceptResponseContent(HttpResponse response) {
     HttpEntity entity = response.getEntity();
     if (entity instanceof HttpEntityWrapper) {
@@ -251,7 +257,7 @@ public class ShadowDefaultRequestDirector {
 
         byte[] buffer = Util.readBytes(content);
 
-        ShadowApplication.getInstance().getFakeHttpLayer().addHttpResponseContent(buffer);
+        FakeHttp.getFakeHttpLayer().addHttpResponseContent(buffer);
         contentField.set(basicEntity, new ByteArrayInputStream(buffer));
       } catch (Exception e) {
         // fail to record
