@@ -1,7 +1,5 @@
 package org.robolectric.annotation.processing;
 
-import java.io.StringWriter;
-import java.util.Arrays;
 import java.util.List;
 
 import javax.annotation.processing.ProcessingEnvironment;
@@ -12,8 +10,6 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic.Kind;
-
-import com.google.common.collect.Iterables;
 
 public class ImplementsValidator extends Validator {
 

@@ -6,7 +6,6 @@ import static com.google.common.collect.Sets.*;
 
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -192,6 +191,14 @@ public class RoboModel {
     return type;
   }
   
+  private static ElementVisitor<TypeElement,Void> typeElementVisitor = new SimpleElementVisitor6<TypeElement,Void>() {
+
+    @Override
+    public TypeElement visitType(TypeElement e, Void p) {
+      return e;
+    }
+  };
+  
   private void registerType(TypeElement type) {
     if (!Objects.equal(ANYTHING, type) && !importMap.containsKey(type)) {
       typeMap.put(type.getSimpleName().toString(), type);
@@ -199,7 +206,7 @@ public class RoboModel {
       for (TypeParameterElement typeParam : type.getTypeParameters()) {
         for (TypeMirror bound : typeParam.getBounds()) {
           // FIXME: get rid of cast using a visitor
-          TypeElement boundElement = (TypeElement)types.asElement(bound);
+          TypeElement boundElement = typeElementVisitor.visit(types.asElement(bound));
           registerType(boundElement);
         }
       }
@@ -317,8 +324,10 @@ public class RoboModel {
   
   private Equivalence<TypeParameterElement> typeEq = new Equivalence<TypeParameterElement>() {
     @Override
+    @SuppressWarnings({"unchecked"})
     protected boolean doEquivalent(TypeParameterElement arg0,
         TypeParameterElement arg1) {
+      // Casts are necessary due to flaw in pairwise equivalence implementation.
       return typeMirrorEq.pairwise().equivalent((List<TypeMirror>)arg0.getBounds(),
                                                 (List<TypeMirror>)arg1.getBounds());
     }
@@ -352,6 +361,7 @@ public class RoboModel {
     }
   }
   
+  @SuppressWarnings({"unchecked"})
   public boolean isSameParameterList(List<? extends TypeParameterElement> l1, List<? extends TypeParameterElement> l2) {
     // Cast is necessary because of a flaw in the API design of "PairwiseEquivalent",
     // a flaw that is even acknowledged in the source.

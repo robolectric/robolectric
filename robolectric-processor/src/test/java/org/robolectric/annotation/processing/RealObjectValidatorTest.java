@@ -6,7 +6,6 @@ import static org.truth0.Truth.ASSERT;
 import static org.robolectric.annotation.processing.Utils.SHADOW_EXTRACTOR_SOURCE;
 import static org.robolectric.annotation.processing.SingleClassSubject.singleClass;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
