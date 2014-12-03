@@ -86,7 +86,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     ReflectionHelpers.setFieldReflectively(activityThread, "mInstrumentation", new RoboInstrumentation());
     ReflectionHelpers.setFieldReflectively(activityThread, "mCompatConfiguration", configuration);
 
-    Context systemContextImpl = ReflectionHelpers.callStaticMethodReflectively(contextImplClass, "createSystemContext", new ClassParameter(activityThreadClass, activityThread));
+    Context systemContextImpl = ReflectionHelpers.callStaticMethodReflectively(contextImplClass, "createSystemContext", ClassParameter.from(activityThreadClass, activityThread));
 
     final Application application = (Application) testLifecycle.createApplication(method, appManifest, config);
     if (application != null) {
@@ -102,9 +102,12 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
       Class<?> compatibilityInfoClass = ReflectionHelpers.loadClassReflectively(getClass().getClassLoader(), "android.content.res.CompatibilityInfo");
 
-      Object loadedApk = ReflectionHelpers.callInstanceMethodReflectively(activityThread, "getPackageInfo", new ClassParameter(ApplicationInfo.class, applicationInfo),
-          new ClassParameter(compatibilityInfoClass, null), new ClassParameter(ClassLoader.class, getClass().getClassLoader()), new ClassParameter(boolean.class, false),
-          new ClassParameter(boolean.class, true));
+      Object loadedApk = ReflectionHelpers.callInstanceMethodReflectively(activityThread, "getPackageInfo",
+          ClassParameter.from(ApplicationInfo.class, applicationInfo),
+          ClassParameter.from(compatibilityInfoClass, null),
+          ClassParameter.from(ClassLoader.class, getClass().getClassLoader()),
+          ClassParameter.from(boolean.class, false),
+          ClassParameter.from(boolean.class, true));
 
       shadowsAdapter.bind(application, appManifest, resourceLoader);
       if (appManifest == null) {
@@ -113,9 +116,9 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       }
       Resources appResources = application.getResources();
       ReflectionHelpers.setFieldReflectively(loadedApk, "mResources", appResources);
-      Context contextImpl = ReflectionHelpers.callInstanceMethodReflectively(systemContextImpl, "createPackageContext", new ClassParameter(String.class, applicationInfo.packageName), new ClassParameter(int.class, Context.CONTEXT_INCLUDE_CODE));
+      Context contextImpl = ReflectionHelpers.callInstanceMethodReflectively(systemContextImpl, "createPackageContext", ClassParameter.from(String.class, applicationInfo.packageName), ClassParameter.from(int.class, Context.CONTEXT_INCLUDE_CODE));
       ReflectionHelpers.setFieldReflectively(activityThread, "mInitialApplication", application);
-      ReflectionHelpers.callInstanceMethodReflectively(application, "attach", new ClassParameter(Context.class, contextImpl));
+      ReflectionHelpers.callInstanceMethodReflectively(application, "attach", ClassParameter.from(Context.class, contextImpl));
 
       appResources.updateConfiguration(configuration, appResources.getDisplayMetrics());
       shadowsAdapter.setAssetsQualifiers(appResources.getAssets(), qualifiers);

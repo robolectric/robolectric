@@ -6,6 +6,7 @@ import android.content.Context;
 import android.os.IBinder;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.ShadowsAdapter;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 public class ServiceController<T extends Service> extends ComponentController<ServiceController<T>, T>{
 
@@ -47,10 +48,13 @@ public class ServiceController<T extends Service> extends ComponentController<Se
       throw new RuntimeException(e);
     }
 
-    ReflectionHelpers.callInstanceMethodReflectively(component, "attach", new ReflectionHelpers.ClassParameter(Context.class, baseContext),
-        new ReflectionHelpers.ClassParameter(activityThreadClass, null), new ReflectionHelpers.ClassParameter(String.class, component.getClass().getSimpleName()),
-        new ReflectionHelpers.ClassParameter(IBinder.class, null), new ReflectionHelpers.ClassParameter(Application.class, application),
-        new ReflectionHelpers.ClassParameter(Object.class, null));
+    ReflectionHelpers.callInstanceMethodReflectively(component, "attach",
+        ClassParameter.from(Context.class, baseContext),
+        ClassParameter.from(activityThreadClass, null),
+        ClassParameter.from(String.class, component.getClass().getSimpleName()),
+        ClassParameter.from(IBinder.class, null),
+        ClassParameter.from(Application.class, application),
+        ClassParameter.from(Object.class, null));
 
     attached = true;
     return this;

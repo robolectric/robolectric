@@ -10,7 +10,7 @@ import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import java.util.ArrayList;
 
@@ -244,49 +244,49 @@ public class ShadowNotification {
     @Implementation
     public Builder setContentTitle(CharSequence contentTitle) {
       this.contentTitle = contentTitle;
-      directlyOn(realBuilder, Builder.class, "setContentTitle", new ReflectionHelpers.ClassParameter(CharSequence.class, contentTitle));
+      directlyOn(realBuilder, Builder.class, "setContentTitle", ClassParameter.from(CharSequence.class, contentTitle));
       return realBuilder;
     }
 
     @Implementation
     public Builder setContentText(CharSequence text) {
       this.contentText = text;
-      directlyOn(realBuilder, Builder.class, "setContentText", new ReflectionHelpers.ClassParameter(CharSequence.class, text));
+      directlyOn(realBuilder, Builder.class, "setContentText", ClassParameter.from(CharSequence.class, text));
       return realBuilder;
     }
 
     @Implementation
     public Builder setSmallIcon(int smallIcon) {
       this.smallIcon = smallIcon;
-      directlyOn(realBuilder, Builder.class, "setSmallIcon", new ReflectionHelpers.ClassParameter(int.class, smallIcon));
+      directlyOn(realBuilder, Builder.class, "setSmallIcon", ClassParameter.from(int.class, smallIcon));
       return realBuilder;
     }
 
     @Implementation
     public Builder setOngoing(boolean ongoing) {
       this.ongoing = ongoing;
-      directlyOn(realBuilder, Builder.class, "setOngoing", new ReflectionHelpers.ClassParameter(boolean.class, ongoing));
+      directlyOn(realBuilder, Builder.class, "setOngoing", ClassParameter.from(boolean.class, ongoing));
       return realBuilder;
     }
 
     @Implementation
     public Builder setWhen(long when) {
       this.when = when;
-      directlyOn(realBuilder, Builder.class, "setWhen", new ReflectionHelpers.ClassParameter(long.class, when));
+      directlyOn(realBuilder, Builder.class, "setWhen", ClassParameter.from(long.class, when));
       return realBuilder;
     }
 
     @Implementation
     public Builder setTicker(CharSequence ticker) {
       this.ticker = ticker;
-      directlyOn(realBuilder, Builder.class, "setTicker", new ReflectionHelpers.ClassParameter(CharSequence.class, ticker));
+      directlyOn(realBuilder, Builder.class, "setTicker", ClassParameter.from(CharSequence.class, ticker));
       return realBuilder;
     }
 
     @Implementation
     public Builder setContentInfo(CharSequence contentInfo) {
       this.contentInfo = contentInfo;
-      directlyOn(realBuilder, Builder.class, "setContentInfo", new ReflectionHelpers.ClassParameter(CharSequence.class, contentInfo));
+      directlyOn(realBuilder, Builder.class, "setContentInfo", ClassParameter.from(CharSequence.class, contentInfo));
       return realBuilder;
     }
 
@@ -302,7 +302,7 @@ public class ShadowNotification {
     @Implementation
     public Builder setStyle(Style style) {
       this.style = style;
-      directlyOn(realBuilder, Builder.class, "setStyle", new ReflectionHelpers.ClassParameter(Style.class, style));
+      directlyOn(realBuilder, Builder.class, "setStyle", ClassParameter.from(Style.class, style));
 
       return realBuilder;
     }
@@ -311,7 +311,7 @@ public class ShadowNotification {
     public Builder setProgress(int max, int progress, boolean indeterminate) {
       this.progress = new Progress(max, progress, indeterminate);
       directlyOn(realBuilder, Builder.class, "setProgress",
-          new ReflectionHelpers.ClassParameter(int.class, max), new ReflectionHelpers.ClassParameter(int.class, progress), new ReflectionHelpers.ClassParameter(boolean.class, indeterminate));
+          ClassParameter.from(int.class, max), ClassParameter.from(int.class, progress), ClassParameter.from(boolean.class, indeterminate));
 
       return realBuilder;
     }
@@ -319,14 +319,14 @@ public class ShadowNotification {
     @Implementation
     public Builder setUsesChronometer(boolean usesChronometer) {
       this.usesChronometer = usesChronometer;
-      directlyOn(realBuilder, Builder.class, "setUsesChronometer", new ReflectionHelpers.ClassParameter(boolean.class, usesChronometer));
+      directlyOn(realBuilder, Builder.class, "setUsesChronometer", ClassParameter.from(boolean.class, usesChronometer));
       return realBuilder;
     }
 
     @Implementation
     public Builder setShowWhen(boolean showWhen) {
       this.showWhen = showWhen;
-      directlyOn(realBuilder, Builder.class, "setShowWhen", new ReflectionHelpers.ClassParameter(boolean.class, showWhen));
+      directlyOn(realBuilder, Builder.class, "setShowWhen", ClassParameter.from(boolean.class, showWhen));
       return realBuilder;
     }
   }
@@ -343,13 +343,13 @@ public class ShadowNotification {
     @Implementation
     public void internalSetBigContentTitle(CharSequence bigContentTitle) {
       this.bigContentTitle = bigContentTitle;
-      directlyOn(realStyle, Style.class, "internalSetBigContentTitle", new ReflectionHelpers.ClassParameter(CharSequence.class, bigContentTitle));
+      directlyOn(realStyle, Style.class, "internalSetBigContentTitle", ClassParameter.from(CharSequence.class, bigContentTitle));
     }
     
     @Implementation
     public void internalSetSummaryText(CharSequence summaryText) {
       this.summaryText = summaryText;
-      directlyOn(realStyle, Style.class, "internalSetSummaryText", new ReflectionHelpers.ClassParameter(CharSequence.class, summaryText));
+      directlyOn(realStyle, Style.class, "internalSetSummaryText", ClassParameter.from(CharSequence.class, summaryText));
     }
 
     public CharSequence getBigContentTitle() {
@@ -370,7 +370,7 @@ public class ShadowNotification {
     @Implementation
     public BigTextStyle bigText(CharSequence bigText) {
       this.bigText = bigText;
-      directlyOn(realStyle, BigTextStyle.class, "bigText", new ReflectionHelpers.ClassParameter(CharSequence.class, bigText));
+      directlyOn(realStyle, BigTextStyle.class, "bigText", ClassParameter.from(CharSequence.class, bigText));
       return realStyle;
     }
     

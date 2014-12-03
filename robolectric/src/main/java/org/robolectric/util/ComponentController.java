@@ -7,6 +7,7 @@ import android.os.Bundle;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.ShadowsAdapter;
 import org.robolectric.ShadowsAdapter.ShadowLooperAdapter;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 abstract class ComponentController<C extends ComponentController<C, T>, T> {
   protected final C myself;
@@ -78,7 +79,7 @@ abstract class ComponentController<C extends ComponentController<C, T>, T> {
     shadowMainLooper.runPaused(new Runnable() {
       @Override
       public void run() {
-        ReflectionHelpers.callInstanceMethodReflectively(component, methodName, new ReflectionHelpers.ClassParameter(Bundle.class, arg));
+        ReflectionHelpers.callInstanceMethodReflectively(component, methodName, ClassParameter.from(Bundle.class, arg));
       }
     });
     return myself;
@@ -88,7 +89,7 @@ abstract class ComponentController<C extends ComponentController<C, T>, T> {
     shadowMainLooper.runPaused(new Runnable() {
       @Override
       public void run() {
-        ReflectionHelpers.callInstanceMethodReflectively(component, methodName, new ReflectionHelpers.ClassParameter(Intent.class, arg));
+        ReflectionHelpers.callInstanceMethodReflectively(component, methodName, ClassParameter.from(Intent.class, arg));
       }
     });
     return myself;
@@ -98,7 +99,7 @@ abstract class ComponentController<C extends ComponentController<C, T>, T> {
     shadowMainLooper.runPaused(new Runnable() {
       @Override
       public void run() {
-        ReflectionHelpers.callInstanceMethodReflectively(component, methodName, new ReflectionHelpers.ClassParameter(Intent.class, arg), new ReflectionHelpers.ClassParameter(int.class, param1), new ReflectionHelpers.ClassParameter(int.class, param2));
+        ReflectionHelpers.callInstanceMethodReflectively(component, methodName, ClassParameter.from(Intent.class, arg), ClassParameter.from(int.class, param1), ClassParameter.from(int.class, param2));
       }
     });
     return myself;

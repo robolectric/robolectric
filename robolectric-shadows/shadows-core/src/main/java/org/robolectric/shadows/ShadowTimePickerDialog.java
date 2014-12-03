@@ -20,9 +20,13 @@ public class ShadowTimePickerDialog extends ShadowAlertDialog {
     this.hourOfDay = hourOfDay;
     this.minute = minute;
 
-    Shadow.invokeConstructor(TimePickerDialog.class, realTimePickerDialog, new ClassParameter(Context.class, context),
-        new ClassParameter(int.class, theme), new ClassParameter(TimePickerDialog.OnTimeSetListener.class, callBack),
-        new ClassParameter(int.class, hourOfDay), new ClassParameter(int.class, minute), new ClassParameter(boolean.class, is24HourView));
+    Shadow.invokeConstructor(TimePickerDialog.class, realTimePickerDialog,
+        ClassParameter.from(Context.class, context),
+        ClassParameter.from(int.class, theme),
+        ClassParameter.from(TimePickerDialog.OnTimeSetListener.class, callBack),
+        ClassParameter.from(int.class, hourOfDay),
+        ClassParameter.from(int.class, minute),
+        ClassParameter.from(boolean.class, is24HourView));
   }
 
   public int getHourOfDay() {

@@ -7,6 +7,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
 public class ReflectionHelpers {
+
+  @SuppressWarnings("unchecked")
   public static <R> R getFieldReflectively(final Object object, final String fieldName) {
     try {
       return traverseClassHierarchy(object.getClass(), NoSuchFieldException.class, new InsideTraversal<R>() {
@@ -38,6 +40,7 @@ public class ReflectionHelpers {
     }
   }
 
+  @SuppressWarnings("unchecked")
   public static <R> R getStaticFieldReflectively(Field field) {
     try {
       makeFieldVeryAccessible(field);
@@ -72,6 +75,7 @@ public class ReflectionHelpers {
     }
   }
 
+  @SuppressWarnings("unchecked")
   public static <R> R callInstanceMethodReflectively(final Object instance, final String methodName, ClassParameter... classParameters) {
     try {
       final Class[] classes = ClassParameter.getClasses(classParameters);
@@ -95,6 +99,7 @@ public class ReflectionHelpers {
     }
   }
 
+  @SuppressWarnings("unchecked")
   public static <R> R callStaticMethodReflectively(Class<?> containingClass, String methodName, ClassParameter... classParameters) {
     try {
       Class[] classes = ClassParameter.getClasses(classParameters);
@@ -116,6 +121,7 @@ public class ReflectionHelpers {
     }
   }
 
+  @SuppressWarnings("unchecked")
   public static <R> R callConstructorReflectively(Class<? extends R> targetClass, ClassParameter... classParameters) {
     try {
       final Class[] classes = ClassParameter.getClasses(classParameters);
@@ -169,10 +175,14 @@ public class ReflectionHelpers {
       this.val = val;
     }
 
+    public static <V> ClassParameter<V> from(Class<? extends V> clazz, V val) {
+      return new ClassParameter<>(clazz, val);
+    }
+
     public static ClassParameter[] fromComponentLists(Class[] classes, Object[] values) {
       ClassParameter[] classParameters = new ClassParameter[classes.length];
       for (int i = 0; i < classes.length; i++) {
-        classParameters[i] = new ClassParameter(classes[i], values[i]);
+        classParameters[i] = ClassParameter.from(classes[i], values[i]);
       }
       return classParameters;
     }
@@ -203,6 +213,10 @@ public class ReflectionHelpers {
     public StringParameter(String className, V val) {
       this.className = className;
       this.val = val;
+    }
+
+    public static <V> StringParameter<V> from(String className, V val) {
+      return new StringParameter<>(className, val);
     }
   }
 }

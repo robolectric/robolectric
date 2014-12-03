@@ -15,12 +15,12 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.robolectric.internal.Shadow.directlyOn;
-import static org.robolectric.Shadows.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Dialog.class)
@@ -139,6 +139,6 @@ public class ShadowDialog {
   }
 
   public void callOnCreate(Bundle bundle) {
-    ReflectionHelpers.callInstanceMethodReflectively(realDialog, "onCreate", new ReflectionHelpers.ClassParameter(Bundle.class, bundle));
+    ReflectionHelpers.callInstanceMethodReflectively(realDialog, "onCreate", ClassParameter.from(Bundle.class, bundle));
   }
 }

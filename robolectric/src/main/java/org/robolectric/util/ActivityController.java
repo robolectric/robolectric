@@ -18,6 +18,7 @@ import org.robolectric.RoboInstrumentation;
 import org.robolectric.res.ResName;
 import org.robolectric.ShadowsAdapter.ShadowActivityAdapter;
 import org.robolectric.ShadowsAdapter.ShadowApplicationAdapter;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 public class ActivityController<T extends Activity> extends ComponentController<ActivityController<T>, T> {
 
@@ -66,19 +67,19 @@ public class ActivityController<T extends Activity> extends ComponentController<
     }
 
     ReflectionHelpers.callInstanceMethodReflectively(component, "attach",
-        new ReflectionHelpers.ClassParameter(Context.class, baseContext),
-        new ReflectionHelpers.ClassParameter(activityThreadClass, null),
-        new ReflectionHelpers.ClassParameter(Instrumentation.class, new RoboInstrumentation()),
-        new ReflectionHelpers.ClassParameter(IBinder.class, null),
-        new ReflectionHelpers.ClassParameter(int.class, 0),
-        new ReflectionHelpers.ClassParameter(Application.class, application),
-        new ReflectionHelpers.ClassParameter(Intent.class, intent),
-        new ReflectionHelpers.ClassParameter(ActivityInfo.class, activityInfo),
-        new ReflectionHelpers.ClassParameter(CharSequence.class, activityTitle),
-        new ReflectionHelpers.ClassParameter(Activity.class, null),
-        new ReflectionHelpers.ClassParameter(String.class, "id"),
-        new ReflectionHelpers.ClassParameter(nonConfigurationInstancesClass, null),
-        new ReflectionHelpers.ClassParameter(Configuration.class, application.getResources().getConfiguration()));
+        ClassParameter.from(Context.class, baseContext),
+        ClassParameter.from(activityThreadClass, null),
+        ClassParameter.from(Instrumentation.class, new RoboInstrumentation()),
+        ClassParameter.from(IBinder.class, null),
+        ClassParameter.from(int.class, 0),
+        ClassParameter.from(Application.class, application),
+        ClassParameter.from(Intent.class, intent),
+        ClassParameter.from(ActivityInfo.class, activityInfo),
+        ClassParameter.from(CharSequence.class, activityTitle),
+        ClassParameter.from(Activity.class, null),
+        ClassParameter.from(String.class, "id"),
+        ClassParameter.from(nonConfigurationInstancesClass, null),
+        ClassParameter.from(Configuration.class, application.getResources().getConfiguration()));
 
     shadowReference.setThemeFromManifest();
     attached = true;
@@ -120,7 +121,7 @@ public class ActivityController<T extends Activity> extends ComponentController<
       @Override
       public void run() {
         if (!attached) attach();
-        ReflectionHelpers.callInstanceMethodReflectively(component, "performCreate", new ReflectionHelpers.ClassParameter(Bundle.class, bundle));
+        ReflectionHelpers.callInstanceMethodReflectively(component, "performCreate", ClassParameter.from(Bundle.class, bundle));
       }
     });
     return this;

@@ -42,27 +42,33 @@ public class ShadowIntent {
     componentName = new ComponentName(packageContext, cls);
     data = uri;
     intentClass = cls;
-    Shadow.invokeConstructor(Intent.class, realIntent, new ClassParameter(String.class, action),
-        new ClassParameter(Uri.class, uri), new ClassParameter(Context.class, packageContext), new ClassParameter(Class.class, cls));
+    Shadow.invokeConstructor(Intent.class, realIntent,
+        ClassParameter.from(String.class, action),
+        ClassParameter.from(Uri.class, uri),
+        ClassParameter.from(Context.class, packageContext),
+        ClassParameter.from(Class.class, cls));
   }
 
   public void __constructor__(Context packageContext, Class cls) {
     componentName = new ComponentName(packageContext, cls);
     intentClass = cls;
-    Shadow.invokeConstructor(Intent.class, realIntent, new ClassParameter(Context.class, packageContext),
-        new ClassParameter(Class.class, cls));
+    Shadow.invokeConstructor(Intent.class, realIntent,
+        ClassParameter.from(Context.class, packageContext),
+        ClassParameter.from(Class.class, cls));
   }
 
   public void __constructor__(String action, Uri uri) {
     this.action = action;
     data = uri;
-    Shadow.invokeConstructor(Intent.class, realIntent, new ClassParameter(String.class, action),
-        new ClassParameter(Uri.class, uri));
+    Shadow.invokeConstructor(Intent.class, realIntent,
+        ClassParameter.from(String.class, action),
+        ClassParameter.from(Uri.class, uri));
   }
 
   public void __constructor__(String action) {
     __constructor__(action, null);
-    Shadow.invokeConstructor(Intent.class, realIntent, new ClassParameter(String.class, action));
+    Shadow.invokeConstructor(Intent.class, realIntent,
+        ClassParameter.from(String.class, action));
   }
 
   public void __constructor__(Parcel in) {
@@ -117,7 +123,7 @@ public class ShadowIntent {
     intentClass = other.intentClass;
     packageName = other.packageName;
     categories.addAll(other.categories);
-    Shadow.invokeConstructor(Intent.class, realIntent, new ClassParameter(Intent.class, intent));
+    Shadow.invokeConstructor(Intent.class, realIntent, ClassParameter.from(Intent.class, intent));
   }
 
   @Implementation

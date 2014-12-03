@@ -8,6 +8,7 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Function;
 import org.robolectric.internal.ShadowConstants;
 import org.robolectric.internal.Shadow;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import java.lang.reflect.*;
 import java.util.*;
@@ -245,7 +246,7 @@ public class ShadowWrangler implements ClassHandler {
           }
 
           Object context = params[0];
-          return ReflectionHelpers.callStaticMethodReflectively(shadowWindowClass, "create", new ReflectionHelpers.ClassParameter(activityClass, context));
+          return ReflectionHelpers.callStaticMethodReflectively(shadowWindowClass, "create", ClassParameter.from(activityClass, context));
         }
       };
     } else if (methodSignature.matches("java.lang.System", "nanoTime") || methodSignature.matches("java.lang.System", "currentTimeMillis")) {

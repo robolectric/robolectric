@@ -12,7 +12,6 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.internal.Shadow;
 
 import static org.junit.Assert.assertEquals;
-import static org.robolectric.internal.Shadow.directlyOn;
 
 @RunWith(TestRunners.RealApisWithoutDefaults.class)
 public class RealApisSuperHandlingTest {

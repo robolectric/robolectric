@@ -57,26 +57,37 @@ public class ShadowMapView extends ShadowViewGroup {
   public void __constructor__(Context context) {
     setContextOnRealView(context);
     this.attributeSet = new RoboAttributeSet(new ArrayList<Attribute>(), ShadowApplication.getInstance().getResourceLoader());
-    invokeConstructor(View.class, realView, new ClassParameter(Context.class, context));
-    invokeConstructor(ViewGroup.class, realView, new ClassParameter(Context.class, context));
+    invokeConstructor(View.class, realView, ClassParameter.from(Context.class, context));
+    invokeConstructor(ViewGroup.class, realView, ClassParameter.from(Context.class, context));
   }
 
   public void __constructor__(Context context, AttributeSet attributeSet) {
     setContextOnRealView(context);
     this.attributeSet = attributeSet;
-    invokeConstructor(View.class, realView, new ClassParameter(Context.class, context), new ClassParameter(AttributeSet.class, attributeSet),
-        new ClassParameter(int.class, 0));
-    invokeConstructor(ViewGroup.class, realView, new ClassParameter(Context.class, context), new ClassParameter(AttributeSet.class, attributeSet),
-        new ClassParameter(int.class, 0));
+    invokeConstructor(View.class, realView,
+        ClassParameter.from(Context.class, context),
+        ClassParameter.from(AttributeSet.class, attributeSet),
+        ClassParameter.from(int.class, 0));
+
+    invokeConstructor(ViewGroup.class, realView,
+        ClassParameter.from(Context.class, context),
+        ClassParameter.from(AttributeSet.class, attributeSet),
+        ClassParameter.from(int.class, 0));
   }
 
   @Override public void __constructor__(Context context, AttributeSet attributeSet, int defStyle) {
     setContextOnRealView(context);
     this.attributeSet = attributeSet;
-    invokeConstructor(View.class, realView, new ClassParameter(Context.class, context), new ClassParameter(AttributeSet.class, attributeSet),
-        new ClassParameter(int.class, defStyle));
-    invokeConstructor(ViewGroup.class, realView, new ClassParameter(Context.class, context), new ClassParameter(AttributeSet.class, attributeSet),
-        new ClassParameter(int.class, defStyle));
+    invokeConstructor(View.class, realView,
+        ClassParameter.from(Context.class, context),
+        ClassParameter.from(AttributeSet.class, attributeSet),
+        ClassParameter.from(int.class, defStyle));
+
+    invokeConstructor(ViewGroup.class, realView,
+        ClassParameter.from(Context.class, context),
+        ClassParameter.from(AttributeSet.class, attributeSet),
+        ClassParameter.from(int.class, defStyle));
+
     super.__constructor__(context, attributeSet, defStyle);
   }
 

@@ -2,6 +2,8 @@ package org.robolectric.util;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
+
 import java.lang.reflect.Field;
 
 public class ReflectionHelpersTest {
@@ -109,7 +111,7 @@ public class ReflectionHelpersTest {
   @Test
   public void callInstanceMethodReflectively_whenMultipleSignaturesExistForAMethodName_callsMethodWithCorrectSignature() {
     ExampleDescendant example = new ExampleDescendant();
-    Assert.assertEquals(ReflectionHelpers.callInstanceMethodReflectively(example, "returnNumber", new ReflectionHelpers.ClassParameter(int.class, 5)), 5);
+    Assert.assertEquals(ReflectionHelpers.callInstanceMethodReflectively(example, "returnNumber", ClassParameter.from(int.class, 5)), 5);
   }
 
   @Test
@@ -144,7 +146,7 @@ public class ReflectionHelpersTest {
 
   @Test
   public void callConstructorReflectively_whenMultipleSignaturesExistForTheConstructor_callsConstructorWithCorrectSignature() {
-    ExampleClass ec = ReflectionHelpers.callConstructorReflectively(ExampleClass.class, new ReflectionHelpers.ClassParameter(int.class, 16));
+    ExampleClass ec = ReflectionHelpers.callConstructorReflectively(ExampleClass.class, ClassParameter.from(int.class, 16));
     Assert.assertEquals(ec.index, 16);
     Assert.assertNull(ec.name);
   }

@@ -13,12 +13,12 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewParent;
-import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import java.io.PrintStream;
 import java.lang.reflect.Method;
@@ -105,11 +105,11 @@ public class ShadowView {
 
   public void __constructor__(Context context, AttributeSet attributeSet, int defStyle) {
     if (context == null) throw new NullPointerException("no context");
-
     this.attributeSet = attributeSet;
-
-    invokeConstructor(View.class, realView, new ReflectionHelpers.ClassParameter(Context.class, context), new ReflectionHelpers.ClassParameter(AttributeSet.class, attributeSet),
-        new ReflectionHelpers.ClassParameter(int.class, defStyle));
+    invokeConstructor(View.class, realView,
+        ClassParameter.from(Context.class, context),
+        ClassParameter.from(AttributeSet.class, attributeSet),
+        ClassParameter.from(int.class, defStyle));
   }
 
   /**
@@ -197,8 +197,12 @@ public class ShadowView {
   @Implementation
   public void onLayout(boolean changed, int left, int top, int right, int bottom) {
     onLayoutWasCalled = true;
-    directlyOn(realView, View.class, "onLayout", new ReflectionHelpers.ClassParameter(boolean.class, changed), new ReflectionHelpers.ClassParameter(int.class, left),
-        new ReflectionHelpers.ClassParameter(int.class, top), new ReflectionHelpers.ClassParameter(int.class, right), new ReflectionHelpers.ClassParameter(int.class, bottom));
+    directlyOn(realView, View.class, "onLayout",
+        ClassParameter.from(boolean.class, changed),
+        ClassParameter.from(int.class, left),
+        ClassParameter.from(int.class, top),
+        ClassParameter.from(int.class, right),
+        ClassParameter.from(int.class, bottom));
   }
 
   public boolean onLayoutWasCalled() {
@@ -512,7 +516,7 @@ public class ShadowView {
   }
 
   public void setMyParent(ViewParent viewParent) {
-    directlyOn(realView, View.class, "assignParent", new ReflectionHelpers.ClassParameter(ViewParent.class, viewParent));
+    directlyOn(realView, View.class, "assignParent", ClassParameter.from(ViewParent.class, viewParent));
   }
 
   private View directly() {

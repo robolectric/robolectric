@@ -16,6 +16,7 @@ import org.robolectric.util.NamedStream;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Join;
 import org.robolectric.internal.Shadow;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -37,14 +38,17 @@ public class ShadowBitmapFactory {
   private static Map<String, Point> widthAndHeightMap = new HashMap<String, Point>();
 
   @Implementation
-  public static Bitmap decodeResourceStream(Resources res, TypedValue value,
-                        InputStream is, Rect pad, BitmapFactory.Options opts) {
-    Bitmap bitmap = directlyOn(BitmapFactory.class, "decodeResourceStream", new ReflectionHelpers.ClassParameter(Resources.class, res),
-        new ReflectionHelpers.ClassParameter(TypedValue.class, value), new ReflectionHelpers.ClassParameter(InputStream.class, is),
-        new ReflectionHelpers.ClassParameter(Rect.class, pad), new ReflectionHelpers.ClassParameter(BitmapFactory.Options.class, opts));
+  public static Bitmap decodeResourceStream(Resources res, TypedValue value, InputStream is, Rect pad, BitmapFactory.Options opts) {
+    Bitmap bitmap = directlyOn(BitmapFactory.class, "decodeResourceStream",
+        ClassParameter.from(Resources.class, res),
+        ClassParameter.from(TypedValue.class, value),
+        ClassParameter.from(InputStream.class, is),
+        ClassParameter.from(Rect.class, pad),
+        ClassParameter.from(BitmapFactory.Options.class, opts));
+
     if (value != null && value.string != null && value.string.toString().contains(".9.")) {
       // todo: better support for nine-patches
-      ReflectionHelpers.callInstanceMethodReflectively(bitmap, "setNinePatchChunk", new ReflectionHelpers.ClassParameter(byte[].class, new byte[0]));
+      ReflectionHelpers.callInstanceMethodReflectively(bitmap, "setNinePatchChunk", ClassParameter.from(byte[].class, new byte[0]));
     }
     return bitmap;
   }

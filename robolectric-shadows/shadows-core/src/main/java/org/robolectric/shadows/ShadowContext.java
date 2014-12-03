@@ -14,6 +14,7 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.res.Attribute;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceLoader;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import java.io.*;
 import java.util.List;
@@ -197,6 +198,6 @@ abstract public class ShadowContext {
   }
 
   public void callAttachBaseContext(Context context) {
-    ReflectionHelpers.callInstanceMethodReflectively(realContext, "attachBaseContext", new ReflectionHelpers.ClassParameter(Context.class, context));
+    ReflectionHelpers.callInstanceMethodReflectively(realContext, "attachBaseContext", ClassParameter.from(Context.class, context));
   }
 }
