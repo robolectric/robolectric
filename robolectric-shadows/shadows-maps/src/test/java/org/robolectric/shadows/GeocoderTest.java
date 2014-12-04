@@ -6,18 +6,17 @@ import android.location.Geocoder;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
+import org.robolectric.internal.ShadowExtractor;
+import org.robolectric.util.TestRunnerWithManifest;
 
 import java.util.List;
 
 import static junit.framework.Assert.assertFalse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunnerWithManifest.class)
 public class GeocoderTest {
-
   private Geocoder geocoder;
 
   @Before
@@ -52,12 +51,15 @@ public class GeocoderTest {
     assertEquals(0, result.size());
   }
 
-
   @Test
   public void answersWhetherResolutionHappened() throws Exception {
     assertFalse(shadowOf(geocoder).didResolution());
     shadowOf(geocoder).setReturnNoResults(true);
     geocoder.getFromLocationName("731 Market St, San Francisco, CA 94103", 1);
     assertTrue(shadowOf(geocoder).didResolution());
+  }
+
+  private ShadowGeocoder shadowOf(Geocoder geocoder) {
+    return (ShadowGeocoder) ShadowExtractor.extract(geocoder);
   }
 }

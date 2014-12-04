@@ -8,10 +8,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ZoomButtonsController;
 import com.google.android.maps.*;
-import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.HiddenApi;
+import org.robolectric.internal.ShadowExtractor;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.res.Attribute;
 import org.robolectric.internal.Shadow;
@@ -23,12 +23,7 @@ import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 import static org.robolectric.internal.Shadow.directlyOn;
 import static org.robolectric.internal.Shadow.invokeConstructor;
 
-/**
- * Shadow of {@code MapView} that simulates the internal state of a {@code MapView}. Supports {@code Projection}s,
- * {@code Overlay}s, and {@code TouchEvent}s
- */
-@SuppressWarnings({"UnusedDeclaration"})
-@Implements(value = MapView.class, inheritImplementationMethods = true)
+@Implements(MapView.class)
 public class ShadowMapView extends ShadowViewGroup {
   private boolean satelliteOn;
   private MapController mapController;
@@ -37,7 +32,6 @@ public class ShadowMapView extends ShadowViewGroup {
   int longitudeSpan = 20;
   int latitudeSpan = 30;
   int zoomLevel = 1;
-  private ShadowMapController shadowMapController;
   private ZoomButtonsController zoomButtonsController;
   private MapView realMapView;
   private Projection projection;
@@ -133,7 +127,7 @@ public class ShadowMapView extends ShadowViewGroup {
     if (mapController == null) {
       try {
         mapController = Shadow.newInstanceOf(MapController.class);
-        shadowMapController = Shadows.shadowOf(mapController);
+        ShadowMapController shadowMapController = shadowOf(mapController);
         shadowMapController.setShadowMapView(this);
       } catch (Exception e) {
         throw new RuntimeException(e);
@@ -328,5 +322,9 @@ public class ShadowMapView extends ShadowViewGroup {
 
   private void setContextOnRealView(Context context) {
     ReflectionHelpers.setFieldReflectively(realView, "mContext", context);
+  }
+
+  private ShadowMapController shadowOf(MapController mapController) {
+    return (ShadowMapController) ShadowExtractor.extract(mapController);
   }
 }

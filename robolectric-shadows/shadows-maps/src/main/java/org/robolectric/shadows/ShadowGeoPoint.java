@@ -7,7 +7,6 @@ import org.robolectric.internal.ShadowExtractor;
 
 import static org.robolectric.shadows.ShadowMapView.fromE6;
 
-@SuppressWarnings({"UnusedDeclaration"})
 @Implements(GeoPoint.class)
 public class ShadowGeoPoint {
   private int lat;
@@ -59,16 +58,20 @@ public class ShadowGeoPoint {
         '}';
   }
 
-  /** @deprecated Use {@link #getLatitudeE6()}
-   * @return the lat
+  /**
+   * @deprecated Use {@link #getLatitudeE6()}
+   *
+   * @return The latitude.
    */
   @Deprecated
   public int getLat() {
     return lat;
   }
 
-  /** @deprecated Use {@link #getLongitudeE6()}.
-   * @return the lng
+  /**
+   * @deprecated Use {@link #getLongitudeE6()}.
+   *
+   * @return The longitude.
    */
   @Deprecated
   public int getLng() {

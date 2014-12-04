@@ -10,11 +10,6 @@ import org.robolectric.annotation.RealObject;
 
 import java.util.ArrayList;
 
-/**
- * Shadow for {@code ItemizedOverlay} that keeps track of what has been called and enables the return value for
- * {@link #hitTest(com.google.android.maps.OverlayItem, android.graphics.drawable.Drawable, int, int)} to be set up by
- * tests.
- */
 @Implements(ItemizedOverlay.class)
 public class ShadowItemizedOverlay<Item extends OverlayItem> {
   private boolean isPopulated;

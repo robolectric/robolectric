@@ -7,7 +7,6 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.internal.ShadowExtractor;
 import org.robolectric.util.Strings;
 
-@SuppressWarnings({"UnusedDeclaration"})
 @Implements(OverlayItem.class)
 public class ShadowOverlayItem {
   private GeoPoint geoPoint;

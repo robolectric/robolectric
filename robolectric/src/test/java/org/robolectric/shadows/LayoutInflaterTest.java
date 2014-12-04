@@ -19,7 +19,6 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import com.google.android.maps.MapView;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -298,12 +297,6 @@ public class LayoutInflaterTest {
     LinearLayout linearLayout = new LinearLayout(context);
     View innerMerge = inflate(context, TEST_PACKAGE, "inner_merge", linearLayout, "");
     assertThat(linearLayout.getChildAt(0)).isInstanceOf(TextView.class);
-  }
-
-  @Test
-  public void testMapView() throws Exception {
-    RelativeLayout mainView = (RelativeLayout) inflate("mapview");
-    assertThat(mainView.findViewById(R.id.map_view)).isInstanceOf(MapView.class);
   }
 
   @Test

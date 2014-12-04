@@ -5,11 +5,11 @@ import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.OverlayItem;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
+import org.robolectric.util.TestRunnerWithManifest;
 
 import static org.junit.Assert.*;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunnerWithManifest.class)
 public class ItemizedOverlayTest {
 
   class TestItemizedOverlay extends ItemizedOverlay<OverlayItem> {

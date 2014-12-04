@@ -107,13 +107,6 @@
     </dependency>
 
     <dependency>
-      <groupId>com.google.android.maps</groupId>
-      <artifactId>maps</artifactId>
-      <version>18_r3</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
       <groupId>com.intellij</groupId>
       <artifactId>annotations</artifactId>
     </dependency>

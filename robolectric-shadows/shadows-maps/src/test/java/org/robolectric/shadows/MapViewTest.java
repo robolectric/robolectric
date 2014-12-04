@@ -2,23 +2,25 @@ package org.robolectric.shadows;
 
 import android.app.Activity;
 import android.graphics.Point;
+import android.graphics.drawable.Drawable;
 import android.view.MotionEvent;
 import android.view.View;
 import com.google.android.maps.GeoPoint;
+import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.MapView;
+import com.google.android.maps.OverlayItem;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
-import org.robolectric.bytecode.ShadowingTest;
+import org.robolectric.annotation.Implements;
+import org.robolectric.util.TestRunnerWithManifest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.shadows.ShadowMapView.toE6;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunnerWithManifest.class)
 public class MapViewTest {
   private MapView mapView;
   private MyOverlay overlay1;
@@ -26,12 +28,12 @@ public class MapViewTest {
   private MotionEvent sourceEvent;
   private MyOnTouchListener mapTouchListener;
 
-
-  @Before public void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
     mapView = new MapView(new Activity(), "foo");
 
-    overlay1 = new MyOverlay();
-    overlay2 = new MyOverlay();
+    overlay1 = new MyOverlay(null);
+    overlay2 = new MyOverlay(null);
     mapTouchListener = new MyOnTouchListener();
 
     mapView.getOverlays().add(overlay1);
@@ -110,13 +112,6 @@ public class MapViewTest {
     assertThat(mapView.getMapCenter()).isEqualTo(new GeoPoint(toE6(25), toE6(25)));
   }
 
-  private void initMapForDrag() {
-    mapView = new MapView(RuntimeEnvironment.application, "");
-    mapView.layout(0, 0, 50, 50);
-    mapView.getController().setCenter(new GeoPoint(toE6(25), toE6(25)));
-    mapView.getController().zoomToSpan(toE6(50), toE6(50));
-  }
-
   @Test
   public void getProjection_fromPixels_shouldPerformCorrectTranslations() throws Exception {
     int centerLat = 11;
@@ -149,6 +144,13 @@ public class MapViewTest {
     assertThat(mapView.getProjection().toPixels(new GeoPoint(toE6(1), toE6(31)), null)).isEqualTo(new Point(650, 460));
   }
 
+  private void initMapForDrag() {
+    mapView = new MapView(RuntimeEnvironment.application, "");
+    mapView.layout(0, 0, 50, 50);
+    mapView.getController().setCenter(new GeoPoint(toE6(25), toE6(25)));
+    mapView.getController().zoomToSpan(toE6(50), toE6(50));
+  }
+
   private void dispatchTouchEvent(int action, int x, int y) {
     mapView.dispatchTouchEvent(MotionEvent.obtain(0, 0, action, x, y, 0));
   }
@@ -156,21 +158,34 @@ public class MapViewTest {
   public static class MyOnTouchListener implements View.OnTouchListener {
     private MotionEvent lastMotionEvent;
 
-    @Override public boolean onTouch(View v, MotionEvent event) {
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
       lastMotionEvent = event;
       return false;
     }
   }
 
-  private class MyOverlay extends ShadowingTest.ItemizedOverlayForTests {
+  @Implements(ItemizedOverlay.class)
+  public static class MyOverlay extends ItemizedOverlay {
     private MotionEvent lastMotionEvent;
     private boolean shouldConsumeEvent = true;
 
-    public MyOverlay() {
-      super(null);
+    public MyOverlay(Drawable drawable) {
+      super(drawable);
     }
 
-    @Override public boolean onTouchEvent(MotionEvent motionEvent, MapView mapView) {
+    @Override
+    protected OverlayItem createItem(int i) {
+      return null;
+    }
+
+    @Override
+    public int size() {
+      return 0;
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent motionEvent, MapView mapView) {
       lastMotionEvent = motionEvent;
       return shouldConsumeEvent;
     }

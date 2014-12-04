@@ -5,13 +5,10 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
 import android.graphics.Paint;
-import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
-import com.google.android.maps.ItemizedOverlay;
-import com.google.android.maps.OverlayItem;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -218,30 +215,17 @@ public class ShadowingTest {
     assertEquals("did foo", new NonApiSubclass().doSomething("foo"));
   }
 
-  public static class NonApiSubclass extends ApiImplementedClass { public String doSomething(String value) { return "did " + value; } }
-  @Instrument public static class ApiImplementedClass { }
-  @Implements(ApiImplementedClass.class) public static class ShadowApiImplementedClass {}
-
-
-  @Implements(ItemizedOverlay.class)
-  public static class ItemizedOverlayForTests extends ItemizedOverlay {
-    public ItemizedOverlayForTests(Drawable drawable) {
-      super(drawable);
-    }
-
-    @Override
-    protected OverlayItem createItem(int i) {
-      return null;
-    }
-
-    public void triggerProtectedCall() {
-      populate();
-    }
-
-    @Override
-    public int size() {
-      return 0;
+  public static class NonApiSubclass extends ApiImplementedClass {
+    public String doSomething(String value) {
+      return "did " + value;
     }
   }
 
+  @Instrument
+  public static class ApiImplementedClass {
+  }
+
+  @Implements(ApiImplementedClass.class)
+  public static class ShadowApiImplementedClass {
+  }
 }

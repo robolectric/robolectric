@@ -5,11 +5,6 @@ import com.google.android.maps.MapController;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-/**
- * A Shadow of {@code MapController} that tracks its own state and keeps the state of the {@code MapView} it controlls
- * up to date.
- */
-@SuppressWarnings({"UnusedDeclaration"})
 @Implements(MapController.class)
 public class ShadowMapController {
   private ShadowMapView shadowMapView;

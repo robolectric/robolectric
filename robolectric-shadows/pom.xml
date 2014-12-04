@@ -13,6 +13,7 @@
 
   <modules>
     <module>shadows-core</module>
+    <module>shadows-maps</module>
     <module>shadows-support-v4</module>
     <module>shadows-httpclient</module>
   </modules>

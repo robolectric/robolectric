@@ -5,10 +5,11 @@ import com.google.android.maps.MapActivity;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.TestRunners;
+import org.robolectric.util.TestRunnerWithManifest;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunnerWithManifest.class)
 public class MapActivityTest {
+
   @Test
   public void onDestroy_shouldNotComplainIfLifecycleIsCorrect() throws Exception {
     MyMapActivity mapActivity = new MyMapActivity();
