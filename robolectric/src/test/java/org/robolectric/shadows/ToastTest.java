@@ -80,6 +80,14 @@ public class ToastTest {
   }
 
   @Test
+  public void shouldSetOffsetsCorrectly() throws Exception {
+    Toast toast = Toast.makeText(new Activity(), "short toast", Toast.LENGTH_SHORT);
+    toast.setGravity(0, 12, 34);
+    assertThat(toast.getXOffset()).isEqualTo(12);
+    assertThat(toast.getYOffset()).isEqualTo(34);
+  }
+
+  @Test
   public void shouldCountToastsCorrectly() throws Exception {
     assertThat(ShadowToast.shownToastCount()).isEqualTo(0);
     Toast toast = Toast.makeText(new Activity(), "short toast", Toast.LENGTH_SHORT);
