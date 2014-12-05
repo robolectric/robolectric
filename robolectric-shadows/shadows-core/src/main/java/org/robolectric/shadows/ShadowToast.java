@@ -23,6 +23,8 @@ public class ShadowToast {
   private String text;
   private int duration;
   private int gravity;
+  private int xOffset;
+  private int yOffset;
   private View view;
 
   @RealObject Toast toast;
@@ -71,11 +73,23 @@ public class ShadowToast {
   @Implementation
   public void setGravity(int gravity, int xOffset, int yOffset) {
     this.gravity = gravity;
+    this.xOffset = xOffset;
+    this.yOffset = yOffset;
   }
 
   @Implementation
   public int getGravity() {
     return gravity;
+  }
+
+  @Implementation
+  public int getXOffset() {
+    return xOffset;
+  }
+
+  @Implementation
+  public int getYOffset() {
+    return yOffset;
   }
 
   @Implementation
