@@ -76,7 +76,7 @@ public class ShadowWrangler implements ClassHandler {
   }
 
   @Override
-  synchronized public Plan methodInvoked(String signature, boolean isStatic, Class<?> theClass) {
+  public Plan methodInvoked(String signature, boolean isStatic, Class<?> theClass) {
     if (debug) System.out.println("[DEBUG] " + signature);
     if (planCache.containsKey(signature)) return planCache.get(signature);
     Plan plan = calculatePlan(signature, isStatic, theClass);
@@ -145,7 +145,7 @@ public class ShadowWrangler implements ClassHandler {
     }
   }
 
-  synchronized private ShadowConfig getShadowConfig(Class clazz) {
+  private ShadowConfig getShadowConfig(Class clazz) {
     ShadowConfig shadowConfig = shadowConfigCache.get(clazz);
     if (shadowConfig == null) {
       shadowConfig = shadowMap.get(clazz);
