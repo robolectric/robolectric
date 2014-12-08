@@ -5,11 +5,13 @@ import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
+import org.robolectric.shadows.util.DataSource;
 
 import java.io.FileDescriptor;
 import java.util.HashMap;
@@ -19,8 +21,10 @@ import static android.media.MediaMetadataRetriever.METADATA_KEY_ALBUM;
 import static android.media.MediaMetadataRetriever.METADATA_KEY_ARTIST;
 import static android.media.MediaMetadataRetriever.METADATA_KEY_TITLE;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.shadows.ShadowMediaMetadataRetriever.addException;
 import static org.robolectric.shadows.ShadowMediaMetadataRetriever.addFrame;
 import static org.robolectric.shadows.ShadowMediaMetadataRetriever.addMetadata;
+import static org.robolectric.shadows.util.DataSource.toDataSource;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class MediaMetadataRetrieverTest {
@@ -108,9 +112,37 @@ public class MediaMetadataRetrieverTest {
   @Test
   public void reset_clearsStaticValues() {
     addMetadata(path, METADATA_KEY_ARTIST, "The Rolling Stones");
+    addFrame(path, 1, bitmap);
+    addException(toDataSource(path2), new IllegalArgumentException());
     retriever.setDataSource(path);
     assertThat(retriever.extractMetadata(METADATA_KEY_ARTIST)).isEqualTo("The Rolling Stones");
+    assertThat(retriever.getFrameAtTime(1)).isSameAs(bitmap);
+    try {
+      retriever2.setDataSource(path2);
+      Assertions.failBecauseExceptionWasNotThrown(IllegalArgumentException.class);
+    } catch (IllegalArgumentException e) {}
     ShadowMediaMetadataRetriever.reset();
     assertThat(retriever.extractMetadata(METADATA_KEY_ARTIST)).isNull();
+    assertThat(retriever.getFrameAtTime(1)).isNull();
+    try {
+      retriever2.setDataSource(path2);
+    } catch (IllegalArgumentException e) {
+      Assertions.fail("Shouldn't throw exception after reset", e);
+    }
+  }
+  
+  @Test
+  public void setDataSourceException_withAllowedException() {
+    RuntimeException e = new RuntimeException("some dummy message");
+    addException(toDataSource(path), e);
+    try {
+      retriever.setDataSource(path);
+      Assertions.failBecauseExceptionWasNotThrown(e.getClass());
+    } catch (Exception caught) {
+      assertThat(caught).isSameAs(e);
+      assertThat(e.getStackTrace()[0].getClassName())
+         .as("Stack trace should originate in Shadow")
+         .isEqualTo(ShadowMediaMetadataRetriever.class.getName());
+    }
   }
 }
