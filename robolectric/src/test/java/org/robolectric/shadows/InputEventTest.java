@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.view.InputDevice;
 import android.view.KeyEvent;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
@@ -10,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
-public class KeyEventTest {
+public class InputEventTest {
   @Test
   public void canSetInputDeviceOnKeyEvent() throws Exception {
     InputDevice myDevice = ShadowInputDevice.makeInputDeviceNamed("myDevice");
