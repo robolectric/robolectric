@@ -53,7 +53,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   private int pendingTransitionExitAnimResId = -1;
   private Object lastNonConfigurationInstance;
   private Map<Integer, Dialog> dialogForId = new HashMap<Integer, Dialog>();
-  private boolean onKeyUpWasCalled;
   private ArrayList<Cursor> managedCusors = new ArrayList<Cursor>();
 
   private int mDefaultKeyMode = Activity.DEFAULT_KEYS_DISABLE;
@@ -372,24 +371,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   @Implementation
   public View getCurrentFocus() {
     return currentFocus;
-  }
-
-  @Implementation
-  public boolean onKeyUp(int keyCode, KeyEvent event) {
-    onKeyUpWasCalled = true;
-    if (keyCode == KeyEvent.KEYCODE_BACK) {
-      onBackPressed();
-      return true;
-    }
-    return false;
-  }
-
-  public boolean onKeyUpWasCalled() {
-    return onKeyUpWasCalled;
-  }
-
-  public void resetKeyUpWasCalled() {
-    onKeyUpWasCalled = false;
   }
 
   public int getPendingTransitionEnterAnimationResourceId() {
