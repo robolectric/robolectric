@@ -577,10 +577,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   @Implementation
-  public void onSaveInstanceState(Bundle outState) {
-  }
-
-  @Implementation
   public void startManagingCursor(Cursor c) {
     managedCusors.add(c);
   }
