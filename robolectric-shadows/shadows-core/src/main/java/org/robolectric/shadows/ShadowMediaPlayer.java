@@ -17,13 +17,18 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.SystemClock;
 
-import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
+import org.robolectric.internal.Shadow;
+import org.robolectric.shadows.util.DataSource;
+
+import com.google.android.collect.Maps;
 
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowMediaPlayer.State.*;
+import static org.robolectric.shadows.util.DataSource.toDataSource;
 
 /**
  * Shadows the Android {@code MediaPlayer} class.
@@ -97,6 +102,8 @@ public class ShadowMediaPlayer {
    * @see #setCreateListener(CreateListener)
    */
   protected static CreateListener createListener;
+  
+  private static final Map<DataSource, Exception> exceptions = Maps.newHashMap();
 
   @RealObject
   private MediaPlayer player;
@@ -453,13 +460,9 @@ public class ShadowMediaPlayer {
   private boolean looping;
   private int pendingSeek = -1;
   /** Various source variables from setDataSource() */
-  private String sourcePath;
   private Uri sourceUri;
-  private Map<String, String> sourceHeaders;
   private int sourceResId;
-  private FileDescriptor sourceFD;
-  private long sourceOffset = -1;
-  private long sourceLength = -1;
+  private DataSource dataSource;
 
   /** The time (in ms) at which playback was last started/resumed. */
   private long startTime = -1;
@@ -598,34 +601,71 @@ public class ShadowMediaPlayer {
       createListener.onCreate(player, this);
     }
     // Ensure that the real object is set up properly.
-    Robolectric.invokeConstructor(MediaPlayer.class, player);
+    Shadow.invokeConstructor(MediaPlayer.class, player);
   }
 
+  public void setDataSource(DataSource dataSource) throws IOException {
+    Exception e = exceptions.get(dataSource);
+    if (e != null) {
+      e.fillInStackTrace();
+      if (e instanceof IOException) {
+        throw (IOException)e;
+      } else if (e instanceof RuntimeException) {
+        throw (RuntimeException)e;
+      }
+      throw new AssertionError("Invalid exception type for setDataSource: <" + e + '>');
+    }
+    checkStateException("setDataSource()", idleState);
+    this.dataSource = dataSource;
+    state = INITIALIZED;
+  }
+  
   @Implementation
   public void setDataSource(String path) throws IOException {
-    MediaInfo info = dataSourceMap == null ? null : dataSourceMap.get(path);
-    setCurrentMediaInfo(info);
-    doSetDataSourceExceptions();
-    this.sourcePath = path;
+    setDataSource(toDataSource(path));
   }
 
   @Implementation
-  public void setDataSource(Context context, Uri uri,
-      Map<String, String> headers) throws IOException {
-    doSetDataSourceExceptions();
-    this.sourceUri = uri;
-    this.sourceHeaders = headers;
+  public void setDataSource(Context context, Uri uri, Map<String, String> headers) throws IOException {
+    setDataSource(toDataSource(context, uri, headers));
+    sourceUri = uri;
   }
 
   @Implementation
-  public void setDataSource(FileDescriptor fd, long offset, long length)
-      throws IOException {
-    doSetDataSourceExceptions();
-    this.sourceFD = fd;
-    this.sourceOffset = offset;
-    this.sourceLength = length;
+  public void setDataSource(String uri, Map<String, String> headers) throws IOException {
+    setDataSource(toDataSource(uri, headers));
   }
 
+  @Implementation
+  public void setDataSource(FileDescriptor fd, long offset, long length) throws IOException {
+    setDataSource(toDataSource(fd, offset, length));
+  }
+
+//  @Implementation
+//  public void setDataSource(String path) throws IOException {
+//    MediaInfo info = dataSourceMap == null ? null : dataSourceMap.get(path);
+//    setCurrentMediaInfo(info);
+//    doSetDataSourceExceptions();
+//    this.sourcePath = path;
+//  }
+//
+//  @Implementation
+//  public void setDataSource(Context context, Uri uri,
+//      Map<String, String> headers) throws IOException {
+//    doSetDataSourceExceptions();
+//    this.sourceUri = uri;
+//    this.sourceHeaders = headers;
+//  }
+//
+//  @Implementation
+//  public void setDataSource(FileDescriptor fd, long offset, long length)
+//      throws IOException {
+//    doSetDataSourceExceptions();
+//    this.sourceFD = fd;
+//    this.sourceOffset = offset;
+//    this.sourceLength = length;
+//  }
+//
   private void doSetDataSourceExceptions() throws IOException {
     Exception setDataSourceException = mediaInfo.getSetDataSourceException();
     // By inspection I determined that the state check is one
@@ -642,10 +682,16 @@ public class ShadowMediaPlayer {
       throw new AssertionError("Invalid exception type specified: "
           + setDataSourceException);
     }
-    checkStateException("setDataSource()", idleState);
-    state = INITIALIZED;
   }
 
+  public static void addException(DataSource dataSource, RuntimeException e) {
+    exceptions.put(dataSource, e);
+  }
+  
+  public static void addException(DataSource dataSource, IOException e) {
+    exceptions.put(dataSource, e);
+  }
+  
   /**
    * Checks states for methods that only log when there is an error. Such
    * methods throw an {@link IllegalArgumentException} when invoked in the END
@@ -735,7 +781,7 @@ public class ShadowMediaPlayer {
    *          the states that this method is allowed to be called from.
    * @see #setAssertOnError
    * @see #checkStateLog(String, EnumSet)
-   * @see #checkStateException(String, EnumSet)
+   * @see #checkStateError(String, EnumSet)
    */
   private void checkStateException(String method, EnumSet<State> allowedStates) {
     if (!allowedStates.contains(state)) {
@@ -1435,16 +1481,15 @@ public class ShadowMediaPlayer {
   }
 
   /**
-   * Retrieves the source path (if any) that was passed in to
-   * {@link MediaPlayer#setDataSource(String, Map)} or
-   * {@link MediaPlayer#setDataSource(String)}.
+   * Retrieves the data source (if any) that was passed in to
+   * {@link MediaPlayer#setDataSource(DataSource)}.
    * 
    * Non-Android accessor. Use for assertions.
    * 
-   * @return The source path passed in to <code>setDataSource</code>.
+   * @return The source passed in to <code>setDataSource</code>.
    */
-  public String getSourcePath() {
-    return sourcePath;
+  public DataSource getDataSource() {
+    return dataSource;
   }
 
   /**
@@ -1458,56 +1503,6 @@ public class ShadowMediaPlayer {
    */
   public Uri getSourceUri() {
     return sourceUri;
-  }
-
-  /**
-   * Retrieves the source headers (if any) that were passed in to
-   * {@link MediaPlayer#setDataSource(Context, Uri, Map)} or
-   * {@link MediaPlayer#setDataSource(String, Map)}.
-   * 
-   * Non-Android accessor. Use for assertions.
-   * 
-   * @return The source headers passed in to <code>setDataSource</code>.
-   */
-  public Map<String, String> getSourceHeaders() {
-    return sourceHeaders;
-  }
-
-  /**
-   * Retrieves the {@link FileDescriptor} (if any) that was passed in to
-   * {@link MediaPlayer#setDataSource(FileDescriptor)} or
-   * {@link MediaPlayer#setDataSource(FileDescriptor, long, long)}.
-   * 
-   * Non-Android accessor. Use for assertions.
-   * 
-   * @return The source file descriptor passed in to <code>setDataSource</code>.
-   */
-  public FileDescriptor getSourceFD() {
-    return sourceFD;
-  }
-
-  /**
-   * Retrieves the file descriptor offset (if any) that was passed in to
-   * {@link MediaPlayer#setDataSource(FileDescriptor, long, long)}.
-   * 
-   * Non-Android accessor. Use for assertions.
-   * 
-   * @return The source file offset passed in to <code>setDataSource</code>.
-   */
-  public long getSourceOffset() {
-    return sourceOffset;
-  }
-
-  /**
-   * Retrieves the file descriptor length (if any) that was passed in to
-   * {@link MediaPlayer#setDataSource(FileDescriptor, long, long)}.
-   * 
-   * Non-Android accessor. Use for assertions.
-   * 
-   * @return The source file length passed in to <code>setDataSource</code>.
-   */
-  public long getSourceLength() {
-    return sourceLength;
   }
 
   /**
@@ -1538,7 +1533,7 @@ public class ShadowMediaPlayer {
   /**
    * Non-Android accessor. Use for assertions.
    * 
-   * @return
+   * @return The right channel volume.
    */
   public float getRightVolume() {
     return rightVolume;
@@ -1662,5 +1657,11 @@ public class ShadowMediaPlayer {
       // to PLAYBACK_COMPLETED
       state = ERROR;
     }
+  }
+
+  @Resetter
+  public static void resetStaticState() {
+    createListener = null;
+    exceptions.clear();
   }
 }
