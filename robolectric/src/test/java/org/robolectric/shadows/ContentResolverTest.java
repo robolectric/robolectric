@@ -27,7 +27,7 @@ import org.robolectric.DefaultTestLifecycle;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.manifest.ContentProviderData;
-import org.robolectric.tester.android.database.TestCursor;
+import org.robolectric.fakes.BaseCursor;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -82,7 +82,7 @@ public class ContentResolverTest {
         return false;
       }
       @Override public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
-        return new TestCursor();
+        return new BaseCursor();
       }
       @Override public Uri insert(Uri uri, ContentValues values) {
         return null;
@@ -171,9 +171,9 @@ public class ContentResolverTest {
   @Test
   public void query_shouldReturnTheCursorThatWasSet() throws Exception {
     assertNull(shadowContentResolver.query(null, null, null, null, null));
-    TestCursor cursor = new TestCursor();
+    BaseCursor cursor = new BaseCursor();
     shadowContentResolver.setCursor(cursor);
-    assertThat((TestCursor) shadowContentResolver.query(null, null, null, null, null)).isSameAs(cursor);
+    assertThat((BaseCursor) shadowContentResolver.query(null, null, null, null, null)).isSameAs(cursor);
   }
 
   @Test
@@ -181,13 +181,13 @@ public class ContentResolverTest {
     assertNull(shadowContentResolver.query(uri21, null, null, null, null));
     assertNull(shadowContentResolver.query(uri22, null, null, null, null));
 
-    TestCursor cursor21 = new TestCursor();
-    TestCursor cursor22 = new TestCursor();
+    BaseCursor cursor21 = new BaseCursor();
+    BaseCursor cursor22 = new BaseCursor();
     shadowContentResolver.setCursor(uri21, cursor21);
     shadowContentResolver.setCursor(uri22, cursor22);
 
-    assertThat((TestCursor) shadowContentResolver.query(uri21, null, null, null, null)).isSameAs(cursor21);
-    assertThat((TestCursor) shadowContentResolver.query(uri22, null, null, null, null)).isSameAs(cursor22);
+    assertThat((BaseCursor) shadowContentResolver.query(uri21, null, null, null, null)).isSameAs(cursor21);
+    assertThat((BaseCursor) shadowContentResolver.query(uri22, null, null, null, null)).isSameAs(cursor22);
   }
 
   @Test
@@ -197,11 +197,11 @@ public class ContentResolverTest {
     String[] selectionArgs = {};
     String sortOrder = "order";
 
-    QueryParamTrackingTestCursor testCursor = new QueryParamTrackingTestCursor();
+    QueryParamTrackingCursor testCursor = new QueryParamTrackingCursor();
 
     shadowContentResolver.setCursor(testCursor);
     Cursor cursor = shadowContentResolver.query(uri21, projection, selection, selectionArgs, sortOrder);
-    assertThat((QueryParamTrackingTestCursor) cursor).isEqualTo(testCursor);
+    assertThat((QueryParamTrackingCursor) cursor).isEqualTo(testCursor);
     assertThat(testCursor.uri).isEqualTo(uri21);
     assertThat(testCursor.projection).isEqualTo(projection);
     assertThat(testCursor.selection).isEqualTo(selection);
@@ -476,7 +476,7 @@ public class ContentResolverTest {
         return false;
       }
       @Override public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
-        return new TestCursor();
+        return new BaseCursor();
       }
       @Override public Uri insert(Uri uri, ContentValues values) {
         return null;
@@ -557,7 +557,7 @@ public class ContentResolverTest {
     assertThat(ShadowContentResolver.getProvider(Uri.parse("content://"))).isNull();
   }
 
-  static class QueryParamTrackingTestCursor extends TestCursor {
+  static class QueryParamTrackingCursor extends BaseCursor {
     public Uri uri;
     public String[] projection;
     public String selection;

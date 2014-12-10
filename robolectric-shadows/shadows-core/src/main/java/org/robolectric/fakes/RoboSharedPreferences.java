@@ -1,4 +1,6 @@
-package android.content;
+package org.robolectric.fakes;
+
+import android.content.SharedPreferences;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -7,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class TestSharedPreferences implements SharedPreferences {
+public class RoboSharedPreferences implements SharedPreferences {
 
   public Map<String, Map<String, Object>> content;
   protected String filename;
@@ -15,8 +17,8 @@ public class TestSharedPreferences implements SharedPreferences {
 
   private ArrayList<OnSharedPreferenceChangeListener> listeners;
 
-  public TestSharedPreferences(Map<String, Map<String, Object>> content,
-      String name, int mode) {
+  public RoboSharedPreferences(Map<String, Map<String, Object>> content,
+                               String name, int mode) {
     this.content = content;
     this.filename = name;
     this.mode = mode;
@@ -188,7 +190,7 @@ public class TestSharedPreferences implements SharedPreferences {
 
       for (OnSharedPreferenceChangeListener listener : listeners) {
         for (String key : keysToPassToListeners) {
-          listener.onSharedPreferenceChanged(TestSharedPreferences.this, key);
+          listener.onSharedPreferenceChanged(RoboSharedPreferences.this, key);
         }
       }
 

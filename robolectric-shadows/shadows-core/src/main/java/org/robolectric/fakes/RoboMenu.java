@@ -1,4 +1,4 @@
-package org.robolectric.tester.android.view;
+package org.robolectric.fakes;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -13,15 +13,15 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class TestMenu implements Menu {
+public class RoboMenu implements Menu {
   private List<MenuItem> menuItems = new ArrayList<MenuItem>();
   private Context context;
 
-  public TestMenu() {
+  public RoboMenu() {
     this(null);
   }
 
-  public TestMenu(Context context) {
+  public RoboMenu(Context context) {
     this.context = context;
   }
 
@@ -37,7 +37,7 @@ public class TestMenu implements Menu {
 
   @Override
   public MenuItem add(int groupId, int itemId, int order, CharSequence title) {
-    TestMenuItem menuItem = new TestMenuItem();
+    RoboMenuItem menuItem = new RoboMenuItem();
     menuItem.setOrder(order);
     menuItems.add(menuItem);
     menuItem.setGroupId(groupId);
@@ -54,8 +54,8 @@ public class TestMenu implements Menu {
 
   @Override
   public SubMenu addSubMenu(CharSequence title) {
-    TestSubMenu tsm = new TestSubMenu();
-    TestMenuItem menuItem = new TestMenuItem();
+    RoboSubMenu tsm = new RoboSubMenu();
+    RoboMenuItem menuItem = new RoboMenuItem();
     menuItems.add(menuItem);
     menuItem.setTitle(title);
     menuItem.setSubMenu(tsm);
@@ -64,8 +64,8 @@ public class TestMenu implements Menu {
 
   @Override
   public SubMenu addSubMenu(int titleRes) {
-    TestSubMenu tsm = new TestSubMenu();
-    TestMenuItem menuItem = new TestMenuItem();
+    RoboSubMenu tsm = new RoboSubMenu();
+    RoboMenuItem menuItem = new RoboMenuItem();
     menuItems.add(menuItem);
     menuItem.setTitle(titleRes);
     menuItem.setSubMenu(tsm);
@@ -74,8 +74,8 @@ public class TestMenu implements Menu {
 
   @Override
   public SubMenu addSubMenu(int groupId, int itemId, int order, CharSequence title) {
-    TestSubMenu tsm = new TestSubMenu();
-    TestMenuItem menuItem = new TestMenuItem();
+    RoboSubMenu tsm = new RoboSubMenu();
+    RoboMenuItem menuItem = new RoboMenuItem();
     menuItems.add(menuItem);
     menuItem.setGroupId(groupId);
     menuItem.setItemId(itemId);
@@ -86,8 +86,8 @@ public class TestMenu implements Menu {
 
   @Override
   public SubMenu addSubMenu(int groupId, int itemId, int order, int titleRes) {
-    TestSubMenu tsm = new TestSubMenu();
-    TestMenuItem menuItem = new TestMenuItem();
+    RoboSubMenu tsm = new RoboSubMenu();
+    RoboMenuItem menuItem = new RoboMenuItem();
     menuItems.add(menuItem);
     menuItem.setGroupId(groupId);
     menuItem.setItemId(itemId);
@@ -177,9 +177,9 @@ public class TestMenu implements Menu {
   public void setQwertyMode(boolean isQwerty) {
   }
 
-  public TestMenuItem findMenuItem(CharSequence title) {
+  public RoboMenuItem findMenuItem(CharSequence title) {
     for (int i = 0; i < size(); i++) {
-      TestMenuItem menuItem = (TestMenuItem) getItem(i);
+      RoboMenuItem menuItem = (RoboMenuItem) getItem(i);
       if (menuItem.getTitle().equals(title)) {
         return menuItem;
       }
@@ -187,9 +187,9 @@ public class TestMenu implements Menu {
     return null;
   }
 
-  public TestMenuItem findMenuItemContaining(CharSequence desiredText) {
+  public RoboMenuItem findMenuItemContaining(CharSequence desiredText) {
     for (int i = 0; i < size(); i++) {
-      TestMenuItem menuItem = (TestMenuItem) getItem(i);
+      RoboMenuItem menuItem = (RoboMenuItem) getItem(i);
       if (menuItem.getTitle().toString().contains(desiredText)) {
         return menuItem;
       }

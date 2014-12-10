@@ -1,11 +1,15 @@
-package android.hardware;
+package org.robolectric.fakes;
 
+import android.hardware.Sensor;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.hardware.TriggerEventListener;
 import android.os.Handler;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class TestSensorManager extends SensorManager {
+public class RoboSensorManager extends SensorManager {
 
   @Override
   public List<Sensor> getSensorList(int type) {

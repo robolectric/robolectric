@@ -6,6 +6,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.HiddenApi;
+import org.robolectric.fakes.RoboWebSettings;
 import org.robolectric.util.ReflectionHelpers;
 
 import java.lang.reflect.Field;
@@ -27,7 +28,7 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
   private String lastUrl;
   private Map<String, String> lastAdditionalHttpHeaders;
   private HashMap<String, Object> javascriptInterfaces = new HashMap<String, Object>();
-  private WebSettings webSettings = new TestWebSettings();
+  private WebSettings webSettings = new RoboWebSettings();
   private WebViewClient webViewClient = null;
   private boolean runFlag = false;
   private boolean clearCacheCalled = false;

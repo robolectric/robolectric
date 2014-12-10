@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import android.os.AsyncTask;
-import android.os.ShadowAsyncTaskBridge;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;

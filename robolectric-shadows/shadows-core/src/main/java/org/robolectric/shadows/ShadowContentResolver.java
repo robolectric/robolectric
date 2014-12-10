@@ -23,7 +23,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.NamedStream;
 import org.robolectric.manifest.ContentProviderData;
-import org.robolectric.tester.android.database.TestCursor;
+import org.robolectric.fakes.BaseCursor;
 import org.robolectric.internal.Shadow;
 
 import java.io.IOException;
@@ -45,12 +45,12 @@ public class ShadowContentResolver {
 
   @RealObject ContentResolver realContentResolver;
 
-  private TestCursor cursor;
+  private BaseCursor cursor;
   private final List<InsertStatement> insertStatements = new ArrayList<InsertStatement>();
   private final List<UpdateStatement> updateStatements = new ArrayList<UpdateStatement>();
   private final List<DeleteStatement> deleteStatements = new ArrayList<DeleteStatement>();
   private List<NotifiedUri> notifiedUris = new ArrayList<NotifiedUri>();
-  private Map<Uri, TestCursor> uriCursorMap = new HashMap<Uri, TestCursor>();
+  private Map<Uri, BaseCursor> uriCursorMap = new HashMap<Uri, BaseCursor>();
   private Map<Uri, InputStream> inputStreamMap = new HashMap<Uri, InputStream>();
   private final Map<String, ArrayList<ContentProviderOperation>> contentProviderOperations = new HashMap<String, ArrayList<ContentProviderOperation>>();
   private ContentProviderResult[] contentProviderResults;
@@ -149,7 +149,7 @@ public class ShadowContentResolver {
     if (provider != null) {
       return provider.query(uri, projection, selection, selectionArgs, sortOrder);
     } else {
-      TestCursor returnCursor = getCursor(uri);
+      BaseCursor returnCursor = getCursor(uri);
       if (returnCursor == null) {
         return null;
       }
@@ -423,11 +423,11 @@ public class ShadowContentResolver {
     return status;
   }
 
-  public void setCursor(TestCursor cursor) {
+  public void setCursor(BaseCursor cursor) {
     this.cursor = cursor;
   }
 
-  public void setCursor(Uri uri, TestCursor cursorForUri) {
+  public void setCursor(Uri uri, BaseCursor cursorForUri) {
     this.uriCursorMap.put(uri, cursorForUri);
   }
 
@@ -531,7 +531,7 @@ public class ShadowContentResolver {
     }
   }
 
-  private TestCursor getCursor(Uri uri) {
+  private BaseCursor getCursor(Uri uri) {
     if (uriCursorMap.get(uri) != null) {
       return uriCursorMap.get(uri);
     } else if (cursor != null) {

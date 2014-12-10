@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.internal.DoNotInstrument;
+import org.robolectric.fakes.RoboWebSettings;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -12,13 +13,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(TestRunners.WithDefaults.class)
 public class WebSettingsTest {
 
-  private TestWebSettings webSettings;
+  private RoboWebSettings webSettings;
 
   private boolean[] trueAndFalse = {true, false};
 
   @Before
   public void setUp() throws Exception {
-    webSettings = new TestWebSettings();
+    webSettings = new RoboWebSettings();
   }
 
   @Test

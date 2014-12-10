@@ -8,6 +8,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
+import org.robolectric.fakes.RoboMenu;
+import org.robolectric.fakes.RoboMenuItem;
 import org.robolectric.shadows.ShadowActivity;
 
 import static org.junit.Assert.assertEquals;
@@ -19,46 +21,46 @@ public class MenuTest {
 
   @Test
   public void addAndRemoveMenuItems() {
-    TestMenu testMenu = new TestMenu(new MyActivity());
-    testMenu.add(9, 10, 0, org.robolectric.R.string.ok);
+    RoboMenu menu = new RoboMenu(new MyActivity());
+    menu.add(9, 10, 0, org.robolectric.R.string.ok);
 
-    TestMenuItem testMenuItem = (TestMenuItem) testMenu.findItem(10);
+    RoboMenuItem item = (RoboMenuItem) menu.findItem(10);
 
-    assertThat(testMenuItem.getGroupId()).isEqualTo(9);
-    assertThat(testMenuItem.getItemId()).isEqualTo(10);
+    assertThat(item.getGroupId()).isEqualTo(9);
+    assertThat(item.getItemId()).isEqualTo(10);
 
-    testMenu.removeItem(10);
+    menu.removeItem(10);
 
-    testMenuItem = (TestMenuItem) testMenu.findItem(10);
-    Assert.assertNull(testMenuItem);
+    item = (RoboMenuItem) menu.findItem(10);
+    Assert.assertNull(item);
   }
 
   @Test
   public void addSubMenu() {
-    TestMenu testMenu = new TestMenu(new MyActivity());
-    testMenu.addSubMenu(9, 10, 0, org.robolectric.R.string.ok);
+    RoboMenu menu = new RoboMenu(new MyActivity());
+    menu.addSubMenu(9, 10, 0, org.robolectric.R.string.ok);
 
-    TestMenuItem testMenuItem = (TestMenuItem) testMenu.findItem(10);
+    RoboMenuItem item = (RoboMenuItem) menu.findItem(10);
 
-    assertThat(testMenuItem.getGroupId()).isEqualTo(9);
-    assertThat(testMenuItem.getItemId()).isEqualTo(10);
+    assertThat(item.getGroupId()).isEqualTo(9);
+    assertThat(item.getItemId()).isEqualTo(10);
   }
 
   @Test
   public void clickWithIntent() {
     MyActivity activity = new MyActivity();
 
-    TestMenu testMenu = new TestMenu(activity);
-    testMenu.add(0, 10, 0, org.robolectric.R.string.ok);
+    RoboMenu menu = new RoboMenu(activity);
+    menu.add(0, 10, 0, org.robolectric.R.string.ok);
 
-    TestMenuItem testMenuItem = (TestMenuItem) testMenu.findItem(10);
-    Assert.assertNull(testMenuItem.getIntent());
+    RoboMenuItem item = (RoboMenuItem) menu.findItem(10);
+    Assert.assertNull(item.getIntent());
 
     Intent intent = new Intent(activity, MyActivity.class);
-    testMenuItem.setIntent(intent);
-    testMenuItem.click();
+    item.setIntent(intent);
+    item.click();
 
-    Assert.assertNotNull(testMenuItem);
+    Assert.assertNotNull(item);
 
     ShadowActivity shadowActivity = Shadows.shadowOf(activity);
     Intent startedIntent = shadowActivity.getNextStartedActivity();
@@ -68,16 +70,16 @@ public class MenuTest {
   @Test
   public void add_AddsItemsInOrder() {
     MyActivity activity = new MyActivity();
-    TestMenu testMenu = new TestMenu(activity);
-    testMenu.add(0, 0, 1, "greeting");
-    testMenu.add(0, 0, 0, "hell0");
-    testMenu.add(0, 0, 0, "hello");
+    RoboMenu menu = new RoboMenu(activity);
+    menu.add(0, 0, 1, "greeting");
+    menu.add(0, 0, 0, "hell0");
+    menu.add(0, 0, 0, "hello");
 
-    MenuItem item = testMenu.getItem(0);
+    MenuItem item = menu.getItem(0);
     assertEquals("hell0", item.getTitle());
-    item = testMenu.getItem(1);
+    item = menu.getItem(1);
     assertEquals("hello", item.getTitle());
-    item = testMenu.getItem(2);
+    item = menu.getItem(2);
     assertEquals("greeting", item.getTitle());
   }
 

@@ -5,7 +5,7 @@ import android.app.PendingIntent.CanceledException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
-import android.content.TestIntentSender;
+import org.robolectric.fakes.RoboIntentSender;
 import android.os.Bundle;
 
 import org.robolectric.Shadows;
@@ -88,7 +88,7 @@ public class ShadowPendingIntent {
 
   @Implementation
   public IntentSender getIntentSender() {
-    TestIntentSender testIntentSender = new TestIntentSender();
+    RoboIntentSender testIntentSender = new RoboIntentSender();
     testIntentSender.intent = savedIntents[0];
     return testIntentSender;
   }

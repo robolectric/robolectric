@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import android.view.animation.Animation;
 import android.view.animation.Interpolator;
-import android.view.animation.ShadowAnimationBridge;
 import android.view.animation.Transformation;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;

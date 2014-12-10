@@ -7,9 +7,9 @@ import org.junit.Test;
 import android.view.MenuItem;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
+import org.robolectric.fakes.RoboMenuItem;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -20,7 +20,7 @@ public class MenuItemTest {
 
   @Before
   public void setUp() throws Exception {
-    item = new TestMenuItem();
+    item = new RoboMenuItem();
     listener =  new TestOnActionExpandListener();
     item.setOnActionExpandListener(listener);
   }

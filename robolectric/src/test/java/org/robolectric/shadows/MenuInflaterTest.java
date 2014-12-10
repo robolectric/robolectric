@@ -8,11 +8,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
-import org.robolectric.tester.android.view.TestMenu;
-import org.robolectric.tester.android.view.TestMenuItem;
+import org.robolectric.fakes.RoboMenu;
+import org.robolectric.fakes.RoboMenuItem;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -30,32 +29,32 @@ public class MenuInflaterTest {
 
   @Test
   public void canRetrieveMenuListAndFindMenuItemById() {
-    TestMenu menu = new TestMenu(context);
+    RoboMenu menu = new RoboMenu(context);
     new MenuInflater(context).inflate(R.menu.test, menu);
 
-    TestMenuItem testMenuItem = (TestMenuItem) menu.getItem(0);
-    assertEquals("Test menu item 1", testMenuItem.getTitle().toString());
-    testMenuItem.click();
+    RoboMenuItem item = (RoboMenuItem) menu.getItem(0);
+    assertEquals("Test menu item 1", item.getTitle().toString());
+    item.click();
 
-    testMenuItem = (TestMenuItem) menu.getItem(1);
-    assertEquals("Test menu item 2", testMenuItem.getTitle().toString());
-    testMenuItem.click();
+    item = (RoboMenuItem) menu.getItem(1);
+    assertEquals("Test menu item 2", item.getTitle().toString());
+    item.click();
 
     assertNotNull(menu.findItem(R.id.test_menu_1));
   }
 
   @Test
   public void shouldInflateComplexMenu() throws Exception {
-    TestMenu testMenu = new TestMenu();
-    new MenuInflater(context).inflate(R.menu.test_withchilds, testMenu);
-    assertThat(testMenu.size()).isEqualTo(4);
+    RoboMenu menu = new RoboMenu();
+    new MenuInflater(context).inflate(R.menu.test_withchilds, menu);
+    assertThat(menu.size()).isEqualTo(4);
   }
 
   @Test
   public void shouldParseSubItemCorrectly() throws Exception {
-    TestMenu testMenu = new TestMenu();
-    new MenuInflater(context).inflate(R.menu.test_withchilds, testMenu);
-    MenuItem mi = testMenu.findItem(R.id.test_submenu_1);
+    RoboMenu menu = new RoboMenu();
+    new MenuInflater(context).inflate(R.menu.test_withchilds, menu);
+    MenuItem mi = menu.findItem(R.id.test_submenu_1);
     assertTrue(mi.hasSubMenu());
     assertThat(mi.getSubMenu().size()).isEqualTo(2);
     assertThat(mi.getSubMenu().getItem(1).getTitle() + "").isEqualTo("Test menu item 3");
@@ -63,22 +62,22 @@ public class MenuInflaterTest {
 
   @Test
   public void shouldCreateActionViews() throws Exception {
-    TestMenu testMenu = new TestMenu();
-    new MenuInflater(context).inflate(R.menu.action_menu, testMenu);
+    RoboMenu menu = new RoboMenu();
+    new MenuInflater(context).inflate(R.menu.action_menu, menu);
 
-    MenuItem item = testMenu.getItem(0);
+    MenuItem item = menu.getItem(0);
     assertEquals(item.getActionView().getClass(), SearchView.class);
   }
 
   @Test
   public void shouldOrderItemsInCategory() {
-    TestMenu menu = new TestMenu();
+    RoboMenu menu = new RoboMenu();
     new MenuInflater(context).inflate(R.menu.test_withorder, menu);
 
-    TestMenuItem testMenuItem = (TestMenuItem) menu.getItem(0);
-    assertEquals("Test menu item 1", testMenuItem.getTitle().toString());
+    RoboMenuItem item = (RoboMenuItem) menu.getItem(0);
+    assertEquals("Test menu item 1", item.getTitle().toString());
 
-    testMenuItem = (TestMenuItem) menu.getItem(1);
-    assertEquals("Test menu item 2", testMenuItem.getTitle().toString());
+    item = (RoboMenuItem) menu.getItem(1);
+    assertEquals("Test menu item 2", item.getTitle().toString());
   }
 }

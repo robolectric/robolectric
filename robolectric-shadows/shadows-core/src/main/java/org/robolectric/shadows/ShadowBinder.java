@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import android.os.Binder;
 import android.os.Parcel;
 import android.os.RemoteException;
-import android.os.ShadowBinderBridge;
 
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;

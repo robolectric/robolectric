@@ -1,4 +1,4 @@
-package org.robolectric.tester.android.view;
+package org.robolectric.fakes;
 
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
@@ -9,7 +9,7 @@ import android.view.SubMenu;
 import android.view.View;
 import org.robolectric.shadows.ShadowApplication;
 
-public class TestMenuItem implements MenuItem {
+public class RoboMenuItem implements MenuItem {
   private int itemId;
   private int groupId;
   private CharSequence title;
@@ -26,10 +26,10 @@ public class TestMenuItem implements MenuItem {
   private OnActionExpandListener actionExpandListener;
   private int order;
 
-  public TestMenuItem() {
+  public RoboMenuItem() {
   }
 
-  public TestMenuItem(int itemId) {
+  public RoboMenuItem(int itemId) {
     this.itemId = itemId;
   }
 

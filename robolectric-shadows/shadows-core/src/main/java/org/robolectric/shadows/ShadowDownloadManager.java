@@ -8,7 +8,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.tester.android.database.TestCursor;
+import org.robolectric.fakes.BaseCursor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -129,7 +129,7 @@ public class ShadowDownloadManager {
     }
   }
 
-  private class ResultCursor extends TestCursor {
+  private class ResultCursor extends BaseCursor {
     private static final int COLUMN_INDEX_LOCAL_FILENAME = 0;
     private static final int COLUMN_INDEX_DESCRIPTION = 1;
     private static final int COLUMN_INDEX_REASON = 2;

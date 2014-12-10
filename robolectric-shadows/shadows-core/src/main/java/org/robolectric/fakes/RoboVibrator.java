@@ -1,5 +1,6 @@
-package android.os;
+package org.robolectric.fakes;
 
+import android.os.Vibrator;
 import org.robolectric.annotation.internal.DoNotInstrument;
 
 @DoNotInstrument

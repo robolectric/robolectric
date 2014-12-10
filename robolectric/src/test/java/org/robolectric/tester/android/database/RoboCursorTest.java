@@ -5,9 +5,9 @@ import android.net.Uri;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
+import org.robolectric.fakes.RoboCursor;
 import org.robolectric.shadows.ShadowContentResolver;
 
 import java.util.ArrayList;
@@ -17,9 +17,9 @@ import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
-public class SimpleTestCursorTest {
+public class RoboCursorTest {
   private Uri uri;
-  private SimpleTestCursor cursor;
+  private RoboCursor cursor;
   private ContentResolver contentResolver;
 
   @Before
@@ -27,7 +27,7 @@ public class SimpleTestCursorTest {
     contentResolver = RuntimeEnvironment.application.getContentResolver();
     ShadowContentResolver shadowContentResolver = shadowOf(contentResolver);
     uri = Uri.parse("http://foo");
-    cursor = new SimpleTestCursor();
+    cursor = new RoboCursor();
     shadowContentResolver.setCursor(uri, cursor);
     ArrayList<String> columnNames = new ArrayList<String>();
     columnNames.add("stringColumn");

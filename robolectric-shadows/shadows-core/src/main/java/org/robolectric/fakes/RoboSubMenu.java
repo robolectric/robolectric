@@ -1,11 +1,11 @@
-package org.robolectric.tester.android.view;
+package org.robolectric.fakes;
 
 import android.graphics.drawable.Drawable;
 import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
 
-public class TestSubMenu extends TestMenu implements SubMenu {
+public class RoboSubMenu extends RoboMenu implements SubMenu {
 
   @Override
   public SubMenu setHeaderTitle(int titleRes) {

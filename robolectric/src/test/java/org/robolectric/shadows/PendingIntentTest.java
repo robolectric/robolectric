@@ -5,7 +5,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
-import android.content.TestIntentSender;
+import org.robolectric.fakes.RoboIntentSender;
 import android.os.Bundle;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,7 +24,7 @@ public class PendingIntentTest {
     PendingIntent service = PendingIntent.getService(null, 0, expectedIntent, 0);
 
     IntentSender intentSender = service.getIntentSender();
-    assertThat(expectedIntent).isEqualTo(((TestIntentSender) intentSender).intent);
+    assertThat(expectedIntent).isEqualTo(((RoboIntentSender) intentSender).intent);
   }
 
   @Test

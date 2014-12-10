@@ -1,4 +1,4 @@
-package org.robolectric.tester.android.database;
+package org.robolectric.fakes;
 
 import android.content.ContentResolver;
 import android.database.CharArrayBuffer;
@@ -8,7 +8,7 @@ import android.database.DataSetObserver;
 import android.net.Uri;
 import android.os.Bundle;
 
-public class TestCursor implements Cursor {
+public class BaseCursor implements Cursor {
   @Override
   public int getCount() {
     throw new UnsupportedOperationException();

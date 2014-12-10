@@ -1,9 +1,11 @@
-package android.webkit;
+package org.robolectric.fakes;
+
+import android.webkit.WebSettings;
 
 /**
  * Concrete implementation of the abstract WebSettings class.
  */
-public class TestWebSettings extends WebSettings {
+public class RoboWebSettings extends WebSettings {
 
   private boolean allowFileAccess = true;
   private boolean allowFileAccessFromFile = true;
@@ -37,7 +39,7 @@ public class TestWebSettings extends WebSettings {
   private int textZoom = 100;
   private WebSettings.LayoutAlgorithm layoutAlgorithm = WebSettings.LayoutAlgorithm.NARROW_COLUMNS;
 
-  public TestWebSettings() {
+  public RoboWebSettings() {
   }
 
   @Override

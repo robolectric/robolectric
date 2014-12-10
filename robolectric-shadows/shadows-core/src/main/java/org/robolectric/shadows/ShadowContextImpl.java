@@ -31,8 +31,8 @@ public class ShadowContextImpl extends ShadowContext {
     // They specify concrete classes within Robolectric for interfaces or abstract classes defined by Android
     SYSTEM_SERVICE_MAP.put(Context.WINDOW_SERVICE, "android.view.WindowManagerImpl");
     SYSTEM_SERVICE_MAP.put(Context.CLIPBOARD_SERVICE, "android.content.ClipboardManager");
-    SYSTEM_SERVICE_MAP.put(Context.SENSOR_SERVICE, "android.hardware.TestSensorManager");
-    SYSTEM_SERVICE_MAP.put(Context.VIBRATOR_SERVICE, "android.os.RoboVibrator");
+    SYSTEM_SERVICE_MAP.put(Context.SENSOR_SERVICE, "org.robolectric.fakes.RoboSensorManager");
+    SYSTEM_SERVICE_MAP.put(Context.VIBRATOR_SERVICE, "org.robolectric.fakes.RoboVibrator");
 
     // the rest are as mapped in docs...
     SYSTEM_SERVICE_MAP.put(Context.LAYOUT_INFLATER_SERVICE, "android.view.LayoutInflater");

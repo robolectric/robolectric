@@ -1,7 +1,7 @@
 package org.robolectric.tester.android.content;
 
 import android.content.SharedPreferences;
-import android.content.TestSharedPreferences;
+import org.robolectric.fakes.RoboSharedPreferences;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,11 +22,11 @@ import static org.junit.Assert.assertTrue;
  * TestSharedPreferencesTest
  */
 @RunWith(TestRunners.WithDefaults.class)
-public class TestSharedPreferencesTest {
+public class RoboSharedPreferencesTest {
   protected final static String FILENAME = "filename";
   private HashMap<String, Map<String, Object>> content;
   private SharedPreferences.Editor editor;
-  private TestSharedPreferences sharedPreferences;
+  private RoboSharedPreferences sharedPreferences;
 
   private static final Set<String> stringSet;
 
@@ -41,7 +41,7 @@ public class TestSharedPreferencesTest {
   public void setUp() {
     content = new HashMap<String, Map<String, Object>>();
 
-    sharedPreferences = new TestSharedPreferences(content, FILENAME, 3);
+    sharedPreferences = new RoboSharedPreferences(content, FILENAME, 3);
     editor = sharedPreferences.edit();
     editor.putBoolean("boolean", true);
     editor.putFloat("float", 1.1f);
@@ -55,7 +55,7 @@ public class TestSharedPreferencesTest {
   public void commit_shouldStoreValues() throws Exception {
     editor.commit();
 
-    TestSharedPreferences anotherSharedPreferences = new TestSharedPreferences(content, FILENAME, 3);
+    RoboSharedPreferences anotherSharedPreferences = new RoboSharedPreferences(content, FILENAME, 3);
     assertTrue(anotherSharedPreferences.getBoolean("boolean", false));
     assertThat(anotherSharedPreferences.getFloat("float", 666f)).isEqualTo(1.1f);
     assertThat(anotherSharedPreferences.getInt("int", 666)).isEqualTo(2);
@@ -71,7 +71,7 @@ public class TestSharedPreferencesTest {
 
     assertThat(sharedPreferences.getString("string", "no value for key")).isEqualTo("no value for key");
 
-    TestSharedPreferences anotherSharedPreferences = new TestSharedPreferences(content, FILENAME, 3);
+    RoboSharedPreferences anotherSharedPreferences = new RoboSharedPreferences(content, FILENAME, 3);
     anotherSharedPreferences.edit().putString("string", "value for key").commit();
 
     editor.commit();
@@ -98,7 +98,7 @@ public class TestSharedPreferencesTest {
 
     editor.commit();
 
-    TestSharedPreferences anotherSharedPreferences = new TestSharedPreferences(content, FILENAME, 3);
+    RoboSharedPreferences anotherSharedPreferences = new RoboSharedPreferences(content, FILENAME, 3);
     assertTrue(anotherSharedPreferences.getBoolean("boolean", false));
     assertThat(anotherSharedPreferences.getFloat("float", 666f)).isEqualTo(1.1f);
     assertThat(anotherSharedPreferences.getInt("int", 666)).isEqualTo(2);
@@ -119,7 +119,7 @@ public class TestSharedPreferencesTest {
 
     editor.commit();
 
-    TestSharedPreferences anotherSharedPreferences = new TestSharedPreferences(content, FILENAME, 3);
+    RoboSharedPreferences anotherSharedPreferences = new RoboSharedPreferences(content, FILENAME, 3);
     assertTrue(anotherSharedPreferences.getBoolean("boolean", false));
     assertThat(anotherSharedPreferences.getFloat("float", 666f)).isEqualTo(1.1f);
     assertThat(anotherSharedPreferences.getInt("int", 666)).isEqualTo(2);
@@ -156,13 +156,13 @@ public class TestSharedPreferencesTest {
   public void apply_shouldStoreValues() throws Exception {
     editor.apply();
 
-    TestSharedPreferences anotherSharedPreferences = new TestSharedPreferences(content, FILENAME, 3);
+    RoboSharedPreferences anotherSharedPreferences = new RoboSharedPreferences(content, FILENAME, 3);
     assertThat(anotherSharedPreferences.getString("string", "wacka wa")).isEqualTo("foobar");
   }
 
   @Test
   public void shouldReturnDefaultValues() throws Exception {
-    TestSharedPreferences anotherSharedPreferences = new TestSharedPreferences(content, "bazBang", 3);
+    RoboSharedPreferences anotherSharedPreferences = new RoboSharedPreferences(content, "bazBang", 3);
 
     assertFalse(anotherSharedPreferences.getBoolean("boolean", false));
     assertThat(anotherSharedPreferences.getFloat("float", 666f)).isEqualTo(666f);
@@ -173,14 +173,14 @@ public class TestSharedPreferencesTest {
 
   @Test
   public void shouldStoreRegisteredListeners() {
-    TestSharedPreferences anotherSharedPreferences = new TestSharedPreferences(content, "bazBang", 3);
+    RoboSharedPreferences anotherSharedPreferences = new RoboSharedPreferences(content, "bazBang", 3);
     anotherSharedPreferences.registerOnSharedPreferenceChangeListener(testListener);
     assertTrue(anotherSharedPreferences.hasListener(testListener));
   }
 
   @Test
   public void shouldRemoveRegisteredListenersOnUnresgister() {
-    TestSharedPreferences anotherSharedPreferences = new TestSharedPreferences(content, "bazBang", 3);
+    RoboSharedPreferences anotherSharedPreferences = new RoboSharedPreferences(content, "bazBang", 3);
     anotherSharedPreferences.registerOnSharedPreferenceChangeListener(testListener);
 
     anotherSharedPreferences.unregisterOnSharedPreferenceChangeListener(testListener);
@@ -189,7 +189,7 @@ public class TestSharedPreferencesTest {
 
   @Test
   public void shouldTriggerRegisteredListeners() {
-    TestSharedPreferences anotherSharedPreferences = new TestSharedPreferences(content, "bazBang", 3);
+    RoboSharedPreferences anotherSharedPreferences = new RoboSharedPreferences(content, "bazBang", 3);
 
     final String testKey = "foo";
 

@@ -11,7 +11,7 @@ import org.robolectric.annotation.Implements;
 import static org.robolectric.Shadows.shadowOf;
 
 /**
- * Shadow for {@code PreferenceManager} that returns instances of the {@link android.content.TestSharedPreferences} utility class.
+ * Shadow for {@code PreferenceManager} that returns instances of the {@link org.robolectric.fakes.RoboSharedPreferences} utility class.
  */
 @Implements(PreferenceManager.class)
 public class ShadowPreferenceManager {

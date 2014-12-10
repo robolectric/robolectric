@@ -1,11 +1,10 @@
 package org.robolectric.shadows;
 
 import android.content.Context;
-import android.os.RoboVibrator;
+import org.robolectric.fakes.RoboVibrator;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 

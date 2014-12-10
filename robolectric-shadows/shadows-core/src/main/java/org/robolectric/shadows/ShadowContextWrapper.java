@@ -23,7 +23,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.res.ResourceLoader;
-import android.content.TestSharedPreferences;
+import org.robolectric.fakes.RoboSharedPreferences;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -44,8 +44,8 @@ public class ShadowContextWrapper extends ShadowContext {
   private String appName;
   private String packageName;
 
-  private final Map<String, TestSharedPreferences> sharedPreferencesMap =
-      new HashMap<String, TestSharedPreferences>();
+  private final Map<String, RoboSharedPreferences> sharedPreferencesMap =
+      new HashMap<String, RoboSharedPreferences>();
 
   @Implementation
   public int checkCallingPermission(String permission) {
@@ -252,7 +252,7 @@ public class ShadowContextWrapper extends ShadowContext {
   @Implementation
   public SharedPreferences getSharedPreferences(String name, int mode) {
     if (!sharedPreferencesMap.containsKey(name)) {
-      sharedPreferencesMap.put(name, new TestSharedPreferences(getShadowApplication().getSharedPreferenceMap(), name, mode));
+      sharedPreferencesMap.put(name, new RoboSharedPreferences(getShadowApplication().getSharedPreferenceMap(), name, mode));
     }
 
     return sharedPreferencesMap.get(name);

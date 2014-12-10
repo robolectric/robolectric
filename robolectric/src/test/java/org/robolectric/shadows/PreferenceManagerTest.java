@@ -8,7 +8,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
-import android.content.TestSharedPreferences;
+import org.robolectric.fakes.RoboSharedPreferences;
 
 import java.util.Map;
 
@@ -22,7 +22,7 @@ public class PreferenceManagerTest {
   public void shouldProvideDefaultSharedPreferences() {
     Map<String, Map<String, Object>> content = ShadowApplication.getInstance().getSharedPreferenceMap();
 
-    TestSharedPreferences testPrefs = new TestSharedPreferences(content, "__default__", Context.MODE_PRIVATE);
+    RoboSharedPreferences testPrefs = new RoboSharedPreferences(content, "__default__", Context.MODE_PRIVATE);
     Editor editor = testPrefs.edit();
     editor.putInt("foobar", 13);
     editor.commit();

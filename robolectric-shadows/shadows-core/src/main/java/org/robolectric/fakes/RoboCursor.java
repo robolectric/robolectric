@@ -1,11 +1,11 @@
-package org.robolectric.tester.android.database;
+package org.robolectric.fakes;
 
 import android.net.Uri;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class SimpleTestCursor extends TestCursor {
+public class RoboCursor extends BaseCursor {
   public Uri uri;
   public String[] projection;
   public String selection;
