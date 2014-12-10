@@ -1,6 +1,6 @@
 package android.view.animation;
 
-import org.robolectric.annotation.DoNotInstrument;
+import org.robolectric.annotation.internal.DoNotInstrument;
 
 @DoNotInstrument
 public class ShadowAnimationBridge {

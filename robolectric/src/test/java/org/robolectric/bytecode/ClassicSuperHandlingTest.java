@@ -3,11 +3,10 @@ package org.robolectric.bytecode;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implements;
-import org.robolectric.internal.Instrument;
+import org.robolectric.annotation.internal.Instrument;
 import org.robolectric.annotation.RealObject;
 
 import static org.junit.Assert.assertEquals;

@@ -9,7 +9,7 @@ import org.robolectric.bytecode.testing.Foo;
 import org.robolectric.bytecode.testing.ShadowFoo;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.internal.Instrument;
+import org.robolectric.annotation.internal.Instrument;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.internal.ShadowExtractor;
 

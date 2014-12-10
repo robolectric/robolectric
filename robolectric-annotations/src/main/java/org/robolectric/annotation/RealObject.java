@@ -2,8 +2,6 @@ package org.robolectric.annotation;
 
 /**
  * Shadow fields annotated @RealObject will have the real instance injected.
- *
- * @see Implements
  */
 @java.lang.annotation.Documented
 @java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy.RUNTIME)

@@ -7,7 +7,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.internal.Instrument;
+import org.robolectric.annotation.internal.Instrument;
 import org.robolectric.internal.Shadow;
 import org.robolectric.internal.ShadowExtractor;
 import java.lang.reflect.Field;

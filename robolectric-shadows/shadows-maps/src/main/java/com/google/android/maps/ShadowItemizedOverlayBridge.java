@@ -1,6 +1,6 @@
 package com.google.android.maps;
 
-import org.robolectric.annotation.DoNotInstrument;
+import org.robolectric.annotation.internal.DoNotInstrument;
 
 @DoNotInstrument
 public class ShadowItemizedOverlayBridge<Item extends OverlayItem> {

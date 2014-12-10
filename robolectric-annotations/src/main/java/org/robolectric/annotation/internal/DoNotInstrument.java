@@ -1,10 +1,10 @@
-package org.robolectric.internal;
+package org.robolectric.annotation.internal;
 
 /**
- * Indicates that a class should always be instrumented regardless of its package.
+ * Indicates that a class should not be stripped/instrumented under any circumstances.
  */
 @java.lang.annotation.Documented
 @java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy.RUNTIME)
 @java.lang.annotation.Target({java.lang.annotation.ElementType.TYPE})
-public @interface Instrument {
+public @interface DoNotInstrument {
 }

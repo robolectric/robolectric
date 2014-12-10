@@ -1,7 +1,6 @@
 package org.robolectric.bytecode.testing;
 
-import org.robolectric.bytecode.testing.AParent;
-import org.robolectric.internal.Instrument;
+import org.robolectric.annotation.internal.Instrument;
 
 @Instrument
 public class AChild extends AParent {

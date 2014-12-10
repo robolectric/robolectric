@@ -1,7 +1,6 @@
 package org.robolectric.bytecode.testing;
 
-import org.robolectric.bytecode.testing.AnUninstrumentedParent;
-import org.robolectric.internal.Instrument;
+import org.robolectric.annotation.internal.Instrument;
 
 @SuppressWarnings("UnusedDeclaration")
 @Instrument

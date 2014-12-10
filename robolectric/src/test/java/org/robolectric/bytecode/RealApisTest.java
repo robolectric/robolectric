@@ -6,7 +6,7 @@ import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 import org.robolectric.bytecode.testing.Pony;
 import org.robolectric.annotation.Implements;
-import org.robolectric.internal.Instrument;
+import org.robolectric.annotation.internal.Instrument;
 
 import static org.junit.Assert.assertEquals;
 

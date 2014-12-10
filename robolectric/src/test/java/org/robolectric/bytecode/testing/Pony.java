@@ -2,7 +2,7 @@ package org.robolectric.bytecode.testing;
 
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.internal.Instrument;
+import org.robolectric.annotation.internal.Instrument;
 
 @Instrument
 public class Pony {

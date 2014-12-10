@@ -1,6 +1,6 @@
 package org.robolectric.bytecode.testing;
 
-import org.robolectric.internal.Instrument;
+import org.robolectric.annotation.internal.Instrument;
 
 @Instrument
 public class Foo {

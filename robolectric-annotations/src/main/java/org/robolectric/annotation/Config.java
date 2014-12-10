@@ -15,7 +15,7 @@ import java.util.Properties;
 import java.util.Set;
 
 /**
- * Indicate that robolectric should look for values that is specific by those qualifiers.
+ * Configuration settings that can be used on a per-class or per-test basis.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
