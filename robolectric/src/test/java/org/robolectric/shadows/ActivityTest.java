@@ -455,24 +455,16 @@ public class ActivityTest {
   }
 
   @Test
-  public void onKeyUp_recordsThatItWasCalled() throws Exception {
-    Activity activity = new Activity();
-    boolean consumed = activity.onKeyUp(KeyEvent.KEYCODE_0, new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_0));
-
-    assertFalse(consumed);
-    assertTrue(shadowOf(activity).onKeyUpWasCalled());
-
-    shadowOf(activity).resetKeyUpWasCalled();
-    assertFalse(shadowOf(activity).onKeyUpWasCalled());
-  }
-
-  @Test
   public void onKeyUp_callsOnBackPressedWhichFinishesTheActivity() throws Exception {
-    Activity activity = new Activity();
-    boolean consumed = activity.onKeyUp(KeyEvent.KEYCODE_BACK, new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
+    OnBackPressedActivity activity = buildActivity(OnBackPressedActivity.class).setup().get();
+    boolean downConsumed =
+        activity.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
+    boolean upConsumed =
+        activity.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
 
-    assertTrue(consumed);
-    assertTrue(shadowOf(activity).onKeyUpWasCalled());
+    assertTrue(downConsumed);
+    assertTrue(upConsumed);
+    assertTrue(activity.onBackPressedCalled);
     assertTrue(activity.isFinishing());
   }
 
@@ -892,6 +884,16 @@ public class ActivityTest {
       getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.custom_title);
 
       customTitleText = (TextView) findViewById(R.id.custom_title_text);
+    }
+  }
+
+  private static class OnBackPressedActivity extends Activity {
+    public boolean onBackPressedCalled = false;
+
+    @Override
+    public void onBackPressed() {
+      onBackPressedCalled = true;
+      super.onBackPressed();
     }
   }
 }
