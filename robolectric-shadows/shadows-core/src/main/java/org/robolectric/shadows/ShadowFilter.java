@@ -5,7 +5,8 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
+
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.*;
 
 @Implements(Filter.class)
 public class ShadowFilter {
@@ -16,11 +17,11 @@ public class ShadowFilter {
     try {
       Class<?> forName = Class.forName("android.widget.Filter$FilterResults");
       Object filtering = ReflectionHelpers.callInstanceMethodReflectively(realObject, "performFiltering",
-          ClassParameter.from(CharSequence.class, constraint));
+         from(CharSequence.class, constraint));
 
       ReflectionHelpers.callInstanceMethodReflectively(realObject, "publishResults",
-          ClassParameter.from(CharSequence.class, constraint),
-          ClassParameter.from(forName, filtering));
+          from(CharSequence.class, constraint),
+          from(forName, filtering));
 
     } catch (ClassNotFoundException e) {
       throw new RuntimeException("Cannot load android.widget.Filter$FilterResults");

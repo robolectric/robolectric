@@ -5,8 +5,8 @@ import android.content.Context;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
-import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 import static org.robolectric.internal.Shadow.invokeConstructor;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.*;
 
 @Implements(DatePickerDialog.class)
 public class ShadowDatePickerDialog extends ShadowAlertDialog {
@@ -22,12 +22,12 @@ public class ShadowDatePickerDialog extends ShadowAlertDialog {
     this.dayOfMonth = dayOfMonth;
 
     invokeConstructor(DatePickerDialog.class, realDatePickerDialog,
-        ClassParameter.from(Context.class, context),
-        ClassParameter.from(int.class, theme),
-        ClassParameter.from(DatePickerDialog.OnDateSetListener.class, callBack),
-        ClassParameter.from(int.class, year),
-        ClassParameter.from(int.class, monthOfYear),
-        ClassParameter.from(int.class, dayOfMonth));
+        from(Context.class, context),
+        from(theme),
+        from(DatePickerDialog.OnDateSetListener.class, callBack),
+        from(year),
+        from(monthOfYear),
+        from(dayOfMonth));
   }
 
   public int getYear() {

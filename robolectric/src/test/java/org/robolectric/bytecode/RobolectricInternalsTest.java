@@ -9,10 +9,10 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.internal.Instrument;
 import org.robolectric.internal.ShadowExtractor;
 import org.robolectric.internal.Shadow;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.ReflectionHelpers.StringParameter;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.*;
 
 @Config(shadows={ RobolectricInternalsTest.ShadowConstructors.class })
 @RunWith(TestRunners.WithDefaults.class)
@@ -87,7 +87,7 @@ public class RobolectricInternalsTest {
     assertThat(a.param11).isNull();
     assertThat(sa.shadowParam11).isEqualTo(PARAM1);
 
-    Shadow.invokeConstructor(Constructors.class, a, ClassParameter.from(String.class, PARAM1));
+    Shadow.invokeConstructor(Constructors.class, a, from(PARAM1));
     assertThat(a.param11).isEqualTo(PARAM1);
   }
 
@@ -101,7 +101,7 @@ public class RobolectricInternalsTest {
     assertThat(sa.shadowParam21).isEqualTo(PARAM1);
     assertThat(sa.shadowParam22).isEqualTo(PARAM2);
 
-    Shadow.invokeConstructor(Constructors.class, a, ClassParameter.from(String.class, PARAM1), ClassParameter.from(Byte.class, PARAM2));
+    Shadow.invokeConstructor(Constructors.class, a, from(PARAM1), from(Byte.class, PARAM2));
     assertThat(a.param21).isEqualTo(PARAM1);
     assertThat(a.param22).isEqualTo(PARAM2);
   }
@@ -118,7 +118,7 @@ public class RobolectricInternalsTest {
     assertThat(sa.shadowParam32).isEqualTo(PARAM2);
     assertThat(sa.shadowParam33).isEqualTo(PARAM3);
     
-    Shadow.invokeConstructor(Constructors.class, a, ClassParameter.from(String.class, PARAM1), ClassParameter.from(Byte.class, PARAM2), ClassParameter.from(Long.class, PARAM3));
+    Shadow.invokeConstructor(Constructors.class, a, from(PARAM1), from(Byte.class, PARAM2), from(Long.class, PARAM3));
     assertThat(a.param31).isEqualTo(PARAM1);
     assertThat(a.param32).isEqualTo(PARAM2);
     assertThat(a.param33).isEqualTo(PARAM3);

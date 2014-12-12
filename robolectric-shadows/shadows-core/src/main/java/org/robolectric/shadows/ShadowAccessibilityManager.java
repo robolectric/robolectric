@@ -13,11 +13,12 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.internal.Shadow;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.List;
+
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.*;
 
 @Implements(AccessibilityManager.class)
 public class ShadowAccessibilityManager {
@@ -119,7 +120,7 @@ public class ShadowAccessibilityManager {
     public void handleMessage(Message message) {
       switch (message.what) {
         case DO_SET_STATE:
-          ReflectionHelpers.callInstanceMethodReflectively(accessibilityManager, "setState", ClassParameter.from(int.class, message.arg1));
+          ReflectionHelpers.callInstanceMethodReflectively(accessibilityManager, "setState", from(message.arg1));
           return;
         default:
           Log.w("AccessibilityManager", "Unknown message type: " + message.what);

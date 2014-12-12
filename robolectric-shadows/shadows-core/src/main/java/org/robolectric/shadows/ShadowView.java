@@ -26,6 +26,7 @@ import java.lang.reflect.Method;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.internal.Shadow.directlyOn;
 import static org.robolectric.internal.Shadow.invokeConstructor;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.*;
 
 /**
  * Shadow implementation of {@code View} that simulates the behavior of this
@@ -87,7 +88,6 @@ public class ShadowView {
    *
    * @param view the view to dump
    */
-  @SuppressWarnings("UnusedDeclaration")
   public static void dump(View view) {
     shadowOf(view).dump();
   }
@@ -98,7 +98,6 @@ public class ShadowView {
    * @param view the view to scan for text
    * @return Text contained within this view.
    */
-  @SuppressWarnings("UnusedDeclaration")
   public static String innerText(View view) {
     return shadowOf(view).innerText();
   }
@@ -107,9 +106,9 @@ public class ShadowView {
     if (context == null) throw new NullPointerException("no context");
     this.attributeSet = attributeSet;
     invokeConstructor(View.class, realView,
-        ClassParameter.from(Context.class, context),
-        ClassParameter.from(AttributeSet.class, attributeSet),
-        ClassParameter.from(int.class, defStyle));
+        from(Context.class, context),
+        from(AttributeSet.class, attributeSet),
+        from(defStyle));
   }
 
   /**
@@ -198,11 +197,11 @@ public class ShadowView {
   public void onLayout(boolean changed, int left, int top, int right, int bottom) {
     onLayoutWasCalled = true;
     directlyOn(realView, View.class, "onLayout",
-        ClassParameter.from(boolean.class, changed),
-        ClassParameter.from(int.class, left),
-        ClassParameter.from(int.class, top),
-        ClassParameter.from(int.class, right),
-        ClassParameter.from(int.class, bottom));
+        from(changed),
+        from(left),
+        from(top),
+        from(right),
+        from(bottom));
   }
 
   public boolean onLayoutWasCalled() {
@@ -516,7 +515,7 @@ public class ShadowView {
   }
 
   public void setMyParent(ViewParent viewParent) {
-    directlyOn(realView, View.class, "assignParent", ClassParameter.from(ViewParent.class, viewParent));
+    directlyOn(realView, View.class, "assignParent", from(ViewParent.class, viewParent));
   }
 
   private View directly() {

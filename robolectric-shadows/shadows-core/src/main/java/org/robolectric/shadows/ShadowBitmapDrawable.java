@@ -10,12 +10,12 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.internal.Shadow.directlyOn;
 
-@SuppressWarnings({"UnusedDeclaration"})
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.*;
+
 @Implements(BitmapDrawable.class)
 public class ShadowBitmapDrawable extends ShadowDrawable {
   private ColorFilter colorFilter;
@@ -39,7 +39,7 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
   @Implementation
   public Drawable mutate() {
     Bitmap bitmap = realBitmapDrawable.getBitmap();
-    BitmapDrawable real = ReflectionHelpers.callConstructorReflectively(BitmapDrawable.class, ClassParameter.from(Bitmap.class, bitmap));
+    BitmapDrawable real = ReflectionHelpers.callConstructorReflectively(BitmapDrawable.class, from(Bitmap.class, bitmap));
     ShadowBitmapDrawable shadow = shadowOf(real);
     shadow.colorFilter = this.colorFilter;
     shadow.drawableCreateFromStreamSource = drawableCreateFromStreamSource;

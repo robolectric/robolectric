@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static android.content.Intent.*;
-import static org.robolectric.util.ReflectionHelpers.ClassParameter;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.*;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Intent.class)
@@ -38,37 +38,36 @@ public class ShadowIntent {
   private String packageName;
   private final Set<String> categories = new HashSet<String>();
 
-  public void __constructor__(String action, Uri uri, Context packageContext, Class cls) {
+  public void __constructor__(String action, Uri uri, Context packageContext, Class<?> cls) {
     componentName = new ComponentName(packageContext, cls);
     data = uri;
     intentClass = cls;
     Shadow.invokeConstructor(Intent.class, realIntent,
-        ClassParameter.from(String.class, action),
-        ClassParameter.from(Uri.class, uri),
-        ClassParameter.from(Context.class, packageContext),
-        ClassParameter.from(Class.class, cls));
+        from(action),
+        from(Uri.class, uri),
+        from(Context.class, packageContext),
+        from(cls));
   }
 
-  public void __constructor__(Context packageContext, Class cls) {
+  public void __constructor__(Context packageContext, Class<?> cls) {
     componentName = new ComponentName(packageContext, cls);
     intentClass = cls;
     Shadow.invokeConstructor(Intent.class, realIntent,
-        ClassParameter.from(Context.class, packageContext),
-        ClassParameter.from(Class.class, cls));
+        from(Context.class, packageContext),
+        from(cls));
   }
 
   public void __constructor__(String action, Uri uri) {
     this.action = action;
     data = uri;
     Shadow.invokeConstructor(Intent.class, realIntent,
-        ClassParameter.from(String.class, action),
-        ClassParameter.from(Uri.class, uri));
+        from(action),
+        from(Uri.class, uri));
   }
 
   public void __constructor__(String action) {
     __constructor__(action, null);
-    Shadow.invokeConstructor(Intent.class, realIntent,
-        ClassParameter.from(String.class, action));
+    Shadow.invokeConstructor(Intent.class, realIntent, from(action));
   }
 
   public void __constructor__(Parcel in) {
@@ -123,7 +122,7 @@ public class ShadowIntent {
     intentClass = other.intentClass;
     packageName = other.packageName;
     categories.addAll(other.categories);
-    Shadow.invokeConstructor(Intent.class, realIntent, ClassParameter.from(Intent.class, intent));
+    Shadow.invokeConstructor(Intent.class, realIntent, from(Intent.class, intent));
   }
 
   @Implementation
@@ -800,7 +799,7 @@ public class ShadowIntent {
 
   private String ifWeHave(Object o, String name) {
     if (o == null) return null;
-    if (o instanceof Map && ((Map) o).isEmpty()) return null;
+    if (o instanceof Map && ((Map<?,?>) o).isEmpty()) return null;
     return name + "=" + o;
   }
 

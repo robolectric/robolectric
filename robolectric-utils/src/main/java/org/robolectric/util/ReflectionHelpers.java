@@ -223,14 +223,33 @@ public class ReflectionHelpers {
       return new ClassParameter<>(clazz, val);
     }
 
+    /**
+     * Convenience factory method for constructing a null parameter for a given type.
+     * Equivalent to calling {@link #from(Class, Object) from(clazz, null)}.
+     *
+     * @param clazz the class of the method's parameter.
+     * @return The class parameter with the given class and <tt>null</tt> value.
+     */
+    public static <V> ClassParameter<V> fromNull(Class<? extends V> clazz) {
+      return from(clazz, null);
+    }
+    
     public static <V> ClassParameter<V> from(V val) {
       return new ClassParameter<>(val);
     }
 
-    public static ClassParameter<?>[] fromComponentLists(Class<?>[] classes, Object[] values) {
+    public static ClassParameter<?>[] fromSeparateComponentLists(Class<?>[] classes, Object[] values) {
       ClassParameter<?>[] classParameters = new ClassParameter[classes.length];
       for (int i = 0; i < classes.length; i++) {
         classParameters[i] = ClassParameter.from(classes[i], values[i]);
+      }
+      return classParameters;
+    }
+
+    public static ClassParameter<?>[] fromObjectList(Object... values) {
+      ClassParameter<?>[] classParameters = new ClassParameter[values.length];
+      for (int i = 0; i < values.length; i++) {
+        classParameters[i] = ClassParameter.from(values[i]);
       }
       return classParameters;
     }

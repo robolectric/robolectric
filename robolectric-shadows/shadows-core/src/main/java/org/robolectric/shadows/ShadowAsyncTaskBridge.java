@@ -5,6 +5,8 @@ import org.robolectric.annotation.internal.DoNotInstrument;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.*;
+
 /**
  * This must be placed in the same package as the underlying AsyncTask because it calls protected methods.
  */
@@ -17,7 +19,7 @@ public class ShadowAsyncTaskBridge<Params, Progress, Result> {
   }
 
   public Result doInBackground(Params... params) {
-    return ReflectionHelpers.callInstanceMethodReflectively(asyncTask, "doInBackground", ClassParameter.from(Object[].class, params));
+    return ReflectionHelpers.callInstanceMethodReflectively(asyncTask, "doInBackground", from(Object[].class, params));
   }
 
   public void onPreExecute() {
@@ -25,11 +27,11 @@ public class ShadowAsyncTaskBridge<Params, Progress, Result> {
   }
 
   public void onPostExecute(Result result) {
-    ReflectionHelpers.callInstanceMethodReflectively(asyncTask, "onPostExecute", ClassParameter.from(Object.class, result));
+    ReflectionHelpers.callInstanceMethodReflectively(asyncTask, "onPostExecute", from(Object.class, result));
   }
 
   public void onProgressUpdate(Progress... values) {
-    ReflectionHelpers.callInstanceMethodReflectively(asyncTask, "onProgressUpdate", ClassParameter.from(Object[].class, values));
+    ReflectionHelpers.callInstanceMethodReflectively(asyncTask, "onProgressUpdate", from(Object[].class, values));
   }
 
   public void onCancelled() {

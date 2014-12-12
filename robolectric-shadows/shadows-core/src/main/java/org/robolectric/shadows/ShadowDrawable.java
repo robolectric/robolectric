@@ -19,9 +19,9 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.internal.Shadow;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.*;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Drawable.class)
@@ -66,7 +66,7 @@ public class ShadowDrawable {
     if (bm != null) {
       boolean isNinePatch = srcName != null && srcName.contains(".9.");
       if (isNinePatch) {
-        ReflectionHelpers.callInstanceMethodReflectively(bm, "setNinePatchChunk", ClassParameter.from(byte[].class, new byte[0]));
+        ReflectionHelpers.callInstanceMethodReflectively(bm, "setNinePatchChunk", from(new byte[0]));
       }
       byte[] np = bm.getNinePatchChunk();
       if (np == null || !NinePatch.isNinePatchChunk(np)) {
