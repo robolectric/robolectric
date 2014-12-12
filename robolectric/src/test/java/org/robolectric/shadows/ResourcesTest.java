@@ -212,9 +212,6 @@ public class ResourcesTest {
     assertThat(resources.getDrawable(-12345)).isInstanceOf(BitmapDrawable.class);
   }
 
-  /**
-   * given an R.anim.id value, will return an AnimationDrawable
-   */
   @Test
   public void testGetAnimationDrawable() {
     assertThat(resources.getDrawable(R.anim.animation_list)).isInstanceOf(AnimationDrawable.class);
@@ -226,9 +223,6 @@ public class ResourcesTest {
     assertThat(resources.getString(R.string.hello)).isEqualTo("Bonjour");
   }
 
-  /**
-   * given an R.color.id value, will return a ColorDrawable
-   */
   @Test
   public void testGetColorDrawable() {
     Drawable drawable = resources.getDrawable(R.color.color_with_alpha);
@@ -251,25 +245,16 @@ public class ResourcesTest {
     resources.getColor(R.color.test_color_1);
   }
 
-  /**
-   * given an R.color.id value, will return a ColorStateList
-   */
   @Test
   public void testGetColorStateList() {
     assertThat(resources.getColorStateList(R.color.color_state_list)).isInstanceOf(ColorStateList.class);
   }
 
-  /**
-   * given an R.drawable.id value, will return a BitmapDrawable
-   */
   @Test
   public void testGetBitmapDrawable() {
     assertThat(resources.getDrawable(R.drawable.an_image)).isInstanceOf(BitmapDrawable.class);
   }
 
-  /**
-   * given an R.drawable.id value, will return a NinePatchDrawable for .9.png file
-   */
   @Test
   public void testGetNinePatchDrawable() {
     assertThat(ShadowApplication.getInstance().getResources().getDrawable(R.drawable.nine_patch_drawable)).isInstanceOf(NinePatchDrawable.class);
@@ -412,7 +397,7 @@ public class ResourcesTest {
 
     Resources.Theme theme = resources.newTheme();
     theme.applyStyle(R.style.MyBlackTheme, false);
-    int internalId = getInternalId(theme);
+    long internalId = getInternalId(theme);
 
     ShadowAssetManager shadow = Shadows.shadowOf(resources.getAssets());
     shadow.getThemeValue(internalId, android.R.attr.windowBackground, out, true);
@@ -432,16 +417,12 @@ public class ResourcesTest {
 
     Resources.Theme theme = resources.newTheme();
     theme.applyStyle(R.style.MyBlackTheme, false);
-    int internalId = getInternalId(theme);
+    long internalId = getInternalId(theme);
 
     ShadowAssetManager shadow = Shadows.shadowOf(resources.getAssets());
     shadow.getThemeValue(internalId, android.R.attr.windowBackground, out, false);
     assertThat(out.type).isEqualTo(TypedValue.TYPE_REFERENCE);
     assertThat(out.resourceId).isEqualTo(android.R.color.black);
-  }
-
-  private int getInternalId(Resources.Theme theme) {
-    return ReflectionHelpers.getFieldReflectively(theme, "mTheme");
   }
 
   @Test
@@ -462,72 +443,76 @@ public class ResourcesTest {
     assertThat(subClassResources.openRawResource(R.raw.raw_resource)).isNotNull();
   }
 
-  private static class SubClassResources extends Resources {
-
-    public SubClassResources(Resources res) {
-      super(res.getAssets(), res.getDisplayMetrics(), res.getConfiguration());
-    }
-  }
-
   @Test
   public void applyStyleForced() {
-    Resources.Theme theme = resources.newTheme();
+    final Resources.Theme theme = resources.newTheme();
+
     theme.applyStyle(R.style.MyBlackTheme, true);
     TypedArray arr = theme.obtainStyledAttributes(new int[]{android.R.attr.windowBackground, android.R.attr.textColorHint});
-    TypedValue backgroundColor = new TypedValue();
-    arr.getValue(0, backgroundColor);
-    arr.recycle();
 
-    assertThat(backgroundColor.resourceId).isEqualTo(android.R.color.black);
+    final TypedValue blackBackgroundColor = new TypedValue();
+    arr.getValue(0, blackBackgroundColor);
+    assertThat(blackBackgroundColor.resourceId).isEqualTo(android.R.color.black);
+    arr.recycle();
 
     theme.applyStyle(R.style.MyBlueTheme, true);
-
     arr = theme.obtainStyledAttributes(new int[]{android.R.attr.windowBackground, android.R.attr.textColor, android.R.attr.textColorHint});
-    backgroundColor = new TypedValue();
-    arr.getValue(0, backgroundColor);
-    TypedValue textColor = new TypedValue();
-    arr.getValue(1, textColor);
-    TypedValue textColorHint = new TypedValue();
-    arr.getValue(2, textColorHint);
-    arr.recycle();
 
-    assertThat(backgroundColor.resourceId).isEqualTo(R.color.blue);
-    assertThat(textColor.resourceId).isEqualTo(R.color.white);
-    assertThat(textColorHint.resourceId).isEqualTo(android.R.color.darker_gray);
+    final TypedValue blueBackgroundColor = new TypedValue();
+    arr.getValue(0, blueBackgroundColor);
+    assertThat(blueBackgroundColor.resourceId).isEqualTo(R.color.blue);
+
+    final TypedValue blueTextColor = new TypedValue();
+    arr.getValue(1, blueTextColor);
+    assertThat(blueTextColor.resourceId).isEqualTo(R.color.white);
+
+    final TypedValue blueTextColorHint = new TypedValue();
+    arr.getValue(2, blueTextColorHint);
+    assertThat(blueTextColorHint.resourceId).isEqualTo(android.R.color.darker_gray);
+
+    arr.recycle();
   }
 
   @Test
   public void applyStyleNotForced() {
-    Resources.Theme theme = resources.newTheme();
+    final Resources.Theme theme = resources.newTheme();
+
+    // Apply black theme
     theme.applyStyle(R.style.MyBlackTheme, true);
     TypedArray arr = theme.obtainStyledAttributes(new int[]{android.R.attr.windowBackground, android.R.attr.textColorHint});
-    TypedValue backgroundColor = new TypedValue();
-    arr.getValue(0, backgroundColor);
-    TypedValue textColorHint = new TypedValue();
-    arr.getValue(1, textColorHint);
+
+    final TypedValue blackBackgroundColor = new TypedValue();
+    arr.getValue(0, blackBackgroundColor);
+    assertThat(blackBackgroundColor.resourceId).isEqualTo(android.R.color.black);
+
+    final TypedValue blackTextColorHint = new TypedValue();
+    arr.getValue(1, blackTextColorHint);
+    assertThat(blackTextColorHint.resourceId).isEqualTo(android.R.color.darker_gray);
 
     arr.recycle();
 
-    assertThat(backgroundColor.resourceId).isEqualTo(android.R.color.black);
-    assertThat(textColorHint.resourceId).isEqualTo(android.R.color.darker_gray);
-
+    // Apply blue theme
     theme.applyStyle(R.style.MyBlueTheme, false);
-
     arr = theme.obtainStyledAttributes(new int[]{android.R.attr.windowBackground, android.R.attr.textColor, android.R.attr.textColorHint});
-    backgroundColor = new TypedValue();
-    arr.getValue(0, backgroundColor);
-    TypedValue textColor = new TypedValue();
-    arr.getValue(1, textColor);
-    textColorHint = new TypedValue();
-    arr.getValue(2, textColorHint);
-    arr.recycle();
 
-    assertThat(textColor.resourceId).isEqualTo(R.color.white);
-    assertThat(textColorHint.resourceId).isEqualTo(android.R.color.darker_gray);
-    assertThat(backgroundColor.resourceId).isEqualTo(android.R.color.black);
+    final TypedValue blueBackgroundColor = new TypedValue();
+    arr.getValue(0, blueBackgroundColor);
+    assertThat(blueBackgroundColor.resourceId).isEqualTo(android.R.color.black);
+
+    final TypedValue blueTextColor = new TypedValue();
+    arr.getValue(1, blueTextColor);
+    assertThat(blueTextColor.resourceId).isEqualTo(R.color.white);
+
+    final TypedValue blueTextColorHint = new TypedValue();
+    arr.getValue(2, blueTextColorHint);
+    assertThat(blueTextColorHint.resourceId).isEqualTo(android.R.color.darker_gray);
+
+    arr.recycle();
   }
 
-  /////////////////////////////
+  private long getInternalId(Resources.Theme theme) {
+    return ReflectionHelpers.getFieldReflectively(theme, "mTheme");
+  }
 
   private static String findRootTag(XmlResourceParser parser) throws Exception {
     int event;
@@ -535,5 +520,11 @@ public class ResourcesTest {
       event = parser.next();
     } while (event != XmlPullParser.START_TAG);
     return parser.getName();
+  }
+
+  private static class SubClassResources extends Resources {
+    public SubClassResources(Resources res) {
+      super(res.getAssets(), res.getDisplayMetrics(), res.getConfiguration());
+    }
   }
 }

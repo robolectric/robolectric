@@ -27,7 +27,7 @@ public class AccountTest {
     p.setDataPosition(0);
 
     Account actual = new Account(p);
-    assertThat(expected).isEqualTo(actual);
+    assertThat(actual).isEqualTo(expected);
   }
 
   @Test
@@ -37,7 +37,7 @@ public class AccountTest {
     expected.writeToParcel(p, 0);
     p.setDataPosition(0);
     Account actual = Account.CREATOR.createFromParcel(p);
-    assertThat(expected).isEqualTo(actual);
+    assertThat(actual).isEqualTo(expected);
   }
 
   @Test(expected = IllegalArgumentException.class)

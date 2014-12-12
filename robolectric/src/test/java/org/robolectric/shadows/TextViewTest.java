@@ -22,7 +22,6 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
@@ -453,16 +452,6 @@ public class TextViewTest {
     assertThat(textView.getTextSize()).isEqualTo(10f);
     textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, 20);
     assertThat(textView.getTextSize()).isEqualTo(20f);
-  }
-
-  @Ignore("not yet working in 2.0, sorry :-(") // todo 2.0-cleanup
-  @Test
-  public void setLines_setsTheLines() throws Exception {
-    textView.measure(100, 100);
-    textView.setLines(1);
-    assertThat(textView.getLineCount()).isEqualTo(1);
-    textView.setLines(4);
-    assertThat(textView.getLineCount()).isEqualTo(4);
   }
 
   @Test

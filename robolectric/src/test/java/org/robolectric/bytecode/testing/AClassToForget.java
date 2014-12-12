@@ -40,4 +40,31 @@ public class AClassToForget {
   public static byte[] byteArrayReturningMethod() {
     return new byte[0];
   }
+
+  public static float floatReturningMethod() {
+    return 0f;
+  }
+
+  public static float[] floatArrayReturningMethod() {
+    return new float[0];
+  }
+
+  public static double doubleReturningMethod() {
+    return 0;
+  }
+
+  public static double[] doubleArrayReturningMethod() {
+    return new double[0];
+  }
+
+  public static short shortReturningMethod() {
+    return 0;
+  }
+
+  public static short[] shortArrayReturningMethod() {
+    return new short[0];
+  }
+
+  public static void voidReturningMethod() {
+  }
 }

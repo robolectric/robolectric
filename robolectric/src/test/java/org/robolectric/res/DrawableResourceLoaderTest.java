@@ -3,22 +3,18 @@ package org.robolectric.res;
 import android.animation.Animator;
 import android.animation.AnimatorInflater;
 import android.content.res.Resources;
-import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.NinePatchDrawable;
-import android.graphics.drawable.StateListDrawable;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.shadows.ShadowApplication;
-import org.robolectric.shadows.ShadowStateListDrawable;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -94,26 +90,6 @@ public class DrawableResourceLoaderTest {
     shadowOf(resources.getAssets()).setQualifiers("xlarge");
 
     assertEquals(6, ((LayerDrawable) resources.getDrawable(R.drawable.rainbow)).getNumberOfLayers());
-  }
-
-  @Ignore("badly broken right now") @Test
-  public void testStateListDrawable() {
-    Drawable drawable = resources.getDrawable(R.drawable.state_drawable);
-    assertThat(drawable).isInstanceOf(StateListDrawable.class);
-    ShadowStateListDrawable shDrawable = shadowOf((StateListDrawable) drawable);
-    assertThat(shDrawable.getResourceIdForState(android.R.attr.state_selected)).isEqualTo(R.drawable.l0_red);
-    assertThat(shDrawable.getResourceIdForState(android.R.attr.state_pressed)).isEqualTo(R.drawable.l1_orange);
-    assertThat(shDrawable.getResourceIdForState(android.R.attr.state_focused)).isEqualTo(R.drawable.l2_yellow);
-    assertThat(shDrawable.getResourceIdForState(android.R.attr.state_checkable)).isEqualTo(R.drawable.l3_green);
-    assertThat(shDrawable.getResourceIdForState(android.R.attr.state_checked)).isEqualTo(R.drawable.l4_blue);
-    assertThat(shDrawable.getResourceIdForState(android.R.attr.state_enabled)).isEqualTo(R.drawable.l5_indigo);
-    assertThat(shDrawable.getResourceIdForState(android.R.attr.state_window_focused)).isEqualTo(R.drawable.l6_violet);
-    assertThat(shDrawable.getResourceIdForState(android.R.attr.state_active)).isEqualTo(R.drawable.l7_white);
-  }
-
-  @Test @Ignore("this seems to be wrong...")
-  public void shouldCreateAnims() throws Exception {
-    assertInstanceOf(AnimationDrawable.class, resources.getDrawable(R.anim.test_anim_1));
   }
 
   @Test

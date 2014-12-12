@@ -101,19 +101,6 @@ public class DialogFragmentTest {
     assertSame(dialogFragment, fragmentManager.findFragmentByTag("this is a tag"));
   }
 
-  @Ignore("needs some work") @Test
-  public void dismiss_shouldDismissTheDialog() throws Exception {
-    dialogFragment.show(fragmentManager, "tag");
-
-    dialogFragment.dismiss();
-
-    Dialog dialog = ShadowDialog.getLatestDialog();
-    assertFalse(dialog.isShowing());
-    assertTrue(shadowOf(dialog).hasBeenDismissed());
-
-    assertNull(fragmentManager.findFragmentByTag("tag"));
-  }
-
   @Test
   public void removeUsingTransaction_shouldDismissTheDialog() throws Exception {
     dialogFragment.show(fragmentManager, null);

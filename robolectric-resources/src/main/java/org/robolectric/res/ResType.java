@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public enum ResType {
+  DRAWABLE,
   ATTR_DATA,
   BOOLEAN,
   COLOR,

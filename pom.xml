@@ -29,6 +29,7 @@
     <maven.compiler.source>1.7</maven.compiler.source>
     <maven.compiler.target>1.7</maven.compiler.target>
     <libsqlite.version>0.282-3</libsqlite.version>
+    <robolectric.api.level>21</robolectric.api.level>
   </properties>
 
   <dependencyManagement>
@@ -68,7 +69,7 @@
         <groupId>org.robolectric</groupId>
         <artifactId>shadows-core</artifactId>
         <version>${project.version}</version>
-        <classifier>19</classifier>
+        <classifier>${robolectric.api.level}</classifier>
       </dependency>
 
       <!-- Test Dependencies -->
@@ -89,7 +90,7 @@
       <dependency>
         <groupId>org.robolectric</groupId>
         <artifactId>android-all</artifactId>
-        <version>4.4_r1-robolectric-0</version>
+        <version>5.0.0_r2-robolectric-0</version>
         <scope>provided</scope>
       </dependency>
 
@@ -117,53 +118,6 @@
         <groupId>org.apache.httpcomponents</groupId>
         <artifactId>httpclient</artifactId>
         <version>4.0.3</version>
-      </dependency>
-
-      <!-- SQLite Dependencies -->
-      <dependency>
-        <groupId>com.almworks.sqlite4java</groupId>
-        <artifactId>sqlite4java</artifactId>
-        <version>0.282</version>
-      </dependency>
-
-      <dependency>
-        <groupId>com.github.axet.litedb</groupId>
-        <artifactId>libsqlite</artifactId>
-        <version>${libsqlite.version}</version>
-        <classifier>natives-windows-x86</classifier>
-        <scope>provided</scope>
-      </dependency>
-
-      <dependency>
-        <groupId>com.github.axet.litedb</groupId>
-        <artifactId>libsqlite</artifactId>
-        <version>${libsqlite.version}</version>
-        <classifier>natives-windows-x86_64</classifier>
-        <scope>provided</scope>
-      </dependency>
-
-      <dependency>
-        <groupId>com.github.axet.litedb</groupId>
-        <artifactId>libsqlite</artifactId>
-        <version>${libsqlite.version}</version>
-        <classifier>natives-mac-x86_64</classifier>
-        <scope>provided</scope>
-      </dependency>
-
-      <dependency>
-        <groupId>com.github.axet.litedb</groupId>
-        <artifactId>libsqlite</artifactId>
-        <version>${libsqlite.version}</version>
-        <classifier>natives-linux-x86</classifier>
-        <scope>provided</scope>
-      </dependency>
-
-      <dependency>
-        <groupId>com.github.axet.litedb</groupId>
-        <artifactId>libsqlite</artifactId>
-        <classifier>natives-linux-x86_64</classifier>
-        <version>${libsqlite.version}</version>
-        <scope>provided</scope>
       </dependency>
     </dependencies>
   </dependencyManagement>

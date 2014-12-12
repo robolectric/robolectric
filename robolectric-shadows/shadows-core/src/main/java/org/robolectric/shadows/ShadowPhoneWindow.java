@@ -5,6 +5,7 @@ import android.widget.ProgressBar;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import static org.robolectric.internal.Shadow.directlyOn;
 
@@ -18,7 +19,7 @@ public class ShadowPhoneWindow extends ShadowWindow {
   @Implementation
   public void setTitle(CharSequence title) {
     this.title = title;
-    directlyOn(realWindow, PHONE_WINDOW_CLASS_NAME, "setTitle", new ReflectionHelpers.ClassParameter(CharSequence.class, title));
+    directlyOn(realWindow, PHONE_WINDOW_CLASS_NAME, "setTitle", ClassParameter.from(CharSequence.class, title));
   }
 
   public CharSequence getTitle() {
@@ -28,7 +29,7 @@ public class ShadowPhoneWindow extends ShadowWindow {
   @Implementation
   public void setBackgroundDrawable(Drawable drawable) {
     this.backgroundDrawable = drawable;
-    directlyOn(realWindow, PHONE_WINDOW_CLASS_NAME, "setBackgroundDrawable", new ReflectionHelpers.ClassParameter(Drawable.class, drawable));
+    directlyOn(realWindow, PHONE_WINDOW_CLASS_NAME, "setBackgroundDrawable", ClassParameter.from(Drawable.class, drawable));
   }
 
   public Drawable getBackgroundDrawable() {
@@ -37,11 +38,11 @@ public class ShadowPhoneWindow extends ShadowWindow {
 
   @Override
   public ProgressBar getProgressBar() {
-    return (ProgressBar) directlyOn(realWindow, PHONE_WINDOW_CLASS_NAME, "getHorizontalProgressBar", new ReflectionHelpers.ClassParameter(boolean.class, false));
+    return (ProgressBar) directlyOn(realWindow, PHONE_WINDOW_CLASS_NAME, "getHorizontalProgressBar", ClassParameter.from(boolean.class, false));
   }
 
   @Override
   public ProgressBar getIndeterminateProgressBar() {
-    return (ProgressBar) directlyOn(realWindow, PHONE_WINDOW_CLASS_NAME, "getCircularProgressBar", new ReflectionHelpers.ClassParameter(boolean.class, false));
+    return (ProgressBar) directlyOn(realWindow, PHONE_WINDOW_CLASS_NAME, "getCircularProgressBar", ClassParameter.from(boolean.class, false));
   }
 }

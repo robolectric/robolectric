@@ -1,3 +1,6 @@
+#set($Integer = 0)
+#set($apiLevel = $Integer.parseInt($apiLevel))
+
 package org.robolectric.shadows;
 
 import android.accessibilityservice.AccessibilityServiceInfo;
@@ -8,6 +11,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 import android.view.accessibility.AccessibilityManager;
+import android.view.accessibility.IAccessibilityManager;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.HiddenApi;
@@ -28,6 +32,16 @@ public class ShadowAccessibilityManager {
   private List<ServiceInfo> accessibilityServiceList;
   private boolean touchExplorationEnabled;
 
+#if ($apiLevel >= 21)
+  @HiddenApi @Implementation
+  public static AccessibilityManager getInstance(Context context) throws Exception {
+    AccessibilityManager accessibilityManager = Shadow.newInstance(AccessibilityManager.class, new Class[] {Context.class, IAccessibilityManager.class, int.class}, new Object[] {context, null, 0});
+    Handler handler = new MyHandler(context.getMainLooper(), accessibilityManager);
+    Field mHandlerField = AccessibilityManager.class.getDeclaredField("mHandler");
+    makeNonFinal(mHandlerField).set(accessibilityManager, handler);
+    return accessibilityManager;
+  }
+#else
   @HiddenApi @Implementation
   public static AccessibilityManager getInstance(Context context) throws Exception {
     AccessibilityManager accessibilityManager = Shadow.newInstance(AccessibilityManager.class, new Class[0], new Object[0]);
@@ -36,6 +50,7 @@ public class ShadowAccessibilityManager {
     makeNonFinal(mHandlerField).set(accessibilityManager, handler);
     return accessibilityManager;
   }
+#end
 
   @Implementation
   public boolean addAccessibilityStateChangeListener(AccessibilityManager.AccessibilityStateChangeListener listener) {

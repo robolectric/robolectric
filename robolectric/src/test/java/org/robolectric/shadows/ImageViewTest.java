@@ -9,7 +9,6 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.widget.ImageView;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
@@ -73,15 +72,6 @@ public class ImageViewTest {
     Drawable animation = imageView.getDrawable();
     assertTrue(animation instanceof Drawable);
     assertTrue(animation instanceof AnimationDrawable);
-  }
-
-  @Test @Ignore("animations are busted right now...")
-  public void testSetAnimationItem() throws Exception {
-    imageView.setImageResource(R.anim.animation_list);
-    AnimationDrawable animation = (AnimationDrawable) imageView.getDrawable();
-    assertEquals(3, animation.getNumberOfFrames());
-    assertEquals(400, animation.getDuration(0));
-    assertEquals(300, animation.getDuration(2));
   }
 
   @Test

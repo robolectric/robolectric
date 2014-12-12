@@ -28,4 +28,32 @@ public class AClassThatRefersToAForgettableClassInMethodCallsReturningPrimitive 
   long[] longArrayMethod() {
     return AClassToForget.longArrayReturningMethod();
   }
+
+  float floatMethod() {
+    return AClassToForget.floatReturningMethod();
+  }
+
+  float[] floatArrayMethod() {
+    return AClassToForget.floatArrayReturningMethod();
+  }
+
+  double doubleMethod() {
+    return AClassToForget.doubleReturningMethod();
+  }
+
+  double[] doubleArrayMethod() {
+    return AClassToForget.doubleArrayReturningMethod();
+  }
+
+  short shortMethod() {
+    return AClassToForget.shortReturningMethod();
+  }
+
+  short[] shortArrayMethod() {
+    return AClassToForget.shortArrayReturningMethod();
+  }
+
+  void voidReturningMethod() {
+    AClassToForget.voidReturningMethod();
+  }
 }

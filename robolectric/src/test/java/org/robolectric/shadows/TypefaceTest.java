@@ -1,30 +1,25 @@
-// Not in master, can maybe be deleted
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.Shadows.shadowOf;
-
-import java.io.File;
-import java.util.List;
-
+import android.graphics.Typeface;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
+import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.test.TemporaryAsset;
 
-import android.content.res.AssetManager;
-import android.graphics.Typeface;
+import java.io.File;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class TypefaceTest {
-  @Rule public TemporaryAsset temporaryAsset = new TemporaryAsset();
   private File fontFile;
-  private File libraryFontFile;
+  @Rule public TemporaryAsset temporaryAsset = new TemporaryAsset();
 
   @Before
   public void setup() throws Exception {
@@ -32,45 +27,54 @@ public class TypefaceTest {
     fontFile = temporaryAsset.createFile(appManifest, "myFont.ttf", "myFontData");
 
     List<AndroidManifest> libraryManifests = appManifest.getLibraryManifests();
-    libraryFontFile = temporaryAsset.createFile(libraryManifests.get(0), "libFont.ttf", "libFontData");
+    temporaryAsset.createFile(libraryManifests.get(0), "libFont.ttf", "libFontData");
   }
 
   @Test
-  public void canAnswerAssetUsedDuringCreation() throws Exception {
-    AssetManager assetManager = RuntimeEnvironment.application.getAssets();
-    Typeface typeface = Typeface.createFromAsset(assetManager, "myFont.ttf");
-    assertThat(shadowOf(typeface).getAssetPath()).isEqualTo(fontFile.getPath());
+  public void create_withFamilyName_shouldCreateTypeface() {
+    Typeface typeface = Typeface.create("roboto", Typeface.BOLD);
+    assertThat(typeface.getStyle()).isEqualTo(Typeface.BOLD);
+    assertThat(shadowOf(typeface).getFontDescription().getFamilyName()).isEqualTo("roboto");
+    assertThat(shadowOf(typeface).getFontDescription().getStyle()).isEqualTo(Typeface.BOLD);
   }
 
   @Test
-  public void canAnswerAssetFromLibraryUsedDuringCreation() throws Exception {
-    AssetManager assetManager = RuntimeEnvironment.application.getAssets();
-    Typeface typeface = Typeface.createFromAsset(assetManager, "libFont.ttf");
-    assertThat(shadowOf(typeface).getAssetPath()).isEqualTo(libraryFontFile.getPath());
+  public void create_withFamily_shouldCreateTypeface() {
+    Typeface typeface = Typeface.create(Typeface.create("roboto", Typeface.BOLD), Typeface.ITALIC);
+
+    assertThat(typeface.getStyle()).isEqualTo(Typeface.ITALIC);
+    assertThat(shadowOf(typeface).getFontDescription().getFamilyName()).isEqualTo("roboto");
+    assertThat(shadowOf(typeface).getFontDescription().getStyle()).isEqualTo(Typeface.ITALIC);
+  }
+
+  @Test
+  public void createFromFile_withFile_shouldCreateTypeface() {
+    Typeface typeface = Typeface.createFromFile(fontFile);
+
+    assertThat(typeface.getStyle()).isEqualTo(Typeface.NORMAL);
+    assertThat(shadowOf(typeface).getFontDescription().getFamilyName()).isEqualTo("myFont.ttf");
+  }
+
+  @Test
+  public void createFromFile_withPath_shouldCreateTypeface() {
+    Typeface typeface = Typeface.createFromFile(fontFile.getPath());
+
+    assertThat(typeface.getStyle()).isEqualTo(Typeface.NORMAL);
+    assertThat(shadowOf(typeface).getFontDescription().getFamilyName()).isEqualTo("myFont.ttf");
+    assertThat(shadowOf(typeface).getFontDescription().getStyle()).isEqualTo(Typeface.NORMAL);
+  }
+
+  @Test
+  public void createFromAsset_shouldCreateTypeface() {
+    Typeface typeface = Typeface.createFromAsset(RuntimeEnvironment.application.getAssets(), "libFont.ttf");
+
+    assertThat(typeface.getStyle()).isEqualTo(Typeface.NORMAL);
+    assertThat(shadowOf(typeface).getFontDescription().getFamilyName()).isEqualTo("libFont.ttf");
+    assertThat(shadowOf(typeface).getFontDescription().getStyle()).isEqualTo(Typeface.NORMAL);
   }
 
   @Test(expected = RuntimeException.class)
   public void createFromAsset_throwsExceptionWhenFontNotFound() throws Exception {
     Typeface.createFromAsset(RuntimeEnvironment.application.getAssets(), "nonexistent.ttf");
-  }
-
-  @Test public void createFromTypeface() throws Exception {
-    AssetManager assetManager = RuntimeEnvironment.application.getAssets();
-    Typeface typeface = Typeface.createFromAsset(assetManager, "myFont.ttf");
-    Typeface derivativeTypeface = Typeface.create(typeface, Typeface.BOLD_ITALIC);
-    assertThat(derivativeTypeface.getStyle()).isEqualTo(Typeface.BOLD_ITALIC);
-    assertThat(shadowOf(derivativeTypeface).getAssetPath()).isEqualTo(fontFile.getPath());
-  }
-
-  @Test
-  public void createFontWithStyle() {
-    Typeface typeface;
-    typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL);
-    assertThat(typeface).isNotNull();
-    assertThat(typeface.getStyle()).isEqualTo((Typeface.NORMAL));
-    ShadowTypeface.reset();
-    typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.ITALIC);
-    assertThat(typeface).isNotNull();
-    assertThat(typeface.getStyle()).isEqualTo((Typeface.ITALIC));
   }
 }

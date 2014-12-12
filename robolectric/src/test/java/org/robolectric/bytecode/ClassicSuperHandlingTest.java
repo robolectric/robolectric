@@ -1,6 +1,5 @@
 package org.robolectric.bytecode;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
@@ -17,10 +16,6 @@ public class ClassicSuperHandlingTest {
   @Config(shadows = {ChildShadow.class, ParentShadow.class, GrandparentShadow.class})
   public void uninstrumentedSubclassesShouldBeAbleToCallSuperWithoutLooping() throws Exception {
     assertEquals("4-3s-2s-1s-boof", new BabiesHavingBabies().method("boof"));
-    /*
-     * Something like:
-     *   directlyOn(realObject, Parent.class).method("boof") to call Parent's boof()
-     */
   }
 
   @Test
@@ -29,31 +24,6 @@ public class ClassicSuperHandlingTest {
     assertEquals("3s-2s-1s-boof", new Child().method("boof"));
     assertEquals("2s-1s-boof", new Parent().method("boof"));
     assertEquals("1s-boof", new Grandparent().method("boof"));
-  }
-
-  @Ignore("this doesn't make sense until call-through is turned on by default for unshadowed classes")
-  @Test
-  @Config(shadows = {ParentShadow.class, GrandparentShadow.class})
-  public void shadowInvocationWhenChildIsInstrumentedButUnshadowed() throws Exception {
-    assertEquals("2s-1s-boof", new Child().method("boof"));
-    assertEquals("2s-1s-boof", new Parent().method("boof"));
-    assertEquals("1s-boof", new Grandparent().method("boof"));
-  }
-
-  @Ignore("this doesn't make sense until call-through is turned on by default for unshadowed classes")
-  @Test
-  @Config(shadows = {ParentShadow.class})
-  public void whenIntermediateIsShadowed() throws Exception {
-    assertEquals("2s-1s-boof", new Child().method("boof"));
-    assertEquals("2s-1s-boof", new Parent().method("boof"));
-    assertEquals(null, new Grandparent().method("boof"));
-  }
-
-  @Ignore("this class probably doesn't make much sense anymore...")
-  @Test public void whenNoneAreShadowed() throws Exception {
-    assertEquals(null, new Child().method("boof"));
-    assertEquals(null, new Parent().method("boof"));
-    assertEquals(null, new Grandparent().method("boof"));
   }
 
   @Implements(Child.class)

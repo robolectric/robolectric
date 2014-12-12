@@ -151,7 +151,6 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes 
         } else {
           bytes = origClassBytes;
         }
-//                System.out.println("[DEBUG] Defining " + classFilename + " (" + bytes.length + ") in " + this + ": class" + number++);
         ensurePackage(className);
         return defineClass(className, bytes, 0, bytes.length);
       } catch (Exception e) {
@@ -162,7 +161,6 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes 
       }
     } else {
       throw new IllegalStateException("how did we get here? " + className);
-//            return super.findClass(className);
     }
   }
 
@@ -665,8 +663,10 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes 
           case INVOKEVIRTUAL:
             MethodInsnNode targetMethod = (MethodInsnNode) node;
             targetMethod.desc = remapParams(targetMethod.desc);
-            if (shouldIntercept(targetMethod)) {
-              interceptNastyMethod(instructions, callingMethod, targetMethod);
+            if (isGregorianCalendar(targetMethod)) {
+              replaceNastyGregorianCalendarConstructor(instructions, targetMethod);
+            } else if (shouldIntercept(targetMethod)) {
+              interceptNastyMethod(instructions, targetMethod);
             }
             break;
 
@@ -676,7 +676,27 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes 
       }
     }
 
-    private void interceptNastyMethod(ListIterator<AbstractInsnNode> instructions, MethodNode callingMethod, MethodInsnNode targetMethod) {
+    private boolean isGregorianCalendar(MethodInsnNode targetMethod) {
+      return targetMethod.owner.equals("java/util/GregorianCalendar") && targetMethod.name.equals("<init>") && targetMethod.desc.equals("(Z)V");
+    }
+
+    private void replaceNastyGregorianCalendarConstructor(ListIterator<AbstractInsnNode> instructions, MethodInsnNode targetMethod) {
+      // Remove the call to GregorianCalendar(boolean)
+      instructions.remove();
+
+      // Discard the already-pushed parameter for GregorianCalendar(boolean)
+      instructions.add(new InsnNode(POP));
+
+      // Add parameters values for calling GregorianCalendar(int, int, int)
+      instructions.add(new InsnNode(ICONST_0));
+      instructions.add(new InsnNode(ICONST_0));
+      instructions.add(new InsnNode(ICONST_0));
+
+      // Call GregorianCalendar(int, int, int)
+      instructions.add(new MethodInsnNode(INVOKESPECIAL, targetMethod.owner, targetMethod.name, "(III)V", targetMethod.itf));
+    }
+
+    private void interceptNastyMethod(ListIterator<AbstractInsnNode> instructions, MethodInsnNode targetMethod) {
       boolean isStatic = targetMethod.getOpcode() == INVOKESTATIC;
 
       instructions.remove(); // remove the method invocation
@@ -724,40 +744,46 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes 
       instructions.add(new MethodInsnNode(INVOKESTATIC,
           Type.getType(RobolectricInternals.class).getInternalName(), "intercept",
           "(Ljava/lang/String;Ljava/lang/Object;[Ljava/lang/Object;Ljava/lang/Class;)Ljava/lang/Object;"));
-      Type returnType = Type.getReturnType(targetMethod.desc);
-      // todo: make this honor the return value if somebody cares about what intercept returns
+
+      final Type returnType = Type.getReturnType(targetMethod.desc);
       switch (returnType.getSort()) {
+        case ARRAY:
         case OBJECT:
           instructions.add(new TypeInsnNode(CHECKCAST, remapType(returnType.getInternalName())));
-          break;
-        case ARRAY:
-          // wrong
-          instructions.add(new InsnNode(POP));
-          instructions.add(new InsnNode(ACONST_NULL));
           break;
         case VOID:
           instructions.add(new InsnNode(POP));
           break;
         case Type.LONG:
-          // wrong: should do Long#toLong()
-          instructions.add(new InsnNode(POP));
-          instructions.add(new InsnNode(LCONST_0));
+          instructions.add(new TypeInsnNode(CHECKCAST, Type.getInternalName(Long.class)));
+          instructions.add(new MethodInsnNode(INVOKEVIRTUAL, Type.getInternalName(Long.class), "longValue", Type.getMethodDescriptor(Type.LONG_TYPE), false));
           break;
         case Type.FLOAT:
-          // wrong
-          instructions.add(new InsnNode(POP));
-          instructions.add(new InsnNode(FCONST_0));
+          instructions.add(new TypeInsnNode(CHECKCAST, Type.getInternalName(Float.class)));
+          instructions.add(new MethodInsnNode(INVOKEVIRTUAL, Type.getInternalName(Float.class), "floatValue", Type.getMethodDescriptor(Type.FLOAT_TYPE), false));
           break;
         case Type.DOUBLE:
-          // wrong
-          instructions.add(new InsnNode(POP));
-          instructions.add(new InsnNode(DCONST_0));
+          instructions.add(new TypeInsnNode(CHECKCAST, Type.getInternalName(Double.class)));
+          instructions.add(new MethodInsnNode(INVOKEVIRTUAL, Type.getInternalName(Double.class), "doubleValue", Type.getMethodDescriptor(Type.DOUBLE_TYPE), false));
+          break;
+        case Type.BOOLEAN:
+          instructions.add(new TypeInsnNode(CHECKCAST, Type.getInternalName(Boolean.class)));
+          instructions.add(new MethodInsnNode(INVOKEVIRTUAL, Type.getInternalName(Boolean.class), "booleanValue", Type.getMethodDescriptor(Type.BOOLEAN_TYPE), false));
+          break;
+        case Type.INT:
+          instructions.add(new TypeInsnNode(CHECKCAST, Type.getInternalName(Integer.class)));
+          instructions.add(new MethodInsnNode(INVOKEVIRTUAL, Type.getInternalName(Integer.class), "intValue", Type.getMethodDescriptor(Type.INT_TYPE), false));
+          break;
+        case Type.SHORT:
+          instructions.add(new TypeInsnNode(CHECKCAST, Type.getInternalName(Short.class)));
+          instructions.add(new MethodInsnNode(INVOKEVIRTUAL, Type.getInternalName(Short.class), "shortValue", Type.getMethodDescriptor(Type.SHORT_TYPE), false));
+          break;
+        case Type.BYTE:
+          instructions.add(new TypeInsnNode(CHECKCAST, Type.getInternalName(Byte.class)));
+          instructions.add(new MethodInsnNode(INVOKEVIRTUAL, Type.getInternalName(Byte.class), "byteValue", Type.getMethodDescriptor(Type.BYTE_TYPE), false));
           break;
         default:
-          // wrong
-          instructions.add(new InsnNode(POP));
-          instructions.add(new InsnNode(ICONST_0));
-          break;
+          throw new RuntimeException("Not implemented: " + getClass().getName() + " cannot intercept methods with return type " + returnType.getClassName());
       }
     }
 
@@ -960,7 +986,7 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes 
 
   public static class AsmClassInfo implements ClassInfo {
     private final String className;
-    private ClassNode classNode;
+    private final ClassNode classNode;
 
     public AsmClassInfo(String className, ClassNode classNode) {
       this.className = className;

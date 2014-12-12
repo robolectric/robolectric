@@ -43,8 +43,7 @@ public class ShadowPath {
 
   @Implementation
   public void quadTo(float x1, float y1, float x2, float y2) {
-    quadDescription = "Add a quadratic bezier from last point, approaching (" + x1 + "," + y1 + "), " +
-        "ending at (" + x2 + "," + y2 + ")";
+    quadDescription = "Add a quadratic bezier from last point, approaching (" + x1 + "," + y1 + "), ending at (" + x2 + "," + y2 + ")";
   }
 
   @Implementation
@@ -52,6 +51,11 @@ public class ShadowPath {
     points.clear();
     wasMovedTo = null;
     quadDescription = "";
+  }
+
+  @Implementation // TODO: This should only be used to enable interpolator resource parsing
+  public float[] approximate(float acceptableError) {
+    return new float[]{0, 0, 0, 1, 1, 1};
   }
 
   public String getQuadDescription() {
@@ -77,8 +81,9 @@ public class ShadowPath {
   }
 
   public static class Point {
-    float x, y;
-    private Type type;
+    private final float x;
+    private final float y;
+    private final Type type;
 
     public enum Type {
       MOVE_TO,

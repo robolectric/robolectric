@@ -10,12 +10,13 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@SuppressWarnings("unchecked")
 public class ShadowWranglerUnitTest {
   private ShadowWrangler shadowWrangler;
 
   @Before
   public void setup() throws Exception {
-    shadowWrangler = new ShadowWrangler(ShadowMap.EMPTY, SdkConfig.getDefaultSdk());
+    shadowWrangler = new ShadowWrangler(ShadowMap.EMPTY, new SdkConfig(SdkConfig.FALLBACK_SDK_VERSION));
   }
 
   @Test
@@ -23,15 +24,12 @@ public class ShadowWranglerUnitTest {
     MethodSignature methodSignature = MethodSignature.parse("java/lang/Object/unknownMethod()V");
     Function<Object,Object> handler = shadowWrangler.getInterceptionHandler(methodSignature);
 
-    assertThat(handler)
-        .isNotNull()
-        .isSameAs(ShadowWrangler.DO_NOTHING_HANDLER);
     assertThat(handler.call(null, null, new Object[0])).isNull();
   }
 
   @Test
   public void getInterceptionHandler_whenInterceptingElderOnLinkedHashMap_shouldReturnNonDoNothingHandler() throws Exception {
-    MethodSignature methodSignature = MethodSignature.parse("java/util/LinkedHashMap/eldest()Ljava/lang/Object");
+    MethodSignature methodSignature = MethodSignature.parse("java/util/LinkedHashMap/eldest()Ljava/lang/Object;");
     Function<Object,Object> handler = shadowWrangler.getInterceptionHandler(methodSignature);
 
     assertThat(handler).isNotSameAs(ShadowWrangler.DO_NOTHING_HANDLER);
@@ -43,7 +41,6 @@ public class ShadowWranglerUnitTest {
     map.put(1, "one");
     map.put(2, "two");
 
-    @SuppressWarnings("unchecked")
     Map.Entry<Integer, String> result = (Map.Entry<Integer, String>)
         shadowWrangler.intercept("java/util/LinkedHashMap/eldest()Ljava/lang/Object;", map, null, getClass());
 
@@ -57,7 +54,6 @@ public class ShadowWranglerUnitTest {
   public void intercept_elderOnLinkedHashMapHandler_shouldReturnNullForEmptyMap() throws Throwable {
     LinkedHashMap<Integer, String> map = new LinkedHashMap<Integer, String>();
 
-    @SuppressWarnings("unchecked")
     Map.Entry<Integer, String> result = (Map.Entry<Integer, String>)
         shadowWrangler.intercept("java/util/LinkedHashMap/eldest()Ljava/lang/Object;", map, null, getClass());
 

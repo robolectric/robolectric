@@ -19,6 +19,7 @@ import java.util.List;
 
 import static org.robolectric.Shadows.shadowOf;
 
+// TODO: Consider making these methods static
 public class PreferenceBuilder {
   private Class<? extends Preference> loadClass(String className) {
     try {
@@ -29,15 +30,14 @@ public class PreferenceBuilder {
     }
   }
 
-
   public Preference inflate(PreferenceNode preferenceNode, Activity activity, Preference parent) {
     if ("intent".equals(preferenceNode.getName())) {
-      shadowOf(parent).setIntent(createIntent(preferenceNode));
+      parent.setIntent(createIntent(preferenceNode));
       return null;
     }
 
     Preference preference = create(preferenceNode, activity, (PreferenceGroup) parent);
-    shadowOf(preference).onAttachedToHierarchy(new PreferenceManager(activity, 0));
+    shadowOf(preference).callOnAttachedToHierarchy(new PreferenceManager(activity, 0));
 
     for (PreferenceNode child : preferenceNode.getChildren()) {
       inflate(child, activity, preference);

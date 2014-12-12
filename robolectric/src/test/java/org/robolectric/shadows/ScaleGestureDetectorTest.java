@@ -5,6 +5,7 @@ import android.view.ScaleGestureDetector;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
 import static junit.framework.Assert.*;
@@ -18,7 +19,7 @@ public class ScaleGestureDetectorTest {
 
   @Before
   public void setUp() throws Exception {
-    detector = new ScaleGestureDetector(null, null);
+    detector = new ScaleGestureDetector(RuntimeEnvironment.application, null);
     motionEvent = MotionEvent.obtain(-1, -1, MotionEvent.ACTION_UP, 100, 30, -1);
   }
 
@@ -44,7 +45,7 @@ public class ScaleGestureDetectorTest {
   @Test
   public void test_getListener() throws Exception {
     TestOnGestureListener listener = new TestOnGestureListener();
-    assertSame(listener, shadowOf(new ScaleGestureDetector(null, listener)).getListener());
+    assertSame(listener, shadowOf(new ScaleGestureDetector(RuntimeEnvironment.application, listener)).getListener());
   }
 
   @Test

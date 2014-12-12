@@ -1,17 +1,13 @@
 package org.robolectric.shadows;
 
 import android.accounts.AccountManager;
-import android.app.ActivityManager;
-import android.app.SearchManager;
-import android.app.admin.DevicePolicyManager;
 import android.content.Context;
 import android.os.Build;
 import android.os.Handler;
-import android.os.storage.StorageManager;
 import android.view.Display;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -23,7 +19,6 @@ import static org.robolectric.internal.Shadow.newInstanceOf;
 @Implements(className = ShadowContextImpl.CLASS_NAME)
 public class ShadowContextImpl extends ShadowContext {
   public static final String CLASS_NAME = "android.app.ContextImpl";
-
   private static final Map<String, String> SYSTEM_SERVICE_MAP = new HashMap<String, String>();
 
   static {
@@ -60,7 +55,6 @@ public class ShadowContextImpl extends ShadowContext {
     SYSTEM_SERVICE_MAP.put(Context.ACCOUNT_SERVICE, "android.accounts.AccountManager");
   }
 
-  @RealObject private Context realContextImpl;
   private Map<String, Object> systemServices = new HashMap<String, Object>();
 
   @Implements(className = ShadowServiceFetcher.CLASS_NAME, looseSignatures = true)
@@ -76,7 +70,7 @@ public class ShadowContextImpl extends ShadowContext {
   @Implementation
   public Object getSystemService(String name) {
     if (name.equals(Context.LAYOUT_INFLATER_SERVICE)) {
-      return new RoboLayoutInflater(realContextImpl);
+      return new RoboLayoutInflater(RuntimeEnvironment.application);
     }
 
     Object service = systemServices.get(name);
@@ -88,24 +82,30 @@ public class ShadowContextImpl extends ShadowContext {
       }
 
       try {
-        if (serviceClassName.equals("android.app.SearchManager")) {
-          service = ReflectionHelpers.callConstructorReflectively(SearchManager.class, ClassParameter.from(Context.class, realContextImpl),
+        Class<?> clazz = Class.forName(serviceClassName);
+        if (serviceClassName.equals("android.app.SearchManager")
+            || serviceClassName.equals("android.app.ActivityManager")
+            || serviceClassName.equals("android.app.admin.DevicePolicyManager")) {
+
+          service = ReflectionHelpers.callConstructorReflectively(clazz,
+              ClassParameter.from(Context.class, RuntimeEnvironment.application),
               ClassParameter.from(Handler.class, null));
-        } else if (serviceClassName.equals("android.app.ActivityManager")) {
-          service = ReflectionHelpers.callConstructorReflectively(ActivityManager.class, ClassParameter.from(Context.class, realContextImpl),
-              ClassParameter.from(Handler.class, null));
-        } else if (serviceClassName.equals("android.app.admin.DevicePolicyManager")) {
-          service = ReflectionHelpers.callConstructorReflectively(DevicePolicyManager.class, ClassParameter.from(Context.class, realContextImpl),
-              ClassParameter.from(Handler.class, null));
+
         } else if (serviceClassName.equals("android.os.storage.StorageManager")) {
-          service = ReflectionHelpers.callConstructorReflectively(StorageManager.class);
+          service = ReflectionHelpers.callConstructorReflectively(clazz);
+
+        } else if (serviceClassName.equals("android.hardware.display.DisplayManager")) {
+          service = ReflectionHelpers.callConstructorReflectively(clazz, ClassParameter.from(Context.class, RuntimeEnvironment.application));
+
         } else if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) && (serviceClassName.equals("android.view.WindowManagerImpl"))) {
           Display display = newInstanceOf(Display.class);
           service = ReflectionHelpers.callConstructorReflectively(Class.forName("android.view.WindowManagerImpl"), ClassParameter.from(Display.class, display));
+
         } else if (serviceClassName.equals("android.accounts.AccountManager")) {
           service = AccountManager.get(null);
+
         } else {
-          service = newInstanceOf(Class.forName(serviceClassName));
+          service = newInstanceOf(clazz);
         }
       } catch (ClassNotFoundException e) {
         throw new RuntimeException(e);

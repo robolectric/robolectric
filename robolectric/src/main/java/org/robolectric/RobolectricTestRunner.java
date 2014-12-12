@@ -286,18 +286,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     return lastSdkEnvironment;
   }
 
-  protected SdkConfig pickSdkVersion(AndroidManifest appManifest, Config config) {
-    if (config != null && config.emulateSdk() > 0) {
-      return new SdkConfig(config.emulateSdk());
-    } else {
-      if (appManifest != null) {
-        return new SdkConfig(appManifest.getTargetSdkVersion());
-      } else {
-        return SdkConfig.getDefaultSdk();
-      }
-    }
-  }
-
   protected AndroidManifest getAppManifest(Config config) {
     if (config.manifest().equals(Config.NONE)) {
       return null;
@@ -412,9 +400,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     if (config != null) {
       Class<?>[] shadows = config.shadows();
       if (shadows.length > 0) {
-        shadowMap = shadowMap.newBuilder()
-            .addShadowClasses(shadows)
-            .build();
+        shadowMap = shadowMap.newBuilder().addShadowClasses(shadows).build();
       }
     }
 
@@ -437,21 +423,27 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     parallelUniverseInterface.setUpApplicationState(method, testLifecycle, systemResourceLoader, appManifest, config);
   }
 
-  private int getTargetSdkVersion(AndroidManifest appManifest) {
-    return getTargetVersionWhenAppManifestMightBeNullWhaaa(appManifest);
-  }
-
-  public int getTargetVersionWhenAppManifestMightBeNullWhaaa(AndroidManifest appManifest) {
-    return appManifest == null // app manifest would be null for libraries
-        ? Build.VERSION_CODES.ICE_CREAM_SANDWICH // todo: how should we be picking this?
-        : appManifest.getTargetSdkVersion();
-  }
-
-  protected int pickReportedSdkVersion(Config config, AndroidManifest appManifest) {
-    if (config != null && config.reportSdk() != -1) {
-      return config.reportSdk();
+  private SdkConfig pickSdkVersion(AndroidManifest appManifest, Config config) {
+    if (config != null && config.emulateSdk() > 0) {
+      return new SdkConfig(config.emulateSdk());
     } else {
-      return getTargetSdkVersion(appManifest);
+      if (appManifest != null) {
+        return new SdkConfig(appManifest.getTargetSdkVersion());
+      } else {
+        return new SdkConfig(SdkConfig.FALLBACK_SDK_VERSION);
+      }
+    }
+  }
+
+  private int pickReportedSdkVersion(Config config, AndroidManifest appManifest) {
+    // Check if the user has explicitly overridden the reported version
+    if (config != null && config.reportSdk() > 0) {
+      return config.reportSdk();
+    }
+    if (config != null && config.emulateSdk() > 0) {
+      return config.emulateSdk();
+    } else {
+      return appManifest != null ? appManifest.getTargetSdkVersion() : SdkConfig.FALLBACK_SDK_VERSION;
     }
   }
 
@@ -523,13 +515,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   protected ShadowMap createShadowMap() {
     synchronized (RobolectricTestRunner.class) {
       if (mainShadowMap != null) return mainShadowMap;
-
-      mainShadowMap = new ShadowMap.Builder()
-          //.addShadowClasses(Shadows.DEFAULT_SHADOW_CLASSES)
-          .build();
-      //mainShadowMap = new ShadowMap.Builder()
-      //        .addShadowClasses(Shadows.DEFAULT_SHADOW_CLASSES)
-      //        .build();
+      mainShadowMap = new ShadowMap.Builder().build();
       return mainShadowMap;
     }
   }

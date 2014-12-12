@@ -8,6 +8,8 @@ import android.graphics.Typeface;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.internal.Shadow;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /**
  * Shadow of {@code Paint} that has some extra accessors so that tests can tell whether a {@code Paint} object was
@@ -42,6 +44,7 @@ public class ShadowPaint {
   public void __constructor__(int flags) {
     this.flags = flags;
     antiAlias = (flags & Paint.ANTI_ALIAS_FLAG) == Paint.ANTI_ALIAS_FLAG;
+    Shadow.invokeConstructor(Paint.class, paint, ClassParameter.from(int.class, flags));
   }
 
   @Implementation

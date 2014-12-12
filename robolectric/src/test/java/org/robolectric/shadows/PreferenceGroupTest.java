@@ -24,7 +24,7 @@ import static org.robolectric.Shadows.shadowOf;
 public class PreferenceGroupTest {
 
   private TestPreferenceGroup group;
-  private ShadowPreferenceGroup shadow;
+  private ShadowPreference shadow;
   private Activity activity;
   private RoboAttributeSet attrs;
   private Preference pref1, pref2;
@@ -37,7 +37,7 @@ public class PreferenceGroupTest {
 
     group = new TestPreferenceGroup(activity, attrs);
     shadow = shadowOf(group);
-    shadow.onAttachedToHierarchy(new PreferenceManager(activity, 0));
+    shadow.callOnAttachedToHierarchy(new PreferenceManager(activity, 0));
 
     pref1 = new Preference(activity);
     pref1.setKey("pref1");
@@ -144,7 +144,7 @@ public class PreferenceGroupTest {
   @Test
   public void shouldFindPreferenceRecursively() {
     TestPreferenceGroup group2 = new TestPreferenceGroup(activity, attrs);
-    shadowOf(group2).onAttachedToHierarchy(new PreferenceManager(activity, 0));
+    shadowOf(group2).callOnAttachedToHierarchy(new PreferenceManager(activity, 0));
     group2.addPreference(pref2);
 
     group.addPreference(pref1);
@@ -158,7 +158,7 @@ public class PreferenceGroupTest {
     boolean[] values = {false, true};
 
     TestPreferenceGroup group2 = new TestPreferenceGroup(activity, attrs);
-    shadowOf(group2).onAttachedToHierarchy(new PreferenceManager(activity, 0));
+    shadowOf(group2).callOnAttachedToHierarchy(new PreferenceManager(activity, 0));
     group2.addPreference(pref2);
 
     group.addPreference(pref1);

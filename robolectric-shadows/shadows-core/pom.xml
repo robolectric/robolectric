@@ -62,11 +62,13 @@
     <dependency>
       <groupId>com.almworks.sqlite4java</groupId>
       <artifactId>sqlite4java</artifactId>
+      <version>0.282</version>
     </dependency>
 
     <dependency>
       <groupId>com.github.axet.litedb</groupId>
       <artifactId>libsqlite</artifactId>
+      <version>${libsqlite.version}</version>
       <classifier>natives-windows-x86</classifier>
       <scope>provided</scope>
     </dependency>
@@ -74,6 +76,7 @@
     <dependency>
       <groupId>com.github.axet.litedb</groupId>
       <artifactId>libsqlite</artifactId>
+      <version>${libsqlite.version}</version>
       <classifier>natives-windows-x86_64</classifier>
       <scope>provided</scope>
     </dependency>
@@ -81,6 +84,7 @@
     <dependency>
       <groupId>com.github.axet.litedb</groupId>
       <artifactId>libsqlite</artifactId>
+      <version>${libsqlite.version}</version>
       <classifier>natives-mac-x86_64</classifier>
       <scope>provided</scope>
     </dependency>
@@ -88,6 +92,7 @@
     <dependency>
       <groupId>com.github.axet.litedb</groupId>
       <artifactId>libsqlite</artifactId>
+      <version>${libsqlite.version}</version>
       <classifier>natives-linux-x86</classifier>
       <scope>provided</scope>
     </dependency>
@@ -96,12 +101,6 @@
       <groupId>com.github.axet.litedb</groupId>
       <artifactId>libsqlite</artifactId>
       <classifier>natives-linux-x86_64</classifier>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>com.github.axet.litedb</groupId>
-      <artifactId>libsqlite</artifactId>
       <version>${libsqlite.version}</version>
       <scope>provided</scope>
     </dependency>
@@ -278,6 +277,12 @@
       <id>android-19</id>
       <properties>
         <api>19</api>
+      </properties>
+    </profile>
+    <profile>
+      <id>android-21</id>
+      <properties>
+        <api>21</api>
       </properties>
       <activation>
         <activeByDefault>true</activeByDefault>

@@ -115,14 +115,6 @@ public class ObjectAnimatorTest {
   }
 
   @Test
-  public void getAnimatorsFor_shouldReturnAMapOfAnimatorsCreatedForTarget() throws Exception {
-    View target = new View(RuntimeEnvironment.application);
-    ObjectAnimator expectedAnimator = ObjectAnimator.ofFloat(target, "translationX", 0f, 1f);
-
-    assertThat(ShadowObjectAnimator.getAnimatorsFor(target).get("translationX")).isSameAs(expectedAnimator);
-  }
-
-  @Test
   public void testIsRunning() throws Exception {
     View target = new View(RuntimeEnvironment.application);
     ObjectAnimator expectedAnimator = ObjectAnimator.ofFloat(target, "translationX", 0f, 1f);

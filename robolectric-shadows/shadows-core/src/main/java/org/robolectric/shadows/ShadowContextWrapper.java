@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
@@ -22,6 +23,7 @@ import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.internal.Shadow;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.fakes.RoboSharedPreferences;
 
@@ -34,7 +36,6 @@ import java.util.List;
 import java.util.Map;
 
 import static android.database.sqlite.SQLiteDatabase.CursorFactory;
-import static org.robolectric.Shadows.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ContextWrapper.class)
@@ -61,6 +62,19 @@ public class ShadowContextWrapper extends ShadowContext {
   public Context getApplicationContext() {
     Context applicationContext = realContextWrapper.getBaseContext().getApplicationContext();
     return applicationContext == null ? RuntimeEnvironment.application : applicationContext;
+  }
+
+  @Implementation
+  public ApplicationInfo getApplicationInfo() {
+    ApplicationInfo applicationInfo = Shadow.newInstance(ApplicationInfo.class, new Class[0], new Object[0]);
+    applicationInfo.packageName = ShadowApplication.getInstance().getAppManifest().getPackageName();
+    applicationInfo.targetSdkVersion = ShadowApplication.getInstance().getAppManifest().getTargetSdkVersion();
+    return applicationInfo;
+  }
+
+  @Implementation
+  public int getUserId() {
+    return 0;
   }
 
   @Implementation

@@ -9,15 +9,12 @@ import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.LayoutAnimationController;
 import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
@@ -172,17 +169,6 @@ public class ViewGroupTest {
     //can find views by tag from child3
     assertThat(child3.findViewWithTag("tag1")).isSameAs(child3a);
     assertThat(child3.findViewWithTag("tag2")).isSameAs(child3b);
-  }
-
-  @Test @Ignore("This doesn't actually match Android's behavior, at least in Jelly Bean.")
-  public void shouldFindViewWithTag_whenViewGroupOverridesGetTag() throws Exception {
-    ViewGroup viewGroup = new LinearLayout(RuntimeEnvironment.application) {
-      @Override
-      public Object getTag() {
-        return "blarg";
-      }
-    };
-    assertThat((ViewGroup) viewGroup.findViewWithTag("blarg")).isSameAs(viewGroup);
   }
 
   @Test

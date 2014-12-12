@@ -29,7 +29,6 @@ import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import org.junit.Ignore;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ListViewTest {
@@ -44,46 +43,6 @@ public class ListViewTest {
   public void setUp() throws Exception {
     transcript = new Transcript();
     listView = new ListView(RuntimeEnvironment.application);
-  }
-
-  @Ignore("not yet working in 2.0, sorry :-(") // todo 2.0-cleanup
-  @Test
-  public void testSetSelection_ShouldFireOnItemSelectedListener() throws Exception {
-    listView.setAdapter(new CountingAdapter(1));
-    ShadowHandler.idleMainLooper();
-
-    listView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-      @Override
-      public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        transcript.add("item was selected: " + position);
-      }
-
-      @Override
-      public void onNothingSelected(AdapterView<?> parent) {
-      }
-    });
-
-    listView.setSelection(0);
-    ShadowHandler.idleMainLooper();
-    transcript.assertEventsSoFar("item was selected: 0");
-  }
-
-  @Test
-  public void addHeaderView_ShouldThrowIfAdapterIsAlreadySet() throws Exception {
-    listView.setAdapter(new CountingAdapter(1));
-    try {
-      listView.addHeaderView(new View(RuntimeEnvironment.application));
-      fail();
-    } catch (java.lang.IllegalStateException exception) {
-      assertThat(exception.getMessage()).isEqualTo("Cannot add header view to list -- setAdapter has already been called.");
-    }
-
-    try {
-      listView.addHeaderView(new View(RuntimeEnvironment.application), null, false);
-      fail();
-    } catch (java.lang.IllegalStateException exception) {
-      assertThat(exception.getMessage()).isEqualTo("Cannot add header view to list -- setAdapter has already been called.");
-    }
   }
 
   @Test
@@ -121,18 +80,6 @@ public class ListViewTest {
     listView.addHeaderView(view);
 
     assertThat(listView.findViewById(42)).isSameAs(view);
-  }
-
-  @Test @Ignore("Android doesn't behave this way, at least as of Jelly Bean.")
-  public void addFooterView_ShouldThrowIfAdapterIsAlreadySet() throws Exception {
-    listView.setAdapter(new CountingAdapter(1));
-    try {
-      listView.addFooterView(new View(RuntimeEnvironment.application));
-      fail();
-    } catch (java.lang.IllegalStateException exception) {
-      assertThat(exception.getMessage()).isEqualTo("Cannot add footer view to list -- setAdapter has already been called");
-
-    }
   }
 
   @Test
@@ -258,74 +205,6 @@ public class ListViewTest {
     shadowListView.clickFirstItemContainingText("Non-existant item");
   }
 
-  @Test @Ignore("Old safety checks, no longer supported.")
-  public void revalidate_whenItemsHaveNotChanged_shouldWork() throws Exception {
-    prepareWithListAdapter();
-    shadowOf(listView).checkValidity();
-  }
-
-  @Test @Ignore("Old safety checks, no longer supported.")
-  public void revalidate_removingAnItemWithoutInvalidating_shouldExplode() throws Exception {
-    ListAdapter adapter = prepareWithListAdapter();
-    adapter.items.remove(0);
-    try {
-      shadowOf(listView).checkValidity(); // should 'splode!
-      fail("should have thrown!");
-    } catch (RuntimeException e) {
-      // expected
-    }
-  }
-
-  @Test @Ignore("Old safety checks, no longer supported.")
-  public void revalidate_addingAnItemWithoutInvalidating_shouldExplode() throws Exception {
-    ListAdapter adapter = prepareWithListAdapter();
-    adapter.items.add("x");
-    try {
-      shadowOf(listView).checkValidity(); // should 'splode!
-      fail("should have thrown!");
-    } catch (RuntimeException e) {
-      // expected
-    }
-  }
-
-  @Test @Ignore("Old safety checks, no longer supported.")
-  public void revalidate_changingAnItemWithoutInvalidating_shouldExplode() throws Exception {
-    ListAdapter adapter = prepareWithListAdapter();
-    adapter.items.remove(2);
-    adapter.items.add("x");
-    try {
-      shadowOf(listView).checkValidity(); // should 'splode!
-      fail("should have thrown!");
-    } catch (RuntimeException e) {
-      // expected
-    }
-  }
-
-  @Test @Ignore("Not supported as of Robolectric 2.0-alpha3.")
-  public void testShouldBeAbleToTurnOffAutomaticRowUpdates() throws Exception {
-    try {
-      TranscriptAdapter adapter1 = new TranscriptAdapter();
-      assertThat(adapter1.getCount()).isEqualTo(1);
-      listView.setAdapter(adapter1);
-      transcript.assertEventsSoFar("called getView");
-      transcript.clear();
-      adapter1.notifyDataSetChanged();
-      transcript.assertEventsSoFar("called getView");
-
-      transcript.clear();
-      ShadowAdapterView.automaticallyUpdateRowViews(false);
-
-      TranscriptAdapter adapter2 = new TranscriptAdapter();
-      assertThat(adapter2.getCount()).isEqualTo(1);
-      listView.setAdapter(adapter2);
-      adapter2.notifyDataSetChanged();
-      transcript.assertNoEventsSoFar();
-
-    } finally {
-      ShadowAdapterView.automaticallyUpdateRowViews(true);
-    }
-  }
-
   @Test(expected = UnsupportedOperationException.class)
   public void removeAllViews_shouldThrowAnException() throws Exception {
     listView.removeAllViews();
@@ -354,27 +233,6 @@ public class ListViewTest {
     View view = new View(RuntimeEnvironment.application);
     shadowOf(view).setMyParent(new StubViewRoot()); // Android implementation requires the item have a parent
     assertThat(listView.getPositionForView(view)).isEqualTo(AdapterView.INVALID_POSITION);
-  }
-
-  @Test @Ignore("Old safety checks, no longer supported.")
-  public void revalidate_withALazyAdapterShouldWork() {
-    ListAdapter lazyAdapter = new ListAdapter() {
-      List<String> lazyItems = Arrays.asList("a", "b", "c");
-
-      @Override
-      public View getView(int position, View convertView, ViewGroup parent) {
-        if (items.isEmpty()) items.addAll(lazyItems);
-        return super.getView(position, convertView, parent);
-      }
-
-      @Override
-      public int getCount() {
-        return lazyItems.size();
-      }
-    };
-    listView.setAdapter(lazyAdapter);
-    ShadowHandler.idleMainLooper();
-    shadowOf(listView).checkValidity();
   }
 
   @Test
@@ -562,29 +420,6 @@ public class ListViewTest {
         lastCheckedPosition = i;
       }
 
-    }
-  }
-
-  private class TranscriptAdapter extends BaseAdapter {
-    @Override
-    public int getCount() {
-      return 1;
-    }
-
-    @Override
-    public Object getItem(int position) {
-      return null;
-    }
-
-    @Override
-    public long getItemId(int position) {
-      return position;
-    }
-
-    @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-      transcript.add("called getView");
-      return new View(parent.getContext());
     }
   }
 }

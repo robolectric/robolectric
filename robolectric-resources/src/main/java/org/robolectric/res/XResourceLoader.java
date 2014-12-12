@@ -6,6 +6,7 @@ import org.w3c.dom.Document;
 import java.io.IOException;
 import java.io.InputStream;
 
+// TODO: Give me a better name
 abstract class XResourceLoader implements ResourceLoader {
   final ResBunch data = new ResBunch();
   final ResBundle<PluralResourceLoader.PluralRules> pluralsData = new ResBundle<PluralResourceLoader.PluralRules>();

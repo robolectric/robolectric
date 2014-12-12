@@ -11,6 +11,7 @@ import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
@@ -513,5 +514,17 @@ public class ParcelTest {
     assertThat(parcel2.readDouble()).isEqualTo(25.0);
     assertThat(parcel2.readFloat()).isEqualTo(1.25f);
     assertThat(parcel2.readByte()).isEqualTo((byte) 0xAF);
+  }
+
+  @Test @Ignore("Needs implementation in ShadowParcel.ByteBuffer")
+  public void testSetDataSize() {
+    parcel.setDataSize(8);
+    assertThat(parcel.dataSize()).isEqualTo(8);
+  }
+
+  @Test @Ignore("Needs implementation in ShadowParcel.ByteBuffer")
+  public void testSetDataCapacity() {
+    parcel.setDataCapacity(8);
+    assertThat(parcel.dataCapacity()).isEqualTo(8);
   }
 }

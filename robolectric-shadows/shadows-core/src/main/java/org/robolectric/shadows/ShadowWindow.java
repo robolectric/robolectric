@@ -13,6 +13,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceLoader;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import java.lang.reflect.Constructor;
 
@@ -22,8 +23,7 @@ import static org.robolectric.internal.Shadow.directlyOn;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Window.class)
 public class ShadowWindow {
-  @RealObject
-  Window realWindow;
+  @RealObject Window realWindow;
 
   private int flags;
   private int softInputMode;
@@ -37,13 +37,13 @@ public class ShadowWindow {
   @Implementation
   public void setFlags(int flags, int mask) {
     this.flags = (this.flags & ~mask) | (flags & mask);
-    directlyOn(realWindow, Window.class, "setFlags", new ReflectionHelpers.ClassParameter(int.class, flags), new ReflectionHelpers.ClassParameter(int.class, mask));
+    directlyOn(realWindow, Window.class, "setFlags", ClassParameter.from(int.class, flags), ClassParameter.from(int.class, mask));
   }
 
   @Implementation
   public void setSoftInputMode(int softInputMode) {
     this.softInputMode = softInputMode;
-    directlyOn(realWindow, Window.class, "setSoftInputMode", new ReflectionHelpers.ClassParameter(int.class, softInputMode));
+    directlyOn(realWindow, Window.class, "setSoftInputMode", ClassParameter.from(int.class, softInputMode));
   }
 
   public boolean getFlag(int flag) {
@@ -52,20 +52,6 @@ public class ShadowWindow {
 
   public CharSequence getTitle() {
     return "";
-  }
-
-  public ImageView getHomeIcon() {
-    ResourceLoader resourceLoader = shadowOf(RuntimeEnvironment.application).getResourceLoader();
-    ResName internalResource = new ResName("android", "id", "home");
-    Integer resId = resourceLoader.getResourceIndex().getResourceId(internalResource);
-    try {
-      Class<?> actionBarViewClass = Class.forName("com.android.internal.widget.ActionBarView");
-      ViewGroup actionBarView;
-      actionBarView = ReflectionHelpers.getFieldReflectively(realWindow, "mActionBar");
-      return (ImageView) actionBarView.findViewById(resId);
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException("could not resolve ActionBarView");
-    }
   }
 
   public Drawable getBackgroundDrawable() {

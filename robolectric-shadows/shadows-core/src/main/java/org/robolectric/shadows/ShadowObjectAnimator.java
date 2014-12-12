@@ -4,23 +4,22 @@ import android.animation.ObjectAnimator;
 import android.animation.TypeEvaluator;
 import android.os.Handler;
 import android.os.Looper;
-
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.internal.Shadow;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ObjectAnimator.class)
 public class ShadowObjectAnimator extends ShadowValueAnimator {
   private static boolean pausingEndNotifications;
-  private static List<ShadowObjectAnimator> pausedEndNotifications = new ArrayList<ShadowObjectAnimator>();
+  private static List<ShadowObjectAnimator> pausedEndNotifications = new ArrayList<>();
 
   @RealObject
   private ObjectAnimator realObject;
@@ -30,56 +29,9 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
   private int[] intValues;
   private Object[] objectValues;
   private Class<?> animationType;
-  private static final Map<Object, Map<String, ObjectAnimator>> mapsForAnimationTargets = new HashMap<Object, Map<String, ObjectAnimator>>();
   private boolean isRunning;
   private boolean cancelWasCalled;
   private TypeEvaluator typeEvaluator;
-
-  @Implementation
-  public static ObjectAnimator ofFloat(Object target, String propertyName, float... values) {
-    ObjectAnimator result = new ObjectAnimator();
-
-    result.setTarget(target);
-    result.setPropertyName(propertyName);
-    result.setFloatValues(values);
-
-    getAnimatorMapFor(target).put(propertyName, result);
-    return result;
-  }
-
-  @Implementation
-  public static ObjectAnimator ofInt(Object target, String propertyName, int... values) {
-    ObjectAnimator result = new ObjectAnimator();
-
-    result.setTarget(target);
-    result.setPropertyName(propertyName);
-    result.setIntValues(values);
-
-    getAnimatorMapFor(target).put(propertyName, result);
-    return result;
-  }
-
-  @Implementation
-  public static ObjectAnimator ofObject(Object target, String propertyName, TypeEvaluator typeEvaluator, Object... values) {
-    ObjectAnimator result = new ObjectAnimator();
-
-    result.setTarget(target);
-    result.setPropertyName(propertyName);
-    result.setObjectValues(values);
-    result.setEvaluator(typeEvaluator);
-
-    getAnimatorMapFor(target).put(propertyName, result);
-    return result;
-  }
-
-  private static Map<String, ObjectAnimator> getAnimatorMapFor(Object target) {
-    Map<String, ObjectAnimator> result = mapsForAnimationTargets.get(target);
-    if (result == null) {
-      result = new HashMap<String, ObjectAnimator>();
-      mapsForAnimationTargets.put(target, result);
-    }
-    return result;
-  }
 
   private void setAnimationType(Class<?> type) {
     animationType = type;
@@ -109,18 +61,21 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
   public void setFloatValues(float... values) {
     this.floatValues = values;
     Shadows.shadowOf(realObject).setAnimationType(float.class);
+    Shadow.directlyOn(realObject, ObjectAnimator.class, "setFloatValues", ClassParameter.from(float[].class, values));
   }
 
   @Implementation
   public void setIntValues(int... values) {
     this.intValues = values;
     Shadows.shadowOf(realObject).setAnimationType(int.class);
+    Shadow.directlyOn(realObject, ObjectAnimator.class, "setIntValues", ClassParameter.from(int[].class, values));
   }
 
   @Implementation
   public void setObjectValues(Object... values) {
     this.objectValues = values;
     Shadows.shadowOf(realObject).setAnimationType(values[0].getClass());
+    Shadow.directlyOn(realObject, ObjectAnimator.class, "setObjectValues", ClassParameter.from(Object[].class, values));
   }
 
   @Implementation
@@ -197,10 +152,6 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
 
   public void resetCancelWasCalled() {
     cancelWasCalled = false;
-  }
-
-  public static Map<String, ObjectAnimator> getAnimatorsFor(Object target) {
-    return getAnimatorMapFor(target);
   }
 
   public static void pauseEndNotifications() {

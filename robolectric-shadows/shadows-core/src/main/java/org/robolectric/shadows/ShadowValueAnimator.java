@@ -46,11 +46,15 @@ public class ShadowValueAnimator extends ShadowAnimator {
 
   @Implementation
   public void cancel() {
-
   }
 
   @Implementation
   public void start() {
     realObject.end();
   }
+
+//  @Implementation
+//  public void animateValue(float fraction) {
+//    System.err.println(System.identityHashCode(this) + ": Animate value: " + fraction);
+//  }
 }

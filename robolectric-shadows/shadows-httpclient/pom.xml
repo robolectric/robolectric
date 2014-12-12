@@ -38,14 +38,14 @@
 
     <!-- Project Dependencies -->
     <dependency>
-      <groupId>org.robolectric</groupId>
-      <artifactId>android-all</artifactId>
-    </dependency>
-
-    <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
       <version>4.0.3</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.robolectric</groupId>
+      <artifactId>android-all</artifactId>
     </dependency>
   </dependencies>
 

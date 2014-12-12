@@ -29,8 +29,6 @@ public class ShadowWrangler implements ClassHandler {
   public static final Plan CALL_REAL_CODE_PLAN = null;
   private static final boolean STRIP_SHADOW_STACK_TRACES = true;
   private static final ShadowConfig NO_SHADOW_CONFIG = new ShadowConfig(Object.class.getName(), true, false, false);
-  public boolean debug = false;
-
   private final ShadowMap shadowMap;
   private final Map<Class, MetaShadow> metaShadowMap = new HashMap<Class, MetaShadow>();
   private final Map<String, Plan> planCache = new LinkedHashMap<String, Plan>() {
@@ -41,10 +39,48 @@ public class ShadowWrangler implements ClassHandler {
   };
   private final Map<Class, ShadowConfig> shadowConfigCache = new HashMap<Class, ShadowConfig>();
   private final SdkConfig sdkConfig;
+  public boolean debug = false;
+  public static final HashMap<String, Object> PRIMITIVE_RETURN_VALUES = new HashMap<>();
+
+  static {
+    PRIMITIVE_RETURN_VALUES.put("boolean", Boolean.FALSE);
+    PRIMITIVE_RETURN_VALUES.put("int", Integer.valueOf(0));
+    PRIMITIVE_RETURN_VALUES.put("long", Long.valueOf(0));
+    PRIMITIVE_RETURN_VALUES.put("float", Float.valueOf(0));
+    PRIMITIVE_RETURN_VALUES.put("double", Double.valueOf(0));
+    PRIMITIVE_RETURN_VALUES.put("short", Short.valueOf((short) 0));
+    PRIMITIVE_RETURN_VALUES.put("byte", Byte.valueOf((byte) 0));
+  }
 
   public ShadowWrangler(ShadowMap shadowMap, SdkConfig sdkConfig) {
     this.shadowMap = shadowMap;
     this.sdkConfig = sdkConfig;
+  }
+
+  public static Class<?> loadClass(String paramType, ClassLoader classLoader) {
+    Class primitiveClass = RoboType.findPrimitiveClass(paramType);
+    if (primitiveClass != null) return primitiveClass;
+
+    int arrayLevel = 0;
+    while (paramType.endsWith("[]")) {
+      arrayLevel++;
+      paramType = paramType.substring(0, paramType.length() - 2);
+    }
+
+    Class<?> clazz = RoboType.findPrimitiveClass(paramType);
+    if (clazz == null) {
+      try {
+        clazz = classLoader.loadClass(paramType);
+      } catch (ClassNotFoundException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
+    while (arrayLevel-- > 0) {
+      clazz = Array.newInstance(clazz, 0).getClass();
+    }
+
+    return clazz;
   }
 
   @Override
@@ -214,8 +250,9 @@ public class ShadowWrangler implements ClassHandler {
     return getInterceptionHandler(methodSignature).call(theClass, instance, params);
   }
 
+  @SuppressWarnings("UnnecessaryBoxing")
   public Function<Object, Object> getInterceptionHandler(final MethodSignature methodSignature) {
-    // todo: move these somewhere else!
+    // TODO: move these somewhere else!
     if (methodSignature.matches(LinkedHashMap.class.getName(), "eldest")) {
       return new Function<Object, Object>() {
         @Override
@@ -256,7 +293,7 @@ public class ShadowWrangler implements ClassHandler {
           ClassLoader cl = theClass.getClassLoader();
           Class<?> shadowSystemClockClass;
           try {
-              shadowSystemClockClass = cl.loadClass("org.robolectric.shadows.ShadowSystemClock");
+            shadowSystemClockClass = cl.loadClass("org.robolectric.shadows.ShadowSystemClock");
           } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
           }
@@ -264,9 +301,42 @@ public class ShadowWrangler implements ClassHandler {
           return ReflectionHelpers.callStaticMethodReflectively(shadowSystemClockClass, methodSignature.methodName);
         }
       };
+    } else if (methodSignature.matches("java.lang.System", "arraycopy")) {
+      return new Function<Object, Object>() {
+        @Override
+        public Object call(Class<?> theClass, Object value, Object[] params) {
+          //noinspection SuspiciousSystemArraycopy
+          System.arraycopy(params[0], (Integer) params[1], params[2], (Integer) params[3], (Integer) params[4]);
+          return null;
+        }
+      };
+    } else if (methodSignature.matches("java.util.Locale", "adjustLanguageCode")) {
+      return new Function<Object, Object>() {
+        @Override
+        public Object call(Class<?> theClass, Object value, Object[] params) {
+          return params[0];
+        }
+      };
+    } else if (methodSignature.matches("java.lang.System", "logE")) {
+      return new Function<Object, Object>() {
+        @Override
+        public Object call(Class<?> theClass, Object value, Object[] params) {
+          String message = "System.logE: ";
+          for (Object param : params) {
+            message += param.toString();
+          }
+          System.err.println(message);
+          return null;
+        }
+      };
     }
 
-    return ShadowWrangler.DO_NOTHING_HANDLER;
+    return new Function<Object, Object>() {
+      @Override
+      public Object call(Class<?> theClass, Object value, Object[] params) {
+        return PRIMITIVE_RETURN_VALUES.get(methodSignature.returnType);
+      }
+    };
   }
 
   @Override
@@ -316,32 +386,6 @@ public class ShadowWrangler implements ClassHandler {
       throwable.setStackTrace(stackTrace.toArray(new StackTraceElement[stackTrace.size()]));
     }
     return throwable;
-  }
-
-  public static Class<?> loadClass(String paramType, ClassLoader classLoader) {
-    Class primitiveClass = RoboType.findPrimitiveClass(paramType);
-    if (primitiveClass != null) return primitiveClass;
-
-    int arrayLevel = 0;
-    while (paramType.endsWith("[]")) {
-      arrayLevel++;
-      paramType = paramType.substring(0, paramType.length() - 2);
-    }
-
-    Class<?> clazz = RoboType.findPrimitiveClass(paramType);
-    if (clazz == null) {
-      try {
-        clazz = classLoader.loadClass(paramType);
-      } catch (ClassNotFoundException e) {
-        throw new RuntimeException(e);
-      }
-    }
-
-    while (arrayLevel-- > 0) {
-      clazz = Array.newInstance(clazz, 0).getClass();
-    }
-
-    return clazz;
   }
 
   public Object createShadowFor(Object instance) {
@@ -446,23 +490,6 @@ public class ShadowWrangler implements ClassHandler {
     }
   }
 
-  private class MetaShadow {
-    List<Field> realObjectFields = new ArrayList<Field>();
-
-    public MetaShadow(Class<?> shadowClass) {
-      while (shadowClass != null) {
-        for (Field field : shadowClass.getDeclaredFields()) {
-          if (field.isAnnotationPresent(RealObject.class)) {
-            field.setAccessible(true);
-            realObjectFields.add(field);
-          }
-        }
-        shadowClass = shadowClass.getSuperclass();
-      }
-
-    }
-  }
-
   private static class ShadowMethodPlan implements Plan {
     private final Method shadowMethod;
 
@@ -481,6 +508,22 @@ public class ShadowWrangler implements ClassHandler {
             + (shadow == null ? "" : " on instance of " + shadow.getClass() + ", but " + shadow.getClass().getSimpleName() + " doesn't extend " + shadowMethod.getDeclaringClass().getSimpleName()));
       } catch (InvocationTargetException e) {
         throw e.getCause();
+      }
+    }
+  }
+
+  private class MetaShadow {
+    List<Field> realObjectFields = new ArrayList<Field>();
+
+    public MetaShadow(Class<?> shadowClass) {
+      while (shadowClass != null) {
+        for (Field field : shadowClass.getDeclaredFields()) {
+          if (field.isAnnotationPresent(RealObject.class)) {
+            field.setAccessible(true);
+            realObjectFields.add(field);
+          }
+        }
+        shadowClass = shadowClass.getSuperclass();
       }
     }
   }

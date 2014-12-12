@@ -8,7 +8,6 @@ import org.robolectric.res.ResourceExtractor;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.ResourcePath;
 
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,8 +23,7 @@ public class SdkEnvironment {
   }
 
   public PackageResourceLoader createSystemResourceLoader(DependencyResolver dependencyResolver) {
-    URL url = dependencyResolver.getLocalArtifactUrl(sdkConfig.getSystemResourceDependency());
-    Fs systemResFs = Fs.fromJar(url);
+    Fs systemResFs = Fs.fromJar(dependencyResolver.getLocalArtifactUrl(sdkConfig.getSystemResourceDependency()));
     ResourceExtractor resourceExtractor = new ResourceExtractor(getRobolectricClassLoader());
     ResourcePath resourcePath = new ResourcePath(resourceExtractor.getProcessedRFile(), resourceExtractor.getPackageName(), systemResFs.join("res"), systemResFs.join("assets"));
     return new PackageResourceLoader(resourcePath, resourceExtractor);

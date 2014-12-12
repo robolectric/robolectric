@@ -1,7 +1,6 @@
 package org.robolectric;
 
 import android.content.res.Resources;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
@@ -14,14 +13,6 @@ import static org.junit.Assert.assertEquals;
 @RunWith(TestRunners.WithDefaults.class)
 public class LibraryHandlingTest {
   private final Resources resources = RuntimeEnvironment.application.getResources();
-
-  @Ignore("this seems to be unsupported behavior after Android's library scheme changes") @Test
-  public void shouldFetchResourcesFromExplicitlyIndicatedLibrary() throws Exception {
-    assertEquals("from main", resources.getText(org.robolectric.R.string.only_in_main));
-    assertEquals("from lib1", resources.getText(org.robolectric.lib1.R.string.only_in_lib1));
-    assertEquals("from lib2", resources.getText(org.robolectric.lib2.R.string.only_in_lib2));
-    assertEquals("from lib3", resources.getText(org.robolectric.lib3.R.string.only_in_lib3));
-  }
 
   @Test
   public void shouldFetchResourcesFromMergedLibraries() throws Exception {

@@ -2,10 +2,9 @@ package org.robolectric.res;
 
 public class OpaqueFileLoader extends XmlLoader {
   private final ResBunch resBunch;
-  private String attrType;
+  private final String attrType;
 
   public OpaqueFileLoader(ResBunch resBunch, String attrType) {
-    super();
     this.resBunch = resBunch;
     this.attrType = attrType;
   }

@@ -60,5 +60,4 @@
   <style name="IndirectButtonStyle" parent="@android:attr/buttonStyle">
     <item name="android:minHeight">12dp</item>
   </style>
-
 </resources>

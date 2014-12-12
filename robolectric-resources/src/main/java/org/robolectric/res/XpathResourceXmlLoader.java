@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.xml.xpath.XPathExpressionException;
 
 public abstract class XpathResourceXmlLoader extends XmlLoader {
-  private String expression;
+  private final String expression;
 
   public XpathResourceXmlLoader(String expression) {
     this.expression = expression;

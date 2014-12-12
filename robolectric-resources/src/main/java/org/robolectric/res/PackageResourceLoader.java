@@ -31,6 +31,7 @@ public class PackageResourceLoader extends XResourceLoader {
         new ValueResourceLoader(data, "/resources/bool", "bool", ResType.BOOLEAN),
         new ValueResourceLoader(data, "/resources/item[@type='bool']", "bool", ResType.BOOLEAN),
         new ValueResourceLoader(data, "/resources/color", "color", ResType.COLOR),
+        new ValueResourceLoader(data, "/resources/drawable", "drawable", ResType.DRAWABLE),
         new ValueResourceLoader(data, "/resources/item[@type='color']", "color", ResType.COLOR),
         new ValueResourceLoader(data, "/resources/dimen", "dimen", ResType.DIMEN),
         new ValueResourceLoader(data, "/resources/item[@type='dimen']", "dimen", ResType.DIMEN),
@@ -55,6 +56,8 @@ public class PackageResourceLoader extends XResourceLoader {
     documentLoader.load("animator", new OpaqueFileLoader(data, "animator"), new XmlFileLoader(xmlDocuments, "animator"));
     documentLoader.load("color", new ColorResourceLoader(data), new XmlFileLoader(xmlDocuments, "color"));
     documentLoader.load("xml", new PreferenceLoader(preferenceData), new XmlFileLoader(xmlDocuments, "xml"));
+    documentLoader.load("transition", new OpaqueFileLoader(data, "transition"), new XmlFileLoader(xmlDocuments, "transition"));
+    documentLoader.load("interpolator", new OpaqueFileLoader(data, "interpolator"), new XmlFileLoader(xmlDocuments, "interpolator"));
 
     new DrawableResourceLoader(drawableData).findDrawableResources(resourcePath);
     new RawResourceLoader(resourcePath).loadTo(rawResources);

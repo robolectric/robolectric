@@ -6,8 +6,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.Robolectric;
-import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,17 +15,10 @@ import static org.robolectric.Robolectric.buildActivity;
 public class ListPreferenceTest {
 
   private ListPreference listPreference;
-  private ShadowListPreference shadow;
 
   @Before
   public void setUp() throws Exception {
     listPreference = new ListPreference(buildActivity(Activity.class).create().get());
-    shadow = Shadows.shadowOf(listPreference);
-  }
-
-  @Test
-  public void shouldInheritFromDialogPreference() {
-    assertThat(shadow).isInstanceOf(ShadowDialogPreference.class);
   }
 
   @Test

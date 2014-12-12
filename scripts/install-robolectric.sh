@@ -12,6 +12,7 @@ cd "$PROJECT"/robolectric-shadows/shadows-core; mvn clean velocity:velocity inst
 cd "$PROJECT"/robolectric-shadows/shadows-core; mvn clean velocity:velocity install -Pandroid-16
 cd "$PROJECT"/robolectric-shadows/shadows-core; mvn clean velocity:velocity install -Pandroid-17
 cd "$PROJECT"/robolectric-shadows/shadows-core; mvn clean velocity:velocity install -Pandroid-18
+cd "$PROJECT"/robolectric-shadows/shadows-core; mvn clean velocity:velocity install -Pandroid-19
 
 # Build everything with tests (tests require the shadows)
 cd "$PROJECT"; mvn install

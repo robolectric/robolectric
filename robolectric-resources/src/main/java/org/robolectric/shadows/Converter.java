@@ -83,6 +83,10 @@ public class Converter<T> {
           return; // resourceId is good enough, right?
         } else if (resName.type.equals("dimen")) {
           return;
+        } else if (resName.type.equals("transition")) {
+          return;
+        } else if (resName.type.equals("interpolator")) {
+          return;
         } else if (DrawableResourceLoader.isStillHandledHere(resName)) {
           // wtf. color and drawable references reference are all kinds of stupid.
           DrawableNode drawableNode = resourceLoader.getDrawableNode(resName, qualifiers);
@@ -161,6 +165,7 @@ public class Converter<T> {
     }
   }
 
+  // TODO: Handle 'anim' resources
   public static Converter getConverter(ResType resType) {
     switch (resType) {
       case ATTR_DATA:
@@ -183,7 +188,9 @@ public class Converter<T> {
         return new FromInt();
       case FRACTION:
         return new FromFraction();
-      case LAYOUT:
+      case DRAWABLE: // TODO: maybe call this DRAWABLE_VALUE instead to avoid confusion?
+        return new FromDrawableValue();
+      case LAYOUT: // TODO: LOLLIPOP: should we rename this?  it's also used for drawable xml files
         return new FromFilePath();
 
       case CHAR_SEQUENCE_ARRAY:
@@ -244,6 +251,19 @@ public class Converter<T> {
   }
 
   public static class FromColor extends Converter<String> {
+    @Override public void fillTypedValue(String data, TypedValue typedValue) {
+      typedValue.type = TypedValue.TYPE_INT_COLOR_ARGB8;
+      typedValue.data = Color.parseColor(data);
+      typedValue.assetCookie = 0;
+    }
+
+    @Override public int asInt(TypedResource typedResource) {
+      String rawValue = typedResource.asString();
+      return Color.parseColor(rawValue);
+    }
+  }
+
+  public static class FromDrawableValue extends Converter<String> {
     @Override public void fillTypedValue(String data, TypedValue typedValue) {
       typedValue.type = TypedValue.TYPE_INT_COLOR_ARGB8;
       typedValue.data = Color.parseColor(data);

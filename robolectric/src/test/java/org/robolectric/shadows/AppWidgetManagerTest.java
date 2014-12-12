@@ -79,10 +79,10 @@ public class AppWidgetManagerTest {
     View originalWidgetView = shadowAppWidgetManager.getViewFor(widgetId);
     assertContains("Main Layout", originalWidgetView);
 
-    appWidgetManager.updateAppWidget(widgetId, new RemoteViews("whatevs", R.layout.main));
+    appWidgetManager.updateAppWidget(widgetId, new RemoteViews("org.robolectric.default", R.layout.main));
     assertSame(originalWidgetView, shadowAppWidgetManager.getViewFor(widgetId));
 
-    appWidgetManager.updateAppWidget(widgetId, new RemoteViews("whatevs", R.layout.media));
+    appWidgetManager.updateAppWidget(widgetId, new RemoteViews("org.robolectric.default", R.layout.media));
     assertNotSame(originalWidgetView, shadowAppWidgetManager.getViewFor(widgetId));
 
     View mediaWidgetView = shadowAppWidgetManager.getViewFor(widgetId);

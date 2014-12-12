@@ -20,7 +20,6 @@ import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
@@ -185,14 +184,6 @@ public class LayoutInflaterTest {
     ViewGroup viewGroup = (ViewGroup) inflate("request_focus");
     EditText editText = (EditText) viewGroup.findViewById(R.id.edit_text);
     assertFalse(editText.isFocused());
-  }
-
-  @Ignore("what's supposed to happen here?") // todo 2.0-cleanup
-  @Test
-  public void shouldGiveFocusToFirstFocusableElement_butThisMightBeTheWrongBehavior() throws Exception {
-    ViewGroup viewGroup = (ViewGroup) inflate("request_focus_with_two_edit_texts");
-    assertTrue(viewGroup.findViewById(R.id.edit_text).isFocused());
-    assertFalse(viewGroup.findViewById(R.id.edit_text2).isFocused());
   }
 
   @Test

@@ -23,7 +23,6 @@ import android.view.animation.Animation;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
@@ -32,7 +31,6 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.res.Attribute;
 import org.robolectric.res.ResourceLoader;
-import org.robolectric.util.TestAnimationListener;
 import org.robolectric.util.TestOnClickListener;
 import org.robolectric.util.TestOnLongClickListener;
 import org.robolectric.util.TestRunnable;
@@ -357,24 +355,6 @@ public class ViewTest {
     Animation anim = new TestAnimation();
     view.setAnimation(anim);
     assertThat(view.getAnimation()).isSameAs(anim);
-  }
-
-  @Test @Ignore("animations are busted right now, sorry")
-  public void shouldStartAndClearAnimation() throws Exception {
-    Animation anim = new TestAnimation();
-    TestAnimationListener listener = new TestAnimationListener();
-    anim.setAnimationListener(listener);
-    assertThat(listener.wasStartCalled).isFalse();
-    assertThat(listener.wasRepeatCalled).isFalse();
-    assertThat(listener.wasEndCalled).isFalse();
-    view.startAnimation(anim);
-    assertThat(listener.wasStartCalled).isTrue();
-    assertThat(listener.wasRepeatCalled).isFalse();
-    assertThat(listener.wasEndCalled).isFalse();
-    view.clearAnimation();
-    assertThat(listener.wasStartCalled).isTrue();
-    assertThat(listener.wasRepeatCalled).isFalse();
-    assertThat(listener.wasEndCalled).isTrue();
   }
 
   @Test

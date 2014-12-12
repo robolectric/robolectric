@@ -17,4 +17,5 @@ if [ "${TRAVIS_PULL_REQUEST}" = "false" ] && [ "${TRAVIS_BRANCH}" = "master" ]; 
     cd "$PROJECT"/robolectric-shadows/shadows-core; mvn ${ARGUMENTS} clean velocity:velocity deploy -Pandroid-16
     cd "$PROJECT"/robolectric-shadows/shadows-core; mvn ${ARGUMENTS} clean velocity:velocity deploy -Pandroid-17
     cd "$PROJECT"/robolectric-shadows/shadows-core; mvn ${ARGUMENTS} clean velocity:velocity deploy -Pandroid-18
+    cd "$PROJECT"/robolectric-shadows/shadows-core; mvn ${ARGUMENTS} clean velocity:velocity deploy -Pandroid-19
 fi

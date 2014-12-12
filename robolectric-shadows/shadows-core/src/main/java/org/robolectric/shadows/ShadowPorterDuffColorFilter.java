@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 
+import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 @Implements(PorterDuffColorFilter.class)
@@ -19,6 +20,7 @@ public class ShadowPorterDuffColorFilter {
     return srcColor;
   }
 
+  @Implementation
   public PorterDuff.Mode getMode() {
     return mode;
   }

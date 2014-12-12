@@ -258,6 +258,7 @@ public final class R {
 
   public static final class xml {
     public static final int preferences = 0x10c00;
+    public static final int dialog_preferences = 0x10c01;
   }
 
   public static final class styleable {

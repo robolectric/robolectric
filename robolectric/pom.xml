@@ -54,7 +54,7 @@
     <dependency>
       <groupId>org.robolectric</groupId>
       <artifactId>shadows-core</artifactId>
-      <classifier>19</classifier>
+      <classifier>${robolectric.api.level}</classifier>
     </dependency>
 
     <!-- Project Dependencies -->

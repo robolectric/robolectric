@@ -6,12 +6,8 @@ import android.app.Dialog;
 import android.content.ContextWrapper;
 import android.content.DialogInterface;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.FrameLayout;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
@@ -136,52 +132,6 @@ public class AlertDialogTest {
     assertThat(shadowOf(alert).getCustomTitleView()).isEqualTo(view);
   }
 
-  @Test @Ignore("this seems to no longer be true...")
-  public void shouldSetThePositiveButtonAfterCreation() throws Exception {
-    final AlertDialog alertDialog = new AlertDialog.Builder(application)
-      .setPositiveButton("Positive", null).create();
-    shadowOf(alertDialog).callOnCreate(null);
-
-    TestDialogOnClickListener listener = new TestDialogOnClickListener();
-    alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "More Positive", listener);
-
-    final Button positiveButton = alertDialog.getButton(AlertDialog.BUTTON_POSITIVE);
-    positiveButton.performClick();
-
-    assertThat(positiveButton.getText().toString()).isEqualTo("More Positive");
-    listener.assertEventsSoFar("clicked on " + AlertDialog.BUTTON_POSITIVE);
-  }
-
-  @Test @Ignore("this seems to no longer be true...")
-  public void shouldSetTheNegativeButtonAfterCreation() throws Exception {
-    final AlertDialog alertDialog = new AlertDialog.Builder(application)
-      .setNegativeButton("Negative", null).create();
-
-    TestDialogOnClickListener listener = new TestDialogOnClickListener();
-    alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "More Negative", listener);
-
-    final Button negativeButton = alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE);
-    negativeButton.performClick();
-
-    assertThat(negativeButton.getText().toString()).isEqualTo("More Negative");
-    listener.assertEventsSoFar("clicked on " + AlertDialog.BUTTON_NEGATIVE);
-  }
-
-  @Test @Ignore("this seems to no longer be true...")
-  public void shouldSetTheNeutralButtonAfterCreation() throws Exception {
-    final AlertDialog alertDialog = new AlertDialog.Builder(application)
-      .setNegativeButton("Neutral", null).create();
-
-    TestDialogOnClickListener listener = new TestDialogOnClickListener();
-    alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "Still Neutral", listener);
-
-    final Button neutralButton = alertDialog.getButton(AlertDialog.BUTTON_NEUTRAL);
-    neutralButton.performClick();
-
-    assertThat(neutralButton.getText().toString()).isEqualTo("Still Neutral");
-    listener.assertEventsSoFar("clicked on " + AlertDialog.BUTTON_NEUTRAL);
-  }
-
   @Test
   public void clickingPositiveButtonDismissesDialog() throws Exception {
     AlertDialog alertDialog = new AlertDialog.Builder(application)
@@ -242,20 +192,6 @@ public class AlertDialogTest {
     assertThat(ShadowAlertDialog.getLatestAlertDialog()).isSameAs(alert);
   }
 
-//  @Test
-//  public void testBuilderWithItemArrayCanPerformClickOnItem() throws Exception {
-//    TestDialogOnClickListener listener = new TestDialogOnClickListener();
-//    AlertDialog alert = new AlertDialog.Builder(new ContextWrapper(RuntimeEnvironment.application))
-//        .setItems(R.array.alertDialogTestItems, listener)
-//        .create();
-//
-//    alert.show();
-//    ShadowAlertDialog shadowAlertDialog = shadowOf(alert);
-//    shadowAlertDialog.clickOnItem(1);
-//
-//
-//  }
-
   @Test
   public void testBuilderWithAdapter() throws Exception {
     List<Integer> list = new ArrayList<Integer>();
@@ -292,51 +228,6 @@ public class AlertDialogTest {
     assertEquals(alertDialog, ShadowAlertDialog.getLatestAlertDialog());
   }
 
-  @Ignore("not yet working in 2.0, sorry :-(") // todo 2.0-cleanup
-  @Test
-  public void shouldReturnTheIndexOfTheCheckedItemInASingleChoiceDialog() throws Exception {
-    AlertDialog.Builder builder = new AlertDialog.Builder(new ContextWrapper(RuntimeEnvironment.application));
-
-    builder.setSingleChoiceItems(new String[]{"foo", "bar"}, 1, new DialogInterface.OnClickListener() {
-      public void onClick(DialogInterface dialog, int item) {
-      }
-    });
-    ItemListener itemListener = new ItemListener();
-    builder.setOnItemSelectedListener(itemListener);
-    AlertDialog alert = builder.create();
-    alert.show();
-
-    assertThat(alert.isShowing()).isTrue();
-
-    shadowOf(alert).clickOnItem(0);
-    itemListener.assertEventsSoFar("selected foo");
-    assertThat(ShadowAlertDialog.getLatestAlertDialog()).isSameAs(alert);
-  }
-
-  @Ignore("maybe not a valid test in the 2.0 world?") // todo 2.0-cleanup
-  @Test
-  public void shouldCallTheClickListenerOfTheCheckedItemInASingleChoiceDialog() throws Exception {
-    AlertDialog.Builder builder = new AlertDialog.Builder(new ContextWrapper(RuntimeEnvironment.application));
-
-    TestDialogOnClickListener listener = new TestDialogOnClickListener();
-    builder.setSingleChoiceItems(new String[]{"foo", "bar"}, 1, listener);
-
-    ItemListener itemListener = new ItemListener();
-    builder.setOnItemSelectedListener(itemListener);
-    AlertDialog alert = builder.create();
-    alert.show();
-
-    ShadowAlertDialog shadowAlertDialog = shadowOf(alert);
-    shadowAlertDialog.clickOnItem(0);
-    listener.assertEventsSoFar("clicked on 0");
-    itemListener.assertEventsSoFar("selected foo");
-
-    shadowAlertDialog.clickOnItem(1);
-    listener.assertEventsSoFar("clicked on 1");
-    itemListener.assertEventsSoFar("selected bar");
-
-  }
-
   @Test
   public void shouldCallTheClickListenerOfTheCheckedAdapterInASingleChoiceDialog() throws Exception {
     AlertDialog.Builder builder = new AlertDialog.Builder(new ContextWrapper(RuntimeEnvironment.application));
@@ -361,21 +252,6 @@ public class AlertDialogTest {
 
   }
 
-  @Ignore("not yet working in 2.0, sorry :-(") // todo 2.0-cleanup
-  @Test
-  public void shouldFindViewsByIdIfAViewIsSet() throws Exception {
-    AlertDialog dialog = new AlertDialog.Builder(application).create();
-
-    assertThat(dialog.findViewById(99)).isNull();
-
-    View view = new View(application);
-    view.setId(99);
-    dialog.setView(view);
-    assertThat(dialog.findViewById(99)).isSameAs(view);
-
-    assertThat(dialog.findViewById(66)).isNull();
-  }
-
   @Test
   public void shouldDelegateToDialogFindViewByIdIfViewIsNull() {
     AlertDialog dialog = new AlertDialog(RuntimeEnvironment.application) {
@@ -385,17 +261,6 @@ public class AlertDialogTest {
 
     dialog.setContentView(R.layout.main);
     assertNotNull(dialog.findViewById(R.id.title));
-  }
-
-  @Ignore("not yet working in 2.0, sorry :-(") // todo 2.0-cleanup
-  @Test
-  public void shouldReturnACustomFrameLayout() {
-    AlertDialog dialog = new AlertDialog.Builder(RuntimeEnvironment.application).create();
-
-    assertThat(dialog.findViewById(android.R.id.custom)).isNotNull();
-    assertThat(dialog.findViewById(android.R.id.custom)).isInstanceOf(FrameLayout.class);
-    assertThat(dialog.findViewById(android.R.id.custom)).isSameAs(dialog.findViewById(android.R.id.custom));
-
   }
 
   @Test
@@ -440,15 +305,4 @@ public class AlertDialogTest {
       add("clicked on " + item);
     }
   }
-
-  private static class ItemListener extends Transcript implements AdapterView.OnItemSelectedListener {
-    @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-      add("selected " + ShadowView.innerText(view));
-    }
-
-    @Override public void onNothingSelected(AdapterView<?> parent) {
-      add("selected none");
-    }
-  }
-
 }

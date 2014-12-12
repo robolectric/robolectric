@@ -43,12 +43,6 @@ public class PreferenceActivityTest {
   }
 
   @Test
-  public void shouldLoadPreferenceScreen() {
-    activity.addPreferencesFromResource(R.xml.preferences);
-    assertThat(activity.getPreferenceScreen().getPreferenceCount()).isEqualTo(8);
-  }
-
-  @Test
   public void shouldFindPreferences() {
     activity.addPreferencesFromResource(R.xml.preferences);
     assertNotNull(activity.findPreference("category"));

@@ -714,13 +714,6 @@ public class ActivityTest {
     }
   }
 
-  @Test
-  public void shouldSetCustomTitle() {
-    CustomTitleActivity activity = create(CustomTitleActivity.class);
-    assertThat(activity.customTitleText).isNotNull();
-    assertThat(activity.customTitleText.getText().toString()).isEqualTo(activity.getString(R.string.hello));
-  }
-
   @Test @Config(emulateSdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void canGetOptionsMenu() throws Exception {
     Activity activity = buildActivity(OptionsMenuActivity.class).create().visible().get();

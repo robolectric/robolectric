@@ -39,7 +39,6 @@ import static org.robolectric.shadows.ShadowApplication.getInstance;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AssetManager.class)
 public final class ShadowAssetManager {
-  // taken from AssetManager:
   public static final int STYLE_NUM_ENTRIES = 6;
   public static final int STYLE_TYPE = 0;
   public static final int STYLE_DATA = 1;
@@ -49,10 +48,11 @@ public final class ShadowAssetManager {
   public static final int STYLE_DENSITY = 5;
 
   private String qualifiers = "";
-  private Map<Integer, Resources.Theme> themesById = new LinkedHashMap<Integer, Resources.Theme>();
+  private Map<Long, Resources.Theme> themesById = new LinkedHashMap<>();
   private int nextInternalThemeId = 1000;
-
-  private static Map<Integer, List<OverlayedStyle>> appliedThemeStyles = new HashMap<Integer, List<OverlayedStyle>>();
+  private static final Map<Long, List<OverlayedStyle>> APPLIED_STYLES = new HashMap<>();
+  private AndroidManifest appManifest;
+  private ResourceLoader resourceLoader;
 
   static AssetManager bind(AssetManager assetManager, AndroidManifest androidManifest, ResourceLoader resourceLoader) {
     ShadowAssetManager shadowAssetManager = shadowOf(assetManager);
@@ -61,9 +61,6 @@ public final class ShadowAssetManager {
     shadowAssetManager.resourceLoader = resourceLoader;
     return assetManager;
   }
-
-  private AndroidManifest appManifest;
-  private ResourceLoader resourceLoader;
 
   @HiddenApi @Implementation
   public CharSequence getResourceText(int ident) {
@@ -116,8 +113,8 @@ public final class ShadowAssetManager {
     return charSequences;
   }
 
-  @HiddenApi @Implementation
-  public boolean getThemeValue(int theme, int ident, TypedValue outValue, boolean resolveRefs) {
+  @HiddenApi @Implementation // TODO: API 21 int -> long
+  public boolean getThemeValue(long theme, int ident, TypedValue outValue, boolean resolveRefs) {
     ResourceIndex resourceIndex = resourceLoader.getResourceIndex();
     ResName resName = resourceIndex.getResName(ident);
     Resources.Theme theTheme = getThemeByInternalId(theme);
@@ -249,15 +246,15 @@ public final class ShadowAssetManager {
     return nextInternalThemeId++;
   }
 
-  @HiddenApi @Implementation
-  synchronized public void releaseTheme(int theme) {
+  @HiddenApi @Implementation // TODO: API 21 int -> long
+  synchronized public void releaseTheme(long theme) {
     themesById.remove(theme);
   }
 
-  @HiddenApi @Implementation
-  public static void applyThemeStyle(int theme, int styleRes, boolean force) {
-    if (!appliedThemeStyles.containsKey(theme)) {
-      appliedThemeStyles.put(theme, new LinkedList<OverlayedStyle>());
+  @HiddenApi @Implementation // TODO: API 21 int -> long
+  public static void applyThemeStyle(long theme, int styleRes, boolean force) {
+    if (!APPLIED_STYLES.containsKey(theme)) {
+      APPLIED_STYLES.put(theme, new LinkedList<OverlayedStyle>());
     }
 
     ResourceLoader resourceLoader = getInstance().getResourceLoader();
@@ -268,11 +265,11 @@ public final class ShadowAssetManager {
 
     Style style = resolveStyle(resourceLoader, null, resName, assetManager.getQualifiers());
 
-    appliedThemeStyles.get(theme).add(new OverlayedStyle(style, force));
+    APPLIED_STYLES.get(theme).add(new OverlayedStyle(style, force));
   }
 
-  static List<OverlayedStyle> getOverlayThemeStyles(int themeResourceId) {
-    return appliedThemeStyles.get(themeResourceId);
+  static List<OverlayedStyle> getOverlayThemeStyles(long themeResourceId) {
+    return APPLIED_STYLES.get(themeResourceId);
   }
 
   static class OverlayedStyle {
@@ -285,18 +282,18 @@ public final class ShadowAssetManager {
     }
   }
 
-  @HiddenApi @Implementation
-  public static void copyTheme(int dest, int source) {
+  @HiddenApi @Implementation // TODO: API 21 int -> long
+  public static void copyTheme(long dest, long source) {
     throw new UnsupportedOperationException();
   }
 
   /////////////////////////
 
-  synchronized public void setTheme(int internalThemeId, Resources.Theme theme) {
+  synchronized public void setTheme(long internalThemeId, Resources.Theme theme) {
     themesById.put(internalThemeId, theme);
   }
 
-  synchronized private Resources.Theme getThemeByInternalId(int internalThemeId) {
+  synchronized private Resources.Theme getThemeByInternalId(long internalThemeId) {
     return themesById.get(internalThemeId);
   }
 

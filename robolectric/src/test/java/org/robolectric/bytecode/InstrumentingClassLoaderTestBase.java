@@ -16,13 +16,13 @@ import java.util.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 
-abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" or ant will try to run this as a test
-
+// Don't end in "Test" or ant will try to run this as a test
+abstract public class InstrumentingClassLoaderTestBase {
   private ClassLoader classLoader;
   private Transcript transcript = new Transcript();
   private MyClassHandler classHandler = new MyClassHandler(transcript);
 
-  abstract protected ClassLoader createClassLoader(Setup setup) throws ClassNotFoundException;
+  protected abstract ClassLoader createClassLoader(Setup setup) throws ClassNotFoundException;
 
   @Test
   public void shouldMakeClassesNonFinal() throws Exception {
@@ -232,7 +232,7 @@ abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" 
     directMethod.setAccessible(true);
     Object exampleInstance = exampleClass.newInstance();
     transcript.assertEventsSoFar("methodInvoked: AClassWithMethodReturningArray.__constructor__()");
-    assertArrayEquals(new String[] {"miao, mieuw"}, (String[]) directMethod.invoke(exampleInstance));
+    assertArrayEquals(new String[]{"miao, mieuw"}, (String[]) directMethod.invoke(exampleInstance));
     transcript.assertEventsSoFar("methodInvoked: AClassWithMethodReturningArray.normalMethodReturningArray()");
   }
 
@@ -396,34 +396,93 @@ abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" 
   }
 
   @Test
-  public void shouldInterceptFilteredMethodInvocationsReturningNarrowestPrimitives() throws Exception {
-    setClassLoader(createClassLoader(new MethodInterceptingSetup(new Setup.MethodRef(AClassToForget.class, "*"))));
-    Class<?> theClass = loadClass(AClassThatRefersToAForgettableClassInMethodCallsReturningPrimitive.class);
-    Object instance = theClass.newInstance();
-    assertEquals((byte) 0, theClass.getMethod("byteMethod").invoke(Shadow.directlyOn(instance, (Class<Object>) theClass)));
-    assertNull(theClass.getMethod("byteArrayMethod").invoke(Shadow.directlyOn(instance, (Class<Object>) theClass)));
+  public void byte_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
+    classHandler.valueToReturnFromIntercept = (byte) 10;
+    assertThat(invokeInterceptedMethodOnAClassToForget("byteMethod")).isEqualTo((byte) 10);
   }
 
   @Test
-  public void shouldInterceptFilteredMethodInvocationsReturningNarrowPrimitives() throws Exception {
-    setClassLoader(createClassLoader(new MethodInterceptingSetup(new Setup.MethodRef(AClassToForget.class, "*"))));
-    Class<?> theClass = loadClass(AClassThatRefersToAForgettableClassInMethodCallsReturningPrimitive.class);
-    Object instance = theClass.newInstance();
-    assertEquals(0, theClass.getMethod("intMethod").invoke(Shadow.directlyOn(instance, (Class<Object>) theClass)));
-    assertNull(theClass.getMethod("intArrayMethod").invoke(Shadow.directlyOn(instance, (Class<Object>) theClass)));
+  public void byteArray_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
+    classHandler.valueToReturnFromIntercept = new byte[]{10, 12, 14};
+    assertThat(invokeInterceptedMethodOnAClassToForget("byteArrayMethod")).isEqualTo(new byte[]{10, 12, 14});
   }
 
   @Test
-  public void shouldInterceptFilteredMethodInvocationsReturningWidePrimitives() throws Exception {
+  public void int_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
+    classHandler.valueToReturnFromIntercept = 20;
+    assertThat(invokeInterceptedMethodOnAClassToForget("intMethod")).isEqualTo(20);
+  }
+
+  @Test
+  public void intArray_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
+    classHandler.valueToReturnFromIntercept = new int[]{20, 22, 24};
+    assertThat(invokeInterceptedMethodOnAClassToForget("intArrayMethod")).isEqualTo(new int[]{20, 22, 24});
+  }
+
+  @Test
+  public void long_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
+    classHandler.valueToReturnFromIntercept = 30L;
+    assertThat(invokeInterceptedMethodOnAClassToForget("longMethod")).isEqualTo(30L);
+  }
+
+  @Test
+  public void longArray_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
+    classHandler.valueToReturnFromIntercept = new long[] {30L, 32L, 34L};
+    assertThat(invokeInterceptedMethodOnAClassToForget("longArrayMethod")).isEqualTo(new long[] {30L, 32L, 34L});
+  }
+
+  @Test
+  public void float_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
+    classHandler.valueToReturnFromIntercept = 40f;
+    assertThat(invokeInterceptedMethodOnAClassToForget("floatMethod")).isEqualTo(40f);
+  }
+
+  @Test
+  public void floatArray_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
+    classHandler.valueToReturnFromIntercept = new float[] {50f, 52f, 54f};
+    assertThat(invokeInterceptedMethodOnAClassToForget("floatArrayMethod")).isEqualTo(new float[] {50f, 52f, 54f});
+  }
+
+  @Test
+  public void double_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
+    classHandler.valueToReturnFromIntercept = 80.0;
+    assertThat(invokeInterceptedMethodOnAClassToForget("doubleMethod")).isEqualTo(80.0);
+  }
+
+  @Test
+  public void doubleArray_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
+    classHandler.valueToReturnFromIntercept = new double[] {90.0, 92.0, 94.0};
+    assertThat(invokeInterceptedMethodOnAClassToForget("doubleArrayMethod")).isEqualTo(new double[] {90.0, 92.0, 94.0});
+  }
+
+  @Test
+  public void short_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
+    classHandler.valueToReturnFromIntercept = (short) 60;
+    assertThat(invokeInterceptedMethodOnAClassToForget("shortMethod")).isEqualTo((short) 60);
+  }
+
+  @Test
+  public void shortArray_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
+    classHandler.valueToReturnFromIntercept = new short[] {70, 72, 74};
+    assertThat(invokeInterceptedMethodOnAClassToForget("shortArrayMethod")).isEqualTo(new short[] {70, 72, 74});
+  }
+
+  @Test
+  public void void_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
+    classHandler.valueToReturnFromIntercept = null;
+    assertThat(invokeInterceptedMethodOnAClassToForget("voidReturningMethod")).isNull();
+  }
+
+  private Object invokeInterceptedMethodOnAClassToForget(String methodName) throws Exception {
     setClassLoader(createClassLoader(new MethodInterceptingSetup(new Setup.MethodRef(AClassToForget.class, "*"))));
     Class<?> theClass = loadClass(AClassThatRefersToAForgettableClassInMethodCallsReturningPrimitive.class);
     Object instance = theClass.newInstance();
-    assertEquals(0L, theClass.getMethod("longMethod").invoke(Shadow.directlyOn(instance, (Class<Object>) theClass)));
-    assertNull(theClass.getMethod("longArrayMethod").invoke(Shadow.directlyOn(instance, (Class<Object>) theClass)));
+    return theClass.getMethod(methodName).invoke(Shadow.directlyOn(instance, (Class<Object>) theClass));
   }
 
   @Test
   public void shouldPassArgumentsFromInterceptedMethods() throws Exception {
+    classHandler.valueToReturnFromIntercept = 10L;
     setClassLoader(createClassLoader(new MethodInterceptingSetup(new Setup.MethodRef(AClassToForget.class, "*"))));
     Class<?> theClass = loadClass(AClassThatRefersToAForgettableClassInMethodCallsReturningPrimitive.class);
     Object instance = theClass.newInstance();
@@ -459,7 +518,8 @@ abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" 
     assertArrayEquals(new Integer[]{}, Util.reverse(new Integer[]{}));
   }
 
-  @Test public void shouldMakeBuildVersionIntsNonFinal() throws Exception {
+  @Test
+  public void shouldMakeBuildVersionIntsNonFinal() throws Exception {
     Class<?> versionClass = loadClass(Build.VERSION.class);
     int modifiers = versionClass.getDeclaredField("SDK_INT").getModifiers();
     assertThat(Modifier.isFinal(modifiers)).as("SDK_INT should be non-final").isFalse();
@@ -487,7 +547,8 @@ abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" 
     public void classInitializing(Class clazz) {
     }
 
-    @Override public Object initializing(Object instance) {
+    @Override
+    public Object initializing(Object instance) {
       return "a shadow!";
     }
 
@@ -511,7 +572,8 @@ abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" 
     public Plan methodInvoked(String signature, boolean isStatic, Class<?> theClass) {
       final InvocationProfile invocationProfile = new InvocationProfile(signature, isStatic, getClass().getClassLoader());
       return new Plan() {
-        @Override public Object run(Object instance, Object roboData, Object[] params) throws Exception {
+        @Override
+        public Object run(Object instance, Object roboData, Object[] params) throws Exception {
           try {
             return methodInvoked(invocationProfile.clazz, invocationProfile.methodName, instance, invocationProfile.paramTypes, params);
           } catch (Throwable throwable) {
@@ -533,11 +595,11 @@ abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" 
       }
       buf.append(")");
       transcript.add(buf.toString());
-
       return valueToReturnFromIntercept;
     }
 
-    @Override public <T extends Throwable> T stripStackTrace(T throwable) {
+    @Override
+    public <T extends Throwable> T stripStackTrace(T throwable) {
       return throwable;
     }
   }

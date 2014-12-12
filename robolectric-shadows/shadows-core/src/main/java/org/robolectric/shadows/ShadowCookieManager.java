@@ -29,10 +29,11 @@ public class ShadowCookieManager {
   private static final String HTTP = "http://";
   private static final String HTTPS = "https://";
   private static final String[] COOKIE_ATTRS_NOT_STRICT = {"Expires", "expires"};
+  private static final List<Cookie> emtpyCookieList = new ArrayList<Cookie>();
   private static CookieManager sRef;
   private CookieStore store = new BasicCookieStore();
   private boolean accept;
-  private static final List<Cookie> emtpyCookieList = new ArrayList<Cookie>();
+  private boolean flushed;
 
   @Implementation
   public static CookieManager getInstance() {
@@ -120,6 +121,19 @@ public class ShadowCookieManager {
     synchronized(store){
       clearAndAddPersistentCookies();
     }
+  }
+
+  @Implementation
+  public void flush() {
+    this.flushed = true;
+  }
+
+  public boolean isFlushed() {
+    return this.flushed;
+  }
+
+  public void reset() {
+    this.flushed = false;
   }
 
   private void clearAndAddPersistentCookies() {

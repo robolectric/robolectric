@@ -6,7 +6,6 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
@@ -51,13 +50,6 @@ public class AbsSpinnerTest {
   @Test
   public void getSelectedItemShouldReturnNull_NoAdapterSet(){
     assertThat(spinner.getSelectedItem()).isNull();
-  }
-
-  @Ignore("maybe not a valid test in the 2.0 world?") // todo 2.0-cleanup
-  @Test (expected = IndexOutOfBoundsException.class)
-  public void getSelectedItemShouldThrowException_EmptyArray(){
-    spinner.setAdapter(new MyArrayAdapter(context, new String[]{}));
-    spinner.getSelectedItem();
   }
 
   @Test

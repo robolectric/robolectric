@@ -25,13 +25,6 @@ import static org.robolectric.Shadows.shadowOf;
 @RunWith(TestRunners.WithDefaults.class)
 public class EditTextTest {
 
-  @Ignore("maybe not a valid test in the 2.0 world?") // todo 2.0-cleanup
-  @Test
-  public void shouldBeFocusableByDefault() throws Exception {
-    assertThat(new EditText(RuntimeEnvironment.application).isFocusable()).isTrue();
-    assertThat(new EditText(RuntimeEnvironment.application).isFocusableInTouchMode()).isFalse();
-  }
-
   @Test
   public void givenInitializingWithAttributeSet_whenMaxLengthDefined_thenRestrictTextLengthToMaxLength() {
     int maxLength = anyInteger();

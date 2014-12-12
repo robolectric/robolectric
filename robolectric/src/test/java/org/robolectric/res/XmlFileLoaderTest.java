@@ -3,7 +3,6 @@ package org.robolectric.res;
 import android.content.res.XmlResourceParser;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
@@ -17,10 +16,7 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.StringReader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -199,15 +195,11 @@ public class XmlFileLoaderTest {
 
   @Test
   public void testSetInput_InputStreamString() throws IOException {
-    FileInputStream inputStream = null;
-    try {
-      inputStream = new FileInputStream("src/test/resources/res/xml/preferences.xml");
+    try (InputStream inputStream = getClass().getResourceAsStream("src/test/resources/res/xml/preferences.xml")) {
       parser.setInput(inputStream, "UTF-8");
       fail("This method should not be supported");
     } catch (XmlPullParserException ex) {
       // pass
-    } finally {
-      inputStream.close();
     }
   }
 
@@ -274,7 +266,7 @@ public class XmlFileLoaderTest {
   @Test
   public void testGetDepth() throws XmlPullParserException, IOException {
     // Recorded depths from preference file elements
-    List<Integer> expectedDepths = asList(1, 2, 3, 2, 3, 3, 2, 2, 2, 2, 2, 2);
+    List<Integer> expectedDepths = asList(1, 2, 3, 2, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 3);
     List<Integer> actualDepths = new ArrayList<Integer>();
     int evt;
     while ((evt = parser.next()) != XmlResourceParser.END_DOCUMENT) {
@@ -296,14 +288,6 @@ public class XmlFileLoaderTest {
 
     forgeAndOpenDocument("<foo>bar</foo>");
     assertThat(parser.getText()).isEqualTo("bar");
-  }
-
-  @Test
-  @Ignore("Not implemented yet")
-  public void testGetLineNumber() throws XmlPullParserException, IOException {
-    assertThat(parser.getLineNumber()).isEqualTo(-1);
-    parseUntilNext(XmlResourceParser.START_TAG);
-    assertThat(parser.getLineNumber()).isEqualTo(1).as("The root element should be at line 1.");
   }
 
   @Test
@@ -471,6 +455,12 @@ public class XmlFileLoaderTest {
         ">",
         "<", // Preference
         ">",
+        "<",
+        ">",
+        "<",
+        "<",
+        ">",
+        ">",
         ">",
         "</xml>");
     List<String> actualEvents = new ArrayList<String>();
@@ -554,12 +544,6 @@ public class XmlFileLoaderTest {
       assertTrue(acceptableTags.contains(evt));
     } while (evt == XmlResourceParser.END_TAG &&
         "foo".equals(parser.getName()));
-  }
-
-  @Test
-  @Ignore("Not yet implemented")
-  public void testGetAttributeNameResource() {
-    fail("Not yet implemented");
   }
 
   @Test

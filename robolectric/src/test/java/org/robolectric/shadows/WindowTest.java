@@ -2,17 +2,18 @@ package org.robolectric.shadows;
 
 import android.R;
 import android.app.Activity;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
 import org.robolectric.util.ActivityController;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -41,19 +42,6 @@ public class WindowTest {
   }
 
   @Test
-  public void getHomeIcon_getsTheIconThatWasSetWithTheActionBar() throws Exception {
-    TestActivity activity = Robolectric.buildActivity(TestActivity.class).create().get();
-    Window window = activity.getWindow();
-    ShadowWindow shadowWindow = shadowOf(window);
-
-    ImageView homeIcon = shadowWindow.getHomeIcon();
-
-    assertThat(homeIcon.getDrawable()).isNotNull();
-    int createdFromResId = shadowOf(homeIcon.getDrawable()).getCreatedFromResId();
-    assertThat(createdFromResId).isEqualTo(R.drawable.ic_lock_power_off);
-  }
-
-  @Test
   public void getBackgroundDrawable_returnsSetDrawable() throws Exception {
     Activity activity = Robolectric.buildActivity(Activity.class).create().get();
     Window window = activity.getWindow();
@@ -76,7 +64,7 @@ public class WindowTest {
     assertThat(shadowWindow.getSoftInputMode()).isEqualTo(7);
   }
 
-  @Test
+  @Test @Config(emulateSdk = Build.VERSION_CODES.KITKAT)
   public void getProgressBar_returnsTheProgressBar() {
     Activity activity = Robolectric.buildActivity(TestActivity.class).create().get();
 
@@ -89,7 +77,7 @@ public class WindowTest {
     assertThat(progress.getVisibility()).isEqualTo(View.GONE);
   }
 
-  @Test
+  @Test @Config(emulateSdk = Build.VERSION_CODES.KITKAT)
   public void getIndeterminateProgressBar_returnsTheIndeterminateProgressBar() {
     ActivityController<TestActivity> testActivityActivityController = Robolectric.buildActivity(TestActivity.class);
     TestActivity activity = testActivityActivityController.get();

@@ -9,7 +9,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
@@ -21,16 +20,13 @@ import org.robolectric.bytecode.testing.Pony;
 import org.robolectric.annotation.internal.Instrument;
 import org.robolectric.internal.ShadowConstants;
 import org.robolectric.internal.Shadow;
-import org.robolectric.internal.ShadowExtractor;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -106,19 +102,6 @@ public class ShadowingTest {
   @Test
   public void testPrintlnWorks() throws Exception {
     Log.println(1, "tag", "msg");
-  }
-
-  @Ignore // todo we need to figure out a better way to deal with this...
-  @Test // the shadow will still have its default constructor called; it would be duplicative to call __constructor__() too.
-  @Config(shadows = {ShadowForClassWithNoDefaultConstructor.class})
-  public void forClassWithNoDefaultConstructor_generatedDefaultConstructorShouldNotCallShadow() throws Exception {
-    Constructor<ClassWithNoDefaultConstructor> ctor = ClassWithNoDefaultConstructor.class.getDeclaredConstructor();
-    ctor.setAccessible(true);
-    ClassWithNoDefaultConstructor instance = ctor.newInstance();
-    assertThat(ShadowExtractor.extract(instance)).isNotNull();
-    assertThat(ShadowExtractor.extract(instance)).isInstanceOf(ShadowForClassWithNoDefaultConstructor.class);
-    assertTrue(ShadowForClassWithNoDefaultConstructor.shadowDefaultConstructorCalled);
-    assertFalse(ShadowForClassWithNoDefaultConstructor.shadowDefaultConstructorImplementorCalled);
   }
 
   @Implements(ClassWithNoDefaultConstructor.class)

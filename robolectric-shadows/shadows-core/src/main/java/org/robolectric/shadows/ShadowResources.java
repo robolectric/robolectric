@@ -28,6 +28,7 @@ import org.robolectric.res.Style;
 import org.robolectric.res.TypedResource;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.res.builder.XmlFileBuilder;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.Util;
 import org.w3c.dom.Document;
 
@@ -120,7 +121,7 @@ public class ShadowResources {
     Style styleAttrStyle = null;
     Style theme = null;
 
-    List<ShadowAssetManager.OverlayedStyle> overlayedStyles = ShadowAssetManager.getOverlayThemeStyles(themeResourceId);
+    List<ShadowAssetManager.OverlayedStyle> overlayedStyles = ShadowAssetManager.getOverlayThemeStyles((long) themeResourceId);
     if (themeResourceId != 0) {
       // Load the style for the theme we represent. E.g. "@style/Theme.Robolectric"
       ResName themeStyleName = getResName(themeResourceId);
@@ -192,7 +193,11 @@ public class ShadowResources {
       Attribute attribute = findAttributeValue(attrName, set, styleAttrStyle, defStyleFromAttr, defStyleFromRes, theme, overlayedStyles);
       while (attribute != null && attribute.isStyleReference()) {
         ResName otherAttrName = attribute.getStyleReference();
-        if (theme == null) throw new RuntimeException("no theme, but trying to look up " + otherAttrName);
+
+        // TODO: this is just a debugging hack to avoid the problem of Resources.loadDrawableForCookie not working.
+        // TODO: We need to address the real problem instead, but are putting it off for a day or two -AV, ED 2014-12-03
+        if (theme == null) break;
+
         attribute = getOverlayedThemeValue(otherAttrName, theme, overlayedStyles);
         if (attribute != null) {
           attribute = new Attribute(attrName, attribute.value, attribute.contextPackageName);
@@ -497,8 +502,8 @@ public class ShadowResources {
       return shadowOf(getResources()).attrsToTypedArray(set, attrs, defStyleAttr, styleResourceId, defStyleRes);
     }
 
-    Resources getResources() {
-      // ugh
+    @Implementation
+    public Resources getResources() {
       return ReflectionHelpers.getFieldReflectively(realTheme, "this$0");
     }
   }
@@ -506,7 +511,7 @@ public class ShadowResources {
   @Implementation
   public final Resources.Theme newTheme() {
     Resources.Theme theme = directlyOn(realResources, Resources.class).newTheme();
-    int themeId = ReflectionHelpers.getFieldReflectively(theme, "mTheme");
+    int themeId = Integer.valueOf(ReflectionHelpers.getFieldReflectively(theme, "mTheme").toString()); // TODO: in Lollipop, these can be longs, which will overflow int
     shadowOf(realResources.getAssets()).setTheme(themeId, theme);
     return theme;
   }
@@ -514,8 +519,8 @@ public class ShadowResources {
   @HiddenApi @Implementation
   public Drawable loadDrawable(TypedValue value, int id) {
     ResName resName = tryResName(id);
-    Drawable drawable = directlyOn(realResources, Resources.class, "loadDrawable", new ReflectionHelpers.ClassParameter(TypedValue.class, value),
-        new ReflectionHelpers.ClassParameter(int.class, id));
+    Drawable drawable = directlyOn(realResources, Resources.class, "loadDrawable",
+        new ClassParameter(TypedValue.class, value), new ClassParameter(int.class, id));
     // todo: this kinda sucks, find some better way...
     if (drawable != null) {
       shadowOf(drawable).createdFromResId = id;
@@ -531,6 +536,37 @@ public class ShadowResources {
     }
     return drawable;
   }
+
+  @Implementation
+  public Drawable loadDrawable(TypedValue value, int id, Resources.Theme theme) throws Resources.NotFoundException {
+    ResName resName = tryResName(id);
+    Drawable drawable = directlyOn(realResources, Resources.class, "loadDrawable",
+        new ClassParameter(TypedValue.class, value), new ClassParameter(int.class, id), new ClassParameter(Resources.Theme.class, theme));
+
+    // todo: this kinda sucks, find some better way...
+    if (drawable != null) {
+      shadowOf(drawable).createdFromResId = id;
+      if (drawable instanceof BitmapDrawable) {
+        Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
+        if (bitmap != null) {
+          ShadowBitmap shadowBitmap = shadowOf(bitmap);
+          if (shadowBitmap.createdFromResId == -1) {
+            shadowBitmap.setCreatedFromResId(id, resName);
+          }
+        }
+      }
+    }
+    return drawable;
+  }
+
+//  @Implementation
+//  public Drawable loadDrawableForCookie(TypedValue value, int id, Resources.Theme theme) {
+//    return loadDrawable(value, id, theme);
+//  }
+//
+//  @HiddenApi @Implementation
+//  public void updateConfiguration(Configuration config, DisplayMetrics metrics, CompatibilityInfo compat) {
+//  }
 
   @Implements(Resources.NotFoundException.class)
   public static class ShadowNotFoundException {

@@ -2,28 +2,31 @@ package org.robolectric.util;
 
 import android.app.Activity;
 import android.app.Application;
-import android.app.Instrumentation;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
-import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Bundle;
-import android.os.IBinder;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.ShadowsAdapter;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.RoboInstrumentation;
 import org.robolectric.res.ResName;
 import org.robolectric.ShadowsAdapter.ShadowActivityAdapter;
 import org.robolectric.ShadowsAdapter.ShadowApplicationAdapter;
+import org.robolectric.runtime.AndroidRuntimeAdapter;
+import org.robolectric.runtime.AndroidRuntimeAdapterFactory;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 public class ActivityController<T extends Activity> extends ComponentController<ActivityController<T>, T> {
 
-  private final ShadowActivityAdapter shadowReference;
   private final ShadowsAdapter shadowsAdapter;
+  private final ShadowActivityAdapter shadowReference;
+
+  // TODO: LOLLIPOP: this should be injected in some better way where it can be configured in a centrallized place
+  // TODO: LOLLIPOP: (ideally in SdkConfig), but there a classloader ordering issues to be careful of when making this
+  // TODO: LOLLIPOP: happen -AV 2014-11-16
+  private final AndroidRuntimeAdapter androidRuntimeAdapter = AndroidRuntimeAdapterFactory.getInstance();
 
   public static <T extends Activity> ActivityController<T> of(ShadowsAdapter shadowsAdapter, Class<T> activityClass) {
     return new ActivityController<T>(shadowsAdapter, ReflectionHelpers.<T>callConstructorReflectively(activityClass));
@@ -66,20 +69,7 @@ public class ActivityController<T extends Activity> extends ComponentController<
       throw new RuntimeException(e);
     }
 
-    ReflectionHelpers.callInstanceMethodReflectively(component, "attach",
-        ClassParameter.from(Context.class, baseContext),
-        ClassParameter.from(activityThreadClass, null),
-        ClassParameter.from(Instrumentation.class, new RoboInstrumentation()),
-        ClassParameter.from(IBinder.class, null),
-        ClassParameter.from(int.class, 0),
-        ClassParameter.from(Application.class, application),
-        ClassParameter.from(Intent.class, intent),
-        ClassParameter.from(ActivityInfo.class, activityInfo),
-        ClassParameter.from(CharSequence.class, activityTitle),
-        ClassParameter.from(Activity.class, null),
-        ClassParameter.from(String.class, "id"),
-        ClassParameter.from(nonConfigurationInstancesClass, null),
-        ClassParameter.from(Configuration.class, application.getResources().getConfiguration()));
+    androidRuntimeAdapter.callActivityAttach(component, baseContext, activityThreadClass, application, intent, activityInfo, activityTitle, nonConfigurationInstancesClass);
 
     shadowReference.setThemeFromManifest();
     attached = true;

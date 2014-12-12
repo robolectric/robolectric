@@ -106,12 +106,10 @@ public class AssetManagerTest {
   @Test
   public void openNonAssetShouldOpenRealAssetFromAndroidJar() throws IOException {
     // Not the real full path (it's in .m2/repository), but it only cares about the last folder and file name
-    final String jarFile = "jar:/android-all-4.3_r2-robolectric-0.jar!/res/drawable/overscroll_edge.png";
+    final String jarFile = "jar:/android-all-5.0.0_r2-robolectric-0.jar!/res/drawable-hdpi/bottom_bar.png";
 
     InputStream inputStream = assetManager.openNonAsset(0, jarFile, 0);
-
-    ByteArrayInputStream byteArrayInputStream = (ByteArrayInputStream) inputStream;
-    assertThat(byteArrayInputStream.available()).isEqualTo(1345);
+    assertThat(((ByteArrayInputStream) inputStream).available()).isEqualTo(389);
   }
 
   @Test

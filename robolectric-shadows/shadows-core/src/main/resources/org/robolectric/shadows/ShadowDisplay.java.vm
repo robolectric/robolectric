@@ -126,6 +126,11 @@ public class ShadowDisplay {
     outSize.set(realWidth, realHeight);
   }
 
+  @Implementation
+  public int getState() {
+    return Display.STATE_ON;
+  }
+
   public float getDensity() {
     return density;
   }

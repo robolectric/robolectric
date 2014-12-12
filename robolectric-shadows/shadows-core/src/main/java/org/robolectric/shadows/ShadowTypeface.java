@@ -1,111 +1,135 @@
 package org.robolectric.shadows;
 
 import android.content.res.AssetManager;
+import android.graphics.FontFamily;
 import android.graphics.Typeface;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.Shadows;
+import org.robolectric.annotation.HiddenApi;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
+import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
 
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.Shadows;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
-import org.robolectric.annotation.Resetter;
-import org.robolectric.annotation.HiddenApi;
-import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.internal.Shadow;
+import static org.robolectric.Shadows.shadowOf;
 
 @Implements(Typeface.class)
 public class ShadowTypeface {
-  private static Map<FontDesc, Integer> fonts = new HashMap<FontDesc, Integer>();
-  private static int nextFontId = 1;
-
+  private static Map<Long, FontDesc> FONTS = new HashMap<>();
+  private static long nextFontId = 1;
+  private FontDesc description;
   @RealObject private Typeface realTypeface;
-  private FontDesc fontDesc;
 
   @HiddenApi
   public void __constructor__(int fontId) {
-    fontDesc = findById(fontId);
-    Shadow.invokeConstructor(Typeface.class, realTypeface, new ReflectionHelpers.ClassParameter(int.class, fontId));
+    description = findById(fontId);
   }
 
-  public String getAssetPath() {
-    return fontDesc.familyName;
+  @HiddenApi
+  public void __constructor__(long fontId) {
+    description = findById(fontId);
   }
 
-  @Resetter
-  synchronized public static void reset() {
-    // Don't need to reset cache, because native Typeface itself has a cache of font instance,
-    // so this class should be consistent with it. 
+  @Implementation
+  public static Typeface create(String familyName, int style) {
+    return createUnderlyingTypeface(familyName, style);
   }
 
-  @HiddenApi @Implementation
-  synchronized public static int nativeCreate(String familyName, int style) {
-    FontDesc fontDesc = new FontDesc(familyName, style);
-    Integer fontId = fonts.get(fontDesc);
-    if (fontId == null) {
-      fontId = nextFontId++;
-      fonts.put(fontDesc, fontId);
-    }
-    return fontId;
+  @Implementation
+  public static Typeface create(Typeface family, int style) {
+    return createUnderlyingTypeface(shadowOf(family).getFontDescription().getFamilyName(), style);
   }
 
-  @HiddenApi @Implementation
-  public static int nativeCreateFromTypeface(int native_instance, int style) {
-    FontDesc fontDesc = findById(native_instance);
-    return nativeCreate(fontDesc.familyName, style);
-  }
-
-  @HiddenApi @Implementation
-  public static int nativeGetStyle(int native_instance) {
-    return findById(native_instance).style;
-  }
-
-  @HiddenApi @Implementation
-  public static int nativeCreateFromAsset(AssetManager mgr, String fontName) {
-    List<String> paths = new ArrayList<String>();
-
+  @Implementation
+  public static Typeface createFromAsset(AssetManager mgr, String path) {
     AndroidManifest appManifest = Shadows.shadowOf(RuntimeEnvironment.application).getAppManifest();
-    paths.add(getAssetsPath(appManifest, fontName));
+    ArrayList<String> paths = new ArrayList<>();
+    paths.add(getAssetsPath(appManifest, path));
 
     List<AndroidManifest> libraryManifests = appManifest.getLibraryManifests();
     for (AndroidManifest libraryManifest : libraryManifests) {
-      paths.add(getAssetsPath(libraryManifest, fontName));
+      paths.add(getAssetsPath(libraryManifest, path));
     }
 
-    return nativeCreateFromFile(paths);
-  }
-
-  @HiddenApi @Implementation
-  public static int nativeCreateFromFile(List<String> paths) {
-    for (String path : paths) {
-      File file = new File(path);
-      if (file.exists()) {
-        return nativeCreate(file.getPath(), 0);
+    for (String assetPath : paths) {
+      if (new File(assetPath).exists()) {
+        return createUnderlyingTypeface(path, Typeface.NORMAL);
       }
     }
 
     throw new RuntimeException("Font not found at " + paths);
   }
 
+  @Implementation
+  public static Typeface createFromFile(File path) {
+    String familyName = path.toPath().getFileName().toString();
+    return createUnderlyingTypeface(familyName, Typeface.NORMAL);
+  }
+
+  @Implementation
+  public static Typeface createFromFile(String path) {
+    return createFromFile(new File(path));
+  }
+
+  @Implementation
+  public int getStyle() {
+    return description.getStyle();
+  }
+
+  @HiddenApi
+  @Implementation // TODO: API 21
+  public static Typeface createFromFamilies(FontFamily[] families) {
+    return null;
+  }
+
+  @HiddenApi
+  @Implementation // TODO: API 21
+  public static Typeface createFromFamiliesWithDefault(FontFamily[] families) {
+    return null;
+  }
+
+  @Resetter
+  synchronized public static void reset() {
+    FONTS.clear();
+  }
+
+  private static Typeface createUnderlyingTypeface(String familyName, int style) {
+    long thisFontId = nextFontId++;
+    FONTS.put(thisFontId, new FontDesc(familyName, style));
+    return ReflectionHelpers.callConstructorReflectively(Typeface.class, ClassParameter.from(long.class, thisFontId));
+  }
+
   private static String getAssetsPath(AndroidManifest appManifest, String fontName) {
     return appManifest.getAssetsDirectory().join(fontName).toString();
   }
 
-  synchronized private static FontDesc findById(int fontId) {
-    for (Map.Entry<FontDesc, Integer> entry : fonts.entrySet()) {
-      if (entry.getValue().equals(fontId)) {
-        return entry.getKey();
-      }
+  private synchronized static FontDesc findById(long fontId) {
+    if (FONTS.containsKey(fontId)) {
+      return FONTS.get(fontId);
     }
-    throw new RuntimeException("unknown font id " + fontId);
+    throw new RuntimeException("Unknown font id: " + fontId);
   }
 
-  private static class FontDesc {
+  /**
+   * Non-Android accessor. Return the font description.
+   *
+   * @return Font description.
+   */
+  public FontDesc getFontDescription() {
+    return description;
+  }
+
+  public static class FontDesc {
     public final String familyName;
     public final int style;
 
@@ -133,6 +157,14 @@ public class ShadowTypeface {
       int result = familyName != null ? familyName.hashCode() : 0;
       result = 31 * result + style;
       return result;
+    }
+
+    public String getFamilyName() {
+      return familyName;
+    }
+
+    public int getStyle() {
+      return style;
     }
   }
 }

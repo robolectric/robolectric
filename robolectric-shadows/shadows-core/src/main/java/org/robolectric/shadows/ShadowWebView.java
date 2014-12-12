@@ -290,6 +290,10 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
     goBackInvocations++;
   }
 
+  @Implementation
+  public static String findAddress(String addr) {
+    return null;
+  }
 
   /**
    * Non-Android accessor.

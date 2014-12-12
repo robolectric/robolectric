@@ -18,6 +18,11 @@ public class ShadowSystemProperties {
     VALUES.put("ro.build.date.utc", 1277708400000L);  // Jun 28, 2010
     VALUES.put("ro.debuggable", 0);
     VALUES.put("ro.secure", 1);
+    VALUES.put("ro.product.cpu.abilist", "armeabi-v7a");
+    VALUES.put("ro.product.cpu.abilist32", "armeabi-v7a,armeabi");
+    VALUES.put("ro.product.cpu.abilist64", "armeabi-v7a,armeabi");
+    VALUES.put("ro.build.fingerprint", "robolectric");
+    VALUES.put("ro.build.version.all_codenames", "REL");
     VALUES.put("log.closeguard.Animation", false);
     VALUES.put("debug.choreographer.vsync", false); // disable vsync for Choreographer
   }
@@ -27,7 +32,7 @@ public class ShadowSystemProperties {
     Object o = VALUES.get(key);
     if (o == null) {
       warnUnknown(key);
-      return null;
+      return "";
     }
     return o.toString();
   }
