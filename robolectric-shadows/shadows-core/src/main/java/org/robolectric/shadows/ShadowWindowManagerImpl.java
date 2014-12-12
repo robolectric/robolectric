@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.robolectric.internal.Shadow.directlyOn;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.*;
 
 @Implements(className = ShadowWindowManagerImpl.WINDOW_MANAGER_IMPL_CLASS_NAME)
 public class ShadowWindowManagerImpl extends ShadowWindowManager {
@@ -20,16 +21,16 @@ public class ShadowWindowManagerImpl extends ShadowWindowManager {
   private List<View> views = new ArrayList<View>();
 
   @Implementation
-  public void addView(View view, android.view.ViewGroup.LayoutParams layoutParams) {
+  public void addView(View view, ViewGroup.LayoutParams layoutParams) {
     views.add(view);
     directlyOn(realObject, WINDOW_MANAGER_IMPL_CLASS_NAME, "addView",
-        new ReflectionHelpers.ClassParameter(View.class, view), new ReflectionHelpers.ClassParameter(ViewGroup.LayoutParams.class, layoutParams));
+        from(View.class, view), from(ViewGroup.LayoutParams.class, layoutParams));
   }
 
   @Implementation
   public void removeView(View view) {
     views.remove(view);
-    directlyOn(realObject, WINDOW_MANAGER_IMPL_CLASS_NAME, "removeView", new ReflectionHelpers.ClassParameter(View.class, view));
+    directlyOn(realObject, WINDOW_MANAGER_IMPL_CLASS_NAME, "removeView", from(View.class, view));
   }
 
   public List<View> getViews() {

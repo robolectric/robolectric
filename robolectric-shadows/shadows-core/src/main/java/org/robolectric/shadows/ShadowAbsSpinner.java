@@ -2,28 +2,28 @@ package org.robolectric.shadows;
 
 import android.widget.AbsSpinner;
 import android.widget.SpinnerAdapter;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import static org.robolectric.internal.Shadow.directlyOn;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.*;
 
-@SuppressWarnings({"UnusedDeclaration"})
 @Implements(AbsSpinner.class)
-public class ShadowAbsSpinner extends ShadowAdapterView {
+public class ShadowAbsSpinner extends ShadowAdapterView<SpinnerAdapter> {
   @RealObject AbsSpinner realAbsSpinner;
   private boolean animatedTransition;
 
   @Implementation
   public void setSelection(int position, boolean animate) {
-    directlyOn(realAbsSpinner, AbsSpinner.class, "setSelection", ClassParameter.from(int.class, position), ClassParameter.from(boolean.class, animate));
+    directlyOn(realAbsSpinner, AbsSpinner.class, "setSelection", from(position), from(animate));
     animatedTransition = animate;
   }
 
   @Implementation
   public void setSelection(int position) {
-    directlyOn(realAbsSpinner, AbsSpinner.class, "setSelection", ClassParameter.from(int.class, position));
+    directlyOn(realAbsSpinner, AbsSpinner.class, "setSelection", from(position));
     SpinnerAdapter adapter = realAbsSpinner.getAdapter();
     if (getItemSelectedListener() != null && adapter != null) {
       getItemSelectedListener().onItemSelected(realAbsSpinner, null, position, adapter.getItemId(position));

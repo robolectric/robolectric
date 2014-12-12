@@ -4,9 +4,9 @@ import android.app.IntentService;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import static org.robolectric.internal.Shadow.directlyOn;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.*;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(IntentService.class)
@@ -22,6 +22,6 @@ public class ShadowIntentService extends ShadowService {
   @Implementation
   public void setIntentRedelivery(boolean enabled) {
     mRedelivery = enabled;
-    directlyOn(realIntentService, IntentService.class, "setIntentRedelivery", ClassParameter.from(boolean.class, enabled));
+    directlyOn(realIntentService, IntentService.class, "setIntentRedelivery", from(enabled));
   }
 }

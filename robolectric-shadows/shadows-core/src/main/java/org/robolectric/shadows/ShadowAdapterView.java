@@ -12,6 +12,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import static org.robolectric.internal.Shadow.directlyOn;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.*;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AdapterView.class)
@@ -27,7 +28,7 @@ public class ShadowAdapterView<T extends Adapter> extends ShadowViewGroup {
   @Implementation
   public void setOnItemSelectedListener(AdapterView.OnItemSelectedListener itemSelectedListener) {
     this.itemSelectedListener = itemSelectedListener;
-    directlyOn(realAdapterView, AdapterView.class, "setOnItemSelectedListener", ClassParameter.from(AdapterView.OnItemSelectedListener.class, itemSelectedListener));
+    directlyOn(realAdapterView, AdapterView.class, "setOnItemSelectedListener", from(AdapterView.OnItemSelectedListener.class, itemSelectedListener));
   }
 
   public AdapterView.OnItemSelectedListener getItemSelectedListener() {

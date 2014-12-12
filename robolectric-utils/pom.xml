@@ -18,6 +18,11 @@
       <scope>provided</scope>
     </dependency>
 
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+    </dependency>
+
     <!-- Project Dependencies -->
     <dependency>
       <groupId>org.robolectric</groupId>

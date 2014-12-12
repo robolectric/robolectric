@@ -7,6 +7,8 @@ import org.robolectric.annotation.internal.DoNotInstrument;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.*;
+
 @DoNotInstrument
 public class ShadowBinderBridge {
   private Binder realBinder;
@@ -17,9 +19,9 @@ public class ShadowBinderBridge {
 
   public boolean onTransact(int code, Parcel data, Parcel reply, int flags) throws RemoteException {
     return ReflectionHelpers.callInstanceMethodReflectively(realBinder, "onTransact",
-        ClassParameter.from(int.class, code),
-        ClassParameter.from(Parcel.class, data),
-        ClassParameter.from(Parcel.class, reply),
-        ClassParameter.from(int.class, flags));
+        from(code),
+        from(Parcel.class, data),
+        from(Parcel.class, reply),
+        from(flags));
   }
 }

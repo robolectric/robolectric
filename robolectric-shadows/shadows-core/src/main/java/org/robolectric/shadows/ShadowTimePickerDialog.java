@@ -6,7 +6,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.internal.Shadow;
 
-import static org.robolectric.util.ReflectionHelpers.ClassParameter;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.*;
 
 @Implements(value = TimePickerDialog.class, inheritImplementationMethods = true)
 public class ShadowTimePickerDialog extends ShadowAlertDialog {
@@ -21,12 +21,12 @@ public class ShadowTimePickerDialog extends ShadowAlertDialog {
     this.minute = minute;
 
     Shadow.invokeConstructor(TimePickerDialog.class, realTimePickerDialog,
-        ClassParameter.from(Context.class, context),
-        ClassParameter.from(int.class, theme),
-        ClassParameter.from(TimePickerDialog.OnTimeSetListener.class, callBack),
-        ClassParameter.from(int.class, hourOfDay),
-        ClassParameter.from(int.class, minute),
-        ClassParameter.from(boolean.class, is24HourView));
+        from(Context.class, context),
+        from(theme),
+        from(TimePickerDialog.OnTimeSetListener.class, callBack),
+        from(hourOfDay),
+        from(minute),
+        from(is24HourView));
   }
 
   public int getHourOfDay() {

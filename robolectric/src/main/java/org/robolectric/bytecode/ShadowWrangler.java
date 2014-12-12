@@ -8,10 +8,11 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Function;
 import org.robolectric.internal.ShadowConstants;
 import org.robolectric.internal.Shadow;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import java.lang.reflect.*;
 import java.util.*;
+
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 public class ShadowWrangler implements ClassHandler {
   public static final Function<Object, Object> DO_NOTHING_HANDLER = new Function<Object, Object>() {
@@ -246,7 +247,7 @@ public class ShadowWrangler implements ClassHandler {
           }
 
           Object context = params[0];
-          return ReflectionHelpers.callStaticMethodReflectively(shadowWindowClass, "create", ClassParameter.from(activityClass, context));
+          return ReflectionHelpers.callStaticMethodReflectively(shadowWindowClass, "create", from(activityClass, context));
         }
       };
     } else if (methodSignature.matches("java.lang.System", "nanoTime") || methodSignature.matches("java.lang.System", "currentTimeMillis")) {

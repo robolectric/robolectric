@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.*;
+
 @Implements(LocalBroadcastManager.class)
 public class ShadowLocalBroadcastManager {
 
@@ -27,7 +29,7 @@ public class ShadowLocalBroadcastManager {
     return shadowOf(context).getShadowApplication().getSingleton(LocalBroadcastManager.class, new Provider<LocalBroadcastManager>() {
       @Override
       public LocalBroadcastManager get() {
-        return ReflectionHelpers.callConstructorReflectively(LocalBroadcastManager.class, new ReflectionHelpers.ClassParameter(Context.class, context));
+        return ReflectionHelpers.callConstructorReflectively(LocalBroadcastManager.class, from(Context.class, context));
       }
     });
   }

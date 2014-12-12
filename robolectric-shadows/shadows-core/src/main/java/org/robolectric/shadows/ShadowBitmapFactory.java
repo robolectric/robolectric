@@ -31,6 +31,7 @@ import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
 import static org.robolectric.internal.Shadow.directlyOn;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.*;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(BitmapFactory.class)
@@ -40,15 +41,15 @@ public class ShadowBitmapFactory {
   @Implementation
   public static Bitmap decodeResourceStream(Resources res, TypedValue value, InputStream is, Rect pad, BitmapFactory.Options opts) {
     Bitmap bitmap = directlyOn(BitmapFactory.class, "decodeResourceStream",
-        ClassParameter.from(Resources.class, res),
-        ClassParameter.from(TypedValue.class, value),
-        ClassParameter.from(InputStream.class, is),
-        ClassParameter.from(Rect.class, pad),
-        ClassParameter.from(BitmapFactory.Options.class, opts));
+        from(Resources.class, res),
+        from(TypedValue.class, value),
+        from(InputStream.class, is),
+        from(Rect.class, pad),
+        from(BitmapFactory.Options.class, opts));
 
     if (value != null && value.string != null && value.string.toString().contains(".9.")) {
       // todo: better support for nine-patches
-      ReflectionHelpers.callInstanceMethodReflectively(bitmap, "setNinePatchChunk", ClassParameter.from(byte[].class, new byte[0]));
+      ReflectionHelpers.callInstanceMethodReflectively(bitmap, "setNinePatchChunk", from(new byte[0]));
     }
     return bitmap;
   }

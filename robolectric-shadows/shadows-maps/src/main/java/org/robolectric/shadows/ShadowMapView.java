@@ -19,9 +19,9 @@ import org.robolectric.internal.Shadow;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 import static org.robolectric.internal.Shadow.directlyOn;
 import static org.robolectric.internal.Shadow.invokeConstructor;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.*;
 
 @Implements(MapView.class)
 public class ShadowMapView extends ShadowViewGroup {
@@ -51,36 +51,36 @@ public class ShadowMapView extends ShadowViewGroup {
   public void __constructor__(Context context) {
     setContextOnRealView(context);
     this.attributeSet = new RoboAttributeSet(new ArrayList<Attribute>(), ShadowApplication.getInstance().getResourceLoader());
-    invokeConstructor(View.class, realView, ClassParameter.from(Context.class, context));
-    invokeConstructor(ViewGroup.class, realView, ClassParameter.from(Context.class, context));
+    invokeConstructor(View.class, realView, from(Context.class, context));
+    invokeConstructor(ViewGroup.class, realView, from(Context.class, context));
   }
 
   public void __constructor__(Context context, AttributeSet attributeSet) {
     setContextOnRealView(context);
     this.attributeSet = attributeSet;
     invokeConstructor(View.class, realView,
-        ClassParameter.from(Context.class, context),
-        ClassParameter.from(AttributeSet.class, attributeSet),
-        ClassParameter.from(int.class, 0));
+        from(Context.class, context),
+        from(AttributeSet.class, attributeSet),
+        from(0));
 
     invokeConstructor(ViewGroup.class, realView,
-        ClassParameter.from(Context.class, context),
-        ClassParameter.from(AttributeSet.class, attributeSet),
-        ClassParameter.from(int.class, 0));
+        from(Context.class, context),
+        from(AttributeSet.class, attributeSet),
+        from(0));
   }
 
   @Override public void __constructor__(Context context, AttributeSet attributeSet, int defStyle) {
     setContextOnRealView(context);
     this.attributeSet = attributeSet;
     invokeConstructor(View.class, realView,
-        ClassParameter.from(Context.class, context),
-        ClassParameter.from(AttributeSet.class, attributeSet),
-        ClassParameter.from(int.class, defStyle));
+        from(Context.class, context),
+        from(AttributeSet.class, attributeSet),
+        from(defStyle));
 
     invokeConstructor(ViewGroup.class, realView,
-        ClassParameter.from(Context.class, context),
-        ClassParameter.from(AttributeSet.class, attributeSet),
-        ClassParameter.from(int.class, defStyle));
+        from(Context.class, context),
+        from(AttributeSet.class, attributeSet),
+        from(defStyle));
 
     super.__constructor__(context, attributeSet, defStyle);
   }

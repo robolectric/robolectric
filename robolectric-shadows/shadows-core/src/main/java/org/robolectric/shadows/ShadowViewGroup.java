@@ -10,12 +10,11 @@ import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.util.ReflectionHelpers;
 
 import java.io.PrintStream;
 
 import static org.robolectric.internal.Shadow.directlyOn;
-import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.*;
 
 /**
  * Shadow for {@code ViewGroup} that simulates its implementation
@@ -34,8 +33,8 @@ public class ShadowViewGroup extends ShadowView {
   public void addView(final View child, final int index, final ViewGroup.LayoutParams params) {
     Shadows.shadowOf(Looper.getMainLooper()).runPaused(new Runnable() {
       @Override public void run() {
-        directlyOn(realViewGroup, ViewGroup.class, "addView", new ReflectionHelpers.ClassParameter(View.class, child),
-            new ReflectionHelpers.ClassParameter(int.class, index), new ReflectionHelpers.ClassParameter(ViewGroup.LayoutParams.class, params));
+        directlyOn(realViewGroup, ViewGroup.class, "addView", from(View.class, child),
+            from(index), from(ViewGroup.LayoutParams.class, params));
       }
     });
   }

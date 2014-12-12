@@ -15,6 +15,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import java.util.ArrayList;
 
 import static org.robolectric.internal.Shadow.directlyOn;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.*;
 
 @Implements(Notification.class)
 public class ShadowNotification {
@@ -244,49 +245,49 @@ public class ShadowNotification {
     @Implementation
     public Builder setContentTitle(CharSequence contentTitle) {
       this.contentTitle = contentTitle;
-      directlyOn(realBuilder, Builder.class, "setContentTitle", ClassParameter.from(CharSequence.class, contentTitle));
+      directlyOn(realBuilder, Builder.class, "setContentTitle", from(CharSequence.class, contentTitle));
       return realBuilder;
     }
 
     @Implementation
     public Builder setContentText(CharSequence text) {
       this.contentText = text;
-      directlyOn(realBuilder, Builder.class, "setContentText", ClassParameter.from(CharSequence.class, text));
+      directlyOn(realBuilder, Builder.class, "setContentText", from(CharSequence.class, text));
       return realBuilder;
     }
 
     @Implementation
     public Builder setSmallIcon(int smallIcon) {
       this.smallIcon = smallIcon;
-      directlyOn(realBuilder, Builder.class, "setSmallIcon", ClassParameter.from(int.class, smallIcon));
+      directlyOn(realBuilder, Builder.class, "setSmallIcon", from(smallIcon));
       return realBuilder;
     }
 
     @Implementation
     public Builder setOngoing(boolean ongoing) {
       this.ongoing = ongoing;
-      directlyOn(realBuilder, Builder.class, "setOngoing", ClassParameter.from(boolean.class, ongoing));
+      directlyOn(realBuilder, Builder.class, "setOngoing", from(ongoing));
       return realBuilder;
     }
 
     @Implementation
     public Builder setWhen(long when) {
       this.when = when;
-      directlyOn(realBuilder, Builder.class, "setWhen", ClassParameter.from(long.class, when));
+      directlyOn(realBuilder, Builder.class, "setWhen", from(when));
       return realBuilder;
     }
 
     @Implementation
     public Builder setTicker(CharSequence ticker) {
       this.ticker = ticker;
-      directlyOn(realBuilder, Builder.class, "setTicker", ClassParameter.from(CharSequence.class, ticker));
+      directlyOn(realBuilder, Builder.class, "setTicker", from(CharSequence.class, ticker));
       return realBuilder;
     }
 
     @Implementation
     public Builder setContentInfo(CharSequence contentInfo) {
       this.contentInfo = contentInfo;
-      directlyOn(realBuilder, Builder.class, "setContentInfo", ClassParameter.from(CharSequence.class, contentInfo));
+      directlyOn(realBuilder, Builder.class, "setContentInfo", from(CharSequence.class, contentInfo));
       return realBuilder;
     }
 
@@ -302,7 +303,7 @@ public class ShadowNotification {
     @Implementation
     public Builder setStyle(Style style) {
       this.style = style;
-      directlyOn(realBuilder, Builder.class, "setStyle", ClassParameter.from(Style.class, style));
+      directlyOn(realBuilder, Builder.class, "setStyle", from(Style.class, style));
 
       return realBuilder;
     }
@@ -311,7 +312,7 @@ public class ShadowNotification {
     public Builder setProgress(int max, int progress, boolean indeterminate) {
       this.progress = new Progress(max, progress, indeterminate);
       directlyOn(realBuilder, Builder.class, "setProgress",
-          ClassParameter.from(int.class, max), ClassParameter.from(int.class, progress), ClassParameter.from(boolean.class, indeterminate));
+          from(max), from(progress), from(indeterminate));
 
       return realBuilder;
     }
@@ -319,14 +320,14 @@ public class ShadowNotification {
     @Implementation
     public Builder setUsesChronometer(boolean usesChronometer) {
       this.usesChronometer = usesChronometer;
-      directlyOn(realBuilder, Builder.class, "setUsesChronometer", ClassParameter.from(boolean.class, usesChronometer));
+      directlyOn(realBuilder, Builder.class, "setUsesChronometer", from(usesChronometer));
       return realBuilder;
     }
 
     @Implementation
     public Builder setShowWhen(boolean showWhen) {
       this.showWhen = showWhen;
-      directlyOn(realBuilder, Builder.class, "setShowWhen", ClassParameter.from(boolean.class, showWhen));
+      directlyOn(realBuilder, Builder.class, "setShowWhen", from(showWhen));
       return realBuilder;
     }
   }
@@ -343,13 +344,13 @@ public class ShadowNotification {
     @Implementation
     public void internalSetBigContentTitle(CharSequence bigContentTitle) {
       this.bigContentTitle = bigContentTitle;
-      directlyOn(realStyle, Style.class, "internalSetBigContentTitle", ClassParameter.from(CharSequence.class, bigContentTitle));
+      directlyOn(realStyle, Style.class, "internalSetBigContentTitle", from(CharSequence.class, bigContentTitle));
     }
     
     @Implementation
     public void internalSetSummaryText(CharSequence summaryText) {
       this.summaryText = summaryText;
-      directlyOn(realStyle, Style.class, "internalSetSummaryText", ClassParameter.from(CharSequence.class, summaryText));
+      directlyOn(realStyle, Style.class, "internalSetSummaryText", from(CharSequence.class, summaryText));
     }
 
     public CharSequence getBigContentTitle() {
@@ -370,7 +371,7 @@ public class ShadowNotification {
     @Implementation
     public BigTextStyle bigText(CharSequence bigText) {
       this.bigText = bigText;
-      directlyOn(realStyle, BigTextStyle.class, "bigText", ClassParameter.from(CharSequence.class, bigText));
+      directlyOn(realStyle, BigTextStyle.class, "bigText", from(CharSequence.class, bigText));
       return realStyle;
     }
     

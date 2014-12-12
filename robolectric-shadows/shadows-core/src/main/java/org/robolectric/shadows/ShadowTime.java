@@ -14,6 +14,8 @@ import java.util.Calendar;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.*;
+
 @Implements(Time.class)
 public class ShadowTime {
   @RealObject
@@ -313,7 +315,7 @@ public class ShadowTime {
   }
 
   private void throwTimeFormatException(String optionalMessage) {
-    throw ReflectionHelpers.<TimeFormatException>callConstructorReflectively(TimeFormatException.class, new ReflectionHelpers.ClassParameter(String.class, optionalMessage == null ? "fail" : optionalMessage));
+    throw ReflectionHelpers.<TimeFormatException>callConstructorReflectively(TimeFormatException.class, from((String)(optionalMessage == null ? "fail" : optionalMessage)));
   }
 
   private Calendar getCalendar() {

@@ -41,6 +41,7 @@ import java.util.Locale;
 
 import static org.robolectric.internal.Shadow.directlyOn;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.*;
 
 /**
  * Shadow of {@code Resources} that simulates the loading of resources
@@ -514,8 +515,8 @@ public class ShadowResources {
   @HiddenApi @Implementation
   public Drawable loadDrawable(TypedValue value, int id) {
     ResName resName = tryResName(id);
-    Drawable drawable = directlyOn(realResources, Resources.class, "loadDrawable", new ReflectionHelpers.ClassParameter(TypedValue.class, value),
-        new ReflectionHelpers.ClassParameter(int.class, id));
+    Drawable drawable = directlyOn(realResources, Resources.class, "loadDrawable", from(TypedValue.class, value),
+        from(id));
     // todo: this kinda sucks, find some better way...
     if (drawable != null) {
       shadowOf(drawable).createdFromResId = id;

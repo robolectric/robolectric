@@ -18,6 +18,7 @@ import java.lang.reflect.Constructor;
 
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.internal.Shadow.directlyOn;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.*;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Window.class)
@@ -37,13 +38,13 @@ public class ShadowWindow {
   @Implementation
   public void setFlags(int flags, int mask) {
     this.flags = (this.flags & ~mask) | (flags & mask);
-    directlyOn(realWindow, Window.class, "setFlags", new ReflectionHelpers.ClassParameter(int.class, flags), new ReflectionHelpers.ClassParameter(int.class, mask));
+    directlyOn(realWindow, Window.class, "setFlags", from(flags), from(mask));
   }
 
   @Implementation
   public void setSoftInputMode(int softInputMode) {
     this.softInputMode = softInputMode;
-    directlyOn(realWindow, Window.class, "setSoftInputMode", new ReflectionHelpers.ClassParameter(int.class, softInputMode));
+    directlyOn(realWindow, Window.class, "setSoftInputMode", from(softInputMode));
   }
 
   public boolean getFlag(int flag) {
