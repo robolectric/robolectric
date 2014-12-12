@@ -4,9 +4,14 @@ import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
+import com.google.android.collect.Lists;
+
+import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 public class ReflectionHelpersTest {
 
@@ -247,8 +252,46 @@ public class ReflectionHelpersTest {
   }
 
   @Test
+  public void singleArgFrom_unboxes_primitives() {
+    List<ClassParameter<?>> expected = Lists.newArrayList(new ClassParameter<?>[] {
+        from(boolean.class, true),
+        from(char.class, 'a'),
+        from(byte.class, (byte)1),
+        from(short.class, (short)2),
+        from(int.class, 3),
+        from(long.class, 4L),
+        from(float.class, 5.0f),
+        from(double.class, 6.0)
+    });
+    List<ClassParameter<?>> actual = Lists.newArrayList(new ClassParameter<?>[] {
+       from(true),
+       from('a'),
+       from((byte)1),
+       from((short)2),
+       from(3),
+       from(4L),
+       from(5.0f),
+       from(6.0)
+    });
+    for (int i = 0; i < actual.size(); i++) {
+      ClassParameter<?> cpA = actual.get(i);
+      ClassParameter<?> cpE = expected.get(i);
+      assertThat(cpA.clazz).as("clazz").isEqualTo(cpE.clazz);
+      assertThat(cpA.val).as("val").isEqualTo(cpE.val);
+    }
+  }
+  
+  @Test
+  public void singleArgFrom_handlesNonPrimitives() {
+    String param = "Hi there";
+    ClassParameter<String> cpA = from(param);
+    assertThat(cpA.clazz).as("clazz").isEqualTo(String.class);
+    assertThat(cpA.val).as("val").isSameAs(param);
+  }
+  
+  @Test
   public void callConstructorReflectively_whenMultipleSignaturesExistForTheConstructor_callsConstructorWithCorrectSignature() {
-    ExampleClass ec = ReflectionHelpers.callConstructorReflectively(ExampleClass.class, ClassParameter.from(int.class, 16));
+    ExampleClass ec = ReflectionHelpers.callConstructorReflectively(ExampleClass.class, ClassParameter.from(16));
     assertThat(ec.index).as("index").isEqualTo(16);
     assertThat(ec.name).as("name").isNull();
   }

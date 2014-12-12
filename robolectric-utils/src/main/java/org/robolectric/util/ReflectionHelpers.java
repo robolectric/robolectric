@@ -5,6 +5,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ReflectionHelpers {
 
@@ -188,6 +190,30 @@ public class ReflectionHelpers {
     public final Class<? extends V> clazz;
     public final V val;
 
+    private static Map<Class<?>, Class<?>> unboxMap = new HashMap<>();
+    
+    static {
+      unboxMap.put(Boolean.class, boolean.class);
+      unboxMap.put(Character.class, char.class);
+      unboxMap.put(Byte.class, byte.class);
+      unboxMap.put(Short.class, short.class);
+      unboxMap.put(Integer.class, int.class);
+      unboxMap.put(Long.class, long.class);
+      unboxMap.put(Float.class, float.class);
+      unboxMap.put(Double.class, double.class);
+    }
+    
+    @SuppressWarnings("unchecked")
+    public ClassParameter(V val) {
+      Class<?> unboxed = unboxMap.get(val.getClass());
+      if (unboxed == null) {
+        clazz = (Class<V>)val.getClass();
+      } else {
+        clazz = (Class<? extends V>)unboxed;
+      }
+      this.val = val;
+    }
+    
     public ClassParameter(Class<? extends V> clazz, V val) {
       this.clazz = clazz;
       this.val = val;
@@ -195,6 +221,10 @@ public class ReflectionHelpers {
 
     public static <V> ClassParameter<V> from(Class<? extends V> clazz, V val) {
       return new ClassParameter<>(clazz, val);
+    }
+
+    public static <V> ClassParameter<V> from(V val) {
+      return new ClassParameter<>(val);
     }
 
     public static ClassParameter<?>[] fromComponentLists(Class<?>[] classes, Object[] values) {
