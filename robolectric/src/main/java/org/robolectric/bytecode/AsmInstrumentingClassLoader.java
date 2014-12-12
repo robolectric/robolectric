@@ -247,32 +247,10 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes 
     return value;
   }
 
-  private byte[] getInstrumentedBytes(String className, ClassNode classNode, boolean containsStubs) throws ClassNotFoundException {
+  private byte[] getInstrumentedBytes(final String className, ClassNode classNode, boolean containsStubs) throws ClassNotFoundException {
     new ClassInstrumentor(classNode, containsStubs).instrument();
 
-    /**
-     * Preserve stack map frames for V51 and newer bytecode. This fixes class verification errors
-     * for JDK7 and JDK8. The option to disable bytecode verification was removed in JDK8.
-     *
-     * Don't bother for V50 and earlier bytecode, because it doesn't contain stack map frames, and
-     * also because ASM's stack map frame handling doesn't support the JSR and RET instructions
-     * present in legacy bytecode.
-     */
-    int classWriterFlags = classNode.version >= 51
-        ? ClassWriter.COMPUTE_FRAMES
-        : ClassWriter.COMPUTE_MAXS;
-    ClassWriter classWriter = new ClassWriter(classWriterFlags) {
-      @Override
-      public int newNameType(String name, String desc) {
-        return super.newNameType(name, desc.charAt(0) == ')' ? remapParams(desc) : remapParamType(desc));
-      }
-
-      @Override
-      public int newClass(String value) {
-        value = remapType(value);
-        return super.newClass(value);
-      }
-    };
+    ClassWriter classWriter = new InstrumentingClassWriter(classNode, urls);
     classNode.accept(classWriter);
     byte[] classBytes = classWriter.toByteArray();
 
@@ -405,7 +383,7 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes 
 
   private class ClassInstrumentor {
     private final ClassNode classNode;
-    private boolean containsStubs;
+    private final boolean containsStubs;
     private final String internalClassName;
     private final String className;
     private final Type classType;
@@ -1017,6 +995,63 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes 
     @Override
     public String getName() {
       return className;
+    }
+  }
+
+  /**
+   * ClassWriter implementation that verifies classes by loading them from the URLClassLoader
+   * containing all of the classes in the android-all jar.
+   */
+  private class InstrumentingClassWriter extends ClassWriter {
+    private ClassLoader classLoader;
+
+    /**
+     * Preserve stack map frames for V51 and newer bytecode. This fixes class verification errors
+     * for JDK7 and JDK8. The option to disable bytecode verification was removed in JDK8.
+     *
+     * Don't bother for V50 and earlier bytecode, because it doesn't contain stack map frames, and
+     * also because ASM's stack map frame handling doesn't support the JSR and RET instructions
+     * present in legacy bytecode.
+     */
+    public InstrumentingClassWriter(ClassNode classNode, URLClassLoader classLoader) {
+      super(classNode.version >= 51 ? ClassWriter.COMPUTE_FRAMES : ClassWriter.COMPUTE_MAXS);
+      this.classLoader = classLoader;
+    }
+
+    @Override
+    public int newNameType(String name, String desc) {
+      return super.newNameType(name, desc.charAt(0) == ')' ? remapParams(desc) : remapParamType(desc));
+    }
+
+    @Override
+    public int newClass(String value) {
+      value = remapType(value);
+      return super.newClass(value);
+    }
+
+    @Override
+    protected String getCommonSuperClass(final String type1, final String type2) {
+      Class<?> c, d;
+      try {
+        c = Class.forName(type1.replace('/', '.'), false, classLoader);
+        d = Class.forName(type2.replace('/', '.'), false, classLoader);
+      } catch (Exception e) {
+        throw new RuntimeException(e.toString());
+      }
+      if (c.isAssignableFrom(d)) {
+        return type1;
+      }
+      if (d.isAssignableFrom(c)) {
+        return type2;
+      }
+      if (c.isInterface() || d.isInterface()) {
+        return "java/lang/Object";
+      } else {
+        do {
+          c = c.getSuperclass();
+        } while (!c.isAssignableFrom(d));
+        return c.getName().replace('.', '/');
+      }
     }
   }
 }
