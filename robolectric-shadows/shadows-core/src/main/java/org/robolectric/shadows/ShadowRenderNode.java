@@ -4,7 +4,7 @@ import android.view.RenderNode;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-@Implements(RenderNode.class)
+@Implements(value = RenderNode.class, isInAndroidSdk = false)
 public class ShadowRenderNode {
   private float translationX;
   private float translationY;

@@ -19,10 +19,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
 
-/**
- * Shadows Android native SQLite connection.
- */
-@Implements(android.database.sqlite.SQLiteConnection.class)
+@Implements(value = android.database.sqlite.SQLiteConnection.class, isInAndroidSdk = false)
 public class ShadowSQLiteConnection {
   private static final String IN_MEMORY_PATH = ":memory:";
   private static final Connections CONNECTIONS = new Connections();

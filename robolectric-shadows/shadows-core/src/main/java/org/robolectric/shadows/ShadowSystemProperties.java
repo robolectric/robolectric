@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import android.os.SystemProperties;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
@@ -8,7 +9,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-@Implements(className = "android.os.SystemProperties")
+@Implements(value = SystemProperties.class, isInAndroidSdk = false)
 public class ShadowSystemProperties {
   private static final Map<String, Object> VALUES = new HashMap<String, Object>();
   private static final Set<String> alreadyWarned = new HashSet<String>();

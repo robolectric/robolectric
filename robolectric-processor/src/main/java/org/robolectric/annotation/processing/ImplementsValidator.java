@@ -88,7 +88,7 @@ public class ImplementsValidator extends Validator {
       messager.printMessage(Kind.ERROR, message, elem);
       return null;
     }
-    model.shadowTypes.put(elem, type);
+    model.addShadowType(elem, type);
     return null;
   }
 }

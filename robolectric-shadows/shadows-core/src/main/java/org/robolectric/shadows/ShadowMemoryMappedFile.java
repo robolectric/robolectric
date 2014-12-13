@@ -4,20 +4,19 @@ import android.system.ErrnoException;
 import libcore.io.*;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.internal.ShadowExtractor;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-import static org.robolectric.Shadows.shadowOf;
-
 /**
  * Shadow for MemoryMappedFile. This is used by Android to load and parse time zone information.
  * Robolectric emulates this functionality by proxying to a time zone database file packaged into
  * the android-all jar.
  */
-@Implements(MemoryMappedFile.class)
+@Implements(value = MemoryMappedFile.class, isInAndroidSdk = false)
 public class ShadowMemoryMappedFile {
     private byte[] bytes;
     private static final String TZ_DATA_1 = "/misc/zoneinfo/tzdata";
@@ -32,7 +31,8 @@ public class ShadowMemoryMappedFile {
             }
             try {
                 MemoryMappedFile memoryMappedFile = new MemoryMappedFile(-1, -1);
-                shadowOf(memoryMappedFile).bytes = Streams.readFully(is);
+                ShadowMemoryMappedFile shadowMemoryMappedFile = (ShadowMemoryMappedFile) ShadowExtractor.extract(memoryMappedFile);
+                shadowMemoryMappedFile.bytes = Streams.readFully(is);
                 return memoryMappedFile;
             } catch (IOException e) {
                 throw new ErrnoException("mmap", -1, e);

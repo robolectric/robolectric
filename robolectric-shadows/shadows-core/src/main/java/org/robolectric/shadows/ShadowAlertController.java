@@ -13,7 +13,7 @@ import java.lang.reflect.InvocationTargetException;
 
 import static org.robolectric.internal.Shadow.directlyOn;
 
-@Implements(AlertController.class)
+@Implements(value = AlertController.class, isInAndroidSdk = false)
 public class ShadowAlertController {
 
   @RealObject AlertController realAlertController;

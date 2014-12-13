@@ -40,6 +40,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
+import org.robolectric.annotation.Implements;
 
 /**
  * Model describing the Robolectric source file.
@@ -65,13 +66,13 @@ public class RoboModel {
   /** Convenience reference for the processing environment's types utilities. */
   private final Types types;
   
-  HashMap<TypeElement,String> referentMap = newHashMap();
-  HashMultimap<String,TypeElement> typeMap = HashMultimap.create();
-  HashMap<TypeElement,TypeElement> importMap = newHashMap();
-  TreeMap<TypeElement,TypeElement> shadowTypes = newTreeMap(fqComparator);
-  TreeSet<String> imports = newTreeSet();
-  TreeMap<TypeElement,ExecutableElement> resetterMap = newTreeMap(comparator);
-  
+  private HashMap<TypeElement,String> referentMap = newHashMap();
+  private HashMultimap<String,TypeElement> typeMap = HashMultimap.create();
+  private HashMap<TypeElement,TypeElement> importMap = newHashMap();
+  private TreeMap<TypeElement,TypeElement> shadowTypes = newTreeMap(fqComparator);
+  private TreeSet<String> imports = newTreeSet();
+  private TreeMap<TypeElement,ExecutableElement> resetterMap = newTreeMap(comparator);
+
   private static class FQComparator implements Comparator<TypeElement> {
     @Override
     public int compare(TypeElement o1, TypeElement o2) {
@@ -218,7 +219,7 @@ public class RoboModel {
    * that have been registered to date.
    */
   public void prepare() {
-    for (Map.Entry<TypeElement,TypeElement> entry : shadowTypes.entrySet()) {
+    for (Map.Entry<TypeElement,TypeElement> entry : getVisibleShadowTypes().entrySet()) {
       final TypeElement shadowType = entry.getKey();
       registerType(shadowType);
 
@@ -271,8 +272,33 @@ public class RoboModel {
     imports.add("org.robolectric.util.ShadowProvider");
   }
 
-  public NavigableMap<TypeElement, TypeElement> getShadowMap() {
-    return Maps.filterEntries(shadowTypes, new Predicate<Entry<TypeElement,TypeElement>> () {
+  void addShadowType(TypeElement elem, TypeElement type) {
+    shadowTypes.put(elem, type);
+  }
+
+  void addResetter(TypeElement parent, ExecutableElement elem) {
+    resetterMap.put(parent, elem);
+  }
+
+  Set<Entry<TypeElement, ExecutableElement>> getResetters() {
+    return resetterMap.entrySet();
+  }
+
+  Set<String> getImports() {
+    return imports;
+  }
+
+  public Map<TypeElement, TypeElement> getVisibleShadowTypes() {
+    return Maps.filterEntries(shadowTypes, new Predicate<Entry<TypeElement, TypeElement>>() {
+      @Override
+      public boolean apply(Entry<TypeElement, TypeElement> entry) {
+        return entry.getKey().getAnnotation(Implements.class).isInAndroidSdk();
+      }
+    });
+  }
+
+  public Map<TypeElement, TypeElement> getShadowOfMap() {
+    return Maps.filterEntries(getVisibleShadowTypes(), new Predicate<Entry<TypeElement,TypeElement>> () {
       @Override
       public boolean apply(Entry<TypeElement, TypeElement> entry) {
         return !Objects.equal(ANYTHING, entry.getValue());

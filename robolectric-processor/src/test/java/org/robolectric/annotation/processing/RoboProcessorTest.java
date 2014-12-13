@@ -107,7 +107,20 @@ public class RoboProcessorTest {
       .and()
       .generatesSources(forResource("org/robolectric/Robolectric_ClassNameOnly.java"));
   }
-  
+
+  @Test
+  public void generatedFile_shouldNotGenerateShadowOfMethodsForExcludedClasses() {
+    ASSERT.about(javaSources())
+        .that(ImmutableList.of(
+            SHADOW_PROVIDER_SOURCE,
+            SHADOW_EXTRACTOR_SOURCE,
+            forResource("org/robolectric/annotation/processing/shadows/ShadowExcludedFromAndroidSdk.java")))
+        .processedWith(new RoboProcessor(DEFAULT_OPTS))
+        .compilesWithoutError()
+        .and()
+        .generatesSources(forResource("org/robolectric/Robolectric_NoExcludedTypes.java"));
+  }
+
   @Test
   public void generatedFile_shouldUseSpecifiedPackage() throws IOException {
     StringBuffer expected = new StringBuffer();

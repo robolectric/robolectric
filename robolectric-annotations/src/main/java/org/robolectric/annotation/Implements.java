@@ -25,6 +25,14 @@ public @interface Implements {
   String className() default "";
 
   /**
+   * Denotes that this type exists in the public Android SDK. When this value is true, the
+   * annotation processor will generate a shadowOf method.
+   *
+   * @return True if the type is exposed in the Android SDK.
+   */
+  boolean isInAndroidSdk() default true;
+
+  /**
    * If true, Robolectric will invoke the actual Android code for any method that isn't shadowed.
    *
    * @return True to invoke the underlying method.

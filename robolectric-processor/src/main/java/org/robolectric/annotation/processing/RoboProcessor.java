@@ -69,7 +69,7 @@ public class RoboProcessor extends AbstractProcessor {
     processOptions(env.getOptions());
     model = new RoboModel(env.getElementUtils(), env.getTypeUtils());
     messager = processingEnv.getMessager();
-    messager.printMessage(Kind.NOTE, "Initialising RAP");
+    messager.printMessage(Kind.NOTE, "Initialising Robolectric annotation processor");
     addValidator(new ImplementationValidator(model, env));
     addValidator(new ImplementsValidator(model, env));
     addValidator(new RealObjectValidator(model, env));
@@ -114,7 +114,7 @@ public class RoboProcessor extends AbstractProcessor {
       JavaFileObject jfo = filer.createSourceFile(shadowClassName);
       writer = new PrintWriter(jfo.openWriter());
       writer.print("package " + shadowPackage + ";\n");
-      for (String name : model.imports) {
+      for (String name : model.getImports()) {
         writer.println("import " + name + ';');
       }
       writer.println();
@@ -127,7 +127,7 @@ public class RoboProcessor extends AbstractProcessor {
       writer.println();
       writer.print("  public static final Class<?>[] DEFAULT_SHADOW_CLASSES = {");
       boolean firstIteration = true;
-      for (TypeElement shadow : model.shadowTypes.keySet()) {
+      for (TypeElement shadow : model.getVisibleShadowTypes().keySet()) {
         if (firstIteration) {
           firstIteration = false;
         } else {
@@ -136,7 +136,7 @@ public class RoboProcessor extends AbstractProcessor {
         writer.print("\n    " + model.getReferentFor(shadow) + ".class");
       }
       writer.println("\n  };\n");
-      for (Entry<TypeElement, TypeElement> entry : model.getShadowMap().entrySet()) {
+      for (Entry<TypeElement, TypeElement> entry : model.getShadowOfMap().entrySet()) {
         final TypeElement actualType = entry.getValue();
         if (!actualType.getModifiers().contains(Modifier.PUBLIC)) {
           continue;
@@ -177,7 +177,7 @@ public class RoboProcessor extends AbstractProcessor {
         writer.println();
       }
       writer.println("  public void reset() {");
-      for (Entry<TypeElement, ExecutableElement> entry : model.resetterMap.entrySet()) {
+      for (Entry<TypeElement, ExecutableElement> entry : model.getResetters()) {
         writer.println("    " + model.getReferentFor(entry.getKey()) + "." + entry.getValue().getSimpleName() + "();");
       }
       writer.println("  }");

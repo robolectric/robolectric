@@ -33,7 +33,7 @@ public class ResetterValidator extends FoundOnImplementsValidator {
         error = true;
       }
       if (!error) {
-        model.resetterMap.put(parent, elem);
+        model.addResetter(parent, elem);
       }
     }
     return null;

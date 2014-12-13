@@ -1,13 +1,12 @@
 package org.robolectric.shadows;
 
 import android.os.Looper;
+import android.view.WindowManagerGlobal;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-@Implements(className = ShadowWindowManagerGlobal.REAL_CLASS_NAME)
+@Implements(value = WindowManagerGlobal.class, isInAndroidSdk = false)
 public class ShadowWindowManagerGlobal {
-
-  public static final String REAL_CLASS_NAME = "android.view.WindowManagerGlobal";
 
   @Implementation
   public static Object getWindowSession() {

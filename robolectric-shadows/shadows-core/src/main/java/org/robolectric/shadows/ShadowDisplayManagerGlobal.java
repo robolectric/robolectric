@@ -9,14 +9,14 @@ import org.robolectric.internal.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
-@Implements(className = ShadowDisplayManagerGlobal.REAL_CLASS_NAME)
+@Implements(value = DisplayManagerGlobal.class, isInAndroidSdk = false)
 public class ShadowDisplayManagerGlobal {
   private static final RoboDisplayManager displayManager = new RoboDisplayManager();
-  public static final String REAL_CLASS_NAME = "android.hardware.display.DisplayManagerGlobal";
 
   @Implementation
   public static Object getInstance() {
-    return ReflectionHelpers.callConstructorReflectively(DisplayManagerGlobal.class, new ClassParameter(IDisplayManager.class, displayManager));
+    return ReflectionHelpers.callConstructorReflectively(DisplayManagerGlobal.class,
+        ClassParameter.from(IDisplayManager.class, displayManager));
   }
 
   @Implementation

@@ -5,7 +5,7 @@ import org.robolectric.annotation.Implements;
 
 import java.util.Locale;
 
-@Implements(libcore.icu.ICU.class)
+@Implements(value = libcore.icu.ICU.class, isInAndroidSdk = false)
 public class ShadowICU {
 
   @Implementation

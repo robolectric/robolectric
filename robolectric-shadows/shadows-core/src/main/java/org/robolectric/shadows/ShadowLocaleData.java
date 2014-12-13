@@ -10,7 +10,7 @@ import org.robolectric.internal.Shadow;
 /**
  * Setup locale data for Robolectric. We fill in values for en_US regardless of the default locale set in the JVM.
  */
-@Implements(className = ShadowLocaleData.REAL_CLASS_NAME)
+@Implements(value = LocaleData.class, isInAndroidSdk = false)
 public class ShadowLocaleData {
   public static final String REAL_CLASS_NAME = "libcore.icu.LocaleData";
 

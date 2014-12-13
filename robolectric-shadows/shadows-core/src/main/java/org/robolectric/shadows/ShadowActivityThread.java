@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import android.app.ActivityThread;
 import android.content.pm.PackageManager;
 
 import org.jetbrains.annotations.NotNull;
@@ -11,7 +12,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
-@Implements(className = ShadowActivityThread.CLASS_NAME)
+@Implements(value = ActivityThread.class, isInAndroidSdk = false)
 public class ShadowActivityThread {
   public static final String CLASS_NAME = "android.app.ActivityThread";
 

@@ -2,17 +2,18 @@ package org.robolectric.shadows;
 
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManagerImpl;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.robolectric.internal.Shadow.directlyOn;
 
-@Implements(className = ShadowWindowManagerImpl.WINDOW_MANAGER_IMPL_CLASS_NAME)
+@Implements(value = WindowManagerImpl.class, isInAndroidSdk = false)
 public class ShadowWindowManagerImpl extends ShadowWindowManager {
   public static final String WINDOW_MANAGER_IMPL_CLASS_NAME = "android.view.WindowManagerImpl";
 
@@ -23,13 +24,13 @@ public class ShadowWindowManagerImpl extends ShadowWindowManager {
   public void addView(View view, android.view.ViewGroup.LayoutParams layoutParams) {
     views.add(view);
     directlyOn(realObject, WINDOW_MANAGER_IMPL_CLASS_NAME, "addView",
-        new ReflectionHelpers.ClassParameter(View.class, view), new ReflectionHelpers.ClassParameter(ViewGroup.LayoutParams.class, layoutParams));
+        ClassParameter.from(View.class, view), ClassParameter.from(ViewGroup.LayoutParams.class, layoutParams));
   }
 
   @Implementation
   public void removeView(View view) {
     views.remove(view);
-    directlyOn(realObject, WINDOW_MANAGER_IMPL_CLASS_NAME, "removeView", new ReflectionHelpers.ClassParameter(View.class, view));
+    directlyOn(realObject, WINDOW_MANAGER_IMPL_CLASS_NAME, "removeView", ClassParameter.from(View.class, view));
   }
 
   public List<View> getViews() {
