@@ -8,12 +8,12 @@
          android:theme="@style/Theme.Robolectric"
          android:label="@string/app_name">
 
-    <activity android:name="org.robolectric.shadows.ThemeTest$TestActivity"/>
+    <activity android:name="org.robolectric.shadows.ShadowThemeTest$TestActivity"/>
 
-    <activity android:name="org.robolectric.shadows.ThemeTest$TestActivityWithAnotherTheme"
+    <activity android:name="org.robolectric.shadows.ShadowThemeTest$TestActivityWithAnotherTheme"
           android:theme="@style/Theme.AnotherTheme"/>
 
-    <activity android:name="org.robolectric.shadows.ThemeTest$TestActivityWithAThirdTheme"
+    <activity android:name="org.robolectric.shadows.ShadowThemeTest$TestActivityWithAThirdTheme"
           android:theme="@style/Theme.ThirdTheme"/>
   </application>
 </manifest>

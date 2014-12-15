@@ -76,7 +76,7 @@ public class AndroidManifestTest {
     assertThat(config.getBroadcastReceivers().get(0).getClassName()).isEqualTo("org.robolectric.AndroidManifestTest.ConfigTestReceiver");
     assertThat(config.getBroadcastReceivers().get(0).getActions()).contains("org.robolectric.ACTION1", "org.robolectric.ACTION2");
 
-    assertThat(config.getBroadcastReceivers().get(1).getClassName()).isEqualTo("org.robolectric.tester.ConfigTestReceiver");
+    assertThat(config.getBroadcastReceivers().get(1).getClassName()).isEqualTo("org.robolectric.fakes.ConfigTestReceiver");
     assertThat(config.getBroadcastReceivers().get(1).getActions()).contains("org.robolectric.ACTION_SUPERSET_PACKAGE");
 
     assertThat(config.getBroadcastReceivers().get(2).getClassName()).isEqualTo("org.robolectric.ConfigTestReceiver");

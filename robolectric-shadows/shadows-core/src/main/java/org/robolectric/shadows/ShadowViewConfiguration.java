@@ -52,9 +52,9 @@ public class ShadowViewConfiguration {
   private static final int MINIMUM_FLING_VELOCITY = 50;
   private static final int MAXIMUM_FLING_VELOCITY = 4000;
   private static final int MAXIMUM_DRAWING_CACHE_SIZE = 320 * 480 * 4;
-  private static float SCROLL_FRICTION = 0.015f;
   private static final int OVERSCROLL_DISTANCE = 0;
   private static final int OVERFLING_DISTANCE = 4;
+  private static final float SCROLL_FRICTION = 0.015f;
 
   private int edgeSlop;
   private int fadingEdgeLength;

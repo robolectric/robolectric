@@ -48,7 +48,7 @@ abstract public class AdapterViewBehavior {
   }
 
   @Test public void testSetAdapter_ShouldCauseViewsToBeRenderedAsynchronously() throws Exception {
-    adapterView.setAdapter(new CountingAdapter(2));
+    adapterView.setAdapter(new ShadowCountingAdapter(2));
 
     assertThat(adapterView.getCount()).isEqualTo(2);
     assertThat(adapterView.getChildCount()).isEqualTo(0);
@@ -70,7 +70,7 @@ abstract public class AdapterViewBehavior {
   }
 
   @Test public void testSetEmptyView_ShouldHideAdapterViewIfAdapterViewIsEmpty() throws Exception {
-    adapterView.setAdapter(new CountingAdapter(0));
+    adapterView.setAdapter(new ShadowCountingAdapter(0));
 
     View emptyView = new View(adapterView.getContext());
     adapterView.setEmptyView(emptyView);
@@ -80,7 +80,7 @@ abstract public class AdapterViewBehavior {
   }
 
   @Test public void testSetEmptyView_ShouldHideEmptyViewIfAdapterViewIsNotEmpty() throws Exception {
-    adapterView.setAdapter(new CountingAdapter(1));
+    adapterView.setAdapter(new ShadowCountingAdapter(1));
 
     View emptyView = new View(adapterView.getContext());
     adapterView.setEmptyView(emptyView);
@@ -90,7 +90,7 @@ abstract public class AdapterViewBehavior {
   }
 
   @Test public void testSetEmptyView_ShouldHideEmptyViewWhenAdapterGetsNewItem() throws Exception {
-    CountingAdapter adapter = new CountingAdapter(0);
+    ShadowCountingAdapter adapter = new ShadowCountingAdapter(0);
     adapterView.setAdapter(adapter);
 
     View emptyView = new View(adapterView.getContext());
@@ -108,7 +108,7 @@ abstract public class AdapterViewBehavior {
   }
 
   @Test public void testSetEmptyView_ShouldHideAdapterViewWhenAdapterBecomesEmpty() throws Exception {
-    CountingAdapter adapter = new CountingAdapter(1);
+    ShadowCountingAdapter adapter = new ShadowCountingAdapter(1);
     adapterView.setAdapter(adapter);
 
     View emptyView = new View(adapterView.getContext());
