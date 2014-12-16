@@ -68,7 +68,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   public void setApplication(Application application) {
-    ReflectionHelpers.setFieldReflectively(realActivity, "mApplication", application);
+    ReflectionHelpers.setField(realActivity, "mApplication", application);
   }
 
   public boolean setThemeFromManifest() {
@@ -232,7 +232,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   public void setWindow(Window window) {
-    ReflectionHelpers.setFieldReflectively(realActivity, "mWindow", window);
+    ReflectionHelpers.setField(realActivity, "mWindow", window);
   }
 
   @Implementation

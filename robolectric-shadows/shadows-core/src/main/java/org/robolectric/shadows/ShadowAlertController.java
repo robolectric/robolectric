@@ -75,6 +75,6 @@ public class ShadowAlertController {
   }
 
   public Adapter getAdapter() {
-    return ReflectionHelpers.<ListView>callInstanceMethodReflectively(realAlertController, "getListView").getAdapter();
+    return ReflectionHelpers.<ListView>callInstanceMethod(realAlertController, "getListView").getAdapter();
   }
 }

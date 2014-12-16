@@ -198,6 +198,6 @@ abstract public class ShadowContext {
   }
 
   public void callAttachBaseContext(Context context) {
-    ReflectionHelpers.callInstanceMethodReflectively(realContext, "attachBaseContext", ClassParameter.from(Context.class, context));
+    ReflectionHelpers.callInstanceMethod(realContext, "attachBaseContext", ClassParameter.from(Context.class, context));
   }
 }

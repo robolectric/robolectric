@@ -17,7 +17,7 @@ public class ShadowTypedArray {
   public String positionDescription;
 
   public static TypedArray create(Resources realResources, int[] attrs, int[] data, int[] indices, int len, CharSequence[] stringData) {
-    TypedArray typedArray = ReflectionHelpers.callConstructorReflectively(TypedArray.class, new ReflectionHelpers.ClassParameter(Resources.class, realResources),
+    TypedArray typedArray = ReflectionHelpers.callConstructor(TypedArray.class, new ReflectionHelpers.ClassParameter(Resources.class, realResources),
         new ReflectionHelpers.ClassParameter(int[].class, data), new ReflectionHelpers.ClassParameter(int[].class, indices),
         new ReflectionHelpers.ClassParameter(int.class, len));
     Shadows.shadowOf(typedArray).stringData = stringData;

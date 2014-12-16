@@ -39,7 +39,7 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
   @Implementation
   public Drawable mutate() {
     Bitmap bitmap = realBitmapDrawable.getBitmap();
-    BitmapDrawable real = ReflectionHelpers.callConstructorReflectively(BitmapDrawable.class, ClassParameter.from(Bitmap.class, bitmap));
+    BitmapDrawable real = ReflectionHelpers.callConstructor(BitmapDrawable.class, ClassParameter.from(Bitmap.class, bitmap));
     ShadowBitmapDrawable shadow = shadowOf(real);
     shadow.colorFilter = this.colorFilter;
     shadow.drawableCreateFromStreamSource = drawableCreateFromStreamSource;

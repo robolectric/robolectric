@@ -87,19 +87,19 @@ public class ShadowContextImpl extends ShadowContext {
             || serviceClassName.equals("android.app.ActivityManager")
             || serviceClassName.equals("android.app.admin.DevicePolicyManager")) {
 
-          service = ReflectionHelpers.callConstructorReflectively(clazz,
+          service = ReflectionHelpers.callConstructor(clazz,
               ClassParameter.from(Context.class, RuntimeEnvironment.application),
               ClassParameter.from(Handler.class, null));
 
         } else if (serviceClassName.equals("android.os.storage.StorageManager")) {
-          service = ReflectionHelpers.callConstructorReflectively(clazz);
+          service = ReflectionHelpers.callConstructor(clazz);
 
         } else if (serviceClassName.equals("android.hardware.display.DisplayManager")) {
-          service = ReflectionHelpers.callConstructorReflectively(clazz, ClassParameter.from(Context.class, RuntimeEnvironment.application));
+          service = ReflectionHelpers.callConstructor(clazz, ClassParameter.from(Context.class, RuntimeEnvironment.application));
 
         } else if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) && (serviceClassName.equals("android.view.WindowManagerImpl"))) {
           Display display = newInstanceOf(Display.class);
-          service = ReflectionHelpers.callConstructorReflectively(Class.forName("android.view.WindowManagerImpl"), ClassParameter.from(Display.class, display));
+          service = ReflectionHelpers.callConstructor(Class.forName("android.view.WindowManagerImpl"), ClassParameter.from(Display.class, display));
 
         } else if (serviceClassName.equals("android.accounts.AccountManager")) {
           service = AccountManager.get(null);

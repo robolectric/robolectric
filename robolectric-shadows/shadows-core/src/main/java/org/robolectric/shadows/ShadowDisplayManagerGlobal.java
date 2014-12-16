@@ -15,7 +15,7 @@ public class ShadowDisplayManagerGlobal {
 
   @Implementation
   public static Object getInstance() {
-    return ReflectionHelpers.callConstructorReflectively(DisplayManagerGlobal.class,
+    return ReflectionHelpers.callConstructor(DisplayManagerGlobal.class,
         ClassParameter.from(IDisplayManager.class, displayManager));
   }
 

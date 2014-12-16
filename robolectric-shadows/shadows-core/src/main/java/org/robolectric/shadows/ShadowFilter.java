@@ -15,10 +15,10 @@ public class ShadowFilter {
   public void filter(CharSequence constraint, Filter.FilterListener listener) {
     try {
       Class<?> forName = Class.forName("android.widget.Filter$FilterResults");
-      Object filtering = ReflectionHelpers.callInstanceMethodReflectively(realObject, "performFiltering",
+      Object filtering = ReflectionHelpers.callInstanceMethod(realObject, "performFiltering",
           ClassParameter.from(CharSequence.class, constraint));
 
-      ReflectionHelpers.callInstanceMethodReflectively(realObject, "publishResults",
+      ReflectionHelpers.callInstanceMethod(realObject, "publishResults",
           ClassParameter.from(CharSequence.class, constraint),
           ClassParameter.from(forName, filtering));
 

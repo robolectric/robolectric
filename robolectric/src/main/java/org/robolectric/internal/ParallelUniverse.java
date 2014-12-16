@@ -77,16 +77,16 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     systemResources.updateConfiguration(configuration, systemResources.getDisplayMetrics());
     RuntimeEnvironment.setQualifiers(qualifiers);
 
-    Class<?> contextImplClass = ReflectionHelpers.loadClassReflectively(getClass().getClassLoader(), shadowsAdapter.getShadowContextImplClassName());
+    Class<?> contextImplClass = ReflectionHelpers.loadClass(getClass().getClassLoader(), shadowsAdapter.getShadowContextImplClassName());
 
-    Class<?> activityThreadClass = ReflectionHelpers.loadClassReflectively(getClass().getClassLoader(), shadowsAdapter.getShadowActivityThreadClassName());
-    Object activityThread = ReflectionHelpers.callConstructorReflectively(activityThreadClass);
+    Class<?> activityThreadClass = ReflectionHelpers.loadClass(getClass().getClassLoader(), shadowsAdapter.getShadowActivityThreadClassName());
+    Object activityThread = ReflectionHelpers.callConstructor(activityThreadClass);
     RuntimeEnvironment.setActivityThread(activityThread);
 
-    ReflectionHelpers.setFieldReflectively(activityThread, "mInstrumentation", new RoboInstrumentation());
-    ReflectionHelpers.setFieldReflectively(activityThread, "mCompatConfiguration", configuration);
+    ReflectionHelpers.setField(activityThread, "mInstrumentation", new RoboInstrumentation());
+    ReflectionHelpers.setField(activityThread, "mCompatConfiguration", configuration);
 
-    Context systemContextImpl = ReflectionHelpers.callStaticMethodReflectively(contextImplClass, "createSystemContext", ClassParameter.from(activityThreadClass, activityThread));
+    Context systemContextImpl = ReflectionHelpers.callStaticMethod(contextImplClass, "createSystemContext", ClassParameter.from(activityThreadClass, activityThread));
 
     final Application application = (Application) testLifecycle.createApplication(method, appManifest, config);
     if (application != null) {
@@ -100,9 +100,9 @@ public class ParallelUniverse implements ParallelUniverseInterface {
         throw new RuntimeException(e);
       }
 
-      Class<?> compatibilityInfoClass = ReflectionHelpers.loadClassReflectively(getClass().getClassLoader(), "android.content.res.CompatibilityInfo");
+      Class<?> compatibilityInfoClass = ReflectionHelpers.loadClass(getClass().getClassLoader(), "android.content.res.CompatibilityInfo");
 
-      Object loadedApk = ReflectionHelpers.callInstanceMethodReflectively(activityThread, "getPackageInfo",
+      Object loadedApk = ReflectionHelpers.callInstanceMethod(activityThread, "getPackageInfo",
           ClassParameter.from(ApplicationInfo.class, applicationInfo),
           ClassParameter.from(compatibilityInfoClass, null),
           ClassParameter.from(int.class, Context.CONTEXT_INCLUDE_CODE));
@@ -113,10 +113,10 @@ public class ParallelUniverse implements ParallelUniverseInterface {
         shadowsAdapter.setPackageName(application, applicationInfo.packageName);
       }
       Resources appResources = application.getResources();
-      ReflectionHelpers.setFieldReflectively(loadedApk, "mResources", appResources);
-      Context contextImpl = ReflectionHelpers.callInstanceMethodReflectively(systemContextImpl, "createPackageContext", ClassParameter.from(String.class, applicationInfo.packageName), ClassParameter.from(int.class, Context.CONTEXT_INCLUDE_CODE));
-      ReflectionHelpers.setFieldReflectively(activityThread, "mInitialApplication", application);
-      ReflectionHelpers.callInstanceMethodReflectively(application, "attach", ClassParameter.from(Context.class, contextImpl));
+      ReflectionHelpers.setField(loadedApk, "mResources", appResources);
+      Context contextImpl = ReflectionHelpers.callInstanceMethod(systemContextImpl, "createPackageContext", ClassParameter.from(String.class, applicationInfo.packageName), ClassParameter.from(int.class, Context.CONTEXT_INCLUDE_CODE));
+      ReflectionHelpers.setField(activityThread, "mInitialApplication", application);
+      ReflectionHelpers.callInstanceMethod(application, "attach", ClassParameter.from(Context.class, contextImpl));
 
       appResources.updateConfiguration(configuration, appResources.getDisplayMetrics());
       shadowsAdapter.setAssetsQualifiers(appResources.getAssets(), qualifiers);

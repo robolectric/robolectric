@@ -239,6 +239,6 @@ public class ShadowDownloadManager {
   }
 
   private static <T> T getFieldReflectively(String fieldName, Object object, Class aClass) {
-    return ReflectionHelpers.getFieldReflectively(object, fieldName);
+    return ReflectionHelpers.getField(object, fieldName);
   }
 }

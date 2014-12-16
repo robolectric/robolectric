@@ -7,7 +7,7 @@ import org.robolectric.util.ReflectionHelpers.StringParameter;
 
 public class Shadow {
   public static <T> T newInstanceOf(Class<T> clazz) {
-    return ReflectionHelpers.callConstructorReflectively(clazz);
+    return ReflectionHelpers.callConstructor(clazz);
   }
 
   public static Object newInstanceOf(String className) {
@@ -22,11 +22,11 @@ public class Shadow {
   }
 
   public static <T> T newInstance(Class<T> clazz, Class[] parameterTypes, Object[] params) {
-    return ReflectionHelpers.callConstructorReflectively(clazz, ClassParameter.fromComponentLists(parameterTypes, params));
+    return ReflectionHelpers.callConstructor(clazz, ClassParameter.fromComponentLists(parameterTypes, params));
   }
 
   public static <T> T directlyOn(T shadowedObject, Class<T> clazz) {
-    return ReflectionHelpers.callConstructorReflectively(clazz, ClassParameter.fromComponentLists(new Class[]{DirectObjectMarker.class, clazz}, new Object[]{DirectObjectMarker.INSTANCE, shadowedObject}));
+    return ReflectionHelpers.callConstructor(clazz, ClassParameter.fromComponentLists(new Class[]{DirectObjectMarker.class, clazz}, new Object[]{DirectObjectMarker.INSTANCE, shadowedObject}));
   }
 
   @SuppressWarnings("unchecked")
@@ -41,12 +41,12 @@ public class Shadow {
 
   public static <R, T> R directlyOn(T shadowedObject, Class<T> clazz, String methodName, ClassParameter... paramValues) {
     String directMethodName = directMethodName(clazz.getName(), methodName);
-    return ReflectionHelpers.callInstanceMethodReflectively(shadowedObject, directMethodName, paramValues);
+    return (R) ReflectionHelpers.callInstanceMethod(shadowedObject, directMethodName, paramValues);
   }
 
   public static <R, T> R directlyOn(Class<T> clazz, String methodName, ClassParameter... paramValues) {
     String directMethodName = directMethodName(clazz.getName(), methodName);
-    return ReflectionHelpers.callStaticMethodReflectively(clazz, directMethodName, paramValues);
+    return (R) ReflectionHelpers.callStaticMethod(clazz, directMethodName, paramValues);
   }
 
   public static <R> R invokeConstructor(Class<? extends R> clazz, R instance, StringParameter paramValue0, StringParameter... paramValues) {
@@ -70,7 +70,7 @@ public class Shadow {
 
   public static <R> R invokeConstructor(Class<? extends R> clazz, R instance, ClassParameter... paramValues) {
     String directMethodName = directMethodName(clazz.getName(), ShadowConstants.CONSTRUCTOR_METHOD_NAME);
-    return ReflectionHelpers.callInstanceMethodReflectively(instance, directMethodName, paramValues);
+    return (R) ReflectionHelpers.callInstanceMethod(instance, directMethodName, paramValues);
   }
 
   public static String directMethodName(String methodName) {

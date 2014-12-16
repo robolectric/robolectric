@@ -511,7 +511,7 @@ public class ShadowResourcesTest {
   }
 
   private long getInternalId(Resources.Theme theme) {
-    return ReflectionHelpers.getFieldReflectively(theme, "mTheme");
+    return ReflectionHelpers.getField(theme, "mTheme");
   }
 
   private static String findRootTag(XmlResourceParser parser) throws Exception {

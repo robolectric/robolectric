@@ -8,7 +8,6 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;
@@ -37,7 +36,7 @@ public class ShadowCanvas {
   private List<OvalPaintHistoryEvent> ovalPaintEvents = new ArrayList<OvalPaintHistoryEvent>();
   private List<TextHistoryEvent> drawnTextEventHistory = new ArrayList<TextHistoryEvent>();
   private Paint drawnPaint;
-  private Bitmap targetBitmap = ReflectionHelpers.callConstructorReflectively(Bitmap.class);
+  private Bitmap targetBitmap = ReflectionHelpers.callConstructor(Bitmap.class);
   private float translateX;
   private float translateY;
   private float scaleX = 1;

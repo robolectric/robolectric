@@ -9,6 +9,6 @@ import org.robolectric.util.ReflectionHelpers;
 public class ShadowKeyCharacterMap {
   @Implementation
   public static KeyCharacterMap load(int deviceId) {
-    return ReflectionHelpers.callConstructorReflectively(KeyCharacterMap.class);
+    return ReflectionHelpers.callConstructor(KeyCharacterMap.class);
   }
 }

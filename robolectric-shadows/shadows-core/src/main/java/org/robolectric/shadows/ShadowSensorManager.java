@@ -62,6 +62,6 @@ public class ShadowSensorManager {
   }
 
   public SensorEvent createSensorEvent() {
-    return ReflectionHelpers.callConstructorReflectively(SensorEvent.class);
+    return ReflectionHelpers.callConstructor(SensorEvent.class);
   }
 }

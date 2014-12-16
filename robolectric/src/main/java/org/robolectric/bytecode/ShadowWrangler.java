@@ -283,7 +283,7 @@ public class ShadowWrangler implements ClassHandler {
           }
 
           Object context = params[0];
-          return ReflectionHelpers.callStaticMethodReflectively(shadowWindowClass, "create", ClassParameter.from(activityClass, context));
+          return ReflectionHelpers.callStaticMethod(shadowWindowClass, "create", ClassParameter.from(activityClass, context));
         }
       };
     } else if (methodSignature.matches("java.lang.System", "nanoTime") || methodSignature.matches("java.lang.System", "currentTimeMillis")) {
@@ -298,7 +298,7 @@ public class ShadowWrangler implements ClassHandler {
             throw new RuntimeException(e);
           }
 
-          return ReflectionHelpers.callStaticMethodReflectively(shadowSystemClockClass, methodSignature.methodName);
+          return ReflectionHelpers.callStaticMethod(shadowSystemClockClass, methodSignature.methodName);
         }
       };
     } else if (methodSignature.matches("java.lang.System", "arraycopy")) {

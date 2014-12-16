@@ -46,7 +46,7 @@ public class ShadowWifiManager {
   public WifiInfo getConnectionInfo() {
     checkAccessWifiStatePermission();
     if (wifiInfo == null) {
-      wifiInfo = ReflectionHelpers.callConstructorReflectively(WifiInfo.class);
+      wifiInfo = ReflectionHelpers.callConstructor(WifiInfo.class);
     }
     return wifiInfo;
   }
@@ -103,7 +103,7 @@ public class ShadowWifiManager {
 
   @Implementation
   public WifiManager.WifiLock createWifiLock(int lockType, java.lang.String tag) {
-    return ReflectionHelpers.callConstructorReflectively(WifiManager.WifiLock.class);
+    return ReflectionHelpers.callConstructor(WifiManager.WifiLock.class);
   }
 
   @Implementation

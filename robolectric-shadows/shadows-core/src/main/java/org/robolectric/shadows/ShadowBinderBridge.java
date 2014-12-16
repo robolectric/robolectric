@@ -16,7 +16,7 @@ public class ShadowBinderBridge {
   }
 
   public boolean onTransact(int code, Parcel data, Parcel reply, int flags) throws RemoteException {
-    return ReflectionHelpers.callInstanceMethodReflectively(realBinder, "onTransact",
+    return ReflectionHelpers.callInstanceMethod(realBinder, "onTransact",
         ClassParameter.from(int.class, code),
         ClassParameter.from(Parcel.class, data),
         ClassParameter.from(Parcel.class, reply),

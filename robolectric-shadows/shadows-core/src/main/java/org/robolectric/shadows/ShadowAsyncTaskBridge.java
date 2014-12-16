@@ -17,22 +17,22 @@ public class ShadowAsyncTaskBridge<Params, Progress, Result> {
   }
 
   public Result doInBackground(Params... params) {
-    return ReflectionHelpers.callInstanceMethodReflectively(asyncTask, "doInBackground", ClassParameter.from(Object[].class, params));
+    return ReflectionHelpers.callInstanceMethod(asyncTask, "doInBackground", ClassParameter.from(Object[].class, params));
   }
 
   public void onPreExecute() {
-    ReflectionHelpers.callInstanceMethodReflectively(asyncTask, "onPreExecute");
+    ReflectionHelpers.callInstanceMethod(asyncTask, "onPreExecute");
   }
 
   public void onPostExecute(Result result) {
-    ReflectionHelpers.callInstanceMethodReflectively(asyncTask, "onPostExecute", ClassParameter.from(Object.class, result));
+    ReflectionHelpers.callInstanceMethod(asyncTask, "onPostExecute", ClassParameter.from(Object.class, result));
   }
 
   public void onProgressUpdate(Progress... values) {
-    ReflectionHelpers.callInstanceMethodReflectively(asyncTask, "onProgressUpdate", ClassParameter.from(Object[].class, values));
+    ReflectionHelpers.callInstanceMethod(asyncTask, "onProgressUpdate", ClassParameter.from(Object[].class, values));
   }
 
   public void onCancelled() {
-    ReflectionHelpers.callInstanceMethodReflectively(asyncTask, "onCancelled");
+    ReflectionHelpers.callInstanceMethod(asyncTask, "onCancelled");
   }
 }

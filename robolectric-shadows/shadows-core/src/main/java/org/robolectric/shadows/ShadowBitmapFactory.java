@@ -48,7 +48,7 @@ public class ShadowBitmapFactory {
 
     if (value != null && value.string != null && value.string.toString().contains(".9.")) {
       // todo: better support for nine-patches
-      ReflectionHelpers.callInstanceMethodReflectively(bitmap, "setNinePatchChunk", ClassParameter.from(byte[].class, new byte[0]));
+      ReflectionHelpers.callInstanceMethod(bitmap, "setNinePatchChunk", ClassParameter.from(byte[].class, new byte[0]));
     }
     return bitmap;
   }

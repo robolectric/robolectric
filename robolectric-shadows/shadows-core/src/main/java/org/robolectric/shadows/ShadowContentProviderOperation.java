@@ -54,6 +54,6 @@ public class ShadowContentProviderOperation {
   }
 
   private <T> T getFieldReflectively(String fieldName) {
-    return ReflectionHelpers.getFieldReflectively(realOperation, fieldName);
+    return ReflectionHelpers.getField(realOperation, fieldName);
   }
 }

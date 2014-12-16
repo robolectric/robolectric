@@ -86,7 +86,7 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
 
   @Implementation
   public void setLayoutParams(LayoutParams params) {
-    ReflectionHelpers.setFieldReflectively(realWebView, "mLayoutParams", params);
+    ReflectionHelpers.setField(realWebView, "mLayoutParams", params);
   }
 
   private Object nullish(Method method) {

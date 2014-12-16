@@ -391,7 +391,7 @@ public class ShadowView {
 
   @Implementation
   public Bitmap getDrawingCache() {
-    return ReflectionHelpers.callConstructorReflectively(Bitmap.class);
+    return ReflectionHelpers.callConstructor(Bitmap.class);
   }
 
   @Implementation
@@ -490,7 +490,7 @@ public class ShadowView {
 
   @Implementation
   public boolean isAttachedToWindow() {
-    return ReflectionHelpers.getFieldReflectively(realView, "mAttachInfo") != null;
+    return ReflectionHelpers.getField(realView, "mAttachInfo") != null;
   }
 
   public void callOnAttachedToWindow() {
@@ -502,7 +502,7 @@ public class ShadowView {
   }
 
   private void invokeReflectively(String methodName) {
-    ReflectionHelpers.callInstanceMethodReflectively(realView, methodName);
+    ReflectionHelpers.callInstanceMethod(realView, methodName);
   }
 
   @Implementation

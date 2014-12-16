@@ -36,7 +36,7 @@ public class DrawableResourceLoaderNoRunnerTest {
   public void tearDown() throws Exception {
     if (originalSeparator != null) {
       Field field = File.class.getDeclaredField("separator");
-      ReflectionHelpers.setStaticFieldReflectively(field, originalSeparator);
+      ReflectionHelpers.setStaticField(field, originalSeparator);
       originalSeparator = null;
     }
   }
@@ -143,8 +143,8 @@ public class DrawableResourceLoaderNoRunnerTest {
 
   private void setFileSeparator(String separator) throws Exception {
     Field field = File.class.getDeclaredField("separator");
-    originalSeparator = ReflectionHelpers.getStaticFieldReflectively(field);
-    ReflectionHelpers.setStaticFieldReflectively(field, separator);
+    originalSeparator = ReflectionHelpers.getStaticField(field);
+    ReflectionHelpers.setStaticField(field, separator);
   }
 
   private void setResourceBase(FsFile mockTestBaseDir, ResourcePath mockResourcePath) throws NoSuchFieldException, IllegalAccessException {

@@ -120,7 +120,7 @@ public class ShadowAlertDialog extends ShadowDialog {
   }
 
   public ShadowAlertController getShadowAlertController() {
-    AlertController alert = ReflectionHelpers.getFieldReflectively(realAlertDialog, "mAlert");
+    AlertController alert = ReflectionHelpers.getField(realAlertDialog, "mAlert");
     return (ShadowAlertController) ShadowExtractor.extract(alert);
   }
 

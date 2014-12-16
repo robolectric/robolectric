@@ -18,6 +18,6 @@ public class ShadowAbstractCursor {
    * @return Notification URI.
    */
   public Uri getNotificationUri_Compatibility() {
-    return ReflectionHelpers.getFieldReflectively(realAbstractCursor, "mNotifyUri");
+    return ReflectionHelpers.getField(realAbstractCursor, "mNotifyUri");
   }
 }

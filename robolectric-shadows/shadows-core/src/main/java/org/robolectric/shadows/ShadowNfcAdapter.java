@@ -21,7 +21,7 @@ public class ShadowNfcAdapter {
 
   @Implementation
   public static NfcAdapter getDefaultAdapter(Context context) {
-    return ReflectionHelpers.callConstructorReflectively(NfcAdapter.class);
+    return ReflectionHelpers.callConstructor(NfcAdapter.class);
   }
 
   @Implementation

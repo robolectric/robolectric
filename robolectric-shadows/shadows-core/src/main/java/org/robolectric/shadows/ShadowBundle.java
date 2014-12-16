@@ -43,6 +43,6 @@ public class ShadowBundle {
   }
 
   private static Map getUnderlyingMap(Bundle bundle) {
-    return ReflectionHelpers.getFieldReflectively(bundle, "mMap");
+    return ReflectionHelpers.getField(bundle, "mMap");
   }
 }

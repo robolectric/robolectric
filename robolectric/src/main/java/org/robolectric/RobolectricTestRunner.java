@@ -150,8 +150,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
   public static void injectClassHandler(ClassLoader robolectricClassLoader, ClassHandler classHandler) {
     String className = RobolectricInternals.class.getName();
-    Class<?> robolectricInternalsClass = ReflectionHelpers.loadClassReflectively(robolectricClassLoader, className);
-    ReflectionHelpers.setStaticFieldReflectively(robolectricInternalsClass, "classHandler", classHandler);
+    Class<?> robolectricInternalsClass = ReflectionHelpers.loadClass(robolectricClassLoader, className);
+    ReflectionHelpers.setStaticField(robolectricInternalsClass, "classHandler", classHandler);
   }
 
   @Override
@@ -214,7 +214,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
           parallelUniverseInterface.setSdkConfig(sdkEnvironment.getSdkConfig());
 
           int sdkVersion = pickReportedSdkVersion(config, appManifest);
-          ReflectionHelpers.setStaticFieldReflectively(sdkEnvironment.bootstrappedClass(Build.VERSION.class), "SDK_INT", sdkVersion);
+          ReflectionHelpers.setStaticField(sdkEnvironment.bootstrappedClass(Build.VERSION.class), "SDK_INT", sdkVersion);
 
           ResourceLoader systemResourceLoader = sdkEnvironment.getSystemResourceLoader(getJarResolver());
           setUpApplicationState(bootstrappedMethod, parallelUniverseInterface, systemResourceLoader, appManifest, config);

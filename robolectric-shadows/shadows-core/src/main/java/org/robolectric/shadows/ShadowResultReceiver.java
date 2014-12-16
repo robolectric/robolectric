@@ -15,7 +15,7 @@ public class ShadowResultReceiver {
 
   @Implementation
   public void send(int resultCode, android.os.Bundle resultData) {
-    ReflectionHelpers.callInstanceMethodReflectively(realResultReceiver, "onReceiveResult", new ReflectionHelpers.ClassParameter(Integer.TYPE, resultCode),
+    ReflectionHelpers.callInstanceMethod(realResultReceiver, "onReceiveResult", new ReflectionHelpers.ClassParameter(Integer.TYPE, resultCode),
         new ReflectionHelpers.ClassParameter(Bundle.class, resultData));
   }
 }

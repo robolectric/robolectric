@@ -36,18 +36,14 @@ public class ShadowAccessibilityManager {
   @HiddenApi @Implementation
   public static AccessibilityManager getInstance(Context context) throws Exception {
     AccessibilityManager accessibilityManager = Shadow.newInstance(AccessibilityManager.class, new Class[] {Context.class, IAccessibilityManager.class, int.class}, new Object[] {context, null, 0});
-    Handler handler = new MyHandler(context.getMainLooper(), accessibilityManager);
-    Field mHandlerField = AccessibilityManager.class.getDeclaredField("mHandler");
-    makeNonFinal(mHandlerField).set(accessibilityManager, handler);
+    ReflectionHelpers.setField(accessibilityManager, "mHandler", new MyHandler(context.getMainLooper(), accessibilityManager));
     return accessibilityManager;
   }
 #else
   @HiddenApi @Implementation
   public static AccessibilityManager getInstance(Context context) throws Exception {
     AccessibilityManager accessibilityManager = Shadow.newInstance(AccessibilityManager.class, new Class[0], new Object[0]);
-    Handler handler = new MyHandler(context.getMainLooper(), accessibilityManager);
-    Field mHandlerField = AccessibilityManager.class.getDeclaredField("mHandler");
-    makeNonFinal(mHandlerField).set(accessibilityManager, handler);
+    ReflectionHelpers.setField(accessibilityManager, "mHandler", new MyHandler(context.getMainLooper(), accessibilityManager));
     return accessibilityManager;
   }
 #end
@@ -107,20 +103,6 @@ public class ShadowAccessibilityManager {
     this.touchExplorationEnabled = touchExplorationEnabled;
   }
 
-  static Field makeNonFinal(Field field) {
-    try {
-      field.setAccessible(true);
-      Field modifiersField = Field.class.getDeclaredField("modifiers");
-      modifiersField.setAccessible(true);
-      modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-      return field;
-    } catch (NoSuchFieldException e) {
-      throw new RuntimeException(e);
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
   static class MyHandler extends Handler {
     private static final int DO_SET_STATE = 10;
     private final AccessibilityManager accessibilityManager;
@@ -134,7 +116,7 @@ public class ShadowAccessibilityManager {
     public void handleMessage(Message message) {
       switch (message.what) {
         case DO_SET_STATE:
-          ReflectionHelpers.callInstanceMethodReflectively(accessibilityManager, "setState", ClassParameter.from(int.class, message.arg1));
+          ReflectionHelpers.callInstanceMethod(accessibilityManager, "setState", ClassParameter.from(int.class, message.arg1));
           return;
         default:
           Log.w("AccessibilityManager", "Unknown message type: " + message.what);

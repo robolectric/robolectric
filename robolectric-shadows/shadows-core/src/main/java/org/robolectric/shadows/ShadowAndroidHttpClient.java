@@ -28,12 +28,12 @@ public class ShadowAndroidHttpClient {
 
   @Implementation
   public static AndroidHttpClient newInstance(String userAgent) {
-    return ReflectionHelpers.callConstructorReflectively(AndroidHttpClient.class);
+    return ReflectionHelpers.callConstructor(AndroidHttpClient.class);
   }
 
   @Implementation
   public static AndroidHttpClient newInstance(String userAgent, Context context) {
-    return ReflectionHelpers.callConstructorReflectively(AndroidHttpClient.class);
+    return ReflectionHelpers.callConstructor(AndroidHttpClient.class);
   }
 
   @Implementation

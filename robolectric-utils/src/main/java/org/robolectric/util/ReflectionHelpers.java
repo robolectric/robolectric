@@ -6,10 +6,21 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
+/**
+ * Collection of helper methods for calling methods and accessing fields reflectively.
+ */
 public class ReflectionHelpers {
 
+  /**
+   * Reflectively get the value of a field.
+   *
+   * @param object Target object.
+   * @param fieldName The field name.
+   * @param <R> The return type.
+   * @return Value of the field on the object.
+   */
   @SuppressWarnings("unchecked")
-  public static <R> R getFieldReflectively(final Object object, final String fieldName) {
+  public static <R> R getField(final Object object, final String fieldName) {
     try {
       return traverseClassHierarchy(object.getClass(), NoSuchFieldException.class, new InsideTraversal<R>() {
         @Override
@@ -24,7 +35,14 @@ public class ReflectionHelpers {
     }
   }
 
-  public static void setFieldReflectively(final Object object, final String fieldName, final Object fieldNewValue) {
+  /**
+   * Reflectively set the value of a field.
+   *
+   * @param object Target object.
+   * @param fieldName The field name.
+   * @param fieldNewValue New value.
+   */
+  public static void setField(final Object object, final String fieldName, final Object fieldNewValue) {
     try {
       traverseClassHierarchy(object.getClass(), NoSuchFieldException.class, new InsideTraversal<Void>() {
         @Override
@@ -40,8 +58,15 @@ public class ReflectionHelpers {
     }
   }
 
+  /**
+   * Reflectively get the value of a static field.
+   *
+   * @param field Field object.
+   * @param <R> The return type.
+   * @return Value of the field.
+   */
   @SuppressWarnings("unchecked")
-  public static <R> R getStaticFieldReflectively(Field field) {
+  public static <R> R getStaticField(Field field) {
     try {
       makeFieldVeryAccessible(field);
       return (R) field.get(null);
@@ -50,15 +75,29 @@ public class ReflectionHelpers {
     }
   }
 
-  public static <R> R getStaticFieldReflectively(Class<?> clazz, String fieldName) {
+  /**
+   * Reflectively get the value of a static field.
+   *
+   * @param clazz Target class.
+   * @param fieldName The field name.
+   * @param <R> The return type.
+   * @return Value of the field.
+   */
+  public static <R> R getStaticField(Class<?> clazz, String fieldName) {
     try {
-      return getStaticFieldReflectively(clazz.getDeclaredField(fieldName));
+      return getStaticField(clazz.getDeclaredField(fieldName));
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
   }
 
-  public static void setStaticFieldReflectively(Field field, Object fieldNewValue) {
+  /**
+   * Reflectively set the value of a static field.
+   *
+   * @param field Field object.
+   * @param fieldNewValue The new value.
+   */
+  public static void setStaticField(Field field, Object fieldNewValue) {
     try {
       makeFieldVeryAccessible(field);
       field.set(null, fieldNewValue);
@@ -67,15 +106,31 @@ public class ReflectionHelpers {
     }
   }
 
-  public static void setStaticFieldReflectively(Class<?> clazz, String fieldName, Object fieldNewValue) {
+  /**
+   * Reflectively set the value of a static field.
+   *
+   * @param clazz Target class.
+   * @param fieldName The field name.
+   * @param fieldNewValue The new value.
+   */
+  public static void setStaticField(Class<?> clazz, String fieldName, Object fieldNewValue) {
     try {
-      setStaticFieldReflectively(clazz.getDeclaredField(fieldName), fieldNewValue);
+      setStaticField(clazz.getDeclaredField(fieldName), fieldNewValue);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
   }
 
-  public static <R> R callInstanceMethodReflectively(final Object instance, final String methodName, ClassParameter<?>... classParameters) {
+  /**
+   * Reflectively call an instance method on an object.
+   *
+   * @param instance Target object.
+   * @param methodName The method name to call.
+   * @param classParameters Array of parameter types and values.
+   * @param <R> The return type.
+   * @return The return value of the method.
+   */
+  public static <R> R callInstanceMethod(final Object instance, final String methodName, ClassParameter<?>... classParameters) {
     try {
       final Class<?>[] classes = ClassParameter.getClasses(classParameters);
       final Object[] values = ClassParameter.getValues(classParameters);
@@ -102,13 +157,22 @@ public class ReflectionHelpers {
     }
   }
 
+  /**
+   * Reflectively call a static method on a class.
+   *
+   * @param clazz Target class.
+   * @param methodName The method name to call.
+   * @param classParameters Array of parameter types and values.
+   * @param <R> The return type.
+   * @return The return value of the method.
+   */
   @SuppressWarnings("unchecked")
-  public static <R> R callStaticMethodReflectively(Class<?> containingClass, String methodName, ClassParameter<?>... classParameters) {
+  public static <R> R callStaticMethod(Class<?> clazz, String methodName, ClassParameter<?>... classParameters) {
     try {
       Class<?>[] classes = ClassParameter.getClasses(classParameters);
       Object[] values = ClassParameter.getValues(classParameters);
 
-      Method method = containingClass.getDeclaredMethod(methodName, classes);
+      Method method = clazz.getDeclaredMethod(methodName, classes);
       method.setAccessible(true);
       return (R) method.invoke(null, values);
     } catch (InvocationTargetException e) {
@@ -124,7 +188,14 @@ public class ReflectionHelpers {
     }
   }
 
-  public static Class<?> loadClassReflectively(ClassLoader classLoader, String fullyQualifiedClassName) {
+  /**
+   * Load a class.
+   *
+   * @param classLoader The class loader.
+   * @param fullyQualifiedClassName The fully qualified class name.
+   * @return The class object.
+   */
+  public static Class<?> loadClass(ClassLoader classLoader, String fullyQualifiedClassName) {
     try {
       return classLoader.loadClass(fullyQualifiedClassName);
     } catch (ClassNotFoundException e) {
@@ -132,16 +203,24 @@ public class ReflectionHelpers {
     }
   }
 
-  public static <R> R callConstructorReflectively(Class<? extends R> targetClass, ClassParameter<?>... classParameters) {
+  /**
+   * Reflectively call the constructor of an object.
+   *
+   * @param clazz Target class.
+   * @param classParameters Array of parameter types and values.
+   * @param <R> The return type.
+   * @return The return value of the method.
+   */
+  public static <R> R callConstructor(Class<? extends R> clazz, ClassParameter<?>... classParameters) {
     try {
       final Class<?>[] classes = ClassParameter.getClasses(classParameters);
       final Object[] values = ClassParameter.getValues(classParameters);
 
-      Constructor<? extends R> constructor = targetClass.getDeclaredConstructor(classes);
+      Constructor<? extends R> constructor = clazz.getDeclaredConstructor(classes);
       constructor.setAccessible(true);
       return constructor.newInstance(values);
     } catch (InstantiationException e) {
-      throw new RuntimeException("error instantiating " + targetClass.getName(), e);
+      throw new RuntimeException("error instantiating " + clazz.getName(), e);
     } catch (InvocationTargetException e) {
       if (e.getTargetException() instanceof RuntimeException) {
         throw (RuntimeException) e.getTargetException();

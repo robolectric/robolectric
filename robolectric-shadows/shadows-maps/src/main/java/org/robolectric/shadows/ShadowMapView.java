@@ -321,7 +321,7 @@ public class ShadowMapView extends ShadowViewGroup {
   }
 
   private void setContextOnRealView(Context context) {
-    ReflectionHelpers.setFieldReflectively(realView, "mContext", context);
+    ReflectionHelpers.setField(realView, "mContext", context);
   }
 
   private ShadowMapController shadowOf(MapController mapController) {

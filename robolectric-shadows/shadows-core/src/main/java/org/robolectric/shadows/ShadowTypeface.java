@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.PriorityQueue;
 
 import static org.robolectric.Shadows.shadowOf;
 
@@ -106,7 +105,7 @@ public class ShadowTypeface {
   private static Typeface createUnderlyingTypeface(String familyName, int style) {
     long thisFontId = nextFontId++;
     FONTS.put(thisFontId, new FontDesc(familyName, style));
-    return ReflectionHelpers.callConstructorReflectively(Typeface.class, ClassParameter.from(long.class, thisFontId));
+    return ReflectionHelpers.callConstructor(Typeface.class, ClassParameter.from(long.class, thisFontId));
   }
 
   private static String getAssetsPath(AndroidManifest appManifest, String fontName) {

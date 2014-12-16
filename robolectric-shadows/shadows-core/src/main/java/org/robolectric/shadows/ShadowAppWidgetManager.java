@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import android.app.Activity;
 import android.app.Application;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
@@ -193,7 +192,7 @@ public class ShadowAppWidgetManager {
    * @return the IDs of the new widgets
    */
   public int[] createWidgets(Class<? extends AppWidgetProvider> appWidgetProviderClass, int widgetLayoutId, int howManyToCreate) {
-    AppWidgetProvider appWidgetProvider = ReflectionHelpers.callConstructorReflectively(appWidgetProviderClass);
+    AppWidgetProvider appWidgetProvider = ReflectionHelpers.callConstructor(appWidgetProviderClass);
 
     int[] newWidgetIds = new int[howManyToCreate];
     for (int i = 0; i < howManyToCreate; i++) {
@@ -209,7 +208,7 @@ public class ShadowAppWidgetManager {
   }
 
   private void createWidgetProvider(Class<? extends AppWidgetProvider> appWidgetProviderClass, int... newWidgetIds) {
-    AppWidgetProvider appWidgetProvider = ReflectionHelpers.callConstructorReflectively(appWidgetProviderClass);
+    AppWidgetProvider appWidgetProvider = ReflectionHelpers.callConstructor(appWidgetProviderClass);
     appWidgetProvider.onUpdate(context, realAppWidgetManager, newWidgetIds);
   }
 

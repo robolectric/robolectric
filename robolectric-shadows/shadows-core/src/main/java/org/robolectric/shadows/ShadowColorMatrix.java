@@ -28,6 +28,6 @@ public class ShadowColorMatrix {
   }
   
   private float[] getMatrix() {
-    return ReflectionHelpers.getFieldReflectively(realColorMatrix, "mArray");
+    return ReflectionHelpers.getField(realColorMatrix, "mArray");
   }
 }

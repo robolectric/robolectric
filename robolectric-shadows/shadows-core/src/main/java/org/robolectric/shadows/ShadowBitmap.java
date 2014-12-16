@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
-import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -182,7 +181,7 @@ public class ShadowBitmap {
     if (width <= 0 || height <= 0) {
       throw new IllegalArgumentException("width and height must be > 0");
     }
-    Bitmap scaledBitmap = ReflectionHelpers.callConstructorReflectively(Bitmap.class);
+    Bitmap scaledBitmap = ReflectionHelpers.callConstructor(Bitmap.class);
     ShadowBitmap shadowBitmap = shadowOf(scaledBitmap);
 
     shadowBitmap.setDescription("Bitmap (" + width + " x " + height + ")");
@@ -206,7 +205,7 @@ public class ShadowBitmap {
       return src; // Return the original.
     }
 
-    Bitmap scaledBitmap = ReflectionHelpers.callConstructorReflectively(Bitmap.class);
+    Bitmap scaledBitmap = ReflectionHelpers.callConstructor(Bitmap.class);
     ShadowBitmap shadowBitmap = shadowOf(scaledBitmap);
 
     shadowBitmap.appendDescription(shadowOf(src).getDescription());
@@ -228,7 +227,7 @@ public class ShadowBitmap {
       return src; // Return the original.
     }
 
-    Bitmap newBitmap = ReflectionHelpers.callConstructorReflectively(Bitmap.class);
+    Bitmap newBitmap = ReflectionHelpers.callConstructor(Bitmap.class);
     ShadowBitmap shadowBitmap = shadowOf(newBitmap);
 
     shadowBitmap.appendDescription(shadowOf(src).getDescription());
@@ -258,7 +257,7 @@ public class ShadowBitmap {
       throw new IllegalArgumentException("y + height must be <= bitmap.height()");
     }
 
-    Bitmap newBitmap = ReflectionHelpers.callConstructorReflectively(Bitmap.class);
+    Bitmap newBitmap = ReflectionHelpers.callConstructor(Bitmap.class);
     ShadowBitmap shadowBitmap = shadowOf(newBitmap);
 
     shadowBitmap.appendDescription(shadowOf(src).getDescription());
@@ -348,7 +347,7 @@ public class ShadowBitmap {
 
   @Implementation
   public Bitmap copy(Bitmap.Config config, boolean isMutable) {
-    Bitmap newBitmap = ReflectionHelpers.callConstructorReflectively(Bitmap.class);
+    Bitmap newBitmap = ReflectionHelpers.callConstructor(Bitmap.class);
     ShadowBitmap shadowBitmap = shadowOf(newBitmap);
     shadowBitmap.createdFromBitmap = realBitmap;
     shadowBitmap.config = config;

@@ -37,6 +37,6 @@ public class RobolectricInternals {
   }
 
   public static void performStaticInitialization(Class<?> clazz) {
-    ReflectionHelpers.callStaticMethodReflectively(clazz, ShadowConstants.STATIC_INITIALIZER_METHOD_NAME);
+    ReflectionHelpers.callStaticMethod(clazz, ShadowConstants.STATIC_INITIALIZER_METHOD_NAME);
   }
 }

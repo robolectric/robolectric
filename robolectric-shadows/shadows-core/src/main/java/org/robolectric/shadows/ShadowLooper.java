@@ -38,7 +38,7 @@ public class ShadowLooper {
   }
 
   private static Looper createLooper() {
-    return ReflectionHelpers.callConstructorReflectively(Looper.class);
+    return ReflectionHelpers.callConstructor(Looper.class);
   }
 
   @Resetter

@@ -11,6 +11,6 @@ public class ShadowContextThemeWrapper extends ShadowContextWrapper {
   @RealObject private ContextThemeWrapper realContextThemeWrapper;
 
   public Integer callGetThemeResId() {
-    return ReflectionHelpers.callInstanceMethodReflectively(realContextThemeWrapper, "getThemeResId");
+    return ReflectionHelpers.callInstanceMethod(realContextThemeWrapper, "getThemeResId");
   }
 }

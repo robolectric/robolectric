@@ -82,7 +82,7 @@ public class ShadowDialog {
   }
 
   public boolean isCancelable() {
-    return ReflectionHelpers.getFieldReflectively(realDialog, "mCancelable");
+    return ReflectionHelpers.getField(realDialog, "mCancelable");
   }
 
   public boolean isCancelableOnTouchOutside() {
@@ -139,6 +139,6 @@ public class ShadowDialog {
   }
 
   public void callOnCreate(Bundle bundle) {
-    ReflectionHelpers.callInstanceMethodReflectively(realDialog, "onCreate", ClassParameter.from(Bundle.class, bundle));
+    ReflectionHelpers.callInstanceMethod(realDialog, "onCreate", ClassParameter.from(Bundle.class, bundle));
   }
 }

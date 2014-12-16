@@ -16,7 +16,7 @@ public class Api21AndroidRuntimeAdapter implements AndroidRuntimeAdapter {
 
   @Override
   public void callActivityAttach(Object component, Context baseContext, Class<?> activityThreadClass, Application application, Intent intent, ActivityInfo activityInfo, String activityTitle, Class<?> nonConfigurationInstancesClass) {
-    ReflectionHelpers.callInstanceMethodReflectively(component, "attach",
+    ReflectionHelpers.callInstanceMethod(component, "attach",
         new ReflectionHelpers.ClassParameter(Context.class, baseContext),
         new ReflectionHelpers.ClassParameter(activityThreadClass, null),
         new ReflectionHelpers.ClassParameter(Instrumentation.class, new RoboInstrumentation()),

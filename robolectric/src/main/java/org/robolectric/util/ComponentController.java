@@ -69,7 +69,7 @@ abstract class ComponentController<C extends ComponentController<C, T>, T> {
     shadowMainLooper.runPaused(new Runnable() {
       @Override
       public void run() {
-        ReflectionHelpers.callInstanceMethodReflectively(component, methodName);
+        ReflectionHelpers.callInstanceMethod(component, methodName);
       }
     });
     return myself;
@@ -79,7 +79,7 @@ abstract class ComponentController<C extends ComponentController<C, T>, T> {
     shadowMainLooper.runPaused(new Runnable() {
       @Override
       public void run() {
-        ReflectionHelpers.callInstanceMethodReflectively(component, methodName, ClassParameter.from(Bundle.class, arg));
+        ReflectionHelpers.callInstanceMethod(component, methodName, ClassParameter.from(Bundle.class, arg));
       }
     });
     return myself;
@@ -89,7 +89,7 @@ abstract class ComponentController<C extends ComponentController<C, T>, T> {
     shadowMainLooper.runPaused(new Runnable() {
       @Override
       public void run() {
-        ReflectionHelpers.callInstanceMethodReflectively(component, methodName, ClassParameter.from(Intent.class, arg));
+        ReflectionHelpers.callInstanceMethod(component, methodName, ClassParameter.from(Intent.class, arg));
       }
     });
     return myself;
@@ -99,7 +99,7 @@ abstract class ComponentController<C extends ComponentController<C, T>, T> {
     shadowMainLooper.runPaused(new Runnable() {
       @Override
       public void run() {
-        ReflectionHelpers.callInstanceMethodReflectively(component, methodName, ClassParameter.from(Intent.class, arg), ClassParameter.from(int.class, param1), ClassParameter.from(int.class, param2));
+        ReflectionHelpers.callInstanceMethod(component, methodName, ClassParameter.from(Intent.class, arg), ClassParameter.from(int.class, param1), ClassParameter.from(int.class, param2));
       }
     });
     return myself;

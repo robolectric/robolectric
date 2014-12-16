@@ -27,12 +27,12 @@ public class ShadowMediaStore {
 
   @Resetter
   public static void reset() {
-    ReflectionHelpers.setStaticFieldReflectively(MediaStore.Images.Media.class, "EXTERNAL_CONTENT_URI", Uri.parse("content://media/external/images/media"));
+    ReflectionHelpers.setStaticField(MediaStore.Images.Media.class, "EXTERNAL_CONTENT_URI", Uri.parse("content://media/external/images/media"));
 
-    ReflectionHelpers.setStaticFieldReflectively(MediaStore.Images.Media.class, "INTERNAL_CONTENT_URI", Uri.parse("content://media/internal/images/media"));
+    ReflectionHelpers.setStaticField(MediaStore.Images.Media.class, "INTERNAL_CONTENT_URI", Uri.parse("content://media/internal/images/media"));
 
-    ReflectionHelpers.setStaticFieldReflectively(MediaStore.Video.Media.class, "EXTERNAL_CONTENT_URI", Uri.parse("content://media/external/video/media"));
+    ReflectionHelpers.setStaticField(MediaStore.Video.Media.class, "EXTERNAL_CONTENT_URI", Uri.parse("content://media/external/video/media"));
 
-    ReflectionHelpers.setStaticFieldReflectively(MediaStore.Video.Media.class, "INTERNAL_CONTENT_URI", Uri.parse("content://media/internal/video/media"));
+    ReflectionHelpers.setStaticField(MediaStore.Video.Media.class, "INTERNAL_CONTENT_URI", Uri.parse("content://media/internal/video/media"));
   }
 }

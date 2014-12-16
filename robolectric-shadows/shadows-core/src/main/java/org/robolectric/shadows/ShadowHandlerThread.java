@@ -33,7 +33,7 @@ public class ShadowHandlerThread {
   }
 
   private void callOnLooperPrepared() {
-    ReflectionHelpers.callInstanceMethodReflectively(realObject, "onLooperPrepared");
+    ReflectionHelpers.callInstanceMethod(realObject, "onLooperPrepared");
   }
 
   @Implementation

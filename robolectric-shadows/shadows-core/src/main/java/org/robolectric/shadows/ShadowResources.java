@@ -76,7 +76,7 @@ public class ShadowResources {
   }
 
   public static void setSystemResources(ResourceLoader systemResourceLoader) {
-    AssetManager assetManager = ReflectionHelpers.callConstructorReflectively(AssetManager.class);
+    AssetManager assetManager = ReflectionHelpers.callConstructor(AssetManager.class);
     ShadowAssetManager.bind(assetManager, null, systemResourceLoader);
     DisplayMetrics metrics = new DisplayMetrics();
     Configuration config = new Configuration();
@@ -96,7 +96,7 @@ public class ShadowResources {
   }
 
   public static Resources createFor(ResourceLoader resourceLoader) {
-    AssetManager assetManager = ShadowAssetManager.bind((AssetManager) ReflectionHelpers.callConstructorReflectively(AssetManager.class), null, resourceLoader);
+    AssetManager assetManager = ShadowAssetManager.bind((AssetManager) ReflectionHelpers.callConstructor(AssetManager.class), null, resourceLoader);
     return bind(new Resources(assetManager, new DisplayMetrics(), new Configuration()), resourceLoader);
   }
 
@@ -430,7 +430,7 @@ public class ShadowResources {
   public DisplayMetrics getDisplayMetrics() {
     if (displayMetrics == null) {
       if (display == null) {
-        display = ReflectionHelpers.callConstructorReflectively(Display.class);
+        display = ReflectionHelpers.callConstructor(Display.class);
       }
 
       displayMetrics = new DisplayMetrics();
@@ -504,14 +504,14 @@ public class ShadowResources {
 
     @Implementation
     public Resources getResources() {
-      return ReflectionHelpers.getFieldReflectively(realTheme, "this$0");
+      return ReflectionHelpers.getField(realTheme, "this$0");
     }
   }
 
   @Implementation
   public final Resources.Theme newTheme() {
     Resources.Theme theme = directlyOn(realResources, Resources.class).newTheme();
-    int themeId = Integer.valueOf(ReflectionHelpers.getFieldReflectively(theme, "mTheme").toString()); // TODO: in Lollipop, these can be longs, which will overflow int
+    int themeId = Integer.valueOf(ReflectionHelpers.getField(theme, "mTheme").toString()); // TODO: in Lollipop, these can be longs, which will overflow int
     shadowOf(realResources.getAssets()).setTheme(themeId, theme);
     return theme;
   }

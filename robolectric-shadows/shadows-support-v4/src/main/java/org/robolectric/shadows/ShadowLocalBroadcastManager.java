@@ -27,7 +27,7 @@ public class ShadowLocalBroadcastManager {
     return shadowOf(context).getShadowApplication().getSingleton(LocalBroadcastManager.class, new Provider<LocalBroadcastManager>() {
       @Override
       public LocalBroadcastManager get() {
-        return ReflectionHelpers.callConstructorReflectively(LocalBroadcastManager.class, new ReflectionHelpers.ClassParameter(Context.class, context));
+        return ReflectionHelpers.callConstructor(LocalBroadcastManager.class, new ReflectionHelpers.ClassParameter(Context.class, context));
       }
     });
   }

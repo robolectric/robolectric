@@ -162,7 +162,7 @@ public class ShadowPendingIntent {
       return getCreatedIntentFor(intents);
     }
 
-    PendingIntent pendingIntent = ReflectionHelpers.callConstructorReflectively(PendingIntent.class);
+    PendingIntent pendingIntent = ReflectionHelpers.callConstructor(PendingIntent.class);
     ShadowPendingIntent shadowPendingIntent = Shadows.shadowOf(pendingIntent);
     shadowPendingIntent.savedIntents = intents;
     shadowPendingIntent.isActivityIntent = isActivity;

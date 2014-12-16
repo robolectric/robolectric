@@ -29,7 +29,7 @@ public class ActivityController<T extends Activity> extends ComponentController<
   private final AndroidRuntimeAdapter androidRuntimeAdapter = AndroidRuntimeAdapterFactory.getInstance();
 
   public static <T extends Activity> ActivityController<T> of(ShadowsAdapter shadowsAdapter, Class<T> activityClass) {
-    return new ActivityController<T>(shadowsAdapter, ReflectionHelpers.<T>callConstructorReflectively(activityClass));
+    return new ActivityController<T>(shadowsAdapter, ReflectionHelpers.<T>callConstructor(activityClass));
   }
 
   public static <T extends Activity> ActivityController<T> of(ShadowsAdapter shadowsAdapter, T activity) {
@@ -52,7 +52,7 @@ public class ActivityController<T extends Activity> extends ComponentController<
     Context baseContext = this.baseContext == null ? application : this.baseContext;
     Intent intent = getIntent();
     ActivityInfo activityInfo = new ActivityInfo();
-    ReflectionHelpers.setFieldReflectively(activityInfo, "applicationInfo", new ApplicationInfo());
+    ReflectionHelpers.setField(activityInfo, "applicationInfo", new ApplicationInfo());
     String activityTitle = getActivityTitle();
 
     ClassLoader cl = baseContext.getClassLoader();
@@ -111,7 +111,7 @@ public class ActivityController<T extends Activity> extends ComponentController<
       @Override
       public void run() {
         if (!attached) attach();
-        ReflectionHelpers.callInstanceMethodReflectively(component, "performCreate", ClassParameter.from(Bundle.class, bundle));
+        ReflectionHelpers.callInstanceMethod(component, "performCreate", ClassParameter.from(Bundle.class, bundle));
       }
     });
     return this;
@@ -165,8 +165,8 @@ public class ActivityController<T extends Activity> extends ComponentController<
     shadowMainLooper.runPaused(new Runnable() {
       @Override
       public void run() {
-        ReflectionHelpers.setFieldReflectively(component, "mDecor", component.getWindow().getDecorView());
-        ReflectionHelpers.callInstanceMethodReflectively(component, "makeVisible");
+        ReflectionHelpers.setField(component, "mDecor", component.getWindow().getDecorView());
+        ReflectionHelpers.callInstanceMethod(component, "makeVisible");
       }
     });
 

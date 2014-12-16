@@ -38,7 +38,7 @@ public class ShadowCookieManager {
   @Implementation
   public static CookieManager getInstance() {
     if (sRef == null) {
-      sRef = ReflectionHelpers.callConstructorReflectively(CookieManager.class);
+      sRef = ReflectionHelpers.callConstructor(CookieManager.class);
     }
     return sRef;
   }

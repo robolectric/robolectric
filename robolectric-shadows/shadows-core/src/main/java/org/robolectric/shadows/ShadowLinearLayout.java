@@ -11,6 +11,6 @@ public class ShadowLinearLayout extends ShadowViewGroup {
   @RealObject LinearLayout realObject;
 
   public int getGravity() {
-    return ReflectionHelpers.getFieldReflectively(realObject, "mGravity");
+    return ReflectionHelpers.getField(realObject, "mGravity");
   }
 }

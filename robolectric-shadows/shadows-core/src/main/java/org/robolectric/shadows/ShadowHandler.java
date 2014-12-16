@@ -116,7 +116,7 @@ public class ShadowHandler {
   }
 
   private void setMessageWhen(Message msg, long when) {
-    ReflectionHelpers.setFieldReflectively(msg, "when", when);
+    ReflectionHelpers.setField(msg, "when", when);
   }
 
   private void routeMessage(Message msg) {

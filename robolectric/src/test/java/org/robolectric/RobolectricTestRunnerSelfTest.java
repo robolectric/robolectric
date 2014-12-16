@@ -39,7 +39,7 @@ public class RobolectricTestRunnerSelfTest {
 
   @Test
   public void setStaticValue_shouldIgnoreFinalModifier() {
-    ReflectionHelpers.setStaticFieldReflectively(android.os.Build.class, "MODEL", "expected value");
+    ReflectionHelpers.setStaticField(android.os.Build.class, "MODEL", "expected value");
 
     assertEquals("expected value", android.os.Build.MODEL);
   }

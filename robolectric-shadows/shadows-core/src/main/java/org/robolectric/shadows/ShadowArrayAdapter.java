@@ -11,10 +11,10 @@ public class ShadowArrayAdapter<T> extends ShadowBaseAdapter {
   @RealObject private ArrayAdapter<T> realArrayAdapter;
 
   public int getTextViewResourceId() {
-    return ReflectionHelpers.getFieldReflectively(realArrayAdapter, "mFieldId");
+    return ReflectionHelpers.getField(realArrayAdapter, "mFieldId");
   }
 
   public int getResourceId() {
-    return ReflectionHelpers.getFieldReflectively(realArrayAdapter, "mResource");
+    return ReflectionHelpers.getField(realArrayAdapter, "mResource");
   }
 }

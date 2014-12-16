@@ -45,7 +45,7 @@ public class ShadowDrawable {
     if (corruptStreamSources.contains(srcName)) {
       return null;
     }
-    BitmapDrawable drawable = new BitmapDrawable(ReflectionHelpers.callConstructorReflectively(Bitmap.class));
+    BitmapDrawable drawable = new BitmapDrawable(ReflectionHelpers.callConstructor(Bitmap.class));
     shadowOf(drawable).createdFromInputStream = is;
     shadowOf(drawable).drawableCreateFromStreamSource = srcName;
     shadowOf(drawable).validate(); // start off not invalidated
@@ -66,7 +66,7 @@ public class ShadowDrawable {
     if (bm != null) {
       boolean isNinePatch = srcName != null && srcName.contains(".9.");
       if (isNinePatch) {
-        ReflectionHelpers.callInstanceMethodReflectively(bm, "setNinePatchChunk", ClassParameter.from(byte[].class, new byte[0]));
+        ReflectionHelpers.callInstanceMethod(bm, "setNinePatchChunk", ClassParameter.from(byte[].class, new byte[0]));
       }
       byte[] np = bm.getNinePatchChunk();
       if (np == null || !NinePatch.isNinePatchChunk(np)) {
@@ -86,14 +86,14 @@ public class ShadowDrawable {
 
   @Implementation
   public static Drawable createFromPath(String pathName) {
-    BitmapDrawable drawable = new BitmapDrawable(ReflectionHelpers.callConstructorReflectively(Bitmap.class));
+    BitmapDrawable drawable = new BitmapDrawable(ReflectionHelpers.callConstructor(Bitmap.class));
     shadowOf(drawable).drawableCreateFromPath = pathName;
     shadowOf(drawable).validate(); // start off not invalidated
     return drawable;
   }
 
   public static Drawable createFromResourceId(int resourceId) {
-    Bitmap bitmap = ReflectionHelpers.callConstructorReflectively(Bitmap.class);
+    Bitmap bitmap = ReflectionHelpers.callConstructor(Bitmap.class);
     shadowOf(bitmap).createdFromResId = resourceId;
     BitmapDrawable drawable = new BitmapDrawable(bitmap);
     shadowOf(drawable).validate(); // start off not invalidated

@@ -15,7 +15,7 @@ public class ShadowAnimationBridge {
   }
 
   public void applyTransformation(float interpolatedTime, Transformation transformation) {
-    ReflectionHelpers.callInstanceMethodReflectively(realAnimation, "applyTransformation",
+    ReflectionHelpers.callInstanceMethod(realAnimation, "applyTransformation",
         ClassParameter.from(float.class, interpolatedTime),
         ClassParameter.from(Transformation.class, transformation));
   }
