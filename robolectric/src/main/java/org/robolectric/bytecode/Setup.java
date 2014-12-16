@@ -61,7 +61,7 @@ public class Setup {
   );
 
   private static List<String> stringify(Class... classes) {
-    ArrayList<String> strings = new ArrayList<String>();
+    ArrayList<String> strings = new ArrayList<>();
     for (Class aClass : classes) {
       strings.add(aClass.getName());
     }
@@ -123,7 +123,7 @@ public class Setup {
   }
 
   public Set<MethodRef> methodsToIntercept() {
-    return Collections.unmodifiableSet(new HashSet<MethodRef>(asList(
+    return Collections.unmodifiableSet(new HashSet<>(asList(
         new MethodRef(LinkedHashMap.class, "eldest"),
         new MethodRef(System.class, "loadLibrary"),
         new MethodRef("android.os.StrictMode", "trackActivity"),
@@ -147,7 +147,7 @@ public class Setup {
    * @return Mapping of class name translations.
    */
   public Map<String, String> classNameTranslations() {
-    Map<String, String> map = new HashMap<String, String>();
+    Map<String, String> map = new HashMap<>();
     map.put("java.net.ExtendedResponseCache", ExtendedResponseCache.class.getName());
     map.put("java.net.ResponseSource", ResponseSource.class.getName());
     map.put("java.nio.charset.Charsets", FakeCharsets.class.getName());
