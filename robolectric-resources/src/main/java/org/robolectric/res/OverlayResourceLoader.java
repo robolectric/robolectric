@@ -23,7 +23,6 @@ public class OverlayResourceLoader extends XResourceLoader {
 
       pluralsData.mergeLibraryStyle(subResourceLoader.pluralsData, packageName);
       stringData.mergeLibraryStyle(subResourceLoader.stringData, packageName);
-      menuData.mergeLibraryStyle(subResourceLoader.menuData, packageName);
       drawableData.mergeLibraryStyle(subResourceLoader.drawableData, packageName);
       preferenceData.mergeLibraryStyle(subResourceLoader.preferenceData, packageName);
       xmlDocuments.mergeLibraryStyle(subResourceLoader.xmlDocuments, packageName);
@@ -34,10 +33,6 @@ public class OverlayResourceLoader extends XResourceLoader {
 
   @Override public DrawableNode getDrawableNode(ResName resName, String qualifiers) {
     return super.getDrawableNode(resName.withPackageName(packageName), qualifiers);
-  }
-
-  @Override public MenuNode getMenuNode(ResName resName, String qualifiers) {
-    return super.getMenuNode(resName.withPackageName(packageName), qualifiers);
   }
 
   @Override public Plural getPlural(ResName resName, int quantity, String qualifiers) {

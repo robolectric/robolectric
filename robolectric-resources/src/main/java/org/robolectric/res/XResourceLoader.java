@@ -11,7 +11,6 @@ abstract class XResourceLoader implements ResourceLoader {
   final ResBunch data = new ResBunch();
   final ResBundle<PluralResourceLoader.PluralRules> pluralsData = new ResBundle<PluralResourceLoader.PluralRules>();
   final ResBundle<String> stringData = new ResBundle<String>();
-  final ResBundle<MenuNode> menuData = new ResBundle<MenuNode>();
   final ResBundle<DrawableNode> drawableData = new ResBundle<DrawableNode>();
   final ResBundle<PreferenceNode> preferenceData = new ResBundle<PreferenceNode>();
   final ResBundle<Document> xmlDocuments = new ResBundle<Document>();
@@ -38,7 +37,6 @@ abstract class XResourceLoader implements ResourceLoader {
 
     pluralsData.makeImmutable();
     stringData.makeImmutable();
-    menuData.makeImmutable();
     drawableData.makeImmutable();
     preferenceData.makeImmutable();
     xmlDocuments.makeImmutable();
@@ -93,13 +91,6 @@ abstract class XResourceLoader implements ResourceLoader {
     initialize();
 
     return preferenceData.get(resName, qualifiers);
-  }
-
-  @Override
-  public MenuNode getMenuNode(ResName resName, String qualifiers) {
-    initialize();
-    if (resName == null) return null;
-    return menuData.get(resName, qualifiers);
   }
 
   @Override

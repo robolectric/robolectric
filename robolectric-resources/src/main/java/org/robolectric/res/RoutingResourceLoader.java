@@ -61,11 +61,6 @@ public class RoutingResourceLoader implements ResourceLoader {
     return resourceIndex;
   }
 
-  @Override
-  public MenuNode getMenuNode(ResName resName, String qualifiers) {
-    return pickFor(resName).getMenuNode(resName, qualifiers);
-  }
-
   @Override public boolean providesFor(String namespace) {
     return whichProvidesFor(namespace) != null;
   }
