@@ -2,6 +2,7 @@ package org.robolectric;
 
 import android.app.Application;
 import android.os.Build;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.TestOnly;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -12,9 +13,16 @@ import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
 import org.robolectric.annotation.*;
-import org.robolectric.bytecode.*;
+import org.robolectric.internal.bytecode.*;
+import org.robolectric.internal.dependency.CachedDependencyResolver;
+import org.robolectric.internal.dependency.DependencyResolver;
+import org.robolectric.internal.dependency.LocalDependencyResolver;
+import org.robolectric.internal.dependency.MavenDependencyResolver;
+import org.robolectric.internal.EnvHolder;
 import org.robolectric.internal.ParallelUniverse;
 import org.robolectric.internal.ParallelUniverseInterface;
+import org.robolectric.internal.SdkConfig;
+import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.DocumentLoader;
 import org.robolectric.res.Fs;
@@ -25,19 +33,19 @@ import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.res.RoutingResourceLoader;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.AnnotationUtil;
 import org.robolectric.util.Pair;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.net.URL;
 import java.security.SecureRandom;
 import java.util.*;
 
 /**
- * Installs a {@link org.robolectric.bytecode.AsmInstrumentingClassLoader} and
+ * Installs a {@link org.robolectric.internal.bytecode.AsmInstrumentingClassLoader} and
  * {@link org.robolectric.res.ResourceLoader} in order to
  * provide a simulation of the Android runtime environment.
  */
@@ -356,7 +364,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   }
 
   public Config getConfig(Method method) {
-    Config config = AnnotationUtil.defaultsFor(Config.class);
+    Config config = defaultsFor(Config.class);
 
     Config globalConfig = Config.Implementation.fromProperties(getConfigProperties());
     if (globalConfig != null) {
@@ -538,5 +546,16 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     @Override public Statement methodBlock(FrameworkMethod method) {
       return super.methodBlock(method);
     }
+  }
+
+  private static <A extends Annotation> A defaultsFor(Class<A> annotation) {
+    //noinspection unchecked
+    return (A) Proxy.newProxyInstance(annotation.getClassLoader(),
+        new Class[]{annotation}, new InvocationHandler() {
+          public Object invoke(Object proxy, @NotNull Method method, Object[] args)
+              throws Throwable {
+            return method.getDefaultValue();
+          }
+        });
   }
 }

@@ -1,6 +1,6 @@
 package org.robolectric.internal;
 
-import org.robolectric.bytecode.DirectObjectMarker;
+import org.robolectric.internal.bytecode.DirectObjectMarker;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.ReflectionHelpers.StringParameter;

@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.bytecode.AsmInstrumentingClassLoader;
+import org.robolectric.internal.bytecode.AsmInstrumentingClassLoader;
 import org.robolectric.test.DummyClass;
 
 
