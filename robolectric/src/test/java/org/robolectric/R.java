@@ -229,6 +229,8 @@ public final class R {
     public static final int raw_resource = 0x10900;
     public static final int raw_no_ext = 0x10901;
     public static final int lib_raw_resource = 0x10902;
+    public static final int lib_raw_resource_from_2 = 0x10903;
+    public static final int lib_raw_resource_from_3 = 0x10904;
   }
 
   public static final class attr {
