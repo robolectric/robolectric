@@ -27,6 +27,10 @@ echo Installing shadows for API 18...
 cd "%PROJECT%\robolectric-shadows\shadows-core"
 call mvn clean velocity:velocity install -Pandroid-18
 
+echo Installing shadows for API 19...
+cd "%PROJECT%\robolectric-shadows\shadows-core"
+call mvn clean velocity:velocity install -Pandroid-19
+
 rem Build everything with tests (tests require the shadows)
 echo Installing base installation (with tests)...
 cd "%PROJECT%"
