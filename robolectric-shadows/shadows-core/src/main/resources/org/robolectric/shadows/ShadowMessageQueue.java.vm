@@ -126,6 +126,7 @@ public class ShadowMessageQueue {
           }
         }
       };
+      shadowOf(msg).setScheduledRunnable(callback);
       if (when == 0) {
         scheduler.postAtFrontOfQueue(callback);
       } else {

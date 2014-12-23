@@ -333,6 +333,29 @@ public class ShadowHandlerTest {
   }
 
   @Test
+  public void scheduler_wontDispatchRemovedMessage_evenIfMessageReused() {
+    final ArrayList<Long> runAt = new ArrayList<>();
+    ShadowLooper.pauseMainLooper();
+    Handler handler = new Handler() {
+      @Override
+      public void handleMessage(Message msg) {
+        runAt.add(shadowOf(ShadowLooper.myLooper()).getScheduler().getCurrentTime());
+      }
+    };
+
+    Message msg = handler.obtainMessage(123);
+    handler.sendMessageDelayed(msg, 200);
+    handler.removeMessages(123);
+    Message newMsg = handler.obtainMessage(123);
+    assertThat(newMsg).as("new message").isSameAs(msg);
+    handler.sendMessageDelayed(newMsg, 400);
+    ShadowLooper.unPauseMainLooper();
+    // Original implementation had a bug which caused reused messages to still
+    // be invoked at their original post time.
+    assertThat(runAt).as("handledAt").containsExactly(400L);
+  }
+
+  @Test
   public void shouldRemoveAllCallbacksAndMessages() throws Exception {
     final boolean[] wasRun = new boolean[1];
     ShadowLooper.pauseMainLooper();
@@ -346,7 +369,7 @@ public class ShadowHandlerTest {
     handler.post(scratchRunnable);
 
     handler.removeCallbacksAndMessages(null);
-    ShadowLooper.unPauseMainLooper();
+    ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
 
     assertThat(wasRun[0]).as("Message").isFalse();
     assertThat(scratchRunnable.wasRun).as("Callback").isFalse();
@@ -400,7 +423,7 @@ public class ShadowHandlerTest {
     assertThat(count[0]).as("run count").isEqualTo(1);
     // This assertion proves that it was the first runnable that ran,
     // which proves that the correctly tagged runnable was removed.
-    assertThat(shadowOf(handler.getLooper()).getScheduler().getCurrentTime()).as("currentTime").isEqualTo(105);
+    assertThat(shadowOf(handler.getLooper()).getScheduler().getCurrentTime()).as("currentTime").isEqualTo(100);
   }
 
   @Test
