@@ -32,7 +32,9 @@ public class MavenDependencyResolver implements DependencyResolver {
       dependency.setGroupId(dependencyJar.getGroupId());
       dependency.setType(dependencyJar.getType());
       dependency.setVersion(dependencyJar.getVersion());
-      dependency.setClassifier(dependencyJar.getClassifier());
+      if (dependencyJar.getClassifier() != null) {
+        dependency.setClassifier(dependencyJar.getClassifier());
+      }
       dependenciesTask.addDependency(dependency);
     }
     dependenciesTask.execute();
@@ -61,7 +63,7 @@ public class MavenDependencyResolver implements DependencyResolver {
 
   private String key(DependencyJar dependency) {
     String key = dependency.getGroupId() + ":" + dependency.getArtifactId() + ":" + dependency.getType();
-    if(!dependency.getClassifier().isEmpty()) {
+    if(dependency.getClassifier() != null) {
       key += ":" + dependency.getClassifier();
     }
     return key;
