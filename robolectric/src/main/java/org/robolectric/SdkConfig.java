@@ -33,15 +33,15 @@ public class SdkConfig {
   }
 
   public DependencyJar getSystemResourceDependency() {
-    return createDependency("org.robolectric", "android-all", artifactVersionString, "");
+    return createDependency("org.robolectric", "android-all", artifactVersionString, null);
   }
 
   public DependencyJar[] getSdkClasspathDependencies() {
     return new DependencyJar[] {
-        createDependency("org.robolectric", "android-all", artifactVersionString, ""),
+        createDependency("org.robolectric", "android-all", artifactVersionString, null),
         createDependency("org.robolectric", "shadows-core", "3.0-SNAPSHOT", Integer.toString(apiLevel)),
-        createDependency("org.json", "json", "20080701", ""),
-        createDependency("org.ccil.cowan.tagsoup", "tagsoup", "1.2", "")
+        createDependency("org.json", "json", "20080701", null),
+        createDependency("org.ccil.cowan.tagsoup", "tagsoup", "1.2", null)
     };
   }
 
