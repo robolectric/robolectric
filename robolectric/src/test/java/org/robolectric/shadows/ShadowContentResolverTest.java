@@ -395,6 +395,18 @@ public class ShadowContentResolverTest {
   }
 
   @Test
+  public void shouldCancelSync() throws Exception {
+    ContentResolver.requestSync(a, AUTHORITY, new Bundle());
+    ContentResolver.requestSync(b, AUTHORITY, new Bundle());
+    assertTrue(ContentResolver.isSyncActive(a, AUTHORITY));
+    assertTrue(ContentResolver.isSyncActive(b, AUTHORITY));
+
+    ContentResolver.cancelSync(a, AUTHORITY);
+    assertFalse(ContentResolver.isSyncActive(a, AUTHORITY));
+    assertTrue(ContentResolver.isSyncActive(b, AUTHORITY));
+  }
+
+  @Test
   public void shouldSetIsSyncable() throws Exception {
     assertThat(ContentResolver.getIsSyncable(a, AUTHORITY)).isEqualTo(-1);
     assertThat(ContentResolver.getIsSyncable(b, AUTHORITY)).isEqualTo(-1);
@@ -413,19 +425,71 @@ public class ShadowContentResolverTest {
 
   @Test
   public void shouldAddPeriodicSync() throws Exception {
-    ContentResolver.addPeriodicSync(a, AUTHORITY, new Bundle(), 6000l);
-    ShadowContentResolver.Status status = ShadowContentResolver.getStatus(a, AUTHORITY);
-    assertNotNull(status);
-    assertThat(status.syncs.size()).isEqualTo(1);
-    assertThat(status.syncs.get(0).period).isEqualTo(6000l);
-    assertNotNull(status.syncs.get(0).extras);
+	Bundle fooBar = new Bundle();
+    fooBar.putString("foo", "bar");
+    Bundle fooBaz = new Bundle();
+    fooBaz.putString("foo", "baz");
+
+    ContentResolver.addPeriodicSync(a, AUTHORITY, fooBar, 6000L);
+    ContentResolver.addPeriodicSync(a, AUTHORITY, fooBaz, 6000L);
+    ContentResolver.addPeriodicSync(b, AUTHORITY, fooBar, 6000L);
+    ContentResolver.addPeriodicSync(b, AUTHORITY, fooBaz, 6000L);
+    assertThat(ShadowContentResolver.getPeriodicSyncs(a, AUTHORITY)).containsOnly(
+         new PeriodicSync(a, AUTHORITY, fooBar, 6000L),
+         new PeriodicSync(a, AUTHORITY, fooBaz, 6000L));
+    assertThat(ShadowContentResolver.getPeriodicSyncs(b, AUTHORITY)).containsOnly(
+            new PeriodicSync(b, AUTHORITY, fooBar, 6000L),
+            new PeriodicSync(b, AUTHORITY, fooBaz, 6000L));
+
+    // If same extras, but different time, simply update the time.
+    ContentResolver.addPeriodicSync(a, AUTHORITY, fooBar, 42L);
+    ContentResolver.addPeriodicSync(b, AUTHORITY, fooBaz, 42L);
+    assertThat(ShadowContentResolver.getPeriodicSyncs(a, AUTHORITY)).containsOnly(
+         new PeriodicSync(a, AUTHORITY, fooBar, 42L),
+         new PeriodicSync(a, AUTHORITY, fooBaz, 6000L));
+    assertThat(ShadowContentResolver.getPeriodicSyncs(b, AUTHORITY)).containsOnly(
+            new PeriodicSync(b, AUTHORITY, fooBar, 6000L),
+            new PeriodicSync(b, AUTHORITY, fooBaz, 42L));
   }
 
   @Test
   public void shouldRemovePeriodSync() throws Exception {
-    ContentResolver.addPeriodicSync(a, AUTHORITY, new Bundle(), 6000l);
-    ContentResolver.removePeriodicSync(a, AUTHORITY, new Bundle());
-    assertThat(ShadowContentResolver.getStatus(a, AUTHORITY).syncs.size()).isEqualTo(0);
+    Bundle fooBar = new Bundle();
+    fooBar.putString("foo", "bar");
+    Bundle fooBaz = new Bundle();
+    fooBaz.putString("foo", "baz");
+    Bundle foo42 = new Bundle();
+    foo42.putInt("foo", 42);
+    assertThat(ShadowContentResolver.getPeriodicSyncs(b, AUTHORITY)).isEmpty();
+    assertThat(ShadowContentResolver.getPeriodicSyncs(a, AUTHORITY)).isEmpty();
+ 
+    ContentResolver.addPeriodicSync(a, AUTHORITY, fooBar, 6000L);
+    ContentResolver.addPeriodicSync(a, AUTHORITY, fooBaz, 6000L);
+    ContentResolver.addPeriodicSync(a, AUTHORITY, foo42, 6000L);
+    ContentResolver.addPeriodicSync(b, AUTHORITY, fooBar, 6000L);
+    ContentResolver.addPeriodicSync(b, AUTHORITY, fooBaz, 6000L);
+    ContentResolver.addPeriodicSync(b, AUTHORITY, foo42, 6000L);
+
+    assertThat(ShadowContentResolver.getPeriodicSyncs(a, AUTHORITY)).containsOnly(
+        new PeriodicSync(a, AUTHORITY, fooBar, 6000L),
+        new PeriodicSync(a, AUTHORITY, fooBaz, 6000L),
+        new PeriodicSync(a, AUTHORITY, foo42, 6000L));
+
+    ContentResolver.removePeriodicSync(a, AUTHORITY, fooBar);
+    assertThat(ShadowContentResolver.getPeriodicSyncs(a, AUTHORITY)).containsOnly(
+        new PeriodicSync(a, AUTHORITY, fooBaz, 6000L),
+        new PeriodicSync(a, AUTHORITY, foo42, 6000L));
+
+    ContentResolver.removePeriodicSync(a, AUTHORITY, fooBaz);
+    assertThat(ShadowContentResolver.getPeriodicSyncs(a, AUTHORITY)).containsOnly(
+        new PeriodicSync(a, AUTHORITY, foo42, 6000L));
+
+    ContentResolver.removePeriodicSync(a, AUTHORITY, foo42);
+    assertThat(ShadowContentResolver.getPeriodicSyncs(a, AUTHORITY)).isEmpty();
+    assertThat(ShadowContentResolver.getPeriodicSyncs(b, AUTHORITY)).containsOnly(
+            new PeriodicSync(b, AUTHORITY, fooBar, 6000L),
+            new PeriodicSync(b, AUTHORITY, fooBaz, 6000L),
+            new PeriodicSync(b, AUTHORITY, foo42, 6000L));
   }
 
   @Test
