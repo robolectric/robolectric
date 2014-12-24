@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 
 import static org.robolectric.Shadows.shadowOf;
@@ -304,6 +305,21 @@ public class ShadowContentResolver {
     status.syncRequests++;
     status.syncExtras = extras;
   }
+  
+  @Implementation
+  public static void cancelSync(Account account, String authority) {
+    Status status = getStatus(account, authority);
+    if (status != null) {
+      status.syncRequests = 0;
+      if (status.syncExtras != null) {
+        status.syncExtras.clear();
+      }
+      // This may be too much, as the above should be sufficient.
+      if (status.syncs != null) {
+        status.syncs.clear();
+      }
+    }
+  }
 
   @Implementation
   public static boolean isSyncActive(Account account, String authority) {
@@ -335,8 +351,8 @@ public class ShadowContentResolver {
   @Implementation
   public static void addPeriodicSync(Account account, String authority, Bundle extras,
                      long pollFrequency) {
-
     validateSyncExtrasBundle(extras);
+    removePeriodicSync(account, authority, extras);
     getStatus(account, authority, true).syncs.add(new PeriodicSync(account, authority, extras, pollFrequency));
   }
 
@@ -344,7 +360,14 @@ public class ShadowContentResolver {
   public static void removePeriodicSync(Account account, String authority, Bundle extras) {
     validateSyncExtrasBundle(extras);
     Status status = getStatus(account, authority);
-    if (status != null) status.syncs.clear();
+    if (status != null) {
+      for (int i = 0; i < status.syncs.size(); ++i) {
+        if (Objects.equals(extras, status.syncs.get(i).extras)) {
+          status.syncs.remove(i);
+          break;
+        }
+      }
+    }
   }
 
   @Implementation
