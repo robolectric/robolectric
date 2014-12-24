@@ -1,7 +1,7 @@
 package org.robolectric.manifest;
 
+import java.util.ArrayList;
 import java.util.List;
-import com.google.android.collect.Lists;
 
 public class BroadcastReceiverData {
   private final String className;
@@ -9,7 +9,7 @@ public class BroadcastReceiverData {
   private final List<String> actions;
 
   public BroadcastReceiverData(String className, MetaData metaData) {
-    this.actions = Lists.newArrayList();
+    this.actions = new ArrayList<>();
     this.className = className;
     this.metaData = metaData;
   }
