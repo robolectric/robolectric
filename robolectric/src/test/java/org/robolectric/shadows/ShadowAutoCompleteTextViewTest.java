@@ -5,13 +5,13 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Filter;
 import android.widget.Filterable;
-import com.google.android.collect.Lists;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
-
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -46,7 +46,7 @@ public class ShadowAutoCompleteTextViewTest {
       FilterResults results = new FilterResults();
       if (text != null) {
         results.count = 2;
-        results.values = Lists.newArrayList("Foo", "Bar");
+        results.values = new ArrayList<>(Arrays.asList("Foo", "Bar"));
       }
       return results;
     }

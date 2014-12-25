@@ -4,26 +4,22 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
-
-import com.google.android.collect.Maps;
-
+import java.io.FileDescriptor;
+import java.util.HashMap;
+import java.util.Map;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadows.util.DataSource;
-
-import java.io.FileDescriptor;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.robolectric.shadows.util.DataSource.toDataSource;
 
 @Implements(MediaMetadataRetriever.class)
 public class ShadowMediaMetadataRetriever {
   private DataSource dataSource;
-  private static final Map<DataSource, HashMap<Integer, String>> metadata = Maps.newHashMap();
-  private static final Map<DataSource, HashMap<Long, Bitmap>> frames = Maps.newHashMap();
-  private static final Map<DataSource, RuntimeException> exceptions = Maps.newHashMap();
+  private static final Map<DataSource, Map<Integer, String>> metadata = new HashMap<>();
+  private static final Map<DataSource, Map<Long, Bitmap>> frames = new HashMap<>();
+  private static final Map<DataSource, RuntimeException> exceptions = new HashMap<>();
 
   public void setDataSource(DataSource dataSource) {
     RuntimeException e = exceptions.get(dataSource);
@@ -33,7 +29,7 @@ public class ShadowMediaMetadataRetriever {
     }
     this.dataSource = dataSource;
   }
-  
+
   @Implementation
   public void setDataSource(String path) {
     setDataSource(toDataSource(path));
@@ -71,9 +67,9 @@ public class ShadowMediaMetadataRetriever {
   /**
    * Configures an exception to be thrown when {@link #setDataSource}
    * is called for the given data source.
-   * 
+   *
    * @param ds the data source that will trigger an exception
-   * @param e the exception to trigger, or <tt>null</tt> to 
+   * @param e the exception to trigger, or <tt>null</tt> to
    * avoid throwing an exception.
    */
   public static void addException(DataSource ds, RuntimeException e) {
@@ -95,7 +91,7 @@ public class ShadowMediaMetadataRetriever {
    * you can call {@link #addMetadata(DataSource, int, String)} directly.
    *
    * @param path the path to the data source whose metadata is being set.
-   * @param keyCode the keyCode for the metadata being set, as used by {@link MediaMetadataRetriever#extractMetadata(int)}. 
+   * @param keyCode the keyCode for the metadata being set, as used by {@link MediaMetadataRetriever#extractMetadata(int)}.
    * @param value the value for the specified metadata.
    */
   public static void addMetadata(String path, int keyCode, String value) {
@@ -108,14 +104,14 @@ public class ShadowMediaMetadataRetriever {
     }
     frames.get(ds).put(time, bitmap);
   }
-  
+
   /**
    * Adds the given bitmap at the given time for the given data source.
    * Uses <tt>path</tt> to call {@link org.robolectric.shadows.util.DataSource#toDataSource(String)} and
    * then calls {@link #addFrame(DataSource, long, Bitmap)}. This
    * method is retained mostly for backwards compatibility;
    * you can call {@link #addFrame(DataSource, long, Bitmap)} directly.
-   * 
+   *
    * @param path the path to the data source.
    * @param time the playback time at which the specified bitmap
    * should be retrieved.
