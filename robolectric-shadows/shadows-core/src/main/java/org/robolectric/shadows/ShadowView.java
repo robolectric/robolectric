@@ -14,7 +14,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewParent;
 
-import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -25,9 +24,6 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import java.io.PrintStream;
 import java.lang.reflect.Method;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
 
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.internal.Shadow.directlyOn;
