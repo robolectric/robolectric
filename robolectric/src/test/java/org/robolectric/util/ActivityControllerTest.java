@@ -167,15 +167,15 @@ public class ActivityControllerTest {
   }
 
   @Test
-  public void setup_callsLifecycleMethodsAndMakesVisible() {
-    controller.setup();
+  public void launch_callsLifecycleMethodsAndMakesVisible() {
+    controller.launch();
     transcript.assertEventsInclude("onCreate", "onStart", "onPostCreate", "onResume", "onPostResume");
     assertEquals(controller.get().getWindow().getDecorView().getParent().getClass().getName(), "android.view.ViewRootImpl");
   }
 
   @Test
-  public void setupWithBundle_callsLifecycleMethodsAndMakesVisible() {
-    controller.setup(new Bundle());
+  public void launchWithBundle_callsLifecycleMethodsAndMakesVisible() {
+    controller.launch(new Bundle());
     transcript.assertEventsInclude("onCreate", "onStart", "onRestoreInstanceState", "onPostCreate", "onResume", "onPostResume");
     assertEquals(controller.get().getWindow().getDecorView().getParent().getClass().getName(), "android.view.ViewRootImpl");
   }

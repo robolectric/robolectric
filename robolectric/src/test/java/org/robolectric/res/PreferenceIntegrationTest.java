@@ -119,7 +119,7 @@ public class PreferenceIntegrationTest {
   }
 
   private PreferenceScreen inflatePreferenceActivity() {
-    TestPreferenceActivity activity = Robolectric.setupActivity(TestPreferenceActivity.class);
+    TestPreferenceActivity activity = Robolectric.launchActivity(TestPreferenceActivity.class);
     return activity.getPreferenceScreen();
   }
 

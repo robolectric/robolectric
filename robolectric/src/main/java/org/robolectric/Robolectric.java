@@ -38,8 +38,8 @@ public class Robolectric {
     return ActivityController.of(shadowsAdapter, activityClass);
   }
 
-  public static <T extends Activity> T setupActivity(Class<T> activityClass) {
-    return ActivityController.of(shadowsAdapter, activityClass).setup().get();
+  public static <T extends Activity> T launchActivity(Class<T> activityClass) {
+    return ActivityController.of(shadowsAdapter, activityClass).launch().get();
   }
 
   private static ShadowsAdapter instantiateShadowsAdapter() {

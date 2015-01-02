@@ -198,7 +198,7 @@ public class ActivityController<T extends Activity> extends ComponentController<
    *
    * @return Activity controller instance.
    */
-  public ActivityController<T> setup() {
+  public ActivityController<T> launch() {
     return create().start().postCreate(null).resume().visible();
   }
 
@@ -208,7 +208,7 @@ public class ActivityController<T extends Activity> extends ComponentController<
    * @param savedInstanceState Saved instance state.
    * @return Activity controller instance.
    */
-  public ActivityController<T> setup(Bundle savedInstanceState) {
+  public ActivityController<T> launch(Bundle savedInstanceState) {
     return create(savedInstanceState)
         .start()
         .restoreInstanceState(savedInstanceState)
