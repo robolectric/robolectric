@@ -18,11 +18,15 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Implements(value = android.database.sqlite.SQLiteConnection.class, isInAndroidSdk = false)
 public class ShadowSQLiteConnection {
   private static final String IN_MEMORY_PATH = ":memory:";
   private static final Connections CONNECTIONS = new Connections();
+  private static final Pattern COLLATE_LOCALIZED_UNICODE_PATTERN =
+    Pattern.compile("\\s+COLLATE\\s+(LOCALIZED|UNICODE)", Pattern.CASE_INSENSITIVE);
 
   // indicates an ignored statement
   private static final int IGNORED_REINDEX_STMT = -2;
@@ -52,7 +56,16 @@ public class ShadowSQLiteConnection {
 
   @Implementation // TODO: Handle API 21 int -> long changes
   public static long nativePrepareStatement(long connectionPtr, String sql) {
-    return CONNECTIONS.prepareStatement(connectionPtr, sql);
+    final String newSql = convertSQLWithLocalizedUnicodeCollator(sql);
+    return CONNECTIONS.prepareStatement(connectionPtr, newSql);
+  }
+
+  /**
+   * Convert SQL with phrase COLLATE LOCALIZED or COLLATE UNICODE to COLLATE NOCASE.
+   */
+  static String convertSQLWithLocalizedUnicodeCollator(String sql) {
+    Matcher matcher = COLLATE_LOCALIZED_UNICODE_PATTERN.matcher(sql);
+    return matcher.replaceAll(" COLLATE NOCASE");
   }
 
   @Implementation // TODO: Handle API 21 int -> long changes
@@ -297,6 +310,7 @@ public class ShadowSQLiteConnection {
 
   // TODO: Handle API 21 int -> long changes
   private static class Connections {
+
     private final AtomicLong pointerCounter = new AtomicLong(0);
     private final Map<Long, SQLiteStatement> statementsMap = new ConcurrentHashMap<Long, SQLiteStatement>();
     private final Map<Long, SQLiteConnection> connectionsMap = new ConcurrentHashMap<Long, SQLiteConnection>();
