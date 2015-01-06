@@ -7,6 +7,7 @@ import android.webkit.WebSettings;
  */
 public class RoboWebSettings extends WebSettings {
 
+  private boolean allowContentAccess = true;
   private boolean allowFileAccess = true;
   private boolean allowFileAccessFromFile = true;
   private boolean allowUniversalAccessFromFile = true;
@@ -40,6 +41,16 @@ public class RoboWebSettings extends WebSettings {
   private WebSettings.LayoutAlgorithm layoutAlgorithm = WebSettings.LayoutAlgorithm.NARROW_COLUMNS;
 
   public RoboWebSettings() {
+  }
+
+  @Override
+  public void setAllowContentAccess(boolean allow) {
+    allowContentAccess = allow;
+  }
+
+  @Override
+  public boolean getAllowContentAccess() {
+    return allowContentAccess;
   }
 
   @Override
