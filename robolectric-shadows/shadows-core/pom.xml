@@ -126,6 +126,7 @@
         <artifactId>maven-jar-plugin</artifactId>
         <configuration>
           <classifier>${api}</classifier>
+          <outputDirectory>dist</outputDirectory>
         </configuration>
       </plugin>
 
@@ -142,6 +143,7 @@
         <artifactId>maven-source-plugin</artifactId>
         <configuration>
           <classifier>${api}-sources</classifier>
+          <outputDirectory>dist</outputDirectory>
         </configuration>
       </plugin>
 
@@ -150,6 +152,7 @@
         <artifactId>maven-javadoc-plugin</artifactId>
         <configuration>
           <classifier>${api}-javadoc</classifier>
+          <jarOutputDirectory>${basedir}/dist</jarOutputDirectory>
         </configuration>
       </plugin>
 
@@ -204,6 +207,7 @@
         <version>1.9.1</version>
         <executions>
           <execution>
+            <id>add-source-directories</id>
             <phase>generate-sources</phase>
             <goals>
               <goal>add-source</goal>
@@ -287,6 +291,160 @@
       <activation>
         <activeByDefault>true</activeByDefault>
       </activation>
+    </profile>
+
+    <profile>
+      <id>dist</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-clean-plugin</artifactId>
+            <configuration>
+              <filesets>
+                <fileset>
+                  <directory>dist</directory>
+                </fileset>
+              </filesets>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>upload</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <version>1.9.1</version>
+            <executions>
+              <execution>
+                <id>add-source-directories</id>
+                <phase>generate-sources</phase>
+                <goals>
+                  <goal>add-source</goal>
+                </goals>
+                <configuration>
+                  <sources>
+                    <source>target/generated-shadows</source>
+                    <source>target/generated-sources</source>
+                  </sources>
+                </configuration>
+              </execution>
+
+              <execution>
+                <id>attach-artifacts</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>attach-artifact</goal>
+                </goals>
+                <configuration>
+                  <artifacts>
+                    <artifact>
+                      <file>dist/shadows-core-3.0-SNAPSHOT-15.jar</file>
+                      <type>jar</type>
+                      <classifier>15</classifier>
+                    </artifact>
+                    <artifact>
+                      <file>dist/shadows-core-3.0-SNAPSHOT-15-javadoc.jar</file>
+                      <type>jar</type>
+                      <classifier>15-javadoc</classifier>
+                    </artifact>
+                    <artifact>
+                      <file>dist/shadows-core-3.0-SNAPSHOT-15-sources.jar</file>
+                      <type>jar</type>
+                      <classifier>15-sources</classifier>
+                    </artifact>
+
+                    <artifact>
+                      <file>dist/shadows-core-3.0-SNAPSHOT-16.jar</file>
+                      <type>jar</type>
+                      <classifier>16</classifier>
+                    </artifact>
+                    <artifact>
+                      <file>dist/shadows-core-3.0-SNAPSHOT-16-javadoc.jar</file>
+                      <type>jar</type>
+                      <classifier>16-javadoc</classifier>
+                    </artifact>
+                    <artifact>
+                      <file>dist/shadows-core-3.0-SNAPSHOT-16-sources.jar</file>
+                      <type>jar</type>
+                      <classifier>16-sources</classifier>
+                    </artifact>
+
+                    <artifact>
+                      <file>dist/shadows-core-3.0-SNAPSHOT-17.jar</file>
+                      <type>jar</type>
+                      <classifier>17</classifier>
+                    </artifact>
+                    <artifact>
+                      <file>dist/shadows-core-3.0-SNAPSHOT-17-javadoc.jar</file>
+                      <type>jar</type>
+                      <classifier>17-javadoc</classifier>
+                    </artifact>
+                    <artifact>
+                      <file>dist/shadows-core-3.0-SNAPSHOT-17-sources.jar</file>
+                      <type>jar</type>
+                      <classifier>17-sources</classifier>
+                    </artifact>
+
+                    <artifact>
+                      <file>dist/shadows-core-3.0-SNAPSHOT-18.jar</file>
+                      <type>jar</type>
+                      <classifier>18</classifier>
+                    </artifact>
+                    <artifact>
+                      <file>dist/shadows-core-3.0-SNAPSHOT-18-javadoc.jar</file>
+                      <type>jar</type>
+                      <classifier>18-javadoc</classifier>
+                    </artifact>
+                    <artifact>
+                      <file>dist/shadows-core-3.0-SNAPSHOT-18-sources.jar</file>
+                      <type>jar</type>
+                      <classifier>18-sources</classifier>
+                    </artifact>
+
+                    <artifact>
+                      <file>dist/shadows-core-3.0-SNAPSHOT-19.jar</file>
+                      <type>jar</type>
+                      <classifier>19</classifier>
+                    </artifact>
+                    <artifact>
+                      <file>dist/shadows-core-3.0-SNAPSHOT-19-javadoc.jar</file>
+                      <type>jar</type>
+                      <classifier>19-javadoc</classifier>
+                    </artifact>
+                    <artifact>
+                      <file>dist/shadows-core-3.0-SNAPSHOT-19-sources.jar</file>
+                      <type>jar</type>
+                      <classifier>19-sources</classifier>
+                    </artifact>
+
+                    <artifact>
+                      <file>dist/shadows-core-3.0-SNAPSHOT-21.jar</file>
+                      <type>jar</type>
+                      <classifier>21</classifier>
+                    </artifact>
+                    <artifact>
+                      <file>dist/shadows-core-3.0-SNAPSHOT-21-javadoc.jar</file>
+                      <type>jar</type>
+                      <classifier>21-javadoc</classifier>
+                    </artifact>
+                    <artifact>
+                      <file>dist/shadows-core-3.0-SNAPSHOT-21-sources.jar</file>
+                      <type>jar</type>
+                      <classifier>21-sources</classifier>
+                    </artifact>
+                  </artifacts>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
 </project>
