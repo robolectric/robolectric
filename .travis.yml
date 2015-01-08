@@ -15,6 +15,7 @@ before_install:
     - echo "y" | android update sdk --no-ui --filter addon-google_apis-google-18,extra-android-support
     - ./scripts/install-maps-jar.sh
     - ./scripts/install-support-jar.sh
+    - ./scripts/install-multidex-aar.sh
 
 script:
     - ./scripts/install-robolectric.sh
