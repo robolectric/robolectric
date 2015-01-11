@@ -431,7 +431,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     parallelUniverseInterface.setUpApplicationState(method, testLifecycle, systemResourceLoader, appManifest, config);
   }
 
-  private SdkConfig pickSdkVersion(AndroidManifest appManifest, Config config) {
+  protected SdkConfig pickSdkVersion(AndroidManifest appManifest, Config config) {
     if (config != null && config.emulateSdk() > 0) {
       return new SdkConfig(config.emulateSdk());
     } else {
@@ -443,7 +443,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     }
   }
 
-  private int pickReportedSdkVersion(Config config, AndroidManifest appManifest) {
+  protected int pickReportedSdkVersion(Config config, AndroidManifest appManifest) {
     // Check if the user has explicitly overridden the reported version
     if (config != null && config.reportSdk() > 0) {
       return config.reportSdk();

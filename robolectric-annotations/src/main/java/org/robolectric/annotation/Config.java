@@ -180,7 +180,7 @@ public @interface Config {
       shadows.addAll(Arrays.asList(overlayConfig.shadows()));
       this.shadows = shadows.toArray(new Class[shadows.size()]);
 
-      this.application = pick(baseConfig.application(), overlayConfig.application(), null);
+      this.application = pick(baseConfig.application(), overlayConfig.application(), Application.class);
 
       Set<String> libraries = new HashSet<String>();
       libraries.addAll(Arrays.asList(baseConfig.libraries()));
