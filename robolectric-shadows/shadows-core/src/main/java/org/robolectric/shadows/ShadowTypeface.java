@@ -85,17 +85,17 @@ public class ShadowTypeface {
     return description.getStyle();
   }
 
-//  @HiddenApi
-//  @Implementation // TODO: API 21
-//  public static Typeface createFromFamilies(FontFamily[] families) {
-//    return null;
-//  }
-//
-//  @HiddenApi
-//  @Implementation // TODO: API 21
-//  public static Typeface createFromFamiliesWithDefault(FontFamily[] families) {
-//    return null;
-//  }
+  @HiddenApi
+  @Implementation // TODO: API 21
+  public static Typeface createFromFamilies(FontFamily[] families) {
+    return null;
+  }
+
+  @HiddenApi
+  @Implementation // TODO: API 21
+  public static Typeface createFromFamiliesWithDefault(FontFamily[] families) {
+    return null;
+  }
 
   @Resetter
   synchronized public static void reset() {
