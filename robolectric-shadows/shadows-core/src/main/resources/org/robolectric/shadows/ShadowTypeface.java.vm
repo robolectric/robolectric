@@ -1,7 +1,14 @@
+#set($Integer = 0)
+#set($apiLevel = $Integer.parseInt($apiLevel))
+
 package org.robolectric.shadows;
 
 import android.content.res.AssetManager;
+
+#if ($apiLevel >= 21)
 import android.graphics.FontFamily;
+#end
+
 import android.graphics.Typeface;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
@@ -24,18 +31,22 @@ import static org.robolectric.Shadows.shadowOf;
 
 @Implements(Typeface.class)
 public class ShadowTypeface {
-  private static Map<Long, FontDesc> FONTS = new HashMap<>();
-  private static long nextFontId = 1;
+
+  #if ($apiLevel >= 21)
+  #set($ptrClass = "long")
+  #set($ptrClassBoxed = "Long")
+  #else
+  #set($ptrClass = "int")
+  #set($ptrClassBoxed = "Integer")
+  #end
+
+  private static Map<$ptrClassBoxed, FontDesc> FONTS = new HashMap<>();
+  private static $ptrClass nextFontId = 1;
   private FontDesc description;
   @RealObject private Typeface realTypeface;
 
   @HiddenApi
-  public void __constructor__(int fontId) {
-    description = findById(fontId);
-  }
-
-  @HiddenApi
-  public void __constructor__(long fontId) {
+  public void __constructor__($ptrClass fontId) {
     description = findById(fontId);
   }
 
@@ -85,6 +96,8 @@ public class ShadowTypeface {
     return description.getStyle();
   }
 
+#if ($apiLevel >= 21)
+
   @HiddenApi
   @Implementation // TODO: API 21
   public static Typeface createFromFamilies(FontFamily[] families) {
@@ -97,22 +110,24 @@ public class ShadowTypeface {
     return null;
   }
 
+#end
+
   @Resetter
   synchronized public static void reset() {
     FONTS.clear();
   }
 
   private static Typeface createUnderlyingTypeface(String familyName, int style) {
-    long thisFontId = nextFontId++;
+    $ptrClass thisFontId = nextFontId++;
     FONTS.put(thisFontId, new FontDesc(familyName, style));
-    return ReflectionHelpers.callConstructor(Typeface.class, ClassParameter.from(long.class, thisFontId));
+    return ReflectionHelpers.callConstructor(Typeface.class, ClassParameter.from($ptrClass .class, thisFontId));
   }
 
   private static String getAssetsPath(AndroidManifest appManifest, String fontName) {
     return appManifest.getAssetsDirectory().join(fontName).toString();
   }
 
-  private synchronized static FontDesc findById(long fontId) {
+  private synchronized static FontDesc findById($ptrClass fontId) {
     if (FONTS.containsKey(fontId)) {
       return FONTS.get(fontId);
     }
