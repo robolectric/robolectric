@@ -4,6 +4,7 @@ import android.os.Looper;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.TextView;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,10 +41,10 @@ abstract public class AdapterViewBehavior {
       }
     });
 
-    ShadowHandler.idleMainLooper();
+    ShadowLooper.idleMainLooper();
     transcript.assertNoEventsSoFar();
     adapterView.setSelection(AdapterView.INVALID_POSITION);
-    ShadowHandler.idleMainLooper();
+    ShadowLooper.idleMainLooper();
     transcript.assertNoEventsSoFar();
   }
 
@@ -101,7 +102,7 @@ abstract public class AdapterViewBehavior {
 
     adapter.setCount(1);
 
-    ShadowHandler.idleMainLooper();
+    ShadowLooper.idleMainLooper();
 
     assertThat(adapterView.getVisibility()).isEqualTo(View.VISIBLE);
     assertThat(emptyView.getVisibility()).isEqualTo(View.GONE);
@@ -119,7 +120,7 @@ abstract public class AdapterViewBehavior {
 
     adapter.setCount(0);
 
-    ShadowHandler.idleMainLooper();
+    ShadowLooper.idleMainLooper();
 
     assertThat(adapterView.getVisibility()).isEqualTo(View.GONE);
     assertThat(emptyView.getVisibility()).isEqualTo(View.VISIBLE);
