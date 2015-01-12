@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import org.junit.Rule;
 import org.junit.Test;
@@ -71,7 +72,7 @@ public class AndroidManifestTest {
   @Test
   public void parseManifest_shouldReadBroadcastReceivers() throws Exception {
     AndroidManifest config = newConfig("TestAndroidManifestWithReceivers.xml");
-    assertThat(config.getBroadcastReceivers()).hasSize(7);
+    assertThat(config.getBroadcastReceivers()).hasSize(8);
 
     assertThat(config.getBroadcastReceivers().get(0).getClassName()).isEqualTo("org.robolectric.AndroidManifestTest.ConfigTestReceiver");
     assertThat(config.getBroadcastReceivers().get(0).getActions()).contains("org.robolectric.ACTION1", "org.robolectric.ACTION2");
@@ -93,6 +94,15 @@ public class AndroidManifestTest {
 
     assertThat(config.getBroadcastReceivers().get(6).getClassName()).isEqualTo("com.bar.ReceiverWithoutIntentFilter");
     assertThat(config.getBroadcastReceivers().get(6).getActions()).isEmpty();
+
+    assertThat(config.getBroadcastReceivers().get(7).getClassName()).isEqualTo("org.robolectric.ConfigTestReceiverPermissionsAndActions");
+    assertThat(config.getBroadcastReceivers().get(7).getActions()).contains("org.robolectric.ACTION_RECEIVER_PERMISSION_PACKAGE");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testManifestWithNoApplicationElement() throws Exception {
+    AndroidManifest config = newConfig("TestAndroidManifestNoApplicationElement.xml");
+    config.parseAndroidManifest();
   }
 
   @Test
@@ -141,6 +151,16 @@ public class AndroidManifestTest {
 
     metaValue = meta.get("org.robolectric.metaStringRes");
     assertEquals("@string/app_name", metaValue);
+  }
+
+  @Test
+  public void shouldReadBroadcastReceiverPermissions() throws Exception {
+    AndroidManifest config = newConfig("TestAndroidManifestWithReceivers.xml");
+
+    assertThat(config.getBroadcastReceivers().get(7).getClassName()).isEqualTo("org.robolectric.ConfigTestReceiverPermissionsAndActions");
+    assertThat(config.getBroadcastReceivers().get(7).getActions()).contains("org.robolectric.ACTION_RECEIVER_PERMISSION_PACKAGE");
+
+    assertEquals("org.robolectric.CUSTOM_PERM", config.getReceiverPermission(7));
   }
 
   @Test
