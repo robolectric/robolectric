@@ -1,0 +1,151 @@
+#set($Integer = 0)
+#set($apiLevel = $Integer.parseInt($apiLevel))
+
+package org.robolectric.shadows;
+
+import android.os.Handler;
+import android.os.Message;
+import android.os.MessageQueue;
+
+import javax.annotation.Generated;
+
+import org.robolectric.annotation.HiddenApi;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.util.Scheduler;
+
+import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.internal.Shadow.*;
+import static org.robolectric.util.ReflectionHelpers.*;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
+
+/**
+ * Shadow for MessageQueue that puts {@link Message}s into the scheduler queue instead of sending them to be handled on a
+ * separate thread. {@link Message}s that are scheduled to be dispatched can be triggered by calling
+ * {@link ShadowLooper#idleMainLooper}.
+ * 
+ * @see ShadowLooper
+ */
+@Generated("org.robolectric.shadows.ShadowMessageQueue.java.vm")
+@Implements(MessageQueue.class)
+public class ShadowMessageQueue {
+  @RealObject
+  private MessageQueue realQueue;
+
+#if ($apiLevel >= 21)
+#set($ptrClass = "long")
+#set($recycle = "recycleUnchecked")
+#else
+#set($ptrClass = "int")
+#set($recycle = "recycle")
+#end
+
+#set($Integer = 0)
+
+  // Stub out the native peer - scheduling
+  // is handled by the Scheduler class which is user-driven
+  // rather than automatic.
+  @HiddenApi
+  @Implementation
+  public static $ptrClass nativeInit() {
+    return 1;
+  }
+  
+  @HiddenApi
+  @Implementation
+  public static void nativeDestroy($ptrClass ptr) {}
+  
+  @HiddenApi
+  @Implementation
+  public static void nativePollOnce($ptrClass ptr, int timeoutMillis) {
+    throw new AssertionError("Should not be called");
+  }
+
+  @HiddenApi
+  @Implementation
+  public static void nativeWake($ptrClass ptr) {
+    throw new AssertionError("Should not be called");    
+  }
+  
+  @HiddenApi
+  @Implementation
+  public static boolean nativeIsIdling($ptrClass ptr) {
+    return false;
+  }
+
+  public Message getHead() {
+    return getField(realQueue, "mMessages");
+  }
+  
+  public void setHead(Message msg) {
+    setField(realQueue, "mMessages", msg);
+  }
+  
+  public static Message getNext(Message msg) {
+    return getField(msg, "next");    
+  }
+  
+  public static void setNext(Message msg, Message next) {
+    setField(msg, "next", next);
+  }
+  
+  public static Handler getTarget(Message msg) {
+    return getField(msg, "target");
+  }
+  
+  @Implementation
+  public boolean enqueueMessage(final Message msg, long when) {
+    final boolean retval = directlyOn(realQueue, MessageQueue.class, "enqueueMessage", from(Message.class, msg), from(long.class, when));
+    if (retval) {
+      final Scheduler scheduler = shadowOf(getTarget(msg).getLooper()).getScheduler();
+      final Runnable callback = new Runnable() {
+        @Override
+        public void run() {
+          Message m = getHead();
+          if (m == null) {
+            return;
+          }
+          
+          Message n = getNext(m);
+          if (m == msg) {
+            setHead(n);
+            dispatchMessage(msg);
+            return;
+          }
+          
+          while (n != null) {
+            if (n == msg) {
+              n = getNext(n);
+              setNext(m, n);
+              dispatchMessage(msg);
+              return;
+            }
+            m = n;
+            n = getNext(m);
+          }
+        }
+      };
+      shadowOf(msg).setScheduledRunnable(callback);
+      if (when == 0) {
+        scheduler.postAtFrontOfQueue(callback);
+      } else {
+        scheduler.postDelayed(callback, when - scheduler.getCurrentTime());
+      }
+    }
+    return retval;
+  }
+
+  private static void dispatchMessage(Message msg) {
+    final Handler target = getTarget(msg);
+    
+    setNext(msg, null);
+    // If target is null it means the message has been removed
+    // from the queue prior to being dispatched by the scheduler.
+    if (target != null) {
+      callInstanceMethod(msg, "markInUse");
+      target.dispatchMessage(msg);
+      callInstanceMethod(msg, "$recycle");
+    }
+  }
+}

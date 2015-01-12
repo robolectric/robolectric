@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.webkit.SslErrorHandler;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,11 +21,6 @@ public class ShadowSslErrorHandlerTest {
   public void setUp() throws Exception {
     handler = Shadow.newInstanceOf(SslErrorHandler.class);
     shadow = Shadows.shadowOf(handler);
-  }
-
-  @Test
-  public void shouldInheritFromShadowHandler() {
-    assertThat(shadow).isInstanceOf(ShadowHandler.class);
   }
 
   @Test
