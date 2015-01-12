@@ -24,6 +24,7 @@ public class RoboWebSettingsTest {
 
   @Test
   public void testDefaults() {
+    assertThat(webSettings.getAllowContentAccess()).isTrue();
     assertThat(webSettings.getAllowFileAccess()).isTrue();
     assertThat(webSettings.getAppCacheEnabled()).isFalse();
     assertThat(webSettings.getBlockNetworkImage()).isFalse();
@@ -47,6 +48,14 @@ public class RoboWebSettingsTest {
     assertThat(webSettings.getNeedInitialFocus()).isFalse();
     assertThat(webSettings.getSupportMultipleWindows()).isFalse();
     assertThat(webSettings.getSupportZoom()).isTrue();
+  }
+
+  @Test
+  public void testAllowContentAccess() {
+    for (boolean value : trueAndFalse) {
+      webSettings.setAllowContentAccess(value);
+      assertThat(webSettings.getAllowContentAccess()).isEqualTo(value);
+    }
   }
 
   @Test

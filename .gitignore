@@ -12,6 +12,7 @@ bin/
 out/
 
 # Maven
+dist
 target
 pom.xml.*
 release.properties
