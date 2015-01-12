@@ -129,8 +129,8 @@ public class RobolectricTest {
   }
 
   @Test
-  public void setupActivity_returnsAVisibleActivity() throws Exception {
-    LifeCycleActivity activity = Robolectric.setupActivity(LifeCycleActivity.class);
+  public void launchActivity_returnsAVisibleActivity() throws Exception {
+    LifeCycleActivity activity = Robolectric.launchActivity(LifeCycleActivity.class);
 
     assertThat(activity.isCreated()).isTrue();
     assertThat(activity.isStarted()).isTrue();

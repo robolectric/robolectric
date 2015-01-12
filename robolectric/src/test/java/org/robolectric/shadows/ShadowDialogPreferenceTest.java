@@ -28,7 +28,7 @@ public class ShadowDialogPreferenceTest {
   }
 
   private PreferenceScreen inflatePreferenceActivity() {
-    PreferenceActivity activity = Robolectric.setupActivity(TestPreferenceActivity.class);
+    PreferenceActivity activity = Robolectric.launchActivity(TestPreferenceActivity.class);
     return activity.getPreferenceScreen();
   }
 

@@ -32,7 +32,7 @@ public final class FragmentTestUtil {
   }
 
   private static FragmentManager buildFragmentManager(Class<? extends Activity> activityClass) {
-    Activity activity = Robolectric.setupActivity(activityClass);
+    Activity activity = Robolectric.launchActivity(activityClass);
     return activity.getFragmentManager();
   }
 

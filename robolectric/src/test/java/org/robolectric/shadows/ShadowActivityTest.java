@@ -456,7 +456,7 @@ public class ShadowActivityTest {
 
   @Test
   public void onKeyUp_callsOnBackPressedWhichFinishesTheActivity() throws Exception {
-    OnBackPressedActivity activity = buildActivity(OnBackPressedActivity.class).setup().get();
+    OnBackPressedActivity activity = buildActivity(OnBackPressedActivity.class).launch().get();
     boolean downConsumed =
         activity.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
     boolean upConsumed =

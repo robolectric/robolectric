@@ -22,7 +22,7 @@ import org.robolectric.TestRunners;
  */
 @RunWith(TestRunners.WithDefaults.class)
 public class ShadowPreferenceActivityTestWithFragment {
-  private TestPreferenceActivity activity = Robolectric.setupActivity(TestPreferenceActivity.class);
+  private TestPreferenceActivity activity = Robolectric.launchActivity(TestPreferenceActivity.class);
   private TestPreferenceFragment fragment;
   private static final String FRAGMENT_TAG = "fragmentPreferenceTag";
 
