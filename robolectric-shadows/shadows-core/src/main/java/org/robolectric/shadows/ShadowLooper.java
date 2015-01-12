@@ -12,15 +12,13 @@ import org.robolectric.util.Scheduler;
 import org.robolectric.util.SoftThreadLocal;
 
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.util.ReflectionHelpers.ClassParameter.*;
 
 /**
  * Shadow for {@code Looper} that enqueues posted {@link Runnable}s to be run (on this thread) later. {@code Runnable}s
  * that are scheduled to run immediately can be triggered by calling {@link #idle()}
  * todo: provide better support for advancing the clock and running queued tasks
- *
- * @see ShadowMessageQueue
  */
+@SuppressWarnings({"UnusedDeclaration"})
 @Implements(Looper.class)
 public class ShadowLooper {
   private static final Thread MAIN_THREAD = Thread.currentThread();
@@ -40,7 +38,7 @@ public class ShadowLooper {
   }
 
   private static Looper createLooper() {
-    return ReflectionHelpers.callConstructor(Looper.class, from(boolean.class, Thread.currentThread() != MAIN_THREAD));
+    return ReflectionHelpers.callConstructor(Looper.class);
   }
 
   @Resetter
@@ -83,6 +81,10 @@ public class ShadowLooper {
 
   public static Scheduler getUiThreadScheduler() {
     return shadowOf(Looper.getMainLooper()).getScheduler();
+  }
+
+  @HiddenApi
+  public void __constructor__() {
   }
 
   private void doLoop() {
@@ -144,10 +146,6 @@ public class ShadowLooper {
     unPauseLooper(Looper.getMainLooper());
   }
 
-  public static void idleMainLooper() {
-    shadowOf(Looper.getMainLooper()).idle();
-  }
-
   public static void idleMainLooper(long interval) {
     shadowOf(Looper.getMainLooper()).idle(interval);
   }
@@ -155,14 +153,6 @@ public class ShadowLooper {
 
   public static void idleMainLooperConstantly(boolean shouldIdleConstantly) {
     shadowOf(Looper.getMainLooper()).idleConstantly(shouldIdleConstantly);
-  }
-
-  public static void runMainLooperOneTask() {
-    shadowOf(Looper.getMainLooper()).runOneTask();
-  }
-
-  public static void runMainLooperToNextTask() {
-    shadowOf(Looper.getMainLooper()).runToNextTask();
   }
 
   /**
