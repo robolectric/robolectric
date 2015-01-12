@@ -3,12 +3,11 @@ package org.robolectric.shadows;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
-import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.internal.Shadow;
 import org.robolectric.util.TestRunnable;
 import org.robolectric.util.Transcript;
 
@@ -19,7 +18,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ShadowHandlerTest {
@@ -43,7 +41,7 @@ public class ShadowHandlerTest {
 
   @Test
   public void testInsertsRunnablesBasedOnLooper() throws Exception {
-    Looper looper = newLooper(false);
+    Looper looper = Shadow.newInstanceOf(Looper.class);
 
     Handler handler1 = new Handler(looper);
     handler1.post(new Say("first thing"));
@@ -69,16 +67,12 @@ public class ShadowHandlerTest {
     transcript.assertEventsSoFar("first thing", "second thing");
   }
 
-  private static Looper newLooper(boolean canQuit) {
-    return ReflectionHelpers.callConstructor(Looper.class, from(boolean.class, canQuit));
-  }
-  
   @Test
   public void testDifferentLoopersGetDifferentQueues() throws Exception {
-    Looper looper1 = newLooper(true);
+    Looper looper1 = Shadow.newInstanceOf(Looper.class);
     ShadowLooper.pauseLooper(looper1);
 
-    Looper looper2 = newLooper(true);
+    Looper looper2 = Shadow.newInstanceOf(Looper.class);
     ShadowLooper.pauseLooper(looper2);
 
     Handler handler1 = new Handler(looper1);
@@ -102,21 +96,21 @@ public class ShadowHandlerTest {
   @Test
   public void testPostAndIdleMainLooper() throws Exception {
     new Handler().post(scratchRunnable);
-    ShadowLooper.idleMainLooper();
+    ShadowHandler.idleMainLooper();
     assertThat(scratchRunnable.wasRun).isTrue();
   }
 
   @Test
   public void postDelayedThenIdleMainLooper_shouldNotRunRunnable() throws Exception {
     new Handler().postDelayed(scratchRunnable, 1);
-    ShadowLooper.idleMainLooper();
+    ShadowHandler.idleMainLooper();
     assertThat(scratchRunnable.wasRun).isFalse();
   }
 
   @Test
   public void testPostDelayedThenRunMainLooperOneTask() throws Exception {
     new Handler().postDelayed(scratchRunnable, 1);
-    ShadowLooper.runMainLooperOneTask();
+    ShadowHandler.runMainLooperOneTask();
     assertThat(scratchRunnable.wasRun).isTrue();
   }
 
@@ -148,7 +142,7 @@ public class ShadowHandlerTest {
     new Handler().postDelayed(task1, 1);
     new Handler().postDelayed(task2, 1);
 
-    ShadowLooper.runMainLooperToNextTask();
+    ShadowHandler.runMainLooperToNextTask();
     assertThat(task1.wasRun).isTrue();
     assertThat(task2.wasRun).isTrue();
   }
@@ -161,7 +155,7 @@ public class ShadowHandlerTest {
     new Handler().postDelayed(task1, 1);
     new Handler().postDelayed(task2, 1);
 
-    ShadowLooper.runMainLooperOneTask();
+    ShadowHandler.runMainLooperOneTask();
     assertThat(task1.wasRun).isTrue();
     assertThat(task2.wasRun).isFalse();
   }
@@ -176,7 +170,7 @@ public class ShadowHandlerTest {
     new Handler().postDelayed(task2, 10);
     new Handler().postDelayed(task3, 100);
 
-    ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+    ShadowHandler.runMainLooperToEndOfTasks();
     assertThat(task1.wasRun).isTrue();
     assertThat(task2.wasRun).isTrue();
     assertThat(task3.wasRun).isTrue();
@@ -193,10 +187,10 @@ public class ShadowHandlerTest {
 
     assertTrue(result);
 
-    ShadowLooper.runMainLooperOneTask();
+    ShadowHandler.runMainLooperOneTask();
     assertThat(task2.wasRun).isTrue();
     assertThat(task1.wasRun).isFalse();
-    ShadowLooper.runMainLooperOneTask();
+    ShadowHandler.runMainLooperOneTask();
     assertThat(task1.wasRun).isTrue();
   }
 
@@ -215,10 +209,10 @@ public class ShadowHandlerTest {
 
     assertTrue(handler.hasMessages(123));
     assertTrue(handler.hasMessages(345));
-    ShadowLooper.runMainLooperOneTask();
+    ShadowHandler.runMainLooperOneTask();
     assertTrue(handler.hasMessages(123));
     assertFalse(handler.hasMessages(345));
-    ShadowLooper.runMainLooperOneTask();
+    ShadowHandler.runMainLooperOneTask();
     assertFalse(handler.hasMessages(123));
     assertFalse(handler.hasMessages(345));
   }
@@ -333,30 +327,7 @@ public class ShadowHandlerTest {
   }
 
   @Test
-  public void scheduler_wontDispatchRemovedMessage_evenIfMessageReused() {
-    final ArrayList<Long> runAt = new ArrayList<>();
-    ShadowLooper.pauseMainLooper();
-    Handler handler = new Handler() {
-      @Override
-      public void handleMessage(Message msg) {
-        runAt.add(shadowOf(ShadowLooper.myLooper()).getScheduler().getCurrentTime());
-      }
-    };
-
-    Message msg = handler.obtainMessage(123);
-    handler.sendMessageDelayed(msg, 200);
-    handler.removeMessages(123);
-    Message newMsg = handler.obtainMessage(123);
-    assertThat(newMsg).as("new message").isSameAs(msg);
-    handler.sendMessageDelayed(newMsg, 400);
-    ShadowLooper.unPauseMainLooper();
-    // Original implementation had a bug which caused reused messages to still
-    // be invoked at their original post time.
-    assertThat(runAt).as("handledAt").containsExactly(400L);
-  }
-
-  @Test
-  public void shouldRemoveAllCallbacksAndMessages() throws Exception {
+  public void shouldRemoveAllMessages() throws Exception {
     final boolean[] wasRun = new boolean[1];
     ShadowLooper.pauseMainLooper();
     Handler handler = new Handler() {
@@ -366,13 +337,9 @@ public class ShadowHandlerTest {
       }
     };
     handler.sendEmptyMessage(0);
-    handler.post(scratchRunnable);
-
     handler.removeCallbacksAndMessages(null);
-    ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
-
-    assertThat(wasRun[0]).as("Message").isFalse();
-    assertThat(scratchRunnable.wasRun).as("Callback").isFalse();
+    ShadowLooper.unPauseMainLooper();
+    assertThat(wasRun[0]).isFalse();
   }
 
   @Test
@@ -396,34 +363,8 @@ public class ShadowHandlerTest {
     handler.removeCallbacksAndMessages(secondObj);
     ShadowLooper.unPauseMainLooper();
 
-    assertThat(objects).containsExactly(firstObj);
-  }
-
-  @Test
-  public void shouldRemoveTaggedCallback() throws Exception {
-    ShadowLooper.pauseMainLooper();
-    Handler handler = new Handler();
-    
-    final int[] count = new int[1];
-    Runnable r = new Runnable() {
-      @Override
-      public void run() {
-        count[0]++;  
-      }
-    };
-    
-    String tag1 = "tag1", tag2 = "tag2";
-    
-    handler.postAtTime(r, tag1, 100);
-    handler.postAtTime(r, tag2, 105);
-
-    handler.removeCallbacks(r, tag2);
-    ShadowLooper.unPauseMainLooper();
-
-    assertThat(count[0]).as("run count").isEqualTo(1);
-    // This assertion proves that it was the first runnable that ran,
-    // which proves that the correctly tagged runnable was removed.
-    assertThat(shadowOf(handler.getLooper()).getScheduler().getCurrentTime()).as("currentTime").isEqualTo(100);
+    assertThat(objects.contains(firstObj)).isTrue();
+    assertThat(objects.contains(secondObj)).isFalse();
   }
 
   @Test
@@ -455,11 +396,11 @@ public class ShadowHandlerTest {
 
   @Test
   public void shouldSetWhenOnMessage() throws Exception {
-    final List<Long>  whens = new ArrayList<Long>();
+    final List<Message>  msgs = new ArrayList<Message>();
     Handler h = new Handler(new Handler.Callback() {
       @Override
       public boolean handleMessage(Message msg) {
-        whens.add(msg.getWhen());
+        msgs.add(msg);
         return false;
       }
     });
@@ -469,8 +410,15 @@ public class ShadowHandlerTest {
     ShadowLooper.getUiThreadScheduler().advanceToLastPostedRunnable();
     h.sendEmptyMessageDelayed(0, 12000l);
     ShadowLooper.getUiThreadScheduler().advanceToLastPostedRunnable();
+    assertThat(msgs.size()).isEqualTo(3);
 
-    assertThat(whens).as("whens").containsExactly(0l, 4000l, 16000l);
+    Message m0 = msgs.get(0);
+    Message m1 = msgs.get(1);
+    Message m2 = msgs.get(2);
+
+    assertThat(m0.getWhen()).isEqualTo(0l);
+    assertThat(m1.getWhen()).isEqualTo(4000l);
+    assertThat(m2.getWhen()).isEqualTo(16000l);
   }
 
   @Test
