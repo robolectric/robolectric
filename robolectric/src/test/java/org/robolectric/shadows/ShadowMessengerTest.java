@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Messenger;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
@@ -23,7 +24,7 @@ public class ShadowMessengerTest {
     messenger.send(msg);
 
     assertTrue(handler.hasMessages(123));
-    ShadowHandler.runMainLooperOneTask();
+    ShadowLooper.runMainLooperOneTask();
     assertFalse(handler.hasMessages(123));
   }
 }
