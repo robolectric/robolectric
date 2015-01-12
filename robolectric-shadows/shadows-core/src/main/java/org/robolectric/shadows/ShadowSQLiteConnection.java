@@ -367,7 +367,13 @@ public class ShadowSQLiteConnection {
         @Override
         public SQLiteStatement call() throws Exception {
           SQLiteConnection connection = getConnection(connectionPtr);
-          return connection.prepare(sql);
+
+          // workaround for Android collation sequences
+          String sqlWithoutAndroidCollators = sql
+              .replaceAll("COLLATE LOCALIZED", "")
+              .replaceAll("COLLATE UNICODE", "");
+
+          return connection.prepare(sqlWithoutAndroidCollators);
         }
       });
 

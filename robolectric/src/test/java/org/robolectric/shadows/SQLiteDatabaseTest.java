@@ -876,4 +876,16 @@ public class SQLiteDatabaseTest {
         data.moveToFirst();
         assertThat(data.getBlob(0)).isEqualTo(values.getAsString("first_column").getBytes());
     }
+
+    @Test
+    public void shouldNotFailOnAndroidCollators() {
+        database.execSQL("CREATE TABLE collators_test (\n" +
+             "  col_text_unicode_collate TEXT COLLATE UNICODE,\n" +
+             "  col_text_localized_collate TEXT COLLATE LOCALIZED,\n" +
+             "  col_text TEXT\n" +
+             ");");
+
+        database.query("collators_test", new String[] { "col_text COLLATE UNICODE" }, null, null, null, null, null);
+        database.query("collators_test", new String[] { "col_text COLLATE LOCALIZED" }, null, null, null, null, null);
+    }
 }
