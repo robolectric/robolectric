@@ -1,4 +1,21 @@
+#set($Integer = 0)
+#set($apiLevel = $Integer.parseInt($apiLevel))
+
+#if ($apiLevel >= 21)
+#set($ptrClass = "long")
+#set($ptrClassBoxed = "Long")
+#else
+#set($ptrClass = "int")
+#set($ptrClassBoxed = "Integer")
+#end
+
 package org.robolectric.shadows;
+
+#if ($apiLevel >= 21)
+import java.util.concurrent.atomic.AtomicLong;
+#else
+import java.util.concurrent.atomic.AtomicInteger;
+#end
 
 import android.database.Cursor;
 import android.database.CursorWindow;
@@ -12,24 +29,25 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
+import javax.annotation.Generated;
 
+@Generated("org.robolectric.shadows.ShadowCursorWindow.java.vm")
 @Implements(value = CursorWindow.class)
 public class ShadowCursorWindow {
   private static final WindowData WINDOW_DATA = new WindowData();
 
-  @Implementation // TODO: Handle API 21 int -> long changes
+  @Implementation
   public static long nativeCreate(String name, int cursorWindowSize) {
     return WINDOW_DATA.create(name, cursorWindowSize);
   }
 
-  @Implementation // TODO: Handle API 21 int -> long changes
-  public static void nativeDispose(long windowPtr) {
+  @Implementation
+  public static void nativeDispose($ptrClass windowPtr) {
     WINDOW_DATA.close(windowPtr);
   }
 
-  @Implementation // TODO: Handle API 21 int -> long changes
-  public static byte[] nativeGetBlob(long windowPtr, int row, int column) {
+  @Implementation
+  public static byte[] nativeGetBlob($ptrClass windowPtr, int row, int column) {
     Value value = WINDOW_DATA.get(windowPtr).value(row, column);
 
     switch (value.type) {
@@ -44,8 +62,8 @@ public class ShadowCursorWindow {
     }
   }
 
-  @Implementation // TODO: Handle API 21 int -> long changes
-  public static String nativeGetString(long windowPtr, int row, int column) {
+  @Implementation
+  public static String nativeGetString($ptrClass windowPtr, int row, int column) {
     Value val = WINDOW_DATA.get(windowPtr).value(row, column);
     if (val.type == Cursor.FIELD_TYPE_BLOB) {
       throw new android.database.sqlite.SQLiteException("Getting string when column is blob. Row " + row + ", col " + column);
@@ -54,78 +72,76 @@ public class ShadowCursorWindow {
     return value == null ? null : String.valueOf(value);
   }
 
-  @Implementation // TODO: Handle API 21 int -> long changes
-  public static long nativeGetLong(long windowPtr, int row, int column) {
+  @Implementation
+  public static long nativeGetLong($ptrClass windowPtr, int row, int column) {
     return nativeGetNumber(windowPtr, row, column).longValue();
   }
 
-  @Implementation // TODO: Handle API 21 int -> long changes
-  public static double nativeGetDouble(long windowPtr, int row, int column) {
+  @Implementation
+  public static double nativeGetDouble($ptrClass windowPtr, int row, int column) {
     return nativeGetNumber(windowPtr, row, column).doubleValue();
   }
 
-  @Implementation // TODO: Handle API 21 int -> long changes
-  public static int nativeGetType(long windowPtr, int row, int column) {
+  @Implementation
+  public static int nativeGetType($ptrClass windowPtr, int row, int column) {
     return WINDOW_DATA.get(windowPtr).value(row, column).type;
   }
 
-  @Implementation // TODO: Handle API 21 int -> long changes
-  public static void nativeClear(long windowPtr) {
+  @Implementation
+  public static void nativeClear($ptrClass windowPtr) {
     WINDOW_DATA.clear(windowPtr);
   }
 
-  @Implementation // TODO: Handle API 21 int -> long changes
-  public static int nativeGetNumRows(long windowPtr) {
+  @Implementation
+  public static int nativeGetNumRows($ptrClass windowPtr) {
     return WINDOW_DATA.get(windowPtr).numRows();
   }
 
-  @Implementation // TODO: Handle API 21 int -> long changes
-  public static boolean nativePutBlob(long windowPtr, byte[] value, int row, int column) {
+  @Implementation
+  public static boolean nativePutBlob($ptrClass windowPtr, byte[] value, int row, int column) {
     return WINDOW_DATA.get(windowPtr).putValue(new Value(value, Cursor.FIELD_TYPE_BLOB), row, column);
   }
 
-  @Implementation // TODO: Handle API 21 int -> long changes
-  public static boolean nativePutString(long windowPtr, String value, int row, int column) {
+  @Implementation
+  public static boolean nativePutString($ptrClass windowPtr, String value, int row, int column) {
     return WINDOW_DATA.get(windowPtr).putValue(new Value(value, Cursor.FIELD_TYPE_STRING), row, column);
   }
 
-  @Implementation // TODO: Handle API 21 int -> long changes
-  public static boolean nativePutLong(long windowPtr, long value, int row, int column) {
+  @Implementation
+  public static boolean nativePutLong($ptrClass windowPtr, long value, int row, int column) {
     return WINDOW_DATA.get(windowPtr).putValue(new Value(value, Cursor.FIELD_TYPE_INTEGER), row, column);
   }
 
-  @Implementation // TODO: Handle API 21 int -> long changes
-  public static boolean nativePutDouble(long windowPtr, double value, int row, int column) {
+  @Implementation
+  public static boolean nativePutDouble($ptrClass windowPtr, double value, int row, int column) {
     return WINDOW_DATA.get(windowPtr).putValue(new Value(value, Cursor.FIELD_TYPE_FLOAT), row, column);
   }
 
-  @Implementation // TODO: Handle API 21 int -> long changes
-  public static boolean nativePutNull(long windowPtr, int row, int column) {
+  @Implementation
+  public static boolean nativePutNull($ptrClass windowPtr, int row, int column) {
     return WINDOW_DATA.get(windowPtr).putValue(new Value(null, Cursor.FIELD_TYPE_NULL), row, column);
   }
 
-  @Implementation // TODO: Handle API 21 int -> long changes
-  public static boolean nativeAllocRow(long windowPtr) {
+  @Implementation
+  public static boolean nativeAllocRow($ptrClass windowPtr) {
     return WINDOW_DATA.get(windowPtr).allocRow();
   }
 
-  @Implementation // TODO: Handle API 21 int -> long changes
-  public static boolean nativeSetNumColumns(long windowPtr, int columnNum) {
+  @Implementation
+  public static boolean nativeSetNumColumns($ptrClass windowPtr, int columnNum) {
     return WINDOW_DATA.get(windowPtr).setNumColumns(columnNum);
   }
 
-  @Implementation // TODO: Handle API 21 int -> long changes
-  public static String nativeGetName(long windowPtr) {
+  @Implementation
+  public static String nativeGetName($ptrClass windowPtr) {
     return WINDOW_DATA.get(windowPtr).getName();
   }
 
-  // TODO: Handle API 21 int -> long changes
-  protected static int setData(long windowPtr, SQLiteStatement stmt) throws SQLiteException {
+  protected static int setData($ptrClass windowPtr, SQLiteStatement stmt) throws SQLiteException {
     return WINDOW_DATA.setData(windowPtr, stmt);
   }
 
-  // TODO: Handle API 21 int -> long changes
-  private static Number nativeGetNumber(long windowPtr, int row, int column) {
+  private static Number nativeGetNumber($ptrClass windowPtr, int row, int column) {
     Value value = WINDOW_DATA.get(windowPtr).value(row, column);
     switch (value.type) {
       case Cursor.FIELD_TYPE_NULL:
@@ -252,13 +268,15 @@ public class ShadowCursorWindow {
     }
   }
 
-  // TODO: Handle API 21 int -> long changes
   private static class WindowData {
+#if($apiLevel >= 21)
     private final AtomicLong windowPtrCounter = new AtomicLong(0);
-    private final Map<Long, Data> dataMap = new ConcurrentHashMap<Long, Data>();
+#else
+    private final AtomicInteger windowPtrCounter = new AtomicInteger(0);
+#end
+    private final Map<$ptrClassBoxed, Data> dataMap = new ConcurrentHashMap<>();
 
-    // TODO: Handle API 21 int -> long changes
-    public Data get(long ptr) {
+    public Data get($ptrClass ptr) {
       Data data = dataMap.get(ptr);
       if (data == null) {
         throw new IllegalArgumentException("Invalid window pointer: " + ptr + "; current pointers: " + dataMap.keySet());
@@ -266,29 +284,25 @@ public class ShadowCursorWindow {
       return data;
     }
 
-    // TODO: Handle API 21 int -> long changes
-    public int setData(final long ptr, final SQLiteStatement stmt) throws SQLiteException {
+    public int setData(final $ptrClass ptr, final SQLiteStatement stmt) throws SQLiteException {
       Data data = get(ptr);
       data.fillWith(stmt);
       return data.numRows();
     }
 
-    // TODO: Handle API 21 int -> long changes
-    public void close(final long ptr) {
+    public void close(final $ptrClass ptr) {
       Data removed = dataMap.remove(ptr);
       if (removed == null) {
         throw new IllegalArgumentException("Bad cursor window pointer " + ptr + ". Valid pointers: " + dataMap.keySet());
       }
     }
 
-    // TODO: Handle API 21 int -> long changes
-    public void clear(final long ptr) {
+    public void clear(final $ptrClass ptr) {
       get(ptr).clear();
     }
 
-    // TODO: Handle API 21 int -> long changes
-    public long create(String name, int cursorWindowSize) {
-      long ptr = windowPtrCounter.incrementAndGet();
+    public $ptrClass create(String name, int cursorWindowSize) {
+      $ptrClass ptr = windowPtrCounter.incrementAndGet();
       dataMap.put(ptr, new Data(name, cursorWindowSize));
       return ptr;
     }
@@ -296,7 +310,7 @@ public class ShadowCursorWindow {
 
   // TODO: Implement these methods
   // private static native int nativeCreateFromParcel(Parcel parcel);
-  // private static native void nativeWriteToParcel(int windowPtr, Parcel parcel);
-  // private static native void nativeFreeLastRow(int windowPtr);
-  // private static native void nativeCopyStringToBuffer(int windowPtr, int row, int column, CharArrayBuffer buffer);
+  // private static native void nativeWriteToParcel($ptrClass windowPtr, Parcel parcel);
+  // private static native void nativeFreeLastRow($ptrClass windowPtr);
+  // private static native void nativeCopyStringToBuffer($ptrClass windowPtr, int row, int column, CharArrayBuffer buffer);
 }
