@@ -383,6 +383,20 @@ public class ShadowResourcesTest {
   }
 
   @Test
+  public void shouldLoadRawResourcesFromSecondaryLibraries() throws Exception {
+    InputStream resourceStream = resources.openRawResource(R.raw.lib_raw_resource_from_2);
+    assertThat(resourceStream).isNotNull();
+    assertThat(TestUtil.readString(resourceStream)).isEqualTo("I'm only defined in lib2");
+  }
+
+  @Test
+  public void shouldLoadRawResourcesFromTertiaryLibraries() throws Exception {
+    InputStream resourceStream = resources.openRawResource(R.raw.lib_raw_resource_from_3);
+    assertThat(resourceStream).isNotNull();
+    assertThat(TestUtil.readString(resourceStream)).isEqualTo("I'm only defined in lib3");
+  }
+
+  @Test
   public void setScaledDensityShouldSetScaledDensityInDisplayMetrics() {
     final DisplayMetrics displayMetrics = resources.getDisplayMetrics();
 

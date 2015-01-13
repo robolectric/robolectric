@@ -24,6 +24,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.internal.Shadow;
+import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.fakes.RoboSharedPreferences;
 
@@ -67,8 +68,11 @@ public class ShadowContextWrapper extends ShadowContext {
   @Implementation
   public ApplicationInfo getApplicationInfo() {
     ApplicationInfo applicationInfo = Shadow.newInstance(ApplicationInfo.class, new Class[0], new Object[0]);
-    applicationInfo.packageName = ShadowApplication.getInstance().getAppManifest().getPackageName();
-    applicationInfo.targetSdkVersion = ShadowApplication.getInstance().getAppManifest().getTargetSdkVersion();
+    AndroidManifest appManifest = ShadowApplication.getInstance().getAppManifest();
+    if (appManifest != null) {
+      applicationInfo.packageName = appManifest.getPackageName();
+      applicationInfo.targetSdkVersion = appManifest.getTargetSdkVersion();
+    }
     return applicationInfo;
   }
 

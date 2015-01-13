@@ -1,14 +1,21 @@
 #set($Integer = 0)
 #set($apiLevel = $Integer.parseInt($apiLevel))
 
-package org.robolectric.shadows;
+#if ($apiLevel >= 21)
+#set($ptrClass = "long")
+#set($ptrClassBoxed = "Long")
+#else
+#set($ptrClass = "int")
+#set($ptrClassBoxed = "Integer")
+#end
 
-import android.content.res.AssetManager;
+package org.robolectric.shadows;
 
 #if ($apiLevel >= 21)
 import android.graphics.FontFamily;
 #end
 
+import android.content.res.AssetManager;
 import android.graphics.Typeface;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
@@ -20,6 +27,7 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import javax.annotation.Generated;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -29,16 +37,9 @@ import java.util.Map;
 
 import static org.robolectric.Shadows.shadowOf;
 
+@Generated("org.robolectric.shadows.ShadowTypeface.java.vm")
 @Implements(Typeface.class)
 public class ShadowTypeface {
-
-  #if ($apiLevel >= 21)
-  #set($ptrClass = "long")
-  #set($ptrClassBoxed = "Long")
-  #else
-  #set($ptrClass = "int")
-  #set($ptrClassBoxed = "Integer")
-  #end
 
   private static Map<$ptrClassBoxed, FontDesc> FONTS = new HashMap<>();
   private static $ptrClass nextFontId = 1;
@@ -97,19 +98,17 @@ public class ShadowTypeface {
   }
 
 #if ($apiLevel >= 21)
-
   @HiddenApi
-  @Implementation // TODO: API 21
+  @Implementation
   public static Typeface createFromFamilies(FontFamily[] families) {
     return null;
   }
 
   @HiddenApi
-  @Implementation // TODO: API 21
+  @Implementation
   public static Typeface createFromFamiliesWithDefault(FontFamily[] families) {
     return null;
   }
-
 #end
 
   @Resetter
