@@ -32,15 +32,10 @@ import static org.robolectric.util.TestUtil.TEST_RESOURCE_PATH;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ShadowContextTest {
-  private Context context;
+  private final Context context = RuntimeEnvironment.application;
 
   @Before
   public void setUp() throws Exception {
-    context = RuntimeEnvironment.application;
-    deleteDir(context.getFilesDir());
-    deleteDir(context.getCacheDir());
-    deleteDir(ShadowContext.DATABASE_DIR);
-
     File[] files = context.getFilesDir().listFiles();
     assertNotNull(files);
     assertThat(files.length).isEqualTo(0);
@@ -52,22 +47,7 @@ public class ShadowContextTest {
 
   @After
   public void after() {
-    deleteDir(context.getFilesDir());
-    deleteDir(context.getCacheDir());
-    deleteDir(context.getExternalCacheDir());
-    deleteDir(context.getExternalFilesDir(null));
-    deleteDir(ShadowContext.DATABASE_DIR);
-  }
-
-  public void deleteDir(File path) {
-    if (path.isDirectory()) {
-      File[] files = path.listFiles();
-      assertNotNull(files);
-      for (File f : files) {
-        deleteDir(f);
-      }
-    }
-    path.delete();
+    ShadowContext.reset();
   }
 
   @Test
@@ -79,7 +59,6 @@ public class ShadowContextTest {
     assertThat(dataDir).isNotNull();
     assertThat(dataDir.exists()).isTrue();
   }
-
 
   @Test
   public void shouldCreateIfDoesNotExistAndGetApplicationDataDirectory() {
@@ -369,5 +348,25 @@ public class ShadowContextTest {
     TypedArray typedArray = context.obtainStyledAttributes(roboAttributeSet, new int[]{R.attr.quitKeyCombo, R.attr.itemType});
     assertThat(typedArray.getString(0)).isEqualTo("^q");
     assertThat(typedArray.getInt(1, -1234)).isEqualTo(1 /* ungulate */);
+  }
+
+  @Test
+  public void reset_shouldCleanupTempDirectories() {
+    ShadowContext.reset();
+
+    assertThat(ShadowContext.CACHE_DIR.exists()).isFalse();
+    assertThat(ShadowContext.CACHE_DIR.getParentFile().exists()).isFalse();
+
+    assertThat(ShadowContext.FILES_DIR.exists()).isFalse();
+    assertThat(ShadowContext.FILES_DIR.getParentFile().exists()).isFalse();
+
+    assertThat(ShadowContext.EXTERNAL_CACHE_DIR.exists()).isFalse();
+    assertThat(ShadowContext.EXTERNAL_CACHE_DIR.getParentFile().exists()).isFalse();
+
+    assertThat(ShadowContext.EXTERNAL_FILES_DIR.exists()).isFalse();
+    assertThat(ShadowContext.EXTERNAL_FILES_DIR.getParentFile().exists()).isFalse();
+
+    assertThat(ShadowContext.DATABASE_DIR.exists()).isFalse();
+    assertThat(ShadowContext.DATABASE_DIR.getParentFile().exists()).isFalse();
   }
 }
