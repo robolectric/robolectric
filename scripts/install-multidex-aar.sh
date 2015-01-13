@@ -24,6 +24,4 @@ cd /tmp; jar xvf $archive
 echo "Installing com.android.support:multidex $version from $archive"
 mvn -q install:install-file -DgroupId=com.android.support -DartifactId=multidex -Dversion=$version -Dpackaging=jar -Dfile="$classes"
 
-rm $archive
-
 echo "Done!"
