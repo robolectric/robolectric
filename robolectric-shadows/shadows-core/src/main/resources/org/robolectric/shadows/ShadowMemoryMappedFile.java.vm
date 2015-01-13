@@ -1,7 +1,16 @@
+#set($Integer = 0)
+#set($apiLevel = $Integer.parseInt($apiLevel))
+
 package org.robolectric.shadows;
 
+import libcore.io.BufferIterator;
+#if ($apiLevel >= 21)
 import android.system.ErrnoException;
-import libcore.io.*;
+#else
+import libcore.io.ErrnoException;
+#end
+import libcore.io.MemoryMappedFile;
+import libcore.io.Streams;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.internal.ShadowExtractor;
