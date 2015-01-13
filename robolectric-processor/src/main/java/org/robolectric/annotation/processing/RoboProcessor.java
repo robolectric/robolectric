@@ -33,7 +33,7 @@ import javax.tools.StandardLocation;
  */
 @SupportedOptions(RoboProcessor.PACKAGE_OPT)
 @SupportedAnnotationTypes("org.robolectric.annotation.*")
-@SupportedSourceVersion(SourceVersion.RELEASE_6)
+@SupportedSourceVersion(SourceVersion.RELEASE_7)
 public class RoboProcessor extends AbstractProcessor {
   private static final String GEN_CLASS = "Shadows";
   static final String PACKAGE_OPT = "org.robolectric.annotation.processing.shadowPackage";
@@ -43,7 +43,7 @@ public class RoboProcessor extends AbstractProcessor {
   private String shadowPackage;
   private Map<String, String> options;
   private boolean generated = false;
-  private Map<TypeElement, Validator> elementValidators = new HashMap<TypeElement, Validator>(13);
+  private Map<TypeElement, Validator> elementValidators = new HashMap<>(13);
 
   /**
    * Default constructor.
