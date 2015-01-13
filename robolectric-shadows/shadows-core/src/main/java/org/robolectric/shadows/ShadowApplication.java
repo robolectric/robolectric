@@ -24,7 +24,6 @@ import android.view.LayoutInflater;
 import android.widget.ListPopupWindow;
 import android.widget.PopupWindow;
 import android.widget.Toast;
-import android.util.MutableBoolean;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.Shadows;
@@ -45,6 +44,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
@@ -428,7 +428,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     return result;
   }
 
-  private void postIntent(Intent intent, Wrapper wrapper, final MutableBoolean abort) {
+  private void postIntent(Intent intent, Wrapper wrapper, final AtomicBoolean abort) {
     final Handler scheduler = (wrapper.scheduler != null) ? wrapper.scheduler : this.mainHandler;
     final BroadcastReceiver receiver = wrapper.broadcastReceiver;
     final ShadowBroadcastReceiver shReceiver = Shadows.shadowOf(receiver);
@@ -442,7 +442,7 @@ public class ShadowApplication extends ShadowContextWrapper {
   }
 
   private void postToWrappers(List<Wrapper> wrappers, Intent intent, String receiverPermission) {
-    MutableBoolean abort = new MutableBoolean(false); // abort state is shared among all broadcast receivers
+    AtomicBoolean abort = new AtomicBoolean(false); // abort state is shared among all broadcast receivers
     for (Wrapper wrapper: wrappers) {
       postIntent(intent, wrapper, abort);
     }
