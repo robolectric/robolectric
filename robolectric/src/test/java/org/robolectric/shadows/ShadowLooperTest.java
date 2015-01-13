@@ -105,7 +105,7 @@ public class ShadowLooperTest {
 
   @Test
   public void shouldThrowawayRunnableQueueIfLooperQuits() throws Exception {
-    HandlerThread ht = new HandlerThread("test1");
+    HandlerThread ht = new HandlerThread("shouldThrowawayRunnableQueueIfLooperQuits");
     ht.start();
     Looper looper = ht.getLooper();
     shadowOf(looper).pause();
@@ -117,8 +117,28 @@ public class ShadowLooperTest {
     looper.quit();
     assertTrue(shadowOf(looper).hasQuit());
     assertFalse(shadowOf(looper).getScheduler().areAnyRunnable());
+    assertThat(shadowOf(looper.getQueue()).getHead()).as("queue").isNull();
   }
 
+  @Test
+  public void shouldResetQueue_whenLooperIsReset() {
+    HandlerThread ht = new HandlerThread("shouldResetQueue_whenLooperIsReset");
+    ht.start();
+    Looper looper = ht.getLooper();
+    Handler h = new Handler(looper);
+    ShadowLooper sLooper = shadowOf(looper);
+    sLooper.pause();
+    h.post(new Runnable() {
+      @Override
+      public void run() {
+      }
+    });
+    assertThat(shadowOf(looper.getQueue()).getHead()).as("queue").isNotNull();
+    sLooper.reset();
+    assertFalse(sLooper.getScheduler().areAnyRunnable());
+    assertThat(shadowOf(looper.getQueue()).getHead()).as("queue").isNull();
+  }
+  
   @Test
   public void testLoopThread() {
     assertTrue(shadowOf(Looper.getMainLooper()).getThread() == Thread.currentThread());
