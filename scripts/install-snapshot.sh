@@ -14,24 +14,24 @@ if [ "${TRAVIS_PULL_REQUEST}" = "false" ] && [ "${TRAVIS_BRANCH}" = "master" ]; 
 
     # Install older shadow packages
     echo "Building shadows for API 15..."
-    cd "$PROJECT"/robolectric-shadows/shadows-core; mvn ${ARGUMENTS} clean velocity:velocity package -Pandroid-15
+    cd "$PROJECT"/robolectric-shadows/shadows-core; mvn ${ARGUMENTS} clean velocity:velocity source:jar javadoc:javadoc package -Pandroid-15
 
     echo "Building shadows for API 16..."
-    cd "$PROJECT"/robolectric-shadows/shadows-core; mvn ${ARGUMENTS} clean velocity:velocity package -Pandroid-16
+    cd "$PROJECT"/robolectric-shadows/shadows-core; mvn ${ARGUMENTS} clean velocity:velocity source:jar javadoc:javadoc package -Pandroid-16
 
     echo "Building shadows for API 17..."
-    cd "$PROJECT"/robolectric-shadows/shadows-core; mvn ${ARGUMENTS} clean velocity:velocity package -Pandroid-17
+    cd "$PROJECT"/robolectric-shadows/shadows-core; mvn ${ARGUMENTS} clean velocity:velocity source:jar javadoc:javadoc package -Pandroid-17
 
     echo "Building shadows for API 18..."
-    cd "$PROJECT"/robolectric-shadows/shadows-core; mvn ${ARGUMENTS} clean velocity:velocity package -Pandroid-18
+    cd "$PROJECT"/robolectric-shadows/shadows-core; mvn ${ARGUMENTS} clean velocity:velocity source:jar javadoc:javadoc package -Pandroid-18
 
     echo "Building shadows for API 19..."
-    cd "$PROJECT"/robolectric-shadows/shadows-core; mvn ${ARGUMENTS} clean velocity:velocity package -Pandroid-19
+    cd "$PROJECT"/robolectric-shadows/shadows-core; mvn ${ARGUMENTS} clean velocity:velocity source:jar javadoc:javadoc package -Pandroid-19
 
     # Install everything
     echo "Cleaning project..."
     cd "$PROJECT"; mvn ${ARGUMENTS} clean
 
     echo "Building API 21 and uploading artifacts to Sonatype..."
-    cd "$PROJECT"; mvn ${ARGUMENTS} deploy -Pupload,android-21
+    cd "$PROJECT"; mvn ${ARGUMENTS} source:jar javadoc:javadoc deploy -Pupload,android-21
 fi
