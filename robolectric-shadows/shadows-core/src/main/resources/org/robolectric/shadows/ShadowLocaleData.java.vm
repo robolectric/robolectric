@@ -1,3 +1,6 @@
+#set($Integer = 0)
+#set($apiLevel = $Integer.parseInt($apiLevel))
+
 package org.robolectric.shadows;
 
 import java.util.Locale;
@@ -70,9 +73,16 @@ public class ShadowLocaleData {
     localeData.groupingSeparator = ',';
     localeData.patternSeparator = ';';
     localeData.percent = '%';
-    localeData.perMill = '‰';
+    localeData.perMill = 0x2030;
     localeData.monetarySeparator = '.';
+
+#if ($apiLevel >= 21)
+    // Lollipop uses a String
     localeData.minusSign = "-";
+#else
+    // Upto KitKat was a char
+    localeData.minusSign = '-';
+#end
 
     localeData.exponentSeparator = "E";
     localeData.infinity = "∞";
@@ -81,9 +91,12 @@ public class ShadowLocaleData {
     localeData.currencySymbol = "$";
     localeData.internationalCurrencySymbol = "USD";
 
-    localeData.numberPattern = "#,##0.###";
-    localeData.integerPattern = "#,##0";
-    localeData.currencyPattern = "¤#,##0.00;(¤#,##0.00)";
-    localeData.percentPattern = "#,##0%";
+#set( $H = '#' )
+
+    localeData.numberPattern = "$H,$H$H0.$H$H$H";
+    localeData.integerPattern = "$H,$H$H0";
+    localeData.currencyPattern = "¤$H,$H$H0.00;(¤$H,$H$H0.00)";
+    localeData.percentPattern = "$H,$H$H0%";
+
   }
 }
