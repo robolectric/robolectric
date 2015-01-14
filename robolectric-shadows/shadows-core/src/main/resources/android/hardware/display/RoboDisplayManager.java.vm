@@ -38,6 +38,11 @@ public class RoboDisplayManager implements IDisplayManager {
   public void stopWifiDisplayScan() throws RemoteException {
 
   }
+#else
+  @Override
+  public void scanWifiDisplays() {
+
+  }
 #end
 
   @Override
@@ -60,6 +65,7 @@ public class RoboDisplayManager implements IDisplayManager {
 
   }
 
+#if ($apiLevel >= 19)
   @Override
   public void pauseWifiDisplay() throws RemoteException {
 
@@ -69,6 +75,7 @@ public class RoboDisplayManager implements IDisplayManager {
   public void resumeWifiDisplay() throws RemoteException {
 
   }
+#end
 
   @Override
   public WifiDisplayStatus getWifiDisplayStatus() throws RemoteException {
@@ -95,12 +102,7 @@ public class RoboDisplayManager implements IDisplayManager {
   public void releaseVirtualDisplay(IVirtualDisplayCallback iVirtualDisplayCallback) throws RemoteException {
 
   }
-#else
-  @Override
-  public void scanWifiDisplays() {
-
-  }
-
+#elseif ($apiLevel >= 19)
   @Override
   public int createVirtualDisplay(IBinder binder, String s, String s1, int i, int i1, int i2, Surface surface, int i3) {
     return 0;

@@ -1146,6 +1146,11 @@ public class RobolectricActivityManager implements IActivityManager {
   public void reportAssistContextExtras(IBinder token, Bundle extras) throws RemoteException {
 
   }
+#else
+  @Override
+  public long inputDispatchingTimedOut(int pid, boolean aboveSystem) throws RemoteException {
+    return 0;
+  }
 #end
 
 #if ($apiLevel >= 21)
@@ -1328,13 +1333,8 @@ public class RobolectricActivityManager implements IActivityManager {
   }
 
   @Override
-  public long inputDispatchingTimedOut(int pid, boolean aboveSystem) throws RemoteException {
-
-  }
-
-  @Override
   public Bundle getTopActivityExtras(int requestType) throws RemoteException {
-
+    return null;
   }
 
   @Override

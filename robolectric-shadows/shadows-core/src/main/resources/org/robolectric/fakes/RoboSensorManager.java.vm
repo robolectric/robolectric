@@ -1,3 +1,6 @@
+#set($Integer = 0)
+#set($apiLevel = $Integer.parseInt($apiLevel))
+
 package org.robolectric.fakes;
 
 import android.hardware.Sensor;
@@ -20,6 +23,7 @@ public class RoboSensorManager extends SensorManager {
   protected void unregisterListenerImpl(SensorEventListener listener, Sensor sensor) {
   }
 
+#if ($apiLevel >= 19)
   @Override
   protected boolean registerListenerImpl(SensorEventListener listener, Sensor sensor, int delayUs, Handler handler, int maxBatchReportLatencyUs, int reservedFlags) {
     return false;
@@ -29,6 +33,12 @@ public class RoboSensorManager extends SensorManager {
   protected boolean flushImpl(SensorEventListener listener) {
     return false;
   }
+#else
+  @Override
+  protected boolean registerListenerImpl(SensorEventListener listener, Sensor sensor, int delayUs, Handler handler) {
+    return false;
+  }
+#end
 
   @Override
   protected boolean requestTriggerSensorImpl(TriggerEventListener listener, Sensor sensor) {
