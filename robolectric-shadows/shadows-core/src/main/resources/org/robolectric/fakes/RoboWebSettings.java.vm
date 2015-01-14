@@ -25,7 +25,6 @@ public class RoboWebSettings extends WebSettings {
   private boolean javaScriptCanOpenWindowAutomatically = false;
   private boolean lightTouchEnabled = false;
   private boolean loadWithOverviewMode = false;
-  private boolean mediaPlaybackRequiresUserGesture = true;
   private boolean needInitialFocus = false;
   private RenderPriority renderPriority = RenderPriority.NORMAL;
   private boolean pluginsEnabled = false;
@@ -166,6 +165,10 @@ public class RoboWebSettings extends WebSettings {
     loadWithOverviewMode = flag;
   }
 
+#if ($apiLevel >= 17)
+  // > API 17
+  private boolean mediaPlaybackRequiresUserGesture = true;
+
   @Override
   public boolean getMediaPlaybackRequiresUserGesture() {
     return mediaPlaybackRequiresUserGesture;
@@ -175,6 +178,7 @@ public class RoboWebSettings extends WebSettings {
   public void setMediaPlaybackRequiresUserGesture(boolean require) {
     mediaPlaybackRequiresUserGesture = require;
   }
+#end
 
   public boolean getNeedInitialFocus() {
     return needInitialFocus;

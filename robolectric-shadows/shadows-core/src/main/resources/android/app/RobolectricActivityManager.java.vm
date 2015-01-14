@@ -26,6 +26,9 @@ import android.os.ParcelFileDescriptor;
 
 #if ($apiLevel >= 19)
 import android.content.UriPermission;
+#end
+
+#if ($apiLevel == 19)
 import android.app.ActivityManager.StackBoxInfo;
 #end
 
@@ -47,6 +50,19 @@ import com.android.internal.app.IVoiceInteractor;
 import java.util.List;
 
 public class RobolectricActivityManager implements IActivityManager {
+
+#if ($apiLevel == 16)
+  @Override
+  public int startActivitiesInPackage(int i, Intent[] intents, String[] s,IBinder binder, Bundle bundle) throws RemoteException {
+    return 0;
+  }
+
+  @Override
+  public int startActivityInPackage(int i, Intent intent, String s, IBinder binder, String s1, int i1, int i2, Bundle bundle) throws RemoteException {
+    return 0;
+  }
+
+#end
 
 #if ($apiLevel >= 21)
   @Override
@@ -84,7 +100,7 @@ public class RobolectricActivityManager implements IActivityManager {
   public final WaitResult startActivityAndWait(IApplicationThread caller, String callingPackage, Intent intent, String resolvedType, IBinder resultTo, String resultWho, int requestCode, int startFlags, String profileFile, ParcelFileDescriptor profileFd, Bundle options, int userId) {
     return null;
   }
-#else
+#elseif ($apiLevel >= 17)
   @Override
   public final int startActivity(IApplicationThread caller, Intent intent, String resolvedType, IBinder resultTo, String resultWho, int requestCode, int startFlags, String profileFile, ParcelFileDescriptor profileFd, Bundle options) {
     return 0;
@@ -99,18 +115,32 @@ public class RobolectricActivityManager implements IActivityManager {
   public final WaitResult startActivityAndWait(IApplicationThread caller, Intent intent, String resolvedType, IBinder resultTo, String resultWho, int requestCode, int startFlags, String profileFile, ParcelFileDescriptor profileFd, Bundle options, int userId) {
     return null;
   }
+#else
+  @Override
+  public final int startActivity(IApplicationThread caller, Intent intent, String resolvedType, IBinder resultTo, String resultWho, int requestCode, int startFlags, String profileFile, ParcelFileDescriptor profileFd, Bundle options) {
+    return 0;
+  }
 
+  @Override
+  public final WaitResult startActivityAndWait(IApplicationThread caller, Intent intent, String resolvedType, IBinder resultTo, String resultWho, int requestCode, int startFlags, String profileFile, ParcelFileDescriptor profileFd, Bundle options) {
+    return null;
+  }
 #end
+
 
 #if ($apiLevel >= 18)
   @Override
   public int startActivityWithConfig(IApplicationThread caller, String callingPackage, Intent intent, String resolvedType, IBinder resultTo, String resultWho, int requestCode, int startFlags, Configuration newConfig, Bundle options, int userId) throws RemoteException {
     return 0;
   }
-
-#else
+#elseif ($apiLevel >= 17)
   @Override
   public int startActivityWithConfig(IApplicationThread caller, Intent intent, String resolvedType, IBinder resultTo, String resultWho, int requestCode, int startFlags, Configuration newConfig, Bundle options, int userId) throws RemoteException {
+    return 0;
+  }
+#else
+  @Override
+  public int startActivityWithConfig(IApplicationThread caller, Intent intent, String resolvedType, IBinder resultTo, String resultWho, int requestCode, int startFlags, Configuration newConfig, Bundle options) throws RemoteException {
     return 0;
   }
 
@@ -181,10 +211,17 @@ public class RobolectricActivityManager implements IActivityManager {
     return false;
   }
 
+#if ($apiLevel >= 17)
   @Override
   public Intent registerReceiver(IApplicationThread caller, String callerPackage, IIntentReceiver receiver, IntentFilter filter, String requiredPermission, int userId) throws RemoteException {
     return null;
   }
+#else
+  @Override
+  public Intent registerReceiver(IApplicationThread caller, String callerPackage, IIntentReceiver receiver, IntentFilter filter, String requiredPermission) throws RemoteException {
+    return null;
+  }
+#end
 
   @Override
   public void unregisterReceiver(IIntentReceiver receiver) throws RemoteException {
@@ -219,10 +256,12 @@ public class RobolectricActivityManager implements IActivityManager {
 
   }
 
+#if ($apiLevel >= 17)
   @Override
   public void activityResumed(IBinder token) throws RemoteException {
 
   }
+#end
 
   @Override
   public void activityIdle(IBinder token, Configuration config, boolean stopProfiling) throws RemoteException {
@@ -294,25 +333,34 @@ public class RobolectricActivityManager implements IActivityManager {
   }
 #end
 
+#if ($apiLevel >= 17)
   @Override
   public List<ActivityManager.RecentTaskInfo> getRecentTasks(int maxNum, int flags, int userId) throws RemoteException {
     return null;
   }
+#else
+  @Override
+  public List<ActivityManager.RecentTaskInfo> getRecentTasks(int maxNum, int flags) throws RemoteException {
+    return null;
+  }
+#end
 
 #if ($apiLevel >= 21)
   @Override
   public ActivityManager.TaskThumbnail getTaskThumbnail(int taskId) throws RemoteException {
     return null;
   }
-#else
+#elseif ($apiLevel >= 16)
   @Override
   public ActivityManager.TaskThumbnails getTaskThumbnails(int id) {
     return null;
   }
+#end
 
+#if ($apiLevel >= 17 && $apiLevel < 21)
   @Override
   public Bitmap getTaskTopThumbnail(int id) {
-    return null;
+   return null;
   }
 #end
 
@@ -375,7 +423,7 @@ public class RobolectricActivityManager implements IActivityManager {
   }
 #end
 
-#if ($apiLevel >= 19)
+#if ($apiLevel == 19)
   @Override
   public void resizeStackBox(int stackBoxId, float weight) {
 
@@ -390,7 +438,9 @@ public class RobolectricActivityManager implements IActivityManager {
   public StackBoxInfo getStackBoxInfo(int stackBoxId) {
     return null;
   }
+#end
 
+#if ($apiLevel >= 19)
   @Override
   public void setFocusedStack(int stackId) throws RemoteException {
 
@@ -402,6 +452,7 @@ public class RobolectricActivityManager implements IActivityManager {
     return 0;
   }
 
+#if ($apiLevel >= 17)
   @Override
   public ContentProviderHolder getContentProvider(IApplicationThread caller, String name, int userId, boolean stable) throws RemoteException {
     return null;
@@ -411,6 +462,17 @@ public class RobolectricActivityManager implements IActivityManager {
   public ContentProviderHolder getContentProviderExternal(String name, int userId, IBinder token) throws RemoteException {
     return null;
   }
+#else
+  @Override
+  public ContentProviderHolder getContentProvider(IApplicationThread caller, String name, boolean stable) throws RemoteException {
+    return null;
+  }
+
+  @Override
+  public ContentProviderHolder getContentProviderExternal(String name, IBinder token) throws RemoteException {
+    return null;
+  }
+#end
 
   @Override
   public void removeContentProvider(IBinder connection, boolean stable) throws RemoteException {
@@ -449,6 +511,7 @@ public class RobolectricActivityManager implements IActivityManager {
     return null;
   }
 
+#if ($apiLevel >= 17)
   @Override
   public ComponentName startService(IApplicationThread caller, Intent service, String resolvedType, int userId) throws RemoteException {
     return null;
@@ -458,6 +521,17 @@ public class RobolectricActivityManager implements IActivityManager {
   public int stopService(IApplicationThread caller, Intent service, String resolvedType, int userId) throws RemoteException {
     return 0;
   }
+#else
+  @Override
+  public ComponentName startService(IApplicationThread caller, Intent service, String resolvedType) throws RemoteException {
+    return null;
+  }
+
+  @Override
+  public int stopService(IApplicationThread caller, Intent service, String resolvedType) throws RemoteException {
+    return 0;
+  }
+#end
 
   @Override
   public boolean stopServiceToken(ComponentName className, IBinder token, int startId) throws RemoteException {
@@ -504,10 +578,12 @@ public class RobolectricActivityManager implements IActivityManager {
     return false;
   }
 
+#if ($apiLevel >= 17)
   @Override
   public void clearPendingBackup() throws RemoteException {
 
   }
+#end
 
   @Override
   public void backupAgentCreated(String packageName, IBinder agent) throws RemoteException {
@@ -529,16 +605,20 @@ public class RobolectricActivityManager implements IActivityManager {
   public boolean startInstrumentation(ComponentName className, String profileFile, int flags, Bundle arguments, IInstrumentationWatcher watcher, IUiAutomationConnection connection, int userId, String abiOverride) throws RemoteException {
     return false;
   }
-
 #elseif ($apiLevel >= 18)
   @Override
   public boolean startInstrumentation(ComponentName className, String profileFile, int flags, Bundle arguments, IInstrumentationWatcher watcher, IUiAutomationConnection uiAutomationConnection, int userId) {
     return false;
   }
 
-#else
+#elseif ($apiLevel >= 17)
   @Override
   public boolean startInstrumentation(ComponentName className, String profileFile, int flags, Bundle arguments, IInstrumentationWatcher watcher, int userId) {
+    return false;
+  }
+#else
+  @Override
+  public boolean startInstrumentation(ComponentName className, String profileFile, int flags, Bundle arguments, IInstrumentationWatcher watcher) {
     return false;
   }
 #end
@@ -578,10 +658,17 @@ public class RobolectricActivityManager implements IActivityManager {
     return null;
   }
 
+#if ($apiLevel >= 17)
   @Override
   public IIntentSender getIntentSender(int type, String packageName, IBinder token, String resultWho, int requestCode, Intent[] intents, String[] resolvedTypes, int flags, Bundle options, int userId) throws RemoteException {
     return null;
   }
+#else
+  @Override
+  public IIntentSender getIntentSender(int type, String packageName, IBinder token, String resultWho, int requestCode, Intent[] intents, String[] resolvedTypes, int flags, Bundle options) throws RemoteException {
+    return null;
+  }
+#end
 
   @Override
   public void cancelIntentSender(IIntentSender sender) throws RemoteException {
@@ -603,10 +690,12 @@ public class RobolectricActivityManager implements IActivityManager {
     return 0;
   }
 
+#if ($apiLevel >= 17)
   @Override
   public int handleIncomingUser(int callingPid, int callingUid, int userId, boolean allowAll, boolean requireFull, String name, String callerPackage) throws RemoteException {
     return 0;
   }
+#end
 
   @Override
   public void setProcessLimit(int max) throws RemoteException {
@@ -674,11 +763,6 @@ public class RobolectricActivityManager implements IActivityManager {
   }
 
   @Override
-  public ParceledListSlice<UriPermission> getPersistedUriPermissions(String packageName, boolean incoming) throws RemoteException {
-    return null;
-  }
-
-  @Override
   public void releasePersistableUriPermission(Uri uri, int modeFlags) {
 
   }
@@ -699,6 +783,13 @@ public class RobolectricActivityManager implements IActivityManager {
   }
 #end
 
+#if ($apiLevel >= 19)
+  @Override
+  public ParceledListSlice<UriPermission> getPersistedUriPermissions(String packageName, boolean incoming) throws RemoteException {
+    return null;
+  }
+#end
+
   @Override
   public void showWaitingForDebugger(IApplicationThread who, boolean waiting) throws RemoteException {
 
@@ -709,20 +800,34 @@ public class RobolectricActivityManager implements IActivityManager {
 
   }
 
+#if ($apiLevel >= 17)
   @Override
   public void killBackgroundProcesses(String packageName, int userId) throws RemoteException {
 
   }
+#else
+  @Override
+  public void killBackgroundProcesses(String packageName) throws RemoteException {
+
+  }
+#end
 
   @Override
   public void killAllBackgroundProcesses() throws RemoteException {
 
   }
 
+#if ($apiLevel >= 17)
   @Override
   public void forceStopPackage(String packageName, int userId) throws RemoteException {
 
   }
+#else
+  @Override
+  public void forceStopPackage(String packageName) throws RemoteException {
+
+  }
+#end
 
   @Override
   public void setLockScreenShown(boolean shown) throws RemoteException {
@@ -833,9 +938,14 @@ public class RobolectricActivityManager implements IActivityManager {
   public boolean profileControl(String process, int userId, boolean start, ProfilerInfo profilerInfo, int profileType) throws RemoteException {
     return false;
   }
-#else
+#elseif ($apiLevel >= 17)
   @Override
   public boolean profileControl(String process, int userId, boolean start, String path, ParcelFileDescriptor fd, int profileType) throws RemoteException {
+    return false;
+  }
+#else
+  @Override
+  public boolean profileControl(String process, boolean start, String path, ParcelFileDescriptor fd, int profileType) throws RemoteException {
     return false;
   }
 #end
@@ -865,6 +975,11 @@ public class RobolectricActivityManager implements IActivityManager {
 #if ($apiLevel >= 19)
   @Override
   public void killApplicationWithAppId(String pkg, int appid, String reason) throws RemoteException {
+
+  }
+#elseif ($apiLevel >= 17)
+  @Override
+  public void killApplicationWithAppId(String pkg, int appid) throws RemoteException {
 
   }
 #end
@@ -966,10 +1081,17 @@ public class RobolectricActivityManager implements IActivityManager {
 
   }
 
+#if ($apiLevel >= 17)
   @Override
   public String getProviderMimeType(Uri uri, int userId) throws RemoteException {
     return null;
   }
+#else
+  @Override
+  public String getProviderMimeType(Uri uri) throws RemoteException {
+    return null;
+  }
+#end
 
   @Override
   public IBinder newUriPermissionOwner(String name) throws RemoteException {
@@ -1008,10 +1130,17 @@ public class RobolectricActivityManager implements IActivityManager {
   }
 #end
 
+#if ($apiLevel >= 17)
   @Override
   public boolean dumpHeap(String process, int userId, boolean managed, String path, ParcelFileDescriptor fd) throws RemoteException {
     return false;
   }
+#else
+  @Override
+  public boolean dumpHeap(String process, boolean managed, String path, ParcelFileDescriptor fd) throws RemoteException {
+    return false;
+  }
+#end
 
 #if ($apiLevel >= 18)
   @Override
@@ -1019,9 +1148,15 @@ public class RobolectricActivityManager implements IActivityManager {
     return 0;
   }
 
-#else
+#elseif ($apiLevel >= 17)
   @Override
   public int startActivities(IApplicationThread caller, Intent[] intents, String[] resolvedTypes, IBinder resultTo, Bundle options, int userId) throws RemoteException {
+    return 0;
+  }
+
+#else
+  @Override
+  public int startActivities(IApplicationThread caller, Intent[] intents, String[] resolvedTypes, IBinder resultTo, Bundle options) throws RemoteException {
     return 0;
   }
 
@@ -1069,16 +1204,19 @@ public class RobolectricActivityManager implements IActivityManager {
   }
 #end
 
+#if ($apiLevel >= 17)
   @Override
   public int stopUser(int userid, IStopUserCallback callback) throws RemoteException {
     return 0;
   }
+#end
 
   @Override
   public UserInfo getCurrentUser() throws RemoteException {
     return null;
   }
 
+#if ($apiLevel >= 17)
   @Override
   public boolean isUserRunning(int userid, boolean orStopping) throws RemoteException {
     return false;
@@ -1088,6 +1226,7 @@ public class RobolectricActivityManager implements IActivityManager {
   public int[] getRunningUserIds() throws RemoteException {
     return new int[0];
   }
+#end
 
   @Override
   public boolean removeTask(int taskId, int flags) throws RemoteException {
@@ -1114,10 +1253,12 @@ public class RobolectricActivityManager implements IActivityManager {
     return false;
   }
 
+#if ($apiLevel >= 17)
   @Override
   public Intent getIntentForIntentSender(IIntentSender sender) throws RemoteException {
     return null;
   }
+#end
 
 #if ($apiLevel >= 21)
   @Override
@@ -1170,6 +1311,7 @@ public class RobolectricActivityManager implements IActivityManager {
   }
 #end
 
+#if ($apiLevel >= 17)
   @Override
   public void registerUserSwitchObserver(IUserSwitchObserver observer) throws RemoteException {
 
@@ -1184,6 +1326,7 @@ public class RobolectricActivityManager implements IActivityManager {
   public void requestBugReport() throws RemoteException {
 
   }
+#end
 
 #if ($apiLevel >= 19)
   @Override
@@ -1200,7 +1343,7 @@ public class RobolectricActivityManager implements IActivityManager {
   public void reportAssistContextExtras(IBinder token, Bundle extras) throws RemoteException {
 
   }
-#else
+#elseif ($apiLevel >= 17)
   @Override
   public long inputDispatchingTimedOut(int pid, boolean aboveSystem) throws RemoteException {
     return 0;
@@ -1241,7 +1384,9 @@ public class RobolectricActivityManager implements IActivityManager {
   public void performIdleMaintenance() throws RemoteException {
 
   }
+#end
 
+#if ($apiLevel == 19)
   @Override
   public int createStack(int taskId, int relativeStackBoxId, int position, float weight) {
     return 0;
@@ -1381,10 +1526,9 @@ public class RobolectricActivityManager implements IActivityManager {
   }
 #end
 
-#if ($apiLevel < 19)
-
+#if ($apiLevel == 16)
   @Override
-  public void killApplicationWithAppId(String pkg, int appid) throws RemoteException {
+  public void killApplicationWithUid(String pkg, int appid) throws RemoteException {
 
   }
 #end

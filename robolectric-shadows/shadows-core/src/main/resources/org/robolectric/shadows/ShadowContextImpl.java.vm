@@ -1,3 +1,6 @@
+#set($Integer = 0)
+#set($apiLevel = $Integer.parseInt($apiLevel))
+
 package org.robolectric.shadows;
 
 import android.accounts.AccountManager;
@@ -50,7 +53,9 @@ public class ShadowContextImpl extends ShadowContext {
     SYSTEM_SERVICE_MAP.put(Context.DEVICE_POLICY_SERVICE, "android.app.admin.DevicePolicyManager");
     SYSTEM_SERVICE_MAP.put(Context.DROPBOX_SERVICE, "android.os.DropBoxManager");
     SYSTEM_SERVICE_MAP.put(Context.MEDIA_ROUTER_SERVICE, "android.media.MediaRouter");
+#if ($apiLevel >= 17)
     SYSTEM_SERVICE_MAP.put(Context.DISPLAY_SERVICE, "android.hardware.display.DisplayManager");
+#end
     SYSTEM_SERVICE_MAP.put(Context.ACCESSIBILITY_SERVICE, "android.view.accessibility.AccessibilityManager");
     SYSTEM_SERVICE_MAP.put(Context.ACCOUNT_SERVICE, "android.accounts.AccountManager");
   }
@@ -97,10 +102,11 @@ public class ShadowContextImpl extends ShadowContext {
         } else if (serviceClassName.equals("android.hardware.display.DisplayManager")) {
           service = ReflectionHelpers.callConstructor(clazz, ClassParameter.from(Context.class, RuntimeEnvironment.application));
 
-        } else if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) && (serviceClassName.equals("android.view.WindowManagerImpl"))) {
+#if ($apiLevel >= 17)
+        } else if (serviceClassName.equals("android.view.WindowManagerImpl")) {
           Display display = newInstanceOf(Display.class);
           service = ReflectionHelpers.callConstructor(Class.forName("android.view.WindowManagerImpl"), ClassParameter.from(Display.class, display));
-
+#end
         } else if (serviceClassName.equals("android.accounts.AccountManager")) {
           service = AccountManager.get(null);
 
