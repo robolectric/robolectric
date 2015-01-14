@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import android.system.ErrnoException;
 import libcore.io.*;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
