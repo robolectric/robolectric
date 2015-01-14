@@ -6,7 +6,9 @@ package org.robolectric.fakes;
 import android.hardware.Sensor;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+#if ($apiLevel >= 18)
 import android.hardware.TriggerEventListener;
+#end
 import android.os.Handler;
 
 import java.util.ArrayList;
@@ -40,6 +42,7 @@ public class RoboSensorManager extends SensorManager {
   }
 #end
 
+#if ($apiLevel >= 18)
   @Override
   protected boolean requestTriggerSensorImpl(TriggerEventListener listener, Sensor sensor) {
     return false;
@@ -49,6 +52,7 @@ public class RoboSensorManager extends SensorManager {
   protected boolean cancelTriggerSensorImpl(TriggerEventListener listener, Sensor sensor, boolean disable) {
     return false;
   }
+#end
 
   @Override
   protected List<Sensor> getFullSensorList() {

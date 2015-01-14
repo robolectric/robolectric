@@ -13,6 +13,7 @@ import org.robolectric.res.Attribute;
 import org.robolectric.res.PreferenceNode;
 import org.robolectric.res.ResName;
 import org.robolectric.shadows.RoboAttributeSet;
+import org.robolectric.util.ReflectionHelpers;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -37,7 +38,8 @@ public class PreferenceBuilder {
     }
 
     Preference preference = create(preferenceNode, activity, (PreferenceGroup) parent);
-    shadowOf(preference).callOnAttachedToHierarchy(new PreferenceManager(activity, 0));
+    PreferenceManager manager = ReflectionHelpers.callConstructor(PreferenceManager.class, ReflectionHelpers.ClassParameter.from(Activity.class, activity), ReflectionHelpers.ClassParameter.from(int.class, 0));
+    shadowOf(preference).callOnAttachedToHierarchy(manager);
 
     for (PreferenceNode child : preferenceNode.getChildren()) {
       inflate(child, activity, preference);

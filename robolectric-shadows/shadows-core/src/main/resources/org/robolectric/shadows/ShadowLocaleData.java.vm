@@ -60,8 +60,11 @@ public class ShadowLocaleData {
     localeData.longTimeFormat = "h:mm:ss a z";
     localeData.mediumTimeFormat = "h:mm:ss a";
     localeData.shortTimeFormat = "h:mm a";
+
+#if ($apiLevel >= 18)
     localeData.timeFormat12 = "h:mm a";
     localeData.timeFormat24 = "HH:mm";
+#end
 
     localeData.fullDateFormat = "EEEE, MMMM d, y";
     localeData.longDateFormat = "MMMM d, y";
