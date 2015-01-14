@@ -51,7 +51,7 @@ import java.util.List;
 
 public class RobolectricActivityManager implements IActivityManager {
 
-#if ($apiLevel == 16)
+#if ($apiLevel >= 15 && $apiLevel < 17)
   @Override
   public int startActivitiesInPackage(int i, Intent[] intents, String[] s,IBinder binder, Bundle bundle) throws RemoteException {
     return 0;
@@ -62,6 +62,10 @@ public class RobolectricActivityManager implements IActivityManager {
     return 0;
   }
 
+  @Override
+  public void killApplicationWithUid(String pkg, int appid) throws RemoteException {
+
+  }
 #end
 
 #if ($apiLevel >= 21)
@@ -350,7 +354,7 @@ public class RobolectricActivityManager implements IActivityManager {
   public ActivityManager.TaskThumbnail getTaskThumbnail(int taskId) throws RemoteException {
     return null;
   }
-#elseif ($apiLevel >= 16)
+#elseif ($apiLevel >= 15)
   @Override
   public ActivityManager.TaskThumbnails getTaskThumbnails(int id) {
     return null;
@@ -1522,13 +1526,6 @@ public class RobolectricActivityManager implements IActivityManager {
 
   @Override
   public void reportThumbnail(IBinder token, Bitmap thumbnail, CharSequence description) {
-
-  }
-#end
-
-#if ($apiLevel == 16)
-  @Override
-  public void killApplicationWithUid(String pkg, int appid) throws RemoteException {
 
   }
 #end
