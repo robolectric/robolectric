@@ -9,7 +9,6 @@ import android.content.IIntentSender;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentSender;
-import android.content.UriPermission;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.ConfigurationInfo;
 import android.content.pm.IPackageDataObserver;
@@ -25,11 +24,15 @@ import android.os.Debug;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
 
+#if ($apiLevel >= 19)
+import android.content.UriPermission;
+import android.app.ActivityManager.StackBoxInfo;
+#end
+
 #if ($apiLevel >= 21)
 import android.os.PersistableBundle;
 #else
 import android.app.ActivityManager.RunningTaskInfo;
-import android.app.ActivityManager.StackBoxInfo;
 import android.app.IThumbnailReceiver;
 #end
 
@@ -310,10 +313,12 @@ public class RobolectricActivityManager implements IActivityManager {
 
   }
 
+#if ($apiLevel >= 19)
   @Override
   public void moveTaskToStack(int taskId, int stackId, boolean toTop) throws RemoteException {
 
   }
+#end
 
 #if ($apiLevel >= 21)
   @Override
@@ -335,7 +340,9 @@ public class RobolectricActivityManager implements IActivityManager {
   public boolean isInHomeStack(int taskId) throws RemoteException {
     return false;
   }
-#else
+#end
+
+#if ($apiLevel >= 19)
   @Override
   public void resizeStackBox(int stackBoxId, float weight) {
 
@@ -350,12 +357,12 @@ public class RobolectricActivityManager implements IActivityManager {
   public StackBoxInfo getStackBoxInfo(int stackBoxId) {
     return null;
   }
-#end
 
   @Override
   public void setFocusedStack(int stackId) throws RemoteException {
 
   }
+#end
 
   @Override
   public int getTaskForActivity(IBinder token, boolean onlyRoot) throws RemoteException {
@@ -397,10 +404,12 @@ public class RobolectricActivityManager implements IActivityManager {
 
   }
 
+#if ($apiLevel >= 19)
   @Override
   public void appNotRespondingViaProvider(IBinder connection) throws RemoteException {
 
   }
+#end
 
   @Override
   public PendingIntent getRunningServiceControlPanel(ComponentName service) throws RemoteException {
@@ -603,6 +612,21 @@ public class RobolectricActivityManager implements IActivityManager {
   public void releasePersistableUriPermission(Uri uri, int modeFlags, int userId) throws RemoteException {
 
   }
+#elseif ($apiLevel >= 19)
+  @Override
+  public void takePersistableUriPermission(Uri uri, int modeFlags) {
+
+  }
+
+  @Override
+  public ParceledListSlice<UriPermission> getPersistedUriPermissions(String packageName, boolean incoming) throws RemoteException {
+    return null;
+  }
+
+  @Override
+  public void releasePersistableUriPermission(Uri uri, int modeFlags) {
+
+  }
 #else
   @Override
   public int checkUriPermission(Uri uri, int pid, int uid, int modeFlags) {
@@ -618,22 +642,7 @@ public class RobolectricActivityManager implements IActivityManager {
   public void revokeUriPermission(IApplicationThread caller, Uri uri, int modeFlags) {
 
   }
-
-  @Override
-  public void takePersistableUriPermission(Uri uri, int modeFlags) {
-
-  }
-
-  @Override
-  public void releasePersistableUriPermission(Uri uri, int modeFlags) {
-
-  }
 #end
-
-  @Override
-  public ParceledListSlice<UriPermission> getPersistedUriPermissions(String packageName, boolean incoming) throws RemoteException {
-    return null;
-  }
 
   @Override
   public void showWaitingForDebugger(IApplicationThread who, boolean waiting) throws RemoteException {
@@ -798,10 +807,12 @@ public class RobolectricActivityManager implements IActivityManager {
   }
 #end
 
+#if ($apiLevel >= 19)
   @Override
   public void killApplicationWithAppId(String pkg, int appid, String reason) throws RemoteException {
 
   }
+#end
 
   @Override
   public void closeSystemDialogs(String reason) throws RemoteException {
@@ -833,27 +844,31 @@ public class RobolectricActivityManager implements IActivityManager {
 
   }
 
+#if ($apiLevel >= 19)
   @Override
   public boolean convertFromTranslucent(IBinder token) throws RemoteException {
     return false;
   }
+#end
 
 #if ($apiLevel >= 21)
   @Override
   public boolean convertToTranslucent(IBinder token, ActivityOptions options) throws RemoteException {
     return false;
   }
-#else
+#elseif ($apiLevel >= 19)
   @Override
   public boolean convertToTranslucent(IBinder token) {
     return false;
   }
 #end
 
+#if ($apiLevel >= 19)
   @Override
   public void notifyActivityDrawn(IBinder token) throws RemoteException {
 
   }
+#end
 
 #if ($apiLevel >= 21)
   @Override
@@ -1102,6 +1117,7 @@ public class RobolectricActivityManager implements IActivityManager {
 
   }
 
+#if ($apiLevel >= 19)
   @Override
   public long inputDispatchingTimedOut(int pid, boolean aboveSystem, String reason) throws RemoteException {
     return 0;
@@ -1116,6 +1132,7 @@ public class RobolectricActivityManager implements IActivityManager {
   public void reportAssistContextExtras(IBinder token, Bundle extras) throws RemoteException {
 
   }
+#end
 
 #if ($apiLevel >= 21)
   @Override
@@ -1134,6 +1151,7 @@ public class RobolectricActivityManager implements IActivityManager {
 
   }
 
+#if ($apiLevel >= 19)
   @Override
   public void reportActivityFullyDrawn(IBinder token) throws RemoteException {
 
@@ -1148,6 +1166,7 @@ public class RobolectricActivityManager implements IActivityManager {
   public void performIdleMaintenance() throws RemoteException {
 
   }
+#end
 
 #if ($apiLevel >= 21)
   @Override
@@ -1280,7 +1299,32 @@ public class RobolectricActivityManager implements IActivityManager {
   public void reportThumbnail(IBinder token, Bitmap thumbnail, CharSequence description) {
 
   }
+#end
 
+#if ($apiLevel < 19)
+
+  @Override
+  public void killApplicationWithAppId(String pkg, int appid) throws RemoteException {
+
+  }
+
+  @Override
+  public long inputDispatchingTimedOut(int pid, boolean aboveSystem) throws RemoteException {
+
+  }
+
+  @Override
+  public Bundle getTopActivityExtras(int requestType) throws RemoteException {
+
+  }
+
+  @Override
+  public void reportTopActivityExtras(IBinder token, Bundle extras) throws RemoteException {
+
+  }
+#end
+
+#if ($apiLevel >= 19)
   @Override
   public int createStack(int taskId, int relativeStackBoxId, int position, float weight) {
     return 0;
