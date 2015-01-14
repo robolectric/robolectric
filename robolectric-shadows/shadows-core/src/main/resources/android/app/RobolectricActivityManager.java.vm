@@ -614,7 +614,21 @@ public class RobolectricActivityManager implements IActivityManager {
   }
 #elseif ($apiLevel >= 19)
   @Override
+  public int checkUriPermission(Uri uri, int pid, int uid, int mode) throws RemoteException {
+    return 0;
+  }
+  @Override
   public void takePersistableUriPermission(Uri uri, int modeFlags) {
+
+  }
+
+  @Override
+  public void grantUriPermission(IApplicationThread caller, String targetPkg, Uri uri, int mode) throws RemoteException {
+
+  }
+
+  @Override
+  public void revokeUriPermission(IApplicationThread caller, Uri uri, int mode) throws RemoteException {
 
   }
 
