@@ -1166,6 +1166,11 @@ public class RobolectricActivityManager implements IActivityManager {
   public void performIdleMaintenance() throws RemoteException {
 
   }
+
+  @Override
+  public int createStack(int taskId, int relativeStackBoxId, int position, float weight) {
+    return 0;
+  }
 #end
 
 #if ($apiLevel >= 21)
@@ -1321,13 +1326,6 @@ public class RobolectricActivityManager implements IActivityManager {
   @Override
   public void reportTopActivityExtras(IBinder token, Bundle extras) throws RemoteException {
 
-  }
-#end
-
-#if ($apiLevel >= 19)
-  @Override
-  public int createStack(int taskId, int relativeStackBoxId, int position, float weight) {
-    return 0;
   }
 #end
 }
