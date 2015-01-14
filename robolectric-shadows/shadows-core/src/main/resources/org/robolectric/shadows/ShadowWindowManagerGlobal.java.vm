@@ -1,5 +1,9 @@
+#set($Integer = 0)
+#set($apiLevel = $Integer.parseInt($apiLevel))
+
 package org.robolectric.shadows;
 
+#if ($apiLevel >= 17)
 import android.os.Looper;
 import android.view.WindowManagerGlobal;
 import org.robolectric.annotation.Implementation;
@@ -18,3 +22,8 @@ public class ShadowWindowManagerGlobal {
     return null;
   }
 }
+#else
+public class ShadowWindowManagerGlobal {
+  // Dummy class, this was added in API17
+}
+#end

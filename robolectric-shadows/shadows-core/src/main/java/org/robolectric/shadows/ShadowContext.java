@@ -91,7 +91,7 @@ abstract public class ShadowContext {
 
   @Implementation
   public File getExternalCacheDir() {
-    EXTERNAL_CACHE_DIR.mkdir();
+    EXTERNAL_CACHE_DIR.mkdirs();
     return EXTERNAL_CACHE_DIR;
   }
 
@@ -171,11 +171,12 @@ abstract public class ShadowContext {
           f.delete();
         }
       }
+      dir.delete();
+      dir.getParentFile().delete();
     }
   }
 
-  public static File createTempDir(String name) {
-    // todo: need to clear these out between tests, delete recursively, etc...
+  private static File createTempDir(String name) {
     try {
       File tmp = File.createTempFile(name, "robolectric");
       if (!tmp.delete()) throw new IOException("could not delete "+tmp);

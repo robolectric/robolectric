@@ -1,7 +1,12 @@
+#set($Integer = 0)
+#set($apiLevel = $Integer.parseInt($apiLevel))
+
 package org.robolectric.shadows;
 
 import android.bluetooth.BluetoothAdapter;
+#if ($apiLevel >= 18)
 import android.bluetooth.BluetoothAdapter.LeScanCallback;
+#end
 import android.bluetooth.BluetoothDevice;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -17,7 +22,9 @@ public class ShadowBluetoothAdapter {
   private static final int ADDRESS_LENGTH = 17;
 
   private Set<BluetoothDevice> bondedDevices = new HashSet<BluetoothDevice>();
+#if ($apiLevel >= 18)
   private Set<LeScanCallback> leScanCallbacks = new HashSet<LeScanCallback>();
+#end
   private boolean isDiscovering;
   private String address;
   private boolean enabled;
@@ -49,6 +56,7 @@ public class ShadowBluetoothAdapter {
     return true;
   }
 
+#if ($apiLevel >= 18)
   @Implementation
   public boolean startLeScan(LeScanCallback callback) {
     return startLeScan(null, callback);
@@ -76,6 +84,7 @@ public class ShadowBluetoothAdapter {
     }
     return leScanCallbacks.iterator().next();
   }
+#end
 
   @Implementation
   public boolean isDiscovering() {

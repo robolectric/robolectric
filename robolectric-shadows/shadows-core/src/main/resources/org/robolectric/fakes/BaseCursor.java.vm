@@ -1,3 +1,6 @@
+#set($Integer = 0)
+#set($apiLevel = $Integer.parseInt($apiLevel))
+
 package org.robolectric.fakes;
 
 import android.content.ContentResolver;
@@ -184,10 +187,12 @@ public class BaseCursor implements Cursor {
     throw new UnsupportedOperationException();
   }
 
+#if ($apiLevel >= 19)
   @Override
   public Uri getNotificationUri() {
     throw new UnsupportedOperationException();
   }
+#end
 
   @Override
   public boolean getWantsAllOnMoveCalls() {

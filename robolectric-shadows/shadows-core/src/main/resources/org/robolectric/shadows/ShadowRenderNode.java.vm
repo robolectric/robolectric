@@ -1,4 +1,9 @@
+#set($Integer = 0)
+#set($apiLevel = $Integer.parseInt($apiLevel))
+
 package org.robolectric.shadows;
+
+#if ($apiLevel >= 21)
 
 import android.view.RenderNode;
 import org.robolectric.annotation.Implementation;
@@ -43,3 +48,9 @@ public class ShadowRenderNode {
     return translationZ;
   }
 }
+
+#else
+public class ShadowRenderNode {
+  // Stub class, does not exist pre-21
+}
+#end

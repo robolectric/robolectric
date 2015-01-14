@@ -14,7 +14,7 @@
     <!-- Test Dependencies -->
     <dependency>
       <groupId>junit</groupId>
-      <artifactId>junit-dep</artifactId>
+      <artifactId>junit</artifactId>
       <scope>test</scope>
     </dependency>
 
@@ -51,11 +51,6 @@
       <artifactId>maps</artifactId>
       <version>18_r3</version>
       <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.robolectric</groupId>
-      <artifactId>android-all</artifactId>
     </dependency>
 
     <!-- SQLite Dependencies -->
@@ -255,36 +250,78 @@
   <profiles>
     <profile>
       <id>android-15</id>
+        <dependencies>
+            <dependency>
+                <groupId>org.robolectric</groupId>
+                <artifactId>android-all</artifactId>
+                <version>4.1.2_r1-robolectric-0</version>
+            </dependency>
+        </dependencies>
       <properties>
         <api>15</api>
       </properties>
     </profile>
     <profile>
       <id>android-16</id>
+        <dependencies>
+            <dependency>
+                <groupId>org.robolectric</groupId>
+                <artifactId>android-all</artifactId>
+                <version>4.1.2_r1-robolectric-0</version>
+            </dependency>
+        </dependencies>
       <properties>
         <api>16</api>
       </properties>
     </profile>
     <profile>
       <id>android-17</id>
+        <dependencies>
+            <dependency>
+                <groupId>org.robolectric</groupId>
+                <artifactId>android-all</artifactId>
+                <version>4.2.2_r1.2-robolectric-0</version>
+            </dependency>
+        </dependencies>
       <properties>
         <api>17</api>
       </properties>
     </profile>
     <profile>
       <id>android-18</id>
+        <dependencies>
+            <dependency>
+                <groupId>org.robolectric</groupId>
+                <artifactId>android-all</artifactId>
+                <version>4.3_r2-robolectric-0</version>
+            </dependency>
+        </dependencies>
       <properties>
         <api>18</api>
       </properties>
     </profile>
     <profile>
       <id>android-19</id>
+        <dependencies>
+            <dependency>
+                <groupId>org.robolectric</groupId>
+                <artifactId>android-all</artifactId>
+                <version>4.4_r1-robolectric-0</version>
+            </dependency>
+        </dependencies>
       <properties>
         <api>19</api>
       </properties>
     </profile>
     <profile>
       <id>android-21</id>
+        <dependencies>
+            <dependency>
+                <groupId>org.robolectric</groupId>
+                <artifactId>android-all</artifactId>
+                <version>5.0.0_r2-robolectric-0</version>
+            </dependency>
+        </dependencies>
       <properties>
         <api>21</api>
       </properties>

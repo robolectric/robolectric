@@ -1,3 +1,6 @@
+#set($Integer = 0)
+#set($apiLevel = $Integer.parseInt($apiLevel))
+
 package org.robolectric.shadows;
 
 import java.util.Locale;
@@ -35,30 +38,36 @@ public class ShadowLocaleData {
 
     localeData.longMonthNames = new String[]{"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
     localeData.shortMonthNames = new String[]{"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+
+#if ($apiLevel >= 17)
     localeData.tinyMonthNames = new String[]{"J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"};
-
-    localeData.longStandAloneMonthNames = localeData.longMonthNames;
-    localeData.shortStandAloneMonthNames = localeData.shortMonthNames;
     localeData.tinyStandAloneMonthNames = localeData.tinyMonthNames;
-
-    localeData.longWeekdayNames = new String[]{"", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
-    localeData.shortWeekdayNames = new String[]{"", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
     localeData.tinyWeekdayNames = new String[]{"", "S", "M", "T", "W", "T", "F", "S"};
-
-    localeData.longStandAloneWeekdayNames = localeData.longWeekdayNames;
-    localeData.shortStandAloneWeekdayNames = localeData.shortWeekdayNames;
     localeData.tinyStandAloneWeekdayNames = localeData.tinyWeekdayNames;
 
     localeData.yesterday = "Yesterday";
     localeData.today = "Today";
     localeData.tomorrow = "Tomorrow";
+#end
+
+    localeData.longStandAloneMonthNames = localeData.longMonthNames;
+    localeData.shortStandAloneMonthNames = localeData.shortMonthNames;
+
+    localeData.longWeekdayNames = new String[]{"", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+    localeData.shortWeekdayNames = new String[]{"", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+
+    localeData.longStandAloneWeekdayNames = localeData.longWeekdayNames;
+    localeData.shortStandAloneWeekdayNames = localeData.shortWeekdayNames;
 
     localeData.fullTimeFormat = "h:mm:ss a zzzz";
     localeData.longTimeFormat = "h:mm:ss a z";
     localeData.mediumTimeFormat = "h:mm:ss a";
     localeData.shortTimeFormat = "h:mm a";
+
+#if ($apiLevel >= 18)
     localeData.timeFormat12 = "h:mm a";
     localeData.timeFormat24 = "HH:mm";
+#end
 
     localeData.fullDateFormat = "EEEE, MMMM d, y";
     localeData.longDateFormat = "MMMM d, y";
@@ -70,20 +79,28 @@ public class ShadowLocaleData {
     localeData.groupingSeparator = ',';
     localeData.patternSeparator = ';';
     localeData.percent = '%';
-    localeData.perMill = '‰';
+    localeData.perMill = 0x2030;
     localeData.monetarySeparator = '.';
+
+#if ($apiLevel >= 21)
+    // Lollipop uses a String
     localeData.minusSign = "-";
+#else
+    // Upto KitKat was a char
+    localeData.minusSign = '-';
+#end
 
     localeData.exponentSeparator = "E";
-    localeData.infinity = "∞";
+    localeData.infinity = "\u221E";
     localeData.NaN = "NaN";
 
     localeData.currencySymbol = "$";
     localeData.internationalCurrencySymbol = "USD";
 
-    localeData.numberPattern = "#,##0.###";
-    localeData.integerPattern = "#,##0";
-    localeData.currencyPattern = "¤#,##0.00;(¤#,##0.00)";
-    localeData.percentPattern = "#,##0%";
+    localeData.numberPattern = "\u0023,\u0023\u00230.\u0023\u0023\u0023";
+    localeData.integerPattern = "\u0023,\u0023\u00230";
+    localeData.currencyPattern = "\u00A4\u0023,\u0023\u00230.00;(\u00A4\u0023,\u0023\u00230.00)";
+    localeData.percentPattern = "\u0023,\u0023\u00230%";
+
   }
 }

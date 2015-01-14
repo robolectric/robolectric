@@ -1,5 +1,9 @@
+#set($Integer = 0)
+#set($apiLevel = $Integer.parseInt($apiLevel))
+
 package org.robolectric.shadows;
 
+#if ($apiLevel >= 17)
 import android.hardware.display.DisplayManagerGlobal;
 import android.hardware.display.IDisplayManager;
 import android.hardware.display.RoboDisplayManager;
@@ -24,3 +28,9 @@ public class ShadowDisplayManagerGlobal {
     return Shadow.newInstanceOf("android.view.DisplayInfo");
   }
 }
+
+#else
+public class ShadowDisplayManagerGlobal {
+  // Dummy, this class was added in API 17
+}
+#end

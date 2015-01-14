@@ -1,3 +1,6 @@
+#set($Integer = 0)
+#set($apiLevel = $Integer.parseInt($apiLevel))
+
 package org.robolectric.fakes;
 
 import android.webkit.WebSettings;
@@ -22,7 +25,6 @@ public class RoboWebSettings extends WebSettings {
   private boolean javaScriptCanOpenWindowAutomatically = false;
   private boolean lightTouchEnabled = false;
   private boolean loadWithOverviewMode = false;
-  private boolean mediaPlaybackRequiresUserGesture = true;
   private boolean needInitialFocus = false;
   private RenderPriority renderPriority = RenderPriority.NORMAL;
   private boolean pluginsEnabled = false;
@@ -163,6 +165,10 @@ public class RoboWebSettings extends WebSettings {
     loadWithOverviewMode = flag;
   }
 
+#if ($apiLevel >= 17)
+  // > API 17
+  private boolean mediaPlaybackRequiresUserGesture = true;
+
   @Override
   public boolean getMediaPlaybackRequiresUserGesture() {
     return mediaPlaybackRequiresUserGesture;
@@ -172,6 +178,7 @@ public class RoboWebSettings extends WebSettings {
   public void setMediaPlaybackRequiresUserGesture(boolean require) {
     mediaPlaybackRequiresUserGesture = require;
   }
+#end
 
   public boolean getNeedInitialFocus() {
     return needInitialFocus;
@@ -259,6 +266,8 @@ public class RoboWebSettings extends WebSettings {
     return cacheMode;
   }
 
+
+#if ($apiLevel >= 21)
   @Override
   public void setMixedContentMode(int i) {
 
@@ -278,6 +287,7 @@ public class RoboWebSettings extends WebSettings {
   public boolean getVideoOverlayForEmbeddedEncryptedVideoEnabled() {
     return false;
   }
+#end
 
   @Override
   public boolean getUseWideViewPort() {

@@ -1,3 +1,6 @@
+#set($Integer = 0)
+#set($apiLevel = $Integer.parseInt($apiLevel))
+
 package org.robolectric.shadows;
 
 import android.content.ContentResolver;
@@ -194,10 +197,12 @@ public class ShadowCursorWrapper implements Cursor {
     wrappedCursor.setNotificationUri(contentResolver, uri);
   }
 
+#if ($apiLevel >= 19)
   @Implementation
   public Uri getNotificationUri() {
     return wrappedCursor.getNotificationUri();
   }
+#end
 
   @Implementation
   public boolean getWantsAllOnMoveCalls() {

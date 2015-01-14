@@ -1,4 +1,9 @@
+#set($Integer = 0)
+#set($apiLevel = $Integer.parseInt($apiLevel))
+
 package org.robolectric.shadows;
+
+#if ($apiLevel >= 18)
 
 import android.app.PendingIntent;
 import android.telephony.SmsManager;
@@ -86,3 +91,9 @@ public class ShadowSmsManager {
     }
   }
 }
+
+#else
+public class ShadowSmsManager {
+  // Does not exist pre API 18
+}
+#end
