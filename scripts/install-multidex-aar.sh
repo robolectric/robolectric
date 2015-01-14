@@ -13,7 +13,8 @@
 version=1.0.0
 archive="$ANDROID_HOME/extras/android/m2repository/com/android/support/multidex/$version/multidex-$version.aar"
 if [ ! -f "$archive" ]; then
-  echo "multidex $version artifact not found!"
+  echo "multidex $version artifact not found! Make sure that \$ANDROID_HOME is \
+set, and that the Android Support Repository is up to date in the SDK manager."
   exit 1
 fi
 
@@ -22,7 +23,5 @@ cd /tmp; jar xvf $archive
 
 echo "Installing com.android.support:multidex $version from $archive"
 mvn -q install:install-file -DgroupId=com.android.support -DartifactId=multidex -Dversion=$version -Dpackaging=jar -Dfile="$classes"
-
-rm $archive
 
 echo "Done!"
