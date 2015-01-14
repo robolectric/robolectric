@@ -91,18 +91,16 @@ public class ShadowLocaleData {
 #end
 
     localeData.exponentSeparator = "E";
-    localeData.infinity = "∞";
+    localeData.infinity = "\u221E";
     localeData.NaN = "NaN";
 
     localeData.currencySymbol = "$";
     localeData.internationalCurrencySymbol = "USD";
 
-#set( $H = '#' )
-
-    localeData.numberPattern = "$H,$H$H0.$H$H$H";
-    localeData.integerPattern = "$H,$H$H0";
-    localeData.currencyPattern = "¤$H,$H$H0.00;(¤$H,$H$H0.00)";
-    localeData.percentPattern = "$H,$H$H0%";
+    localeData.numberPattern = "\u0023,\u0023\u00230.\u0023\u0023\u0023";
+    localeData.integerPattern = "\u0023,\u0023\u00230";
+    localeData.currencyPattern = "\u00A4\u0023,\u0023\u00230.00;(\u00A4\u0023,\u0023\u00230.00)";
+    localeData.percentPattern = "\u0023,\u0023\u00230%";
 
   }
 }
