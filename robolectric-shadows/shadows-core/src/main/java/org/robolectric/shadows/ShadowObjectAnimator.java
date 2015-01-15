@@ -23,7 +23,6 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
 
   @RealObject
   private ObjectAnimator realObject;
-  private Object target;
   private String propertyName;
   private float[] floatValues;
   private int[] intValues;
@@ -35,16 +34,6 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
 
   private void setAnimationType(Class<?> type) {
     animationType = type;
-  }
-
-  @Implementation
-  public void setTarget(Object target) {
-    this.target = target;
-  }
-
-  @Implementation
-  public Object getTarget() {
-    return target;
   }
 
   @Implementation
@@ -97,7 +86,7 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
     final Method setter;
     notifyStart();
     try {
-      setter = target.getClass().getMethod(methodName, animationType);
+      setter = realObject.getTarget().getClass().getMethod(methodName, animationType);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -177,9 +166,9 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
     public void run() {
       try {
         if (animationType == float.class) {
-          setter.invoke(target, floatValues[index]);
+          setter.invoke(realObject.getTarget(), floatValues[index]);
         } else if (animationType == int.class) {
-          setter.invoke(target, intValues[index]);
+          setter.invoke(realObject.getTarget(), intValues[index]);
         } else {
           Object startValue = objectValues[index];
           Object endValue;
@@ -188,7 +177,7 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
           } else {
             endValue = objectValues[index + 1];
           }
-          setter.invoke(target, typeEvaluator.evaluate((float) index / objectValues.length, startValue, endValue));
+          setter.invoke(realObject.getTarget(), typeEvaluator.evaluate((float) index / objectValues.length, startValue, endValue));
         }
       } catch (Exception e) {
         throw new RuntimeException(e);
