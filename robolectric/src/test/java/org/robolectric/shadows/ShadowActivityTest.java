@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.ActivityOptions;
+import android.app.Application;
 import android.app.Dialog;
 import android.app.Fragment;
 import android.appwidget.AppWidgetProvider;
@@ -24,7 +25,6 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -89,13 +89,6 @@ public class ShadowActivityTest {
   public static final class LabelTestActivity2 extends Activity {}
   public static final class LabelTestActivity3 extends Activity {}
 
-  @Test(expected = IllegalStateException.class)
-  public void shouldComplainIfActivityIsDestroyedWithRegisteredBroadcastReceivers() throws Exception {
-    activity = create(DialogLifeCycleActivity.class);
-    activity.registerReceiver(new AppWidgetProvider(), new IntentFilter());
-    destroy(activity);
-  }
-
   @Test
   public void shouldNotComplainIfActivityIsDestroyedWhileAnotherActivityHasRegisteredBroadcastReceivers() throws Exception {
     activity = create(DialogLifeCycleActivity.class);
@@ -118,7 +111,7 @@ public class ShadowActivityTest {
   public void shouldReportDestroyedStatus() {
     activity = create(DialogLifeCycleActivity.class);
     destroy(activity);
-    assertThat(shadowOf(activity).isDestroyed()).isTrue();
+    assertThat(activity.isDestroyed()).isTrue();
   }
 
   @Test
@@ -758,6 +751,34 @@ public class ShadowActivityTest {
     assertThat(shadowOf(activity).getNextStartedActivityForResult().options).isSameAs(animationBundle);
   }
 
+  @Test
+  public void shouldCallActivityLifecycleCallbacks() {
+    final Transcript transcript = new Transcript();
+    final ActivityController<Activity> controller = buildActivity(Activity.class);
+    RuntimeEnvironment.application.registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks(transcript));
+
+    controller.create();
+    transcript.assertEventsSoFar("onActivityCreated");
+
+    controller.start();
+    transcript.assertEventsSoFar("onActivityStarted");
+
+    controller.resume();
+    transcript.assertEventsSoFar("onActivityResumed");
+
+    controller.saveInstanceState(new Bundle());
+    transcript.assertEventsSoFar("onActivitySaveInstanceState");
+
+    controller.pause();
+    transcript.assertEventsSoFar("onActivityPaused");
+
+    controller.stop();
+    transcript.assertEventsSoFar("onActivityStopped");
+
+    controller.destroy();
+    transcript.assertEventsSoFar("onActivityDestroyed");
+  }
+
   /////////////////////////////
 
   private void destroy(Activity activity) {
@@ -865,21 +886,6 @@ public class ShadowActivityTest {
     }
   }
 
-  private static class CustomTitleActivity extends Activity {
-    public TextView customTitleText;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-      super.onCreate(savedInstanceState);
-
-      requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
-      setContentView(R.layout.main);
-      getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.custom_title);
-
-      customTitleText = (TextView) findViewById(R.id.custom_title_text);
-    }
-  }
-
   private static class OnBackPressedActivity extends Activity {
     public boolean onBackPressedCalled = false;
 
@@ -887,6 +893,49 @@ public class ShadowActivityTest {
     public void onBackPressed() {
       onBackPressedCalled = true;
       super.onBackPressed();
+    }
+  }
+
+  private static class ActivityLifecycleCallbacks implements Application.ActivityLifecycleCallbacks {
+    private final Transcript transcript;
+
+    public ActivityLifecycleCallbacks(Transcript transcript) {
+      this.transcript = transcript;
+    }
+
+    @Override
+    public void onActivityCreated(Activity activity, Bundle bundle) {
+      transcript.add("onActivityCreated");
+    }
+
+    @Override
+    public void onActivityStarted(Activity activity) {
+      transcript.add("onActivityStarted");
+    }
+
+    @Override
+    public void onActivityResumed(Activity activity) {
+      transcript.add("onActivityResumed");
+    }
+
+    @Override
+    public void onActivityPaused(Activity activity) {
+      transcript.add("onActivityPaused");
+    }
+
+    @Override
+    public void onActivityStopped(Activity activity) {
+      transcript.add("onActivityStopped");
+    }
+
+    @Override
+    public void onActivitySaveInstanceState(Activity activity, Bundle bundle) {
+      transcript.add("onActivitySaveInstanceState");
+    }
+
+    @Override
+    public void onActivityDestroyed(Activity activity) {
+      transcript.add("onActivityDestroyed");
     }
   }
 }
