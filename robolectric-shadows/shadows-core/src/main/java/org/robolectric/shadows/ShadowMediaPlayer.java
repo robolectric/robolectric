@@ -8,13 +8,14 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
+import java.util.HashMap;
 import java.util.TreeMap;
 
-import android.app.Activity;
 import android.content.Context;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Handler;
+import android.os.Message;
 import android.os.SystemClock;
 
 import org.robolectric.annotation.Implementation;
@@ -23,8 +24,6 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.internal.Shadow;
 import org.robolectric.shadows.util.DataSource;
-
-import com.google.android.collect.Maps;
 
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowMediaPlayer.State.*;
@@ -39,7 +38,7 @@ import static org.robolectric.shadows.util.DataSource.toDataSource;
  * of <code>ShadowMediaPlayer</code> with Robolectric.
  * 
  * This shadow implementation provides much of the functionality needed to
- * emulate {@link MediaPlayer} initialization & playback behavior without having
+ * emulate {@link MediaPlayer} initialization &amp; playback behavior without having
  * to play actual media files. A summary of the features included are:
  * 
  * <ul>
@@ -61,32 +60,18 @@ import static org.robolectric.shadows.util.DataSource.toDataSource;
  * Robolectric's scheduling system using the {@link MediaInfo} inner class.</li>
  * <li>Emulation of error behavior when methods are called from invalid states,
  * or to throw assertions when methods are invoked in invalid states (using
- * {@link #setAssertOnError}).</li>
+ * {@link #setInvalidStateBehavior}).</li>
  * <li>Emulation of different playback behaviors based on the current data
- * source, as passed in to {@link #setDataSource(String)}, using
- * {@link #setDataSourceMap}.</li>
+ * source, as passed in to {@link #setDataSource(String) setDataSource()}, using
+ * {@link #addMediaInfo}.</li>
  * <li>Emulation of exceptions when calling {@link #setDataSource} using
- * {@link MediaInfo#setDataSourceException}.</li>
+ * {@link #addException}.</li>
  * </ul>
  * 
- * Known gaps in the current feature set are:
- * 
- * <ul>
- * <li>The current features of <code>ShadowMediaPlayer</code> were developed for
+ * The current features of <code>ShadowMediaPlayer</code> were developed for
  * testing playback of audio tracks. Thus support for emulating timed text and
- * video events is incomplete.</li>
- * <li>The {@link #setDataSourceMap(Map) dataSourceMap} currently only supports
- * the {@link #setDataSource(String)} method. Other overloaded forms of
- * <code>setDataSource()</code> are not yet supported.</li>
- * <li>Due to what appears to be a bug in Robolectric's {@link Scheduler}/
- * {@link ShadowHandler} implementation, some events (including manually
- * scheduled events) can fire after the {@link MediaPlayer} is
- * {@link MediaPlayer#release()}d.</li>
- * feature-complete while reducing the maintenance overhead.</li>
- * </ul>
- * 
- * None of these features/bugs would be particularly onerous to add/fix - contributions
- * welcome.
+ * video events is incomplete. None of these features would be particularly onerous
+ * to add/fix - contributions welcome, of course!
  * 
  * @author Fr Jeremy Krieg, Holy Monastery of St Nectarios, Adelaide, Australia
  */
@@ -103,8 +88,9 @@ public class ShadowMediaPlayer {
    */
   protected static CreateListener createListener;
   
-  private static final Map<DataSource, Exception> exceptions = Maps.newHashMap();
-
+  private static final Map<DataSource, Exception> exceptions = new HashMap<>();
+  private static final Map<DataSource, MediaInfo> mediaInfo = new HashMap<>();
+  
   @RealObject
   private MediaPlayer player;
 
@@ -137,7 +123,7 @@ public class ShadowMediaPlayer {
    * schedules the next event to run.
    */
   @SuppressWarnings("serial")
-  private class RunList extends ArrayList<Runnable> implements Runnable {
+  private static class RunList extends ArrayList<MediaEvent> implements MediaEvent {
 
     public RunList() {
       // Set the default size to one as most of the time we will
@@ -145,29 +131,38 @@ public class ShadowMediaPlayer {
       super(1);
     }
 
-    public void run() {
-      for (Runnable r : this) {
-        r.run();
+    @Override
+    public void run(MediaPlayer mp, ShadowMediaPlayer smp) {
+      for (MediaEvent e : this) {
+        e.run(mp, smp);
       }
-      scheduleNextPlaybackEvent();
     }
   }
 
+  public interface MediaEvent {
+    public void run(MediaPlayer mp, ShadowMediaPlayer smp);
+  }
+  
   /**
    * Class specifying information for an emulated media object. Used by
    * ShadowMediaPlayer when setDataSource() is called to populate the shadow
    * player with the specified values.
    */
-  public class MediaInfo {
+  public static class MediaInfo {
     public int duration;
     private int preparationDelay;
 
-    /** Exception to throw when {@link #setDataSource} is called. */
-    private Exception setDataSourceException;
-
-    /** Map that maps time offsets to runnable events. */
+    /** Map that maps time offsets to media events. */
     public TreeMap<Integer, RunList> events = new TreeMap<Integer, RunList>();
 
+    /**
+     * Creates a new <code>MediaInfo</code> object with default duration (1000ms)
+     * and default preparation delay (0ms).
+     */
+    public MediaInfo() {
+      this(1000, 0);
+    }
+    
     /**
      * Creates a new <code>MediaInfo</code> object with the given duration and
      * preparation delay. A completion callback event is scheduled at
@@ -175,7 +170,7 @@ public class ShadowMediaPlayer {
      * 
      * @param duration
      *          the duration (in ms) of this emulated media. A callback event
-     *          will be scheduled at this offset to stop playback simulation &
+     *          will be scheduled at this offset to stop playback simulation &amp;
      *          invoke the completion callback.
      * @param preparationDelay
      *          the preparation delay (in ms) to emulate for this media. If set
@@ -210,32 +205,6 @@ public class ShadowMediaPlayer {
     }
 
     /**
-     * Gets the exception that will be thrown when setDataSource() is called.
-     * 
-     * @return The exception that will be thrown when setDataSource() is called.
-     */
-    public Exception getSetDataSourceException() {
-      return setDataSourceException;
-    }
-
-    /**
-     * Sets the exception to throw when setDataSource() is called.
-     * <code>null</code> means no exception will be thrown. Note that emulation
-     * of IllegalStateException is already handled by the shadow implementation
-     * of setDataSource() and does not need to be emulated using this method.
-     * 
-     * @param e
-     *          the exception to be thrown.
-     */
-    public void setSetDataSourceException(Exception e) {
-      if (e != null && !(e instanceof IOException)
-          && !(e instanceof RuntimeException)) {
-        throw new AssertionError("Invalid exception type: " + e);
-      }
-      setDataSourceException = e;
-    }
-
-    /**
      * Schedules a generic event to run at the specified playback offset. Events
      * are run on the thread on which the {@link android.media.MediaPlayer
      * MediaPlayer} was created.
@@ -246,14 +215,8 @@ public class ShadowMediaPlayer {
      * @param event
      *          the event to run.
      */
-    public void scheduleEventAtOffset(int offset, Runnable event) {
+    public void scheduleEventAtOffset(int offset, MediaEvent event) {
       RunList runList = events.get(offset);
-      final boolean reallyPlaying = isReallyPlaying();
-      if (reallyPlaying) {
-        // Need to stop while modifying the collections
-        // otherwise we can cause a ConcurrentModificationException
-        doStop();
-      }
       if (runList == null) {
         // Given that most run lists will only contain one event,
         // we use 1 as the default capacity.
@@ -261,16 +224,11 @@ public class ShadowMediaPlayer {
         events.put(offset, runList);
       }
       runList.add(event);
-      // If we were playing make sure we restart again to reschedule
-      // the new events.
-      if (reallyPlaying) {
-        doStart();
-      }
     }
 
     /**
      * Schedules an error event to run at the specified playback offset. A
-     * reference to the actual Runnable that is scheduled is returned, which can
+     * reference to the actual MediaEvent that is scheduled is returned, which can
      * be used in a subsequent call to {@link #removeEventAtOffset}.
      * 
      * @param offset
@@ -283,12 +241,12 @@ public class ShadowMediaPlayer {
      *          onError()}.
      * @param extra
      *          the value for the <code>extra</code> parameter to use in the
-     *          call to
+     *          call toH
      *          {@link android.media.MediaPlayer.OnErrorListener#onError(MediaPlayer, int, int)
      *          onError()}.
-     * @return A reference to the Runnable object that was created & scheduled.
+     * @return A reference to the MediaEvent object that was created &amp; scheduled.
      */
-    public Runnable scheduleErrorAtOffset(int offset, int what, int extra) {
+    public MediaEvent scheduleErrorAtOffset(int offset, int what, int extra) {
       ErrorCallback callback = new ErrorCallback(what, extra);
       scheduleEventAtOffset(offset, callback);
       return callback;
@@ -296,7 +254,7 @@ public class ShadowMediaPlayer {
 
     /**
      * Schedules an info event to run at the specified playback offset. A
-     * reference to the actual Runnable that is scheduled is returned, which can
+     * reference to the actual MediaEvent that is scheduled is returned, which can
      * be used in a subsequent call to {@link #removeEventAtOffset}.
      * 
      * @param offset
@@ -312,13 +270,14 @@ public class ShadowMediaPlayer {
      *          call to
      *          {@link android.media.MediaPlayer.OnInfoListener#onInfo(MediaPlayer, int, int)
      *          onInfo()}.
-     * @return A reference to the Runnable object that was created & scheduled.
+     * @return A reference to the MediaEvent object that was created &amp; scheduled.
      */
-    public Runnable scheduleInfoAtOffset(int offset, final int what,
+    public MediaEvent scheduleInfoAtOffset(int offset, final int what,
         final int extra) {
-      Runnable callback = new Runnable() {
-        public void run() {
-          invokeInfoListener(what, extra);
+      MediaEvent callback = new MediaEvent() {
+        @Override
+        public void run(MediaPlayer mp, ShadowMediaPlayer smp) {
+          smp.invokeInfoListener(what, extra);
         }
       };
       scheduleEventAtOffset(offset, callback);
@@ -327,7 +286,7 @@ public class ShadowMediaPlayer {
 
     /**
      * Schedules a simulated buffer underrun event to run at the specified
-     * playback offset. A reference to the actual Runnable that is scheduled is
+     * playback offset. A reference to the actual MediaEvent that is scheduled is
      * returned, which can be used in a subsequent call to
      * {@link #removeEventAtOffset}.
      * 
@@ -344,20 +303,22 @@ public class ShadowMediaPlayer {
      *          will trigger.
      * @param length
      *          the length of time (in ms) for which playback will be paused.
-     * @return A reference to the Runnable object that was created & scheduled.
+     * @return A reference to the MediaEvent object that was created &amp; scheduled.
      */
-    public Runnable scheduleBufferUnderrunAtOffset(int offset, final int length) {
-      final Runnable restart = new Runnable() {
-        public void run() {
-          invokeInfoListener(MediaPlayer.MEDIA_INFO_BUFFERING_END, 0);
-          doStart();
+    public MediaEvent scheduleBufferUnderrunAtOffset(int offset, final int length) {
+      final MediaEvent restart = new MediaEvent() {
+        @Override
+        public void run(MediaPlayer mp, ShadowMediaPlayer smp) {
+          smp.invokeInfoListener(MediaPlayer.MEDIA_INFO_BUFFERING_END, 0);
+          smp.doStart();
         }
       };
-      Runnable callback = new Runnable() {
-        public void run() {
-          doStop();
-          invokeInfoListener(MediaPlayer.MEDIA_INFO_BUFFERING_START, 0);
-          handler.postDelayed(restart, length);
+      MediaEvent callback = new MediaEvent() {
+        @Override
+        public void run(MediaPlayer mp, ShadowMediaPlayer smp) {
+          smp.doStop();
+          smp.invokeInfoListener(MediaPlayer.MEDIA_INFO_BUFFERING_START, 0);
+          smp.postEventDelayed(restart, length);
         }
       };
       scheduleEventAtOffset(offset, callback);
@@ -372,25 +333,14 @@ public class ShadowMediaPlayer {
      *          the offset at which the event was scheduled.
      * @param event
      *          the event to remove.
-     * @see #removeEvent(Runnable)
+     * @see ShadowMediaPlayer.MediaInfo#removeEvent(ShadowMediaPlayer.MediaEvent)
      */
-    public void removeEventAtOffset(int offset, Runnable event) {
-      ArrayList<Runnable> runList = events.get(offset);
+    public void removeEventAtOffset(int offset, MediaEvent event) {
+      RunList runList = events.get(offset);
       if (runList != null) {
-        final boolean reallyPlaying = isReallyPlaying();
-        if (reallyPlaying) {
-          // Need to stop while modifying the collections
-          // otherwise we can cause a ConcurrentModificationException
-          doStop();
-        }
         runList.remove(event);
         if (runList.isEmpty()) {
           events.remove(offset);
-        }
-        if (reallyPlaying) {
-          // If we were playing make sure we restart again to reschedule
-          // the new events.
-          doStart();
         }
       }
     }
@@ -401,15 +351,9 @@ public class ShadowMediaPlayer {
      * 
      * @param event
      *          the event to remove.
-     * @see #removeEventAtOffset(int,Runnable)
+     * @see ShadowMediaPlayer.MediaInfo#removeEventAtOffset(int,ShadowMediaPlayer.MediaEvent)
      */
-    public void removeEvent(Runnable event) {
-      final boolean reallyPlaying = isReallyPlaying();
-      if (reallyPlaying) {
-        // Need to stop while modifying the collections
-        // otherwise we can cause a ConcurrentModificationException
-        doStop();
-      }
+    public void removeEvent(MediaEvent event) {
       for (Iterator<Entry<Integer, RunList>> iter = events.entrySet()
           .iterator(); iter.hasNext();) {
         Entry<Integer, RunList> entry = iter.next();
@@ -419,14 +363,19 @@ public class ShadowMediaPlayer {
           iter.remove();
         }
       }
-      // If we were playing make sure we restart again to reschedule
-      // the new events.
-      if (reallyPlaying) {
-        doStart();
-      }
     }
   }
 
+  public void postEvent(MediaEvent e) {
+    Message msg = handler.obtainMessage(MEDIA_EVENT, e);
+    handler.sendMessage(msg);
+  }
+  
+  public void postEventDelayed(MediaEvent e, long delay) {
+    Message msg = handler.obtainMessage(MEDIA_EVENT, e);
+    handler.sendMessageDelayed(msg, delay);
+  }
+  
   /**
    * Callback interface for clients that wish to be informed when a new
    * {@link MediaPlayer} instance is constructed.
@@ -493,27 +442,30 @@ public class ShadowMediaPlayer {
   private InvalidStateBehavior invalidStateBehavior = InvalidStateBehavior.SILENT;
   private Handler handler;
 
-  private final Runnable completionCallback = new Runnable() {
-    public void run() {
-      if (looping) {
-        startOffset = 0;
-        doStart();
+  private static final MediaEvent completionCallback = new MediaEvent() {
+    @Override
+    public void run(MediaPlayer mp, ShadowMediaPlayer smp) {
+      if (mp.isLooping()) {
+        smp.startOffset = 0;
+        smp.doStart();
       } else {
-        doStop();
-        invokeCompletionListener();
+        smp.doStop();
+        smp.invokeCompletionListener();
       }
     }
   };
 
-  private final Runnable preparedCallback = new Runnable() {
-    public void run() {
-      invokePreparedListener();
+  private static final MediaEvent preparedCallback = new MediaEvent() {
+    @Override
+    public void run(MediaPlayer mp, ShadowMediaPlayer smp) {
+      smp.invokePreparedListener();
     }
   };
 
-  private final Runnable seekCompleteCallback = new Runnable() {
-    public void run() {
-      invokeSeekCompleteListener();
+  private static final MediaEvent seekCompleteCallback = new MediaEvent() {
+    @Override
+    public void run(MediaPlayer mp, ShadowMediaPlayer smp) {
+      smp.invokeSeekCompleteListener();
     }
   };
 
@@ -522,11 +474,13 @@ public class ShadowMediaPlayer {
    * <code>what = -38</code> and <code>extra = 0</code>, which are values that
    * were determined by inspection.
    */
-  private final ErrorCallback invalidStateErrorCallback = new ErrorCallback(
+  private static final ErrorCallback invalidStateErrorCallback = new ErrorCallback(
       -38, 0);
 
+  public static final int MEDIA_EVENT = 1;
+
   /** Callback to use for scheduled errors. */
-  private class ErrorCallback implements Runnable {
+  private static class ErrorCallback implements MediaEvent {
     private int what;
     private int extra;
 
@@ -535,27 +489,11 @@ public class ShadowMediaPlayer {
       this.extra = extra;
     }
 
-    public void run() {
-      invokeErrorListener(what, extra);
+    @Override
+    public void run(MediaPlayer mp, ShadowMediaPlayer smp) {
+      smp.invokeErrorListener(what, extra);
     }
   }
-
-  /**
-   * Map of strings to {@link #MediaInfo} instances. Used by
-   * {@link #setDataSource(String)} to set the {@link #currentMediaInfo} field
-   * based on the current data source.
-   */
-  private Map<String, MediaInfo> dataSourceMap;
-
-  /**
-   * The MediaInfo object describing the default playback schedule currently
-   * selected. If there is no overriding {@link #MediaInfo} instance invoked by
-   * {@link #setDataSource(String)}, then this instance is used.
-   */
-  private MediaInfo defaultMediaInfo = new MediaInfo(1000, 0);
-
-  /** The MediaInfo object describing the playback schedule currently selected. */
-  private MediaInfo mediaInfo = defaultMediaInfo;
 
   @Implementation
   public static MediaPlayer create(Context context, int resId) {
@@ -593,7 +531,18 @@ public class ShadowMediaPlayer {
     // worth the effort - a random non-zero number will probably do.
     Random random = new Random();
     audioSessionId = random.nextInt(Integer.MAX_VALUE) + 1;
-    handler = new Handler();
+    handler = new Handler() {
+      @Override
+      public void handleMessage(Message msg) {
+        switch (msg.what) {
+        case MEDIA_EVENT:
+          MediaEvent e = (MediaEvent)msg.obj;
+          e.run(player, ShadowMediaPlayer.this);
+          scheduleNextPlaybackEvent();
+          break;
+        }
+      }
+    };
     // This gives test suites a chance to customize the MP instance
     // and its shadow when it is created, without having to modify
     // the code under test in order to do so.
@@ -604,6 +553,24 @@ public class ShadowMediaPlayer {
     Shadow.invokeConstructor(MediaPlayer.class, player);
   }
 
+  /**
+   * Common code path for all <code>setDataSource()</code> implementations.
+   * <ol><li>Checks for any specified exceptions for the specified data source and throws them.</li>
+   * <li>Checks the current state and throws an exception if it is in an invalid state.</li>
+   * <li>If no exception is thrown in either of the previous two steps, then {@link #doSetDataSource(DataSource)}
+   * is called to set the data source.</li>
+   * <li>Sets the player state to <code>INITIALIZED</code>.</li>
+   * </ol>
+   * Usually this method would not be called directly, but indirectly through one of the
+   * other {@link #setDataSource(String)} implementations, which use {@link DataSource#toDataSource(String)}
+   * methods to convert their discrete parameters into a single {@link DataSource} instance.
+   * 
+   * @param dataSource the data source that is being set.
+   * @throws IOException if the specified data source has been configured to throw an IO exception.
+   * @see #addException(DataSource, IOException)
+   * @see #addException(DataSource, RuntimeException)
+   * @see #doSetDataSource(DataSource)
+   */
   public void setDataSource(DataSource dataSource) throws IOException {
     Exception e = exceptions.get(dataSource);
     if (e != null) {
@@ -616,8 +583,22 @@ public class ShadowMediaPlayer {
       throw new AssertionError("Invalid exception type for setDataSource: <" + e + '>');
     }
     checkStateException("setDataSource()", idleState);
-    this.dataSource = dataSource;
+    doSetDataSource(dataSource);
     state = INITIALIZED;
+  }
+  
+  /**
+   * Sets the data source without doing any other emulation. Sets the
+   * internal data source only.
+   * Calling directly can be useful for setting up a {@link ShadowMediaPlayer}
+   * instance during specific testing so that you don't have to clutter your
+   * tests catching exceptions you know won't be thrown.
+   * 
+   * @param dataSource the data source that is being set.
+   * @see #setDataSource(DataSource)
+   */
+  public void doSetDataSource(DataSource dataSource) {
+    this.dataSource = dataSource;
   }
   
   @Implementation
@@ -641,49 +622,14 @@ public class ShadowMediaPlayer {
     setDataSource(toDataSource(fd, offset, length));
   }
 
-//  @Implementation
-//  public void setDataSource(String path) throws IOException {
-//    MediaInfo info = dataSourceMap == null ? null : dataSourceMap.get(path);
-//    setCurrentMediaInfo(info);
-//    doSetDataSourceExceptions();
-//    this.sourcePath = path;
-//  }
-//
-//  @Implementation
-//  public void setDataSource(Context context, Uri uri,
-//      Map<String, String> headers) throws IOException {
-//    doSetDataSourceExceptions();
-//    this.sourceUri = uri;
-//    this.sourceHeaders = headers;
-//  }
-//
-//  @Implementation
-//  public void setDataSource(FileDescriptor fd, long offset, long length)
-//      throws IOException {
-//    doSetDataSourceExceptions();
-//    this.sourceFD = fd;
-//    this.sourceOffset = offset;
-//    this.sourceLength = length;
-//  }
-//
-  private void doSetDataSourceExceptions() throws IOException {
-    Exception setDataSourceException = mediaInfo.getSetDataSourceException();
-    // By inspection I determined that the state check is one
-    // of the last things to happen (once you get into native
-    // code land) - there is plenty of code in Java land for
-    // another type of exception to be thrown before then.
-    if (setDataSourceException != null) {
-      if (setDataSourceException instanceof IOException) {
-        throw (IOException) setDataSourceException;
-      }
-      if (setDataSourceException instanceof RuntimeException) {
-        throw (RuntimeException) setDataSourceException;
-      }
-      throw new AssertionError("Invalid exception type specified: "
-          + setDataSourceException);
-    }
+  public static MediaInfo getMediaInfo(DataSource dataSource) {
+    return mediaInfo.get(dataSource);
   }
-
+  
+  public static void addMediaInfo(DataSource dataSource, MediaInfo info) {
+    mediaInfo.put(dataSource, info);
+  }
+  
   public static void addException(DataSource dataSource, RuntimeException e) {
     exceptions.put(dataSource, e);
   }
@@ -758,7 +704,7 @@ public class ShadowMediaPlayer {
           throw new IllegalStateException(msg);
         }
         state = ERROR;
-        handler.post(invalidStateErrorCallback);
+        postEvent(invalidStateErrorCallback);
         return false;
       case ASSERT:
         String msg = "Can't call " + method + " from state " + state;
@@ -862,7 +808,7 @@ public class ShadowMediaPlayer {
    * {@link SystemClock#sleep(long)} before calling
    * {@link #invokePreparedListener()}.
    * 
-   * If <code>preparationDelay</code> is not positive and non-zero, there is no
+   * If <code>preparationDelay</code> is not positigetve and non-zero, there is no
    * sleep.
    * 
    * @see MediaInfo#setPreparationDelay(int)
@@ -871,8 +817,9 @@ public class ShadowMediaPlayer {
   @Implementation
   public void prepare() {
     checkStateException("prepare()", preparableStates);
-    if (mediaInfo.preparationDelay > 0) {
-      SystemClock.sleep(mediaInfo.preparationDelay);
+    MediaInfo info = getMediaInfo();
+    if (info.preparationDelay > 0) {
+      SystemClock.sleep(info.preparationDelay);
     }
     invokePreparedListener();
   }
@@ -880,7 +827,7 @@ public class ShadowMediaPlayer {
   /**
    * Simulates {@link MediaPlayer#prepareAsync()}. Sets state to PREPARING and
    * posts a callback to {@link #invokePreparedListener()} if the current
-   * preparation delay for the current media (see {@link #getMediaInfo()}) is >=
+   * preparation delay for the current media (see {@link #getMediaInfo()}) is &gt;=
    * 0, otherwise the test suite is responsible for calling
    * {@link #invokePreparedListener()} directly if required.
    * 
@@ -891,8 +838,9 @@ public class ShadowMediaPlayer {
   public void prepareAsync() {
     checkStateException("prepareAsync()", preparableStates);
     state = PREPARING;
-    if (mediaInfo.preparationDelay >= 0) {
-      handler.postDelayed(preparedCallback, mediaInfo.preparationDelay);
+    MediaInfo info = getMediaInfo();
+    if (info.preparationDelay >= 0) {
+      postEventDelayed(preparedCallback, info.preparationDelay);
     }
   }
 
@@ -909,7 +857,7 @@ public class ShadowMediaPlayer {
    * @see #doStart()
    */
   @Implementation
-  public void _start() {
+  public void start() {
     if (checkStateError("start()", startableStates)) {
       if (state == PLAYBACK_COMPLETED) {
         startOffset = 0;
@@ -924,17 +872,17 @@ public class ShadowMediaPlayer {
       return;
     }
     final int currentPosition = getCurrentPositionRaw();
-    Entry<Integer, RunList> event = mediaInfo.events
-        .higherEntry(currentPosition);
+    MediaInfo info = getMediaInfo();
+    Entry<Integer, RunList> event = info.events.higherEntry(currentPosition);
     if (event == null) {
       // This means we've "seeked" past the end. Get the last
       // event (which should be the completion event) and
       // invoke that, setting the position to the duration.
-      handler.post(completionCallback);
+      postEvent(completionCallback);
     } else {
       final int runListOffset = event.getKey();
       nextPlaybackEvent = event.getValue();
-      handler.postDelayed(nextPlaybackEvent, runListOffset - currentPosition);
+      postEventDelayed(nextPlaybackEvent, runListOffset - currentPosition);
     }
   }
 
@@ -942,7 +890,7 @@ public class ShadowMediaPlayer {
    * Tests to see if the player is really playing.
    * 
    * The player is defined as "really playing" if simulated playback events
-   * (including playback completion) are being scheduled & invoked and
+   * (including playback completion) are being scheduled &amp; invoked and
    * {@link #getCurrentPosition currentPosition} is being updated as time
    * passes. Note that while the player will normally be really playing if in
    * the STARTED state, this is not always the case - for example, if a pending
@@ -964,7 +912,13 @@ public class ShadowMediaPlayer {
    * 
    * This method is used internally by the various shadow method implementations
    * of the MediaPlayer public API, but may also be called directly by the test
-   * suite if you wish to simulate an internal pause.
+   * suite if you wish to simulate an internal pause. For example, to simulate
+   * a buffer underrun (player is in PLAYING state but isn't actually advancing
+   * the current position through the media), you could call {@link #doStop()} to
+   * mark the start of the buffer underrun and {@link #doStart()} to mark its
+   * end and restart normal playback (which is what
+   * {@link ShadowMediaPlayer.MediaInfo#scheduleBufferUnderrunAtOffset(int, int) scheduleBufferUnderrunAtOffset()}
+   * does).
    * 
    * @see #isReallyPlaying()
    * @see #doStop()
@@ -989,7 +943,7 @@ public class ShadowMediaPlayer {
   public void doStop() {
     startOffset = getCurrentPositionRaw();
     if (nextPlaybackEvent != null) {
-      handler.removeCallbacks(nextPlaybackEvent);
+      handler.removeMessages(MEDIA_EVENT);
       nextPlaybackEvent = null;
     }
     startTime = -1;
@@ -1023,13 +977,7 @@ public class ShadowMediaPlayer {
     checkStateException("release()", allStates);
     doStop();
     state = END;
-    // FIXME: This doesn't actually do the job due to a bug
-    // in the ShadowHandler implementation - the callbacks are
-    // removed from the Handler but not from the Scheduler, so
-    // they run anyway. Need to fix - otherwise (eg) a pending
-    // seek callback can be invoked some time after reset()
-    // has completed, which is not realistic.
-    handler.removeCallbacksAndMessages(null);
+    handler.removeMessages(MEDIA_EVENT);
   }
 
   /**
@@ -1041,13 +989,7 @@ public class ShadowMediaPlayer {
     checkStateException("reset()", nonEndStates);
     doStop();
     state = IDLE;
-    // FIXME: This doesn't actually do the job due to a bug
-    // in the ShadowHandler implementation - the callbacks are
-    // removed from the Handler but not from the Scheduler, so
-    // they run anyway. Need to fix - otherwise (eg) a pending
-    // seek callback can be invoked some time after reset()
-    // has completed, which is not realistic.
-    handler.removeCallbacksAndMessages(null);
+    handler.removeMessages(MEDIA_EVENT);
     startOffset = 0;
   }
 
@@ -1101,12 +1043,12 @@ public class ShadowMediaPlayer {
    * as defined by the current {@link MediaInfo} instance.
    * 
    * @return The duration (in ms) of the current simulated playback.
-   * @see #getCurrentMediaInfo()
+   * @see addMediaInfo
    */
   @Implementation
   public int getDuration() {
     checkStateError("getDuration()", stoppableStates);
-    return mediaInfo.duration;
+    return getMediaInfo().duration;
   }
 
   @Implementation
@@ -1128,7 +1070,7 @@ public class ShadowMediaPlayer {
    * Simulates seeking to specified position. The seek will complete after
    * {@link #seekDelay} ms (defaults to 0), or else if seekDelay is negative
    * then the controlling test is expected to simulate seek completion by
-   * manually invoking {@link #invokeSeekCompletedListener}.
+   * manually invoking {@link #invokeSeekCompleteListener}.
    * 
    * @param seekTo
    *          the offset (in ms) from the start of the track to seek to.
@@ -1137,7 +1079,7 @@ public class ShadowMediaPlayer {
   public void seekTo(int seekTo) {
     boolean success = checkStateError("seekTo()", seekableStates);
     // Cancel any pending seek operations.
-    handler.removeCallbacks(seekCompleteCallback);
+    handler.removeMessages(MEDIA_EVENT, seekCompleteCallback);
 
     if (success) {
       // Need to call doStop() before setting pendingSeek,
@@ -1147,7 +1089,7 @@ public class ShadowMediaPlayer {
       doStop();
       pendingSeek = seekTo;
       if (seekDelay >= 0) {
-        handler.postDelayed(seekCompleteCallback, seekDelay);
+        postEventDelayed(seekCompleteCallback, seekDelay);
       }
     }
   }
@@ -1172,9 +1114,7 @@ public class ShadowMediaPlayer {
   /**
    * Sets a listener that is invoked whenever a new shadowed {@link MediaPlayer}
    * object is constructed. Registering a listener gives you a chance to
-   * customize the shadowed object appropriately (eg, invoking
-   * {@link #setDefaultMediaInfo setDefaultMediaInfo()} or
-   * {@link #setDataSourceMap setDataSourceMap()} without needing to modify the
+   * customize the shadowed object appropriately without needing to modify the
    * application-under-test to provide access to the instance at the appropriate
    * point in its life cycle. This is useful because normally a new
    * {@link MediaPlayer} is created and {@link #setDataSource setDataSource()}
@@ -1196,7 +1136,7 @@ public class ShadowMediaPlayer {
    * events to take place at a particular "real" time (ie, time as measured by
    * the scheduler). For scheduling events to occur at a particular playback
    * offset (no matter how long playback may be paused for, or where you seek
-   * to, etc), see {@link MediaInfo#scheduleEventAtOffset(int, Runnable)} and
+   * to, etc), see {@link MediaInfo#scheduleEventAtOffset(int, ShadowMediaPlayer.MediaEvent)} and
    * its various helpers.
    * 
    * @return Handler object that can be used to schedule asynchronous events on
@@ -1263,7 +1203,7 @@ public class ShadowMediaPlayer {
    * <li>ASSERT: the shadow will raise an assertion any time that a method is
    * invoked in an invalid state. The philosophy behind this mode is that to
    * invoke a method in an invalid state is a programming error - a bug, pure
-   * and simple. As such it should be discovered & eliminated at development &
+   * and simple. As such it should be discovered &amp; eliminated at development &amp;
    * testing time, rather than anticipated and handled at runtime. Asserting is
    * a way of testing for these bugs during testing.</li>
    * </ul>
@@ -1277,78 +1217,16 @@ public class ShadowMediaPlayer {
   }
 
   /**
-   * Retrieves the default {@link MediaInfo}. This is the {@link MediaInfo}
-   * instance that will be used if it is not overridden by something in the
-   * {@link #setDataSourceMap dataSourceMap}.
-   * 
-   * @return The default {@link MediaInfo} instance.
-   * @see #setDefaultMediaInfo(MediaInfo)
-   */
-  public MediaInfo getDefaultMediaInfo() {
-    return defaultMediaInfo;
-  }
-
-  /**
-   * Sets the default {@link MediaInfo} instance. See
-   * {@link #getDefaultMediaInfo()} for details.
-   * 
-   * @param defaultMediaInfo
-   *          the new default {@link MediaInfo} instance.
-   * @throws NullPointerException
-   *           if <code>defaultMediaInfo</code> is <code>null</code>.
-   * @see #getDefaultMediaInfo()
-   */
-  public void setDefaultMediaInfo(MediaInfo defaultMediaInfo) {
-    if (defaultMediaInfo == null) {
-      throw new NullPointerException();
-    }
-    this.defaultMediaInfo = defaultMediaInfo;
-  }
-
-  /**
    * Retrieves the currently selected {@link MediaInfo}. This instance is used
    * to define current duration, preparation delay, exceptions for
    * <code>setDataSource()</code>, playback events, etc.
    * 
    * @return The currently selected {@link MediaInfo}.
-   * @see #setCurrentMediaInfo(MediaInfo)
+   * @see #addMediaInfo
+   * @see #doSetDataSource(DataSource)
    */
-  public MediaInfo getCurrentMediaInfo() {
-    return mediaInfo;
-  }
-
-  /**
-   * Sets the current media info and configures playback simulation
-   * appropriately. Non-Android setter. Calling this during a playback
-   * simulation will have unpredictable results.
-   * 
-   * @param mediaInfo
-   *          the new {@link MediaInfo} instance to describe current playback
-   *          behavior. If <code>null</code>, will be set to
-   *          {@link #getDefaultMediaInfo defaultMediaInfo}.
-   * @see #getCurrentMediaInfo()
-   */
-  public void setCurrentMediaInfo(MediaInfo mediaInfo) {
-    if (mediaInfo == null) {
-      this.mediaInfo = defaultMediaInfo;
-    } else {
-      this.mediaInfo = mediaInfo;
-    }
-  }
-
-  /**
-   * Constructs a new {@link MediaInfo} object with the specified duration and
-   * preparation delay.
-   * 
-   * @param duration
-   *          the duration (in ms) for the MediaInfo object.
-   * @param preparationDelay
-   *          the preparation delay (in ms) for the MediaInfo object.
-   * @return The newly created MediaInfo instance with the specified initial
-   *         values.
-   */
-  public MediaInfo buildMediaInfo(int duration, int preparationDelay) {
-    return new MediaInfo(duration, preparationDelay);
+  public MediaInfo getMediaInfo() {
+    return mediaInfo.get(dataSource);
   }
 
   /**
@@ -1360,15 +1238,6 @@ public class ShadowMediaPlayer {
    */
   public void setCurrentPosition(int position) {
     startOffset = position;
-  }
-
-  /**
-   * Non-Android setter. Sets a map from String datasource to a MediaInfo
-   * instance containing info to use for that data source (eg, duration,
-   * preparation delay, etc).
-   */
-  public void setDataSourceMap(Map<String, MediaInfo> map) {
-    this.dataSourceMap = map;
   }
 
   /**
@@ -1393,7 +1262,7 @@ public class ShadowMediaPlayer {
    * @return The duration of the current clip loaded by the player.
    */
   public int getDurationRaw() {
-    return mediaInfo.duration;
+    return getMediaInfo().duration;
   }
 
   /**
@@ -1429,11 +1298,17 @@ public class ShadowMediaPlayer {
   }
 
   /**
-   * Non-Android accessor.
+   * Non-Android accessor. Note: This has a funny name at the
+   * moment to avoid having to produce an API-specific shadow -
+   * if it were called <code>getAudioStreamType()</code> then
+   * the <code>RobolectricWiringTest</code> will inform us that
+   * it should be annotated with {@link Implementation}, because
+   * there is a private method in the later API versions with
+   * the same name, however this would fail on earlier versions.
    * 
    * @return audioStreamType
    */
-  public int getAudioStreamType() {
+  public int getTheAudioStreamType() {
     return audioStreamType;
   }
 
@@ -1462,7 +1337,7 @@ public class ShadowMediaPlayer {
   /**
    * Non-Android accessor. Used for assertions.
    * 
-   * @return
+   * @return The current <code>auxEffect</code> setting.
    */
   public int getAuxEffect() {
     return auxEffect;
@@ -1482,7 +1357,7 @@ public class ShadowMediaPlayer {
 
   /**
    * Retrieves the data source (if any) that was passed in to
-   * {@link MediaPlayer#setDataSource(DataSource)}.
+   * {@link #setDataSource(DataSource)}.
    * 
    * Non-Android accessor. Use for assertions.
    * 
@@ -1574,7 +1449,7 @@ public class ShadowMediaPlayer {
   /**
    * Allows test cases to simulate 'prepared' state by invoking callback. Sets
    * the player's state to PREPARED and invokes the
-   * {@link MediaPlayer.OnPreparedListener#onPrepare preparedListener()
+   * {@link MediaPlayer.OnPreparedListener#onPrepared preparedListener()}
    */
   public void invokePreparedListener() {
     state = PREPARED;
@@ -1600,7 +1475,8 @@ public class ShadowMediaPlayer {
    * Allows test cases to simulate seek completion by invoking callback.
    */
   public void invokeSeekCompleteListener() {
-    setCurrentPosition(pendingSeek > mediaInfo.duration ? mediaInfo.duration
+    int duration = getMediaInfo().duration;
+    setCurrentPosition(pendingSeek > duration ? duration
         : pendingSeek < 0 ? 0 : pendingSeek);
     pendingSeek = -1;
     if (state == STARTED) {
@@ -1617,10 +1493,10 @@ public class ShadowMediaPlayer {
    * 
    * @param what
    *          parameter to pass in to <code>what</code> in
-   *          {@link OnInfoListener#onInfo onInfo()}.
+   *          {@link MediaPlayer.OnInfoListener#onInfo onInfo()}.
    * @param extra
    *          parameter to pass in to <code>extra</code> in
-   *          {@link OnInfoListener#onInfo onInfo()}.
+   *          {@link MediaPlayer.OnInfoListener#onInfo onInfo()}.
    */
   public void invokeInfoListener(int what, int extra) {
     if (infoListener != null) {
@@ -1633,10 +1509,10 @@ public class ShadowMediaPlayer {
    * 
    * @param what
    *          parameter to pass in to <code>what</code> in
-   *          {@link OnErrorListener#onError()}.
+   *          {@link MediaPlayer.OnErrorListener#onError onError()}.
    * @param extra
    *          parameter to pass in to <code>extra</code> in
-   *          {@link OnErrorListener#onError()}.
+   *          {@link MediaPlayer.OnErrorListener#onError onError()}.
    */
   public void invokeErrorListener(int what, int extra) {
     // Calling doStop() un-schedules the next event and
@@ -1663,5 +1539,6 @@ public class ShadowMediaPlayer {
   public static void resetStaticState() {
     createListener = null;
     exceptions.clear();
+    mediaInfo.clear();
   }
 }
