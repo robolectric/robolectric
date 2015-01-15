@@ -57,7 +57,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
   private int mDefaultKeyMode = Activity.DEFAULT_KEYS_DISABLE;
   private SpannableStringBuilder mDefaultKeySsb = null;
-  private boolean destroyed = false;
   private int streamType = -1;
   private boolean mIsTaskRoot = true;
   private Menu optionsMenu;
@@ -238,23 +237,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   @Implementation
   public void runOnUiThread(Runnable action) {
     ShadowLooper.getUiThreadScheduler().post(action);
-  }
-
-  /**
-   * Checks to see if {@code BroadcastListener}s are still registered.
-   *
-   * @throws RuntimeException if any listeners are still registered
-   * @see #assertNoBroadcastListenersRegistered()
-   */
-  @Implementation
-  public void onDestroy() {
-    assertNoBroadcastListenersRegistered();
-    this.destroyed = true;
-  }
-
-  @Implementation
-  public boolean isDestroyed() {
-    return destroyed;
   }
 
   @Implementation
