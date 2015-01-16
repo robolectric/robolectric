@@ -11,7 +11,7 @@ import org.robolectric.annotation.processing.shadows.ShadowOuterDummy;
 import org.robolectric.annotation.processing.shadows.ShadowUniqueDummy;
 import org.robolectric.annotation.processing.shadows.ShadowUniqueDummy.ShadowUniqueInnerDummy;
 import org.robolectric.internal.ShadowExtractor;
-import org.robolectric.util.ShadowProvider;
+import org.robolectric.internal.ShadowProvider;
 
 @Generated("org.robolectric.annotation.processing.RobolectricProcessor")
 @SuppressWarnings({"unchecked","deprecation"})

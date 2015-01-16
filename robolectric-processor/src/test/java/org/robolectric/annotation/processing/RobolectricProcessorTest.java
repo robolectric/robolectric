@@ -159,7 +159,7 @@ public class RobolectricProcessorTest {
         .processedWith(new RobolectricProcessor(DEFAULT_OPTS))
         .compilesWithoutError()
         .and()
-        .generatesFiles(forResource("META-INF/services/org.robolectric.util.ShadowProvider"));
+        .generatesFiles(forResource("META-INF/services/org.robolectric.internal.ShadowProvider"));
   }
   
   @Test
