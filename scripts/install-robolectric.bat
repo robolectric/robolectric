@@ -11,10 +11,6 @@ call mvn clean install -DskipTests
 
 rem Build older shadow packages
 
-echo Installing shadows for API 15...
-cd "%PROJECT%\robolectric-shadows\shadows-core"
-call mvn clean velocity:velocity install -Pandroid-15
-
 echo Installing shadows for API 16...
 cd "%PROJECT%\robolectric-shadows\shadows-core"
 call mvn clean velocity:velocity install -Pandroid-16
