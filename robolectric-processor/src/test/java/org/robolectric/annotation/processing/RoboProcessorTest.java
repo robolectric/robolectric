@@ -5,9 +5,9 @@ import static com.google.testing.compile.JavaFileObjects.*;
 import static com.google.testing.compile.JavaSourceSubjectFactory.javaSource;
 import static com.google.testing.compile.JavaSourcesSubjectFactory.javaSources;
 import static org.robolectric.annotation.processing.RoboProcessor.PACKAGE_OPT;
-import static org.robolectric.annotation.processing.Utils.ROBO_SOURCE;
-import static org.robolectric.annotation.processing.Utils.SHADOW_PROVIDER_SOURCE;
-import static org.robolectric.annotation.processing.Utils.SHADOW_EXTRACTOR_SOURCE;
+import static org.robolectric.annotation.processing.validator.Utils.ROBO_SOURCE;
+import static org.robolectric.annotation.processing.validator.Utils.SHADOW_PROVIDER_SOURCE;
+import static org.robolectric.annotation.processing.validator.Utils.SHADOW_EXTRACTOR_SOURCE;
 
 import java.io.BufferedReader;
 import java.io.IOException;
