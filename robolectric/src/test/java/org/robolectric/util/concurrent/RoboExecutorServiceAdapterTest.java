@@ -1,4 +1,4 @@
-package org.robolectric.util;
+package org.robolectric.util.concurrent;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -7,6 +7,9 @@ import org.robolectric.ShadowsAdapter;
 import org.robolectric.TestRunners;
 import org.robolectric.shadows.CoreShadowsAdapter;
 import org.robolectric.shadows.ShadowApplication;
+import org.robolectric.util.Scheduler;
+import org.robolectric.util.Transcript;
+import org.robolectric.util.concurrent.RoboExecutorServiceAdapter;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -14,16 +17,16 @@ import java.util.concurrent.Future;
 import static org.junit.Assert.*;
 
 @RunWith(TestRunners.WithDefaults.class)
-public class RobolectricBackgroundExecutorServiceTest {
+public class RoboExecutorServiceAdapterTest {
   private Transcript transcript;
-  private RobolectricBackgroundExecutorService executorService;
+  private RoboExecutorServiceAdapter executorService;
   private Runnable runnable;
 
   @Before public void setUp() throws Exception {
     transcript = new Transcript();
     ShadowsAdapter shadowsAdapter = new CoreShadowsAdapter();
     Scheduler backgroundScheduler = shadowsAdapter.getBackgroundScheduler();
-    executorService = new RobolectricBackgroundExecutorService(shadowsAdapter);
+    executorService = new RoboExecutorServiceAdapter(shadowsAdapter);
 
     backgroundScheduler.pause();
 

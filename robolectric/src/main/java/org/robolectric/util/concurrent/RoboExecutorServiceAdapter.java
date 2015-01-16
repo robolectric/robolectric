@@ -1,4 +1,4 @@
-package org.robolectric.util;
+package org.robolectric.util.concurrent;
 
 import org.robolectric.ShadowsAdapter;
 
@@ -12,10 +12,10 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-public class RobolectricBackgroundExecutorService implements ExecutorService {
+public class RoboExecutorServiceAdapter implements ExecutorService {
   private final ShadowsAdapter shadowsAdapter;
 
-  public RobolectricBackgroundExecutorService(ShadowsAdapter shadowsAdapter) {
+  public RoboExecutorServiceAdapter(ShadowsAdapter shadowsAdapter) {
     this.shadowsAdapter = shadowsAdapter;
   }
 
