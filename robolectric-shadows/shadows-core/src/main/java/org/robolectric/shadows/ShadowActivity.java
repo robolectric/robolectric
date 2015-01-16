@@ -33,7 +33,6 @@ import static org.robolectric.internal.Shadow.invokeConstructor;
 
 @Implements(Activity.class)
 public class ShadowActivity extends ShadowContextThemeWrapper {
-  private static final Set<String> ALREADY_WARNED_ABOUT = new HashSet<String>();
 
   @RealObject
   protected Activity realActivity;
@@ -42,22 +41,18 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   private Intent resultIntent;
   private Activity parent;
   private boolean finishWasCalled;
-
-  private List<IntentForResult> startedActivitiesForResults = new ArrayList<IntentForResult>();
-
-  private Map<Intent, Integer> intentRequestCodeMap = new HashMap<Intent, Integer>();
+  private List<IntentForResult> startedActivitiesForResults = new ArrayList<>();
+  private Map<Intent, Integer> intentRequestCodeMap = new HashMap<>();
   private int requestedOrientation = -1;
   private View currentFocus;
   private Integer lastShownDialogId = null;
   private int pendingTransitionEnterAnimResId = -1;
   private int pendingTransitionExitAnimResId = -1;
   private Object lastNonConfigurationInstance;
-  private Map<Integer, Dialog> dialogForId = new HashMap<Integer, Dialog>();
-  private ArrayList<Cursor> managedCusors = new ArrayList<Cursor>();
-
+  private Map<Integer, Dialog> dialogForId = new HashMap<>();
+  private ArrayList<Cursor> managedCursors = new ArrayList<>();
   private int mDefaultKeyMode = Activity.DEFAULT_KEYS_DISABLE;
   private SpannableStringBuilder mDefaultKeySsb = null;
-  private boolean destroyed = false;
   private int streamType = -1;
   private boolean mIsTaskRoot = true;
   private Menu optionsMenu;
@@ -238,23 +233,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   @Implementation
   public void runOnUiThread(Runnable action) {
     ShadowLooper.getUiThreadScheduler().post(action);
-  }
-
-  /**
-   * Checks to see if {@code BroadcastListener}s are still registered.
-   *
-   * @throws RuntimeException if any listeners are still registered
-   * @see #assertNoBroadcastListenersRegistered()
-   */
-  @Implementation
-  public void onDestroy() {
-    assertNoBroadcastListenersRegistered();
-    this.destroyed = true;
-  }
-
-  @Implementation
-  public boolean isDestroyed() {
-    return destroyed;
   }
 
   @Implementation
@@ -559,16 +537,16 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
   @Implementation
   public void startManagingCursor(Cursor c) {
-    managedCusors.add(c);
+    managedCursors.add(c);
   }
 
   @Implementation
   public void stopManagingCursor(Cursor c) {
-    managedCusors.remove(c);
+    managedCursors.remove(c);
   }
 
   public List<Cursor> getManagedCursors() {
-    return managedCusors;
+    return managedCursors;
   }
 
   @Implementation
@@ -611,11 +589,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     public Object with(final Object... parameters) {
       try {
         return method.invoke(realActivity, parameters);
-      } catch (IllegalAccessException e) {
-        throw new RuntimeException(e);
-      } catch (IllegalArgumentException e) {
-        throw new RuntimeException(e);
-      } catch (InvocationTargetException e) {
+      } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
         throw new RuntimeException(e);
       }
     }
