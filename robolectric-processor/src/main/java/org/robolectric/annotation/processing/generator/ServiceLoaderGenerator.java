@@ -28,7 +28,7 @@ public class ServiceLoaderGenerator extends Generator {
 
   @Override
   public void generate(String shadowPackage) {
-    final String fileName = "org.robolectric.util.ShadowProvider";
+    final String fileName = "org.robolectric.internal.ShadowProvider";
     messager.printMessage(Diagnostic.Kind.NOTE, "Writing META-INF/services/" + fileName);
 
     try {

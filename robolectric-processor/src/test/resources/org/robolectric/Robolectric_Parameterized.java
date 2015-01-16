@@ -7,7 +7,7 @@ import org.robolectric.annotation.processing.objects.ParameterizedDummy;
 import org.robolectric.annotation.processing.shadows.ShadowDummy;
 import org.robolectric.annotation.processing.shadows.ShadowParameterizedDummy;
 import org.robolectric.internal.ShadowExtractor;
-import org.robolectric.util.ShadowProvider;
+import org.robolectric.internal.ShadowProvider;
 
 @Generated("org.robolectric.annotation.processing.RobolectricProcessor")
 @SuppressWarnings({"unchecked","deprecation"})

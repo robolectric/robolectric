@@ -2,10 +2,9 @@ package org.robolectric;
 
 import android.app.Activity;
 import android.app.Service;
-import org.robolectric.annotation.Implements;
 import org.robolectric.util.ActivityController;
 import org.robolectric.util.ServiceController;
-import org.robolectric.util.ShadowProvider;
+import org.robolectric.internal.ShadowProvider;
 
 import java.util.ServiceLoader;
 

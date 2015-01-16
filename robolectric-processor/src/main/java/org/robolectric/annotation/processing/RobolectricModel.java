@@ -267,7 +267,7 @@ public class RobolectricModel {
     // Other imports that the generated class needs
     imports.add("javax.annotation.Generated");
     imports.add("org.robolectric.internal.ShadowExtractor");
-    imports.add("org.robolectric.util.ShadowProvider");
+    imports.add("org.robolectric.internal.ShadowProvider");
   }
 
   public void addShadowType(TypeElement elem, TypeElement type) {
