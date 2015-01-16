@@ -13,11 +13,6 @@ import org.robolectric.util.ShadowProvider;
 @SuppressWarnings({"unchecked","deprecation"})
 public class Shadows implements ShadowProvider {
 
-  public static final Class<?>[] DEFAULT_SHADOW_CLASSES = {
-    ShadowClassNameOnly.class,
-    ShadowDummy.class,
-  };
-  
   public static ShadowClassNameOnly shadowOf(AnyObject actual) {
     return (ShadowClassNameOnly) ShadowExtractor.extract(actual);
   }
