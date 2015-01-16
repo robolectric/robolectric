@@ -14,8 +14,8 @@ import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResName;
 import org.robolectric.ShadowsAdapter.ShadowActivityAdapter;
 import org.robolectric.ShadowsAdapter.ShadowApplicationAdapter;
-import org.robolectric.internal.runtime.AndroidRuntimeAdapter;
-import org.robolectric.internal.runtime.AndroidRuntimeAdapterFactory;
+import org.robolectric.runtime.AndroidRuntimeAdapter;
+import org.robolectric.runtime.AndroidRuntimeAdapterFactory;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 public class ActivityController<T extends Activity> extends ComponentController<ActivityController<T>, T> {
