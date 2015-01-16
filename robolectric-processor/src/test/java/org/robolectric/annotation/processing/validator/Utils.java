@@ -1,4 +1,4 @@
-package org.robolectric.annotation.processing;
+package org.robolectric.annotation.processing.validator;
 
 import static com.google.testing.compile.JavaFileObjects.forResource;
 import static org.truth0.Truth.ASSERT;

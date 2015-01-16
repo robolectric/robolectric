@@ -1,6 +1,6 @@
-package org.robolectric.annotation.processing;
+package org.robolectric.annotation.processing.validator;
 
-import static org.robolectric.annotation.processing.SingleClassSubject.singleClass;
+import static org.robolectric.annotation.processing.validator.SingleClassSubject.singleClass;
 import static org.truth0.Truth.ASSERT;
 
 import org.junit.Test;

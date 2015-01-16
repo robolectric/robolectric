@@ -1,4 +1,6 @@
-package org.robolectric.annotation.processing;
+package org.robolectric.annotation.processing.validator;
+
+import org.robolectric.annotation.processing.RoboModel;
 
 import java.util.List;
 

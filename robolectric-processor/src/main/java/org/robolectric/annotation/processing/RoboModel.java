@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -41,6 +40,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.processing.validator.ImplementsValidator;
 
 /**
  * Model describing the Robolectric source file.
@@ -52,7 +52,7 @@ public class RoboModel {
   /** TypeElement representing the Robolectric.Anything interface, or null if the element isn't found. */
   final TypeElement ANYTHING;
   /** TypeMirror representing the Robolectric.Anything interface, or null if the element isn't found. */
-  final TypeMirror ANYTHING_MIRROR;
+  public final TypeMirror ANYTHING_MIRROR;
   /** TypeMirror representing the Object class. */
   final TypeMirror OBJECT_MIRROR;
   /** TypeElement representing the @Implements annotation. */
@@ -115,16 +115,14 @@ public class RoboModel {
     return null;
   }
 
-  static ElementVisitor<TypeElement,Void> typeVisitor = new SimpleElementVisitor6<TypeElement,Void>() {
+  public static ElementVisitor<TypeElement,Void> typeVisitor = new SimpleElementVisitor6<TypeElement,Void>() {
     @Override
     public TypeElement visitType(TypeElement e, Void p) {
       return e;
     }
   };
-  
 
-  static AnnotationValue getAnnotationValue(AnnotationMirror annotationMirror, String key) {
-    
+  public static AnnotationValue getAnnotationValue(AnnotationMirror annotationMirror, String key) {
     for (Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : annotationMirror.getElementValues().entrySet() ) {
       if (entry.getKey().getSimpleName().toString().equals(key)) {
         return entry.getValue();
@@ -133,14 +131,14 @@ public class RoboModel {
     return null;
   }
 
-  static AnnotationValueVisitor<TypeMirror,Void> valueVisitor = new SimpleAnnotationValueVisitor6<TypeMirror,Void>() {
+  public static AnnotationValueVisitor<TypeMirror,Void> valueVisitor = new SimpleAnnotationValueVisitor6<TypeMirror,Void>() {
     @Override
     public TypeMirror visitType(TypeMirror t, Void arg) {
       return t;
     }
   };
 
-  static AnnotationValueVisitor<String, Void> classNameVisitor = new SimpleAnnotationValueVisitor6<String, Void>() {
+  public static AnnotationValueVisitor<String, Void> classNameVisitor = new SimpleAnnotationValueVisitor6<String, Void>() {
     @Override
     public String visitString(String s, Void arg) {
       return s;
@@ -272,19 +270,19 @@ public class RoboModel {
     imports.add("org.robolectric.util.ShadowProvider");
   }
 
-  void addShadowType(TypeElement elem, TypeElement type) {
+  public void addShadowType(TypeElement elem, TypeElement type) {
     shadowTypes.put(elem, type);
   }
 
-  void addResetter(TypeElement parent, ExecutableElement elem) {
+  public void addResetter(TypeElement parent, ExecutableElement elem) {
     resetterMap.put(parent, elem);
   }
 
-  Set<Entry<TypeElement, ExecutableElement>> getResetters() {
+  public Set<Entry<TypeElement, ExecutableElement>> getResetters() {
     return resetterMap.entrySet();
   }
 
-  Set<String> getImports() {
+  public Set<String> getImports() {
     return imports;
   }
 
