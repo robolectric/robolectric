@@ -30,12 +30,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import static org.robolectric.Shadows.shadowOf;
 
@@ -56,7 +57,7 @@ public class ShadowContentResolver {
   private final Map<String, ArrayList<ContentProviderOperation>> contentProviderOperations = new HashMap<String, ArrayList<ContentProviderOperation>>();
   private ContentProviderResult[] contentProviderResults;
 
-  private final Map<Uri, ContentObserver> contentObservers = new HashMap<Uri,ContentObserver>();
+  private final Map<Uri, CopyOnWriteArraySet<ContentObserver>> contentObservers = new HashMap<Uri, CopyOnWriteArraySet<ContentObserver>>();
 
   private static final Map<String, Map<Account, Status>>  syncableAccounts =
       new HashMap<String, Map<Account, Status>>();
@@ -272,10 +273,13 @@ public class ShadowContentResolver {
   public void notifyChange(Uri uri, ContentObserver observer, boolean syncToNetwork) {
     notifiedUris.add(new NotifiedUri(uri, observer, syncToNetwork));
 
-    // TODO does not support multiple observers for a URI
-    ContentObserver obs = contentObservers.get(uri);
-    if ( obs != null && obs != observer  ) {
-      obs.dispatchChange( false, uri );
+    CopyOnWriteArraySet<ContentObserver> observers = contentObservers.get(uri);
+    if (observers != null) {
+      for (ContentObserver obs : observers) {
+        if ( obs != null && obs != observer  ) {
+          obs.dispatchChange( false, uri );
+        }
+      }
     }
     if ( observer != null && observer.deliverSelfNotifications() ) {
       observer.dispatchChange( true, uri );
@@ -499,8 +503,12 @@ public class ShadowContentResolver {
 
   @Implementation
   public void registerContentObserver( Uri uri, boolean notifyForDescendents, ContentObserver observer) {
-    // TODO does not support multiple observers for a URI
-    contentObservers.put( uri, observer );
+    CopyOnWriteArraySet<ContentObserver> observers = contentObservers.get(uri);
+    if (observers == null) {
+      observers = new CopyOnWriteArraySet<ContentObserver>();
+      contentObservers.put(uri, observers);
+    }
+    observers.add(observer);
   }
 
   @Implementation
@@ -510,14 +518,9 @@ public class ShadowContentResolver {
 
   @Implementation
   public void unregisterContentObserver( ContentObserver observer ) {
-    if ( observer != null && contentObservers.containsValue( observer ) ) {
-      Set<Entry<Uri,ContentObserver>> entries = contentObservers.entrySet();
-      for ( Entry<Uri,ContentObserver> e : entries ) {
-        ContentObserver other = e.getValue();
-        if ( observer == other || observer.equals(other) ) {
-              contentObservers.remove( e.getKey() );
-              return;
-        }
+    if ( observer != null ) {
+      for (CopyOnWriteArraySet<ContentObserver> observers : contentObservers.values()) {
+        observers.remove(observer);
       }
     }
   }
@@ -531,13 +534,29 @@ public class ShadowContentResolver {
   }
 
   /**
-   * Non-Android accessor.  Returns the content observer registered with
-   * the given URI, or null if none registered.
+   * Non-Android accessor.  Returns one (which one is unspecified) of the content observers registered with
+   * the given URI, or null if none is registered.
    * @param uri Given URI
    * @return The content observer
+   *
+   * @deprecated This method return random observer, {@link #getContentObservers} should be used instead.
    */
+  @Deprecated
   public ContentObserver getContentObserver( Uri uri ) {
-    return contentObservers.get(uri);
+    Collection<ContentObserver> observers = getContentObservers(uri);
+    return observers.isEmpty() ? null : observers.iterator().next();
+  }
+
+
+  /**
+   * Non-Android accessor. Returns the content observers registered with
+   * the given URI, will be empty if no observer is registered.
+   * @param uri Given URI
+   * @return The content observers
+   */
+  public Collection<ContentObserver> getContentObservers( Uri uri ) {
+    CopyOnWriteArraySet<ContentObserver> observers = contentObservers.get(uri);
+    return (observers == null) ? Collections.<ContentObserver>emptyList() : observers;
   }
 
   private static ContentProvider createAndInitialize(ContentProviderData providerData) {
