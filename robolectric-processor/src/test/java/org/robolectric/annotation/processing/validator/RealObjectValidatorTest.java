@@ -9,7 +9,7 @@ import static org.robolectric.annotation.processing.validator.SingleClassSubject
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
-import org.robolectric.annotation.processing.RoboProcessor;
+import org.robolectric.annotation.processing.RobolectricProcessor;
 
 public class RealObjectValidatorTest {
   @Test
@@ -103,7 +103,7 @@ public class RealObjectValidatorTest {
     .that(ImmutableList.of(
         SHADOW_EXTRACTOR_SOURCE,
         forResource("org/robolectric/annotation/processing/shadows/ShadowRealObjectWithCorrectType.java")))
-    .processedWith(new RoboProcessor())
+    .processedWith(new RobolectricProcessor())
       .compilesWithoutError();
   }
 
@@ -121,7 +121,7 @@ public class RealObjectValidatorTest {
       .that(ImmutableList.of(
           SHADOW_EXTRACTOR_SOURCE,
           forResource("org/robolectric/annotation/processing/shadows/ShadowRealObjectWithCorrectClassName.java")))
-      .processedWith(new RoboProcessor())
+      .processedWith(new RobolectricProcessor())
       .compilesWithoutError();
   }
   

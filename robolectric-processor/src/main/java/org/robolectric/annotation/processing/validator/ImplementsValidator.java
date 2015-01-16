@@ -1,6 +1,6 @@
 package org.robolectric.annotation.processing.validator;
 
-import org.robolectric.annotation.processing.RoboModel;
+import org.robolectric.annotation.processing.RobolectricModel;
 
 import java.util.List;
 
@@ -17,12 +17,12 @@ public class ImplementsValidator extends Validator {
 
   public static final String IMPLEMENTS_CLASS = "org.robolectric.annotation.Implements";
   
-  public ImplementsValidator(RoboModel model, ProcessingEnvironment env) {
+  public ImplementsValidator(RobolectricModel model, ProcessingEnvironment env) {
     super(model, env, IMPLEMENTS_CLASS);
   }
 
   private TypeElement getClassNameTypeElement(AnnotationValue cv) {
-    String className = RoboModel.classNameVisitor.visit(cv);
+    String className = RobolectricModel.classNameVisitor.visit(cv);
     TypeElement type = elements.getTypeElement(className.replace('$', '.'));
     
     if (type == null) {
@@ -36,8 +36,8 @@ public class ImplementsValidator extends Validator {
   public Void visitType(TypeElement elem, Element parent) {
     // Don't import nested classes because some of them have the same name.
     AnnotationMirror am = getCurrentAnnotation();
-    AnnotationValue av = RoboModel.getAnnotationValue(am, "value");
-    AnnotationValue cv = RoboModel.getAnnotationValue(am, "className");
+    AnnotationValue av = RobolectricModel.getAnnotationValue(am, "value");
+    AnnotationValue cv = RobolectricModel.getAnnotationValue(am, "className");
     TypeElement type = null;
     if (av == null) {
       if (cv == null) {
@@ -46,7 +46,7 @@ public class ImplementsValidator extends Validator {
       }
       type = getClassNameTypeElement(cv);
     } else {
-      TypeMirror value = RoboModel.valueVisitor.visit(av);
+      TypeMirror value = RobolectricModel.valueVisitor.visit(av);
       if (value == null) {
         return null;
       }
@@ -64,7 +64,7 @@ public class ImplementsValidator extends Validator {
       } else if (cv != null) {
         error("@Implements: cannot specify both <value> and <className> attributes");
       } else {
-        type = RoboModel.typeVisitor.visit(types.asElement(value));
+        type = RobolectricModel.typeVisitor.visit(types.asElement(value));
       }
     }
     if (type == null) {

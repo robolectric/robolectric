@@ -1,6 +1,6 @@
 package org.robolectric.annotation.processing.validator;
 
-import org.robolectric.annotation.processing.RoboModel;
+import org.robolectric.annotation.processing.RobolectricModel;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -13,7 +13,7 @@ public abstract class FoundOnImplementsValidator extends Validator {
 
   protected AnnotationMirror imp;
   
-  public FoundOnImplementsValidator(RoboModel model,
+  public FoundOnImplementsValidator(RobolectricModel model,
       ProcessingEnvironment env,
       String annotationType) {
     super(model, env, annotationType);
@@ -30,7 +30,7 @@ public abstract class FoundOnImplementsValidator extends Validator {
   
   @Override
   final public Void visitVariable(VariableElement elem, Element parent) {
-    return visitVariable(elem, RoboModel.typeVisitor.visit(parent));
+    return visitVariable(elem, RobolectricModel.typeVisitor.visit(parent));
   }
   
   public Void visitVariable(VariableElement elem, TypeElement parent) {
@@ -39,7 +39,7 @@ public abstract class FoundOnImplementsValidator extends Validator {
 
   @Override
   final public Void visitExecutable(ExecutableElement elem, Element parent) {
-    return visitExecutable(elem, RoboModel.typeVisitor.visit(parent));
+    return visitExecutable(elem, RobolectricModel.typeVisitor.visit(parent));
   }
 
   public Void visitExecutable(ExecutableElement elem, TypeElement parent) {
