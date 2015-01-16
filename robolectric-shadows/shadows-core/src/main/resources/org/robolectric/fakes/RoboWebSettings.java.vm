@@ -40,6 +40,7 @@ public class RoboWebSettings extends WebSettings {
   private int cacheMode;
   private long appCacheMaxSize;
   private int textZoom = 100;
+  private boolean displayZoomControls;
   private WebSettings.LayoutAlgorithm layoutAlgorithm = WebSettings.LayoutAlgorithm.NARROW_COLUMNS;
 
   public RoboWebSettings() {
@@ -268,14 +269,17 @@ public class RoboWebSettings extends WebSettings {
 
 
 #if ($apiLevel >= 21)
-  @Override
-  public void setMixedContentMode(int i) {
+  // API 21
+  private int mixedContentMode;
 
+  @Override
+  public void setMixedContentMode(int mixedContentMode) {
+    this.mixedContentMode = mixedContentMode;
   }
 
   @Override
   public int getMixedContentMode() {
-    return 0;
+    return mixedContentMode;
   }
 
   @Override
@@ -287,6 +291,7 @@ public class RoboWebSettings extends WebSettings {
   public boolean getVideoOverlayForEmbeddedEncryptedVideoEnabled() {
     return false;
   }
+  // End API 21
 #end
 
   @Override
@@ -377,5 +382,15 @@ public class RoboWebSettings extends WebSettings {
   @Override
   public synchronized void setLayoutAlgorithm(WebSettings.LayoutAlgorithm algorithm) {
     this.layoutAlgorithm = algorithm;
+  }
+
+  @Override
+  public void setDisplayZoomControls(boolean enabled) {
+    displayZoomControls = enabled;
+  }
+
+  @Override
+  public boolean getDisplayZoomControls() {
+    return displayZoomControls;
   }
 }
