@@ -6,6 +6,7 @@ import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.content.pm.ProviderInfo;
 import android.content.pm.ResolveInfo;
 import android.graphics.drawable.Drawable;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -104,6 +106,7 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
   private Map<IntentFilter, ComponentName> preferredActivities = new LinkedHashMap<IntentFilter, ComponentName>();
   private Map<Pair<String, Integer>, Drawable> drawables = new LinkedHashMap<Pair<String, Integer>, Drawable>();
   private boolean queryIntentImplicitly = false;
+  private HashMap<String, Integer> applicationEnabledSettingMap = new HashMap<>();
 
   @Override
   public PackageInfo getPackageInfo(String packageName, int flags) throws NameNotFoundException {
@@ -354,6 +357,7 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
   @Override
   public void addPackage(PackageInfo packageInfo) {
     packageInfos.put(packageInfo.packageName, packageInfo);
+    applicationEnabledSettingMap.put(packageInfo.packageName, PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
   }
 
   @Override
@@ -573,7 +577,23 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
     this.queryIntentImplicitly = queryIntentImplicitly;
   }
 
-  /***
+  @Override
+  public void setApplicationEnabledSetting(String packageName, int newState, int flags) {
+    applicationEnabledSettingMap.put(packageName, newState);
+  }
+
+  @Override
+  public int getApplicationEnabledSetting(String packageName) {
+      try {
+          PackageInfo packageInfo = getPackageInfo(packageName, -1);
+      } catch (NameNotFoundException e) {
+          throw new IllegalArgumentException(e);
+      }
+
+      return applicationEnabledSettingMap.get(packageName);
+  }
+
+    /***
    * Goes through the meta data and puts each value in to a
    * bundle as the correct type.
    *
