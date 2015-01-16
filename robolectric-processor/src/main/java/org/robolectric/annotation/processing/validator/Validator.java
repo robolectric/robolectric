@@ -1,6 +1,6 @@
 package org.robolectric.annotation.processing.validator;
 
-import org.robolectric.annotation.processing.RoboModel;
+import org.robolectric.annotation.processing.RobolectricModel;
 
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -19,7 +19,7 @@ import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
 
 public class Validator implements ElementVisitor<Void, Element> {
-  final protected RoboModel model;
+  final protected RobolectricModel model;
   final protected Elements elements;
   final protected Types types;
   final protected Messager messager;
@@ -55,7 +55,7 @@ public class Validator implements ElementVisitor<Void, Element> {
   protected Element currentElement;
   protected AnnotationMirror currentAnnotation;
 
-  public Validator(RoboModel model, ProcessingEnvironment env, String annotationType) {
+  public Validator(RobolectricModel model, ProcessingEnvironment env, String annotationType) {
     this.model = model;
     elements = env.getElementUtils();
     types = env.getTypeUtils();

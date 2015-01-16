@@ -29,13 +29,13 @@ import java.util.Set;
 /**
  * Annotation processor entry point for Robolectric annotations.
  */
-@SupportedOptions(RoboProcessor.PACKAGE_OPT)
+@SupportedOptions(RobolectricProcessor.PACKAGE_OPT)
 @SupportedAnnotationTypes("org.robolectric.annotation.*")
 @SupportedSourceVersion(SourceVersion.RELEASE_7)
-public class RoboProcessor extends AbstractProcessor {
+public class RobolectricProcessor extends AbstractProcessor {
   static final String PACKAGE_OPT = "org.robolectric.annotation.processing.shadowPackage";
 
-  private RoboModel model;
+  private RobolectricModel model;
   private String shadowPackage;
   private Map<String, String> options;
   private boolean generated = false;
@@ -45,7 +45,7 @@ public class RoboProcessor extends AbstractProcessor {
   /**
    * Default constructor.
    */
-  public RoboProcessor() {
+  public RobolectricProcessor() {
   }
 
   /**
@@ -56,7 +56,7 @@ public class RoboProcessor extends AbstractProcessor {
    * @param options simulated options that would ordinarily
    *                be passed in the {@link ProcessingEnvironment}.
    */
-  RoboProcessor(Map<String, String> options) {
+  RobolectricProcessor(Map<String, String> options) {
     processOptions(options);
   }
 
@@ -64,7 +64,7 @@ public class RoboProcessor extends AbstractProcessor {
   public void init(ProcessingEnvironment environment) {
     super.init(environment);
     processOptions(environment.getOptions());
-    model = new RoboModel(environment.getElementUtils(), environment.getTypeUtils());
+    model = new RobolectricModel(environment.getElementUtils(), environment.getTypeUtils());
 
     Messager messager = processingEnv.getMessager();
     messager.printMessage(Kind.NOTE, "Initialising Robolectric annotation processor");

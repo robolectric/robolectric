@@ -45,7 +45,7 @@ import org.robolectric.annotation.processing.validator.ImplementsValidator;
 /**
  * Model describing the Robolectric source file.
  */
-public class RoboModel {
+public class RobolectricModel {
   private static FQComparator fqComparator = new FQComparator();
   private static SimpleComparator comparator = new SimpleComparator();
   
@@ -87,7 +87,7 @@ public class RoboModel {
     }
   }
 
-  public RoboModel(Elements elements, Types types) {
+  public RobolectricModel(Elements elements, Types types) {
     this.elements = elements;
     this.types = types;
     ANYTHING   = elements.getTypeElement("org.robolectric.Robolectric.Anything");
@@ -100,7 +100,7 @@ public class RoboModel {
     notObject = new Predicate<TypeMirror>() {
       @Override
       public boolean apply(TypeMirror t) {
-        return !RoboModel.this.types.isSameType(t, OBJECT_MIRROR);
+        return !RobolectricModel.this.types.isSameType(t, OBJECT_MIRROR);
       }
     };
   }

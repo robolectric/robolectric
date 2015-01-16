@@ -1,6 +1,6 @@
 package org.robolectric.annotation.processing.generator;
 
-import org.robolectric.annotation.processing.RoboModel;
+import org.robolectric.annotation.processing.RobolectricModel;
 
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.Messager;
@@ -18,9 +18,9 @@ import java.io.PrintWriter;
 public class ServiceLoaderGenerator extends Generator {
   private final Filer filer;
   private final Messager messager;
-  private final RoboModel model;
+  private final RobolectricModel model;
 
-  public ServiceLoaderGenerator(RoboModel model, ProcessingEnvironment environment) {
+  public ServiceLoaderGenerator(RobolectricModel model, ProcessingEnvironment environment) {
     this.filer = environment.getFiler();
     this.messager = environment.getMessager();
     this.model = model;

@@ -1,6 +1,6 @@
 package org.robolectric.annotation.processing.validator;
 
-import org.robolectric.annotation.processing.RoboModel;
+import org.robolectric.annotation.processing.RobolectricModel;
 
 import java.util.List;
 import java.util.Set;
@@ -12,7 +12,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
 public class ResetterValidator extends FoundOnImplementsValidator {
-  public ResetterValidator(RoboModel model, ProcessingEnvironment env) {
+  public ResetterValidator(RobolectricModel model, ProcessingEnvironment env) {
     super(model, env, "org.robolectric.annotation.Resetter");
   }
 

@@ -1,6 +1,6 @@
 package org.robolectric.annotation.processing.validator;
 
-import org.robolectric.annotation.processing.RoboModel;
+import org.robolectric.annotation.processing.RobolectricModel;
 
 import java.util.List;
 
@@ -16,7 +16,7 @@ import javax.tools.Diagnostic.Kind;
 
 public class RealObjectValidator extends FoundOnImplementsValidator {
 
-  public RealObjectValidator(RoboModel model, ProcessingEnvironment env) {
+  public RealObjectValidator(RobolectricModel model, ProcessingEnvironment env) {
     super(model, env, "org.robolectric.annotation.RealObject");
   }
 

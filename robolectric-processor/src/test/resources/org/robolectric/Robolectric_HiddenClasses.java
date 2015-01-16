@@ -13,7 +13,7 @@ import org.robolectric.annotation.processing.shadows.ShadowPrivate;
 import org.robolectric.internal.ShadowExtractor;
 import org.robolectric.util.ShadowProvider;
 
-@Generated("org.robolectric.annotation.processing.RoboProcessor")
+@Generated("org.robolectric.annotation.processing.RobolectricProcessor")
 @SuppressWarnings({"unchecked","deprecation"})
 public class Shadows implements ShadowProvider {
 

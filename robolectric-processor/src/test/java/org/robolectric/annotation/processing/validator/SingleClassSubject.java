@@ -6,7 +6,7 @@ import com.google.testing.compile.CompileTester.LineClause;
 import com.google.testing.compile.CompileTester.SuccessfulCompilationClause;
 import com.google.testing.compile.CompileTester.UnsuccessfulCompilationClause;
 import com.google.testing.compile.JavaFileObjects;
-import org.robolectric.annotation.processing.RoboProcessor;
+import org.robolectric.annotation.processing.RobolectricProcessor;
 import org.truth0.FailureStrategy;
 import org.truth0.subjects.Subject;
 import org.truth0.subjects.SubjectFactory;
@@ -38,7 +38,7 @@ public final class SingleClassSubject extends Subject<SingleClassSubject, String
     source = JavaFileObjects.forResource(Utils.toResourcePath(subject));
     tester = ASSERT.about(javaSources())
       .that(ImmutableList.of(source, Utils.ROBO_SOURCE, Utils.SHADOW_EXTRACTOR_SOURCE))
-      .processedWith(new RoboProcessor());
+      .processedWith(new RobolectricProcessor());
   }
 
   public SuccessfulCompilationClause compilesWithoutError() {
