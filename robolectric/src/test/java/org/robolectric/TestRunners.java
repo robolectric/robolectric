@@ -2,10 +2,10 @@ package org.robolectric;
 
 import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.bytecode.AndroidTranslatorClassInstrumentedTest;
-import org.robolectric.internal.bytecode.ClassInfo;
-import org.robolectric.internal.bytecode.Setup;
-import org.robolectric.internal.bytecode.ShadowMap;
+import org.robolectric.bytecode.AndroidTranslatorClassInstrumentedTest;
+import org.robolectric.bytecode.ClassInfo;
+import org.robolectric.bytecode.Setup;
+import org.robolectric.bytecode.ShadowMap;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.FsFile;

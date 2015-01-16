@@ -8,11 +8,10 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import org.robolectric.*;
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.fakes.RoboInstrumentation;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResBunch;
 import org.robolectric.res.ResourceLoader;
-import org.robolectric.res.builder.DefaultPackageManager;
+import org.robolectric.res.builder.DefaultRobolectricPackageManager;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.ShadowsAdapter;
 
@@ -60,7 +59,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   @Override
   public void setUpApplicationState(Method method, TestLifecycle testLifecycle, ResourceLoader systemResourceLoader, AndroidManifest appManifest, Config config) {
     RuntimeEnvironment.application = null;
-    RuntimeEnvironment.setRobolectricPackageManager(new DefaultPackageManager(shadowsAdapter));
+    RuntimeEnvironment.setRobolectricPackageManager(new DefaultRobolectricPackageManager(shadowsAdapter));
     RuntimeEnvironment.getRobolectricPackageManager().addPackage(DEFAULT_PACKAGE_NAME);
     ResourceLoader resourceLoader;
     if (appManifest != null) {

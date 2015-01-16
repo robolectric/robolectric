@@ -2,9 +2,9 @@ package org.robolectric.util;
 
 import android.content.res.Resources;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.internal.dependency.MavenDependencyResolver;
+import org.robolectric.MavenDependencyResolver;
 import org.robolectric.R;
-import org.robolectric.internal.SdkConfig;
+import org.robolectric.SdkConfig;
 import org.robolectric.res.Attribute;
 import org.robolectric.res.EmptyResourceLoader;
 import org.robolectric.res.Fs;
@@ -21,6 +21,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.net.URL;
 import java.util.Collection;
 
 import static org.junit.Assert.assertTrue;

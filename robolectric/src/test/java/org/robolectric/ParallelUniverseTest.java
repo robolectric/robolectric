@@ -8,8 +8,6 @@ import org.robolectric.annotation.Config;
 import android.content.res.Resources;
 import android.content.res.Configuration;
 import org.robolectric.internal.ParallelUniverse;
-import org.robolectric.internal.SdkConfig;
-
 import static org.mockito.Mockito.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
