@@ -58,18 +58,6 @@ public class ShadowProviderGenerator extends Generator {
       writer.println("public class " + GEN_CLASS + " implements ShadowProvider {");
       writer.println();
 
-      writer.print("  public static final Class<?>[] DEFAULT_SHADOW_CLASSES = {");
-      boolean firstIteration = true;
-      for (TypeElement shadow : model.getVisibleShadowTypes().keySet()) {
-        if (firstIteration) {
-          firstIteration = false;
-        } else {
-          writer.print(",");
-        }
-        writer.print("\n    " + model.getReferentFor(shadow) + ".class");
-      }
-      writer.println("\n  };\n");
-
       for (Map.Entry<TypeElement, TypeElement> entry : model.getShadowOfMap().entrySet()) {
         final TypeElement actualType = entry.getValue();
         if (!actualType.getModifiers().contains(Modifier.PUBLIC)) {

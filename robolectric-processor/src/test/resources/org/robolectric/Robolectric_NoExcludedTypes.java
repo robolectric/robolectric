@@ -12,9 +12,6 @@ import org.robolectric.util.ShadowProvider;
 @SuppressWarnings({"unchecked","deprecation"})
 public class Shadows implements ShadowProvider {
 
-  public static final Class<?>[] DEFAULT_SHADOW_CLASSES = {
-  };
-
   public void reset() {
   }
 }
