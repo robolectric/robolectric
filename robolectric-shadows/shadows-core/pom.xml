@@ -249,19 +249,6 @@
 
   <profiles>
     <profile>
-      <id>android-15</id>
-        <dependencies>
-            <dependency>
-                <groupId>org.robolectric</groupId>
-                <artifactId>android-all</artifactId>
-                <version>4.1.2_r1-robolectric-0</version>
-            </dependency>
-        </dependencies>
-      <properties>
-        <api>15</api>
-      </properties>
-    </profile>
-    <profile>
       <id>android-16</id>
         <dependencies>
             <dependency>
