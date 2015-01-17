@@ -1,14 +1,15 @@
 package org.robolectric.shadows;
 
 import android.app.Application;
+import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 
 import java.util.concurrent.atomic.AtomicReference;
@@ -151,10 +152,11 @@ public class ShadowLooperTest {
     assertThat(RuntimeEnvironment.application.getMainLooper()).isSameAs(mainLooper);
 
     ShadowLooper.resetThreadLoopers();
-    RuntimeEnvironment.application = new Application();
+    Application application = new Application();
+    ReflectionHelpers.callInstanceMethod(application, "attach", ReflectionHelpers.ClassParameter.from(Context.class, RuntimeEnvironment.application.getBaseContext()));
 
     assertThat(Looper.getMainLooper()).isSameAs(mainLooper);
-    assertThat(RuntimeEnvironment.application.getMainLooper()).isSameAs(mainLooper);
+    assertThat(application.getMainLooper()).isSameAs(mainLooper);
     assertThat(shadowOf(mainLooper).getScheduler()).isNotSameAs(scheduler);
     assertThat(shadowOf(mainLooper).hasQuit()).isFalse();
   }
