@@ -1,68 +1,48 @@
 package org.robolectric.internal.bytecode;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import java.lang.annotation.Annotation;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class SetupTest {
-  private Setup setup;
-
-  @Before
-  public void setUp() throws Exception {
-    setup = new Setup();
-  }
-
-  @Test
-  public void shouldInstrumentDefaultRequestDirector() throws Exception {
-    assertTrue(setup.shouldInstrument(wrap("org.apache.http.impl.client.DefaultRequestDirector")));
-  }
-
-  @Test
-  public void shouldInstrumentGoogleMapsClasses() throws Exception {
-    assertTrue(setup.shouldInstrument(wrap("com.google.android.maps.SomeMapsClass")));
-  }
-
-  @Test
-  public void shouldInstrumentGooglePlayServicesClasses() throws Exception {
-    assertTrue(setup.shouldInstrument(wrap("com.google.android.gms.auth.GoogleAuthUtil")));
-  }
+  private final Setup setup = new Setup();
 
   @Test
   public void shouldNotInstrumentAndroidAppClasses() throws Exception {
-    assertFalse(setup.shouldInstrument(wrap("com.google.android.apps.Foo")));
+    assertThat(setup.shouldInstrument(wrap("com.google.android.apps.Foo"))).isFalse();
   }
 
   @Test
   public void shouldInstrumentDalvikClasses() {
-    assertTrue(setup.shouldInstrument(wrap("dalvik.system.DexFile")));
+    assertThat(setup.shouldInstrument(wrap("dalvik.system.DexFile"))).isTrue();
   }
 
   @Test
   public void shouldNotInstrumentCoreJdkClasses() throws Exception {
-    assertFalse(setup.shouldInstrument(wrap("java.lang.Object")));
-    assertFalse(setup.shouldInstrument(wrap("java.lang.String")));
+    assertThat(setup.shouldInstrument(wrap("java.lang.Object"))).isFalse();
+    assertThat(setup.shouldInstrument(wrap("java.lang.String"))).isFalse();
   }
 
   @Test
   public void shouldInstrumentAndroidCoreClasses() throws Exception {
-    assertTrue(setup.shouldInstrument(wrap("android.content.Intent")));
-    assertTrue(setup.shouldInstrument(wrap("android.and.now.for.something.completely.different")));
+    assertThat(setup.shouldInstrument(wrap("android.content.Intent"))).isTrue();
+    assertThat(setup.shouldInstrument(wrap("android.and.now.for.something.completely.different"))).isTrue();
   }
 
   @Test
   public void shouldNotAcquireRClasses() throws Exception {
-    assertTrue(setup.shouldAcquire("com.whatever.Rfoo"));
-    assertTrue(setup.shouldAcquire("com.whatever.fooR"));
-    assertFalse(setup.shouldAcquire("com.whatever.R"));
-    assertFalse(setup.shouldAcquire("com.whatever.R$anything"));
-    assertTrue(setup.shouldAcquire("com.whatever.R$anything$else"));
+    assertThat(setup.shouldAcquire("com.whatever.Rfoo")).isTrue();
+    assertThat(setup.shouldAcquire("com.whatever.fooR")).isTrue();
+    assertThat(setup.shouldAcquire("com.whatever.R")).isFalse();
+    assertThat(setup.shouldAcquire("com.whatever.R$anything")).isFalse();
+    assertThat(setup.shouldAcquire("com.whatever.R$anything$else")).isTrue();
   }
 
-  ClassInfo wrap(final String className) {
+  private ClassInfo wrap(final String className) {
     return new ClassInfo() {
       @Override public String getName() {
         return className;

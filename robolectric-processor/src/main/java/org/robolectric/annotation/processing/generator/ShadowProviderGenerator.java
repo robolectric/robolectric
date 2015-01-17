@@ -1,5 +1,6 @@
 package org.robolectric.annotation.processing.generator;
 
+import com.google.common.base.Joiner;
 import org.robolectric.annotation.processing.RobolectricModel;
 import org.robolectric.annotation.processing.RobolectricProcessor;
 
@@ -98,10 +99,16 @@ public class ShadowProviderGenerator extends Generator {
         writer.println("  }");
         writer.println();
       }
+
       writer.println("  public void reset() {");
       for (Map.Entry<TypeElement, ExecutableElement> entry : model.getResetters()) {
         writer.println("    " + model.getReferentFor(entry.getKey()) + "." + entry.getValue().getSimpleName() + "();");
       }
+      writer.println("  }");
+      writer.println();
+
+      writer.println("  public String[] getInstrumentedPackageNames() {");
+      writer.println("    return new String[] {" + Joiner.on(",").join(model.getShadowedPackages()) + "};");
       writer.println("  }");
 
       writer.println('}');

@@ -9,4 +9,11 @@ public interface ShadowProvider {
    * Reset the static state of all shadows provided by this package.
    */
   void reset();
+
+  /**
+   * Array of Java package names that are shadowed by this package.
+   *
+   * @return  Array of Java package names.
+   */
+  String[] getInstrumentedPackageNames();
 }
