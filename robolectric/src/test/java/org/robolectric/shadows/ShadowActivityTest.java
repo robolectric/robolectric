@@ -216,7 +216,7 @@ public class ShadowActivityTest {
   @Test
   public void onContentChangedShouldBeCalledAfterContentViewIsSet() throws RuntimeException {
     final Transcript transcript = new Transcript();
-    ActivityWithContentChangedTranscript customActivity = buildActivity(ActivityWithContentChangedTranscript.class).create().get();
+    ActivityWithContentChangedTranscript customActivity = Robolectric.setupActivity(ActivityWithContentChangedTranscript.class);
     customActivity.setTranscript(transcript);
     customActivity.setContentView(R.layout.main);
     transcript.assertEventsSoFar("onContentChanged was called; title is \"Main Layout\"");
@@ -224,11 +224,7 @@ public class ShadowActivityTest {
 
   @Test
   public void shouldRetrievePackageNameFromTheManifest() throws Exception {
-    AndroidManifest appManifest = newConfigWith("com.wacka.wa", "");
-    RuntimeEnvironment.application = new DefaultTestLifecycle().createApplication(null, appManifest, null);
-    shadowOf(application).bind(appManifest, null);
-
-    assertThat("com.wacka.wa").isEqualTo(new Activity().getPackageName());
+    assertThat(Robolectric.setupActivity(Activity.class).getPackageName()).isEqualTo(RuntimeEnvironment.application.getPackageName());
   }
 
   @Test
