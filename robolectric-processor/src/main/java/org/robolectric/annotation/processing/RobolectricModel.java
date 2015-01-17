@@ -4,8 +4,10 @@ import static com.google.common.collect.Lists.*;
 import static com.google.common.collect.Maps.*;
 import static com.google.common.collect.Sets.*;
 
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -302,6 +304,14 @@ public class RobolectricModel {
         return !Objects.equal(ANYTHING, entry.getValue());
       }
     });
+  }
+
+  public Collection<String> getShadowedPackages() {
+    Set<String> packages = new HashSet<>();
+    for (TypeElement element : getVisibleShadowTypes().values()) {
+      packages.add("\"" + elements.getPackageOf(element).toString() + "\"");
+    }
+    return packages;
   }
 
   private Predicate<TypeMirror> notObject;

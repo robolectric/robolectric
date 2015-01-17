@@ -1,6 +1,7 @@
 package org.robolectric.internal.bytecode;
 
 import android.R;
+import org.robolectric.internal.ShadowProvider;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.internal.dependency.DependencyJar;
 import org.robolectric.RobolectricTestRunner;
@@ -28,19 +29,20 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.Set;
 
 import static java.util.Arrays.asList;
 
+
 public class Setup {
-  public static final List<String> CLASSES_TO_ALWAYS_DELEGATE = stringify(
+  private static final List<String> INSTRUMENTED_PACKAGES = new ArrayList<>();
+  private static final List<String> CLASSES_TO_ALWAYS_DELEGATE = stringify(
       TestLifecycle.class,
-      RealObject.class,
       ShadowWrangler.class,
       AndroidManifest.class,
       R.class,
-
-      org.robolectric.internal.bytecode.AsmInstrumentingClassLoader.class,
+      AsmInstrumentingClassLoader.class,
       SdkEnvironment.class,
       SdkConfig.class,
       RobolectricTestRunner.class,
@@ -49,46 +51,44 @@ public class Setup {
       ResourceLoader.class,
       ClassHandler.class,
       ClassHandler.Plan.class,
+      RealObject.class,
       Implements.class,
       Implementation.class,
       Instrument.class,
       DoNotInstrument.class,
       Config.class,
       Transcript.class,
-      org.robolectric.internal.bytecode.DirectObjectMarker.class,
+      DirectObjectMarker.class,
       DependencyJar.class,
       ParallelUniverseInterface.class
   );
 
-  private static List<String> stringify(Class... classes) {
-    ArrayList<String> strings = new ArrayList<>();
-    for (Class aClass : classes) {
-      strings.add(aClass.getName());
+  static {
+    INSTRUMENTED_PACKAGES.add("dalvik.");
+    INSTRUMENTED_PACKAGES.add("libcore.");
+    INSTRUMENTED_PACKAGES.add("android.");
+    INSTRUMENTED_PACKAGES.add("com.android.internal.");
+    for (ShadowProvider provider : ServiceLoader.load(ShadowProvider.class)) {
+      Collections.addAll(INSTRUMENTED_PACKAGES, provider.getInstrumentedPackageNames());
     }
-    return strings;
   }
 
+  /**
+   * Determine if {@link AsmInstrumentingClassLoader} should instrument a given class.
+   *
+   * @param   classInfo The class to check.
+   * @return  True if the class should be instrumented.
+   */
   public boolean shouldInstrument(ClassInfo classInfo) {
-    if (classInfo.isInterface() || classInfo.isAnnotation() || classInfo.hasAnnotation(DoNotInstrument.class)) {
-      return false;
-    }
-
-    // allow explicit control with @Instrument, mostly for tests
-    return classInfo.hasAnnotation(Instrument.class) || isFromAndroidSdk(classInfo);
+    return !(classInfo.isInterface() || classInfo.isAnnotation() || classInfo.hasAnnotation(DoNotInstrument.class)) && (isFromAndroidSdk(classInfo) || classInfo.hasAnnotation(Instrument.class));
   }
 
-  public boolean isFromAndroidSdk(ClassInfo classInfo) {
-    String className = classInfo.getName();
-    return className.startsWith("android.")
-        || className.startsWith("libcore.")
-        || className.startsWith("dalvik.")
-        || className.startsWith("com.android.internal.")
-        || className.startsWith("com.google.android.maps.")
-        || className.startsWith("com.google.android.gms.")
-        || className.startsWith("dalvik.system.")
-        || className.startsWith("org.apache.http.impl.client.DefaultRequestDirector");
-  }
-
+  /**
+   * Determine if {@link AsmInstrumentingClassLoader} should load a given class.
+   *
+   * @param   name The fully-qualified class name.
+   * @return  True if the class should be loaded.
+   */
   public boolean shouldAcquire(String name) {
     // the org.robolectric.res and org.robolectric.manifest packages live in the base classloader, but not its tests; yuck.
     int lastDot = name.lastIndexOf('.');
@@ -158,6 +158,27 @@ public class Setup {
     return classInfo.getName().startsWith("com.google.android.maps.");
   }
 
+  private static List<String> stringify(Class... classes) {
+    ArrayList<String> strings = new ArrayList<>();
+    for (Class aClass : classes) {
+      strings.add(aClass.getName());
+    }
+    return strings;
+  }
+
+  private boolean isFromAndroidSdk(ClassInfo classInfo) {
+    final String className = classInfo.getName();
+    for (String instrumentedPackage : INSTRUMENTED_PACKAGES) {
+      if (className.startsWith(instrumentedPackage)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Reference to a specific method on a class.
+   */
   public static class MethodRef {
     public final String className;
     public final String methodName;

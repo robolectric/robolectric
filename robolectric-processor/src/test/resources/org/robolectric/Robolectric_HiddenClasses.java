@@ -29,4 +29,8 @@ public class Shadows implements ShadowProvider {
     ShadowDummy.resetter_method();
     ShadowPrivate.resetMethod();
   }
+
+  public String[] getInstrumentedPackageNames() {
+    return new String[] {"org.robolectric.annotation.processing.objects"};
+  }
 }
