@@ -23,13 +23,11 @@ public class ShadowLocaleData {
     if (locale == null) {
       locale = Locale.getDefault();
     }
-    System.out.println("Requested locale: " + locale.getDisplayName());
     setEnUsLocaleData(localeData);
     return localeData;
   }
 
   private static void setEnUsLocaleData(LocaleData localeData) {
-    System.out.println("Using LocaleData for (best match): " + Locale.US.getDisplayName());
     localeData.amPm = new String[]{"AM", "PM"};
     localeData.eras = new String[]{"BC", "AD"};
 
