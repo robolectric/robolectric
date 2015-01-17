@@ -554,12 +554,25 @@ public class DefaultRobolectricPackageManagerTest {
 
   @Test
   @Config(manifest = "src/test/resources/TestAndroidManifest.xml")
+  public void testSetApplicationEnabledSetting() {
+    PackageManager packageManager = RuntimeEnvironment.getPackageManager();
+
+    assertThat(packageManager.getApplicationEnabledSetting("org.robolectric")).isEqualTo(PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
+
+    packageManager.setApplicationEnabledSetting("org.robolectric", PackageManager.COMPONENT_ENABLED_STATE_DISABLED, 0);
+
+    assertThat(packageManager.getApplicationEnabledSetting("org.robolectric")).isEqualTo(PackageManager.COMPONENT_ENABLED_STATE_DISABLED);
+  }
+
+  @Test
+  @Config(manifest = "src/test/resources/TestAndroidManifest.xml")
   public void shouldAssignLabelResFromTheManifest() throws Exception {
     rpm.addManifest(ShadowApplication.getInstance().getAppManifest(), ShadowApplication.getInstance().getResourceLoader());
     ApplicationInfo applicationInfo = rpm.getApplicationInfo("org.robolectric", 0);
     String appName = ShadowApplication.getInstance().getApplicationContext().getString(applicationInfo.labelRes);
     assertThat(appName).isEqualTo("Testing App");
   }
+
   /////////////////////////////
 
   public AndroidManifest newConfigWith(String contents) throws IOException {
