@@ -115,4 +115,10 @@ public class ShadowPowerManagerTest {
     shadowPowerManager.setIsInteractive(false);
     assertThat(powerManager.isInteractive()).isFalse();
   }
+
+  public void isPowerSaveMode_shouldGetAndSet() {
+    assertThat(powerManager.isPowerSaveMode()).isFalse();
+    shadowPowerManager.setIsPowerSaveMode(true);
+    assertThat(powerManager.isPowerSaveMode()).isTrue();
+  }
 }

@@ -21,6 +21,7 @@ import static org.robolectric.shadows.ShadowApplication.getInstance;
 public class ShadowPowerManager {
   private boolean isScreenOn = true;
   private boolean isInteractive = true;
+  private boolean isPowerSaveMode = false;
 
   @Implementation
   public PowerManager.WakeLock newWakeLock(int flags, String tag) {
@@ -46,6 +47,15 @@ public class ShadowPowerManager {
 
   public void setIsInteractive(boolean interactive) {
     isInteractive = interactive;
+  }
+
+  @Implementation
+  public boolean isPowerSaveMode() {
+    return isPowerSaveMode;
+  }
+
+  public void setIsPowerSaveMode(boolean powerSaveMode) {
+    isPowerSaveMode = powerSaveMode;
   }
 #end
 
