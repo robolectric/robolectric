@@ -40,7 +40,7 @@ public class DefaultTestLifecycle implements TestLifecycle {
       if (config.application().getCanonicalName() != null) {
         Class<? extends Application> applicationClass = null;
         try {
-          applicationClass = new ClassNameResolver<Application>(null, config.application().getCanonicalName()).resolve();
+          applicationClass = new ClassNameResolver<Application>(null, config.application().getName()).resolve();
         } catch (ClassNotFoundException e) {
           throw new RuntimeException(e);
         }
