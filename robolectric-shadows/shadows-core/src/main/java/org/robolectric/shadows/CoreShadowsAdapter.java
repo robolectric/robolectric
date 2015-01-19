@@ -116,8 +116,4 @@ public class CoreShadowsAdapter implements ShadowsAdapter {
     return ShadowApplication.getInstance().getResourceLoader();
   }
 
-  @Override
-  public File getFilesDir() {
-    return ShadowContext.FILES_DIR;
-  }
 }
