@@ -4,12 +4,13 @@ import static com.google.common.collect.Lists.*;
 import static com.google.common.collect.Maps.*;
 import static com.google.common.collect.Sets.*;
 
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -41,18 +42,19 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.processing.validator.ImplementsValidator;
 
 /**
  * Model describing the Robolectric source file.
  */
-public class RoboModel {
+public class RobolectricModel {
   private static FQComparator fqComparator = new FQComparator();
   private static SimpleComparator comparator = new SimpleComparator();
   
   /** TypeElement representing the Robolectric.Anything interface, or null if the element isn't found. */
   final TypeElement ANYTHING;
   /** TypeMirror representing the Robolectric.Anything interface, or null if the element isn't found. */
-  final TypeMirror ANYTHING_MIRROR;
+  public final TypeMirror ANYTHING_MIRROR;
   /** TypeMirror representing the Object class. */
   final TypeMirror OBJECT_MIRROR;
   /** TypeElement representing the @Implements annotation. */
@@ -87,7 +89,7 @@ public class RoboModel {
     }
   }
 
-  public RoboModel(Elements elements, Types types) {
+  public RobolectricModel(Elements elements, Types types) {
     this.elements = elements;
     this.types = types;
     ANYTHING   = elements.getTypeElement("org.robolectric.Robolectric.Anything");
@@ -100,7 +102,7 @@ public class RoboModel {
     notObject = new Predicate<TypeMirror>() {
       @Override
       public boolean apply(TypeMirror t) {
-        return !RoboModel.this.types.isSameType(t, OBJECT_MIRROR);
+        return !RobolectricModel.this.types.isSameType(t, OBJECT_MIRROR);
       }
     };
   }
@@ -115,16 +117,14 @@ public class RoboModel {
     return null;
   }
 
-  static ElementVisitor<TypeElement,Void> typeVisitor = new SimpleElementVisitor6<TypeElement,Void>() {
+  public static ElementVisitor<TypeElement,Void> typeVisitor = new SimpleElementVisitor6<TypeElement,Void>() {
     @Override
     public TypeElement visitType(TypeElement e, Void p) {
       return e;
     }
   };
-  
 
-  static AnnotationValue getAnnotationValue(AnnotationMirror annotationMirror, String key) {
-    
+  public static AnnotationValue getAnnotationValue(AnnotationMirror annotationMirror, String key) {
     for (Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : annotationMirror.getElementValues().entrySet() ) {
       if (entry.getKey().getSimpleName().toString().equals(key)) {
         return entry.getValue();
@@ -133,14 +133,14 @@ public class RoboModel {
     return null;
   }
 
-  static AnnotationValueVisitor<TypeMirror,Void> valueVisitor = new SimpleAnnotationValueVisitor6<TypeMirror,Void>() {
+  public static AnnotationValueVisitor<TypeMirror,Void> valueVisitor = new SimpleAnnotationValueVisitor6<TypeMirror,Void>() {
     @Override
     public TypeMirror visitType(TypeMirror t, Void arg) {
       return t;
     }
   };
 
-  static AnnotationValueVisitor<String, Void> classNameVisitor = new SimpleAnnotationValueVisitor6<String, Void>() {
+  public static AnnotationValueVisitor<String, Void> classNameVisitor = new SimpleAnnotationValueVisitor6<String, Void>() {
     @Override
     public String visitString(String s, Void arg) {
       return s;
@@ -269,22 +269,22 @@ public class RoboModel {
     // Other imports that the generated class needs
     imports.add("javax.annotation.Generated");
     imports.add("org.robolectric.internal.ShadowExtractor");
-    imports.add("org.robolectric.util.ShadowProvider");
+    imports.add("org.robolectric.internal.ShadowProvider");
   }
 
-  void addShadowType(TypeElement elem, TypeElement type) {
+  public void addShadowType(TypeElement elem, TypeElement type) {
     shadowTypes.put(elem, type);
   }
 
-  void addResetter(TypeElement parent, ExecutableElement elem) {
+  public void addResetter(TypeElement parent, ExecutableElement elem) {
     resetterMap.put(parent, elem);
   }
 
-  Set<Entry<TypeElement, ExecutableElement>> getResetters() {
+  public Set<Entry<TypeElement, ExecutableElement>> getResetters() {
     return resetterMap.entrySet();
   }
 
-  Set<String> getImports() {
+  public Set<String> getImports() {
     return imports;
   }
 
@@ -304,6 +304,14 @@ public class RoboModel {
         return !Objects.equal(ANYTHING, entry.getValue());
       }
     });
+  }
+
+  public Collection<String> getShadowedPackages() {
+    Set<String> packages = new HashSet<>();
+    for (TypeElement element : getVisibleShadowTypes().values()) {
+      packages.add("\"" + elements.getPackageOf(element).toString() + "\"");
+    }
+    return packages;
   }
 
   private Predicate<TypeMirror> notObject;

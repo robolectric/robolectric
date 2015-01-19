@@ -1,23 +1,20 @@
-package org.robolectric.annotation.processing;
-
-import static com.google.testing.compile.JavaFileObjects.forResource;
-import static com.google.testing.compile.JavaSourcesSubjectFactory.javaSources;
-import static org.robolectric.annotation.processing.Utils.toResourcePath;
-import static org.robolectric.annotation.processing.Utils.ROBO_SOURCE;
-import static org.robolectric.annotation.processing.Utils.SHADOW_EXTRACTOR_SOURCE;
-import static org.truth0.Truth.ASSERT;
-
-import javax.tools.JavaFileObject;
-
-import org.truth0.FailureStrategy;
-import org.truth0.subjects.Subject;
-import org.truth0.subjects.SubjectFactory;
+package org.robolectric.annotation.processing.validator;
 
 import com.google.common.collect.ImmutableList;
 import com.google.testing.compile.CompileTester;
 import com.google.testing.compile.CompileTester.LineClause;
 import com.google.testing.compile.CompileTester.SuccessfulCompilationClause;
 import com.google.testing.compile.CompileTester.UnsuccessfulCompilationClause;
+import com.google.testing.compile.JavaFileObjects;
+import org.robolectric.annotation.processing.RobolectricProcessor;
+import org.truth0.FailureStrategy;
+import org.truth0.subjects.Subject;
+import org.truth0.subjects.SubjectFactory;
+
+import javax.tools.JavaFileObject;
+
+import static com.google.testing.compile.JavaSourcesSubjectFactory.javaSources;
+import static org.truth0.Truth.ASSERT;
 
 public final class SingleClassSubject extends Subject<SingleClassSubject, String> {
 
@@ -38,10 +35,10 @@ public final class SingleClassSubject extends Subject<SingleClassSubject, String
   
   public SingleClassSubject(FailureStrategy failureStrategy, String subject) {
     super(failureStrategy, subject);
-    source = forResource(toResourcePath(subject));
+    source = JavaFileObjects.forResource(Utils.toResourcePath(subject));
     tester = ASSERT.about(javaSources())
-      .that(ImmutableList.of(source, ROBO_SOURCE, SHADOW_EXTRACTOR_SOURCE))
-      .processedWith(new RoboProcessor());
+      .that(ImmutableList.of(source, Utils.ROBO_SOURCE, Utils.SHADOW_EXTRACTOR_SOURCE))
+      .processedWith(new RobolectricProcessor());
   }
 
   public SuccessfulCompilationClause compilesWithoutError() {

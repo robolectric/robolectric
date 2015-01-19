@@ -1,4 +1,6 @@
-package org.robolectric.annotation.processing;
+package org.robolectric.annotation.processing.validator;
+
+import org.robolectric.annotation.processing.RobolectricModel;
 
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -16,18 +18,14 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
 
-public class Validator implements ElementVisitor<Void,Element> {
-  final protected RoboModel model;
+public class Validator implements ElementVisitor<Void, Element> {
+  final protected RobolectricModel model;
   final protected Elements elements;
   final protected Types types;
   final protected Messager messager;
   final protected TypeElement annotationType;
-
-  protected Element currentElement;
-  protected AnnotationMirror currentAnnotation;
-  
   // This is the easiest way to do it because visit() is final in AbstractEV6
-  final ElementVisitor<Void,Element> visitorAdapter = new AbstractElementVisitor6<Void,Element>() {
+  final ElementVisitor<Void, Element> visitorAdapter = new AbstractElementVisitor6<Void, Element>() {
 
     @Override
     public Void visitPackage(PackageElement e, Element p) {
@@ -53,10 +51,11 @@ public class Validator implements ElementVisitor<Void,Element> {
     public Void visitTypeParameter(TypeParameterElement e, Element p) {
       return Validator.this.visitTypeParameter(e, p);
     }
-  
   };
-  
-  public Validator(RoboModel model, ProcessingEnvironment env, String annotationType) {
+  protected Element currentElement;
+  protected AnnotationMirror currentAnnotation;
+
+  public Validator(RobolectricModel model, ProcessingEnvironment env, String annotationType) {
     this.model = model;
     elements = env.getElementUtils();
     types = env.getTypeUtils();
@@ -66,12 +65,12 @@ public class Validator implements ElementVisitor<Void,Element> {
   }
 
   protected AnnotationMirror getCurrentAnnotation() {
-    if (currentAnnotation == null ) {
+    if (currentAnnotation == null) {
       currentAnnotation = model.getAnnotationMirror(currentElement, annotationType);
     }
     return currentAnnotation;
   }
-  
+
   protected void message(Kind severity, String msg, AnnotationValue av) {
     final AnnotationMirror am = getCurrentAnnotation();
     messager.printMessage(severity, msg, currentElement, am, av);
@@ -94,6 +93,11 @@ public class Validator implements ElementVisitor<Void,Element> {
     currentElement = e;
     currentAnnotation = null;
   }
+
+  public TypeElement getAnnotationType() {
+    return annotationType;
+  }
+
   @Override
   public Void visit(Element e, Element p) {
     init(e, p);
