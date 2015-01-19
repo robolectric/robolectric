@@ -67,7 +67,7 @@ public class CustomRobolectricTestRunnerTest {
 
     @Test public void shouldPass() throws Exception {
       assertEquals(true, prepared);
-      assertEquals(AsmInstrumentingClassLoader.class.getName(), this.getClass().getClassLoader().getClass().getName());
+      assertEquals(InstrumentingClassLoader.class.getName(), this.getClass().getClassLoader().getClass().getName());
     }
   }
 
@@ -79,8 +79,8 @@ public class CustomRobolectricTestRunnerTest {
     assertThat(result.getRunCount()).isEqualTo(1);
     assertThat(beforeTestMethod.getName()).isEqualTo("properMethodName");
     assertThat(afterTestMethod.getName()).isEqualTo("properMethodName");
-    assertEquals(AsmInstrumentingClassLoader.class, beforeTestMethod.getDeclaringClass().getClassLoader().getClass());
-    assertEquals(AsmInstrumentingClassLoader.class, afterTestMethod.getDeclaringClass().getClassLoader().getClass());
+    assertEquals(InstrumentingClassLoader.class, beforeTestMethod.getDeclaringClass().getClassLoader().getClass());
+    assertEquals(InstrumentingClassLoader.class, afterTestMethod.getDeclaringClass().getClassLoader().getClass());
   }
 
   @Ignore("should only be run by custom test runner")
@@ -143,8 +143,8 @@ public class CustomRobolectricTestRunnerTest {
       super(testClass);
     }
 
-    @Override public Setup createSetup() {
-      return new Setup() {
+    @Override public InstrumentingClassLoaderConfig createSetup() {
+      return new InstrumentingClassLoaderConfig() {
         @Override public boolean shouldAcquire(String name) {
           return !name.equals(CustomRobolectricTestRunnerTest.class.getName()) && super.shouldAcquire(name);
         }

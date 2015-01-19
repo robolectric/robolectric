@@ -23,6 +23,7 @@ import org.robolectric.res.ResourcePath;
 import org.robolectric.util.Transcript;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,15 +35,17 @@ import java.util.Set;
 
 import static java.util.Arrays.asList;
 
-
-public class Setup {
+/**
+ * Configuration rules for {@link org.robolectric.internal.bytecode.InstrumentingClassLoader}.
+ */
+public class InstrumentingClassLoaderConfig {
   private static final List<String> INSTRUMENTED_PACKAGES = new ArrayList<>();
   private static final List<String> CLASSES_TO_ALWAYS_DELEGATE = stringify(
       TestLifecycle.class,
       ShadowWrangler.class,
       AndroidManifest.class,
       R.class,
-      AsmInstrumentingClassLoader.class,
+      InstrumentingClassLoader.class,
       SdkEnvironment.class,
       SdkConfig.class,
       RobolectricTestRunner.class,
@@ -64,17 +67,14 @@ public class Setup {
   );
 
   static {
-    INSTRUMENTED_PACKAGES.add("dalvik.");
-    INSTRUMENTED_PACKAGES.add("libcore.");
-    INSTRUMENTED_PACKAGES.add("android.");
-    INSTRUMENTED_PACKAGES.add("com.android.internal.");
+    INSTRUMENTED_PACKAGES.addAll(Arrays.asList("dalvik.", "libcore.", "android.", "com.android.internal."));
     for (ShadowProvider provider : ServiceLoader.load(ShadowProvider.class)) {
       Collections.addAll(INSTRUMENTED_PACKAGES, provider.getInstrumentedPackageNames());
     }
   }
 
   /**
-   * Determine if {@link AsmInstrumentingClassLoader} should instrument a given class.
+   * Determine if {@link org.robolectric.internal.bytecode.InstrumentingClassLoader} should instrument a given class.
    *
    * @param   classInfo The class to check.
    * @return  True if the class should be instrumented.
@@ -84,7 +84,7 @@ public class Setup {
   }
 
   /**
-   * Determine if {@link AsmInstrumentingClassLoader} should load a given class.
+   * Determine if {@link org.robolectric.internal.bytecode.InstrumentingClassLoader} should load a given class.
    *
    * @param   name The fully-qualified class name.
    * @return  True if the class should be loaded.
