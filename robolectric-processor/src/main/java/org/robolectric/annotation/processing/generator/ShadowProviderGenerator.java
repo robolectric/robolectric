@@ -107,7 +107,7 @@ public class ShadowProviderGenerator extends Generator {
       writer.println("  }");
       writer.println();
 
-      writer.println("  public String[] getInstrumentedPackageNames() {");
+      writer.println("  public String[] getProvidedPackageNames() {");
       writer.println("    return new String[] {" + Joiner.on(",").join(model.getShadowedPackages()) + "};");
       writer.println("  }");
 
