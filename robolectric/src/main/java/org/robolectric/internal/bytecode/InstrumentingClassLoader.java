@@ -1060,7 +1060,7 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
           }
         }
       } catch (IOException e) {
-        throw new RuntimeException(e.toString());
+        return "java/lang/Object"; // Handle classes that may be obfuscated
       }
     }
 
