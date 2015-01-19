@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import org.junit.After;
@@ -36,13 +37,12 @@ public class ShadowContextTest {
 
   @Before
   public void setUp() throws Exception {
-    File[] files = context.getFilesDir().listFiles();
+    File dataDir = new File(RuntimeEnvironment.getPackageManager()
+        .getPackageInfo("org.robolectric", 0).applicationInfo.dataDir);
+
+    File[] files = dataDir.listFiles();
     assertNotNull(files);
     assertThat(files.length).isEqualTo(0);
-
-    File[] cachedFiles = context.getFilesDir().listFiles();
-    assertNotNull(cachedFiles);
-    assertThat(cachedFiles.length).isEqualTo(0);
   }
 
   @After
@@ -52,17 +52,16 @@ public class ShadowContextTest {
 
   @Test
   public void shouldGetApplicationDataDirectory() throws IOException {
-    File dataDir = new File(ShadowContext.FILES_DIR, "data");
-    assertThat(dataDir.mkdir()).isTrue();
-
-    dataDir = context.getDir("data", Context.MODE_PRIVATE);
+    File dataDir = context.getDir("data", Context.MODE_PRIVATE);
     assertThat(dataDir).isNotNull();
     assertThat(dataDir.exists()).isTrue();
   }
 
   @Test
-  public void shouldCreateIfDoesNotExistAndGetApplicationDataDirectory() {
-    File dataDir = new File(ShadowContext.FILES_DIR, "data");
+  public void shouldCreateIfDoesNotExistAndGetApplicationDataDirectory() throws Exception {
+    File dataDir = new File(RuntimeEnvironment.getPackageManager()
+        .getPackageInfo("org.robolectric", 0).applicationInfo.dataDir, "data");
+
     assertThat(dataDir.exists()).isFalse();
 
     dataDir = context.getDir("data", Context.MODE_PRIVATE);
@@ -94,7 +93,6 @@ public class ShadowContextTest {
     File cacheTest = new File(context.getCacheDir(), "__test__");
 
     assertThat(cacheTest.getAbsolutePath()).startsWith(System.getProperty("java.io.tmpdir"));
-    assertThat(cacheTest.getAbsolutePath()).contains("android-cache");
     assertThat(cacheTest.getAbsolutePath()).endsWith(File.separator + "__test__");
 
     FileOutputStream fos = null;
@@ -354,19 +352,10 @@ public class ShadowContextTest {
   public void reset_shouldCleanupTempDirectories() {
     ShadowContext.reset();
 
-    assertThat(ShadowContext.CACHE_DIR.exists()).isFalse();
-    assertThat(ShadowContext.CACHE_DIR.getParentFile().exists()).isFalse();
-
-    assertThat(ShadowContext.FILES_DIR.exists()).isFalse();
-    assertThat(ShadowContext.FILES_DIR.getParentFile().exists()).isFalse();
-
     assertThat(ShadowContext.EXTERNAL_CACHE_DIR.exists()).isFalse();
     assertThat(ShadowContext.EXTERNAL_CACHE_DIR.getParentFile().exists()).isFalse();
 
     assertThat(ShadowContext.EXTERNAL_FILES_DIR.exists()).isFalse();
     assertThat(ShadowContext.EXTERNAL_FILES_DIR.getParentFile().exists()).isFalse();
-
-    assertThat(ShadowContext.DATABASE_DIR.exists()).isFalse();
-    assertThat(ShadowContext.DATABASE_DIR.getParentFile().exists()).isFalse();
   }
 }

@@ -2,12 +2,14 @@ package org.robolectric.shadows;
 
 import android.accounts.Account;
 import android.app.Activity;
+import android.app.Application;
 import android.content.ContentProvider;
 import android.content.ContentProviderOperation;
 import android.content.ContentProviderResult;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.content.OperationApplicationException;
 import android.content.PeriodicSync;
@@ -28,6 +30,7 @@ import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.manifest.ContentProviderData;
 import org.robolectric.fakes.BaseCursor;
+import org.robolectric.util.ReflectionHelpers;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -675,7 +678,8 @@ public class ShadowContentResolverTest {
 
   @Test
   public void getProvider_shouldNotReturnAnyProviderWhenManifestIsNull() {
-    RuntimeEnvironment.application = new DefaultTestLifecycle().createApplication(null, null, null);
+    Application application = new DefaultTestLifecycle().createApplication(null, null, null);
+    ReflectionHelpers.callInstanceMethod(application, "attach", ReflectionHelpers.ClassParameter.from(Context.class, RuntimeEnvironment.application.getBaseContext()));
     assertThat(ShadowContentResolver.getProvider(Uri.parse("content://"))).isNull();
   }
 

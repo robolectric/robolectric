@@ -29,9 +29,6 @@ import org.robolectric.res.ResourceLoader;
 import org.robolectric.fakes.RoboSharedPreferences;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,44 +63,13 @@ public class ShadowContextWrapper extends ShadowContext {
   }
 
   @Implementation
-  public ApplicationInfo getApplicationInfo() {
-    ApplicationInfo applicationInfo = Shadow.newInstance(ApplicationInfo.class, new Class[0], new Object[0]);
-    AndroidManifest appManifest = ShadowApplication.getInstance().getAppManifest();
-    if (appManifest != null) {
-      applicationInfo.packageName = appManifest.getPackageName();
-      applicationInfo.targetSdkVersion = appManifest.getTargetSdkVersion();
-    }
-    return applicationInfo;
-  }
-
-  @Implementation
   public int getUserId() {
     return 0;
   }
 
   @Implementation
-  @Override public File getFilesDir() {
-    return super.getFilesDir();
-  }
-
-  @Implementation
-  @Override public File getCacheDir() {
-    return super.getCacheDir();
-  }
-
-  @Implementation
-  @Override public String[] fileList() {
-    return super.fileList();
-  }
-
-  @Implementation
   @Override public File getDatabasePath(String name) {
     return super.getDatabasePath(name);
-  }
-
-  @Implementation
-  @Override public File getFileStreamPath(String name) {
-    return super.getFileStreamPath(name);
   }
 
   @Override public ResourceLoader getResourceLoader() {
@@ -133,21 +99,6 @@ public class ShadowContextWrapper extends ShadowContext {
   @Implementation
   @Override public File getExternalFilesDir(String type) {
     return super.getExternalFilesDir(type);
-  }
-
-  @Implementation
-  @Override public FileInputStream openFileInput(String path) throws FileNotFoundException {
-    return super.openFileInput(path);
-  }
-
-  @Implementation
-  @Override public FileOutputStream openFileOutput(String path, int mode) throws FileNotFoundException {
-    return super.openFileOutput(path, mode);
-  }
-
-  @Implementation
-  @Override public boolean deleteFile(String name) {
-    return super.deleteFile(name);
   }
 
   @Implementation

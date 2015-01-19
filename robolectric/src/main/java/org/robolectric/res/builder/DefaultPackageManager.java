@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.os.PatternMatcher;
 import android.util.Pair;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -25,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.UUID;
 
 import org.robolectric.ShadowsAdapter;
 import org.robolectric.manifest.AndroidManifest;
@@ -367,7 +369,8 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
 
     ApplicationInfo applicationInfo = new ApplicationInfo();
     applicationInfo.packageName = packageName;
-    initApplicationInfo(applicationInfo);
+    applicationInfo.sourceDir = new File(".").getAbsolutePath();
+    applicationInfo.dataDir = createTempDir("android-tmp").getAbsolutePath();
 
     packageInfo.applicationInfo = applicationInfo;
 
@@ -415,6 +418,8 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
     applicationInfo.processName = androidManifest.getProcessName();
     applicationInfo.name = androidManifest.getApplicationName();
     applicationInfo.metaData = metaDataToBundle(androidManifest.getApplicationMetaData());
+    applicationInfo.sourceDir = new File(".").getAbsolutePath();
+    applicationInfo.dataDir = createTempDir("android-tmp").getAbsolutePath();
 
     if (androidManifest.getLabelRef() != null && resourceIndex != null) {
       Integer id = ResName.getResourceId(resourceIndex, androidManifest.getLabelRef(), androidManifest.getPackageName());
@@ -422,13 +427,21 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
     }
 
     packageInfo.applicationInfo = applicationInfo;
-    initApplicationInfo(applicationInfo);
     addPackage(packageInfo);
   }
 
-  private void initApplicationInfo(ApplicationInfo applicationInfo) {
-    applicationInfo.sourceDir = new File(".").getAbsolutePath();
-    applicationInfo.dataDir = shadowsAdapter.getFilesDir().getAbsolutePath();
+  private static File createTempDir(String name) {
+    try {
+      File tmp = File.createTempFile(name, "robolectric");
+      if (!tmp.delete()) throw new IOException("could not delete "+tmp);
+      tmp = new File(tmp, UUID.randomUUID().toString());
+      if (!tmp.mkdirs()) throw new IOException("could not create "+tmp);
+      tmp.deleteOnExit();
+
+      return tmp;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override

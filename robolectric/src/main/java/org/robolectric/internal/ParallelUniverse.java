@@ -16,7 +16,10 @@ import org.robolectric.res.builder.DefaultPackageManager;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.ShadowsAdapter;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.UUID;
 
 import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -133,7 +136,24 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   @Override
   public void tearDownApplication() {
     if (RuntimeEnvironment.application != null) {
+      clearFiles(new File(RuntimeEnvironment.application.getApplicationInfo().dataDir));
       RuntimeEnvironment.application.onTerminate();
+    }
+  }
+
+  private static void clearFiles(File dir) {
+    if (dir != null && dir.isDirectory()) {
+      File[] files = dir.listFiles();
+      if (files != null) {
+        for (File f : files) {
+          if (f.isDirectory()) {
+            clearFiles(f);
+          }
+          f.delete();
+        }
+      }
+      dir.delete();
+      dir.getParentFile().delete();
     }
   }
 
