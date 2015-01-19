@@ -15,5 +15,5 @@ public interface ShadowProvider {
    *
    * @return  Array of Java package names.
    */
-  String[] getInstrumentedPackageNames();
+  String[] getProvidedPackageNames();
 }

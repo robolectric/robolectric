@@ -30,7 +30,7 @@ public class Shadows implements ShadowProvider {
     ShadowPrivate.resetMethod();
   }
 
-  public String[] getInstrumentedPackageNames() {
+  public String[] getProvidedPackageNames() {
     return new String[] {"org.robolectric.annotation.processing.objects"};
   }
 }

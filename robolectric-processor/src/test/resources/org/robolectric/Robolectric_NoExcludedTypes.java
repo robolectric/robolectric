@@ -15,7 +15,7 @@ public class Shadows implements ShadowProvider {
   public void reset() {
   }
 
-  public String[] getInstrumentedPackageNames() {
+  public String[] getProvidedPackageNames() {
     return new String[] {};
   }
 }
