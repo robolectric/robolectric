@@ -45,13 +45,12 @@ import java.security.SecureRandom;
 import java.util.*;
 
 /**
- * Installs a {@link org.robolectric.internal.bytecode.AsmInstrumentingClassLoader} and
- * {@link org.robolectric.res.ResourceLoader} in order to
- * provide a simulation of the Android runtime environment.
+ * Installs a {@link org.robolectric.internal.bytecode.InstrumentingClassLoader} and
+ * {@link org.robolectric.res.ResourceLoader} in order to provide a simulation of the Android runtime environment.
  */
 public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
-  private static final Map<Class<? extends RobolectricTestRunner>, EnvHolder> envHoldersByTestRunner = new HashMap<Class<? extends RobolectricTestRunner>, EnvHolder>();
-  private static Map<Pair<AndroidManifest, SdkConfig>, ResourceLoader> resourceLoadersByManifestAndConfig = new HashMap<Pair<AndroidManifest, SdkConfig>, ResourceLoader>();
+  private static final Map<Class<? extends RobolectricTestRunner>, EnvHolder> envHoldersByTestRunner = new HashMap<>();
+  private static Map<Pair<AndroidManifest, SdkConfig>, ResourceLoader> resourceLoadersByManifestAndConfig = new HashMap<>();
   private static ShadowMap mainShadowMap;
   private final EnvHolder envHolder;
   private TestLifecycle<Application> testLifecycle;
@@ -122,8 +121,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   }
 
   public SdkEnvironment createSdkEnvironment(SdkConfig sdkConfig) {
-    Setup setup = createSetup();
-    ClassLoader robolectricClassLoader = createRobolectricClassLoader(setup, sdkConfig);
+    InstrumentingClassLoaderConfig config = createSetup();
+    ClassLoader robolectricClassLoader = createRobolectricClassLoader(config, sdkConfig);
     return new SdkEnvironment(sdkConfig, robolectricClassLoader);
   }
 
@@ -143,17 +142,17 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     return manifest;
   }
 
-  public Setup createSetup() {
-    return new Setup();
+  public InstrumentingClassLoaderConfig createSetup() {
+    return new InstrumentingClassLoaderConfig();
   }
 
   protected Class<? extends TestLifecycle> getTestLifecycleClass() {
     return DefaultTestLifecycle.class;
   }
 
-  protected ClassLoader createRobolectricClassLoader(Setup setup, SdkConfig sdkConfig) {
+  protected ClassLoader createRobolectricClassLoader(InstrumentingClassLoaderConfig config, SdkConfig sdkConfig) {
     URL[] urls = getJarResolver().getLocalArtifactUrls(sdkConfig.getSdkClasspathDependencies());
-    return new AsmInstrumentingClassLoader(setup, urls);
+    return new InstrumentingClassLoader(config, urls);
   }
 
   public static void injectClassHandler(ClassLoader robolectricClassLoader, ClassHandler classHandler) {

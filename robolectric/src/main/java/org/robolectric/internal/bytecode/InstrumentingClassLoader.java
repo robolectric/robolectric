@@ -42,10 +42,12 @@ import java.util.Set;
 import static org.objectweb.asm.Type.ARRAY;
 import static org.objectweb.asm.Type.OBJECT;
 import static org.objectweb.asm.Type.VOID;
-import static org.objectweb.asm.Type.getType;
 import static org.robolectric.util.Util.readBytes;
 
-public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes {
+/**
+ * Class loader that modifies the bytecode of Android classes to insert calls to Robolectric's shadow classes.
+ */
+public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
   private static final Type OBJECT_TYPE = Type.getType(Object.class);
   private static final Type ROBOLECTRIC_INTERNALS_TYPE = Type.getType(RobolectricInternals.class);
   private static final Type PLAN_TYPE = Type.getType(ClassHandler.Plan.class);
@@ -60,18 +62,18 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes 
   private static final String ROBO_INIT_METHOD_NAME = "$$robo$init";
   private static final String GET_ROBO_DATA_SIGNATURE = "()Ljava/lang/Object;";
 
-  private final Setup setup;
   private final URLClassLoader urls;
+  private final InstrumentingClassLoaderConfig config;
   private final Map<String, Class> classes = new HashMap<>();
-  private final Set<Setup.MethodRef> methodsToIntercept;
   private final Map<String, String> classesToRemap;
+  private final Set<InstrumentingClassLoaderConfig.MethodRef> methodsToIntercept;
 
-  public AsmInstrumentingClassLoader(Setup setup, URL... urls) {
-    super(AsmInstrumentingClassLoader.class.getClassLoader());
-    this.setup = setup;
+  public InstrumentingClassLoader(InstrumentingClassLoaderConfig config, URL... urls) {
+    super(InstrumentingClassLoader.class.getClassLoader());
+    this.config = config;
     this.urls = new URLClassLoader(urls, null);
-    classesToRemap = convertToSlashes(setup.classNameTranslations());
-    methodsToIntercept = convertToSlashes(setup.methodsToIntercept());
+    classesToRemap = convertToSlashes(config.classNameTranslations());
+    methodsToIntercept = convertToSlashes(config.methodsToIntercept());
     for (URL url : urls) {
       System.out.println("Loading classes from: " + url.toString());
     }
@@ -89,7 +91,7 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes 
     }
 
     try {
-      if (setup.shouldAcquire(name)) {
+      if (config.shouldAcquire(name)) {
         theClass = findClass(name);
       } else {
         theClass = getParent().loadClass(name);
@@ -117,7 +119,7 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes 
 
   @Override
   protected Class<?> findClass(final String className) throws ClassNotFoundException {
-    if (setup.shouldAcquire(className)) {
+    if (config.shouldAcquire(className)) {
       final byte[] origClassBytes = getByteCode(className);
 
       ClassNode classNode = new ClassNode(Opcodes.ASM4) {
@@ -140,8 +142,8 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes 
       try {
         byte[] bytes;
         AsmClassInfo classInfo = new AsmClassInfo(className, classNode);
-        if (setup.shouldInstrument(classInfo)) {
-          bytes = getInstrumentedBytes(classNode, setup.containsStubs(classInfo));
+        if (config.shouldInstrument(classInfo)) {
+          bytes = getInstrumentedBytes(classNode, config.containsStubs(classInfo));
         } else {
           bytes = origClassBytes;
         }
@@ -345,10 +347,10 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes 
     return newMap;
   }
 
-  private Set<Setup.MethodRef> convertToSlashes(Set<Setup.MethodRef> methodRefs) {
-    HashSet<Setup.MethodRef> transformed = new HashSet<>();
-    for (Setup.MethodRef methodRef : methodRefs) {
-      transformed.add(new Setup.MethodRef(internalize(methodRef.className), methodRef.methodName));
+  private Set<InstrumentingClassLoaderConfig.MethodRef> convertToSlashes(Set<InstrumentingClassLoaderConfig.MethodRef> methodRefs) {
+    HashSet<InstrumentingClassLoaderConfig.MethodRef> transformed = new HashSet<>();
+    for (InstrumentingClassLoaderConfig.MethodRef methodRef : methodRefs) {
+      transformed.add(new InstrumentingClassLoaderConfig.MethodRef(internalize(methodRef.className), methodRef.methodName));
     }
     return transformed;
   }
@@ -943,8 +945,8 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes 
 
   private boolean shouldIntercept(MethodInsnNode targetMethod) {
     if (targetMethod.name.equals("<init>")) return false; // sorry, can't strip out calls to super() in constructor
-    return methodsToIntercept.contains(new Setup.MethodRef(targetMethod.owner, targetMethod.name))
-        || methodsToIntercept.contains(new Setup.MethodRef(targetMethod.owner, "*"));
+    return methodsToIntercept.contains(new InstrumentingClassLoaderConfig.MethodRef(targetMethod.owner, targetMethod.name))
+        || methodsToIntercept.contains(new InstrumentingClassLoaderConfig.MethodRef(targetMethod.owner, "*"));
   }
 
   public static class AsmClassInfo implements ClassInfo {
