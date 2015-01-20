@@ -139,9 +139,7 @@ public final class ShadowAssetManager {
         ResName attrResName = new ResName(attrValue.contextPackageName, "attr", attrValue.value.substring(1));
         attrValue = ShadowResources.getOverlayedThemeValue(attrResName, themeStyle, overlayThemeStyles);
       }
-      if (attrValue == null) {
-        System.out.println("Couldn't find " + resName + " in " + themeStyleName);
-      } else {
+      if (attrValue != null) {
         TypedResource attrDataValue = resourceLoader.getValue(resName, getQualifiers());
         Converter.convertAndFill(attrValue, outValue, resourceLoader, getQualifiers(), resolveRefs);
         return true;
@@ -367,7 +365,7 @@ public final class ShadowAssetManager {
 
   static class StyleResolver implements Style {
     private final ResourceLoader resourceLoader;
-    private final List<StyleData> styles = new ArrayList<StyleData>();
+    private final List<StyleData> styles = new ArrayList<>();
     private final Style theme;
     private final ResName myResName;
     private final String qualifiers;
