@@ -150,15 +150,6 @@ public class ShadowContextTest {
   }
 
   @Test
-  public void getDatabasePath_shouldCreateDirectory() {
-    assertFalse(ShadowContext.DATABASE_DIR.exists());
-    String testDBName = "abc.db";
-    File dbFile = context.getDatabasePath(testDBName);
-    assertTrue(ShadowContext.DATABASE_DIR.exists());
-    assertEquals(ShadowContext.DATABASE_DIR, dbFile.getParentFile());
-  }
-
-  @Test
   public void getDatabasePath_shouldAllowAbsolutePaths() throws Exception {
       String testDbName;
 
