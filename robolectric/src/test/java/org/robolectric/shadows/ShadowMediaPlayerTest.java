@@ -19,7 +19,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
-import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.internal.Shadow;
@@ -1152,25 +1151,6 @@ public class ShadowMediaPlayerTest {
     assertThat(shadowMediaPlayer.getCurrentPositionRaw()).isEqualTo(500);
   }
 
-//  @Test
-//  public void testScheduleErrorAtOffsetWhilePlaying() {
-//    shadowMediaPlayer.setState(PREPARED);
-//    mediaPlayer.start();
-//
-//    scheduler.advanceBy(200);
-//
-//    shadowMediaPlayer.getDefaultMediaInfo().scheduleErrorAtOffset(500, 1, 3);
-//
-//    scheduler.advanceBy(299);
-//    Mockito.verifyZeroInteractions(errorListener);
-//
-//    scheduler.advanceBy(1);
-//    Mockito.verify(errorListener).onError(mediaPlayer, 1, 3);
-//    Mockito.verify(completionListener).onCompletion(mediaPlayer);
-//    assertThat(scheduler.advanceToLastPostedRunnable()).isFalse();
-//    assertThat(shadowMediaPlayer.getCurrentPositionRaw()).isEqualTo(500);
-//  }
-
   @Test
   public void testScheduleErrorAtOffsetInPast() {
     info.scheduleErrorAtOffset(200, 1, 2);
@@ -1182,24 +1162,6 @@ public class ShadowMediaPlayerTest {
     Mockito.verifyZeroInteractions(errorListener);
   }
 
-//  @Ignore("Changing the schedule during playback is not currently supported")
-//  @Test
-//  public void testScheduleInfoAtOffsetWhilePlaying() {
-//    shadowMediaPlayer.setState(PREPARED);
-//    mediaPlayer.start();
-//
-//    scheduler.advanceBy(200);
-//
-//    shadowMediaPlayer.getDefaultMediaInfo().scheduleInfoAtOffset(500, 1, 3);
-//
-//    scheduler.advanceBy(299);
-//    Mockito.verifyZeroInteractions(infoListener);
-//
-//    scheduler.advanceBy(1);
-//    Mockito.verify(infoListener).onInfo(mediaPlayer, 1, 3);
-//    Mockito.verifyZeroInteractions(completionListener);
-//  }
-//
   @Test
   public void testScheduleBufferUnderrunAtOffset() {
     info.scheduleBufferUnderrunAtOffset(100, 50);
@@ -1231,77 +1193,83 @@ public class ShadowMediaPlayerTest {
 
   @Test
   public void testRemoveEventAtOffset() {
-//    shadowMediaPlayer.setState(PREPARED);
-//    mediaPlayer.start();
-//
-//    scheduler.advanceBy(200);
-//
-//    Runnable r = shadowMediaPlayer.getDefaultMediaInfo().scheduleInfoAtOffset(
-//        500, 1, 3);
-//
-//    scheduler.advanceBy(299);
-//    shadowMediaPlayer.getDefaultMediaInfo().removeEventAtOffset(500, r);
-//    scheduler.advanceToLastPostedRunnable();
-//    Mockito.verifyZeroInteractions(infoListener);
+    shadowMediaPlayer.setState(PREPARED);
+    mediaPlayer.start();
+
+    scheduler.advanceBy(200);
+
+    MediaEvent e = info.scheduleInfoAtOffset(
+        500, 1, 3);
+
+    scheduler.advanceBy(299);
+    info.removeEventAtOffset(500, e);
+    scheduler.advanceToLastPostedRunnable();
+    Mockito.verifyZeroInteractions(infoListener);
   }
 
   @Test
   public void testRemoveEvent() {
-//    shadowMediaPlayer.setState(PREPARED);
-//    mediaPlayer.start();
-//
-//    scheduler.advanceBy(200);
-//
-//    Runnable r = shadowMediaPlayer.getDefaultMediaInfo().scheduleInfoAtOffset(
-//        500, 1, 3);
-//
-//    scheduler.advanceBy(299);
-//    shadowMediaPlayer.getDefaultMediaInfo().removeEvent(r);
-//    scheduler.advanceToLastPostedRunnable();
-//    Mockito.verifyZeroInteractions(infoListener);
+    shadowMediaPlayer.setState(PREPARED);
+    mediaPlayer.start();
+
+    scheduler.advanceBy(200);
+
+    MediaEvent e = info.scheduleInfoAtOffset(500, 1, 3);
+
+    scheduler.advanceBy(299);
+    shadowMediaPlayer.doStop();
+    info.removeEvent(e);
+    shadowMediaPlayer.doStart();
+    scheduler.advanceToLastPostedRunnable();
+    Mockito.verifyZeroInteractions(infoListener);
   }
 
   @Test
   public void testScheduleMultipleRunnables() {
-//    shadowMediaPlayer.setState(PREPARED);
-//    scheduler.advanceBy(25);
-//    mediaPlayer.start();
-//
-//    scheduler.advanceBy(200);
-//    MediaInfo mediaInfo = shadowMediaPlayer.getDefaultMediaInfo();
-//    assertThat(scheduler.size()).isEqualTo(1);
-//    mediaInfo.scheduleInfoAtOffset(250, 2, 4);
-//    assertThat(scheduler.size()).isEqualTo(1);
-//
-//    Runnable r1 = Mockito.mock(Runnable.class);
-//
-//    mediaInfo.scheduleEventAtOffset(400, r1);
-//
-//    scheduler.advanceBy(49);
-//    Mockito.verifyZeroInteractions(infoListener);
-//    scheduler.advanceBy(1);
-//    Mockito.verify(infoListener).onInfo(mediaPlayer, 2, 4);
-//    scheduler.advanceBy(149);
-//    mediaInfo.scheduleErrorAtOffset(675, 32, 22);
-//    Mockito.verifyZeroInteractions(r1);
-//    scheduler.advanceBy(1);
-//    Mockito.verify(r1).run();
-//
-//    mediaPlayer.pause();
-//    assertThat(scheduler.size()).isEqualTo(0);
-//    scheduler.advanceBy(324);
-//    Runnable r2 = Mockito.mock(Runnable.class);
-//    mediaInfo.scheduleEventAtOffset(680, r2);
-//    mediaPlayer.start();
-//    scheduler.advanceBy(274);
-//    Mockito.verifyZeroInteractions(errorListener);
-//
-//    scheduler.advanceBy(1);
-//    Mockito.verify(errorListener).onError(mediaPlayer, 32, 22);
-//    assertThat(scheduler.size()).isEqualTo(0);
-//    assertThat(shadowMediaPlayer.getCurrentPositionRaw()).isEqualTo(675);
-//    assertThat(shadowMediaPlayer.getState()).isSameAs(ERROR);
-//    Mockito.verifyZeroInteractions(r2);
+    shadowMediaPlayer.setState(PREPARED);
+    scheduler.advanceBy(25);
+    mediaPlayer.start();
+
+    scheduler.advanceBy(200);
+    assertThat(scheduler.size()).isEqualTo(1);
+    shadowMediaPlayer.doStop();
+    info.scheduleInfoAtOffset(250, 2, 4);
+    shadowMediaPlayer.doStart();
+    assertThat(scheduler.size()).isEqualTo(1);
+
+    MediaEvent e1 = Mockito.mock(MediaEvent.class);
+
+    shadowMediaPlayer.doStop();
+    info.scheduleEventAtOffset(400, e1);
+    shadowMediaPlayer.doStart();
+
+    scheduler.advanceBy(49);
+    Mockito.verifyZeroInteractions(infoListener);
+    scheduler.advanceBy(1);
+    Mockito.verify(infoListener).onInfo(mediaPlayer, 2, 4);
+    scheduler.advanceBy(149);
+    shadowMediaPlayer.doStop();
+    info.scheduleErrorAtOffset(675, 32, 22);
+    shadowMediaPlayer.doStart();
+    Mockito.verifyZeroInteractions(e1);
+    scheduler.advanceBy(1);
+    Mockito.verify(e1).run(mediaPlayer, shadowMediaPlayer);
+
+    mediaPlayer.pause();
+    assertThat(scheduler.size()).isEqualTo(0);
+    scheduler.advanceBy(324);
+    MediaEvent e2 = Mockito.mock(MediaEvent.class);
+    info.scheduleEventAtOffset(680, e2);
+    mediaPlayer.start();
+    scheduler.advanceBy(274);
+    Mockito.verifyZeroInteractions(errorListener);
+
+    scheduler.advanceBy(1);
+    Mockito.verify(errorListener).onError(mediaPlayer, 32, 22);
+    assertThat(scheduler.size()).isEqualTo(0);
+    assertThat(shadowMediaPlayer.getCurrentPositionRaw()).isEqualTo(675);
+    assertThat(shadowMediaPlayer.getState()).isSameAs(ERROR);
+    Mockito.verifyZeroInteractions(e2);
   }
 
   @Test
@@ -1335,24 +1303,6 @@ public class ShadowMediaPlayerTest {
     } catch (Exception eThrown) {
       Assertions.fail(eThrown + " was thrown, expecting IOException");
     }
-  }
-
-  @Test
-  public void testMediaInfoOfSubsequentSDSCallsNotAffectedByEarlier()
-      throws IOException {
-//    MediaInfo dummyInfo = shadowMediaPlayer.buildMediaInfo(3000, 2);
-//    Map<String, MediaInfo> map = new HashMap<String, MediaInfo>();
-//    map.put("dummy", dummyInfo);
-//    shadowMediaPlayer.setDataSourceMap(map);
-//    mediaPlayer.setDataSource("dummy");
-//
-//    assertThat(shadowMediaPlayer.getCurrentMediaInfo()).isSameAs(dummyInfo);
-//
-//    shadowMediaPlayer.setState(IDLE);
-//    mediaPlayer.setDataSource("dummy2");
-//
-//    assertThat(shadowMediaPlayer.getCurrentMediaInfo()).isSameAs(
-//        shadowMediaPlayer.getDefaultMediaInfo());
   }
 
   @Test
