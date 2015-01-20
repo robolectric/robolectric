@@ -65,11 +65,14 @@ public class ShadowMatrix {
   @Implementation
   public void set(Matrix src) {
     reset();
-
-    ShadowMatrix shadowMatrix = Shadows.shadowOf(src);
-    preOps.addAll(shadowMatrix.preOps);
-    postOps.addAll(shadowMatrix.postOps);
-    setOps.putAll(shadowMatrix.setOps);
+    //src could be null according to Android API doc
+    //(deep) copy the src matrix into this matrix. If src is null, reset this matrix to the identity matrix.
+    if(src != null){
+      ShadowMatrix shadowMatrix = Shadows.shadowOf(src);
+      preOps.addAll(shadowMatrix.preOps);
+      postOps.addAll(shadowMatrix.postOps);
+      setOps.putAll(shadowMatrix.setOps);
+    }
   }
 
   @Implementation
