@@ -598,6 +598,10 @@ public class ShadowMediaPlayer {
    * @see #setDataSource(DataSource)
    */
   public void doSetDataSource(DataSource dataSource) {
+    if (mediaInfo.get(dataSource) == null) {
+      throw new AssertionError("Don't know what to do with dataSource " + dataSource +
+          " - either add an exception with addException() or media info with addMediaInfo()");
+    }
     this.dataSource = dataSource;
   }
   
