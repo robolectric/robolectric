@@ -30,7 +30,6 @@ import static org.robolectric.Shadows.shadowOf;
 abstract public class ShadowContext {
   public static final File EXTERNAL_CACHE_DIR = createTempDir("android-external-cache");
   public static final File EXTERNAL_FILES_DIR = createTempDir("android-external-files");
-  public static final File DATABASE_DIR = createTempDir("android-database");
 
   @RealObject private Context realContext;
   private ShadowApplication shadowApplication;
@@ -60,17 +59,6 @@ abstract public class ShadowContext {
   }
 
   @Implementation
-  public File getDatabasePath(String name) {
-    File file = new File(name);
-    if (file.isAbsolute()) {
-      return file;
-    } else {
-      DATABASE_DIR.mkdirs();
-      return new File(DATABASE_DIR, name);
-    }
-  }
-
-  @Implementation
   public File getExternalCacheDir() {
     EXTERNAL_CACHE_DIR.mkdirs();
     return EXTERNAL_CACHE_DIR;
@@ -81,16 +69,6 @@ abstract public class ShadowContext {
     File f = (type == null) ? EXTERNAL_FILES_DIR : new File( EXTERNAL_FILES_DIR, type );
     f.mkdirs();
     return f;
-  }
-
-  @Implementation
-  public SQLiteDatabase openOrCreateDatabase(String name, int mode, SQLiteDatabase.CursorFactory factory) {
-    return openOrCreateDatabase(name, mode, factory, null);
-  }
-
-  @Implementation
-  public SQLiteDatabase openOrCreateDatabase(String name, int mode, SQLiteDatabase.CursorFactory factory, DatabaseErrorHandler databaseErrorHandler) {
-    return SQLiteDatabase.openOrCreateDatabase(realContext.getDatabasePath(name).getAbsolutePath(), factory, databaseErrorHandler);
   }
 
   /**
@@ -110,7 +88,6 @@ abstract public class ShadowContext {
   public static void reset() {
     clearFiles(EXTERNAL_CACHE_DIR);
     clearFiles(EXTERNAL_FILES_DIR);
-    clearFiles(DATABASE_DIR);
   }
 
   public static void clearFiles(File dir) {
