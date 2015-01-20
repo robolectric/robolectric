@@ -75,7 +75,7 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
     classesToRemap = convertToSlashes(config.classNameTranslations());
     methodsToIntercept = convertToSlashes(config.methodsToIntercept());
     for (URL url : urls) {
-      System.out.println("Loading classes from: " + url.toString());
+      System.out.println("DEBUG: Loading classes from: " + url.toString());
     }
   }
 
@@ -551,7 +551,6 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
             ctor.visitCode();
             ctor.visitInsn(RETURN);
             ctor.visitEnd();
-            System.out.println("ignoring throw in " + ctor.name + ctor.desc);
             return removedInstructions;
         }
       }
