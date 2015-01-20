@@ -39,6 +39,8 @@ import static org.robolectric.shadows.util.DataSource.toDataSource;
 @RunWith(TestRunners.WithDefaults.class)
 public class ShadowMediaPlayerTest {
 
+  private static final String DUMMY_SOURCE = "dummy-source";
+  
   private MediaPlayer mediaPlayer;
   private ShadowMediaPlayer shadowMediaPlayer;
   private MediaPlayer.OnCompletionListener completionListener;
@@ -75,7 +77,7 @@ public class ShadowMediaPlayerTest {
     scheduler = ShadowLooper.getUiThreadScheduler();
     scheduler.pause();
     
-    defaultSource = toDataSource("dummy-source");
+    defaultSource = toDataSource(DUMMY_SOURCE);
     info = new MediaInfo();
     ShadowMediaPlayer.addMediaInfo(defaultSource, info);
     shadowMediaPlayer.doSetDataSource(defaultSource);
@@ -123,8 +125,9 @@ public class ShadowMediaPlayerTest {
 
   @Test
   public void testSetDataSourceString() throws IOException {
-    mediaPlayer.setDataSource("dummy");
     DataSource ds = toDataSource("dummy");
+    ShadowMediaPlayer.addMediaInfo(ds, info);
+    mediaPlayer.setDataSource("dummy");
     assertThat(shadowMediaPlayer.getDataSource()).as("dataSource").isEqualTo(ds);
   }
 
@@ -132,9 +135,11 @@ public class ShadowMediaPlayerTest {
   public void testSetDataSourceUri() throws IOException {
     Map<String, String> headers = new HashMap<String, String>();
     Uri uri = Uri.parse("file:/test");
+    DataSource ds = toDataSource(RuntimeEnvironment.application, uri, headers);
+    ShadowMediaPlayer.addMediaInfo(ds, info);
+    
     mediaPlayer.setDataSource(RuntimeEnvironment.application, uri, headers);
 
-    DataSource ds = toDataSource(RuntimeEnvironment.application, uri, headers);
     assertThat(shadowMediaPlayer.getSourceUri()).as("sourceUri").isSameAs(uri);
     assertThat(shadowMediaPlayer.getDataSource()).as("dataSource").isEqualTo(ds);
   }
@@ -147,8 +152,9 @@ public class ShadowMediaPlayerTest {
       FileInputStream is = new FileInputStream(tmpFile);
       try {
         FileDescriptor fd = is.getFD();
-        mediaPlayer.setDataSource(fd, 23, 524);
         DataSource ds = toDataSource(fd, 23, 524);
+        ShadowMediaPlayer.addMediaInfo(ds, info);
+        mediaPlayer.setDataSource(fd, 23, 524);
         assertThat(shadowMediaPlayer.getSourceUri()).as("sourceUri").isNull();
         assertThat(shadowMediaPlayer.getDataSource()).as("dataSource")
             .isEqualTo(ds);
@@ -511,7 +517,7 @@ public class ShadowMediaPlayerTest {
     final EnumSet<State> invalidStates = EnumSet.of(INITIALIZED, PREPARED,
         STARTED, PAUSED, PLAYBACK_COMPLETED, STOPPED, ERROR);
 
-    testStates(new MethodSpec("setDataSource", "dummyFile"), invalidStates, iseTester, INITIALIZED);
+    testStates(new MethodSpec("setDataSource", DUMMY_SOURCE), invalidStates, iseTester, INITIALIZED);
   }
 
   @Test
@@ -1399,18 +1405,27 @@ public class ShadowMediaPlayerTest {
       .as("createListener")
       .isNull();
 
+    // Check that the mediaInfo was cleared.
+    boolean success = false;
+    try {
+      shadowMediaPlayer.doSetDataSource(defaultSource);
+      success = true;
+    } catch (AssertionError ae) {
+      // We expect this if the static state has been cleared.
+    }
+    if (success) {
+      Assertions.failBecauseExceptionWasNotThrown(AssertionError.class);
+    }
+
     // Check that the exception was cleared.
     try {
       shadowMediaPlayer.setState(IDLE);
+      ShadowMediaPlayer.addMediaInfo(dummy, info);
       shadowMediaPlayer.setDataSource(dummy);
     } catch (IOException e2) {
       Assertions.fail("Exception was not cleared by resetStaticState() for <" + dummy + ">", e2);
     }
-    
-    // Check that the mediaInfo was cleared
-    shadowMediaPlayer.doSetDataSource(defaultSource);
-    assertThat(shadowMediaPlayer.getMediaInfo()).as("mediaInfo:after").isNull();
-}
+  }
   
   @Test
   public void setDataSourceException_withRuntimeException() {
@@ -1442,6 +1457,24 @@ public class ShadowMediaPlayerTest {
          .isEqualTo(ShadowMediaPlayer.class.getName());
       assertThat(shadowMediaPlayer.getState()).as(
           "State after " + e + " thrown should be unchanged").isSameAs(IDLE);
+    }
+  }
+  
+  @Test
+  public void setDataSource_forNoDataSource_asserts() {
+    boolean success = false;
+    try {
+      mediaPlayer.setDataSource("some unspecified data source");
+      success = true;
+    } catch (Exception e) {
+      Assertions.fail("Unexpected exception", e);
+    } catch (AssertionError a) {
+      assertThat(a.getMessage()).as("assertionMessage")
+        .contains("addException")
+        .contains("addMediaInfo");
+    }
+    if (success) {
+      Assertions.failBecauseExceptionWasNotThrown(AssertionError.class);
     }
   }
 }
