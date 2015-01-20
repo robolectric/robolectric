@@ -14,7 +14,7 @@ import org.robolectric.util.ActivityController;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.ServiceController;
-import org.robolectric.util.ShadowProvider;
+import org.robolectric.internal.ShadowProvider;
 
 //
 // Imports for shims

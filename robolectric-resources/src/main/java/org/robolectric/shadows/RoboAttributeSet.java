@@ -48,8 +48,7 @@ public class RoboAttributeSet implements AttributeSet {
     String qualifiers = RuntimeEnvironment.getQualifiers();
     TypedResource<AttrData> typedResource = resourceLoader.getValue(resName, qualifiers);
     if (typedResource == null) {
-      System.out.println("WARN: no attr found for " + resName + ", assuming it's an integer...");
-      typedResource = new TypedResource<AttrData>(new AttrData(attribute, "integer", null), ResType.INTEGER);
+      typedResource = new TypedResource<>(new AttrData(attribute, "integer", null), ResType.INTEGER);
     }
 
     TypedValue outValue = new TypedValue();

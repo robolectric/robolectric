@@ -17,5 +17,6 @@
     <module>shadows-multidex</module>
     <module>shadows-support-v4</module>
     <module>shadows-httpclient</module>
+    <module>shadows-play-services</module>
   </modules>
 </project>

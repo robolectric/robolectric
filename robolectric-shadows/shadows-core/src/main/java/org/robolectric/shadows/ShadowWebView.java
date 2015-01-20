@@ -20,14 +20,12 @@ import java.util.Map;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(value = WebView.class, inheritImplementationMethods = true)
 public class ShadowWebView extends ShadowAbsoluteLayout {
-  public static boolean DEBUG = false;
-
   @RealObject
   private WebView realWebView;
   
   private String lastUrl;
   private Map<String, String> lastAdditionalHttpHeaders;
-  private HashMap<String, Object> javascriptInterfaces = new HashMap<String, Object>();
+  private HashMap<String, Object> javascriptInterfaces = new HashMap<>();
   private WebSettings webSettings = new RoboWebSettings();
   private WebViewClient webViewClient = null;
   private boolean runFlag = false;
@@ -57,8 +55,6 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
       if (mProvider.get(realView) == null) {
         Object provider = Proxy.newProxyInstance(classLoader, new Class[]{webViewProviderClass}, new InvocationHandler() {
           @Override public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-            if (DEBUG) System.out.println("[DEBUG] WebView: " + method);
-
             if (method.getName().equals("getViewDelegate") || method.getName().equals("getScrollDelegate")) {
               return Proxy.newProxyInstance(classLoader, new Class[]{
                   getClassNamed("android.webkit.WebViewProvider$ViewDelegate"),
@@ -66,7 +62,6 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
               }, new InvocationHandler() {
                 @Override
                 public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                  if (DEBUG) System.out.println("[DEBUG] WebView delegate: " + method);
                   return nullish(method);
                 }
               });
@@ -77,9 +72,7 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
         });
         mProvider.set(realView, provider);
       }
-    } catch (NoSuchFieldException e) {
-      throw new RuntimeException(e);
-    } catch (IllegalAccessException e) {
+    } catch (NoSuchFieldException | IllegalAccessException e) {
       throw new RuntimeException(e);
     }
   }

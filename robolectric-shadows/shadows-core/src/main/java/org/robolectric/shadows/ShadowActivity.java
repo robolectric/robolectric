@@ -365,8 +365,31 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     return directlyOn(realActivity, Activity.class).onCreateOptionsMenu(menu);
   }
 
+  /**
+   * Return the options menu.
+   *
+   * @return  Options menu.
+   */
   public Menu getOptionsMenu() {
     return optionsMenu;
+  }
+
+  /**
+   * Perform a click on a menu item.
+   *
+   * @param menuItemResId Menu item resource ID.
+   */
+  public boolean clickMenuItem(int menuItemResId) {
+    if (optionsMenu == null) {
+      throw new RuntimeException("Activity does not have an options menu!");
+    }
+
+    final MenuItem item = optionsMenu.findItem(menuItemResId);
+    if (item == null) {
+      throw new RuntimeException("Could not find menu item with ID: " + menuItemResId);
+    }
+
+    return realActivity.onOptionsItemSelected(item);
   }
 
   /**
