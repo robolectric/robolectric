@@ -24,9 +24,9 @@ public class ShadowMatrix {
   public static final String SKEW = "skew";
   public static final String MATRIX = "matrix";
 
-  private final Deque<String> preOps = new ArrayDeque<String>();
-  private final Deque<String> postOps = new ArrayDeque<String>();
-  private final Map<String, String> setOps = new LinkedHashMap<String, String>();
+  private final Deque<String> preOps = new ArrayDeque<>();
+  private final Deque<String> postOps = new ArrayDeque<>();
+  private final Map<String, String> setOps = new LinkedHashMap<>();
 
   public void __constructor__(Matrix src) {
     set(src);
@@ -38,7 +38,7 @@ public class ShadowMatrix {
    * @return A list of all 'pre' operations performed on this Matrix.
    */
   public List<String> getPreOperations() {
-    return Collections.unmodifiableList(new ArrayList<String>(preOps));
+    return Collections.unmodifiableList(new ArrayList<>(preOps));
   }
 
   /**
@@ -47,14 +47,15 @@ public class ShadowMatrix {
    * @return A list of all 'post' operations performed on this Matrix.
    */
   public List<String> getPostOperations() {
-    return Collections.unmodifiableList(new ArrayList<String>(postOps));
+    return Collections.unmodifiableList(new ArrayList<>(postOps));
   }
 
-  /** A map of all 'set' operations performed on this Matrix.
+  /**
+   * A map of all 'set' operations performed on this Matrix.
    * @return A map of all 'set' operations performed on this Matrix.
    */
   public Map<String, String> getSetOperations() {
-    return Collections.unmodifiableMap(new LinkedHashMap<String, String>(setOps));
+    return Collections.unmodifiableMap(new LinkedHashMap<>(setOps));
   }
 
   @Implementation
@@ -65,11 +66,12 @@ public class ShadowMatrix {
   @Implementation
   public void set(Matrix src) {
     reset();
-
-    ShadowMatrix shadowMatrix = Shadows.shadowOf(src);
-    preOps.addAll(shadowMatrix.preOps);
-    postOps.addAll(shadowMatrix.postOps);
-    setOps.putAll(shadowMatrix.setOps);
+    if (src != null) {
+      ShadowMatrix shadowMatrix = Shadows.shadowOf(src);
+      preOps.addAll(shadowMatrix.preOps);
+      postOps.addAll(shadowMatrix.postOps);
+      setOps.putAll(shadowMatrix.setOps);
+    }
   }
 
   @Implementation
