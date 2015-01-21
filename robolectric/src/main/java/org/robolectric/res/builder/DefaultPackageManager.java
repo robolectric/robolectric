@@ -13,6 +13,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.PatternMatcher;
 import android.util.Pair;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -29,8 +30,8 @@ import java.util.TreeMap;
 import java.util.UUID;
 
 import org.robolectric.ShadowsAdapter;
-import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.ActivityData;
+import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.BroadcastReceiverData;
 import org.robolectric.manifest.ContentProviderData;
 import org.robolectric.manifest.IntentFilterData;
@@ -404,6 +405,34 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
       }
     }
 
+    // Populate information related to BroadcastReceivers. Broadcast receivers can be queried in two
+    // possible ways,
+    // 1. PackageManager#getPackageInfo(...),
+    // 2. PackageManager#queryBroadcastReceivers(...)
+    // The following piece of code will let you enable querying receivers through both the methods.
+    List<ActivityInfo> receiverActivityInfos = new ArrayList<ActivityInfo>();
+    for (int i = 0; i < androidManifest.getBroadcastReceivers().size(); ++i) {
+      ActivityInfo activityInfo = new ActivityInfo();
+      activityInfo.name = androidManifest.getBroadcastReceivers().get(i).getClassName();
+      activityInfo.permission = androidManifest.getBroadcastReceivers().get(i).getPermission();
+      receiverActivityInfos.add(activityInfo);
+
+      ResolveInfo resolveInfo = new ResolveInfo();
+      resolveInfo.activityInfo = activityInfo;
+      IntentFilter filter = new IntentFilter();
+      for (String action : androidManifest.getBroadcastReceivers().get(i).getActions()) {
+        filter.addAction(action);
+      }
+      resolveInfo.filter = filter;
+
+      for (String action : androidManifest.getBroadcastReceivers().get(i).getActions()) {
+        Intent intent = new Intent(action);
+        intent.setPackage(androidManifest.getPackageName());
+        addResolveInfoForIntent(intent, resolveInfo);
+      }
+    }
+    packageInfo.receivers = receiverActivityInfos.toArray(new ActivityInfo[0]);
+
     String[] usedPermissions = androidManifest.getUsedPermissions().toArray(new String[]{});
     if (usedPermissions.length == 0) {
       packageInfo.requestedPermissions = null;
@@ -606,7 +635,20 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
       return applicationEnabledSettingMap.get(packageName);
   }
 
-    /***
+  public int checkPermission(String permName, String pkgName) {
+    PackageInfo permissionsInfo = packageInfos.get(pkgName);
+    if (permissionsInfo == null) {
+      return PackageManager.PERMISSION_DENIED;
+    }
+    for (String permission : permissionsInfo.requestedPermissions) {
+      if (permission != null && permission.toString().equals(permName)) {
+        return PackageManager.PERMISSION_GRANTED;
+      }
+    }
+    return PackageManager.PERMISSION_DENIED;
+  }
+
+  /**
    * Goes through the meta data and puts each value in to a
    * bundle as the correct type.
    *

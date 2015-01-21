@@ -192,6 +192,10 @@ public class AndroidManifest {
             receiver.addAction(nameNode.getTextContent());
           }
         }
+        Node permissionItem = receiverNode.getAttributes().getNamedItem("android:permission");
+        if (permissionItem != null) {
+          receiver.setPermission(permissionItem.getTextContent());
+        }
       }
       receivers.add(receiver);
     }
@@ -645,6 +649,6 @@ public class AndroidManifest {
     parseAndroidManifest();
     return usedPermissions;
   }
-}
 
+}
 
