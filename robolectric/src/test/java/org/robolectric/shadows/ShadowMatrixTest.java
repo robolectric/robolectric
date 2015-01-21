@@ -52,4 +52,16 @@ public class ShadowMatrixTest {
 
     assertThat(shadowOf(m).getSetOperations()).contains(entry("rotate", "108.0"));
   }
+  
+  @Test
+  public void testSetNullParam(){
+    Matrix m = new Matrix();
+    try{
+    	shadowOf(m).set(null);
+    }
+    catch(NullPointerException e){
+    	fail("NullPointerException in shadowMatrix.set()");
+    }
+	  assertTrue(true);
+  }
 }
