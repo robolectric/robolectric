@@ -28,9 +28,7 @@ import static org.robolectric.Shadows.shadowOf;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Context.class)
 abstract public class ShadowContext {
-  public static final File CACHE_DIR = createTempDir("android-cache");
   public static final File EXTERNAL_CACHE_DIR = createTempDir("android-external-cache");
-  public static final File FILES_DIR = createTempDir("android-tmp");
   public static final File EXTERNAL_FILES_DIR = createTempDir("android-external-files");
   public static final File DATABASE_DIR = createTempDir("android-database");
 
@@ -62,23 +60,6 @@ abstract public class ShadowContext {
   }
 
   @Implementation
-  public File getCacheDir() {
-    CACHE_DIR.mkdirs();
-    return CACHE_DIR;
-  }
-
-  @Implementation
-  public File getFilesDir() {
-    FILES_DIR.mkdirs();
-    return FILES_DIR;
-  }
-
-  @Implementation
-  public String[] fileList() {
-    return getFilesDir().list();
-  }
-
-  @Implementation
   public File getDatabasePath(String name) {
     File file = new File(name);
     if (file.isAbsolute()) {
@@ -91,7 +72,7 @@ abstract public class ShadowContext {
 
   @Implementation
   public File getExternalCacheDir() {
-    EXTERNAL_CACHE_DIR.mkdir();
+    EXTERNAL_CACHE_DIR.mkdirs();
     return EXTERNAL_CACHE_DIR;
   }
 
@@ -103,39 +84,13 @@ abstract public class ShadowContext {
   }
 
   @Implementation
-  public FileInputStream openFileInput(String path) throws FileNotFoundException {
-    return new FileInputStream(getFileStreamPath(path));
-  }
-
-  @Implementation
-  public FileOutputStream openFileOutput(String path, int mode) throws FileNotFoundException {
-    if ((mode & Context.MODE_APPEND) == Context.MODE_APPEND) {
-      return new FileOutputStream(getFileStreamPath(path), true);
-    }
-    return new FileOutputStream(getFileStreamPath(path));
-  }
-
-  @Implementation
-  public File getFileStreamPath(String name) {
-    if (name.contains(File.separator)) {
-      throw new IllegalArgumentException("File " + name + " contains a path separator");
-    }
-    return new File(getFilesDir(), name);
-  }
-
-  @Implementation
   public SQLiteDatabase openOrCreateDatabase(String name, int mode, SQLiteDatabase.CursorFactory factory) {
     return openOrCreateDatabase(name, mode, factory, null);
   }
 
   @Implementation
   public SQLiteDatabase openOrCreateDatabase(String name, int mode, SQLiteDatabase.CursorFactory factory, DatabaseErrorHandler databaseErrorHandler) {
-    return SQLiteDatabase.openOrCreateDatabase(getDatabasePath(name).getAbsolutePath(), factory, databaseErrorHandler);
-  }
-
-  @Implementation
-  public boolean deleteFile(String name) {
-    return getFileStreamPath(name).delete();
+    return SQLiteDatabase.openOrCreateDatabase(realContext.getDatabasePath(name).getAbsolutePath(), factory, databaseErrorHandler);
   }
 
   /**
@@ -153,8 +108,6 @@ abstract public class ShadowContext {
 
   @Resetter
   public static void reset() {
-    clearFiles(FILES_DIR);
-    clearFiles(CACHE_DIR);
     clearFiles(EXTERNAL_CACHE_DIR);
     clearFiles(EXTERNAL_FILES_DIR);
     clearFiles(DATABASE_DIR);
@@ -171,11 +124,12 @@ abstract public class ShadowContext {
           f.delete();
         }
       }
+      dir.delete();
+      dir.getParentFile().delete();
     }
   }
 
-  public static File createTempDir(String name) {
-    // todo: need to clear these out between tests, delete recursively, etc...
+  private static File createTempDir(String name) {
     try {
       File tmp = File.createTempFile(name, "robolectric");
       if (!tmp.delete()) throw new IOException("could not delete "+tmp);

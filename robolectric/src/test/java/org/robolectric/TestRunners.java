@@ -4,7 +4,7 @@ import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.bytecode.AndroidTranslatorClassInstrumentedTest;
 import org.robolectric.internal.bytecode.ClassInfo;
-import org.robolectric.internal.bytecode.Setup;
+import org.robolectric.internal.bytecode.InstrumentingClassLoaderConfig;
 import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.manifest.AndroidManifest;
@@ -29,8 +29,8 @@ public class TestRunners {
     }
 
     @Override
-    public Setup createSetup() {
-      return new Setup() {
+    public InstrumentingClassLoaderConfig createSetup() {
+      return new InstrumentingClassLoaderConfig() {
         @Override
         public boolean shouldInstrument(ClassInfo classInfo) {
           String name = classInfo.getName();
@@ -74,8 +74,8 @@ public class TestRunners {
       Locale.setDefault(Locale.ENGLISH);
     }
 
-    @Override public Setup createSetup() {
-      return new Setup() {
+    @Override public InstrumentingClassLoaderConfig createSetup() {
+      return new InstrumentingClassLoaderConfig() {
         @Override public boolean shouldAcquire(String name) {
           // todo: whyyyyy!?!? if this isn't there, tests after TestRunnerSequenceTest start failing bad.
           if (name.startsWith("org.mockito.")) return false;

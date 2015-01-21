@@ -3,12 +3,18 @@ package org.robolectric.shadows;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.Scheduler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
+import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ShadowMessageTest {
@@ -159,5 +165,80 @@ public class ShadowMessageTest {
     Handler h = new Handler();
     Message.obtain(h, 123).sendToTarget();
     assertTrue(h.hasMessages(123));
+  }
+  
+  @Test
+  public void testSetGetNext() {
+    Message msg = Message.obtain();
+    Message msg2 = Message.obtain();
+    ShadowMessage sMsg = shadowOf(msg);
+    sMsg.setNext(msg2);
+    assertThat(sMsg.getNext()).isSameAs(msg2);
+  }
+  
+  @Test
+  public void testIsInUse() {
+    ShadowLooper.pauseMainLooper();
+    Handler h = new Handler();
+    Message msg = Message.obtain(h, 123);
+    ShadowMessage sMsg = shadowOf(msg);
+    assertThat(sMsg.isInUse()).isFalse();
+    msg.sendToTarget();
+    assertThat(sMsg.isInUse()).isTrue();
+  }
+  
+  @Test
+  @Config(emulateSdk=19)
+  public void recycle_shouldInvokeRealObject19() {
+    recycle_shouldInvokeRealObject("recycle");
+  }
+
+  @Test
+  @Config(emulateSdk=21)
+  public void recycle_shouldInvokeRealObject21() {
+    recycle_shouldInvokeRealObject("recycleUnchecked");
+  }
+  
+  private void recycle_shouldInvokeRealObject(String recycleMethod) {
+    Handler h = new Handler();
+    Message msg = Message.obtain(h, 234);
+    ReflectionHelpers.callInstanceMethod(msg, recycleMethod);
+    assertThat(msg.what).isZero();
+  }
+  
+  @Test
+  @Config(emulateSdk=19)
+  public void recycle_shouldRemoveMessageFromScheduler19() {
+    recycle_shouldRemoveMessageFromScheduler();
+  }
+  
+  @Test
+  @Config(emulateSdk=21)
+  public void recycle_shouldRemoveMessageFromScheduler21() {
+    recycle_shouldRemoveMessageFromScheduler();
+  }
+  
+  private void recycle_shouldRemoveMessageFromScheduler() {
+    ShadowLooper.pauseMainLooper();
+    Handler h = new Handler();
+    Message msg = Message.obtain(h, 234);
+    msg.sendToTarget();
+    Scheduler scheduler = ShadowLooper.getUiThreadScheduler();
+    assertThat(scheduler.enqueuedTaskCount()).as("before recycle").isEqualTo(1);
+    shadowOf(msg).recycleUnchecked();
+    assertThat(scheduler.enqueuedTaskCount()).as("after recycle").isEqualTo(0);    
+  }
+  
+  @Test
+  public void reset_shouldEmptyMessagePool() {
+    Message dummy1 = Message.obtain();
+    shadowOf(dummy1).recycleUnchecked();
+    Message dummy2 = Message.obtain();
+    assertThat(dummy2).as("before resetting").isSameAs(dummy1);
+
+    shadowOf(dummy2).recycleUnchecked();
+    Robolectric.reset();
+    dummy1 = Message.obtain();
+    assertThat(dummy1).as("after resetting").isNotSameAs(dummy2);
   }
 }

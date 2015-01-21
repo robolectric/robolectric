@@ -1,0 +1,133 @@
+#set($Integer = 0)
+#set($apiLevel = $Integer.parseInt($apiLevel))
+
+package android.hardware.display;
+
+#if ($apiLevel >= 21)
+import android.media.projection.IMediaProjection;
+#end
+
+#if ($apiLevel >= 17)
+import android.os.IBinder;
+import android.os.RemoteException;
+import android.view.DisplayInfo;
+import android.view.Surface;
+
+public class RoboDisplayManager implements IDisplayManager {
+
+#if ($apiLevel >= 21)
+  // API21+
+
+  @Override
+  public void startWifiDisplayScan() throws RemoteException {
+
+  }
+
+  @Override
+  public void stopWifiDisplayScan() throws RemoteException {
+
+  }
+#else
+  @Override
+  public void scanWifiDisplays() {
+
+  }
+#end
+
+#if ($apiLevel >= 19)
+  // API19+
+
+  @Override
+  public void pauseWifiDisplay() throws RemoteException {
+
+  }
+
+  @Override
+  public void resumeWifiDisplay() throws RemoteException {
+
+  }
+#end
+
+#if ($apiLevel >= 21)
+  @Override
+  public int createVirtualDisplay(IVirtualDisplayCallback iVirtualDisplayCallback, IMediaProjection iMediaProjection, String s, String s1, int i, int i1, int i2, Surface surface, int i3) throws RemoteException {
+    return 0;
+  }
+
+  @Override
+  public void resizeVirtualDisplay(IVirtualDisplayCallback iVirtualDisplayCallback, int i, int i1, int i2) throws RemoteException {
+
+  }
+
+  @Override
+  public void setVirtualDisplaySurface(IVirtualDisplayCallback iVirtualDisplayCallback, Surface surface) throws RemoteException {
+
+  }
+
+  @Override
+  public void releaseVirtualDisplay(IVirtualDisplayCallback iVirtualDisplayCallback) throws RemoteException {
+
+  }
+#elseif ($apiLevel >= 19)
+  @Override
+  public int createVirtualDisplay(IBinder binder, String s, String s1, int i, int i1, int i2, Surface surface, int i3) {
+    return 0;
+  }
+
+  @Override
+  public void releaseVirtualDisplay(IBinder binder) {
+
+  }
+#end
+
+  @Override
+  public DisplayInfo getDisplayInfo(int i) throws RemoteException {
+    return null;
+  }
+
+  @Override
+  public int[] getDisplayIds() throws RemoteException {
+    return new int[0];
+  }
+
+  @Override
+  public void registerCallback(IDisplayManagerCallback iDisplayManagerCallback) throws RemoteException {
+
+  }
+
+  @Override
+  public void connectWifiDisplay(String s) throws RemoteException {
+
+  }
+
+  @Override
+  public void disconnectWifiDisplay() throws RemoteException {
+
+  }
+
+  @Override
+  public void renameWifiDisplay(String s, String s1) throws RemoteException {
+
+  }
+
+  @Override
+  public void forgetWifiDisplay(String s) throws RemoteException {
+
+  }
+
+  @Override
+  public WifiDisplayStatus getWifiDisplayStatus() throws RemoteException {
+    return null;
+  }
+
+  @Override
+  public IBinder asBinder() {
+    return null;
+  }
+}
+
+#else
+public class RoboDisplayManager {
+  // Stub class, this was introduced in API 17
+}
+#end

@@ -2,12 +2,14 @@ package org.robolectric.shadows;
 
 import android.accounts.Account;
 import android.app.Activity;
+import android.app.Application;
 import android.content.ContentProvider;
 import android.content.ContentProviderOperation;
 import android.content.ContentProviderResult;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.content.OperationApplicationException;
 import android.content.PeriodicSync;
@@ -28,6 +30,7 @@ import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.manifest.ContentProviderData;
 import org.robolectric.fakes.BaseCursor;
+import org.robolectric.util.ReflectionHelpers;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -395,6 +398,18 @@ public class ShadowContentResolverTest {
   }
 
   @Test
+  public void shouldCancelSync() throws Exception {
+    ContentResolver.requestSync(a, AUTHORITY, new Bundle());
+    ContentResolver.requestSync(b, AUTHORITY, new Bundle());
+    assertTrue(ContentResolver.isSyncActive(a, AUTHORITY));
+    assertTrue(ContentResolver.isSyncActive(b, AUTHORITY));
+
+    ContentResolver.cancelSync(a, AUTHORITY);
+    assertFalse(ContentResolver.isSyncActive(a, AUTHORITY));
+    assertTrue(ContentResolver.isSyncActive(b, AUTHORITY));
+  }
+
+  @Test
   public void shouldSetIsSyncable() throws Exception {
     assertThat(ContentResolver.getIsSyncable(a, AUTHORITY)).isEqualTo(-1);
     assertThat(ContentResolver.getIsSyncable(b, AUTHORITY)).isEqualTo(-1);
@@ -413,19 +428,71 @@ public class ShadowContentResolverTest {
 
   @Test
   public void shouldAddPeriodicSync() throws Exception {
-    ContentResolver.addPeriodicSync(a, AUTHORITY, new Bundle(), 6000l);
-    ShadowContentResolver.Status status = ShadowContentResolver.getStatus(a, AUTHORITY);
-    assertNotNull(status);
-    assertThat(status.syncs.size()).isEqualTo(1);
-    assertThat(status.syncs.get(0).period).isEqualTo(6000l);
-    assertNotNull(status.syncs.get(0).extras);
+	Bundle fooBar = new Bundle();
+    fooBar.putString("foo", "bar");
+    Bundle fooBaz = new Bundle();
+    fooBaz.putString("foo", "baz");
+
+    ContentResolver.addPeriodicSync(a, AUTHORITY, fooBar, 6000L);
+    ContentResolver.addPeriodicSync(a, AUTHORITY, fooBaz, 6000L);
+    ContentResolver.addPeriodicSync(b, AUTHORITY, fooBar, 6000L);
+    ContentResolver.addPeriodicSync(b, AUTHORITY, fooBaz, 6000L);
+    assertThat(ShadowContentResolver.getPeriodicSyncs(a, AUTHORITY)).containsOnly(
+         new PeriodicSync(a, AUTHORITY, fooBar, 6000L),
+         new PeriodicSync(a, AUTHORITY, fooBaz, 6000L));
+    assertThat(ShadowContentResolver.getPeriodicSyncs(b, AUTHORITY)).containsOnly(
+            new PeriodicSync(b, AUTHORITY, fooBar, 6000L),
+            new PeriodicSync(b, AUTHORITY, fooBaz, 6000L));
+
+    // If same extras, but different time, simply update the time.
+    ContentResolver.addPeriodicSync(a, AUTHORITY, fooBar, 42L);
+    ContentResolver.addPeriodicSync(b, AUTHORITY, fooBaz, 42L);
+    assertThat(ShadowContentResolver.getPeriodicSyncs(a, AUTHORITY)).containsOnly(
+         new PeriodicSync(a, AUTHORITY, fooBar, 42L),
+         new PeriodicSync(a, AUTHORITY, fooBaz, 6000L));
+    assertThat(ShadowContentResolver.getPeriodicSyncs(b, AUTHORITY)).containsOnly(
+            new PeriodicSync(b, AUTHORITY, fooBar, 6000L),
+            new PeriodicSync(b, AUTHORITY, fooBaz, 42L));
   }
 
   @Test
   public void shouldRemovePeriodSync() throws Exception {
-    ContentResolver.addPeriodicSync(a, AUTHORITY, new Bundle(), 6000l);
-    ContentResolver.removePeriodicSync(a, AUTHORITY, new Bundle());
-    assertThat(ShadowContentResolver.getStatus(a, AUTHORITY).syncs.size()).isEqualTo(0);
+    Bundle fooBar = new Bundle();
+    fooBar.putString("foo", "bar");
+    Bundle fooBaz = new Bundle();
+    fooBaz.putString("foo", "baz");
+    Bundle foo42 = new Bundle();
+    foo42.putInt("foo", 42);
+    assertThat(ShadowContentResolver.getPeriodicSyncs(b, AUTHORITY)).isEmpty();
+    assertThat(ShadowContentResolver.getPeriodicSyncs(a, AUTHORITY)).isEmpty();
+ 
+    ContentResolver.addPeriodicSync(a, AUTHORITY, fooBar, 6000L);
+    ContentResolver.addPeriodicSync(a, AUTHORITY, fooBaz, 6000L);
+    ContentResolver.addPeriodicSync(a, AUTHORITY, foo42, 6000L);
+    ContentResolver.addPeriodicSync(b, AUTHORITY, fooBar, 6000L);
+    ContentResolver.addPeriodicSync(b, AUTHORITY, fooBaz, 6000L);
+    ContentResolver.addPeriodicSync(b, AUTHORITY, foo42, 6000L);
+
+    assertThat(ShadowContentResolver.getPeriodicSyncs(a, AUTHORITY)).containsOnly(
+        new PeriodicSync(a, AUTHORITY, fooBar, 6000L),
+        new PeriodicSync(a, AUTHORITY, fooBaz, 6000L),
+        new PeriodicSync(a, AUTHORITY, foo42, 6000L));
+
+    ContentResolver.removePeriodicSync(a, AUTHORITY, fooBar);
+    assertThat(ShadowContentResolver.getPeriodicSyncs(a, AUTHORITY)).containsOnly(
+        new PeriodicSync(a, AUTHORITY, fooBaz, 6000L),
+        new PeriodicSync(a, AUTHORITY, foo42, 6000L));
+
+    ContentResolver.removePeriodicSync(a, AUTHORITY, fooBaz);
+    assertThat(ShadowContentResolver.getPeriodicSyncs(a, AUTHORITY)).containsOnly(
+        new PeriodicSync(a, AUTHORITY, foo42, 6000L));
+
+    ContentResolver.removePeriodicSync(a, AUTHORITY, foo42);
+    assertThat(ShadowContentResolver.getPeriodicSyncs(a, AUTHORITY)).isEmpty();
+    assertThat(ShadowContentResolver.getPeriodicSyncs(b, AUTHORITY)).containsOnly(
+            new PeriodicSync(b, AUTHORITY, fooBar, 6000L),
+            new PeriodicSync(b, AUTHORITY, fooBaz, 6000L),
+            new PeriodicSync(b, AUTHORITY, foo42, 6000L));
   }
 
   @Test
@@ -523,6 +590,33 @@ public class ShadowContentResolverTest {
     scr.clearContentObservers();
     assertThat(scr.getContentObserver(EXTERNAL_CONTENT_URI)).isNull();
   }
+    
+  @Test
+  public void shouldRegisterMultipleContentObservers() throws Exception {
+    TestContentObserver co = new TestContentObserver(null);
+    TestContentObserver co1 = new TestContentObserver(null);
+    TestContentObserver co2 = new TestContentObserver(null);
+
+    assertThat(shadowContentResolver.getContentObservers(uri21)).isEmpty();
+
+    contentResolver.registerContentObserver(uri21, true, co);
+    contentResolver.registerContentObserver(uri21, true, co1);
+    contentResolver.registerContentObserver(uri22, true, co2);
+
+    assertThat(shadowContentResolver.getContentObservers(uri21)).containsExactly(co, co1);
+    assertThat(shadowContentResolver.getContentObservers(uri22)).containsExactly(co2);
+
+    assertThat(co.changed).isFalse();
+    assertThat(co1.changed).isFalse();
+    assertThat(co2.changed).isFalse();
+    contentResolver.notifyChange(uri21, null);
+    assertThat(co.changed).isTrue();
+    assertThat(co1.changed).isTrue();
+    assertThat(co2.changed).isFalse();
+
+    shadowContentResolver.clearContentObservers();
+    assertThat(shadowContentResolver.getContentObservers(uri21)).isEmpty();
+  }
 
   @Test
   public void shouldUnregisterContentObservers() throws Exception {
@@ -537,6 +631,37 @@ public class ShadowContentResolverTest {
     assertThat(co.changed).isFalse();
     contentResolver.notifyChange(EXTERNAL_CONTENT_URI, null);
     assertThat(co.changed).isFalse();
+  }
+    
+  @Test
+  public void shouldUnregisterMultipleContentObservers() throws Exception {
+    TestContentObserver co = new TestContentObserver(null);
+    TestContentObserver co1 = new TestContentObserver(null);
+    TestContentObserver co2 = new TestContentObserver(null);
+      
+    contentResolver.registerContentObserver(uri21, true, co);
+    contentResolver.registerContentObserver(uri21, true, co1);
+    contentResolver.registerContentObserver(uri22, true, co);
+    contentResolver.registerContentObserver(uri22, true, co2);
+    assertThat(shadowContentResolver.getContentObservers(uri21)).containsExactly(co, co1);
+    assertThat(shadowContentResolver.getContentObservers(uri22)).containsExactly(co, co2);
+
+    contentResolver.unregisterContentObserver(co);
+    assertThat(shadowContentResolver.getContentObservers(uri21)).containsExactly(co1);
+    assertThat(shadowContentResolver.getContentObservers(uri22)).containsExactly(co2);
+      
+    contentResolver.unregisterContentObserver(co2);
+    assertThat(shadowContentResolver.getContentObservers(uri21)).containsExactly(co1);
+    assertThat(shadowContentResolver.getContentObservers(uri22)).isEmpty();
+
+    assertThat(co.changed).isFalse();
+    assertThat(co1.changed).isFalse();
+    assertThat(co2.changed).isFalse();
+    contentResolver.notifyChange(uri21, null);
+    contentResolver.notifyChange(uri22, null);
+    assertThat(co.changed).isFalse();
+    assertThat(co1.changed).isTrue();
+    assertThat(co2.changed).isFalse();
   }
 
   @Test
@@ -553,7 +678,8 @@ public class ShadowContentResolverTest {
 
   @Test
   public void getProvider_shouldNotReturnAnyProviderWhenManifestIsNull() {
-    RuntimeEnvironment.application = new DefaultTestLifecycle().createApplication(null, null, null);
+    Application application = new DefaultTestLifecycle().createApplication(null, null, null);
+    ReflectionHelpers.callInstanceMethod(application, "attach", ReflectionHelpers.ClassParameter.from(Context.class, RuntimeEnvironment.application.getBaseContext()));
     assertThat(ShadowContentResolver.getProvider(Uri.parse("content://"))).isNull();
   }
 
