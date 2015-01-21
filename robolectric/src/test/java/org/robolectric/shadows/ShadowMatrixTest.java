@@ -6,6 +6,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.assertj.core.api.Assertions.entry;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -65,6 +66,6 @@ public class ShadowMatrixTest {
     catch (Throwable t){
     	fail(t.getMessage());
     }
-    assertTrue(true);
+    assertThat(true).isTrue();
   }
 }
