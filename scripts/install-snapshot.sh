@@ -13,20 +13,17 @@ if [ "${TRAVIS_PULL_REQUEST}" = "false" ] && [ "${TRAVIS_BRANCH}" = "master" ] &
     cd "$PROJECT"; mvn ${ARGUMENTS} clean -Pdist
 
     echo "Building shadows for API 16..."
-    cd "$PROJECT"/robolectric-shadows/shadows-core; mvn ${ARGUMENTS} clean velocity:velocity source:jar javadoc:jar package -Pandroid-16
+    cd "$PROJECT"/robolectric-shadows/shadows-core; mvn ${ARGUMENTS} clean package source:jar javadoc:jar -Pandroid-16
 
     echo "Building shadows for API 17..."
-    cd "$PROJECT"/robolectric-shadows/shadows-core; mvn ${ARGUMENTS} clean velocity:velocity source:jar javadoc:jar package -Pandroid-17
+    cd "$PROJECT"/robolectric-shadows/shadows-core; mvn ${ARGUMENTS} clean package source:jar javadoc:jar -Pandroid-17
 
     echo "Building shadows for API 18..."
-    cd "$PROJECT"/robolectric-shadows/shadows-core; mvn ${ARGUMENTS} clean velocity:velocity source:jar javadoc:jar package -Pandroid-18
+    cd "$PROJECT"/robolectric-shadows/shadows-core; mvn ${ARGUMENTS} clean package source:jar javadoc:jar -Pandroid-18
 
     echo "Building shadows for API 19..."
-    cd "$PROJECT"/robolectric-shadows/shadows-core; mvn ${ARGUMENTS} clean velocity:velocity source:jar javadoc:jar package -Pandroid-19
+    cd "$PROJECT"/robolectric-shadows/shadows-core; mvn ${ARGUMENTS} clean package source:jar javadoc:jar -Pandroid-19
 
-    echo "Cleaning project..."
-    cd "$PROJECT"; mvn ${ARGUMENTS} clean
-
-    echo "Building API 21 and uploading artifacts to Sonatype..."
-    cd "$PROJECT"; mvn ${ARGUMENTS} source:jar javadoc:jar deploy -Pupload,android-21
+    echo "Building Robolectric and uploading artifacts to Sonatype..."
+    cd "$PROJECT"; mvn ${ARGUMENTS} clean package source:jar javadoc:jar deploy -Pupload,android-21
 fi
