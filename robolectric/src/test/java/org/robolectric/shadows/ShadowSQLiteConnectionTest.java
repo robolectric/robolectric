@@ -10,6 +10,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -23,7 +24,10 @@ public class ShadowSQLiteConnectionTest {
 
   @Before
   public void setUp() throws Exception {
-    database = SQLiteDatabase.openOrCreateDatabase(RuntimeEnvironment.application.getDatabasePath("path").getPath(), null);
+    final File databasePath = RuntimeEnvironment.application.getDatabasePath("database.db");
+    databasePath.getParentFile().mkdirs();
+
+    database = SQLiteDatabase.openOrCreateDatabase(databasePath.getPath(), null);
     SQLiteStatement createStatement = database.compileStatement(
         "CREATE TABLE `routine` (`id` INTEGER PRIMARY KEY AUTOINCREMENT , `name` VARCHAR , `lastUsed` INTEGER DEFAULT 0 ,  UNIQUE (`name`)) ;");
     createStatement.execute();

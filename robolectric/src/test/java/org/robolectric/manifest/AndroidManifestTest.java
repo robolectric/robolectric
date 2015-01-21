@@ -1,4 +1,4 @@
-package org.robolectric;
+package org.robolectric.manifest;
 
 import android.Manifest;
 import android.content.BroadcastReceiver;
@@ -8,12 +8,10 @@ import android.content.pm.PackageManager;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
-import org.robolectric.manifest.ActivityData;
-import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
-import org.robolectric.manifest.IntentFilterData;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.test.TemporaryFolder;
 
@@ -50,12 +48,6 @@ import static org.robolectric.util.TestUtil.*;
 public class AndroidManifestTest {
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-  @Test(expected = IllegalArgumentException.class)
-  public void parseManifest_shouldHandleMissingApplicationElement() throws Exception {
-    AndroidManifest config = newConfig("TestAndroidManifestNoApplicationElement.xml");
-    config.parseAndroidManifest();
-  }
-
   @Test
   public void parseManifest_shouldReadContentProviders() throws Exception {
     AndroidManifest config = newConfig("TestAndroidManifestWithContentProviders.xml");
@@ -73,7 +65,7 @@ public class AndroidManifestTest {
     AndroidManifest config = newConfig("TestAndroidManifestWithReceivers.xml");
     assertThat(config.getBroadcastReceivers()).hasSize(7);
 
-    assertThat(config.getBroadcastReceivers().get(0).getClassName()).isEqualTo("org.robolectric.AndroidManifestTest.ConfigTestReceiver");
+    assertThat(config.getBroadcastReceivers().get(0).getClassName()).isEqualTo("org.robolectric.manifest.AndroidManifestTest.ConfigTestReceiver");
     assertThat(config.getBroadcastReceivers().get(0).getActions()).contains("org.robolectric.ACTION1", "org.robolectric.ACTION2");
 
     assertThat(config.getBroadcastReceivers().get(1).getClassName()).isEqualTo("org.robolectric.fakes.ConfigTestReceiver");
@@ -365,7 +357,6 @@ public class AndroidManifestTest {
             "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
             "          package=\"org.robolectric\">\n" +
             "    <uses-sdk " + usesSdkAttrs + "/>\n" +
-            "<application/>" +
             "</manifest>\n");
     return new AndroidManifest(Fs.newFile(f), null, null);
   }
