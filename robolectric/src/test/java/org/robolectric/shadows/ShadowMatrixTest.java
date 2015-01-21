@@ -62,6 +62,9 @@ public class ShadowMatrixTest {
     catch(NullPointerException e){
     	fail("NullPointerException in shadowMatrix.set()");
     }
-	  assertTrue(true);
+    catch (Throwable t){
+    	fail(t.getMessage());
+    }
+    assertTrue(true);
   }
 }
