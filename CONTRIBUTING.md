@@ -12,9 +12,7 @@ Create a feature branch to make your changes:
     
 Mavenize all required dependencies:
 
-    ./scripts/install-maps-jar.sh
-    ./scripts/install-support-jar.sh
-    ./scripts/install-multidex-aar.sh
+    ./scripts/install-dependencies.sh
 
 Perform a full build of all shadows:
 
