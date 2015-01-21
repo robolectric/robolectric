@@ -6,6 +6,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.assertj.core.api.Assertions.entry;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -51,5 +52,20 @@ public class ShadowMatrixTest {
     m.setRotate(108);
 
     assertThat(shadowOf(m).getSetOperations()).contains(entry("rotate", "108.0"));
+  }
+  
+  @Test
+  public void testSetNullParam(){
+    Matrix m = new Matrix();
+    try{
+    	shadowOf(m).set(null);
+    }
+    catch(NullPointerException e){
+    	fail("NullPointerException in shadowMatrix.set()");
+    }
+    catch (Throwable t){
+    	fail(t.getMessage());
+    }
+    assertThat(true).isTrue();
   }
 }
