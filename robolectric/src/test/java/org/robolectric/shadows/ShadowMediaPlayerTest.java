@@ -1406,15 +1406,11 @@ public class ShadowMediaPlayerTest {
       .isNull();
 
     // Check that the mediaInfo was cleared.
-    boolean success = false;
     try {
       shadowMediaPlayer.doSetDataSource(defaultSource);
-      success = true;
-    } catch (AssertionError ae) {
+      Assertions.failBecauseExceptionWasNotThrown(IllegalArgumentException.class);
+    } catch (IllegalArgumentException ie) {
       // We expect this if the static state has been cleared.
-    }
-    if (success) {
-      Assertions.failBecauseExceptionWasNotThrown(AssertionError.class);
     }
 
     // Check that the exception was cleared.
@@ -1462,19 +1458,15 @@ public class ShadowMediaPlayerTest {
   
   @Test
   public void setDataSource_forNoDataSource_asserts() {
-    boolean success = false;
     try {
       mediaPlayer.setDataSource("some unspecified data source");
-      success = true;
+      Assertions.failBecauseExceptionWasNotThrown(AssertionError.class);
+    } catch (IllegalArgumentException a) {
+      assertThat(a.getMessage()).as("assertionMessage")
+      .contains("addException")
+      .contains("addMediaInfo");
     } catch (Exception e) {
       Assertions.fail("Unexpected exception", e);
-    } catch (AssertionError a) {
-      assertThat(a.getMessage()).as("assertionMessage")
-        .contains("addException")
-        .contains("addMediaInfo");
-    }
-    if (success) {
-      Assertions.failBecauseExceptionWasNotThrown(AssertionError.class);
     }
   }
 }
