@@ -11,14 +11,14 @@ import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ShadowTimeTest {
-  
-  static final TimeZone DEFAULT_TIMEZONE = TimeZone.getDefault();
+  private static final TimeZone DEFAULT_TIMEZONE = TimeZone.getDefault();
   
   @After
   public void tearDown() {
@@ -28,7 +28,7 @@ public class ShadowTimeTest {
     TimeZone.setDefault(DEFAULT_TIMEZONE);
   }
   
-  @Test
+  @Test @Config(emulateSdk = 18)
   public void shouldSetToNow() throws Exception {
     Time t = new Time();
     SystemClock.setCurrentTimeMillis(1000);
@@ -36,13 +36,13 @@ public class ShadowTimeTest {
     assertThat(t.toMillis(false)).isEqualTo(1000);
   }
 
-  @Test
+  @Test @Config(emulateSdk = 18)
   public void shouldHaveNoArgsConstructor() throws Exception {
     Time t = new Time();
     assertNotNull(t.timezone);
   }
 
-  @Test
+  @Test @Config(emulateSdk = 18)
   public void shouldHaveCopyConstructor() throws Exception {
     Time t = new Time();
     t.setToNow();
@@ -56,7 +56,7 @@ public class ShadowTimeTest {
     assertEquals(t.second, t2.second);
   }
 
-  @Test
+  @Test @Config(emulateSdk = 18)
   public void shouldHaveSetTime() throws Exception {
     Time t = new Time();
     t.setToNow();
@@ -71,7 +71,7 @@ public class ShadowTimeTest {
     assertEquals(t.second, t2.second);
   }
 
-  @Test
+  @Test @Config(emulateSdk = 18)
   public void shouldHaveSet3Args() throws Exception {
     Time t = new Time();
     t.set(1, 1, 2000);
@@ -80,7 +80,7 @@ public class ShadowTimeTest {
     assertEquals(t.monthDay, 1);
   }
 
-  @Test
+  @Test @Config(emulateSdk = 18)
   public void shouldHaveSet6Args() throws Exception {
     Time t = new Time();
     t.set(1, 1, 1, 1, 1, 2000);
@@ -92,13 +92,13 @@ public class ShadowTimeTest {
     assertEquals(t.hour, 1);
   }
 
-  @Test
+  @Test @Config(emulateSdk = 18)
   public void shouldHaveTimeZoneConstructor() throws Exception {
     Time t = new Time("UTC");
     assertEquals(t.timezone, "UTC");
   }
 
-  @Test
+  @Test @Config(emulateSdk = 18)
   public void shouldClear() throws Exception {
     Time t = new Time();
     t.setToNow();
@@ -116,19 +116,19 @@ public class ShadowTimeTest {
     assertEquals(-1, t.isDst);
   }
 
-  @Test
+  @Test @Config(emulateSdk = 18)
   public void shouldHaveToMillis() throws Exception {
     Time t = new Time();
     t.set(86400 * 1000);
     assertEquals(86400 * 1000, t.toMillis(false));
   }
 
-  @Test
+  @Test @Config(emulateSdk = 18)
   public void shouldHaveCurrentTimeZone() throws Exception {
     assertNotNull(Time.getCurrentTimezone());
   }
   
-  @Test
+  @Test @Config(emulateSdk = 18)
   public void shouldSwitchTimeZones() throws Exception {
     Time t = new Time("UTC");
   	
@@ -144,7 +144,7 @@ public class ShadowTimeTest {
     assertThat(t.toMillis(true)).isEqualTo(1414213562000L);
   }
 
-  @Test
+  @Test @Config(emulateSdk = 18)
   public void shouldHaveCompareAndBeforeAfter() throws Exception {
     Time a = new Time();
     Time b = new Time();
@@ -164,7 +164,7 @@ public class ShadowTimeTest {
     assertThat(a.before(b)).isTrue();
   }
 
-  @Test
+  @Test @Config(emulateSdk = 18)
   public void shouldHaveParse() throws Exception {
     Time t = new Time("Europe/Berlin");
     assertFalse(t.parse("20081013T160000"));
@@ -184,7 +184,7 @@ public class ShadowTimeTest {
     assertEquals(0, t.second);
   }
   
-  @Test
+  @Test @Config(emulateSdk = 18)
   public void shouldParseRfc3339() {
     for (String tz : Arrays.asList("Europe/Berlin", "America/Los Angeles", "Australia/Adelaide")) {
       String desc = "Eval when local timezone is " + tz;
@@ -202,7 +202,7 @@ public class ShadowTimeTest {
       assertFalse(desc, t.allDay);
 
       t = new Time("Europe/Berlin");
-      assertTrue(desc, t.parse3339("2008-10-13T16:30:50.1000+07:00"));
+      assertTrue(desc, t.parse3339("2008-10-13T16:30:50.000+07:00"));
       assertEquals(desc, 2008, t.year);
       assertEquals(desc, 9, t.month);
       assertEquals(desc, 13, t.monthDay);
@@ -213,7 +213,7 @@ public class ShadowTimeTest {
       assertFalse(desc, t.allDay);
     
       t = new Time("Europe/Berlin");
-      assertTrue(desc, t.parse3339("2008-10-13T16:30:50.999-03:00"));
+      assertTrue(desc, t.parse3339("2008-10-13T16:30:50.999-03"));
       assertEquals(desc, 2008, t.year);
       assertEquals(desc, 9, t.month);
       assertEquals(desc, 13, t.monthDay);
@@ -242,7 +242,7 @@ public class ShadowTimeTest {
     t.parse("BLARGH");
   }
 
-  @Test
+  @Test @Config(emulateSdk = 18)
   public void shouldHaveParseShort() throws Exception {
     Time t = new Time();
     t.parse("20081013");
@@ -254,7 +254,7 @@ public class ShadowTimeTest {
     assertEquals(0, t.second);
   }
 
-  @Test
+  @Test @Config(emulateSdk = 18)
   public void shouldFormat() throws Exception {
     Time t = new Time(Time.TIMEZONE_UTC);
     t.set(3600000L);
@@ -263,7 +263,7 @@ public class ShadowTimeTest {
     assertEquals("Hello epoch  1:00 AM", t.format("Hello epoch %l:%M %p"));
   }
 
-  @Test
+  @Test @Config(emulateSdk = 18)
   public void shouldFormatAndroidStrings() throws Exception {
     Time t = new Time("UTC");
     // NOTE: month is zero-based.
@@ -289,7 +289,7 @@ public class ShadowTimeTest {
         t.format("%-l:%M%^p"));
   }
 
-  @Test
+  @Test @Config(emulateSdk = 18)
   public void shouldFormatAllFormats() throws Exception {
     Time t = new Time("Asia/Tokyo");
     t.set(1407496560000L);
@@ -326,16 +326,16 @@ public class ShadowTimeTest {
     assertEquals("5", t.format("%u"));
     assertEquals("32", t.format("%V"));
     assertEquals("5", t.format("%w"));
-    assertEquals("August 8, 2014", t.format("%x"));
-    assertEquals("8:16:00 PM", t.format("%X"));
+    assertEquals("08/08/2014", t.format("%x"));
+    assertEquals("08:16:00 PM", t.format("%X"));
     assertEquals("14", t.format("%y"));
     assertEquals("2014", t.format("%Y"));
     assertEquals("+0900", t.format("%z"));
     assertEquals("JST", t.format("%Z"));
 
     // Case.
-    assertEquals("pm", t.format("%^P"));
-    assertEquals("pm", t.format("%#P"));
+    assertEquals("PM", t.format("%^P"));
+    assertEquals("PM", t.format("%#P"));
 
     // Padding.
     assertEquals("8", t.format("%-l"));
@@ -346,7 +346,7 @@ public class ShadowTimeTest {
     assertEquals("%", t.format("%%"));
   }
 
-  @Test
+  @Test @Config(emulateSdk = 18)
   public void shouldFormat2445() throws Exception {
     Time t = new Time();
     assertEquals("19700101T000000", t.format2445());
@@ -355,21 +355,21 @@ public class ShadowTimeTest {
     assertEquals("19700101T000000Z",t.format2445());
   }
 
-  @Test
+  @Test @Config(emulateSdk = 18)
   public void shouldFormat3339() throws Exception {
     Time t = new Time("Europe/Berlin");
     assertEquals("1970-01-01T00:00:00.000+00:00", t.format3339(false));
     assertEquals("1970-01-01", t.format3339(true));
   }
 
-  @Test
+  @Test @Config(emulateSdk = 18)
   public void testIsEpoch() throws Exception {
     Time t = new Time();
     boolean isEpoch = Time.isEpoch(t);
     assertEquals(true, isEpoch);
   }
 
-  @Test
+  @Test @Config(emulateSdk = 18)
   public void testGetJulianDay() throws Exception {
     Time time = new Time();
 
@@ -393,7 +393,7 @@ public class ShadowTimeTest {
     }
   }
 
-  @Test
+  @Test @Config(emulateSdk = 18)
   public void testSetJulianDay() throws Exception {
     Time time = new Time();
     time.set(0, 0, 0, 12, 5, 2008);
