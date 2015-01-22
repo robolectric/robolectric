@@ -28,6 +28,10 @@ public class DataSource {
     return toDataSource(uri.toString());
   }
 
+  public static DataSource toDataSource(Context context, Uri uri, Map<String, String> headers) {
+    return toDataSource(context, uri);
+  }
+
   public static DataSource toDataSource(String uri, Map<String, String> headers) {
     return toDataSource(uri);
   }
