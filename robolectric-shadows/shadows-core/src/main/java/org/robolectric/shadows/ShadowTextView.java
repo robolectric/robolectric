@@ -69,12 +69,6 @@ public class ShadowTextView extends ShadowView {
   }
 
   @Implementation
-  public boolean onPreDraw() {
-    // Stub this method to avoid calling native code we can't shadow for API 21
-    return true;
-  }
-
-  @Implementation
   public boolean onKeyDown(int keyCode, KeyEvent event) {
     previousKeyCodes.add(keyCode);
     previousKeyEvents.add(event);
