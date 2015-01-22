@@ -58,6 +58,7 @@ public class ShadowContextImpl extends ShadowContext {
 #end
     SYSTEM_SERVICE_MAP.put(Context.ACCESSIBILITY_SERVICE, "android.view.accessibility.AccessibilityManager");
     SYSTEM_SERVICE_MAP.put(Context.ACCOUNT_SERVICE, "android.accounts.AccountManager");
+    SYSTEM_SERVICE_MAP.put(Context.NFC_SERVICE, "android.nfc.NfcManager");
   }
 
   private Map<String, Object> systemServices = new HashMap<String, Object>();
