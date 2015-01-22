@@ -189,6 +189,7 @@ public class ShadowBitmap {
     shadowBitmap.width = width;
     shadowBitmap.height = height;
     shadowBitmap.config = config;
+    shadowBitmap.setMutable(true);
     return scaledBitmap;
   }
 
@@ -291,6 +292,7 @@ public class ShadowBitmap {
     Bitmap newBitmap = Bitmap.createBitmap(width, height, config);
     ShadowBitmap shadowBitmap = shadowOf(newBitmap);
 
+    shadowBitmap.setMutable(false);
     shadowBitmap.createdFromColors = colors;
     shadowBitmap.colors = new int[colors.length];
     System.arraycopy(colors, 0, shadowBitmap.colors, 0, colors.length);
