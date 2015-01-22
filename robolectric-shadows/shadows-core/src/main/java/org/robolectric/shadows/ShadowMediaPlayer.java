@@ -67,9 +67,15 @@ import static org.robolectric.shadows.util.DataSource.toDataSource;
  * <li>Emulation of exceptions when calling {@link #setDataSource} using
  * {@link #addException}.</li>
  * </ul>
+ *
+ * <b>Note</b>: One gotcha with this shadow is that you need to either configure an
+ * exception or a {@link ShadowMediaPlayer.MediaInfo} instance for that data source
+ * (using {@link #addException} or {@link addMediaInfo} respectively) <i>before</i>
+ * calling {@link #setDataSource}, otherwise you'll get an
+ * {@link IllegalArgumentException}.
  * 
- * The current features of <code>ShadowMediaPlayer</code> were developed for
- * testing playback of audio tracks. Thus support for emulating timed text and
+ * The current features of <code>ShadowMediaPlayer</code> were focussed on development
+ * for testing playback of audio tracks. Thus support for emulating timed text and
  * video events is incomplete. None of these features would be particularly onerous
  * to add/fix - contributions welcome, of course!
  * 
@@ -599,7 +605,7 @@ public class ShadowMediaPlayer {
    */
   public void doSetDataSource(DataSource dataSource) {
     if (mediaInfo.get(dataSource) == null) {
-      throw new AssertionError("Don't know what to do with dataSource " + dataSource +
+      throw new IllegalArgumentException("Don't know what to do with dataSource " + dataSource +
           " - either add an exception with addException() or media info with addMediaInfo()");
     }
     this.dataSource = dataSource;
