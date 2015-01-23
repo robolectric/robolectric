@@ -342,7 +342,7 @@ public class ShadowView {
     if (!realView.isEnabled()) {
       throw new RuntimeException("View is not enabled and cannot be clicked");
     }
-    if (!AccessibilityUtil.isAccessible(realView)) {
+    if (!AccessibilityUtil.passesAccessibilityChecksIfEnabled(realView)) {
       throw new RuntimeException("View has accessibility issues.");
     }
     

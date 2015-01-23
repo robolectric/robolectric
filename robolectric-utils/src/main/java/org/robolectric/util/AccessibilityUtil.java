@@ -36,7 +36,7 @@ public class AccessibilityUtil {
    * @return {@code false} if accessibility checks are enabled and a problem
    * was found. {@code true} otherwise.
    */
-  public static boolean isAccessible(View view) {
+  public static boolean passesAccessibilityChecksIfEnabled(View view) {
     boolean checksEnabled = false;
     boolean warningsAsErrors = false;
 
@@ -88,6 +88,21 @@ public class AccessibilityUtil {
       return true;
     }
     
+    return passesAccessibilityChecks(view, warningsAsErrors);
+  }
+
+  /**
+   * Check a {@code View} for accessibility. Prints details of issues
+   * found to System.out.
+   *
+   * @param view The {@code View} to examine
+   * @param warningsAsErrors Set to {@code true} to treat warnings found
+   * the same as errors.
+   * @return {@code false} if accessibility checks are enabled and a problem
+   * was found. {@code true} otherwise.
+   */
+  public static boolean passesAccessibilityChecks(View view,
+      boolean warningsAsErrors) {
     /* 
      * For the initial release, it's fine to ignore the forRobolectricVersion 
      * because there is only one version. These sets need to be adjusted in 
@@ -117,7 +132,7 @@ public class AccessibilityUtil {
             results, AccessibilityCheckResultType.WARNING));
     }
     for (AccessibilityViewCheckResult error : errors) {
-      System.out.println(error.getMessage().toString());
+      System.out.println("Accessibility Issue: " + error.getMessage().toString());
     }
 
     return (errors.size() == 0);
