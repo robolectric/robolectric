@@ -166,7 +166,7 @@ public class InstrumentingClassLoaderConfig {
     return strings;
   }
 
-  private boolean isFromAndroidSdk(ClassInfo classInfo) {
+  protected boolean isFromAndroidSdk(ClassInfo classInfo) {
     final String className = classInfo.getName();
     for (String instrumentedPackage : INSTRUMENTED_PACKAGES) {
       if (className.startsWith(instrumentedPackage)) {
