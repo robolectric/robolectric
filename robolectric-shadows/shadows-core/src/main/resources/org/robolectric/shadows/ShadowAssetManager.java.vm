@@ -1,3 +1,14 @@
+#set($Integer = 0)
+#set($apiLevel = $Integer.parseInt($apiLevel))
+
+#if ($apiLevel >= 21)
+#set($ptrClass = "long")
+#set($ptrClassBoxed = "Long")
+#else
+#set($ptrClass = "int")
+#set($ptrClassBoxed = "Integer")
+#end
+
 package org.robolectric.shadows;
 
 import android.content.res.AssetFileDescriptor;
@@ -48,9 +59,9 @@ public final class ShadowAssetManager {
   public static final int STYLE_DENSITY = 5;
 
   private String qualifiers = "";
-  private Map<Long, Resources.Theme> themesById = new LinkedHashMap<>();
+  private Map<$ptrClassBoxed, Resources.Theme> themesById = new LinkedHashMap<>();
   private int nextInternalThemeId = 1000;
-  private static final Map<Long, List<OverlayedStyle>> APPLIED_STYLES = new HashMap<>();
+  private static final Map<$ptrClassBoxed, List<OverlayedStyle>> APPLIED_STYLES = new HashMap<>();
   private AndroidManifest appManifest;
   private ResourceLoader resourceLoader;
 
@@ -113,8 +124,8 @@ public final class ShadowAssetManager {
     return charSequences;
   }
 
-  @HiddenApi @Implementation // TODO: API 21 int -> long
-  public boolean getThemeValue(long theme, int ident, TypedValue outValue, boolean resolveRefs) {
+  @HiddenApi @Implementation
+  public boolean getThemeValue($ptrClass theme, int ident, TypedValue outValue, boolean resolveRefs) {
     ResourceIndex resourceIndex = resourceLoader.getResourceIndex();
     ResName resName = resourceIndex.getResName(ident);
     Resources.Theme theTheme = getThemeByInternalId(theme);
@@ -244,13 +255,13 @@ public final class ShadowAssetManager {
     return nextInternalThemeId++;
   }
 
-  @HiddenApi @Implementation // TODO: API 21 int -> long
-  synchronized public void releaseTheme(long theme) {
+  @HiddenApi @Implementation
+  synchronized public void releaseTheme($ptrClass theme) {
     themesById.remove(theme);
   }
 
-  @HiddenApi @Implementation // TODO: API 21 int -> long
-  public static void applyThemeStyle(long theme, int styleRes, boolean force) {
+  @HiddenApi @Implementation
+  public static void applyThemeStyle($ptrClass theme, int styleRes, boolean force) {
     if (!APPLIED_STYLES.containsKey(theme)) {
       APPLIED_STYLES.put(theme, new LinkedList<OverlayedStyle>());
     }
@@ -266,7 +277,7 @@ public final class ShadowAssetManager {
     APPLIED_STYLES.get(theme).add(new OverlayedStyle(style, force));
   }
 
-  static List<OverlayedStyle> getOverlayThemeStyles(long themeResourceId) {
+  static List<OverlayedStyle> getOverlayThemeStyles($ptrClass themeResourceId) {
     return APPLIED_STYLES.get(themeResourceId);
   }
 
@@ -280,18 +291,18 @@ public final class ShadowAssetManager {
     }
   }
 
-  @HiddenApi @Implementation // TODO: API 21 int -> long
-  public static void copyTheme(long dest, long source) {
+  @HiddenApi @Implementation
+  public static void copyTheme($ptrClass dest, long source) {
     throw new UnsupportedOperationException();
   }
 
   /////////////////////////
 
-  synchronized public void setTheme(long internalThemeId, Resources.Theme theme) {
+  synchronized public void setTheme($ptrClass internalThemeId, Resources.Theme theme) {
     themesById.put(internalThemeId, theme);
   }
 
-  synchronized private Resources.Theme getThemeByInternalId(long internalThemeId) {
+  synchronized private Resources.Theme getThemeByInternalId($ptrClass internalThemeId) {
     return themesById.get(internalThemeId);
   }
 
