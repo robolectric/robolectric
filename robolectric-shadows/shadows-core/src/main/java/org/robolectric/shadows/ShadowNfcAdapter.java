@@ -2,13 +2,11 @@ package org.robolectric.shadows;
 
 import android.app.Activity;
 import android.app.PendingIntent;
-import android.content.Context;
 import android.content.IntentFilter;
 import android.nfc.NfcAdapter;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.util.ReflectionHelpers;
 
 @Implements(NfcAdapter.class)
 public class ShadowNfcAdapter {
@@ -18,11 +16,6 @@ public class ShadowNfcAdapter {
   private IntentFilter[] filters;
   private String[][] techLists;
   private Activity disabledActivity;
-
-  @Implementation
-  public static NfcAdapter getDefaultAdapter(Context context) {
-    return ReflectionHelpers.callConstructor(NfcAdapter.class);
-  }
 
   @Implementation
   public void enableForegroundDispatch(Activity activity, PendingIntent intent, IntentFilter[] filters, String[][] techLists) {

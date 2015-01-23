@@ -53,6 +53,12 @@
       <scope>provided</scope>
     </dependency>
 
+    <dependency>
+      <groupId>com.ibm.icu</groupId>
+      <artifactId>icu4j</artifactId>
+      <version>53.1</version>
+    </dependency>
+
     <!-- SQLite Dependencies -->
     <dependency>
       <groupId>com.almworks.sqlite4java</groupId>
@@ -367,22 +373,6 @@
                 </goals>
                 <configuration>
                   <artifacts>
-                    <artifact>
-                      <file>dist/shadows-core-3.0-SNAPSHOT-15.jar</file>
-                      <type>jar</type>
-                      <classifier>15</classifier>
-                    </artifact>
-                    <artifact>
-                      <file>dist/shadows-core-3.0-SNAPSHOT-15-javadoc.jar</file>
-                      <type>jar</type>
-                      <classifier>15-javadoc</classifier>
-                    </artifact>
-                    <artifact>
-                      <file>dist/shadows-core-3.0-SNAPSHOT-15-sources.jar</file>
-                      <type>jar</type>
-                      <classifier>15-sources</classifier>
-                    </artifact>
-
                     <artifact>
                       <file>dist/shadows-core-3.0-SNAPSHOT-16.jar</file>
                       <type>jar</type>

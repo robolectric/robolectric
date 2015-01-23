@@ -6,6 +6,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.assertj.core.api.Assertions.entry;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -51,5 +52,44 @@ public class ShadowMatrixTest {
     m.setRotate(108);
 
     assertThat(shadowOf(m).getSetOperations()).contains(entry("rotate", "108.0"));
+  }
+
+  @Test
+  public void set_shouldAddOpsToMatrix() {
+    final Matrix matrix = new Matrix();
+    matrix.setScale(1, 1);
+    matrix.preScale(2, 2, 2, 2);
+    matrix.postScale(3, 3, 3, 3);
+
+    final ShadowMatrix shadow = shadowOf(matrix);
+    assertThat(shadow.getSetOperations().get("scale")).isEqualTo("1.0 1.0");
+    assertThat(shadow.getPreOperations().get(0)).isEqualTo("scale 2.0 2.0 2.0 2.0");
+    assertThat(shadow.getPostOperations().get(0)).isEqualTo("scale 3.0 3.0 3.0 3.0");
+  }
+
+  @Test
+  public void set_shouldOverrideValues(){
+    final Matrix matrix1 = new Matrix();
+    matrix1.setScale(1, 2);
+
+    final Matrix matrix2 = new Matrix();
+    matrix2.setScale(3, 4);
+    matrix2.set(matrix1);
+
+    final ShadowMatrix shadow = shadowOf(matrix2);
+    assertThat(shadow.getSetOperations().get("scale")).isEqualTo("1.0 2.0");
+  }
+
+  @Test
+  public void set_whenNull_shouldReset() {
+    final Matrix matrix1 = new Matrix();
+    matrix1.setScale(1, 2);
+
+    final Matrix matrix2 = new Matrix();
+    matrix2.set(matrix1);
+    matrix2.set(null);
+
+    final ShadowMatrix shadow = shadowOf(matrix2);
+    assertThat(shadow.getSetOperations()).isEmpty();
   }
 }

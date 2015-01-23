@@ -67,6 +67,12 @@ public class ShadowBitmapTest {
   }
 
   @Test
+  public void shouldCreateMutableBitmap() throws Exception {
+    Bitmap mutableBitmap = Bitmap.createBitmap(100, 200, Config.ARGB_8888);
+    assertTrue(mutableBitmap.isMutable());
+  }
+
+  @Test
   public void shouldRecycleBitmap() throws Exception {
     Bitmap bitmap = Bitmap.createBitmap(100, 200, Config.ARGB_8888);
     bitmap.recycle();
