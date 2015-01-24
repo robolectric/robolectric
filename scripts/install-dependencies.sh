@@ -59,7 +59,7 @@ function install_maps() {
   done
 }
 
-if [ -z "{ANDROID_HOME}" ]; then
+if [ -z "${ANDROID_HOME}" ]; then
   echo "You must set \$ANDROID_HOME"
   exit 1
 fi
