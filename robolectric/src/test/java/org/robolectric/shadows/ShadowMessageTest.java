@@ -224,9 +224,9 @@ public class ShadowMessageTest {
     Message msg = Message.obtain(h, 234);
     msg.sendToTarget();
     Scheduler scheduler = ShadowLooper.getUiThreadScheduler();
-    assertThat(scheduler.enqueuedTaskCount()).as("before recycle").isEqualTo(1);
+    assertThat(scheduler.size()).as("before recycle").isEqualTo(1);
     shadowOf(msg).recycleUnchecked();
-    assertThat(scheduler.enqueuedTaskCount()).as("after recycle").isEqualTo(0);    
+    assertThat(scheduler.size()).as("after recycle").isEqualTo(0);
   }
   
   @Test

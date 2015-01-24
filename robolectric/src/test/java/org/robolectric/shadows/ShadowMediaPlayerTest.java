@@ -390,7 +390,7 @@ public class ShadowMediaPlayerTest {
     scheduler.advanceBy(200);
 
     // We should have a pending completion callback.
-    assertThat(scheduler.enqueuedTaskCount()).isEqualTo(1);
+    assertThat(scheduler.size()).isEqualTo(1);
 
     shadowMediaPlayer.invokeErrorListener(2, 3);
     assertThat(scheduler.advanceToLastPostedRunnable()).isFalse();

@@ -9,24 +9,22 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class SchedulerTest {
-  private Transcript transcript;
-  private Scheduler scheduler;
+  private final Scheduler scheduler = new Scheduler();
+  private final Transcript transcript = new Transcript();
 
   @Before
   public void setUp() throws Exception {
-    scheduler = new Scheduler();
     scheduler.pause();
-    transcript = new Transcript();
   }
 
   @Test
-  public void shouldAdvanceTimeEvenIfThereIsNoWork() throws Exception {
+  public void advanceTo_shouldAdvanceTimeEvenIfThereIsNoWork() throws Exception {
     scheduler.advanceTo(1000);
     assertThat(scheduler.getCurrentTime()).isEqualTo(1000);
   }
 
   @Test
-  public void testTick_ReturnsTrueIffSomeJobWasRun() throws Exception {
+  public void advanceBy_returnsTrueIffSomeJobWasRun() throws Exception {
     scheduler.postDelayed(new AddToTranscript("one"), 0);
     scheduler.postDelayed(new AddToTranscript("two"), 0);
     scheduler.postDelayed(new AddToTranscript("three"), 1000);
@@ -42,7 +40,7 @@ public class SchedulerTest {
   }
 
   @Test
-  public void testShadowPostDelayed() throws Exception {
+  public void postDelayed_addsAJobToBeRunInTheFuture() throws Exception {
     scheduler.postDelayed(new AddToTranscript("one"), 1000);
     scheduler.postDelayed(new AddToTranscript("two"), 2000);
     scheduler.postDelayed(new AddToTranscript("three"), 3000);
@@ -61,7 +59,7 @@ public class SchedulerTest {
   }
 
   @Test
-  public void testShadowPostAtFrontOfQueue() throws Exception {
+  public void postAtFrontOfQueue_addsJobAtFrontOfQueue() throws Exception {
     scheduler.post(new AddToTranscript("one"));
     scheduler.post(new AddToTranscript("two"));
     scheduler.postAtFrontOfQueue(new AddToTranscript("three"));
@@ -77,14 +75,14 @@ public class SchedulerTest {
   }
 
   @Test
-  public void testShadowPostAtFrontOfQueue_whenUnpaused() throws Exception {
+  public void postAtFrontOfQueue_whenUnpaused_runsJobs() throws Exception {
     scheduler.unPause();
     scheduler.postAtFrontOfQueue(new AddToTranscript("three"));
     transcript.assertEventsSoFar("three");
   }
 
   @Test
-  public void testShadowPostDelayed_WhenMoreItemsAreAdded() throws Exception {
+  public void postDelayed_whenMoreItemsAreAdded_runsJobs() throws Exception {
     scheduler.postDelayed(new Runnable() {
       @Override
       public void run() {
@@ -113,20 +111,20 @@ public class SchedulerTest {
   }
 
   @Test
-  public void removeShouldRemoveAllInstancesOfRunnableFromQueue() throws Exception {
+  public void remove_ShouldRemoveAllInstancesOfRunnableFromQueue() throws Exception {
     scheduler.post(new TestRunnable());
     TestRunnable runnable = new TestRunnable();
     scheduler.post(runnable);
     scheduler.post(runnable);
-    assertThat(scheduler.enqueuedTaskCount()).isEqualTo(3);
+    assertThat(scheduler.size()).isEqualTo(3);
     scheduler.remove(runnable);
-    assertThat(scheduler.enqueuedTaskCount()).isEqualTo(1);
+    assertThat(scheduler.size()).isEqualTo(1);
     scheduler.advanceToLastPostedRunnable();
     assertThat(runnable.wasRun).isFalse();
   }
 
   @Test
-  public void resetShouldUnPause() throws Exception {
+  public void reset_shouldUnPause() throws Exception {
     scheduler.pause();
 
     TestRunnable runnable = new TestRunnable();
@@ -140,7 +138,7 @@ public class SchedulerTest {
   }
 
   @Test
-  public void resetShouldClearPendingRunnables() throws Exception {
+  public void reset_shouldClearPendingRunnables() throws Exception {
     scheduler.pause();
 
     TestRunnable runnable1 = new TestRunnable();
@@ -159,7 +157,7 @@ public class SchedulerTest {
 
   @Test
   public void postDelayed_whenAnotherPostDelayedIsEnqueued_runsInCorrectSequence() {
-    final List<Integer> order = new ArrayList<Integer>();
+    final List<Integer> order = new ArrayList<>();
     scheduler.unPause();
     scheduler.postDelayed(new Runnable() {
       @Override
@@ -181,7 +179,7 @@ public class SchedulerTest {
 
   @Test
   public void postDelayed_whenAnotherPostDelayedIsEnqueued_runsInCorrectSequence2() {
-    final List<Integer> order = new ArrayList<Integer>();
+    final List<Integer> order = new ArrayList<>();
     scheduler.postDelayed(new Runnable() {
       @Override
       public void run() {
@@ -203,7 +201,7 @@ public class SchedulerTest {
 
   @Test
   public void post_whenTheRunnableThrows_executesSubsequentRunnables() throws Exception {
-    final List<Integer> runnablesThatWereRun = new ArrayList<Integer>();
+    final List<Integer> runnablesThatWereRun = new ArrayList<>();
     scheduler.post(new Runnable() {
       @Override
       public void run() {
