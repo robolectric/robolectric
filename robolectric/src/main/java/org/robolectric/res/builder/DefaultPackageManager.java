@@ -105,6 +105,7 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
   private Map<Intent, List<ResolveInfo>> resolveInfoForIntent = new TreeMap<Intent, List<ResolveInfo>>(new IntentComparator());
   private Map<ComponentName, ComponentState> componentList = new LinkedHashMap<ComponentName, ComponentState>();
   private Map<ComponentName, Drawable> drawableList = new LinkedHashMap<ComponentName, Drawable>();
+  private Map<String, Drawable> applicationIcons = new HashMap<String, Drawable>();
   private Map<String, Boolean> systemFeatureList = new LinkedHashMap<String, Boolean>();
   private Map<IntentFilter, ComponentName> preferredActivities = new LinkedHashMap<IntentFilter, ComponentName>();
   private Map<Pair<String, Integer>, Drawable> drawables = new LinkedHashMap<Pair<String, Integer>, Drawable>();
@@ -287,6 +288,16 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
   @Override
   public CharSequence getApplicationLabel(ApplicationInfo info) {
     return info.name;
+  }
+
+  @Override
+  public Drawable getApplicationIcon(String packageName) {
+    return applicationIcons.get(packageName);
+  }
+
+  @Override
+  public void setApplicationIcon(String packageName, Drawable drawable) {
+    applicationIcons.put(packageName, drawable);
   }
 
   @Override
