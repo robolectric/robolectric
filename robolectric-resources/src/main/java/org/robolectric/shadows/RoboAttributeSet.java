@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import android.content.res.Resources;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import org.robolectric.RuntimeEnvironment;
