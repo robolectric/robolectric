@@ -13,7 +13,7 @@ public class SdkConfig {
   public static final int FALLBACK_SDK_VERSION = Build.VERSION_CODES.JELLY_BEAN;
 
   static {
-    SUPPORTED_APIS = new HashMap<Integer, SdkVersion>();
+    SUPPORTED_APIS = new HashMap<>();
     SUPPORTED_APIS.put(Build.VERSION_CODES.JELLY_BEAN, new SdkVersion("4.1.2_r1", "0"));
     SUPPORTED_APIS.put(Build.VERSION_CODES.JELLY_BEAN_MR1, new SdkVersion("4.2.2_r1.2", "0"));
     SUPPORTED_APIS.put(Build.VERSION_CODES.JELLY_BEAN_MR2, new SdkVersion("4.3_r2", "0"));
@@ -43,7 +43,8 @@ public class SdkConfig {
         createDependency("org.robolectric", "android-all", artifactVersionString, null),
         createDependency("org.robolectric", "shadows-core", "3.0-SNAPSHOT", Integer.toString(apiLevel)),
         createDependency("org.json", "json", "20080701", null),
-        createDependency("org.ccil.cowan.tagsoup", "tagsoup", "1.2", null)
+        createDependency("org.ccil.cowan.tagsoup", "tagsoup", "1.2", null),
+        createDependency("com.ibm.icu", "icu4j", "53.1", null)
     };
   }
 
