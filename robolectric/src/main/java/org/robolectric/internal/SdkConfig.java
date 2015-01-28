@@ -43,7 +43,8 @@ public class SdkConfig {
         createDependency("org.robolectric", "android-all", artifactVersionString, null),
         createDependency("org.robolectric", "shadows-core", "3.0-SNAPSHOT", Integer.toString(apiLevel)),
         createDependency("org.json", "json", "20080701", null),
-        createDependency("org.ccil.cowan.tagsoup", "tagsoup", "1.2", null)
+        createDependency("org.ccil.cowan.tagsoup", "tagsoup", "1.2", null),
+        createDependency("com.ibm.icu", "icu4j", "53.1", null)
     };
   }
 
