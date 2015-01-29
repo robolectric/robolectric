@@ -12,7 +12,7 @@ public class ShadowColor {
 
   @Implementation
   public static int parseColor(String colorString) {
-    if (colorString.charAt(0) == '#' && colorString.length() == 4 || colorString.length() == 5) {
+    if (colorString.charAt(0) == '#' && (colorString.length() == 4 || colorString.length() == 5)) {
       StringBuilder buf = new StringBuilder();
       buf.append('#');
       for (int i = 1; i < colorString.length(); i++) {
