@@ -94,27 +94,29 @@ public class ShadowMessageQueue {
       final Runnable callback = new Runnable() {
         @Override
         public void run() {
-          Message m = getHead();
-          if (m == null) {
-            return;
-          }
-          
-          Message n = shadowOf(m).getNext();
-          if (m == msg) {
-            setHead(n);
-            dispatchMessage(msg);
-            return;
-          }
-          
-          while (n != null) {
-            if (n == msg) {
-              n = shadowOf(n).getNext();
-              shadowOf(m).setNext(n);
+          synchronized (realQueue) {
+            Message m = getHead();
+            if (m == null) {
+              return;
+            }
+
+            Message n = shadowOf(m).getNext();
+            if (m == msg) {
+              setHead(n);
               dispatchMessage(msg);
               return;
             }
-            m = n;
-            n = shadowOf(m).getNext();
+
+            while (n != null) {
+              if (n == msg) {
+                n = shadowOf(n).getNext();
+                shadowOf(m).setNext(n);
+                dispatchMessage(msg);
+                return;
+              }
+              m = n;
+              n = shadowOf(m).getNext();
+            }
           }
         }
       };
