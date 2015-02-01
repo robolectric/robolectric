@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.animation.ObjectAnimator;
 import android.animation.AnimatorInflater;
 import android.animation.TypeEvaluator;
+import android.util.Property;
 import android.view.View;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,6 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ShadowObjectAnimatorTest {
+
   @Test
   public void shouldCreateForFloat() throws Exception {
     Object expectedTarget = new Object();
@@ -23,6 +25,29 @@ public class ShadowObjectAnimatorTest {
     assertThat(animator).isNotNull();
     assertThat(animator.getTarget()).isEqualTo(expectedTarget);
     assertThat(animator.getPropertyName()).isEqualTo(propertyName);
+  }
+
+  @Test
+  public void shouldCreateForFloat_withPropertyValues() {
+    View expectedTarget = new View(RuntimeEnvironment.application);
+    Property<View, Float> expectedProperty = View.ALPHA;
+
+    ObjectAnimator animator = ObjectAnimator.ofFloat(expectedTarget, expectedProperty, 0.5f, 0.4f);
+
+    assertThat(animator).isNotNull();
+    assertThat(animator.getTarget()).isEqualTo(expectedTarget);
+    assertThat(animator.getPropertyName()).isEqualTo(expectedProperty.getName());
+  }
+
+
+  @Test
+  public void shouldNotThrowExceptionWithMultipleValues() {
+    View expectedTarget = new View(RuntimeEnvironment.application);
+    ObjectAnimator animator = ObjectAnimator.ofFloat(expectedTarget, View.ALPHA, 0.5f, 0.4f, 0.3f);
+
+    assertThat(animator).isNotNull();
+    assertThat(animator.getTarget()).isEqualTo(expectedTarget);
+    animator.start(); // should not throw an exception
   }
 
   @Test
