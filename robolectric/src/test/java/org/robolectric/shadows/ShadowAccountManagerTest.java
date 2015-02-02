@@ -504,6 +504,21 @@ public class ShadowAccountManagerTest {
     assertThat(am).isEqualTo(systemService);
   }
 
+  @Test
+  public void testGetPreviousName_noPreviousName() {
+    Account account = new Account("name_a", "type_a");
+    
+    assertThat(am.getPreviousName(account)).isNull();
+  }
+
+  @Test
+  public void testGetPreviousName_hasPreviousName() {
+    Account account = new Account("name_a", "type_a");
+    shadowOf(am).setPreviousName(account, "previous_name_a");
+    
+    assertThat(am.getPreviousName(account)).is("previous_name_a");
+  }
+  
   private static class AccountManagerFutureMatcher<T> extends BaseMatcher<AccountManagerFuture<T>> {
 
     private final Matcher<T> matcher;
