@@ -44,6 +44,7 @@ public class ShadowAccountManager {
   private List<OnAccountsUpdateListener> listeners = new ArrayList<OnAccountsUpdateListener>();
   private Map<Account, Map<String, String>> userData = new HashMap<Account, Map<String,String>>();
   private Map<Account, String> passwords = new HashMap<Account, String>();
+  private Map<Account, String> previousNames = new HashMap<Account, String>();
   private AccountManagerCallback<Bundle> pendingAddCallback;
   private RoboAccountManagerFuture pendingAddFuture;
 
@@ -368,6 +369,20 @@ public class ShadowAccountManager {
 
     pendingAddFuture = new RoboAccountManagerFuture(accountType, resultBundle);
     return pendingAddFuture;
+  }
+
+  /**
+   * Non-android accessor.
+   *
+   * @param account User account.
+   */
+  public void setPreviousAccountName(Account account, String previousName) {
+    previousNames.put(account, previousName);
+  }
+  
+  @Implementation
+  public String getPreviousName(Account account) {
+    return previousNames.get(account);
   }
 
   /**
