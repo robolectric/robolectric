@@ -498,6 +498,13 @@ public class ShadowAccountManagerTest {
   }
 
   @Test
+  public void addPreviousAccount() {
+    Account account = new Account("name_a", "type_a");
+    shadowOf(am).setPreviousAccountName(account, "old_name");
+    assertThat(am.getPreviousName(account)).isEqualTo("old_name");
+  }
+
+  @Test
   public void testGetAsSystemService() throws Exception {
     AccountManager systemService = (AccountManager) app.getSystemService(Context.ACCOUNT_SERVICE);
     assertThat(systemService).isNotNull();
