@@ -45,6 +45,8 @@ public interface RobolectricPackageManager {
 
   void addActivityIcon(Intent intent, Drawable d);
 
+  void setApplicationIcon(String packageName, Drawable d);
+
   Intent getLaunchIntentForPackage(String packageName);
 
   CharSequence getApplicationLabel(ApplicationInfo info);
