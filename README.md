@@ -38,9 +38,13 @@ If you'd like to start a new project with Robolectric you can use deckard (for e
 or [gradle](http://github.com/robolectric/deckard-gradle)). These project will guide you through setting
 up both Android and Robolectric on your machine.
 
-### Current project
+### Gradle
 
-Alternatively, you can install Robolectric for your current project by adding the following to your pom.xml:
+```groovy
+testCompile "org.robolectric:robolectric:2.4"
+```
+
+### Maven
 
 ```xml
 <dependency>
@@ -71,7 +75,38 @@ You will need to either replace or have `ANDROID_HOME` set to your local Android
 
 ## Building And Contributing
 
-Robolectric can be built using either Maven or Ant. Both Eclipse (with the M2Eclipse plug-in) and
-IntelliJ can import the `pom.xml` file and will automatically generate their project files from it.
+Robolectric is built using Maven. Both Eclipse (with the M2Eclipse plug-in) and IntelliJ can import the `pom.xml` file and will automatically generate their project files from it.
 
 Guides on to extending Robolectric can be found [here](http://robolectric.org/extending/) and the contributor guidlines can be found [here](http://robolectric.org/contributor-guidelines/).
+
+### Using SNAPSHOTS
+
+If you would like to live on the bleeding edge, you can try running against a snapshot build. Keep in mind that snapshots represent the most recent changes on master and may contain bugs.
+
+### Gradle
+
+```groovy
+repositories {
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+}
+
+dependencies {
+    testCompile "org.robolectric:robolectric:3.0-SNAPSHOT"
+}
+```
+
+### Maven
+
+```xml
+<repository>
+  <id>sonatype-snapshpots</id>
+  <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+</repository>
+
+<dependency>
+   <groupId>org.robolectric</groupId>
+   <artifactId>robolectric</artifactId>
+   <version>3.0-SNAPSHOT</version>
+   <scope>test</scope>
+</dependency>
+```
