@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.app.DownloadManager;
 import android.database.Cursor;
 import android.net.Uri;
+import android.util.Pair;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -117,6 +118,10 @@ public class ShadowDownloadManager {
 
     public boolean getVisibleInDownloadsUi() {
       return getFieldReflectively("mIsVisibleInDownloadsUi", realObject, DownloadManager.Request.class);
+    }
+
+    public List<Pair<String, String>> getRequestHeaders() {
+      return getFieldReflectively("mRequestHeaders", realObject, DownloadManager.Request.class);
     }
   }
 
