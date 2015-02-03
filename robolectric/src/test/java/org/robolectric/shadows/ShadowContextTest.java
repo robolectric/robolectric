@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import org.junit.After;
@@ -32,58 +33,35 @@ import static org.robolectric.util.TestUtil.TEST_RESOURCE_PATH;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ShadowContextTest {
-  private Context context;
+  private final Context context = RuntimeEnvironment.application;
 
   @Before
   public void setUp() throws Exception {
-    context = RuntimeEnvironment.application;
-    deleteDir(context.getFilesDir());
-    deleteDir(context.getCacheDir());
-    deleteDir(ShadowContext.DATABASE_DIR);
+    File dataDir = new File(RuntimeEnvironment.getPackageManager()
+        .getPackageInfo("org.robolectric", 0).applicationInfo.dataDir);
 
-    File[] files = context.getFilesDir().listFiles();
+    File[] files = dataDir.listFiles();
     assertNotNull(files);
     assertThat(files.length).isEqualTo(0);
-
-    File[] cachedFiles = context.getFilesDir().listFiles();
-    assertNotNull(cachedFiles);
-    assertThat(cachedFiles.length).isEqualTo(0);
   }
 
   @After
   public void after() {
-    deleteDir(context.getFilesDir());
-    deleteDir(context.getCacheDir());
-    deleteDir(context.getExternalCacheDir());
-    deleteDir(context.getExternalFilesDir(null));
-    deleteDir(ShadowContext.DATABASE_DIR);
-  }
-
-  public void deleteDir(File path) {
-    if (path.isDirectory()) {
-      File[] files = path.listFiles();
-      assertNotNull(files);
-      for (File f : files) {
-        deleteDir(f);
-      }
-    }
-    path.delete();
+    ShadowContext.reset();
   }
 
   @Test
   public void shouldGetApplicationDataDirectory() throws IOException {
-    File dataDir = new File(ShadowContext.FILES_DIR, "data");
-    assertThat(dataDir.mkdir()).isTrue();
-
-    dataDir = context.getDir("data", Context.MODE_PRIVATE);
+    File dataDir = context.getDir("data", Context.MODE_PRIVATE);
     assertThat(dataDir).isNotNull();
     assertThat(dataDir.exists()).isTrue();
   }
 
-
   @Test
-  public void shouldCreateIfDoesNotExistAndGetApplicationDataDirectory() {
-    File dataDir = new File(ShadowContext.FILES_DIR, "data");
+  public void shouldCreateIfDoesNotExistAndGetApplicationDataDirectory() throws Exception {
+    File dataDir = new File(RuntimeEnvironment.getPackageManager()
+        .getPackageInfo("org.robolectric", 0).applicationInfo.dataDir, "data");
+
     assertThat(dataDir.exists()).isFalse();
 
     dataDir = context.getDir("data", Context.MODE_PRIVATE);
@@ -115,7 +93,6 @@ public class ShadowContextTest {
     File cacheTest = new File(context.getCacheDir(), "__test__");
 
     assertThat(cacheTest.getAbsolutePath()).startsWith(System.getProperty("java.io.tmpdir"));
-    assertThat(cacheTest.getAbsolutePath()).contains("android-cache");
     assertThat(cacheTest.getAbsolutePath()).endsWith(File.separator + "__test__");
 
     FileOutputStream fos = null;
@@ -170,15 +147,6 @@ public class ShadowContextTest {
     File f = context.getExternalFilesDir("__test__");
     assertTrue(f.exists());
     assertTrue(f.getAbsolutePath().endsWith("__test__"));
-  }
-
-  @Test
-  public void getDatabasePath_shouldCreateDirectory() {
-    assertFalse(ShadowContext.DATABASE_DIR.exists());
-    String testDBName = "abc.db";
-    File dbFile = context.getDatabasePath(testDBName);
-    assertTrue(ShadowContext.DATABASE_DIR.exists());
-    assertEquals(ShadowContext.DATABASE_DIR, dbFile.getParentFile());
   }
 
   @Test
@@ -369,5 +337,16 @@ public class ShadowContextTest {
     TypedArray typedArray = context.obtainStyledAttributes(roboAttributeSet, new int[]{R.attr.quitKeyCombo, R.attr.itemType});
     assertThat(typedArray.getString(0)).isEqualTo("^q");
     assertThat(typedArray.getInt(1, -1234)).isEqualTo(1 /* ungulate */);
+  }
+
+  @Test
+  public void reset_shouldCleanupTempDirectories() {
+    ShadowContext.reset();
+
+    assertThat(ShadowContext.EXTERNAL_CACHE_DIR.exists()).isFalse();
+    assertThat(ShadowContext.EXTERNAL_CACHE_DIR.getParentFile().exists()).isFalse();
+
+    assertThat(ShadowContext.EXTERNAL_FILES_DIR.exists()).isFalse();
+    assertThat(ShadowContext.EXTERNAL_FILES_DIR.getParentFile().exists()).isFalse();
   }
 }

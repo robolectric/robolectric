@@ -13,6 +13,7 @@ import javax.annotation.Generated;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.internal.Shadow.*;
@@ -125,5 +126,18 @@ public class ShadowMessage {
    */
   public void setNext(Message next) {
     setField(realMessage, "next", next);
+  }
+  
+  /**
+   * Resets the static state of the {@link Message} class by
+   * emptying the message pool.
+   */
+  @Resetter
+  public static void reset() {
+    Object lock = getStaticField(Message.class, "sPoolSync");
+    synchronized (lock) {
+	  setStaticField(Message.class, "sPoolSize", 0);
+	  setStaticField(Message.class, "sPool", null);
+	}
   }
 }

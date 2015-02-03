@@ -89,6 +89,12 @@ public class DefaultTestLifecycleTest {
     assertThat(application).isExactlyInstanceOf(TestFakeApp.class);
   }
 
+  @Test public void shouldLoadConfigInnerClassApplication() throws Exception {
+    Application application = defaultTestLifecycle.createApplication(null,
+        newConfigWith("<application android:name=\"" + "ClassNameToIgnore" + "\"/>"), new Config.Implementation(-1, "", "", "", "", -1, new Class[0], TestFakeAppInner.class, new String[0]));
+    assertThat(application).isExactlyInstanceOf(TestFakeAppInner.class);
+  }
+
   @Test public void shouldLoadTestApplicationIfClassIsPresent() throws Exception {
     Application application = defaultTestLifecycle.createApplication(null,
         newConfigWith("<application android:name=\"" + FakeApp.class.getName() + "\"/>"), null);
@@ -111,8 +117,9 @@ public class DefaultTestLifecycleTest {
             "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
             "          package=\"" + packageName + "\">\n" +
             "    " + contents + "\n" +
-            "<application/>\n" +
             "</manifest>\n");
     return new AndroidManifest(Fs.newFile(f), null, null);
   }
+
+  public static class TestFakeAppInner extends Application { }
 }

@@ -49,7 +49,6 @@ import static org.robolectric.Shadows.shadowOf;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Resources.class)
 public class ShadowResources {
-  private static boolean DEBUG = false;
   private static Resources system = null;
 
   private float density = 1.0f;
@@ -96,7 +95,7 @@ public class ShadowResources {
   }
 
   public static Resources createFor(ResourceLoader resourceLoader) {
-    AssetManager assetManager = ShadowAssetManager.bind((AssetManager) ReflectionHelpers.callConstructor(AssetManager.class), null, resourceLoader);
+    AssetManager assetManager = ShadowAssetManager.bind(ReflectionHelpers.callConstructor(AssetManager.class), null, resourceLoader);
     return bind(new Resources(assetManager, new DisplayMetrics(), new Configuration()), resourceLoader);
   }
 
@@ -121,12 +120,10 @@ public class ShadowResources {
     Style styleAttrStyle = null;
     Style theme = null;
 
-    List<ShadowAssetManager.OverlayedStyle> overlayedStyles = ShadowAssetManager.getOverlayThemeStyles((long) themeResourceId);
+    List<ShadowAssetManager.OverlayedStyle> overlayedStyles = ShadowAssetManager.getOverlayThemeStyles(themeResourceId);
     if (themeResourceId != 0) {
       // Load the style for the theme we represent. E.g. "@style/Theme.Robolectric"
       ResName themeStyleName = getResName(themeResourceId);
-      if (DEBUG) System.out.println("themeStyleName = " + themeStyleName);
-
       theme = ShadowAssetManager.resolveStyle(resourceLoader, null, themeStyleName, shadowAssetManager.getQualifiers());
 
       if (defStyleAttr != 0) {
@@ -142,9 +139,6 @@ public class ShadowResources {
               throw new RuntimeException("couldn't dereference " + defStyleAttribute);
             }
             defStyleAttribute = other;
-
-            // todo
-            System.out.println("TODO: Not handling " + defStyleAttribute + " yet in ShadowResouces!");
           }
 
           if (defStyleAttribute.isResourceReference()) {
@@ -260,14 +254,12 @@ public class ShadowResources {
   private Attribute findAttributeValue(ResName attrName, AttributeSet attributeSet, Style styleAttrStyle, Style defStyleFromAttr, Style defStyleFromRes, Style theme, List<ShadowAssetManager.OverlayedStyle> overlayedStyles) {
     String attrValue = attributeSet.getAttributeValue(attrName.getNamespaceUri(), attrName.name);
     if (attrValue != null) {
-      if (DEBUG) System.out.println("Got " + attrName + " from attr: " + attrValue);
       return new Attribute(attrName, attrValue, "fixme!!!");
     }
 
     if (styleAttrStyle != null) {
       Attribute attribute = styleAttrStyle.getAttrValue(attrName);
       if (attribute != null) {
-        if (DEBUG) System.out.println("Got " + attrName + " from styleAttrStyle: " + attribute);
         return attribute;
       }
     }
@@ -276,7 +268,6 @@ public class ShadowResources {
     if (defStyleFromAttr != null) {
       Attribute attribute = defStyleFromAttr.getAttrValue(attrName);
       if (attribute != null) {
-        if (DEBUG) System.out.println("Got " + attrName + " from defStyleFromAttr: " + attribute);
         return attribute;
       }
     }
@@ -284,7 +275,6 @@ public class ShadowResources {
     if (defStyleFromRes != null) {
       Attribute attribute = defStyleFromRes.getAttrValue(attrName);
       if (attribute != null) {
-        if (DEBUG) System.out.println("Got " + attrName + " from defStyleFromRes: " + attribute);
         return attribute;
       }
     }
@@ -309,9 +299,6 @@ public class ShadowResources {
       }
     }
 
-    if (attribute != null) {
-      if (DEBUG) System.out.println("Got " + attrName + " from theme: " + attribute);
-    }
     return attribute;
   }
 
@@ -388,7 +375,7 @@ public class ShadowResources {
     String string = plural.getString();
     ShadowAssetManager shadowAssetManager = shadowOf(realResources.getAssets());
     TypedResource typedResource = shadowAssetManager.resolve(
-        new TypedResource<String>(string, ResType.CHAR_SEQUENCE), getQualifiers(),
+        new TypedResource<>(string, ResType.CHAR_SEQUENCE), getQualifiers(),
         new ResName(resName.packageName, "string", resName.name));
     return typedResource == null ? null : typedResource.asString();
   }
@@ -520,7 +507,8 @@ public class ShadowResources {
   public Drawable loadDrawable(TypedValue value, int id) {
     ResName resName = tryResName(id);
     Drawable drawable = directlyOn(realResources, Resources.class, "loadDrawable",
-        new ClassParameter(TypedValue.class, value), new ClassParameter(int.class, id));
+        ClassParameter.from(TypedValue.class, value), ClassParameter.from(int.class, id));
+
     // todo: this kinda sucks, find some better way...
     if (drawable != null) {
       shadowOf(drawable).createdFromResId = id;
@@ -541,7 +529,7 @@ public class ShadowResources {
   public Drawable loadDrawable(TypedValue value, int id, Resources.Theme theme) throws Resources.NotFoundException {
     ResName resName = tryResName(id);
     Drawable drawable = directlyOn(realResources, Resources.class, "loadDrawable",
-        new ClassParameter(TypedValue.class, value), new ClassParameter(int.class, id), new ClassParameter(Resources.Theme.class, theme));
+        ClassParameter.from(TypedValue.class, value), ClassParameter.from(int.class, id), ClassParameter.from(Resources.Theme.class, theme));
 
     // todo: this kinda sucks, find some better way...
     if (drawable != null) {
@@ -558,15 +546,6 @@ public class ShadowResources {
     }
     return drawable;
   }
-
-//  @Implementation
-//  public Drawable loadDrawableForCookie(TypedValue value, int id, Resources.Theme theme) {
-//    return loadDrawable(value, id, theme);
-//  }
-//
-//  @HiddenApi @Implementation
-//  public void updateConfiguration(Configuration config, DisplayMetrics metrics, CompatibilityInfo compat) {
-//  }
 
   @Implements(Resources.NotFoundException.class)
   public static class ShadowNotFoundException {

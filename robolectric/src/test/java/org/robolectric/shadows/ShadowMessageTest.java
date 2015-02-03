@@ -6,6 +6,7 @@ import android.os.Message;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
@@ -226,5 +227,18 @@ public class ShadowMessageTest {
     assertThat(scheduler.enqueuedTaskCount()).as("before recycle").isEqualTo(1);
     shadowOf(msg).recycleUnchecked();
     assertThat(scheduler.enqueuedTaskCount()).as("after recycle").isEqualTo(0);    
+  }
+  
+  @Test
+  public void reset_shouldEmptyMessagePool() {
+    Message dummy1 = Message.obtain();
+    shadowOf(dummy1).recycleUnchecked();
+    Message dummy2 = Message.obtain();
+    assertThat(dummy2).as("before resetting").isSameAs(dummy1);
+
+    shadowOf(dummy2).recycleUnchecked();
+    Robolectric.reset();
+    dummy1 = Message.obtain();
+    assertThat(dummy1).as("after resetting").isNotSameAs(dummy2);
   }
 }

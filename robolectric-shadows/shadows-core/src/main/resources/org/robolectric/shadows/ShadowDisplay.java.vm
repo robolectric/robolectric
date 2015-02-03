@@ -126,10 +126,12 @@ public class ShadowDisplay {
     outSize.set(realWidth, realHeight);
   }
 
+#if ($apiLevel >= 21)
   @Implementation
   public int getState() {
     return Display.STATE_ON;
   }
+#end
 
   public float getDensity() {
     return density;

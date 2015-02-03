@@ -3,7 +3,7 @@
   <uses-sdk android:targetSdkVersion="18"/>
 
   <application>
-    <receiver android:name="org.robolectric.AndroidManifestTest.ConfigTestReceiver"
+    <receiver android:name="org.robolectric.manifest.AndroidManifestTest.ConfigTestReceiver"
           android:permission="com.ignored.PERM">
       <intent-filter>
         <action android:name="org.robolectric.ACTION1"/>
@@ -59,5 +59,11 @@
     </receiver>
 
     <receiver android:name="com.bar.ReceiverWithoutIntentFilter"/>
+    <receiver android:name="org.robolectric.ConfigTestReceiverPermissionsAndActions"
+        android:permission="org.robolectric.CUSTOM_PERM">
+      <intent-filter>
+        <action android:name="org.robolectric.ACTION_RECEIVER_PERMISSION_PACKAGE"/>
+      </intent-filter>
+    </receiver>
   </application>
 </manifest>

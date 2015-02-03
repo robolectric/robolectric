@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.text.InputFilter;
-import android.text.Layout;
 import android.text.TextPaint;
 import android.text.TextWatcher;
 import android.text.method.MovementMethod;
@@ -31,7 +30,6 @@ public class ShadowTextView extends ShadowView {
 
   private CharSequence text = "";
   private TextView.BufferType bufferType = TextView.BufferType.NORMAL;
-  //    private CompoundDrawables compoundDrawablesImpl = new CompoundDrawables(0, 0, 0, 0);
   private Integer textColorHexValue;
   private Integer hintColorHexValue;
   private float textSize = 14.0f;
@@ -55,10 +53,9 @@ public class ShadowTextView extends ShadowView {
   private InputFilter[] inputFilters;
   private TextPaint textPaint = new TextPaint();
 
-  private List<TextWatcher> watchers = new ArrayList<TextWatcher>();
-  private List<Integer> previousKeyCodes = new ArrayList<Integer>();
-  private List<KeyEvent> previousKeyEvents = new ArrayList<KeyEvent>();
-  private Layout layout;
+  private List<TextWatcher> watchers = new ArrayList<>();
+  private List<Integer> previousKeyCodes = new ArrayList<>();
+  private List<KeyEvent> previousKeyEvents = new ArrayList<>();
   private int paintFlags;
   private int compoundDrawablesWithIntrinsicBoundsLeft;
   private int compoundDrawablesWithIntrinsicBoundsTop;
@@ -126,10 +123,6 @@ public class ShadowTextView extends ShadowView {
    */
   public List<TextWatcher> getWatchers() {
     return watchers;
-  }
-
-  public void setLayout(Layout layout) {
-    this.layout = layout;
   }
 
   @HiddenApi @Implementation

@@ -44,8 +44,6 @@ public interface ShadowsAdapter {
 
   ResourceLoader getResourceLoader();
 
-  File getFilesDir();
-
   public interface ShadowActivityAdapter {
     public void setTestApplication(Application application);
 

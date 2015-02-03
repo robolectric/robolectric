@@ -7,17 +7,12 @@ import org.robolectric.annotation.processing.objects.Dummy;
 import org.robolectric.annotation.processing.shadows.ShadowClassNameOnly;
 import org.robolectric.annotation.processing.shadows.ShadowDummy;
 import org.robolectric.internal.ShadowExtractor;
-import org.robolectric.util.ShadowProvider;
+import org.robolectric.internal.ShadowProvider;
 
-@Generated("org.robolectric.annotation.processing.RoboProcessor")
+@Generated("org.robolectric.annotation.processing.RobolectricProcessor")
 @SuppressWarnings({"unchecked","deprecation"})
 public class Shadows implements ShadowProvider {
 
-  public static final Class<?>[] DEFAULT_SHADOW_CLASSES = {
-    ShadowClassNameOnly.class,
-    ShadowDummy.class,
-  };
-  
   public static ShadowClassNameOnly shadowOf(AnyObject actual) {
     return (ShadowClassNameOnly) ShadowExtractor.extract(actual);
   }
@@ -29,5 +24,9 @@ public class Shadows implements ShadowProvider {
   public void reset() {
     ShadowClassNameOnly.anotherResetter();
     ShadowDummy.resetter_method();
+  }
+
+  public String[] getProvidedPackageNames() {
+    return new String[] {"org.robolectric.annotation.processing.objects"};
   }
 }

@@ -109,51 +109,44 @@ public class AndroidManifest {
     }
   }
 
-  public void parseAndroidManifest() {
+  void parseAndroidManifest() {
     if (manifestIsParsed) {
       return;
     }
     DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-
-    Document manifestDocument = null;
     try {
       DocumentBuilder db = dbf.newDocumentBuilder();
       InputStream inputStream = androidManifestFile.getInputStream();
-      manifestDocument = db.parse(inputStream);
+      Document manifestDocument = db.parse(inputStream);
       inputStream.close();
+
+      if (packageName == null) {
+        packageName = getTagAttributeText(manifestDocument, "manifest", "package");
+      }
+      versionCode = getTagAttributeIntValue(manifestDocument, "manifest", "android:versionCode", 0);
+      versionName = getTagAttributeText(manifestDocument, "manifest", "android:versionName");
+      rClassName = packageName + ".R";
+      applicationName = getTagAttributeText(manifestDocument, "application", "android:name");
+      applicationLabel = getTagAttributeText(manifestDocument, "application", "android:label");
+      minSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:minSdkVersion");
+      targetSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:targetSdkVersion");
+      processName = getTagAttributeText(manifestDocument, "application", "android:process");
+      if (processName == null) {
+        processName = packageName;
+      }
+
+      themeRef = getTagAttributeText(manifestDocument, "application", "android:theme");
+      labelRef = getTagAttributeText(manifestDocument, "application", "android:label");
+
+      parseApplicationFlags(manifestDocument);
+      parseReceivers(manifestDocument);
+      parseActivities(manifestDocument);
+      parseApplicationMetaData(manifestDocument);
+      parseContentProviders(manifestDocument);
+      parseUsedPermissions(manifestDocument);
     } catch (Exception ignored) {
       ignored.printStackTrace();
     }
-
-    if(manifestDocument.getElementsByTagName("application").item(0) == null) {
-      throw new IllegalArgumentException("Missing required <application/> element in " + androidManifestFile.getPath());
-    }
-
-    if (packageName == null) {
-      packageName = getTagAttributeText(manifestDocument, "manifest", "package");
-    }
-    versionCode = getTagAttributeIntValue(manifestDocument, "manifest", "android:versionCode", 0);
-    versionName = getTagAttributeText(manifestDocument, "manifest", "android:versionName");
-    rClassName = packageName + ".R";
-    applicationName = getTagAttributeText(manifestDocument, "application", "android:name");
-    applicationLabel = getTagAttributeText(manifestDocument, "application", "android:label");
-    minSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:minSdkVersion");
-    targetSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:targetSdkVersion");
-    processName = getTagAttributeText(manifestDocument, "application", "android:process");
-    if (processName == null) {
-      processName = packageName;
-    }
-
-    themeRef = getTagAttributeText(manifestDocument, "application", "android:theme");
-    labelRef = getTagAttributeText(manifestDocument, "application", "android:label");
-
-    parseApplicationFlags(manifestDocument);
-    parseReceivers(manifestDocument);
-    parseActivities(manifestDocument);
-    parseApplicationMetaData(manifestDocument);
-    parseContentProviders(manifestDocument);
-    parseUsedPermissions(manifestDocument);
-
     manifestIsParsed = true;
   }
 
@@ -198,6 +191,10 @@ public class AndroidManifest {
           if (nameNode != null) {
             receiver.addAction(nameNode.getTextContent());
           }
+        }
+        Node permissionItem = receiverNode.getAttributes().getNamedItem("android:permission");
+        if (permissionItem != null) {
+          receiver.setPermission(permissionItem.getTextContent());
         }
       }
       receivers.add(receiver);
@@ -525,27 +522,25 @@ public class AndroidManifest {
 
   protected List<FsFile> findLibraries() {
     FsFile baseDir = getBaseDir();
-    List<FsFile> libraryBaseDirs = new ArrayList<FsFile>();
+    List<FsFile> libraryBaseDirs = new ArrayList<>();
 
-    Properties properties = getProperties(baseDir.join("project.properties"));
-    // get the project.properties overrides and apply them (if any)
+    final Properties properties = getProperties(baseDir.join("project.properties"));
     Properties overrideProperties = getProperties(baseDir.join("test-project.properties"));
-    if (overrideProperties!=null) properties.putAll(overrideProperties);
-    if (properties != null) {
-      int libRef = 1;
-      String lib;
-      while ((lib = properties.getProperty("android.library.reference." + libRef)) != null) {
-        FsFile libraryBaseDir = baseDir.join(lib);
-        if (libraryBaseDir.isDirectory()) {
-          // Ignore directories without any files
-          FsFile[] libraryBaseDirFiles = libraryBaseDir.listFiles();
-          if (libraryBaseDirFiles != null && libraryBaseDirFiles.length > 0) {
-            libraryBaseDirs.add(libraryBaseDir);
-          }
-        }
+    properties.putAll(overrideProperties);
 
-        libRef++;
+    int libRef = 1;
+    String lib;
+    while ((lib = properties.getProperty("android.library.reference." + libRef)) != null) {
+      FsFile libraryBaseDir = baseDir.join(lib);
+      if (libraryBaseDir.isDirectory()) {
+        // Ignore directories without any files
+        FsFile[] libraryBaseDirFiles = libraryBaseDir.listFiles();
+        if (libraryBaseDirFiles != null && libraryBaseDirFiles.length > 0) {
+          libraryBaseDirs.add(libraryBaseDir);
+        }
       }
+
+      libRef++;
     }
     return libraryBaseDirs;
   }
@@ -564,9 +559,11 @@ public class AndroidManifest {
   }
 
   private static Properties getProperties(FsFile propertiesFile) {
-    if (!propertiesFile.exists()) return null;
-
     Properties properties = new Properties();
+
+    // return an empty Properties object if the propertiesFile does not exist
+    if (!propertiesFile.exists()) return properties;
+
     InputStream stream;
     try {
       stream = propertiesFile.getInputStream();

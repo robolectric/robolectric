@@ -195,4 +195,17 @@ public class ShadowMessageQueueTest {
 
     assertThat(msg2.what).as("msg2.what").isZero();
   }
+  
+  @Test 
+  public void reset_shouldClearMessageQueue() {
+    Message msg  = handler.obtainMessage(1234);
+    Message msg2 = handler.obtainMessage(5678);
+    handler.sendMessage(msg);
+    handler.sendMessage(msg2);
+    assertThat(handler.hasMessages(1234)).as("before-1234").isTrue();
+    assertThat(handler.hasMessages(5678)).as("before-5678").isTrue();
+    shadowOf(handler.getLooper().getQueue()).reset();
+    assertThat(handler.hasMessages(1234)).as("after-1234").isFalse();
+    assertThat(handler.hasMessages(5678)).as("after-5678").isFalse();
+  }
 }

@@ -1,26 +1,23 @@
 package org.robolectric.shadows;
 
 import android.content.Context;
+import android.os.Build;
 import android.os.PowerManager;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
 
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertTrue;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ShadowPowerManagerTest {
-
-  PowerManager powerManager;
-  ShadowPowerManager shadowPowerManager;
+  private PowerManager powerManager;
+  private ShadowPowerManager shadowPowerManager;
 
   @Before
   public void before() {
@@ -29,79 +26,79 @@ public class ShadowPowerManagerTest {
   }
 
   @Test
-  public void testIsScreenOn() {
-    assertTrue(powerManager.isScreenOn());
-    shadowPowerManager.setIsScreenOn(false);
-    assertFalse(powerManager.isScreenOn());
-  }
-
-  @Test
-  public void shouldCreateWakeLock() throws Exception {
-    assertNotNull(powerManager.newWakeLock(0, "TAG"));
-  }
-
-  @Test
-  public void shouldAcquireAndReleaseReferenceCountedLock() throws Exception {
+  public void acquire_shouldAcquireAndReleaseReferenceCountedLock() throws Exception {
     PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
-    assertFalse(lock.isHeld());
+    assertThat(lock.isHeld()).isFalse();
     lock.acquire();
-    assertTrue(lock.isHeld());
+    assertThat(lock.isHeld()).isTrue();
     lock.acquire();
 
-    assertTrue(lock.isHeld());
+    assertThat(lock.isHeld()).isTrue();
     lock.release();
 
-    assertTrue(lock.isHeld());
+    assertThat(lock.isHeld()).isTrue();
     lock.release();
-    assertFalse(lock.isHeld());
+    assertThat(lock.isHeld()).isFalse();
   }
 
   @Test
-  public void shouldAcquireAndReleaseNonReferenceCountedLock() throws Exception {
-    PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
-    lock.setReferenceCounted(false);
-
-    assertFalse(lock.isHeld());
-    lock.acquire();
-    assertTrue(lock.isHeld());
-    lock.acquire();
-    assertTrue(lock.isHeld());
-
-    lock.release();
-
-    assertFalse(lock.isHeld());
-  }
-
-  @Test(expected = RuntimeException.class)
-  public void shouldThrowRuntimeExceptionIfLockisUnderlocked() throws Exception {
-    PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
-    lock.release();
-  }
-
-  @Test
-  public void shouldLogLatestWakeLock() throws Exception {
+  public void acquire_shouldLogLatestWakeLock() throws Exception {
     ShadowPowerManager.reset();
-    assertThat(shadowPowerManager.getLatestWakeLock()).isNull();
+    assertThat(ShadowPowerManager.getLatestWakeLock()).isNull();
 
     PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
     lock.acquire();
 
-    assertThat(shadowPowerManager.getLatestWakeLock()).isNotNull();
-    assertThat(shadowPowerManager.getLatestWakeLock()).isSameAs(lock);
+    assertThat(ShadowPowerManager.getLatestWakeLock()).isNotNull();
+    assertThat(ShadowPowerManager.getLatestWakeLock()).isSameAs(lock);
     assertThat(lock.isHeld()).isTrue();
 
     lock.release();
 
-    assertThat(shadowPowerManager.getLatestWakeLock()).isNotNull();
-    assertThat(shadowPowerManager.getLatestWakeLock()).isSameAs(lock);
+    assertThat(ShadowPowerManager.getLatestWakeLock()).isNotNull();
+    assertThat(ShadowPowerManager.getLatestWakeLock()).isSameAs(lock);
     assertThat(lock.isHeld()).isFalse();
 
     ShadowPowerManager.reset();
-    assertThat(shadowPowerManager.getLatestWakeLock()).isNull();
+    assertThat(ShadowPowerManager.getLatestWakeLock()).isNull();
   }
 
   @Test
-  public void shouldGetReferenceCounted() throws Exception {
+  public void newWakeLock_shouldCreateWakeLock() throws Exception {
+    assertThat(powerManager.newWakeLock(0, "TAG")).isNotNull();
+  }
+
+  @Test
+  public void newWakeLock_shouldAcquireAndReleaseNonReferenceCountedLock() throws Exception {
+    PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
+    lock.setReferenceCounted(false);
+
+    assertThat(lock.isHeld()).isFalse();
+    lock.acquire();
+    assertThat(lock.isHeld()).isTrue();
+    lock.acquire();
+    assertThat(lock.isHeld()).isTrue();
+
+    lock.release();
+
+    assertThat(lock.isHeld()).isFalse();
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void newWakeLock_shouldThrowRuntimeExceptionIfLockIsUnderlocked() throws Exception {
+    PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
+    lock.release();
+  }
+
+  @Test
+  public void isScreenOn_shouldGetAndSet() {
+    assertThat(powerManager.isScreenOn()).isTrue();
+    shadowPowerManager.setIsScreenOn(false);
+    assertThat(powerManager.isScreenOn()).isFalse();
+  }
+
+  @Test
+  public void isReferenceCounted_shouldGetAndSet() throws Exception {
     PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
     ShadowPowerManager.ShadowWakeLock shadowLock = shadowOf(lock);
     assertThat(shadowLock.isReferenceCounted()).isTrue();
@@ -109,5 +106,19 @@ public class ShadowPowerManagerTest {
     assertThat(shadowLock.isReferenceCounted()).isFalse();
     lock.setReferenceCounted(true);
     assertThat(shadowLock.isReferenceCounted()).isTrue();
+  }
+
+  @Test @Config(emulateSdk = Build.VERSION_CODES.LOLLIPOP)
+  public void isInteractive_shouldGetAndSet() {
+    shadowPowerManager.setIsInteractive(true);
+    assertThat(powerManager.isInteractive()).isTrue();
+    shadowPowerManager.setIsInteractive(false);
+    assertThat(powerManager.isInteractive()).isFalse();
+  }
+
+  public void isPowerSaveMode_shouldGetAndSet() {
+    assertThat(powerManager.isPowerSaveMode()).isFalse();
+    shadowPowerManager.setIsPowerSaveMode(true);
+    assertThat(powerManager.isPowerSaveMode()).isTrue();
   }
 }

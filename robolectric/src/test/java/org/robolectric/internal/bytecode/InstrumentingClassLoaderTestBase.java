@@ -22,7 +22,7 @@ abstract public class InstrumentingClassLoaderTestBase {
   private Transcript transcript = new Transcript();
   private MyClassHandler classHandler = new MyClassHandler(transcript);
 
-  protected abstract ClassLoader createClassLoader(Setup setup) throws ClassNotFoundException;
+  protected abstract ClassLoader createClassLoader(InstrumentingClassLoaderConfig config) throws ClassNotFoundException;
 
   @Test
   public void shouldMakeClassesNonFinal() throws Exception {
@@ -56,14 +56,14 @@ abstract public class InstrumentingClassLoaderTestBase {
 
   @Test
   public void shouldDelegateClassLoadForUnacquiredClasses() throws Exception {
-    ClassLoader classLoader = createClassLoader(new MySetup(false, false));
+    ClassLoader classLoader = createClassLoader(new MyConfig(false, false));
     Class<?> exampleClass = classLoader.loadClass(AnExampleClass.class.getName());
     assertSame(getClass().getClassLoader(), exampleClass.getClassLoader());
   }
 
   @Test
   public void shouldPerformClassLoadForAcquiredClasses() throws Exception {
-    ClassLoader classLoader = createClassLoader(new MySetup(true, false));
+    ClassLoader classLoader = createClassLoader(new MyConfig(true, false));
     Class<?> exampleClass = classLoader.loadClass(AnUninstrumentedClass.class.getName());
     assertSame(classLoader, exampleClass.getClassLoader());
     try {
@@ -76,7 +76,7 @@ abstract public class InstrumentingClassLoaderTestBase {
 
   @Test
   public void shouldPerformClassLoadAndInstrumentLoadForInstrumentedClasses() throws Exception {
-    ClassLoader classLoader = createClassLoader(new MySetup(true, true));
+    ClassLoader classLoader = createClassLoader(new MyConfig(true, true));
     Class<?> exampleClass = classLoader.loadClass(AnExampleClass.class.getName());
     assertSame(classLoader, exampleClass.getClassLoader());
     assertNotNull(exampleClass.getField(ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME));
@@ -354,7 +354,7 @@ abstract public class InstrumentingClassLoaderTestBase {
 
   @Test
   public void shouldRemapClasses() throws Exception {
-    setClassLoader(createClassLoader(new ClassRemappingSetup()));
+    setClassLoader(createClassLoader(new ClassRemappingConfig()));
     Class<?> theClass = loadClass(AClassThatRefersToAForgettableClass.class);
     assertEquals(loadClass(AClassToRemember.class), theClass.getField("someField").getType());
     assertEquals(Array.newInstance(loadClass(AClassToRemember.class), 0).getClass(), theClass.getField("someFields").getType());
@@ -362,7 +362,7 @@ abstract public class InstrumentingClassLoaderTestBase {
 
   @Test
   public void shouldFixTypesInFieldAccess() throws Exception {
-    setClassLoader(createClassLoader(new ClassRemappingSetup()));
+    setClassLoader(createClassLoader(new ClassRemappingConfig()));
     Class<?> theClass = loadClass(AClassThatRefersToAForgettableClassInItsConstructor.class);
     Object instance = theClass.newInstance();
     Method method = theClass.getDeclaredMethod(Shadow.directMethodName(theClass.getName(), ShadowConstants.CONSTRUCTOR_METHOD_NAME));
@@ -372,14 +372,14 @@ abstract public class InstrumentingClassLoaderTestBase {
 
   @Test
   public void shouldFixTypesInMethodArgsAndReturn() throws Exception {
-    setClassLoader(createClassLoader(new ClassRemappingSetup()));
+    setClassLoader(createClassLoader(new ClassRemappingConfig()));
     Class<?> theClass = loadClass(AClassThatRefersToAForgettableClassInMethodCalls.class);
     assertNotNull(theClass.getMethod("aMethod", int.class, loadClass(AClassToRemember.class), String.class));
   }
 
   @Test
   public void shouldInterceptFilteredMethodInvocations() throws Exception {
-    setClassLoader(createClassLoader(new MethodInterceptingSetup(new Setup.MethodRef(AClassToForget.class, "forgettableMethod"))));
+    setClassLoader(createClassLoader(new MethodInterceptingConfig(new InstrumentingClassLoaderConfig.MethodRef(AClassToForget.class, "forgettableMethod"))));
     Class<?> theClass = loadClass(AClassThatRefersToAForgettableClass.class);
     Object instance = theClass.newInstance();
     Object output = theClass.getMethod("interactWithForgettableClass").invoke(Shadow.directlyOn(instance, (Class<Object>) theClass));
@@ -388,7 +388,7 @@ abstract public class InstrumentingClassLoaderTestBase {
 
   @Test
   public void shouldInterceptFilteredStaticMethodInvocations() throws Exception {
-    setClassLoader(createClassLoader(new MethodInterceptingSetup(new Setup.MethodRef(AClassToForget.class, "forgettableStaticMethod"))));
+    setClassLoader(createClassLoader(new MethodInterceptingConfig(new InstrumentingClassLoaderConfig.MethodRef(AClassToForget.class, "forgettableStaticMethod"))));
     Class<?> theClass = loadClass(AClassThatRefersToAForgettableClass.class);
     Object instance = theClass.newInstance();
     Object output = theClass.getMethod("interactWithForgettableStaticMethod").invoke(Shadow.directlyOn(instance, (Class<Object>) theClass));
@@ -474,7 +474,7 @@ abstract public class InstrumentingClassLoaderTestBase {
   }
 
   private Object invokeInterceptedMethodOnAClassToForget(String methodName) throws Exception {
-    setClassLoader(createClassLoader(new MethodInterceptingSetup(new Setup.MethodRef(AClassToForget.class, "*"))));
+    setClassLoader(createClassLoader(new MethodInterceptingConfig(new InstrumentingClassLoaderConfig.MethodRef(AClassToForget.class, "*"))));
     Class<?> theClass = loadClass(AClassThatRefersToAForgettableClassInMethodCallsReturningPrimitive.class);
     Object instance = theClass.newInstance();
     return theClass.getMethod(methodName).invoke(Shadow.directlyOn(instance, (Class<Object>) theClass));
@@ -483,7 +483,7 @@ abstract public class InstrumentingClassLoaderTestBase {
   @Test
   public void shouldPassArgumentsFromInterceptedMethods() throws Exception {
     classHandler.valueToReturnFromIntercept = 10L;
-    setClassLoader(createClassLoader(new MethodInterceptingSetup(new Setup.MethodRef(AClassToForget.class, "*"))));
+    setClassLoader(createClassLoader(new MethodInterceptingConfig(new InstrumentingClassLoaderConfig.MethodRef(AClassToForget.class, "*"))));
     Class<?> theClass = loadClass(AClassThatRefersToAForgettableClassInMethodCallsReturningPrimitive.class);
     Object instance = theClass.newInstance();
     Shadow.directlyOn(instance, (Class<Object>) theClass, "longMethod");
@@ -494,7 +494,7 @@ abstract public class InstrumentingClassLoaderTestBase {
 
   @Test
   public void shouldRemapClassesWhileInterceptingMethods() throws Exception {
-    setClassLoader(createClassLoader(new MethodInterceptingClassRemappingSetup(new Setup.MethodRef(AClassThatCallsAMethodReturningAForgettableClass.class, "getAForgettableClass"))));
+    setClassLoader(createClassLoader(new MethodInterceptingClassRemappingConfig(new InstrumentingClassLoaderConfig.MethodRef(AClassThatCallsAMethodReturningAForgettableClass.class, "getAForgettableClass"))));
     Class<?> theClass = loadClass(AClassThatCallsAMethodReturningAForgettableClass.class);
     theClass.getMethod("callSomeMethod").invoke(Shadow.directlyOn(theClass.newInstance(), (Class<Object>) theClass));
   }
@@ -604,11 +604,11 @@ abstract public class InstrumentingClassLoaderTestBase {
     }
   }
 
-  private static class MySetup extends Setup {
+  private static class MyConfig extends InstrumentingClassLoaderConfig {
     private final boolean shouldAcquire;
     private final boolean shouldInstrument;
 
-    private MySetup(boolean shouldAcquire, boolean shouldInstrument) {
+    private MyConfig(boolean shouldAcquire, boolean shouldInstrument) {
       this.shouldAcquire = shouldAcquire;
       this.shouldInstrument = shouldInstrument;
     }
@@ -630,16 +630,16 @@ abstract public class InstrumentingClassLoaderTestBase {
 
   private Class<?> loadClass(Class<?> clazz) throws ClassNotFoundException {
     if (classLoader == null) {
-      classLoader = createClassLoader(new Setup());
+      classLoader = createClassLoader(new InstrumentingClassLoaderConfig());
     }
     RobolectricTestRunner.injectClassHandler(classLoader, classHandler);
     return classLoader.loadClass(clazz.getName());
   }
 
-  private static class MethodInterceptingSetup extends Setup {
-    private final HashSet<MethodRef> methodRefs = new HashSet<MethodRef>();
+  private static class MethodInterceptingConfig extends InstrumentingClassLoaderConfig {
+    private final HashSet<MethodRef> methodRefs = new HashSet<>();
 
-    private MethodInterceptingSetup(MethodRef... methodRefsToIntercept) {
+    private MethodInterceptingConfig(MethodRef... methodRefsToIntercept) {
       Collections.addAll(methodRefs, methodRefsToIntercept);
     }
 
@@ -649,10 +649,10 @@ abstract public class InstrumentingClassLoaderTestBase {
     }
   }
 
-  private static class ClassRemappingSetup extends Setup {
+  private static class ClassRemappingConfig extends InstrumentingClassLoaderConfig {
     @Override
     public Map<String, String> classNameTranslations() {
-      Map<String, String> map = new HashMap<String, String>();
+      Map<String, String> map = new HashMap<>();
       map.put(AClassToForget.class.getName(), AClassToRemember.class.getName());
       return map;
     }
@@ -666,10 +666,10 @@ abstract public class InstrumentingClassLoaderTestBase {
     }
   }
 
-  private static class MethodInterceptingClassRemappingSetup extends ClassRemappingSetup {
-    private final HashSet<MethodRef> methodRefs = new HashSet<MethodRef>();
+  private static class MethodInterceptingClassRemappingConfig extends ClassRemappingConfig {
+    private final HashSet<MethodRef> methodRefs = new HashSet<>();
 
-    private MethodInterceptingClassRemappingSetup(MethodRef... methodRefsToIntercept) {
+    private MethodInterceptingClassRemappingConfig(MethodRef... methodRefsToIntercept) {
       Collections.addAll(methodRefs, methodRefsToIntercept);
     }
 

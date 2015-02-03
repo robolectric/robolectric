@@ -12,7 +12,7 @@ import org.robolectric.util.Scheduler;
 import org.robolectric.util.SoftThreadLocal;
 
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.util.ReflectionHelpers.ClassParameter.*;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 /**
  * Shadow for {@code Looper} that enqueues posted {@link Runnable}s to be run (on this thread) later. {@code Runnable}s
@@ -152,7 +152,6 @@ public class ShadowLooper {
     shadowOf(Looper.getMainLooper()).idle(interval);
   }
 
-
   public static void idleMainLooperConstantly(boolean shouldIdleConstantly) {
     shadowOf(Looper.getMainLooper()).idleConstantly(shouldIdleConstantly);
   }
@@ -164,7 +163,7 @@ public class ShadowLooper {
   public static void runMainLooperToNextTask() {
     shadowOf(Looper.getMainLooper()).runToNextTask();
   }
-
+    
   /**
    * Runs any immediately runnable tasks previously queued on the UI thread,
    * e.g. by {@link android.app.Activity#runOnUiThread(Runnable)} or {@link android.os.AsyncTask#onPostExecute(Object)}.
@@ -233,7 +232,10 @@ public class ShadowLooper {
    * @param runnable    the task to be run
    * @param delayMillis how many milliseconds into the (virtual) future to run it
    * @return true if the runnable is enqueued
+   * @see android.os.Handler#postDelayed(Runnable,long)
+   * @deprecated Use a {@link android.os.Handler} instance to post to a looper.
    */
+  @Deprecated
   public boolean post(Runnable runnable, long delayMillis) {
     if (!quit) {
       scheduler.postDelayed(runnable, delayMillis);
@@ -242,7 +244,16 @@ public class ShadowLooper {
       return false;
     }
   }
-
+  
+  /**
+   * Enqueue a task to be run ahead of all other delayed tasks.
+   *
+   * @param runnable    the task to be run
+   * @return true if the runnable is enqueued
+   * @see android.os.Handler#postAtFrontOfQueue(Runnable)
+   * @deprecated Use a {@link android.os.Handler} instance to post to a looper.
+   */
+  @Deprecated
   public boolean postAtFrontOfQueue(Runnable runnable) {
     if (!quit) {
       scheduler.postAtFrontOfQueue(runnable);
@@ -279,6 +290,7 @@ public class ShadowLooper {
    */
   public void reset() {
     scheduler = new Scheduler();
+    shadowOf(realObject.getQueue()).reset();
     quit = false;
   }
 

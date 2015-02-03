@@ -6,27 +6,32 @@ import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.content.pm.ProviderInfo;
 import android.content.pm.ResolveInfo;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.PatternMatcher;
 import android.util.Pair;
+
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.UUID;
 
 import org.robolectric.ShadowsAdapter;
-import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.ActivityData;
+import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.BroadcastReceiverData;
 import org.robolectric.manifest.ContentProviderData;
 import org.robolectric.manifest.IntentFilterData;
@@ -104,6 +109,7 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
   private Map<IntentFilter, ComponentName> preferredActivities = new LinkedHashMap<IntentFilter, ComponentName>();
   private Map<Pair<String, Integer>, Drawable> drawables = new LinkedHashMap<Pair<String, Integer>, Drawable>();
   private boolean queryIntentImplicitly = false;
+  private HashMap<String, Integer> applicationEnabledSettingMap = new HashMap<>();
 
   @Override
   public PackageInfo getPackageInfo(String packageName, int flags) throws NameNotFoundException {
@@ -354,6 +360,7 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
   @Override
   public void addPackage(PackageInfo packageInfo) {
     packageInfos.put(packageInfo.packageName, packageInfo);
+    applicationEnabledSettingMap.put(packageInfo.packageName, PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
   }
 
   @Override
@@ -363,7 +370,8 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
 
     ApplicationInfo applicationInfo = new ApplicationInfo();
     applicationInfo.packageName = packageName;
-    initApplicationInfo(applicationInfo);
+    applicationInfo.sourceDir = new File(".").getAbsolutePath();
+    applicationInfo.dataDir = createTempDir("android-tmp").getAbsolutePath();
 
     packageInfo.applicationInfo = applicationInfo;
 
@@ -397,6 +405,34 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
       }
     }
 
+    // Populate information related to BroadcastReceivers. Broadcast receivers can be queried in two
+    // possible ways,
+    // 1. PackageManager#getPackageInfo(...),
+    // 2. PackageManager#queryBroadcastReceivers(...)
+    // The following piece of code will let you enable querying receivers through both the methods.
+    List<ActivityInfo> receiverActivityInfos = new ArrayList<ActivityInfo>();
+    for (int i = 0; i < androidManifest.getBroadcastReceivers().size(); ++i) {
+      ActivityInfo activityInfo = new ActivityInfo();
+      activityInfo.name = androidManifest.getBroadcastReceivers().get(i).getClassName();
+      activityInfo.permission = androidManifest.getBroadcastReceivers().get(i).getPermission();
+      receiverActivityInfos.add(activityInfo);
+
+      ResolveInfo resolveInfo = new ResolveInfo();
+      resolveInfo.activityInfo = activityInfo;
+      IntentFilter filter = new IntentFilter();
+      for (String action : androidManifest.getBroadcastReceivers().get(i).getActions()) {
+        filter.addAction(action);
+      }
+      resolveInfo.filter = filter;
+
+      for (String action : androidManifest.getBroadcastReceivers().get(i).getActions()) {
+        Intent intent = new Intent(action);
+        intent.setPackage(androidManifest.getPackageName());
+        addResolveInfoForIntent(intent, resolveInfo);
+      }
+    }
+    packageInfo.receivers = receiverActivityInfos.toArray(new ActivityInfo[0]);
+
     String[] usedPermissions = androidManifest.getUsedPermissions().toArray(new String[]{});
     if (usedPermissions.length == 0) {
       packageInfo.requestedPermissions = null;
@@ -411,6 +447,8 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
     applicationInfo.processName = androidManifest.getProcessName();
     applicationInfo.name = androidManifest.getApplicationName();
     applicationInfo.metaData = metaDataToBundle(androidManifest.getApplicationMetaData());
+    applicationInfo.sourceDir = new File(".").getAbsolutePath();
+    applicationInfo.dataDir = createTempDir("android-tmp").getAbsolutePath();
 
     if (androidManifest.getLabelRef() != null && resourceIndex != null) {
       Integer id = ResName.getResourceId(resourceIndex, androidManifest.getLabelRef(), androidManifest.getPackageName());
@@ -418,13 +456,21 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
     }
 
     packageInfo.applicationInfo = applicationInfo;
-    initApplicationInfo(applicationInfo);
     addPackage(packageInfo);
   }
 
-  private void initApplicationInfo(ApplicationInfo applicationInfo) {
-    applicationInfo.sourceDir = new File(".").getAbsolutePath();
-    applicationInfo.dataDir = shadowsAdapter.getFilesDir().getAbsolutePath();
+  private static File createTempDir(String name) {
+    try {
+      File tmp = File.createTempFile(name, "robolectric");
+      if (!tmp.delete()) throw new IOException("could not delete "+tmp);
+      tmp = new File(tmp, UUID.randomUUID().toString());
+      if (!tmp.mkdirs()) throw new IOException("could not create "+tmp);
+      tmp.deleteOnExit();
+
+      return tmp;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
@@ -573,7 +619,37 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
     this.queryIntentImplicitly = queryIntentImplicitly;
   }
 
-  /***
+  @Override
+  public void setApplicationEnabledSetting(String packageName, int newState, int flags) {
+    applicationEnabledSettingMap.put(packageName, newState);
+  }
+
+  @Override
+  public int getApplicationEnabledSetting(String packageName) {
+      try {
+          PackageInfo packageInfo = getPackageInfo(packageName, -1);
+      } catch (NameNotFoundException e) {
+          throw new IllegalArgumentException(e);
+      }
+
+      return applicationEnabledSettingMap.get(packageName);
+  }
+
+  @Override
+  public int checkPermission(String permName, String pkgName) {
+    PackageInfo permissionsInfo = packageInfos.get(pkgName);
+    if (permissionsInfo == null) {
+      return PackageManager.PERMISSION_DENIED;
+    }
+    for (String permission : permissionsInfo.requestedPermissions) {
+      if (permission != null && permission.equals(permName)) {
+        return PackageManager.PERMISSION_GRANTED;
+      }
+    }
+    return PackageManager.PERMISSION_DENIED;
+  }
+
+  /**
    * Goes through the meta data and puts each value in to a
    * bundle as the correct type.
    *

@@ -11,7 +11,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
@@ -25,13 +24,15 @@ import static org.junit.Assert.fail;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class SQLiteDatabaseTest {
-    private static final String ANY_VALID_SQL = "SELECT 1";
-
     private SQLiteDatabase database;
+    private static final String ANY_VALID_SQL = "SELECT 1";
 
     @Before
     public void setUp() throws Exception {
-        database = SQLiteDatabase.openOrCreateDatabase(RuntimeEnvironment.application.getDatabasePath("path").getPath(), null);
+        final File databasePath = RuntimeEnvironment.application.getDatabasePath("database.db");
+        databasePath.getParentFile().mkdirs();
+
+        database = SQLiteDatabase.openOrCreateDatabase(databasePath.getPath(), null);
         database.execSQL("CREATE TABLE table_name (\n" +
                 "  id INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
                 "  first_column VARCHAR(255),\n" +
@@ -595,11 +596,6 @@ public class SQLiteDatabaseTest {
         assertThat(database.getVersion()).isEqualTo(0);
         database.setVersion(20);
         assertThat(database.getVersion()).isEqualTo(20);
-    }
-
-    @Test
-    public void testGetPath() throws Exception {
-        assertThat(database.getPath()).isEqualTo(RuntimeEnvironment.application.getDatabasePath("path").getPath());
     }
 
     @Test

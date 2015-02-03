@@ -24,7 +24,6 @@ import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.DocumentLoader;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
 import org.robolectric.res.OverlayResourceLoader;
@@ -45,13 +44,12 @@ import java.security.SecureRandom;
 import java.util.*;
 
 /**
- * Installs a {@link org.robolectric.internal.bytecode.AsmInstrumentingClassLoader} and
- * {@link org.robolectric.res.ResourceLoader} in order to
- * provide a simulation of the Android runtime environment.
+ * Installs a {@link org.robolectric.internal.bytecode.InstrumentingClassLoader} and
+ * {@link org.robolectric.res.ResourceLoader} in order to provide a simulation of the Android runtime environment.
  */
 public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
-  private static final Map<Class<? extends RobolectricTestRunner>, EnvHolder> envHoldersByTestRunner = new HashMap<Class<? extends RobolectricTestRunner>, EnvHolder>();
-  private static Map<Pair<AndroidManifest, SdkConfig>, ResourceLoader> resourceLoadersByManifestAndConfig = new HashMap<Pair<AndroidManifest, SdkConfig>, ResourceLoader>();
+  private static final Map<Class<? extends RobolectricTestRunner>, EnvHolder> envHoldersByTestRunner = new HashMap<>();
+  private static Map<Pair<AndroidManifest, SdkConfig>, ResourceLoader> resourceLoadersByManifestAndConfig = new HashMap<>();
   private static ShadowMap mainShadowMap;
   private final EnvHolder envHolder;
   private TestLifecycle<Application> testLifecycle;
@@ -88,15 +86,12 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     this.envHolder = envHolder;
   }
 
+  @SuppressWarnings("unchecked")
   private void assureTestLifecycle(SdkEnvironment sdkEnvironment) {
     try {
       ClassLoader robolectricClassLoader = sdkEnvironment.getRobolectricClassLoader();
       testLifecycle = (TestLifecycle) robolectricClassLoader.loadClass(getTestLifecycleClass().getName()).newInstance();
-    } catch (InstantiationException e) {
-      throw new RuntimeException(e);
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    } catch (ClassNotFoundException e) {
+    } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
       throw new RuntimeException(e);
     }
   }
@@ -122,8 +117,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   }
 
   public SdkEnvironment createSdkEnvironment(SdkConfig sdkConfig) {
-    Setup setup = createSetup();
-    ClassLoader robolectricClassLoader = createRobolectricClassLoader(setup, sdkConfig);
+    InstrumentingClassLoaderConfig config = createSetup();
+    ClassLoader robolectricClassLoader = createRobolectricClassLoader(config, sdkConfig);
     return new SdkEnvironment(sdkConfig, robolectricClassLoader);
   }
 
@@ -143,17 +138,17 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     return manifest;
   }
 
-  public Setup createSetup() {
-    return new Setup();
+  public InstrumentingClassLoaderConfig createSetup() {
+    return new InstrumentingClassLoaderConfig();
   }
 
   protected Class<? extends TestLifecycle> getTestLifecycleClass() {
     return DefaultTestLifecycle.class;
   }
 
-  protected ClassLoader createRobolectricClassLoader(Setup setup, SdkConfig sdkConfig) {
+  protected ClassLoader createRobolectricClassLoader(InstrumentingClassLoaderConfig config, SdkConfig sdkConfig) {
     URL[] urls = getJarResolver().getLocalArtifactUrls(sdkConfig.getSdkClasspathDependencies());
-    return new AsmInstrumentingClassLoader(setup, urls);
+    return new InstrumentingClassLoader(config, urls);
   }
 
   public static void injectClassHandler(ClassLoader robolectricClassLoader, ClassHandler classHandler) {
@@ -333,7 +328,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
     List<FsFile> libraryDirs = null;
     if (config.libraries().length > 0) {
-      libraryDirs = new ArrayList<FsFile>();
+      libraryDirs = new ArrayList<>();
       for (String libraryDirName : config.libraries()) {
         libraryDirs.add(baseDir.join(libraryDirName));
       }
@@ -343,16 +338,10 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       AndroidManifest appManifest;
       appManifest = envHolder.appManifestsByFile.get(manifestFile);
       if (appManifest == null) {
-        long startTime = System.currentTimeMillis();
         appManifest = createAppManifest(manifestFile, resDir, assetDir);
-
         if (libraryDirs != null) {
           appManifest.setLibraryDirectories(libraryDirs);
         }
-
-        if (DocumentLoader.DEBUG_PERF)
-          System.out.println(String.format("%4dms spent in %s", System.currentTimeMillis() - startTime, manifestFile));
-
         envHolder.appManifestsByFile.put(manifestFile, appManifest);
       }
       return appManifest;
@@ -462,15 +451,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       Class<? extends ParallelUniverseInterface> typedClazz = clazz.asSubclass(ParallelUniverseInterface.class);
       Constructor<? extends ParallelUniverseInterface> constructor = typedClazz.getConstructor(RobolectricTestRunner.class);
       return constructor.newInstance(this);
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e);
-    } catch (NoSuchMethodException e) {
-      throw new RuntimeException(e);
-    } catch (InvocationTargetException e) {
-      throw new RuntimeException(e);
-    } catch (InstantiationException e) {
-      throw new RuntimeException(e);
-    } catch (IllegalAccessException e) {
+    } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
       throw new RuntimeException(e);
     }
   }
@@ -494,7 +475,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   }
 
   public final ResourceLoader getAppResourceLoader(SdkConfig sdkConfig, ResourceLoader systemResourceLoader, final AndroidManifest appManifest) {
-    Pair<AndroidManifest, SdkConfig> androidManifestSdkConfigPair = new Pair<AndroidManifest, SdkConfig>(appManifest, sdkConfig);
+    Pair<AndroidManifest, SdkConfig> androidManifestSdkConfigPair = new Pair<>(appManifest, sdkConfig);
     ResourceLoader resourceLoader = resourceLoadersByManifestAndConfig.get(androidManifestSdkConfigPair);
     if (resourceLoader == null) {
       resourceLoader = createAppResourceLoader(systemResourceLoader, appManifest);
@@ -504,13 +485,13 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   }
 
   protected ResourceLoader createAppResourceLoader(ResourceLoader systemResourceLoader, AndroidManifest appManifest) {
-    List<PackageResourceLoader> appAndLibraryResourceLoaders = new ArrayList<PackageResourceLoader>();
+    List<PackageResourceLoader> appAndLibraryResourceLoaders = new ArrayList<>();
     for (ResourcePath resourcePath : appManifest.getIncludedResourcePaths()) {
       appAndLibraryResourceLoaders.add(createResourceLoader(resourcePath));
     }
     OverlayResourceLoader overlayResourceLoader = new OverlayResourceLoader(appManifest.getPackageName(), appAndLibraryResourceLoaders);
 
-    Map<String, ResourceLoader> resourceLoaders = new HashMap<String, ResourceLoader>();
+    Map<String, ResourceLoader> resourceLoaders = new HashMap<>();
     resourceLoaders.put("android", systemResourceLoader);
     resourceLoaders.put(appManifest.getPackageName(), overlayResourceLoader);
     return new RoutingResourceLoader(resourceLoaders);
