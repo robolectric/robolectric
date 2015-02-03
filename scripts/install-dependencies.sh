@@ -6,7 +6,7 @@
 #   install-dependencies.sh
 #
 # Assumptions:
-#  1. You've got one or more Android SDKs installed locally.
+#  1. You've got one or more Android SDKs and Google APIs installed locally.
 #  2. Your ANDROID_HOME environment variable points to the Android SDK install directory.
 #  3. You have installed the Android Repository and Google Repository libraries from the SDK installer.
 
@@ -14,6 +14,7 @@ set -e
 
 ANDROID_REPOSITORY=${ANDROID_HOME}/extras/android/m2repository
 GOOGLE_REPOSITORY=${ANDROID_HOME}/extras/google/m2repository
+ADDONS=${ANDROID_HOME}/add-ons
 
 function install_jar() {
   groupId=$1; artifactId=$2; version=$3; archive=$4
@@ -36,7 +37,7 @@ function install_aar() {
   fi
 
   tempdir=`mktemp -qd /tmp/robolectric-dependencies.XXXXXX`
-  cd ${tempdir}; jar xvf ${archive} > /dev/null 2>&1
+  ( cd ${tempdir}; jar xvf ${archive} > /dev/null 2>&1 )
 
   echo "Installing ${groupId}:${artifactId} from ${archive}"
   mvn -q install:install-file -DgroupId=${groupId} -DartifactId=${artifactId} -Dversion=${version} -Dpackaging=jar -Dfile="${tempdir}/classes.jar"
@@ -44,22 +45,27 @@ function install_aar() {
 }
 
 function install_maps() {
-  groupId=$1; artifactId=$2
+  groupId=$1; artifactId=$2 api=$3; revision=$4
 
-  cd "${ANDROID_HOME}"/add-ons
-  for dir in `ls -1d addon-google_apis-google-*`; do
-    (
-      name=`grep ^name= ${dir}/manifest.ini | cut -d= -f2`
-      api=`grep ^api= ${dir}/manifest.ini | cut -d= -f2`
-      version=`grep ^revision= ${dir}/manifest.ini | cut -d= -f2`
+  dir="${ADDONS}/addon-google_apis-google-${api}"
 
-      echo "Installing ${groupId}:${artifactId} from ${ANDROID_HOME}/add-ons/${dir}/libs/maps.jar"
-      mvn -q install:install-file -DgroupId=${groupId} -DartifactId=${artifactId} -Dversion=${api}_r${version} -Dpackaging=jar -Dfile=${dir}/libs/maps.jar
-    )
-  done
+  if [ ! -d "$dir" ]; then
+    echo "${groupId}:${artifactId} not found! Make sure that 'Google APIs' is up to date in the SDK manager for API ${api}."
+    exit 1
+  fi
+
+  version=`grep ^revision= ${dir}/manifest.ini | cut -d= -f2`
+
+  if [ "$version" != "$revision" ]; then
+    echo "${groupId}:${artifactId} is an incompatible revision! Make sure that 'Google APIs' is up to date in the SDK manager for API ${api}. Expected revision ${revision} but was ${version}."
+    exit 1
+  fi
+
+  echo "Installing ${groupId}:${artifactId} from ${dir}/libs/maps.jar"
+  mvn -q install:install-file -DgroupId=${groupId} -DartifactId=${artifactId} -Dversion=${api}_r${version} -Dpackaging=jar -Dfile="${dir}/libs/maps.jar"
 }
 
-if [ -z "{ANDROID_HOME}" ]; then
+if [ -z "${ANDROID_HOME}" ]; then
   echo "You must set \$ANDROID_HOME"
   exit 1
 fi
@@ -74,4 +80,4 @@ install_aar "com.android.support" "multidex" "1.0.0" "${ANDROID_REPOSITORY}/com/
 install_aar "com.google.android.gms" "play-services" "6.5.87" "${GOOGLE_REPOSITORY}/com/google/android/gms/play-services/6.5.87/play-services-6.5.87.aar"
 
 # Install maps
-install_maps "com.google.android.maps" "maps"
+install_maps "com.google.android.maps" "maps" "18" "3"

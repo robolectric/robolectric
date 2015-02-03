@@ -32,6 +32,13 @@ public class ShadowColorTest {
   }
 
   @Test
+  public void testParseColorWithStringName() {
+    assertThat(Color.parseColor("blue")).isEqualTo(-16776961);
+    assertThat(Color.parseColor("black")).isEqualTo(-16777216);
+    assertThat(Color.parseColor("green")).isEqualTo(-16711936);
+  }
+
+  @Test
   public void colorToHSVShouldBeCorrectForBlue() {
     float[] hsv = new float[3];
     Color.colorToHSV(Color.BLUE, hsv);

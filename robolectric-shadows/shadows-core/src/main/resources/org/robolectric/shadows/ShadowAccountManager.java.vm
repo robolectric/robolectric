@@ -1,3 +1,6 @@
+#set($Integer = 0)
+#set($apiLevel = $Integer.parseInt($apiLevel))
+
 package org.robolectric.shadows;
 
 import android.accounts.Account;
@@ -382,4 +385,22 @@ public class ShadowAccountManager {
   public void addAuthenticator(String type) {
     addAuthenticator(AuthenticatorDescription.newKey(type));
   }
+
+#if ($apiLevel >= 21)
+  private Map<Account, String> previousNames = new HashMap<Account, String>();
+  /**
+   * Non-android accessor.
+   *
+   * @param account User account.
+   */
+  public void setPreviousAccountName(Account account, String previousName) {
+    previousNames.put(account, previousName);
+  }
+
+  @Implementation
+  public String getPreviousName(Account account) {
+    return previousNames.get(account);
+  }
+#end
+
 }

@@ -50,6 +50,11 @@ public class RoboCursor extends BaseCursor {
   }
 
   @Override
+  public int getInt(int columnIndex) {
+    return (Integer) results[resultsIndex][columnIndex];
+  }
+
+  @Override
   public boolean moveToNext() {
     ++resultsIndex;
     return resultsIndex < results.length;
@@ -60,7 +65,7 @@ public class RoboCursor extends BaseCursor {
     closeWasCalled = true;
   }
 
-  public void setColumnNames(ArrayList<String> columnNames) {
+  public void setColumnNames(List<String> columnNames) {
     this.columnNames = columnNames;
   }
 
