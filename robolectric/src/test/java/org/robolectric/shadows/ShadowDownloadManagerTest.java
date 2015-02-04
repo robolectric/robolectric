@@ -3,6 +3,8 @@ package org.robolectric.shadows;
 import android.app.DownloadManager;
 import android.database.Cursor;
 import android.net.Uri;
+import android.util.Pair;
+import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
@@ -47,6 +49,15 @@ public class ShadowDownloadManagerTest {
   public void request_shouldGetMimeType() throws Exception {
     request.setMimeType("application/json");
     assertThat(shadow.getMimeType()).isEqualTo("application/json");
+  }
+
+  @Test
+  public void request_shouldGetRequestHeaders() throws Exception {
+    request.addRequestHeader("Authorization", "Bearer token");
+    List<Pair<String, String>> headers = shadow.getRequestHeaders();
+    assertThat(headers).isNotEmpty().hasSize(1);
+    assertThat(headers.get(0).first).isEqualTo("Authorization");
+    assertThat(headers.get(0).second).isEqualTo("Bearer token");
   }
 
   @Test
