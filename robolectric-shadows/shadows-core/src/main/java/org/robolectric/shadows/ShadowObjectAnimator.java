@@ -4,6 +4,7 @@ import android.animation.ObjectAnimator;
 import android.animation.TypeEvaluator;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Property;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -39,6 +40,11 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
   @Implementation
   public void setPropertyName(String propertyName) {
     this.propertyName = propertyName;
+  }
+
+  @Implementation
+  public void setProperty(Property property) {
+    this.propertyName = property.getName();
   }
 
   @Implementation
@@ -103,7 +109,7 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
     Runnable animationRunnable = new AnimationRunnable(setter);
     if (keyFrameCount > 1) {
       long stepDuration = duration / (keyFrameCount - 1);
-      for (int i = 0; i * stepDuration <= duration; ++i) {
+      for (int i = 0; i < keyFrameCount; ++i) {
         new Handler(Looper.getMainLooper()).postDelayed(animationRunnable, stepDuration * i);
       }
     } else {
