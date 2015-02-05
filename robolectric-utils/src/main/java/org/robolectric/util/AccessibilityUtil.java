@@ -39,7 +39,7 @@ public class AccessibilityUtil {
     boolean checksEnabled = false;
 
     /* Pull defaults from environment variables */
-    String checksEnabledString = System.getenv("a11y_checks_enabled");
+    String checksEnabledString = System.getenv("robolectric.accessibility.enablechecks");
     if (checksEnabledString != null) {
       checksEnabled = checksEnabledString.equals("true");
     }

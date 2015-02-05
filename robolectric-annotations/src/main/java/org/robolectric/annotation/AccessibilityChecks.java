@@ -27,14 +27,6 @@ public @interface AccessibilityChecks {
   boolean enabled() default true;
   
   /**
-   * In addition to errors, some checks for accessibility generate warnings
-   * for items that can indicate accessibility bugs but may be benign. Treating
-   * these warnings as errors causes Robolectric to throw exceptions whenever
-   * it suspects that there may be an issue. The default is false.
-   */
-  boolean treatWarningsAsErors() default false;
-  
-  /**
    *  Accessibility checking can be a moving target. As new checks are added to
    *  Robolectric, these checks may reveal issues with a UI that previously
    *  passed all checks (but were probably affecting users all along). This
