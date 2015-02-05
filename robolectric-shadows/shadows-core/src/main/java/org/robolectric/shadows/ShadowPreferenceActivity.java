@@ -21,6 +21,7 @@ public class ShadowPreferenceActivity extends ShadowActivity {
   public void addPreferencesFromResource(int preferencesResId) {
     this.preferencesResId = preferencesResId;
     preferenceScreen = inflatePreferences(preferencesResId);
+    ((PreferenceActivity)realActivity).setPreferenceScreen(preferenceScreen);
   }
 
   private PreferenceScreen inflatePreferences(int preferencesResId) {
