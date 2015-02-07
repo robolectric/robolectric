@@ -1,14 +1,12 @@
 package org.robolectric.shadows;
 
 import android.util.Log;
-
-import java.io.FileOutputStream;
-import java.io.IOException;
-
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,9 +16,10 @@ import java.util.Map;
 @Implements(Log.class)
 public class ShadowLog {
   private static final int extraLogLength = "l/: \n".length();
-  private static Map<String,List<LogItem>> logsByTag = new HashMap<String,List<LogItem>>();
-  private static List<LogItem> logs = new ArrayList<LogItem>();
+  private static Map<String,List<LogItem>> logsByTag = new HashMap<>();
+  private static List<LogItem> logs = new ArrayList<>();
   public static PrintStream stream;
+  private static final Map<String, Integer> tagToLevel = new HashMap<>();
 
   @Implementation
   public static void e(String tag, String msg) {
@@ -89,7 +88,10 @@ public class ShadowLog {
   }
 
   @Implementation
-  public static boolean isLoggable(String tag, int level) {
+  public static synchronized boolean isLoggable(String tag, int level) {
+    if (tagToLevel.containsKey(tag)) {
+      return level >= tagToLevel.get(tag);
+    }
     return stream != null || level >= Log.INFO;
   }
 
@@ -97,6 +99,15 @@ public class ShadowLog {
   public static int println(int priority, String tag, String msg) {
     addLog(priority, tag, msg, null);
     return extraLogLength + tag.length() + msg.length();
+  }
+
+  /**
+   * Sets the log level of a given tag, that {@link #isLoggable} will follow.
+   * @param tag A log tag
+   * @param level A log level, from {@link android.util.Log}
+   */
+  public static synchronized void setLoggable(String tag, int level) {
+    tagToLevel.put(tag, level);
   }
 
   private static synchronized void addLog(int level, String tag, String msg, Throwable throwable) {
@@ -157,6 +168,7 @@ public class ShadowLog {
   public static synchronized void reset() {
     logs.clear();
     logsByTag.clear();
+    tagToLevel.clear();
   }
 
   public static void setupLogging() {

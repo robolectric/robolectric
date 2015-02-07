@@ -219,4 +219,19 @@ public class ShadowLogTest {
     assertThat(item1).isEqualTo(item2);
     assertThat(item2).isEqualTo(item1);
   }
+
+  @Test
+  public void logsAfterSetLoggable() {
+    ShadowLog.setLoggable("Foo", Log.VERBOSE);
+    assertTrue(Log.isLoggable("Foo", Log.DEBUG));
+  }
+
+  @Test
+  public void noLogAfterSetLoggable() {
+    PrintStream old = ShadowLog.stream;
+    ShadowLog.stream = new PrintStream(new ByteArrayOutputStream());
+    ShadowLog.setLoggable("Foo", Log.DEBUG);
+    assertFalse(Log.isLoggable("Foo", Log.VERBOSE));
+    ShadowLog.stream = old;
+  }
 }
