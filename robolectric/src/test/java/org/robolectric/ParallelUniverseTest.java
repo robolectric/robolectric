@@ -1,6 +1,8 @@
 package org.robolectric;
 
 import android.app.Application;
+
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.Test;
 import org.junit.Before;
 import org.junit.runner.RunWith;
@@ -9,6 +11,9 @@ import android.content.res.Resources;
 import android.content.res.Configuration;
 import org.robolectric.internal.ParallelUniverse;
 import org.robolectric.internal.SdkConfig;
+
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 
 import static org.mockito.Mockito.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -23,7 +28,13 @@ public class ParallelUniverseTest {
     pu = new ParallelUniverse(mock(RobolectricTestRunner.class));
     pu.setSdkConfig(new SdkConfig(18));
   }
-  
+
+  @Test
+  public void ensureBouncyCastleInstalled() throws CertificateException {
+    CertificateFactory factory = CertificateFactory.getInstance("X.509");
+    assertThat(factory.getProvider().getName()).isEqualTo(BouncyCastleProvider.PROVIDER_NAME);
+  }
+
   @Test
   public void setUpApplicationState_setsVersionQualifierFromSdkConfig() {
     String givenQualifiers = "";

@@ -57,6 +57,12 @@
       <classifier>${robolectric.api.level}</classifier>
     </dependency>
 
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcprov-jdk16</artifactId>
+      <version>1.46</version>
+    </dependency>
+
     <!-- Project Dependencies -->
     <dependency>
       <groupId>org.ow2.asm</groupId>
