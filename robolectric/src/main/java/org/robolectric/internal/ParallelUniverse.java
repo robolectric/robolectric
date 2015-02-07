@@ -6,6 +6,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.robolectric.*;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.fakes.RoboInstrumentation;
@@ -17,9 +18,8 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.ShadowsAdapter;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.UUID;
+import java.security.Security;
 
 import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -72,6 +72,8 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     } else {
       resourceLoader = systemResourceLoader;
     }
+
+    Security.insertProviderAt(new BouncyCastleProvider(), 1);
 
     shadowsAdapter.setSystemResources(systemResourceLoader);
     String qualifiers = addVersionQualifierToQualifiers(config.qualifiers());
