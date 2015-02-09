@@ -1,60 +1,25 @@
 package org.robolectric.shadows;
 
-import android.animation.TimeInterpolator;
-import android.animation.TypeEvaluator;
 import android.animation.ValueAnimator;
-import android.view.animation.LinearInterpolator;
-import org.robolectric.annotation.Implementation;
+
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
+import org.robolectric.util.ReflectionHelpers;
 
 @Implements(ValueAnimator.class)
 public class ShadowValueAnimator extends ShadowAnimator {
-  private TimeInterpolator interpolator;
-  @RealObject
-  private ValueAnimator realObject;
-  private TypeEvaluator typeEvaluator;
 
-  @Implementation
-  public void setInterpolator(TimeInterpolator value) {
-    if (value != null) {
-      interpolator = value;
-    } else {
-      interpolator = new LinearInterpolator();
-    }
+  @Resetter
+  public static void reset() {
+    ValueAnimator.clearAllAnimations();
+    /* ValueAnimator.sAnimationHandler is a static thread local that otherwise would survive between
+     * tests. The AnimationHandler.mAnimationScheduled is set to true when the scheduleAnimation() is
+     * called and the reset to false when run() is called by the Choreographer. If an animation is
+     * already scheduled, it will not post to the Choreographer. This is a problem if a previous
+     * test leaves animations on the Choreographers callback queue without running them as it will
+     * cause the AnimationHandler not to post a callback. We reset the thread local here so a new
+     * one will be created for each test with a fresh state.
+     */
+    ReflectionHelpers.setStaticField(ValueAnimator.class, "sAnimationHandler", new ThreadLocal<>());
   }
-
-  @Implementation
-  public void setEvaluator(TypeEvaluator typeEvaluator) {
-    this.typeEvaluator = typeEvaluator;
-  }
-
-  @Implementation
-  public TimeInterpolator getInterpolator() {
-    return interpolator;
-  }
-
-  @Implementation
-  public boolean isRunning() {
-    return false;
-  }
-
-  @Implementation @Override
-  public long getDuration() {
-    return super.getDuration();
-  }
-
-  @Implementation
-  public void cancel() {
-  }
-
-  @Implementation
-  public void start() {
-    realObject.end();
-  }
-
-//  @Implementation
-//  public void animateValue(float fraction) {
-//    System.err.println(System.identityHashCode(this) + ": Animate value: " + fraction);
-//  }
 }

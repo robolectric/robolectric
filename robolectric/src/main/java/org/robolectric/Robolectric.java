@@ -2,11 +2,15 @@ package org.robolectric;
 
 import android.app.Activity;
 import android.app.Service;
+import android.os.Looper;
+import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.util.ActivityController;
 import org.robolectric.util.ServiceController;
 import org.robolectric.internal.ShadowProvider;
 
 import java.util.ServiceLoader;
+
+import static org.robolectric.Shadows.shadowOf;
 
 public class Robolectric {
   private static final ShadowsAdapter shadowsAdapter = instantiateShadowsAdapter();
@@ -39,6 +43,20 @@ public class Robolectric {
 
   public static <T extends Activity> T setupActivity(Class<T> activityClass) {
     return ActivityController.of(shadowsAdapter, activityClass).setup().get();
+  }
+
+  /**
+   * Execute all runnables that have been enqueued on the foreground scheduler.
+   */
+  public static void flushForegroundScheduler() {
+    ShadowLooper.getUiThreadScheduler().advanceToLastPostedRunnable();
+  }
+
+  /**
+   * Execute all runnables that have been enqueues on the background scheduler.
+   */
+  public static void flushBackgroundScheduler() {
+    shadowOf(Looper.getMainLooper()).getScheduler().advanceToLastPostedRunnable();
   }
 
   private static ShadowsAdapter instantiateShadowsAdapter() {
