@@ -55,6 +55,11 @@ public class RoboCursor extends BaseCursor {
   }
 
   @Override
+  public int getCount() {
+    return results.length;
+  }
+
+  @Override
   public boolean moveToNext() {
     ++resultsIndex;
     return resultsIndex < results.length;
