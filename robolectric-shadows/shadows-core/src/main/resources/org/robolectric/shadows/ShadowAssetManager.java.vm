@@ -43,6 +43,7 @@ import org.robolectric.res.Style;
 import org.robolectric.res.StyleData;
 import org.robolectric.res.TypedResource;
 import org.robolectric.res.builder.XmlFileBuilder;
+import org.robolectric.util.Strings;
 
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowApplication.getInstance;
@@ -274,7 +275,15 @@ public final class ShadowAssetManager {
 
     Style style = resolveStyle(resourceLoader, null, resName, assetManager.getQualifiers());
 
-    APPLIED_STYLES.get(theme).add(new OverlayedStyle(style, force));
+    List<OverlayedStyle> overlayedStyleList = APPLIED_STYLES.get(theme);
+    OverlayedStyle styleToAdd = new OverlayedStyle(style, force);
+    for (int i = 0; i < overlayedStyleList.size(); ++i) {
+      if (styleToAdd.equals(overlayedStyleList.get(i))) {
+        overlayedStyleList.remove(i);
+        break;
+      }
+    }
+    overlayedStyleList.add(styleToAdd);
   }
 
   static List<OverlayedStyle> getOverlayThemeStyles($ptrClass themeResourceId) {
@@ -288,6 +297,20 @@ public final class ShadowAssetManager {
     public OverlayedStyle(Style style, boolean force) {
       this.style = style;
       this.force = force;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (!(obj instanceof OverlayedStyle)) {
+        return false;
+      }
+      OverlayedStyle overlayedStyle = (OverlayedStyle) obj;
+      return style.equals(overlayedStyle.style);
+    }
+
+    @Override
+    public int hashCode() {
+      return style.hashCode();
     }
   }
 
@@ -510,6 +533,29 @@ public final class ShadowAssetManager {
       throw new RuntimeException("Found a " + attr + " but can't cast it :(");
     }
 
+    @Override
+    public boolean equals(Object obj) {
+      if (!(obj instanceof StyleResolver)) {
+        return false;
+      }
+      StyleResolver other = (StyleResolver) obj;
+
+      return ((theme == null && other.theme == null) || (theme != null && theme.equals(other.theme)))
+          && ((myResName == null && other.myResName == null)
+            || (myResName != null && myResName.equals(other.myResName)))
+          && Strings.equals(qualifiers, other.qualifiers);
+    }
+
+    @Override
+    public int hashCode() {
+      int hashCode = 0;
+      hashCode = 31 * hashCode + (theme != null ? theme.hashCode() : 0);
+      hashCode = 31 * hashCode + (myResName != null ? myResName.hashCode() : 0);
+      hashCode = 31 * hashCode + Strings.nullToEmpty(qualifiers).hashCode();
+      return hashCode;
+    }
+
+    @Override
     public String toString() {
       return "StyleResolver{"
           + "name=" + myResName
