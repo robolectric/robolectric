@@ -145,19 +145,19 @@ public class ShadowApplicationTest {
     NullBinder expectedBinder = new NullBinder();
     Shadows.shadowOf(RuntimeEnvironment.application).setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
     RuntimeEnvironment.application.bindService(new Intent(""), service, Context.BIND_AUTO_CREATE);
-    assertEquals(expectedComponentName, service.name);
-    assertEquals(expectedBinder, service.service);
-    assertNull(service.nameUnbound);
+    assertThat(service.name).isEqualTo(expectedComponentName);
+    assertThat(service.service).isEqualTo(expectedBinder);
+    assertThat(service.nameUnbound).isNull();
     RuntimeEnvironment.application.unbindService(service);
-    assertEquals(expectedComponentName, service.nameUnbound);
+    assertThat(service.nameUnbound).isEqualTo(expectedComponentName);
   }
 
   @Test
   public void bindServiceShouldCallOnServiceConnectedWithNullValues() {
     TestService service = new TestService();
     RuntimeEnvironment.application.bindService(new Intent(""), service, Context.BIND_AUTO_CREATE);
-    assertNull(service.name);
-    assertNull(service.service);
+    assertThat(service.name).isNull();
+    assertThat(service.service).isNull();
   }
 
   @Test
@@ -169,15 +169,15 @@ public class ShadowApplicationTest {
     Shadows.shadowOf(RuntimeEnvironment.application).setComponentNameAndServiceForBindServiceForIntent(expectedIntent, expectedComponentName, expectedBinder);
 
     TestService service = new TestService();
-    assertTrue(RuntimeEnvironment.application.bindService(expectedIntent, service, Context.BIND_AUTO_CREATE));
+    assertThat(RuntimeEnvironment.application.bindService(expectedIntent, service, Context.BIND_AUTO_CREATE)).isTrue();
 
-    assertNull(service.name);
-    assertNull(service.service);
+    assertThat(service.name).isNull();
+    assertThat(service.service).isNull();
 
     ShadowLooper.unPauseMainLooper();
 
-    assertEquals(expectedComponentName, service.name);
-    assertEquals(expectedBinder, service.service);
+    assertThat(service.name).isEqualTo(expectedComponentName);
+    assertThat(service.service).isEqualTo(expectedBinder);
   }
 
   @Test
@@ -191,9 +191,9 @@ public class ShadowApplicationTest {
     ShadowLooper.pauseMainLooper();
 
     RuntimeEnvironment.application.unbindService(service);
-    assertNull(service.nameUnbound);
+    assertThat(service.nameUnbound).isNull();
     ShadowLooper.unPauseMainLooper();
-    assertEquals(expectedComponentName, service.nameUnbound);
+    assertThat(service.nameUnbound).isEqualTo(expectedComponentName);
   }
 
   @Test
@@ -206,8 +206,8 @@ public class ShadowApplicationTest {
     shadowApplication.setComponentNameAndServiceForBindServiceForIntent(expectedIntent, expectedComponentName, expectedBinder);
     RuntimeEnvironment.application.bindService(expectedIntent, service, Context.BIND_AUTO_CREATE);
     RuntimeEnvironment.application.unbindService(service);
-    assertEquals(1, shadowApplication.getUnboundServiceConnections().size());
-    assertEquals(service, shadowApplication.getUnboundServiceConnections().get(0));
+    assertThat(shadowApplication.getUnboundServiceConnections()).hasSize(1);
+    assertThat(shadowApplication.getUnboundServiceConnections().get(0)).isSameAs(service);
   }
 
   @Test
@@ -222,9 +222,9 @@ public class ShadowApplicationTest {
     shadowApplication.declareActionUnbindable(expectedIntent.getAction());
     assertFalse(RuntimeEnvironment.application.bindService(expectedIntent, service, Context.BIND_AUTO_CREATE));
     ShadowLooper.unPauseMainLooper();
-    assertNull(service.name);
-    assertNull(service.service);
-    assertNull(shadowApplication.peekNextStartedService());
+    assertThat(service.name).isNull();
+    assertThat(service.service).isNull();
+    assertThat(shadowApplication.peekNextStartedService()).isNull();
   }
 
   @Test
@@ -240,11 +240,11 @@ public class ShadowApplicationTest {
     shadowApplication.setComponentNameAndServiceForBindServiceForIntent(expectedIntentOne, expectedComponentNameOne, expectedBinderOne);
     shadowApplication.setComponentNameAndServiceForBindServiceForIntent(expectedIntentTwo, expectedComponentNameTwo, expectedBinderTwo);
     RuntimeEnvironment.application.bindService(expectedIntentOne, service, Context.BIND_AUTO_CREATE);
-    assertEquals(expectedComponentNameOne, service.name);
-    assertEquals(expectedBinderOne, service.service);
+    assertThat(service.name).isEqualTo(expectedComponentNameOne);
+    assertThat(service.service).isEqualTo(expectedBinderOne);
     RuntimeEnvironment.application.bindService(expectedIntentTwo, service, Context.BIND_AUTO_CREATE);
-    assertEquals(expectedComponentNameTwo, service.name);
-    assertEquals(expectedBinderTwo, service.service);
+    assertThat(service.name).isEqualTo(expectedComponentNameTwo);
+    assertThat(service.service).isEqualTo(expectedBinderTwo);
   }
 
   @Test
@@ -260,14 +260,14 @@ public class ShadowApplicationTest {
     shadowApplication.setComponentNameAndServiceForBindServiceForIntent(expectedIntentOne, expectedComponentNameOne, expectedBinderOne);
     shadowApplication.setComponentNameAndServiceForBindServiceForIntent(expectedIntentTwo, expectedComponentNameTwo, expectedBinderTwo);
     RuntimeEnvironment.application.bindService(expectedIntentOne, service, Context.BIND_AUTO_CREATE);
-    assertEquals(expectedComponentNameOne, service.name);
-    assertEquals(expectedBinderOne, service.service);
+    assertThat(service.name).isEqualTo(expectedComponentNameOne);
+    assertThat(service.service).isEqualTo(expectedBinderOne);
     RuntimeEnvironment.application.bindService(expectedIntentTwo, service, Context.BIND_AUTO_CREATE);
-    assertEquals(expectedComponentNameTwo, service.name);
-    assertEquals(expectedBinderTwo, service.service);
+    assertThat(service.name).isEqualTo(expectedComponentNameTwo);
+    assertThat(service.service).isEqualTo(expectedBinderTwo);
     RuntimeEnvironment.application.bindService(new Intent("unknown"), service, Context.BIND_AUTO_CREATE);
-    assertEquals(null, service.name);
-    assertEquals(null, service.service);
+    assertThat(service.name).isNull();
+    assertThat(service.service).isNull();
   }
 
   @Test
@@ -285,20 +285,20 @@ public class ShadowApplicationTest {
     shadowApplication.setComponentNameAndServiceForBindServiceForIntent(expectedIntentTwo, expectedComponentNameTwo, expectedBinderTwo);
 
     RuntimeEnvironment.application.bindService(expectedIntentOne, serviceOne, Context.BIND_AUTO_CREATE);
-    assertNull(serviceOne.nameUnbound);
+    assertThat(serviceOne.nameUnbound).isNull();
     RuntimeEnvironment.application.unbindService(serviceOne);
-    assertEquals(expectedComponentNameOne, serviceOne.name);
+    assertThat(serviceOne.name).isEqualTo(expectedComponentNameOne);
 
     RuntimeEnvironment.application.bindService(expectedIntentTwo, serviceTwo, Context.BIND_AUTO_CREATE);
-    assertNull(serviceTwo.nameUnbound);
+    assertThat(serviceTwo.nameUnbound).isNull();
     RuntimeEnvironment.application.unbindService(serviceTwo);
-    assertEquals(expectedComponentNameTwo, serviceTwo.name);
+    assertThat(serviceTwo.name).isEqualTo(expectedComponentNameTwo);
 
     TestService serviceDefault = new TestService();
     RuntimeEnvironment.application.bindService(new Intent("default"), serviceDefault, Context.BIND_AUTO_CREATE);
-    assertNull(serviceDefault.nameUnbound);
+    assertThat(serviceDefault.nameUnbound).isNull();
     RuntimeEnvironment.application.unbindService(serviceDefault);
-    assertEquals(null, serviceDefault.name);
+    assertThat(serviceDefault.name).isNull();
   }
 
   @Test
