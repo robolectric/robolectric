@@ -408,10 +408,10 @@ public class ShadowApplicationTest {
     final ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
     final ServiceConnection expectedServiceConnection = new EmptyServiceConnection();
 
-    assertEquals(0, shadowApplication.getBoundServiceConnections().size());
-    assertTrue(shadowApplication.bindService(new Intent("connect"), expectedServiceConnection, 0));
-    assertEquals(1, shadowApplication.getBoundServiceConnections().size());
-    assertSame(expectedServiceConnection, shadowApplication.getBoundServiceConnections().get(0));
+    assertThat(shadowApplication.getBoundServiceConnections()).hasSize(0);
+    assertThat(shadowApplication.bindService(new Intent("connect"), expectedServiceConnection, 0)).isTrue();
+    assertThat(shadowApplication.getBoundServiceConnections()).hasSize(1);
+    assertThat(shadowApplication.getBoundServiceConnections().get(0)).isSameAs(expectedServiceConnection);
   }
 
   @Test
@@ -421,10 +421,10 @@ public class ShadowApplicationTest {
     final String unboundableAction = "refuse";
     final Intent serviceIntent = new Intent(unboundableAction);
     shadowApplication.declareActionUnbindable(unboundableAction);
-    assertEquals(0, shadowApplication.getBoundServiceConnections().size());
-    assertFalse(shadowApplication.bindService(serviceIntent, expectedServiceConnection, 0));
-    assertEquals(1, shadowApplication.getBoundServiceConnections().size());
-    assertSame(expectedServiceConnection, shadowApplication.getBoundServiceConnections().get(0));
+    assertThat(shadowApplication.getBoundServiceConnections()).hasSize(0);
+    assertThat(shadowApplication.bindService(serviceIntent, expectedServiceConnection, 0)).isFalse();
+    assertThat(shadowApplication.getBoundServiceConnections()).hasSize(1);
+    assertThat(shadowApplication.getBoundServiceConnections().get(0)).isSameAs(expectedServiceConnection);
   }
 
   @Test
@@ -432,13 +432,13 @@ public class ShadowApplicationTest {
     final ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
     final ServiceConnection expectedServiceConnection = new EmptyServiceConnection();
 
-    assertTrue(shadowApplication.bindService(new Intent("connect"), expectedServiceConnection, 0));
-    assertEquals(1, shadowApplication.getBoundServiceConnections().size());
-    assertEquals(0, shadowApplication.getUnboundServiceConnections().size());
+    assertThat(shadowApplication.bindService(new Intent("connect"), expectedServiceConnection, 0)).isTrue();
+    assertThat(shadowApplication.getBoundServiceConnections()).hasSize(1);
+    assertThat(shadowApplication.getUnboundServiceConnections()).hasSize(0);
     shadowApplication.unbindService(expectedServiceConnection);
-    assertEquals(0, shadowApplication.getBoundServiceConnections().size());
-    assertEquals(1, shadowApplication.getUnboundServiceConnections().size());
-    assertSame(expectedServiceConnection, shadowApplication.getUnboundServiceConnections().get(0));
+    assertThat(shadowApplication.getBoundServiceConnections()).hasSize(0);
+    assertThat(shadowApplication.getUnboundServiceConnections()).hasSize(1);
+    assertThat(shadowApplication.getUnboundServiceConnections().get(0)).isSameAs(expectedServiceConnection);
   }
   /////////////////////////////
 
