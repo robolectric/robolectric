@@ -66,7 +66,8 @@ public class ShadowApplication extends ShadowContextWrapper {
   private List<Intent> startedServices = new ArrayList<Intent>();
   private List<Intent> stoppedServies = new ArrayList<Intent>();
   private List<Intent> broadcastIntents = new ArrayList<Intent>();
-  private List<ServiceConnection> unboundServiceConnections = new ArrayList<ServiceConnection>();
+  private List<ServiceConnection> boundServiceConnections = new ArrayList<>();
+  private List<ServiceConnection> unboundServiceConnections = new ArrayList<>();
   private List<Wrapper> registeredReceivers = new ArrayList<Wrapper>();
   private Map<String, Intent> stickyIntents = new LinkedHashMap<String, Intent>();
   private Looper mainLooper = ShadowLooper.myLooper();
@@ -273,6 +274,8 @@ public class ShadowApplication extends ShadowContextWrapper {
 
   @Implementation
   public boolean bindService(Intent intent, final ServiceConnection serviceConnection, int i) {
+    boundServiceConnections.add(serviceConnection);
+    unboundServiceConnections.remove(serviceConnection);
     if (unbindableActions.contains(intent.getAction())) {
       return false;
     }
@@ -286,9 +289,14 @@ public class ShadowApplication extends ShadowContextWrapper {
     return true;
   }
 
+  public List<ServiceConnection> getBoundServiceConnections() {
+    return boundServiceConnections;
+  }
+
   @Override @Implementation
   public void unbindService(final ServiceConnection serviceConnection) {
     unboundServiceConnections.add(serviceConnection);
+    boundServiceConnections.remove(serviceConnection);
     shadowOf(Looper.getMainLooper()).post(new Runnable() {
       @Override
       public void run() {
