@@ -16,13 +16,6 @@ import org.robolectric.annotation.Implements;
 public class ShadowAnimationUtils {
 
   @Implementation
-  public static Animation loadAnimation(Context context, int id) {
-    Animation anim = new TranslateAnimation(0, 0, 30, 0);
-    Shadows.shadowOf(anim).setLoadedFromResourceId(id);
-    return anim;
-  }
-
-  @Implementation
   public static Interpolator loadInterpolator(Context context, int id) {
     return new LinearInterpolator();
   }
