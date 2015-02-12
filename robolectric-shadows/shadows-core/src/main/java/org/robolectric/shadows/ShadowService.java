@@ -48,6 +48,7 @@ public class ShadowService extends ShadowContextWrapper {
     if (unbindServiceShouldThrowIllegalArgument) {
       throw new IllegalArgumentException();
     }
+    super.unbindService(conn);
   }
 
   @Implementation

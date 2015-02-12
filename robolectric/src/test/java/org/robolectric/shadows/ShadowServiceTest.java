@@ -57,6 +57,16 @@ public class ShadowServiceTest {
   }
 
   @Test
+  public void shouldUnbindServiceAtShadowApplication() {
+    ShadowApplication shadowApplication = shadowOf(RuntimeEnvironment.application);
+    ServiceConnection conn = Shadow.newInstanceOf(MediaScannerConnection.class);
+    service.bindService(new Intent("dummy"), conn, 0);
+    assertThat(shadowApplication.getUnboundServiceConnections().size()).isEqualTo(0);
+    service.unbindService(conn);
+    assertThat(shadowApplication.getUnboundServiceConnections().size()).isEqualTo(1);
+  }
+
+  @Test
   public void shouldUnbindServiceSuccessfully() {
     ServiceConnection conn = Shadow.newInstanceOf(MediaScannerConnection.class);
     service.unbindService(conn);
