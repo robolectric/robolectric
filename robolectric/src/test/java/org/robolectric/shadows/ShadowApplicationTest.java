@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.res.Resources;
 import org.robolectric.fakes.RoboSensorManager;
 import android.os.IBinder;
@@ -401,6 +402,44 @@ public class ShadowApplicationTest {
       assertThat(shadowOf(application).getNextStartedActivity()).isNull();
     }
   }
+
+  @Test
+  public void bindServiceShouldAddServiceConnectionToListOfBoundServiceConnections() {
+    final ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
+    final ServiceConnection expectedServiceConnection = new EmptyServiceConnection();
+
+    assertThat(shadowApplication.getBoundServiceConnections()).hasSize(0);
+    assertThat(shadowApplication.bindService(new Intent("connect"), expectedServiceConnection, 0)).isTrue();
+    assertThat(shadowApplication.getBoundServiceConnections()).hasSize(1);
+    assertThat(shadowApplication.getBoundServiceConnections().get(0)).isSameAs(expectedServiceConnection);
+  }
+
+  @Test
+  public void bindServiceShouldAddServiceConnectionToListOfBoundServiceConnectionsEvenIfServiceUnboundable() {
+    final ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
+    final ServiceConnection expectedServiceConnection = new EmptyServiceConnection();
+    final String unboundableAction = "refuse";
+    final Intent serviceIntent = new Intent(unboundableAction);
+    shadowApplication.declareActionUnbindable(unboundableAction);
+    assertThat(shadowApplication.getBoundServiceConnections()).hasSize(0);
+    assertThat(shadowApplication.bindService(serviceIntent, expectedServiceConnection, 0)).isFalse();
+    assertThat(shadowApplication.getBoundServiceConnections()).hasSize(1);
+    assertThat(shadowApplication.getBoundServiceConnections().get(0)).isSameAs(expectedServiceConnection);
+  }
+
+  @Test
+  public void unbindServiceShouldRemoveServiceConnectionFromListOfBoundServiceConnections() {
+    final ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
+    final ServiceConnection expectedServiceConnection = new EmptyServiceConnection();
+
+    assertThat(shadowApplication.bindService(new Intent("connect"), expectedServiceConnection, 0)).isTrue();
+    assertThat(shadowApplication.getBoundServiceConnections()).hasSize(1);
+    assertThat(shadowApplication.getUnboundServiceConnections()).hasSize(0);
+    shadowApplication.unbindService(expectedServiceConnection);
+    assertThat(shadowApplication.getBoundServiceConnections()).hasSize(0);
+    assertThat(shadowApplication.getUnboundServiceConnections()).hasSize(1);
+    assertThat(shadowApplication.getUnboundServiceConnections().get(0)).isSameAs(expectedServiceConnection);
+  }
   /////////////////////////////
 
   public AndroidManifest newConfigWith(String contents) throws IOException {
@@ -422,5 +461,13 @@ public class ShadowApplicationTest {
     public ResName getResName(int resourceId) {
       return new ResName("", "", "");
     }
+  }
+
+  private static class EmptyServiceConnection implements ServiceConnection {
+    @Override
+    public void onServiceConnected(ComponentName name, IBinder service) {}
+
+    @Override
+    public void onServiceDisconnected(ComponentName name) {}
   }
 }
