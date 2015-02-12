@@ -381,7 +381,8 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
    */
   public boolean clickMenuItem(int menuItemResId) {
     if (optionsMenu == null) {
-      throw new RuntimeException("Activity does not have an options menu!");
+      throw new RuntimeException("Activity does not have an options menu! Did you forget to call " +
+          "super.onCreateOptionsMenu(menu) in " + realActivity.getClass().getName() + "?");
     }
 
     final MenuItem item = optionsMenu.findItem(menuItemResId);
