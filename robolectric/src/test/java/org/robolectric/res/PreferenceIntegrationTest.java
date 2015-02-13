@@ -55,6 +55,13 @@ public class PreferenceIntegrationTest {
   }
 
   @Test
+  public void inflate_shouldBindPreferencesToPreferenceManager() throws Exception {
+    final PreferenceScreen screen = inflatePreferenceActivity();
+    final Preference preference = screen.findPreference("preference");
+    assertThat(preference.getPreferenceManager().findPreference("preference")).isNotNull();
+  }
+
+  @Test
   public void setPersistent_shouldMarkThePreferenceAsPersistent() throws Exception {
     final PreferenceScreen screen = inflatePreferenceActivity();
     final Preference preference = screen.findPreference("preference");

@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.preference.Preference;
+import android.preference.PreferenceActivity;
 import android.preference.PreferenceGroup;
 import android.preference.PreferenceManager;
 import android.util.AttributeSet;
@@ -38,8 +39,7 @@ public class PreferenceBuilder {
     }
 
     Preference preference = create(preferenceNode, activity, (PreferenceGroup) parent);
-    PreferenceManager manager = ReflectionHelpers.callConstructor(PreferenceManager.class, ReflectionHelpers.ClassParameter.from(Activity.class, activity), ReflectionHelpers.ClassParameter.from(int.class, 0));
-    shadowOf(preference).callOnAttachedToHierarchy(manager);
+    shadowOf(preference).callOnAttachedToHierarchy(((PreferenceActivity)activity).getPreferenceManager());
 
     for (PreferenceNode child : preferenceNode.getChildren()) {
       inflate(child, activity, preference);
