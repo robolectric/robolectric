@@ -1,6 +1,7 @@
 package org.robolectric.fakes;
 
 import android.content.ContentResolver;
+import android.database.Cursor;
 import android.net.Uri;
 import org.junit.Before;
 import org.junit.Test;
@@ -49,6 +50,12 @@ public class RoboCursorTest {
   @Test
   public void canGetStringsAndLongs() throws Exception {
     cursor.setResults(new Object[][]{new Object[]{"aString", 1234L, 42}});
+    assertThat(cursor.getCount()).isEqualTo(1);
+    assertThat(cursor.getColumnCount()).isEqualTo(3);
+    assertThat(cursor.getType(0)).isEqualTo(Cursor.FIELD_TYPE_STRING);
+    assertThat(cursor.getColumnName(0)).isEqualTo("stringColumn");
+    assertThat(cursor.getColumnName(1)).isEqualTo("longColumn");
+    assertThat(cursor.getType(1)).isEqualTo(Cursor.FIELD_TYPE_INTEGER);
     assertThat(cursor.moveToNext()).isTrue();
     assertThat(cursor.getString(cursor.getColumnIndex("stringColumn"))).isEqualTo("aString");
     assertThat(cursor.getLong(cursor.getColumnIndex("longColumn"))).isEqualTo(1234L);
@@ -59,8 +66,14 @@ public class RoboCursorTest {
   public void moveToNextAdvancesToNextRow() throws Exception {
     cursor.setResults(new Object[][] { new Object[] { "aString", 1234L, 41 },
             new Object[] { "anotherString", 5678L, 42 }});
+    assertThat(cursor.getCount()).isEqualTo(2);
+    assertThat(cursor.getColumnCount()).isEqualTo(3);
+    assertThat(cursor.getType(0)).isEqualTo(Cursor.FIELD_TYPE_STRING);
+    assertThat(cursor.getType(1)).isEqualTo(Cursor.FIELD_TYPE_INTEGER);
     assertThat(cursor.moveToNext()).isTrue();
     assertThat(cursor.moveToNext()).isTrue();
+    assertThat(cursor.getColumnName(0)).isEqualTo("stringColumn");
+    assertThat(cursor.getColumnName(1)).isEqualTo("longColumn");
     assertThat(cursor.getString(cursor.getColumnIndex("stringColumn"))).isEqualTo("anotherString");
     assertThat(cursor.getLong(cursor.getColumnIndex("longColumn"))).isEqualTo(5678L);
     assertThat(cursor.getInt(cursor.getColumnIndex("intColumn"))).isEqualTo(42);
