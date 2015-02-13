@@ -29,6 +29,7 @@ import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
+import org.robolectric.annotation.AccessibilityChecks;
 import org.robolectric.res.Attribute;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.util.TestOnClickListener;
@@ -210,6 +211,14 @@ public class ShadowViewTest {
   @Test(expected = RuntimeException.class)
   public void checkedClick_shouldThrowIfViewIsDisabled() throws Exception {
     view.setEnabled(false);
+    shadowOf(view).checkedPerformClick();
+  }
+
+  @Test(expected = RuntimeException.class)
+  @AccessibilityChecks
+  public void checkedClick_shouldThrowIfViewNotAccessible() throws Exception {
+    view.setContentDescription(null);
+    shadowOf(view).setMyParent(new StubViewRoot());
     shadowOf(view).checkedPerformClick();
   }
 
