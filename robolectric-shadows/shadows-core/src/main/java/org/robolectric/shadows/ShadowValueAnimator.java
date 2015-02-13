@@ -7,7 +7,7 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 
 @Implements(ValueAnimator.class)
-public class ShadowValueAnimator extends ShadowAnimator {
+public class ShadowValueAnimator {
 
   @Resetter
   public static void reset() {
