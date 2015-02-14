@@ -74,11 +74,6 @@ public class RoboCursor extends BaseCursor {
   }
 
   @Override
-  public int getCount() {
-    return results.length;
-  }
-
-  @Override
   public int getColumnCount() {
     return results[0].length;
   }
