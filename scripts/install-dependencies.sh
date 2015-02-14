@@ -37,7 +37,7 @@ function install_aar() {
   fi
 
   tempdir=`mktemp -qd /tmp/robolectric-dependencies.XXXXXX`
-  ( cd ${tempdir}; jar xvf ${archive} > /dev/null 2>&1 )
+  ( cd ${tempdir}; jar xvf ${archive} > /dev/null )
 
   echo "Installing ${groupId}:${artifactId} from ${archive}"
   mvn -q install:install-file -DgroupId=${groupId} -DartifactId=${artifactId} -Dversion=${version} -Dpackaging=jar -Dfile="${tempdir}/classes.jar"
