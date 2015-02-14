@@ -37,7 +37,7 @@ function install_aar() {
   fi
 
   tempdir=`mktemp -qd /tmp/robolectric-dependencies.XXXXXX`
-  ( cd ${tempdir}; jar xvf ${archive} > /dev/null )
+  ( cd ${tempdir}; jar xvf "${archive}" > /dev/null )
 
   echo "Installing ${groupId}:${artifactId} from ${archive}"
   mvn -q install:install-file -DgroupId=${groupId} -DartifactId=${artifactId} -Dversion=${version} -Dpackaging=jar -Dfile="${tempdir}/classes.jar"
@@ -54,7 +54,7 @@ function install_maps() {
     exit 1
   fi
 
-  version=`grep ^revision= ${dir}/manifest.ini | cut -d= -f2`
+  version=`grep ^revision= "${dir}/manifest.ini" | cut -d= -f2`
 
   if [ "$version" != "$revision" ]; then
     echo "${groupId}:${artifactId} is an incompatible revision! Make sure that 'Google APIs' is up to date in the SDK manager for API ${api}. Expected revision ${revision} but was ${version}."
