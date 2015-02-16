@@ -51,6 +51,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.robolectric.Robolectric.setupActivity;
 import static org.robolectric.RuntimeEnvironment.application;
 import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Shadows.shadowOf;
@@ -773,6 +774,18 @@ public class ShadowActivityTest {
 
     controller.destroy();
     transcript.assertEventsSoFar("onActivityDestroyed");
+  }
+
+  public static class ChildActivity extends Activity { }
+
+  public static class ParentActivity extends Activity { }
+
+  @Test
+  public void getParentActivityIntent() {
+    Activity activity = setupActivity(ChildActivity.class);
+
+    assertThat(activity.getParentActivityIntent().getComponent().getClassName())
+        .isEqualTo(ParentActivity.class.getName());
   }
 
   /////////////////////////////

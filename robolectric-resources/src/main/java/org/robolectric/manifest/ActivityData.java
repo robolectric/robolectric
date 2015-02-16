@@ -43,22 +43,24 @@ public class ActivityData {
    * XML Namespace used for android.
    */
   private final String xmlns;
+  private final MetaData metaData;
 
   public ActivityData(Map<String, String> attrMap, List<IntentFilterData> intentFilters) {
     this("android", attrMap, intentFilters);
   }
 
   public ActivityData(String xmlns, Map<String, String> attrMap, List<IntentFilterData> intentFilters) {
-    this(xmlns, attrMap, intentFilters, null);
+    this(xmlns, attrMap, intentFilters, null, null);
   }
 
   public ActivityData(String xmlns, Map<String, String> attrMap, List<IntentFilterData> intentFilters,
-      ActivityData targetActivity) {
+      ActivityData targetActivity, MetaData metaData) {
     this.xmlns = xmlns;
-    attrs = new HashMap<String,String>();
+    attrs = new HashMap<>();
     attrs.putAll(attrMap);
-    this.intentFilters = new ArrayList<IntentFilterData>(intentFilters);
+    this.intentFilters = new ArrayList<>(intentFilters);
     this.targetActivity = targetActivity;
+    this.metaData = metaData;
   }
 
   public boolean isAllowTaskReparenting() {
@@ -230,6 +232,10 @@ public class ActivityData {
    */
   public List<IntentFilterData> getIntentFilters() {
     return intentFilters;
+  }
+
+  public MetaData getMetaData() {
+    return metaData;
   }
 
   public ActivityData getTargetActivity() {
