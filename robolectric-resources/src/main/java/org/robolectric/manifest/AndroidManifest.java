@@ -218,7 +218,8 @@ public class AndroidManifest {
     final NamedNodeMap attributes = activityNode.getAttributes();
     final int attrCount = attributes.getLength();
     final List<IntentFilterData> intentFilterData = parseIntentFilters(activityNode);
-    final HashMap<String, String> activityAttrs = new HashMap<String, String>(attrCount);
+    final MetaData metaData = new MetaData(getChildrenTags(activityNode, "meta-data"));
+    final HashMap<String, String> activityAttrs = new HashMap<>(attrCount);
     for(int i = 0; i < attrCount; i++) {
       Node attr = attributes.item(i);
       String v = attr.getNodeValue();
@@ -243,7 +244,7 @@ public class AndroidManifest {
       activityAttrs.put(ActivityData.getTargetAttr("android"), targetName);
     }
     activityAttrs.put(ActivityData.getNameAttr("android"), activityName);
-    activityDatas.put(activityName, new ActivityData("android", activityAttrs, intentFilterData, targetActivity));
+    activityDatas.put(activityName, new ActivityData("android", activityAttrs, intentFilterData, targetActivity, metaData));
   }
 
   private List<IntentFilterData> parseIntentFilters(final Node activityNode) {

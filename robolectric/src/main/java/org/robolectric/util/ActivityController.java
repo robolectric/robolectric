@@ -2,10 +2,11 @@ package org.robolectric.util;
 
 import android.app.Activity;
 import android.app.Application;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.os.Bundle;
 import org.robolectric.RuntimeEnvironment;
@@ -51,8 +52,12 @@ public class ActivityController<T extends Activity> extends ComponentController<
     }
     Context baseContext = this.baseContext == null ? application : this.baseContext;
     Intent intent = getIntent();
-    ActivityInfo activityInfo = new ActivityInfo();
-    ReflectionHelpers.setField(activityInfo, "applicationInfo", new ApplicationInfo());
+    ActivityInfo activityInfo;
+    try {
+      activityInfo = application.getPackageManager().getActivityInfo(new ComponentName(application.getPackageName(), component.getClass().getName()), PackageManager.GET_ACTIVITIES|PackageManager.GET_META_DATA);
+    } catch (PackageManager.NameNotFoundException e) {
+      throw new RuntimeException(e);
+    }
     String activityTitle = getActivityTitle();
 
     ClassLoader cl = baseContext.getClassLoader();

@@ -140,6 +140,8 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
     activityInfo.packageName = packageName;
     activityInfo.name = activityName;
     if (activityData != null) {
+      activityInfo.parentActivityName = activityData.getParentActivityName();
+      activityInfo.metaData = metaDataToBundle(activityData.getMetaData().getValueMap());
       ResourceIndex resourceIndex = shadowsAdapter.getResourceLoader().getResourceIndex();
       String themeRef;
 

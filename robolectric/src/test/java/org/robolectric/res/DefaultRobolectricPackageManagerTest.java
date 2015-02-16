@@ -1,5 +1,6 @@
 package org.robolectric.res;
 
+import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -34,6 +35,7 @@ import org.robolectric.test.TemporaryFolder;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.robolectric.Robolectric.setupActivity;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
@@ -618,6 +620,17 @@ public class DefaultRobolectricPackageManagerTest {
     packageManager.setApplicationEnabledSetting("org.robolectric", PackageManager.COMPONENT_ENABLED_STATE_DISABLED, 0);
 
     assertThat(packageManager.getApplicationEnabledSetting("org.robolectric")).isEqualTo(PackageManager.COMPONENT_ENABLED_STATE_DISABLED);
+  }
+
+  public static class ActivityWithMetadata extends Activity { }
+
+  @Test
+  @Config(manifest = "src/test/resources/TestAndroidManifest.xml")
+  public void getActivityMetaData() throws Exception {
+    Activity activity = setupActivity(ActivityWithMetadata.class);
+
+    ActivityInfo activityInfo = RuntimeEnvironment.getPackageManager().getActivityInfo(activity.getComponentName(), PackageManager.GET_ACTIVITIES|PackageManager.GET_META_DATA);
+    assertThat(activityInfo.metaData.get("someName")).isEqualTo("someValue");
   }
 
   @Test

@@ -15,5 +15,13 @@
 
     <activity android:name="org.robolectric.shadows.ShadowThemeTest$TestActivityWithAThirdTheme"
           android:theme="@style/Theme.ThirdTheme"/>
+
+    <activity android:name="org.robolectric.shadows.ShadowActivityTest$ParentActivity"/>
+    <activity android:name="org.robolectric.shadows.ShadowActivityTest$ChildActivity"
+        android:parentActivityName="org.robolectric.shadows.ShadowActivityTest$ParentActivity"/>
+
+      <activity android:name="org.robolectric.res.DefaultRobolectricPackageManagerTest$ActivityWithMetadata">
+          <meta-data android:name="someName" android:value="someValue"/>
+      </activity>
   </application>
 </manifest>
