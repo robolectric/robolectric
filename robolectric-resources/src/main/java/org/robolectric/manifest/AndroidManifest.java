@@ -365,8 +365,9 @@ public class AndroidManifest {
    * @param resLoader used for getting resource IDs from string identifiers
    */
   public void initMetaData(ResourceLoader resLoader) {
-    applicationMetaData.init(resLoader, packageName);
-
+    if (applicationMetaData != null) {
+      applicationMetaData.init(resLoader, packageName);
+    }
     for (BroadcastReceiverData receiver : receivers) {
       receiver.getMetaData().init(resLoader, packageName);
     }
@@ -374,7 +375,9 @@ public class AndroidManifest {
 
   private void parseApplicationMetaData(final Document manifestDocument) {
     Node application = manifestDocument.getElementsByTagName("application").item(0);
-    if (application == null) return;
+    if (application == null) {
+      return;
+    }
     applicationMetaData = new MetaData(getChildrenTags(application, "meta-data"));
   }
 
@@ -482,7 +485,11 @@ public class AndroidManifest {
 
   public Map<String, Object> getApplicationMetaData() {
     parseAndroidManifest();
-    return applicationMetaData.getValueMap();
+    if (applicationMetaData == null) {
+      return Collections.emptyMap();
+    } else {
+      return applicationMetaData.getValueMap();
+    }
   }
 
   public ResourcePath getResourcePath() {
