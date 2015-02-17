@@ -44,7 +44,7 @@ public class Converter<T> {
 
     TypedResource attrTypeData = resourceLoader.getValue(attribute.resName, qualifiers);
     if (attrTypeData == null) {
-      throw new Resources.NotFoundException("Couldn't find " + attribute.resName + " attr data");
+      return;
     }
 
     AttrData attrData = (AttrData) attrTypeData.getData();
