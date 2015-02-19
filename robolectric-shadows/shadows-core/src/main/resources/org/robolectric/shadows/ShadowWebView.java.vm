@@ -1,3 +1,6 @@
+#set($Integer = 0)
+#set($apiLevel = $Integer.parseInt($apiLevel))
+
 package org.robolectric.shadows;
 
 import android.view.ViewGroup.LayoutParams;
@@ -316,6 +319,10 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
   public LoadDataWithBaseURL getLastLoadDataWithBaseURL() {
     return lastLoadDataWithBaseURL;
   }
+
+#if ($apiLevel >= 19)
+  public static void setWebContentsDebuggingEnabled(boolean enabled) { }
+#end
 
   public class LoadDataWithBaseURL {
     public final String baseUrl;
