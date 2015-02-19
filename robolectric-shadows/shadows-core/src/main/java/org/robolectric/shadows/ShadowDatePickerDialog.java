@@ -15,11 +15,13 @@ public class ShadowDatePickerDialog extends ShadowAlertDialog {
   private int year;
   private int monthOfYear;
   private int dayOfMonth;
+  private DatePickerDialog.OnDateSetListener callBack;
 
   public void __constructor__(Context context, int theme, DatePickerDialog.OnDateSetListener callBack, int year, int monthOfYear, int dayOfMonth) {
     this.year = year;
     this.monthOfYear = monthOfYear;
     this.dayOfMonth = dayOfMonth;
+    this.callBack = callBack;
 
     invokeConstructor(DatePickerDialog.class, realDatePickerDialog,
         ClassParameter.from(Context.class, context),
@@ -40,5 +42,9 @@ public class ShadowDatePickerDialog extends ShadowAlertDialog {
 
   public int getDayOfMonth() {
     return dayOfMonth;
+  }
+
+  public DatePickerDialog.OnDateSetListener getOnDateSetListenerCallback() {
+    return this.callBack;
   }
 }

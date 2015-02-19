@@ -1,16 +1,18 @@
 package org.robolectric.shadows;
 
+import android.widget.DatePicker;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import android.app.DatePickerDialog;
-import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
+
+import java.lang.Override;
 import java.util.Locale;
 
-import static org.robolectric.Robolectric.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.test.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ShadowDatePickerDialogTest {
@@ -22,5 +24,20 @@ public class ShadowDatePickerDialogTest {
     assertThat(shadowOf(datePickerDialog).getYear()).isEqualTo(2012);
     assertThat(shadowOf(datePickerDialog).getMonthOfYear()).isEqualTo(6);
     assertThat(shadowOf(datePickerDialog).getDayOfMonth()).isEqualTo(7);
+  }
+
+  @Test
+  public void savesTheCallback() {
+    DatePickerDialog.OnDateSetListener expectedDateSetListener = new DatePickerDialog.OnDateSetListener() {
+      @Override
+      public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
+        // ignored
+      }
+    };
+
+    DatePickerDialog datePickerDialog = new DatePickerDialog(RuntimeEnvironment.application, expectedDateSetListener, 2012, 6, 7);
+
+    ShadowDatePickerDialog shadowDatePickerDialog = (ShadowDatePickerDialog) shadowOf(datePickerDialog);
+    assertThat(shadowDatePickerDialog.getOnDateSetListenerCallback()).isEqualTo(expectedDateSetListener);
   }
 }
