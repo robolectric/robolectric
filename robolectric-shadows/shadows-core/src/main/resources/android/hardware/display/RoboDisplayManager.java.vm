@@ -15,8 +15,7 @@ import android.view.Surface;
 
 public class RoboDisplayManager implements IDisplayManager {
 
-#if ($apiLevel >= 21)
-  // API21+
+#if ($apiLevel >= 19)
 
   @Override
   public void startWifiDisplayScan() throws RemoteException {
@@ -27,15 +26,6 @@ public class RoboDisplayManager implements IDisplayManager {
   public void stopWifiDisplayScan() throws RemoteException {
 
   }
-#else
-  @Override
-  public void scanWifiDisplays() {
-
-  }
-#end
-
-#if ($apiLevel >= 19)
-  // API19+
 
   @Override
   public void pauseWifiDisplay() throws RemoteException {
@@ -46,7 +36,13 @@ public class RoboDisplayManager implements IDisplayManager {
   public void resumeWifiDisplay() throws RemoteException {
 
   }
+#else
+  @Override
+  public void scanWifiDisplays() {
+
+  }
 #end
+
 
 #if ($apiLevel >= 21)
   @Override
