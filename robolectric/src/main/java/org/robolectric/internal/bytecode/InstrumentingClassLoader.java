@@ -24,6 +24,7 @@ import org.objectweb.asm.tree.TypeInsnNode;
 import org.robolectric.internal.Shadow;
 import org.robolectric.internal.ShadowConstants;
 import org.objectweb.asm.tree.VarInsnNode;
+import org.robolectric.util.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -75,7 +76,7 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
     classesToRemap = convertToSlashes(config.classNameTranslations());
     methodsToIntercept = convertToSlashes(config.methodsToIntercept());
     for (URL url : urls) {
-      System.out.println("DEBUG: Loading classes from: " + url.toString());
+      Logger.debug("Loading classes from: %s", url);
     }
   }
 

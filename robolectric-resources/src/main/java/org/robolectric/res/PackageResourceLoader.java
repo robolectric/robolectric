@@ -1,5 +1,7 @@
 package org.robolectric.res;
 
+import org.robolectric.util.Logger;
+
 public class PackageResourceLoader extends XResourceLoader {
   private final ResourcePath resourcePath;
 
@@ -23,7 +25,7 @@ public class PackageResourceLoader extends XResourceLoader {
   }
 
   private void loadEverything() throws Exception {
-    System.out.println("DEBUG: Loading resources for " + resourcePath.getPackageName() + " from " + resourcePath.resourceBase + "...");
+    Logger.debug("Loading resources for %s from %s...", resourcePath.getPackageName(), resourcePath.resourceBase);
 
     DocumentLoader documentLoader = new DocumentLoader(resourcePath);
 
