@@ -74,8 +74,10 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
     this.urls = new URLClassLoader(urls, null);
     classesToRemap = convertToSlashes(config.classNameTranslations());
     methodsToIntercept = convertToSlashes(config.methodsToIntercept());
-    for (URL url : urls) {
-      System.out.println("DEBUG: Loading classes from: " + url.toString());
+    if (Boolean.getBoolean("robolectric.logging.enabled")) {
+      for (URL url : urls) {
+        System.out.println("DEBUG: Loading classes from: " + url.toString());
+      }
     }
   }
 
