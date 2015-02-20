@@ -134,8 +134,14 @@ build_jarjared_classes() {
     cd ${OUT}/android-jarjar-workspace
     wget https://jarjar.googlecode.com/files/jarjar-1.4.jar
     echo "rule com.squareup.** com.android.**" >> rules
+    echo "rule org.conscrypt.** com.android.**" >> rules
+
     java -jar jarjar-1.4.jar process rules ${ANDROID_SOURCES_BASE}/out/target/common/obj/JAVA_LIBRARIES/okhttp_intermediates/classes.jar okhttp-classes.jar
-    cd ${OUT}/android-all-classes; jar xf ${OUT}/android-jarjar-workspace/okhttp-classes.jar
+    java -jar jarjar-1.4.jar process rules ${ANDROID_SOURCES_BASE}/out/target/common/obj/JAVA_LIBRARIES/conscrypt_intermediates/classes.jar conscrypt-classes.jar
+
+    cd ${OUT}/android-all-classes;
+    jar xf ${OUT}/android-jarjar-workspace/okhttp-classes.jar
+    jar xf ${OUT}/android-jarjar-workspace/conscrypt-classes.jar
 }
 
 build_android_all_jar() {
