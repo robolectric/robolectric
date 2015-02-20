@@ -1,3 +1,6 @@
+#set($Integer = 0)
+#set($apiLevel = $Integer.parseInt($apiLevel))
+
 package org.robolectric.shadows;
 
 import org.robolectric.annotation.Implementation;
@@ -13,8 +16,16 @@ public class ShadowICU {
     return "en-US";
   }
 
+#if ($apiLevel >= 21)
   @Implementation
   public static String getBestDateTimePattern(String skeleton, Locale locale) {
     return "h:mm a";
   }
+#else
+  @Implementation
+  public static String getBestDateTimePattern(String skeleton, String locale) {
+    return "h:mm a";
+  }
+#end
+
 }
