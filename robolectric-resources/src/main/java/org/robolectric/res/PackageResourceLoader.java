@@ -23,7 +23,10 @@ public class PackageResourceLoader extends XResourceLoader {
   }
 
   private void loadEverything() throws Exception {
-    System.out.println("DEBUG: Loading resources for " + resourcePath.getPackageName() + " from " + resourcePath.resourceBase + "...");
+    if (Boolean.getBoolean("robolectric.logging.enabled")) {
+      System.out.println("DEBUG: Loading resources for " + resourcePath.getPackageName() + " from " +
+          resourcePath.resourceBase + "...");
+    }
 
     DocumentLoader documentLoader = new DocumentLoader(resourcePath);
 
