@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ResBundle<T> {
   private final ResMap<T> valuesMap = new ResMap<T>();
@@ -16,8 +17,17 @@ public class ResBundle<T> {
   public void put(String attrType, String name, T value, XmlLoader.XmlContext xmlContext) {
     ResName resName = new ResName(maybeOverride(xmlContext.packageName), attrType, name);
     Values<T> values = valuesMap.find(resName);
-    values.add(new Value<T>(xmlContext.getQualifiers(), value, xmlContext));
-    Collections.sort(values);
+    Value<T> newValue = new Value<T>(xmlContext.getQualifiers(), value, xmlContext);
+    values.add(newValue);
+    int pos;
+    for(pos=0;pos<values.size();pos++){
+      if(values.get(pos).compareTo(newValue)>0){
+        values.add(pos,newValue);
+        return;
+      }
+    }
+    values.add(newValue);
+
   }
 
   public T get(ResName resName, String qualifiers) {
@@ -112,7 +122,7 @@ public class ResBundle<T> {
     }
   }
 
-  static class Values<T> extends ArrayList<Value<T>> {
+  static class Values<T> extends CopyOnWriteArrayList<Value<T>> {
   }
 
   private static class ResMap<T> {
