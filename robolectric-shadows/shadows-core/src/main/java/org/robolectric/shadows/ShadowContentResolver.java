@@ -29,6 +29,8 @@ import org.robolectric.internal.Shadow;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.Exception;
+import java.lang.System;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -36,6 +38,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import static org.robolectric.Shadows.shadowOf;
@@ -57,11 +60,11 @@ public class ShadowContentResolver {
   private final Map<String, ArrayList<ContentProviderOperation>> contentProviderOperations = new HashMap<String, ArrayList<ContentProviderOperation>>();
   private ContentProviderResult[] contentProviderResults;
 
-  private final Map<Uri, CopyOnWriteArraySet<ContentObserver>> contentObservers = new HashMap<Uri, CopyOnWriteArraySet<ContentObserver>>();
+  private final Map<Uri, CopyOnWriteArraySet<ContentObserver>> contentObservers = new ConcurrentHashMap<>();
 
   private static final Map<String, Map<Account, Status>>  syncableAccounts =
-      new HashMap<String, Map<Account, Status>>();
-  private static final Map<String, ContentProvider> providers = new HashMap<String, ContentProvider>();
+      new ConcurrentHashMap<>();
+  private static final Map<String, ContentProvider> providers = new ConcurrentHashMap<>();
   private static boolean masterSyncAutomatically;
 
   @Resetter
@@ -420,7 +423,18 @@ public class ShadowContentResolver {
       if (manifest != null) {
         for (ContentProviderData providerData : manifest.getContentProviders()) {
           if (providerData.getAuthority().equals(authority)) {
-            providers.put(providerData.getAuthority(), createAndInitialize(providerData));
+            final ContentProvider provider;
+            try {
+              provider = (ContentProvider) Class.forName(providerData.getClassName()).newInstance();
+            } catch (InstantiationException e) {
+              throw new RuntimeException("Error instantiating class " + providerData.getClassName(), e);
+            } catch (IllegalAccessException e) {
+              throw new RuntimeException("Error instantiating class " + providerData.getClassName(), e);
+            } catch (ClassNotFoundException e) {
+              throw new RuntimeException("Error instantiating class " + providerData.getClassName(), e);
+            }
+            providers.put(providerData.getAuthority(), provider);
+            provider.onCreate();
           }
         }
       }
@@ -428,9 +442,10 @@ public class ShadowContentResolver {
     return providers.get(authority);
   }
 
-  public static void registerProvider(String authority, ContentProvider provider) {
-    providers.put(authority, provider);
-  }
+
+    public static void registerProvider(String authority, ContentProvider provider) {
+        providers.put(authority, provider);
+    }
 
   public static Status getStatus(Account account, String authority) {
     return getStatus(account, authority, false);
@@ -557,20 +572,6 @@ public class ShadowContentResolver {
   public Collection<ContentObserver> getContentObservers( Uri uri ) {
     CopyOnWriteArraySet<ContentObserver> observers = contentObservers.get(uri);
     return (observers == null) ? Collections.<ContentObserver>emptyList() : observers;
-  }
-
-  private static ContentProvider createAndInitialize(ContentProviderData providerData) {
-    try {
-      ContentProvider provider = (ContentProvider) Class.forName(providerData.getClassName()).newInstance();
-      provider.onCreate();
-      return provider;
-    } catch (InstantiationException e) {
-      throw new RuntimeException("Error instantiating class " + providerData.getClassName());
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException("Error instantiating class " + providerData.getClassName());
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException("Error instantiating class " + providerData.getClassName());
-    }
   }
 
   private BaseCursor getCursor(Uri uri) {
