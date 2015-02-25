@@ -64,8 +64,18 @@ public class RoboCursor extends BaseCursor {
 
   @Override
   public boolean moveToNext() {
-    ++resultsIndex;
-    return resultsIndex < results.length;
+    return moveToPosition(resultsIndex + 1);
+  }
+
+  @Override
+  public boolean moveToFirst() {
+    return moveToPosition(0);
+  }
+
+  @Override
+  public boolean moveToPosition(int position) {
+    resultsIndex = position;
+    return resultsIndex >= 0 && resultsIndex < results.length;
   }
 
   @Override
