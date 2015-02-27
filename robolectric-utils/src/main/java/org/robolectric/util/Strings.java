@@ -22,4 +22,8 @@ public class Strings {
     }
     return a.equals(b);
   }
+
+  public static String nullToEmpty(String string) {
+    return string == null ? "" : string;
+  }
 }

@@ -1,5 +1,7 @@
 package org.robolectric.res;
 
+import org.robolectric.util.Strings;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -40,6 +42,29 @@ public class StyleData implements Style {
       }
     }
     return attribute;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof StyleData)) {
+      return false;
+    }
+    StyleData other = (StyleData) obj;
+
+    return Strings.equals(packageName, other.packageName)
+        && Strings.equals(name, other.name)
+        && Strings.equals(parent, other.parent)
+        && items.size() == other.items.size();
+  }
+
+  @Override
+  public int hashCode() {
+    int hashCode = 0;
+    hashCode = 31 * hashCode + Strings.nullToEmpty(packageName).hashCode();
+    hashCode = 31 * hashCode + Strings.nullToEmpty(name).hashCode();
+    hashCode = 31 * hashCode + Strings.nullToEmpty(parent).hashCode();
+    hashCode = 31 * hashCode + items.size();
+    return hashCode;
   }
 
   @Override public String toString() {
