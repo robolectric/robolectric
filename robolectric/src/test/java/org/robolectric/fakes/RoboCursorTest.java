@@ -80,6 +80,36 @@ public class RoboCursorTest {
   }
 
   @Test
+  public void moveToPositionMovesToAppropriateRow() throws Exception {
+    cursor.setResults(new Object[][] { new Object[] { "aString", 1234L, 41 },
+            new Object[] { "anotherString", 5678L, 42 }});
+    assertThat(cursor.moveToPosition(1)).isTrue();
+    assertThat(cursor.getString(cursor.getColumnIndex("stringColumn"))).isEqualTo("anotherString");
+    assertThat(cursor.getLong(cursor.getColumnIndex("longColumn"))).isEqualTo(5678L);
+    assertThat(cursor.getInt(cursor.getColumnIndex("intColumn"))).isEqualTo(42);
+
+    assertThat(cursor.moveToPosition(0)).isTrue();
+    assertThat(cursor.getString(cursor.getColumnIndex("stringColumn"))).isEqualTo("aString");
+    assertThat(cursor.getLong(cursor.getColumnIndex("longColumn"))).isEqualTo(1234L);
+    assertThat(cursor.getInt(cursor.getColumnIndex("intColumn"))).isEqualTo(41);
+  }
+
+  @Test
+  public void moveToPositionBoundsChecks() {
+    cursor.setResults(new Object[][] { new Object[] { "aString", 1234L, 41 },
+            new Object[] { "anotherString", 5678L, 42 }});
+    assertThat(cursor.moveToPosition(2)).isFalse();
+    assertThat(cursor.moveToPosition(-1)).isFalse();
+  }
+
+  @Test
+  public void getCount() {
+    cursor.setResults(new Object[][] { new Object[] { "aString", 1234L, 41 },
+            new Object[] { "anotherString", 5678L, 42 }});
+    assertThat(cursor.getCount()).isEqualTo(2);
+  }
+
+  @Test
   public void closeIsRemembered() throws Exception {
     cursor.close();
     assertThat(cursor.getCloseWasCalled()).isTrue();
