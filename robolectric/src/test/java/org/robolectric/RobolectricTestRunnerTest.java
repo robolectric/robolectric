@@ -18,7 +18,6 @@ import java.util.Arrays;
 import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.contentOf;
 
 public class RobolectricTestRunnerTest {
   @Test
@@ -43,6 +42,30 @@ public class RobolectricTestRunnerTest {
 
     assertConfig(configFor(Test2.class, "withOverrideAnnotation"),
         9, "furf", "from-method", "method/res", "method/assets", 8, new Class[]{Test1.class});
+  }
+
+  @Test
+  public void whenClassDoesntHaveConfigAnnotation_getConfig_shouldMergeParentClassAndMethodConfig() throws Exception {
+    assertConfig(configFor(Test5.class, "withoutAnnotation"),
+        1, "foo", "from-test", "test/res", "test/assets", 2, new Class[]{Test1.class});
+
+    assertConfig(configFor(Test5.class, "withDefaultsAnnotation"),
+        1, "foo", "from-test", "test/res", "test/assets", 2, new Class[]{Test1.class});
+
+    assertConfig(configFor(Test5.class, "withOverrideAnnotation"),
+        9, "foo", "from-method5", "test/res", "method5/assets", 8, new Class[]{Test1.class, Test5.class});
+  }
+
+  @Test
+  public void whenClassAndParentClassHaveConfigAnnotation_getConfig_shouldMergeParentClassAndMethodConfig() throws Exception {
+    assertConfig(configFor(Test6.class, "withoutAnnotation"),
+            1, "foo", "from-class6", "class6/res", "test/assets", 2, new Class[]{Test1.class, Test6.class});
+
+    assertConfig(configFor(Test6.class, "withDefaultsAnnotation"),
+            1, "foo", "from-class6", "class6/res", "test/assets", 2, new Class[]{Test1.class, Test6.class});
+
+    assertConfig(configFor(Test6.class, "withOverrideAnnotation"),
+            9, "foo", "from-method5", "class6/res", "method5/assets", 8, new Class[]{Test1.class, Test5.class, Test6.class});
   }
 
   @Test
@@ -176,6 +199,26 @@ public class RobolectricTestRunnerTest {
   @Ignore
   @Config(qualifiers = "from-subclass")
   public static class Test4 extends Test2 {
+  }
+
+  @Ignore
+  public static class Test5 extends Test1 {
+    @Test
+    public void withoutAnnotation() throws Exception {
+    }
+
+    @Test @Config
+    public void withDefaultsAnnotation() throws Exception {
+    }
+
+    @Test @Config(emulateSdk = 9, reportSdk = 8, shadows = Test5.class, qualifiers = "from-method5", assetDir = "method5/assets")
+    public void withOverrideAnnotation() throws Exception {
+    }
+  }
+
+  @Ignore
+  @Config(qualifiers = "from-class6", shadows = Test6.class, resourceDir = "class6/res")
+  public static class Test6 extends Test5 {
   }
 
   private String stringify(Config config) {
