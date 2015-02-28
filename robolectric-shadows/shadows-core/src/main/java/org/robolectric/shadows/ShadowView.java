@@ -10,9 +10,13 @@ import android.graphics.drawable.Drawable;
 import android.os.Looper;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.view.Choreographer;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewParent;
+import android.view.animation.Animation;
+import android.view.animation.Transformation;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -475,20 +479,20 @@ public class ShadowView {
   }
 
   @Implementation
-  public void onAnimationEnd() {
-  }
+  public void setAnimation(final Animation animation) {
+    directly().setAnimation(animation);
 
-  /*
-   * Non-Android accessor.
-   */
-  public void finishedAnimation() {
-    try {
-      Method onAnimationEnd = realView.getClass().getDeclaredMethod("onAnimationEnd", new Class[0]);
-      onAnimationEnd.setAccessible(true);
-      onAnimationEnd.invoke(realView);
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+    ShadowChoreographer.getInstance().postCallbackDelayed(Choreographer.CALLBACK_ANIMATION, new Runnable() {
+      @Override
+      public void run() {
+        boolean complete = false;
+        while(!complete) {
+          complete = !animation.getTransformation(ShadowChoreographer.getInstance().getFrameTime(), new Transformation());
+        }
+
+      }
+    }, null, animation.getStartTime());
+
   }
 
   @Implementation

@@ -19,10 +19,12 @@ import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.WindowManager;
+import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
@@ -46,6 +48,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -433,11 +438,34 @@ public class ShadowViewTest {
   }
 
   @Test
-  public void dispatchOnAnimationEnd() throws Exception {
-    TestView view1 = new TestView(buildActivity(Activity.class).create().get());
-    assertFalse(view1.onAnimationEndWasCalled);
-    shadowOf(view1).finishedAnimation();
-    assertTrue(view1.onAnimationEndWasCalled);
+  public void startAnimation() {
+    TestView view = new TestView(buildActivity(Activity.class).create().get());
+    AlphaAnimation animation = new AlphaAnimation(0, 1);
+
+    Animation.AnimationListener listener = mock(Animation.AnimationListener.class);
+    animation.setAnimationListener(listener);
+    view.startAnimation(animation);
+
+    verify(listener).onAnimationStart(animation);
+    verify(listener).onAnimationEnd(animation);
+  }
+
+  @Test
+  public void setAnimation() {
+    TestView view = new TestView(buildActivity(Activity.class).create().get());
+    AlphaAnimation animation = new AlphaAnimation(0, 1);
+
+    Animation.AnimationListener listener = mock(Animation.AnimationListener.class);
+    animation.setAnimationListener(listener);
+    animation.setStartTime(1000);
+    view.setAnimation(animation);
+
+    verifyZeroInteractions(listener);
+
+    ShadowLooper.getUiThreadScheduler().advanceToNextPostedRunnable();
+
+    verify(listener).onAnimationStart(animation);
+    verify(listener).onAnimationEnd(animation);
   }
 
   @Test
