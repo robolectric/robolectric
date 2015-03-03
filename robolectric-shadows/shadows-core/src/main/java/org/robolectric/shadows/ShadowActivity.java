@@ -472,28 +472,25 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
   @Implementation
   public final boolean showDialog(int id, Bundle bundle) {
-    Dialog dialog = null;
     this.lastShownDialogId = id;
-
-    dialog = dialogForId.get(id);
+    Dialog dialog = dialogForId.get(id);
 
     if (dialog == null) {
       final ActivityInvoker invoker = new ActivityInvoker();
       dialog = (Dialog) invoker.call("onCreateDialog", Integer.TYPE).with(id);
-
+      if (dialog == null) {
+        return false;
+      }
       if (bundle == null) {
-        invoker.call("onPrepareDialog", Integer.TYPE, Dialog.class)
-            .with(id, dialog);
+        invoker.call("onPrepareDialog", Integer.TYPE, Dialog.class).with(id, dialog);
       } else {
-        invoker.call("onPrepareDialog", Integer.TYPE, Dialog.class, Bundle.class)
-            .with(id, dialog, bundle);
+        invoker.call("onPrepareDialog", Integer.TYPE, Dialog.class, Bundle.class).with(id, dialog, bundle);
       }
 
       dialogForId.put(id, dialog);
     }
 
     dialog.show();
-
     return true;
   }
 
