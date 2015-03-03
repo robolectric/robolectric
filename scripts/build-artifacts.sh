@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # This script builds the AOSP Android jars, and installs them in your local
 # Maven repository. See: http://source.android.com/source/building.html for
@@ -123,9 +123,16 @@ build_android_classes() {
         src=${ANDROID_SOURCES_BASE}/out/target/common/obj/JAVA_LIBRARIES/${artifact}_intermediates
         cd ${OUT}/android-all-classes; jar xf ${src}/classes.jar
     done
+    build_tzdata
     build_jarjared_classes
     cd ${OUT}/android-all-classes; jar cf ${OUT}/${ANDROID_CLASSES} .
     rm -rf ${OUT}/android-all-classes
+}
+
+build_tzdata() {
+    echo "Robolectric: Building tzdata..."
+    mkdir -p ${OUT}/android-all-classes/usr/share/zoneinfo
+    cp ${ANDROID_SOURCES_BASE}/out/target/product/generic_x86_64/system/usr/share/zoneinfo/tzdata ${OUT}/android-all-classes/usr/share/zoneinfo
 }
 
 build_jarjared_classes() {
