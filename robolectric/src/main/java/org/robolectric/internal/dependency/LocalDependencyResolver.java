@@ -8,9 +8,11 @@ import java.net.URL;
 
 public class LocalDependencyResolver implements DependencyResolver {
   private File offlineJarDir;
+  private final DependencyResolver dependencyResolver;
 
-  public LocalDependencyResolver(File offlineJarDir) {
+  public LocalDependencyResolver(DependencyResolver dependencyResolver, File offlineJarDir) {
     super();
+    this.dependencyResolver = dependencyResolver;
     this.offlineJarDir = offlineJarDir;
   }
 
@@ -29,7 +31,12 @@ public class LocalDependencyResolver implements DependencyResolver {
     filenameBuilder.append(".")
         .append(dependency.getType());
 
-    return fileToUrl(validateFile(new File(offlineJarDir, filenameBuilder.toString())));
+    File file = new File(offlineJarDir, filenameBuilder.toString());
+
+    if (isValidFile(file)) {
+      return fileToUrl(file);
+    }
+    return dependencyResolver.getLocalArtifactUrl(dependency);
   }
 
   @Override
@@ -43,24 +50,8 @@ public class LocalDependencyResolver implements DependencyResolver {
     return urls;
   }
 
-  /**
-   * Validates {@code file} as a File that exists and is a file, and is readable.
-   *
-   * @param file the File to test
-   * @return the provided file, if all validation passes
-   * @throws IllegalArgumentException if validation fails
-   */
-  private static File validateFile(File file) throws IllegalArgumentException {
-    if (!file.exists()) {
-      throw new IllegalArgumentException("File does not exist: " + file);
-    }
-    if (!file.isFile()) {
-      throw new IllegalArgumentException("Path is not a file: " + file);
-    }
-    if (!file.canRead()) {
-      throw new IllegalArgumentException("Unable to read file: " + file);
-    }
-    return file;
+  private boolean isValidFile(File file) {
+    return (file.exists() && file.isFile() && file.canRead());
   }
 
   /** Returns the given file as a {@link URL}. */
