@@ -16,6 +16,9 @@ public class LocalDependencyResolver implements DependencyResolver {
 
   @Override
   public URL getLocalArtifactUrl(DependencyJar dependency) {
+    if (offlineJarDir == null){
+      return null;
+    }
     StringBuilder filenameBuilder = new StringBuilder();
     filenameBuilder.append(dependency.getArtifactId())
         .append("-")
