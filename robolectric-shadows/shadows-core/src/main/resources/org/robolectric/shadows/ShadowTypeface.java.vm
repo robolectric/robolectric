@@ -58,6 +58,7 @@ public class ShadowTypeface {
 
   @Implementation
   public static Typeface create(Typeface family, int style) {
+    if(family == null) return createUnderlyingTypeface(null, style);
     return createUnderlyingTypeface(shadowOf(family).getFontDescription().getFamilyName(), style);
   }
 
