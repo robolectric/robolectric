@@ -48,6 +48,14 @@ public class ShadowTypefaceTest {
   }
 
   @Test
+  public void create_withoutFamily_shouldCreateTypeface() {
+    Typeface typeface = Typeface.create((Typeface) null, Typeface.ITALIC);
+    assertThat(typeface.getStyle()).isEqualTo(Typeface.ITALIC);
+    assertThat(shadowOf(typeface).getFontDescription().getFamilyName()).isEqualTo(null);
+    assertThat(shadowOf(typeface).getFontDescription().getStyle()).isEqualTo(Typeface.ITALIC);
+  }
+
+  @Test
   public void createFromFile_withFile_shouldCreateTypeface() {
     Typeface typeface = Typeface.createFromFile(fontFile);
 
