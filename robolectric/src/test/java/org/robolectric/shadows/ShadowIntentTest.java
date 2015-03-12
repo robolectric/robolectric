@@ -2,7 +2,10 @@ package org.robolectric.shadows;
 
 import android.app.Activity;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcel;
@@ -15,6 +18,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNull;
@@ -27,6 +31,20 @@ import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ShadowIntentTest {
+
+    private static final String TEST_ACTIVITY_CLASS_NAME = "org.robolectric.shadows.TestActivity";
+
+    @Test
+    @Config(manifest = "src/test/resources/TestAndroidManifestForActivities.xml")
+    public void test() {
+        Context context = RuntimeEnvironment.application;
+        PackageManager packageManager = context.getPackageManager();
+
+        Intent intent = new Intent();
+        intent.setClassName(context, TEST_ACTIVITY_CLASS_NAME);
+        ActivityInfo activityInfo = intent.resolveActivityInfo(packageManager, PackageManager.GET_ACTIVITIES);
+        assertThat(activityInfo).isNotNull();
+    }
 
   @Test
   public void testGetExtraReturnsNull_whenThereAreNoExtrasAdded() throws Exception {
