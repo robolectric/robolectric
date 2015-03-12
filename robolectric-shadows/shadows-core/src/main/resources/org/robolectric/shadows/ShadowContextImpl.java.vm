@@ -100,6 +100,10 @@ public class ShadowContextImpl extends ShadowContext {
         } else if (serviceClassName.equals("android.os.storage.StorageManager")) {
           service = ReflectionHelpers.callConstructor(clazz);
 
+        } else if (serviceClassName.equals("android.nfc.NfcManager")) {
+          service = ReflectionHelpers.callConstructor(clazz,
+              ClassParameter.from(Context.class, RuntimeEnvironment.application));
+
         } else if (serviceClassName.equals("android.hardware.display.DisplayManager")) {
           service = ReflectionHelpers.callConstructor(clazz, ClassParameter.from(Context.class, RuntimeEnvironment.application));
 

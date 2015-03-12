@@ -2,11 +2,13 @@ package org.robolectric.shadows;
 
 import android.app.Activity;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.IntentFilter;
 import android.nfc.NfcAdapter;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.util.ReflectionHelpers;
 
 @Implements(NfcAdapter.class)
 public class ShadowNfcAdapter {
@@ -16,6 +18,12 @@ public class ShadowNfcAdapter {
   private IntentFilter[] filters;
   private String[][] techLists;
   private Activity disabledActivity;
+  private NfcAdapter.CreateNdefMessageCallback callback;
+
+  @Implementation
+  public static NfcAdapter getNfcAdapter(Context context) {
+    return ReflectionHelpers.callConstructor(NfcAdapter.class);
+  }
 
   @Implementation
   public void enableForegroundDispatch(Activity activity, PendingIntent intent, IntentFilter[] filters, String[][] techLists) {
@@ -28,6 +36,11 @@ public class ShadowNfcAdapter {
   @Implementation
   public void disableForegroundDispatch(Activity activity) {
     disabledActivity = activity;
+  }
+
+  @Implementation
+  public void setNdefPushMessageCallback(NfcAdapter.CreateNdefMessageCallback callback, Activity activity, Activity... activities) {
+    this.callback = callback;
   }
 
   public Activity getEnabledActivity() {
@@ -48,5 +61,9 @@ public class ShadowNfcAdapter {
 
   public Activity getDisabledActivity() {
     return disabledActivity;
+  }
+
+  public NfcAdapter.CreateNdefMessageCallback getNdefPushMessageCallback() {
+    return callback;
   }
 }
