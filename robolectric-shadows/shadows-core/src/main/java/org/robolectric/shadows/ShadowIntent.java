@@ -3,6 +3,9 @@ package org.robolectric.shadows;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcel;
@@ -609,6 +612,24 @@ public class ShadowIntent {
   @Implementation
   public ComponentName getComponent() {
     return componentName;
+  }
+
+  @Implementation
+  public ActivityInfo resolveActivityInfo(PackageManager pm, int flags) {
+    ActivityInfo ai = null;
+    if (this.componentName != null) {
+      try {
+        ai = pm.getActivityInfo(this.componentName, flags);
+      } catch (PackageManager.NameNotFoundException e) {
+        // Ignore this exception
+      }
+    } else {
+      ResolveInfo info = pm.resolveActivity(realIntent, PackageManager.MATCH_DEFAULT_ONLY | flags);
+      if (info != null) {
+        ai = info.activityInfo;
+      }
+    }
+    return ai;
   }
 
   @Implementation
