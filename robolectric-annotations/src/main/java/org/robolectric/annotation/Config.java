@@ -21,10 +21,10 @@ import java.util.Set;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
 public @interface Config {
-  public static final String NONE = "--none";
-  public static final String DEFAULT = "--default";
-  public static final String DEFAULT_RES_FOLDER = "res";
-  public static final String DEFAULT_ASSET_FOLDER = "assets";
+  String NONE = "--none";
+  String DEFAULT = "--default";
+  String DEFAULT_RES_FOLDER = "res";
+  String DEFAULT_ASSET_FOLDER = "assets";
 
   /**
    * The Android SDK level to emulate. If not specified, Robolectric defaults to API 16.
@@ -44,6 +44,13 @@ public @interface Config {
    * @return The Android manifest file to load.
    */
   String manifest() default DEFAULT;
+
+  /**
+   * Reference to the BuildConfig class created by the Gradle build system.
+   *
+   * @return Reference to BuildConfig class.
+   */
+  Class<?> constants() default Void.class;
 
   /**
    * The {@link android.app.Application} class to use in the test, this takes precedence over any application
@@ -101,61 +108,64 @@ public @interface Config {
    */
   String[] libraries() default {};
 
-  public class Implementation implements Config {
+  class Implementation implements Config {
+    private final int reportSdk;
     private final int emulateSdk;
     private final String manifest;
     private final String qualifiers;
     private final String resourceDir;
     private final String assetDir;
-    private final int reportSdk;
+    private final Class<?> constants;
     private final Class<?>[] shadows;
     private final Class<? extends Application> application;
     private final String[] libraries;
 
-    public static Config fromProperties(Properties configProperties) {
-      if (configProperties == null || configProperties.size() == 0) return null;
+    public static Config fromProperties(Properties properties) {
+      if (properties == null || properties.size() == 0) return null;
       return new Implementation(
-          Integer.parseInt(configProperties.getProperty("emulateSdk", "-1")),
-          configProperties.getProperty("manifest", DEFAULT),
-          configProperties.getProperty("qualifiers", ""),
-          configProperties.getProperty("resourceDir", Config.DEFAULT_RES_FOLDER),
-          configProperties.getProperty("assetDir", Config.DEFAULT_ASSET_FOLDER),
-          Integer.parseInt(configProperties.getProperty("reportSdk", "-1")),
-          parseClasses(configProperties.getProperty("shadows", "")),
-          parseApplication(configProperties.getProperty("application", "android.app.Application")),
-          parsePaths(configProperties.getProperty("libraries", ""))
+          Integer.parseInt(properties.getProperty("emulateSdk", "-1")),
+          properties.getProperty("manifest", DEFAULT),
+          properties.getProperty("qualifiers", ""),
+          properties.getProperty("resourceDir", Config.DEFAULT_RES_FOLDER),
+          properties.getProperty("assetDir", Config.DEFAULT_ASSET_FOLDER),
+          Integer.parseInt(properties.getProperty("reportSdk", "-1")),
+          parseClasses(properties.getProperty("shadows", "")),
+          parseApplication(properties.getProperty("application", "android.app.Application")),
+          parsePaths(properties.getProperty("libraries", "")),
+          parseClass(properties.getProperty("constants", ""))
       );
     }
 
-    private static Class<?>[] parseClasses(String classList) {
-      if (classList.length() == 0) return new Class[0];
-      String[] classNames = classList.split("[, ]+");
-      Class[] classes = new Class[classNames.length];
+    private static Class<?> parseClass(String className) {
+      if (className.isEmpty()) return null;
+      try {
+        return Implementation.class.getClassLoader().loadClass(className);
+      } catch (ClassNotFoundException e) {
+        throw new RuntimeException("Could not load class: " + className);
+      }
+    }
+
+    private static Class<?>[] parseClasses(String input) {
+      if (input.isEmpty()) return new Class[0];
+      final String[] classNames = input.split("[, ]+");
+      final Class[] classes = new Class[classNames.length];
       for (int i = 0; i < classNames.length; i++) {
-        try {
-          classes[i] = Implementation.class.getClassLoader().loadClass(classNames[i]);
-        } catch (ClassNotFoundException e) {
-          throw new RuntimeException(e);
-        }
+        classes[i] = parseClass(classNames[i]);
       }
       return classes;
     }
 
+    @SuppressWarnings("unchecked")
     private static <T extends Application> Class<T> parseApplication(String className) {
-      try {
-        Class<T> aClass = (Class<T>) Implementation.class.getClassLoader().loadClass(className);
-        return aClass;
-      } catch (ClassNotFoundException e) {
-        throw new RuntimeException(e);
-      }
+      return (Class<T>) parseClass(className);
     }
 
     private static String[] parsePaths(String pathList) {
-      if (pathList.length() == 0) return new String[0];
+      if (pathList.isEmpty()) return new String[0];
       return pathList.split("[, ]+");
     }
 
-    public Implementation(int emulateSdk, String manifest, String qualifiers, String resourceDir, String assetDir, int reportSdk, Class<?>[] shadows, Class<? extends Application> application, String[] libraries) {
+    public Implementation(int emulateSdk, String manifest, String qualifiers, String resourceDir, String assetDir, int reportSdk, Class<?>[] shadows, Class<? extends Application> application, String[] libraries, Class<?> constants) {
       this.emulateSdk = emulateSdk;
       this.manifest = manifest;
       this.qualifiers = qualifiers;
@@ -165,6 +175,7 @@ public @interface Config {
       this.shadows = shadows;
       this.application = application;
       this.libraries = libraries;
+      this.constants = constants;
     }
 
     public Implementation(Config baseConfig, Config overlayConfig) {
@@ -174,22 +185,23 @@ public @interface Config {
       this.resourceDir = pick(baseConfig.resourceDir(), overlayConfig.resourceDir(), Config.DEFAULT_RES_FOLDER);
       this.assetDir = pick(baseConfig.assetDir(), overlayConfig.assetDir(), Config.DEFAULT_ASSET_FOLDER);
       this.reportSdk = pick(baseConfig.reportSdk(), overlayConfig.reportSdk(), -1);
+      this.constants = pick(baseConfig.constants(), overlayConfig.constants(), null);
 
-      Set<Class<?>> shadows = new HashSet<Class<?>>();
+      Set<Class<?>> shadows = new HashSet<>();
       shadows.addAll(Arrays.asList(baseConfig.shadows()));
       shadows.addAll(Arrays.asList(overlayConfig.shadows()));
       this.shadows = shadows.toArray(new Class[shadows.size()]);
 
       this.application = pick(baseConfig.application(), overlayConfig.application(), null);
 
-      Set<String> libraries = new HashSet<String>();
+      Set<String> libraries = new HashSet<>();
       libraries.addAll(Arrays.asList(baseConfig.libraries()));
       libraries.addAll(Arrays.asList(overlayConfig.libraries()));
       this.libraries = libraries.toArray(new String[libraries.size()]);
     }
 
     private <T> T pick(T baseValue, T overlayValue, T nullValue) {
-      return overlayValue.equals(nullValue) ? baseValue : overlayValue;
+      return overlayValue != null ? (overlayValue.equals(nullValue) ? baseValue : overlayValue) : null;
     }
 
     @Override
@@ -200,6 +212,11 @@ public @interface Config {
     @Override
     public String manifest() {
       return manifest;
+    }
+
+    @Override
+    public Class<?> constants() {
+      return constants;
     }
 
     @Override

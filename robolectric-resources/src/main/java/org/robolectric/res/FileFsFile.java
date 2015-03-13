@@ -10,8 +10,6 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class FileFsFile implements FsFile {
-
-  /** Guarded by the instance lock */
   private File canonicalFile;
   private final File file;
 
@@ -19,31 +17,42 @@ public class FileFsFile implements FsFile {
     this.file = file;
   }
 
-  @Override public boolean exists() {
+  FileFsFile(String path) {
+    this.file = new File(path);
+  }
+
+  @Override
+  public boolean exists() {
     return file.exists();
   }
 
-  @Override public boolean isDirectory() {
+  @Override
+  public boolean isDirectory() {
     return file.isDirectory();
   }
 
-  @Override public boolean isFile() {
+  @Override
+  public boolean isFile() {
     return file.isFile();
   }
 
-  @Override public FsFile[] listFiles() {
+  @Override
+  public FsFile[] listFiles() {
     return asFsFiles(file.listFiles());
   }
 
-  @Override public FsFile[] listFiles(final Filter filter) {
+  @Override
+  public FsFile[] listFiles(final Filter filter) {
     return asFsFiles(file.listFiles(new FileFilter() {
-      @Override public boolean accept(File pathname) {
+      @Override
+      public boolean accept(File pathname) {
         return filter.accept(new FileFsFile(pathname));
       }
     }));
   }
 
-  @Override public String[] listFileNames() {
+  @Override
+  public String[] listFileNames() {
     File[] files = file.listFiles();
     if (files == null) return null;
     String[] strings = new String[files.length];
@@ -53,24 +62,29 @@ public class FileFsFile implements FsFile {
     return strings;
   }
 
-  @Override public FsFile getParent() {
+  @Override
+  public FsFile getParent() {
     File parentFile = file.getParentFile();
     return parentFile == null ? null : Fs.newFile(parentFile);
   }
 
-  @Override public String getName() {
+  @Override
+  public String getName() {
     return file.getName();
   }
 
-  @Override public InputStream getInputStream() throws IOException {
+  @Override
+  public InputStream getInputStream() throws IOException {
     return new BufferedInputStream(new FileInputStream(file));
   }
 
-  @Override public byte[] getBytes() throws IOException {
+  @Override
+  public byte[] getBytes() throws IOException {
     return Util.readBytes(new FileInputStream(file));
   }
 
-  @Override public FsFile join(String... pathParts) {
+  @Override
+  public FsFile join(String... pathParts) {
     File f = file;
     for (String pathPart : pathParts) {
       f = new File(f, pathPart);
@@ -83,7 +97,8 @@ public class FileFsFile implements FsFile {
     return file;
   }
 
-  @Override public String toString() {
+  @Override
+  public String toString() {
     return file.getPath();
   }
 
@@ -97,12 +112,38 @@ public class FileFsFile implements FsFile {
     return getCanonicalFile().equals(fsFile.getCanonicalFile());
   }
 
+  @Override
+  public int hashCode() {
+    return getCanonicalFile().hashCode();
+  }
+
+  @Override
+  public String getBaseName() {
+    String name = getName();
+    int dotIndex = name.indexOf(".");
+    return dotIndex >= 0 ? name.substring(0, dotIndex) : name;
+  }
+
+  @Override
+  public String getPath() {
+    return file.getPath();
+  }
+
+  private FsFile[] asFsFiles(File[] files) {
+    if (files == null) return null;
+    FsFile[] fsFiles = new FsFile[files.length];
+    for (int i = 0; i < files.length; i++) {
+      fsFiles[i] = Fs.newFile(files[i]);
+    }
+    return fsFiles;
+  }
+
   /**
    * Canonical file queries can be expensive, so perform them lazily. In
-   * practice, this should only happen for raw resources, AndroidManifest.xmls,
+   * practice, this should only happen for raw resources, AndroidManifest.xml,
    * and project.properties.
    */
-  private final synchronized File getCanonicalFile() {
+  private synchronized File getCanonicalFile() {
     if (canonicalFile == null) {
       try {
         // Android library references in project.properties are all
@@ -118,27 +159,23 @@ public class FileFsFile implements FsFile {
     return canonicalFile;
   }
 
-  @Override
-  public int hashCode() {
-    return getCanonicalFile().hashCode();
-  }
-
-  private FsFile[] asFsFiles(File[] files) {
-    if (files == null) return null;
-    FsFile[] fsFiles = new FsFile[files.length];
-    for (int i = 0; i < files.length; i++) {
-      fsFiles[i] = Fs.newFile(files[i]);
+  /**
+   * Construct an FileFsFile from a series of path components. Path components that are
+   * null or empty string will be ignored.
+   *
+   * @param part Array of path components.
+   * @return New FileFsFile.
+   */
+  public static FileFsFile from(String... part) {
+    final StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < part.length; i++) {
+      if (part[i] != null && part[i].length() > 0) {
+        sb.append(part[i]);
+        if (i < part.length - 1) {
+          sb.append(File.separator);
+        }
+      }
     }
-    return fsFiles;
-  }
-
-  @Override public String getBaseName() {
-    String name = getName();
-    int dotIndex = name.indexOf(".");
-    return dotIndex >= 0 ? name.substring(0, dotIndex) : name;
-  }
-
-  @Override public String getPath() {
-    return file.getPath();
+    return new FileFsFile(sb.toString());
   }
 }
