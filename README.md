@@ -32,7 +32,7 @@ contributors, please visit
 
 ## Install
 
-### Starting a new project
+### Starting a New Project
 
 If you'd like to start a new project with Robolectric you can use deckard (for either [maven](http://github.com/robolectric/deckard-maven)
 or [gradle](http://github.com/robolectric/deckard-gradle)). These project will guide you through setting
@@ -75,11 +75,21 @@ You will need to either replace or have `ANDROID_HOME` set to your local Android
 
 ## Building And Contributing
 
-Robolectric is built using Maven. Both Eclipse (with the M2Eclipse plug-in) and IntelliJ can import the `pom.xml` file and will automatically generate their project files from it.
+Robolectric is built using Maven. Both Eclipse (with the M2Eclipse plug-in) and IntelliJ can import the `pom.xml` file and will automatically generate their project files from it. You will need to have portions of the Android SDK available in your local Maven repo in order to build Robolectric.
 
-Guides on to extending Robolectric can be found [here](http://robolectric.org/extending/) and the contributor guidlines can be found [here](http://robolectric.org/contributor-guidelines/).
+Mavenize all required dependencies by running:
 
-### Using SNAPSHOTS
+    ./scripts/install-dependencies.sh
+
+Because Robolectric's shadows are compiled against the Android APIs that they target, you must build the shadows for all API levels before being able to run any of the tests. You can build all of Robolectric by running:
+
+    ./scripts/install-robolectric.sh
+    
+After doing this once, you can build and test against the specific API level you care about:
+
+    mvn install -P android-18 (for example)
+
+### Using Snapshots
 
 If you would like to live on the bleeding edge, you can try running against a snapshot build. Keep in mind that snapshots represent the most recent changes on master and may contain bugs.
 
