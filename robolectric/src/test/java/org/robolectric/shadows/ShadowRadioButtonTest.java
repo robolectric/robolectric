@@ -1,16 +1,18 @@
 package org.robolectric.shadows;
 
+import android.graphics.drawable.ColorDrawable;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
+import org.robolectric.R;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ShadowRadioButtonTest {
@@ -67,4 +69,23 @@ public class ShadowRadioButtonTest {
     radioButton2.setChecked(true);
     assertThat(radioGroup.getCheckedRadioButtonId()).isEqualTo(radioButton2.getId());
   }
+
+  @Test
+  public void getButtonDrawableId() {
+    RadioButton radioButton = new RadioButton(RuntimeEnvironment.application);
+
+    radioButton.setButtonDrawable(R.drawable.an_image);
+    assertThat(shadowOf(radioButton).getButtonDrawableId()).isEqualTo(R.drawable.an_image);
+  }
+
+  @Test
+  public void getButtonDrawable() {
+    RadioButton radioButton = new RadioButton(RuntimeEnvironment.application);
+
+    ColorDrawable drawable = new ColorDrawable();
+    radioButton.setButtonDrawable(drawable);
+    assertThat(shadowOf(radioButton).getButtonDrawable()).isEqualTo(drawable);
+  }
+
+
 }
