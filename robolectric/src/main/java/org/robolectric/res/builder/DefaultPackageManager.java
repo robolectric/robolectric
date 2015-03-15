@@ -132,13 +132,21 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
   }
 
   @Override public ActivityInfo getActivityInfo(ComponentName className, int flags) throws NameNotFoundException {
-    String packageName = className.getPackageName();
-    AndroidManifest androidManifest = androidManifests.get(packageName);
-    String activityName = className.getClassName();
-    ActivityData activityData = androidManifest.getActivityData(activityName);
     ActivityInfo activityInfo = new ActivityInfo();
-    activityInfo.packageName = packageName;
+    String packageName = className.getPackageName();
+    String activityName = className.getClassName();
     activityInfo.name = activityName;
+    activityInfo.packageName = packageName;
+
+    AndroidManifest androidManifest = androidManifests.get(packageName);
+
+    // In the cases where there is no manifest entry for the activity, e.g: a test that creates
+    // simply an android.app.Activity just return what we have.
+    if (androidManifest == null) {
+      return activityInfo;
+    }
+
+    ActivityData activityData = androidManifest.getActivityData(activityName);
     if (activityData != null) {
       activityInfo.parentActivityName = activityData.getParentActivityName();
       activityInfo.metaData = metaDataToBundle(activityData.getMetaData().getValueMap());
