@@ -17,8 +17,11 @@ public class ShadowStatFsTest {
     StatFs statsFs = new StatFs("/tmp");
 
     assertThat(statsFs.getBlockCount()).isEqualTo(100);
+    assertThat(statsFs.getBlockCountLong()).isEqualTo(100);
     assertThat(statsFs.getFreeBlocks()).isEqualTo(20);
     assertThat(statsFs.getAvailableBlocks()).isEqualTo(10);
+    assertThat(statsFs.getAvailableBlocksLong()).isEqualTo(10L);
+    assertThat(statsFs.getBlockSizeLong()).isEqualTo(ShadowStatFs.BLOCK_SIZE);
     assertThat(statsFs.getBlockSize()).isEqualTo(ShadowStatFs.BLOCK_SIZE);
   }
 
@@ -28,8 +31,11 @@ public class ShadowStatFsTest {
     StatFs statsFs = new StatFs(new File("/tmp").getAbsolutePath());
 
     assertThat(statsFs.getBlockCount()).isEqualTo(100);
+    assertThat(statsFs.getBlockCountLong()).isEqualTo(100);
     assertThat(statsFs.getFreeBlocks()).isEqualTo(20);
     assertThat(statsFs.getAvailableBlocks()).isEqualTo(10);
+    assertThat(statsFs.getAvailableBlocksLong()).isEqualTo(10L);
+    assertThat(statsFs.getBlockSizeLong()).isEqualTo(ShadowStatFs.BLOCK_SIZE);
     assertThat(statsFs.getBlockSize()).isEqualTo(ShadowStatFs.BLOCK_SIZE);
   }
 
@@ -37,8 +43,11 @@ public class ShadowStatFsTest {
   public void shouldResetStateBetweenTests() throws Exception {
     StatFs statsFs = new StatFs("/tmp");
     assertThat(statsFs.getBlockCount()).isEqualTo(0);
+    assertThat(statsFs.getBlockCountLong()).isEqualTo(0);
     assertThat(statsFs.getFreeBlocks()).isEqualTo(0);
     assertThat(statsFs.getAvailableBlocks()).isEqualTo(0);
+    assertThat(statsFs.getAvailableBlocksLong()).isEqualTo(0);
+    assertThat(statsFs.getBlockSizeLong()).isEqualTo(ShadowStatFs.BLOCK_SIZE);
     assertThat(statsFs.getBlockSize()).isEqualTo(ShadowStatFs.BLOCK_SIZE);
   }
 

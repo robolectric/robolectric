@@ -26,7 +26,17 @@ public class ShadowStatFs {
   }
 
   @Implementation
+  public long getBlockSizeLong() {
+    return BLOCK_SIZE;
+  }
+
+  @Implementation
   public int getBlockCount() {
+    return stat.blockCount;
+  }
+
+  @Implementation
+  public long getBlockCountLong() {
     return stat.blockCount;
   }
 
@@ -37,6 +47,11 @@ public class ShadowStatFs {
 
   @Implementation
   public int getAvailableBlocks() {
+    return stat.availableBlocks;
+  }
+
+  @Implementation
+  public long getAvailableBlocksLong() {
     return stat.availableBlocks;
   }
 
