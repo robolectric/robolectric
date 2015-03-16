@@ -48,6 +48,23 @@ public class ShadowStatFs {
     }
   }
 
+#if ($apiLevel >= 18)
+  @Implementation
+  public long getBlockSizeLong() {
+    return BLOCK_SIZE;
+  }
+
+  @Implementation
+  public long getBlockCountLong() {
+    return stat.blockCount;
+  }
+
+  @Implementation
+  public long getAvailableBlocksLong() {
+    return stat.availableBlocks;
+  }
+#end
+
   public static void registerStats(File path, int blockCount, int freeBlocks, int availableBlocks) {
     registerStats(path.getAbsolutePath(), blockCount, freeBlocks, availableBlocks);
   }

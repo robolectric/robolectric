@@ -1,9 +1,11 @@
 package org.robolectric.shadows;
 
+import android.os.Build;
 import android.os.StatFs;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
 
 import java.io.File;
 
@@ -40,6 +42,37 @@ public class ShadowStatFsTest {
     assertThat(statsFs.getFreeBlocks()).isEqualTo(0);
     assertThat(statsFs.getAvailableBlocks()).isEqualTo(0);
     assertThat(statsFs.getBlockSize()).isEqualTo(ShadowStatFs.BLOCK_SIZE);
+  }
+
+  @Test
+  @Config(emulateSdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
+  public void withApi18_shouldRegisterStats() {
+    ShadowStatFs.registerStats("/tmp", 100, 20, 10);
+    StatFs statsFs = new StatFs("/tmp");
+
+    assertThat(statsFs.getBlockCountLong()).isEqualTo(100);
+    assertThat(statsFs.getAvailableBlocksLong()).isEqualTo(10L);
+    assertThat(statsFs.getBlockSizeLong()).isEqualTo(ShadowStatFs.BLOCK_SIZE);
+  }
+
+  @Test
+  @Config(emulateSdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
+  public void withApi18_shouldRegisterStatsWithFile() {
+    ShadowStatFs.registerStats(new File("/tmp"), 100, 20, 10);
+    StatFs statsFs = new StatFs(new File("/tmp").getAbsolutePath());
+
+    assertThat(statsFs.getBlockCountLong()).isEqualTo(100);
+    assertThat(statsFs.getAvailableBlocksLong()).isEqualTo(10L);
+    assertThat(statsFs.getBlockSizeLong()).isEqualTo(ShadowStatFs.BLOCK_SIZE);
+  }
+
+  @Test
+  @Config(emulateSdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
+  public void withApi18_shouldResetStateBetweenTests() {
+    StatFs statsFs = new StatFs("/tmp");
+    assertThat(statsFs.getBlockCountLong()).isEqualTo(0);
+    assertThat(statsFs.getAvailableBlocksLong()).isEqualTo(0);
+    assertThat(statsFs.getBlockSizeLong()).isEqualTo(ShadowStatFs.BLOCK_SIZE);
   }
 
   @Test
