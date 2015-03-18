@@ -228,6 +228,14 @@ public class ShadowViewTest {
   }
 
   @Test
+  @AccessibilityChecks
+  public void checkedClick_shouldNotThrowIfViewIsOK() throws Exception {
+    view.setContentDescription("Something");
+    shadowOf(view).setMyParent(new StubViewRoot());
+    shadowOf(view).checkedPerformClick();
+  }
+
+  @Test
   public void getBackground_shouldReturnNullIfNoBackgroundHasBeenSet() throws Exception {
     assertThat(view.getBackground()).isNull();
   }

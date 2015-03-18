@@ -7,6 +7,7 @@ import com.google.android.apps.common.testing.accessibility.framework.Accessibil
 import com.google.android.apps.common.testing.accessibility.framework.AccessibilityViewCheckResult;
 import com.google.android.apps.common.testing.accessibility.framework.AccessibilityViewHierarchyCheck;
 import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheckResult.AccessibilityCheckResultType;
+import com.google.android.apps.common.testing.accessibility.framework.TouchTargetSizeViewCheck;
 
 import android.view.View;
 
@@ -14,6 +15,8 @@ import org.robolectric.annotation.AccessibilityChecks;
 
 import java.io.PrintStream;
 import java.lang.reflect.Method;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -100,8 +103,17 @@ public class AccessibilityUtil {
      * because there is only one version. These sets need to be adjusted in 
      * later versions to take forVersion into account
      */
-    Set<AccessibilityCheck> viewChecks = AccessibilityCheckPreset
-        .getAllChecksForPreset(AccessibilityCheckPreset.VIEW_CHECKS);
+    Set<AccessibilityCheck> viewChecks = new HashSet<>(AccessibilityCheckPreset
+        .getAllChecksForPreset(AccessibilityCheckPreset.VIEW_CHECKS));
+    /* Robolectric Views are reported as 0x0, so skip the test target size check */
+    Iterator<AccessibilityCheck> viewCheckIterator = viewChecks.iterator();
+    while (viewCheckIterator.hasNext()) {
+      AccessibilityCheck viewCheck = viewCheckIterator.next();
+      if (viewCheck instanceof TouchTargetSizeViewCheck) {
+        viewCheckIterator.remove();
+      }
+    }
+    
     Set<AccessibilityCheck> viewHierarchyChecks = AccessibilityCheckPreset
         .getAllChecksForPreset(AccessibilityCheckPreset.VIEW_HIERARCHY_CHECKS);
 
