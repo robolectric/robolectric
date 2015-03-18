@@ -136,10 +136,10 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
     AndroidManifest androidManifest = androidManifests.get(packageName);
     String activityName = className.getClassName();
     ActivityData activityData = androidManifest.getActivityData(activityName);
-    ActivityInfo activityInfo = new ActivityInfo();
-    activityInfo.packageName = packageName;
-    activityInfo.name = activityName;
     if (activityData != null) {
+      ActivityInfo activityInfo = new ActivityInfo();
+      activityInfo.packageName = packageName;
+      activityInfo.name = activityName;
       activityInfo.parentActivityName = activityData.getParentActivityName();
       activityInfo.metaData = metaDataToBundle(activityData.getMetaData().getValueMap());
       ResourceIndex resourceIndex = shadowsAdapter.getResourceLoader().getResourceIndex();
@@ -155,9 +155,11 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
         ResName style = ResName.qualifyResName(themeRef.replace("@", ""), packageName, "style");
         activityInfo.theme = resourceIndex.getResourceId(style);
       }
+      activityInfo.applicationInfo = getApplicationInfo(packageName, flags);
+      return activityInfo;
+    } else {
+        throw new NameNotFoundException(activityName);
     }
-    activityInfo.applicationInfo = getApplicationInfo(packageName, flags);
-    return activityInfo;
   }
 
   @Override
