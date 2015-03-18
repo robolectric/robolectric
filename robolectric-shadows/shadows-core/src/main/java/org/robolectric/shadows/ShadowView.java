@@ -482,6 +482,8 @@ public class ShadowView {
   public void setAnimation(final Animation animation) {
     directly().setAnimation(animation);
 
+    if (animation == null) return;
+
     ShadowChoreographer.getInstance().postCallbackDelayed(Choreographer.CALLBACK_ANIMATION, new Runnable() {
       @Override
       public void run() {
@@ -492,7 +494,6 @@ public class ShadowView {
 
       }
     }, null, animation.getStartTime());
-
   }
 
   @Implementation

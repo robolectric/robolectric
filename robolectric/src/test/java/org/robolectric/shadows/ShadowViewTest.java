@@ -469,6 +469,13 @@ public class ShadowViewTest {
   }
 
   @Test
+  public void setNullAnimation() {
+    TestView view = new TestView(buildActivity(Activity.class).create().get());
+    view.setAnimation(null);
+    assertThat(view.getAnimation()).isNull();
+  }
+
+  @Test
   public void test_measuredDimension() {
     // View does not provide its own onMeasure implementation
     TestView view1 = new TestView(buildActivity(Activity.class).create().get());
