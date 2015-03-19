@@ -480,7 +480,9 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     if (dialog == null) {
       final ActivityInvoker invoker = new ActivityInvoker();
       dialog = (Dialog) invoker.call("onCreateDialog", Integer.TYPE).with(id);
-
+      if (dialog == null) {
+        return false;
+      }
       if (bundle == null) {
         invoker.call("onPrepareDialog", Integer.TYPE, Dialog.class)
             .with(id, dialog);

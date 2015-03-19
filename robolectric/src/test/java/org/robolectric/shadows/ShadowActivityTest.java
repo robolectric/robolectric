@@ -296,6 +296,18 @@ public class ShadowActivityTest {
   }
 
   @Test
+  public void showDialog_shouldReturnFalseIfDialogDoesNotExist() {
+    final DialogLifeCycleActivity activity = create(DialogLifeCycleActivity.class);
+
+    boolean dialogCreated = activity.showDialog(97, new Bundle());
+
+    assertFalse(dialogCreated);
+    assertTrue(activity.createdDialog);
+    assertFalse(activity.preparedDialogWithBundle);
+  }
+
+
+  @Test
   public void showDialog_shouldReuseDialogs() {
     final DialogCreatingActivity activity = create(DialogCreatingActivity.class);
     activity.showDialog(1);
