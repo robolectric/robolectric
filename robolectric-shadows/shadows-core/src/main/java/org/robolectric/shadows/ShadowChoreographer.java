@@ -45,6 +45,16 @@ public class ShadowChoreographer {
   }
 
   @Implementation
+  public void postFrameCallbackDelayed(final Choreographer.FrameCallback callback, long delayMillis) {
+    ShadowLooper.getUiThreadScheduler().postDelayed(new Runnable() {
+      @Override
+      public void run() {
+        callback.doFrame(getFrameTimeNanos());
+      }
+    }, delayMillis);
+  }
+
+  @Implementation
   public long getFrameTimeNanos() {
     final long now = nanoTime;
     nanoTime += ShadowChoreographer.FRAME_INTERVAL;
