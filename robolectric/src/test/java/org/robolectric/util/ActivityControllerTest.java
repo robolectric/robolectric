@@ -34,6 +34,13 @@ public class ActivityControllerTest {
   }
 
   @Test
+  @Config(manifest = Config.NONE)
+  public void canCreateActivityNotListedInManifest() {
+    ActivityController<Activity> activityController = Robolectric.buildActivity(Activity.class);
+    assertThat(activityController.setup()).isNotNull();
+  }
+
+  @Test
   public void shouldSetIntent() throws Exception {
     MyActivity myActivity = controller.create().get();
     assertThat(myActivity.getIntent()).isNotNull();
