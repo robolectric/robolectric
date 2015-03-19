@@ -48,6 +48,7 @@ import java.util.*;
  * {@link org.robolectric.res.ResourceLoader} in order to provide a simulation of the Android runtime environment.
  */
 public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
+  private static final String CONFIG_PROPERTIES = "robolectric.properties";
   private static final Map<Class<? extends RobolectricTestRunner>, EnvHolder> envHoldersByTestRunner = new HashMap<>();
   private static Map<Pair<AndroidManifest, SdkConfig>, ResourceLoader> resourceLoadersByManifestAndConfig = new HashMap<>();
   private static ShadowMap mainShadowMap;
@@ -390,7 +391,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
   protected Properties getConfigProperties() {
     ClassLoader classLoader = getTestClass().getClass().getClassLoader();
-    InputStream resourceAsStream = classLoader.getResourceAsStream("org.robolectric.Config.properties");
+    InputStream resourceAsStream = classLoader.getResourceAsStream(CONFIG_PROPERTIES);
     if (resourceAsStream == null) return null;
     Properties properties = new Properties();
     try {
