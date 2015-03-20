@@ -59,10 +59,10 @@ public class AndroidManifest {
   private int versionCode;
   private String versionName;
   private int applicationFlags;
-  private final List<ContentProviderData> providers = new ArrayList<ContentProviderData>();
-  private final List<BroadcastReceiverData> receivers = new ArrayList<BroadcastReceiverData>();
-  private final Map<String, ActivityData> activityDatas = new LinkedHashMap<String, ActivityData>();
-  private final List<String> usedPermissions = new ArrayList<String>();
+  private final List<ContentProviderData> providers = new ArrayList<>();
+  private final List<BroadcastReceiverData> receivers = new ArrayList<>();
+  private final Map<String, ActivityData> activityDatas = new LinkedHashMap<>();
+  private final List<String> usedPermissions = new ArrayList<>();
   private MetaData applicationMetaData;
   private List<FsFile> libraryDirectories;
   private List<AndroidManifest> libraryManifests;
@@ -78,6 +78,19 @@ public class AndroidManifest {
     this.androidManifestFile = androidManifestFile;
     this.resDirectory = resDirectory;
     this.assetsDirectory = assetsDirectory;
+  }
+
+  /**
+   * Creates a Robolectric configuration using specified values.
+   *
+   * @param androidManifestFile Location of the AndroidManifest.xml file.
+   * @param resDirectory        Location of the res directory.
+   * @param assetsDirectory     Location of the assets directory.
+   * @param packageName         Application package name.
+   */
+  public AndroidManifest(FsFile androidManifestFile, FsFile resDirectory, FsFile assetsDirectory, String packageName) {
+    this(androidManifestFile, resDirectory, assetsDirectory);
+    this.packageName = packageName;
   }
 
   public String getThemeRef(Class<? extends Activity> activityClass) {
@@ -386,7 +399,7 @@ public class AndroidManifest {
   }
 
   private List<Node> getChildrenTags(final Node node, final String tagName) {
-    List<Node> children = new ArrayList<Node>();
+    List<Node> children = new ArrayList<>();
     for (int i = 0; i < node.getChildNodes().getLength(); i++) {
       Node childNode = node.getChildNodes().item(i);
       if (childNode.getNodeName().equalsIgnoreCase(tagName)) {
@@ -498,12 +511,12 @@ public class AndroidManifest {
   }
 
   public List<ResourcePath> getIncludedResourcePaths() {
-    Collection<ResourcePath> resourcePaths = new LinkedHashSet<ResourcePath>(); // Needs stable ordering and no duplicates
+    Collection<ResourcePath> resourcePaths = new LinkedHashSet<>(); // Needs stable ordering and no duplicates
     resourcePaths.add(getResourcePath());
     for (AndroidManifest libraryManifest : getLibraryManifests()) {
       resourcePaths.addAll(libraryManifest.getIncludedResourcePaths());
     }
-    return new ArrayList<ResourcePath>(resourcePaths);
+    return new ArrayList<>(resourcePaths);
   }
 
   public List<ContentProviderData> getContentProviders() {
@@ -516,7 +529,7 @@ public class AndroidManifest {
   }
 
   protected void createLibraryManifests() {
-    libraryManifests = new ArrayList<AndroidManifest>();
+    libraryManifests = new ArrayList<>();
     if (libraryDirectories == null) {
       libraryDirectories = findLibraries();
     }
@@ -597,6 +610,10 @@ public class AndroidManifest {
 
   public FsFile getAssetsDirectory() {
     return assetsDirectory;
+  }
+
+  public FsFile getAndroidManifestFile() {
+    return androidManifestFile;
   }
 
   public List<BroadcastReceiverData> getBroadcastReceivers() {

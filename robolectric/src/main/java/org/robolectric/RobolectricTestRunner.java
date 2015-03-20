@@ -62,7 +62,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   private Class<? extends RobolectricTestRunner> lastTestRunnerClass;
   private SdkConfig lastSdkConfig;
   private SdkEnvironment lastSdkEnvironment;
-  private final HashSet<Class<?>> loadedTestClasses = new HashSet<Class<?>>();
+  private final HashSet<Class<?>> loadedTestClasses = new HashSet<>();
 
   /**
    * Creates a runner to run {@code testClass}. Looks in your working directory for your AndroidManifest.xml file
