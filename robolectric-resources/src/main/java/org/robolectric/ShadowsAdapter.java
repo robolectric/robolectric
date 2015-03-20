@@ -8,12 +8,8 @@ import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.util.Scheduler;
 
-import java.io.File;
-
 /**
  * Interface between robolectric and shadows-core modules.
- *
- * TODO: Move this interface into robolectric-utils and remove dependency on robolectric-resources.
  */
 public interface ShadowsAdapter {
   Scheduler getBackgroundScheduler();
@@ -44,19 +40,19 @@ public interface ShadowsAdapter {
 
   ResourceLoader getResourceLoader();
 
-  public interface ShadowActivityAdapter {
-    public void setTestApplication(Application application);
+  interface ShadowActivityAdapter {
+    void setTestApplication(Application application);
 
-    public void setThemeFromManifest();
+    void setThemeFromManifest();
   }
 
-  public interface ShadowLooperAdapter {
-    public void runPaused(Runnable runnable);
+  interface ShadowLooperAdapter {
+    void runPaused(Runnable runnable);
   }
 
-  public interface ShadowApplicationAdapter {
-    public AndroidManifest getAppManifest();
+  interface ShadowApplicationAdapter {
+    AndroidManifest getAppManifest();
 
-    public ResourceLoader getResourceLoader();
+    ResourceLoader getResourceLoader();
   }
 }

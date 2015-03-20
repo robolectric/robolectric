@@ -11,30 +11,24 @@ import android.content.res.Resources;
 import android.os.Bundle;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.ShadowsAdapter;
+import org.robolectric.internal.runtime.RuntimeAdapter;
+import org.robolectric.internal.runtime.RuntimeAdapterFactory;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResName;
 import org.robolectric.ShadowsAdapter.ShadowActivityAdapter;
 import org.robolectric.ShadowsAdapter.ShadowApplicationAdapter;
-import org.robolectric.internal.runtime.AndroidRuntimeAdapter;
-import org.robolectric.internal.runtime.AndroidRuntimeAdapterFactory;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 public class ActivityController<T extends Activity> extends ComponentController<ActivityController<T>, T> {
-
   private final ShadowsAdapter shadowsAdapter;
   private final ShadowActivityAdapter shadowReference;
 
-  // TODO: LOLLIPOP: this should be injected in some better way where it can be configured in a centrallized place
-  // TODO: LOLLIPOP: (ideally in SdkConfig), but there a classloader ordering issues to be careful of when making this
-  // TODO: LOLLIPOP: happen -AV 2014-11-16
-  private final AndroidRuntimeAdapter androidRuntimeAdapter = AndroidRuntimeAdapterFactory.getInstance();
-
   public static <T extends Activity> ActivityController<T> of(ShadowsAdapter shadowsAdapter, Class<T> activityClass) {
-    return new ActivityController<T>(shadowsAdapter, ReflectionHelpers.<T>callConstructor(activityClass));
+    return new ActivityController<>(shadowsAdapter, ReflectionHelpers.callConstructor(activityClass));
   }
 
   public static <T extends Activity> ActivityController<T> of(ShadowsAdapter shadowsAdapter, T activity) {
-    return new ActivityController<T>(shadowsAdapter, activity);
+    return new ActivityController<>(shadowsAdapter, activity);
   }
 
   public ActivityController(ShadowsAdapter shadowsAdapter, T activity) {
@@ -51,34 +45,43 @@ public class ActivityController<T extends Activity> extends ComponentController<
       shadowReference.setTestApplication(this.application);
     }
     Context baseContext = this.baseContext == null ? application : this.baseContext;
-    Intent intent = getIntent();
-    ActivityInfo activityInfo;
-    try {
-      activityInfo = application.getPackageManager().getActivityInfo(new ComponentName(application.getPackageName(), component.getClass().getName()), PackageManager.GET_ACTIVITIES|PackageManager.GET_META_DATA);
-    } catch (PackageManager.NameNotFoundException e) {
-      throw new RuntimeException(e);
-    }
-    String activityTitle = getActivityTitle();
 
-    ClassLoader cl = baseContext.getClassLoader();
-    Class<?> activityThreadClass = null;
-    try {
-      activityThreadClass = cl.loadClass(shadowsAdapter.getShadowActivityThreadClassName());
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e);
-    }
-    Class<?> nonConfigurationInstancesClass = null;
-    try {
-      nonConfigurationInstancesClass = cl.loadClass("android.app.Activity$NonConfigurationInstances");
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e);
-    }
+    final String title = getActivityTitle();
+    final ClassLoader cl = baseContext.getClassLoader();
+    final ActivityInfo info = getActivityInfo(application);
+    final Class<?> threadClass = getActivityThreadClass(cl);
+    final Class<?> nonConfigurationClass = getNonConfigurationClass(cl);
 
-    androidRuntimeAdapter.callActivityAttach(component, baseContext, activityThreadClass, application, intent, activityInfo, activityTitle, nonConfigurationInstancesClass);
+    final RuntimeAdapter runtimeAdapter = RuntimeAdapterFactory.getInstance();
+    runtimeAdapter.callActivityAttach(component, baseContext, threadClass, application, getIntent(), info, title, nonConfigurationClass);
 
     shadowReference.setThemeFromManifest();
     attached = true;
     return this;
+  }
+
+  private ActivityInfo getActivityInfo(Application application) {
+    try {
+      return application.getPackageManager().getActivityInfo(new ComponentName(application.getPackageName(), component.getClass().getName()), PackageManager.GET_ACTIVITIES | PackageManager.GET_META_DATA);
+    } catch (PackageManager.NameNotFoundException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private Class<?> getActivityThreadClass(ClassLoader cl) {
+    try {
+      return cl.loadClass(shadowsAdapter.getShadowActivityThreadClassName());
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private Class<?> getNonConfigurationClass(ClassLoader cl) {
+    try {
+      return cl.loadClass("android.app.Activity$NonConfigurationInstances");
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   private String getActivityTitle() {
