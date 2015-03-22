@@ -1,7 +1,10 @@
 package org.robolectric.annotation;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * Robolectric can check for certain kinds of accessibility bugs while running
@@ -10,23 +13,16 @@ import java.lang.annotation.RetentionPolicy;
  * {@code Robolectric.onClick()} will run a series of checks on your UI and
  * throw exceptions if errors are present.
  */
-@java.lang.annotation.Documented
-@java.lang.annotation.Retention(RetentionPolicy.RUNTIME)
-@java.lang.annotation.Target({ElementType.TYPE, ElementType.METHOD})
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE, ElementType.METHOD})
 public @interface AccessibilityChecks {
-  public enum ForRobolectricVersion {
-    /**
-     * Only perform checks that were present in Robolectric 3.0
-     */
-    VERSION_3_0,
-    /**
-     * Perform all checks
-     */
-    LATEST
-  }
+  enum ForRobolectricVersion { VERSION_3_0, LATEST }
 
   /**
-   * Enable or disable accessibility checking. The default value is true.
+   * Enable or disable accessibility checking.
+   *
+   * @return  True if accessibility checking is enabled.
    */
   boolean enabled() default true;
 
@@ -40,8 +36,8 @@ public @interface AccessibilityChecks {
    * guarantee that the behavior of individual checks won't change as bugs are
    * fixed and/or features added to checks that existed in the specified
    * version.
-   * <p/>
-   * The default is to perform all available checks.
+   *
+   * @return  Run all checks corresponding to this version of Robolectric.
    */
   ForRobolectricVersion forRobolectricVersion() default ForRobolectricVersion.LATEST;
 }
