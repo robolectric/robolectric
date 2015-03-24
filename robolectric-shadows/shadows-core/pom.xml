@@ -267,6 +267,7 @@
         <api>16</api>
       </properties>
     </profile>
+
     <profile>
       <id>android-17</id>
         <dependencies>
@@ -280,6 +281,7 @@
         <api>17</api>
       </properties>
     </profile>
+
     <profile>
       <id>android-18</id>
         <dependencies>
@@ -293,6 +295,7 @@
         <api>18</api>
       </properties>
     </profile>
+
     <profile>
       <id>android-19</id>
         <dependencies>
@@ -306,6 +309,7 @@
         <api>19</api>
       </properties>
     </profile>
+
     <profile>
       <id>android-21</id>
         <dependencies>
