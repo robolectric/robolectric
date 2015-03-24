@@ -5,6 +5,7 @@ import android.app.Service;
 import android.os.Looper;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.util.ActivityController;
+import org.robolectric.util.Scheduler;
 import org.robolectric.util.ServiceController;
 import org.robolectric.internal.ShadowProvider;
 
@@ -46,10 +47,28 @@ public class Robolectric {
   }
 
   /**
+   * Return the foreground thread scheduler (e.g the UI thread scheduler).
+   *
+   * @return  Foreground thread scheduler.
+   */
+  public static Scheduler getForegroundThreadScheduler() {
+    return ShadowLooper.getUiThreadScheduler();
+  }
+
+  /**
    * Execute all runnables that have been enqueued on the foreground scheduler.
    */
   public static void flushForegroundScheduler() {
     ShadowLooper.getUiThreadScheduler().advanceToLastPostedRunnable();
+  }
+
+  /**
+   * Return the background thread scheduler.
+   *
+   * @return  Background thread scheduler.
+   */
+  public static Scheduler getBackgroundThreadScheduler() {
+    return shadowOf(Looper.getMainLooper()).getScheduler();
   }
 
   /**
