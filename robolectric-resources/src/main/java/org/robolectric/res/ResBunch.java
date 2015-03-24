@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,9 +31,16 @@ public class ResBunch {
   public void put(String attrType, String name, TypedResource value, XmlLoader.XmlContext xmlContext) {
     ResName resName = new ResName(xmlContext.packageName, attrType, name);
     ResMap<TypedResource> valuesMap = getValuesMap(attrType);
+    Value newValue = new Value(xmlContext.getQualifiers(), value, xmlContext);
     Values values = valuesMap.find(resName);
-    values.add(new Value(xmlContext.getQualifiers(), value, xmlContext));
-    Collections.sort(values);
+    int pos;
+    for(pos=0;pos<values.size();pos++){
+      if(values.get(pos).compareTo(newValue)>0){
+        values.add(pos,newValue);
+        return;
+      }
+    }
+    values.add(newValue);
   }
 
   private ResMap<TypedResource> getValuesMap(String attrType) {
@@ -190,7 +199,7 @@ public class ResBunch {
     }
 
     @Override
-    public int compareTo(Value o) {
+    public int compareTo(@NotNull Value o) {
       return qualifiers.compareTo(o.qualifiers);
     }
 
@@ -209,11 +218,11 @@ public class ResBunch {
     }
   }
 
-  protected static class Values extends ArrayList<Value> {
+  protected static class Values extends CopyOnWriteArrayList<Value> {
   }
 
   private static class ResMap<T> {
-    private final Map<ResName, Values> map = new HashMap<ResName, Values>();
+    private final Map<ResName, Values> map = new HashMap<>();
     private boolean immutable;
 
     public Values find(ResName resName) {
