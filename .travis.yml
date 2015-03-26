@@ -19,7 +19,7 @@ script:
     - ./scripts/install-robolectric.sh
 
 after_success:
-    - ./scripts/install-snapshot.sh
+    - ./scripts/deploy-snapshot.sh
 
 env:
     global:
