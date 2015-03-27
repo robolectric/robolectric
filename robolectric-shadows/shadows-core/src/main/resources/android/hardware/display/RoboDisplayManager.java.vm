@@ -15,7 +15,7 @@ import android.view.Surface;
 
 public class RoboDisplayManager implements IDisplayManager {
 
-#if ($apiLevel >= 21)
+#if ($apiLevel >= 19)
   // API21+
 
   @Override
