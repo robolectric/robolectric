@@ -81,6 +81,8 @@ public interface RobolectricPackageManager {
 
   void setQueryIntentImplicitly(boolean queryIntentImplicitly);
 
+  void reset();
+
   class ComponentState {
     public int newState;
     public int flags;

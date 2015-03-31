@@ -15,7 +15,7 @@ import android.os.PatternMatcher;
 import android.util.Pair;
 
 import java.io.File;
-import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -27,8 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.UUID;
 
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.ShadowsAdapter;
 import org.robolectric.manifest.ActivityData;
 import org.robolectric.manifest.AndroidManifest;
@@ -38,6 +38,7 @@ import org.robolectric.manifest.IntentFilterData;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceIndex;
 import org.robolectric.res.ResourceLoader;
+import org.robolectric.util.TempDirectory;
 
 public class DefaultPackageManager extends StubPackageManager implements RobolectricPackageManager {
 
@@ -392,7 +393,7 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
     ApplicationInfo applicationInfo = new ApplicationInfo();
     applicationInfo.packageName = packageName;
     applicationInfo.sourceDir = new File(".").getAbsolutePath();
-    applicationInfo.dataDir = createTempDir("android-tmp").getAbsolutePath();
+    applicationInfo.dataDir = TempDirectory.create().toAbsolutePath().toString();
 
     packageInfo.applicationInfo = applicationInfo;
 
@@ -469,7 +470,7 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
     applicationInfo.name = androidManifest.getApplicationName();
     applicationInfo.metaData = metaDataToBundle(androidManifest.getApplicationMetaData());
     applicationInfo.sourceDir = new File(".").getAbsolutePath();
-    applicationInfo.dataDir = createTempDir("android-tmp").getAbsolutePath();
+    applicationInfo.dataDir = TempDirectory.create().toAbsolutePath().toString();
 
     if (androidManifest.getLabelRef() != null && resourceIndex != null) {
       Integer id = ResName.getResourceId(resourceIndex, androidManifest.getLabelRef(), androidManifest.getPackageName());
@@ -478,20 +479,6 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
 
     packageInfo.applicationInfo = applicationInfo;
     addPackage(packageInfo);
-  }
-
-  private static File createTempDir(String name) {
-    try {
-      File tmp = File.createTempFile(name, "robolectric");
-      if (!tmp.delete()) throw new IOException("could not delete "+tmp);
-      tmp = new File(tmp, UUID.randomUUID().toString());
-      if (!tmp.mkdirs()) throw new IOException("could not create "+tmp);
-      tmp.deleteOnExit();
-
-      return tmp;
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
   }
 
   @Override
@@ -668,6 +655,15 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
       }
     }
     return PackageManager.PERMISSION_DENIED;
+  }
+
+  @Override
+  public void reset() {
+    for (PackageInfo info : packageInfos.values()) {
+      if (info.applicationInfo != null && info.applicationInfo.dataDir != null) {
+        TempDirectory.destroy(Paths.get(info.applicationInfo.dataDir));
+      }
+    }
   }
 
   /**

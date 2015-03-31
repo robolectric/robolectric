@@ -1,18 +1,25 @@
 package org.robolectric.shadows;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.HashMap;
 import android.os.Environment;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Implementation;
+import org.robolectric.util.TempDirectory;
 
 @Implements(Environment.class)
 public class ShadowEnvironment {
   private static String externalStorageState = Environment.MEDIA_REMOVED;
   private static final Map<File, Boolean> STORAGE_EMULATED = new HashMap<>();
   private static final Map<File, Boolean> STORAGE_REMOVABLE = new HashMap<>();
+
+  static Path EXTERNAL_CACHE_DIR;
+  static Path EXTERNAL_FILES_DIR;
 
   @Implementation
   public static String getExternalStorageState() {
@@ -30,21 +37,37 @@ public class ShadowEnvironment {
 
   @Implementation
   public static File getExternalStorageDirectory() {
-    ShadowContext.EXTERNAL_CACHE_DIR.mkdirs();
-    return ShadowContext.EXTERNAL_CACHE_DIR;
+    if (!exists(EXTERNAL_CACHE_DIR)) EXTERNAL_CACHE_DIR = TempDirectory.create();
+    return EXTERNAL_CACHE_DIR.toFile();
   }
 
   @Implementation
   public static File getExternalStoragePublicDirectory(String type) {
-    File f = (type == null) ? ShadowContext.EXTERNAL_FILES_DIR : new File(ShadowContext.EXTERNAL_FILES_DIR, type);
-    f.mkdirs();
-    return f;
+    if (!exists(EXTERNAL_FILES_DIR)) EXTERNAL_FILES_DIR = TempDirectory.create();
+    if (type == null) return EXTERNAL_FILES_DIR.toFile();
+    Path path = EXTERNAL_FILES_DIR.resolve(type);
+    try {
+      Files.createDirectory(path);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    return path.toFile();
   }
 
   @Resetter
   public static void reset() {
+    TempDirectory.destroy(EXTERNAL_CACHE_DIR);
+    TempDirectory.destroy(EXTERNAL_FILES_DIR);
+
+    EXTERNAL_CACHE_DIR = null;
+    EXTERNAL_FILES_DIR = null;
+
     STORAGE_EMULATED.clear();
     STORAGE_REMOVABLE.clear();
+  }
+
+  private static boolean exists(Path path) {
+    return path != null && Files.exists(path);
   }
 
 #if ($api >= 19)
