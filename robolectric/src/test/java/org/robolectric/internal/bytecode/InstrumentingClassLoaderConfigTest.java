@@ -1,8 +1,10 @@
 package org.robolectric.internal.bytecode;
 
 import org.junit.Test;
-import java.lang.annotation.Annotation;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class InstrumentingClassLoaderConfigTest {
   private final InstrumentingClassLoaderConfig config = new InstrumentingClassLoaderConfig();
@@ -39,22 +41,8 @@ public class InstrumentingClassLoaderConfigTest {
   }
 
   private ClassInfo wrap(final String className) {
-    return new ClassInfo() {
-      @Override public String getName() {
-        return className;
-      }
-
-      @Override public boolean isInterface() {
-        return false;
-      }
-
-      @Override public boolean isAnnotation() {
-        return false;
-      }
-
-      @Override public boolean hasAnnotation(Class<? extends Annotation> annotationClass) {
-        return false;
-      }
-    };
+    ClassInfo info = mock(ClassInfo.class);
+    when(info.getName()).thenReturn(className);
+    return info;
   }
 }
