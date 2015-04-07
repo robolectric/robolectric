@@ -8,9 +8,11 @@ import android.content.Context;
 import android.os.Build;
 import android.os.Handler;
 import android.view.Display;
+import android.view.accessibility.AccessibilityManager;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -23,6 +25,9 @@ import static org.robolectric.internal.Shadow.newInstanceOf;
 public class ShadowContextImpl extends ShadowContext {
   public static final String CLASS_NAME = "android.app.ContextImpl";
   private static final Map<String, String> SYSTEM_SERVICE_MAP = new HashMap<String, String>();
+
+  @RealObject
+  private Context realObject;
 
   static {
     // note that these are different!
@@ -109,7 +114,8 @@ public class ShadowContextImpl extends ShadowContext {
 
         } else if (serviceClassName.equals("android.hardware.display.DisplayManager")) {
           service = ReflectionHelpers.callConstructor(clazz, ClassParameter.from(Context.class, RuntimeEnvironment.application));
-
+        } else if (serviceClassName.equals("android.view.accessibility.AccessibilityManager")) {
+          service = AccessibilityManager.getInstance(realObject);
 #if ($apiLevel >= 17)
         } else if (serviceClassName.equals("android.view.WindowManagerImpl")) {
           Display display = newInstanceOf(Display.class);
