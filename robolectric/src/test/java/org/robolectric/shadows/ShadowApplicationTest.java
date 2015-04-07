@@ -16,6 +16,8 @@ import android.os.IBinder;
 import android.os.IInterface;
 import android.os.Parcel;
 import android.os.RemoteException;
+import android.view.accessibility.AccessibilityManager;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,6 +49,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -118,6 +121,14 @@ public class ShadowApplicationTest {
   @Test public void shouldProvideLayoutInflater() throws Exception {
     Object systemService = RuntimeEnvironment.application.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     assertThat(systemService).isInstanceOf(RoboLayoutInflater.class);
+  }
+
+  @Test public void shouldCorrectlyInstantiatedAccessibilityService() throws Exception {
+    AccessibilityManager accessibilityManager = (AccessibilityManager) RuntimeEnvironment.application.getSystemService(Context.ACCESSIBILITY_SERVICE);
+
+    AccessibilityManager.TouchExplorationStateChangeListener mockListener = mock(AccessibilityManager.TouchExplorationStateChangeListener.class);
+    assertThat(accessibilityManager.addTouchExplorationStateChangeListener(mockListener)).isTrue();
+    assertThat(accessibilityManager.removeTouchExplorationStateChangeListener(mockListener)).isTrue();
   }
 
   private void checkSystemService(String name, Class expectedClass) {
