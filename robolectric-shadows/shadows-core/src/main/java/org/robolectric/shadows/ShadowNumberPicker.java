@@ -30,9 +30,6 @@ public class ShadowNumberPicker extends ShadowLinearLayout {
 
   @Implementation
   public void setDisplayedValues(String[] displayedValues) {
-    if (displayedValues != null && displayedValues.length != (maxValue - minValue) + 1) {
-      throw new RuntimeException("Displayed values should fit into range min and max values");
-    }
     this.displayedValues = displayedValues;
   }
 
