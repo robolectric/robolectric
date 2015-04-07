@@ -11,7 +11,6 @@ import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.commons.JSRInlinerAdapter;
 import org.objectweb.asm.commons.Method;
 import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.FieldNode;
@@ -28,7 +27,6 @@ import org.robolectric.util.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -142,7 +140,7 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
 
       try {
         byte[] bytes;
-        AsmClassInfo classInfo = new AsmClassInfo(className, classNode);
+        ClassInfo classInfo = new ClassInfo(className, classNode);
         if (config.shouldInstrument(classInfo)) {
           bytes = getInstrumentedBytes(classNode, config.containsStubs(classInfo));
         } else {
@@ -947,42 +945,6 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
     if (targetMethod.name.equals("<init>")) return false; // sorry, can't strip out calls to super() in constructor
     return methodsToIntercept.contains(new InstrumentingClassLoaderConfig.MethodRef(targetMethod.owner, targetMethod.name))
         || methodsToIntercept.contains(new InstrumentingClassLoaderConfig.MethodRef(targetMethod.owner, "*"));
-  }
-
-  public static class AsmClassInfo implements ClassInfo {
-    private final String className;
-    private final ClassNode classNode;
-
-    public AsmClassInfo(String className, ClassNode classNode) {
-      this.className = className;
-      this.classNode = classNode;
-    }
-
-    @Override
-    public boolean isInterface() {
-      return (classNode.access & ACC_INTERFACE) != 0;
-    }
-
-    @Override
-    public boolean isAnnotation() {
-      return (classNode.access & ACC_ANNOTATION) != 0;
-    }
-
-    @Override
-    public boolean hasAnnotation(Class<? extends Annotation> annotationClass) {
-      String internalName = "L" + annotationClass.getName().replace('.', '/') + ";";
-      if (classNode.visibleAnnotations == null) return false;
-      for (Object visibleAnnotation : classNode.visibleAnnotations) {
-        AnnotationNode annotationNode = (AnnotationNode) visibleAnnotation;
-        if (annotationNode.desc.equals(internalName)) return true;
-      }
-      return false;
-    }
-
-    @Override
-    public String getName() {
-      return className;
-    }
   }
 
   /**
