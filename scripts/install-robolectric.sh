@@ -1,16 +1,13 @@
 #!/bin/bash
 #
-# Build Robolectric including shadows for all API levels.
+# Install Robolectric into the local Maven repository.
 #
 
 set -e
 
 PROJECT=$(cd $(dirname "$0")/..; pwd)
 
-echo "Cleaning dist directories..."
-cd "$PROJECT"; mvn -P dist clean
-
-echo "Building Robolectric (without tests)..."
+echo "Building Robolectric..."
 cd "$PROJECT"; mvn -D skipTests clean install
 
 echo "Building shadows for API 16..."
@@ -28,5 +25,5 @@ cd "$PROJECT"/robolectric-shadows/shadows-core; mvn -P android-19 clean install
 echo "Building shadows for API 21..."
 cd "$PROJECT"/robolectric-shadows/shadows-core; mvn -P android-21 clean install
 
-echo "Building Robolectric and API 21 (with tests)..."
-cd "$PROJECT"; mvn -P android-latest test
+echo "Running Tests..."
+cd "$PROJECT"; mvn test
