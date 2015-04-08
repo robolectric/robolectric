@@ -32,6 +32,11 @@ public class InstrumentingClassLoaderConfigTest {
   }
 
   @Test
+  public void shouldInstrumentOrgApacheHttpClasses() {
+    assertThat(config.shouldInstrument(wrap("org.apache.http.util.CharArrayBuffer"))).isTrue();
+  }
+
+  @Test
   public void shouldNotAcquireRClasses() throws Exception {
     assertThat(config.shouldAcquire("com.whatever.Rfoo")).isTrue();
     assertThat(config.shouldAcquire("com.whatever.fooR")).isTrue();
