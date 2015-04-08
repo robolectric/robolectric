@@ -494,19 +494,6 @@
                       <type>jar</type>
                       <classifier>21</classifier>
                     </artifact>
-
-                    <artifact>
-                      <file>dist/shadows-core-3.0-SNAPSHOT.jar</file>
-                      <type>jar</type>
-                    </artifact>
-                    <artifact>
-                      <file>dist/shadows-core-3.0-SNAPSHOT-javadoc.jar</file>
-                      <type>jar</type>
-                    </artifact>
-                    <artifact>
-                      <file>dist/shadows-core-3.0-SNAPSHOT-sources.jar</file>
-                      <type>jar</type>
-                    </artifact>
                   </artifacts>
                 </configuration>
               </execution>
