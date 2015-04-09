@@ -55,6 +55,7 @@ public class ShadowContextImpl extends ShadowContext {
     SYSTEM_SERVICE_MAP.put(Context.MEDIA_ROUTER_SERVICE, "android.media.MediaRouter");
 #if ($apiLevel >= 17)
     SYSTEM_SERVICE_MAP.put(Context.DISPLAY_SERVICE, "android.hardware.display.DisplayManager");
+    SYSTEM_SERVICE_MAP.put(Context.USER_SERVICE, "android.os.UserManager");
 #end
     SYSTEM_SERVICE_MAP.put(Context.ACCESSIBILITY_SERVICE, "android.view.accessibility.AccessibilityManager");
     SYSTEM_SERVICE_MAP.put(Context.ACCOUNT_SERVICE, "android.accounts.AccountManager");

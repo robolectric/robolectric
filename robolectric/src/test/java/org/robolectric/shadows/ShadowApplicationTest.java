@@ -16,6 +16,8 @@ import android.os.IBinder;
 import android.os.IInterface;
 import android.os.Parcel;
 import android.os.RemoteException;
+import android.os.UserManager;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -113,6 +115,7 @@ public class ShadowApplicationTest {
     checkSystemService(Context.MEDIA_ROUTER_SERVICE, android.media.MediaRouter.class);
     checkSystemService(Context.DISPLAY_SERVICE, android.hardware.display.DisplayManager.class);
     checkSystemService(Context.ACCESSIBILITY_SERVICE, android.view.accessibility.AccessibilityManager.class);
+    checkSystemService(Context.USER_SERVICE, UserManager.class);
   }
 
   @Test public void shouldProvideLayoutInflater() throws Exception {
