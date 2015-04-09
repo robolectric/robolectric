@@ -7,6 +7,9 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.util.TypedValue;
+import java.util.Iterator;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
@@ -19,7 +22,6 @@ import org.robolectric.internal.Shadow;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
@@ -36,6 +38,12 @@ import static org.robolectric.internal.Shadow.directlyOn;
 @Implements(BitmapFactory.class)
 public class ShadowBitmapFactory {
   private static Map<String, Point> widthAndHeightMap = new HashMap<String, Point>();
+
+  static {
+    // Stops ImageIO from creating temp files when reading images
+    // from input stream.
+    ImageIO.setUseCache(false);
+  }
 
   @Implementation
   public static Bitmap decodeResourceStream(Resources res, TypedValue value, InputStream is, Rect pad, BitmapFactory.Options opts) {
@@ -207,18 +215,20 @@ public class ShadowBitmapFactory {
     return new Point(100, 100);
   }
 
-  private static Point getImageSizeFromStream(final InputStream is) {
+  private static Point getImageSizeFromStream(InputStream is) {
     try {
-      final BufferedImage image = ImageIO.read(is);
+      ImageInputStream imageStream = ImageIO.createImageInputStream(is);
+      Iterator<ImageReader> readers = ImageIO.getImageReaders(imageStream);
+      if (!readers.hasNext()) return null;
 
-      if (image != null) {
-        return new Point(image.getWidth(), image.getHeight());
-      } else {
-        return null;
+      ImageReader reader = readers.next();
+      try {
+        reader.setInput(imageStream);
+        return new Point(reader.getWidth(0), reader.getHeight(0));
+      } finally {
+        reader.dispose();
       }
-    }
-
-    catch (IOException e) {
+    } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
