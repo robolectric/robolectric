@@ -12,6 +12,7 @@ import android.os.Message;
 import android.util.Log;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.IAccessibilityManager;
+import com.android.server.accessibility.AccessibilityManagerService;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.HiddenApi;
@@ -32,10 +33,10 @@ public class ShadowAccessibilityManager {
   private List<ServiceInfo> accessibilityServiceList;
   private boolean touchExplorationEnabled;
 
-#if ($apiLevel >= 21)
+#if ($apiLevel >= 19)
   @HiddenApi @Implementation
   public static AccessibilityManager getInstance(Context context) throws Exception {
-    AccessibilityManager accessibilityManager = Shadow.newInstance(AccessibilityManager.class, new Class[] {Context.class, IAccessibilityManager.class, int.class}, new Object[] {context, null, 0});
+    AccessibilityManager accessibilityManager = Shadow.newInstance(AccessibilityManager.class, new Class[] {Context.class, IAccessibilityManager.class, int.class}, new Object[] {context, new AccessibilityManagerService(context), 0});
     ReflectionHelpers.setField(accessibilityManager, "mHandler", new MyHandler(context.getMainLooper(), accessibilityManager));
     return accessibilityManager;
   }
