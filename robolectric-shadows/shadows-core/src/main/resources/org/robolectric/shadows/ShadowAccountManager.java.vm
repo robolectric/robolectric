@@ -33,7 +33,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Shadow implementation for the Android {@code AccountManager } class.
+ * Shadow implementation for the Android {@code AccountManager} class.
  */
 @Implements(AccountManager.class)
 public class ShadowAccountManager {
@@ -49,6 +49,7 @@ public class ShadowAccountManager {
   private Map<Account, String> passwords = new HashMap<Account, String>();
   private AccountManagerCallback<Bundle> pendingAddCallback;
   private RoboAccountManagerFuture pendingAddFuture;
+  private List<Bundle> addAccountOptionsList = new ArrayList<Bundle>();
 
   @Resetter
   public static void reset() {
@@ -315,6 +316,35 @@ public class ShadowAccountManager {
     notifyListeners();
   }
 
+  /**
+   * Non-Android accessor consumes and returns the next {@code addAccountOptions} passed to
+   * {@link #addAccount(String, String, String[], android.os.Bundle, android.app.Activity, android.accounts.AccountManagerCallback, android.os.Handler)}.
+   *
+   * @return the next {@code addAccountOptions}
+   */
+  public Bundle getNextAddAccountOptions() {
+    if (addAccountOptionsList.isEmpty()) {
+      return null;
+    } else {
+      return addAccountOptionsList.remove(0);
+    }
+  }
+
+  /**
+   * Non-Android accessor returns the next {@code addAccountOptions} passed to
+   * {@link #addAccount(String, String, String[], android.os.Bundle, android.app.Activity, android.accounts.AccountManagerCallback, android.os.Handler)}.
+   * without consuming it.
+   *
+   * @return the next {@code addAccountOptions}
+   */
+  public Bundle peekNextAddAccountOptions() {
+    if (addAccountOptionsList.isEmpty()) {
+      return null;
+    } else {
+      return addAccountOptionsList.get(0);
+    }
+  }
+
   private class RoboAccountManagerFuture implements AccountManagerFuture<Bundle> {
     private final String accountType;
     final Bundle resultBundle;
@@ -357,7 +387,6 @@ public class ShadowAccountManager {
     }
   }
 
-
   @Implementation
   public AccountManagerFuture<Bundle> addAccount(final String accountType, String authTokenType, String[] requiredFeatures, Bundle addAccountOptions, Activity activity, AccountManagerCallback<Bundle> callback, Handler handler) {
     final Bundle resultBundle = new Bundle();
@@ -367,6 +396,7 @@ public class ShadowAccountManager {
     } else if (callback == null) {
       resultBundle.putString(AccountManager.KEY_ACCOUNT_NAME, "some_user@gmail.com");
     }
+    addAccountOptionsList.add(addAccountOptions);
     pendingAddCallback = callback;
 
     pendingAddFuture = new RoboAccountManagerFuture(accountType, resultBundle);
