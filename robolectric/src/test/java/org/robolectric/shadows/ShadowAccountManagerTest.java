@@ -498,6 +498,36 @@ public class ShadowAccountManagerTest {
   }
 
   @Test
+  public void addAccount_withOptionsShouldSupportGetNextAddAccountOptions() throws Exception {
+    assertThat(shadowOf(am).getNextAddAccountOptions()).isNull();
+
+    shadowOf(am).addAuthenticator("google.com");
+
+    Bundle expectedAddAccountOptions = new Bundle();
+    expectedAddAccountOptions.putString("option", "value");
+    am.addAccount("google.com", "auth_token_type", null, expectedAddAccountOptions, new Activity(), null, null);
+
+    Bundle actualAddAccountOptions = shadowOf(am).getNextAddAccountOptions();
+    assertThat(shadowOf(am).getNextAddAccountOptions()).isNull();
+    assertThat(actualAddAccountOptions).isEqualTo(expectedAddAccountOptions);
+  }
+
+  @Test
+  public void addAccount_withOptionsShouldSupportPeekNextAddAccountOptions() throws Exception {
+    assertThat(shadowOf(am).peekNextAddAccountOptions()).isNull();
+
+    shadowOf(am).addAuthenticator("google.com");
+
+    Bundle expectedAddAccountOptions = new Bundle();
+    expectedAddAccountOptions.putString("option", "value");
+    am.addAccount("google.com", "auth_token_type", null, expectedAddAccountOptions, new Activity(), null, null);
+
+    Bundle actualAddAccountOptions = shadowOf(am).peekNextAddAccountOptions();
+    assertThat(shadowOf(am).peekNextAddAccountOptions()).isNotNull();
+    assertThat(actualAddAccountOptions).isEqualTo(expectedAddAccountOptions);
+  }
+
+  @Test
   public void addPreviousAccount() {
     Account account = new Account("name_a", "type_a");
     shadowOf(am).setPreviousAccountName(account, "old_name");
