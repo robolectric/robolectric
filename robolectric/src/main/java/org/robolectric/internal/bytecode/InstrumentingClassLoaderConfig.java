@@ -67,7 +67,7 @@ public class InstrumentingClassLoaderConfig {
   );
 
   static {
-    INSTRUMENTED_PACKAGES.addAll(Arrays.asList("dalvik.", "libcore.", "android.", "com.android.internal.", "com.google.android.gms."));
+    INSTRUMENTED_PACKAGES.addAll(Arrays.asList("dalvik.", "libcore.", "android.", "com.android.internal.", "com.google.android.gms.", "org.apache.http."));
     for (ShadowProvider provider : ServiceLoader.load(ShadowProvider.class)) {
       Collections.addAll(INSTRUMENTED_PACKAGES, provider.getProvidedPackageNames());
     }
