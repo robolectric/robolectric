@@ -73,7 +73,9 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       resourceLoader = systemResourceLoader;
     }
 
-    Security.insertProviderAt(new BouncyCastleProvider(), 1);
+    if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+      Security.insertProviderAt(new BouncyCastleProvider(), 1);
+    }
 
     shadowsAdapter.setSystemResources(systemResourceLoader);
     String qualifiers = addVersionQualifierToQualifiers(config.qualifiers());
