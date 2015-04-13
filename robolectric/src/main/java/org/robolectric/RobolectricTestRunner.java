@@ -49,6 +49,7 @@ import java.util.*;
  */
 public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   private static final String CONFIG_PROPERTIES = "robolectric.properties";
+  private static final Config DEFAULT_CONFIG = new Config.Implementation(defaultsFor(Config.class));
   private static final Map<Class<? extends RobolectricTestRunner>, EnvHolder> envHoldersByTestRunner = new HashMap<>();
   private static Map<Pair<AndroidManifest, SdkConfig>, ResourceLoader> resourceLoadersByManifestAndConfig = new HashMap<>();
   private static ShadowMap mainShadowMap;
@@ -354,7 +355,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   }
 
   public Config getConfig(Method method) {
-    Config config = defaultsFor(Config.class);
+    Config config = DEFAULT_CONFIG;
 
     Config globalConfig = Config.Implementation.fromProperties(getConfigProperties());
     if (globalConfig != null) {
@@ -541,13 +542,13 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   }
 
   private static <A extends Annotation> A defaultsFor(Class<A> annotation) {
-    //noinspection unchecked
-    return (A) Proxy.newProxyInstance(annotation.getClassLoader(),
-        new Class[]{annotation}, new InvocationHandler() {
-          public Object invoke(Object proxy, @NotNull Method method, Object[] args)
-              throws Throwable {
-            return method.getDefaultValue();
-          }
-        });
+    return annotation.cast(
+        Proxy.newProxyInstance(annotation.getClassLoader(), new Class[] { annotation },
+            new InvocationHandler() {
+              public Object invoke(Object proxy, @NotNull Method method, Object[] args)
+                  throws Throwable {
+                return method.getDefaultValue();
+              }
+            }));
   }
 }

@@ -88,7 +88,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     Class<?> contextImplClass = ReflectionHelpers.loadClass(getClass().getClassLoader(), shadowsAdapter.getShadowContextImplClassName());
 
     Class<?> activityThreadClass = ReflectionHelpers.loadClass(getClass().getClassLoader(), shadowsAdapter.getShadowActivityThreadClassName());
-    Object activityThread = ReflectionHelpers.callConstructor(activityThreadClass);
+    Object activityThread = ReflectionHelpers.newInstance(activityThreadClass);
     RuntimeEnvironment.setActivityThread(activityThread);
 
     ReflectionHelpers.setField(activityThread, "mInstrumentation", new RoboInstrumentation());
@@ -122,9 +122,13 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       }
       Resources appResources = application.getResources();
       ReflectionHelpers.setField(loadedApk, "mResources", appResources);
-      Context contextImpl = ReflectionHelpers.callInstanceMethod(systemContextImpl, "createPackageContext", ClassParameter.from(String.class, applicationInfo.packageName), ClassParameter.from(int.class, Context.CONTEXT_INCLUDE_CODE));
-      ReflectionHelpers.setField(activityThread, "mInitialApplication", application);
-      ReflectionHelpers.callInstanceMethod(application, "attach", ClassParameter.from(Context.class, contextImpl));
+      try {
+        Context contextImpl = systemContextImpl.createPackageContext(applicationInfo.packageName, Context.CONTEXT_INCLUDE_CODE);
+        ReflectionHelpers.setField(activityThread, "mInitialApplication", application);
+        ReflectionHelpers.callInstanceMethod(application, "attach", ClassParameter.from(Context.class, contextImpl));
+      } catch (PackageManager.NameNotFoundException e) {
+        throw new RuntimeException(e);
+      }
 
       appResources.updateConfiguration(configuration, appResources.getDisplayMetrics());
       shadowsAdapter.setAssetsQualifiers(appResources.getAssets(), qualifiers);

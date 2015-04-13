@@ -178,6 +178,19 @@ public @interface Config {
       this.constants = constants;
     }
 
+    public Implementation(Config other) {
+      this.reportSdk = other.reportSdk();
+      this.emulateSdk = other.emulateSdk();
+      this.manifest = other.manifest();
+      this.qualifiers = other.qualifiers();
+      this.resourceDir = other.resourceDir();
+      this.assetDir = other.assetDir();
+      this.constants = other.constants();
+      this.shadows = other.shadows();
+      this.application = other.application();
+      this.libraries = other.libraries();
+    }
+
     public Implementation(Config baseConfig, Config overlayConfig) {
       this.emulateSdk = pick(baseConfig.emulateSdk(), overlayConfig.emulateSdk(), -1);
       this.manifest = pick(baseConfig.manifest(), overlayConfig.manifest(), DEFAULT);

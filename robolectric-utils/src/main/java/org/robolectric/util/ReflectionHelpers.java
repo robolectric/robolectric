@@ -204,6 +204,17 @@ public class ReflectionHelpers {
   }
 
   /**
+   * Create a new instance of a class
+   */
+  public static <T> T newInstance(Class<T> cl) {
+    try {
+      return cl.newInstance();
+    } catch (InstantiationException | IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
    * Reflectively call the constructor of an object.
    *
    * @param clazz Target class.
