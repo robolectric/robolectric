@@ -639,13 +639,10 @@ public class XmlFileBuilder {
 
     public int getAttributeResourceValue(String namespace, String attribute, int defaultValue) {
       String attr = getAttribute(namespace, attribute);
-      if (attr == null) {
-        return defaultValue;
-      }
-      if (attr.startsWith("@")) {
+      if (attr != null && attr.startsWith("@")) {
         return getResourceId(attr.substring(1), packageName, null);
       }
-      throw new RuntimeException("huh?");
+      return defaultValue;
     }
 
     public int getAttributeIntValue(String namespace, String attribute, int defaultValue) {
