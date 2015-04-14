@@ -11,6 +11,9 @@ public class ShadowSpannableStringBuilder {
 
   // this sucks because while ssb.equals(equivalentString) is true, equivalentString.equals(ssb) is not! sorry. [xw]
   @Implementation @Override public boolean equals(Object obj) {
+    if (obj == null) {
+      return false;
+    }
     // todo: we should check that the spans match too...
     return realSpannableStringBuilder.toString().equals(obj.toString());
   }

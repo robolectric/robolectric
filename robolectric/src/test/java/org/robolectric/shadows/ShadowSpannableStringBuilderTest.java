@@ -86,4 +86,10 @@ public class ShadowSpannableStringBuilderTest {
     Object[] spans = builder.getSpans(0, builder.length(), Object.class);
     assertThat(spans).isEmpty();
   }
+
+  @Test
+  public void equals_returnFalseWhenComparingToNull() {
+    SpannableStringBuilder builder = new SpannableStringBuilder("abc");
+    assertThat(builder.equals(null)).isFalse();
+  }
 }
