@@ -5,6 +5,7 @@ import org.robolectric.internal.dependency.DependencyJar;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class SdkConfig {
   private final int apiLevel;
@@ -13,12 +14,16 @@ public class SdkConfig {
   public static final int FALLBACK_SDK_VERSION = Build.VERSION_CODES.JELLY_BEAN;
 
   static {
-    SUPPORTED_APIS = new HashMap<Integer, SdkVersion>();
+    SUPPORTED_APIS = new HashMap<>();
     SUPPORTED_APIS.put(Build.VERSION_CODES.JELLY_BEAN, new SdkVersion("4.1.2_r1", "0"));
     SUPPORTED_APIS.put(Build.VERSION_CODES.JELLY_BEAN_MR1, new SdkVersion("4.2.2_r1.2", "0"));
     SUPPORTED_APIS.put(Build.VERSION_CODES.JELLY_BEAN_MR2, new SdkVersion("4.3_r2", "0"));
     SUPPORTED_APIS.put(Build.VERSION_CODES.KITKAT, new SdkVersion("4.4_r1", "1"));
     SUPPORTED_APIS.put(Build.VERSION_CODES.LOLLIPOP, new SdkVersion("5.0.0_r2", "1"));
+  }
+
+  public static Set<Integer> getSupportedApis() {
+    return SUPPORTED_APIS.keySet();
   }
 
   public SdkConfig(int apiLevel) {
