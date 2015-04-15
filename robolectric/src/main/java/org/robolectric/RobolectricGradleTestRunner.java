@@ -34,15 +34,19 @@ public class RobolectricGradleTestRunner extends RobolectricTestRunner {
     final String flavor = getFlavor(config);
     final String applicationId = getApplicationId(config);
 
-    final FileFsFile res = FileFsFile.from(BUILD_OUTPUT, "res", flavor, type);
-    final FileFsFile assets = FileFsFile.from(BUILD_OUTPUT, "assets", flavor, type);
-
+    final FileFsFile res;
+    final FileFsFile assets;
     final FileFsFile manifest;
+    
     if (FileFsFile.from(BUILD_OUTPUT, "manifests").exists()) {
       manifest = FileFsFile.from(BUILD_OUTPUT, "manifests", "full", flavor, type, "AndroidManifest.xml");
+      res = FileFsFile.from(BUILD_OUTPUT, "res", flavor, type);
+      assets = FileFsFile.from(BUILD_OUTPUT, "assets", flavor, type);
     } else {
       // Fallback to the location for library manifests
       manifest = FileFsFile.from(BUILD_OUTPUT, "bundles", flavor, type, "AndroidManifest.xml");
+      res = FileFsFile.from(BUILD_OUTPUT, "bundles", flavor, type, "res");
+      assets = FileFsFile.from(BUILD_OUTPUT, "bundles", flavor, type, "assets");
     }
 
     Logger.debug("Robolectric assets directory: " + assets.getPath());
