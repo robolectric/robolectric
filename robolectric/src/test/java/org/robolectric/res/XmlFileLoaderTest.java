@@ -589,6 +589,13 @@ public class XmlFileLoaderTest {
   }
 
   @Test
+  public void testGetAttributeResourceValueWhenNotAResource()
+          throws XmlPullParserException {
+    forgeAndOpenDocument("<foo xmlns:bar=\"banana\"/>");
+    assertThat(parser.getAttributeResourceValue(XMLNS_NS, "bar", 42)).isEqualTo(42);
+  }
+
+  @Test
   public void testGetAttributeIntValue_StringStringInt()
       throws XmlPullParserException {
     forgeAndOpenDocument("<foo xmlns:bar=\"-12\"/>");
