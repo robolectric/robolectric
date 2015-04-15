@@ -1,6 +1,5 @@
 package org.robolectric;
 
-import org.junit.Assert;
 import org.junit.runner.Runner;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.Suite;
@@ -11,21 +10,12 @@ import org.robolectric.annotation.Config;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.manifest.AndroidManifest;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-import java.lang.reflect.Constructor;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 /**
- * A Parameterized test runner for Robolectric. Copied from the {@link org.junit.runners.Parameterized} class, then modified the custom
- * test runner to extend the {@link org.robolectric.RobolectricTestRunner}. The {@link org.robolectric.RobolectricTestRunner#getHelperTestRunner(Class)}
- * is overridden in order to create instances of the test class with the appropriate apiVersion. Merged in the ability
- * to name your tests through the {@link Parameters#name()} property.
+ * A test runner for Robolectric that will run a test against multiple API versions.
  */
 public final class ExperimentalRobolectricTestRunner extends Suite {
 
@@ -63,6 +53,10 @@ public final class ExperimentalRobolectricTestRunner extends Suite {
     @Override
     public String toString() {
       return "TestClassRunnerForParameters " + name;
+    }
+
+    protected boolean shouldIgnore(FrameworkMethod method, Config config) {
+      return super.shouldIgnore(method, config) || (config.emulateSdk() != -1 && config.emulateSdk() != apiVersion);
     }
 
     @Override

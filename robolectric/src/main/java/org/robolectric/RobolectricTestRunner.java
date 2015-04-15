@@ -6,6 +6,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.TestOnly;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.internal.AssumptionViolatedException;
+import org.junit.internal.runners.model.EachTestNotifier;
+import org.junit.runner.Description;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkMethod;
@@ -184,13 +188,38 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     }
   }
 
-  @Override protected Statement methodBlock(final FrameworkMethod method) {
+  @Override
+  protected void runChild(FrameworkMethod method, RunNotifier notifier) {
+    Description description= describeChild(method);
+    EachTestNotifier eachNotifier = new EachTestNotifier(notifier, description);
+
+    final Config config = getConfig(method.getMethod());
+    if (shouldIgnore(method, config)) {
+      eachNotifier.fireTestIgnored();
+    } else {
+      eachNotifier.fireTestStarted();
+      try {
+        AndroidManifest appManifest = getAppManifest(config);
+        SdkEnvironment sdkEnvironment = getEnvironment(appManifest, config);
+        methodBlock(method, config, appManifest, sdkEnvironment).evaluate();
+      } catch (AssumptionViolatedException e) {
+        eachNotifier.addFailedAssumption(e);
+      } catch (Throwable e) {
+        eachNotifier.addFailure(e);
+      } finally {
+        eachNotifier.fireTestFinished();
+      }
+    }
+  }
+
+  protected boolean shouldIgnore(FrameworkMethod method, Config config) {
+    return method.getAnnotation(Ignore.class) != null;
+  }
+
+  private Statement methodBlock(final FrameworkMethod method, final Config config, final AndroidManifest appManifest, final SdkEnvironment sdkEnvironment) {
     return new Statement() {
       @Override
       public void evaluate() throws Throwable {
-        final Config config = getConfig(method.getMethod());
-        AndroidManifest appManifest = getAppManifest(config);
-        SdkEnvironment sdkEnvironment = getEnvironment(appManifest, config);
         Thread.currentThread().setContextClassLoader(sdkEnvironment.getRobolectricClassLoader());
 
         Class bootstrappedTestClass = sdkEnvironment.bootstrappedClass(getTestClass().getJavaClass());
