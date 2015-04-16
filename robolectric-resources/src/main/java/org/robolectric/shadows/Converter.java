@@ -235,8 +235,7 @@ public class Converter<T> {
     }
 
     @Override public int asInt(TypedResource typedResource) {
-      String rawValue = typedResource.asString();
-      return convertInt(rawValue);
+      return convertInt(typedResource.asString().trim());
     }
 
     @Override public void fillTypedValue(String data, TypedValue typedValue) {
