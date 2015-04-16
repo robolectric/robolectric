@@ -409,37 +409,8 @@ public class ShadowBitmap {
   }
 
   @Override
-  @Implementation
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (!(o instanceof Bitmap)) return false;
-
-    ShadowBitmap that = shadowOf((Bitmap) o);
-
-    if (height != that.height) return false;
-    if (width != that.width) return false;
-    if (description != null ? !description.equals(that.description) : that.description != null) return false;
-
-    return true;
-  }
-
-  @Override
-  @Implementation
-  public int hashCode() {
-    int result = width;
-    result = 31 * result + height;
-    result = 31 * result + (description != null ? description.hashCode() : 0);
-    return result;
-  }
-
-  @Override
-  @Implementation
   public String toString() {
-    return "Bitmap{" +
-        "description='" + description + '\'' +
-        ", width=" + width +
-        ", height=" + height +
-        '}';
+    return "Bitmap{description='" + description + '\'' + ", width=" + width + ", height=" + height + '}';
   }
 
   public Bitmap getRealBitmap() {

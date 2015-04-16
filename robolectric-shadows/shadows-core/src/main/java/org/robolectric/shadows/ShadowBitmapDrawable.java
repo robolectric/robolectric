@@ -71,33 +71,4 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
   public String getPath() {
     return drawableCreateFromPath;
   }
-
-  @Override
-  @Implementation
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != ShadowBitmapDrawable.class) return false;
-
-    ShadowBitmapDrawable that = shadowOf((BitmapDrawable) o);
-
-    Bitmap bitmap = realBitmapDrawable.getBitmap();
-    Bitmap thatBitmap = that.realBitmapDrawable.getBitmap();
-    if (bitmap != null ? !bitmap.equals(thatBitmap) : thatBitmap != null) return false;
-
-    return super.equals(o);
-  }
-
-  @Override
-  @Implementation
-  public int hashCode() {
-    Bitmap bitmap = realBitmapDrawable.getBitmap();
-    return bitmap != null ? bitmap.hashCode() : 0;
-  }
-
-  @Override
-  @Implementation
-  public String toString() {
-    Bitmap bitmap = realBitmapDrawable.getBitmap();
-    return "BitmapDrawable{bitmap=" + bitmap + '}';
-  }
 }
