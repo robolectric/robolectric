@@ -75,7 +75,7 @@ public class ShadowResources {
   }
 
   public static void setSystemResources(ResourceLoader systemResourceLoader) {
-    AssetManager assetManager = ReflectionHelpers.callConstructor(AssetManager.class);
+    AssetManager assetManager = new AssetManager();
     ShadowAssetManager.bind(assetManager, null, systemResourceLoader);
     DisplayMetrics metrics = new DisplayMetrics();
     Configuration config = new Configuration();
