@@ -15,13 +15,17 @@ import static org.robolectric.Shadows.shadowOf;
 
 public class Robolectric {
   private static final ShadowsAdapter shadowsAdapter = instantiateShadowsAdapter();
+  private static ServiceLoader<ShadowProvider> providers;
 
   public static void reset() {
     RuntimeEnvironment.application = null;
     RuntimeEnvironment.setRobolectricPackageManager(null);
     RuntimeEnvironment.setActivityThread(null);
 
-    for (ShadowProvider provider : ServiceLoader.load(ShadowProvider.class)) {
+    if (providers == null) {
+      providers = ServiceLoader.load(ShadowProvider.class);
+    }
+    for (ShadowProvider provider : providers) {
       provider.reset();
     }
   }
