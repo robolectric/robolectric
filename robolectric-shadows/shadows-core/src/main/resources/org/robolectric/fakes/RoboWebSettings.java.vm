@@ -9,7 +9,6 @@ import android.webkit.WebSettings;
  * Concrete implementation of the abstract WebSettings class.
  */
 public class RoboWebSettings extends WebSettings {
-
   private boolean allowContentAccess = true;
   private boolean allowFileAccess = true;
   private boolean allowFileAccessFromFile = true;
@@ -42,9 +41,7 @@ public class RoboWebSettings extends WebSettings {
   private int textZoom = 100;
   private boolean displayZoomControls;
   private WebSettings.LayoutAlgorithm layoutAlgorithm = WebSettings.LayoutAlgorithm.NARROW_COLUMNS;
-
-  public RoboWebSettings() {
-  }
+  private String defaultTextEncoding = "UTF-8";
 
   @Override
   public void setAllowContentAccess(boolean allow) {
@@ -392,5 +389,15 @@ public class RoboWebSettings extends WebSettings {
   @Override
   public boolean getDisplayZoomControls() {
     return displayZoomControls;
+  }
+
+  @Override
+  public String getDefaultTextEncodingName() {
+    return this.defaultTextEncoding;
+  }
+
+  @Override
+  public void setDefaultTextEncodingName(String defaultTextEncoding) {
+    this.defaultTextEncoding = defaultTextEncoding;
   }
 }

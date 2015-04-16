@@ -1,7 +1,6 @@
 package org.robolectric.fakes;
 
 import android.webkit.WebSettings;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
@@ -12,15 +11,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DoNotInstrument
 @RunWith(TestRunners.WithDefaults.class)
 public class RoboWebSettingsTest {
-
-  private RoboWebSettings webSettings;
-
-  private boolean[] trueAndFalse = {true, false};
-
-  @Before
-  public void setUp() throws Exception {
-    webSettings = new RoboWebSettings();
-  }
+  private final RoboWebSettings webSettings = new RoboWebSettings();
+  private static final boolean[] TRUE_AND_FALSE = {true, false};
 
   @Test
   public void testDefaults() {
@@ -40,6 +32,7 @@ public class RoboWebSettingsTest {
     assertThat(webSettings.getPluginState()).isEqualTo(WebSettings.PluginState.OFF);
     assertThat(webSettings.getSaveFormData()).isFalse();
     assertThat(webSettings.getTextZoom()).isEqualTo(100);
+    assertThat(webSettings.getDefaultTextEncodingName()).isEqualTo("UTF-8");
 
     // deprecated methods
     assertThat(webSettings.getPluginsEnabled()).isFalse();
@@ -52,7 +45,7 @@ public class RoboWebSettingsTest {
 
   @Test
   public void testAllowContentAccess() {
-    for (boolean value : trueAndFalse) {
+    for (boolean value : TRUE_AND_FALSE) {
       webSettings.setAllowContentAccess(value);
       assertThat(webSettings.getAllowContentAccess()).isEqualTo(value);
     }
@@ -60,7 +53,7 @@ public class RoboWebSettingsTest {
 
   @Test
   public void testAllowFileAccess() {
-    for (boolean value : trueAndFalse) {
+    for (boolean value : TRUE_AND_FALSE) {
       webSettings.setAllowFileAccess(value);
       assertThat(webSettings.getAllowFileAccess()).isEqualTo(value);
     }
@@ -68,7 +61,7 @@ public class RoboWebSettingsTest {
 
   @Test
   public void testAllowFileAccessFromFileURLs() {
-    for (boolean value : trueAndFalse) {
+    for (boolean value : TRUE_AND_FALSE) {
       webSettings.setAllowFileAccessFromFileURLs(value);
       assertThat(webSettings.getAllowFileAccessFromFileURLs()).isEqualTo(value);
     }
@@ -76,7 +69,7 @@ public class RoboWebSettingsTest {
 
   @Test
   public void testAllowUniversalAccessFromFileURLs() {
-    for (boolean value : trueAndFalse) {
+    for (boolean value : TRUE_AND_FALSE) {
       webSettings.setAllowUniversalAccessFromFileURLs(value);
       assertThat(webSettings.getAllowUniversalAccessFromFileURLs()).isEqualTo(value);
     }
@@ -84,7 +77,7 @@ public class RoboWebSettingsTest {
 
   @Test
   public void testBlockNetworkImage() {
-    for (boolean value : trueAndFalse) {
+    for (boolean value : TRUE_AND_FALSE) {
       webSettings.setBlockNetworkImage(value);
       assertThat(webSettings.getBlockNetworkImage()).isEqualTo(value);
     }
@@ -92,7 +85,7 @@ public class RoboWebSettingsTest {
 
   @Test
   public void testBlockNetworkLoads() {
-    for (boolean value : trueAndFalse) {
+    for (boolean value : TRUE_AND_FALSE) {
       webSettings.setBlockNetworkLoads(value);
       assertThat(webSettings.getBlockNetworkLoads()).isEqualTo(value);
     }
@@ -100,7 +93,7 @@ public class RoboWebSettingsTest {
 
   @Test
   public void testBuiltInZoomControls() {
-    for (boolean value : trueAndFalse) {
+    for (boolean value : TRUE_AND_FALSE) {
       webSettings.setBuiltInZoomControls(value);
       assertThat(webSettings.getBuiltInZoomControls()).isEqualTo(value);
     }
@@ -108,7 +101,7 @@ public class RoboWebSettingsTest {
 
   @Test
   public void testDatabaseEnabled() {
-    for (boolean value : trueAndFalse) {
+    for (boolean value : TRUE_AND_FALSE) {
       webSettings.setDatabaseEnabled(value);
       assertThat(webSettings.getDatabaseEnabled()).isEqualTo(value);
     }
@@ -116,7 +109,7 @@ public class RoboWebSettingsTest {
 
   @Test
   public void testDomStorageEnabled() {
-    for (boolean value : trueAndFalse) {
+    for (boolean value : TRUE_AND_FALSE) {
       webSettings.setDomStorageEnabled(value);
       assertThat(webSettings.getDomStorageEnabled()).isEqualTo(value);
     }
@@ -124,7 +117,7 @@ public class RoboWebSettingsTest {
 
   @Test
   public void testJavaScriptEnabled() {
-    for (boolean value : trueAndFalse) {
+    for (boolean value : TRUE_AND_FALSE) {
       webSettings.setJavaScriptEnabled(value);
       assertThat(webSettings.getJavaScriptEnabled()).isEqualTo(value);
     }
@@ -132,7 +125,7 @@ public class RoboWebSettingsTest {
 
   @Test
   public void testLightTouchEnabled() {
-    for (boolean value : trueAndFalse) {
+    for (boolean value : TRUE_AND_FALSE) {
       webSettings.setLightTouchEnabled(value);
       assertThat(webSettings.getLightTouchEnabled()).isEqualTo(value);
     }
@@ -140,7 +133,7 @@ public class RoboWebSettingsTest {
 
   @Test
   public void testLoadWithOverviewMode() {
-    for (boolean value : trueAndFalse) {
+    for (boolean value : TRUE_AND_FALSE) {
       webSettings.setLoadWithOverviewMode(value);
       assertThat(webSettings.getLoadWithOverviewMode()).isEqualTo(value);
     }
@@ -148,7 +141,7 @@ public class RoboWebSettingsTest {
 
   @Test
   public void testMediaPlaybackRequiresUserGesture() throws Exception {
-    for (boolean value : trueAndFalse) {
+    for (boolean value : TRUE_AND_FALSE) {
       webSettings.setMediaPlaybackRequiresUserGesture(value);
       assertThat(webSettings.getMediaPlaybackRequiresUserGesture()).isEqualTo(value);
     }
@@ -156,7 +149,7 @@ public class RoboWebSettingsTest {
 
   @Test
   public void testNeedInitialFocus() {
-    for (boolean value : trueAndFalse) {
+    for (boolean value : TRUE_AND_FALSE) {
       webSettings.setNeedInitialFocus(value);
       assertThat(webSettings.getNeedInitialFocus()).isEqualTo(value);
     }
@@ -164,7 +157,7 @@ public class RoboWebSettingsTest {
 
   @Test
   public void testPluginsEnabled() {
-    for (boolean value : trueAndFalse) {
+    for (boolean value : TRUE_AND_FALSE) {
       webSettings.setPluginsEnabled(value);
       assertThat(webSettings.getPluginsEnabled()).isEqualTo(value);
     }
@@ -181,7 +174,7 @@ public class RoboWebSettingsTest {
 
   @Test
   public void testSupportMultipleWindows() {
-    for (boolean value : trueAndFalse) {
+    for (boolean value : TRUE_AND_FALSE) {
       webSettings.setSupportMultipleWindows(value);
       assertThat(webSettings.getSupportMultipleWindows()).isEqualTo(value);
     }
@@ -189,7 +182,7 @@ public class RoboWebSettingsTest {
 
   @Test
   public void testSupportZoom() {
-    for (boolean value : trueAndFalse) {
+    for (boolean value : TRUE_AND_FALSE) {
       webSettings.setSupportZoom(value);
       assertThat(webSettings.getSupportZoom()).isEqualTo(value);
     }
@@ -203,7 +196,7 @@ public class RoboWebSettingsTest {
 
   @Test
   public void testSetUseWideViewPort() throws Exception {
-    for (boolean value : trueAndFalse) {
+    for (boolean value : TRUE_AND_FALSE) {
       webSettings.setUseWideViewPort(value);
       assertThat(webSettings.getUseWideViewPort()).isEqualTo(value);
     }
@@ -211,7 +204,7 @@ public class RoboWebSettingsTest {
 
   @Test
   public void testSetAppCacheEnabled() throws Exception {
-    for (boolean value : trueAndFalse) {
+    for (boolean value : TRUE_AND_FALSE) {
       webSettings.setAppCacheEnabled(value);
       assertThat(webSettings.getAppCacheEnabled()).isEqualTo(value);
     }
@@ -219,7 +212,7 @@ public class RoboWebSettingsTest {
 
   @Test
   public void testSetGeolocationEnabled() throws Exception {
-    for (boolean value : trueAndFalse) {
+    for (boolean value : TRUE_AND_FALSE) {
       webSettings.setGeolocationEnabled(value);
       assertThat(webSettings.getGeolocationEnabled()).isEqualTo(value);
     }
@@ -227,7 +220,7 @@ public class RoboWebSettingsTest {
 
   @Test
   public void testSetSaveFormData() throws Exception {
-    for (boolean value : trueAndFalse) {
+    for (boolean value : TRUE_AND_FALSE) {
       webSettings.setSaveFormData(value);
       assertThat(webSettings.getSaveFormData()).isEqualTo(value);
     }
@@ -279,5 +272,11 @@ public class RoboWebSettingsTest {
   public void testSetTextZoom() throws Exception {
     webSettings.setTextZoom(50);
     assertThat(webSettings.getTextZoom()).isEqualTo(50);
+  }
+
+  @Test
+  public void setDefaultTextEncodingName_shouldGetSetValue() {
+    webSettings.setDefaultTextEncodingName("UTF-16");
+    assertThat(webSettings.getDefaultTextEncodingName()).isEqualTo("UTF-16");
   }
 }
