@@ -1,13 +1,10 @@
-#set($Integer = 0)
-#set($apiLevel = $Integer.parseInt($apiLevel))
-
 package android.hardware.display;
 
-#if ($apiLevel >= 21)
+#if ($api >= 21)
 import android.media.projection.IMediaProjection;
 #end
 
-#if ($apiLevel >= 17)
+#if ($api >= 17)
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.view.DisplayInfo;
@@ -15,9 +12,7 @@ import android.view.Surface;
 
 public class RoboDisplayManager implements IDisplayManager {
 
-#if ($apiLevel >= 21)
-  // API21+
-
+#if ($api >= 21)
   @Override
   public void startWifiDisplayScan() throws RemoteException {
 
@@ -34,9 +29,7 @@ public class RoboDisplayManager implements IDisplayManager {
   }
 #end
 
-#if ($apiLevel >= 19)
-  // API19+
-
+#if ($api >= 19)
   @Override
   public void pauseWifiDisplay() throws RemoteException {
 
@@ -48,7 +41,7 @@ public class RoboDisplayManager implements IDisplayManager {
   }
 #end
 
-#if ($apiLevel >= 21)
+#if ($api >= 21)
   @Override
   public int createVirtualDisplay(IVirtualDisplayCallback iVirtualDisplayCallback, IMediaProjection iMediaProjection, String s, String s1, int i, int i1, int i2, Surface surface, int i3) throws RemoteException {
     return 0;
@@ -68,7 +61,7 @@ public class RoboDisplayManager implements IDisplayManager {
   public void releaseVirtualDisplay(IVirtualDisplayCallback iVirtualDisplayCallback) throws RemoteException {
 
   }
-#elseif ($apiLevel >= 19)
+#elseif ($api >= 19)
   @Override
   public int createVirtualDisplay(IBinder binder, String s, String s1, int i, int i1, int i2, Surface surface, int i3) {
     return 0;

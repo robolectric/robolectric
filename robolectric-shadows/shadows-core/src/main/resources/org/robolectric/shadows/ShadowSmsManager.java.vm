@@ -1,10 +1,6 @@
-#set($Integer = 0)
-#set($apiLevel = $Integer.parseInt($apiLevel))
-
 package org.robolectric.shadows;
 
-#if ($apiLevel >= 18)
-
+#if ($api >= 18)
 import android.app.PendingIntent;
 import android.telephony.SmsManager;
 import android.text.TextUtils;

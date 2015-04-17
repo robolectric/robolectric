@@ -1,6 +1,3 @@
-#set($Integer = 0)
-#set($apiLevel = $Integer.parseInt($apiLevel))
-
 package org.robolectric.shadows;
 
 import android.app.AlarmManager;
@@ -27,7 +24,7 @@ public class ShadowAlarmManager {
     internalSet(type, triggerAtTime, 0L, operation);
   }
 
-#if ($apiLevel >= 19)
+#if ($api >= 19)
   @Implementation
   public void setExact(int type, long triggerAtTime, PendingIntent operation) {
     internalSet(type, triggerAtTime, 0L, operation);

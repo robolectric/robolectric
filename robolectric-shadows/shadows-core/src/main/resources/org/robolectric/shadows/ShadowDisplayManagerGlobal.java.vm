@@ -1,9 +1,6 @@
-#set($Integer = 0)
-#set($apiLevel = $Integer.parseInt($apiLevel))
-
 package org.robolectric.shadows;
 
-#if ($apiLevel >= 17)
+#if ($api >= 17)
 import android.hardware.display.DisplayManagerGlobal;
 import android.hardware.display.IDisplayManager;
 import android.hardware.display.RoboDisplayManager;
