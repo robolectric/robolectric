@@ -8,6 +8,7 @@ import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.util.DisplayMetrics;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
@@ -66,6 +67,16 @@ public class ShadowBitmapTest {
   public void shouldCreateMutableBitmap() throws Exception {
     Bitmap mutableBitmap = Bitmap.createBitmap(100, 200, Config.ARGB_8888);
     assertThat(mutableBitmap.isMutable()).isTrue();
+  }
+
+  @Test
+  public void shouldCreateMutableBitmapWithDisplayMetrics() throws Exception {
+    final DisplayMetrics metrics = new DisplayMetrics();
+    metrics.densityDpi = 1000;
+
+    final Bitmap bitmap = Bitmap.createBitmap(metrics, 100, 100, Config.ARGB_8888);
+    assertThat(bitmap.isMutable()).isTrue();
+    assertThat(bitmap.getDensity()).isEqualTo(1000);
   }
 
   @Test
@@ -146,6 +157,13 @@ public class ShadowBitmapTest {
     // Null config is not allowed.
     Bitmap b3 = Bitmap.createBitmap(10, 10, null);
     b3.getByteCount();
+  }
+
+  @Test
+  public void shouldSetDensity() {
+    final Bitmap bitmap = Bitmap.createBitmap(new DisplayMetrics(), 100, 100, Config.ARGB_8888);
+    bitmap.setDensity(1000);
+    assertThat(bitmap.getDensity()).isEqualTo(1000);
   }
 
   @Test
