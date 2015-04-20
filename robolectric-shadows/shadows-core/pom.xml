@@ -175,27 +175,25 @@
       </plugin>
 
       <plugin>
-        <groupId>com.googlecode.velocity-maven-plugin</groupId>
-        <artifactId>velocity-maven-plugin</artifactId>
-        <version>1.0.0</version>
+        <groupId>org.robolectric</groupId>
+        <artifactId>robolectric-velocity-plugin</artifactId>
+        <version>1.1.0</version>
         <configuration>
-          <templateFiles>
-            <directory>src/main/resources</directory>
+          <api>${api}</api>
+          <fileset>
+            <directory>${project.basedir}/src/main/resources</directory>
             <includes>
               <include>**/*.vm</include>
             </includes>
-          </templateFiles>
-          <outputDirectory>target/generated-shadows</outputDirectory>
-          <removeExtension>.vm</removeExtension>
-          <templateValues>
-            <apiLevel>${api}</apiLevel>
-          </templateValues>
+          </fileset>
+          <output>target/generated-shadows</output>
         </configuration>
         <executions>
           <execution>
+            <id>generate-shadows</id>
             <phase>generate-sources</phase>
             <goals>
-              <goal>velocity</goal>
+              <goal>process-templates</goal>
             </goals>
           </execution>
         </executions>

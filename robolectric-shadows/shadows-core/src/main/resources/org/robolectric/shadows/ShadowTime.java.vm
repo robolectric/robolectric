@@ -1,6 +1,3 @@
-#set($Integer = 0)
-#set($apiLevel = $Integer.parseInt($apiLevel))
-
 package org.robolectric.shadows;
 
 import android.text.format.Time;
@@ -29,7 +26,7 @@ public class ShadowTime {
     time.set(ShadowSystemClock.currentTimeMillis());
   }
 
-#if ($apiLevel < 21)
+#if ($api < 21)
   private static final long SECOND_IN_MILLIS = 1000;
   private static final long MINUTE_IN_MILLIS = SECOND_IN_MILLIS * 60;
   private static final long HOUR_IN_MILLIS = MINUTE_IN_MILLIS * 60;

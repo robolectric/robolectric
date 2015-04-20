@@ -1,17 +1,6 @@
-#set($Integer = 0)
-#set($apiLevel = $Integer.parseInt($apiLevel))
-
-#if ($apiLevel >= 21)
-#set($ptrClass = "long")
-#set($ptrClassBoxed = "Long")
-#else
-#set($ptrClass = "int")
-#set($ptrClassBoxed = "Integer")
-#end
-
 package org.robolectric.shadows;
 
-#if ($apiLevel >= 21)
+#if ($api >= 21)
 import java.util.concurrent.atomic.AtomicLong;
 #else
 import java.util.concurrent.atomic.AtomicInteger;
@@ -326,7 +315,7 @@ public class ShadowSQLiteConnection {
   }
 
   private static class Connections {
-#if($apiLevel >= 21)
+#if($api >= 21)
     private final AtomicLong pointerCounter = new AtomicLong(0);
 #else
     private final AtomicInteger pointerCounter = new AtomicInteger(0);

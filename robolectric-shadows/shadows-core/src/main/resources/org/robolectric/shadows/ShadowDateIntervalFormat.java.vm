@@ -1,9 +1,6 @@
-#set($Integer = 0)
-#set($apiLevel = $Integer.parseInt($apiLevel))
-
 package org.robolectric.shadows;
 
-#if ($apiLevel >= 19)
+#if ($api >= 19)
 import java.text.FieldPosition;
 import java.util.HashMap;
 import java.util.Locale;

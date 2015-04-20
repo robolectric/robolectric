@@ -1,6 +1,3 @@
-#set($Integer = 0)
-#set($apiLevel = $Integer.parseInt($apiLevel))
-
 package org.robolectric.shadows;
 
 import android.graphics.PixelFormat;
@@ -8,7 +5,7 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.util.DisplayMetrics;
 import android.view.Display;
-#if ($apiLevel >= 19)
+#if ($api >= 19)
 import android.view.DisplayAdjustments;
 #end
 import android.view.Surface;
@@ -126,7 +123,7 @@ public class ShadowDisplay {
     outSize.set(realWidth, realHeight);
   }
 
-#if ($apiLevel >= 21)
+#if ($api >= 21)
   @Implementation
   public int getState() {
     return Display.STATE_ON;
@@ -213,7 +210,7 @@ public class ShadowDisplay {
     this.pixelFormat = pixelFormat;
   }
 
-#if ($apiLevel >= 19)
+#if ($api >= 19)
   @Implementation
   public DisplayAdjustments getDisplayAdjustments() {
     return new DisplayAdjustments();
