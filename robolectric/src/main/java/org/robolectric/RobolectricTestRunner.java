@@ -35,6 +35,7 @@ import org.robolectric.res.PackageResourceLoader;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.res.RoutingResourceLoader;
+import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Pair;
 
@@ -112,6 +113,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
         cacheDir.mkdir();
 
         if (cacheDir.exists()) {
+          Logger.info("Dependency cache location: %s", cacheDir.getAbsolutePath());
           dependencyResolver = new CachedDependencyResolver(new MavenDependencyResolver(), cacheDir, 60 * 60 * 24 * 1000);
         } else {
           dependencyResolver = new MavenDependencyResolver();
