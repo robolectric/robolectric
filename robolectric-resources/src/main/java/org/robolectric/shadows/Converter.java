@@ -20,7 +20,7 @@ import java.util.Map;
 
 public class Converter<T> {
   private static int nextStringCookie = 0xbaaa5;
-  private static final Map<String, ResType> ATTR_TYPE_MAP = new LinkedHashMap<String, ResType>();
+  private static final Map<String, ResType> ATTR_TYPE_MAP = new LinkedHashMap<>();
 
   static {
     ATTR_TYPE_MAP.put("boolean", ResType.BOOLEAN);

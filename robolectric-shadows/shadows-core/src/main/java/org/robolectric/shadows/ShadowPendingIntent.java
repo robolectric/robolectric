@@ -23,7 +23,7 @@ import java.util.List;
  */
 @Implements(PendingIntent.class)
 public class ShadowPendingIntent {
-  private static final List<PendingIntent> createdIntents = new ArrayList<PendingIntent>();
+  private static final List<PendingIntent> createdIntents = new ArrayList<>();
 
   private Intent[] savedIntents;
   private Context savedContext;

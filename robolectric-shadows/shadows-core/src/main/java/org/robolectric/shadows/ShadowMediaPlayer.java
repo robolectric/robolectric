@@ -159,7 +159,7 @@ public class ShadowMediaPlayer {
     private int preparationDelay;
 
     /** Map that maps time offsets to media events. */
-    public TreeMap<Integer, RunList> events = new TreeMap<Integer, RunList>();
+    public TreeMap<Integer, RunList> events = new TreeMap<>();
 
     /**
      * Creates a new <code>MediaInfo</code> object with default duration (1000ms)

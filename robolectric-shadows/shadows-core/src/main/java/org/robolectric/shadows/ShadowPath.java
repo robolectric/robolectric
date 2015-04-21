@@ -18,12 +18,12 @@ import static org.robolectric.shadows.ShadowPath.Point.Type.MOVE_TO;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Path.class)
 public class ShadowPath {
-  private List<Point> points = new ArrayList<Point>();
+  private List<Point> points = new ArrayList<>();
   private Point wasMovedTo;
   private String quadDescription = "";
 
   public void __constructor__(Path path) {
-    points = new ArrayList<Point>(Shadows.shadowOf(path).getPoints());
+    points = new ArrayList<>(Shadows.shadowOf(path).getPoints());
     wasMovedTo = Shadows.shadowOf(path).wasMovedTo;
     quadDescription = Shadows.shadowOf(path).quadDescription;
   }

@@ -23,7 +23,7 @@ import java.util.Map;
 public class ShadowDownloadManager {
 
   private long queueCounter = -1; // First request starts at 0 just like in the real DownloadManager
-  private Map<Long, DownloadManager.Request> requestMap = new HashMap<Long, DownloadManager.Request>();
+  private Map<Long, DownloadManager.Request> requestMap = new HashMap<>();
 
   @Implementation
   public long enqueue(DownloadManager.Request request) {
@@ -142,7 +142,7 @@ public class ShadowDownloadManager {
     private static final int COLUMN_INDEX_URI = 4;
     private static final int COLUMN_INDEX_LOCAL_URI = 5;
 
-    public List<DownloadManager.Request> requests = new ArrayList<DownloadManager.Request>();
+    public List<DownloadManager.Request> requests = new ArrayList<>();
     private int positionIndex = -1;
     private boolean closed;
 

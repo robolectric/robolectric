@@ -162,9 +162,7 @@ public class CustomRobolectricTestRunnerTest {
           method.invoke(test);
         } catch (NoSuchMethodException e) {
           // no prob
-        } catch (InvocationTargetException e) {
-          throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
+        } catch (InvocationTargetException | IllegalAccessException e) {
           throw new RuntimeException(e);
         }
       }

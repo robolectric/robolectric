@@ -294,7 +294,7 @@ public class ShadowContentResolverTest {
   @SuppressWarnings("serial")
   @Test
   public void applyBatchForRegisteredProvider() throws RemoteException, OperationApplicationException {
-    final ArrayList<String> operations = new ArrayList<String>();
+    final ArrayList<String> operations = new ArrayList<>();
     ShadowContentResolver.registerProvider("registeredProvider", new ContentProvider() {
       @Override
       public boolean onCreate() {
@@ -361,7 +361,7 @@ public class ShadowContentResolverTest {
     };
     shadowContentResolver.setContentProviderResult(contentProviderResults);
     Uri uri = Uri.parse("content://org.robolectric");
-    ArrayList<ContentProviderOperation> operations = new ArrayList<ContentProviderOperation>();
+    ArrayList<ContentProviderOperation> operations = new ArrayList<>();
     operations.add(ContentProviderOperation.newInsert(uri)
         .withValue("column1", "foo")
         .withValue("column2", 5)

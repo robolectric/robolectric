@@ -178,7 +178,7 @@ public class ShadowResources {
       defStyleFromRes = ShadowAssetManager.resolveStyle(resourceLoader, theme, resName, shadowAssetManager.getQualifiers());
     }
 
-    List<Attribute> attributes = new ArrayList<Attribute>();
+    List<Attribute> attributes = new ArrayList<>();
     if (attrs == null) attrs = new int[0];
     for (int attr : attrs) {
       ResName attrName = tryResName(attr); // todo probably getResName instead here?

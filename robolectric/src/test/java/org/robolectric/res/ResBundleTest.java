@@ -18,9 +18,9 @@ public class ResBundleTest {
   }
 
   private ResBundle.Values<String> asValues(String... qualifierses) {
-    ResBundle.Values<String> values = new ResBundle.Values<String>();
+    ResBundle.Values<String> values = new ResBundle.Values<>();
     for (String qualifiers : qualifierses) {
-      values.add(new ResBundle.Value<String>(qualifiers, qualifiers, null));
+      values.add(new ResBundle.Value<>(qualifiers, qualifiers, null));
     }
     return values;
   }

@@ -31,11 +31,7 @@ public abstract class XmlLoader {
       }
       inputStream = xmlFile.getInputStream();
       return documentBuilder.parse(inputStream);
-    } catch (ParserConfigurationException e) {
-      throw new RuntimeException(e);
-    } catch (SAXException e) {
-      throw new RuntimeException(e);
-    } catch (IOException e) {
+    } catch (ParserConfigurationException | IOException | SAXException e) {
       throw new RuntimeException(e);
     } finally {
       if (inputStream != null) try {

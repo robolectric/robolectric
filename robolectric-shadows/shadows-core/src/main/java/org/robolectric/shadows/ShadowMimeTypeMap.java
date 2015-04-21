@@ -17,8 +17,8 @@ import java.util.Map;
 @Implements(MimeTypeMap.class)
 public class ShadowMimeTypeMap {
 
-  Map<String, String> extensionToMimeTypeMap = new HashMap<String, String>();
-  Map<String, String> mimeTypeToExtensionMap = new HashMap<String, String>();
+  Map<String, String> extensionToMimeTypeMap = new HashMap<>();
+  Map<String, String> mimeTypeToExtensionMap = new HashMap<>();
 
   static MimeTypeMap sSingleton = null;
   static Object sSingletonLock = new Object();

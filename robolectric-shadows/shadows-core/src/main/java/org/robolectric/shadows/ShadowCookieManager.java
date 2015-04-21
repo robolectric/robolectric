@@ -29,7 +29,7 @@ public class ShadowCookieManager {
   private static final String HTTP = "http://";
   private static final String HTTPS = "https://";
   private static final String[] COOKIE_ATTRS_NOT_STRICT = {"Expires", "expires"};
-  private static final List<Cookie> emtpyCookieList = new ArrayList<Cookie>();
+  private static final List<Cookie> emtpyCookieList = new ArrayList<>();
   private static CookieManager sRef;
   private CookieStore store = new BasicCookieStore();
   private boolean accept;
@@ -78,7 +78,7 @@ public class ShadowCookieManager {
   }
 
   private List<Cookie> filter(CookieOrigin origin) {
-    List<Cookie> matchedCookies = new ArrayList<Cookie>();
+    List<Cookie> matchedCookies = new ArrayList<>();
     Date now = new Date();
     CookieSpec cookieSpec = createSpec();
     for (Cookie cookie : store.getCookies()) {
@@ -137,7 +137,7 @@ public class ShadowCookieManager {
   }
 
   private void clearAndAddPersistentCookies() {
-    List<Cookie> cookies = new ArrayList<Cookie>(store.getCookies());
+    List<Cookie> cookies = new ArrayList<>(store.getCookies());
     store.clear();
     for(Cookie cookie : cookies) {
       if(cookie.isPersistent()){

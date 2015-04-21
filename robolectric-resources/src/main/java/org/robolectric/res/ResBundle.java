@@ -9,14 +9,14 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 public class ResBundle<T> {
-  private final ResMap<T> valuesMap = new ResMap<T>();
-  private final ResMap<List<T>> valuesArrayMap = new ResMap<List<T>>();
+  private final ResMap<T> valuesMap = new ResMap<>();
+  private final ResMap<List<T>> valuesArrayMap = new ResMap<>();
   private String overrideNamespace;
 
   public void put(String attrType, String name, T value, XmlLoader.XmlContext xmlContext) {
     ResName resName = new ResName(maybeOverride(xmlContext.packageName), attrType, name);
     Values<T> values = valuesMap.find(resName);
-    values.add(new Value<T>(xmlContext.getQualifiers(), value, xmlContext));
+    values.add(new Value<>(xmlContext.getQualifiers(), value, xmlContext));
     Collections.sort(values);
   }
 
@@ -116,12 +116,12 @@ public class ResBundle<T> {
   }
 
   private static class ResMap<T> {
-    private final Map<ResName, Values<T>> map = new HashMap<ResName, Values<T>>();
+    private final Map<ResName, Values<T>> map = new HashMap<>();
     private boolean immutable;
 
     public Values<T> find(ResName resName) {
       Values<T> values = map.get(resName);
-      if (values == null) map.put(resName, values = new Values<T>());
+      if (values == null) map.put(resName, values = new Values<>());
       return values;
     }
 

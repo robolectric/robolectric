@@ -2,22 +2,15 @@ package org.robolectric.shadows;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.view.ViewGroup;
 import android.view.Window;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.res.ResName;
-import org.robolectric.res.ResourceLoader;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import java.lang.reflect.Constructor;
 
-import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.internal.Shadow.directlyOn;
 
 @SuppressWarnings({"UnusedDeclaration"})

@@ -121,7 +121,7 @@ public class ShadowLog {
     List<LogItem> itemList;
 
     if (!logsByTag.containsKey(tag)) {
-      itemList = new ArrayList<LogItem>();
+      itemList = new ArrayList<>();
       logsByTag.put(tag, itemList);
     } else {
       itemList = logsByTag.get(tag);

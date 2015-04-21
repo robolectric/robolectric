@@ -76,9 +76,7 @@ public class DefaultTestLifecycle implements TestLifecycle {
     Application application;
     try {
       application = applicationClass.newInstance();
-    } catch (InstantiationException e) {
-      throw new RuntimeException(e);
-    } catch (IllegalAccessException e) {
+    } catch (InstantiationException | IllegalAccessException e) {
       throw new RuntimeException(e);
     }
     return application;

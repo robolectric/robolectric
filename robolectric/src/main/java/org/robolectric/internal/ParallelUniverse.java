@@ -15,7 +15,6 @@ import org.robolectric.res.ResBunch;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.builder.DefaultPackageManager;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.ShadowsAdapter;
 
 import java.io.File;
 import java.lang.reflect.Method;

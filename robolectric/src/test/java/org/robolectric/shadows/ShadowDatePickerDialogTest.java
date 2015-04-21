@@ -12,7 +12,6 @@ import java.util.Locale;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.test.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ShadowDatePickerDialogTest {

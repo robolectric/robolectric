@@ -10,7 +10,6 @@ import android.widget.Button;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.Robolectric;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.res.ResName;

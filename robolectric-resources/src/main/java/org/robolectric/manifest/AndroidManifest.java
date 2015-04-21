@@ -261,10 +261,10 @@ public class AndroidManifest {
   }
 
   private List<IntentFilterData> parseIntentFilters(final Node activityNode) {
-    ArrayList<IntentFilterData> intentFilterDatas = new ArrayList<IntentFilterData>();
+    ArrayList<IntentFilterData> intentFilterDatas = new ArrayList<>();
     for (Node n : getChildrenTags(activityNode, "intent-filter")) {
-      ArrayList<String> actionNames = new ArrayList<String>();
-      ArrayList<String> categories = new ArrayList<String>();
+      ArrayList<String> actionNames = new ArrayList<>();
+      ArrayList<String> categories = new ArrayList<>();
       //should only be one action.
       for (Node action : getChildrenTags(n, "action")) {
         NamedNodeMap attributes = action.getAttributes();

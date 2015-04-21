@@ -39,7 +39,7 @@ public class ShadowIntent {
   private int flags;
   private Class<?> intentClass;
   private String packageName;
-  private final Set<String> categories = new HashSet<String>();
+  private final Set<String> categories = new HashSet<>();
 
   public void __constructor__(String action, Uri uri, Context packageContext, Class cls) {
     componentName = new ComponentName(packageContext, cls);

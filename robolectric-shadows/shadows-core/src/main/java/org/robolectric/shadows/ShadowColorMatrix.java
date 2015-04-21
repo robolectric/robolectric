@@ -18,7 +18,7 @@ public class ShadowColorMatrix {
   
   @Override @Implementation
   public String toString() {
-    List<String> floats = new ArrayList<String>();
+    List<String> floats = new ArrayList<>();
     for (float f : getMatrix()) {
       String format = String.format("%.2f", f);
       format = format.replace(".00", "");

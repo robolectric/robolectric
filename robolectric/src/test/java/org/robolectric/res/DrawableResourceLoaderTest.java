@@ -34,7 +34,7 @@ public class DrawableResourceLoaderTest {
 
   @Before
   public void setup() throws Exception {
-    drawableNodes = new ResBundle<DrawableNode>();
+    drawableNodes = new ResBundle<>();
     drawableResourceLoader = new DrawableResourceLoader(drawableNodes);
     new DocumentLoader(testResources()).load("drawable", drawableResourceLoader);
     new DocumentLoader(testResources()).load("anim", drawableResourceLoader);
@@ -47,7 +47,7 @@ public class DrawableResourceLoaderTest {
 
   @Test
   public void testProcessResourceXml() throws Exception {
-    drawableNodes = new ResBundle<DrawableNode>();
+    drawableNodes = new ResBundle<>();
     drawableResourceLoader = new DrawableResourceLoader(drawableNodes);
 
     new DocumentLoader(testResources()).load("drawable", drawableResourceLoader);

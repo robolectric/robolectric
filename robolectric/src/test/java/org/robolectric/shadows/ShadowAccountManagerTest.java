@@ -18,7 +18,6 @@ import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
@@ -469,7 +468,7 @@ public class ShadowAccountManagerTest {
     assertFalse(result.isDone());
     shadowOf(am).addAccount(new Account("thebomb@google.com", "google.com"));
     assertTrue(result.isDone());
-    AccountManagerFutureMatcher<Bundle> matcher = new AccountManagerFutureMatcher<Bundle>(new BaseMatcher<Bundle>() {
+    AccountManagerFutureMatcher<Bundle> matcher = new AccountManagerFutureMatcher<>(new BaseMatcher<Bundle>() {
       @Override
       public boolean matches(Object o) {
         return "thebomb@google.com".equals(((Bundle) o).getString(AccountManager.KEY_ACCOUNT_NAME));

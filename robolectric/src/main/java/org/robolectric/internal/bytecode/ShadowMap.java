@@ -11,12 +11,12 @@ import java.util.Set;
 
 public class ShadowMap {
   public static final ShadowMap EMPTY = new ShadowMap(Collections.<String, ShadowConfig>emptyMap());
-  private static final Set<String> unloadableClassNames = new HashSet<String>();
+  private static final Set<String> unloadableClassNames = new HashSet<>();
 
   private final Map<String, ShadowConfig> map;
 
   ShadowMap(Map<String, ShadowConfig> map) {
-    this.map = new HashMap<String, ShadowConfig>(map);
+    this.map = new HashMap<>(map);
   }
 
   private static void warnAbout(String unloadableClassName) {
@@ -128,11 +128,11 @@ public class ShadowMap {
     private final Map<String, ShadowConfig> map;
 
     public Builder() {
-      map = new HashMap<String, ShadowConfig>();
+      map = new HashMap<>();
     }
 
     public Builder(ShadowMap shadowMap) {
-      this.map = new HashMap<String, ShadowConfig>(shadowMap.map);
+      this.map = new HashMap<>(shadowMap.map);
     }
 
     public Builder addShadowClasses(Class<?>... shadowClasses) {

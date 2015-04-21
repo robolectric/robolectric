@@ -7,7 +7,7 @@ import java.util.List;
 public class PreferenceNode {
   private final String name;
   private final List<Attribute> attributes;
-  private final List<PreferenceNode> children = new ArrayList<PreferenceNode>();
+  private final List<PreferenceNode> children = new ArrayList<>();
 
   public PreferenceNode(String name, List<Attribute> attributes) {
     this.name = name;

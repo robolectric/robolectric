@@ -75,9 +75,7 @@ public class AccessibilityUtil {
        * don't look like junit test methods. In that case we simply go on
        * to the next element
        */
-      catch (ClassNotFoundException e) {}
-      catch (NoSuchMethodException e) {}
-      catch (SecurityException e) {}
+      catch (ClassNotFoundException | SecurityException | NoSuchMethodException e) {}
     }
 
     if (!checksEnabled) {
@@ -117,7 +115,7 @@ public class AccessibilityUtil {
     Set<AccessibilityCheck> viewHierarchyChecks = AccessibilityCheckPreset
         .getAllChecksForPreset(AccessibilityCheckPreset.VIEW_HIERARCHY_CHECKS);
 
-    List<AccessibilityViewCheckResult> results = new LinkedList<AccessibilityViewCheckResult>();
+    List<AccessibilityViewCheckResult> results = new LinkedList<>();
 
     for (AccessibilityCheck check : viewChecks) {
       results.addAll(((AccessibilityViewCheck) check).runCheckOnView(view));

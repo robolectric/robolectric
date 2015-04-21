@@ -23,12 +23,12 @@ public class ParamsParser {
     if (request instanceof HttpEntityEnclosingRequestBase) {
       return parseParamsForRequestWithEntity((HttpEntityEnclosingRequestBase) request);
     }
-    return new LinkedHashMap<String, String>();
+    return new LinkedHashMap<>();
   }
 
   private static Map<String, String> parseParamsForRequestWithEntity(HttpEntityEnclosingRequestBase request) {
     try {
-      LinkedHashMap<String, String> map = new LinkedHashMap<String, String>();
+      LinkedHashMap<String, String> map = new LinkedHashMap<>();
       HttpEntity entity = request.getEntity();
       if (entity != null) {
         List<NameValuePair> pairs = URLEncodedUtils.parse(entity);
@@ -46,7 +46,7 @@ public class ParamsParser {
   private static Map<String, String> parseParamsForGet(HttpRequest request) {
     Uri uri = Uri.parse(request.getRequestLine().getUri());
     Set<String> paramNames = uri.getQueryParameterNames();
-    LinkedHashMap<String, String> map = new LinkedHashMap<String, String>();
+    LinkedHashMap<String, String> map = new LinkedHashMap<>();
     for (String paramName : paramNames) {
       map.put(paramName, uri.getQueryParameter(paramName));
     }

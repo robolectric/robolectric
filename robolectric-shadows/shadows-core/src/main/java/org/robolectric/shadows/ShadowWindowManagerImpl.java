@@ -18,7 +18,7 @@ public class ShadowWindowManagerImpl extends ShadowWindowManager {
   public static final String WINDOW_MANAGER_IMPL_CLASS_NAME = "android.view.WindowManagerImpl";
 
   @RealObject Object realObject;
-  private List<View> views = new ArrayList<View>();
+  private List<View> views = new ArrayList<>();
 
   @Implementation
   public void addView(View view, android.view.ViewGroup.LayoutParams layoutParams) {

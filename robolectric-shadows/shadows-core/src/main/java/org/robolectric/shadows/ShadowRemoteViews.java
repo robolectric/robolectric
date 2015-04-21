@@ -22,7 +22,7 @@ import java.util.List;
 public class ShadowRemoteViews {
   private String packageName;
   private int layoutId;
-  private List<ViewUpdater> viewUpdaters = new ArrayList<ViewUpdater>();
+  private List<ViewUpdater> viewUpdaters = new ArrayList<>();
 
   public void __constructor__(String packageName, int layoutId) {
     this.packageName = packageName;

@@ -374,7 +374,7 @@ public class ShadowParcelTest {
   @Test
   public void testWriteTypedListAndCreateTypedArrayList() throws Exception {
     TestParcelable normal = new TestParcelable(23);
-    ArrayList<TestParcelable> normals = new ArrayList<TestParcelable>();
+    ArrayList<TestParcelable> normals = new ArrayList<>();
     normals.add(normal);
 
     parcel.writeTypedList(normals);
@@ -388,8 +388,8 @@ public class ShadowParcelTest {
 
   @Test
   public void testReadAndWriteStringList() throws Exception {
-    ArrayList<String> original = new ArrayList<String>();
-    ArrayList<String> rehydrated = new ArrayList<String>();
+    ArrayList<String> original = new ArrayList<>();
+    ArrayList<String> rehydrated = new ArrayList<>();
     original.add("str1");
     original.add("str2");
     parcel.writeStringList(original);
@@ -402,7 +402,7 @@ public class ShadowParcelTest {
 
   @Test
   public void testReadWriteMap() throws Exception {
-    HashMap<String, String> original = new HashMap<String, String>();
+    HashMap<String, String> original = new HashMap<>();
     original.put("key", "value");
     parcel.writeMap(original);
     parcel.setDataPosition(0);

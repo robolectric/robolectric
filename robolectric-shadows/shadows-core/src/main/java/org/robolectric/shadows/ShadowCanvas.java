@@ -28,13 +28,13 @@ import static org.robolectric.Shadows.shadowOf;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Canvas.class)
 public class ShadowCanvas {
-  private List<PathPaintHistoryEvent> pathPaintEvents = new ArrayList<PathPaintHistoryEvent>();
-  private List<CirclePaintHistoryEvent> circlePaintEvents = new ArrayList<CirclePaintHistoryEvent>();
-  private List<ArcPaintHistoryEvent> arcPaintEvents = new ArrayList<ArcPaintHistoryEvent>();
-  private List<RectPaintHistoryEvent> rectPaintEvents = new ArrayList<RectPaintHistoryEvent>();
-  private List<LinePaintHistoryEvent> linePaintEvents = new ArrayList<LinePaintHistoryEvent>();
-  private List<OvalPaintHistoryEvent> ovalPaintEvents = new ArrayList<OvalPaintHistoryEvent>();
-  private List<TextHistoryEvent> drawnTextEventHistory = new ArrayList<TextHistoryEvent>();
+  private List<PathPaintHistoryEvent> pathPaintEvents = new ArrayList<>();
+  private List<CirclePaintHistoryEvent> circlePaintEvents = new ArrayList<>();
+  private List<ArcPaintHistoryEvent> arcPaintEvents = new ArrayList<>();
+  private List<RectPaintHistoryEvent> rectPaintEvents = new ArrayList<>();
+  private List<LinePaintHistoryEvent> linePaintEvents = new ArrayList<>();
+  private List<OvalPaintHistoryEvent> ovalPaintEvents = new ArrayList<>();
+  private List<TextHistoryEvent> drawnTextEventHistory = new ArrayList<>();
   private Paint drawnPaint;
   private Bitmap targetBitmap = ReflectionHelpers.callConstructor(Bitmap.class);
   private float translateX;

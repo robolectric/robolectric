@@ -27,7 +27,7 @@ public class ShadowAudioManager {
   private AudioFocusRequest lastAudioFocusRequest;
   private int nextResponseValue = AudioManager.AUDIOFOCUS_REQUEST_GRANTED;
   private AudioManager.OnAudioFocusChangeListener lastAbandonedAudioFocusListener;
-  private HashMap<Integer, AudioStream> streamStatus = new HashMap<Integer, AudioStream>();
+  private HashMap<Integer, AudioStream> streamStatus = new HashMap<>();
   private int ringerMode = AudioManager.RINGER_MODE_NORMAL;
   private boolean wiredHeadsetOn;
   private boolean bluetoothA2dpOn;

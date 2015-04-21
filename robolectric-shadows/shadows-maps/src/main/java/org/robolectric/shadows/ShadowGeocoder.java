@@ -55,7 +55,7 @@ public class ShadowGeocoder {
       throw new IOException("Simulated geocode exception");
     }
     if (returnNoResults) {
-      return new ArrayList<Address>();
+      return new ArrayList<>();
     } else {
       Address address = makeAddress();
       address.setLatitude(simulatedLatitude);
@@ -131,7 +131,7 @@ public class ShadowGeocoder {
   }
 
   private List<Address> oneElementList(Address address) {
-    ArrayList<Address> addresses = new ArrayList<Address>();
+    ArrayList<Address> addresses = new ArrayList<>();
     addresses.add(address);
     return addresses;
   }

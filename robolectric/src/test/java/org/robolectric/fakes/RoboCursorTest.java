@@ -30,7 +30,7 @@ public class RoboCursorTest {
     uri = Uri.parse("http://foo");
     cursor = new RoboCursor();
     shadowContentResolver.setCursor(uri, cursor);
-    ArrayList<String> columnNames = new ArrayList<String>();
+    ArrayList<String> columnNames = new ArrayList<>();
     columnNames.add("stringColumn");
     columnNames.add("longColumn");
     columnNames.add("intColumn");

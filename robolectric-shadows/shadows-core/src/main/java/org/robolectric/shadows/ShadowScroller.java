@@ -5,8 +5,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.Scheduler;
 
-import static org.robolectric.Shadows.shadowOf;
-
 @Implements(Scroller.class)
 public class ShadowScroller {
   private int startX;

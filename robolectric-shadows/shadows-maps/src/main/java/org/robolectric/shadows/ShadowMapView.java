@@ -27,7 +27,7 @@ import static org.robolectric.internal.Shadow.invokeConstructor;
 public class ShadowMapView extends ShadowViewGroup {
   private boolean satelliteOn;
   private MapController mapController;
-  private List<Overlay> overlays = new ArrayList<Overlay>();
+  private List<Overlay> overlays = new ArrayList<>();
   GeoPoint mapCenter = new GeoPoint(10, 10);
   int longitudeSpan = 20;
   int latitudeSpan = 30;

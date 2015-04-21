@@ -54,7 +54,7 @@ public class XmlFileLoaderTest {
 
   @Before
   public void setUp() throws Exception {
-    resBundle = new ResBundle<Document>();
+    resBundle = new ResBundle<>();
     xmlFileLoader = new XmlFileLoader(resBundle, "xml");
     new DocumentLoader(testResources()).load("xml", xmlFileLoader);
     xmlFileBuilder = new XmlFileBuilder();
@@ -267,7 +267,7 @@ public class XmlFileLoaderTest {
   public void testGetDepth() throws XmlPullParserException, IOException {
     // Recorded depths from preference file elements
     List<Integer> expectedDepths = asList(1, 2, 3, 2, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 3);
-    List<Integer> actualDepths = new ArrayList<Integer>();
+    List<Integer> actualDepths = new ArrayList<>();
     int evt;
     while ((evt = parser.next()) != XmlResourceParser.END_DOCUMENT) {
       switch (evt) {
@@ -463,7 +463,7 @@ public class XmlFileLoaderTest {
         ">",
         ">",
         "</xml>");
-    List<String> actualEvents = new ArrayList<String>();
+    List<String> actualEvents = new ArrayList<>();
 
     int evt;
     do {
@@ -533,7 +533,7 @@ public class XmlFileLoaderTest {
    */
   @Test
   public void testNextTag() throws XmlPullParserException, IOException {
-    Set<Integer> acceptableTags = new HashSet<Integer>();
+    Set<Integer> acceptableTags = new HashSet<>();
     acceptableTags.add(XmlResourceParser.START_TAG);
     acceptableTags.add(XmlResourceParser.END_TAG);
 

@@ -50,12 +50,12 @@ public class RoboExecutorService implements ExecutorService {
 
   @Override
   public <T> Future<T> submit(Callable<T> tCallable) {
-    return schedule(new FutureTask<T>(tCallable));
+    return schedule(new FutureTask<>(tCallable));
   }
 
   @Override
   public <T> Future<T> submit(Runnable runnable, T t) {
-    return schedule(new FutureTask<T>(runnable, t));
+    return schedule(new FutureTask<>(runnable, t));
   }
 
   @Override

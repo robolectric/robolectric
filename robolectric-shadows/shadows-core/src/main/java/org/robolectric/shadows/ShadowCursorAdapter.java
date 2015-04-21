@@ -46,7 +46,7 @@ import static android.widget.CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER;
 public class ShadowCursorAdapter extends ShadowBaseAdapter {
   @RealObject CursorAdapter realCursorAdapter;
 
-  private List<View> views = new ArrayList<View>();
+  private List<View> views = new ArrayList<>();
 
   @Implementation
   public View getView(int position, View convertView, ViewGroup parent) {

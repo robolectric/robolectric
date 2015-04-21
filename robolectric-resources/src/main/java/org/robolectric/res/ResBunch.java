@@ -24,7 +24,7 @@ public class ResBunch {
   private static final Pattern VERSION_QUALIFIER_PATTERN_WITH_DASHES
     = Pattern.compile(PADDED_VERSION_QUALIFIER_REGEX);
 
-  private final Map<String, ResMap<TypedResource>> types = new LinkedHashMap<String, ResMap<TypedResource>>();
+  private final Map<String, ResMap<TypedResource>> types = new LinkedHashMap<>();
 
   public void put(String attrType, String name, TypedResource value, XmlLoader.XmlContext xmlContext) {
     ResName resName = new ResName(xmlContext.packageName, attrType, name);
@@ -37,7 +37,7 @@ public class ResBunch {
   private ResMap<TypedResource> getValuesMap(String attrType) {
     ResMap<TypedResource> valuesMap = types.get(attrType);
     if (valuesMap == null) {
-      valuesMap = new ResMap<TypedResource>();
+      valuesMap = new ResMap<>();
       types.put(attrType, valuesMap);
     }
     return valuesMap;
@@ -213,7 +213,7 @@ public class ResBunch {
   }
 
   private static class ResMap<T> {
-    private final Map<ResName, Values> map = new HashMap<ResName, Values>();
+    private final Map<ResName, Values> map = new HashMap<>();
     private boolean immutable;
 
     public Values find(ResName resName) {

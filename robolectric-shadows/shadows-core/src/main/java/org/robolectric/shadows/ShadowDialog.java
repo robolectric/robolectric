@@ -39,7 +39,7 @@ public class ShadowDialog {
   private Window window;
   private Activity ownerActivity;
   private boolean hasShownBefore;
-  private static final ArrayList<Dialog> shownDialogs = new ArrayList<Dialog>();
+  private static final ArrayList<Dialog> shownDialogs = new ArrayList<>();
   private boolean isCancelableOnTouchOutside;
 
   @Resetter

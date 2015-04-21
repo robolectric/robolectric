@@ -19,8 +19,8 @@ import java.util.List;
 @Implements(LocalBroadcastManager.class)
 public class ShadowLocalBroadcastManager {
 
-  final List<Intent> sentBroadcastIntents = new ArrayList<Intent>();
-  final List<Wrapper> registeredReceivers = new ArrayList<Wrapper>();
+  final List<Intent> sentBroadcastIntents = new ArrayList<>();
+  final List<Wrapper> registeredReceivers = new ArrayList<>();
 
   @Implementation
   public static LocalBroadcastManager getInstance(final Context context) {
@@ -56,7 +56,7 @@ public class ShadowLocalBroadcastManager {
   public boolean sendBroadcast(Intent intent) {
     boolean sent = false;
     sentBroadcastIntents.add(intent);
-    List<Wrapper> copy = new ArrayList<Wrapper>();
+    List<Wrapper> copy = new ArrayList<>();
     copy.addAll(registeredReceivers);
     for (Wrapper wrapper : copy) {
       if (wrapper.intentFilter.matchAction(intent.getAction())) {

@@ -5,7 +5,6 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;

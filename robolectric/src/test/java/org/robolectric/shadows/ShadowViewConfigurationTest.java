@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.view.ViewConfiguration;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 

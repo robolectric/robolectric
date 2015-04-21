@@ -16,10 +16,10 @@ import java.util.List;
 public class ShadowActivityManager {
 
   private List<ActivityManager.RunningTaskInfo> tasks =
-    new ArrayList<ActivityManager.RunningTaskInfo>();
+    new ArrayList<>();
 
   private List<ActivityManager.RunningAppProcessInfo> processes =
-    new ArrayList<ActivityManager.RunningAppProcessInfo>();
+    new ArrayList<>();
 
   private String backgroundPackage;
   private ActivityManager.MemoryInfo memoryInfo;

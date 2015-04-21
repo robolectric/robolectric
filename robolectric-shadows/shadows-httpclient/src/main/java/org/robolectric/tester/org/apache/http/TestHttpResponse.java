@@ -84,7 +84,7 @@ public class TestHttpResponse extends HttpResponseStub {
   }
 
   @Override public Header[] getHeaders(String s) {
-    List<Header> found = new ArrayList<Header>();
+    List<Header> found = new ArrayList<>();
     for (Header h : headers) {
       if (h.getName().equalsIgnoreCase(s)) found.add(h);
     }
@@ -93,7 +93,7 @@ public class TestHttpResponse extends HttpResponseStub {
 
   @Override
   public void addHeader(Header header) {
-    List<Header> temp = new ArrayList<Header>();
+    List<Header> temp = new ArrayList<>();
     Collections.addAll(temp, headers);
     temp.add(header);
     headers = temp.toArray(new Header[temp.size()]);

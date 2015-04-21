@@ -25,9 +25,7 @@ public class ShadowExtractor {
       }
       getRoboData.setAccessible(true);
       roboData = getRoboData.invoke(instance);
-    } catch (InvocationTargetException e) {
-      throw new RuntimeException(e);
-    } catch (IllegalAccessException e) {
+    } catch (InvocationTargetException | IllegalAccessException e) {
       throw new RuntimeException(e);
     }
 

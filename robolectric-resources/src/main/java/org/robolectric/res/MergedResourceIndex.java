@@ -7,7 +7,7 @@ import java.util.Set;
 
 public class MergedResourceIndex extends ResourceIndex {
   private final ResourceIndex[] subIndexes;
-  private final Set<String> actualPackageNames = new HashSet<String>();
+  private final Set<String> actualPackageNames = new HashSet<>();
 
   public MergedResourceIndex(ResourceIndex... subIndexes) {
     this.subIndexes = subIndexes;

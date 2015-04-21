@@ -15,7 +15,7 @@ import java.util.Map;
 public class SdkEnvironment {
   private final SdkConfig sdkConfig;
   private final ClassLoader robolectricClassLoader;
-  public final Map<ShadowMap, ShadowWrangler> classHandlersByShadowMap = new HashMap<ShadowMap, ShadowWrangler>();
+  public final Map<ShadowMap, ShadowWrangler> classHandlersByShadowMap = new HashMap<>();
   private ResourceLoader systemResourceLoader;
 
   public SdkEnvironment(SdkConfig sdkConfig, ClassLoader robolectricClassLoader) {

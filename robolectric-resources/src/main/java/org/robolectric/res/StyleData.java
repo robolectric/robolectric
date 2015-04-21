@@ -9,7 +9,7 @@ public class StyleData implements Style {
   private final String packageName;
   private final String name;
   private final String parent;
-  private final Map<ResName, Attribute> items = new LinkedHashMap<ResName, Attribute>();
+  private final Map<ResName, Attribute> items = new LinkedHashMap<>();
 
   public StyleData(String packageName, String name, String parent) {
     this.packageName = packageName;

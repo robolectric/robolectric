@@ -11,7 +11,7 @@ import java.util.List;
 @Implements(ViewTreeObserver.class)
 public class ShadowViewTreeObserver {
 
-  private ArrayList<ViewTreeObserver.OnGlobalLayoutListener> globalLayoutListeners = new ArrayList<ViewTreeObserver.OnGlobalLayoutListener>();
+  private ArrayList<ViewTreeObserver.OnGlobalLayoutListener> globalLayoutListeners = new ArrayList<>();
 
   @Implementation
   public void addOnGlobalLayoutListener(ViewTreeObserver.OnGlobalLayoutListener listener) {
@@ -24,7 +24,7 @@ public class ShadowViewTreeObserver {
   }
 
   public void fireOnGlobalLayoutListeners() {
-    for (ViewTreeObserver.OnGlobalLayoutListener listener : new ArrayList<ViewTreeObserver.OnGlobalLayoutListener>(globalLayoutListeners)) {
+    for (ViewTreeObserver.OnGlobalLayoutListener listener : new ArrayList<>(globalLayoutListeners)) {
       listener.onGlobalLayout();
     }
   }

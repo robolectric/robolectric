@@ -4,7 +4,6 @@ import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import org.junit.Rule;
 import org.junit.Test;
@@ -382,7 +381,7 @@ public class AndroidManifestTest {
   }
 
   private List<String> stringify(Collection<ResourcePath> resourcePaths) {
-    List<String> resourcePathBases = new ArrayList<String>();
+    List<String> resourcePathBases = new ArrayList<>();
     for (ResourcePath resourcePath : resourcePaths) {
       resourcePathBases.add(resourcePath.resourceBase.toString());
     }
@@ -423,7 +422,7 @@ public class AndroidManifestTest {
   @Test
   public void shouldLoadLibraryManifests() throws Exception {
     AndroidManifest manifest = newConfig("TestAndroidManifest.xml");
-    List<FsFile> libraries = new ArrayList<FsFile>();
+    List<FsFile> libraries = new ArrayList<>();
     libraries.add(resourceFile("lib1"));
     manifest.setLibraryDirectories(libraries);
 

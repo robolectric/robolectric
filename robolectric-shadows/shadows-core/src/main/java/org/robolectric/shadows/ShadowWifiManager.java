@@ -15,8 +15,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.robolectric.Shadows.shadowOf;
-
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(WifiManager.class)
 public class ShadowWifiManager {
@@ -25,7 +23,7 @@ public class ShadowWifiManager {
   private boolean wifiEnabled = true;
   private WifiInfo wifiInfo;
   private List<ScanResult> scanResults;
-  private Map<Integer, WifiConfiguration> networkIdToConfiguredNetworks = new LinkedHashMap<Integer, WifiConfiguration>();
+  private Map<Integer, WifiConfiguration> networkIdToConfiguredNetworks = new LinkedHashMap<>();
   public boolean wasSaved;
   private Pair<Integer, Boolean> lastEnabledNetwork;
 
@@ -58,7 +56,7 @@ public class ShadowWifiManager {
 
   @Implementation
   public List<WifiConfiguration> getConfiguredNetworks() {
-    final ArrayList<WifiConfiguration> wifiConfigurations = new ArrayList<WifiConfiguration>();
+    final ArrayList<WifiConfiguration> wifiConfigurations = new ArrayList<>();
     for (WifiConfiguration wifiConfiguration : networkIdToConfiguredNetworks.values()) {
       wifiConfigurations.add(wifiConfiguration);
     }
@@ -97,7 +95,7 @@ public class ShadowWifiManager {
 
   @Implementation
   public boolean enableNetwork(int netId, boolean disableOthers) {
-    lastEnabledNetwork = new Pair<Integer, Boolean>(netId, disableOthers);
+    lastEnabledNetwork = new Pair<>(netId, disableOthers);
     return true;
   }
 

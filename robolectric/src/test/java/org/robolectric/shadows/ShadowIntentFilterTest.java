@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
 import org.junit.Test;

@@ -15,13 +15,13 @@ public class IntentFilterData {
 
   public IntentFilterData(List<String> actions, List<String> categories) {
     this.actions = actions;
-    this.categories = new ArrayList<String>(categories);
-    this.schemes = new ArrayList<String>();
-    this.mimeTypes = new ArrayList<String>();
-    this.authorities = new ArrayList<DataAuthority>();
-    this.paths = new ArrayList<String>();
-    this.pathPatterns = new ArrayList<String>();
-    this.pathPrefixes = new ArrayList<String>();
+    this.categories = new ArrayList<>(categories);
+    this.schemes = new ArrayList<>();
+    this.mimeTypes = new ArrayList<>();
+    this.authorities = new ArrayList<>();
+    this.paths = new ArrayList<>();
+    this.pathPatterns = new ArrayList<>();
+    this.pathPrefixes = new ArrayList<>();
   }
 
   public List<String> getActions() {

@@ -13,8 +13,8 @@ import java.util.List;
 import java.util.Map;
 
 public final class MetaData {
-  private final Map<String, Object> valueMap = new LinkedHashMap<String, Object>();
-  private final Map<String, VALUE_TYPE> typeMap = new LinkedHashMap<String, VALUE_TYPE>();
+  private final Map<String, Object> valueMap = new LinkedHashMap<>();
+  private final Map<String, VALUE_TYPE> typeMap = new LinkedHashMap<>();
   private boolean initialised;
 
   public MetaData(List<Node> nodes) {

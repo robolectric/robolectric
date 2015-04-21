@@ -11,7 +11,7 @@ public class ActivityDataTest {
 
   @Test
   public void test_non_android_namespace() {
-    HashMap<String, String> attrs = new HashMap<String, String>();
+    HashMap<String, String> attrs = new HashMap<>();
     attrs.put("testns:name", ".test.TestActivity");
     ActivityData activityData = new ActivityData("testns", attrs, new ArrayList<IntentFilterData>());
 
@@ -21,7 +21,7 @@ public class ActivityDataTest {
 
   @Test
   public void test_config_changes() {
-    HashMap<String, String> attrs = new HashMap<String, String>();
+    HashMap<String, String> attrs = new HashMap<>();
     attrs.put("android:configChanges", "mcc|screenLayout|orientation");
     ActivityData activityData = new ActivityData(attrs, new ArrayList<IntentFilterData>());
 

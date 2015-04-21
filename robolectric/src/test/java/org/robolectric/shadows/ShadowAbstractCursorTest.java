@@ -5,7 +5,6 @@ import android.net.Uri;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
@@ -223,7 +222,7 @@ public class ShadowAbstractCursorTest {
 
   private class TestCursor extends AbstractCursor {
 
-    public List<Object> theTable = new ArrayList<Object>();
+    public List<Object> theTable = new ArrayList<>();
 
     @Override
     public int getCount() {

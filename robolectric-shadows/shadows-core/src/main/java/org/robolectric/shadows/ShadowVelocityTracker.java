@@ -20,8 +20,8 @@ public class ShadowVelocityTracker {
   private final Movement[] movements = new Movement[HISTORY_SIZE];
   private int curIndex = 0;
 
-  private SparseArray<Float> computedVelocityX = new SparseArray<Float>();
-  private SparseArray<Float> computedVelocityY = new SparseArray<Float>();
+  private SparseArray<Float> computedVelocityX = new SparseArray<>();
+  private SparseArray<Float> computedVelocityY = new SparseArray<>();
 
   private void maybeInitialize() {
     if (initialized) {
@@ -163,8 +163,8 @@ public class ShadowVelocityTracker {
     public int[] pointerIds = new int[0];
     public int activePointerId = -1;
     public long eventTime;
-    public SparseArray<Float> x = new SparseArray<Float>();
-    public SparseArray<Float> y = new SparseArray<Float>();
+    public SparseArray<Float> x = new SparseArray<>();
+    public SparseArray<Float> y = new SparseArray<>();
 
     public void set(MotionEvent event) {
       pointerCount = event.getPointerCount();

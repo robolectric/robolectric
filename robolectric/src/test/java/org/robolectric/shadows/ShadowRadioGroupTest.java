@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import android.widget.RadioGroup;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
@@ -51,8 +50,8 @@ public class ShadowRadioGroupTest {
   }
 
   private static class TestOnCheckedChangeListener implements RadioGroup.OnCheckedChangeListener {
-    public ArrayList<RadioGroup> onCheckedChangedGroups = new ArrayList<RadioGroup>();
-    public ArrayList<Integer> onCheckedChangedCheckedIds = new ArrayList<Integer>();
+    public ArrayList<RadioGroup> onCheckedChangedGroups = new ArrayList<>();
+    public ArrayList<Integer> onCheckedChangedCheckedIds = new ArrayList<>();
 
     @Override
     public void onCheckedChanged(RadioGroup group, int checkedId) {

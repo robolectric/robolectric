@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import android.app.Service;
 import android.os.StrictMode;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
