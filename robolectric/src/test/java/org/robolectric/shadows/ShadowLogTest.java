@@ -128,6 +128,27 @@ public class ShadowLogTest {
   }
 
   @Test
+  public void println_shouldLogNullTagAppropriately() {
+    int len = Log.println(Log.ASSERT, null, "msg");
+    assertLogged(Log.ASSERT, null, "msg", null);
+    assertThat(len).isEqualTo(8);
+  }
+
+  @Test
+  public void println_shouldLogNullMessageAppropriately() {
+    int len = Log.println(Log.ASSERT, "tag", null);
+    assertLogged(Log.ASSERT, "tag", null, null);
+    assertThat(len).isEqualTo(8);
+  }
+
+  @Test
+  public void println_shouldLogNullTagAndNullMessageAppropriately() {
+    int len = Log.println(Log.ASSERT, null, null);
+    assertLogged(Log.ASSERT, null, null, null);
+    assertThat(len).isEqualTo(5);
+  }
+
+  @Test
   public void shouldLogToProvidedStream() throws Exception {
     final ByteArrayOutputStream bos = new ByteArrayOutputStream();
     PrintStream old = ShadowLog.stream;
