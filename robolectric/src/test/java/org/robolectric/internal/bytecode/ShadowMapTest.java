@@ -16,6 +16,26 @@ public class ShadowMapTest {
     assertThat(map.get(android.widget.CursorAdapter.class).shadowClassName).isEqualTo(ShadowCursorAdapter.class.getName());
   }
 
+  @Test public void getInvalidatedClasses_disjoin() {
+    ShadowMap current = new ShadowMap.Builder().addShadowClass("a1", "a2", true, false, false).build();
+    ShadowMap previous = new ShadowMap.Builder().addShadowClass("b1", "b2", true, false, false).build();
+
+    assertThat(current.getInvalidatedClasses(previous)).containsOnly("a1", "b1");
+  }
+
+  @Test public void getInvalidatedClasses_overlap() {
+    ShadowMap current = new ShadowMap.Builder()
+        .addShadowClass("a1", "a2", true, false, false)
+        .addShadowClass("c1", "c2", true, false, false)
+        .build();
+    ShadowMap previous = new ShadowMap.Builder()
+        .addShadowClass("a1", "a2", true, false, false)
+        .addShadowClass("c1", "c3", true, false, false)
+        .build();
+
+    assertThat(current.getInvalidatedClasses(previous)).containsExactly("c1");
+  }
+
   @Test public void equalsHashCode() throws Exception {
     ShadowMap a = new ShadowMap.Builder().addShadowClass("a", "b", true, false, false).build();
     ShadowMap b = new ShadowMap.Builder().addShadowClass("a", "b", true, false, false).build();
