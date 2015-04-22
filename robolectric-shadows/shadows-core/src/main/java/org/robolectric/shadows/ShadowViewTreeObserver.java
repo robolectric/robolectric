@@ -19,6 +19,11 @@ public class ShadowViewTreeObserver {
   }
 
   @Implementation
+  public void removeOnGlobalLayoutListener(ViewTreeObserver.OnGlobalLayoutListener listener) {
+    this.globalLayoutListeners.remove(listener);
+  }
+
+  @Implementation
   public void removeGlobalOnLayoutListener(ViewTreeObserver.OnGlobalLayoutListener listener) {
     this.globalLayoutListeners.remove(listener);
   }
