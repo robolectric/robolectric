@@ -15,6 +15,7 @@ import android.text.Selection;
 import android.text.SpannableStringBuilder;
 import android.view.*;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.fakes.RoboMenuItem;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -378,19 +379,17 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
    * Perform a click on a menu item.
    *
    * @param menuItemResId Menu item resource ID.
+   * @return True if the click was handled, false otherwise.
    */
   public boolean clickMenuItem(int menuItemResId) {
     if (optionsMenu == null) {
-      throw new RuntimeException("Activity does not have an options menu! Did you forget to call " +
+      throw new RuntimeException(
+          "Activity does not have an options menu! Did you forget to call " +
           "super.onCreateOptionsMenu(menu) in " + realActivity.getClass().getName() + "?");
     }
 
-    final MenuItem item = optionsMenu.findItem(menuItemResId);
-    if (item == null) {
-      throw new RuntimeException("Could not find menu item with ID: " + menuItemResId);
-    }
-
-    return realActivity.onOptionsItemSelected(item);
+    final RoboMenuItem item = new RoboMenuItem(menuItemResId);
+    return realActivity.onMenuItemSelected(Window.FEATURE_OPTIONS_PANEL, item);
   }
 
   /**
