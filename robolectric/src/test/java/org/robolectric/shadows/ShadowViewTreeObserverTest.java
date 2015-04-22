@@ -38,7 +38,7 @@ public class ShadowViewTreeObserverTest {
 
     listener1.reset();
     listener2.reset();
-    viewTreeObserver.removeGlobalOnLayoutListener(listener1);
+    viewTreeObserver.removeOnGlobalLayoutListener(listener1);
     shadowOf(viewTreeObserver).fireOnGlobalLayoutListeners();
 
     assertFalse(listener1.onGlobalLayoutWasCalled);
@@ -46,7 +46,7 @@ public class ShadowViewTreeObserverTest {
 
     listener1.reset();
     listener2.reset();
-    viewTreeObserver.removeGlobalOnLayoutListener(listener2);
+    viewTreeObserver.removeOnGlobalLayoutListener(listener2);
     shadowOf(viewTreeObserver).fireOnGlobalLayoutListeners();
 
     assertFalse(listener1.onGlobalLayoutWasCalled);
