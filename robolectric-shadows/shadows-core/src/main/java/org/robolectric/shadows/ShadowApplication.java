@@ -134,8 +134,6 @@ public class ShadowApplication extends ShadowContextWrapper {
 
     if (appManifest != null) {
       setPackageName(appManifest.getPackageName());
-      setApplicationName(appManifest.getApplicationName());
-
       this.registerBroadcastReceivers(appManifest);
     }
   }
