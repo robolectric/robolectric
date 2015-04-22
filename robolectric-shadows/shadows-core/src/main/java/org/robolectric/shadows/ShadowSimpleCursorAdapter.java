@@ -173,14 +173,28 @@ public class ShadowSimpleCursorAdapter extends ShadowResourceCursorAdapter {
   }
 
   private void findColumnsFromCursor(Cursor c, String[] from) {
-    int i;
-    int count = from.length;
-    if (mFrom == null || mFrom.length != count) {
-      mFrom = new int[count];
+    // By convention, calling LoaderManager.LoaderCallbacks#onLoaderReset will swap
+    // the current cursor for null. In that case, the current mapping is removed.
+    if(c != null) {
+      int i;
+      int count = from.length;
+      if (mFrom == null || mFrom.length != count) {
+        mFrom = new int[count];
+      }
+      for (i = 0; i < count; i++) {
+        mFrom[i] = c.getColumnIndexOrThrow(from[i]);
+      }
+    } else {
+      mFrom = null;
     }
-    for (i = 0; i < count; i++) {
-      mFrom[i] = c.getColumnIndexOrThrow(from[i]);
-    }
+  }
+
+  @Implementation
+  public Cursor swapCursor(Cursor c) {
+    // super.swapCursor() will notify observers, so make sure we have a mapping before 
+    // this happens
+      findColumnsFromCursor(c, mOriginalFrom);
+      return super.swapCursor(c);
   }
 
   @Implementation
