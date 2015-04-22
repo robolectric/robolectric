@@ -24,6 +24,29 @@ public class ShadowSimpleCursorAdapterTest {
     assertThat(adapter.getCursor()).isSameAs(cursor);
   }
 
+  @Test
+  public void testSwapCursor() {
+    SimpleCursorAdapter adapter = new SimpleCursorAdapter(RuntimeEnvironment.application, 1, null, new String[]{"name"}, new int[]{2}, 0);
+
+    Cursor cursor = setUpDatabase();
+
+    adapter.swapCursor(cursor);
+
+    assertThat(adapter.getCursor()).isSameAs(cursor);
+  }
+
+  @Test
+  public void testSwapCursorToNull() {
+    SimpleCursorAdapter adapter = new SimpleCursorAdapter(RuntimeEnvironment.application, 1, null, new String[]{"name"}, new int[]{2}, 0);
+
+    Cursor cursor = setUpDatabase();
+
+    adapter.swapCursor(cursor);
+    adapter.swapCursor(null);
+
+    assertThat(adapter.getCursor()).isNull();
+  }
+
   private Cursor setUpDatabase() {
     SQLiteDatabase database = SQLiteDatabase.create(null);
     database.execSQL("CREATE TABLE table_name(_id INT PRIMARY KEY, name VARCHAR(255));");
