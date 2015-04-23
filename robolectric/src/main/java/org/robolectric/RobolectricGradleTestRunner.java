@@ -32,7 +32,7 @@ public class RobolectricGradleTestRunner extends RobolectricTestRunner {
 
     final String type = getType(config);
     final String flavor = getFlavor(config);
-    final String applicationId = getApplicationId(config);
+    final String packageName = getPackageName(config);
 
     final FileFsFile res;
     final FileFsFile assets;
@@ -59,8 +59,8 @@ public class RobolectricGradleTestRunner extends RobolectricTestRunner {
     Logger.debug("Robolectric assets directory: " + assets.getPath());
     Logger.debug("   Robolectric res directory: " + res.getPath());
     Logger.debug("   Robolectric manifest path: " + manifest.getPath());
-    Logger.debug("    Robolectric package name: " + applicationId);
-    return new AndroidManifest(manifest, res, assets, applicationId);
+    Logger.debug("    Robolectric package name: " + packageName);
+    return new AndroidManifest(manifest, res, assets, packageName);
   }
 
   private String getType(Config config) {
@@ -79,9 +79,14 @@ public class RobolectricGradleTestRunner extends RobolectricTestRunner {
     }
   }
 
-  private String getApplicationId(Config config) {
+  private String getPackageName(Config config) {
     try {
-      return ReflectionHelpers.getStaticField(config.constants(), "APPLICATION_ID");
+      final String packageName = config.packageName();
+      if (packageName != null && !packageName.isEmpty()) {
+        return packageName;
+      } else {
+        return ReflectionHelpers.getStaticField(config.constants(), "APPLICATION_ID");
+      }
     } catch (Throwable e) {
       return null;
     }

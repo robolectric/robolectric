@@ -61,6 +61,17 @@ public @interface Config {
   Class<? extends Application> application() default Application.class;
 
   /**
+   * Java package name where the "R.class" file is located. This only needs to be specified if you define
+   * an {@code applicationId} associated with {@code productFlavors} or specify {@code applicationIdSuffix}
+   * in your build.gradle.
+   *
+   * <p>If not specified, Robolectric defaults to the {@code applicationId}.</p>
+   *
+   * @return The java package name for R.class.
+   */
+  String packageName() default "";
+
+  /**
    * Qualifiers for the resource resolution, such as "fr-normal-port-hdpi".
    *
    * @return Qualifiers used for resource resolution.
@@ -70,8 +81,7 @@ public @interface Config {
   /**
    * The directory from which to load resources.  This should be relative to the directory containing AndroidManifest.xml.
    *
-   * <p>
-   * If not specified, Robolectric defaults to {@code res}.
+   * <p>If not specified, Robolectric defaults to {@code res}.</p>
    *
    * @return Android resource directory.
    */
@@ -80,8 +90,7 @@ public @interface Config {
   /**
    * The directory from which to load assets. This should be relative to the directory containing AndroidManifest.xml.
    *
-   * <p>
-   * If not specified, Robolectric defaults to {@code assets}.
+   * <p>If not specified, Robolectric defaults to {@code assets}.</p>
    *
    * @return Android asset directory.
    */
@@ -115,6 +124,7 @@ public @interface Config {
     private final String qualifiers;
     private final String resourceDir;
     private final String assetDir;
+    private final String packageName;
     private final Class<?> constants;
     private final Class<?>[] shadows;
     private final Class<? extends Application> application;
@@ -126,6 +136,7 @@ public @interface Config {
           Integer.parseInt(properties.getProperty("emulateSdk", "-1")),
           properties.getProperty("manifest", DEFAULT),
           properties.getProperty("qualifiers", ""),
+          properties.getProperty("packageName", ""),
           properties.getProperty("resourceDir", Config.DEFAULT_RES_FOLDER),
           properties.getProperty("assetDir", Config.DEFAULT_ASSET_FOLDER),
           Integer.parseInt(properties.getProperty("reportSdk", "-1")),
@@ -165,10 +176,11 @@ public @interface Config {
       return pathList.split("[, ]+");
     }
 
-    public Implementation(int emulateSdk, String manifest, String qualifiers, String resourceDir, String assetDir, int reportSdk, Class<?>[] shadows, Class<? extends Application> application, String[] libraries, Class<?> constants) {
+    public Implementation(int emulateSdk, String manifest, String qualifiers, String packageName, String resourceDir, String assetDir, int reportSdk, Class<?>[] shadows, Class<? extends Application> application, String[] libraries, Class<?> constants) {
       this.emulateSdk = emulateSdk;
       this.manifest = manifest;
       this.qualifiers = qualifiers;
+      this.packageName = packageName;
       this.resourceDir = resourceDir;
       this.assetDir = assetDir;
       this.reportSdk = reportSdk;
@@ -183,6 +195,7 @@ public @interface Config {
       this.emulateSdk = other.emulateSdk();
       this.manifest = other.manifest();
       this.qualifiers = other.qualifiers();
+      this.packageName = other.packageName();
       this.resourceDir = other.resourceDir();
       this.assetDir = other.assetDir();
       this.constants = other.constants();
@@ -195,6 +208,7 @@ public @interface Config {
       this.emulateSdk = pick(baseConfig.emulateSdk(), overlayConfig.emulateSdk(), -1);
       this.manifest = pick(baseConfig.manifest(), overlayConfig.manifest(), DEFAULT);
       this.qualifiers = pick(baseConfig.qualifiers(), overlayConfig.qualifiers(), "");
+      this.packageName = pick(baseConfig.packageName(), overlayConfig.packageName(), "");
       this.resourceDir = pick(baseConfig.resourceDir(), overlayConfig.resourceDir(), Config.DEFAULT_RES_FOLDER);
       this.assetDir = pick(baseConfig.assetDir(), overlayConfig.assetDir(), Config.DEFAULT_ASSET_FOLDER);
       this.reportSdk = pick(baseConfig.reportSdk(), overlayConfig.reportSdk(), -1);
@@ -240,6 +254,11 @@ public @interface Config {
     @Override
     public String qualifiers() {
       return qualifiers;
+    }
+
+    @Override
+    public String packageName() {
+      return packageName;
     }
 
     @Override

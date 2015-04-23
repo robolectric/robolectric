@@ -67,6 +67,17 @@ public class RobolectricGradleTestRunnerTest {
   }
 
   @Test
+  public void getAppManifest_withPackageNameOverride_shouldCreateManifest() throws Exception {
+    final RobolectricGradleTestRunner runner = new RobolectricGradleTestRunner(PackageNameTest.class);
+    final AndroidManifest manifest = runner.getAppManifest(runner.getConfig(PackageNameTest.class.getMethod("withoutAnnotation")));
+
+    assertThat(manifest.getPackageName()).isEqualTo("fake.package.name");
+    assertThat(manifest.getResDirectory().getPath()).isEqualTo("build/intermediates/res/flavor1/type1");
+    assertThat(manifest.getAssetsDirectory().getPath()).isEqualTo("build/intermediates/assets/flavor1/type1");
+    assertThat(manifest.getAndroidManifestFile().getPath()).isEqualTo("build/intermediates/manifests/full/flavor1/type1/AndroidManifest.xml");
+  }
+
+  @Test
   public void getAppManifest_shouldThrowException_whenConstantsNotSpecified() throws Exception {
     final RobolectricGradleTestRunner runner = new RobolectricGradleTestRunner(NoConstantsTest.class);
     exception.expect(RuntimeException.class);
@@ -99,6 +110,15 @@ public class RobolectricGradleTestRunnerTest {
   @Ignore
   @Config
   public static class NoConstantsTest {
+
+    @Test
+    public void withoutAnnotation() throws Exception {
+    }
+  }
+
+  @Ignore
+  @Config(constants = BuildConfig.class, packageName = "fake.package.name")
+  public static class PackageNameTest {
 
     @Test
     public void withoutAnnotation() throws Exception {
