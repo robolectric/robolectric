@@ -7,9 +7,10 @@ import org.robolectric.TestRunners;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.assertj.core.api.Assertions.*;
+import static org.robolectric.res.ResBunch.Value;
 
 @RunWith(TestRunners.WithDefaults.class)
-public class ResBunchTest extends ResBunch {
+public class ResBunchTest {
 
   @Test
   public void closestMatchIsPicked() {
@@ -111,7 +112,6 @@ public class ResBunchTest extends ResBunch {
   }
 
   // Extend ResBunch.Values to make its constructor visible to this class
-  @SuppressWarnings("serial")
   private static class Values extends ResBunch.Values {
   }
 }

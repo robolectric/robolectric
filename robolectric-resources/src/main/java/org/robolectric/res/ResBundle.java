@@ -1,7 +1,7 @@
 package org.robolectric.res;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -34,33 +34,30 @@ public class ResBundle<T> {
     final int count = values.size();
     if (count == 0) return null;
 
-    BigInteger possibles = BigInteger.ZERO;
-    for (int i = 0; i < count; i++) possibles = possibles.setBit(i);
+    BitSet possibles = new BitSet(count);
+    possibles.set(0, count);
 
     StringTokenizer st = new StringTokenizer(qualifiers, "-");
     while (st.hasMoreTokens()) {
       String qualifier = st.nextToken();
       String paddedQualifier = "-" + qualifier + "-";
-      BigInteger matches = BigInteger.ZERO;
+      BitSet matches = new BitSet(count);
 
-      for (int i = 0; i < count; i++) {
-        if (!possibles.testBit(i)) continue;
-
+      for (int i = possibles.nextSetBit(0); i != -1; i = possibles.nextSetBit(i + 1)) {
         if (values.get(i).qualifiers.contains(paddedQualifier)) {
-          matches = matches.setBit(i);
+          matches.set(i);
         }
       }
 
-      if (!matches.equals(BigInteger.ZERO)) {
-        possibles = possibles.and(matches); // eliminate any that didn't match this qualifier
+      if (!matches.isEmpty()) {
+        possibles.and(matches); // eliminate any that didn't match this qualifier
       }
 
-      if (matches.bitCount() == 1) break;
+      if (matches.cardinality() == 1) break;
     }
 
-    for (int i = 0; i < count; i++) {
-      if (possibles.testBit(i)) return values.get(i);
-    }
+    int i = possibles.nextSetBit(0);
+    if (i != -1) return values.get(i);
     throw new IllegalStateException("couldn't handle qualifiers \"" + qualifiers + "\"");
   }
 

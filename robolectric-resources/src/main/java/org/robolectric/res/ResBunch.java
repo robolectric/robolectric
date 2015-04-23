@@ -1,6 +1,6 @@
 package org.robolectric.res;
 
-import java.math.BigInteger;
+import java.util.BitSet;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -66,28 +66,26 @@ public class ResBunch {
     final int count = values.size();
     if (count == 0) return null;
 
-    BigInteger possibles = BigInteger.ZERO;
-    for (int i = 0; i < count; i++) possibles = possibles.setBit(i);
+    BitSet possibles = new BitSet(count);
+    possibles.set(0, count);
 
     StringTokenizer st = new StringTokenizer(qualifiers, "-");
     while (st.hasMoreTokens()) {
       String qualifier = st.nextToken();
       String paddedQualifier = "-" + qualifier + "-";
-      BigInteger matches = BigInteger.ZERO;
+      BitSet matches = new BitSet(count);
 
-      for (int i = 0; i < count; i++) {
-        if (!possibles.testBit(i)) continue;
-
+      for (int i = possibles.nextSetBit(0); i != -1; i = possibles.nextSetBit(i + 1)) {
         if (values.get(i).qualifiers.contains(paddedQualifier)) {
-          matches = matches.setBit(i);
+          matches.set(i);
         }
       }
 
-      if (!matches.equals(BigInteger.ZERO)) {
-        possibles = possibles.and(matches); // eliminate any that didn't match this qualifier
+      if (!matches.isEmpty()) {
+        possibles.and(matches); // eliminate any that didn't match this qualifier
       }
 
-      if (matches.bitCount() == 1) break;
+      if (matches.cardinality() == 1) break;
     }
 
     /*
@@ -100,11 +98,7 @@ public class ResBunch {
     if (qualifiers.length() > 0 && targetApiLevel != -1) {
       Value bestMatch = null;
       int bestMatchDistance = Integer.MAX_VALUE;
-      for (int i = 0; i < count; i++) {
-        if (!possibles.testBit(i)) {
-          continue;
-        }
-        
+      for (int i = possibles.nextSetBit(0); i != -1; i = possibles.nextSetBit(i + 1)) {
         Value value = values.get(i);
         int distance = getDistance(value, targetApiLevel);
           // Remove the version part and see if they still match
@@ -121,9 +115,9 @@ public class ResBunch {
       }
     }
 
-    for (int i = 0; i < count; i++) {
-      if (possibles.testBit(i)) return values.get(i);
-    }
+    int i = possibles.nextSetBit(0);
+    if (i != -1) return values.get(i);
+
     throw new IllegalStateException("couldn't handle qualifiers \"" + qualifiers + "\"");
   }
   
