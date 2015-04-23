@@ -16,7 +16,7 @@ public class ShadowWranglerUnitTest {
 
   @Before
   public void setup() throws Exception {
-    shadowWrangler = new ShadowWrangler(ShadowMap.EMPTY, new SdkConfig(SdkConfig.FALLBACK_SDK_VERSION));
+    shadowWrangler = new ShadowWrangler(ShadowMap.EMPTY);
   }
 
   @Test
