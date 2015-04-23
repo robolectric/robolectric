@@ -8,12 +8,7 @@ import org.robolectric.annotation.RealObject;
 public class ShadowFoo extends ShadowWranglerTest.ShadowFooParent {
   @RealObject public Foo realFooField;
   public Foo realFooInConstructor;
-  public Foo realFooCtor;
   public String name;
-
-  public ShadowFoo(Foo foo) {
-    this.realFooCtor = foo;
-  }
 
   @Override
   @SuppressWarnings({"UnusedDeclaration"})

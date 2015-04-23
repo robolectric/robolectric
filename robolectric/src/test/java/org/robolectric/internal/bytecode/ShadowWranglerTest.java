@@ -36,11 +36,10 @@ public class ShadowWranglerTest {
   }
 
   @Test
-  @Config(shadows = {ShadowFoo.class})
+  @Config(shadows = { ShadowFoo.class })
   public void testConstructorInvocation() throws Exception {
     Foo foo = new Foo(name);
     assertSame(name, shadowOf(foo).name);
-    assertSame(foo, shadowOf(foo).realFooCtor);
   }
 
   @Test
@@ -270,9 +269,6 @@ public class ShadowWranglerTest {
 
   @Implements(TextFoo.class)
   public static class ShadowTextFoo extends ShadowFoo {
-    public ShadowTextFoo(Foo foo) {
-      super(foo);
-    }
   }
 
   @Instrument
