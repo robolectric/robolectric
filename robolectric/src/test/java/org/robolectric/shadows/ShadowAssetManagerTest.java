@@ -79,20 +79,15 @@ public class ShadowAssetManagerTest {
   }
 
   @Test
-  public void assetsInputStreams() throws IOException {
-    String testPath;
-    String fileContents;
-    InputStream inputStream;
+  public void open_shouldOpenFile() throws IOException {
+    final String contents = Strings.fromStream(assetManager.open("assetsHome.txt"));
+    assertThat(contents).isEqualTo("assetsHome!");
+  }
 
-    testPath = "assetsHome.txt";
-    inputStream = assetManager.open(testPath);
-    fileContents = Strings.fromStream(inputStream);
-    assertEquals("assetsHome!", fileContents);
-
-    testPath = joinPath("docs", "extra", "testing", "hello.txt");
-    inputStream = assetManager.open(testPath);
-    fileContents = Strings.fromStream(inputStream);
-    assertEquals("hello!", fileContents);
+  @Test
+  public void open_withAccessMode_shouldOpenFile() throws IOException {
+    final String contents = Strings.fromStream(assetManager.open("assetsHome.txt", AssetManager.ACCESS_BUFFER));
+    assertThat(contents).isEqualTo("assetsHome!");
   }
 
   @Test
