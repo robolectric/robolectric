@@ -3,6 +3,7 @@ package org.robolectric.internal.bytecode;
 import android.os.Build;
 import org.junit.Test;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.internal.ShadowedObject;
 import org.robolectric.internal.bytecode.testing.*;
 import org.robolectric.internal.ShadowConstants;
 import org.robolectric.internal.Shadow;
@@ -615,7 +616,7 @@ abstract public class InstrumentingClassLoaderTestBase {
 
     @Override
     public boolean shouldAcquire(String name) {
-      return shouldAcquire && !name.startsWith("java.");
+      return shouldAcquire && !name.startsWith("java.") && !name.equals(ShadowedObject.class.getName());
     }
 
     @Override

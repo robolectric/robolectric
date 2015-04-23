@@ -20,6 +20,7 @@ import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
+import org.robolectric.internal.ShadowedObject;
 import org.robolectric.internal.Shadow;
 import org.robolectric.internal.ShadowConstants;
 import org.objectweb.asm.tree.VarInsnNode;
@@ -137,6 +138,8 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
 
       final ClassReader classReader = new ClassReader(origClassBytes);
       classReader.accept(classNode, 0);
+
+      classNode.interfaces.add(Type.getInternalName(ShadowedObject.class));
 
       try {
         byte[] bytes;
@@ -450,7 +453,7 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
       }
 
       {
-        MethodNode initMethodNode = new MethodNode(ACC_PROTECTED, ShadowConstants.GET_ROBO_DATA_METHOD_NAME, GET_ROBO_DATA_SIGNATURE, null, null);
+        MethodNode initMethodNode = new MethodNode(ACC_PUBLIC, ShadowConstants.GET_ROBO_DATA_METHOD_NAME, GET_ROBO_DATA_SIGNATURE, null, null);
         MyGenerator m = new MyGenerator(initMethodNode);
         m.loadThis();                                         // this
         m.getField(classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);  // contents of __robo_data__
