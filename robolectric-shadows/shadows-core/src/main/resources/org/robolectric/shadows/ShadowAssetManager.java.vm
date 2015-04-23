@@ -159,6 +159,11 @@ public final class ShadowAssetManager {
   }
 
   @Implementation
+  public final InputStream open(String fileName, int accessMode) throws IOException {
+    return appManifest.getAssetsDirectory().join(fileName).getInputStream();
+  }
+
+  @Implementation
   public final String[] list(String path) throws IOException {
     FsFile file = appManifest.getAssetsDirectory().join(path);
     if (file.isDirectory()) {
