@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.os.MessageQueue;
@@ -58,25 +59,25 @@ public class ShadowMessageQueueTest {
   }
   
   @Test
-  @Config(emulateSdk=19)
+  @Config(sdk = Build.VERSION_CODES.KITKAT)
   public void nativePollOnce_shouldAssert_19() {
     shouldAssert("nativePollOnce", from(int.class, 1), from(int.class, 2));
   }
   
   @Test
-  @Config(emulateSdk=19)
+  @Config(sdk = Build.VERSION_CODES.KITKAT)
   public void nativeWake_shouldAssert_19() {
     shouldAssert("nativeWake", from(int.class, 1));
   }
   
   @Test
-  @Config(emulateSdk=21)
+  @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
   public void nativePollOnce_shouldAssert_21() {
     shouldAssert("nativePollOnce", from(long.class, 1), from(int.class, 2));
   }
   
   @Test
-  @Config(emulateSdk=21)
+  @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
   public void nativeWake_shouldAssert_21() {
     shouldAssert("nativeWake", from(long.class, 1));
   }
@@ -161,13 +162,13 @@ public class ShadowMessageQueueTest {
   }
   
   @Test
-  @Config(emulateSdk = 19)
+  @Config(sdk = Build.VERSION_CODES.KITKAT)
   public void dispatchedMessage_isMarkedInUse_andRecycled_19() {
     dispatchedMessage_isMarkedInUse_andRecycled();
   }
 
   @Test
-  @Config(emulateSdk = 21)
+  @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
   public void dispatchedMessage_isMarkedInUse_andRecycled_21() {
     dispatchedMessage_isMarkedInUse_andRecycled();
   }

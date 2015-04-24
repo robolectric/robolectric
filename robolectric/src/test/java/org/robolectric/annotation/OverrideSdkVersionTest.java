@@ -18,8 +18,8 @@ public class OverrideSdkVersionTest {
   }
 
   @Test
-  @Config(reportSdk = Build.VERSION_CODES.FROYO)
+  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR1)
   public void whenOverridden_shouldUseSpecifiedVersion() {
-    assertThat(Build.VERSION.SDK_INT).isEqualTo(Build.VERSION_CODES.FROYO);
+    assertThat(Build.VERSION.SDK_INT).isEqualTo(Build.VERSION_CODES.JELLY_BEAN_MR1);
   }
 }

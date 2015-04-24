@@ -38,7 +38,7 @@ public class ParallelUniverseTest {
   @Test
   public void setUpApplicationState_setsVersionQualifierFromSdkConfig() {
     String givenQualifiers = "";
-    Config c = new Config.Implementation(-1, Config.DEFAULT, givenQualifiers, null, "res", "assets", -1, new Class[0], Application.class, new String[0], null);
+    Config c = new Config.Implementation(-1, Config.DEFAULT, givenQualifiers, "org.robolectric", "res", "assets", new Class[0], Application.class, new String[0], null);
     pu.setUpApplicationState(null, new DefaultTestLifecycle(), null, null, c);
     assertThat(getQualifiersfromSystemResources()).isEqualTo("v18");
     assertThat(getQualifiersFromAppAssetManager()).isEqualTo("v18");
@@ -48,7 +48,7 @@ public class ParallelUniverseTest {
   @Test
   public void setUpApplicationState_setsVersionQualifierFromConfigQualifiers() {
     String givenQualifiers = "land-v17";
-    Config c = new Config.Implementation(-1, Config.DEFAULT, givenQualifiers, null, "res", "assets", -1, new Class[0], Application.class, new String[0], null);
+    Config c = new Config.Implementation(-1, Config.DEFAULT, givenQualifiers, "org.robolectric", "res", "assets", new Class[0], Application.class, new String[0], null);
     pu.setUpApplicationState(null, new DefaultTestLifecycle(), null, null, c);
     assertThat(getQualifiersfromSystemResources()).isEqualTo("land-v17");
     assertThat(getQualifiersFromAppAssetManager()).isEqualTo("land-v17");
@@ -58,7 +58,7 @@ public class ParallelUniverseTest {
   @Test
   public void setUpApplicationState_setsVersionQualifierFromSdkConfigWithOtherQualifiers() {
     String givenQualifiers = "large-land";
-    Config c = new Config.Implementation(-1, Config.DEFAULT, givenQualifiers, null, "res", "assets", -1, new Class[0], Application.class, new String[0], null);
+    Config c = new Config.Implementation(-1, Config.DEFAULT, givenQualifiers, "res", "assets", "", new Class[0], Application.class, new String[0], null);
     pu.setUpApplicationState(null, new DefaultTestLifecycle(), null, null, c);
     assertThat(getQualifiersfromSystemResources()).isEqualTo("large-land-v18");
     assertThat(getQualifiersFromAppAssetManager()).isEqualTo("large-land-v18");

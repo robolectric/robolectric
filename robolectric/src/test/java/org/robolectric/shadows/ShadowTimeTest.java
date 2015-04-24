@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import java.util.Arrays;
 import java.util.TimeZone;
 
+import android.os.Build;
 import android.os.SystemClock;
 import android.text.format.Time;
 import android.util.TimeFormatException;
@@ -28,7 +29,8 @@ public class ShadowTimeTest {
     TimeZone.setDefault(DEFAULT_TIMEZONE);
   }
   
-  @Test @Config(emulateSdk = 18)
+  @Test
+  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void shouldSetToNow() throws Exception {
     Time t = new Time();
     SystemClock.setCurrentTimeMillis(1000);
@@ -36,13 +38,15 @@ public class ShadowTimeTest {
     assertThat(t.toMillis(false)).isEqualTo(1000);
   }
 
-  @Test @Config(emulateSdk = 18)
+  @Test
+  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void shouldHaveNoArgsConstructor() throws Exception {
     Time t = new Time();
     assertNotNull(t.timezone);
   }
 
-  @Test @Config(emulateSdk = 18)
+  @Test
+  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void shouldHaveCopyConstructor() throws Exception {
     Time t = new Time();
     t.setToNow();
@@ -56,7 +60,8 @@ public class ShadowTimeTest {
     assertEquals(t.second, t2.second);
   }
 
-  @Test @Config(emulateSdk = 18)
+  @Test
+  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void shouldHaveSetTime() throws Exception {
     Time t = new Time();
     t.setToNow();
@@ -71,7 +76,8 @@ public class ShadowTimeTest {
     assertEquals(t.second, t2.second);
   }
 
-  @Test @Config(emulateSdk = 18)
+  @Test
+  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void shouldHaveSet3Args() throws Exception {
     Time t = new Time();
     t.set(1, 1, 2000);
@@ -80,7 +86,8 @@ public class ShadowTimeTest {
     assertEquals(t.monthDay, 1);
   }
 
-  @Test @Config(emulateSdk = 18)
+  @Test
+  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void shouldHaveSet6Args() throws Exception {
     Time t = new Time();
     t.set(1, 1, 1, 1, 1, 2000);
@@ -92,13 +99,15 @@ public class ShadowTimeTest {
     assertEquals(t.hour, 1);
   }
 
-  @Test @Config(emulateSdk = 18)
+  @Test
+  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void shouldHaveTimeZoneConstructor() throws Exception {
     Time t = new Time("UTC");
     assertEquals(t.timezone, "UTC");
   }
 
-  @Test @Config(emulateSdk = 18)
+  @Test
+  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void shouldClear() throws Exception {
     Time t = new Time();
     t.setToNow();
@@ -116,19 +125,22 @@ public class ShadowTimeTest {
     assertEquals(-1, t.isDst);
   }
 
-  @Test @Config(emulateSdk = 18)
+  @Test
+  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void shouldHaveToMillis() throws Exception {
     Time t = new Time();
     t.set(86400 * 1000);
     assertEquals(86400 * 1000, t.toMillis(false));
   }
 
-  @Test @Config(emulateSdk = 18)
+  @Test
+  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void shouldHaveCurrentTimeZone() throws Exception {
     assertNotNull(Time.getCurrentTimezone());
   }
   
-  @Test @Config(emulateSdk = 18)
+  @Test
+  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void shouldSwitchTimeZones() throws Exception {
     Time t = new Time("UTC");
   	
@@ -144,7 +156,8 @@ public class ShadowTimeTest {
     assertThat(t.toMillis(true)).isEqualTo(1414213562000L);
   }
 
-  @Test @Config(emulateSdk = 18)
+  @Test
+  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void shouldHaveCompareAndBeforeAfter() throws Exception {
     Time a = new Time();
     Time b = new Time();
@@ -164,7 +177,8 @@ public class ShadowTimeTest {
     assertThat(a.before(b)).isTrue();
   }
 
-  @Test @Config(emulateSdk = 18)
+  @Test
+  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void shouldHaveParse() throws Exception {
     Time t = new Time("Europe/Berlin");
     assertFalse(t.parse("20081013T160000"));
@@ -184,7 +198,8 @@ public class ShadowTimeTest {
     assertEquals(0, t.second);
   }
   
-  @Test @Config(emulateSdk = 18)
+  @Test
+  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void shouldParseRfc3339() {
     for (String tz : Arrays.asList("Europe/Berlin", "America/Los Angeles", "Australia/Adelaide")) {
       String desc = "Eval when local timezone is " + tz;
@@ -242,7 +257,8 @@ public class ShadowTimeTest {
     t.parse("BLARGH");
   }
 
-  @Test @Config(emulateSdk = 18)
+  @Test
+  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void shouldHaveParseShort() throws Exception {
     Time t = new Time();
     t.parse("20081013");
@@ -254,7 +270,8 @@ public class ShadowTimeTest {
     assertEquals(0, t.second);
   }
 
-  @Test @Config(emulateSdk = 18)
+  @Test
+  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void shouldFormat() throws Exception {
     Time t = new Time(Time.TIMEZONE_UTC);
     t.set(3600000L);
@@ -263,7 +280,8 @@ public class ShadowTimeTest {
     assertEquals("Hello epoch  1:00 AM", t.format("Hello epoch %l:%M %p"));
   }
 
-  @Test @Config(emulateSdk = 18)
+  @Test
+  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void shouldFormatAndroidStrings() throws Exception {
     Time t = new Time("UTC");
     // NOTE: month is zero-based.
@@ -289,7 +307,8 @@ public class ShadowTimeTest {
         t.format("%-l:%M%^p"));
   }
 
-  @Test @Config(emulateSdk = 18)
+  @Test
+  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void shouldFormatAllFormats() throws Exception {
     Time t = new Time("Asia/Tokyo");
     t.set(1407496560000L);
@@ -346,7 +365,8 @@ public class ShadowTimeTest {
     assertEquals("%", t.format("%%"));
   }
 
-  @Test @Config(emulateSdk = 18)
+  @Test
+  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void shouldFormat2445() throws Exception {
     Time t = new Time();
     assertEquals("19700101T000000", t.format2445());
@@ -355,21 +375,24 @@ public class ShadowTimeTest {
     assertEquals("19700101T000000Z",t.format2445());
   }
 
-  @Test @Config(emulateSdk = 18)
+  @Test
+  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void shouldFormat3339() throws Exception {
     Time t = new Time("Europe/Berlin");
     assertEquals("1970-01-01T00:00:00.000+00:00", t.format3339(false));
     assertEquals("1970-01-01", t.format3339(true));
   }
 
-  @Test @Config(emulateSdk = 18)
+  @Test
+  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void testIsEpoch() throws Exception {
     Time t = new Time();
     boolean isEpoch = Time.isEpoch(t);
     assertEquals(true, isEpoch);
   }
 
-  @Test @Config(emulateSdk = 18)
+  @Test
+  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void testGetJulianDay() throws Exception {
     Time time = new Time();
 
@@ -393,7 +416,8 @@ public class ShadowTimeTest {
     }
   }
 
-  @Test @Config(emulateSdk = 18)
+  @Test
+  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void testSetJulianDay() throws Exception {
     Time time = new Time();
     time.set(0, 0, 0, 12, 5, 2008);

@@ -64,7 +64,8 @@ public class ShadowWindowTest {
     assertThat(shadowWindow.getSoftInputMode()).isEqualTo(7);
   }
 
-  @Test @Config(emulateSdk = Build.VERSION_CODES.KITKAT)
+  @Test
+  @Config(sdk = Build.VERSION_CODES.KITKAT)
   public void getProgressBar_returnsTheProgressBar() {
     Activity activity = Robolectric.buildActivity(TestActivity.class).create().get();
 
@@ -77,7 +78,8 @@ public class ShadowWindowTest {
     assertThat(progress.getVisibility()).isEqualTo(View.GONE);
   }
 
-  @Test @Config(emulateSdk = Build.VERSION_CODES.KITKAT)
+  @Test
+  @Config(sdk = Build.VERSION_CODES.KITKAT)
   public void getIndeterminateProgressBar_returnsTheIndeterminateProgressBar() {
     ActivityController<TestActivity> testActivityActivityController = Robolectric.buildActivity(TestActivity.class);
     TestActivity activity = testActivityActivityController.get();

@@ -108,7 +108,8 @@ public class ShadowPowerManagerTest {
     assertThat(shadowLock.isReferenceCounted()).isTrue();
   }
 
-  @Test @Config(emulateSdk = Build.VERSION_CODES.LOLLIPOP)
+  @Test
+  @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
   public void isInteractive_shouldGetAndSet() {
     shadowPowerManager.setIsInteractive(true);
     assertThat(powerManager.isInteractive()).isTrue();

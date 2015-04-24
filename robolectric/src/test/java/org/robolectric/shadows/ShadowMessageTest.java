@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -188,13 +189,13 @@ public class ShadowMessageTest {
   }
   
   @Test
-  @Config(emulateSdk=19)
+  @Config(sdk = Build.VERSION_CODES.KITKAT)
   public void recycle_shouldInvokeRealObject19() {
     recycle_shouldInvokeRealObject("recycle");
   }
 
   @Test
-  @Config(emulateSdk=21)
+  @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
   public void recycle_shouldInvokeRealObject21() {
     recycle_shouldInvokeRealObject("recycleUnchecked");
   }
@@ -207,13 +208,13 @@ public class ShadowMessageTest {
   }
   
   @Test
-  @Config(emulateSdk=19)
+  @Config(sdk = Build.VERSION_CODES.KITKAT)
   public void recycle_shouldRemoveMessageFromScheduler19() {
     recycle_shouldRemoveMessageFromScheduler();
   }
   
   @Test
-  @Config(emulateSdk=21)
+  @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
   public void recycle_shouldRemoveMessageFromScheduler21() {
     recycle_shouldRemoveMessageFromScheduler();
   }
