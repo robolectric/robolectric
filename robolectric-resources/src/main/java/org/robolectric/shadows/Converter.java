@@ -130,9 +130,9 @@ public class Converter<T> {
     // todo: generalize this!
     if (format.equals("integer|enum") || format.equals("dimension|enum")) {
       if (attribute.value.matches("^\\d.*")) {
-        types = new String[] { types[0] };
+        types = new String[]{types[0]};
       } else {
-        types = new String[] { "enum" };
+        types = new String[]{"enum"};
       }
     }
 
@@ -219,26 +219,31 @@ public class Converter<T> {
   }
 
   public static class FromAttrData extends Converter<AttrData> {
-    @Override public CharSequence asCharSequence(TypedResource typedResource) {
+    @Override
+    public CharSequence asCharSequence(TypedResource typedResource) {
       return typedResource.asString();
     }
 
-    @Override public void fillTypedValue(AttrData data, TypedValue typedValue) {
+    @Override
+    public void fillTypedValue(AttrData data, TypedValue typedValue) {
       typedValue.type = TypedValue.TYPE_STRING;
       throw new RuntimeException("huh?");
     }
   }
 
   public static class FromCharSequence extends Converter<String> {
-    @Override public CharSequence asCharSequence(TypedResource typedResource) {
-      return typedResource.asString();
+    @Override
+    public CharSequence asCharSequence(TypedResource typedResource) {
+      return typedResource.asString().trim();
     }
 
-    @Override public int asInt(TypedResource typedResource) {
+    @Override
+    public int asInt(TypedResource typedResource) {
       return convertInt(typedResource.asString().trim());
     }
 
-    @Override public void fillTypedValue(String data, TypedValue typedValue) {
+    @Override
+    public void fillTypedValue(String data, TypedValue typedValue) {
       typedValue.type = TypedValue.TYPE_STRING;
       typedValue.data = 0;
       typedValue.assetCookie = getNextStringCookie();
@@ -247,33 +252,36 @@ public class Converter<T> {
   }
 
   public static class FromColor extends Converter<String> {
-    @Override public void fillTypedValue(String data, TypedValue typedValue) {
+    @Override
+    public void fillTypedValue(String data, TypedValue typedValue) {
       typedValue.type = TypedValue.TYPE_INT_COLOR_ARGB8;
       typedValue.data = Color.parseColor(data);
       typedValue.assetCookie = 0;
     }
 
-    @Override public int asInt(TypedResource typedResource) {
-      String rawValue = typedResource.asString();
-      return Color.parseColor(rawValue);
+    @Override
+    public int asInt(TypedResource typedResource) {
+      return Color.parseColor(typedResource.asString().trim());
     }
   }
 
   public static class FromDrawableValue extends Converter<String> {
-    @Override public void fillTypedValue(String data, TypedValue typedValue) {
+    @Override
+    public void fillTypedValue(String data, TypedValue typedValue) {
       typedValue.type = TypedValue.TYPE_INT_COLOR_ARGB8;
       typedValue.data = Color.parseColor(data);
       typedValue.assetCookie = 0;
     }
 
-    @Override public int asInt(TypedResource typedResource) {
-      String rawValue = typedResource.asString();
-      return Color.parseColor(rawValue);
+    @Override
+    public int asInt(TypedResource typedResource) {
+      return Color.parseColor(typedResource.asString().trim());
     }
   }
 
   private static class FromFilePath extends Converter<String> {
-    @Override public void fillTypedValue(String data, TypedValue typedValue) {
+    @Override
+    public void fillTypedValue(String data, TypedValue typedValue) {
       typedValue.type = TypedValue.TYPE_STRING;
       typedValue.data = 0;
       typedValue.string = data;
@@ -282,32 +290,36 @@ public class Converter<T> {
   }
 
   public static class FromArray extends Converter {
-    @Override public TypedResource[] getItems(TypedResource typedResource) {
+    @Override
+    public TypedResource[] getItems(TypedResource typedResource) {
       return (TypedResource[]) typedResource.getData();
     }
   }
 
   private static class FromInt extends Converter<String> {
-    @Override public void fillTypedValue(String data, TypedValue typedValue) {
+    @Override
+    public void fillTypedValue(String data, TypedValue typedValue) {
       typedValue.type = TypedValue.TYPE_INT_HEX;
       typedValue.data = convertInt(data);
       typedValue.assetCookie = 0;
     }
 
-    @Override public int asInt(TypedResource typedResource) {
-      String rawValue = typedResource.asString();
-      return convertInt(rawValue);
+    @Override
+    public int asInt(TypedResource typedResource) {
+      return convertInt(typedResource.asString().trim());
     }
   }
 
   private static class FromFraction extends Converter<String> {
-    @Override public void fillTypedValue(String data, TypedValue typedValue) {
+    @Override
+    public void fillTypedValue(String data, TypedValue typedValue) {
       ResourceHelper.parseFloatAttribute(null, data, typedValue, false);
     }
   }
 
   private static class FromFile extends Converter<FsFile> {
-    @Override public void fillTypedValue(FsFile data, TypedValue typedValue) {
+    @Override
+    public void fillTypedValue(FsFile data, TypedValue typedValue) {
       typedValue.type = TypedValue.TYPE_STRING;
       typedValue.data = 0;
       typedValue.string = data.getPath();
@@ -316,13 +328,15 @@ public class Converter<T> {
   }
 
   private static class FromFloat extends Converter<String> {
-    @Override public void fillTypedValue(String data, TypedValue typedValue) {
+    @Override
+    public void fillTypedValue(String data, TypedValue typedValue) {
       ResourceHelper.parseFloatAttribute(null, data, typedValue, false);
     }
   }
 
   private static class FromBoolean extends Converter<String> {
-    @Override public void fillTypedValue(String data, TypedValue typedValue) {
+    @Override
+    public void fillTypedValue(String data, TypedValue typedValue) {
       typedValue.type = TypedValue.TYPE_INT_BOOLEAN;
       typedValue.data = convertBool(data) ? 1 : 0;
       typedValue.assetCookie = 0;
@@ -330,12 +344,11 @@ public class Converter<T> {
   }
 
   private static class FromDimen extends Converter<String> {
-    @Override public void fillTypedValue(String data, TypedValue typedValue) {
+    @Override
+    public void fillTypedValue(String data, TypedValue typedValue) {
       ResourceHelper.parseFloatAttribute(null, data, typedValue, false);
     }
   }
-
-  ///////////////////////
 
   private static int convertInt(String rawValue) {
     try {
@@ -374,7 +387,8 @@ public class Converter<T> {
       super(attrData);
     }
 
-    @Override public void fillTypedValue(String data, TypedValue typedValue) {
+    @Override
+    public void fillTypedValue(String data, TypedValue typedValue) {
       typedValue.type = TypedValue.TYPE_INT_HEX;
       typedValue.data = findValueFor(data);
       typedValue.assetCookie = 0;
@@ -386,7 +400,8 @@ public class Converter<T> {
       super(attrData);
     }
 
-    @Override public void fillTypedValue(String data, TypedValue typedValue) {
+    @Override
+    public void fillTypedValue(String data, TypedValue typedValue) {
       int flags = 0;
       for (String key : data.split("\\|")) {
         flags |= findValueFor(key);
