@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 #if ($api >= 18)
+import java.util.ArrayList;
 import android.app.PendingIntent;
 import android.telephony.SmsManager;
 import android.text.TextUtils;
@@ -11,11 +12,10 @@ import org.robolectric.internal.Shadow;
 
 @Implements(SmsManager.class)
 public class ShadowSmsManager {
-
   @RealObject
   private static SmsManager realManager = Shadow.newInstanceOf(SmsManager.class);
-
-  private TextSmsParams lastTextSmsParams = null;
+  private TextSmsParams lastTextSmsParams;
+  private TextMultipartParams lastTextMultipartParams;
 
   @Implementation
   public static SmsManager getDefault() {
@@ -23,42 +23,75 @@ public class ShadowSmsManager {
   }
 
   @Implementation
-  public void sendTextMessage(
-      String destinationAddress, String scAddress, String text,
-      PendingIntent sentIntent, PendingIntent deliveryIntent) {
-
-    if (TextUtils.isEmpty(destinationAddress))
+  public void sendTextMessage(String destinationAddress, String scAddress, String text, PendingIntent sentIntent, PendingIntent deliveryIntent) {
+    if (TextUtils.isEmpty(destinationAddress)) {
       throw new IllegalArgumentException("Invalid destinationAddress");
+    }
 
-    if (TextUtils.isEmpty(text))
+    if (TextUtils.isEmpty(text)) {
       throw new IllegalArgumentException("Invalid message body");
+    }
 
-    lastTextSmsParams = new TextSmsParams(
-      destinationAddress,
-      scAddress,
-      text,
-      sentIntent,
-      deliveryIntent );
+    lastTextSmsParams = new TextSmsParams(destinationAddress, scAddress, text, sentIntent, deliveryIntent);
   }
 
+  @Implementation
+  public void sendMultipartTextMessage(String destinationAddress, String scAddress, ArrayList<String> parts, ArrayList<PendingIntent> sentIntents, ArrayList<PendingIntent> deliveryIntents) {
+    if (TextUtils.isEmpty(destinationAddress)) {
+      throw new IllegalArgumentException("Invalid destinationAddress");
+    }
+
+    if (parts == null) {
+      throw new IllegalArgumentException("Invalid message parts");
+    }
+
+    lastTextMultipartParams = new TextMultipartParams(destinationAddress, scAddress, parts, sentIntents, deliveryIntents);
+  }
+
+  /**
+   * Non-Android accessor.
+   *
+   * @return Parameters for last call to {@code sendTextMessage}.
+   */
   public TextSmsParams getLastSentTextMessageParams() {
     return lastTextSmsParams;
   }
 
+  /**
+   * Non-Android accessor.
+   *
+   * Clear last recorded parameters for {@code sendTextMessage}.
+   */
   public void clearLastSentTextMessageParams() {
     lastTextSmsParams = null;
   }
 
-  public class TextSmsParams {
-    private String destinationAddress;
-    private String scAddress;
-    private String text;
-    private PendingIntent sentIntent;
-    private PendingIntent deliveryIntent;
+  /**
+   * Non-Android accessor.
+   *
+   * @return Parameters for last call to {@code sendMultipartTextMessage}.
+   */
+  public TextMultipartParams getLastSentMultipartTextMessageParams() {
+    return lastTextMultipartParams;
+  }
 
-    public TextSmsParams(
-      String destinationAddress, String scAddress, String text,
-      PendingIntent sentIntent, PendingIntent deliveryIntent) {
+  /**
+   * Non-Android accessor.
+   *
+   * Clear last recorded parameters for {@code sendMultipartTextMessage}.
+   */
+  public void clearLastSentMultipartTextMessageParams() {
+    lastTextMultipartParams = null;
+  }
+
+  public class TextSmsParams {
+    private final String destinationAddress;
+    private final String scAddress;
+    private final String text;
+    private final PendingIntent sentIntent;
+    private final PendingIntent deliveryIntent;
+
+    public TextSmsParams(String destinationAddress, String scAddress, String text, PendingIntent sentIntent, PendingIntent deliveryIntent) {
       this.destinationAddress = destinationAddress;
       this.scAddress = scAddress;
       this.text = text;
@@ -84,6 +117,42 @@ public class ShadowSmsManager {
 
     public PendingIntent getDeliveryIntent() {
       return deliveryIntent;
+    }
+  }
+
+  public class TextMultipartParams {
+    private final String destinationAddress;
+    private final String scAddress;
+    private final ArrayList<String> parts;
+    private final ArrayList<PendingIntent> sentIntents;
+    private final ArrayList<PendingIntent> deliveryIntents;
+
+    public TextMultipartParams(String destinationAddress, String scAddress, ArrayList<String> parts, ArrayList<PendingIntent> sentIntents, ArrayList<PendingIntent> deliveryIntents) {
+      this.destinationAddress = destinationAddress;
+      this.scAddress = scAddress;
+      this.parts = parts;
+      this.sentIntents = sentIntents;
+      this.deliveryIntents = deliveryIntents;
+    }
+
+    public String getDestinationAddress() {
+      return destinationAddress;
+    }
+
+    public String getScAddress() {
+      return scAddress;
+    }
+
+    public ArrayList<String> getParts() {
+      return parts;
+    }
+
+    public ArrayList<PendingIntent> getSentIntents() {
+      return sentIntents;
+    }
+
+    public ArrayList<PendingIntent> getDeliveryIntents() {
+      return deliveryIntents;
     }
   }
 }
