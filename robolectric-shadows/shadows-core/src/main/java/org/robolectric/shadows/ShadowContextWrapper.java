@@ -55,7 +55,8 @@ public class ShadowContextWrapper extends ShadowContext {
   @Implementation
   public ApplicationInfo getApplicationInfo() {
     try {
-      return RuntimeEnvironment.getPackageManager().getApplicationInfo(getPackageName(), 0);
+      final PackageManager packageManager = RuntimeEnvironment.getPackageManager();
+      return packageManager != null ? packageManager.getApplicationInfo(getPackageName(), 0) : null;
     } catch (PackageManager.NameNotFoundException e) {
       throw new RuntimeException("Could not find applicationInfo for current package.");
     }

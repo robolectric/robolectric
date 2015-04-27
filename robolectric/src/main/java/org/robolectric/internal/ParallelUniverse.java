@@ -140,7 +140,10 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   @Override
   public void tearDownApplication() {
     if (RuntimeEnvironment.application != null) {
-      clearFiles(new File(RuntimeEnvironment.application.getApplicationInfo().dataDir));
+      final ApplicationInfo applicationInfo = RuntimeEnvironment.application.getApplicationInfo();
+      if (applicationInfo != null) {
+        clearFiles(new File(applicationInfo.dataDir));
+      }
       RuntimeEnvironment.application.onTerminate();
     }
   }

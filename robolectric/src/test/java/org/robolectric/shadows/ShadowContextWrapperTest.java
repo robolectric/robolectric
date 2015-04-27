@@ -458,4 +458,10 @@ public class ShadowContextWrapperTest {
     final ApplicationInfo info = contextWrapper.getApplicationInfo();
     assertThat(info.packageName).isEqualTo("org.robolectric");
   }
+
+  @Test
+  public void getApplicationInfo_whenPackageManagerIsNull_shouldNotExplode() {
+    RuntimeEnvironment.setRobolectricPackageManager(null);
+    contextWrapper.getApplicationInfo();
+  }
 }
