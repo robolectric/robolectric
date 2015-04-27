@@ -43,7 +43,10 @@ public class ShadowActivityManager {
   @Implementation
   public void getMemoryInfo(ActivityManager.MemoryInfo outInfo) {
     if (memoryInfo != null) {
+      outInfo.availMem = memoryInfo.availMem;
       outInfo.lowMemory = memoryInfo.lowMemory;
+      outInfo.threshold = memoryInfo.threshold;
+      outInfo.totalMem = memoryInfo.totalMem;
     }
   }
 
