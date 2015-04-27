@@ -9,6 +9,18 @@ import java.util.ListIterator;
  * Class that manages a queue of Runnables that are scheduled to run now (or at some time in
  * the future). Runnables that are scheduled to run on the UI thread (tasks, animations, etc)
  * eventually get routed to a Scheduler instance.
+ * 
+ * The execution of a scheduler can be in one of three states:
+ * <ul><li>paused ({@link #pause()}): if paused, then no posted events will be run unless the Scheduler
+ * is explicitly instructed to do so.</li>
+ * <li>normal ({@link #unPause()}): if not paused but not set to idle constantly, then the Scheduler will
+ * automatically run any {@link Runnable}s that are scheduled to run at or before the
+ * Scheduler's current time, but it won't automatically run any future events. To
+ * run future events the Scheduler needs to have its clock advanced.</li>
+ * <li>idling constantly: if {@link #idleConstantly(boolean)} is called with
+ * <tt>true</tt>, then the Scheduler will continue looping through posted events
+ * (including future events), advancing its clock as it goes.</li>
+ * </ul>
  */
 public class Scheduler {
   private long currentTime = 0;
@@ -45,7 +57,7 @@ public class Scheduler {
   /**
    * Determine if the scheduler is paused.
    *
-   * @return  True if it is paused.
+   * @return  <tt>true</tt> if it is paused.
    */
   public synchronized boolean isPaused() {
     return paused;
@@ -218,6 +230,17 @@ public class Scheduler {
       runnable.run();
     } finally {
       isExecutingRunnable = false;
+    }
+    if (scheduledTime > currentTime) {
+      currentTime = scheduledTime;
+    }
+    // The runnable we just ran may have queued other runnables. If there are
+    // any pending immediate execution we should run these now too, unless we are
+    // paused.
+    if (isConstantlyIdling) {
+      advanceToLastPostedRunnable();
+    } else if (!paused) {
+      advanceBy(0);
     }
   }
 

@@ -59,6 +59,22 @@ public class SchedulerTest {
   }
 
   @Test
+  public void postDelayed_whileIdlingConstantly_executesImmediately() {
+    scheduler.idleConstantly(true);
+    scheduler.postDelayed(new AddToTranscript("one"), 1000);
+
+    transcript.assertEventsSoFar("one");
+  }
+  
+  @Test
+  public void postDelayed_whileIdlingConstantly_advancesTime() {
+    scheduler.idleConstantly(true);
+    scheduler.postDelayed(new AddToTranscript("one"), 1000);
+
+    assertThat(scheduler.getCurrentTime()).isEqualTo(1000);
+  }
+  
+  @Test
   public void postAtFrontOfQueue_addsJobAtFrontOfQueue() throws Exception {
     scheduler.post(new AddToTranscript("one"));
     scheduler.post(new AddToTranscript("two"));
@@ -156,30 +172,78 @@ public class SchedulerTest {
   }
 
   @Test
-  public void postDelayed_whenAnotherPostDelayedIsEnqueued_runsInCorrectSequence() {
+  public void nestedPost_whilePaused_doesntAutomaticallyExecute() {
     final List<Integer> order = new ArrayList<>();
-    scheduler.unPause();
     scheduler.postDelayed(new Runnable() {
       @Override
       public void run() {
         order.add(1);
-        scheduler.postDelayed(new Runnable() {
+        scheduler.post(new Runnable() {
           @Override
           public void run() {
             order.add(3);
           }
-        }, 0);
+        });
         order.add(2);
       }
     }, 0);
-
-    assertThat(order).containsExactly(1, 2);
-    assertThat(scheduler.size()).isEqualTo(1);
+    scheduler.runOneTask();
+    
+    assertThat(order).as("order:first run").containsExactly(1, 2);
+    assertThat(scheduler.size()).as("size:first run").isEqualTo(1);
+    scheduler.runOneTask();
+    assertThat(order).as("order:second run").containsExactly(1, 2, 3);
+    assertThat(scheduler.size()).as("size:second run").isEqualTo(0);
   }
 
   @Test
-  public void postDelayed_whenAnotherPostDelayedIsEnqueued_runsInCorrectSequence2() {
+  public void nestedPost_whileUnpaused_automaticallyExecutes3After() {
     final List<Integer> order = new ArrayList<>();
+    scheduler.unPause();
+    scheduler.postDelayed(new Runnable() {
+      @Override
+      public void run() {
+        order.add(1);
+        scheduler.post(new Runnable() {
+          @Override
+          public void run() {
+            order.add(3);
+          }
+        });
+        order.add(2);
+      }
+    }, 0);
+    
+    assertThat(order).as("order").containsExactly(1, 2, 3);
+    assertThat(scheduler.size()).as("size").isEqualTo(0);
+  }
+
+  @Test
+  public void nestedPostAtFront_whileUnpaused_runsAfter() {
+    final List<Integer> order = new ArrayList<>();
+    scheduler.unPause();
+    scheduler.postDelayed(new Runnable() {
+      @Override
+      public void run() {
+        order.add(1);
+        scheduler.postAtFrontOfQueue(new Runnable() {
+          @Override
+          public void run() {
+            order.add(3);
+          }
+        });
+        order.add(2);
+      }
+    }, 0);
+    
+    assertThat(order).as("order").containsExactly(1, 2, 3);
+    assertThat(scheduler.size()).as("size").isEqualTo(0);
+  }
+
+  @Test
+  public void nestedPostDelayed_whileUnpaused_doesntAutomaticallyExecute3() {
+    final List<Integer> order = new ArrayList<>();
+    scheduler.unPause();
     scheduler.postDelayed(new Runnable() {
       @Override
       public void run() {
@@ -189,14 +253,40 @@ public class SchedulerTest {
           public void run() {
             order.add(3);
           }
-        }, 0);
+        }, 1);
         order.add(2);
       }
     }, 0);
-    scheduler.unPause();
+    
+    assertThat(order).as("order:before").containsExactly(1, 2);
+    assertThat(scheduler.size()).as("size:before").isEqualTo(1);
+    scheduler.advanceToLastPostedRunnable();
+    assertThat(order).as("order:after").containsExactly(1, 2, 3);
+    assertThat(scheduler.size()).as("size:after").isEqualTo(0);    
+    assertThat(scheduler.getCurrentTime()).as("time:after").isEqualTo(1);    
+  }
 
-    assertThat(order).containsExactly(1, 2, 3);
-    assertThat(scheduler.size()).isEqualTo(0);
+  @Test
+  public void nestedPostDelayed_whenIdlingConstantly_automaticallyExecutes3After() {
+    final List<Integer> order = new ArrayList<>();
+    scheduler.idleConstantly(true);
+    scheduler.postDelayed(new Runnable() {
+      @Override
+      public void run() {
+        order.add(1);
+        scheduler.postDelayed(new Runnable() {
+          @Override
+          public void run() {
+            order.add(3);
+          }
+        }, 1);
+        order.add(2);
+      }
+    }, 0);
+
+    assertThat(order).as("order").containsExactly(1, 2, 3);
+    assertThat(scheduler.size()).as("size").isEqualTo(0);
+    assertThat(scheduler.getCurrentTime()).as("time").isEqualTo(1);
   }
 
   @Test
