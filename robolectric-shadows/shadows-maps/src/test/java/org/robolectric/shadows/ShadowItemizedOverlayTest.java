@@ -10,7 +10,7 @@ import org.robolectric.util.TestRunnerWithManifest;
 import static org.junit.Assert.*;
 
 @RunWith(TestRunnerWithManifest.class)
-public class ItemizedOverlayTest {
+public class ShadowItemizedOverlayTest {
 
   class TestItemizedOverlay extends ItemizedOverlay<OverlayItem> {
     public OverlayItem firstOverlayItem = new OverlayItem(new GeoPoint(0, 0), "title1", "snippet1");

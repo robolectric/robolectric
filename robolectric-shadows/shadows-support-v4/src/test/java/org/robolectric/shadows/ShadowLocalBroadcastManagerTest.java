@@ -16,7 +16,7 @@ import org.robolectric.util.Transcript;
 import static junit.framework.Assert.*;
 
 @RunWith(TestRunnerWithManifest.class)
-public class LocalBroadcastManagerTest {
+public class ShadowLocalBroadcastManagerTest {
   private Transcript transcript = new Transcript();
 
   @Test

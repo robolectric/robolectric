@@ -16,7 +16,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(TestRunnerWithManifest.class)
-public class GeocoderTest {
+public class ShadowGeocoderTest {
   private Geocoder geocoder;
 
   @Before

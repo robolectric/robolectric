@@ -25,7 +25,7 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(TestRunnerWithManifest.class)
-public class DialogFragmentTest {
+public class ShadowDialogFragmentTest {
 
   private FragmentActivity activity;
   private TestDialogFragment dialogFragment;

@@ -12,7 +12,7 @@ import java.lang.reflect.Method;
 import static junit.framework.Assert.assertTrue;
 
 @RunWith(TestRunnerWithManifest.class)
-public class PagerAdapterTest {
+public class ShadowPagerAdapterTest {
   @Test
   public void shouldNotifyDataSetChanged() throws Exception {
     NullPagerAdapter pagerAdapter = new NullPagerAdapter();

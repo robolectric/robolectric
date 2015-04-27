@@ -8,7 +8,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.util.TestRunnerWithManifest;
 
 @RunWith(TestRunnerWithManifest.class)
-public class MapActivityTest {
+public class ShadowMapActivityTest {
 
   @Test
   public void onDestroy_shouldNotComplainIfLifecycleIsCorrect() throws Exception {

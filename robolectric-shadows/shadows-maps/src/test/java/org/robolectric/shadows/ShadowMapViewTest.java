@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.shadows.ShadowMapView.toE6;
 
 @RunWith(TestRunnerWithManifest.class)
-public class MapViewTest {
+public class ShadowMapViewTest {
   private MapView mapView;
   private MyOverlay overlay1;
   private MyOverlay overlay2;

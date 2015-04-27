@@ -12,7 +12,7 @@ import org.robolectric.util.TestRunnerWithManifest;
 import static junit.framework.Assert.*;
 
 @RunWith(TestRunnerWithManifest.class)
-public class ViewPagerTest {
+public class ShadowViewPagerTest {
 
   private ViewPager pager;
   private TestPagerAdapter adapter;

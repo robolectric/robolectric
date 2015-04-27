@@ -37,7 +37,7 @@ import static org.junit.Assert.*;
 import static org.robolectric.httpclient.Shadows.shadowOf;
 
 @RunWith(TestRunnerWithManifest.class)
-public class DefaultRequestDirectorTest {
+public class ShadowDefaultRequestDirectorTest {
   private DefaultRequestDirector requestDirector;
   private ConnectionKeepAliveStrategy connectionKeepAliveStrategy;
 
