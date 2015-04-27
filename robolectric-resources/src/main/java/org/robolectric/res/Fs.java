@@ -74,7 +74,7 @@ abstract public class Fs {
       }
 
       if (cachedMap == null) {
-        cachedMap = new TreeMap<String, JarEntry>();
+        cachedMap = new TreeMap<>();
         Enumeration<JarEntry> entries = jarFile.entries();
         while (entries.hasMoreElements()) {
           JarEntry jarEntry = entries.nextElement();
@@ -114,7 +114,7 @@ abstract public class Fs {
       @Override public FsFile[] listFiles() {
         if (!isDirectory()) return null;
         NavigableSet<String> strings = jarEntryMap.navigableKeySet().subSet(path + "/", false, path + "0", false);
-        List<FsFile> fsFiles = new ArrayList<FsFile>();
+        List<FsFile> fsFiles = new ArrayList<>();
         int startOfFilename = path.length() + 2;
         for (String string : strings) {
           int nextSlash = string.indexOf('/', startOfFilename);
@@ -130,7 +130,7 @@ abstract public class Fs {
       }
 
       @Override public FsFile[] listFiles(Filter filter) {
-        List<FsFile> filteredFsFiles = new ArrayList<FsFile>();
+        List<FsFile> filteredFsFiles = new ArrayList<>();
         for (FsFile fsFile : listFiles()) {
           if (filter.accept(fsFile)) {
             filteredFsFiles.add(fsFile);
@@ -140,7 +140,7 @@ abstract public class Fs {
       }
 
       @Override public String[] listFileNames() {
-        List<String> fileNames = new ArrayList<String>();
+        List<String> fileNames = new ArrayList<>();
         for (FsFile fsFile : listFiles()) {
           fileNames.add(fsFile.getName());
         }

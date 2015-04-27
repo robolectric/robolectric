@@ -1,6 +1,5 @@
 package org.robolectric;
 
-
 import android.os.Build;
 
 import org.junit.Before;
@@ -18,7 +17,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.only;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -97,7 +95,7 @@ public class ExperimentalRobolectricTestRunnerTest {
   }
 
   @RunWith(ExperimentalRobolectricTestRunner.class)
-  @Config(emulateSdk = 18)
+  @Config(sdk = 18)
   public class TestWithClassConfig {
 
     @Test public void testShouldRunApi18() {
@@ -108,30 +106,29 @@ public class ExperimentalRobolectricTestRunnerTest {
   @RunWith(ExperimentalRobolectricTestRunner.class)
   public class TestWithMethodConfig {
 
-    @Config(emulateSdk = 16)
+    @Config(sdk = 16)
     @Test public void testShouldRunApi16() {
       assertThat(Build.VERSION.SDK_INT).isEqualTo(16);
     }
 
-    @Config(emulateSdk = 17)
+    @Config(sdk = 17)
     @Test public void testShouldRunApi17() {
       assertThat(Build.VERSION.SDK_INT).isEqualTo(17);
     }
 
-    @Config(emulateSdk = 18)
+    @Config(sdk = 18)
     @Test public void testShouldRunApi18() {
       assertThat(Build.VERSION.SDK_INT).isEqualTo(18);
     }
 
-    @Config(emulateSdk = 19)
+    @Config(sdk = 19)
     @Test public void testShouldRunApi19() {
       assertThat(Build.VERSION.SDK_INT).isEqualTo(19);
     }
 
-    @Config(emulateSdk = 21)
+    @Config(sdk = 21)
     @Test public void testShouldRunApi21() {
       assertThat(Build.VERSION.SDK_INT).isEqualTo(21);
     }
   }
-
 }

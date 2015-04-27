@@ -596,13 +596,7 @@ public class DefaultRequestDirector implements RequestDirector {
 
       return response;
 
-    } catch (HttpException ex) {
-      abortConnection();
-      throw ex;
-    } catch (IOException ex) {
-      abortConnection();
-      throw ex;
-    } catch (RuntimeException ex) {
+    } catch (HttpException | RuntimeException | IOException ex) {
       abortConnection();
       throw ex;
     }

@@ -4,7 +4,6 @@ import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
 import static org.robolectric.RuntimeEnvironment.application;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -179,11 +178,11 @@ public class ShadowListViewTest {
 
   @Test
   public void clickItemContainingText_shouldPerformItemClickOnList_arrayAdapter() throws Exception {
-    ArrayList<String> adapterFileList = new ArrayList<String>();
+    ArrayList<String> adapterFileList = new ArrayList<>();
     adapterFileList.add("Item 1");
     adapterFileList.add("Item 2");
     adapterFileList.add("Item 3");
-    final ArrayAdapter<String> adapter = new ArrayAdapter<String>(application, android.R.layout.simple_list_item_1, adapterFileList);
+    final ArrayAdapter<String> adapter = new ArrayAdapter<>(application, android.R.layout.simple_list_item_1, adapterFileList);
     listView.setAdapter(adapter);
     shadowOf(listView).populateItems();
     ShadowListView shadowListView = shadowOf(listView);
@@ -363,7 +362,7 @@ public class ShadowListViewTest {
   }
 
   private static class ListAdapter extends BaseAdapter {
-    public List<String> items = new ArrayList<String>();
+    public List<String> items = new ArrayList<>();
 
     public ListAdapter(String... items) {
       this.items.addAll(asList(items));

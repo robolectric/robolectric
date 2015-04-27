@@ -58,7 +58,7 @@ public class ResourceRemapperTest {
   }
 
   private void assertUnique(int... values) {
-    HashSet<Integer> integers = new HashSet<Integer>();
+    HashSet<Integer> integers = new HashSet<>();
     for (int value : values) {
       if (!integers.add(value)) {
         fail(Join.join(", ", asIntList(values)) + " contained " + value + " twice");
@@ -89,7 +89,7 @@ public class ResourceRemapperTest {
   }
 
   private List<Integer> asIntList(int[] ints) {
-    ArrayList<Integer> list = new ArrayList<Integer>();
+    ArrayList<Integer> list = new ArrayList<>();
     for (int anInt : ints) {
       list.add(anInt);
     }

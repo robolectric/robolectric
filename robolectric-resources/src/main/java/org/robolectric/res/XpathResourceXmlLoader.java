@@ -129,9 +129,7 @@ public abstract class XpathResourceXmlLoader extends XmlLoader {
       @Override public boolean hasNext() {
         try {
           return doHasNext();
-        } catch (XPathEvalException e) {
-          throw new RuntimeException(e);
-        } catch (NavException e) {
+        } catch (XPathEvalException | NavException e) {
           throw new RuntimeException(e);
         }
       }

@@ -56,11 +56,11 @@ public final class ExperimentalRobolectricTestRunner extends Suite {
     }
 
     protected boolean shouldIgnore(FrameworkMethod method, Config config) {
-      return super.shouldIgnore(method, config) || (config.emulateSdk() != -1 && config.emulateSdk() != apiVersion);
+      return super.shouldIgnore(method, config) || (config.sdk() != -1 && config.sdk() != apiVersion);
     }
 
     @Override
-    protected SdkConfig pickSdkVersion(AndroidManifest appManifest, Config config) {
+    protected SdkConfig pickSdkVersion(Config config, AndroidManifest appManifest) {
       return new SdkConfig(apiVersion);
 //      if (config != null && config.emulateSdk() > 0) {
 //        return new SdkConfig(config.emulateSdk());
@@ -106,7 +106,7 @@ public final class ExperimentalRobolectricTestRunner extends Suite {
     }
   }
 
-  private final ArrayList<Runner> runners = new ArrayList<Runner>();
+  private final ArrayList<Runner> runners = new ArrayList<>();
 
   /*
    * Only called reflectively. Do not use programmatically.
@@ -124,5 +124,4 @@ public final class ExperimentalRobolectricTestRunner extends Suite {
   protected List<Runner> getChildren() {
     return runners;
   }
-
 }

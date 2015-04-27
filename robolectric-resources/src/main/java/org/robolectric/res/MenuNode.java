@@ -6,7 +6,7 @@ import java.util.List;
 public class MenuNode {
   private final String name;
   private final List<Attribute> attributes;
-  private final List<MenuNode> children = new ArrayList<MenuNode>();
+  private final List<MenuNode> children = new ArrayList<>();
 
   public MenuNode(String name, List<Attribute> attributes) {
     this.name = name;

@@ -26,12 +26,12 @@ public class RoboSharedPreferences implements SharedPreferences {
       content.put(name, new HashMap<String, Object>());
     }
 
-    listeners = new ArrayList<OnSharedPreferenceChangeListener>();
+    listeners = new ArrayList<>();
   }
 
   @Override
   public Map<String, ?> getAll() {
-    return new HashMap<String, Object>(content.get(filename));
+    return new HashMap<>(content.get(filename));
   }
 
   @Override
@@ -99,8 +99,8 @@ public class RoboSharedPreferences implements SharedPreferences {
 
   private class TestSharedPreferencesEditor implements Editor {
 
-    Map<String, Object> editsThatNeedCommit = new HashMap<String, Object>();
-    Set<String> editsThatNeedRemove = new HashSet<String>();
+    Map<String, Object> editsThatNeedCommit = new HashMap<>();
+    Set<String> editsThatNeedRemove = new HashSet<>();
     private boolean shouldClearOnCommit = false;
 
     @Override
@@ -168,7 +168,7 @@ public class RoboSharedPreferences implements SharedPreferences {
     @Override
     public boolean commit() {
       Map<String, Object> previousContent = content.get(filename);
-      List<String> keysToPassToListeners = new ArrayList<String>();
+      List<String> keysToPassToListeners = new ArrayList<>();
 
       if (shouldClearOnCommit) {
         previousContent.clear();

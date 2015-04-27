@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -28,7 +27,7 @@ public class RoboSharedPreferencesTest {
   private static final Set<String> stringSet;
 
   static {
-    stringSet = new HashSet<String>();
+    stringSet = new HashSet<>();
     stringSet.add( "string1" );
     stringSet.add( "string2" );
     stringSet.add( "string3" );
@@ -36,7 +35,7 @@ public class RoboSharedPreferencesTest {
 
   @Before
   public void setUp() {
-    content = new HashMap<String, Map<String, Object>>();
+    content = new HashMap<>();
 
     sharedPreferences = new RoboSharedPreferences(content, FILENAME, 3);
     editor = sharedPreferences.edit();

@@ -14,7 +14,7 @@ import java.util.Map;
 @Implements(NotificationManager.class)
 public class ShadowNotificationManager {
 
-  private Map<Key, Notification> notifications = new HashMap<Key, Notification>();
+  private Map<Key, Notification> notifications = new HashMap<>();
 
   @Implementation
   public void notify(int id, Notification notification) {
@@ -57,7 +57,7 @@ public class ShadowNotificationManager {
   }
 
   public List<Notification> getAllNotifications() {
-    return new ArrayList<Notification>(notifications.values());
+    return new ArrayList<>(notifications.values());
   }
 
   private static final class Key {

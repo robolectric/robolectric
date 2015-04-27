@@ -1,6 +1,3 @@
-#set($Integer = 0)
-#set($apiLevel = $Integer.parseInt($apiLevel))
-
 package org.robolectric.shadows;
 
 import android.accessibilityservice.AccessibilityServiceInfo;
@@ -33,7 +30,7 @@ public class ShadowAccessibilityManager {
   private List<ServiceInfo> accessibilityServiceList;
   private boolean touchExplorationEnabled;
 
-#if ($apiLevel >= 19)
+#if ($api >= 19)
   @HiddenApi @Implementation
   public static AccessibilityManager getInstance(Context context) throws Exception {
     AccessibilityManager accessibilityManager = Shadow.newInstance(AccessibilityManager.class, new Class[] {Context.class, IAccessibilityManager.class, int.class}, new Object[] {context, new AccessibilityManagerService(context), 0});

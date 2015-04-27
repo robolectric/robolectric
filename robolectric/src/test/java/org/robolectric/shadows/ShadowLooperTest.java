@@ -170,8 +170,8 @@ public class ShadowLooperTest {
   @Test
   public void getMainLooperThrowsNullPointerExceptionOnBackgroundThreadWhenRobolectricApplicationIsNull() throws Exception {
       RuntimeEnvironment.application = null;
-      final AtomicReference<Looper> mainLooperAtomicReference = new AtomicReference<Looper>();
-      final AtomicReference<NullPointerException> nullPointerExceptionAtomicReference = new AtomicReference<NullPointerException>();
+      final AtomicReference<Looper> mainLooperAtomicReference = new AtomicReference<>();
+      final AtomicReference<NullPointerException> nullPointerExceptionAtomicReference = new AtomicReference<>();
 
       Thread backgroundThread = new Thread(new Runnable() {
           @Override

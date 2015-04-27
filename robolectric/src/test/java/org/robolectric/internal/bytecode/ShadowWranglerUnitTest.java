@@ -16,7 +16,7 @@ public class ShadowWranglerUnitTest {
 
   @Before
   public void setup() throws Exception {
-    shadowWrangler = new ShadowWrangler(ShadowMap.EMPTY, new SdkConfig(SdkConfig.FALLBACK_SDK_VERSION));
+    shadowWrangler = new ShadowWrangler(ShadowMap.EMPTY);
   }
 
   @Test
@@ -37,7 +37,7 @@ public class ShadowWranglerUnitTest {
 
   @Test
   public void intercept_elderOnLinkedHashMapHandler_shouldReturnEldestMemberOfLinkedHashMap() throws Throwable {
-    LinkedHashMap<Integer, String> map = new LinkedHashMap<Integer, String>(2);
+    LinkedHashMap<Integer, String> map = new LinkedHashMap<>(2);
     map.put(1, "one");
     map.put(2, "two");
 
@@ -52,7 +52,7 @@ public class ShadowWranglerUnitTest {
 
   @Test
   public void intercept_elderOnLinkedHashMapHandler_shouldReturnNullForEmptyMap() throws Throwable {
-    LinkedHashMap<Integer, String> map = new LinkedHashMap<Integer, String>();
+    LinkedHashMap<Integer, String> map = new LinkedHashMap<>();
 
     Map.Entry<Integer, String> result = (Map.Entry<Integer, String>)
         shadowWrangler.intercept("java/util/LinkedHashMap/eldest()Ljava/lang/Object;", map, null, getClass());

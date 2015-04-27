@@ -431,10 +431,10 @@ public class DefaultRobolectricPackageManagerTest {
     rpm.addPreferredActivity(filter, 0, null, name);
 
     // Test match
-    List<IntentFilter> filters = new ArrayList<IntentFilter>();
+    List<IntentFilter> filters = new ArrayList<>();
     filters.add(filter);
 
-    List<ComponentName> activities = new ArrayList<ComponentName>();
+    List<ComponentName> activities = new ArrayList<>();
     rpm.getPreferredActivities(filters, activities, null);
 
     assertThat(activities.size()).isEqualTo(1);

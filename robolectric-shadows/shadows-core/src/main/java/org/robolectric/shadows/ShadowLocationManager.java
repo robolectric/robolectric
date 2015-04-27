@@ -28,13 +28,13 @@ import java.util.Set;
  */
 @Implements(LocationManager.class)
 public class ShadowLocationManager {
-  private final Map<String, LocationProviderEntry> providersEnabled = new LinkedHashMap<String, LocationProviderEntry>();
-  private final Map<String, Location> lastKnownLocations = new HashMap<String, Location>();
-  private final Map<PendingIntent, Criteria> requestLocationUdpateCriteriaPendingIntents = new HashMap<PendingIntent, Criteria>();
-  private final Map<PendingIntent, String> requestLocationUdpateProviderPendingIntents = new HashMap<PendingIntent, String>();
-  private final ArrayList<LocationListener> removedLocationListeners = new ArrayList<LocationListener>();
+  private final Map<String, LocationProviderEntry> providersEnabled = new LinkedHashMap<>();
+  private final Map<String, Location> lastKnownLocations = new HashMap<>();
+  private final Map<PendingIntent, Criteria> requestLocationUdpateCriteriaPendingIntents = new HashMap<>();
+  private final Map<PendingIntent, String> requestLocationUdpateProviderPendingIntents = new HashMap<>();
+  private final ArrayList<LocationListener> removedLocationListeners = new ArrayList<>();
 
-  private final ArrayList<Listener> gpsStatusListeners = new ArrayList<Listener>();
+  private final ArrayList<Listener> gpsStatusListeners = new ArrayList<>();
   private Criteria lastBestProviderCriteria;
   private boolean lastBestProviderEnabled;
   private String bestEnabledProvider, bestDisabledProvider;
@@ -61,7 +61,7 @@ public class ShadowLocationManager {
 
   /** Mapped by provider. */
   private final Map<String, List<ListenerRegistration>> locationListeners =
-      new HashMap<String, List<ListenerRegistration>>();
+      new HashMap<>();
 
   @Implementation
   public boolean isProviderEnabled(String provider) {
@@ -75,12 +75,12 @@ public class ShadowLocationManager {
 
   @Implementation
   public List<String> getAllProviders() {
-    Set<String> allKnownProviders = new LinkedHashSet<String>(providersEnabled.keySet());
+    Set<String> allKnownProviders = new LinkedHashSet<>(providersEnabled.keySet());
     allKnownProviders.add(LocationManager.GPS_PROVIDER);
     allKnownProviders.add(LocationManager.NETWORK_PROVIDER);
     allKnownProviders.add(LocationManager.PASSIVE_PROVIDER);
 
-    return new ArrayList<String>(allKnownProviders);
+    return new ArrayList<>(allKnownProviders);
   }
 
   /**
@@ -103,7 +103,7 @@ public class ShadowLocationManager {
     providerEntry.enabled = isEnabled;
     providerEntry.criteria = criteria;
     providersEnabled.put(provider, providerEntry);
-    List<LocationListener> locationUpdateListeners = new ArrayList<LocationListener>(getRequestLocationUpdateListeners());
+    List<LocationListener> locationUpdateListeners = new ArrayList<>(getRequestLocationUpdateListeners());
     for (LocationListener locationUpdateListener : locationUpdateListeners) {
       if (isEnabled) {
         locationUpdateListener.onProviderEnabled(provider);
@@ -133,7 +133,7 @@ public class ShadowLocationManager {
 
   @Implementation
   public List<String> getProviders(boolean enabledOnly) {
-    ArrayList<String> enabledProviders = new ArrayList<String>();
+    ArrayList<String> enabledProviders = new ArrayList<>();
     for (String provider : getAllProviders()) {
       if (!enabledOnly || providersEnabled.get(provider) != null) {
         enabledProviders.add(provider);
@@ -231,7 +231,7 @@ public class ShadowLocationManager {
   private void addLocationListener(String provider, LocationListener listener, long minTime, float minDistance) {
     List<ListenerRegistration> providerListeners = locationListeners.get(provider);
     if (providerListeners == null) {
-      providerListeners = new ArrayList<ListenerRegistration>();
+      providerListeners = new ArrayList<>();
       locationListeners.put(provider, providerListeners);
     }
     providerListeners.add(new ListenerRegistration(provider,
@@ -391,7 +391,7 @@ public class ShadowLocationManager {
    */
   public List<LocationListener> getRequestLocationUpdateListeners() {
     cleanupRemovedLocationListeners();
-    List<LocationListener> all = new ArrayList<LocationListener>();
+    List<LocationListener> all = new ArrayList<>();
     for (Map.Entry<String, List<ListenerRegistration>> entry : locationListeners.entrySet()) {
       for (ListenerRegistration reg : entry.getValue()) {
         all.add(reg.listener);
@@ -467,7 +467,7 @@ public class ShadowLocationManager {
 
   public Collection<String> getProvidersForListener(LocationListener listener) {
     cleanupRemovedLocationListeners();
-    Set<String> providers = new HashSet<String>();
+    Set<String> providers = new HashSet<>();
     for (List<ListenerRegistration> listenerRegistrations : locationListeners.values()) {
       for (ListenerRegistration listenerRegistration : listenerRegistrations) {
         if (listenerRegistration.listener == listener) {

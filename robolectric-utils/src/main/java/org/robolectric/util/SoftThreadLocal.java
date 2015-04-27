@@ -5,7 +5,7 @@ import java.lang.ref.SoftReference;
 public abstract class SoftThreadLocal<T> {
   private final ThreadLocal<SoftReference<T>> threadLocal = new ThreadLocal<SoftReference<T>>() {
     protected SoftReference<T> initialValue() {
-      return new SoftReference<T>(create());
+      return new SoftReference<>(create());
     }
   };
 
@@ -13,13 +13,13 @@ public abstract class SoftThreadLocal<T> {
     T item = threadLocal.get().get();
     if (item == null) {
       item = create();
-      threadLocal.set(new SoftReference<T>(item));
+      threadLocal.set(new SoftReference<>(item));
     }
     return item;
   }
 
   public void set(T item) {
-    threadLocal.set(new SoftReference<T>(item));
+    threadLocal.set(new SoftReference<>(item));
   }
 
   abstract protected T create();

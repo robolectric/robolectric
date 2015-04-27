@@ -12,7 +12,7 @@ public class ShadowLruTest {
 
   @Test
   public void shouldLru() throws Exception {
-    LruCache<Integer, String> lruCache = new LruCache<Integer, String>(2);
+    LruCache<Integer, String> lruCache = new LruCache<>(2);
     lruCache.put(1, "one");
     lruCache.put(2, "two");
     lruCache.put(3, "three");

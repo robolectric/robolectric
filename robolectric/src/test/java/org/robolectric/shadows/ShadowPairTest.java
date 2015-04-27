@@ -12,7 +12,7 @@ public class ShadowPairTest {
 
   @Test
   public void testConstructor() throws Exception {
-    Pair<String, Integer> pair = new Pair<String, Integer>("a", 1);
+    Pair<String, Integer> pair = new Pair<>("a", 1);
     assertThat(pair.first).isEqualTo("a");
     assertThat(pair.second).isEqualTo(1);
   }

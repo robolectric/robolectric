@@ -28,10 +28,11 @@ public @interface Config {
 
   /**
    * The Android SDK level to emulate. If not specified, Robolectric defaults to API 16.
+   * This value will also be set as Build.VERSION.SDK_INT.
    *
    * @return The Android SDK level to emulate.
    */
-  int emulateSdk() default -1;
+  int sdk() default -1;
 
   /**
    * The Android manifest file to load; Robolectric will look relative to the current directory.
@@ -61,6 +62,17 @@ public @interface Config {
   Class<? extends Application> application() default Application.class;
 
   /**
+   * Java package name where the "R.class" file is located. This only needs to be specified if you define
+   * an {@code applicationId} associated with {@code productFlavors} or specify {@code applicationIdSuffix}
+   * in your build.gradle.
+   *
+   * <p>If not specified, Robolectric defaults to the {@code applicationId}.</p>
+   *
+   * @return The java package name for R.class.
+   */
+  String packageName() default "";
+
+  /**
    * Qualifiers for the resource resolution, such as "fr-normal-port-hdpi".
    *
    * @return Qualifiers used for resource resolution.
@@ -70,8 +82,7 @@ public @interface Config {
   /**
    * The directory from which to load resources.  This should be relative to the directory containing AndroidManifest.xml.
    *
-   * <p>
-   * If not specified, Robolectric defaults to {@code res}.
+   * <p>If not specified, Robolectric defaults to {@code res}.</p>
    *
    * @return Android resource directory.
    */
@@ -80,19 +91,11 @@ public @interface Config {
   /**
    * The directory from which to load assets. This should be relative to the directory containing AndroidManifest.xml.
    *
-   * <p>
-   * If not specified, Robolectric defaults to {@code assets}.
+   * <p>If not specified, Robolectric defaults to {@code assets}.</p>
    *
    * @return Android asset directory.
    */
   String assetDir() default DEFAULT_ASSET_FOLDER;
-
-  /**
-   * The Android SDK level to report in Build.VERSION.SDK_INT.
-   *
-   * @return The Android SDK level to report.
-   */
-  int reportSdk() default -1;
 
   /**
    * A list of shadow classes to enable, in addition to those that are already present.
@@ -109,12 +112,12 @@ public @interface Config {
   String[] libraries() default {};
 
   class Implementation implements Config {
-    private final int reportSdk;
-    private final int emulateSdk;
+    private final int sdk;
     private final String manifest;
     private final String qualifiers;
     private final String resourceDir;
     private final String assetDir;
+    private final String packageName;
     private final Class<?> constants;
     private final Class<?>[] shadows;
     private final Class<? extends Application> application;
@@ -123,12 +126,12 @@ public @interface Config {
     public static Config fromProperties(Properties properties) {
       if (properties == null || properties.size() == 0) return null;
       return new Implementation(
-          Integer.parseInt(properties.getProperty("emulateSdk", "-1")),
+          Integer.parseInt(properties.getProperty("sdk", "-1")),
           properties.getProperty("manifest", DEFAULT),
           properties.getProperty("qualifiers", ""),
+          properties.getProperty("packageName", ""),
           properties.getProperty("resourceDir", Config.DEFAULT_RES_FOLDER),
           properties.getProperty("assetDir", Config.DEFAULT_ASSET_FOLDER),
-          Integer.parseInt(properties.getProperty("reportSdk", "-1")),
           parseClasses(properties.getProperty("shadows", "")),
           parseApplication(properties.getProperty("application", "android.app.Application")),
           parsePaths(properties.getProperty("libraries", "")),
@@ -165,13 +168,13 @@ public @interface Config {
       return pathList.split("[, ]+");
     }
 
-    public Implementation(int emulateSdk, String manifest, String qualifiers, String resourceDir, String assetDir, int reportSdk, Class<?>[] shadows, Class<? extends Application> application, String[] libraries, Class<?> constants) {
-      this.emulateSdk = emulateSdk;
+    public Implementation(int sdk, String manifest, String qualifiers, String packageName, String resourceDir, String assetDir, Class<?>[] shadows, Class<? extends Application> application, String[] libraries, Class<?> constants) {
+      this.sdk = sdk;
       this.manifest = manifest;
       this.qualifiers = qualifiers;
+      this.packageName = packageName;
       this.resourceDir = resourceDir;
       this.assetDir = assetDir;
-      this.reportSdk = reportSdk;
       this.shadows = shadows;
       this.application = application;
       this.libraries = libraries;
@@ -179,10 +182,10 @@ public @interface Config {
     }
 
     public Implementation(Config other) {
-      this.reportSdk = other.reportSdk();
-      this.emulateSdk = other.emulateSdk();
+      this.sdk = other.sdk();
       this.manifest = other.manifest();
       this.qualifiers = other.qualifiers();
+      this.packageName = other.packageName();
       this.resourceDir = other.resourceDir();
       this.assetDir = other.assetDir();
       this.constants = other.constants();
@@ -192,13 +195,13 @@ public @interface Config {
     }
 
     public Implementation(Config baseConfig, Config overlayConfig) {
-      this.emulateSdk = pick(baseConfig.emulateSdk(), overlayConfig.emulateSdk(), -1);
+      this.sdk = pick(baseConfig.sdk(), overlayConfig.sdk(), -1);
       this.manifest = pick(baseConfig.manifest(), overlayConfig.manifest(), DEFAULT);
       this.qualifiers = pick(baseConfig.qualifiers(), overlayConfig.qualifiers(), "");
+      this.packageName = pick(baseConfig.packageName(), overlayConfig.packageName(), "");
       this.resourceDir = pick(baseConfig.resourceDir(), overlayConfig.resourceDir(), Config.DEFAULT_RES_FOLDER);
       this.assetDir = pick(baseConfig.assetDir(), overlayConfig.assetDir(), Config.DEFAULT_ASSET_FOLDER);
-      this.reportSdk = pick(baseConfig.reportSdk(), overlayConfig.reportSdk(), -1);
-      this.constants = pick(baseConfig.constants(), overlayConfig.constants(), null);
+      this.constants = pick(baseConfig.constants(), overlayConfig.constants(), Void.class);
 
       Set<Class<?>> shadows = new HashSet<>();
       shadows.addAll(Arrays.asList(baseConfig.shadows()));
@@ -218,8 +221,8 @@ public @interface Config {
     }
 
     @Override
-    public int emulateSdk() {
-      return emulateSdk;
+    public int sdk() {
+      return sdk;
     }
 
     @Override
@@ -243,6 +246,11 @@ public @interface Config {
     }
 
     @Override
+    public String packageName() {
+      return packageName;
+    }
+
+    @Override
     public String resourceDir() {
       return resourceDir;
     }
@@ -250,11 +258,6 @@ public @interface Config {
     @Override
     public String assetDir() {
       return assetDir;
-    }
-
-    @Override
-    public int reportSdk() {
-      return reportSdk;
     }
 
     @Override
@@ -270,32 +273,6 @@ public @interface Config {
     @NotNull @Override
     public Class<? extends Annotation> annotationType() {
       return Config.class;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
-
-      Implementation other = (Implementation) o;
-
-      if (emulateSdk != other.emulateSdk) return false;
-      if (reportSdk != other.reportSdk) return false;
-      if (!qualifiers.equals(other.qualifiers)) return false;
-      if (!Arrays.equals(shadows, other.shadows)) return false;
-      if (application != other.application) return false;
-
-      return true;
-    }
-
-    @Override
-    public int hashCode() {
-      int result = emulateSdk;
-      result = 31 * result + qualifiers.hashCode();
-      result = 31 * result + reportSdk;
-      result = 31 * result + Arrays.hashCode(shadows);
-      result = 31 * result + application.hashCode();
-      return result;
     }
   }
 }

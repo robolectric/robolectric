@@ -7,7 +7,7 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 
 public class Transcript {
-  private List<String> events = new ArrayList<String>();
+  private List<String> events = new ArrayList<>();
 
   public void add(String event) {
     events.add(event);
@@ -23,7 +23,7 @@ public class Transcript {
   }
 
   public void assertEventsInclude(String... expectedEvents) {
-    List<String> original = new ArrayList<String>(events);
+    List<String> original = new ArrayList<>(events);
     for (String expectedEvent : expectedEvents) {
       int index = events.indexOf(expectedEvent);
       if (index == -1) {

@@ -1,6 +1,7 @@
 package org.robolectric.internal.bytecode;
 
 import android.R;
+import org.robolectric.internal.ShadowedObject;
 import org.robolectric.internal.ShadowProvider;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.internal.dependency.DependencyJar;
@@ -63,7 +64,8 @@ public class InstrumentingClassLoaderConfig {
       Transcript.class,
       DirectObjectMarker.class,
       DependencyJar.class,
-      ParallelUniverseInterface.class
+      ParallelUniverseInterface.class,
+      ShadowedObject.class
   );
 
   static {

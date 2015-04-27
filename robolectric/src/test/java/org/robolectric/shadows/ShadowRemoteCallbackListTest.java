@@ -14,7 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ShadowRemoteCallbackListTest {
   @Test
   public void testBasicWiring() throws Exception {
-    RemoteCallbackList<Foo> fooRemoteCallbackList = new RemoteCallbackList<Foo>();
+    RemoteCallbackList<Foo> fooRemoteCallbackList = new RemoteCallbackList<>();
     Foo callback = new Foo();
     fooRemoteCallbackList.register(callback);
 

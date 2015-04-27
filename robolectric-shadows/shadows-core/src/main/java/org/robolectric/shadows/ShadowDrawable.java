@@ -28,7 +28,7 @@ import static org.robolectric.Shadows.shadowOf;
 public class ShadowDrawable {
   private static int defaultIntrinsicWidth = -1;
   private static int defaultIntrinsicHeight = -1;
-  static final List<String> corruptStreamSources = new ArrayList<String>();
+  static final List<String> corruptStreamSources = new ArrayList<>();
 
   @RealObject Drawable realDrawable;
 

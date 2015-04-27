@@ -8,12 +8,12 @@ import java.util.Map;
 import java.util.Set;
 
 public class ResourceRemapper {
-  private Set<Class<?>> seenClasses = new HashSet<Class<?>>();
+  private Set<Class<?>> seenClasses = new HashSet<>();
   private int nextInt = 0x70000000;
 
   public void remapRClass(Class<?> rClass) {
     if (seenClasses.add(rClass)) {
-      Map<Integer, Integer> mappings = new HashMap<Integer, Integer>();
+      Map<Integer, Integer> mappings = new HashMap<>();
 
       for (Class<?> innerClass : rClass.getClasses()) {
         try {

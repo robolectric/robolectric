@@ -3,8 +3,6 @@ package org.robolectric.shadows;
 import android.app.Application;
 import android.content.Context;
 import android.content.res.Resources;
-import android.database.DatabaseErrorHandler;
-import android.database.sqlite.SQLiteDatabase;
 import android.view.View;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;

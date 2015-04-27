@@ -11,7 +11,6 @@ import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
@@ -46,7 +45,7 @@ public class ShadowWebViewTest {
     assertThat(shadowOf(webView).getLastLoadedUrl()).isEqualTo("http://example.com");
     assertThat(shadowOf(webView).getLastAdditionalHttpHeaders()).isNull();
 
-    Map<String, String> additionalHttpHeaders = new HashMap<String, String>(1);
+    Map<String, String> additionalHttpHeaders = new HashMap<>(1);
     additionalHttpHeaders.put("key1", "value1");
     webView.loadUrl("http://example.com", additionalHttpHeaders);
     assertThat(shadowOf(webView).getLastLoadedUrl()).isEqualTo("http://example.com");

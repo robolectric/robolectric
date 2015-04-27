@@ -12,7 +12,7 @@ public class PluralResourceLoaderTest {
 
   @Before
   public void setUp() throws Exception {
-    pluralRulesResBundle = new ResBundle<PluralResourceLoader.PluralRules>();
+    pluralRulesResBundle = new ResBundle<>();
     PluralResourceLoader pluralResourceLoader = new PluralResourceLoader(pluralRulesResBundle);
 
     new DocumentLoader(testResources()).load("values", pluralResourceLoader);

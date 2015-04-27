@@ -15,11 +15,11 @@ import java.util.Map;
 @Implements(SensorManager.class)
 public class ShadowSensorManager {
 
-  private ArrayList<SensorEventListener> listeners = new ArrayList<SensorEventListener>();
+  private ArrayList<SensorEventListener> listeners = new ArrayList<>();
 
   public boolean forceListenersToFail = false;
 
-  private final Map<Integer, Sensor> sensorMap = new HashMap<Integer, Sensor>();
+  private final Map<Integer, Sensor> sensorMap = new HashMap<>();
 
   /**
    * Provide a Sensor for the indicated sensor type.

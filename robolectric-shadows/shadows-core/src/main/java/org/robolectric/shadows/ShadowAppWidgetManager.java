@@ -48,12 +48,12 @@ public class ShadowAppWidgetManager {
   private AppWidgetManager realAppWidgetManager;
 
   private Context context;
-  private final Map<Integer, WidgetInfo> widgetInfos = new HashMap<Integer, WidgetInfo>();
+  private final Map<Integer, WidgetInfo> widgetInfos = new HashMap<>();
   private int nextWidgetId = 1;
   private boolean alwaysRecreateViewsDuringUpdate = false;
   private boolean allowedToBindWidgets;
   private boolean validWidgetProviderComponentName = true;
-  private final ArrayList<AppWidgetProviderInfo> installedProviders = new ArrayList<AppWidgetProviderInfo>();
+  private final ArrayList<AppWidgetProviderInfo> installedProviders = new ArrayList<>();
 
   private static void bind(AppWidgetManager appWidgetManager, Context context) {
     // todo: implement
@@ -98,7 +98,7 @@ public class ShadowAppWidgetManager {
 
   @Implementation
   public int[] getAppWidgetIds(ComponentName provider) {
-    List<Integer> idList = new ArrayList<Integer>();
+    List<Integer> idList = new ArrayList<>();
     for (int id : widgetInfos.keySet()) {
       WidgetInfo widgetInfo = widgetInfos.get(id);
       if (provider.equals(widgetInfo.providerComponent)) {
@@ -114,7 +114,7 @@ public class ShadowAppWidgetManager {
 
   @Implementation
   public List<AppWidgetProviderInfo> getInstalledProviders() {
-    return new ArrayList<AppWidgetProviderInfo>(installedProviders);
+    return new ArrayList<>(installedProviders);
   }
 
   public void addInstalledProvider(AppWidgetProviderInfo appWidgetProviderInfo) {

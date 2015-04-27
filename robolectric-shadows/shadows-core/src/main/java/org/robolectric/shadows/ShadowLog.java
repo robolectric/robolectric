@@ -98,7 +98,9 @@ public class ShadowLog {
   @Implementation
   public static int println(int priority, String tag, String msg) {
     addLog(priority, tag, msg, null);
-    return extraLogLength + tag.length() + msg.length();
+    int tagLength = tag == null ? 0 : tag.length();
+    int msgLength = msg == null ? 0 : msg.length();
+    return extraLogLength + tagLength + msgLength;
   }
 
   /**
@@ -119,7 +121,7 @@ public class ShadowLog {
     List<LogItem> itemList;
 
     if (!logsByTag.containsKey(tag)) {
-      itemList = new ArrayList<LogItem>();
+      itemList = new ArrayList<>();
       logsByTag.put(tag, itemList);
     } else {
       itemList = logsByTag.get(tag);

@@ -1,7 +1,7 @@
 package org.robolectric.res;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -9,14 +9,14 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 public class ResBundle<T> {
-  private final ResMap<T> valuesMap = new ResMap<T>();
-  private final ResMap<List<T>> valuesArrayMap = new ResMap<List<T>>();
+  private final ResMap<T> valuesMap = new ResMap<>();
+  private final ResMap<List<T>> valuesArrayMap = new ResMap<>();
   private String overrideNamespace;
 
   public void put(String attrType, String name, T value, XmlLoader.XmlContext xmlContext) {
     ResName resName = new ResName(maybeOverride(xmlContext.packageName), attrType, name);
     Values<T> values = valuesMap.find(resName);
-    values.add(new Value<T>(xmlContext.getQualifiers(), value, xmlContext));
+    values.add(new Value<>(xmlContext.getQualifiers(), value, xmlContext));
     Collections.sort(values);
   }
 
@@ -34,33 +34,30 @@ public class ResBundle<T> {
     final int count = values.size();
     if (count == 0) return null;
 
-    BigInteger possibles = BigInteger.ZERO;
-    for (int i = 0; i < count; i++) possibles = possibles.setBit(i);
+    BitSet possibles = new BitSet(count);
+    possibles.set(0, count);
 
     StringTokenizer st = new StringTokenizer(qualifiers, "-");
     while (st.hasMoreTokens()) {
       String qualifier = st.nextToken();
       String paddedQualifier = "-" + qualifier + "-";
-      BigInteger matches = BigInteger.ZERO;
+      BitSet matches = new BitSet(count);
 
-      for (int i = 0; i < count; i++) {
-        if (!possibles.testBit(i)) continue;
-
+      for (int i = possibles.nextSetBit(0); i != -1; i = possibles.nextSetBit(i + 1)) {
         if (values.get(i).qualifiers.contains(paddedQualifier)) {
-          matches = matches.setBit(i);
+          matches.set(i);
         }
       }
 
-      if (!matches.equals(BigInteger.ZERO)) {
-        possibles = possibles.and(matches); // eliminate any that didn't match this qualifier
+      if (!matches.isEmpty()) {
+        possibles.and(matches); // eliminate any that didn't match this qualifier
       }
 
-      if (matches.bitCount() == 1) break;
+      if (matches.cardinality() == 1) break;
     }
 
-    for (int i = 0; i < count; i++) {
-      if (possibles.testBit(i)) return values.get(i);
-    }
+    int i = possibles.nextSetBit(0);
+    if (i != -1) return values.get(i);
     throw new IllegalStateException("couldn't handle qualifiers \"" + qualifiers + "\"");
   }
 
@@ -116,12 +113,12 @@ public class ResBundle<T> {
   }
 
   private static class ResMap<T> {
-    private final Map<ResName, Values<T>> map = new HashMap<ResName, Values<T>>();
+    private final Map<ResName, Values<T>> map = new HashMap<>();
     private boolean immutable;
 
     public Values<T> find(ResName resName) {
       Values<T> values = map.get(resName);
-      if (values == null) map.put(resName, values = new Values<T>());
+      if (values == null) map.put(resName, values = new Values<>());
       return values;
     }
 

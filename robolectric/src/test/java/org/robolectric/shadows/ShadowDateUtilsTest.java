@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import android.os.Build;
 import android.text.format.DateUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,13 +19,15 @@ public class ShadowDateUtilsTest {
     assertThat(actual).isEqualTo("1/1");
   }
 
-  @Test @Config(emulateSdk = 18)
+  @Test
+  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void formatDateTime_worksOnJellybean() {
     String actual = DateUtils.formatDateTime(RuntimeEnvironment.application, 1420099200000L, DateUtils.FORMAT_NUMERIC_DATE);
     assertThat(actual).isEqualTo("1/1/2015");
   }
 
-  @Test @Config(emulateSdk = 18)
+  @Test
+  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void isToday_shouldReturnFalseForNotToday() {
     long today = java.util.Calendar.getInstance().getTimeInMillis();
     ShadowSystemClock.setCurrentTimeMillis(today);

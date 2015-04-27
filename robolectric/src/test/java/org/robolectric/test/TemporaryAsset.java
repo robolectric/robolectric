@@ -27,7 +27,7 @@ import org.robolectric.res.FileFsFile;
  * </pre>
  */
 public class TemporaryAsset extends ExternalResource {
-  List<File> assetsToDelete = new ArrayList<File>();
+  List<File> assetsToDelete = new ArrayList<>();
 
   @Override protected void after() {
     for (File file : assetsToDelete) {

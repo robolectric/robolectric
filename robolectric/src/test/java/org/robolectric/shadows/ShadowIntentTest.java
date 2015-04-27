@@ -155,7 +155,7 @@ public class ShadowIntentTest {
     Intent intent = new Intent();
     Parcelable parcel1 = new TestParcelable(22);
     Parcelable parcel2 = new TestParcelable(23);
-    ArrayList<Parcelable> parcels = new ArrayList<Parcelable>();
+    ArrayList<Parcelable> parcels = new ArrayList<>();
     parcels.add(parcel1);
     parcels.add(parcel2);
 
@@ -506,7 +506,7 @@ public class ShadowIntentTest {
   @Test
   public void putStringArrayListExtra_addsListToExtras() {
     Intent intent = new Intent();
-    final ArrayList<String> strings = new ArrayList<String>(Arrays.asList("hi", "there"));
+    final ArrayList<String> strings = new ArrayList<>(Arrays.asList("hi", "there"));
 
     intent.putStringArrayListExtra("KEY", strings);
     assertThat(intent.getStringArrayListExtra("KEY")).isEqualTo(strings);
@@ -516,7 +516,7 @@ public class ShadowIntentTest {
   @Test
   public void putIntegerArrayListExtra_addsListToExtras() {
     Intent intent = new Intent();
-    final ArrayList<Integer> integers = new ArrayList<Integer>(Arrays.asList(100, 200, 300));
+    final ArrayList<Integer> integers = new ArrayList<>(Arrays.asList(100, 200, 300));
 
     intent.putIntegerArrayListExtra("KEY", integers);
     assertThat(intent.getIntegerArrayListExtra("KEY")).isEqualTo(integers);

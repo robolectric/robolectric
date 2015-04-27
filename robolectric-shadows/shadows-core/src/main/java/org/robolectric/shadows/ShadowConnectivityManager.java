@@ -15,7 +15,7 @@ public class ShadowConnectivityManager {
   private NetworkInfo activeNetwork;
   private boolean backgroundDataSetting;
   private int networkPreference = ConnectivityManager.DEFAULT_NETWORK_PREFERENCE;
-  private final Map<Integer, NetworkInfo> networkTypeToNetworkInfo = new HashMap<Integer, NetworkInfo>();
+  private final Map<Integer, NetworkInfo> networkTypeToNetworkInfo = new HashMap<>();
 
   public ShadowConnectivityManager() {
     NetworkInfo wifi = ShadowNetworkInfo.newInstance(NetworkInfo.DetailedState.DISCONNECTED, ConnectivityManager.TYPE_WIFI, 0, true, false);

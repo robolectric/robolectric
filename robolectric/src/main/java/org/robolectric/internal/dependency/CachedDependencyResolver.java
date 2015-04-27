@@ -2,7 +2,6 @@ package org.robolectric.internal.dependency;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -18,48 +17,73 @@ public class CachedDependencyResolver implements DependencyResolver {
 
   private final DependencyResolver dependencyResolver;
   private final CacheNamingStrategy cacheNamingStrategy;
+  private final CacheValidationStrategy cacheValidationStrategy;
   private final Cache cache;
 
   public CachedDependencyResolver(DependencyResolver dependencyResolver, File cacheDir, long cacheValidTime) {
-    this(dependencyResolver, new FileCache(cacheDir, cacheValidTime), new DefaultCacheNamingStrategy());
+    this(dependencyResolver, new FileCache(cacheDir, cacheValidTime), new DefaultCacheNamingStrategy(), new DefaultCacheValidationStrategy());
   }
 
-  public CachedDependencyResolver(DependencyResolver dependencyResolver, Cache cache, CacheNamingStrategy cacheNamingStrategy) {
+  public CachedDependencyResolver(DependencyResolver dependencyResolver, Cache cache, CacheNamingStrategy cacheNamingStrategy, CacheValidationStrategy cacheValidationStrategy) {
     this.dependencyResolver = dependencyResolver;
     this.cache = cache;
     this.cacheNamingStrategy = cacheNamingStrategy;
+    this.cacheValidationStrategy = cacheValidationStrategy;
   }
 
   @Override
   public URL[] getLocalArtifactUrls(DependencyJar... dependencies) {
-    String cacheName = cacheNamingStrategy.getName(CACHE_PREFIX_1, dependencies);
-    URL[] urlsFromCache = cache.load(cacheName, URL[].class);
+    final String cacheName = cacheNamingStrategy.getName(CACHE_PREFIX_1, dependencies);
+    final URL[] urlsFromCache = cache.load(cacheName, URL[].class);
 
-    if (urlsFromCache != null) {
+    if (urlsFromCache != null && cacheValidationStrategy.isValid(urlsFromCache)) {
       return urlsFromCache;
     }
 
-    URL[] urls = dependencyResolver.getLocalArtifactUrls(dependencies);
+    final URL[] urls = dependencyResolver.getLocalArtifactUrls(dependencies);
     cache.write(cacheName, urls);
     return urls;
   }
 
   @Override
   public URL getLocalArtifactUrl(DependencyJar dependency) {
-    String cacheName = cacheNamingStrategy.getName(CACHE_PREFIX_2, dependency);
-    URL urlFromCache = cache.load(cacheName, URL.class);
+    final String cacheName = cacheNamingStrategy.getName(CACHE_PREFIX_2, dependency);
+    final URL urlFromCache = cache.load(cacheName, URL.class);
 
-    if (urlFromCache != null) {
+    if (urlFromCache != null && cacheValidationStrategy.isValid(urlFromCache)) {
       return urlFromCache;
     }
 
-    URL url = dependencyResolver.getLocalArtifactUrl(dependency);
+    final URL url = dependencyResolver.getLocalArtifactUrl(dependency);
     cache.write(cacheName, url);
     return url;
   }
 
   interface CacheNamingStrategy {
     String getName(String prefix, DependencyJar... dependencies);
+  }
+
+  interface CacheValidationStrategy {
+    boolean isValid(URL url);
+
+    boolean isValid(URL[] urls);
+  }
+
+  static class DefaultCacheValidationStrategy implements CacheValidationStrategy {
+    @Override
+    public boolean isValid(URL url) {
+      return new File(url.getPath()).exists();
+    }
+
+    @Override
+    public boolean isValid(URL[] urls) {
+      for (URL url : urls) {
+        if (!isValid(url)) {
+          return false;
+        }
+      }
+      return true;
+    }
   }
 
   static class DefaultCacheNamingStrategy implements CacheNamingStrategy {
@@ -86,12 +110,10 @@ public class CachedDependencyResolver implements DependencyResolver {
 
   interface Cache {
     <T extends Serializable> T load(String id, Class<T> type);
-
     <T extends Serializable> boolean write(String id, T object);
   }
 
   static class FileCache implements Cache {
-
     private final File dir;
     private final long validTime;
 
@@ -102,28 +124,17 @@ public class CachedDependencyResolver implements DependencyResolver {
 
     @Override
     public <T extends Serializable> T load(String id, Class<T> type) {
-
       try {
         File file = new File(dir, id);
-
         if (!file.exists() || validTime > 0 && file.lastModified() < new Date().getTime() - validTime) {
           return null;
         }
 
-        ObjectInputStream in = new ObjectInputStream(new FileInputStream(file));
-
-        try {
+        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(file))) {
           Object o = in.readObject();
-
           return o.getClass() == type ? (T) o : null;
-        } finally {
-          in.close();
         }
-      } catch (FileNotFoundException e) {
-        return null;
-      } catch (IOException e) {
-        return null;
-      } catch (ClassNotFoundException e) {
+      } catch (IOException | ClassNotFoundException e) {
         return null;
       }
     }
@@ -131,16 +142,10 @@ public class CachedDependencyResolver implements DependencyResolver {
     @Override
     public <T extends Serializable> boolean write(String id, T object) {
       try {
-        ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(new File(dir, id)));
-
-        try {
+        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(new File(dir, id)))) {
           out.writeObject(object);
           return true;
-        } finally {
-          out.close();
         }
-      } catch (FileNotFoundException e) {
-        return false;
       } catch (IOException e) {
         return false;
       }

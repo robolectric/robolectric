@@ -31,7 +31,7 @@ public class PreferenceLoader extends XmlLoader {
   private void processNode(Node node, PreferenceNode parent, XmlContext xmlContext) {
     String name = node.getNodeName();
     NamedNodeMap attributes = node.getAttributes();
-    List<Attribute> attrList = new ArrayList<Attribute>();
+    List<Attribute> attrList = new ArrayList<>();
 
     if (attributes != null) {
       int length = attributes.getLength();

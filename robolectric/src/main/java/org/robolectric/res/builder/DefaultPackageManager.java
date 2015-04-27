@@ -100,15 +100,15 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
   }
 
   private final ShadowsAdapter shadowsAdapter;
-  private final Map<String, AndroidManifest> androidManifests = new LinkedHashMap<String, AndroidManifest>();
-  private final Map<String, PackageInfo> packageInfos = new LinkedHashMap<String, PackageInfo>();
-  private Map<Intent, List<ResolveInfo>> resolveInfoForIntent = new TreeMap<Intent, List<ResolveInfo>>(new IntentComparator());
-  private Map<ComponentName, ComponentState> componentList = new LinkedHashMap<ComponentName, ComponentState>();
-  private Map<ComponentName, Drawable> drawableList = new LinkedHashMap<ComponentName, Drawable>();
-  private Map<String, Drawable> applicationIcons = new HashMap<String, Drawable>();
-  private Map<String, Boolean> systemFeatureList = new LinkedHashMap<String, Boolean>();
-  private Map<IntentFilter, ComponentName> preferredActivities = new LinkedHashMap<IntentFilter, ComponentName>();
-  private Map<Pair<String, Integer>, Drawable> drawables = new LinkedHashMap<Pair<String, Integer>, Drawable>();
+  private final Map<String, AndroidManifest> androidManifests = new LinkedHashMap<>();
+  private final Map<String, PackageInfo> packageInfos = new LinkedHashMap<>();
+  private Map<Intent, List<ResolveInfo>> resolveInfoForIntent = new TreeMap<>(new IntentComparator());
+  private Map<ComponentName, ComponentState> componentList = new LinkedHashMap<>();
+  private Map<ComponentName, Drawable> drawableList = new LinkedHashMap<>();
+  private Map<String, Drawable> applicationIcons = new HashMap<>();
+  private Map<String, Boolean> systemFeatureList = new LinkedHashMap<>();
+  private Map<IntentFilter, ComponentName> preferredActivities = new LinkedHashMap<>();
+  private Map<Pair<String, Integer>, Drawable> drawables = new LinkedHashMap<>();
   private boolean queryIntentImplicitly = false;
   private HashMap<String, Integer> applicationEnabledSettingMap = new HashMap<>();
 
@@ -196,7 +196,7 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
 
   @Override
   public List<PackageInfo> getInstalledPackages(int flags) {
-    return new ArrayList<PackageInfo>(packageInfos.values());
+    return new ArrayList<>(packageInfos.values());
   }
 
   @Override
@@ -352,7 +352,7 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
         }
 
         if (outActivities == null) {
-          outActivities = new ArrayList<ComponentName>();
+          outActivities = new ArrayList<>();
         }
 
         outActivities.add(name);
@@ -431,7 +431,7 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
     // 1. PackageManager#getPackageInfo(...),
     // 2. PackageManager#queryBroadcastReceivers(...)
     // The following piece of code will let you enable querying receivers through both the methods.
-    List<ActivityInfo> receiverActivityInfos = new ArrayList<ActivityInfo>();
+    List<ActivityInfo> receiverActivityInfos = new ArrayList<>();
     for (int i = 0; i < androidManifest.getBroadcastReceivers().size(); ++i) {
       ActivityInfo activityInfo = new ActivityInfo();
       activityInfo.name = androidManifest.getBroadcastReceivers().get(i).getClassName();
@@ -528,7 +528,7 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
   private List<ResolveInfo> findOrCreateInfoList(Intent intent) {
     List<ResolveInfo> infoList = resolveInfoForIntent.get(intent);
     if (infoList == null) {
-      infoList = new ArrayList<ResolveInfo>();
+      infoList = new ArrayList<>();
       resolveInfoForIntent.put(intent, infoList);
     }
     return infoList;
@@ -544,7 +544,7 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
   }
 
   private List<ResolveInfo> queryImplicitIntent(Intent intent, int flags) {
-    List<ResolveInfo> resolveInfoList = new ArrayList<ResolveInfo>();
+    List<ResolveInfo> resolveInfoList = new ArrayList<>();
 
     for (Map.Entry<String, AndroidManifest> androidManifest : androidManifests.entrySet()) {
       String packageName = androidManifest.getKey();

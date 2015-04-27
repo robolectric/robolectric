@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
@@ -28,13 +29,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@SuppressWarnings({"UnusedDeclaration"})
 @Implements(ContextWrapper.class)
 public class ShadowContextWrapper extends ShadowContext {
   private final Map<String, RoboSharedPreferences> sharedPreferencesMap = new HashMap<>();
   @RealObject
   private ContextWrapper realContextWrapper;
-  private String appName;
   private String packageName;
 
   @Implementation
@@ -51,6 +50,16 @@ public class ShadowContextWrapper extends ShadowContext {
   public Context getApplicationContext() {
     Context applicationContext = realContextWrapper.getBaseContext().getApplicationContext();
     return applicationContext == null ? RuntimeEnvironment.application : applicationContext;
+  }
+
+  @Implementation
+  public ApplicationInfo getApplicationInfo() {
+    try {
+      final PackageManager packageManager = RuntimeEnvironment.getPackageManager();
+      return packageManager != null ? packageManager.getApplicationInfo(getPackageName(), 0) : null;
+    } catch (PackageManager.NameNotFoundException e) {
+      throw new RuntimeException("Could not find applicationInfo for current package.");
+    }
   }
 
   @Implementation
@@ -157,29 +166,6 @@ public class ShadowContextWrapper extends ShadowContext {
     return realContextWrapper == getApplicationContext() ? packageName : getApplicationContext().getPackageName();
   }
 
-  /**
-   * Non-Android accessor that is used at start-up to set the package name
-   *
-   * @param packageName the package name
-   */
-  public void setPackageName(String packageName) {
-    this.packageName = packageName;
-  }
-
-  /**
-   * Non-Android accessor.
-   *
-   * @param name Application name.
-   */
-  public void setApplicationName(String name) {
-    appName = name;
-  }
-
-  /**
-   * Implements Android's {@code PackageManager}.
-   *
-   * @return a {@code RobolectricPackageManager}
-   */
   @Implementation
   public PackageManager getPackageManager() {
     return RuntimeEnvironment.getPackageManager();
@@ -231,6 +217,15 @@ public class ShadowContextWrapper extends ShadowContext {
   @Implementation
   public AssetManager getAssets() {
     return getResources().getAssets();
+  }
+
+  /**
+   * Non-Android accessor that is used at start-up to set the package name
+   *
+   * @param packageName the package name
+   */
+  public void setPackageName(String packageName) {
+    this.packageName = packageName;
   }
 
   /**

@@ -1,10 +1,8 @@
 package org.robolectric.fakes;
 
-import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.net.Uri;
 
-import java.sql.Blob;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +13,7 @@ public class RoboCursor extends BaseCursor {
   public String[] selectionArgs;
   public String sortOrder;
   protected Object[][] results = new Object[0][0];
-  protected List<String> columnNames= new ArrayList<String>();
+  protected List<String> columnNames= new ArrayList<>();
   int resultsIndex = -1;
   boolean closeWasCalled;
 

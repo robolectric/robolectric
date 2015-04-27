@@ -109,7 +109,7 @@ public class ShadowContentProviderClientTest {
     client.getStreamTypes(URI, MIME_TYPE);
     verify(provider).getStreamTypes(URI, MIME_TYPE);
 
-    final ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
+    final ArrayList<ContentProviderOperation> ops = new ArrayList<>();
     client.applyBatch(ops);
     verify(provider).applyBatch(ops);
 

@@ -1,17 +1,6 @@
-#set($Integer = 0)
-#set($apiLevel = $Integer.parseInt($apiLevel))
-
-#if ($apiLevel >= 21)
-#set($ptrClass = "long")
-#set($ptrClassBoxed = "Long")
-#else
-#set($ptrClass = "int")
-#set($ptrClassBoxed = "Integer")
-#end
-
 package org.robolectric.shadows;
 
-#if ($apiLevel >= 21)
+#if ($api >= 21)
 import android.graphics.FontFamily;
 #end
 
@@ -101,7 +90,7 @@ public class ShadowTypeface {
     return description.getStyle();
   }
 
-#if ($apiLevel >= 21)
+#if ($api >= 21)
   @HiddenApi
   @Implementation
   public static Typeface createFromFamilies(FontFamily[] families) {

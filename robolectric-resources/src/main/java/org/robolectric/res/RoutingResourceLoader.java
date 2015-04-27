@@ -15,7 +15,7 @@ public class RoutingResourceLoader implements ResourceLoader {
   public RoutingResourceLoader(Map<String, ResourceLoader> resourceLoaders) {
     this.resourceLoaders = resourceLoaders;
 
-    Set<ResourceIndex> resourceIndexes = new HashSet<ResourceIndex>();
+    Set<ResourceIndex> resourceIndexes = new HashSet<>();
     for (ResourceLoader resourceLoader : resourceLoaders.values()) {
       resourceIndexes.add(resourceLoader.getResourceIndex());
     }

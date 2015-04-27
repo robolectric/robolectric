@@ -20,7 +20,7 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableList;
 
 public class RobolectricProcessorTest {
-  private static final Map<String,String> DEFAULT_OPTS = new HashMap<String,String>();
+  private static final Map<String,String> DEFAULT_OPTS = new HashMap<>();
   
   static {
     DEFAULT_OPTS.put(PACKAGE_OPT, "org.robolectric");
@@ -133,7 +133,7 @@ public class RobolectricProcessorTest {
     line = expected.toString();
     line = line.replace("package org.robolectric", "package my.test.pkg");
 
-    Map<String,String> opts = new HashMap<String,String>();
+    Map<String,String> opts = new HashMap<>();
     opts.put(PACKAGE_OPT, "my.test.pkg");
     
     ASSERT.about(javaSources())

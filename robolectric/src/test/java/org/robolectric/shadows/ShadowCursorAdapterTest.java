@@ -9,7 +9,6 @@ import android.widget.CursorAdapter;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
@@ -89,7 +88,7 @@ public class ShadowCursorAdapterTest {
 
   @Test
   public void testGetView() {
-    List<View> views = new ArrayList<View>();
+    List<View> views = new ArrayList<>();
     for (int i = 0; i < 5; i++) {
       views.add(new View(RuntimeEnvironment.application));
     }

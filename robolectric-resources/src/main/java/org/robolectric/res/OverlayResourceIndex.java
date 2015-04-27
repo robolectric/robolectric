@@ -10,7 +10,7 @@ import java.util.Set;
 
 class OverlayResourceIndex extends ResourceIndex {
   private final String packageName;
-  private final Set<String> actualPackageNames = new HashSet<String>();
+  private final Set<String> actualPackageNames = new HashSet<>();
 
   public OverlayResourceIndex(String packageName, List<PackageResourceLoader> subResourceLoaders) {
     this(packageName, map(subResourceLoaders));
@@ -64,12 +64,12 @@ class OverlayResourceIndex extends ResourceIndex {
   }
 
   class ResEntries {
-    private final Map<ResName, List<ResEntry>> resEntries = new HashMap<ResName, List<ResEntry>>();
+    private final Map<ResName, List<ResEntry>> resEntries = new HashMap<>();
 
     public void add(ResName localResName, ResName resName, int value) {
       List<ResEntry> resEntryList = resEntries.get(localResName);
       if (resEntryList == null) {
-        resEntryList = new ArrayList<ResEntry>();
+        resEntryList = new ArrayList<>();
         resEntries.put(localResName, resEntryList);
       }
       resEntryList.add(new ResEntry(resName, value));

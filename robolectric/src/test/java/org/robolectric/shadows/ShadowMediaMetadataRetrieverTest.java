@@ -8,10 +8,8 @@ import android.net.Uri;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
-import org.robolectric.shadows.util.DataSource;
 
 import java.io.FileDescriptor;
 import java.util.HashMap;
@@ -97,7 +95,7 @@ public class ShadowMediaMetadataRetrieverTest {
   public void setDataSource_ignoresHeadersWhenShadowed() {
     Context context = RuntimeEnvironment.application;
     Uri uri = Uri.parse(path);
-    Map<String, String> headers = new HashMap<String, String>();
+    Map<String, String> headers = new HashMap<>();
     headers.put("cookie", "nomnomnom");
     retriever.setDataSource(context, uri);
     retriever2.setDataSource(uri.toString(), headers);

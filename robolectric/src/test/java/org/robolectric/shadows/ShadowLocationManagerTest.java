@@ -136,18 +136,18 @@ public class ShadowLocationManagerTest {
     locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1, 1, listener1);
     locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1, 1, listener1);
 
-    Set<String> listOfExpectedProvidersForListener1 = new HashSet<String>();
+    Set<String> listOfExpectedProvidersForListener1 = new HashSet<>();
     listOfExpectedProvidersForListener1.add(LocationManager.NETWORK_PROVIDER);
     listOfExpectedProvidersForListener1.add(LocationManager.GPS_PROVIDER);
 
     locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1, 1, listener2);
     locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1, 1, listener2);
 
-    Set<String> listOfExpectedProvidersForListener2 = new HashSet<String>();
+    Set<String> listOfExpectedProvidersForListener2 = new HashSet<>();
     listOfExpectedProvidersForListener2.add(LocationManager.NETWORK_PROVIDER);
 
-    assertEquals(listOfExpectedProvidersForListener1, new HashSet<String>(shadowLocationManager.getProvidersForListener(listener1)));
-    assertEquals(listOfExpectedProvidersForListener2, new HashSet<String>(shadowLocationManager.getProvidersForListener(listener2)));
+    assertEquals(listOfExpectedProvidersForListener1, new HashSet<>(shadowLocationManager.getProvidersForListener(listener1)));
+    assertEquals(listOfExpectedProvidersForListener2, new HashSet<>(shadowLocationManager.getProvidersForListener(listener2)));
 
     locationManager.removeUpdates(listener1);
     assertEquals(0, shadowLocationManager.getProvidersForListener(listener1).size());
@@ -164,7 +164,7 @@ public class ShadowLocationManagerTest {
 
     locationManager.removeUpdates(listener);
 
-    List<LocationListener> expected = new ArrayList<LocationListener>();
+    List<LocationListener> expected = new ArrayList<>();
     expected.add(otherListener);
     assertThat(shadowLocationManager.getRequestLocationUpdateListeners()).isEqualTo(expected);
   }
@@ -189,7 +189,7 @@ public class ShadowLocationManagerTest {
 
     locationManager.removeUpdates(someLocationListenerPendingIntent);
 
-    Map<PendingIntent, Criteria> expectedCriteria = new HashMap<PendingIntent, Criteria>();
+    Map<PendingIntent, Criteria> expectedCriteria = new HashMap<>();
     expectedCriteria.put(someOtherLocationListenerPendingIntent, criteria);
     assertThat(shadowLocationManager.getRequestLocationUdpateCriteriaPendingIntents()).isEqualTo(expectedCriteria);
   }
@@ -224,7 +224,7 @@ public class ShadowLocationManagerTest {
 
     locationManager.removeUpdates(someLocationListenerPendingIntent);
 
-    Map<PendingIntent, String> expectedProviders = new HashMap<PendingIntent, String>();
+    Map<PendingIntent, String> expectedProviders = new HashMap<>();
     expectedProviders.put(someOtherLocationListenerPendingIntent, NETWORK_PROVIDER);
     assertThat(shadowLocationManager.getRequestLocationUdpateProviderPendingIntents()).isEqualTo(expectedProviders);
   }
@@ -290,7 +290,7 @@ public class ShadowLocationManagerTest {
     Criteria customProviderCriteria = new Criteria();
 
     // Manually set best provider should be returned
-    ArrayList<Criteria> criteriaList = new ArrayList<Criteria>();
+    ArrayList<Criteria> criteriaList = new ArrayList<>();
     customProviderCriteria.setAccuracy(Criteria.ACCURACY_COARSE);
     criteriaList.add(customProviderCriteria);
     shadowLocationManager.setProviderEnabled("BEST_ENABLED_PROVIDER_WITH_CRITERIA", true, criteriaList);

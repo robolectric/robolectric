@@ -11,6 +11,7 @@ import com.google.android.maps.*;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.HiddenApi;
+import org.robolectric.annotation.RealObject;
 import org.robolectric.internal.ShadowExtractor;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.res.Attribute;
@@ -25,15 +26,16 @@ import static org.robolectric.internal.Shadow.invokeConstructor;
 
 @Implements(MapView.class)
 public class ShadowMapView extends ShadowViewGroup {
+  @SuppressWarnings("UnusedDeclaration") @RealObject
+  private MapView realMapView;
   private boolean satelliteOn;
   private MapController mapController;
-  private List<Overlay> overlays = new ArrayList<Overlay>();
+  private List<Overlay> overlays = new ArrayList<>();
   GeoPoint mapCenter = new GeoPoint(10, 10);
   int longitudeSpan = 20;
   int latitudeSpan = 30;
   int zoomLevel = 1;
   private ZoomButtonsController zoomButtonsController;
-  private MapView realMapView;
   private Projection projection;
   private boolean useBuiltInZoomMapControls;
   private boolean mouseDownOnMe = false;
@@ -42,15 +44,11 @@ public class ShadowMapView extends ShadowViewGroup {
   private boolean preLoadWasCalled;
   private boolean canCoverCenter = true;
 
-  public ShadowMapView(MapView mapView) {
-    realMapView = mapView;
-    zoomButtonsController = new ZoomButtonsController(mapView);
-  }
-
   @HiddenApi
   public void __constructor__(Context context) {
     setContextOnRealView(context);
     this.attributeSet = new RoboAttributeSet(new ArrayList<Attribute>(), ShadowApplication.getInstance().getResourceLoader());
+    zoomButtonsController = new ZoomButtonsController(realMapView);
     invokeConstructor(View.class, realView, ClassParameter.from(Context.class, context));
     invokeConstructor(ViewGroup.class, realView, ClassParameter.from(Context.class, context));
   }
@@ -58,6 +56,7 @@ public class ShadowMapView extends ShadowViewGroup {
   public void __constructor__(Context context, AttributeSet attributeSet) {
     setContextOnRealView(context);
     this.attributeSet = attributeSet;
+    zoomButtonsController = new ZoomButtonsController(realMapView);
     invokeConstructor(View.class, realView,
         ClassParameter.from(Context.class, context),
         ClassParameter.from(AttributeSet.class, attributeSet),
@@ -72,6 +71,7 @@ public class ShadowMapView extends ShadowViewGroup {
   @Override public void __constructor__(Context context, AttributeSet attributeSet, int defStyle) {
     setContextOnRealView(context);
     this.attributeSet = attributeSet;
+    zoomButtonsController = new ZoomButtonsController(realMapView);
     invokeConstructor(View.class, realView,
         ClassParameter.from(Context.class, context),
         ClassParameter.from(AttributeSet.class, attributeSet),

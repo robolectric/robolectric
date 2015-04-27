@@ -35,6 +35,7 @@ import org.robolectric.res.PackageResourceLoader;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.res.RoutingResourceLoader;
+import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Pair;
 
@@ -112,6 +113,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
         cacheDir.mkdir();
 
         if (cacheDir.exists()) {
+          Logger.info("Dependency cache location: %s", cacheDir.getAbsolutePath());
           dependencyResolver = new CachedDependencyResolver(new MavenDependencyResolver(), cacheDir, 60 * 60 * 24 * 1000);
         } else {
           dependencyResolver = new MavenDependencyResolver();
@@ -129,7 +131,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   }
 
   protected ClassHandler createClassHandler(ShadowMap shadowMap, SdkConfig sdkConfig) {
-    return new ShadowWrangler(shadowMap, sdkConfig);
+    return new ShadowWrangler(shadowMap);
   }
 
   protected AndroidManifest createAppManifest(FsFile manifestFile, FsFile resDir, FsFile assetDir) {
@@ -301,7 +303,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   }
 
   private SdkEnvironment getEnvironment(final AndroidManifest appManifest, final Config config) {
-    final SdkConfig sdkConfig = pickSdkVersion(appManifest, config);
+    final SdkConfig sdkConfig = pickSdkVersion(config, appManifest);
 
     // keep the most recently-used SdkEnvironment strongly reachable to prevent thrashing in low-memory situations.
     if (getClass().equals(lastTestRunnerClass) && sdkConfig.equals(lastSdkConfig)) {
@@ -461,27 +463,27 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     parallelUniverseInterface.setUpApplicationState(method, testLifecycle, systemResourceLoader, appManifest, config);
   }
 
-  protected SdkConfig pickSdkVersion(AndroidManifest appManifest, Config config) {
-    if (config != null && config.emulateSdk() > 0) {
-      return new SdkConfig(config.emulateSdk());
+  protected SdkConfig pickSdkVersion(Config config, AndroidManifest manifest) {
+    if (config != null && config.sdk() > 0) {
+      return new SdkConfig(config.sdk());
+
+    } else if (manifest != null) {
+      return new SdkConfig(manifest.getTargetSdkVersion());
+
     } else {
-      if (appManifest != null) {
-        return new SdkConfig(appManifest.getTargetSdkVersion());
-      } else {
-        return new SdkConfig(SdkConfig.FALLBACK_SDK_VERSION);
-      }
+      return new SdkConfig(SdkConfig.FALLBACK_SDK_VERSION);
     }
   }
 
-  protected int pickReportedSdkVersion(Config config, AndroidManifest appManifest) {
-    // Check if the user has explicitly overridden the reported version
-    if (config != null && config.reportSdk() > 0) {
-      return config.reportSdk();
-    }
-    if (config != null && config.emulateSdk() > 0) {
-      return config.emulateSdk();
+  protected int pickReportedSdkVersion(Config config, AndroidManifest manifest) {
+    if (config != null && config.sdk() > 0) {
+      return config.sdk();
+
+    } else if (manifest != null) {
+      return manifest.getTargetSdkVersion();
+
     } else {
-      return appManifest != null ? appManifest.getTargetSdkVersion() : SdkConfig.FALLBACK_SDK_VERSION;
+      return SdkConfig.FALLBACK_SDK_VERSION;
     }
   }
 

@@ -7,8 +7,6 @@ import org.robolectric.util.ReflectionHelpers;
 import java.io.File;
 import java.lang.reflect.Field;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
 public class DrawableResourceLoaderNoRunnerTest {

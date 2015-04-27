@@ -60,17 +60,17 @@ public class ShadowWifiManagerTest {
     int networkId = 666;
     wifiManager.enableNetwork(networkId, true);
     Pair<Integer, Boolean> lastEnabled = shadowWifiManager.getLastEnabledNetwork();
-    assertThat(lastEnabled).isEqualTo(new Pair<Integer, Boolean>(666, true));
+    assertThat(lastEnabled).isEqualTo(new Pair<>(666, true));
 
     int anotherNetworkId = 777;
     wifiManager.enableNetwork(anotherNetworkId, false);
     lastEnabled = shadowWifiManager.getLastEnabledNetwork();
-    assertThat(lastEnabled).isEqualTo(new Pair<Integer, Boolean>(777, false));
+    assertThat(lastEnabled).isEqualTo(new Pair<>(777, false));
   }
 
   @Test
   public void shouldReturnSetScanResults() throws Exception {
-    List<ScanResult> scanResults = new ArrayList<ScanResult>();
+    List<ScanResult> scanResults = new ArrayList<>();
     shadowWifiManager.setScanResults(scanResults);
     assertThat(wifiManager.getScanResults()).isSameAs(scanResults);
   }

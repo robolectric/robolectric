@@ -48,7 +48,7 @@ public class ShadowStatFs {
     }
   }
 
-#if ($apiLevel >= 18)
+#if ($api >= 18)
   @Implementation
   public long getBlockSizeLong() {
     return BLOCK_SIZE;

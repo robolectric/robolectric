@@ -1,11 +1,8 @@
-#set($Integer = 0)
-#set($apiLevel = $Integer.parseInt($apiLevel))
-
 package org.robolectric.fakes;
 
 import android.os.Vibrator;
 
-#if ($apiLevel >= 21)
+#if ($api >= 21)
 import android.media.AudioAttributes;
 #end
 
@@ -34,7 +31,7 @@ public class RoboVibrator extends Vibrator {
     this.repeat = repeat;
   }
 
-#if ($apiLevel >= 21)
+#if ($api >= 21)
   @Override
   public void vibrate(int i, String s, long l, AudioAttributes audioAttributes) {
 
@@ -44,7 +41,7 @@ public class RoboVibrator extends Vibrator {
   public void vibrate(int i, String s, long[] longs, int i1, AudioAttributes audioAttributes) {
 
   }
-#elseif ($apiLevel >= 18)
+#elseif ($api >= 18)
   @Override
   public void vibrate(int i, String s, long l) {
 

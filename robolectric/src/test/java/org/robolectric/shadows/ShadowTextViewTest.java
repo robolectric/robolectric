@@ -471,7 +471,7 @@ public class ShadowTextViewTest {
   }
 
   private List<MockTextWatcher> anyNumberOfTextWatchers() {
-    List<MockTextWatcher> mockTextWatchers = new ArrayList<MockTextWatcher>();
+    List<MockTextWatcher> mockTextWatchers = new ArrayList<>();
     int numberBetweenOneAndTen = new Random().nextInt(10) + 1;
     for (int i = 0; i < numberBetweenOneAndTen; i++) {
       mockTextWatchers.add(new MockTextWatcher());
@@ -488,7 +488,7 @@ public class ShadowTextViewTest {
   }
 
   private List<String> urlStringsFrom(URLSpan[] urlSpans) {
-    List<String> urls = new ArrayList<String>();
+    List<String> urls = new ArrayList<>();
     for (URLSpan urlSpan : urlSpans) {
       urls.add(urlSpan.getURL());
     }
@@ -509,7 +509,7 @@ public class ShadowTextViewTest {
 
   private static class MockTextWatcher implements TextWatcher {
 
-    List<String> methodsCalled = new ArrayList<String>();
+    List<String> methodsCalled = new ArrayList<>();
     Editable afterTextChangeArgument;
 
     @Override

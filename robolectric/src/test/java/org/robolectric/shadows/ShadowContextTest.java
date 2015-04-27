@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import org.junit.After;
@@ -25,7 +24,6 @@ import java.io.IOException;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.util.TestUtil.TEST_PACKAGE;

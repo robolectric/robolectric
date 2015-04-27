@@ -5,7 +5,6 @@ import android.net.Uri;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.internal.ShadowExtractor;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -27,11 +26,11 @@ public class ShadowIntentFilter {
     }
   }
 
-  List<String> actions = new ArrayList<String>();
-  List<String> schemes = new ArrayList<String>();
-  List<String> types = new ArrayList<String>();
-  List<IntentFilter.AuthorityEntry> authoritites = new ArrayList<IntentFilter.AuthorityEntry>();
-  List<String> categories = new ArrayList<String>();
+  List<String> actions = new ArrayList<>();
+  List<String> schemes = new ArrayList<>();
+  List<String> types = new ArrayList<>();
+  List<IntentFilter.AuthorityEntry> authoritites = new ArrayList<>();
+  List<String> categories = new ArrayList<>();
   int priority;
 
   public void __constructor__(String action) {
@@ -44,11 +43,11 @@ public class ShadowIntentFilter {
 
   public void __constructor__(IntentFilter filter) {
     ShadowIntentFilter shadow = Shadows.shadowOf(filter);
-    actions = new ArrayList<String>(shadow.actions);
-    schemes = new ArrayList<String>(shadow.schemes);
-    types = new ArrayList<String>(shadow.types);
-    authoritites = new ArrayList<IntentFilter.AuthorityEntry>(shadow.authoritites);
-    categories = new ArrayList<String>(shadow.categories);
+    actions = new ArrayList<>(shadow.actions);
+    schemes = new ArrayList<>(shadow.schemes);
+    types = new ArrayList<>(shadow.types);
+    authoritites = new ArrayList<>(shadow.authoritites);
+    categories = new ArrayList<>(shadow.categories);
     priority = shadow.priority;
   }
 

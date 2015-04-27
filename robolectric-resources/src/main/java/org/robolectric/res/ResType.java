@@ -24,7 +24,7 @@ public enum ResType {
   CHAR_SEQUENCE {
     @Override
     public TypedResource getValueWithType(XpathResourceXmlLoader.XmlNode xmlNode) {
-      return new TypedResource<String>(StringResources.escape(xmlNode.getTextContent()), this);
+      return new TypedResource<>(StringResources.escape(xmlNode.getTextContent()), this);
     }
   },
 
@@ -41,15 +41,15 @@ public enum ResType {
   };
 
   private static TypedResource extractScalarItems(XpathResourceXmlLoader.XmlNode xmlNode, ResType arrayResType, ResType itemResType) {
-    List<TypedResource> items = new ArrayList<TypedResource>();
+    List<TypedResource> items = new ArrayList<>();
     for (XpathResourceXmlLoader.XmlNode item : xmlNode.selectElements("item")) {
-      items.add(new TypedResource<String>(item.getTextContent(), itemResType));
+      items.add(new TypedResource<>(item.getTextContent(), itemResType));
     }
     TypedResource[] typedResources = items.toArray(new TypedResource[items.size()]);
-    return new TypedResource<TypedResource[]>(typedResources, arrayResType);
+    return new TypedResource<>(typedResources, arrayResType);
   }
 
   public TypedResource getValueWithType(XpathResourceXmlLoader.XmlNode xmlNode) {
-    return new TypedResource<String>(xmlNode.getTextContent(), this);
+    return new TypedResource<>(xmlNode.getTextContent(), this);
   }
 }

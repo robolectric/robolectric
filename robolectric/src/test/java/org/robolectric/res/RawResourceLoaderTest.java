@@ -18,7 +18,7 @@ public class RawResourceLoaderTest {
 
   @Before public void setUp() throws Exception {
     resourceIndex = new ResourceExtractor(testResources());
-    rawResourceFiles = new ResBundle<FsFile>();
+    rawResourceFiles = new ResBundle<>();
     RawResourceLoader rawResourceLoader = new RawResourceLoader(TEST_RESOURCE_PATH);
     rawResourceLoader.loadTo(rawResourceFiles);
   }

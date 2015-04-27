@@ -9,12 +9,12 @@ import java.io.InputStream;
 // TODO: Give me a better name
 abstract class XResourceLoader implements ResourceLoader {
   final ResBunch data = new ResBunch();
-  final ResBundle<PluralResourceLoader.PluralRules> pluralsData = new ResBundle<PluralResourceLoader.PluralRules>();
-  final ResBundle<String> stringData = new ResBundle<String>();
-  final ResBundle<DrawableNode> drawableData = new ResBundle<DrawableNode>();
-  final ResBundle<PreferenceNode> preferenceData = new ResBundle<PreferenceNode>();
-  final ResBundle<Document> xmlDocuments = new ResBundle<Document>();
-  final ResBundle<FsFile> rawResources = new ResBundle<FsFile>();
+  final ResBundle<PluralResourceLoader.PluralRules> pluralsData = new ResBundle<>();
+  final ResBundle<String> stringData = new ResBundle<>();
+  final ResBundle<DrawableNode> drawableData = new ResBundle<>();
+  final ResBundle<PreferenceNode> preferenceData = new ResBundle<>();
+  final ResBundle<Document> xmlDocuments = new ResBundle<>();
+  final ResBundle<FsFile> rawResources = new ResBundle<>();
   private final ResourceIndex resourceIndex;
   boolean isInitialized = false;
 

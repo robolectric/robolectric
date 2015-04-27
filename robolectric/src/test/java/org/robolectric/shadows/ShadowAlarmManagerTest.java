@@ -42,7 +42,8 @@ public class ShadowAlarmManagerTest {
     assertThat(scheduledAlarm).isNotNull();
   }
 
-  @Test @Config(emulateSdk = Build.VERSION_CODES.KITKAT)
+  @Test
+  @Config(sdk = Build.VERSION_CODES.KITKAT)
   public void shouldSupportSetExact_forApiLevel19() throws Exception {
 	  assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNull();
 	  alarmManager.setExact(AlarmManager.ELAPSED_REALTIME, 0, PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));

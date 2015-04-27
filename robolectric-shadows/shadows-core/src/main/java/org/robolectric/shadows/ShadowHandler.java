@@ -2,16 +2,7 @@ package org.robolectric.shadows;
 
 import android.os.Handler;
 import android.os.Looper;
-import android.os.Message;
-import org.robolectric.Shadows;
-import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
-import org.robolectric.util.ReflectionHelpers;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 import static org.robolectric.Shadows.shadowOf;
 

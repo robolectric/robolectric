@@ -37,7 +37,7 @@ import static org.robolectric.internal.Shadow.directlyOn;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(BitmapFactory.class)
 public class ShadowBitmapFactory {
-  private static Map<String, Point> widthAndHeightMap = new HashMap<String, Point>();
+  private static Map<String, Point> widthAndHeightMap = new HashMap<>();
 
   static {
     // Stops ImageIO from creating temp files when reading images
@@ -188,7 +188,7 @@ public class ShadowBitmapFactory {
 
   private static String stringify(BitmapFactory.Options options) {
     if (options == null) return "";
-    List<String> opts = new ArrayList<String>();
+    List<String> opts = new ArrayList<>();
 
     if (options.inJustDecodeBounds) opts.add("inJustDecodeBounds");
     if (options.inSampleSize > 1) opts.add("inSampleSize=" + options.inSampleSize);

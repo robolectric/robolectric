@@ -48,20 +48,20 @@ public class ShadowContentResolver {
   @RealObject ContentResolver realContentResolver;
 
   private BaseCursor cursor;
-  private final List<InsertStatement> insertStatements = new ArrayList<InsertStatement>();
-  private final List<UpdateStatement> updateStatements = new ArrayList<UpdateStatement>();
-  private final List<DeleteStatement> deleteStatements = new ArrayList<DeleteStatement>();
-  private List<NotifiedUri> notifiedUris = new ArrayList<NotifiedUri>();
-  private Map<Uri, BaseCursor> uriCursorMap = new HashMap<Uri, BaseCursor>();
-  private Map<Uri, InputStream> inputStreamMap = new HashMap<Uri, InputStream>();
-  private final Map<String, ArrayList<ContentProviderOperation>> contentProviderOperations = new HashMap<String, ArrayList<ContentProviderOperation>>();
+  private final List<InsertStatement> insertStatements = new ArrayList<>();
+  private final List<UpdateStatement> updateStatements = new ArrayList<>();
+  private final List<DeleteStatement> deleteStatements = new ArrayList<>();
+  private List<NotifiedUri> notifiedUris = new ArrayList<>();
+  private Map<Uri, BaseCursor> uriCursorMap = new HashMap<>();
+  private Map<Uri, InputStream> inputStreamMap = new HashMap<>();
+  private final Map<String, ArrayList<ContentProviderOperation>> contentProviderOperations = new HashMap<>();
   private ContentProviderResult[] contentProviderResults;
 
-  private final Map<Uri, CopyOnWriteArraySet<ContentObserver>> contentObservers = new HashMap<Uri, CopyOnWriteArraySet<ContentObserver>>();
+  private final Map<Uri, CopyOnWriteArraySet<ContentObserver>> contentObservers = new HashMap<>();
 
   private static final Map<String, Map<Account, Status>>  syncableAccounts =
-      new HashMap<String, Map<Account, Status>>();
-  private static final Map<String, ContentProvider> providers = new HashMap<String, ContentProvider>();
+      new HashMap<>();
+  private static final Map<String, ContentProvider> providers = new HashMap<>();
   private static boolean masterSyncAutomatically;
 
   @Resetter
@@ -88,7 +88,7 @@ public class ShadowContentResolver {
     public int state = -1;
     public boolean syncAutomatically;
     public Bundle syncExtras;
-    public List<PeriodicSync> syncs = new ArrayList<PeriodicSync>();
+    public List<PeriodicSync> syncs = new ArrayList<>();
   }
 
   public void registerInputStream(Uri uri, InputStream inputStream) {
@@ -439,7 +439,7 @@ public class ShadowContentResolver {
   public static Status getStatus(Account account, String authority, boolean create) {
     Map<Account, Status> map = syncableAccounts.get(authority);
     if (map == null) {
-      map = new HashMap<Account, Status>();
+      map = new HashMap<>();
       syncableAccounts.put(authority, map);
     }
     Status status = map.get(account);
@@ -475,7 +475,7 @@ public class ShadowContentResolver {
   }
 
   public List<Uri> getDeletedUris() {
-    List<Uri> uris = new ArrayList<Uri>();
+    List<Uri> uris = new ArrayList<>();
     for (DeleteStatement deleteStatement : deleteStatements) {
       uris.add(deleteStatement.getUri());
     }
@@ -493,7 +493,7 @@ public class ShadowContentResolver {
   public ArrayList<ContentProviderOperation> getContentProviderOperations(String authority) {
     ArrayList<ContentProviderOperation> operations = contentProviderOperations.get(authority);
     if (operations == null)
-      return new ArrayList<ContentProviderOperation>();
+      return new ArrayList<>();
     return operations;
   }
 
@@ -505,7 +505,7 @@ public class ShadowContentResolver {
   public void registerContentObserver( Uri uri, boolean notifyForDescendents, ContentObserver observer) {
     CopyOnWriteArraySet<ContentObserver> observers = contentObservers.get(uri);
     if (observers == null) {
-      observers = new CopyOnWriteArraySet<ContentObserver>();
+      observers = new CopyOnWriteArraySet<>();
       contentObservers.put(uri, observers);
     }
     observers.add(observer);
@@ -564,11 +564,7 @@ public class ShadowContentResolver {
       ContentProvider provider = (ContentProvider) Class.forName(providerData.getClassName()).newInstance();
       provider.onCreate();
       return provider;
-    } catch (InstantiationException e) {
-      throw new RuntimeException("Error instantiating class " + providerData.getClassName());
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException("Error instantiating class " + providerData.getClassName());
-    } catch (ClassNotFoundException e) {
+    } catch (InstantiationException | ClassNotFoundException | IllegalAccessException e) {
       throw new RuntimeException("Error instantiating class " + providerData.getClassName());
     }
   }

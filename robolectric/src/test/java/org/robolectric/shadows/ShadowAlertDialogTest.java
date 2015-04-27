@@ -194,11 +194,11 @@ public class ShadowAlertDialogTest {
 
   @Test
   public void testBuilderWithAdapter() throws Exception {
-    List<Integer> list = new ArrayList<Integer>();
+    List<Integer> list = new ArrayList<>();
     list.add(99);
     list.add(88);
     list.add(77);
-    ArrayAdapter<Integer> adapter = new ArrayAdapter<Integer>(RuntimeEnvironment.application, R.layout.main, R.id.title, list);
+    ArrayAdapter<Integer> adapter = new ArrayAdapter<>(RuntimeEnvironment.application, R.layout.main, R.id.title, list);
 
     AlertDialog.Builder builder = new AlertDialog.Builder(application);
     builder.setSingleChoiceItems(adapter, -1, new DialogInterface.OnClickListener() {
@@ -233,11 +233,11 @@ public class ShadowAlertDialogTest {
     AlertDialog.Builder builder = new AlertDialog.Builder(new ContextWrapper(RuntimeEnvironment.application));
 
     TestDialogOnClickListener listener = new TestDialogOnClickListener();
-    List<Integer> list = new ArrayList<Integer>();
+    List<Integer> list = new ArrayList<>();
     list.add(1);
     list.add(2);
     list.add(3);
-    ArrayAdapter<Integer> arrayAdapter = new ArrayAdapter<Integer>(RuntimeEnvironment.application, R.layout.main, R.id.title, list);
+    ArrayAdapter<Integer> arrayAdapter = new ArrayAdapter<>(RuntimeEnvironment.application, R.layout.main, R.id.title, list);
     builder.setSingleChoiceItems(arrayAdapter, 1, listener);
 
     AlertDialog alert = builder.create();

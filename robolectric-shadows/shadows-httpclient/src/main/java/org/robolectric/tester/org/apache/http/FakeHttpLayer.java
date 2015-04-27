@@ -12,7 +12,6 @@ import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HttpContext;
-import org.robolectric.shadows.FakeHttp;
 import org.robolectric.shadows.HttpResponseGenerator;
 
 import java.io.IOException;
@@ -24,14 +23,14 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 public class FakeHttpLayer {
-  private final List<HttpResponseGenerator> pendingHttpResponses = new ArrayList<HttpResponseGenerator>();
-  private final List<HttpRequestInfo> httpRequestInfos = new ArrayList<HttpRequestInfo>();
-  private final List<HttpResponse> httpResponses = new ArrayList<HttpResponse>();
-  private final List<HttpEntityStub.ResponseRule> httpResponseRules = new ArrayList<HttpEntityStub.ResponseRule>();
+  private final List<HttpResponseGenerator> pendingHttpResponses = new ArrayList<>();
+  private final List<HttpRequestInfo> httpRequestInfos = new ArrayList<>();
+  private final List<HttpResponse> httpResponses = new ArrayList<>();
+  private final List<HttpEntityStub.ResponseRule> httpResponseRules = new ArrayList<>();
   private HttpResponse defaultHttpResponse;
   private boolean interceptHttpRequests = true;
   private boolean logHttpRequests = false;
-  private List<byte[]> httpResposeContent = new ArrayList<byte[]>();
+  private List<byte[]> httpResposeContent = new ArrayList<>();
   private boolean interceptResponseContent;
 
   public HttpRequestInfo getLastSentHttpRequestInfo() {
@@ -194,7 +193,7 @@ public class FakeHttpLayer {
   }
 
   public List<HttpRequestInfo> getSentHttpRequestInfos() {
-    return new ArrayList<HttpRequestInfo>(httpRequestInfos);
+    return new ArrayList<>(httpRequestInfos);
   }
 
   public void clearHttpResponseRules() {
@@ -215,7 +214,7 @@ public class FakeHttpLayer {
    * @return List of all HTTP Responses logged by the fake http layer.
    */
   public List<HttpResponse> getHttpResponses() {
-    return new ArrayList<HttpResponse>(httpResponses);
+    return new ArrayList<>(httpResponses);
   }
 
   /**
@@ -354,8 +353,8 @@ public class FakeHttpLayer {
   public static class RequestMatcherBuilder implements RequestMatcher {
     private String method, hostname, path;
     private boolean noParams;
-    private Map<String, String> params = new HashMap<String, String>();
-    private Map<String, String> headers = new HashMap<String, String>();
+    private Map<String, String> params = new HashMap<>();
+    private Map<String, String> headers = new HashMap<>();
     private PostBodyMatcher postBodyMatcher;
 
     public interface PostBodyMatcher {
@@ -429,7 +428,7 @@ public class FakeHttpLayer {
         }
       }
       if (headers.size() > 0) {
-        Map<String, String> actualRequestHeaders = new HashMap<String, String>();
+        Map<String, String> actualRequestHeaders = new HashMap<>();
         for (Header header : request.getAllHeaders()) {
           actualRequestHeaders.put(header.getName(), header.getValue());
         }

@@ -133,7 +133,7 @@ public class ShadowMediaPlayerTest {
 
   @Test
   public void testSetDataSourceUri() throws IOException {
-    Map<String, String> headers = new HashMap<String, String>();
+    Map<String, String> headers = new HashMap<>();
     Uri uri = Uri.parse("file:/test");
     DataSource ds = toDataSource(RuntimeEnvironment.application, uri, headers);
     ShadowMediaPlayer.addMediaInfo(ds, info);

@@ -377,7 +377,7 @@ public class ShadowHandlerTest {
 
   @Test
   public void shouldRemoveSingleMessage() throws Exception {
-    final List<Object> objects = new ArrayList<Object>();
+    final List<Object> objects = new ArrayList<>();
     ShadowLooper.pauseMainLooper();
 
     Handler handler = new Handler() {
@@ -455,7 +455,7 @@ public class ShadowHandlerTest {
 
   @Test
   public void shouldSetWhenOnMessage() throws Exception {
-    final List<Long>  whens = new ArrayList<Long>();
+    final List<Long>  whens = new ArrayList<>();
     Handler h = new Handler(new Handler.Callback() {
       @Override
       public boolean handleMessage(Message msg) {

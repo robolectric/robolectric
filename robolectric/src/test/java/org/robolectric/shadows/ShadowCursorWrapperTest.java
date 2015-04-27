@@ -11,7 +11,6 @@ import android.os.Bundle;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
-import org.robolectric.Robolectric;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 
@@ -19,7 +18,6 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.matchers.JUnitMatchers.hasItem;
 import static org.mockito.Mockito.*;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -34,7 +32,7 @@ public class ShadowCursorWrapperTest {
     public ForwardVerifier() {
       mockCursor = mock(Cursor.class);
       cursorWrapper = new CursorWrapper(mockCursor);
-      cursorMethod = new HashMap<String, Method>();
+      cursorMethod = new HashMap<>();
 
       // This works because no two methods in the Cursor interface have the same name
       for (Method m : Cursor.class.getMethods()) {

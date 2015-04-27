@@ -9,8 +9,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
-import static org.robolectric.Shadows.shadowOf;
-
 @Implements(AppWidgetHost.class)
 public class ShadowAppWidgetHost {
   @RealObject

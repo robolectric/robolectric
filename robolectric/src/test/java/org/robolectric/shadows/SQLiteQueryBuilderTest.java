@@ -5,7 +5,6 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
-import android.provider.BaseColumns;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

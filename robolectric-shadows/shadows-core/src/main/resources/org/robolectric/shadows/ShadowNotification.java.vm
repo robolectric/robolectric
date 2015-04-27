@@ -1,6 +1,3 @@
-#set($Integer = 0)
-#set($apiLevel = $Integer.parseInt($apiLevel))
-
 package org.robolectric.shadows;
 
 import android.app.Notification;
@@ -21,7 +18,7 @@ import static org.robolectric.internal.Shadow.directlyOn;
 
 @Implements(Notification.class)
 public class ShadowNotification {
-#if ($apiLevel >= 18)
+#if ($api >= 18)
   private static final int MAX_ACTIONS = 3;
 #end
 
@@ -34,7 +31,7 @@ public class ShadowNotification {
   private boolean ongoing;
   private boolean showWhen;
 
-#if ($apiLevel >= 18)
+#if ($api >= 18)
   private ArrayList<Notification.Action> actions = new ArrayList<Notification.Action>(MAX_ACTIONS);
 #end
 
@@ -133,7 +130,7 @@ public class ShadowNotification {
    this.contentInfo = contentInfo;
   }
 
-#if ($apiLevel >= 18)
+#if ($api >= 18)
   public void setActions(ArrayList<Notification.Action> actions) {
     this.actions = actions;
   }
@@ -214,7 +211,7 @@ public class ShadowNotification {
     private boolean ongoing;
     private long when;
     private boolean showWhen = true;
-#if ($apiLevel >= 18)
+#if ($api >= 18)
     private ArrayList<Notification.Action> actions =
         new ArrayList<Notification.Action>(MAX_ACTIONS);
 #end
@@ -245,7 +242,7 @@ public class ShadowNotification {
       s.setWhen(when);
       s.setShowWhen(showWhen);
       s.setContentInfo(contentInfo);
-#if ($apiLevel >= 18)
+#if ($api >= 18)
       s.setActions(actions);
 #end
       s.setStyle(style);
@@ -303,7 +300,7 @@ public class ShadowNotification {
       return realBuilder;
     }
 
-#if ($apiLevel >= 18)
+#if ($api >= 18)
     @Implementation
     public Builder addAction(int icon, CharSequence title, PendingIntent intent) {
       this.actions.add(new Notification.Action(icon, title, intent));

@@ -15,7 +15,7 @@ public class ShadowItemizedOverlay<Item extends OverlayItem> {
   private boolean isPopulated;
   private boolean shouldHit;
   private boolean lastFocusedIndexWasReset;
-  private ArrayList<Item> items = new ArrayList<Item>();
+  private ArrayList<Item> items = new ArrayList<>();
 
   @RealObject
   private ItemizedOverlay<Item> realObject;
@@ -82,6 +82,6 @@ public class ShadowItemizedOverlay<Item extends OverlayItem> {
   }
 
   private ShadowItemizedOverlayBridge<Item> getBridge() {
-    return new ShadowItemizedOverlayBridge<Item>(realObject);
+    return new ShadowItemizedOverlayBridge<>(realObject);
   }
 }

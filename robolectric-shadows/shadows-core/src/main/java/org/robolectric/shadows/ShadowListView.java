@@ -16,7 +16,7 @@ public class ShadowListView extends ShadowAbsListView {
 
   public List<View> getHeaderViews() {
     HeaderViewListAdapter adapter = (HeaderViewListAdapter) realListView.getAdapter();
-    ArrayList<View> headerViews = new ArrayList<View>();
+    ArrayList<View> headerViews = new ArrayList<>();
     int headersCount = adapter.getHeadersCount();
     for (int i = 0; i < headersCount; i++) {
       headerViews.add(adapter.getView(i, null, realListView));
@@ -26,7 +26,7 @@ public class ShadowListView extends ShadowAbsListView {
 
   public List<View> getFooterViews() {
     HeaderViewListAdapter adapter = (HeaderViewListAdapter) realListView.getAdapter();
-    ArrayList<View> footerViews = new ArrayList<View>();
+    ArrayList<View> footerViews = new ArrayList<>();
     int offset = adapter.getHeadersCount() + adapter.getCount() - adapter.getFootersCount();
     int itemCount = adapter.getCount();
     for (int i = offset; i < itemCount; i++) {

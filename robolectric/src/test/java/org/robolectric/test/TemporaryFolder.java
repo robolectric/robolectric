@@ -8,7 +8,7 @@ import java.util.List;
 
 @SuppressWarnings("UnusedDeclaration")
 public class TemporaryFolder extends org.junit.rules.TemporaryFolder {
-  private final List<File> toDeleteAfter = new ArrayList<File>();
+  private final List<File> toDeleteAfter = new ArrayList<>();
 
   @Override protected void after() {
     for (File file : toDeleteAfter) {

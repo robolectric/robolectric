@@ -36,7 +36,7 @@ public class ShadowSurfaceView extends ShadowView {
    */
   public static class FakeSurfaceHolder implements SurfaceHolder {
 
-    final private Set<Callback> callbacks = new HashSet<Callback>();
+    final private Set<Callback> callbacks = new HashSet<>();
 
     @Override public void addCallback(Callback callback) {
       callbacks.add(callback);

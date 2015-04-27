@@ -136,7 +136,7 @@ public class ShadowAsyncTask<Params, Progress, Result> {
   }
 
   private ShadowAsyncTaskBridge<Params, Progress, Result> getBridge() {
-    return new ShadowAsyncTaskBridge<Params, Progress, Result>(realAsyncTask);
+    return new ShadowAsyncTaskBridge<>(realAsyncTask);
   }
 
   private final class BackgroundWorker implements Callable<Result> {

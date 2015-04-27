@@ -34,7 +34,7 @@ public class ShadowCamera {
   private int displayOrientation;
   private Camera.AutoFocusCallback autoFocusCallback;
 
-  private static Map<Integer, Camera.CameraInfo> cameras = new HashMap<Integer,Camera.CameraInfo>();
+  private static Map<Integer, Camera.CameraInfo> cameras = new HashMap<>();
 
   @RealObject
   private Camera realCamera;
@@ -223,7 +223,7 @@ public class ShadowCamera {
     private int previewFps = 30;
     private int exposureCompensation = 0;
     private String focusMode;
-    private List<String> supportedFocusModes = new ArrayList<String>();
+    private List<String> supportedFocusModes = new ArrayList<>();
 
     @Implementation
     public Camera.Size getPictureSize() {
@@ -259,7 +259,7 @@ public class ShadowCamera {
 
     @Implementation
     public List<Camera.Size> getSupportedPictureSizes() {
-      List<Camera.Size> supportedSizes = new ArrayList<Camera.Size>();
+      List<Camera.Size> supportedSizes = new ArrayList<>();
       addSize(supportedSizes, 320, 240);
       addSize(supportedSizes, 640, 480);
       addSize(supportedSizes, 800, 600);
@@ -268,7 +268,7 @@ public class ShadowCamera {
 
     @Implementation
     public List<Integer> getSupportedPictureFormats() {
-      List<Integer> formats = new ArrayList<Integer>();
+      List<Integer> formats = new ArrayList<>();
       formats.add(ImageFormat.NV21);
       formats.add(ImageFormat.JPEG);
       return formats;
@@ -276,7 +276,7 @@ public class ShadowCamera {
 
     @Implementation
     public List<Integer> getSupportedPreviewFormats() {
-      List<Integer> formats = new ArrayList<Integer>();
+      List<Integer> formats = new ArrayList<>();
       formats.add(ImageFormat.NV21);
       formats.add(ImageFormat.JPEG);
       return formats;
@@ -284,7 +284,7 @@ public class ShadowCamera {
 
     @Implementation
     public List<int[]> getSupportedPreviewFpsRange() {
-      List<int[]> supportedRanges = new ArrayList<int[]>();
+      List<int[]> supportedRanges = new ArrayList<>();
       addRange(supportedRanges, 15000, 15000);
       addRange(supportedRanges, 10000, 30000);
       return supportedRanges;
@@ -292,7 +292,7 @@ public class ShadowCamera {
 
     @Implementation
     public List<Integer> getSupportedPreviewFrameRates() {
-      List<Integer> supportedRates = new ArrayList<Integer>();
+      List<Integer> supportedRates = new ArrayList<>();
       supportedRates.add(10);
       supportedRates.add(15);
       supportedRates.add(30);
@@ -301,7 +301,7 @@ public class ShadowCamera {
 
     @Implementation
     public List<Camera.Size> getSupportedPreviewSizes() {
-      List<Camera.Size> supportedSizes = new ArrayList<Camera.Size>();
+      List<Camera.Size> supportedSizes = new ArrayList<>();
       addSize(supportedSizes, 320, 240);
       addSize(supportedSizes, 640, 480);
       return supportedSizes;

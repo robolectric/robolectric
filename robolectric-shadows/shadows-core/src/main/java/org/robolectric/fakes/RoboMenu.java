@@ -14,7 +14,7 @@ import java.util.Comparator;
 import java.util.List;
 
 public class RoboMenu implements Menu {
-  private List<MenuItem> menuItems = new ArrayList<MenuItem>();
+  private List<MenuItem> menuItems = new ArrayList<>();
   private Context context;
 
   public RoboMenu() {

@@ -23,7 +23,7 @@ public class PluralResourceLoader extends XpathResourceXmlLoader {
   }
 
   static class PluralRules {
-    List<Plural> plurals = new ArrayList<Plural>();
+    List<Plural> plurals = new ArrayList<>();
 
     Plural find(int quantity) {
       for (Plural p : plurals) {

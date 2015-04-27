@@ -12,8 +12,6 @@ import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.util.Scheduler;
 
-import java.io.File;
-
 import static org.robolectric.Shadows.shadowOf;
 
 /**

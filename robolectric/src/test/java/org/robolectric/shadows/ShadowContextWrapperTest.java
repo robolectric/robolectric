@@ -9,6 +9,7 @@ import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -98,7 +99,6 @@ public class ShadowContextWrapperTest {
     transcript.assertEventsSoFar("Larry notified of baz");
   }
 
-  @SuppressWarnings("all") // Couldn't figure out which to use for suppressing nullables or null checks, ("null") didn't work
   @Test
   public void sendBroadcast_shouldSendIntentUsingHandlerIfOneIsProvided() {
     HandlerThread handlerThread = new HandlerThread("test");
@@ -417,7 +417,7 @@ public class ShadowContextWrapperTest {
 
   @Test
   public void sendBroadcast_shouldOnlySendIntentWithTypeWhenReceiverMatchesType()
-          throws IntentFilter.MalformedMimeTypeException {
+    throws IntentFilter.MalformedMimeTypeException {
 
     final BroadcastReceiver viewAllTypesReceiver = broadcastReceiver("ViewActionWithAnyTypeReceiver");
     final IntentFilter allTypesIntentFilter = intentFilter("view");
@@ -451,5 +451,17 @@ public class ShadowContextWrapperTest {
             "ImageReceiver notified of view",
             "ViewActionWithAnyTypeReceiver notified of view",
             "VideoReceiver notified of view");
+  }
+
+  @Test
+  public void getApplicationInfo_shouldReturnApplicationInfoForApplicationPackage() {
+    final ApplicationInfo info = contextWrapper.getApplicationInfo();
+    assertThat(info.packageName).isEqualTo("org.robolectric");
+  }
+
+  @Test
+  public void getApplicationInfo_whenPackageManagerIsNull_shouldNotExplode() {
+    RuntimeEnvironment.setRobolectricPackageManager(null);
+    contextWrapper.getApplicationInfo();
   }
 }

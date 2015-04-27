@@ -144,20 +144,20 @@ public class ShadowBundleTest {
 
   @Test
   public void testStringArrayList() {
-    ArrayList<String> list = new ArrayList<String>();
+    ArrayList<String> list = new ArrayList<>();
     list.add("a");
 
-    bundle.putStringArrayList("foo", new ArrayList<String>(list));
+    bundle.putStringArrayList("foo", new ArrayList<>(list));
     Assert.assertEquals(list, bundle.getStringArrayList("foo"));
     assertNull(bundle.getStringArrayList("bar"));
   }
 
   @Test
   public void testIntegerArrayList() {
-    ArrayList<Integer> list = new ArrayList<Integer>();
+    ArrayList<Integer> list = new ArrayList<>();
     list.add(100);
 
-    bundle.putIntegerArrayList("foo", new ArrayList<Integer>(list));
+    bundle.putIntegerArrayList("foo", new ArrayList<>(list));
     Assert.assertEquals(list, bundle.getIntegerArrayList("foo"));
     assertNull(bundle.getIntegerArrayList("bar"));
   }

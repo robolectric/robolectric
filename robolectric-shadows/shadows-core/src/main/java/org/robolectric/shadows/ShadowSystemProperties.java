@@ -11,8 +11,8 @@ import java.util.Set;
 
 @Implements(value = SystemProperties.class, isInAndroidSdk = false)
 public class ShadowSystemProperties {
-  private static final Map<String, Object> VALUES = new HashMap<String, Object>();
-  private static final Set<String> alreadyWarned = new HashSet<String>();
+  private static final Map<String, Object> VALUES = new HashMap<>();
+  private static final Set<String> alreadyWarned = new HashSet<>();
 
   static {
     VALUES.put("ro.build.version.sdk", 8);

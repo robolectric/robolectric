@@ -21,7 +21,7 @@ import java.util.List;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(TabHost.class)
 public class ShadowTabHost extends ShadowFrameLayout {
-  private List<TabHost.TabSpec> tabSpecs = new ArrayList<TabHost.TabSpec>();
+  private List<TabHost.TabSpec> tabSpecs = new ArrayList<>();
   private TabHost.OnTabChangeListener listener;
   private int currentTab = -1;
 

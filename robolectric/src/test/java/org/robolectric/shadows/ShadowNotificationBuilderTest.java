@@ -178,7 +178,7 @@ public class ShadowNotificationBuilderTest {
     PendingIntent action = PendingIntent.getBroadcast(RuntimeEnvironment.application, 0, null, 0);
     builder.addAction(0, "Action", action);
     build();
-    assertThat(s.getActions().get(0).actionIntent).isEqualsToByComparingFields(action);
+    assertThat(s.getActions().get(0).actionIntent).isEqualToComparingFieldByField(action);
   }
 
   private void build() {

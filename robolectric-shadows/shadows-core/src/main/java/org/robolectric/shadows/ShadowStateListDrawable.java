@@ -19,8 +19,8 @@ import java.util.Map;
 @Implements(StateListDrawable.class)
 public class ShadowStateListDrawable extends ShadowDrawable {
 
-  private Map<Integer, Integer> stateToResource = new HashMap<Integer, Integer>();
-  private Map<List<Integer>, Drawable> stateToDrawable = new HashMap<List<Integer>, Drawable>();
+  private Map<Integer, Integer> stateToResource = new HashMap<>();
+  private Map<List<Integer>, Drawable> stateToDrawable = new HashMap<>();
 
   public void addState(int stateId, int resId) {
     stateToResource.put(stateId, resId);
@@ -51,7 +51,7 @@ public class ShadowStateListDrawable extends ShadowDrawable {
   }
 
   private List<Integer> createStateList(int[] stateSet) {
-    List<Integer> stateList = new ArrayList<Integer>();
+    List<Integer> stateList = new ArrayList<>();
     if (stateSet == StateSet.WILD_CARD) {
       stateList.add(-1);
     } else {

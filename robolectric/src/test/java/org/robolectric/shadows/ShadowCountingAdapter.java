@@ -4,7 +4,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
-import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 
 class ShadowCountingAdapter extends BaseAdapter {

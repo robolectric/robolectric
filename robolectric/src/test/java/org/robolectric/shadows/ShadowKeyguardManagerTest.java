@@ -4,7 +4,6 @@ import android.app.KeyguardManager;
 import android.content.Context;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 

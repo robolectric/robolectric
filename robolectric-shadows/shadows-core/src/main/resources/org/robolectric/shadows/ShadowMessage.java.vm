@@ -1,6 +1,3 @@
-#set($Integer = 0)
-#set($apiLevel = $Integer.parseInt($apiLevel))
-
 package org.robolectric.shadows;
 
 import android.os.Handler;
@@ -8,7 +5,8 @@ import android.os.Message;
 
 import javax.annotation.Generated;
 
-#if ($apiLevel >= 21)import org.robolectric.annotation.HiddenApi;
+#if ($api >= 21)
+import org.robolectric.annotation.HiddenApi;
 #end
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -39,7 +37,7 @@ public class ShadowMessage {
   }
 
   @Implementation
-#if ($apiLevel >= 21)
+#if ($api >= 21)
   @HiddenApi
   /**
    * Hook to unscheduled the callback when the message is recycled.
@@ -81,7 +79,7 @@ public class ShadowMessage {
    * @param r the <code>Runnable</code> instance that is scheduled to
    * trigger this message.
    *
-#if ($apiLevel >= 21)   * @see #recycleUnchecked()
+#if ($api >= 21)   * @see #recycleUnchecked()
 #else   * @see #recycle()
 #end
    */

@@ -30,12 +30,12 @@ public class AttrResourceLoader extends XpathResourceXmlLoader {
     }
 
     if ("enum".equals(childFormat)) {
-      pairs = new ArrayList<AttrData.Pair>();
+      pairs = new ArrayList<>();
       for (XmlNode enumNode : xmlNode.selectElements("enum")) {
         pairs.add(new AttrData.Pair(enumNode.getAttrValue("name"), enumNode.getAttrValue("value")));
       }
     } else if ("flag".equals(childFormat)) {
-      pairs = new ArrayList<AttrData.Pair>();
+      pairs = new ArrayList<>();
       for (XmlNode flagNode : xmlNode.selectElements("flag")) {
         pairs.add(new AttrData.Pair(flagNode.getAttrValue("name"), flagNode.getAttrValue("value")));
       }
@@ -47,7 +47,7 @@ public class AttrResourceLoader extends XpathResourceXmlLoader {
 //                    "you need a format, enums, or flags for \"" + name + "\" in " + xmlContext);
     }
     AttrData attrData = new AttrData(name, format, pairs);
-    resBunch.put("attr", name, new TypedResource<AttrData>(attrData, ResType.ATTR_DATA),
+    resBunch.put("attr", name, new TypedResource<>(attrData, ResType.ATTR_DATA),
         xmlContext);
   }
 }
