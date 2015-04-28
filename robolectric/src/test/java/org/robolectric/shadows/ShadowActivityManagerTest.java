@@ -19,11 +19,17 @@ public class ShadowActivityManagerTest {
     final ActivityManager activityManager = getActivityManager();
     ShadowActivityManager shadowActivityManager = shadowOf(activityManager);
     ActivityManager.MemoryInfo memoryInfo = new ActivityManager.MemoryInfo();
+    memoryInfo.availMem = 12345;
     memoryInfo.lowMemory = true;
+    memoryInfo.threshold = 10000;
+    memoryInfo.totalMem = 55555;
     shadowActivityManager.setMemoryInfo(memoryInfo);
     ActivityManager.MemoryInfo fetchedMemoryInfo = new ActivityManager.MemoryInfo();
     activityManager.getMemoryInfo(fetchedMemoryInfo);
+    assertThat(fetchedMemoryInfo.availMem).isEqualTo(12345);
     assertThat(fetchedMemoryInfo.lowMemory).isTrue();
+    assertThat(fetchedMemoryInfo.threshold).isEqualTo(10000);
+    assertThat(fetchedMemoryInfo.totalMem).isEqualTo(55555);
   }
 
   @Test
