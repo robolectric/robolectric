@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,11 +40,6 @@ public class ShadowContextTest {
     File[] files = dataDir.listFiles();
     assertNotNull(files);
     assertThat(files.length).isEqualTo(0);
-  }
-
-  @After
-  public void after() {
-    ShadowContext.reset();
   }
 
   @Test
@@ -110,7 +104,6 @@ public class ShadowContextTest {
     File cacheTest = new File(context.getExternalCacheDir(), "__test__");
 
     assertThat(cacheTest.getAbsolutePath()).startsWith(System.getProperty("java.io.tmpdir"));
-    assertThat(cacheTest.getAbsolutePath()).contains("android-external-cache");
     assertThat(cacheTest.getAbsolutePath()).endsWith(File.separator + "__test__");
 
     FileOutputStream fos = null;
@@ -335,16 +328,5 @@ public class ShadowContextTest {
     TypedArray typedArray = context.obtainStyledAttributes(roboAttributeSet, new int[]{R.attr.quitKeyCombo, R.attr.itemType});
     assertThat(typedArray.getString(0)).isEqualTo("^q");
     assertThat(typedArray.getInt(1, -1234)).isEqualTo(1 /* ungulate */);
-  }
-
-  @Test
-  public void reset_shouldCleanupTempDirectories() {
-    ShadowContext.reset();
-
-    assertThat(ShadowContext.EXTERNAL_CACHE_DIR.exists()).isFalse();
-    assertThat(ShadowContext.EXTERNAL_CACHE_DIR.getParentFile().exists()).isFalse();
-
-    assertThat(ShadowContext.EXTERNAL_FILES_DIR.exists()).isFalse();
-    assertThat(ShadowContext.EXTERNAL_FILES_DIR.getParentFile().exists()).isFalse();
   }
 }

@@ -28,7 +28,10 @@ public class RuntimeEnvironment {
     }
 
     public static void setRobolectricPackageManager(RobolectricPackageManager newPackageManager) {
-        packageManager = newPackageManager;
+      if (packageManager != null) {
+        packageManager.reset();
+      }
+      packageManager = newPackageManager;
     }
 
     public static String getQualifiers() {

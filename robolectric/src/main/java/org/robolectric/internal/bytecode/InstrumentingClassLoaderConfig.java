@@ -21,6 +21,7 @@ import org.robolectric.annotation.internal.Instrument;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.ResourcePath;
+import org.robolectric.util.TempDirectory;
 import org.robolectric.util.Transcript;
 
 import java.util.ArrayList;
@@ -65,7 +66,8 @@ public class InstrumentingClassLoaderConfig {
       DirectObjectMarker.class,
       DependencyJar.class,
       ParallelUniverseInterface.class,
-      ShadowedObject.class
+      ShadowedObject.class,
+      TempDirectory.class
   );
 
   static {

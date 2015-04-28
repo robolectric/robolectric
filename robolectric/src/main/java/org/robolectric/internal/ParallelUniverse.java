@@ -3,9 +3,11 @@ package org.robolectric.internal;
 import android.app.Application;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import java.nio.file.Paths;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.robolectric.*;
 import org.robolectric.annotation.Config;
@@ -14,11 +16,12 @@ import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResBunch;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.builder.DefaultPackageManager;
+import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.util.ReflectionHelpers;
 
-import java.io.File;
 import java.lang.reflect.Method;
 import java.security.Security;
+import org.robolectric.util.TempDirectory;
 
 import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -139,28 +142,15 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
   @Override
   public void tearDownApplication() {
-    if (RuntimeEnvironment.application != null) {
-      final ApplicationInfo applicationInfo = RuntimeEnvironment.application.getApplicationInfo();
-      if (applicationInfo != null) {
-        clearFiles(new File(applicationInfo.dataDir));
-      }
-      RuntimeEnvironment.application.onTerminate();
+    // We would like to null this out (which would call reset) but that can kill async threads
+    // that run after a test complete (because they might call Context.getApplicationInfo()).
+    RobolectricPackageManager rpm = RuntimeEnvironment.getRobolectricPackageManager();
+    if (rpm != null) {
+      rpm.reset();
     }
-  }
 
-  private static void clearFiles(File dir) {
-    if (dir != null && dir.isDirectory()) {
-      File[] files = dir.listFiles();
-      if (files != null) {
-        for (File f : files) {
-          if (f.isDirectory()) {
-            clearFiles(f);
-          }
-          f.delete();
-        }
-      }
-      dir.delete();
-      dir.getParentFile().delete();
+    if (RuntimeEnvironment.application != null) {
+      RuntimeEnvironment.application.onTerminate();
     }
   }
 
