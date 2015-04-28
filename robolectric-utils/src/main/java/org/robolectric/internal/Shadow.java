@@ -40,49 +40,21 @@ public class Shadow {
   }
 
   public static <R, T> R directlyOn(T shadowedObject, Class<T> clazz, String methodName, ClassParameter... paramValues) {
-    String directMethodName = directMethodName(clazz.getName(), methodName);
-    return (R) ReflectionHelpers.callInstanceMethod(shadowedObject, directMethodName, paramValues);
+    String directMethodName = directMethodName(methodName);
+    return (R) ReflectionHelpers.callInstanceMethod(clazz, shadowedObject, directMethodName, paramValues);
   }
 
   public static <R, T> R directlyOn(Class<T> clazz, String methodName, ClassParameter... paramValues) {
-    String directMethodName = directMethodName(clazz.getName(), methodName);
+    String directMethodName = directMethodName(methodName);
     return (R) ReflectionHelpers.callStaticMethod(clazz, directMethodName, paramValues);
   }
 
-  public static <R> R invokeConstructor(Class<? extends R> clazz, R instance, StringParameter paramValue0, StringParameter... paramValues) {
-    ClassParameter[] classParamValues = new ClassParameter[paramValues.length + 1];
-    try {
-      Class<?> paramClass = clazz.getClassLoader().loadClass(paramValue0.className);
-      classParamValues[0] = ClassParameter.from(paramClass, paramValue0.val);
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e);
-    }
-    for (int i = 0; i < paramValues.length; i++) {
-      try {
-        Class<?> paramClass = clazz.getClassLoader().loadClass(paramValues[i].className);
-        classParamValues[i + 1] = ClassParameter.from(paramClass, paramValues[i].val);
-      } catch (ClassNotFoundException e) {
-        throw new RuntimeException(e);
-      }
-    }
-    return invokeConstructor(clazz, instance, classParamValues);
-  }
-
   public static <R> R invokeConstructor(Class<? extends R> clazz, R instance, ClassParameter... paramValues) {
-    String directMethodName = directMethodName(clazz.getName(), ShadowConstants.CONSTRUCTOR_METHOD_NAME);
-    return (R) ReflectionHelpers.callInstanceMethod(instance, directMethodName, paramValues);
+    String directMethodName = directMethodName(ShadowConstants.CONSTRUCTOR_METHOD_NAME);
+    return (R) ReflectionHelpers.callInstanceMethod(clazz, instance, directMethodName, paramValues);
   }
 
   public static String directMethodName(String methodName) {
-    return String.format(ShadowConstants.ROBO_PREFIX + "%s", methodName);
-  }
-
-  public static String directMethodName(String className, String methodName) {
-    String simpleName = className;
-    int lastDotIndex = simpleName.lastIndexOf(".");
-    if (lastDotIndex != -1) simpleName = simpleName.substring(lastDotIndex + 1);
-    int lastDollarIndex = simpleName.lastIndexOf("$");
-    if (lastDollarIndex != -1) simpleName = simpleName.substring(lastDollarIndex + 1);
-    return String.format(ShadowConstants.ROBO_PREFIX + "%s_%04x_%s", simpleName, className.hashCode() & 0xffff, methodName);
+    return ShadowConstants.ROBO_PREFIX + methodName;
   }
 }

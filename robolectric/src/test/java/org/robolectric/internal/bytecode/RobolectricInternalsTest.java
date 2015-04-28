@@ -35,51 +35,6 @@ public class RobolectricInternalsTest {
   }
 
   @Test
-  public void getConstructor_withOneStringParam() {
-    Constructors a = new Constructors(PARAM1);
-    ShadowConstructors sa = shadowOf(a);
-
-    assertThat(a.param11).isNull();
-    assertThat(sa.shadowParam11).isEqualTo(PARAM1);
-    
-    Shadow.invokeConstructor(Constructors.class, a, StringParameter.from("java.lang.String", PARAM1));
-    assertThat(a.param11).isEqualTo(PARAM1);
-  }
-
-  @Test
-  public void getConstructor_withTwoStringParams() {
-    Constructors a = new Constructors(PARAM1, PARAM2);
-    ShadowConstructors sa = shadowOf(a);
-
-    assertThat(a.param21).isNull();
-    assertThat(a.param22).isNull();
-    assertThat(sa.shadowParam21).isEqualTo(PARAM1);
-    assertThat(sa.shadowParam22).isEqualTo(PARAM2);
-
-    Shadow.invokeConstructor(Constructors.class, a, StringParameter.from("java.lang.String", PARAM1), StringParameter.from("java.lang.Byte", PARAM2));
-    assertThat(a.param21).isEqualTo(PARAM1);
-    assertThat(a.param22).isEqualTo(PARAM2);
-  }
-
-  @Test
-  public void getConstructor_withThreeStringParams() {
-    Constructors a = new Constructors(PARAM1, PARAM2, PARAM3);
-    ShadowConstructors sa = shadowOf(a);
-
-    assertThat(a.param31).isNull();
-    assertThat(a.param32).isNull();
-    assertThat(a.param33).isNull();
-    assertThat(sa.shadowParam31).isEqualTo(PARAM1);
-    assertThat(sa.shadowParam32).isEqualTo(PARAM2);
-    assertThat(sa.shadowParam33).isEqualTo(PARAM3);
-
-    Shadow.invokeConstructor(Constructors.class, a, StringParameter.from("java.lang.String", PARAM1), StringParameter.from("java.lang.Byte", PARAM2), StringParameter.from("java.lang.Long", PARAM3));
-    assertThat(a.param31).isEqualTo(PARAM1);
-    assertThat(a.param32).isEqualTo(PARAM2);
-    assertThat(a.param33).isEqualTo(PARAM3);
-  }
-
-  @Test
   public void getConstructor_withOneClassParam() {
     Constructors a = new Constructors(PARAM1);
     ShadowConstructors sa = shadowOf(a);

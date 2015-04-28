@@ -98,7 +98,7 @@ abstract public class InstrumentingClassLoaderTestBase {
   @Test
   public void shouldGenerateClassSpecificDirectAccessMethod() throws Exception {
     Class<?> exampleClass = loadClass(AnExampleClass.class);
-    String methodName = Shadow.directMethodName(AnExampleClass.class.getName(), "normalMethod");
+    String methodName = Shadow.directMethodName("normalMethod");
     Method directMethod = exampleClass.getDeclaredMethod(methodName, String.class, int.class);
     directMethod.setAccessible(true);
     Object exampleInstance = exampleClass.newInstance();
@@ -107,18 +107,9 @@ abstract public class InstrumentingClassLoaderTestBase {
   }
 
   @Test
-  public void soMockitoDoesntExplodeDueToTooManyMethods_shouldGenerateDirectAccessMethodWhichIsPrivate() throws Exception {
-    Class<?> exampleClass = loadClass(AnExampleClass.class);
-    String methodName = Shadow.directMethodName("normalMethod");
-    Method directMethod = exampleClass.getDeclaredMethod(methodName, String.class, int.class);
-    assertTrue(Modifier.isPrivate(directMethod.getModifiers()));
-    assertFalse(Modifier.isFinal(directMethod.getModifiers()));
-  }
-
-  @Test
   public void soMockitoDoesntExplodeDueToTooManyMethods_shouldGenerateClassSpecificDirectAccessMethodWhichIsPrivateAndFinal() throws Exception {
     Class<?> exampleClass = loadClass(AnExampleClass.class);
-    String methodName = Shadow.directMethodName(AnExampleClass.class.getName(), "normalMethod");
+    String methodName = Shadow.directMethodName("normalMethod");
     Method directMethod = exampleClass.getDeclaredMethod(methodName, String.class, int.class);
     assertTrue(Modifier.isPrivate(directMethod.getModifiers()));
     assertTrue(Modifier.isFinal(directMethod.getModifiers()));
@@ -137,8 +128,7 @@ abstract public class InstrumentingClassLoaderTestBase {
   @Test
   public void callingStaticDirectAccessMethodShouldWork() throws Exception {
     Class<?> exampleClass = loadClass(AClassWithStaticMethod.class);
-    String methodName = Shadow.directMethodName(
-        AClassWithStaticMethod.class.getName(), "staticMethod");
+    String methodName = Shadow.directMethodName("staticMethod");
     Method directMethod = exampleClass.getDeclaredMethod(methodName, String.class);
     directMethod.setAccessible(true);
     assertEquals("staticMethod(value1)", directMethod.invoke(null, "value1"));
@@ -295,7 +285,7 @@ abstract public class InstrumentingClassLoaderTestBase {
   }
 
   private Method findDirectMethod(Class<?> declaringClass, String methodName, Class<?>... argClasses) throws NoSuchMethodException {
-    String directMethodName = Shadow.directMethodName(declaringClass.getName(), methodName);
+    String directMethodName = Shadow.directMethodName(methodName);
     Method directMethod = declaringClass.getDeclaredMethod(directMethodName, argClasses);
     directMethod.setAccessible(true);
     return directMethod;
@@ -366,7 +356,7 @@ abstract public class InstrumentingClassLoaderTestBase {
     setClassLoader(createClassLoader(new ClassRemappingConfig()));
     Class<?> theClass = loadClass(AClassThatRefersToAForgettableClassInItsConstructor.class);
     Object instance = theClass.newInstance();
-    Method method = theClass.getDeclaredMethod(Shadow.directMethodName(theClass.getName(), ShadowConstants.CONSTRUCTOR_METHOD_NAME));
+    Method method = theClass.getDeclaredMethod(Shadow.directMethodName(ShadowConstants.CONSTRUCTOR_METHOD_NAME));
     method.setAccessible(true);
     method.invoke(instance);
   }
@@ -501,9 +491,8 @@ abstract public class InstrumentingClassLoaderTestBase {
   }
 
   @Test
-  public void directMethodName_shouldGetSimpleName() throws Exception {
-    assertEquals("$$robo$$SomeName_5c63_method", Shadow.directMethodName("a.b.c.SomeName", "method"));
-    assertEquals("$$robo$$SomeName_3b43_method", Shadow.directMethodName("a.b.c.SomeClass$SomeName", "method"));
+  public void directMethodName() throws Exception {
+    assertEquals("$$robo$$method", Shadow.directMethodName("method"));
   }
 
   @Test

@@ -500,7 +500,7 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
       }
 
       InsnList removedInstructions = extractCallToSuperConstructor(method);
-      method.name = Shadow.directMethodName(className, ShadowConstants.CONSTRUCTOR_METHOD_NAME);
+      method.name = Shadow.directMethodName(ShadowConstants.CONSTRUCTOR_METHOD_NAME);
       classNode.methods.add(redirectorMethod(method, ShadowConstants.CONSTRUCTOR_METHOD_NAME));
 
       String[] exceptions = exceptionArray(method);
@@ -573,8 +573,7 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
       }
 
       String originalName = method.name;
-      method.name = Shadow.directMethodName(className, originalName);
-      classNode.methods.add(redirectorMethod(method, Shadow.directMethodName(originalName)));
+      method.name = Shadow.directMethodName(originalName);
 
       MethodNode delegatorMethodNode = new MethodNode(method.access, originalName, method.desc, method.signature, exceptionArray(method));
       delegatorMethodNode.access &= ~(ACC_NATIVE | ACC_ABSTRACT | ACC_FINAL);

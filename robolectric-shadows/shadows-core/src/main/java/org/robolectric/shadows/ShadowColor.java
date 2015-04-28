@@ -1,11 +1,12 @@
 package org.robolectric.shadows;
 
 import android.graphics.Color;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.internal.Shadow;
 
-import java.lang.reflect.Method;
+import org.robolectric.internal.Shadow;
+import org.robolectric.util.ReflectionHelpers;
 
 @Implements(Color.class)
 public class ShadowColor {
@@ -22,9 +23,8 @@ public class ShadowColor {
       colorString = buf.toString();
     }
     try {
-      Method parseColor = Color.class.getDeclaredMethod(Shadow.directMethodName(Color.class.getName(), "parseColor"), String.class);
-      parseColor.setAccessible(true);
-      return (Integer) parseColor.invoke(null, colorString);
+      return (int) Shadow.directlyOn(Color.class, "parseColor",
+          ReflectionHelpers.ClassParameter.from(String.class, colorString));
     } catch (Exception e) {
       throw new IllegalArgumentException("Can't parse value from color \"" + colorString + "\"", e);
     }
