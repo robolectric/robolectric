@@ -28,7 +28,7 @@ public class ShadowObjectAnimatorTest {
     verify(listener).onAnimationStart(animator);
     assertThat(target.getTransparency()).isEqualTo(0);
 
-    Robolectric.flushForegroundScheduler();
+    Robolectric.flushForegroundThreadScheduler();
 
     verify(listener).onAnimationEnd(animator);
     assertThat(target.getTransparency()).isEqualTo(4);

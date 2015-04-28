@@ -81,10 +81,6 @@ public class ShadowLooper {
     return looperForThread.get();
   }
 
-  public static Scheduler getUiThreadScheduler() {
-    return shadowOf(Looper.getMainLooper()).getScheduler();
-  }
-
   private void doLoop() {
     if (this != shadowOf(getMainLooper())) {
       synchronized (realObject) {
@@ -172,11 +168,11 @@ public class ShadowLooper {
    * Note: calling this method does not pause or un-pause the scheduler.
    */
   public static void runUiThreadTasks() {
-    getUiThreadScheduler().advanceBy(0);
+    ShadowApplication.getInstance().getForegroundThreadScheduler().advanceBy(0);
   }
 
   public static void runUiThreadTasksIncludingDelayedTasks() {
-    getUiThreadScheduler().advanceToLastPostedRunnable();
+    ShadowApplication.getInstance().getForegroundThreadScheduler().advanceToLastPostedRunnable();
   }
 
   /**

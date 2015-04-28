@@ -31,7 +31,7 @@ public class ShadowValueAnimatorTest {
     });
     animator.start();
 
-    Robolectric.flushForegroundScheduler();
+    Robolectric.flushForegroundThreadScheduler();
 
     assertThat(values).containsExactly(0, 0, 0, 0, 2, 3, 5, 6, 7, 9, 9, 10);
   }

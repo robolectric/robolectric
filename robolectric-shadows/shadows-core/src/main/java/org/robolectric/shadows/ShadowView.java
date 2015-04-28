@@ -403,17 +403,17 @@ public class ShadowView {
 
   @Implementation
   public void post(Runnable action) {
-    ShadowLooper.getUiThreadScheduler().post(action);
+    ShadowApplication.getInstance().getForegroundThreadScheduler().post(action);
   }
 
   @Implementation
   public void postDelayed(Runnable action, long delayMills) {
-    ShadowLooper.getUiThreadScheduler().postDelayed(action, delayMills);
+    ShadowApplication.getInstance().getForegroundThreadScheduler().postDelayed(action, delayMills);
   }
 
   @Implementation
   public void postInvalidateDelayed(long delayMilliseconds) {
-    ShadowLooper.getUiThreadScheduler().postDelayed(new Runnable() {
+    ShadowApplication.getInstance().getForegroundThreadScheduler().postDelayed(new Runnable() {
       @Override
       public void run() {
         realView.invalidate();

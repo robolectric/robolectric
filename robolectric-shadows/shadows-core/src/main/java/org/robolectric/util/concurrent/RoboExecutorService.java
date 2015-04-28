@@ -20,7 +20,7 @@ public class RoboExecutorService implements ExecutorService {
   private final Scheduler scheduler;
 
   public RoboExecutorService() {
-    this.scheduler = ShadowApplication.getInstance().getBackgroundScheduler();
+    this.scheduler = ShadowApplication.getInstance().getBackgroundThreadScheduler();
   }
 
   @Override

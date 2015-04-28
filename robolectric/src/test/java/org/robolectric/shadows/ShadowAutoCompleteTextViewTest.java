@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
@@ -21,7 +22,7 @@ public class ShadowAutoCompleteTextViewTest {
 
   @Test
   public void shouldInvokeFilter() throws Exception {
-    ShadowLooper.getUiThreadScheduler().pause();
+    Robolectric.getForegroundThreadScheduler().pause();
     AutoCompleteTextView view = new AutoCompleteTextView(RuntimeEnvironment.application);
     view.setAdapter(adapter);
 

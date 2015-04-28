@@ -233,7 +233,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
   @Implementation
   public void runOnUiThread(Runnable action) {
-    ShadowLooper.getUiThreadScheduler().post(action);
+    ShadowApplication.getInstance().getForegroundThreadScheduler().post(action);
   }
 
   @Implementation

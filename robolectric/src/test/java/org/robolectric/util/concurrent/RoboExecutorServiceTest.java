@@ -3,6 +3,7 @@ package org.robolectric.util.concurrent;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.util.Scheduler;
@@ -17,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class RoboExecutorServiceTest {
   private final Transcript transcript = new Transcript();
   private final RoboExecutorService executorService = new RoboExecutorService();
-  private final Scheduler backgroundScheduler = ShadowApplication.getInstance().getBackgroundScheduler();
+  private final Scheduler backgroundScheduler = Robolectric.getBackgroundThreadScheduler();
   private Runnable runnable;
 
   @Before
