@@ -19,6 +19,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
+import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.internal.Shadow;
@@ -74,9 +75,9 @@ public class ShadowMediaPlayerTest {
 
     // Scheduler is used in many of the tests to simulate
     // moving forward in time.
-    scheduler = ShadowLooper.getUiThreadScheduler();
+    scheduler = Robolectric.getForegroundThreadScheduler();
     scheduler.pause();
-    
+
     defaultSource = toDataSource(DUMMY_SOURCE);
     info = new MediaInfo();
     ShadowMediaPlayer.addMediaInfo(defaultSource, info);

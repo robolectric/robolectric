@@ -2,16 +2,13 @@ package org.robolectric;
 
 import android.app.Activity;
 import android.app.Service;
-import android.os.Looper;
-import org.robolectric.shadows.ShadowLooper;
+import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.util.ActivityController;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.ServiceController;
 import org.robolectric.internal.ShadowProvider;
 
 import java.util.ServiceLoader;
-
-import static org.robolectric.Shadows.shadowOf;
 
 public class Robolectric {
   private static final ShadowsAdapter shadowsAdapter = instantiateShadowsAdapter();
@@ -50,35 +47,35 @@ public class Robolectric {
   }
 
   /**
-   * Return the foreground thread scheduler (e.g the UI thread scheduler).
+   * Return the foreground scheduler (e.g. the UI thread scheduler).
    *
-   * @return  Foreground thread scheduler.
+   * @return  Foreground scheduler.
    */
   public static Scheduler getForegroundThreadScheduler() {
-    return ShadowLooper.getUiThreadScheduler();
+    return ShadowApplication.getInstance().getForegroundThreadScheduler();
   }
 
   /**
    * Execute all runnables that have been enqueued on the foreground scheduler.
    */
-  public static void flushForegroundScheduler() {
-    ShadowLooper.getUiThreadScheduler().advanceToLastPostedRunnable();
+  public static void flushForegroundThreadScheduler() {
+    getForegroundThreadScheduler().advanceToLastPostedRunnable();
   }
 
   /**
-   * Return the background thread scheduler.
+   * Return the background scheduler.
    *
-   * @return  Background thread scheduler.
+   * @return  Background scheduler.
    */
   public static Scheduler getBackgroundThreadScheduler() {
-    return shadowOf(Looper.getMainLooper()).getScheduler();
+    return ShadowApplication.getInstance().getBackgroundThreadScheduler();
   }
 
   /**
-   * Execute all runnables that have been enqueues on the background scheduler.
+   * Execute all runnables that have been enqueued on the background scheduler.
    */
-  public static void flushBackgroundScheduler() {
-    shadowOf(Looper.getMainLooper()).getScheduler().advanceToLastPostedRunnable();
+  public static void flushBackgroundThreadScheduler() {
+    getBackgroundThreadScheduler().advanceToLastPostedRunnable();
   }
 
   private static ShadowsAdapter instantiateShadowsAdapter() {

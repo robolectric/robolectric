@@ -311,7 +311,7 @@ public class ShadowViewTest {
     view.postDelayed(runnable, 1);
     assertFalse(runnable.wasRun);
 
-    ShadowLooper.getUiThreadScheduler().advanceBy(1);
+    Robolectric.getForegroundThreadScheduler().advanceBy(1);
     assertTrue(runnable.wasRun);
   }
 
@@ -322,7 +322,7 @@ public class ShadowViewTest {
 
     view.removeCallbacks(runnable);
 
-    ShadowLooper.getUiThreadScheduler().advanceBy(1);
+    Robolectric.getForegroundThreadScheduler().advanceBy(1);
     assertThat(runnable.wasRun).isFalse();
   }
 
@@ -469,7 +469,7 @@ public class ShadowViewTest {
 
     verifyZeroInteractions(listener);
 
-    ShadowLooper.getUiThreadScheduler().advanceToNextPostedRunnable();
+    Robolectric.getForegroundThreadScheduler().advanceToNextPostedRunnable();
 
     verify(listener).onAnimationStart(animation);
     verify(listener).onAnimationEnd(animation);

@@ -110,7 +110,7 @@ public class ShadowApplication extends ShadowContextWrapper {
    * Note: calling this method does not pause or un-pause the scheduler.
    */
   public static void runBackgroundTasks() {
-    getInstance().getBackgroundScheduler().advanceBy(0);
+    getInstance().getBackgroundThreadScheduler().advanceBy(0);
   }
 
   public static void setDisplayMetricsDensity(float densityMultiplier) {
@@ -165,7 +165,21 @@ public class ShadowApplication extends ShadowContextWrapper {
     return shownToasts;
   }
 
-  public Scheduler getBackgroundScheduler() {
+  /**
+   * Return the foreground scheduler.
+   *
+   * @return  Foreground scheduler.
+   */
+  public Scheduler getForegroundThreadScheduler() {
+    return shadowOf(Looper.getMainLooper()).getScheduler();
+  }
+
+  /**
+   * Return the background scheduler.
+   *
+   * @return  Background scheduler.
+   */
+  public Scheduler getBackgroundThreadScheduler() {
     return backgroundScheduler;
   }
 

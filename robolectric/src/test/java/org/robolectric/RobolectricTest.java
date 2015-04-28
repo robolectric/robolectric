@@ -73,14 +73,14 @@ public class RobolectricTest {
 
   @Test
   public void shouldResetBackgroundSchedulerBeforeTests() throws Exception {
-    assertThat(ShadowApplication.getInstance().getBackgroundScheduler().isPaused()).isFalse();
-    ShadowApplication.getInstance().getBackgroundScheduler().pause();
+    assertThat(Robolectric.getBackgroundThreadScheduler().isPaused()).isFalse();
+    Robolectric.getBackgroundThreadScheduler().pause();
   }
 
   @Test
   public void shouldResetBackgroundSchedulerAfterTests() throws Exception {
-    assertThat(ShadowApplication.getInstance().getBackgroundScheduler().isPaused()).isFalse();
-    ShadowApplication.getInstance().getBackgroundScheduler().pause();
+    assertThat(Robolectric.getBackgroundThreadScheduler().isPaused()).isFalse();
+    Robolectric.getBackgroundThreadScheduler().pause();
   }
 
   @Test

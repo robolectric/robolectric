@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.util.Transcript;
 import org.robolectric.util.TestRunnerWithManifest;
@@ -14,8 +15,8 @@ public class ShadowAsyncTaskLoaderTest {
 
   @Before
   public void setUp() {
-    ShadowLooper.getUiThreadScheduler().pause();
-    ShadowApplication.getInstance().getBackgroundScheduler().pause();
+    Robolectric.getForegroundThreadScheduler().pause();
+    Robolectric.getBackgroundThreadScheduler().pause();
   }
 
   @Test
@@ -23,10 +24,10 @@ public class ShadowAsyncTaskLoaderTest {
     new TestLoader(42).forceLoad();
     transcript.assertNoEventsSoFar();
 
-    ShadowApplication.getInstance().getBackgroundScheduler().runOneTask();
+    Robolectric.flushBackgroundThreadScheduler();
     transcript.assertEventsSoFar("loadInBackground");
 
-    ShadowLooper.getUiThreadScheduler().runOneTask();
+    Robolectric.flushForegroundThreadScheduler();
     transcript.assertEventsSoFar("deliverResult 42");
   }
 

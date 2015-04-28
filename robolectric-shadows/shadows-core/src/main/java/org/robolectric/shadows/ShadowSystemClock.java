@@ -17,13 +17,13 @@ public class ShadowSystemClock {
   private static final int MILLIS_PER_NANO = 1000000;
 
   static long now() {
-    return ShadowLooper.getUiThreadScheduler().getCurrentTime();
+    return ShadowApplication.getInstance().getForegroundThreadScheduler().getCurrentTime();
   }
 
   @Implementation
   public static void sleep(long millis) {
     nanoTime = millis * MILLIS_PER_NANO;
-    ShadowLooper.getUiThreadScheduler().advanceBy(millis);
+    ShadowApplication.getInstance().getForegroundThreadScheduler().advanceBy(millis);
   }
 
   @Implementation
@@ -32,7 +32,7 @@ public class ShadowSystemClock {
       return false;
     }
     nanoTime = millis * MILLIS_PER_NANO;
-    ShadowLooper.getUiThreadScheduler().advanceTo(millis);
+    ShadowApplication.getInstance().getForegroundThreadScheduler().advanceTo(millis);
     return true;
   }
   
