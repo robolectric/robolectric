@@ -98,11 +98,6 @@ public final class ParameterizedRobolectricTestRunner extends Suite {
     }
 
     @Override
-    protected Statement classBlock(RunNotifier notifier) {
-      return childrenInvoker(notifier);
-    }
-
-    @Override
     public String toString() {
       return "TestClassRunnerForParameters " + name;
     }
