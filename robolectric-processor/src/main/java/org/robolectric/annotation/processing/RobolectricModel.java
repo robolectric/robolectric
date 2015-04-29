@@ -227,6 +227,11 @@ public class RobolectricModel {
       registerType(solidType);
     }
 
+    for (Map.Entry<TypeElement,TypeElement> entry : getResetterShadowTypes().entrySet()) {
+      final TypeElement shadowType = entry.getKey();
+      registerType(shadowType);
+    }
+
     while (!typeMap.isEmpty()) {
       final HashMultimap<String,TypeElement> nextRound = HashMultimap.create();
       for (Map.Entry<String, Set<TypeElement>> referents : Multimaps.asMap(typeMap).entrySet()) {
@@ -286,6 +291,15 @@ public class RobolectricModel {
 
   public Set<String> getImports() {
     return imports;
+  }
+
+  public Map<TypeElement, TypeElement> getResetterShadowTypes() {
+    return Maps.filterEntries(shadowTypes, new Predicate<Entry<TypeElement, TypeElement>>() {
+      @Override
+      public boolean apply(Entry<TypeElement, TypeElement> entry) {
+        return resetterMap.containsKey(entry.getKey());
+      }
+    });
   }
 
   public Map<TypeElement, TypeElement> getVisibleShadowTypes() {
