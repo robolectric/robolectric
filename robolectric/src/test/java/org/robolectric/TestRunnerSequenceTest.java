@@ -99,13 +99,10 @@ public class TestRunnerSequenceTest {
       super(testClass);
     }
 
-    @Override public InstrumentingClassLoaderConfig createSetup() {
-      return new InstrumentingClassLoaderConfig() {
-        @Override public boolean shouldAcquire(String name) {
-          if (name.equals(StateHolder.class.getName())) return false;
-          return super.shouldAcquire(name);
-        }
-      };
+    @Override public InstrumentingClassLoaderConfig createClassLoaderConfig() {
+      return InstrumentingClassLoaderConfig.newBuilder()
+          .doNotAquireClass(StateHolder.class.getName())
+          .build();
     }
 
     @Override

@@ -26,6 +26,7 @@ import org.robolectric.util.Transcript;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -35,46 +36,104 @@ import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
 
-import static java.util.Arrays.asList;
-
 /**
  * Configuration rules for {@link org.robolectric.internal.bytecode.InstrumentingClassLoader}.
  */
 public class InstrumentingClassLoaderConfig {
-  private static final List<String> INSTRUMENTED_PACKAGES = new ArrayList<>();
-  private static final List<String> CLASSES_TO_ALWAYS_DELEGATE = stringify(
-      TestLifecycle.class,
-      ShadowWrangler.class,
-      AndroidManifest.class,
-      R.class,
-      InstrumentingClassLoader.class,
-      SdkEnvironment.class,
-      SdkConfig.class,
-      RobolectricTestRunner.class,
-      RobolectricTestRunner.HelperTestRunner.class,
-      ResourcePath.class,
-      ResourceLoader.class,
-      ClassHandler.class,
-      ClassHandler.Plan.class,
-      RealObject.class,
-      Implements.class,
-      Implementation.class,
-      Instrument.class,
-      DoNotInstrument.class,
-      Config.class,
-      Transcript.class,
-      DirectObjectMarker.class,
-      DependencyJar.class,
-      ParallelUniverseInterface.class,
-      ShadowedObject.class,
-      TempDirectory.class
-  );
 
-  static {
-    INSTRUMENTED_PACKAGES.addAll(Arrays.asList("dalvik.", "libcore.", "android.", "com.android.internal.", "com.google.android.gms.", "org.apache.http."));
-    for (ShadowProvider provider : ServiceLoader.load(ShadowProvider.class)) {
-      Collections.addAll(INSTRUMENTED_PACKAGES, provider.getProvidedPackageNames());
+  public static final class Builder {
+
+    private final Collection<String> instrumentedPackages = new HashSet<>();
+    private final Collection<MethodRef> interceptedMethods = new HashSet<>();
+    private final Map<String, String> classNameTranslations = new HashMap<>();
+    private final Collection<String> classesToNotAquire = new HashSet<>();
+
+    public Builder doNotAquireClass(String className) {
+      this.classesToNotAquire.add(className);
+      return this;
     }
+
+    public Builder addClassNameTranslation(String fromName, String toName) {
+      classNameTranslations.put(fromName, toName);
+      return this;
+    }
+
+    public Builder addInterceptedMethod(MethodRef methodReference) {
+      interceptedMethods.add(methodReference);
+      return this;
+    }
+
+    public InstrumentingClassLoaderConfig build() {
+      interceptedMethods.addAll(Arrays.asList(
+          new MethodRef(LinkedHashMap.class, "eldest"),
+          new MethodRef(System.class, "loadLibrary"),
+          new MethodRef("android.os.StrictMode", "trackActivity"),
+          new MethodRef("android.os.StrictMode", "incrementExpectedActivityCount"),
+          new MethodRef("java.lang.AutoCloseable", "*"),
+          new MethodRef("android.util.LocaleUtil", "getLayoutDirectionFromLocale"),
+          new MethodRef("com.android.internal.policy.PolicyManager", "*"),
+          new MethodRef("android.view.FallbackEventHandler", "*"),
+          new MethodRef("android.view.IWindowSession", "*"),
+          new MethodRef("java.lang.System", "nanoTime"),
+          new MethodRef("java.lang.System", "currentTimeMillis"),
+          new MethodRef("java.lang.System", "arraycopy"),
+          new MethodRef("java.lang.System", "logE"),
+          new MethodRef("java.util.Locale", "adjustLanguageCode")
+      ));
+      classesToNotAquire.addAll(stringify(
+          TestLifecycle.class,
+          ShadowWrangler.class,
+          AndroidManifest.class,
+          R.class,
+          InstrumentingClassLoader.class,
+          SdkEnvironment.class,
+          SdkConfig.class,
+          RobolectricTestRunner.class,
+          RobolectricTestRunner.HelperTestRunner.class,
+          ResourcePath.class,
+          ResourceLoader.class,
+          ClassHandler.class,
+          ClassHandler.Plan.class,
+          RealObject.class,
+          Implements.class,
+          Implementation.class,
+          Instrument.class,
+          DoNotInstrument.class,
+          Config.class,
+          Transcript.class,
+          DirectObjectMarker.class,
+          DependencyJar.class,
+          ParallelUniverseInterface.class,
+          ShadowedObject.class,
+          TempDirectory.class
+      ));
+      classNameTranslations.put("java.net.ExtendedResponseCache", RoboExtendedResponseCache.class.getName());
+      classNameTranslations.put("java.net.ResponseSource", RoboResponseSource.class.getName());
+      classNameTranslations.put("java.nio.charset.Charsets", RoboCharsets.class.getName());
+
+      instrumentedPackages.addAll(Arrays.asList("dalvik.", "libcore.", "android.", "com.android.internal.", "com.google.android.gms.", "org.apache.http."));
+      for (ShadowProvider provider : ServiceLoader.load(ShadowProvider.class)) {
+        instrumentedPackages.addAll(Arrays.asList(provider.getProvidedPackageNames()));
+      }
+
+      return new InstrumentingClassLoaderConfig(classNameTranslations, interceptedMethods, instrumentedPackages, classesToNotAquire);
+    }
+  }
+
+  public static Builder newBuilder() {
+    return new Builder();
+  }
+
+  private final List<String> instrumentedPackages = new ArrayList<>();
+  private final Map<String, String> classNameTranslations = new HashMap<>();
+  private final HashSet<MethodRef> interceptedMethods = new HashSet<>();
+  private final Set<String> classesToNotAquire = new HashSet<>();
+
+  private InstrumentingClassLoaderConfig(Map<String, String> classNameTranslations, Collection<MethodRef> interceptedMethods, Collection<String> instrumentedPackages, Collection<String> classesToNotAquire) {
+    this.classNameTranslations.putAll(classNameTranslations);
+    this.interceptedMethods.addAll(interceptedMethods);
+    this.instrumentedPackages.addAll(instrumentedPackages);
+    this.classesToNotAquire.addAll(classesToNotAquire);
   }
 
   /**
@@ -84,7 +143,7 @@ public class InstrumentingClassLoaderConfig {
    * @return  True if the class should be instrumented.
    */
   public boolean shouldInstrument(ClassInfo classInfo) {
-    return !(classInfo.isInterface() || classInfo.isAnnotation() || classInfo.hasAnnotation(DoNotInstrument.class)) && (isFromAndroidSdk(classInfo) || classInfo.hasAnnotation(Instrument.class));
+    return !(classInfo.isInterface() || classInfo.isAnnotation() || classInfo.hasAnnotation(DoNotInstrument.class)) && (isInInstrumentedPackage(classInfo) || classInfo.hasAnnotation(Instrument.class));
   }
 
   /**
@@ -110,7 +169,7 @@ public class InstrumentingClassLoaderConfig {
 
     return !(
         name.matches(".*\\.R(|\\$[a-z]+)$")
-            || CLASSES_TO_ALWAYS_DELEGATE.contains(name)
+            || classesToNotAquire.contains(name)
             || name.startsWith("java.")
             || name.startsWith("javax.")
             || name.startsWith("sun.")
@@ -127,22 +186,7 @@ public class InstrumentingClassLoaderConfig {
   }
 
   public Set<MethodRef> methodsToIntercept() {
-    return Collections.unmodifiableSet(new HashSet<>(asList(
-        new MethodRef(LinkedHashMap.class, "eldest"),
-        new MethodRef(System.class, "loadLibrary"),
-        new MethodRef("android.os.StrictMode", "trackActivity"),
-        new MethodRef("android.os.StrictMode", "incrementExpectedActivityCount"),
-        new MethodRef("java.lang.AutoCloseable", "*"),
-        new MethodRef("android.util.LocaleUtil", "getLayoutDirectionFromLocale"),
-        new MethodRef("com.android.internal.policy.PolicyManager", "*"),
-        new MethodRef("android.view.FallbackEventHandler", "*"),
-        new MethodRef("android.view.IWindowSession", "*"),
-        new MethodRef("java.lang.System", "nanoTime"),
-        new MethodRef("java.lang.System", "currentTimeMillis"),
-        new MethodRef("java.lang.System", "arraycopy"),
-        new MethodRef("java.lang.System", "logE"),
-        new MethodRef("java.util.Locale", "adjustLanguageCode")
-    )));
+    return Collections.unmodifiableSet(interceptedMethods);
   }
 
   /**
@@ -151,18 +195,14 @@ public class InstrumentingClassLoaderConfig {
    * @return Mapping of class name translations.
    */
   public Map<String, String> classNameTranslations() {
-    Map<String, String> map = new HashMap<>();
-    map.put("java.net.ExtendedResponseCache", RoboExtendedResponseCache.class.getName());
-    map.put("java.net.ResponseSource", RoboResponseSource.class.getName());
-    map.put("java.nio.charset.Charsets", RoboCharsets.class.getName());
-    return map;
+    return Collections.unmodifiableMap(classNameTranslations);
   }
 
   public boolean containsStubs(ClassInfo classInfo) {
     return classInfo.getName().startsWith("com.google.android.maps.");
   }
 
-  private static List<String> stringify(Class... classes) {
+  private static Collection<String> stringify(Class... classes) {
     ArrayList<String> strings = new ArrayList<>();
     for (Class aClass : classes) {
       strings.add(aClass.getName());
@@ -170,9 +210,9 @@ public class InstrumentingClassLoaderConfig {
     return strings;
   }
 
-  private boolean isFromAndroidSdk(ClassInfo classInfo) {
+  private boolean isInInstrumentedPackage(ClassInfo classInfo) {
     final String className = classInfo.getName();
-    for (String instrumentedPackage : INSTRUMENTED_PACKAGES) {
+    for (String instrumentedPackage : instrumentedPackages) {
       if (className.startsWith(instrumentedPackage)) {
         return true;
       }

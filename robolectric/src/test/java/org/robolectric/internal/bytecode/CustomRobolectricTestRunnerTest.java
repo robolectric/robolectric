@@ -143,12 +143,10 @@ public class CustomRobolectricTestRunnerTest {
       super(testClass);
     }
 
-    @Override public InstrumentingClassLoaderConfig createSetup() {
-      return new InstrumentingClassLoaderConfig() {
-        @Override public boolean shouldAcquire(String name) {
-          return !name.equals(CustomRobolectricTestRunnerTest.class.getName()) && super.shouldAcquire(name);
-        }
-      };
+    @Override public InstrumentingClassLoaderConfig createClassLoaderConfig() {
+      return InstrumentingClassLoaderConfig.newBuilder()
+          .doNotAquireClass(CustomRobolectricTestRunnerTest.class.getName())
+          .build();
     }
 
     @Override protected Class<? extends TestLifecycle> getTestLifecycleClass() {

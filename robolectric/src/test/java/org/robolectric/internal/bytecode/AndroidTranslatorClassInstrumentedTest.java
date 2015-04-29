@@ -4,14 +4,16 @@ import android.graphics.Bitmap;
 import android.graphics.Paint;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.internal.Instrument;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(TestRunners.WithCustomClassList.class)
+@RunWith(RobolectricTestRunner.class)
 public class AndroidTranslatorClassInstrumentedTest {
 
   @Test
@@ -61,6 +63,7 @@ public class AndroidTranslatorClassInstrumentedTest {
     assertThat(customXmasPaint.getColorName()).isEqualTo("XMAS");
   }
 
+  @Instrument
   public static class ClassWithPrivateConstructor {
     private ClassWithPrivateConstructor() {
     }
@@ -94,6 +97,7 @@ public class AndroidTranslatorClassInstrumentedTest {
   }
 
   @SuppressWarnings({"UnusedDeclaration"})
+  @Instrument
   public static class CustomPaint extends Paint {
     private int customColor;
 

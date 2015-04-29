@@ -7,7 +7,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class InstrumentingClassLoaderConfigTest {
-  private final InstrumentingClassLoaderConfig config = new InstrumentingClassLoaderConfig();
+  private final InstrumentingClassLoaderConfig config = InstrumentingClassLoaderConfig.newBuilder().build();
 
   @Test
   public void shouldNotInstrumentAndroidAppClasses() throws Exception {

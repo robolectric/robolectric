@@ -18,31 +18,6 @@ import java.util.Locale;
 import static org.robolectric.util.TestUtil.resourceFile;
 
 public class TestRunners {
-  public static class WithCustomClassList extends RobolectricTestRunner {
-    public WithCustomClassList(@SuppressWarnings("rawtypes") Class testClass) throws InitializationError {
-      super(testClass);
-    }
-
-    @Override
-    protected AndroidManifest createAppManifest(FsFile manifestFile, FsFile resDir, FsFile assetDir) {
-      return new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"), resourceFile("assets"));
-    }
-
-    @Override
-    public InstrumentingClassLoaderConfig createSetup() {
-      return new InstrumentingClassLoaderConfig() {
-        @Override
-        public boolean shouldInstrument(ClassInfo classInfo) {
-          String name = classInfo.getName();
-          if (name.equals(AndroidTranslatorClassInstrumentedTest.CustomPaint.class.getName())
-              || name.equals(AndroidTranslatorClassInstrumentedTest.ClassWithPrivateConstructor.class.getName())) {
-            return true;
-          }
-          return super.shouldInstrument(classInfo);
-        }
-      };
-    }
-  }
 
   public static class WithoutDefaults extends RobolectricTestRunner {
     public WithoutDefaults(Class<?> testClass) throws InitializationError {
@@ -72,16 +47,6 @@ public class TestRunners {
     public WithDefaults(Class<?> testClass) throws InitializationError {
       super(testClass);
       Locale.setDefault(Locale.ENGLISH);
-    }
-
-    @Override public InstrumentingClassLoaderConfig createSetup() {
-      return new InstrumentingClassLoaderConfig() {
-        @Override public boolean shouldAcquire(String name) {
-          // todo: whyyyyy!?!? if this isn't there, tests after TestRunnerSequenceTest start failing bad.
-          if (name.startsWith("org.mockito.")) return false;
-          return super.shouldAcquire(name);
-        }
-      };
     }
 
     @Override

@@ -125,7 +125,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   }
 
   public SdkEnvironment createSdkEnvironment(SdkConfig sdkConfig) {
-    InstrumentingClassLoaderConfig config = createSetup();
+    InstrumentingClassLoaderConfig config = createClassLoaderConfig();
     ClassLoader robolectricClassLoader = createRobolectricClassLoader(config, sdkConfig);
     return new SdkEnvironment(sdkConfig, robolectricClassLoader);
   }
@@ -146,8 +146,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     return manifest;
   }
 
-  public InstrumentingClassLoaderConfig createSetup() {
-    return new InstrumentingClassLoaderConfig();
+  public InstrumentingClassLoaderConfig createClassLoaderConfig() {
+    return InstrumentingClassLoaderConfig.newBuilder().build();
   }
 
   protected Class<? extends TestLifecycle> getTestLifecycleClass() {

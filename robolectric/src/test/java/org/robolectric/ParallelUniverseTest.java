@@ -6,6 +6,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.Test;
 import org.junit.Before;
 import org.junit.runner.RunWith;
+import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
 import android.content.res.Resources;
 import android.content.res.Configuration;
@@ -15,7 +16,6 @@ import org.robolectric.internal.SdkConfig;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 
-import static org.mockito.Mockito.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -24,8 +24,8 @@ public class ParallelUniverseTest {
   private ParallelUniverse pu;
 
   @Before
-  public void setUp() {
-    pu = new ParallelUniverse(mock(RobolectricTestRunner.class));
+  public void setUp() throws InitializationError {
+    pu = new ParallelUniverse(new RobolectricTestRunner(ParallelUniverseTest.class));
     pu.setSdkConfig(new SdkConfig(18));
   }
 
