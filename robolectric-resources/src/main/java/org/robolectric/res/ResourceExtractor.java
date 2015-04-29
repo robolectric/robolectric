@@ -26,20 +26,10 @@ public class ResourceExtractor extends ResourceIndex {
 
   /**
    * Constructs a ResourceExtractor for the Android system resources.
-   *
-   * @param classLoader Class loader.
    */
-  public ResourceExtractor(ClassLoader classLoader) {
-    Class<?> androidRClass;
-    try {
-      androidRClass = classLoader.loadClass("android.R");
-      Class<?> androidInternalRClass = classLoader.loadClass("com.android.internal.R");
-
-      gatherResourceIdsAndNames(androidRClass, "android", true);
-      gatherResourceIdsAndNames(androidInternalRClass, "android", false);
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e);
-    }
+  public ResourceExtractor(Class<?> androidInternalRClass, Class<?> androidRClass) {
+    gatherResourceIdsAndNames(androidRClass, "android", true);
+    gatherResourceIdsAndNames(androidInternalRClass, "android", false);
     processedRFile = androidRClass;
     packageName = processedRFile.getPackage().getName();
     packageNames = Arrays.asList(packageName);

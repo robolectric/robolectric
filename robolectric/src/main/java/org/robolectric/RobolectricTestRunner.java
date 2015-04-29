@@ -55,10 +55,10 @@ import java.util.*;
 public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   private static final String CONFIG_PROPERTIES = "robolectric.properties";
   private static final Config DEFAULT_CONFIG = new Config.Implementation(defaultsFor(Config.class));
-  private static final Map<Class<? extends RobolectricTestRunner>, EnvHolder> envHoldersByTestRunner = new HashMap<>();
   private static Map<Pair<AndroidManifest, SdkConfig>, ResourceLoader> resourceLoadersByManifestAndConfig = new HashMap<>();
   private static ShadowMap mainShadowMap;
-  private final EnvHolder envHolder;
+  private final EnvHolder envHolder = new EnvHolder();
+  public final Map<FsFile, AndroidManifest> appManifestsByFile = new HashMap<>();
   private TestLifecycle<Application> testLifecycle;
   private DependencyResolver dependencyResolver;
 
@@ -66,9 +66,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     new SecureRandom(); // this starts up the Poller SunPKCS11-Darwin thread early, outside of any Robolectric classloader
   }
 
-  private Class<? extends RobolectricTestRunner> lastTestRunnerClass;
-  private SdkConfig lastSdkConfig;
-  private SdkEnvironment lastSdkEnvironment;
   private final HashSet<Class<?>> loadedTestClasses = new HashSet<>();
 
   /**
@@ -80,17 +77,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
    */
   public RobolectricTestRunner(final Class<?> testClass) throws InitializationError {
     super(testClass);
-
-    EnvHolder envHolder;
-    synchronized (envHoldersByTestRunner) {
-      Class<? extends RobolectricTestRunner> testRunnerClass = getClass();
-      envHolder = envHoldersByTestRunner.get(testRunnerClass);
-      if (envHolder == null) {
-        envHolder = new EnvHolder();
-        envHoldersByTestRunner.put(testRunnerClass, envHolder);
-      }
-    }
-    this.envHolder = envHolder;
   }
 
   @SuppressWarnings("unchecked")
@@ -178,6 +164,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
           }
         } finally {
           afterClass();
+          loadedTestClasses.clear();
         }
       }
     };
@@ -305,21 +292,11 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   private SdkEnvironment getEnvironment(final AndroidManifest appManifest, final Config config) {
     final SdkConfig sdkConfig = pickSdkVersion(config, appManifest);
 
-    // keep the most recently-used SdkEnvironment strongly reachable to prevent thrashing in low-memory situations.
-    if (getClass().equals(lastTestRunnerClass) && sdkConfig.equals(lastSdkConfig)) {
-      return lastSdkEnvironment;
-    }
-
-    lastTestRunnerClass = null;
-    lastSdkConfig = null;
-    lastSdkEnvironment = envHolder.getSdkEnvironment(sdkConfig, new SdkEnvironment.Factory() {
+    return envHolder.getSdkEnvironment(RobolectricTestRunner.this.getClass().getName(), sdkConfig, new SdkEnvironment.Factory() {
       @Override public SdkEnvironment create() {
         return createSdkEnvironment(sdkConfig);
       }
     });
-    lastTestRunnerClass = getClass();
-    lastSdkConfig = sdkConfig;
-    return lastSdkEnvironment;
   }
 
   protected AndroidManifest getAppManifest(Config config) {
@@ -367,15 +344,15 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       }
     }
 
-    synchronized (envHolder) {
+    synchronized (appManifestsByFile) {
       AndroidManifest appManifest;
-      appManifest = envHolder.appManifestsByFile.get(manifestFile);
+      appManifest = appManifestsByFile.get(manifestFile);
       if (appManifest == null) {
         appManifest = createAppManifest(manifestFile, resDir, assetDir);
         if (libraryDirs != null) {
           appManifest.setLibraryDirectories(libraryDirs);
         }
-        envHolder.appManifestsByFile.put(manifestFile, appManifest);
+        appManifestsByFile.put(manifestFile, appManifest);
       }
       return appManifest;
     }
