@@ -148,13 +148,14 @@ abstract public class Fs {
       }
 
       @Override public FsFile getParent() {
-        String[] parts = path.split("\\/");
-        return new JarFsFile(Join.join("/", asList(parts).subList(0, parts.length - 1)));
+        int index = path.lastIndexOf('/');
+        String parent = index != -1 ? path.substring(0, index) : "";
+        return new JarFsFile(parent);
       }
 
       @Override public String getName() {
-        String[] parts = path.split("\\/");
-        return parts[parts.length - 1];
+        int index = path.lastIndexOf('/');
+        return index != -1 ? path.substring(index + 1, path.length()) : path;
       }
 
       @Override public InputStream getInputStream() throws IOException {
