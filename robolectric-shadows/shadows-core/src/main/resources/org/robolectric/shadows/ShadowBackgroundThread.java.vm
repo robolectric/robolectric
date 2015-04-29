@@ -9,7 +9,7 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.internal.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
-@Implements(value = BackgroundThread.class, inheritImplementationMethods = true)
+@Implements(value = BackgroundThread.class, isInAndroidSdk = false, inheritImplementationMethods = true)
 public class ShadowBackgroundThread extends ShadowHandlerThread {
 
   @Resetter
