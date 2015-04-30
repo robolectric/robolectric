@@ -151,6 +151,9 @@
             </includes>
             <argLine>-Xms512m -Xmx1024m -XX:MaxPermSize=256m</argLine>
             <runOrder>random</runOrder>
+            <systemProperties>
+              <java.awt.headless>true</java.awt.headless>
+            </systemProperties>
           </configuration>
         </plugin>
 
