@@ -5,6 +5,8 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
+
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -54,6 +56,11 @@ public class SQLiteQueryBuilderTest {
     builder.setTables(TABLE_NAME);
     builder.appendWhere(COL_VALUE + " <> ");
     builder.appendWhereEscapeString("won't be selected");
+  }
+
+  @After
+  public void tearDown() {
+    database.close();
   }
 
   @Test

@@ -5,6 +5,8 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.database.sqlite.SQLiteOpenHelper;
+
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,6 +23,11 @@ public class SQLiteOpenHelperTest {
   @Before
   public void setUp() throws Exception {
     helper = new TestOpenHelper(RuntimeEnvironment.application, "path", null, 1);
+  }
+
+  @After
+  public void tearDown() {
+    helper.close();
   }
 
   @Test
