@@ -40,6 +40,14 @@ public class ShadowEnvironmentTest {
   }
 
   @Test
+  public void getExternalStoragePublicDirectory_shouldReturnSameDirectory() {
+    File path1 = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
+    File path2 = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
+
+    assertThat(path1).isEqualTo(path2);
+  }
+
+  @Test
   public void isExternalStorageRemovable_shouldReturnSavedValue() {
     final File file = new File("/mnt/media/file");
     assertThat(Environment.isExternalStorageRemovable(file)).isFalse();
