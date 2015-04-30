@@ -30,7 +30,7 @@ public class ResBunch {
     ResName resName = new ResName(xmlContext.packageName, attrType, name);
     ResMap<TypedResource> valuesMap = getValuesMap(attrType);
     Values values = valuesMap.find(resName);
-    values.add(new Value(xmlContext.getQualifiers(), value, xmlContext));
+    values.add(new Value(xmlContext.getQualifiers(), value));
     Collections.sort(values);
   }
 
@@ -103,8 +103,8 @@ public class ResBunch {
         int distance = getDistance(value, targetApiLevel);
           // Remove the version part and see if they still match
           String paddedQualifier = "-" + qualifiers + "-";
-          String valueWithoutVersion = value.qualifiers.replaceAll(PADDED_VERSION_QUALIFIER_REGEX, "--");
-          String qualifierWithoutVersion = paddedQualifier.replaceAll(PADDED_VERSION_QUALIFIER_REGEX, "--");
+          String valueWithoutVersion = VERSION_QUALIFIER_PATTERN_WITH_DASHES.matcher(value.qualifiers).replaceAll("--");
+          String qualifierWithoutVersion = VERSION_QUALIFIER_PATTERN_WITH_DASHES.matcher(paddedQualifier).replaceAll("--");
           if (qualifierWithoutVersion.contains(valueWithoutVersion) && distance >= 0 && distance < bestMatchDistance) {
             bestMatch = value;
             bestMatchDistance = distance;
@@ -171,14 +171,12 @@ public class ResBunch {
   public static class Value implements Comparable<Value> {
     final String qualifiers;
     final TypedResource value;
-    final XmlLoader.XmlContext xmlContext;
 
-    public Value(String qualifiers, TypedResource value, XmlLoader.XmlContext xmlContext) {
+    public Value(String qualifiers, TypedResource value) {
       if (value == null) {
         throw new NullPointerException();
       }
 
-      this.xmlContext = xmlContext;
       this.qualifiers = qualifiers == null ? "--" : "-" + qualifiers + "-";
       this.value = value;
     }
@@ -192,14 +190,9 @@ public class ResBunch {
       return value;
     }
 
-    public XmlLoader.XmlContext getXmlContext() {
-      return xmlContext;
-    }
-    
     @Override
     public String toString() {
-      return "Value [qualifiers=" + qualifiers + ", value=" + value + ", xmlContext=" + xmlContext
-          + "]";
+      return "Value [qualifiers=" + qualifiers + ", value=" + value + "]";
     }
   }
 

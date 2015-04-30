@@ -158,6 +158,37 @@ public class ReflectionHelpers {
   }
 
   /**
+   * Reflectively call an instance method on an object on a specific class.
+   *
+   * @param cl The class.
+   * @param instance Target object.
+   * @param methodName The method name to call.
+   * @param classParameters Array of parameter types and values.
+   * @param <R> The return type.
+   * @return The return value of the method.
+   */
+  public static <R> R callInstanceMethod(Class<?> cl, final Object instance, final String methodName, ClassParameter<?>... classParameters) {
+    try {
+      final Class<?>[] classes = ClassParameter.getClasses(classParameters);
+      final Object[] values = ClassParameter.getValues(classParameters);
+
+      Method declaredMethod = cl.getDeclaredMethod(methodName, classes);
+      declaredMethod.setAccessible(true);
+      return (R) declaredMethod.invoke(instance, values);
+    } catch (InvocationTargetException e) {
+      if (e.getTargetException() instanceof RuntimeException) {
+        throw (RuntimeException) e.getTargetException();
+      }
+      if (e.getTargetException() instanceof Error) {
+        throw (Error) e.getTargetException();
+      }
+      throw new RuntimeException(e.getTargetException());
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
    * Reflectively call a static method on a class.
    *
    * @param clazz Target class.

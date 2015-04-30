@@ -47,7 +47,7 @@ public class ShadowEnvironment {
     if (type == null) return EXTERNAL_FILES_DIR.toFile();
     Path path = EXTERNAL_FILES_DIR.resolve(type);
     try {
-      Files.createDirectory(path);
+      Files.createDirectories(path);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

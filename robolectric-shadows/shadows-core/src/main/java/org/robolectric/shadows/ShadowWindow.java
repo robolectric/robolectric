@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.view.Window;
 import android.widget.ProgressBar;
+import com.android.internal.policy.impl.PhoneWindow;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -16,15 +17,13 @@ import static org.robolectric.internal.Shadow.directlyOn;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Window.class)
 public class ShadowWindow {
-  @RealObject Window realWindow;
+  private @RealObject Window realWindow;
 
   private int flags;
   private int softInputMode;
 
   public static Window create(Context context) throws Exception {
-    Class<?> phoneWindowClass = ShadowWindow.class.getClassLoader().loadClass(ShadowPhoneWindow.PHONE_WINDOW_CLASS_NAME);
-    Constructor<?> constructor = phoneWindowClass.getConstructor(Context.class);
-    return (Window) constructor.newInstance(context);
+    return new PhoneWindow(context);
   }
 
   @Implementation

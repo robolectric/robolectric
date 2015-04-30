@@ -39,7 +39,7 @@ import java.util.Set;
 /**
  * Configuration rules for {@link org.robolectric.internal.bytecode.InstrumentingClassLoader}.
  */
-public final class InstrumentingClassLoaderConfig {
+public class InstrumentingClassLoaderConfig {
 
   public static final class Builder {
 
