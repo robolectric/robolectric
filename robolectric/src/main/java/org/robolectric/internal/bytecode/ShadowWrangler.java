@@ -1,7 +1,6 @@
 package org.robolectric.internal.bytecode;
 
 import android.content.Context;
-import org.robolectric.internal.SdkConfig;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
@@ -343,12 +342,9 @@ public class ShadowWrangler implements ClassHandler {
         }
 
         if (methodName.startsWith(ShadowConstants.ROBO_PREFIX)) {
-          String fullPrefix = Shadow.directMethodName(stackTraceElement.getClassName(), "");
-          if (methodName.startsWith(fullPrefix)) {
-            methodName = methodName.substring(fullPrefix.length());
-            stackTraceElement = new StackTraceElement(className, methodName,
-                stackTraceElement.getFileName(), stackTraceElement.getLineNumber());
-          }
+          methodName = methodName.substring(ShadowConstants.ROBO_PREFIX.length());
+          stackTraceElement = new StackTraceElement(className, methodName,
+              stackTraceElement.getFileName(), stackTraceElement.getLineNumber());
         }
 
         if (className.startsWith("sun.reflect.") || className.startsWith("java.lang.reflect.")) {
