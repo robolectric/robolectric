@@ -57,7 +57,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   private static final Config DEFAULT_CONFIG = new Config.Implementation(defaultsFor(Config.class));
   private static Map<Pair<AndroidManifest, SdkConfig>, ResourceLoader> resourceLoadersByManifestAndConfig = new HashMap<>();
   private static ShadowMap mainShadowMap;
-  private final EnvHolder envHolder = new EnvHolder();
+  private EnvHolder envHolder;
   public final Map<FsFile, AndroidManifest> appManifestsByFile = new HashMap<>();
   private TestLifecycle<Application> testLifecycle;
   private DependencyResolver dependencyResolver;
@@ -110,12 +110,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     return dependencyResolver;
   }
 
-  public SdkEnvironment createSdkEnvironment(SdkConfig sdkConfig) {
-    InstrumentingClassLoaderConfig config = createClassLoaderConfig();
-    ClassLoader robolectricClassLoader = createRobolectricClassLoader(config, sdkConfig);
-    return new SdkEnvironment(sdkConfig, robolectricClassLoader);
-  }
-
   protected ClassHandler createClassHandler(ShadowMap shadowMap, SdkConfig sdkConfig) {
     return new ShadowWrangler(shadowMap);
   }
@@ -138,11 +132,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
   protected Class<? extends TestLifecycle> getTestLifecycleClass() {
     return DefaultTestLifecycle.class;
-  }
-
-  protected ClassLoader createRobolectricClassLoader(InstrumentingClassLoaderConfig config, SdkConfig sdkConfig) {
-    URL[] urls = getJarResolver().getLocalArtifactUrls(sdkConfig.getSdkClasspathDependencies());
-    return new InstrumentingClassLoader(config, urls);
   }
 
   public static void injectClassHandler(ClassLoader robolectricClassLoader, ClassHandler classHandler) {
@@ -190,7 +179,10 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       eachNotifier.fireTestStarted();
       try {
         AndroidManifest appManifest = getAppManifest(config);
-        SdkEnvironment sdkEnvironment = getEnvironment(appManifest, config);
+        if (envHolder == null) {
+          envHolder = new EnvHolder(createClassLoaderConfig(), getJarResolver());
+        }
+        SdkEnvironment sdkEnvironment = envHolder.getSdkEnvironment(pickSdkVersion(config, appManifest));
         methodBlock(method, config, appManifest, sdkEnvironment).evaluate();
       } catch (AssumptionViolatedException e) {
         eachNotifier.addFailedAssumption(e);
@@ -287,16 +279,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     } catch (InitializationError initializationError) {
       throw new RuntimeException(initializationError);
     }
-  }
-
-  private SdkEnvironment getEnvironment(final AndroidManifest appManifest, final Config config) {
-    final SdkConfig sdkConfig = pickSdkVersion(config, appManifest);
-
-    return envHolder.getSdkEnvironment(RobolectricTestRunner.this.getClass().getName(), sdkConfig, new SdkEnvironment.Factory() {
-      @Override public SdkEnvironment create() {
-        return createSdkEnvironment(sdkConfig);
-      }
-    });
   }
 
   protected AndroidManifest getAppManifest(Config config) {

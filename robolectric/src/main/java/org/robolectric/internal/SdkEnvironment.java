@@ -57,8 +57,4 @@ public class SdkEnvironment {
   public SdkConfig getSdkConfig() {
     return sdkConfig;
   }
-
-  public interface Factory {
-    public SdkEnvironment create();
-  }
 }
