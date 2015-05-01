@@ -220,6 +220,30 @@ public class InstrumentingClassLoaderConfig {
     return false;
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+
+    InstrumentingClassLoaderConfig that = (InstrumentingClassLoaderConfig) o;
+
+    if (!classNameTranslations.equals(that.classNameTranslations)) return false;
+    if (!classesToNotAquire.equals(that.classesToNotAquire)) return false;
+    if (!instrumentedPackages.equals(that.instrumentedPackages)) return false;
+    if (!interceptedMethods.equals(that.interceptedMethods)) return false;
+
+    return true;
+  }
+
+  @Override
+  public int hashCode() {
+    int result = instrumentedPackages.hashCode();
+    result = 31 * result + classNameTranslations.hashCode();
+    result = 31 * result + interceptedMethods.hashCode();
+    result = 31 * result + classesToNotAquire.hashCode();
+    return result;
+  }
+
   /**
    * Reference to a specific method on a class.
    */
