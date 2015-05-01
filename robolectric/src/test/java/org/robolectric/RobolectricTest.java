@@ -8,26 +8,36 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.Display;
 import android.view.View;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowDisplay;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowView;
 import org.robolectric.shadows.StubViewRoot;
 import org.robolectric.internal.Shadow;
+import org.robolectric.internal.ShadowProvider;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.TestOnClickListener;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.*;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -138,9 +148,56 @@ public class RobolectricTest {
     assertThat(activity.isVisible()).isTrue();
   }
 
+  private List<String> order = new ArrayList<>();
+  
+  private class MockProvider implements ShadowProvider {
+    @Override
+    public void reset() {
+      order.add("shadowProvider");
+      assertThat(RuntimeEnvironment.application).as("app during shadow reset").isNotNull();
+      assertThat(RuntimeEnvironment.getActivityThread()).as("activityThread during shadow reset").isNotNull();
+      assertThat(RuntimeEnvironment.getRobolectricPackageManager()).as("packageManager during shadow reset").isNotNull();
+    }
+
+    @Override
+    public String[] getProvidedPackageNames() {
+      return null;
+    }
+  }
+
+  @Test
+  public void reset_shouldResetShadows_beforeClearingPackageManager() {
+    Iterable<ShadowProvider> oldProviders = ReflectionHelpers.getStaticField(Robolectric.class, "providers");;
+    ShadowProvider mockProvider = new MockProvider();
+    List<ShadowProvider> mockProviders = Collections.singletonList(mockProvider);
+    
+    ReflectionHelpers.setStaticField(Robolectric.class, "providers", mockProviders);
+
+    RobolectricPackageManager mockManager = mock(RobolectricPackageManager.class);
+    doAnswer(new Answer<Void>() {
+      public Void answer(InvocationOnMock invocation) {
+        order.add("packageManager");
+        return null;
+      }
+    }).when(mockManager).reset();
+    
+    RuntimeEnvironment.setRobolectricPackageManager(mockManager);
+    
+    try {
+      Robolectric.reset();
+      
+    } finally {
+      // Make sure we clean up after ourselves
+      ReflectionHelpers.setStaticField(Robolectric.class, "providers", oldProviders);
+    }
+    assertThat(order).as("reset order").containsExactly("shadowProvider", "packageManager");
+    assertThat(RuntimeEnvironment.application).as("app after reset").isNull();
+    assertThat(RuntimeEnvironment.getPackageManager()).as("packageManager after reset").isNull();
+    assertThat(RuntimeEnvironment.getActivityThread()).as("activityThread after reset").isNull();
+  }
+  
   @Implements(View.class)
   public static class TestShadowView {
-    @SuppressWarnings({"UnusedDeclaration"})
     @Implementation
     public Context getContext() {
       return null;
