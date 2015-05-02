@@ -2,9 +2,6 @@ package org.robolectric;
 
 import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.bytecode.AndroidTranslatorClassInstrumentedTest;
-import org.robolectric.internal.bytecode.ClassInfo;
-import org.robolectric.internal.bytecode.InstrumentingClassLoaderConfig;
 import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.manifest.AndroidManifest;
@@ -52,6 +49,30 @@ public class TestRunners {
     @Override
     protected AndroidManifest createAppManifest(FsFile manifestFile, FsFile resDir, FsFile assetDir) {
       return new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"), resourceFile("assets"));
+    }
+  }
+
+  public static class MultiApiWithDefaults extends MultiApiRobolectricTestRunner {
+
+    public MultiApiWithDefaults(Class<?> testClass) throws Throwable {
+      super(testClass);
+      Locale.setDefault(Locale.ENGLISH);
+    }
+
+    protected TestRunnerForApiVersion createTestRunner(Integer integer) throws InitializationError {
+      return new DefaultRunnerWithApiVersion(getTestClass().getJavaClass(), integer);
+    }
+
+    private static class DefaultRunnerWithApiVersion extends TestRunnerForApiVersion {
+
+      DefaultRunnerWithApiVersion(Class<?> type, Integer apiVersion) throws InitializationError {
+        super(type, apiVersion);
+      }
+
+      @Override
+      protected AndroidManifest createAppManifest(FsFile manifestFile, FsFile resDir, FsFile assetDir) {
+        return new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"), resourceFile("assets"));
+      }
     }
   }
 
