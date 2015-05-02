@@ -17,12 +17,12 @@ import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
 import org.robolectric.annotation.*;
+import org.robolectric.internal.InstrumentingClassLoaderFactory;
 import org.robolectric.internal.bytecode.*;
 import org.robolectric.internal.dependency.CachedDependencyResolver;
 import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.internal.dependency.LocalDependencyResolver;
 import org.robolectric.internal.dependency.MavenDependencyResolver;
-import org.robolectric.internal.EnvHolder;
 import org.robolectric.internal.ParallelUniverse;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.SdkConfig;
@@ -44,7 +44,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
-import java.net.URL;
 import java.security.SecureRandom;
 import java.util.*;
 
@@ -57,7 +56,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   private static final Config DEFAULT_CONFIG = new Config.Implementation(defaultsFor(Config.class));
   private static Map<Pair<AndroidManifest, SdkConfig>, ResourceLoader> resourceLoadersByManifestAndConfig = new HashMap<>();
   private static ShadowMap mainShadowMap;
-  private EnvHolder envHolder;
+  private InstrumentingClassLoaderFactory instrumentingClassLoaderFactory;
   public final Map<FsFile, AndroidManifest> appManifestsByFile = new HashMap<>();
   private TestLifecycle<Application> testLifecycle;
   private DependencyResolver dependencyResolver;
@@ -126,8 +125,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     return manifest;
   }
 
-  public InstrumentingClassLoaderConfig createClassLoaderConfig() {
-    return InstrumentingClassLoaderConfig.newBuilder().build();
+  public InstrumentationConfiguration createClassLoaderConfig() {
+    return InstrumentationConfiguration.newBuilder().build();
   }
 
   protected Class<? extends TestLifecycle> getTestLifecycleClass() {
@@ -179,10 +178,10 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       eachNotifier.fireTestStarted();
       try {
         AndroidManifest appManifest = getAppManifest(config);
-        if (envHolder == null) {
-          envHolder = new EnvHolder(createClassLoaderConfig(), getJarResolver());
+        if (instrumentingClassLoaderFactory == null) {
+          instrumentingClassLoaderFactory = new InstrumentingClassLoaderFactory(createClassLoaderConfig(), getJarResolver());
         }
-        SdkEnvironment sdkEnvironment = envHolder.getSdkEnvironment(pickSdkVersion(config, appManifest));
+        SdkEnvironment sdkEnvironment = instrumentingClassLoaderFactory.getSdkEnvironment(pickSdkVersion(config, appManifest));
         methodBlock(method, config, appManifest, sdkEnvironment).evaluate();
       } catch (AssumptionViolatedException e) {
         eachNotifier.addFailedAssumption(e);

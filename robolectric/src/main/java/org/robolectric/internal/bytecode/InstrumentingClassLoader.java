@@ -63,12 +63,12 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
   private static final String GET_ROBO_DATA_SIGNATURE = "()Ljava/lang/Object;";
 
   private final URLClassLoader urls;
-  private final InstrumentingClassLoaderConfig config;
+  private final InstrumentationConfiguration config;
   private final Map<String, Class> classes = new HashMap<>();
   private final Map<String, String> classesToRemap;
-  private final Set<InstrumentingClassLoaderConfig.MethodRef> methodsToIntercept;
+  private final Set<InstrumentationConfiguration.MethodRef> methodsToIntercept;
 
-  public InstrumentingClassLoader(InstrumentingClassLoaderConfig config, URL... urls) {
+  public InstrumentingClassLoader(InstrumentationConfiguration config, URL... urls) {
     super(InstrumentingClassLoader.class.getClassLoader());
     this.config = config;
     this.urls = new URLClassLoader(urls, null);
@@ -349,10 +349,10 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
     return newMap;
   }
 
-  private Set<InstrumentingClassLoaderConfig.MethodRef> convertToSlashes(Set<InstrumentingClassLoaderConfig.MethodRef> methodRefs) {
-    HashSet<InstrumentingClassLoaderConfig.MethodRef> transformed = new HashSet<>();
-    for (InstrumentingClassLoaderConfig.MethodRef methodRef : methodRefs) {
-      transformed.add(new InstrumentingClassLoaderConfig.MethodRef(internalize(methodRef.className), methodRef.methodName));
+  private Set<InstrumentationConfiguration.MethodRef> convertToSlashes(Set<InstrumentationConfiguration.MethodRef> methodRefs) {
+    HashSet<InstrumentationConfiguration.MethodRef> transformed = new HashSet<>();
+    for (InstrumentationConfiguration.MethodRef methodRef : methodRefs) {
+      transformed.add(new InstrumentationConfiguration.MethodRef(internalize(methodRef.className), methodRef.methodName));
     }
     return transformed;
   }
@@ -945,8 +945,8 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
 
   private boolean shouldIntercept(MethodInsnNode targetMethod) {
     if (targetMethod.name.equals("<init>")) return false; // sorry, can't strip out calls to super() in constructor
-    return methodsToIntercept.contains(new InstrumentingClassLoaderConfig.MethodRef(targetMethod.owner, targetMethod.name))
-        || methodsToIntercept.contains(new InstrumentingClassLoaderConfig.MethodRef(targetMethod.owner, "*"));
+    return methodsToIntercept.contains(new InstrumentationConfiguration.MethodRef(targetMethod.owner, targetMethod.name))
+        || methodsToIntercept.contains(new InstrumentationConfiguration.MethodRef(targetMethod.owner, "*"));
   }
 
   /**
