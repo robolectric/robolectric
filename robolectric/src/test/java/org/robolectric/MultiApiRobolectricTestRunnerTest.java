@@ -21,7 +21,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @RunWith(JUnit4.class)
-public class ExperimentalRobolectricTestRunnerTest {
+public class MultiApiRobolectricTestRunnerTest {
 
   private int numSupportedApis;
 
@@ -32,7 +32,7 @@ public class ExperimentalRobolectricTestRunnerTest {
 
   @Test
   public void createChildrenForEachSupportedApi() throws Throwable {
-    ExperimentalRobolectricTestRunner runner = new ExperimentalRobolectricTestRunner(TestWithNoConfig.class);
+    MultiApiRobolectricTestRunner runner = new MultiApiRobolectricTestRunner(TestWithNoConfig.class);
 
     assertThat(runner.getChildren()).hasSize(numSupportedApis);
 
@@ -43,7 +43,7 @@ public class ExperimentalRobolectricTestRunnerTest {
 
   @Test
   public void noConfig() throws Throwable {
-    ExperimentalRobolectricTestRunner runner = new ExperimentalRobolectricTestRunner(TestWithNoConfig.class);
+    MultiApiRobolectricTestRunner runner = new MultiApiRobolectricTestRunner(TestWithNoConfig.class);
 
     RunNotifier runNotifier = new RunNotifier();
     RunListener runListener = mock(RunListener.class);
@@ -56,7 +56,7 @@ public class ExperimentalRobolectricTestRunnerTest {
 
   @Test
   public void classConfig() throws Throwable {
-    ExperimentalRobolectricTestRunner runner = new ExperimentalRobolectricTestRunner(TestWithClassConfig.class);
+    MultiApiRobolectricTestRunner runner = new MultiApiRobolectricTestRunner(TestWithClassConfig.class);
 
     assertThat(runner.getChildren()).hasSize(numSupportedApis);
 
@@ -73,7 +73,7 @@ public class ExperimentalRobolectricTestRunnerTest {
 
   @Test
   public void methodConfig() throws Throwable {
-    ExperimentalRobolectricTestRunner runner = new ExperimentalRobolectricTestRunner(TestWithMethodConfig.class);
+    MultiApiRobolectricTestRunner runner = new MultiApiRobolectricTestRunner(TestWithMethodConfig.class);
 
     assertThat(runner.getChildren()).hasSize(numSupportedApis);
 
@@ -88,13 +88,13 @@ public class ExperimentalRobolectricTestRunnerTest {
     verify(runListener, times(5)).testFinished(any(Description.class));
   }
 
-  @RunWith(ExperimentalRobolectricTestRunner.class)
+  @RunWith(MultiApiRobolectricTestRunner.class)
   public class TestWithNoConfig {
 
     @Test public void test() {}
   }
 
-  @RunWith(ExperimentalRobolectricTestRunner.class)
+  @RunWith(MultiApiRobolectricTestRunner.class)
   @Config(sdk = 18)
   public class TestWithClassConfig {
 
@@ -103,7 +103,7 @@ public class ExperimentalRobolectricTestRunnerTest {
     }
   }
 
-  @RunWith(ExperimentalRobolectricTestRunner.class)
+  @RunWith(MultiApiRobolectricTestRunner.class)
   public class TestWithMethodConfig {
 
     @Config(sdk = 16)

@@ -1,11 +1,9 @@
 package org.robolectric;
 
 import org.junit.runner.Runner;
-import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.Suite;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
-import org.junit.runners.model.Statement;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.manifest.AndroidManifest;
@@ -17,14 +15,14 @@ import java.util.List;
 /**
  * A test runner for Robolectric that will run a test against multiple API versions.
  */
-public final class ExperimentalRobolectricTestRunner extends Suite {
+public class MultiApiRobolectricTestRunner extends Suite {
 
-  private static class TestClassRunnerForParameters extends RobolectricTestRunner {
+  protected static class TestRunnerForApiVersion extends RobolectricTestRunner {
 
     private final String name;
     private final Integer apiVersion;
 
-    TestClassRunnerForParameters(Class<?> type, Integer apiVersion) throws InitializationError {
+    TestRunnerForApiVersion(Class<?> type, Integer apiVersion) throws InitializationError {
       super(type);
       this.apiVersion = apiVersion;
       this.name = apiVersion.toString();
@@ -57,28 +55,10 @@ public final class ExperimentalRobolectricTestRunner extends Suite {
     @Override
     protected SdkConfig pickSdkVersion(Config config, AndroidManifest appManifest) {
       return new SdkConfig(apiVersion);
-//      if (config != null && config.emulateSdk() > 0) {
-//        return new SdkConfig(config.emulateSdk());
-//      } else {
-//        if (appManifest != null) {
-//          return new SdkConfig(appManifest.getTargetSdkVersion());
-//        } else {
-//          return new SdkConfig(SdkConfig.FALLBACK_SDK_VERSION);
-//        }
-//      }
     }
 
     protected int pickReportedSdkVersion(Config config, AndroidManifest appManifest) {
       return apiVersion;
-      // Check if the user has explicitly overridden the reported version
-//      if (config != null && config.reportSdk() > 0) {
-//        return config.reportSdk();
-//      }
-//      if (config != null && config.emulateSdk() > 0) {
-//        return config.emulateSdk();
-//      } else {
-//        return appManifest != null ? appManifest.getTargetSdkVersion() : SdkConfig.FALLBACK_SDK_VERSION;
-//      }
     }
 
     @Override
@@ -87,12 +67,12 @@ public final class ExperimentalRobolectricTestRunner extends Suite {
         return new HelperTestRunner(bootstrappedTestClass) {
           @Override
           protected void validateConstructor(List<Throwable> errors) {
-            TestClassRunnerForParameters.this.validateOnlyOneConstructor(errors);
+            TestRunnerForApiVersion.this.validateOnlyOneConstructor(errors);
           }
 
           @Override
           public String toString() {
-            return "HelperTestRunner for " + TestClassRunnerForParameters.this.toString();
+            return "HelperTestRunner for " + TestRunnerForApiVersion.this.toString();
           }
         };
       } catch (InitializationError initializationError) {
@@ -106,14 +86,18 @@ public final class ExperimentalRobolectricTestRunner extends Suite {
   /*
    * Only called reflectively. Do not use programmatically.
    */
-  public ExperimentalRobolectricTestRunner(Class<?> klass) throws Throwable {
+  public MultiApiRobolectricTestRunner(Class<?> klass) throws Throwable {
     super(klass, Collections.<Runner>emptyList());
 
     for (Integer integer : SdkConfig.getSupportedApis()) {
-      runners.add(new TestClassRunnerForParameters(getTestClass().getJavaClass(), integer));
+      runners.add(createTestRunner(integer));
 
     }
    }
+
+  protected TestRunnerForApiVersion createTestRunner(Integer integer) throws InitializationError {
+    return new TestRunnerForApiVersion(getTestClass().getJavaClass(), integer);
+  }
 
   @Override
   protected List<Runner> getChildren() {
