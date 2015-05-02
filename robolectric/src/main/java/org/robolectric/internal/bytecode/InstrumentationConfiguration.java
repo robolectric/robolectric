@@ -39,7 +39,7 @@ import java.util.Set;
 /**
  * Configuration rules for {@link org.robolectric.internal.bytecode.InstrumentingClassLoader}.
  */
-public class InstrumentingClassLoaderConfig {
+public class InstrumentationConfiguration {
 
   public static final class Builder {
 
@@ -63,7 +63,7 @@ public class InstrumentingClassLoaderConfig {
       return this;
     }
 
-    public InstrumentingClassLoaderConfig build() {
+    public InstrumentationConfiguration build() {
       interceptedMethods.addAll(Arrays.asList(
           new MethodRef(LinkedHashMap.class, "eldest"),
           new MethodRef(System.class, "loadLibrary"),
@@ -116,7 +116,7 @@ public class InstrumentingClassLoaderConfig {
         instrumentedPackages.addAll(Arrays.asList(provider.getProvidedPackageNames()));
       }
 
-      return new InstrumentingClassLoaderConfig(classNameTranslations, interceptedMethods, instrumentedPackages, classesToNotAquire);
+      return new InstrumentationConfiguration(classNameTranslations, interceptedMethods, instrumentedPackages, classesToNotAquire);
     }
   }
 
@@ -129,7 +129,7 @@ public class InstrumentingClassLoaderConfig {
   private final HashSet<MethodRef> interceptedMethods = new HashSet<>();
   private final Set<String> classesToNotAquire = new HashSet<>();
 
-  private InstrumentingClassLoaderConfig(Map<String, String> classNameTranslations, Collection<MethodRef> interceptedMethods, Collection<String> instrumentedPackages, Collection<String> classesToNotAquire) {
+  private InstrumentationConfiguration(Map<String, String> classNameTranslations, Collection<MethodRef> interceptedMethods, Collection<String> instrumentedPackages, Collection<String> classesToNotAquire) {
     this.classNameTranslations.putAll(classNameTranslations);
     this.interceptedMethods.addAll(interceptedMethods);
     this.instrumentedPackages.addAll(instrumentedPackages);
@@ -225,7 +225,7 @@ public class InstrumentingClassLoaderConfig {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
 
-    InstrumentingClassLoaderConfig that = (InstrumentingClassLoaderConfig) o;
+    InstrumentationConfiguration that = (InstrumentationConfiguration) o;
 
     if (!classNameTranslations.equals(that.classNameTranslations)) return false;
     if (!classesToNotAquire.equals(that.classesToNotAquire)) return false;
