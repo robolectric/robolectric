@@ -6,8 +6,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class InstrumentingClassLoaderConfigTest {
-  private final InstrumentingClassLoaderConfig config = InstrumentingClassLoaderConfig.newBuilder().build();
+public class InstrumentationConfigurationTest {
+  private final InstrumentationConfiguration config = InstrumentationConfiguration.newBuilder().build();
 
   @Test
   public void shouldNotInstrumentAndroidAppClasses() throws Exception {

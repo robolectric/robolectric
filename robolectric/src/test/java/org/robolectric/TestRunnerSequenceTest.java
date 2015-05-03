@@ -7,7 +7,7 @@ import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.bytecode.InstrumentingClassLoaderConfig;
+import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.FsFile;
@@ -99,8 +99,8 @@ public class TestRunnerSequenceTest {
       super(testClass);
     }
 
-    @Override public InstrumentingClassLoaderConfig createClassLoaderConfig() {
-      return InstrumentingClassLoaderConfig.newBuilder()
+    @Override public InstrumentationConfiguration createClassLoaderConfig() {
+      return InstrumentationConfiguration.newBuilder()
           .doNotAquireClass(StateHolder.class.getName())
           .build();
     }

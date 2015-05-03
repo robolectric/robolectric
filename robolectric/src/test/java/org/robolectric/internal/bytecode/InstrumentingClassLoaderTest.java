@@ -55,7 +55,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.robolectric.internal.bytecode.InstrumentingClassLoaderConfig.MethodRef;
+import static org.robolectric.internal.bytecode.InstrumentationConfiguration.MethodRef;
 
 public class InstrumentingClassLoaderTest {
 
@@ -95,7 +95,7 @@ public class InstrumentingClassLoaderTest {
 
   @Test
   public void shouldDelegateClassLoadForUnacquiredClasses() throws Exception {
-    InstrumentingClassLoaderConfig config = mock(InstrumentingClassLoaderConfig.class);
+    InstrumentationConfiguration config = mock(InstrumentationConfiguration.class);
     when(config.shouldAcquire(anyString())).thenReturn(false);
     when(config.shouldInstrument(any(ClassInfo.class))).thenReturn(false);
     ClassLoader classLoader = new InstrumentingClassLoader(config);
@@ -105,7 +105,7 @@ public class InstrumentingClassLoaderTest {
 
   @Test
   public void shouldPerformClassLoadForAcquiredClasses() throws Exception {
-    ClassLoader classLoader = new InstrumentingClassLoader(InstrumentingClassLoaderConfig.newBuilder().build());
+    ClassLoader classLoader = new InstrumentingClassLoader(InstrumentationConfiguration.newBuilder().build());
     Class<?> exampleClass = classLoader.loadClass(AnUninstrumentedClass.class.getName());
     assertSame(classLoader, exampleClass.getClassLoader());
     try {
@@ -118,7 +118,7 @@ public class InstrumentingClassLoaderTest {
 
   @Test
   public void shouldPerformClassLoadAndInstrumentLoadForInstrumentedClasses() throws Exception {
-    ClassLoader classLoader = new InstrumentingClassLoader(InstrumentingClassLoaderConfig.newBuilder().build());
+    ClassLoader classLoader = new InstrumentingClassLoader(InstrumentationConfiguration.newBuilder().build());
     Class<?> exampleClass = classLoader.loadClass(AnExampleClass.class.getName());
     assertSame(classLoader, exampleClass.getClassLoader());
     assertNotNull(exampleClass.getField(ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME));
@@ -392,8 +392,8 @@ public class InstrumentingClassLoaderTest {
     assertEquals(Array.newInstance(loadClass(AClassToRemember.class), 0).getClass(), theClass.getField("someFields").getType());
   }
 
-  private InstrumentingClassLoaderConfig createRemappingConfig() {
-    return InstrumentingClassLoaderConfig.newBuilder()
+  private InstrumentationConfiguration createRemappingConfig() {
+    return InstrumentationConfiguration.newBuilder()
         .addClassNameTranslation(AClassToForget.class.getName(), AClassToRemember.class.getName())
         .build();
   }
@@ -417,7 +417,7 @@ public class InstrumentingClassLoaderTest {
 
   @Test
   public void shouldInterceptFilteredMethodInvocations() throws Exception {
-    setClassLoader(new InstrumentingClassLoader(InstrumentingClassLoaderConfig.newBuilder()
+    setClassLoader(new InstrumentingClassLoader(InstrumentationConfiguration.newBuilder()
         .addInterceptedMethod(new MethodRef(AClassToForget.class, "forgettableMethod"))
         .build()));
 
@@ -429,7 +429,7 @@ public class InstrumentingClassLoaderTest {
 
   @Test
   public void shouldInterceptFilteredStaticMethodInvocations() throws Exception {
-    setClassLoader(new InstrumentingClassLoader(InstrumentingClassLoaderConfig.newBuilder()
+    setClassLoader(new InstrumentingClassLoader(InstrumentationConfiguration.newBuilder()
         .addInterceptedMethod(new MethodRef(AClassToForget.class, "forgettableStaticMethod"))
         .build()));
 
@@ -518,7 +518,7 @@ public class InstrumentingClassLoaderTest {
   }
 
   private Object invokeInterceptedMethodOnAClassToForget(String methodName) throws Exception {
-    setClassLoader(new InstrumentingClassLoader(InstrumentingClassLoaderConfig.newBuilder()
+    setClassLoader(new InstrumentingClassLoader(InstrumentationConfiguration.newBuilder()
         .addInterceptedMethod(new MethodRef(AClassToForget.class, "*"))
         .build()));
     Class<?> theClass = loadClass(AClassThatRefersToAForgettableClassInMethodCallsReturningPrimitive.class);
@@ -530,7 +530,7 @@ public class InstrumentingClassLoaderTest {
   public void shouldPassArgumentsFromInterceptedMethods() throws Exception {
     classHandler.valueToReturnFromIntercept = 10L;
 
-    setClassLoader(new InstrumentingClassLoader(InstrumentingClassLoaderConfig.newBuilder()
+    setClassLoader(new InstrumentingClassLoader(InstrumentationConfiguration.newBuilder()
         .addInterceptedMethod(new MethodRef(AClassToForget.class, "*"))
         .build()));
 
@@ -544,7 +544,7 @@ public class InstrumentingClassLoaderTest {
 
   @Test
   public void shouldRemapClassesWhileInterceptingMethods() throws Exception {
-    InstrumentingClassLoaderConfig config = InstrumentingClassLoaderConfig.newBuilder()
+    InstrumentationConfiguration config = InstrumentationConfiguration.newBuilder()
         .addClassNameTranslation(AClassToForget.class.getName(), AClassToRemember.class.getName())
         .addInterceptedMethod(new MethodRef(AClassThatCallsAMethodReturningAForgettableClass.class, "getAForgettableClass"))
         .build();
@@ -659,7 +659,7 @@ public class InstrumentingClassLoaderTest {
 
   private Class<?> loadClass(Class<?> clazz) throws ClassNotFoundException {
     if (classLoader == null) {
-      classLoader = new InstrumentingClassLoader(InstrumentingClassLoaderConfig.newBuilder().build());
+      classLoader = new InstrumentingClassLoader(InstrumentationConfiguration.newBuilder().build());
     }
     RobolectricTestRunner.injectClassHandler(classLoader, classHandler);
     return classLoader.loadClass(clazz.getName());
@@ -668,7 +668,7 @@ public class InstrumentingClassLoaderTest {
   @Test public void shouldCacheMisses() throws Exception {
     final Transcript transcript = new Transcript();
 
-    InstrumentingClassLoader classLoader = new InstrumentingClassLoader(InstrumentingClassLoaderConfig.newBuilder().build()) {
+    InstrumentingClassLoader classLoader = new InstrumentingClassLoader(InstrumentationConfiguration.newBuilder().build()) {
       @Override
       protected Class<?> findClass(String className) throws ClassNotFoundException {
         transcript.add("find " + className);
