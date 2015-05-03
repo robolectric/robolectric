@@ -26,11 +26,11 @@ import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.StringResources;
 import org.robolectric.res.Style;
 import org.robolectric.res.TypedResource;
+import org.robolectric.res.builder.ResourceParser;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.res.builder.XmlFileBuilder;
+import org.robolectric.res.builder.XmlBlock;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.Util;
-import org.w3c.dom.Document;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -308,15 +308,6 @@ public class ShadowResources {
   }
 
   @Implementation
-  public int getIdentifier(String name, String defType, String defPackage) {
-    ResourceIndex resourceIndex = getResourceLoader().getResourceIndex();
-    ResName resName = ResName.qualifyResName(name, defPackage, defType);
-    Integer resourceId = resourceIndex.getResourceId(resName);
-    if (resourceId == null) return 0;
-    return resourceId;
-  }
-
-  @Implementation
   public String getResourceName(int resId) throws Resources.NotFoundException {
     return getResName(resId).getFullyQualifiedName();
   }
@@ -342,6 +333,15 @@ public class ShadowResources {
 
   private @NotNull ResName getResName(int id) {
     ResName resName = getResourceLoader().getResourceIndex().getResName(id);
+    return checkResName(id, resName);
+  }
+
+  private @NotNull ResName resolveResName(int id) {
+    ResName resName = shadowOf(realResources.getAssets()).resolveResName(id, getQualifiers());
+    return checkResName(id, resName);
+  }
+
+  private ResName checkResName(int id, ResName resName) {
     if (resName == null) {
       throw new Resources.NotFoundException("Unable to find resource ID #0x" + Integer.toHexString(id));
     }
@@ -427,20 +427,19 @@ public class ShadowResources {
     return displayMetrics;
   }
 
-  @Implementation
-  public XmlResourceParser getXml(int id) throws Resources.NotFoundException {
-    ResName resName = getResName(id);
-    Document document = getResourceLoader().getXml(resName, getQualifiers());
-    if (document == null) {
+  @HiddenApi @Implementation
+  public XmlResourceParser loadXmlResourceParser(int id, String type) throws Resources.NotFoundException {
+    ResName resName = resolveResName(id);
+    XmlBlock block = getResourceLoader().getXml(resName, getQualifiers());
+    if (block == null) {
       throw new Resources.NotFoundException();
     }
-    return new XmlFileBuilder().getXml(document, resName.getFullyQualifiedName(), resName.packageName, getResourceLoader().getResourceIndex());
+    return ResourceParser.from(block, getResourceLoader().getResourceIndex());
   }
 
   @HiddenApi @Implementation
   public XmlResourceParser loadXmlResourceParser(String file, int id, int assetCookie, String type) throws Resources.NotFoundException {
-    String packageName = getResName(id).packageName;
-    return XmlFileBuilder.getXmlResourceParser(file, packageName, getResourceLoader().getResourceIndex());
+    return loadXmlResourceParser(id, type);
   }
 
   public ResourceLoader getResourceLoader() {

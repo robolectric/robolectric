@@ -51,15 +51,15 @@ public class PackageResourceLoader extends XResourceLoader {
         new StyleResourceLoader(data)
     );
 
-    documentLoader.load("layout", new OpaqueFileLoader(data, "layout"), new XmlFileLoader(xmlDocuments, "layout"));
-    documentLoader.load("menu", new OpaqueFileLoader(data, "menu"), new XmlFileLoader(xmlDocuments, "menu"));
-    documentLoader.load("drawable", new OpaqueFileLoader(data, "drawable"), new XmlFileLoader(xmlDocuments, "drawable"));
-    documentLoader.load("anim", new OpaqueFileLoader(data, "anim"), new XmlFileLoader(xmlDocuments, "anim"));
-    documentLoader.load("animator", new OpaqueFileLoader(data, "animator"), new XmlFileLoader(xmlDocuments, "animator"));
-    documentLoader.load("color", new ColorResourceLoader(data), new XmlFileLoader(xmlDocuments, "color"));
-    documentLoader.load("xml", new PreferenceLoader(preferenceData), new XmlFileLoader(xmlDocuments, "xml"));
-    documentLoader.load("transition", new OpaqueFileLoader(data, "transition"), new XmlFileLoader(xmlDocuments, "transition"));
-    documentLoader.load("interpolator", new OpaqueFileLoader(data, "interpolator"), new XmlFileLoader(xmlDocuments, "interpolator"));
+    documentLoader.load("layout", new OpaqueFileLoader(data, "layout"), new XmlBlockLoader(xmlDocuments, "layout"));
+    documentLoader.load("menu", new OpaqueFileLoader(data, "menu"), new XmlBlockLoader(xmlDocuments, "menu"));
+    documentLoader.load("drawable", new OpaqueFileLoader(data, "drawable"), new XmlBlockLoader(xmlDocuments, "drawable"));
+    documentLoader.load("anim", new OpaqueFileLoader(data, "anim"), new XmlBlockLoader(xmlDocuments, "anim"));
+    documentLoader.load("animator", new OpaqueFileLoader(data, "animator"), new XmlBlockLoader(xmlDocuments, "animator"));
+    documentLoader.load("color", new ColorResourceLoader(data), new XmlBlockLoader(xmlDocuments, "color"));
+    documentLoader.load("xml", new PreferenceLoader(preferenceData), new XmlBlockLoader(xmlDocuments, "xml"));
+    documentLoader.load("transition", new OpaqueFileLoader(data, "transition"), new XmlBlockLoader(xmlDocuments, "transition"));
+    documentLoader.load("interpolator", new OpaqueFileLoader(data, "interpolator"), new XmlBlockLoader(xmlDocuments, "interpolator"));
 
     new DrawableResourceLoader(drawableData).findDrawableResources(resourcePath);
     new RawResourceLoader(resourcePath).loadTo(rawResources);

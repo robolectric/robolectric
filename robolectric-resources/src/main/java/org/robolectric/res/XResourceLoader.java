@@ -1,7 +1,7 @@
 package org.robolectric.res;
 
 import org.jetbrains.annotations.NotNull;
-import org.w3c.dom.Document;
+import org.robolectric.res.builder.XmlBlock;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,7 +13,7 @@ abstract class XResourceLoader implements ResourceLoader {
   final ResBundle<String> stringData = new ResBundle<>();
   final ResBundle<DrawableNode> drawableData = new ResBundle<>();
   final ResBundle<PreferenceNode> preferenceData = new ResBundle<>();
-  final ResBundle<Document> xmlDocuments = new ResBundle<>();
+  final ResBundle<XmlBlock> xmlDocuments = new ResBundle<>();
   final ResBundle<FsFile> rawResources = new ResBundle<>();
   private final ResourceIndex resourceIndex;
   boolean isInitialized = false;
@@ -50,8 +50,8 @@ abstract class XResourceLoader implements ResourceLoader {
 
   public TypedResource getValue(@NotNull ResName resName, String qualifiers) {
     initialize();
-    ResBunch.Value value = data.getValue(resName, qualifiers);
-    return value == null ? null : value.getTypedResource();
+    ResBundle.Value<TypedResource> value = data.getValue(resName, qualifiers);
+    return value == null ? null : value.getValue();
   }
 
   @Override
@@ -64,7 +64,7 @@ abstract class XResourceLoader implements ResourceLoader {
   }
 
   @Override
-  public Document getXml(ResName resName, String qualifiers) {
+  public XmlBlock getXml(ResName resName, String qualifiers) {
     initialize();
     return xmlDocuments.get(resName, qualifiers);
   }
