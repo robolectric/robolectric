@@ -52,6 +52,30 @@ public class TestRunners {
     }
   }
 
+  public static class MultiApiWithDefaults extends MultiApiRobolectricTestRunner {
+
+    public MultiApiWithDefaults(Class<?> testClass) throws Throwable {
+      super(testClass);
+      Locale.setDefault(Locale.ENGLISH);
+    }
+
+    protected TestRunnerForApiVersion createTestRunner(Integer integer) throws InitializationError {
+      return new DefaultRunnerWithApiVersion(getTestClass().getJavaClass(), integer);
+    }
+
+    private static class DefaultRunnerWithApiVersion extends TestRunnerForApiVersion {
+
+      DefaultRunnerWithApiVersion(Class<?> type, Integer apiVersion) throws InitializationError {
+        super(type, apiVersion);
+      }
+
+      @Override
+      protected AndroidManifest createAppManifest(FsFile manifestFile, FsFile resDir, FsFile assetDir) {
+        return new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"), resourceFile("assets"));
+      }
+    }
+  }
+
   public static class RealApisWithoutDefaults extends RobolectricTestRunner {
     public RealApisWithoutDefaults(Class<?> testClass) throws InitializationError {
       super(testClass);
