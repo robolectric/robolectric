@@ -35,7 +35,7 @@ public class ShadowAnimationSetTest {
 
     verify(moveListener).onAnimationStart(move);
 
-    Robolectric.flushForegroundScheduler();
+    Robolectric.flushForegroundThreadScheduler();
 
     verify(moveListener).onAnimationEnd(move);
   }

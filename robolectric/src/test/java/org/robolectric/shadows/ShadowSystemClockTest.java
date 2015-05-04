@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.os.SystemClock;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.internal.bytecode.RobolectricInternals;
 
@@ -15,20 +16,20 @@ public class ShadowSystemClockTest {
   @Test
   public void shouldAllowForFakingOfTime() throws Exception {
     assertThat(SystemClock.uptimeMillis()).isEqualTo(0);
-    ShadowLooper.getUiThreadScheduler().advanceTo(1000);
+    Robolectric.getForegroundThreadScheduler().advanceTo(1000);
     assertThat(SystemClock.uptimeMillis()).isEqualTo(1000);
   }
 
   @Test
   public void sleep() {
-    ShadowLooper.getUiThreadScheduler().advanceTo(1000);
+    Robolectric.getForegroundThreadScheduler().advanceTo(1000);
     SystemClock.sleep(34);
     assertThat(SystemClock.uptimeMillis()).isEqualTo(1034);
   }
   
   @Test
   public void testSetCurrentTime() {
-    ShadowLooper.getUiThreadScheduler().advanceTo(1000);
+    Robolectric.getForegroundThreadScheduler().advanceTo(1000);
     assertThat(ShadowSystemClock.now()).isEqualTo(1000);
     assertTrue(SystemClock.setCurrentTimeMillis(1034));
     assertThat(ShadowSystemClock.now()).isEqualTo(1034);

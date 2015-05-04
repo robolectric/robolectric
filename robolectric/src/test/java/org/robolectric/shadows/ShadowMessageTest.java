@@ -224,7 +224,7 @@ public class ShadowMessageTest {
     Handler h = new Handler();
     Message msg = Message.obtain(h, 234);
     msg.sendToTarget();
-    Scheduler scheduler = ShadowLooper.getUiThreadScheduler();
+    Scheduler scheduler = Robolectric.getForegroundThreadScheduler();
     assertThat(scheduler.size()).as("before recycle").isEqualTo(1);
     shadowOf(msg).recycleUnchecked();
     assertThat(scheduler.size()).as("after recycle").isEqualTo(0);

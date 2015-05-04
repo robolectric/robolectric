@@ -41,12 +41,12 @@ public class ShadowChoreographer {
 
   @Implementation
   public void postCallbackDelayed(int callbackType, Runnable action, Object token, long delayMillis) {
-      ShadowLooper.getUiThreadScheduler().postDelayed(action, delayMillis);
+    ShadowApplication.getInstance().getForegroundThreadScheduler().postDelayed(action, delayMillis);
   }
 
   @Implementation
   public void postFrameCallbackDelayed(final Choreographer.FrameCallback callback, long delayMillis) {
-    ShadowLooper.getUiThreadScheduler().postDelayed(new Runnable() {
+    ShadowApplication.getInstance().getForegroundThreadScheduler().postDelayed(new Runnable() {
       @Override
       public void run() {
         callback.doFrame(getFrameTimeNanos());

@@ -4,6 +4,7 @@ import android.os.AsyncTask;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.util.Join;
 import org.robolectric.util.Transcript;
@@ -24,8 +25,8 @@ public class ShadowAsyncTaskTest {
   @Before
   public void setUp() throws Exception {
     transcript = new Transcript();
-    ShadowApplication.getInstance().getBackgroundScheduler().pause();
-    ShadowLooper.getUiThreadScheduler().pause();
+    Robolectric.getBackgroundThreadScheduler().pause();
+    Robolectric.getForegroundThreadScheduler().pause();
   }
 
   @Test
@@ -107,7 +108,7 @@ public class ShadowAsyncTaskTest {
 
   @Test
   public void executeReturnsAsyncTask() throws Exception {
-    ShadowApplication.getInstance().getBackgroundScheduler().unPause();
+    Robolectric.getBackgroundThreadScheduler().unPause();
     AsyncTask<String, String, String> asyncTask = new MyAsyncTask();
     assertThat(asyncTask.execute("a", "b").get()).isEqualTo("c");
   }
@@ -118,14 +119,14 @@ public class ShadowAsyncTaskTest {
     assertThat(asyncTask.getStatus()).isEqualTo(AsyncTask.Status.PENDING);
     asyncTask.execute("a");
     assertThat(asyncTask.getStatus()).isEqualTo(AsyncTask.Status.RUNNING);
-    ShadowApplication.getInstance().getBackgroundScheduler().unPause();
+    Robolectric.getBackgroundThreadScheduler().unPause();
     assertThat(asyncTask.getStatus()).isEqualTo(AsyncTask.Status.FINISHED);
   }
 
   @Test
   public void onPostExecute_doesNotSwallowExceptions() throws Exception {
-    ShadowApplication.getInstance().getBackgroundScheduler().unPause();
-    ShadowLooper.getUiThreadScheduler().unPause();
+    Robolectric.getBackgroundThreadScheduler().unPause();
+    Robolectric.getForegroundThreadScheduler().unPause();
 
     AsyncTask<Void, Void, Void> asyncTask = new AsyncTask<Void, Void, Void>() {
       @Override
