@@ -29,15 +29,19 @@ public class RobolectricGradleTestRunnerTest {
     delete(FileFsFile.from("build", "intermediates", "manifests").getFile());
   }
 
+  private static String convertPath(String path) {
+    return path.replace('/', File.separatorChar);
+  }
+  
   @Test
   public void getAppManifest_forApplications_shouldCreateManifest() throws Exception {
     final RobolectricGradleTestRunner runner = new RobolectricGradleTestRunner(ConstantsTest.class);
     final AndroidManifest manifest = runner.getAppManifest(runner.getConfig(ConstantsTest.class.getMethod("withoutAnnotation")));
 
     assertThat(manifest.getPackageName()).isEqualTo("org.sandwich.foo");
-    assertThat(manifest.getResDirectory().getPath()).isEqualTo("build/intermediates/res/flavor1/type1");
-    assertThat(manifest.getAssetsDirectory().getPath()).isEqualTo("build/intermediates/assets/flavor1/type1");
-    assertThat(manifest.getAndroidManifestFile().getPath()).isEqualTo("build/intermediates/manifests/full/flavor1/type1/AndroidManifest.xml");
+    assertThat(manifest.getResDirectory().getPath()).isEqualTo(convertPath("build/intermediates/res/flavor1/type1"));
+    assertThat(manifest.getAssetsDirectory().getPath()).isEqualTo(convertPath("build/intermediates/assets/flavor1/type1"));
+    assertThat(manifest.getAndroidManifestFile().getPath()).isEqualTo(convertPath("build/intermediates/manifests/full/flavor1/type1/AndroidManifest.xml"));
   }
 
   @Test
@@ -50,9 +54,9 @@ public class RobolectricGradleTestRunnerTest {
     final AndroidManifest manifest = runner.getAppManifest(runner.getConfig(ConstantsTest.class.getMethod("withoutAnnotation")));
 
     assertThat(manifest.getPackageName()).isEqualTo("org.sandwich.foo");
-    assertThat(manifest.getResDirectory().getPath()).isEqualTo("build/intermediates/bundles/flavor1/type1/res");
-    assertThat(manifest.getAssetsDirectory().getPath()).isEqualTo("build/intermediates/bundles/flavor1/type1/assets");
-    assertThat(manifest.getAndroidManifestFile().getPath()).isEqualTo("build/intermediates/bundles/flavor1/type1/AndroidManifest.xml");
+    assertThat(manifest.getResDirectory().getPath()).isEqualTo(convertPath("build/intermediates/bundles/flavor1/type1/res"));
+    assertThat(manifest.getAssetsDirectory().getPath()).isEqualTo(convertPath("build/intermediates/bundles/flavor1/type1/assets"));
+    assertThat(manifest.getAndroidManifestFile().getPath()).isEqualTo(convertPath("build/intermediates/bundles/flavor1/type1/AndroidManifest.xml"));
   }
 
   @Test
@@ -61,9 +65,9 @@ public class RobolectricGradleTestRunnerTest {
     final AndroidManifest manifest = runner.getAppManifest(runner.getConfig(ConstantsTest.class.getMethod("withOverrideAnnotation")));
 
     assertThat(manifest.getPackageName()).isEqualTo("org.sandwich.bar");
-    assertThat(manifest.getResDirectory().getPath()).isEqualTo("build/intermediates/res/flavor2/type2");
-    assertThat(manifest.getAssetsDirectory().getPath()).isEqualTo("build/intermediates/assets/flavor2/type2");
-    assertThat(manifest.getAndroidManifestFile().getPath()).isEqualTo("build/intermediates/manifests/full/flavor2/type2/AndroidManifest.xml");
+    assertThat(manifest.getResDirectory().getPath()).isEqualTo(convertPath("build/intermediates/res/flavor2/type2"));
+    assertThat(manifest.getAssetsDirectory().getPath()).isEqualTo(convertPath("build/intermediates/assets/flavor2/type2"));
+    assertThat(manifest.getAndroidManifestFile().getPath()).isEqualTo(convertPath("build/intermediates/manifests/full/flavor2/type2/AndroidManifest.xml"));
   }
 
   @Test
@@ -72,9 +76,9 @@ public class RobolectricGradleTestRunnerTest {
     final AndroidManifest manifest = runner.getAppManifest(runner.getConfig(PackageNameTest.class.getMethod("withoutAnnotation")));
 
     assertThat(manifest.getPackageName()).isEqualTo("fake.package.name");
-    assertThat(manifest.getResDirectory().getPath()).isEqualTo("build/intermediates/res/flavor1/type1");
-    assertThat(manifest.getAssetsDirectory().getPath()).isEqualTo("build/intermediates/assets/flavor1/type1");
-    assertThat(manifest.getAndroidManifestFile().getPath()).isEqualTo("build/intermediates/manifests/full/flavor1/type1/AndroidManifest.xml");
+    assertThat(manifest.getResDirectory().getPath()).isEqualTo(convertPath("build/intermediates/res/flavor1/type1"));
+    assertThat(manifest.getAssetsDirectory().getPath()).isEqualTo(convertPath("build/intermediates/assets/flavor1/type1"));
+    assertThat(manifest.getAndroidManifestFile().getPath()).isEqualTo(convertPath("build/intermediates/manifests/full/flavor1/type1/AndroidManifest.xml"));
   }
 
   @Test
