@@ -54,10 +54,10 @@ import java.util.*;
 public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   private static final String CONFIG_PROPERTIES = "robolectric.properties";
   private static final Config DEFAULT_CONFIG = new Config.Implementation(defaultsFor(Config.class));
-  private static Map<Pair<AndroidManifest, SdkConfig>, ResourceLoader> resourceLoadersByManifestAndConfig = new HashMap<>();
+  private static final Map<Pair<AndroidManifest, SdkConfig>, ResourceLoader> resourceLoadersByManifestAndConfig = new HashMap<>();
+  private static final Map<ManifestIdentifier, AndroidManifest> appManifestsByFile = new HashMap<>();
   private static ShadowMap mainShadowMap;
   private InstrumentingClassLoaderFactory instrumentingClassLoaderFactory;
-  public final Map<FsFile, AndroidManifest> appManifestsByFile = new HashMap<>();
   private TestLifecycle<Application> testLifecycle;
   private DependencyResolver dependencyResolver;
 
@@ -325,15 +325,16 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       }
     }
 
+    ManifestIdentifier identifier = new ManifestIdentifier(manifestFile, resDir, assetDir, libraryDirs);
     synchronized (appManifestsByFile) {
       AndroidManifest appManifest;
-      appManifest = appManifestsByFile.get(manifestFile);
+      appManifest = appManifestsByFile.get(identifier);
       if (appManifest == null) {
         appManifest = createAppManifest(manifestFile, resDir, assetDir);
         if (libraryDirs != null) {
           appManifest.setLibraryDirectories(libraryDirs);
         }
-        appManifestsByFile.put(manifestFile, appManifest);
+        appManifestsByFile.put(identifier, appManifest);
       }
       return appManifest;
     }
@@ -380,8 +381,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   }
 
   protected Properties getConfigProperties() {
-    ClassLoader classLoader = getTestClass().getClass().getClassLoader();
-    InputStream resourceAsStream = classLoader.getResourceAsStream(CONFIG_PROPERTIES);
+    InputStream resourceAsStream = getClass().getClassLoader().getResourceAsStream(CONFIG_PROPERTIES);
     if (resourceAsStream == null) return null;
     Properties properties = new Properties();
     try {
@@ -527,6 +527,43 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
     @Override public Statement methodBlock(FrameworkMethod method) {
       return super.methodBlock(method);
+    }
+  }
+
+  private static class ManifestIdentifier {
+    private final FsFile manifestFile;
+    private final FsFile resDir;
+    private final FsFile assetDir;
+    private final List<FsFile> libraryDirs;
+
+    public ManifestIdentifier(FsFile manifestFile, FsFile resDir, FsFile assetDir,
+        List<FsFile> libraryDirs) {
+      this.manifestFile = manifestFile;
+      this.resDir = resDir;
+      this.assetDir = assetDir;
+      this.libraryDirs = libraryDirs != null ? libraryDirs : Collections.<FsFile>emptyList();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+
+      ManifestIdentifier that = (ManifestIdentifier) o;
+
+      return assetDir.equals(that.assetDir)
+          && libraryDirs.equals(that.libraryDirs)
+          && manifestFile.equals(that.manifestFile)
+          && resDir.equals(that.resDir);
+    }
+
+    @Override
+    public int hashCode() {
+      int result = manifestFile.hashCode();
+      result = 31 * result + resDir.hashCode();
+      result = 31 * result + assetDir.hashCode();
+      result = 31 * result + libraryDirs.hashCode();
+      return result;
     }
   }
 
