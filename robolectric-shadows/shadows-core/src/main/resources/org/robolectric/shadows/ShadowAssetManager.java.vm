@@ -181,7 +181,11 @@ public final class ShadowAssetManager {
       throw new IOException("Unable to find resource for " + fileName);
     }
 
-    return new ByteArrayInputStream(drawableNode.getFsFile().getBytes());
+    if (accessMode == AssetManager.ACCESS_STREAMING) {
+      return drawableNode.getFsFile().getInputStream();
+    } else {
+      return new ByteArrayInputStream(drawableNode.getFsFile().getBytes());
+    }
   }
 
   private ResName qualifyFromNonAssetFileName(String fileName) {
