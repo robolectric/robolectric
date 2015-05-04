@@ -7,16 +7,20 @@ import org.junit.Test;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.junit.runners.model.InitializationError;
-import org.robolectric.annotation.Config;
+
 import android.content.res.Resources;
 import android.content.res.Configuration;
+
+import org.robolectric.annotation.Config;
 import org.robolectric.internal.ParallelUniverse;
 import org.robolectric.internal.SdkConfig;
+import org.robolectric.res.builder.RobolectricPackageManager;
 
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.*;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ParallelUniverseTest {
@@ -63,6 +67,21 @@ public class ParallelUniverseTest {
     assertThat(getQualifiersfromSystemResources()).isEqualTo("large-land-v18");
     assertThat(getQualifiersFromAppAssetManager()).isEqualTo("large-land-v18");
     assertThat(getQualifiersFromSystemAssetManager()).isEqualTo("large-land-v18");
+  }
+  
+  @Test
+  public void tearDownApplication_shouldNotResetPackageManager() {
+    RobolectricPackageManager pm = mock(RobolectricPackageManager.class);
+    RuntimeEnvironment.setRobolectricPackageManager(pm);
+    pu.tearDownApplication();
+    verify(pm, never()).reset();
+  }
+  
+  @Test
+  public void tearDownApplication_invokesOnTerminate() {
+    RuntimeEnvironment.application = mock(Application.class);
+    pu.tearDownApplication();
+    verify(RuntimeEnvironment.application).onTerminate();
   }
   
   private String getQualifiersfromSystemResources() {
