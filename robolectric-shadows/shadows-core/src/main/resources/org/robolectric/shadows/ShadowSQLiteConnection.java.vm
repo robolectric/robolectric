@@ -11,8 +11,10 @@ import android.database.sqlite.SQLiteDoneException;
 import com.almworks.sqlite4java.SQLiteConnection;
 import com.almworks.sqlite4java.SQLiteException;
 import com.almworks.sqlite4java.SQLiteStatement;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.shadows.util.SQLiteLibraryLoader;
 
 import java.io.File;
@@ -72,6 +74,11 @@ public class ShadowSQLiteConnection {
   static String convertSQLWithLocalizedUnicodeCollator(String sql) {
     Matcher matcher = COLLATE_LOCALIZED_UNICODE_PATTERN.matcher(sql);
     return matcher.replaceAll(" COLLATE NOCASE");
+  }
+
+  @Resetter
+  public static void reset() {
+    CONNECTIONS.reset();
   }
 
   @Implementation
@@ -313,8 +320,8 @@ public class ShadowSQLiteConnection {
     // not supported by sqlite4java
     return 0;
   }
-
-  private static class Connections {
+  // VisibleForTesting
+  static class Connections {
 #if($api >= 21)
     private final AtomicLong pointerCounter = new AtomicLong(0);
 #else
@@ -393,6 +400,14 @@ public class ShadowSQLiteConnection {
           return null;
         }
       });
+    }
+
+    public void reset() {
+      for ($ptrClass connectionPtr : connectionsMap.keySet()) {
+        close(connectionPtr);  
+      }
+      connectionsMap.clear();
+      statementsMap.clear();
     }
 
     public void finalizeStmt(final $ptrClass connectionPtr, final $ptrClass statementPtr) {
