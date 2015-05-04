@@ -3,17 +3,23 @@ package org.robolectric.shadows;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
+
+import org.assertj.core.api.Assertions;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
+import org.robolectric.util.ReflectionHelpers;
+
+import com.almworks.sqlite4java.SQLiteConnection;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.shadows.ShadowSQLiteConnection.convertSQLWithLocalizedUnicodeCollator;
@@ -21,16 +27,23 @@ import static org.robolectric.shadows.ShadowSQLiteConnection.convertSQLWithLocal
 @RunWith(TestRunners.WithDefaults.class)
 public class ShadowSQLiteConnectionTest {
   private SQLiteDatabase database;
-
+  private File databasePath;
+  private long ptr;
+  private SQLiteConnection conn;
+  private ShadowSQLiteConnection.Connections CONNECTIONS;
+  
   @Before
   public void setUp() throws Exception {
-    final File databasePath = RuntimeEnvironment.application.getDatabasePath("database.db");
+    databasePath = RuntimeEnvironment.application.getDatabasePath("database.db");
     databasePath.getParentFile().mkdirs();
 
     database = SQLiteDatabase.openOrCreateDatabase(databasePath.getPath(), null);
     SQLiteStatement createStatement = database.compileStatement(
         "CREATE TABLE `routine` (`id` INTEGER PRIMARY KEY AUTOINCREMENT , `name` VARCHAR , `lastUsed` INTEGER DEFAULT 0 ,  UNIQUE (`name`)) ;");
     createStatement.execute();
+    ptr = ShadowSQLiteConnection.nativeOpen(databasePath.getPath(), 0, "test connection", false, false);
+    CONNECTIONS = ReflectionHelpers.getStaticField(ShadowSQLiteConnection.class, "CONNECTIONS");
+    conn = CONNECTIONS.getConnection(ptr);
   }
 
   @After
@@ -79,5 +92,43 @@ public class ShadowSQLiteConnectionTest {
     }
     cursor.close();
     return result;
+  }
+
+  @Test
+  public void nativeOpen_addsConnectionToPool() {
+    assertThat(conn).isNotNull();
+    assertThat(conn.isOpen()).as("open").isTrue();
+  }
+    
+  @Test
+  public void nativeClose_closesConnection() {
+    ShadowSQLiteConnection.nativeClose(ptr);
+    assertThat(conn.isOpen()).as("open").isFalse();
+  }
+    
+  @Test
+  public void reset_closesConnection() {
+    ShadowSQLiteConnection.reset();
+    assertThat(conn.isOpen()).as("open").isFalse();
+  }
+
+  @Test
+  public void reset_clearsConnectionCache() {
+    final Map<Long, SQLiteConnection> connectionsMap = ReflectionHelpers.getField(CONNECTIONS, "connectionsMap");
+
+    assertThat(connectionsMap).as("connections before").isNotEmpty();
+    ShadowSQLiteConnection.reset();
+
+    assertThat(connectionsMap).as("connections after").isEmpty();
+  }
+  
+  @Test
+  public void reset_clearsStatementCache() {
+    final Map<Long, SQLiteStatement> statementsMap = ReflectionHelpers.getField(CONNECTIONS, "statementsMap");
+
+    assertThat(statementsMap).as("statements before").isNotEmpty();
+    ShadowSQLiteConnection.reset();
+
+    assertThat(statementsMap).as("statements after").isEmpty();
   }
 }
