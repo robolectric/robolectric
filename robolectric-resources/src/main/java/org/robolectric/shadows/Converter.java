@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import android.content.res.Resources;
-import android.graphics.Color;
 import android.util.TypedValue;
 import org.robolectric.res.AttrData;
 import org.robolectric.res.Attribute;
@@ -255,13 +254,13 @@ public class Converter<T> {
     @Override
     public void fillTypedValue(String data, TypedValue typedValue) {
       typedValue.type = TypedValue.TYPE_INT_COLOR_ARGB8;
-      typedValue.data = Color.parseColor(data);
+      typedValue.data = ResourceHelper.getColor(data);
       typedValue.assetCookie = 0;
     }
 
     @Override
     public int asInt(TypedResource typedResource) {
-      return Color.parseColor(typedResource.asString().trim());
+      return ResourceHelper.getColor(typedResource.asString().trim());
     }
   }
 
@@ -269,13 +268,13 @@ public class Converter<T> {
     @Override
     public void fillTypedValue(String data, TypedValue typedValue) {
       typedValue.type = TypedValue.TYPE_INT_COLOR_ARGB8;
-      typedValue.data = Color.parseColor(data);
+      typedValue.data = ResourceHelper.getColor(data);
       typedValue.assetCookie = 0;
     }
 
     @Override
     public int asInt(TypedResource typedResource) {
-      return Color.parseColor(typedResource.asString().trim());
+      return ResourceHelper.getColor(typedResource.asString().trim());
     }
   }
 
