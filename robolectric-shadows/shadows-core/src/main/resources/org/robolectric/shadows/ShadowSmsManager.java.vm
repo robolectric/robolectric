@@ -16,10 +16,20 @@ public class ShadowSmsManager {
   private static SmsManager realManager = Shadow.newInstanceOf(SmsManager.class);
   private TextSmsParams lastTextSmsParams;
   private TextMultipartParams lastTextMultipartParams;
+  private DataMessageParams lastDataParams;
 
   @Implementation
   public static SmsManager getDefault() {
     return realManager;
+  }
+
+  @Implementation
+  public void sendDataMessage(String destinationAddress, String scAddress, short destinationPort, byte[] data, PendingIntent sentIntent, PendingIntent deliveryIntent) {
+    if (TextUtils.isEmpty(destinationAddress)) {
+      throw new IllegalArgumentException("Invalid destinationAddress");
+    }
+
+    lastDataParams = new DataMessageParams(destinationAddress, scAddress, destinationPort, data, sentIntent, deliveryIntent);
   }
 
   @Implementation
@@ -46,6 +56,24 @@ public class ShadowSmsManager {
     }
 
     lastTextMultipartParams = new TextMultipartParams(destinationAddress, scAddress, parts, sentIntents, deliveryIntents);
+  }
+
+  /**
+   * Non-Android accessor.
+   *
+   * @return Parameters for last call to {@code sendDataMessage}.
+   */
+  public DataMessageParams getLastSentDataMessageParams() {
+    return lastDataParams;
+  }
+
+  /**
+   * Non-Android accessor.
+   *
+   * Clear last recorded parameters for {@code sendDataMessage}.
+   */
+  public void clearLastSentDataMessageParams() {
+    lastDataParams = null;
   }
 
   /**
@@ -84,7 +112,49 @@ public class ShadowSmsManager {
     lastTextMultipartParams = null;
   }
 
-  public class TextSmsParams {
+  public static class DataMessageParams {
+    private final String destinationAddress;
+    private final String scAddress;
+    private final short destinationPort;
+    private final byte[] data;
+    private final PendingIntent sentIntent;
+    private final PendingIntent deliveryIntent;
+
+    public DataMessageParams(String destinationAddress, String scAddress, short destinationPort, byte[] data, PendingIntent sentIntent, PendingIntent deliveryIntent) {
+      this.destinationAddress = destinationAddress;
+      this.scAddress = scAddress;
+      this.destinationPort = destinationPort;
+      this.data = data;
+      this.sentIntent = sentIntent;
+      this.deliveryIntent = deliveryIntent;
+    }
+
+    public String getDestinationAddress() {
+      return destinationAddress;
+    }
+
+    public String getScAddress() {
+      return scAddress;
+    }
+
+    public short getDestinationPort() {
+      return destinationPort;
+    }
+
+    public byte[] getData() {
+      return data;
+    }
+
+    public PendingIntent getSentIntent() {
+      return sentIntent;
+    }
+
+    public PendingIntent getDeliveryIntent() {
+      return deliveryIntent;
+    }
+  }
+
+  public static class TextSmsParams {
     private final String destinationAddress;
     private final String scAddress;
     private final String text;
@@ -120,7 +190,7 @@ public class ShadowSmsManager {
     }
   }
 
-  public class TextMultipartParams {
+  public static class TextMultipartParams {
     private final String destinationAddress;
     private final String scAddress;
     private final ArrayList<String> parts;
