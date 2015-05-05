@@ -119,7 +119,7 @@ public class ActivityController<T extends Activity> extends ComponentController<
       @Override
       public void run() {
         if (!attached) attach();
-        ReflectionHelpers.callInstanceMethod(component, "performCreate", ClassParameter.from(Bundle.class, bundle));
+        ReflectionHelpers.callInstanceMethod(Activity.class, component, "performCreate", ClassParameter.from(Bundle.class, bundle));
       }
     });
     return this;
