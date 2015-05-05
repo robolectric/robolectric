@@ -164,16 +164,13 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
 
   protected byte[] getByteCode(String className) throws ClassNotFoundException {
     String classFilename = className.replace('.', '/') + ".class";
-    InputStream classBytesStream = getResourceAsStream(classFilename);
-    if (classBytesStream == null) throw new ClassNotFoundException(className);
+    try (InputStream classBytesStream = getResourceAsStream(classFilename)) {
+      if (classBytesStream == null) throw new ClassNotFoundException(className);
 
-    byte[] origClassBytes;
-    try {
-      origClassBytes = readBytes(classBytesStream);
+      return readBytes(classBytesStream);
     } catch (IOException e) {
       throw new ClassNotFoundException("couldn't load " + className, e);
     }
-    return origClassBytes;
   }
 
   private void ensurePackage(final String className) {
