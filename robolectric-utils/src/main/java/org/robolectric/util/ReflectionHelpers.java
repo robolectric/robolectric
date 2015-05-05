@@ -59,6 +59,24 @@ public class ReflectionHelpers {
   }
 
   /**
+   * Reflectively set the value of a field.
+   *
+   * @param type Target type.
+   * @param object Target object.
+   * @param fieldName The field name.
+   * @param fieldNewValue New value.
+   */
+  public static void setField(Class<?> type, final Object object, final String fieldName, final Object fieldNewValue) {
+    try {
+      Field field = type.getDeclaredField(fieldName);
+      field.setAccessible(true);
+      field.set(object, fieldNewValue);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
    * Reflectively get the value of a static field.
    *
    * @param field Field object.

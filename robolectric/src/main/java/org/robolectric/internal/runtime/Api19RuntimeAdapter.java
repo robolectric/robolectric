@@ -16,7 +16,7 @@ public class Api19RuntimeAdapter implements RuntimeAdapter {
 
   @Override
   public void callActivityAttach(Object component, Context baseContext, Class<?> activityThreadClass, Application application, Intent intent, ActivityInfo activityInfo, String activityTitle, Class<?> nonConfigurationInstancesClass) {
-    ReflectionHelpers.callInstanceMethod(component, "attach",
+    ReflectionHelpers.callInstanceMethod(Activity.class, component, "attach",
         ClassParameter.from(Context.class, baseContext),
         ClassParameter.from(activityThreadClass, null),
         ClassParameter.from(Instrumentation.class, new RoboInstrumentation()),

@@ -46,7 +46,7 @@ public class ServiceController<T extends Service> extends ComponentController<Se
       throw new RuntimeException(e);
     }
 
-    ReflectionHelpers.callInstanceMethod(component, "attach",
+    ReflectionHelpers.callInstanceMethod(Service.class, component, "attach",
         ClassParameter.from(Context.class, baseContext),
         ClassParameter.from(activityThreadClass, null),
         ClassParameter.from(String.class, component.getClass().getSimpleName()),
