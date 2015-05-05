@@ -181,7 +181,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
         if (instrumentingClassLoaderFactory == null) {
           instrumentingClassLoaderFactory = new InstrumentingClassLoaderFactory(createClassLoaderConfig(), getJarResolver());
         }
-        SdkEnvironment sdkEnvironment = instrumentingClassLoaderFactory.getSdkEnvironment(pickSdkVersion(config, appManifest));
+        SdkEnvironment sdkEnvironment = instrumentingClassLoaderFactory.getSdkEnvironment(new SdkConfig(pickSdkVersion(config, appManifest)));
         methodBlock(method, config, appManifest, sdkEnvironment).evaluate();
       } catch (AssumptionViolatedException e) {
         eachNotifier.addFailedAssumption(e);
@@ -227,7 +227,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
           parallelUniverseInterface.resetStaticState(config);
           parallelUniverseInterface.setSdkConfig(sdkEnvironment.getSdkConfig());
 
-          int sdkVersion = pickReportedSdkVersion(config, appManifest);
+          int sdkVersion = pickSdkVersion(config, appManifest);
           ReflectionHelpers.setStaticField(sdkEnvironment.bootstrappedClass(Build.VERSION.class), "SDK_INT", sdkVersion);
 
           ResourceLoader systemResourceLoader = sdkEnvironment.getSystemResourceLoader(getJarResolver());
@@ -421,22 +421,11 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     parallelUniverseInterface.setUpApplicationState(method, testLifecycle, systemResourceLoader, appManifest, config);
   }
 
-  protected SdkConfig pickSdkVersion(Config config, AndroidManifest manifest) {
-    if (config != null && config.sdk() > 0) {
-      return new SdkConfig(config.sdk());
-
-    } else if (manifest != null) {
-      return new SdkConfig(manifest.getTargetSdkVersion());
-
-    } else {
-      return new SdkConfig(SdkConfig.FALLBACK_SDK_VERSION);
-    }
-  }
-
-  protected int pickReportedSdkVersion(Config config, AndroidManifest manifest) {
-    if (config != null && config.sdk() > 0) {
-      return config.sdk();
-
+  protected int pickSdkVersion(Config config, AndroidManifest manifest) {
+    if (config != null && config.sdk().length > 1) {
+      throw new IllegalArgumentException("RobolectricTestRunner does not support multiple values for @Config.sdk");
+    } else if (config != null && config.sdk().length == 1) {
+      return config.sdk()[0];
     } else if (manifest != null) {
       return manifest.getTargetSdkVersion();
 

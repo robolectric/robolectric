@@ -32,7 +32,7 @@ public @interface Config {
    *
    * @return The Android SDK level to emulate.
    */
-  int sdk() default -1;
+  int[] sdk() default {};
 
   /**
    * The Android manifest file to load; Robolectric will look relative to the current directory.
@@ -112,7 +112,7 @@ public @interface Config {
   String[] libraries() default {};
 
   class Implementation implements Config {
-    private final int sdk;
+    private final int[] sdk;
     private final String manifest;
     private final String qualifiers;
     private final String resourceDir;
@@ -126,7 +126,7 @@ public @interface Config {
     public static Config fromProperties(Properties properties) {
       if (properties == null || properties.size() == 0) return null;
       return new Implementation(
-          Integer.parseInt(properties.getProperty("sdk", "-1")),
+          parseIntArrayProperty(properties.getProperty("sdk", "")),
           properties.getProperty("manifest", DEFAULT),
           properties.getProperty("qualifiers", ""),
           properties.getProperty("packageName", ""),
@@ -134,7 +134,7 @@ public @interface Config {
           properties.getProperty("assetDir", Config.DEFAULT_ASSET_FOLDER),
           parseClasses(properties.getProperty("shadows", "")),
           parseApplication(properties.getProperty("application", "android.app.Application")),
-          parsePaths(properties.getProperty("libraries", "")),
+          parseStringArrayProperty(properties.getProperty("libraries", "")),
           parseClass(properties.getProperty("constants", ""))
       );
     }
@@ -163,12 +163,22 @@ public @interface Config {
       return (Class<T>) parseClass(className);
     }
 
-    private static String[] parsePaths(String pathList) {
-      if (pathList.isEmpty()) return new String[0];
-      return pathList.split("[, ]+");
+    private static String[] parseStringArrayProperty(String property) {
+      if (property.isEmpty()) return new String[0];
+      return property.split("[, ]+");
     }
 
-    public Implementation(int sdk, String manifest, String qualifiers, String packageName, String resourceDir, String assetDir, Class<?>[] shadows, Class<? extends Application> application, String[] libraries, Class<?> constants) {
+    private static int[] parseIntArrayProperty(String property) {
+      String[] parts = parseStringArrayProperty(property);
+      int[] result = new int[parts.length];
+      for (int i = 0; i < parts.length; i++) {
+        result[i] = Integer.parseInt(parts[i]);
+      }
+
+      return result;
+    }
+
+    public Implementation(int[] sdk, String manifest, String qualifiers, String packageName, String resourceDir, String assetDir, Class<?>[] shadows, Class<? extends Application> application, String[] libraries, Class<?> constants) {
       this.sdk = sdk;
       this.manifest = manifest;
       this.qualifiers = qualifiers;
@@ -195,7 +205,7 @@ public @interface Config {
     }
 
     public Implementation(Config baseConfig, Config overlayConfig) {
-      this.sdk = pick(baseConfig.sdk(), overlayConfig.sdk(), -1);
+      this.sdk = pickSdk(baseConfig.sdk(), overlayConfig.sdk(), new int[0]);
       this.manifest = pick(baseConfig.manifest(), overlayConfig.manifest(), DEFAULT);
       this.qualifiers = pick(baseConfig.qualifiers(), overlayConfig.qualifiers(), "");
       this.packageName = pick(baseConfig.packageName(), overlayConfig.packageName(), "");
@@ -220,8 +230,12 @@ public @interface Config {
       return overlayValue != null ? (overlayValue.equals(nullValue) ? baseValue : overlayValue) : null;
     }
 
+    private int[] pickSdk(int[] baseValue, int[] overlayValue, int[] nullValue) {
+      return Arrays.equals(overlayValue, nullValue) ? baseValue : overlayValue;
+    }
+
     @Override
-    public int sdk() {
+    public int[] sdk() {
       return sdk;
     }
 

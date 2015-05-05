@@ -49,15 +49,23 @@ public class MultiApiRobolectricTestRunner extends Suite {
     }
 
     protected boolean shouldIgnore(FrameworkMethod method, Config config) {
-      return super.shouldIgnore(method, config) || (config.sdk() != -1 && config.sdk() != apiVersion);
+      return super.shouldIgnore(method, config) || !shouldRunApiVersion(config);
+    }
+
+    private boolean shouldRunApiVersion(Config config) {
+      if (config.sdk().length == 0) {
+        return true;
+      }
+      for (int sdk : config.sdk()) {
+        if (sdk == apiVersion) {
+          return true;
+        }
+      }
+      return false;
     }
 
     @Override
-    protected SdkConfig pickSdkVersion(Config config, AndroidManifest appManifest) {
-      return new SdkConfig(apiVersion);
-    }
-
-    protected int pickReportedSdkVersion(Config config, AndroidManifest appManifest) {
+    protected int pickSdkVersion(Config config, AndroidManifest appManifest) {
       return apiVersion;
     }
 
