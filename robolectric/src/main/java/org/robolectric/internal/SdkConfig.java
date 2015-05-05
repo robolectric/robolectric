@@ -1,10 +1,10 @@
 package org.robolectric.internal;
 
 import android.os.Build;
-import java.io.InputStream;
 import org.robolectric.internal.dependency.DependencyJar;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -81,7 +81,7 @@ public class SdkConfig {
 
   private static String getRobolectricVersion() {
     ClassLoader classLoader = SdkVersion.class.getClassLoader();
-    try (InputStream is = classLoader.getResourceAsStream("version.properties")) {
+    try (InputStream is = classLoader.getResourceAsStream("robolectric-version.properties")) {
       final Properties properties = new Properties();
       properties.load(is);
       return properties.getProperty("robolectric.version");
