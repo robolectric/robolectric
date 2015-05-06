@@ -1,10 +1,10 @@
 package org.robolectric.manifest;
 
-import android.graphics.Color;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceIndex;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.TypedResource;
+import org.robolectric.shadows.ResourceHelper;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
@@ -90,8 +90,8 @@ public final class MetaData {
     } else if (value.startsWith("#")) {
       // if it's a color, add it and continue
       try {
-        return Color.parseColor(value);
-      } catch (IllegalArgumentException e) {
+        return ResourceHelper.getColor(value);
+      } catch (NumberFormatException e) {
             /* Not a color */
       }
     } else if (value.contains(".")) {

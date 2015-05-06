@@ -27,8 +27,6 @@ public class ShadowColorTest {
     assertThat(Color.parseColor("#00000000")).isEqualTo(0);
 
     assertThat(Color.parseColor("#ffaabbcc")).isEqualTo(-5588020);
-    assertThat(Color.parseColor("#fabc")).isEqualTo(-5588020);
-    assertThat(Color.parseColor("#abc")).isEqualTo(-5588020);
   }
 
   @Test
