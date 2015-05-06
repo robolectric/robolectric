@@ -41,7 +41,7 @@ public class ShadowChoreographer {
 
   @Implementation
   public void postCallbackDelayed(int callbackType, Runnable action, Object token, long delayMillis) {
-    ShadowApplication.getInstance().getForegroundThreadScheduler().postDelayed(action, delayMillis);
+    ShadowApplication.getInstance().getForegroundThreadScheduler().postDelayed(action, delayMillis, action);
   }
 
   @Implementation
@@ -51,7 +51,12 @@ public class ShadowChoreographer {
       public void run() {
         callback.doFrame(getFrameTimeNanos());
       }
-    }, delayMillis);
+    }, delayMillis, callback);
+  }
+
+  @Implementation
+  public void removeFrameCallback(Choreographer.FrameCallback callback) {
+    ShadowApplication.getInstance().getForegroundThreadScheduler().removeWithToken(callback);
   }
 
   @Implementation
