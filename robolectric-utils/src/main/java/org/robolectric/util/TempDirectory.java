@@ -65,16 +65,16 @@ public class TempDirectory {
   }
 
   void destroyImpl(Path path) {
-    try {
-      if (Files.exists(path)) {
-        clearDirectory(path);
+    if (!Files.exists(path)) return;
 
-        paths.add(path);
-        deleteOnExit(path);
-      }
-    } catch (IOException e) {
-      throw new RuntimeException(e);
+    try {
+      clearDirectory(path);
+      paths.add(path);
+    } catch (IOException ignored) {
+      // We failed to clear the directory, just try again at exit
     }
+
+    deleteOnExit(path);
   }
 
   private void clearDirectory(final Path directory) throws IOException {
