@@ -1,6 +1,7 @@
 package org.robolectric.internal;
 
 import android.os.Build;
+import java.io.InputStream;
 import org.robolectric.internal.dependency.DependencyJar;
 
 import java.io.IOException;
@@ -79,9 +80,10 @@ public class SdkConfig {
   }
 
   private static String getRobolectricVersion() {
-    try {
+    ClassLoader classLoader = SdkVersion.class.getClassLoader();
+    try (InputStream is = classLoader.getResourceAsStream("version.properties")) {
       final Properties properties = new Properties();
-      properties.load(SdkVersion.class.getClassLoader().getResourceAsStream("version.properties"));
+      properties.load(is);
       return properties.getProperty("robolectric.version");
     } catch (IOException e) {
       throw new RuntimeException("Error determining Robolectric version: " + e.getMessage());

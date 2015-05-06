@@ -381,15 +381,15 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   }
 
   protected Properties getConfigProperties() {
-    InputStream resourceAsStream = getClass().getClassLoader().getResourceAsStream(CONFIG_PROPERTIES);
-    if (resourceAsStream == null) return null;
-    Properties properties = new Properties();
-    try {
+    ClassLoader classLoader = getClass().getClassLoader();
+    try (InputStream resourceAsStream = classLoader.getResourceAsStream(CONFIG_PROPERTIES)) {
+      if (resourceAsStream == null) return null;
+      Properties properties = new Properties();
       properties.load(resourceAsStream);
+      return properties;
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-    return properties;
   }
 
   protected void configureShadows(SdkEnvironment sdkEnvironment, Config config) {
