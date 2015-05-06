@@ -1,6 +1,7 @@
 package org.robolectric.res;
 
 import org.jetbrains.annotations.NotNull;
+import org.robolectric.res.builder.XmlBlock;
 import org.w3c.dom.Document;
 
 import java.io.InputStream;
@@ -14,7 +15,7 @@ public interface ResourceLoader {
 
   Plural getPlural(ResName resName, int quantity, String qualifiers);
 
-  Document getXml(ResName resName, String qualifiers);
+  XmlBlock getXml(ResName resName, String qualifiers);
 
   DrawableNode getDrawableNode(ResName resName, String qualifiers);
 

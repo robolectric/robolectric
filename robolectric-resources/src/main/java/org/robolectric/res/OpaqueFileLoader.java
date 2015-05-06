@@ -11,6 +11,6 @@ public class OpaqueFileLoader extends XmlLoader {
 
   @Override
   protected void processResourceXml(FsFile xmlFile, XpathResourceXmlLoader.XmlNode xmlNode, XmlContext xmlContext) throws Exception {
-    resBunch.put(attrType, xmlFile.getBaseName(), new FileTypedResource(xmlContext.getXmlFile().getPath(), ResType.LAYOUT), xmlContext);
+    resBunch.put(attrType, xmlFile.getBaseName(), new FileTypedResource<>(xmlFile.getPath(), ResType.LAYOUT), xmlContext);
   }
 }

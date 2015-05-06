@@ -1,7 +1,7 @@
 package org.robolectric.res;
 
 import org.jetbrains.annotations.NotNull;
-import org.w3c.dom.Document;
+import org.robolectric.res.builder.XmlBlock;
 
 import java.io.InputStream;
 import java.util.List;
@@ -51,7 +51,7 @@ public class OverlayResourceLoader extends XResourceLoader {
     return super.getValue(resName.withPackageName(packageName), qualifiers);
   }
 
-  @Override public Document getXml(ResName resName, String qualifiers) {
+  @Override public XmlBlock getXml(ResName resName, String qualifiers) {
     return super.getXml(resName.withPackageName(packageName), qualifiers);
   }
 

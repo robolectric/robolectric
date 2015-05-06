@@ -1,231 +1,53 @@
 package org.robolectric.res;
 
-import java.util.BitSet;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.StringTokenizer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import org.jetbrains.annotations.NotNull;
 
 public class ResBunch {
-
-  // Matches a version qualifier like "v14". Parentheses capture the numeric
-  // part for easy retrieval with Matcher.group(1).
-  private static final String VERSION_QUALIFIER_REGEX = "v([0-9]+)";
-  private static final String PADDED_VERSION_QUALIFIER_REGEX
-    = "-" + VERSION_QUALIFIER_REGEX + "-";
-  private static final Pattern VERSION_QUALIFIER_PATTERN_WITH_LINE_END
-    = Pattern.compile(VERSION_QUALIFIER_REGEX + "$");
-  private static final Pattern VERSION_QUALIFIER_PATTERN_WITH_DASHES
-    = Pattern.compile(PADDED_VERSION_QUALIFIER_REGEX);
-
-  private final Map<String, ResMap<TypedResource>> types = new LinkedHashMap<>();
+  private final Map<String, ResBundle<TypedResource>> types = new LinkedHashMap<>();
 
   public void put(String attrType, String name, TypedResource value, XmlLoader.XmlContext xmlContext) {
-    ResName resName = new ResName(xmlContext.packageName, attrType, name);
-    ResMap<TypedResource> valuesMap = getValuesMap(attrType);
-    Values values = valuesMap.find(resName);
-    values.add(new Value(xmlContext.getQualifiers(), value));
-    Collections.sort(values);
+    ResBundle<TypedResource> bundle = getBundle(attrType);
+    bundle.put(attrType, name, value, xmlContext);
   }
 
-  private ResMap<TypedResource> getValuesMap(String attrType) {
-    ResMap<TypedResource> valuesMap = types.get(attrType);
-    if (valuesMap == null) {
-      valuesMap = new ResMap<>();
-      types.put(attrType, valuesMap);
+  private ResBundle<TypedResource> getBundle(String attrType) {
+    ResBundle<TypedResource> bundle = types.get(attrType);
+    if (bundle == null) {
+      bundle = new ResBundle<>();
+      types.put(attrType, bundle);
     }
-    return valuesMap;
+    return bundle;
   }
 
   public TypedResource get(@NotNull ResName resName, String qualifiers) {
-    Value value = getValue(resName, qualifiers);
-    return value == null ? null : value.value;
+    ResBundle.Value<TypedResource> value = getValue(resName, qualifiers);
+    return value == null ? null : value.getValue();
   }
 
-  public Value getValue(@NotNull ResName resName, String qualifiers) {
-    ResMap<TypedResource> valuesMap = getValuesMap(resName.type);
-    Values values = valuesMap.find(resName);
-    return (values != null) ? pick(values, qualifiers) : null;
-  }
-
-  public static int getVersionQualifierApiLevel(String qualifiers) {
-    Matcher m = VERSION_QUALIFIER_PATTERN_WITH_LINE_END.matcher(qualifiers);
-    if (m.find()) {
-      return Integer.parseInt(m.group(1));
-    }
-    return -1;
-  }
-
-  public static Value pick(Values values, String qualifiers) {
-    final int count = values.size();
-    if (count == 0) return null;
-
-    BitSet possibles = new BitSet(count);
-    possibles.set(0, count);
-
-    StringTokenizer st = new StringTokenizer(qualifiers, "-");
-    while (st.hasMoreTokens()) {
-      String qualifier = st.nextToken();
-      String paddedQualifier = "-" + qualifier + "-";
-      BitSet matches = new BitSet(count);
-
-      for (int i = possibles.nextSetBit(0); i != -1; i = possibles.nextSetBit(i + 1)) {
-        if (values.get(i).qualifiers.contains(paddedQualifier)) {
-          matches.set(i);
-        }
-      }
-
-      if (!matches.isEmpty()) {
-        possibles.and(matches); // eliminate any that didn't match this qualifier
-      }
-
-      if (matches.cardinality() == 1) break;
-    }
-
-    /*
-     * If any resources out of the possibles have version qualifiers, return the
-     * closest match that doesn't go over. This is the last step because it's lowest
-     * in the precedence table at:
-     * https://developer.android.com/guide/topics/resources/providing-resources.html#table2
-     */
-    int targetApiLevel = getVersionQualifierApiLevel(qualifiers);
-    if (qualifiers.length() > 0 && targetApiLevel != -1) {
-      Value bestMatch = null;
-      int bestMatchDistance = Integer.MAX_VALUE;
-      for (int i = possibles.nextSetBit(0); i != -1; i = possibles.nextSetBit(i + 1)) {
-        Value value = values.get(i);
-        int distance = getDistance(value, targetApiLevel);
-          // Remove the version part and see if they still match
-          String paddedQualifier = "-" + qualifiers + "-";
-          String valueWithoutVersion = VERSION_QUALIFIER_PATTERN_WITH_DASHES.matcher(value.qualifiers).replaceAll("--");
-          String qualifierWithoutVersion = VERSION_QUALIFIER_PATTERN_WITH_DASHES.matcher(paddedQualifier).replaceAll("--");
-          if (qualifierWithoutVersion.contains(valueWithoutVersion) && distance >= 0 && distance < bestMatchDistance) {
-            bestMatch = value;
-            bestMatchDistance = distance;
-        }
-      }
-      if (bestMatch != null) {
-        return bestMatch;
-      }
-    }
-
-    int i = possibles.nextSetBit(0);
-    if (i != -1) return values.get(i);
-
-    throw new IllegalStateException("couldn't handle qualifiers \"" + qualifiers + "\"");
-  }
-  
-  /*
-   * Gets the difference between the version qualifier of val and targetApiLevel.
-   *
-   * Return value:
-   * - Lower number is a better match (0 is a perfect match)
-   * - Less than zero: val's version qualifier is greater than targetApiLevel,
-   *   or val has no version qualifier
-   */
-  private static int getDistance(Value val, int targetApiLevel) {
-    int distance = -1;
-    Matcher m = VERSION_QUALIFIER_PATTERN_WITH_DASHES.matcher(val.qualifiers);
-    if (m.find()) {
-      String match = m.group(1);
-      int resApiLevel = Integer.parseInt(match);
-      distance = targetApiLevel - resApiLevel;
-
-      if (m.find()) {
-        throw new IllegalStateException("A resource file was found that had two API level qualifiers: " + val);
-      }
-    } else {
-    	if (val.qualifiers.matches("--")) {
-    		distance = targetApiLevel;
-    	}
-    }
-    return distance;
+  public ResBundle.Value<TypedResource> getValue(@NotNull ResName resName, String qualifiers) {
+    ResBundle<TypedResource> bundle = getBundle(resName.type);
+    return bundle.getValue(resName, qualifiers);
   }
 
   public int size() {
     int size = 0;
-    for (ResMap<TypedResource> map : types.values()) {
-      size += map.size();
+    for (ResBundle<TypedResource> bundle : types.values()) {
+      size += bundle.size();
     }
     return size;
   }
 
   public void makeImmutable() {
-    for (ResMap<TypedResource> map : types.values()) {
-      map.makeImmutable();
+    for (ResBundle<TypedResource> bundle : types.values()) {
+      bundle.makeImmutable();
     }
   }
 
   public void mergeLibraryStyle(ResBunch fromResBundle, String packageName) {
-    for (Map.Entry<String, ResMap<TypedResource>> entry : fromResBundle.types.entrySet()) {
-      getValuesMap(entry.getKey()).merge(packageName, entry.getValue());
-    }
-  }
-
-  public static class Value implements Comparable<Value> {
-    final String qualifiers;
-    final TypedResource value;
-
-    public Value(String qualifiers, TypedResource value) {
-      if (value == null) {
-        throw new NullPointerException();
-      }
-
-      this.qualifiers = qualifiers == null ? "--" : "-" + qualifiers + "-";
-      this.value = value;
-    }
-
-    @Override
-    public int compareTo(Value o) {
-      return qualifiers.compareTo(o.qualifiers);
-    }
-
-    public TypedResource getTypedResource() {
-      return value;
-    }
-
-    @Override
-    public String toString() {
-      return "Value [qualifiers=" + qualifiers + ", value=" + value + "]";
-    }
-  }
-
-  protected static class Values extends ArrayList<Value> {
-  }
-
-  private static class ResMap<T> {
-    private final Map<ResName, Values> map = new HashMap<>();
-    private boolean immutable;
-
-    public Values find(ResName resName) {
-      Values values = map.get(resName);
-      if (values == null) map.put(resName, values = new Values());
-      return values;
-    }
-
-    private void merge(String packageName, ResMap<T> sourceMap) {
-      if (immutable) {
-        throw new IllegalStateException("immutable!");
-      }
-
-      for (Map.Entry<ResName, Values> entry : sourceMap.map.entrySet()) {
-        ResName resName = entry.getKey().withPackageName(packageName);
-        find(resName).addAll(entry.getValue());
-      }
-    }
-
-    public int size() {
-      return map.size();
-    }
-
-    public void makeImmutable() {
-      immutable = true;
+    for (Map.Entry<String, ResBundle<TypedResource>> entry : fromResBundle.types.entrySet()) {
+      getBundle(entry.getKey()).mergeLibraryStyle(entry.getValue(), packageName);
     }
   }
 }

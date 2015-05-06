@@ -16,7 +16,7 @@ import org.robolectric.TestLifecycle;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.fakes.RoboInstrumentation;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.ResBunch;
+import org.robolectric.res.ResBundle;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.builder.DefaultPackageManager;
 import org.robolectric.util.ReflectionHelpers;
@@ -53,7 +53,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
    * qualifier for the target api level (which comes from the manifest or Config.emulateSdk()).
    */
   private String addVersionQualifierToQualifiers(String qualifiers) {
-    int versionQualifierApiLevel = ResBunch.getVersionQualifierApiLevel(qualifiers);
+    int versionQualifierApiLevel = ResBundle.getVersionQualifierApiLevel(qualifiers);
     if (versionQualifierApiLevel == -1) {
       if (qualifiers.length() > 0) {
         qualifiers += "-";
@@ -117,7 +117,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
           ClassParameter.from(ApplicationInfo.class, applicationInfo),
           ClassParameter.from(compatibilityInfoClass, null),
           ClassParameter.from(int.class, Context.CONTEXT_INCLUDE_CODE));
-      
+
       shadowsAdapter.bind(application, appManifest, resourceLoader);
       if (appManifest == null) {
         // todo: make this cleaner...

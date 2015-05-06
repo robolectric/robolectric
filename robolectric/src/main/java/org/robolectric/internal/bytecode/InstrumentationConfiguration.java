@@ -21,6 +21,7 @@ import org.robolectric.annotation.internal.Instrument;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.ResourcePath;
+import org.robolectric.res.builder.XmlBlock;
 import org.robolectric.util.TempDirectory;
 import org.robolectric.util.Transcript;
 
@@ -92,6 +93,7 @@ public class InstrumentationConfiguration {
           RobolectricTestRunner.HelperTestRunner.class,
           ResourcePath.class,
           ResourceLoader.class,
+          XmlBlock.class,
           ClassHandler.class,
           ClassHandler.Plan.class,
           RealObject.class,

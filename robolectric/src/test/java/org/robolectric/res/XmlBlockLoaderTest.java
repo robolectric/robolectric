@@ -7,8 +7,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.TestRunners;
-import org.robolectric.res.builder.XmlFileBuilder;
-import org.robolectric.res.builder.XmlFileBuilder.XmlResourceParserImpl;
+import org.robolectric.res.builder.ResourceParser;
+import org.robolectric.res.builder.XmlBlock;
+import org.robolectric.res.builder.ResourceParser.XmlResourceParserImpl;
 import org.robolectric.util.TestUtil;
 import org.w3c.dom.Document;
 import org.xmlpull.v1.XmlPullParser;
@@ -31,7 +32,7 @@ import static org.robolectric.util.TestUtil.TEST_PACKAGE;
 import static org.robolectric.util.TestUtil.testResources;
 
 /**
- * Test class for {@link XmlFileLoader} and its inner
+ * Test class for {@link XmlBlockLoader} and its inner
  * class {@link XmlResourceParserImpl}. The tests verify
  * that this implementation will behave exactly as
  * the android implementation.
@@ -43,26 +44,25 @@ import static org.robolectric.util.TestUtil.testResources;
  * @author msama (michele@swiftkey.net)
  */
 @RunWith(TestRunners.WithDefaults.class)
-public class XmlFileLoaderTest {
+public class XmlBlockLoaderTest {
 
   public static final String XMLNS_NS = "http://www.w3.org/2000/xmlns/";
-  private XmlFileLoader xmlFileLoader;
-  private XmlFileBuilder xmlFileBuilder;
+  private XmlBlockLoader xmlBlockLoader;
+  private XmlBlock xmlBlock;
   private XmlResourceParserImpl parser;
-  private ResBundle<Document> resBundle;
+  private ResBundle<XmlBlock> resBundle;
   private ResourceIndex resourceIndex;
 
   @Before
   public void setUp() throws Exception {
     resBundle = new ResBundle<>();
-    xmlFileLoader = new XmlFileLoader(resBundle, "xml");
-    new DocumentLoader(testResources()).load("xml", xmlFileLoader);
-    xmlFileBuilder = new XmlFileBuilder();
+    xmlBlockLoader = new XmlBlockLoader(resBundle, "xml");
+    new DocumentLoader(testResources()).load("xml", xmlBlockLoader);
 
     ResName resName = new ResName(TEST_PACKAGE, "xml", "preferences");
-    Document document = resBundle.get(resName, "");
+    xmlBlock = resBundle.get(resName, "");
     resourceIndex = new MergedResourceIndex(new ResourceExtractor(testResources()), new ResourceExtractor());
-    parser = (XmlResourceParserImpl) xmlFileBuilder.getXml(document, resName.getFullyQualifiedName(), "packageName", resourceIndex);
+    parser = (XmlResourceParserImpl) ResourceParser.from(xmlBlock, resourceIndex);
   }
 
   @After
@@ -128,7 +128,7 @@ public class XmlFileLoaderTest {
 
   @Test
   public void testSetFeature() throws XmlPullParserException {
-    for (String feature : XmlFileBuilder.AVAILABLE_FEATURES) {
+    for (String feature : ResourceParser.AVAILABLE_FEATURES) {
       parser.setFeature(feature, true);
       try {
         parser.setFeature(feature, false);
@@ -138,7 +138,7 @@ public class XmlFileLoaderTest {
       }
     }
 
-    for (String feature : XmlFileBuilder.UNAVAILABLE_FEATURES) {
+    for (String feature : ResourceParser.UNAVAILABLE_FEATURES) {
       try {
         parser.setFeature(feature, false);
         fail(feature + " should not be true.");
@@ -156,11 +156,11 @@ public class XmlFileLoaderTest {
 
   @Test
   public void testGetFeature() {
-    for (String feature : XmlFileBuilder.AVAILABLE_FEATURES) {
+    for (String feature : ResourceParser.AVAILABLE_FEATURES) {
       assertThat(parser.getFeature(feature)).isTrue();
     }
 
-    for (String feature : XmlFileBuilder.UNAVAILABLE_FEATURES) {
+    for (String feature : ResourceParser.UNAVAILABLE_FEATURES) {
       assertThat(parser.getFeature(feature)).isFalse();
     }
 

@@ -31,7 +31,8 @@ import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.Style;
 import org.robolectric.res.StyleData;
 import org.robolectric.res.TypedResource;
-import org.robolectric.res.builder.XmlFileBuilder;
+import org.robolectric.res.builder.ResourceParser;
+import org.robolectric.res.builder.XmlBlock;
 import org.robolectric.util.Strings;
 
 import static org.robolectric.Shadows.shadowOf;
@@ -84,6 +85,15 @@ public final class ShadowAssetManager {
       strings[i] = resourceTextArray[i].toString();
     }
     return strings;
+  }
+
+  @HiddenApi @Implementation
+  public int getResourceIdentifier(String name, String defType, String defPackage) {
+    ResourceIndex resourceIndex = resourceLoader.getResourceIndex();
+    ResName resName = ResName.qualifyResName(name, defPackage, defType);
+    Integer resourceId = resourceIndex.getResourceId(resName);
+    if (resourceId == null) return 0;
+    return resourceId;
   }
 
   @HiddenApi @Implementation
@@ -204,7 +214,7 @@ public final class ShadowAssetManager {
 
   @Implementation
   public final XmlResourceParser openXmlResourceParser(int cookie, String fileName) throws IOException {
-    return XmlFileBuilder.getXmlResourceParser(fileName, "fixme", null);
+    return ResourceParser.create(fileName, "fixme", null);
   }
 
   @HiddenApi @Implementation
@@ -361,26 +371,40 @@ public final class ShadowAssetManager {
   }
 
   TypedResource resolve(TypedResource value, String qualifiers, ResName contextResName) {
-    while (true) {
-      if (value == null) return null;
+    return resolveResource(value, qualifiers, contextResName).value;
+  }
 
+  ResName resolveResName(int resId, String qualifiers) {
+    ResName resName = resourceLoader.getResourceIndex().getResName(resId);
+    if (resName == null) return null;
+    TypedResource value = resourceLoader.getValue(resName, qualifiers);
+    return resolveResource(value, qualifiers, resName).resName;
+  }
+
+  private Resource resolveResource(TypedResource value, String qualifiers, ResName resName) {
+    while (isReference(value)) {
+      String s = value.asString();
+      if (s.equals("@null")) {
+        value = null;
+      } else {
+        String refStr = s.substring(1).replace("+", "");
+        resName = ResName.qualifyResName(refStr, resName);
+        value = resourceLoader.getValue(resName, qualifiers);
+      }
+    }
+
+    return new Resource(value, resName);
+  }
+
+  private boolean isReference(TypedResource value) {
+    if (value != null) {
       Object data = value.getData();
       if (data instanceof String) {
         String s = (String) data;
-        if (s.equals("@null")) {
-          return null;
-        } else if (s.startsWith("@")) {
-          String refStr = s.substring(1).replace("+", "");
-          contextResName = ResName.qualifyResName(refStr, contextResName);
-          value = resourceLoader.getValue(contextResName, qualifiers);
-          // back through...
-        } else {
-          return value;
-        }
-      } else {
-        return value;
+        return !s.isEmpty() && s.charAt(0) == '@';
       }
     }
+    return false;
   }
 
   public FsFile getAssetsDirectory() {
@@ -393,6 +417,16 @@ public final class ShadowAssetManager {
 
   public void setQualifiers(String qualifiers) {
     RuntimeEnvironment.setQualifiers(qualifiers);
+  }
+
+  private static class Resource {
+    public final ResName resName;
+    public final TypedResource<?> value;
+
+    public Resource(TypedResource<?> value, ResName resName) {
+      this.value = value;
+      this.resName = resName;
+    }
   }
 
   static class StyleResolver implements Style {
