@@ -3,10 +3,15 @@ package org.robolectric.shadows;
 import android.view.Choreographer;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.robolectric.TestRunners;
 import org.robolectric.util.TimeUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ShadowChoreographerTest {
@@ -21,6 +26,16 @@ public class ShadowChoreographerTest {
     long time2 = instance.getFrameTimeNanos();
 
     assertThat(time2 - time1).isEqualTo(frameInterval);
+  }
+
+  @Test
+  public void removeFrameCallback_shouldRemoveCallback() {
+    Choreographer instance = ShadowChoreographer.getInstance();
+    Choreographer.FrameCallback callback = mock(Choreographer.FrameCallback.class);
+    instance.postFrameCallbackDelayed(callback, 1000);
+    instance.removeFrameCallback(callback);
+    ShadowApplication.getInstance().getForegroundThreadScheduler().advanceToLastPostedRunnable();
+    verify(callback, never()).doFrame(anyInt());
   }
 
   @Test

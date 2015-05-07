@@ -69,7 +69,17 @@ public class Scheduler {
    * @param runnable    Runnable to add.
    */
   public synchronized void post(Runnable runnable) {
-    postDelayed(runnable, 0);
+    post(runnable, null);
+  }
+
+  /**
+   * Add a runnable to the queue.
+   *
+   * @param runnable    Runnable to add.
+   * @param token       Token for runnable.
+   */
+  public synchronized void post(Runnable runnable, Object token) {
+    postDelayed(runnable, 0, token);
   }
 
   /**
@@ -79,10 +89,21 @@ public class Scheduler {
    * @param delayMillis Delay in millis.
    */
   public synchronized void postDelayed(Runnable runnable, long delayMillis) {
+    postDelayed(runnable, delayMillis, null);
+  }
+
+  /**
+   * Add a runnable to the queue to be run after a delay.
+   *
+   * @param runnable    Runnable to add.
+   * @param delayMillis Delay in millis.
+   * @param token       Token for runnable.
+   */
+  public synchronized void postDelayed(Runnable runnable, long delayMillis, Object token) {
     if ((!isConstantlyIdling && (paused || delayMillis > 0)) || Thread.currentThread() != associatedThread) {
-      queueRunnableAndSort(runnable, currentTime + delayMillis);
+      queueRunnableAndSort(runnable, currentTime + delayMillis, token);
     } else {
-      runOrQueueRunnable(runnable, currentTime + delayMillis);
+      runOrQueueRunnable(runnable, currentTime + delayMillis, token);
     }
   }
 
@@ -92,10 +113,20 @@ public class Scheduler {
    * @param runnable  Runnable to add.
    */
   public synchronized void postAtFrontOfQueue(Runnable runnable) {
+    postAtFrontOfQueue(runnable, null);
+  }
+
+  /**
+   * Add a runnable to the head of the queue.
+   *
+   * @param runnable  Runnable to add.
+   * @param token       Token for runnable.
+   */
+  public synchronized void postAtFrontOfQueue(Runnable runnable, Object token) {
     if (paused || Thread.currentThread() != associatedThread) {
       runnables.add(0, new ScheduledRunnable(runnable, currentTime));
     } else {
-      runOrQueueRunnable(runnable, currentTime);
+      runOrQueueRunnable(runnable, currentTime, token);
     }
   }
 
@@ -109,6 +140,22 @@ public class Scheduler {
     while (iterator.hasNext()) {
       ScheduledRunnable next = iterator.next();
       if (next.runnable == runnable) {
+        iterator.remove();
+      }
+    }
+  }
+
+  /**
+   * Remove a runnable from the queue with the specified token.
+   *
+   * @param token Token to remove.
+   */
+  public synchronized void removeWithToken(Object token) {
+    if (token == null) throw new NullPointerException("Token must not be null");
+    ListIterator<ScheduledRunnable> iterator = runnables.listIterator();
+    while (iterator.hasNext()) {
+      ScheduledRunnable next = iterator.next();
+      if (next.token == token) {
         iterator.remove();
       }
     }
@@ -220,9 +267,9 @@ public class Scheduler {
     return size() > 0 && runnables.get(0).scheduledTime <= endingTime;
   }
 
-  private void runOrQueueRunnable(Runnable runnable, long scheduledTime) {
+  private void runOrQueueRunnable(Runnable runnable, long scheduledTime, Object token) {
     if (isExecutingRunnable) {
-      queueRunnableAndSort(runnable, scheduledTime);
+      queueRunnableAndSort(runnable, scheduledTime, token);
       return;
     }
     isExecutingRunnable = true;
@@ -244,18 +291,26 @@ public class Scheduler {
     }
   }
 
-  private void queueRunnableAndSort(Runnable runnable, long scheduledTime) {
-    runnables.add(new ScheduledRunnable(runnable, scheduledTime));
+  private void queueRunnableAndSort(Runnable runnable, long scheduledTime, Object token) {
+    runnables.add(new ScheduledRunnable(runnable, scheduledTime, token));
     Collections.sort(runnables);
   }
 
   private class ScheduledRunnable implements Comparable<ScheduledRunnable> {
     private final Runnable runnable;
     private final long scheduledTime;
+    private final Object token;
 
     private ScheduledRunnable(Runnable runnable, long scheduledTime) {
       this.runnable = runnable;
       this.scheduledTime = scheduledTime;
+      token = null;
+    }
+
+    private ScheduledRunnable(Runnable runnable, long scheduledTime, Object token) {
+      this.runnable = runnable;
+      this.scheduledTime = scheduledTime;
+      this.token = token;
     }
 
     @Override
