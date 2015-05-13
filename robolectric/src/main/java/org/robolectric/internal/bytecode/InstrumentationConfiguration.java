@@ -64,6 +64,11 @@ public class InstrumentationConfiguration {
       return this;
     }
 
+    public Builder addInstrumentedPackage(String packageName) {
+      instrumentedPackages.add(packageName);
+      return this;
+    }
+
     public InstrumentationConfiguration build() {
       interceptedMethods.addAll(Arrays.asList(
           new MethodRef(LinkedHashMap.class, "eldest"),
