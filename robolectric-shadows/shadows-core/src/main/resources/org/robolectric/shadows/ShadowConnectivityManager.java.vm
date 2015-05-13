@@ -2,12 +2,19 @@ package org.robolectric.shadows;
 
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+
+#if ($api >= 21)
+import android.net.NetworkRequest;
+#end
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.HiddenApi;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 @Implements(ConnectivityManager.class)
 public class ShadowConnectivityManager {
@@ -16,6 +23,10 @@ public class ShadowConnectivityManager {
   private boolean backgroundDataSetting;
   private int networkPreference = ConnectivityManager.DEFAULT_NETWORK_PREFERENCE;
   private final Map<Integer, NetworkInfo> networkTypeToNetworkInfo = new HashMap<>();
+
+#if ($api >= 21)
+  private HashSet<ConnectivityManager.NetworkCallback> networkCallbacks = new HashSet<>();
+#end
 
   public ShadowConnectivityManager() {
     NetworkInfo wifi = ShadowNetworkInfo.newInstance(NetworkInfo.DetailedState.DISCONNECTED, ConnectivityManager.TYPE_WIFI, 0, true, false);
@@ -26,6 +37,31 @@ public class ShadowConnectivityManager {
 
     this.activeNetwork = mobile;
   }
+
+#if ($api >= 21)
+  public Set<ConnectivityManager.NetworkCallback> getNetworkCallbacks() {
+    return networkCallbacks;
+  }
+#end
+
+#if ($api >= 21)
+  @Implementation
+  public void registerNetworkCallback(NetworkRequest request, ConnectivityManager.NetworkCallback networkCallback) {
+    networkCallbacks.add(networkCallback);
+  }
+#end
+
+#if ($api >= 21)
+  @Implementation
+  public void unregisterNetworkCallback (ConnectivityManager.NetworkCallback networkCallback) {
+    if (networkCallback == null) {
+      throw new IllegalArgumentException("Invalid NetworkCallback");
+    }
+    if (networkCallbacks.contains(networkCallback)) {
+      networkCallbacks.remove(networkCallback);
+    }
+  }
+#end
 
   @Implementation
   public NetworkInfo getActiveNetworkInfo() {
