@@ -48,6 +48,7 @@ public class InstrumentationConfiguration {
     private final Collection<MethodRef> interceptedMethods = new HashSet<>();
     private final Map<String, String> classNameTranslations = new HashMap<>();
     private final Collection<String> classesToNotAquire = new HashSet<>();
+    private final Collection<String> instrumentedClasses = new HashSet<>();
 
     public Builder doNotAquireClass(String className) {
       this.classesToNotAquire.add(className);
@@ -61,6 +62,11 @@ public class InstrumentationConfiguration {
 
     public Builder addInterceptedMethod(MethodRef methodReference) {
       interceptedMethods.add(methodReference);
+      return this;
+    }
+    
+    public Builder addInstrumentedClass(String name) {
+      instrumentedClasses.add(name);
       return this;
     }
 
@@ -123,7 +129,7 @@ public class InstrumentationConfiguration {
         instrumentedPackages.addAll(Arrays.asList(provider.getProvidedPackageNames()));
       }
 
-      return new InstrumentationConfiguration(classNameTranslations, interceptedMethods, instrumentedPackages, classesToNotAquire);
+      return new InstrumentationConfiguration(classNameTranslations, interceptedMethods, instrumentedPackages, instrumentedClasses, classesToNotAquire);
     }
   }
 
@@ -132,14 +138,16 @@ public class InstrumentationConfiguration {
   }
 
   private final List<String> instrumentedPackages = new ArrayList<>();
+  private final HashSet<String> instrumentedClasses = new HashSet<>();
   private final Map<String, String> classNameTranslations = new HashMap<>();
   private final HashSet<MethodRef> interceptedMethods = new HashSet<>();
   private final Set<String> classesToNotAquire = new HashSet<>();
 
-  private InstrumentationConfiguration(Map<String, String> classNameTranslations, Collection<MethodRef> interceptedMethods, Collection<String> instrumentedPackages, Collection<String> classesToNotAquire) {
+  private InstrumentationConfiguration(Map<String, String> classNameTranslations, Collection<MethodRef> interceptedMethods, Collection<String> instrumentedPackages, Collection<String> instrumentedClasses, Collection<String> classesToNotAquire) {
     this.classNameTranslations.putAll(classNameTranslations);
     this.interceptedMethods.addAll(interceptedMethods);
     this.instrumentedPackages.addAll(instrumentedPackages);
+    this.instrumentedClasses.addAll(instrumentedClasses);
     this.classesToNotAquire.addAll(classesToNotAquire);
   }
 
@@ -150,7 +158,12 @@ public class InstrumentationConfiguration {
    * @return  True if the class should be instrumented.
    */
   public boolean shouldInstrument(ClassInfo classInfo) {
-    return !(classInfo.isInterface() || classInfo.isAnnotation() || classInfo.hasAnnotation(DoNotInstrument.class)) && (isInInstrumentedPackage(classInfo) || classInfo.hasAnnotation(Instrument.class));
+    return !(classInfo.isInterface() 
+              || classInfo.isAnnotation() 
+              || classInfo.hasAnnotation(DoNotInstrument.class))
+          && (isInInstrumentedPackage(classInfo)
+              || instrumentedClasses.contains(classInfo.getName())
+              || classInfo.hasAnnotation(Instrument.class));
   }
 
   /**
