@@ -10,6 +10,7 @@ import org.robolectric.annotation.RealObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +31,7 @@ public class ShadowCamera {
   private boolean released;
   private Camera.Parameters parameters;
   private Camera.PreviewCallback previewCallback;
+  private List<byte[]> callbackBuffers = new ArrayList<>();
   private SurfaceHolder surfaceHolder;
   private int displayOrientation;
   private Camera.AutoFocusCallback autoFocusCallback;
@@ -123,6 +125,26 @@ public class ShadowCamera {
     previewCallback = cb;
   }
 
+  /**
+   * Allows test cases to invoke the preview callback, to simulate a frame of camera data.
+   *
+   * @param data byte buffer of simulated camera data
+   */
+  public void invokePreviewCallback(byte[] data) {
+    if (previewCallback != null) {
+      previewCallback.onPreviewFrame(data, realCamera);
+    }
+  }
+
+  @Implementation
+  public void addCallbackBuffer(byte[] callbackBuffer) {
+    callbackBuffers.add(callbackBuffer);
+  }
+
+  public List<byte[]> getAddedCallbackBuffers() {
+    return Collections.unmodifiableList(callbackBuffers);
+  }
+
   @Implementation
   public void setDisplayOrientation(int degrees) {
     displayOrientation = degrees;
@@ -140,6 +162,11 @@ public class ShadowCamera {
     autoFocusCallback = callback;
   }
 
+  @Implementation
+  public void cancelAutoFocus() {
+    autoFocusCallback = null;
+  }
+
   public boolean hasRequestedAutoFocus() {
     return autoFocusCallback != null;
   }
@@ -147,7 +174,8 @@ public class ShadowCamera {
   public void invokeAutoFocusCallback(boolean success, Camera camera) {
     if (autoFocusCallback == null) {
       throw new IllegalStateException(
-          "cannot invoke AutoFocusCallback before autoFocus has been called.");
+          "cannot invoke AutoFocusCallback before autoFocus() has been called "
+              + "or after cancelAutoFocus() has been called.");
     }
     autoFocusCallback.onAutoFocus(success, camera);
   }
@@ -162,17 +190,6 @@ public class ShadowCamera {
   @Implementation
   public static int getNumberOfCameras() {
     return cameras.size();
-  }
-
-  /**
-   * Allows test cases to invoke the preview callback, to simulate a frame of camera data.
-   *
-   * @param data byte buffer of simulated camera data
-   */
-  public void invokePreviewCallback(byte[] data) {
-    if (previewCallback != null) {
-      previewCallback.onPreviewFrame(data, realCamera);
-    }
   }
 
   public boolean isLocked() {
