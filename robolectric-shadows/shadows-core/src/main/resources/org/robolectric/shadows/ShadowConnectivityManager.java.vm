@@ -42,16 +42,12 @@ public class ShadowConnectivityManager {
   public Set<ConnectivityManager.NetworkCallback> getNetworkCallbacks() {
     return networkCallbacks;
   }
-#end
 
-#if ($api >= 21)
   @Implementation
   public void registerNetworkCallback(NetworkRequest request, ConnectivityManager.NetworkCallback networkCallback) {
     networkCallbacks.add(networkCallback);
   }
-#end
 
-#if ($api >= 21)
   @Implementation
   public void unregisterNetworkCallback (ConnectivityManager.NetworkCallback networkCallback) {
     if (networkCallback == null) {

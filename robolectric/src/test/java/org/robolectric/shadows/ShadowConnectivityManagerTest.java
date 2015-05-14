@@ -115,8 +115,7 @@ public class ShadowConnectivityManagerTest {
     assertEquals(0, shadowConnectivityManager.getNetworkCallbacks().size());
   }
 
-  @Config(sdk = 21)
-  private ConnectivityManager.NetworkCallback getSimpleCallback() {
+  private static ConnectivityManager.NetworkCallback createSimpleCallback() {
     return new ConnectivityManager.NetworkCallback() {
       @Override
       public void onAvailable(Network network) {}
@@ -128,7 +127,7 @@ public class ShadowConnectivityManagerTest {
   @Test @Config(sdk = 21)
   public void registerCallback_shouldAddCallback() throws Exception {
     NetworkRequest.Builder builder = new NetworkRequest.Builder();
-    ConnectivityManager.NetworkCallback callback = getSimpleCallback();
+    ConnectivityManager.NetworkCallback callback = createSimpleCallback();
     connectivityManager.registerNetworkCallback(builder.build(), callback);
     assertEquals(1, shadowConnectivityManager.getNetworkCallbacks().size());
   }
@@ -137,8 +136,8 @@ public class ShadowConnectivityManagerTest {
   public void unregisterCallback_shouldRemoveCallbacks() throws Exception {
     NetworkRequest.Builder builder = new NetworkRequest.Builder();
     // Add two different callbacks.
-    ConnectivityManager.NetworkCallback callback1 = getSimpleCallback();
-    ConnectivityManager.NetworkCallback callback2 = getSimpleCallback();
+    ConnectivityManager.NetworkCallback callback1 = createSimpleCallback();
+    ConnectivityManager.NetworkCallback callback2 = createSimpleCallback();
     connectivityManager.registerNetworkCallback(builder.build(), callback1);
     connectivityManager.registerNetworkCallback(builder.build(), callback2);
     // Remove one at the time.
