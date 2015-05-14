@@ -1,6 +1,11 @@
 package org.robolectric.shadows;
 
-import android.content.res.*;
+import android.content.res.AssetFileDescriptor;
+import android.content.res.AssetManager;
+import android.content.res.Configuration;
+import android.content.res.Resources;
+import android.content.res.TypedArray;
+import android.content.res.XmlResourceParser;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -10,6 +15,7 @@ import android.util.DisplayMetrics;
 import android.util.LongSparseArray;
 import android.util.TypedValue;
 import android.view.Display;
+
 import org.jetbrains.annotations.NotNull;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
@@ -30,7 +36,6 @@ import org.robolectric.res.builder.ResourceParser;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.res.builder.XmlBlock;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
-import org.robolectric.util.Util;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -46,7 +51,6 @@ import static org.robolectric.Shadows.shadowOf;
 /**
  * Shadow of {@code Resources} that simulates the loading of resources
  */
-@SuppressWarnings({"UnusedDeclaration"})
 @Implements(Resources.class)
 public class ShadowResources {
   private static Resources system = null;
@@ -63,7 +67,7 @@ public class ShadowResources {
       if (Modifier.isStatic(field.getModifiers()) && field.getType().equals(LongSparseArray.class)) {
         try {
           field.setAccessible(true);
-          LongSparseArray longSparseArray = (LongSparseArray) field.get(null);
+          LongSparseArray<?> longSparseArray = (LongSparseArray<?>) field.get(null);
           if (longSparseArray != null) {
             longSparseArray.clear();
           }
@@ -110,7 +114,6 @@ public class ShadowResources {
      */
     ResourceLoader resourceLoader = getResourceLoader();
     ShadowAssetManager shadowAssetManager = shadowOf(realResources.getAssets());
-    String qualifiers = shadowAssetManager.getQualifiers();
 
     if (set == null) {
       set = new RoboAttributeSet(new ArrayList<Attribute>(), ShadowApplication.getInstance().getResourceLoader());
@@ -120,7 +123,7 @@ public class ShadowResources {
     Style styleAttrStyle = null;
     Style theme = null;
 
-    List<ShadowAssetManager.OverlayedStyle> overlayedStyles = ShadowAssetManager.getOverlayThemeStyles(themeResourceId);
+    List<ShadowAssetManager.OverlayedStyle> overlayedStyles = shadowAssetManager.getOverlayThemeStyles(themeResourceId);
     if (themeResourceId != 0) {
       // Load the style for the theme we represent. E.g. "@style/Theme.Robolectric"
       ResName themeStyleName = getResName(themeResourceId);
@@ -217,8 +220,6 @@ public class ShadowResources {
     int[] data = new int[attrs.length * ShadowAssetManager.STYLE_NUM_ENTRIES];
     int[] indices = new int[attrs.length + 1];
     int nextIndex = 0;
-
-    List<Integer> wantedAttrsList = Util.intArrayToList(attrs);
 
     for (int i = 0; i < attrs.length; i++) {
       int offset = i * ShadowAssetManager.STYLE_NUM_ENTRIES;
@@ -327,10 +328,6 @@ public class ShadowResources {
     return getResName(resId).name;
   }
 
-  private boolean isEmpty(String s) {
-    return s == null || s.length() == 0;
-  }
-
   private @NotNull ResName getResName(int id) {
     ResName resName = getResourceLoader().getResourceIndex().getResName(id);
     return checkResName(id, resName);
@@ -374,7 +371,7 @@ public class ShadowResources {
     Plural plural = getResourceLoader().getPlural(resName, quantity, getQualifiers());
     String string = plural.getString();
     ShadowAssetManager shadowAssetManager = shadowOf(realResources.getAssets());
-    TypedResource typedResource = shadowAssetManager.resolve(
+    TypedResource<?> typedResource = shadowAssetManager.resolve(
         new TypedResource<>(string, ResType.CHAR_SEQUENCE), getQualifiers(),
         new ResName(resName.packageName, "string", resName.name));
     return typedResource == null ? null : typedResource.asString();
