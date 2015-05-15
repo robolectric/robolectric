@@ -54,7 +54,7 @@ function install_maps() {
     exit 1
   fi
 
-  version=`grep ^revision= "${dir}/manifest.ini" | cut -d= -f2`
+  version=`grep --color=never ^revision= "${dir}/manifest.ini" | cut -d= -f2`
 
   if [ "$version" != "$revision" ]; then
     echo "${groupId}:${artifactId} is an incompatible revision! Make sure that 'Google APIs' is up to date in the SDK manager for API ${api}. Expected revision ${revision} but was ${version}."
