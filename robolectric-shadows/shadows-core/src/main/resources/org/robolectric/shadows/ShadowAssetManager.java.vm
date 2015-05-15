@@ -271,7 +271,7 @@ public final class ShadowAssetManager {
     ResourceLoader resourceLoader = getInstance().getResourceLoader();
     ShadowAssetManager assetManager = shadowOf(getInstance().getAssets());
 
-	final Map<$ptrClassBoxed, List<OverlayedStyle>> appliedStyles = assetManager.appliedStyles;
+    final Map<$ptrClassBoxed, List<OverlayedStyle>> appliedStyles = assetManager.appliedStyles;
 	
     if (!appliedStyles.containsKey(theme)) {
       appliedStyles.put(theme, new LinkedList<OverlayedStyle>());
