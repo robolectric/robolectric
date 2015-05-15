@@ -32,13 +32,11 @@ import org.robolectric.res.Style;
 import org.robolectric.res.StyleData;
 import org.robolectric.res.TypedResource;
 import org.robolectric.res.builder.ResourceParser;
-import org.robolectric.res.builder.XmlBlock;
 import org.robolectric.util.Strings;
 
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowApplication.getInstance;
 
-@SuppressWarnings({"UnusedDeclaration"})
 @Implements(AssetManager.class)
 public final class ShadowAssetManager {
   public static final int STYLE_NUM_ENTRIES = 6;
@@ -51,8 +49,8 @@ public final class ShadowAssetManager {
 
   private String qualifiers = "";
   private Map<$ptrClassBoxed, Resources.Theme> themesById = new LinkedHashMap<>();
+  private Map<$ptrClassBoxed, List<OverlayedStyle>> appliedStyles = new HashMap<>();
   private int nextInternalThemeId = 1000;
-  private static final Map<$ptrClassBoxed, List<OverlayedStyle>> APPLIED_STYLES = new HashMap<>();
   private AndroidManifest appManifest;
   private ResourceLoader resourceLoader;
 
@@ -130,7 +128,8 @@ public final class ShadowAssetManager {
     ResName resName = resourceIndex.getResName(ident);
     Resources.Theme theTheme = getThemeByInternalId(theme);
     // Load the style for the theme we represent. E.g. "@style/Theme.Robolectric"
-    ResName themeStyleName = resourceIndex.getResName(shadowOf(theTheme).getStyleResourceId());
+    int styleResourceId = shadowOf(theTheme).getStyleResourceId();
+    ResName themeStyleName = resourceIndex.getResName(styleResourceId);
     if (themeStyleName == null) return false; // is this right?
 
     Style themeStyle = resolveStyle(resourceLoader, null, themeStyleName, getQualifiers());
@@ -143,7 +142,6 @@ public final class ShadowAssetManager {
     //ResName defStyleResName = new ResName(defStyleName.packageName, "style", defStyleName.name);
     //Style style = resolveStyle(resourceLoader, defStyleResName, getQualifiers());
     if (themeStyle != null) {
-      int styleResourceId = shadowOf(theTheme).getStyleResourceId();
       List<OverlayedStyle> overlayThemeStyles = getOverlayThemeStyles(styleResourceId);
       Attribute attrValue = ShadowResources.getOverlayedThemeValue(resName, themeStyle, overlayThemeStyles);
       while(resolveRefs && attrValue != null && attrValue.isStyleReference()) {
@@ -151,7 +149,6 @@ public final class ShadowAssetManager {
         attrValue = ShadowResources.getOverlayedThemeValue(attrResName, themeStyle, overlayThemeStyles);
       }
       if (attrValue != null) {
-        TypedResource attrDataValue = resourceLoader.getValue(resName, getQualifiers());
         Converter.convertAndFill(attrValue, outValue, resourceLoader, getQualifiers(), resolveRefs);
         return true;
       }
@@ -271,19 +268,21 @@ public final class ShadowAssetManager {
 
   @HiddenApi @Implementation
   public static void applyThemeStyle($ptrClass theme, int styleRes, boolean force) {
-    if (!APPLIED_STYLES.containsKey(theme)) {
-      APPLIED_STYLES.put(theme, new LinkedList<OverlayedStyle>());
-    }
-
     ResourceLoader resourceLoader = getInstance().getResourceLoader();
     ShadowAssetManager assetManager = shadowOf(getInstance().getAssets());
+
+    final Map<$ptrClassBoxed, List<OverlayedStyle>> appliedStyles = assetManager.appliedStyles;
+	
+    if (!appliedStyles.containsKey(theme)) {
+      appliedStyles.put(theme, new LinkedList<OverlayedStyle>());
+    }
 
     ResourceIndex resourceIndex = resourceLoader.getResourceIndex();
     ResName resName = resourceIndex.getResName(styleRes);
 
     Style style = resolveStyle(resourceLoader, null, resName, assetManager.getQualifiers());
 
-    List<OverlayedStyle> overlayedStyleList = APPLIED_STYLES.get(theme);
+    List<OverlayedStyle> overlayedStyleList = appliedStyles.get(theme);
     OverlayedStyle styleToAdd = new OverlayedStyle(style, force);
     for (int i = 0; i < overlayedStyleList.size(); ++i) {
       if (styleToAdd.equals(overlayedStyleList.get(i))) {
@@ -294,8 +293,8 @@ public final class ShadowAssetManager {
     overlayedStyleList.add(styleToAdd);
   }
 
-  static List<OverlayedStyle> getOverlayThemeStyles($ptrClass themeResourceId) {
-    return APPLIED_STYLES.get(themeResourceId);
+  List<OverlayedStyle> getOverlayThemeStyles($ptrClass themeResourceId) {
+    return appliedStyles.get(themeResourceId);
   }
 
   static class OverlayedStyle {
