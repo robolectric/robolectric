@@ -2,13 +2,16 @@ package org.robolectric.shadows;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
+import android.net.Network;
 import android.net.NetworkInfo;
+import android.net.NetworkRequest;
 import android.telephony.TelephonyManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
@@ -105,5 +108,49 @@ public class ShadowConnectivityManagerTest {
     assertThat(connectivityManager.getNetworkPreference()).isEqualTo(connectivityManager.getNetworkPreference());
     connectivityManager.setNetworkPreference(ConnectivityManager.TYPE_WIFI);
     assertThat(connectivityManager.getNetworkPreference()).isEqualTo(ConnectivityManager.TYPE_WIFI);
+  }
+
+  @Test @Config(sdk = 21)
+  public void getNetworkCallbacks_shouldHaveEmptyDefault() throws Exception {
+    assertEquals(0, shadowConnectivityManager.getNetworkCallbacks().size());
+  }
+
+  private static ConnectivityManager.NetworkCallback createSimpleCallback() {
+    return new ConnectivityManager.NetworkCallback() {
+      @Override
+      public void onAvailable(Network network) {}
+      @Override
+      public void onLost(Network network) {}
+    };
+  }
+
+  @Test @Config(sdk = 21)
+  public void registerCallback_shouldAddCallback() throws Exception {
+    NetworkRequest.Builder builder = new NetworkRequest.Builder();
+    ConnectivityManager.NetworkCallback callback = createSimpleCallback();
+    connectivityManager.registerNetworkCallback(builder.build(), callback);
+    assertEquals(1, shadowConnectivityManager.getNetworkCallbacks().size());
+  }
+
+  @Test @Config(sdk = 21)
+  public void unregisterCallback_shouldRemoveCallbacks() throws Exception {
+    NetworkRequest.Builder builder = new NetworkRequest.Builder();
+    // Add two different callbacks.
+    ConnectivityManager.NetworkCallback callback1 = createSimpleCallback();
+    ConnectivityManager.NetworkCallback callback2 = createSimpleCallback();
+    connectivityManager.registerNetworkCallback(builder.build(), callback1);
+    connectivityManager.registerNetworkCallback(builder.build(), callback2);
+    // Remove one at the time.
+    assertEquals(2, shadowConnectivityManager.getNetworkCallbacks().size());
+    connectivityManager.unregisterNetworkCallback(callback2);
+    assertEquals(1, shadowConnectivityManager.getNetworkCallbacks().size());
+    connectivityManager.unregisterNetworkCallback(callback1);
+    assertEquals(0, shadowConnectivityManager.getNetworkCallbacks().size());
+  }
+
+  @Test(expected=IllegalArgumentException.class) @Config(sdk = 21)
+  public void unregisterCallback_shouldNotAllowNullCallback() throws Exception {
+    // Verify that exception is thrown.
+    connectivityManager.unregisterNetworkCallback(null);
   }
 }
