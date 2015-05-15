@@ -1,6 +1,8 @@
 package org.robolectric.shadows;
 
+import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.view.Choreographer;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -20,6 +22,7 @@ public class ShadowChoreographer {
   private static long FRAME_INTERVAL = 10 * TimeUtils.NANOS_PER_MS; // 10ms
   private static final Thread MAIN_THREAD = Thread.currentThread();
   private static SoftThreadLocal<Choreographer> instance = makeThreadLocal();
+  private Handler handler = new Handler(Looper.myLooper());
 
   private static SoftThreadLocal<Choreographer> makeThreadLocal() {
     return new SoftThreadLocal<Choreographer>() {
@@ -41,22 +44,21 @@ public class ShadowChoreographer {
 
   @Implementation
   public void postCallbackDelayed(int callbackType, Runnable action, Object token, long delayMillis) {
-    ShadowApplication.getInstance().getForegroundThreadScheduler().postDelayed(action, delayMillis, action);
+    handler.postDelayed(action, delayMillis);
   }
 
   @Implementation
   public void postFrameCallbackDelayed(final Choreographer.FrameCallback callback, long delayMillis) {
-    ShadowApplication.getInstance().getForegroundThreadScheduler().postDelayed(new Runnable() {
-      @Override
-      public void run() {
+    handler.postAtTime(new Runnable() {
+      @Override public void run() {
         callback.doFrame(getFrameTimeNanos());
       }
-    }, delayMillis, callback);
+    }, callback, SystemClock.uptimeMillis() + delayMillis);
   }
 
   @Implementation
   public void removeFrameCallback(Choreographer.FrameCallback callback) {
-    ShadowApplication.getInstance().getForegroundThreadScheduler().removeWithToken(callback);
+    handler.removeCallbacksAndMessages(callback);
   }
 
   @Implementation

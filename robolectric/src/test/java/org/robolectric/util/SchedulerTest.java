@@ -140,17 +140,6 @@ public class SchedulerTest {
   }
 
   @Test
-  public void removeWithToken_ShouldRemoveAllInstancesOfRunnableFromQueue() {
-    Object token = new Object();
-    scheduler.post(new TestRunnable(), token);
-    scheduler.post(new TestRunnable(), token);
-    scheduler.post(new TestRunnable());
-    assertThat(scheduler.size()).isEqualTo(3);
-    scheduler.removeWithToken(token);
-    assertThat(scheduler.size()).isEqualTo(1);
-  }
-
-  @Test
   public void reset_shouldUnPause() throws Exception {
     scheduler.pause();
 
