@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-
 import android.graphics.Canvas;
 import android.graphics.ImageFormat;
 import android.graphics.Rect;
@@ -176,6 +175,16 @@ public class ShadowCameraTest {
   }
 
   @Test
+  public void testAddCallbackBuffer() {
+    byte[] buf1 = new byte[0];
+    byte[] buf2 = new byte[1];
+    camera.addCallbackBuffer(buf1);
+    assertThat(shadowCamera.getAddedCallbackBuffers()).containsExactly(buf1);
+    camera.addCallbackBuffer(buf2);
+    assertThat(shadowCamera.getAddedCallbackBuffers()).containsExactly(buf1, buf2);
+  }
+
+  @Test
   public void testDisplayOrientation() {
     camera.setDisplayOrientation(180);
     assertThat(shadowCamera.getDisplayOrientation()).isEqualTo(180);
@@ -196,15 +205,23 @@ public class ShadowCameraTest {
 
   @Test
   public void testAutoFocus() {
-    assertThat(shadowCamera.hasRequestedAutoFocus()).isEqualTo(false);
+    assertThat(shadowCamera.hasRequestedAutoFocus()).isFalse();
     TestAutoFocusCallback callback = new TestAutoFocusCallback();
 
     camera.autoFocus(callback);
 
-    assertThat(shadowCamera.hasRequestedAutoFocus()).isEqualTo(true);
+    assertThat(shadowCamera.hasRequestedAutoFocus()).isTrue();
     shadowCamera.invokeAutoFocusCallback(true, camera);
     assertThat(callback.success).isEqualTo(true);
     assertThat(callback.camera).isEqualTo(camera);
+
+    assertThat(shadowCamera.hasRequestedAutoFocus()).isFalse();
+    try {
+      shadowCamera.invokeAutoFocusCallback(true, camera);
+      fail("expected an IllegalStateException");
+    } catch (IllegalStateException e) {
+      // expected
+    }
   }
 
   @Test
@@ -215,6 +232,15 @@ public class ShadowCameraTest {
     } catch (IllegalStateException e) {
       // expected
     }
+  }
+
+  @Test
+  public void testCancelAutoFocus() {
+    assertThat(shadowCamera.hasRequestedAutoFocus()).isFalse();
+    camera.autoFocus(null);
+    assertThat(shadowCamera.hasRequestedAutoFocus()).isTrue();
+    camera.cancelAutoFocus();
+    assertThat(shadowCamera.hasRequestedAutoFocus()).isFalse();
   }
 
   @Test
