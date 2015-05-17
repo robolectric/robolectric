@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.ProviderInfo;
 import android.content.pm.ResolveInfo;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.PatternMatcher;
 import android.util.Pair;
@@ -28,7 +29,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.ShadowsAdapter;
 import org.robolectric.manifest.ActivityData;
 import org.robolectric.manifest.AndroidManifest;
@@ -54,32 +54,40 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
       if (i1 == null && i2 != null) return -1;
       if (i1 != null && i2 == null) return 1;
       if (i1.equals(i2)) return 0;
-      if (i1.getAction() == null && i2.getAction() != null) return -1;
-      if (i1.getAction() != null && i2.getAction() == null) return 1;
-      if (i1.getAction() != null && i2.getAction() != null) {
+      String action1 = i1.getAction();
+      String action2 = i2.getAction();
+      if (action1 == null && action2 != null) return -1;
+      if (action1 != null && action2 == null) return 1;
+      if (action1 != null && action2 != null) {
         if (!i1.getAction().equals(i2.getAction())) {
           return i1.getAction().compareTo(i2.getAction());
         }
       }
-      if (i1.getData() == null && i2.getData() != null) return -1;
-      if (i1.getData() != null && i2.getData() == null) return 1;
-      if (i1.getData() != null && i2.getData() != null) {
-        if (!i1.getData().equals(i2.getData())) {
-          return i1.getData().compareTo(i2.getData());
+      Uri data1 = i1.getData();
+      Uri data2 = i2.getData();
+      if (data1 == null && data2 != null) return -1;
+      if (data1 != null && data2 == null) return 1;
+      if (data1 != null && data2 != null) {
+        if (!data1.equals(data2)) {
+          return data1.compareTo(data2);
         }
       }
-      if (i1.getComponent() == null && i2.getComponent() != null) return -1;
-      if (i1.getComponent() != null && i2.getComponent() == null) return 1;
-      if (i1.getComponent() != null && i2.getComponent() != null) {
-        if (!i1.getComponent().equals(i2.getComponent())) {
-          return i1.getComponent().compareTo(i2.getComponent());
+      ComponentName component1 = i1.getComponent();
+      ComponentName component2 = i2.getComponent();
+      if (component1 == null && component2 != null) return -1;
+      if (component1 != null && component2 == null) return 1;
+      if (component1 != null && component2 != null) {
+        if (!component1.equals(component2)) {
+          return component1.compareTo(component2);
         }
       }
-      if (i1.getPackage() == null && i2.getPackage() != null) return -1;
-      if (i1.getPackage() != null && i2.getPackage() == null) return 1;
-      if (i1.getPackage() != null && i2.getPackage() != null) {
-        if (!i1.getPackage().equals(i2.getPackage())) {
-          return i1.getPackage().compareTo(i2.getPackage());
+      String package1 = i1.getPackage();
+      String package2 = i2.getPackage();
+      if (package1 == null && package2 != null) return -1;
+      if (package1 != null && package2 == null) return 1;
+      if (package1 != null && package2 != null) {
+        if (!package1.equals(package2)) {
+          return package1.compareTo(package2);
         }
       }
       Set<String> categories1 = i1.getCategories();
