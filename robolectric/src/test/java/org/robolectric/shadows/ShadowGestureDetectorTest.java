@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.view.GestureDetector;
 import android.view.MotionEvent;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,17 +38,6 @@ public class ShadowGestureDetectorTest {
 
     shadowOf(detector).reset();
     assertNull(shadowOf(detector).getOnTouchEventMotionEvent());
-  }
-
-  @Test
-  public void test_setNextOnTouchEventReturnValue() throws Exception {
-    assertTrue(detector.onTouchEvent(motionEvent));
-
-    shadowOf(detector).setNextOnTouchEventReturnValue(true);
-    assertTrue(detector.onTouchEvent(motionEvent));
-
-    shadowOf(detector).setNextOnTouchEventReturnValue(false);
-    assertFalse(detector.onTouchEvent(motionEvent));
   }
 
   @Test
