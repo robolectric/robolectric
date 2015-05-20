@@ -1,15 +1,6 @@
 package org.robolectric.manifest;
 
 import android.app.Activity;
-import org.robolectric.annotation.Config;
-import org.robolectric.res.*;
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -21,6 +12,16 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import org.robolectric.annotation.Config;
+import org.robolectric.res.FsFile;
+import org.robolectric.res.ResourceLoader;
+import org.robolectric.res.ResourcePath;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import static android.content.pm.ApplicationInfo.FLAG_ALLOW_BACKUP;
 import static android.content.pm.ApplicationInfo.FLAG_ALLOW_CLEAR_USER_DATA;
@@ -459,10 +460,9 @@ public class AndroidManifest {
   public Map<String, Object> getApplicationMetaData() {
     parseAndroidManifest();
     if (applicationMetaData == null) {
-      return Collections.emptyMap();
-    } else {
-      return applicationMetaData.getValueMap();
+      applicationMetaData = new MetaData(Collections.<Node>emptyList());
     }
+    return applicationMetaData.getValueMap();
   }
 
   public ResourcePath getResourcePath() {
