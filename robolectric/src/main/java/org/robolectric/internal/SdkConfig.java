@@ -19,12 +19,16 @@ public class SdkConfig {
 
   static {
     SUPPORTED_APIS = new HashMap<>();
-    SUPPORTED_APIS.put(Build.VERSION_CODES.JELLY_BEAN, new SdkVersion("4.1.2_r1", "0"));
-    SUPPORTED_APIS.put(Build.VERSION_CODES.JELLY_BEAN_MR1, new SdkVersion("4.2.2_r1.2", "0"));
-    SUPPORTED_APIS.put(Build.VERSION_CODES.JELLY_BEAN_MR2, new SdkVersion("4.3_r2", "0"));
-    SUPPORTED_APIS.put(Build.VERSION_CODES.KITKAT, new SdkVersion("4.4_r1", "1"));
-    SUPPORTED_APIS.put(Build.VERSION_CODES.LOLLIPOP, new SdkVersion("5.0.0_r2", "1"));
+    addSdk(Build.VERSION_CODES.JELLY_BEAN, "4.1.2_r1", "0");
+    addSdk(Build.VERSION_CODES.JELLY_BEAN_MR1, "4.2.2_r1.2", "0");
+    addSdk(Build.VERSION_CODES.JELLY_BEAN_MR2, "4.3_r2", "0");
+    addSdk(Build.VERSION_CODES.KITKAT, "4.4_r1", "1");
+    addSdk(Build.VERSION_CODES.LOLLIPOP, "5.0.0_r2", "1");
     ROBOLECTRIC_VERSION = getRobolectricVersion();
+  }
+
+  public static void addSdk(int sdkVersion, String androidVersion, String robolectricVersion) {
+    SUPPORTED_APIS.put(sdkVersion, new SdkVersion(androidVersion, robolectricVersion));
   }
 
   public static Set<Integer> getSupportedApis() {
