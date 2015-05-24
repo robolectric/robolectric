@@ -124,7 +124,7 @@ public class InstrumentationConfiguration {
       classNameTranslations.put("java.net.ResponseSource", RoboResponseSource.class.getName());
       classNameTranslations.put("java.nio.charset.Charsets", RoboCharsets.class.getName());
 
-      instrumentedPackages.addAll(Arrays.asList("dalvik.", "libcore.", "android.", "com.android.internal.", "com.google.android.gms.", "org.apache.http."));
+      instrumentedPackages.addAll(Arrays.asList("dalvik.", "libcore.", "android.", "com.android.internal.", "org.apache.http."));
       for (ShadowProvider provider : ServiceLoader.load(ShadowProvider.class)) {
         instrumentedPackages.addAll(Arrays.asList(provider.getProvidedPackageNames()));
       }
