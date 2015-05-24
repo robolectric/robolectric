@@ -44,6 +44,15 @@ public class InstrumentationConfigurationTest {
     assertThat(config.shouldAcquire("com.whatever.R$anything")).isFalse();
     assertThat(config.shouldAcquire("com.whatever.R$anything$else")).isTrue();
   }
+  
+  @Test
+  public void shouldInstrumentCustomClasses() throws Exception {
+    String instrumentName = "com.whatever.SomeClassNameToInstrument";
+    String notInstrumentName = "com.whatever.DoNotInstruementMe";
+    InstrumentationConfiguration customConfig = InstrumentationConfiguration.newBuilder().addInstrumentedClass(instrumentName).build();
+    assertThat(customConfig.shouldInstrument(wrap(instrumentName))).isTrue();
+    assertThat(customConfig.shouldInstrument(wrap(notInstrumentName))).isFalse();
+  }
 
   private ClassInfo wrap(final String className) {
     ClassInfo info = mock(ClassInfo.class);
