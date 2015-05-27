@@ -21,6 +21,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 import android.webkit.CookieManager;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 
 /**
@@ -32,17 +33,22 @@ public class ShadowCookieManager {
   private static final String HTTPS = "https://";
   private static final String[] COOKIE_ATTRS_NOT_STRICT = {"Expires", "expires"};
   private static final List<Cookie> emtpyCookieList = new ArrayList<>();
-  private static CookieManager sRef;
+  private static CookieManager cookieManager;
   private CookieStore store = new BasicCookieStore();
   private boolean accept;
   private boolean flushed;
 
+  @Resetter
+  public static void resetCookies() {
+    cookieManager = null;
+  }
+
   @Implementation
   public static CookieManager getInstance() {
-    if (sRef == null) {
-      sRef = ReflectionHelpers.callConstructor(CookieManager.class);
+    if (cookieManager == null) {
+      cookieManager = ReflectionHelpers.callConstructor(CookieManager.class);
     }
-    return sRef;
+    return cookieManager;
   }
 
   @Implementation

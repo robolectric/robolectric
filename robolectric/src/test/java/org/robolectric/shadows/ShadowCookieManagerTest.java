@@ -13,7 +13,7 @@ public class ShadowCookieManagerTest {
   private final String url = "robolectric.org/";
   private final String httpUrl = "http://robolectric.org/";
   private final String httpsUrl = "https://robolectric.org/";
-  private final CookieManager cookieManager = Shadow.newInstanceOf(CookieManager.class);
+  private final CookieManager cookieManager = CookieManager.getInstance();
 
   @Test
   public void shouldGetASingletonInstance() {
