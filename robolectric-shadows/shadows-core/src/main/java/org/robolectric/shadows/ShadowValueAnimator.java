@@ -2,12 +2,21 @@ package org.robolectric.shadows;
 
 import android.animation.ValueAnimator;
 
+import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 
+import static org.robolectric.internal.Shadow.directlyOn;
+
 @Implements(ValueAnimator.class)
 public class ShadowValueAnimator {
+
+  @RealObject
+  private ValueAnimator realObject;
+
+  private int actualRepeatCount;
 
   @Resetter
   public static void reset() {
@@ -21,5 +30,22 @@ public class ShadowValueAnimator {
      * one will be created for each test with a fresh state.
      */
     ReflectionHelpers.setStaticField(ValueAnimator.class, "sAnimationHandler", new ThreadLocal<>());
+  }
+
+  @Implementation
+  public void setRepeatCount(int count) {
+    actualRepeatCount = count;
+    if (count == ValueAnimator.INFINITE) {
+      count = 1;
+    }
+    directlyOn(realObject, ValueAnimator.class).setRepeatCount(count);
+  }
+
+  /**
+   * Returns the value that was set as the repeat count. This is otherwise the same
+   * as getRepeatCount(), except when the count was set to infinite.
+   */
+  public int getActualRepeatCount() {
+    return actualRepeatCount;
   }
 }
