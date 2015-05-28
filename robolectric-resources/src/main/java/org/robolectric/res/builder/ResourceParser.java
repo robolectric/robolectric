@@ -35,18 +35,19 @@ public class ResourceParser {
       XmlResourceParser.FEATURE_VALIDATION
   };
 
-  public static XmlResourceParser from(XmlBlock block, ResourceIndex resourceIndex) {
-    return new XmlResourceParserImpl(block.getDocument(), block.getFilename(), block.getPackageName(), resourceIndex);
+  public static XmlResourceParser from(XmlBlock block, String applicationPackageName, ResourceIndex resourceIndex) {
+    return new XmlResourceParserImpl(block.getDocument(), block.getFilename(), block.getPackageName(),
+        applicationPackageName, resourceIndex);
   }
 
-  public static XmlResourceParser create(String file, String packageName, ResourceIndex resourceIndex) {
+  public static XmlResourceParser create(String file, String packageName, String applicationPackageName, ResourceIndex resourceIndex) {
     FsFile fsFile = Fs.fileFromPath(file);
     Document document = new XmlBlockLoader(null, "xml").parse(fsFile);
     if (document == null) {
       throw new Resources.NotFoundException("couldn't find resource " + fsFile.getPath());
     }
     XmlBlock block = XmlBlock.create(document, file, packageName);
-    return from(block, resourceIndex);
+    return from(block, applicationPackageName, resourceIndex);
   }
 
   /**
@@ -87,6 +88,7 @@ public class ResourceParser {
     private final Document document;
     private final String fileName;
     private final String packageName;
+    private final String applicationPackageName;
     private final ResourceIndex resourceIndex;
 
     private Node currentNode;
@@ -96,13 +98,16 @@ public class ResourceParser {
     private int mDepth = 0;
     private int mEventType = START_DOCUMENT;
 
-    public XmlResourceParserImpl(Document document, String fileName, String packageName, ResourceIndex resourceIndex) {
+    public XmlResourceParserImpl(Document document, String fileName, String packageName,
+        String applicationPackageName, ResourceIndex resourceIndex) {
       this.document = document;
       this.fileName = fileName;
       this.packageName = packageName;
+      this.applicationPackageName = applicationPackageName;
       this.resourceIndex = resourceIndex;
     }
 
+    @Override
     public void setFeature(String name, boolean state)
         throws XmlPullParserException {
       if (isAndroidSupportedFeature(name) && state) {
@@ -111,30 +116,36 @@ public class ResourceParser {
       throw new XmlPullParserException("Unsupported feature: " + name);
     }
 
+    @Override
     public boolean getFeature(String name) {
       return isAndroidSupportedFeature(name);
     }
 
+    @Override
     public void setProperty(String name, Object value)
         throws XmlPullParserException {
       throw new XmlPullParserException("setProperty() not supported");
     }
 
+    @Override
     public Object getProperty(String name) {
       // Properties are not supported. Android returns null
       // instead of throwing an XmlPullParserException.
       return null;
     }
 
+    @Override
     public void setInput(Reader in) throws XmlPullParserException {
       throw new XmlPullParserException("setInput() not supported");
     }
 
+    @Override
     public void setInput(InputStream inputStream, String inputEncoding)
         throws XmlPullParserException {
       throw new XmlPullParserException("setInput() not supported");
     }
 
+    @Override
     public void defineEntityReplacementText(
         String entityName, String replacementText)
         throws XmlPullParserException {
@@ -142,46 +153,55 @@ public class ResourceParser {
           "defineEntityReplacementText() not supported");
     }
 
+    @Override
     public String getNamespacePrefix(int pos)
         throws XmlPullParserException {
       throw new XmlPullParserException(
           "getNamespacePrefix() not supported");
     }
 
+    @Override
     public String getInputEncoding() {
       return null;
     }
 
+    @Override
     public String getNamespace(String prefix) {
       throw new RuntimeException(
           "getNamespaceCount() not supported");
     }
 
+    @Override
     public int getNamespaceCount(int depth)
         throws XmlPullParserException {
       throw new XmlPullParserException(
           "getNamespaceCount() not supported");
     }
 
+    @Override
     public String getPositionDescription() {
       return "XML file " + fileName + " line #" + getLineNumber() + " (sorry, not yet implemented)";
     }
 
+    @Override
     public String getNamespaceUri(int pos)
         throws XmlPullParserException {
       throw new XmlPullParserException(
           "getNamespaceUri() not supported");
     }
 
+    @Override
     public int getColumnNumber() {
       // Android always returns -1
       return -1;
     }
 
+    @Override
     public int getDepth() {
       return mDepth;
     }
 
+    @Override
     public String getText() {
       if (currentNode == null) {
         return "";
@@ -189,12 +209,14 @@ public class ResourceParser {
       return currentNode.getTextContent();
     }
 
+    @Override
     public int getLineNumber() {
       // TODO(msama): The current implementation is
       //   unable to return line numbers.
       return -1;
     }
 
+    @Override
     public int getEventType()
         throws XmlPullParserException {
       return mEventType;
@@ -209,6 +231,7 @@ public class ResourceParser {
       return text.split("\\s").length == 0;
     }
 
+    @Override
     public boolean isWhitespace()
         throws XmlPullParserException {
       // Note: in android whitespaces are automatically stripped.
@@ -216,10 +239,12 @@ public class ResourceParser {
       return isWhitespace(getText());
     }
 
+    @Override
     public String getPrefix() {
       throw new RuntimeException("getPrefix not supported");
     }
 
+    @Override
     public char[] getTextCharacters(int[] holderForStartAndLength) {
       String txt = getText();
       char[] chars = null;
@@ -232,17 +257,17 @@ public class ResourceParser {
       return chars;
     }
 
+    @Override
     public String getNamespace() {
-      if (currentNode == null) {
-        return "";
-      }
-      String namespace = currentNode.getNamespaceURI();
+      String namespace = currentNode != null ? currentNode.getNamespaceURI() : null;
       if (namespace == null) {
         return "";
       }
-      return namespace;
+
+      return maybeReplaceNamespace(namespace);
     }
 
+    @Override
     public String getName() {
       if (currentNode == null) {
         return "";
@@ -261,7 +286,7 @@ public class ResourceParser {
       return map.item(index);
     }
 
-    public String getAttribute(String namespace, String name) {
+    String getAttribute(String namespace, String name) {
       if (currentNode == null) {
         return null;
       }
@@ -269,22 +294,37 @@ public class ResourceParser {
       Element element = (Element) currentNode;
       if (element.hasAttributeNS(namespace, name)) {
         return element.getAttributeNS(namespace, name);
+      } else if (element.hasAttributeNS(Attribute.RES_AUTO_NS_URI, name)) {
+        return element.getAttributeNS(Attribute.RES_AUTO_NS_URI, name);
       }
       return null;
     }
 
+    @Override
     public String getAttributeNamespace(int index) {
       Node attr = getAttributeAt(index);
       if (attr == null) {
         return null;
       }
-      return attr.getNamespaceURI();
+      return maybeReplaceNamespace(attr.getNamespaceURI());
     }
 
+    private String maybeReplaceNamespace(String namespace) {
+      if (Attribute.RES_AUTO_NS_URI.equals(namespace)) {
+        return applicationPackageName;
+      } else {
+        return namespace;
+      }
+    }
+
+    @Override
     public String getAttributeName(int index) {
       try {
         Node attr = getAttributeAt(index);
-        return (Attribute.ANDROID_RES_NS_PREFIX + packageName).equals(attr.getNamespaceURI()) ?
+        String namespace = attr.getNamespaceURI();
+        boolean useLocal = (Attribute.ANDROID_RES_NS_PREFIX + packageName).equals(namespace)
+            || Attribute.RES_AUTO_NS_URI.equals(namespace);
+        return useLocal ?
           attr.getLocalName() :
           attr.getNodeName();
       } catch (IndexOutOfBoundsException ex) {
@@ -292,16 +332,19 @@ public class ResourceParser {
       }
     }
 
+    @Override
     public String getAttributePrefix(int index) {
       throw new RuntimeException("getAttributePrefix not supported");
     }
 
+    @Override
     public boolean isEmptyElementTag() throws XmlPullParserException {
       // In Android this method is left unimplemented.
       // This implementation is mirroring that.
       return false;
     }
 
+    @Override
     public int getAttributeCount() {
       if (currentNode == null) {
         return -1;
@@ -309,6 +352,7 @@ public class ResourceParser {
       return currentNode.getAttributes().getLength();
     }
 
+    @Override
     public String getAttributeValue(int index) {
       return qualify(getAttributeAt(index).getNodeValue());
     }
@@ -324,25 +368,30 @@ public class ResourceParser {
       return new Attribute(FAKE_RES_NAME, value, packageName);
     }
 
+    @Override
     public String getAttributeType(int index) {
       // Android always returns CDATA even if the
       // node has no attribute.
       return "CDATA";
     }
 
+    @Override
     public boolean isAttributeDefault(int index) {
       // The android implementation always returns false
       return false;
     }
 
+    @Override
     public int nextToken() throws XmlPullParserException, IOException {
       return next();
     }
 
+    @Override
     public String getAttributeValue(String namespace, String name) {
       return qualify(getAttribute(namespace, name));
     }
 
+    @Override
     public int next() throws XmlPullParserException, IOException {
       if (!mStarted) {
         mStarted = true;
@@ -529,6 +578,7 @@ public class ResourceParser {
       }
     }
 
+    @Override
     public void require(int type, String namespace, String name)
         throws XmlPullParserException, IOException {
       if (type != getEventType()
@@ -539,6 +589,7 @@ public class ResourceParser {
       }
     }
 
+    @Override
     public String nextText() throws XmlPullParserException, IOException {
       if (getEventType() != START_TAG) {
         throw new XmlPullParserException(
@@ -564,6 +615,7 @@ public class ResourceParser {
       }
     }
 
+    @Override
     public int nextTag() throws XmlPullParserException, IOException {
       int eventType = next();
       if (eventType == TEXT && isWhitespace()) { // skip whitespace
@@ -576,10 +628,12 @@ public class ResourceParser {
       return eventType;
     }
 
+    @Override
     public int getAttributeNameResource(int index) {
       return getResourceId(getAttributeName(index), packageName, "attr");
     }
 
+    @Override
     public int getAttributeListValue(String namespace, String attribute,
         String[] options, int defaultValue) {
       String attr = getAttribute(namespace, attribute);
@@ -594,6 +648,7 @@ public class ResourceParser {
       return index;
     }
 
+    @Override
     public boolean getAttributeBooleanValue(String namespace, String attribute,
         boolean defaultValue) {
       String attr = getAttribute(namespace, attribute);
@@ -603,6 +658,7 @@ public class ResourceParser {
       return Boolean.parseBoolean(attr);
     }
 
+    @Override
     public int getAttributeResourceValue(String namespace, String attribute, int defaultValue) {
       String attr = getAttribute(namespace, attribute);
       if (attr != null && attr.startsWith("@")) {
@@ -611,6 +667,7 @@ public class ResourceParser {
       return defaultValue;
     }
 
+    @Override
     public int getAttributeIntValue(String namespace, String attribute, int defaultValue) {
       String attr = getAttribute(namespace, attribute);
       if (attr == null) {
@@ -623,6 +680,7 @@ public class ResourceParser {
       }
     }
 
+    @Override
     public int getAttributeUnsignedIntValue(String namespace, String attribute, int defaultValue) {
       int value = getAttributeIntValue(namespace, attribute, defaultValue);
       if (value < 0) {
@@ -631,6 +689,7 @@ public class ResourceParser {
       return value;
     }
 
+    @Override
     public float getAttributeFloatValue(String namespace, String attribute,
         float defaultValue) {
       String attr = getAttribute(namespace, attribute);
@@ -644,6 +703,7 @@ public class ResourceParser {
       }
     }
 
+    @Override
     public int getAttributeListValue(
         int idx, String[] options, int defaultValue) {
       try {
@@ -659,6 +719,7 @@ public class ResourceParser {
       }
     }
 
+    @Override
     public boolean getAttributeBooleanValue(
         int idx, boolean defaultValue) {
       try {
@@ -668,6 +729,7 @@ public class ResourceParser {
       }
     }
 
+    @Override
     public int getAttributeResourceValue(int idx, int defaultValue) {
       String attributeValue = getAttributeValue(idx);
       if (attributeValue != null && attributeValue.startsWith("@")) {
@@ -679,6 +741,7 @@ public class ResourceParser {
       return defaultValue;
     }
 
+    @Override
     public int getAttributeIntValue(int idx, int defaultValue) {
       try {
         return Integer.parseInt(getAttributeValue(idx));
@@ -689,6 +752,7 @@ public class ResourceParser {
       }
     }
 
+    @Override
     public int getAttributeUnsignedIntValue(int idx, int defaultValue) {
       int value = getAttributeIntValue(idx, defaultValue);
       if (value < 0) {
@@ -697,6 +761,7 @@ public class ResourceParser {
       return value;
     }
 
+    @Override
     public float getAttributeFloatValue(int idx, float defaultValue) {
       try {
         return Float.parseFloat(getAttributeValue(idx));
@@ -707,14 +772,17 @@ public class ResourceParser {
       }
     }
 
+    @Override
     public String getIdAttribute() {
       return getAttribute(null, "id");
     }
 
+    @Override
     public String getClassAttribute() {
       return getAttribute(null, "class");
     }
 
+    @Override
     public int getIdAttributeResourceValue(int defaultValue) {
       String id = getIdAttribute();
       if (id == null) {
@@ -727,6 +795,7 @@ public class ResourceParser {
       }
     }
 
+    @Override
     public int getStyleAttribute() {
       String attr = getAttribute(null, "style");
       if (attr == null) {
@@ -735,10 +804,12 @@ public class ResourceParser {
       return getResourceId(attr, packageName, "style");
     }
 
+    @Override
     public void close() {
       // Nothing to do
     }
 
+    @Override
     protected void finalize() throws Throwable {
       close();
     }

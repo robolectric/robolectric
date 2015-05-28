@@ -1,4 +1,4 @@
-package org.robolectric.res;
+package org.robolectric.res.builder;
 
 import android.content.res.XmlResourceParser;
 import org.junit.After;
@@ -7,8 +7,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.TestRunners;
-import org.robolectric.res.builder.ResourceParser;
-import org.robolectric.res.builder.XmlBlock;
+import org.robolectric.res.DocumentLoader;
+import org.robolectric.res.MergedResourceIndex;
+import org.robolectric.res.ResBundle;
+import org.robolectric.res.ResName;
+import org.robolectric.res.ResourceExtractor;
+import org.robolectric.res.ResourceIndex;
+import org.robolectric.res.XmlBlockLoader;
 import org.robolectric.res.builder.ResourceParser.XmlResourceParserImpl;
 import org.robolectric.util.TestUtil;
 import org.w3c.dom.Document;
@@ -62,7 +67,7 @@ public class XmlBlockLoaderTest {
     ResName resName = new ResName(TEST_PACKAGE, "xml", "preferences");
     xmlBlock = resBundle.get(resName, "");
     resourceIndex = new MergedResourceIndex(new ResourceExtractor(testResources()), new ResourceExtractor());
-    parser = (XmlResourceParserImpl) ResourceParser.from(xmlBlock, resourceIndex);
+    parser = (XmlResourceParserImpl) ResourceParser.from(xmlBlock, TEST_PACKAGE, resourceIndex);
   }
 
   @After
@@ -98,7 +103,8 @@ public class XmlBlockLoaderTest {
       Document document = documentBuilder.parse(
           new ByteArrayInputStream(xmlValue.getBytes()));
 
-      parser = new XmlResourceParserImpl(document, "file", TestUtil.testResources().getPackageName(), resourceIndex);
+      parser = new XmlResourceParserImpl(document, "file", TestUtil.testResources().getPackageName(),
+          TEST_PACKAGE, resourceIndex);
       // Navigate to the root element
       parseUntilNext(XmlResourceParser.START_TAG);
     } catch (Exception parsingException) {

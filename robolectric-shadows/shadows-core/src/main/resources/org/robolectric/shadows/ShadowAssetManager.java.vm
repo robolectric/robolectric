@@ -211,7 +211,7 @@ public final class ShadowAssetManager {
 
   @Implementation
   public final XmlResourceParser openXmlResourceParser(int cookie, String fileName) throws IOException {
-    return ResourceParser.create(fileName, "fixme", null);
+    return ResourceParser.create(fileName, "fixme", "fixme", null);
   }
 
   @HiddenApi @Implementation
