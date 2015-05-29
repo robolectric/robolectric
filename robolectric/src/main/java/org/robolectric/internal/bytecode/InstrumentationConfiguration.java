@@ -48,10 +48,16 @@ public class InstrumentationConfiguration {
     private final Collection<MethodRef> interceptedMethods = new HashSet<>();
     private final Map<String, String> classNameTranslations = new HashMap<>();
     private final Collection<String> classesToNotAquire = new HashSet<>();
+    private final Collection<String> packagesToNotAquire = new HashSet<>();
     private final Collection<String> instrumentedClasses = new HashSet<>();
 
     public Builder doNotAquireClass(String className) {
       this.classesToNotAquire.add(className);
+      return this;
+    }
+
+    public Builder doNotAquirePackage(String packageName) {
+      this.packagesToNotAquire.add(packageName);
       return this;
     }
 
@@ -120,6 +126,20 @@ public class InstrumentationConfiguration {
           ShadowedObject.class,
           TempDirectory.class
       ));
+      packagesToNotAquire.addAll(Arrays.asList(
+          "java.",
+          "javax.",
+          "sun.",
+          "com.sun.",
+          "org.w3c.",
+          "org.xml.",
+          "org.junit",
+          "org.hamcrest",
+          "org.specs2",  // allows for android projects with mixed scala\java tests to be
+          "scala.",      //  run with Maven Surefire (see the RoboSpecs project on github)
+          "kotlin.",
+          "com.almworks.sqlite4java" // Fix #958: SQLite native library must be loaded once.
+      ));
       classNameTranslations.put("java.net.ExtendedResponseCache", RoboExtendedResponseCache.class.getName());
       classNameTranslations.put("java.net.ResponseSource", RoboResponseSource.class.getName());
       classNameTranslations.put("java.nio.charset.Charsets", RoboCharsets.class.getName());
@@ -129,7 +149,7 @@ public class InstrumentationConfiguration {
         instrumentedPackages.addAll(Arrays.asList(provider.getProvidedPackageNames()));
       }
 
-      return new InstrumentationConfiguration(classNameTranslations, interceptedMethods, instrumentedPackages, instrumentedClasses, classesToNotAquire);
+      return new InstrumentationConfiguration(classNameTranslations, interceptedMethods, instrumentedPackages, instrumentedClasses, classesToNotAquire, packagesToNotAquire);
     }
   }
 
@@ -142,13 +162,15 @@ public class InstrumentationConfiguration {
   private final Map<String, String> classNameTranslations = new HashMap<>();
   private final HashSet<MethodRef> interceptedMethods = new HashSet<>();
   private final Set<String> classesToNotAquire = new HashSet<>();
+  private final Set<String> packagesToNotAquire = new HashSet<>();
 
-  private InstrumentationConfiguration(Map<String, String> classNameTranslations, Collection<MethodRef> interceptedMethods, Collection<String> instrumentedPackages, Collection<String> instrumentedClasses, Collection<String> classesToNotAquire) {
+  private InstrumentationConfiguration(Map<String, String> classNameTranslations, Collection<MethodRef> interceptedMethods, Collection<String> instrumentedPackages, Collection<String> instrumentedClasses, Collection<String> classesToNotAquire, Collection<String> packagesToNotAquire) {
     this.classNameTranslations.putAll(classNameTranslations);
     this.interceptedMethods.addAll(interceptedMethods);
     this.instrumentedPackages.addAll(instrumentedPackages);
     this.instrumentedClasses.addAll(instrumentedClasses);
     this.classesToNotAquire.addAll(classesToNotAquire);
+    this.packagesToNotAquire.addAll(packagesToNotAquire);
   }
 
   /**
@@ -187,22 +209,11 @@ public class InstrumentationConfiguration {
     // See https://github.com/robolectric/robolectric/issues/521
     if (name.equals("android.R$styleable")) return true;
 
-    return !(
-        name.matches(".*\\.R(|\\$[a-z]+)$")
-            || classesToNotAquire.contains(name)
-            || name.startsWith("java.")
-            || name.startsWith("javax.")
-            || name.startsWith("sun.")
-            || name.startsWith("com.sun.")
-            || name.startsWith("org.w3c.")
-            || name.startsWith("org.xml.")
-            || name.startsWith("org.junit")
-            || name.startsWith("org.hamcrest")
-            || name.startsWith("org.specs2")  // allows for android projects with mixed scala\java tests to be
-            || name.startsWith("scala.")      //  run with Maven Surefire (see the RoboSpecs project on github)
-            || name.startsWith("kotlin.")
-            || name.startsWith("com.almworks.sqlite4java") // Fix #958: SQLite native library must be loaded once.
-    );
+    for (String packageName : packagesToNotAquire) {
+      if (name.startsWith(packageName)) return false;
+    }
+
+    return !(name.matches(".*\\.R(|\\$[a-z]+)$") || classesToNotAquire.contains(name));
   }
 
   public Set<MethodRef> methodsToIntercept() {
