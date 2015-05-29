@@ -90,6 +90,7 @@ public class ResourceParser {
     private final String packageName;
     private final String applicationPackageName;
     private final ResourceIndex resourceIndex;
+    private final String applicationNamespace;
 
     private Node currentNode;
 
@@ -105,6 +106,7 @@ public class ResourceParser {
       this.packageName = packageName;
       this.applicationPackageName = applicationPackageName;
       this.resourceIndex = resourceIndex;
+      applicationNamespace = Attribute.ANDROID_RES_NS_PREFIX + applicationPackageName;
     }
 
     @Override
@@ -294,9 +296,11 @@ public class ResourceParser {
       Element element = (Element) currentNode;
       if (element.hasAttributeNS(namespace, name)) {
         return element.getAttributeNS(namespace, name);
-      } else if (element.hasAttributeNS(Attribute.RES_AUTO_NS_URI, name)) {
+      } else if (applicationNamespace.equals(namespace)
+          && element.hasAttributeNS(Attribute.RES_AUTO_NS_URI, name)) {
         return element.getAttributeNS(Attribute.RES_AUTO_NS_URI, name);
       }
+
       return null;
     }
 
@@ -311,7 +315,7 @@ public class ResourceParser {
 
     private String maybeReplaceNamespace(String namespace) {
       if (Attribute.RES_AUTO_NS_URI.equals(namespace)) {
-        return applicationPackageName;
+        return applicationNamespace;
       } else {
         return namespace;
       }
@@ -321,10 +325,8 @@ public class ResourceParser {
     public String getAttributeName(int index) {
       try {
         Node attr = getAttributeAt(index);
-        String namespace = attr.getNamespaceURI();
-        boolean useLocal = (Attribute.ANDROID_RES_NS_PREFIX + packageName).equals(namespace)
-            || Attribute.RES_AUTO_NS_URI.equals(namespace);
-        return useLocal ?
+        String namespace = maybeReplaceNamespace(attr.getNamespaceURI());
+        return (Attribute.ANDROID_RES_NS_PREFIX + packageName).equals(namespace) ?
           attr.getLocalName() :
           attr.getNodeName();
       } catch (IndexOutOfBoundsException ex) {
