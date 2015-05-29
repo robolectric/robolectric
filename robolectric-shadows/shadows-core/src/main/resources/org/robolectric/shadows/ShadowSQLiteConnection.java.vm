@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import java.util.concurrent.TimeUnit;
 #if ($api >= 21)
 import java.util.concurrent.atomic.AtomicLong;
 #else
@@ -329,7 +330,7 @@ public class ShadowSQLiteConnection {
 #end
     private final Map<$ptrClassBoxed, SQLiteStatement> statementsMap = new ConcurrentHashMap<>();
     private final Map<$ptrClassBoxed, SQLiteConnection> connectionsMap = new ConcurrentHashMap<>();
-    private final ExecutorService dbExecutor = Executors.newSingleThreadExecutor();
+    private ExecutorService dbExecutor = Executors.newSingleThreadExecutor();
 
     public SQLiteConnection getConnection(final $ptrClass pointer) {
       SQLiteConnection connection = connectionsMap.get(pointer);
@@ -406,6 +407,13 @@ public class ShadowSQLiteConnection {
       for ($ptrClass connectionPtr : connectionsMap.keySet()) {
         close(connectionPtr);  
       }
+      dbExecutor.shutdown();
+      try {
+        dbExecutor.awaitTermination(30, TimeUnit.SECONDS);
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
+      dbExecutor = Executors.newSingleThreadExecutor();
       connectionsMap.clear();
       statementsMap.clear();
     }
