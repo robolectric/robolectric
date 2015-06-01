@@ -38,16 +38,16 @@ public class RobolectricGradleTestRunner extends RobolectricTestRunner {
     final FileFsFile assets;
     final FileFsFile manifest;
 
-    if (FileFsFile.from(BUILD_OUTPUT, "res").exists()) {
-      res = FileFsFile.from(BUILD_OUTPUT, "res", flavor, type);
+    if (FileFsFile.from(BUILD_OUTPUT, config.resourceDir()).exists()) {
+      res = FileFsFile.from(BUILD_OUTPUT, config.resourceDir(), flavor, type);
     } else {
-      res = FileFsFile.from(BUILD_OUTPUT, "bundles", flavor, type, "res");
+      res = FileFsFile.from(BUILD_OUTPUT, "bundles", flavor, type, config.resourceDir());
     }
 
-    if (FileFsFile.from(BUILD_OUTPUT, "assets").exists()) {
-      assets = FileFsFile.from(BUILD_OUTPUT, "assets", flavor, type);
+    if (FileFsFile.from(BUILD_OUTPUT, config.assetDir()).exists()) {
+      assets = FileFsFile.from(BUILD_OUTPUT, config.assetDir(), flavor, type);
     } else {
-      assets = FileFsFile.from(BUILD_OUTPUT, "bundles", flavor, type, "assets");
+      assets = FileFsFile.from(BUILD_OUTPUT, "bundles", flavor, type, config.assetDir());
     }
 
     if (FileFsFile.from(BUILD_OUTPUT, "manifests").exists()) {
