@@ -20,6 +20,8 @@ public class RobolectricGradleTestRunnerTest {
     FileFsFile.from("build", "intermediates", "res").getFile().mkdirs();
     FileFsFile.from("build", "intermediates", "assets").getFile().mkdirs();
     FileFsFile.from("build", "intermediates", "manifests").getFile().mkdirs();
+    FileFsFile.from("build", "intermediates", "res/foo").getFile().mkdirs();
+    FileFsFile.from("build", "intermediates", "assets/foo").getFile().mkdirs();
   }
 
   @After
@@ -27,6 +29,8 @@ public class RobolectricGradleTestRunnerTest {
     delete(FileFsFile.from("build", "intermediates", "res").getFile());
     delete(FileFsFile.from("build", "intermediates", "assets").getFile());
     delete(FileFsFile.from("build", "intermediates", "manifests").getFile());
+    delete(FileFsFile.from("build", "intermediates", "res/foo").getFile());
+    delete(FileFsFile.from("build", "intermediates", "assets/foo").getFile());
   }
 
   private static String convertPath(String path) {
@@ -82,6 +86,28 @@ public class RobolectricGradleTestRunnerTest {
   }
 
   @Test
+  public void getAppManifest_withResourceDirOverride_shouldCreateManifest() throws Exception {
+    final RobolectricGradleTestRunner runner = new RobolectricGradleTestRunner(ResourceDirTest.class);
+    final AndroidManifest manifest = runner.getAppManifest(runner.getConfig(ResourceDirTest.class.getMethod("withoutAnnotation")));
+
+    assertThat(manifest.getPackageName()).isEqualTo("org.sandwich.foo");
+    assertThat(manifest.getResDirectory().getPath()).isEqualTo(convertPath("build/intermediates/res/foo/flavor1/type1"));
+    assertThat(manifest.getAssetsDirectory().getPath()).isEqualTo(convertPath("build/intermediates/assets/flavor1/type1"));
+    assertThat(manifest.getAndroidManifestFile().getPath()).isEqualTo(convertPath("build/intermediates/manifests/full/flavor1/type1/AndroidManifest.xml"));
+  }
+
+  @Test
+  public void getAppManifest_withAssetDirOverride_shouldCreateManifest() throws Exception {
+    final RobolectricGradleTestRunner runner = new RobolectricGradleTestRunner(AssetsDirTest.class);
+    final AndroidManifest manifest = runner.getAppManifest(runner.getConfig(AssetsDirTest.class.getMethod("withoutAnnotation")));
+
+    assertThat(manifest.getPackageName()).isEqualTo("org.sandwich.foo");
+    assertThat(manifest.getResDirectory().getPath()).isEqualTo(convertPath("build/intermediates/res/flavor1/type1"));
+    assertThat(manifest.getAssetsDirectory().getPath()).isEqualTo(convertPath("build/intermediates/assets/foo/flavor1/type1"));
+    assertThat(manifest.getAndroidManifestFile().getPath()).isEqualTo(convertPath("build/intermediates/manifests/full/flavor1/type1/AndroidManifest.xml"));
+  }
+
+  @Test
   public void getAppManifest_shouldThrowException_whenConstantsNotSpecified() throws Exception {
     final RobolectricGradleTestRunner runner = new RobolectricGradleTestRunner(NoConstantsTest.class);
     exception.expect(RuntimeException.class);
@@ -123,6 +149,24 @@ public class RobolectricGradleTestRunnerTest {
   @Ignore
   @Config(constants = BuildConfig.class, packageName = "fake.package.name")
   public static class PackageNameTest {
+
+    @Test
+    public void withoutAnnotation() throws Exception {
+    }
+  }
+
+  @Ignore
+  @Config(constants = BuildConfig.class, resourceDir = "res/foo")
+  public static class ResourceDirTest {
+
+    @Test
+    public void withoutAnnotation() throws Exception {
+    }
+  }
+
+  @Ignore
+  @Config(constants = BuildConfig.class, assetDir = "assets/foo")
+  public static class AssetsDirTest {
 
     @Test
     public void withoutAnnotation() throws Exception {
