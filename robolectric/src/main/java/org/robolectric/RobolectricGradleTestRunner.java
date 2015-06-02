@@ -38,7 +38,10 @@ public class RobolectricGradleTestRunner extends RobolectricTestRunner {
     final FileFsFile assets;
     final FileFsFile manifest;
 
-    if (FileFsFile.from(BUILD_OUTPUT, "res").exists()) {
+    // res/merged added in Android Gradle plugin 1.3-beta1
+    if (FileFsFile.from(BUILD_OUTPUT, "res", "merged").exists()) {
+      res = FileFsFile.from(BUILD_OUTPUT, "res", "merged", flavor, type);
+    } else if (FileFsFile.from(BUILD_OUTPUT, "res").exists()) {
       res = FileFsFile.from(BUILD_OUTPUT, "res", flavor, type);
     } else {
       res = FileFsFile.from(BUILD_OUTPUT, "bundles", flavor, type, "res");
