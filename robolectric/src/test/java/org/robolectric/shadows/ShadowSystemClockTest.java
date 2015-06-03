@@ -15,7 +15,7 @@ import static org.junit.Assert.assertTrue;
 public class ShadowSystemClockTest {
   @Test
   public void shouldAllowForFakingOfTime() throws Exception {
-    assertThat(SystemClock.uptimeMillis()).isEqualTo(0);
+    assertThat(SystemClock.uptimeMillis()).isNotEqualTo(1000);
     Robolectric.getForegroundThreadScheduler().advanceTo(1000);
     assertThat(SystemClock.uptimeMillis()).isEqualTo(1000);
   }

@@ -2,6 +2,7 @@ package org.robolectric.util;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.robolectric.Robolectric;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,9 +13,12 @@ public class SchedulerTest {
   private final Scheduler scheduler = new Scheduler();
   private final Transcript transcript = new Transcript();
 
+  private long startTime;
+  
   @Before
   public void setUp() throws Exception {
     scheduler.pause();
+    startTime = scheduler.getCurrentTime();
   }
 
   @Test
@@ -71,7 +75,7 @@ public class SchedulerTest {
     scheduler.idleConstantly(true);
     scheduler.postDelayed(new AddToTranscript("one"), 1000);
 
-    assertThat(scheduler.getCurrentTime()).isEqualTo(1000);
+    assertThat(scheduler.getCurrentTime()).isEqualTo(1000 + startTime);
   }
   
   @Test
@@ -181,18 +185,27 @@ public class SchedulerTest {
         scheduler.post(new Runnable() {
           @Override
           public void run() {
-            order.add(3);
+            order.add(4);
           }
         });
         order.add(2);
       }
     }, 0);
+    scheduler.postDelayed(new Runnable() {
+      @Override
+      public void run() {
+        order.add(3);
+      }
+    }, 0);
     scheduler.runOneTask();
     
     assertThat(order).as("order:first run").containsExactly(1, 2);
-    assertThat(scheduler.size()).as("size:first run").isEqualTo(1);
+    assertThat(scheduler.size()).as("size:first run").isEqualTo(2);
     scheduler.runOneTask();
     assertThat(order).as("order:second run").containsExactly(1, 2, 3);
+    assertThat(scheduler.size()).as("size:second run").isEqualTo(1);
+    scheduler.runOneTask();
+    assertThat(order).as("order:third run").containsExactly(1, 2, 3, 4);
     assertThat(scheduler.size()).as("size:second run").isEqualTo(0);
   }
 
@@ -219,6 +232,33 @@ public class SchedulerTest {
   }
 
   @Test
+  public void nestedPostAtFront_whilePaused_runsBeforeSubsequentPost() {
+    final List<Integer> order = new ArrayList<>();
+    scheduler.postDelayed(new Runnable() {
+      @Override
+      public void run() {
+        order.add(1);
+        scheduler.postAtFrontOfQueue(new Runnable() {
+          @Override
+          public void run() {
+            order.add(3);
+          }
+        });
+        order.add(2);
+      }
+    }, 0);
+    scheduler.postDelayed(new Runnable() {
+      @Override
+      public void run() {
+        order.add(4);
+      }
+    }, 0);
+    scheduler.advanceToLastPostedRunnable();
+    assertThat(order).as("order").containsExactly(1, 2, 3, 4);
+    assertThat(scheduler.size()).as("size").isEqualTo(0);
+  }
+
+  @Test
   public void nestedPostAtFront_whileUnpaused_runsAfter() {
     final List<Integer> order = new ArrayList<>();
     scheduler.unPause();
@@ -235,7 +275,6 @@ public class SchedulerTest {
         order.add(2);
       }
     }, 0);
-    
     assertThat(order).as("order").containsExactly(1, 2, 3);
     assertThat(scheduler.size()).as("size").isEqualTo(0);
   }
@@ -263,7 +302,7 @@ public class SchedulerTest {
     scheduler.advanceToLastPostedRunnable();
     assertThat(order).as("order:after").containsExactly(1, 2, 3);
     assertThat(scheduler.size()).as("size:after").isEqualTo(0);    
-    assertThat(scheduler.getCurrentTime()).as("time:after").isEqualTo(1);    
+    assertThat(scheduler.getCurrentTime()).as("time:after").isEqualTo(1 + startTime);
   }
 
   @Test
@@ -286,7 +325,7 @@ public class SchedulerTest {
 
     assertThat(order).as("order").containsExactly(1, 2, 3);
     assertThat(scheduler.size()).as("size").isEqualTo(0);
-    assertThat(scheduler.getCurrentTime()).as("time").isEqualTo(1);
+    assertThat(scheduler.getCurrentTime()).as("time").isEqualTo(1 + startTime);
   }
 
   @Test

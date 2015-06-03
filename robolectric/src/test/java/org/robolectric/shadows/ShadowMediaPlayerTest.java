@@ -939,6 +939,7 @@ public class ShadowMediaPlayerTest {
     shadowMediaPlayer.setState(PREPARED);
     shadowMediaPlayer.setSeekDelay(100);
 
+    final long startTime = scheduler.getCurrentTime();
     mediaPlayer.start();
     scheduler.advanceBy(200);
     mediaPlayer.seekTo(450);
@@ -967,7 +968,7 @@ public class ShadowMediaPlayerTest {
     assertThat(scheduler.advanceToLastPostedRunnable()).isTrue();
     Mockito.verify(completionListener).onCompletion(mediaPlayer);
     Mockito.verifyNoMoreInteractions(seekListener);
-    assertThat(scheduler.getCurrentTime()).isEqualTo(750);
+    assertThat(scheduler.getCurrentTime()).isEqualTo(startTime + 750);
     assertThat(mediaPlayer.getCurrentPosition()).isEqualTo(1000);
     assertThat(shadowMediaPlayer.getState()).isEqualTo(PLAYBACK_COMPLETED);
   }
