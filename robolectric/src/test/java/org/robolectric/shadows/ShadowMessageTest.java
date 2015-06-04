@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowMessageTest {
 
   @Test
@@ -178,6 +178,8 @@ public class ShadowMessageTest {
   }
   
   @Test
+  @Config(sdk = {
+      Build.VERSION_CODES.LOLLIPOP })
   public void testIsInUse() {
     ShadowLooper.pauseMainLooper();
     Handler h = new Handler();

@@ -2,11 +2,13 @@
 
 package org.robolectric.shadows;
 
+import android.os.Build;
 import android.text.format.DateUtils;
 import libcore.icu.DateIntervalFormat;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
 
 import java.util.Calendar;
 import java.util.Locale;
@@ -14,7 +16,10 @@ import java.util.TimeZone;
 
 import static org.junit.Assert.assertEquals;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
+@Config(sdk = {
+    Build.VERSION_CODES.KITKAT,
+    Build.VERSION_CODES.LOLLIPOP })
 public class ShadowDateIntervalFormatTest {
 
   @Test

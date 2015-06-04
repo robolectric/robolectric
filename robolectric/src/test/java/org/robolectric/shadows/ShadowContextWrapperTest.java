@@ -35,7 +35,7 @@ import static org.junit.Assert.assertTrue;
 import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowContextWrapperTest {
   public Transcript transcript;
   private ContextWrapper contextWrapper;

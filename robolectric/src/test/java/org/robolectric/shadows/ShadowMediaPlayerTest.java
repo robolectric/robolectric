@@ -37,7 +37,7 @@ import static org.robolectric.shadows.ShadowMediaPlayer.addException;
 import static org.robolectric.shadows.ShadowMediaPlayer.State.*;
 import static org.robolectric.shadows.util.DataSource.toDataSource;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowMediaPlayerTest {
 
   private static final String DUMMY_SOURCE = "dummy-source";

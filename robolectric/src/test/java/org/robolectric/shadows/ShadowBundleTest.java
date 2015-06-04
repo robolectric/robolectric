@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import static org.junit.Assert.*;
 
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowBundleTest {
 
   private Bundle bundle;

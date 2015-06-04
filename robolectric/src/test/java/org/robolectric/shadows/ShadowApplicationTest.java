@@ -11,7 +11,11 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.res.Resources;
+
+import org.robolectric.annotation.Config;
 import org.robolectric.fakes.RoboSensorManager;
+
+import android.os.Build;
 import android.os.IBinder;
 import android.os.IInterface;
 import android.os.Parcel;
@@ -53,7 +57,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowApplicationTest {
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
@@ -115,10 +119,24 @@ public class ShadowApplicationTest {
     checkSystemService(Context.DEVICE_POLICY_SERVICE, android.app.admin.DevicePolicyManager.class);
     checkSystemService(Context.DROPBOX_SERVICE, android.os.DropBoxManager.class);
     checkSystemService(Context.MEDIA_ROUTER_SERVICE, android.media.MediaRouter.class);
-    checkSystemService(Context.DISPLAY_SERVICE, android.hardware.display.DisplayManager.class);
     checkSystemService(Context.ACCESSIBILITY_SERVICE, android.view.accessibility.AccessibilityManager.class);
-    checkSystemService(Context.PRINT_SERVICE, PrintManager.class);
+  }
+
+  @Test
+  @Config(sdk = {
+      Build.VERSION_CODES.KITKAT,
+      Build.VERSION_CODES.LOLLIPOP })
+  public void shouldProvideServicesIntroducedInJellyBeanMr1() throws Exception {
+    checkSystemService(Context.DISPLAY_SERVICE, android.hardware.display.DisplayManager.class);
     checkSystemService(Context.USER_SERVICE, UserManager.class);
+  }
+
+  @Test
+  @Config(sdk = {
+      Build.VERSION_CODES.KITKAT,
+      Build.VERSION_CODES.LOLLIPOP })
+  public void shouldProvideServicesIntroducedInKitKat() throws Exception {
+    checkSystemService(Context.PRINT_SERVICE, PrintManager.class);
   }
 
   @Test public void shouldProvideLayoutInflater() throws Exception {
@@ -126,12 +144,23 @@ public class ShadowApplicationTest {
     assertThat(systemService).isInstanceOf(RoboLayoutInflater.class);
   }
 
-  @Test public void shouldCorrectlyInstantiatedAccessibilityService() throws Exception {
+  @Test
+  @Config(sdk = {
+      Build.VERSION_CODES.KITKAT,
+      Build.VERSION_CODES.LOLLIPOP })
+  public void shouldCorrectlyInstantiatedAccessibilityService() throws Exception {
     AccessibilityManager accessibilityManager = (AccessibilityManager) RuntimeEnvironment.application.getSystemService(Context.ACCESSIBILITY_SERVICE);
 
-    AccessibilityManager.TouchExplorationStateChangeListener mockListener = mock(AccessibilityManager.TouchExplorationStateChangeListener.class);
-    assertThat(accessibilityManager.addTouchExplorationStateChangeListener(mockListener)).isTrue();
-    assertThat(accessibilityManager.removeTouchExplorationStateChangeListener(mockListener)).isTrue();
+    AccessibilityManager.TouchExplorationStateChangeListener listener = createTouchListener();
+    assertThat(accessibilityManager.addTouchExplorationStateChangeListener(listener)).isTrue();
+    assertThat(accessibilityManager.removeTouchExplorationStateChangeListener(listener)).isTrue();
+  }
+
+  private static AccessibilityManager.TouchExplorationStateChangeListener createTouchListener() {
+    return new AccessibilityManager.TouchExplorationStateChangeListener() {
+      @Override
+      public void onTouchExplorationStateChanged(boolean enabled) { }
+    };
   }
 
   private void checkSystemService(String name, Class expectedClass) {

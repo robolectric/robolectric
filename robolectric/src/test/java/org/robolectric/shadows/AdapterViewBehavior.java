@@ -14,7 +14,7 @@ import org.robolectric.util.Transcript;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 abstract public class AdapterViewBehavior {
   private AdapterView adapterView;
 

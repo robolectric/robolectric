@@ -1,10 +1,12 @@
 package org.robolectric.shadows;
 
+import android.os.Build;
 import android.os.Environment;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
 
 import java.io.File;
 
@@ -12,7 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowEnvironmentTest {
 
   @After
@@ -48,6 +50,8 @@ public class ShadowEnvironmentTest {
   }
 
   @Test
+  @Config(sdk = {
+      Build.VERSION_CODES.LOLLIPOP })
   public void isExternalStorageRemovable_shouldReturnSavedValue() {
     final File file = new File("/mnt/media/file");
     assertThat(Environment.isExternalStorageRemovable(file)).isFalse();
@@ -56,6 +60,8 @@ public class ShadowEnvironmentTest {
   }
 
   @Test
+  @Config(sdk = {
+      Build.VERSION_CODES.LOLLIPOP })
   public void isExternalStorageEmulated_shouldReturnSavedValue() {
     final File file = new File("/mnt/media/file");
     assertThat(Environment.isExternalStorageEmulated(file)).isFalse();
@@ -64,6 +70,8 @@ public class ShadowEnvironmentTest {
   }
 
   @Test
+  @Config(sdk = {
+      Build.VERSION_CODES.LOLLIPOP })
   public void storageIsLazy() {
     assertNull(ShadowEnvironment.EXTERNAL_CACHE_DIR);
     assertNull(ShadowEnvironment.EXTERNAL_FILES_DIR);
@@ -76,6 +84,8 @@ public class ShadowEnvironmentTest {
   }
 
   @Test
+  @Config(sdk = {
+      Build.VERSION_CODES.LOLLIPOP })
   public void reset_shouldClearRemovableFiles() {
     final File file = new File("foo");
     ShadowEnvironment.setExternalStorageRemovable(file, true);
@@ -86,6 +96,8 @@ public class ShadowEnvironmentTest {
   }
 
   @Test
+  @Config(sdk = {
+      Build.VERSION_CODES.LOLLIPOP })
   public void reset_shouldClearEmulatedFiles() {
     final File file = new File("foo");
     ShadowEnvironment.setExternalStorageEmulated(file, true);

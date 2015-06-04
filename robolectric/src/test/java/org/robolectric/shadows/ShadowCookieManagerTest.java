@@ -8,7 +8,7 @@ import org.robolectric.internal.Shadow;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowCookieManagerTest {
   private final String url = "robolectric.org/";
   private final String httpUrl = "http://robolectric.org/";
