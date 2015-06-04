@@ -2,17 +2,19 @@ package org.robolectric.shadows;
 
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.os.Build;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
 import org.robolectric.internal.Shadow;
 
 import static org.junit.Assert.assertEquals;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowDisplayTest {
   @Test
   public void shouldProvideDisplayMetrics() throws Exception {
@@ -89,6 +91,11 @@ public class ShadowDisplayTest {
   }
 
   @Test
+  @Config(sdk = {
+      Build.VERSION_CODES.JELLY_BEAN_MR1,
+      Build.VERSION_CODES.JELLY_BEAN_MR2,
+      Build.VERSION_CODES.KITKAT,
+      Build.VERSION_CODES.LOLLIPOP })
   public void shouldProvideDisplayInformation() {
     Display display = Shadow.newInstanceOf(Display.class);
     ShadowDisplay shadow = Shadows.shadowOf(display);

@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowRemoteViewsTest {
   private final String packageName = RuntimeEnvironment.application.getPackageName();
   private final Activity activity = buildActivity(Activity.class).create().get();

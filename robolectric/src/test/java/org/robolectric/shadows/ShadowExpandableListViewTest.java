@@ -7,7 +7,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowExpandableListViewTest {
 
   private ExpandableListView expandableListView;

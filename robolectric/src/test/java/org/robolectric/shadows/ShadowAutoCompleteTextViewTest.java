@@ -16,7 +16,7 @@ import org.robolectric.TestRunners;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowAutoCompleteTextViewTest {
   private final AutoCompleteAdapter adapter = new AutoCompleteAdapter(RuntimeEnvironment.application);
 

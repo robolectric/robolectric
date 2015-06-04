@@ -20,7 +20,7 @@ import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.ReflectionHelpers.*;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowMessageQueueTest {
   private MessageQueue queue;
   private ShadowMessageQueue shadowQueue;
@@ -121,12 +121,18 @@ public class ShadowMessageQueueTest {
   }
   
   @Test
+  @Config(sdk = {
+      Build.VERSION_CODES.KITKAT,
+      Build.VERSION_CODES.LOLLIPOP })
   public void enqueueMessage_returnsFalse_whenQuitting() {
     setField(queue, "mQuitting", true);
     assertThat(enqueueMessage(testMessage, 1)).as("enqueueMessage()").isFalse();
   }
-  
+
   @Test
+  @Config(sdk = {
+      Build.VERSION_CODES.KITKAT,
+      Build.VERSION_CODES.LOLLIPOP })
   public void enqueueMessage_doesntSchedule_whenQuitting() {
     setField(queue, "mQuitting", true);
     enqueueMessage(testMessage, 1);

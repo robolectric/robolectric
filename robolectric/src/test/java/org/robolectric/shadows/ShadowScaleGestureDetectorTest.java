@@ -11,7 +11,7 @@ import org.robolectric.TestRunners;
 import static junit.framework.Assert.*;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowScaleGestureDetectorTest {
 
   private ScaleGestureDetector detector;

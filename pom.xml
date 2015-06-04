@@ -149,7 +149,7 @@
             <includes>
               <include>**/*Test.java</include>
             </includes>
-            <argLine>-Xms512m -Xmx1024m -XX:MaxPermSize=256m</argLine>
+            <argLine>-Xms512m -Xmx1024m -XX:MaxPermSize=512m</argLine>
             <runOrder>random</runOrder>
             <systemProperties>
               <java.awt.headless>true</java.awt.headless>

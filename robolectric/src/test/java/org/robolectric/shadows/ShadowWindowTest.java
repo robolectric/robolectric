@@ -19,7 +19,7 @@ import org.robolectric.util.ActivityController;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowWindowTest {
   @Test
   public void getFlag_shouldReturnWindowFlags() throws Exception {

@@ -24,7 +24,7 @@ import static org.robolectric.shadows.ShadowMediaMetadataRetriever.addFrame;
 import static org.robolectric.shadows.ShadowMediaMetadataRetriever.addMetadata;
 import static org.robolectric.shadows.util.DataSource.toDataSource;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowMediaMetadataRetrieverTest {
   private final String path = "/media/foo.mp3";
   private final String path2 = "/media/foo2.mp3";

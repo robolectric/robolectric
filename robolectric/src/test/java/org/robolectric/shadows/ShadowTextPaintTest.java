@@ -7,7 +7,7 @@ import org.robolectric.TestRunners;
 
 import static junit.framework.Assert.assertEquals;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowTextPaintTest {
 
   @Test

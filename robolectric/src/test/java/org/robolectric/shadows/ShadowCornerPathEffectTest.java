@@ -9,7 +9,7 @@ import static junit.framework.Assert.assertEquals;
 import static org.robolectric.Shadows.shadowOf;
 
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowCornerPathEffectTest {
   @Test
   public void shouldGetRadius() throws Exception {

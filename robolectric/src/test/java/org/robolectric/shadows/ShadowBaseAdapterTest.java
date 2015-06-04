@@ -11,7 +11,7 @@ import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowBaseAdapterTest {
   @Test
   public void shouldRecordNotifyDataSetChanged() throws Exception {

@@ -44,7 +44,7 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowContentResolverTest {
   static final String AUTHORITY = "org.robolectric";
 

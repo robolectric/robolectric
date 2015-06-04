@@ -13,7 +13,7 @@ import static android.content.ClipboardManager.OnPrimaryClipChangedListener;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowClipboardManagerTest {
 
   private ClipboardManager clipboardManager;

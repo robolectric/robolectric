@@ -20,7 +20,7 @@ import org.robolectric.TestRunners;
  * trying to access a Context while inflating the Preference objects defined in
  * xml. This class tests that path.
  */
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowPreferenceActivityTestWithFragment {
   private TestPreferenceActivity activity = Robolectric.setupActivity(TestPreferenceActivity.class);
   private TestPreferenceFragment fragment;

@@ -10,24 +10,29 @@ import org.robolectric.annotation.Config;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowDateUtilsTest {
 
   @Test
-  public void formatDateTime_worksOnLollipop() {
+  @Config(sdk = {
+      Build.VERSION_CODES.KITKAT,
+      Build.VERSION_CODES.LOLLIPOP })
+  public void formatDateTime_worksSinceKitKat() {
     String actual = DateUtils.formatDateTime(RuntimeEnvironment.application, 1420099200000L, DateUtils.FORMAT_NUMERIC_DATE);
     assertThat(actual).isEqualTo("1/1");
   }
 
   @Test
-  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
-  public void formatDateTime_worksOnJellybean() {
+  @Config(sdk = {
+      Build.VERSION_CODES.JELLY_BEAN,
+      Build.VERSION_CODES.JELLY_BEAN_MR1,
+      Build.VERSION_CODES.JELLY_BEAN_MR2 })
+  public void formatDateTime_worksPreKitKat() {
     String actual = DateUtils.formatDateTime(RuntimeEnvironment.application, 1420099200000L, DateUtils.FORMAT_NUMERIC_DATE);
     assertThat(actual).isEqualTo("1/1/2015");
   }
 
   @Test
-  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void isToday_shouldReturnFalseForNotToday() {
     long today = java.util.Calendar.getInstance().getTimeInMillis();
     ShadowSystemClock.setCurrentTimeMillis(today);

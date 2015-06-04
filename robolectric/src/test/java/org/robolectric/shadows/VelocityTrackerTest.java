@@ -11,7 +11,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class VelocityTrackerTest {
   VelocityTracker velocityTracker;
 

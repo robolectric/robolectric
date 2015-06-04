@@ -13,7 +13,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
 import org.robolectric.shadows.ShadowNotification.ShadowBigTextStyle;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowNotificationBigTextStyleTest {
 
   private final Builder builder = new Builder(application);

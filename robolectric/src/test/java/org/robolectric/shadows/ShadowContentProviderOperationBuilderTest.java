@@ -13,7 +13,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowContentProviderOperationBuilderTest {
   private Builder builder;
 

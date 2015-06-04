@@ -11,6 +11,7 @@ import android.accounts.OperationCanceledException;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
@@ -20,6 +21,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
 
 import java.io.IOException;
 
@@ -36,7 +38,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowAccountManagerTest {
   Application app;
   AccountManager am;
@@ -527,6 +529,8 @@ public class ShadowAccountManagerTest {
   }
 
   @Test
+  @Config(sdk = {
+      Build.VERSION_CODES.LOLLIPOP })
   public void addPreviousAccount() {
     Account account = new Account("name_a", "type_a");
     shadowOf(am).setPreviousAccountName(account, "old_name");

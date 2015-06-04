@@ -45,7 +45,7 @@ import static org.robolectric.test.Assertions.assertThat;
 import static org.robolectric.util.TestUtil.TEST_PACKAGE;
 import static org.robolectric.util.TestUtil.assertInstanceOf;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowLayoutInflaterTest {
   private Activity context;
 

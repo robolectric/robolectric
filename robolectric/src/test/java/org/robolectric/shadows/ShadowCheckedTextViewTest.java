@@ -10,7 +10,7 @@ import org.robolectric.TestRunners;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowCheckedTextViewTest {
 
   private CheckedTextView checkedTextView;
