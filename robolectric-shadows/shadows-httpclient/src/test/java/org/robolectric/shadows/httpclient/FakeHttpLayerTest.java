@@ -1,4 +1,4 @@
-package org.robolectric.tester.org.apache.http.impl;
+package org.robolectric.shadows.httpclient;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.HttpGet;
@@ -9,7 +9,7 @@ import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
 import org.junit.Before;
 import org.junit.Test;
-import org.robolectric.tester.org.apache.http.FakeHttpLayer;
+import org.robolectric.shadows.httpclient.FakeHttpLayer;
 
 import java.io.IOException;
 

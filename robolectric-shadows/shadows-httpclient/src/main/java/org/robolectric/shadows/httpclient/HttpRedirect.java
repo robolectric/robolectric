@@ -26,7 +26,7 @@
  * <http://www.apache.org/>.
  *
  */
-package org.robolectric.tester.org.apache.http.impl.client;
+package org.robolectric.shadows.httpclient;
 
 import org.apache.http.annotation.NotThreadSafe;
 import org.apache.http.client.methods.HttpGet;

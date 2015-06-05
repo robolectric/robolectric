@@ -1,4 +1,4 @@
-package org.robolectric.tester.org.apache.http;
+package org.robolectric.shadows.httpclient;
 
 import android.net.Uri;
 import org.apache.http.HttpEntity;

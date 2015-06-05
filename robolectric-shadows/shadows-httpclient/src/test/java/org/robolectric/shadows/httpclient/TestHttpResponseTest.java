@@ -1,11 +1,11 @@
-package org.robolectric.tester.org.apache.http.impl;
+package org.robolectric.shadows.httpclient;
 
 import org.apache.http.Header;
 import org.apache.http.HeaderIterator;
 import org.apache.http.HttpResponse;
 import org.apache.http.message.BasicHeader;
 import org.junit.Test;
-import org.robolectric.tester.org.apache.http.TestHttpResponse;
+import org.robolectric.shadows.httpclient.TestHttpResponse;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

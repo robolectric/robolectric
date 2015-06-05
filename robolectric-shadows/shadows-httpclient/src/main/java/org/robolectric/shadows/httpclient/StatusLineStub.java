@@ -1,4 +1,4 @@
-package org.robolectric.shadows;
+package org.robolectric.shadows.httpclient;
 
 import org.apache.http.ProtocolVersion;
 import org.apache.http.StatusLine;

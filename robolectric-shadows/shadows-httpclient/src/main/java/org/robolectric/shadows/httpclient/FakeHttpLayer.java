@@ -1,4 +1,4 @@
-package org.robolectric.tester.org.apache.http;
+package org.robolectric.shadows.httpclient;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -12,7 +12,6 @@ import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HttpContext;
-import org.robolectric.shadows.HttpResponseGenerator;
 
 import java.io.IOException;
 import java.net.URI;

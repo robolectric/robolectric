@@ -1,4 +1,4 @@
-package org.robolectric.tester.org.apache.http;
+package org.robolectric.shadows.httpclient;
 
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;

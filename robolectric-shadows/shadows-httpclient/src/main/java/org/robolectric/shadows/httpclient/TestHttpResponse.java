@@ -1,4 +1,4 @@
-package org.robolectric.tester.org.apache.http;
+package org.robolectric.shadows.httpclient;
 
 import org.apache.http.Header;
 import org.apache.http.HeaderIterator;
@@ -8,7 +8,6 @@ import org.apache.http.ProtocolVersion;
 import org.apache.http.StatusLine;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
-import org.robolectric.shadows.StatusLineStub;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

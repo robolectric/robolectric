@@ -1,4 +1,4 @@
-package org.robolectric.shadows;
+package org.robolectric.shadows.httpclient;
 
 import android.net.http.AndroidHttpClient;
 import org.apache.http.HttpResponse;

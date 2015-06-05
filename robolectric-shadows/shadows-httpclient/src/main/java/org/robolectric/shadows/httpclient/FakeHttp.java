@@ -1,11 +1,8 @@
-package org.robolectric.shadows;
+package org.robolectric.shadows.httpclient;
 
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
-import org.robolectric.tester.org.apache.http.FakeHttpLayer;
-import org.robolectric.tester.org.apache.http.HttpRequestInfo;
-import org.robolectric.tester.org.apache.http.RequestMatcher;
 
 import java.util.List;
 

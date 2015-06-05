@@ -1,4 +1,4 @@
-package org.robolectric.shadows;
+package org.robolectric.shadows.httpclient;
 
 import junit.framework.Assert;
 import org.apache.http.HttpRequest;
@@ -19,9 +19,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.tester.org.apache.http.FakeHttpLayer;
-import org.robolectric.tester.org.apache.http.RequestMatcher;
-import org.robolectric.tester.org.apache.http.TestHttpResponse;
+import org.robolectric.shadows.httpclient.FakeHttp;
+import org.robolectric.shadows.httpclient.HttpResponseGenerator;
+import org.robolectric.shadows.httpclient.FakeHttpLayer;
+import org.robolectric.shadows.httpclient.RequestMatcher;
+import org.robolectric.shadows.httpclient.TestHttpResponse;
 import org.robolectric.util.Strings;
 import org.robolectric.util.TestRunnerWithManifest;
 

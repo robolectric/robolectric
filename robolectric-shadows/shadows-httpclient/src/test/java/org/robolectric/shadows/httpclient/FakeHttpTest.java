@@ -1,4 +1,4 @@
-package org.robolectric.shadows;
+package org.robolectric.shadows.httpclient;
 
 import org.apache.http.HttpException;
 import org.apache.http.HttpResponse;
@@ -8,6 +8,7 @@ import org.apache.http.impl.client.DefaultRequestDirector;
 import org.apache.http.protocol.HttpContext;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.shadows.httpclient.FakeHttp;
 import org.robolectric.util.TestRunnerWithManifest;
 
 import java.io.IOException;

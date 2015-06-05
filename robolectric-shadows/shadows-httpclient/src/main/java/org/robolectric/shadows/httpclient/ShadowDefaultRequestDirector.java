@@ -1,4 +1,4 @@
-package org.robolectric.shadows;
+package org.robolectric.shadows.httpclient;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -26,7 +26,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.tester.org.apache.http.HttpRequestInfo;
 import org.robolectric.util.Util;
 
 import java.io.ByteArrayInputStream;
@@ -53,7 +52,7 @@ public class ShadowDefaultRequestDirector {
   protected UserTokenHandler userTokenHandler;
   protected HttpParams httpParams;
 
-  org.robolectric.tester.org.apache.http.impl.client.DefaultRequestDirector redirector;
+  org.robolectric.shadows.httpclient.DefaultRequestDirector redirector;
 
   public void __constructor__(
       Log log,
@@ -84,7 +83,7 @@ public class ShadowDefaultRequestDirector {
     this.httpParams = params;
 
     try {
-      redirector = new org.robolectric.tester.org.apache.http.impl.client.DefaultRequestDirector(
+      redirector = new org.robolectric.shadows.httpclient.DefaultRequestDirector(
           log,
           requestExec,
           conman,
@@ -135,7 +134,7 @@ public class ShadowDefaultRequestDirector {
 
   /**
    * @param index The index
-   * @deprecated Use {@link org.robolectric.shadows.FakeHttp#getSentHttpRequestInfo(int)} instead.)
+   * @deprecated Use {@link FakeHttp#getSentHttpRequestInfo(int)} instead.)
    * @return HttpRequest
    */
   @Deprecated
@@ -154,7 +153,7 @@ public class ShadowDefaultRequestDirector {
 
   /**
    * @param index The index
-   * @deprecated Use {@link org.robolectric.shadows.FakeHttp#getSentHttpRequest(int)} instead.)
+   * @deprecated Use {@link FakeHttp#getSentHttpRequest(int)} instead.)
    * @return HttpRequestInfo
    */
   @Deprecated
