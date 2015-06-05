@@ -1,11 +1,14 @@
-package org.robolectric.shadows;
+package org.robolectric.shadows.gms;
 
 import android.content.Context;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Implementation;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
 
+/**
+ * Shadow for {@link GooglePlayServicesUtil}
+ */
 @Implements(GooglePlayServicesUtil.class)
 public class ShadowGooglePlayServicesUtil {
   private static int availabilityCode = ConnectionResult.SERVICE_MISSING;
