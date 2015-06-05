@@ -1,4 +1,4 @@
-package org.robolectric.shadows;
+package org.robolectric.shadows.support.v4;
 
 import android.support.v4.content.Loader;
 import org.junit.Before;

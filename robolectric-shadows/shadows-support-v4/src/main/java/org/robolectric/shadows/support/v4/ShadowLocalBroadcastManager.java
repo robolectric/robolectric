@@ -1,4 +1,4 @@
-package org.robolectric.shadows;
+package org.robolectric.shadows.support.v4;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -11,6 +11,8 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.internal.ShadowExtractor;
+import org.robolectric.shadows.Provider;
+import org.robolectric.shadows.ShadowContext;
 import org.robolectric.util.ReflectionHelpers;
 
 import java.util.ArrayList;

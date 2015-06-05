@@ -1,4 +1,4 @@
-package org.robolectric.util;
+package org.robolectric.shadows.support.v4;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -10,10 +10,11 @@ import android.widget.LinearLayout;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
+import org.robolectric.util.TestRunnerWithManifest;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.util.SupportFragmentTestUtil.startFragment;
-import static org.robolectric.util.SupportFragmentTestUtil.startVisibleFragment;
+import static org.robolectric.shadows.support.v4.SupportFragmentTestUtil.startFragment;
+import static org.robolectric.shadows.support.v4.SupportFragmentTestUtil.startVisibleFragment;
 
 @RunWith(TestRunnerWithManifest.class)
 public class SupportFragmentTestUtilTest {

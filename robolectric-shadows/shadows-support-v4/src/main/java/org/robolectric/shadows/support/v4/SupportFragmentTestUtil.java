@@ -1,4 +1,4 @@
-package org.robolectric.util;
+package org.robolectric.shadows.support.v4;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;

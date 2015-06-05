@@ -1,7 +1,7 @@
-package org.robolectric.shadows;
+package org.robolectric.shadows.support.v4;
 
-import org.junit.Before;
 import org.junit.Test;
+import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;

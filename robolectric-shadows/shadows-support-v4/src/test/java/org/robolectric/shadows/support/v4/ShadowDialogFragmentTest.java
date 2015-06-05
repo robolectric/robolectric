@@ -1,4 +1,4 @@
-package org.robolectric.shadows;
+package org.robolectric.shadows.support.v4;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -16,6 +16,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.internal.ShadowExtractor;
+import org.robolectric.shadows.ShadowDialog;
 import org.robolectric.util.TestRunnerWithManifest;
 import org.robolectric.util.Transcript;
 

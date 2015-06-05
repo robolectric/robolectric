@@ -1,4 +1,4 @@
-package org.robolectric.shadows;
+package org.robolectric.shadows.support.v4;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -10,6 +10,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.internal.ShadowExtractor;
+import org.robolectric.shadows.support.v4.ShadowLocalBroadcastManager;
 import org.robolectric.util.TestRunnerWithManifest;
 import org.robolectric.util.Transcript;
 

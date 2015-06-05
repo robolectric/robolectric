@@ -1,4 +1,4 @@
-package org.robolectric.shadows;
+package org.robolectric.shadows.support.v4;
 
 import android.content.Context;
 import org.robolectric.Robolectric;
