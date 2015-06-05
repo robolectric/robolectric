@@ -1,4 +1,4 @@
-package org.robolectric.shadows;
+package org.robolectric.shadows.maps;
 
 import android.graphics.drawable.Drawable;
 import com.google.android.maps.ItemizedOverlay;

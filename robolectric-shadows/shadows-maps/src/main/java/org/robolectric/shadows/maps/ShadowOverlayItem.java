@@ -1,4 +1,4 @@
-package org.robolectric.shadows;
+package org.robolectric.shadows.maps;
 
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.OverlayItem;

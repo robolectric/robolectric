@@ -1,4 +1,4 @@
-package org.robolectric.shadows;
+package org.robolectric.shadows.maps;
 
 import android.location.Address;
 import android.location.Geocoder;

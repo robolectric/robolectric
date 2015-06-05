@@ -1,4 +1,4 @@
-package org.robolectric.shadows;
+package org.robolectric.shadows.maps;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -8,6 +8,7 @@ import android.os.Bundle;
 import com.google.android.maps.MapActivity;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.shadows.ShadowActivity;
 
 @Implements(MapActivity.class)
 public class ShadowMapActivity extends ShadowActivity {

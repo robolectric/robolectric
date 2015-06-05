@@ -1,4 +1,4 @@
-package org.robolectric.shadows;
+package org.robolectric.shadows.maps;
 
 import android.content.Context;
 import android.graphics.Point;
@@ -13,6 +13,9 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.internal.ShadowExtractor;
+import org.robolectric.shadows.RoboAttributeSet;
+import org.robolectric.shadows.ShadowApplication;
+import org.robolectric.shadows.ShadowViewGroup;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.res.Attribute;
 import org.robolectric.internal.Shadow;

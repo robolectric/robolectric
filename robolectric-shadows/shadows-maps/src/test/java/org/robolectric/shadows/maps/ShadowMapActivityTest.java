@@ -1,4 +1,4 @@
-package org.robolectric.shadows;
+package org.robolectric.shadows.maps;
 
 import android.os.Bundle;
 import com.google.android.maps.MapActivity;

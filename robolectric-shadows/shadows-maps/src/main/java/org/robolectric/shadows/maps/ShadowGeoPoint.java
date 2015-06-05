@@ -1,11 +1,9 @@
-package org.robolectric.shadows;
+package org.robolectric.shadows.maps;
 
 import com.google.android.maps.GeoPoint;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.internal.ShadowExtractor;
-
-import static org.robolectric.shadows.ShadowMapView.fromE6;
 
 @Implements(GeoPoint.class)
 public class ShadowGeoPoint {
@@ -53,8 +51,8 @@ public class ShadowGeoPoint {
   @Override @Implementation
   public String toString() {
     return "ShadowGeoPoint{" +
-        "lat=" + fromE6(lat) +
-        ", lng=" + fromE6(lng) +
+        "lat=" + ShadowMapView.fromE6(lat) +
+        ", lng=" + ShadowMapView.fromE6(lng) +
         '}';
   }
 

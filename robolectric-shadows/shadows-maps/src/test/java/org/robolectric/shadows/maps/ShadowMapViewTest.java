@@ -1,4 +1,4 @@
-package org.robolectric.shadows;
+package org.robolectric.shadows.maps;
 
 import android.app.Activity;
 import android.graphics.Point;
@@ -18,7 +18,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.util.TestRunnerWithManifest;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.shadows.ShadowMapView.toE6;
+import static org.robolectric.shadows.maps.ShadowMapView.toE6;
 
 @RunWith(TestRunnerWithManifest.class)
 public class ShadowMapViewTest {
