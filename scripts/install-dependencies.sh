@@ -80,4 +80,4 @@ install_aar "com.android.support" "multidex" "1.0.0" "${ANDROID_REPOSITORY}/com/
 install_aar "com.google.android.gms" "play-services" "6.5.87" "${GOOGLE_REPOSITORY}/com/google/android/gms/play-services/6.5.87/play-services-6.5.87.aar"
 
 # Install maps
-install_maps "com.google.android.maps" "maps" "18" "3"
+install_maps "com.google.android.maps" "maps" "18" "4"
