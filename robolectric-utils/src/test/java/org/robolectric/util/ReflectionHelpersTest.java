@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -114,6 +115,15 @@ public class ReflectionHelpersTest {
   public void callInstanceMethodReflectively_whenMultipleSignaturesExistForAMethodName_callsMethodWithCorrectSignature() {
     ExampleDescendant example = new ExampleDescendant();
     assertThat(ReflectionHelpers.callInstanceMethod(example, "returnNumber", ClassParameter.from(int.class, 5)))
+      .isEqualTo(5);
+  }
+
+  @Test
+  public void callInstanceMethod_viaMethodInstance_callsMethod() throws NoSuchMethodException {
+    ExampleDescendant example = new ExampleDescendant();
+    Method method = ExampleDescendant.class.getDeclaredMethod("returnNumber", int.class);
+    method.setAccessible(true);
+    assertThat(ReflectionHelpers.callInstanceMethod(example, method, 5))
       .isEqualTo(5);
   }
 

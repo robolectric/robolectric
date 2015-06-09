@@ -4,6 +4,10 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.MessageQueue;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 import javax.annotation.Generated;
 
 import org.robolectric.annotation.HiddenApi;
@@ -27,8 +31,6 @@ import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 @Generated("org.robolectric.shadows.ShadowMessageQueue.java.vm")
 @Implements(MessageQueue.class)
 public class ShadowMessageQueue {
-  @RealObject
-  private MessageQueue realQueue;
 
 #if ($api >= 21)
 #set($ptrClass = "long")
@@ -38,7 +40,30 @@ public class ShadowMessageQueue {
 #set($recycle = "recycle")
 #end
 
-#set($Integer = 0)
+  // Cache fields & methods that are invoked reflectively.
+  // Saves having to look them up on every request.
+  private static final Field messagesField;
+  private static final Method enqueueMethod;
+  private static final Method markInUseMethod;
+  private static final Method recycleMethod;
+
+  static {
+    try {
+      messagesField = MessageQueue.class.getDeclaredField("mMessages");
+      messagesField.setAccessible(true);
+      enqueueMethod = MessageQueue.class.getDeclaredMethod(directMethodName("enqueueMessage"), Message.class, long.class);
+      enqueueMethod.setAccessible(true);
+      markInUseMethod = Message.class.getDeclaredMethod("markInUse");
+      markInUseMethod.setAccessible(true);
+      recycleMethod = Message.class.getDeclaredMethod("$recycle");
+      recycleMethod.setAccessible(true);
+    } catch (ReflectiveOperationException e) {
+	  throw new ExceptionInInitializerError(e);
+    }
+  }
+
+  @RealObject
+  private MessageQueue realQueue;
 
   // Stub out the native peer - scheduling
   // is handled by the Scheduler class which is user-driven
@@ -72,11 +97,21 @@ public class ShadowMessageQueue {
   }
 
   public Message getHead() {
-    return getField(realQueue, "mMessages");
+    try {
+      return (Message)messagesField.get(realQueue);
+    } catch (IllegalAccessException e) {
+      // This should never happen
+      throw new RuntimeException(e);
+    }
   }
   
   public void setHead(Message msg) {
-    setField(realQueue, "mMessages", msg);
+    try {
+      messagesField.set(realQueue, msg);
+    } catch (IllegalAccessException e) {
+      // This should never happen
+      throw new RuntimeException(e);
+    }
   }
 
   public void reset() {
@@ -85,7 +120,7 @@ public class ShadowMessageQueue {
   
   @Implementation
   public boolean enqueueMessage(final Message msg, long when) {
-    final boolean retval = directlyOn(realQueue, MessageQueue.class, "enqueueMessage", from(Message.class, msg), from(long.class, when));
+    final boolean retval = callInstanceMethod(realQueue, enqueueMethod, msg, when);
     if (retval) {
       final Scheduler scheduler = shadowOf(msg.getTarget().getLooper()).getScheduler();
       final Runnable callback = new Runnable() {
@@ -134,9 +169,9 @@ public class ShadowMessageQueue {
     // If target is null it means the message has been removed
     // from the queue prior to being dispatched by the scheduler.
     if (target != null) {
-      callInstanceMethod(msg, "markInUse");
+      callInstanceMethod(msg, markInUseMethod);
       target.dispatchMessage(msg);
-      callInstanceMethod(msg, "$recycle");
+      callInstanceMethod(msg, recycleMethod);
     }
   }
 }
