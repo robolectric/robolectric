@@ -13,6 +13,19 @@ public class ResNameTest {
     assertThat(ResName.qualifyResourceName("name", "default.package", "deftype")).isEqualTo("default.package:deftype/name");
   }
 
+  @Test public void shouldQualifyResNameFromString() throws Exception {
+    assertThat(ResName.qualifyResName("some.package:type/name", "default_package", "default_type"))
+        .isEqualTo(new ResName("some.package", "type", "name"));
+    assertThat(ResName.qualifyResName("some.package:name", "default_package", "default_type"))
+        .isEqualTo(new ResName("some.package", "default_type", "name"));
+    assertThat(ResName.qualifyResName("type/name", "default_package", "default_type"))
+        .isEqualTo(new ResName("default_package", "type", "name"));
+    assertThat(ResName.qualifyResName("name", "default_package", "default_type"))
+        .isEqualTo(new ResName("default_package", "default_type", "name"));
+    assertThat(ResName.qualifyResName("type/package:name", "default_package", "default_type"))
+        .isEqualTo(new ResName("package", "type", "name"));
+  }
+
   @Test
   public void qualifyFromFilePathShouldExtractResourceTypeAndNameFromUnqualifiedPath() {
     final ResName actual = ResName.qualifyFromFilePath("some.package", "./res/drawable/icon.png");
