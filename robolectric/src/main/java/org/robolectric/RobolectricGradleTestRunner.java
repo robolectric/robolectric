@@ -66,7 +66,7 @@ public class RobolectricGradleTestRunner extends RobolectricTestRunner {
     return new AndroidManifest(manifest, res, assets, packageName);
   }
 
-  private String getType(Config config) {
+  private static String getType(Config config) {
     try {
       return ReflectionHelpers.getStaticField(config.constants(), "BUILD_TYPE");
     } catch (Throwable e) {
@@ -74,7 +74,7 @@ public class RobolectricGradleTestRunner extends RobolectricTestRunner {
     }
   }
 
-  private String getFlavor(Config config) {
+  private static String getFlavor(Config config) {
     try {
       return ReflectionHelpers.getStaticField(config.constants(), "FLAVOR");
     } catch (Throwable e) {
@@ -82,7 +82,7 @@ public class RobolectricGradleTestRunner extends RobolectricTestRunner {
     }
   }
 
-  private String getPackageName(Config config) {
+  private static String getPackageName(Config config) {
     try {
       final String packageName = config.packageName();
       if (packageName != null && !packageName.isEmpty()) {
