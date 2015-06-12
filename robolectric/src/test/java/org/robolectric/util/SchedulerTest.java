@@ -22,6 +22,18 @@ public class SchedulerTest {
   }
 
   @Test
+  public void unPause_shouldRunPendingTasks() {
+    scheduler.postDelayed(new AddToTranscript("one"), 0);
+    scheduler.postDelayed(new AddToTranscript("two"), 0);
+    scheduler.postDelayed(new AddToTranscript("three"), 1000);
+    transcript.assertNoEventsSoFar();
+    final long time = scheduler.getCurrentTime();
+    scheduler.unPause();
+    transcript.assertEventsSoFar("one", "two");
+    assertThat(scheduler.getCurrentTime()).as("time").isEqualTo(time);
+  }
+  
+  @Test
   public void advanceTo_shouldAdvanceTimeEvenIfThereIsNoWork() throws Exception {
     scheduler.advanceTo(1000);
     assertThat(scheduler.getCurrentTime()).isEqualTo(1000);
