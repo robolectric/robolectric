@@ -7,7 +7,7 @@ import org.robolectric.TestRunners;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowIntentFilterAuthorityEntryTest {
   @Test(expected = NumberFormatException.class)
   public void constructor_shouldThrowAnExceptionIfPortIsNotAValidNumber() throws Exception {

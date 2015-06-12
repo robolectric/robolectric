@@ -12,7 +12,7 @@ import java.io.FileOutputStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowParcelFileDescriptorTest {
   private File file;
 

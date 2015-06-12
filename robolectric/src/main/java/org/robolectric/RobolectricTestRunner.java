@@ -113,16 +113,19 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     return new ShadowWrangler(shadowMap);
   }
 
-  protected AndroidManifest createAppManifest(FsFile manifestFile, FsFile resDir, FsFile assetDir) {
+  protected AndroidManifest createAppManifest(FsFile manifestFile, FsFile resDir, FsFile assetDir, String packageName) {
     if (!manifestFile.exists()) {
       System.out.print("WARNING: No manifest file found at " + manifestFile.getPath() + ".");
       System.out.println("Falling back to the Android OS resources only.");
       System.out.println("To remove this warning, annotate your test class with @Config(manifest=Config.NONE).");
       return null;
     }
-    AndroidManifest manifest = new AndroidManifest(manifestFile, resDir, assetDir);
-    manifest.setPackageName(System.getProperty("android.package"));
-    return manifest;
+
+    Logger.debug("Robolectric assets directory: " + assetDir.getPath());
+    Logger.debug("   Robolectric res directory: " + resDir.getPath());
+    Logger.debug("   Robolectric manifest path: " + manifestFile.getPath());
+    Logger.debug("    Robolectric package name: " + packageName);
+    return new AndroidManifest(manifestFile, resDir, assetDir, packageName);
   }
 
   public InstrumentationConfiguration createClassLoaderConfig() {
@@ -158,7 +161,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     };
   }
 
-  private void invokeAfterClass(final Class<?> clazz) throws Throwable {
+  private static void invokeAfterClass(final Class<?> clazz) throws Throwable {
     final TestClass testClass = new TestClass(clazz);
     final List<FrameworkMethod> afters = testClass.getAnnotatedMethods(AfterClass.class);
     for (FrameworkMethod after : afters) {
@@ -288,6 +291,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     String manifestProperty = System.getProperty("android.manifest");
     String resourcesProperty = System.getProperty("android.resources");
     String assetsProperty = System.getProperty("android.assets");
+    String packageName = System.getProperty("android.package");
 
     FsFile baseDir;
     FsFile manifestFile;
@@ -317,6 +321,11 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       assetDir = baseDir.join(config.assetDir());
     }
 
+    String configPackageName = config.packageName();
+    if (configPackageName != null && !configPackageName.isEmpty()) {
+      packageName = configPackageName;
+    }
+
     List<FsFile> libraryDirs = null;
     if (config.libraries().length > 0) {
       libraryDirs = new ArrayList<>();
@@ -325,12 +334,12 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       }
     }
 
-    ManifestIdentifier identifier = new ManifestIdentifier(manifestFile, resDir, assetDir, libraryDirs);
+    ManifestIdentifier identifier = new ManifestIdentifier(manifestFile, resDir, assetDir, packageName, libraryDirs);
     synchronized (appManifestsByFile) {
       AndroidManifest appManifest;
       appManifest = appManifestsByFile.get(identifier);
       if (appManifest == null) {
-        appManifest = createAppManifest(manifestFile, resDir, assetDir);
+        appManifest = createAppManifest(manifestFile, resDir, assetDir, packageName);
         if (libraryDirs != null) {
           appManifest.setLibraryDirectories(libraryDirs);
         }
@@ -523,13 +532,15 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     private final FsFile manifestFile;
     private final FsFile resDir;
     private final FsFile assetDir;
+    private final String packageName;
     private final List<FsFile> libraryDirs;
 
-    public ManifestIdentifier(FsFile manifestFile, FsFile resDir, FsFile assetDir,
+    public ManifestIdentifier(FsFile manifestFile, FsFile resDir, FsFile assetDir, String packageName,
         List<FsFile> libraryDirs) {
       this.manifestFile = manifestFile;
       this.resDir = resDir;
       this.assetDir = assetDir;
+      this.packageName = packageName;
       this.libraryDirs = libraryDirs != null ? libraryDirs : Collections.<FsFile>emptyList();
     }
 
@@ -543,7 +554,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       return assetDir.equals(that.assetDir)
           && libraryDirs.equals(that.libraryDirs)
           && manifestFile.equals(that.manifestFile)
-          && resDir.equals(that.resDir);
+          && resDir.equals(that.resDir)
+          && ((packageName == null && that.packageName == null) || (packageName != null && packageName.equals(that.packageName)));
     }
 
     @Override
@@ -551,6 +563,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       int result = manifestFile.hashCode();
       result = 31 * result + resDir.hashCode();
       result = 31 * result + assetDir.hashCode();
+      result = 31 * result + (packageName == null ? 0 : packageName.hashCode());
       result = 31 * result + libraryDirs.hashCode();
       return result;
     }

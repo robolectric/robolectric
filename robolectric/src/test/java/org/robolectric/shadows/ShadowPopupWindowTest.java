@@ -28,7 +28,7 @@ import static org.robolectric.Shadows.shadowOf;
 @RunWith(Enclosed.class)
 public class ShadowPopupWindowTest {
 
-  @RunWith(TestRunners.WithDefaults.class)
+  @RunWith(TestRunners.MultiApiWithDefaults.class)
   public static class WithoutContentView {
 
     private PopupWindow popupWindow;
@@ -104,7 +104,7 @@ public class ShadowPopupWindowTest {
     }
   }
 
-  @RunWith(TestRunners.WithDefaults.class)
+  @RunWith(TestRunners.MultiApiWithDefaults.class)
   public static class WithContentView {
 
     private WindowManager windowManager;

@@ -11,11 +11,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowSystemClockTest {
   @Test
   public void shouldAllowForFakingOfTime() throws Exception {
-    assertThat(SystemClock.uptimeMillis()).isEqualTo(0);
+    assertThat(SystemClock.uptimeMillis()).isNotEqualTo(1000);
     Robolectric.getForegroundThreadScheduler().advanceTo(1000);
     assertThat(SystemClock.uptimeMillis()).isEqualTo(1000);
   }

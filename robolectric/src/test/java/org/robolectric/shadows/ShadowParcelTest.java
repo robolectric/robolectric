@@ -20,7 +20,7 @@ import android.accounts.Account;
 import android.os.Bundle;
 import android.os.Parcel;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowParcelTest {
 
   private Parcel parcel;

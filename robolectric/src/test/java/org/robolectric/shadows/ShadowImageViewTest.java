@@ -24,7 +24,7 @@ import static org.junit.Assert.assertTrue;
 import static org.robolectric.RuntimeEnvironment.application;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowImageViewTest {
   private ImageView imageView;
 

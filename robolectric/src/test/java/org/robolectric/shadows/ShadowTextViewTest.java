@@ -46,7 +46,7 @@ import static org.mockito.Mockito.verify;
 import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowTextViewTest {
 
   private static final String INITIAL_TEXT = "initial text";

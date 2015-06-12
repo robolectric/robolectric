@@ -1,16 +1,18 @@
 package org.robolectric.shadows;
 
 import android.app.Activity;
+import android.os.Build;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowCookieSyncManagerTest {
 
   @Test
@@ -25,6 +27,8 @@ public class ShadowCookieSyncManagerTest {
   }
 
   @Test
+  @Config(sdk = {
+      Build.VERSION_CODES.LOLLIPOP })
   public void testSyncAndReset() {
     CookieSyncManager.createInstance(new Activity());
     CookieSyncManager mgr = CookieSyncManager.getInstance();

@@ -14,7 +14,7 @@ import org.robolectric.annotation.Config;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowPowerManagerTest {
   private PowerManager powerManager;
   private ShadowPowerManager shadowPowerManager;

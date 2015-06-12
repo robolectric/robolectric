@@ -1,5 +1,7 @@
 package org.robolectric;
 
+import android.os.Build;
+
 import org.junit.runner.Runner;
 import org.junit.runners.Suite;
 import org.junit.runners.model.FrameworkMethod;
@@ -16,6 +18,36 @@ import java.util.List;
  * A test runner for Robolectric that will run a test against multiple API versions.
  */
 public class MultiApiRobolectricTestRunner extends Suite {
+
+  public static final int[] JELLY_BEAN_UP = {
+      Build.VERSION_CODES.JELLY_BEAN,
+      Build.VERSION_CODES.JELLY_BEAN_MR1,
+      Build.VERSION_CODES.JELLY_BEAN_MR2,
+      Build.VERSION_CODES.KITKAT,
+      Build.VERSION_CODES.LOLLIPOP
+  };
+
+  public static final int[] JELLY_BEAN_MR1_UP = {
+      Build.VERSION_CODES.JELLY_BEAN_MR1,
+      Build.VERSION_CODES.JELLY_BEAN_MR2,
+      Build.VERSION_CODES.KITKAT,
+      Build.VERSION_CODES.LOLLIPOP
+  };
+
+  public static final int[] JELLY_BEAN_MR2_UP = {
+      Build.VERSION_CODES.JELLY_BEAN_MR2,
+      Build.VERSION_CODES.KITKAT,
+      Build.VERSION_CODES.LOLLIPOP
+  };
+
+  public static final int[] KIT_KAT_UP = {
+      Build.VERSION_CODES.KITKAT,
+      Build.VERSION_CODES.LOLLIPOP
+  };
+
+  public static final int[] LOLLIPOP_UP = {
+      Build.VERSION_CODES.LOLLIPOP
+  };
 
   protected static class TestRunnerForApiVersion extends RobolectricTestRunner {
 

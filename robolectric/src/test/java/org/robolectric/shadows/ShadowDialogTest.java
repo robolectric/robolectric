@@ -24,7 +24,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.robolectric.util.TestUtil.assertInstanceOf;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowDialogTest {
   @Test
   public void shouldCallOnDismissListener() throws Exception {

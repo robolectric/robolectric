@@ -9,7 +9,7 @@ import org.robolectric.internal.Shadow;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowNetworkInfoTest {
 
   @Test

@@ -13,7 +13,7 @@ import org.robolectric.annotation.Config;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Config(manifest = Config.NONE)
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowNonAppLibraryTest {
   @Test public void shouldStillCreateAnApplication() throws Exception {
     assertThat(RuntimeEnvironment.application).isExactlyInstanceOf(Application.class);

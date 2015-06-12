@@ -19,7 +19,7 @@ import java.util.Date;
 import static junit.framework.Assert.assertEquals;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowAlarmManagerTest {
 
   private MyActivity activity;

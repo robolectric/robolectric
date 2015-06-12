@@ -37,7 +37,7 @@ import static org.robolectric.shadows.ShadowMediaPlayer.addException;
 import static org.robolectric.shadows.ShadowMediaPlayer.State.*;
 import static org.robolectric.shadows.util.DataSource.toDataSource;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowMediaPlayerTest {
 
   private static final String DUMMY_SOURCE = "dummy-source";
@@ -939,6 +939,7 @@ public class ShadowMediaPlayerTest {
     shadowMediaPlayer.setState(PREPARED);
     shadowMediaPlayer.setSeekDelay(100);
 
+    final long startTime = scheduler.getCurrentTime();
     mediaPlayer.start();
     scheduler.advanceBy(200);
     mediaPlayer.seekTo(450);
@@ -967,7 +968,7 @@ public class ShadowMediaPlayerTest {
     assertThat(scheduler.advanceToLastPostedRunnable()).isTrue();
     Mockito.verify(completionListener).onCompletion(mediaPlayer);
     Mockito.verifyNoMoreInteractions(seekListener);
-    assertThat(scheduler.getCurrentTime()).isEqualTo(750);
+    assertThat(scheduler.getCurrentTime()).isEqualTo(startTime + 750);
     assertThat(mediaPlayer.getCurrentPosition()).isEqualTo(1000);
     assertThat(shadowMediaPlayer.getState()).isEqualTo(PLAYBACK_COMPLETED);
   }

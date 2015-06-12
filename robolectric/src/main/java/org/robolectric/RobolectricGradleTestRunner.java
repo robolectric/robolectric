@@ -38,7 +38,10 @@ public class RobolectricGradleTestRunner extends RobolectricTestRunner {
     final FileFsFile assets;
     final FileFsFile manifest;
 
-    if (FileFsFile.from(BUILD_OUTPUT, "res").exists()) {
+    // res/merged added in Android Gradle plugin 1.3-beta1
+    if (FileFsFile.from(BUILD_OUTPUT, "res", "merged").exists()) {
+      res = FileFsFile.from(BUILD_OUTPUT, "res", "merged", flavor, type);
+    } else if (FileFsFile.from(BUILD_OUTPUT, "res").exists()) {
       res = FileFsFile.from(BUILD_OUTPUT, "res", flavor, type);
     } else {
       res = FileFsFile.from(BUILD_OUTPUT, "bundles", flavor, type, "res");
@@ -63,7 +66,7 @@ public class RobolectricGradleTestRunner extends RobolectricTestRunner {
     return new AndroidManifest(manifest, res, assets, packageName);
   }
 
-  private String getType(Config config) {
+  private static String getType(Config config) {
     try {
       return ReflectionHelpers.getStaticField(config.constants(), "BUILD_TYPE");
     } catch (Throwable e) {
@@ -71,7 +74,7 @@ public class RobolectricGradleTestRunner extends RobolectricTestRunner {
     }
   }
 
-  private String getFlavor(Config config) {
+  private static String getFlavor(Config config) {
     try {
       return ReflectionHelpers.getStaticField(config.constants(), "FLAVOR");
     } catch (Throwable e) {
@@ -79,7 +82,7 @@ public class RobolectricGradleTestRunner extends RobolectricTestRunner {
     }
   }
 
-  private String getPackageName(Config config) {
+  private static String getPackageName(Config config) {
     try {
       final String packageName = config.packageName();
       if (packageName != null && !packageName.isEmpty()) {

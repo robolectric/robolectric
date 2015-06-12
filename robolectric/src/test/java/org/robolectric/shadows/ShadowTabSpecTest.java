@@ -18,7 +18,7 @@ import org.robolectric.TestRunners;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowTabSpecTest {
   Drawable icon1;
 

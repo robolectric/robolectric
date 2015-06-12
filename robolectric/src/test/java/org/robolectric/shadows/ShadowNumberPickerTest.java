@@ -10,7 +10,7 @@ import org.robolectric.TestRunners;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowNumberPickerTest {
 
   @Test

@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
+import android.os.Build;
 
 import org.assertj.core.api.Assertions;
 import org.junit.After;
@@ -11,6 +12,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
 
 import com.almworks.sqlite4java.SQLiteConnection;
@@ -24,7 +26,9 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.shadows.ShadowSQLiteConnection.convertSQLWithLocalizedUnicodeCollator;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
+@Config(sdk = {
+    Build.VERSION_CODES.LOLLIPOP })
 public class ShadowSQLiteConnectionTest {
   private SQLiteDatabase database;
   private File databasePath;

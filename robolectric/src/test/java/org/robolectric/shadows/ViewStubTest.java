@@ -20,7 +20,7 @@ import static org.junit.Assert.*;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.TestUtil.TEST_PACKAGE;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ViewStubTest {
   private Context ctxt;
 

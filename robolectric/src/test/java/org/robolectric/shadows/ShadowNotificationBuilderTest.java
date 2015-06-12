@@ -3,16 +3,19 @@ package org.robolectric.shadows;
 import android.app.Notification;
 import android.app.Notification.Style;
 import android.app.PendingIntent;
+import android.os.Build;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowNotification.Progress;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowNotificationBuilderTest {
   private Notification notification;
   private ShadowNotification s;
@@ -45,6 +48,11 @@ public class ShadowNotificationBuilderTest {
   }
 
   @Test
+  @Config(sdk = {
+      Build.VERSION_CODES.JELLY_BEAN_MR1,
+      Build.VERSION_CODES.JELLY_BEAN_MR2,
+      Build.VERSION_CODES.KITKAT,
+      Build.VERSION_CODES.LOLLIPOP })
   public void build_setShowWhenOnNotification() {
     builder.setShowWhen(false);
     build();
@@ -174,6 +182,10 @@ public class ShadowNotificationBuilderTest {
   }
 
   @Test
+  @Config(sdk = {
+      Build.VERSION_CODES.JELLY_BEAN_MR2,
+      Build.VERSION_CODES.KITKAT,
+      Build.VERSION_CODES.LOLLIPOP })
   public void build_addsActionToNotification() throws Exception {
     PendingIntent action = PendingIntent.getBroadcast(RuntimeEnvironment.application, 0, null, 0);
     builder.addAction(0, "Action", action);

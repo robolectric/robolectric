@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.app.Activity;
 import android.content.res.*;
 import android.graphics.drawable.*;
+import android.os.Build;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import org.assertj.core.data.Offset;
@@ -24,7 +25,9 @@ import java.io.InputStream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
+@Config(sdk = {
+    Build.VERSION_CODES.LOLLIPOP })
 public class ShadowResourcesTest {
   private Resources resources;
 

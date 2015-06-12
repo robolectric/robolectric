@@ -10,7 +10,7 @@ import java.util.Date;
 
 import static org.junit.Assert.assertEquals;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowDateFormatTest {
 
   @Test

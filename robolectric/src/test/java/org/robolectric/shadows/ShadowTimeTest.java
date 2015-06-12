@@ -17,7 +17,7 @@ import org.robolectric.annotation.Config;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowTimeTest {
   private static final TimeZone DEFAULT_TIMEZONE = TimeZone.getDefault();
   
