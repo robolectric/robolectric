@@ -299,7 +299,7 @@ public class ShadowViewTest {
     ShadowView shadowView = shadowOf(view);
     assertFalse(shadowView.wasInvalidated());
 
-    ShadowLooper.unPauseMainLooper();
+    ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
     assertTrue(shadowView.wasInvalidated());
   }
 
