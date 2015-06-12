@@ -23,6 +23,9 @@ public class ShadowAccessibilityServiceTest {
     shadow = shadowOf(service);
   }
 
+  /**
+   * After performing a global action, it should be recorded.
+   */
   @Test
   public void shouldRecordPerformedAction(){
     service.performGlobalAction(AccessibilityService.GLOBAL_ACTION_BACK);
