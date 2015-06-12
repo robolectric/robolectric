@@ -15,16 +15,17 @@ import java.util.List;
 @Implements(AccessibilityService.class)
 public class ShadowAccessibilityService extends ShadowService {
 
-  private final List<Integer> mGlobalActionsPerformed = new ArrayList<>();
+  private final List<Integer> globalActionsPerformed = new ArrayList<>();
 
     @Implementation
     public final boolean performGlobalAction(int action) {
-        mGlobalActionsPerformed.add(action);
-        return true;
+      globalActionsPerformed.add(action);
+      return true;
     }
 
+    @Implementation
     public List<Integer> getGlobalActionsPerformed() {
-        return mGlobalActionsPerformed;
+      return globalActionsPerformed;
     }
 }
 
