@@ -8,6 +8,9 @@ import android.media.AudioAttributes;
 
 import org.robolectric.annotation.internal.DoNotInstrument;
 
+/**
+ * Robolectric implementation of {@link android.os.Vibrator}.
+ */
 @DoNotInstrument
 public class RoboVibrator extends Vibrator {
   private boolean vibrating;

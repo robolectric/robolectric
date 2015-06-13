@@ -12,33 +12,31 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Shadow for {@code MimeTypeMap} that allows custom extension to mimetype mapping to be set up by tests.
+ * Shadow for {@link android.webkit.MimeTypeMap}.
  */
 @Implements(MimeTypeMap.class)
 public class ShadowMimeTypeMap {
-
-  Map<String, String> extensionToMimeTypeMap = new HashMap<>();
-  Map<String, String> mimeTypeToExtensionMap = new HashMap<>();
-
-  static MimeTypeMap sSingleton = null;
-  static Object sSingletonLock = new Object();
+  private final Map<String, String> extensionToMimeTypeMap = new HashMap<>();
+  private final Map<String, String> mimeTypeToExtensionMap = new HashMap<>();
+  private static MimeTypeMap singleton = null;
+  private static final Object singletonLock = new Object();
 
   @Implementation
   public static MimeTypeMap getSingleton() {
-    if (sSingleton == null) {
-      synchronized (sSingletonLock) {
-        if (sSingleton == null) {
-          sSingleton = Shadow.newInstanceOf(MimeTypeMap.class);
+    if (singleton == null) {
+      synchronized (singletonLock) {
+        if (singleton == null) {
+          singleton = Shadow.newInstanceOf(MimeTypeMap.class);
         }
       }
     }
 
-    return sSingleton;
+    return singleton;
   }
 
   @Resetter
   public static void reset() {
-    if (sSingleton != null) {
+    if (singleton != null) {
       Shadows.shadowOf(getSingleton()).clearMappings();
     }
   }

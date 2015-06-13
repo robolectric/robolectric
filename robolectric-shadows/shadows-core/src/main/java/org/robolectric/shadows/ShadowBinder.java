@@ -9,6 +9,9 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 
+/**
+ * Shadow for {@link android.os.Binder}.
+ */
 @Implements(Binder.class)
 public class ShadowBinder {
   @RealObject

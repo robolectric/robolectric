@@ -10,7 +10,7 @@ import android.support.v4.content.AsyncTaskLoader;
 import java.util.concurrent.Callable;
 
 /**
- * Shadow AsyncTaskLoader from the support library.
+ * Shadow for {@link android.support.v4.content.AsyncTaskLoader}.
  */
 @Implements(AsyncTaskLoader.class)
 public class ShadowAsyncTaskLoader<D> {

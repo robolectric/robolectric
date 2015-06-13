@@ -7,6 +7,9 @@ import android.support.v4.app.FragmentManager;
 import android.widget.LinearLayout;
 import org.robolectric.Robolectric;
 
+/**
+ * Utilities for creating Fragments for testing.
+ */
 public class SupportFragmentTestUtil {
 
   public static void startFragment(Fragment fragment) {
@@ -18,7 +21,6 @@ public class SupportFragmentTestUtil {
     buildSupportFragmentManager(fragmentActivityClass)
         .beginTransaction().add(fragment, null).commit();
   }
-
 
   public static void startVisibleFragment(Fragment fragment) {
     buildSupportFragmentManager(FragmentUtilActivity.class)

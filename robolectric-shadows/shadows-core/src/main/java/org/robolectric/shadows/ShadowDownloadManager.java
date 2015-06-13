@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Shadows Androids DownloadManager
+ * Shadow for {@link android.app.DownloadManager}.
  */
 @Implements(DownloadManager.class)
 public class ShadowDownloadManager {

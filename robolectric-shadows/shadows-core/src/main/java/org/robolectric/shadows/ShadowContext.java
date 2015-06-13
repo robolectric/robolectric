@@ -20,7 +20,7 @@ import java.util.List;
 import static org.robolectric.Shadows.shadowOf;
 
 /**
- * Calls through to the {@code resourceLoader} to actually load resources.
+ * Shadow for {@link android.content.Context}.
  */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Context.class)

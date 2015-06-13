@@ -16,11 +16,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Shadow for {@link android.graphics.drawable.StateListDrawable}.
+ */
 @Implements(StateListDrawable.class)
 public class ShadowStateListDrawable extends ShadowDrawable {
-
-  private Map<Integer, Integer> stateToResource = new HashMap<>();
-  private Map<List<Integer>, Drawable> stateToDrawable = new HashMap<>();
+  private final Map<Integer, Integer> stateToResource = new HashMap<>();
+  private final Map<List<Integer>, Drawable> stateToDrawable = new HashMap<>();
 
   public void addState(int stateId, int resId) {
     stateToResource.put(stateId, resId);
@@ -37,7 +39,6 @@ public class ShadowStateListDrawable extends ShadowDrawable {
 
   @Implementation
   public void inflate(Resources r, XmlPullParser parser, AttributeSet attrs) throws XmlPullParserException, IOException {
-    // todo 2.0-cleanup
   }
 
   /**

@@ -14,6 +14,9 @@ import org.robolectric.shadows.util.DataSource;
 
 import static org.robolectric.shadows.util.DataSource.toDataSource;
 
+/**
+ * Shadow for {@link android.media.MediaMetadataRetriever}.
+ */
 @Implements(MediaMetadataRetriever.class)
 public class ShadowMediaMetadataRetriever {
   private DataSource dataSource;

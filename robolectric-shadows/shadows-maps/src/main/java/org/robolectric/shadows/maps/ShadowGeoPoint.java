@@ -5,6 +5,9 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.internal.ShadowExtractor;
 
+/**
+ * Shadow for {@link com.google.android.maps.GeoPoint}.
+ */
 @Implements(GeoPoint.class)
 public class ShadowGeoPoint {
   private int lat;

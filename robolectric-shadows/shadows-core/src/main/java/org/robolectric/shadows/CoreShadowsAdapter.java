@@ -15,7 +15,7 @@ import org.robolectric.util.Scheduler;
 import static org.robolectric.Shadows.shadowOf;
 
 /**
- * This is the interface between the Robolectric runtime and the robolectric-shadows module.
+ * Interface between the Robolectric runtime and the shadows-core module.
  */
 public class CoreShadowsAdapter implements ShadowsAdapter {
   @Override

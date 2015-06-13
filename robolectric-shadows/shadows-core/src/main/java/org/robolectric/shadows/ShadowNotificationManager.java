@@ -10,10 +10,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Shadow for {@link android.app.NotificationManager}.
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(NotificationManager.class)
 public class ShadowNotificationManager {
-
   private Map<Key, Notification> notifications = new HashMap<>();
 
   @Implementation

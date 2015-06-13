@@ -10,6 +10,9 @@ import org.robolectric.internal.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
+/**
+ * Shadow for {@link android.hardware.display.DisplayManagerGlobal}.
+ */
 @Implements(value = DisplayManagerGlobal.class, isInAndroidSdk = false)
 public class ShadowDisplayManagerGlobal {
   private static final RoboDisplayManager displayManager = new RoboDisplayManager();

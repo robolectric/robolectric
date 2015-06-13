@@ -4,6 +4,9 @@ import android.view.animation.LayoutAnimationController;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
+/**
+ * Shadow for {@link android.view.animation.LayoutAnimationController}.
+ */
 @Implements(LayoutAnimationController.class)
 public class ShadowLayoutAnimationController {
   @RealObject

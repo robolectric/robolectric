@@ -18,6 +18,9 @@ import org.robolectric.internal.Shadow;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Shadow for {@link android.widget.TabHost}.
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(TabHost.class)
 public class ShadowTabHost extends ShadowFrameLayout {
@@ -26,7 +29,7 @@ public class ShadowTabHost extends ShadowFrameLayout {
   private int currentTab = -1;
 
   @RealObject
-  TabHost realObject;
+  private TabHost realObject;
 
   @Implementation
   public android.widget.TabHost.TabSpec newTabSpec(java.lang.String tag) {

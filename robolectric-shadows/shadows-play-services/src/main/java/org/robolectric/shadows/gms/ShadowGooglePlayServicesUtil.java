@@ -7,7 +7,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 
 /**
- * Shadow for {@link GooglePlayServicesUtil}
+ * Shadow for {@link com.google.android.gms.common.GooglePlayServicesUtil}.
  */
 @Implements(GooglePlayServicesUtil.class)
 public class ShadowGooglePlayServicesUtil {

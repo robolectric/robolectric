@@ -10,6 +10,9 @@ import org.robolectric.util.ReflectionHelpers;
 
 import static org.robolectric.internal.Shadow.directlyOn;
 
+/**
+ * Shadow for {@link android.animation.ValueAnimator}.
+ */
 @Implements(ValueAnimator.class)
 public class ShadowValueAnimator {
 
@@ -44,6 +47,8 @@ public class ShadowValueAnimator {
   /**
    * Returns the value that was set as the repeat count. This is otherwise the same
    * as getRepeatCount(), except when the count was set to infinite.
+   *
+   * @return Repeat count.
    */
   public int getActualRepeatCount() {
     return actualRepeatCount;

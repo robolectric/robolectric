@@ -6,6 +6,9 @@ import android.view.WindowManagerGlobal;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
+/**
+ * Shadow for {@link android.view.WindowManagerGlobal}.
+ */
 @Implements(value = WindowManagerGlobal.class, isInAndroidSdk = false)
 public class ShadowWindowManagerGlobal {
 

@@ -7,6 +7,9 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.internal.Shadow;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
+/**
+ * Shadow for {@link android.preference.Preference}.
+ */
 @Implements(Preference.class)
 public class ShadowPreference {
   @RealObject private Preference realPreference;

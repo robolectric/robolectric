@@ -5,6 +5,9 @@ import org.robolectric.annotation.Implements;
 
 import static org.robolectric.internal.Shadow.newInstanceOf;
 
+/**
+ * Shadow for {@link android.webkit.JsPromptResult}.
+ */
 @Implements(JsPromptResult.class)
 public class ShadowJsPromptResult extends ShadowJsResult{
 

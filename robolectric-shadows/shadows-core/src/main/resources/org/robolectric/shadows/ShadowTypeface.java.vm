@@ -26,10 +26,11 @@ import java.util.Map;
 
 import static org.robolectric.Shadows.shadowOf;
 
-@Generated("org.robolectric.shadows.ShadowTypeface.java.vm")
+/**
+ * Shadow for {@link android.graphics.Typeface}.
+ */
 @Implements(Typeface.class)
 public class ShadowTypeface {
-
   private static Map<$ptrClassBoxed, FontDesc> FONTS = new HashMap<>();
   private static $ptrClass nextFontId = 1;
   private FontDesc description;

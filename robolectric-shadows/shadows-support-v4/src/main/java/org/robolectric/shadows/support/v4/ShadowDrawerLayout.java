@@ -8,11 +8,13 @@ import org.robolectric.shadows.ShadowViewGroup;
 
 import static org.robolectric.internal.Shadow.directlyOn;
 
+/**
+ * Shadow for {@link android.support.v4.widget.DrawerLayout}.
+ */
 @Implements(DrawerLayout.class)
 public class ShadowDrawerLayout extends ShadowViewGroup {
-  private DrawerLayout.DrawerListener drawerListener;
-
   @RealObject private DrawerLayout realDrawerLayout;
+  private DrawerLayout.DrawerListener drawerListener;
 
   @Implementation
   public void setDrawerListener(DrawerLayout.DrawerListener drawerListener) {

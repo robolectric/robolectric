@@ -4,7 +4,7 @@ import android.widget.FrameLayout;
 import org.robolectric.annotation.Implements;
 
 /**
- * Shadow for {@link FrameLayout} that simulates its implementation.
+ * Shadow for {@link android.widget.FrameLayout}.
  */
 @SuppressWarnings("UnusedDeclaration")
 @Implements(FrameLayout.class)

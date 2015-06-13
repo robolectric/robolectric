@@ -11,6 +11,9 @@ import org.robolectric.shadows.util.PreferenceBuilder;
 
 import static org.robolectric.Shadows.shadowOf;
 
+/**
+ * Shadow for {@link android.preference.PreferenceActivity}.
+ */
 @Implements(PreferenceActivity.class)
 public class ShadowPreferenceActivity extends ShadowActivity {
   private int preferencesResId = -1;

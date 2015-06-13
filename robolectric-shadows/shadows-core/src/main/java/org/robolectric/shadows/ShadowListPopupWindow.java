@@ -10,6 +10,9 @@ import org.robolectric.annotation.RealObject;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.internal.Shadow.directlyOn;
 
+/**
+ * Shadow for {@link android.widget.ListPopupWindow}.
+ */
 @Implements(ListPopupWindow.class)
 public class ShadowListPopupWindow {
   

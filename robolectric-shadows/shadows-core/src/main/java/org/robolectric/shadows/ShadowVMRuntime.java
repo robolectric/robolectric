@@ -6,6 +6,9 @@ import org.robolectric.annotation.Implements;
 
 import java.lang.reflect.Array;
 
+/**
+ * Shadow for {@link dalvik.system.VMRuntime}.
+ */
 @Implements(value = VMRuntime.class, isInAndroidSdk = false)
 public class ShadowVMRuntime {
 

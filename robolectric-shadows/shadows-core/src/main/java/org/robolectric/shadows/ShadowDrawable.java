@@ -23,6 +23,9 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import static org.robolectric.Shadows.shadowOf;
 
+/**
+ * Shadow for {@link android.graphics.drawable.Drawable}.
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Drawable.class)
 public class ShadowDrawable {

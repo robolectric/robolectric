@@ -10,8 +10,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 /**
- * An easy adapter that creates views defined in an XML file. You can specify
- * the XML file that defines the appearance of the views.
+ * Shadow for {@link android.widget.ResourceCursorAdapter}.
  */
 @Implements(ResourceCursorAdapter.class)
 public class ShadowResourceCursorAdapter extends ShadowCursorAdapter {

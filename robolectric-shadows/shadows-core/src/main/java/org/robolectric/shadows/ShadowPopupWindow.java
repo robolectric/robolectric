@@ -15,6 +15,9 @@ import org.robolectric.annotation.RealObject;
 
 import static org.robolectric.Shadows.shadowOf;
 
+/**
+ * Shadow for {@link android.widget.PopupWindow}.
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(PopupWindow.class)
 public class ShadowPopupWindow {

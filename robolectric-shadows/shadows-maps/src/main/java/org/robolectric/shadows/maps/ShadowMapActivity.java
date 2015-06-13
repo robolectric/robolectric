@@ -10,6 +10,9 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadows.ShadowActivity;
 
+/**
+ * Shadow for {@link com.google.android.maps.MapActivity}.
+ */
 @Implements(MapActivity.class)
 public class ShadowMapActivity extends ShadowActivity {
   private ConnectivityBroadcastReceiver connectivityBroadcastReceiver = new ConnectivityBroadcastReceiver();

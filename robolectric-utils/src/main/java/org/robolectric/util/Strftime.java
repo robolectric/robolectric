@@ -5,18 +5,21 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
+/**
+ * An implementation of the Unix strftime with some glibc extensions.
+ */
 public class Strftime {
+
   /**
-   * An implementation of the Unix strftime with some glibc extensions.
+   * Format a date string.
    *
    * @param format The format in strftime syntax.
+   * @param date The date to format.
+   * @param locale The locale to use for formatting.
+   * @param zone The timezone to use for formatting.
    * @return The formatted datetime.
    */
-  static public String format(
-      final String format,
-      final Date date,
-      final Locale locale,
-      final TimeZone timeZone) {
+  public static String format(String format, final Date date, Locale locale, TimeZone zone) {
     StringBuffer buffer = new StringBuffer();
 
     class Formatter {
@@ -42,7 +45,7 @@ public class Strftime {
       }
     }
 
-    Formatter formatter = new Formatter(date, locale, timeZone);
+    Formatter formatter = new Formatter(date, locale, zone);
 
     Boolean inside = false;
 

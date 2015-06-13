@@ -6,9 +6,11 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.HiddenApi;
 
 /**
- * The concept of current time is base on the current time of the UI Scheduler for consistency with previous
- * implementations. This is not ideal, since both schedulers (background and foreground), can see different
- * values for the current time.
+ * Shadow for {@link android.os.SystemClock}.
+ *
+ * <p>The concept of current time is base on the current time of the UI Scheduler for
+ * consistency with previous implementations. This is not ideal, since both schedulers
+ * (background and foreground), can see different values for the current time.</p>
  */
 @Implements(SystemClock.class)
 public class ShadowSystemClock {
@@ -17,15 +19,15 @@ public class ShadowSystemClock {
   private static final int MILLIS_PER_NANO = 1000000;
 
   static long now() {
-    if(ShadowApplication.getInstance() == null) {
-        return 0;
+    if (ShadowApplication.getInstance() == null) {
+      return 0;
     }
     return ShadowApplication.getInstance().getForegroundThreadScheduler().getCurrentTime();
   }
 
   @Implementation
   public static void sleep(long millis) {
-    if(ShadowApplication.getInstance() == null) {
+    if (ShadowApplication.getInstance() == null) {
       return;
     }
 
@@ -35,7 +37,7 @@ public class ShadowSystemClock {
 
   @Implementation
   public static boolean setCurrentTimeMillis(long millis) {
-    if(ShadowApplication.getInstance() == null) {
+    if (ShadowApplication.getInstance() == null) {
       return false;
     }
 
@@ -46,7 +48,7 @@ public class ShadowSystemClock {
     ShadowApplication.getInstance().getForegroundThreadScheduler().advanceTo(millis);
     return true;
   }
-  
+
   @Implementation
   public static long uptimeMillis() {
     return now() - bootedAt;
@@ -62,16 +64,18 @@ public class ShadowSystemClock {
     return uptimeMillis();
   }
 
-  @HiddenApi @Implementation
+  @HiddenApi
+  @Implementation
   public static long currentThreadTimeMicro() {
     return uptimeMillis() * 1000;
   }
 
-  @HiddenApi @Implementation
+  @HiddenApi
+  @Implementation
   public static long currentTimeMicro() {
     return now() * 1000;
   }
-  
+
   /**
    * Implements {@link System#currentTimeMillis} through ShadowWrangler.
    *

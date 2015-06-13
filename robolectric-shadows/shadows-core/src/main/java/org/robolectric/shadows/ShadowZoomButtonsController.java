@@ -6,8 +6,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 /**
- * Shadow of {@code ZoomButtonsController} that allows simulated clicking of the zoom button controls to trigger
- * events on the registered listener.
+ * Shadow for {@link android.widget.ZoomButtonsController}.
  */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ZoomButtonsController.class)

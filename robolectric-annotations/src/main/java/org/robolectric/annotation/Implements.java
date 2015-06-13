@@ -1,13 +1,20 @@
 package org.robolectric.annotation;
 
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 /**
- * Indicates that a class declaration is intended to Shadow an Android class declaration. The Robolectric runtime
- * searches classes with this annotation for methods with the {@link Implementation} annotation and calls them in
- * place of the methods on the Android class.
+ * Indicates that a class declaration is intended to Shadow an Android class declaration.
+ * The Robolectric runtime searches classes with this annotation for methods with the
+ * {@link Implementation} annotation and calls them in place of the methods on the Android
+ * class.
  */
-@java.lang.annotation.Documented
-@java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy.RUNTIME)
-@java.lang.annotation.Target({java.lang.annotation.ElementType.TYPE})
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE})
 public @interface Implements {
 
   /**

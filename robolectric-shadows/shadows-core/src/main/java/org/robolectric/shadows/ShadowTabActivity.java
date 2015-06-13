@@ -7,12 +7,15 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
+/**
+ * Shadow for {@link android.app.TabActivity}.
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(TabActivity.class)
 public class ShadowTabActivity extends ShadowActivityGroup {
+  @RealObject private TabActivity realTabActivity;
+  private TabHost tabhost;
 
-  @RealObject TabActivity realTabActivity;
-  TabHost tabhost;
   @Implementation
   public TabHost getTabHost() {
     if (tabhost==null) {

@@ -14,6 +14,9 @@ import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
+/**
+ * Shadow for {@link android.graphics.Matrix}.
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Matrix.class)
 public class ShadowMatrix {

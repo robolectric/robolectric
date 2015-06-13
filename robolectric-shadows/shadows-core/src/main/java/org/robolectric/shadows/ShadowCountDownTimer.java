@@ -5,9 +5,11 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
+/**
+ * Shadow for {@link android.os.CountDownTimer}.
+ */
 @Implements(CountDownTimer.class)
 public class ShadowCountDownTimer {
-
   private boolean started;
   private long countDownInterval;
   private long millisInFuture;
@@ -26,12 +28,10 @@ public class ShadowCountDownTimer {
     return countDownTimer;
   }
 
-
   @Implementation
   public final void cancel() {
     started = false;
   }
-
 
   public void invokeTick(long millisUntilFinished) {
     countDownTimer.onTick(millisUntilFinished);

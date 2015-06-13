@@ -30,7 +30,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Generated;
 
-@Generated("org.robolectric.shadows.ShadowSQLiteConnection.java.vm")
+/**
+ * Shadow for {@link android.database.sqlite.SQLiteConnection}.
+ */
 @Implements(value = android.database.sqlite.SQLiteConnection.class, isInAndroidSdk = false)
 public class ShadowSQLiteConnection {
 

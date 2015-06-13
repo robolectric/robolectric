@@ -52,7 +52,7 @@ import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.internal.Shadow.newInstanceOf;
 
 /**
- * Shadows the {@code android.app.Application} class.
+ * Shadow for {@link android.app.Application}.
  */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Application.class)

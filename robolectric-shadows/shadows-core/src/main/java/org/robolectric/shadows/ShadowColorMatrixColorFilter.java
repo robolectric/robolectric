@@ -5,6 +5,9 @@ import android.graphics.ColorMatrixColorFilter;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
+/**
+ * Shadow for {@link android.graphics.ColorMatrixColorFilter}.
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ColorMatrixColorFilter.class)
 public class ShadowColorMatrixColorFilter {

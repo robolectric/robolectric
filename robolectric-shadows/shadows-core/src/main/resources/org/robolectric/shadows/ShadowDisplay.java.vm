@@ -14,7 +14,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 /**
- * A shadow for Display with some reasonable defaults
+ * Shadow for {@link android.view.Display}.
  */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(value = Display.class)

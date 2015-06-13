@@ -4,11 +4,14 @@ import android.os.StrictMode;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
+/**
+ * Shadow for {@link android.os.StrictMode}.
+ */
 @Implements(StrictMode.class)
 public class ShadowStrictMode {
+
   @Implementation
   public static void setVmPolicy(StrictMode.VmPolicy p) {
-    // Just ignore VM policy setting.
-    // Results in a NPE otherwise.
+    // Prevent Robolectric from calling through
   }
 }

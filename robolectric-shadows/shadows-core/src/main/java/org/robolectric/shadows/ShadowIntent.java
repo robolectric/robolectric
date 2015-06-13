@@ -26,6 +26,9 @@ import java.util.Set;
 import static android.content.Intent.*;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 
+/**
+ * Shadow for {@link android.content.Intent}.
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Intent.class)
 public class ShadowIntent {

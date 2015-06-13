@@ -23,6 +23,9 @@ import static org.robolectric.internal.Shadow.directlyOn;
 import static org.robolectric.internal.Shadow.newInstanceOf;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
+/**
+ * Shadow for {@code android.content.ContextImpl}.
+ */
 @Implements(className = ShadowContextImpl.CLASS_NAME)
 public class ShadowContextImpl extends ShadowContext {
   public static final String CLASS_NAME = "android.app.ContextImpl";

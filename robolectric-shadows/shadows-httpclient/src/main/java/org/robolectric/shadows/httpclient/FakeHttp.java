@@ -6,6 +6,9 @@ import org.apache.http.HttpResponse;
 
 import java.util.List;
 
+/**
+ * Collection of static methods used interact with HTTP requests / responses.
+ */
 public class FakeHttp {
   private static FakeHttpLayer instance = new FakeHttpLayer();
 

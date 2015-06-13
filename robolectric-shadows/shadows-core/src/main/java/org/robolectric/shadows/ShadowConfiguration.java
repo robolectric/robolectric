@@ -8,6 +8,9 @@ import org.robolectric.annotation.RealObject;
 
 import static org.robolectric.internal.Shadow.directlyOn;
 
+/**
+ * Shadow for {@link android.content.res.Configuration}.
+ */
 @Implements(Configuration.class)
 public class ShadowConfiguration {
 

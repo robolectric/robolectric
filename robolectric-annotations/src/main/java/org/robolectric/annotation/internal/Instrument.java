@@ -1,10 +1,16 @@
 package org.robolectric.annotation.internal;
 
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 /**
  * Indicates that a class should always be instrumented regardless of its package.
  */
-@java.lang.annotation.Documented
-@java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy.RUNTIME)
-@java.lang.annotation.Target({java.lang.annotation.ElementType.TYPE})
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE})
 public @interface Instrument {
 }

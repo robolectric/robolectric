@@ -5,6 +5,9 @@ import com.google.android.maps.MapController;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
+/**
+ * Shadow for {@link com.google.android.maps.MapController}.
+ */
 @Implements(MapController.class)
 public class ShadowMapController {
   private ShadowMapView shadowMapView;

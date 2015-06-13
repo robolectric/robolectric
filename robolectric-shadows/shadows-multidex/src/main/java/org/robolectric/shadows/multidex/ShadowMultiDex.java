@@ -6,10 +6,11 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Implementation;
 
 /**
- * Shadow for {@link MultiDex}.
+ * Shadow for {@link android.support.multidex.MultiDex}.
  */
 @Implements(MultiDex.class)
 public class ShadowMultiDex {
+
   @Implementation
   public static void install(Context context) {
     // Do nothing since with Robolectric nothing is dexed.

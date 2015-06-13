@@ -7,6 +7,9 @@ import org.robolectric.annotation.RealObject;
 
 import java.lang.reflect.Field;
 
+/**
+ * Shadow for {@link android.content.ContentProviderResult}.
+ */
 @Implements(ContentProviderResult.class)
 public class ShadowContentProviderResult {
   @RealObject ContentProviderResult realResult;

@@ -4,7 +4,9 @@ import android.location.Address;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-
+/**
+ * Shadow for {@link android.location.Address}.
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Address.class)
 public class ShadowAddress {

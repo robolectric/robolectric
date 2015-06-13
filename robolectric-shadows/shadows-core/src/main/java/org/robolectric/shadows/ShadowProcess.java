@@ -5,7 +5,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 
 /**
- * Shadows the {@code android.os.Process} class.
+ * Shadow for {@link android.os.Process}.
  */
 @Implements(android.os.Process.class)
 public class ShadowProcess {

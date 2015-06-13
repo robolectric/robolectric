@@ -6,6 +6,9 @@ import org.robolectric.annotation.Implements;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(CornerPathEffect.class)
 
+/**
+ * Shadow for {@link android.graphics.CornerPathEffect}.
+ */
 public class ShadowCornerPathEffect {
   private float radius;
 

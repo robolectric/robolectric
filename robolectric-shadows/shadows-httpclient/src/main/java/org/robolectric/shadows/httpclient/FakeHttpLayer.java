@@ -156,7 +156,7 @@ public class FakeHttpLayer {
    *
    * If you are just using mocked http calls, you should not even notice this method here.
    *
-   * @param requestInfo
+   * @param requestInfo Request info object to add.
    */
   public void addRequestInfo(HttpRequestInfo requestInfo) {
     httpRequestInfos.add(requestInfo);

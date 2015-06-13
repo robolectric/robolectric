@@ -2,6 +2,11 @@ package org.robolectric.util;
 
 import java.lang.ref.SoftReference;
 
+/**
+ * Soft reference to a {@code java.lang.ThreadLocal}.
+ *
+ * @param <T> The referent to track.
+ */
 public abstract class SoftThreadLocal<T> {
   private final ThreadLocal<SoftReference<T>> threadLocal = new ThreadLocal<SoftReference<T>>() {
     protected SoftReference<T> initialValue() {

@@ -10,6 +10,9 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import static org.robolectric.internal.Shadow.directlyOn;
 
+/**
+ * Shadow for {@link com.android.internal.policy.impl.PhoneWindow}.
+ */
 @Implements(value = PhoneWindow.class, isInAndroidSdk = false)
 public class ShadowPhoneWindow extends ShadowWindow {
   @SuppressWarnings("UnusedDeclaration")

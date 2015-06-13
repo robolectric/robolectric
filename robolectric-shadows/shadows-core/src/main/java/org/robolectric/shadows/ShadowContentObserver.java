@@ -6,7 +6,9 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
-
+/**
+ * Shadow for {@link android.database.ContentObserver}.
+ */
 @Implements(ContentObserver.class)
 public class ShadowContentObserver {
 
@@ -14,13 +16,12 @@ public class ShadowContentObserver {
   private ContentObserver realObserver;
 
   @Implementation
-  public void dispatchChange( boolean selfChange, Uri uri ) {
+  public void dispatchChange(boolean selfChange, Uri uri) {
     realObserver.onChange(selfChange, uri);
   }
 
   @Implementation
-  public void dispatchChange( boolean selfChange ) {
+  public void dispatchChange(boolean selfChange) {
     realObserver.onChange(selfChange);
   }
-
 }

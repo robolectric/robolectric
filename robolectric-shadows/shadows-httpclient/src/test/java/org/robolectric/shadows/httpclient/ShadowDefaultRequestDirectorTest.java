@@ -19,11 +19,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.shadows.httpclient.FakeHttp;
-import org.robolectric.shadows.httpclient.HttpResponseGenerator;
-import org.robolectric.shadows.httpclient.FakeHttpLayer;
-import org.robolectric.shadows.httpclient.RequestMatcher;
-import org.robolectric.shadows.httpclient.TestHttpResponse;
 import org.robolectric.util.Strings;
 import org.robolectric.util.TestRunnerWithManifest;
 
@@ -36,7 +31,7 @@ import java.net.URI;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
-import static org.robolectric.httpclient.Shadows.shadowOf;
+import static org.robolectric.shadows.httpclient.Shadows.shadowOf;
 
 @RunWith(TestRunnerWithManifest.class)
 public class ShadowDefaultRequestDirectorTest {

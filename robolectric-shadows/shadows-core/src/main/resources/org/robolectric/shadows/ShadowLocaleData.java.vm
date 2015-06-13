@@ -8,13 +8,15 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.internal.Shadow;
 
 /**
- * Setup locale data for Robolectric. We fill in values for en_US regardless of the default locale set in the JVM.
+ * Shadow for {@link libcore.icu.LocaleData}.
+ *
+ * <p>This class only supports en_US regardless of the default locale set in the JVM.</p>
  */
 @Implements(value = LocaleData.class, isInAndroidSdk = false)
 public class ShadowLocaleData {
   public static final String REAL_CLASS_NAME = "libcore.icu.LocaleData";
 
-  @Implementation // API 21 - Return type changed
+  @Implementation
   public static LocaleData get(Locale locale) {
     LocaleData localeData = (LocaleData) Shadow.newInstanceOf(REAL_CLASS_NAME);
     if (locale == null) {
@@ -96,6 +98,5 @@ public class ShadowLocaleData {
     localeData.integerPattern = "\u0023,\u0023\u00230";
     localeData.currencyPattern = "\u00A4\u0023,\u0023\u00230.00;(\u00A4\u0023,\u0023\u00230.00)";
     localeData.percentPattern = "\u0023,\u0023\u00230%";
-
   }
 }

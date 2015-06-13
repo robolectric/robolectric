@@ -13,6 +13,9 @@ import org.robolectric.res.TypedResource;
 
 import java.util.List;
 
+/**
+ * Robolectric implementation of {@link android.util.AttributeSet}.
+ */
 public class RoboAttributeSet implements AttributeSet {
   private final List<Attribute> attributes;
   private final ResourceLoader resourceLoader;

@@ -10,6 +10,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Generic collection of utility methods.
+ */
 public class Util {
   public static void copy(InputStream in, OutputStream out) throws IOException {
     byte[] buffer = new byte[8196];
@@ -24,17 +27,16 @@ public class Util {
   }
 
   /**
-   * This method consumes an inputstream, returning its content then closing
-   * it.
+   * This method consumes an input stream and returns its content.
+   *
+   * @param is The input stream to read from.
+   * @return The bytes read from the stream.
+   * @throws IOException Error reading from stream.
    */
-  public static byte[] readBytes(InputStream inputStream) throws IOException {
-    try {
-      ByteArrayOutputStream byteArrayOutputStream =
-              new ByteArrayOutputStream(inputStream.available());
-      copy(inputStream, byteArrayOutputStream);
-      return byteArrayOutputStream.toByteArray();
-    } finally {
-      inputStream.close();
+  public static byte[] readBytes(InputStream is) throws IOException {
+    try (ByteArrayOutputStream bos = new ByteArrayOutputStream(is.available())) {
+      copy(is, bos);
+      return bos.toByteArray();
     }
   }
 
