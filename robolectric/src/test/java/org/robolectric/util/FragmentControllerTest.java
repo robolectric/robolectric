@@ -39,9 +39,9 @@ public class FragmentControllerTest {
   }
 
   @Test
-  public void attachedAfterStart() {
+  public void attachedAfterCreate() {
     final LoginFragment fragment = new LoginFragment();
-    FragmentController.of(fragment).start();
+    FragmentController.of(fragment).create();
 
     assertThat(fragment.getView()).isNotNull();
     assertThat(fragment.getActivity()).isNotNull();
@@ -51,9 +51,9 @@ public class FragmentControllerTest {
   }
 
   @Test
-  public void attachedAfterStart_customActivity() {
+  public void attachedAfterCreate_customActivity() {
     final LoginFragment fragment = new LoginFragment();
-    FragmentController.of(fragment, LoginActivity.class).start();
+    FragmentController.of(fragment, LoginActivity.class).create();
 
     assertThat(fragment.getView()).isNotNull();
     assertThat(fragment.getActivity()).isNotNull();
@@ -66,7 +66,7 @@ public class FragmentControllerTest {
   @Test
   public void isResumed() {
     final LoginFragment fragment = new LoginFragment();
-    FragmentController.of(fragment, LoginActivity.class).start().resume();
+    FragmentController.of(fragment, LoginActivity.class).create().start().resume();
 
     assertThat(fragment.getView()).isNotNull();
     assertThat(fragment.getActivity()).isNotNull();
@@ -77,7 +77,7 @@ public class FragmentControllerTest {
   @Test
   public void isPaused() {
     final LoginFragment fragment = spy(new LoginFragment());
-    FragmentController.of(fragment, LoginActivity.class).start().resume().pause();
+    FragmentController.of(fragment, LoginActivity.class).create().start().resume().pause();
 
     assertThat(fragment.getView()).isNotNull();
     assertThat(fragment.getActivity()).isNotNull();
@@ -91,7 +91,7 @@ public class FragmentControllerTest {
   @Test
   public void isStopped() {
     final LoginFragment fragment = spy(new LoginFragment());
-    FragmentController.of(fragment, LoginActivity.class).start().resume().pause().stop();
+    FragmentController.of(fragment, LoginActivity.class).create().start().resume().pause().stop();
 
     assertThat(fragment.getView()).isNotNull();
     assertThat(fragment.getActivity()).isNotNull();

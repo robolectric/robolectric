@@ -5,46 +5,101 @@ import android.app.Fragment;
 import android.os.Bundle;
 import android.widget.LinearLayout;
 import org.robolectric.Robolectric;
+import org.robolectric.ShadowsAdapter;
 
 /**
  * Controller class for driving fragment lifecycles, similar to {@link org.robolectric.util.ActivityController}. Only
  * necessary if more complex lifecycle management is needed, otherwise {@link org.robolectric.util.FragmentTestUtil}
  * should be sufficient.
  */
-public class FragmentController {
-  private final Fragment fragment;
+public class FragmentController<F extends Fragment> extends ComponentController<FragmentController<F>, F> {
+  private final F fragment;
   private final ActivityController<? extends Activity> activityController;
 
-  private FragmentController(Fragment fragment, Class<? extends Activity> activityClass) {
+  private FragmentController(ShadowsAdapter shadowsAdapter, F fragment, Class<? extends Activity> activityClass) {
+    super(shadowsAdapter, fragment);
     this.fragment = fragment;
     this.activityController = Robolectric.buildActivity(activityClass);
   }
 
-  public static FragmentController of(Fragment fragment) {
-    return new FragmentController(fragment, FragmentControllerActivity.class);
+  public static <F extends Fragment> FragmentController<F> of(F fragment) {
+    return new FragmentController<>(Robolectric.getShadowsAdapter(), fragment, FragmentControllerActivity.class);
   }
 
-  public static FragmentController of(Fragment fragment, Class<? extends Activity> activityClass) {
-    return new FragmentController(fragment, activityClass);
+  public static <F extends Fragment> FragmentController<F> of(F fragment, Class<? extends Activity> activityClass) {
+    return new FragmentController<>(Robolectric.getShadowsAdapter(), fragment, activityClass);
   }
 
-  public FragmentController start() {
-    activityController.create().start().get().getFragmentManager().beginTransaction().add(fragment, null).commit();
+  @Override
+  public FragmentController<F> attach() {
+    activityController.attach();
     return this;
   }
 
-  public FragmentController resume() {
-    activityController.resume();
+  public FragmentController<F> create(final Bundle bundle) {
+    shadowMainLooper.runPaused(new Runnable() {
+      @Override
+      public void run() {
+        if (!attached) attach();
+        activityController.create().get().getFragmentManager().beginTransaction().add(fragment, null).commit();
+      }
+    });
     return this;
   }
 
-  public FragmentController pause() {
-    activityController.pause();
+  @Override
+  public FragmentController<F> create() {
+    return create(null);
+  }
+
+  @Override
+  public FragmentController<F> destroy() {
+    shadowMainLooper.runPaused(new Runnable() {
+      @Override
+      public void run() {
+        activityController.destroy();
+      }
+    });
     return this;
   }
 
-  public FragmentController stop() {
-    activityController.stop();
+  public FragmentController<F> start() {
+    shadowMainLooper.runPaused(new Runnable() {
+      @Override
+      public void run() {
+        activityController.start();
+      }
+    });
+    return this;
+  }
+
+  public FragmentController<F> resume() {
+    shadowMainLooper.runPaused(new Runnable() {
+      @Override
+      public void run() {
+        activityController.resume();
+      }
+    });
+    return this;
+  }
+
+  public FragmentController<F> pause() {
+    shadowMainLooper.runPaused(new Runnable() {
+      @Override
+      public void run() {
+        activityController.pause();
+      }
+    });
+    return this;
+  }
+
+  public FragmentController<F> stop() {
+    shadowMainLooper.runPaused(new Runnable() {
+      @Override
+      public void run() {
+        activityController.stop();
+      }
+    });
     return this;
   }
 
