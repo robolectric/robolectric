@@ -33,6 +33,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
@@ -161,6 +162,11 @@ public class RobolectricTest {
 
     @Override
     public String[] getProvidedPackageNames() {
+      return null;
+    }
+
+    @Override
+    public Map<String, String> getShadowMap() {
       return null;
     }
   }

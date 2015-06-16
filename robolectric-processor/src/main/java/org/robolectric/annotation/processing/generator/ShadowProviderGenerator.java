@@ -12,6 +12,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
@@ -24,10 +25,12 @@ import java.util.Map;
 public class ShadowProviderGenerator extends Generator {
   private final Filer filer;
   private final Messager messager;
+  private final Elements elements;
   private final RobolectricModel model;
 
   public ShadowProviderGenerator(RobolectricModel model, ProcessingEnvironment environment) {
     this.messager = environment.getMessager();
+    this.elements = environment.getElementUtils();
     this.filer = environment.getFiler();
     this.model = model;
   }
@@ -57,6 +60,18 @@ public class ShadowProviderGenerator extends Generator {
       writer.println("@Generated(\"" + RobolectricProcessor.class.getCanonicalName() + "\")");
       writer.println("@SuppressWarnings({\"unchecked\",\"deprecation\"})");
       writer.println("public class " + GEN_CLASS + " implements ShadowProvider {");
+
+      final int shadowSize = model.getAllShadowTypes().size();
+      writer.println("  private static final Map<String, String> SHADOW_MAP = new HashMap<>(" + shadowSize + ");");
+      writer.println();
+
+      writer.println("  static {");
+      for (Map.Entry<TypeElement, TypeElement> entry : model.getAllShadowTypes().entrySet()) {
+        final String shadow = elements.getBinaryName(entry.getKey()).toString();
+        final String actual = entry.getValue().getQualifiedName().toString();
+        writer.println("    SHADOW_MAP.put(\"" + actual + "\", \"" + shadow + "\");");
+      }
+      writer.println("  }");
       writer.println();
 
       for (Map.Entry<TypeElement, TypeElement> entry : model.getShadowOfMap().entrySet()) {
@@ -107,6 +122,13 @@ public class ShadowProviderGenerator extends Generator {
       writer.println("  }");
       writer.println();
 
+      writer.println("  @Override");
+      writer.println("  public Map<String, String> getShadowMap() {");
+      writer.println("    return SHADOW_MAP;");
+      writer.println("  }");
+      writer.println();
+
+      writer.println("  @Override");
       writer.println("  public String[] getProvidedPackageNames() {");
       writer.println("    return new String[] {" + Joiner.on(",").join(model.getShadowedPackages()) + "};");
       writer.println("  }");
