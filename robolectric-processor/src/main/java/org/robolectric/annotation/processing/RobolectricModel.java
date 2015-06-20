@@ -22,6 +22,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementVisitor;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
@@ -35,6 +36,7 @@ import javax.lang.model.util.SimpleTypeVisitor6;
 import javax.lang.model.util.Types;
 
 import com.google.common.base.Equivalence;
+import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
 import com.google.common.collect.HashMultimap;
@@ -272,6 +274,8 @@ public class RobolectricModel {
     }
 
     // Other imports that the generated class needs
+    imports.add("java.util.Map");
+    imports.add("java.util.HashMap");
     imports.add("javax.annotation.Generated");
     imports.add("org.robolectric.internal.ShadowExtractor");
     imports.add("org.robolectric.internal.ShadowProvider");
@@ -291,6 +295,10 @@ public class RobolectricModel {
 
   public Set<String> getImports() {
     return imports;
+  }
+
+  public Map<TypeElement, TypeElement> getAllShadowTypes() {
+    return shadowTypes;
   }
 
   public Map<TypeElement, TypeElement> getResetterShadowTypes() {

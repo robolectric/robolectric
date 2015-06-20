@@ -171,7 +171,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
   @Override
   protected void runChild(FrameworkMethod method, RunNotifier notifier) {
-    Description description= describeChild(method);
+    Description description = describeChild(method);
     EachTestNotifier eachNotifier = new EachTestNotifier(notifier, description);
 
     final Config config = getConfig(method.getMethod());
@@ -204,6 +204,11 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     return new Statement() {
       @Override
       public void evaluate() throws Throwable {
+        // Configure shadows *BEFORE* setting the ClassLoader. This is necessary because
+        // creating the ShadowMap loads all ShadowProviders via ServiceLoader and this is
+        // not available once we install the Robolectric class loader.
+        configureShadows(sdkEnvironment, config);
+
         Thread.currentThread().setContextClassLoader(sdkEnvironment.getRobolectricClassLoader());
 
         Class bootstrappedTestClass = sdkEnvironment.bootstrappedClass(getTestClass().getJavaClass());
@@ -216,8 +221,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
         } catch (NoSuchMethodException e) {
           throw new RuntimeException(e);
         }
-
-        configureShadows(sdkEnvironment, config);
 
         ParallelUniverseInterface parallelUniverseInterface = getHooksInterface(sdkEnvironment);
         try {

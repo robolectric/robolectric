@@ -1,5 +1,7 @@
 package org.robolectric.internal.bytecode;
 
+import org.robolectric.annotation.Implements;
+
 public class ShadowConfig {
   public final String shadowClassName;
   public final boolean callThroughByDefault;
@@ -7,10 +9,14 @@ public class ShadowConfig {
   public final boolean looseSignatures;
 
   ShadowConfig(String shadowClassName, boolean callThroughByDefault, boolean inheritImplementationMethods, boolean looseSignatures) {
-    this.callThroughByDefault = callThroughByDefault;
     this.shadowClassName = shadowClassName;
+    this.callThroughByDefault = callThroughByDefault;
     this.inheritImplementationMethods = inheritImplementationMethods;
     this.looseSignatures = looseSignatures;
+  }
+
+  ShadowConfig(String shadowClassName, Implements annotation) {
+    this(shadowClassName, annotation.callThroughByDefault(), annotation.inheritImplementationMethods(), annotation.looseSignatures());
   }
 
   @Override
