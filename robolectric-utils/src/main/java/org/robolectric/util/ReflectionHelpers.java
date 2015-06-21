@@ -140,7 +140,37 @@ public class ReflectionHelpers {
   }
 
   /**
-   * Reflectively call an instance method on an object.
+   * Reflectively call an instance method on an object. The method object is assumed
+   * to have already had {@link Method#setAccessible(boolean) setAccessible(true)}
+   * called on it if necessary - this allows for optimizations where the same method
+   * object may be repeatedly invoked.
+   *
+   * @param instance Target object.
+   * @param method The method to call.
+   * @param parameters Array of parameters.
+   * @param <R> The return type.
+   * @return The return value of the method.
+   */
+  @SuppressWarnings("unchecked")
+  public static <R> R callInstanceMethod(Object instance, Method method, Object... parameters) {
+    try {
+      return (R) method.invoke(instance, parameters);
+    } catch (InvocationTargetException e) {
+      if (e.getTargetException() instanceof RuntimeException) {
+        throw (RuntimeException) e.getTargetException();
+      }
+      if (e.getTargetException() instanceof Error) {
+        throw (Error) e.getTargetException();
+      }
+      throw new RuntimeException(e.getTargetException());
+    } catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * Reflectively call an instance method on an object. The method is specified
+   * as a String and setAccessible(true) is called before calling it.
    *
    * @param instance Target object.
    * @param methodName The method name to call.
@@ -185,6 +215,7 @@ public class ReflectionHelpers {
    * @param <R> The return type.
    * @return The return value of the method.
    */
+  @SuppressWarnings("unchecked")
   public static <R> R callInstanceMethod(Class<?> cl, final Object instance, final String methodName, ClassParameter<?>... classParameters) {
     try {
       final Class<?>[] classes = ClassParameter.getClasses(classParameters);
