@@ -91,7 +91,7 @@ public class ShadowMatrix {
 
   @Implementation
   public void setScale(float sx, float sy, float px, float py) {
-    setOps.put(SCALE, sx + " " + sy + " " + py + " " + py);
+    setOps.put(SCALE, sx + " " + sy + " " + px + " " + py);
   }
 
   @Implementation

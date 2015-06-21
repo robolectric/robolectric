@@ -67,6 +67,15 @@ public class ShadowMatrixTest {
   }
 
   @Test
+  public void setScale_shouldAddOpsToMatrix() {
+    final Matrix matrix = new Matrix();
+    matrix.setScale(1, 2, 3, 4);
+
+    final ShadowMatrix shadow = shadowOf(matrix);
+    assertThat(shadow.getSetOperations().get("scale")).isEqualTo("1.0 2.0 3.0 4.0");
+  }
+
+  @Test
   public void set_shouldOverrideValues(){
     final Matrix matrix1 = new Matrix();
     matrix1.setScale(1, 2);
