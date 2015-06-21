@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-
 import android.util.SparseArray;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
@@ -8,6 +7,9 @@ import android.view.VelocityTracker;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
+/**
+ * Shadow for {@link android.view.VelocityTracker}.
+ */
 @Implements(VelocityTracker.class)
 public class ShadowVelocityTracker {
   private static final int ACTIVE_POINTER_ID = -1;

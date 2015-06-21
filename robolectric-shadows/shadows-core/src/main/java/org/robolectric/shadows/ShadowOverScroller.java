@@ -7,6 +7,9 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.Scheduler;
 
+/**
+ * Shadow for {@link android.widget.OverScroller}.
+ */
 @Implements(OverScroller.class)
 public class ShadowOverScroller {
   private int startX;

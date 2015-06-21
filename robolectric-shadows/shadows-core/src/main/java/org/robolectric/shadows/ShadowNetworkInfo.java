@@ -7,7 +7,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.internal.Shadow;
 
 /**
- * Shadow of {@code NetworkInfo} which is used by ShadowConnectivityManager.
+ * Shadow for {@code android.net.NetworkInfo}.
  */
 @Implements(NetworkInfo.class)
 public class ShadowNetworkInfo {

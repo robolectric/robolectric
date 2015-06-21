@@ -6,6 +6,9 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
 
+/**
+ * Shadow for {@link android.database.AbstractCursor}.
+ */
 @Implements(AbstractCursor.class)
 public class ShadowAbstractCursor {
 

@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Shadow for the Android {@code ActivityManager} class.
+ * Shadow for {@link android.app.ActivityManager}.
  */
 @Implements(ActivityManager.class)
 public class ShadowActivityManager {

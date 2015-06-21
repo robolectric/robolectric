@@ -6,6 +6,9 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.internal.Shadow;
 
+/**
+ * Shadow for {@link android.net.wifi.ScanResult}.
+ */
 @Implements(ScanResult.class)
 public class ShadowScanResult {
 

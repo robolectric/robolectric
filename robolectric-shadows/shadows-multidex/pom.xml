@@ -57,7 +57,7 @@
             <sourceDirectory>target/generated-shadows</sourceDirectory>
           </additionalSourceDirectories>
           <outputDirectory>target/generated-sources</outputDirectory>
-          <compilerArguments>-source ${maven.compiler.source} -target ${maven.compiler.target} -Aorg.robolectric.annotation.processing.shadowPackage=org.robolectric.multidex</compilerArguments>
+          <compilerArguments>-source ${maven.compiler.source} -target ${maven.compiler.target} -Aorg.robolectric.annotation.processing.shadowPackage=org.robolectric.shadows.multidex</compilerArguments>
         </configuration>
         <executions>
           <execution>

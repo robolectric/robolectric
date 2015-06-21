@@ -7,6 +7,9 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
+/**
+ * Shadow for {@link android.widget.Filter}.
+ */
 @Implements(Filter.class)
 public class ShadowFilter {
   @RealObject private Filter realObject;

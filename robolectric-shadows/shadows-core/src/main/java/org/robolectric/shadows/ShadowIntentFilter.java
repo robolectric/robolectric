@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Shadow of {@code IntentFilter} implemented with a {@link java.util.List}
+ * Shadow for {@link android.content.IntentFilter}.
  */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(IntentFilter.class)

@@ -11,6 +11,9 @@ import android.os.Bundle;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
+/**
+ * Shadow for {@link android.database.CursorWrapper}.
+ */
 @Implements(CursorWrapper.class)
 public class ShadowCursorWrapper implements Cursor {
   private Cursor wrappedCursor;

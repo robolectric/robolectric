@@ -10,10 +10,11 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
-import java.lang.reflect.Constructor;
-
 import static org.robolectric.internal.Shadow.directlyOn;
 
+/**
+ * Shadow for {@link android.view.Window}.
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Window.class)
 public class ShadowWindow {

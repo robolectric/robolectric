@@ -37,6 +37,9 @@ import org.robolectric.util.Strings;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowApplication.getInstance;
 
+/**
+ * Shadow for {@link android.content.res.AssetManager}.
+ */
 @Implements(AssetManager.class)
 public final class ShadowAssetManager {
   public static final int STYLE_NUM_ENTRIES = 6;

@@ -9,6 +9,9 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Shadow for {@link android.os.StatFs}.
+ */
 @Implements(StatFs.class)
 public class ShadowStatFs {
   public static final int BLOCK_SIZE = 4096;

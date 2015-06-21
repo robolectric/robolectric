@@ -9,6 +9,9 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.internal.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
+/**
+ * Shadow for {@link com.android.internal.os.BackgroundThread}.
+ */
 @Implements(value = BackgroundThread.class, isInAndroidSdk = false, inheritImplementationMethods = true)
 public class ShadowBackgroundThread {
 

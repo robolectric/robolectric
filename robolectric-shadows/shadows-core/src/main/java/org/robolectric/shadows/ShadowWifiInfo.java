@@ -5,6 +5,9 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.HiddenApi;
 
+/**
+ * Shadow for {@link android.net.wifi.WifiInfo}.
+ */
 @Implements(WifiInfo.class)
 public class ShadowWifiInfo {
   public static void __staticInitializer__() {

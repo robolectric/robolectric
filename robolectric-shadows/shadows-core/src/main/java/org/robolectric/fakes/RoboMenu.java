@@ -13,6 +13,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+/**
+ * Robolectric implementation of {@link android.view.Menu}.
+ */
 public class RoboMenu implements Menu {
   private List<MenuItem> menuItems = new ArrayList<>();
   private Context context;

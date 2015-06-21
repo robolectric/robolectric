@@ -9,6 +9,9 @@ import org.robolectric.annotation.RealObject;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * Shadow for {@link android.content.BroadcastReceiver}.
+ */
 @Implements(BroadcastReceiver.class)
 public class ShadowBroadcastReceiver {
   @RealObject BroadcastReceiver receiver;

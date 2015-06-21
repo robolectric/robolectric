@@ -1,13 +1,12 @@
 package org.robolectric.shadows;
 
 import android.graphics.Color;
-import org.robolectric.Shadows;
-import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Implementation;
 
-import org.robolectric.internal.Shadow;
-import org.robolectric.util.ReflectionHelpers;
-
+/**
+ * Shadow for {@link android.graphics.Color}.
+ */
 @Implements(Color.class)
 public class ShadowColor {
   /**
@@ -17,8 +16,9 @@ public class ShadowColor {
    * with a small adjustment to the representation of the hue.</p>
    *
    * <p>{@link java.awt.Color} represents hue as 0..1 (where 1 == 100% == 360 degrees),
-   * while {@link android.graphics.Color} represents hue as 0..360 degrees. The correct hue can be calculated
-   * by multiplying with 360.</p>
+   * while {@link android.graphics.Color} represents hue as 0..360 degrees. The correct hue
+   * can be calculated by multiplying with 360.</p>
+   *
    * @param red Red component
    * @param green Green component
    * @param blue Blue component

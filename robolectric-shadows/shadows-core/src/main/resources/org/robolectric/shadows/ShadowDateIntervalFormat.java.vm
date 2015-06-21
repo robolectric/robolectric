@@ -11,6 +11,9 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.internal.Shadow;
 
+/**
+ * Shadow for {@link libcore.icu.DateIntervalFormat}.
+ */
 @Implements(value = DateIntervalFormat.class, isInAndroidSdk = false)
 public class ShadowDateIntervalFormat {
 

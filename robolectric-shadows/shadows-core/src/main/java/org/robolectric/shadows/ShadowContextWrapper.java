@@ -29,6 +29,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Shadow for {@link android.content.ContextWrapper}.
+ */
 @Implements(ContextWrapper.class)
 public class ShadowContextWrapper extends ShadowContext {
   private final Map<String, RoboSharedPreferences> sharedPreferencesMap = new HashMap<>();

@@ -9,6 +9,9 @@ import android.view.SubMenu;
 import android.view.View;
 import org.robolectric.shadows.ShadowApplication;
 
+/**
+ * Robolectric implementation of {@link android.view.MenuItem}.
+ */
 public class RoboMenuItem implements MenuItem {
   private int itemId;
   private int groupId;

@@ -23,8 +23,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Shadow of {@code LocationManager} that provides for the simulation of different location providers being enabled and
- * disabled.
+ * Shadow for {@link android.location.LocationManager}.
  */
 @Implements(LocationManager.class)
 public class ShadowLocationManager {

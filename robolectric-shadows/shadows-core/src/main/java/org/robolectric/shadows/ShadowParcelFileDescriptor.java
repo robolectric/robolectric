@@ -12,6 +12,9 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.lang.reflect.Constructor;
 
+/**
+ * Shadow for {@link android.os.ParcelFileDescriptor}.
+ */
 @Implements(ParcelFileDescriptor.class)
 public class ShadowParcelFileDescriptor {
   private RandomAccessFile file;

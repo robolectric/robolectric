@@ -38,9 +38,7 @@ import static android.widget.CursorAdapter.FLAG_AUTO_REQUERY;
 import static android.widget.CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER;
 
 /**
- * Adapter that exposes data from a {@link android.database.Cursor Cursor} to a
- * {@link android.widget.ListView ListView} widget. The Cursor must include
- * a column named "_id" or this class will not work.
+ * Shadow for {@link android.widget.CursorAdapter}.
  */
 @Implements(CursorAdapter.class)
 public class ShadowCursorAdapter extends ShadowBaseAdapter {
@@ -224,7 +222,6 @@ public class ShadowCursorAdapter extends ShadowBaseAdapter {
 
   protected void onContentChangedInternal() {
     if (mAutoRequery && mCursor != null && !mCursor.isClosed()) {
-      if (Config.LOGV) Log.v("Cursor", "Auto requerying " + mCursor + " due to update");
       mDataValid = mCursor.requery();
     }
   }
@@ -258,5 +255,4 @@ public class ShadowCursorAdapter extends ShadowBaseAdapter {
       realCursorAdapter.notifyDataSetInvalidated();
     }
   }
-
 }

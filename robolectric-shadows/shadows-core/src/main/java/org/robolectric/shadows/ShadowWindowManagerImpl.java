@@ -13,6 +13,9 @@ import java.util.List;
 
 import static org.robolectric.internal.Shadow.directlyOn;
 
+/**
+ * Shadow for {@link android.view.WindowManagerImpl}.
+ */
 @Implements(value = WindowManagerImpl.class, isInAndroidSdk = false)
 public class ShadowWindowManagerImpl extends ShadowWindowManager {
   public static final String WINDOW_MANAGER_IMPL_CLASS_NAME = "android.view.WindowManagerImpl";
@@ -24,7 +27,8 @@ public class ShadowWindowManagerImpl extends ShadowWindowManager {
   public void addView(View view, android.view.ViewGroup.LayoutParams layoutParams) {
     views.add(view);
     directlyOn(realObject, WINDOW_MANAGER_IMPL_CLASS_NAME, "addView",
-        ClassParameter.from(View.class, view), ClassParameter.from(ViewGroup.LayoutParams.class, layoutParams));
+        ClassParameter.from(View.class, view),
+        ClassParameter.from(ViewGroup.LayoutParams.class, layoutParams));
   }
 
   @Implementation

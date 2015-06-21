@@ -3,6 +3,9 @@ package org.robolectric.shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
+/**
+ * Shadow for {@code android.webkit.WebSyncManager}.
+ */
 @Implements(className = "android.webkit.WebSyncManager")
 public class ShadowWebSyncManager {
   protected boolean synced = false;

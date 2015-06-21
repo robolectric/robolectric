@@ -9,8 +9,7 @@ import org.robolectric.annotation.RealObject;
 import java.lang.reflect.Constructor;
 
 /**
- * Shadow for {@code MotionEvent} that uses reflection to create {@code MotionEvent} objects, which cannot otherwise
- * be constructed.
+ * Shadow for {@link android.view.MotionEvent}.
  */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(MotionEvent.class)

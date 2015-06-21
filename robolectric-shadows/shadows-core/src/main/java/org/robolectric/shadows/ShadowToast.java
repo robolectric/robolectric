@@ -14,7 +14,7 @@ import java.util.List;
 import static org.robolectric.Shadows.shadowOf;
 
 /**
- * Shadow of {@code Toast} that tracks {@code Toast} requests. Hear hear! (*clink*)
+ * Shadow for {@link android.widget.Toast}.
  */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Toast.class)

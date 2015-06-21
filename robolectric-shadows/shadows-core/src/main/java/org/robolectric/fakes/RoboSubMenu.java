@@ -5,6 +5,9 @@ import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
 
+/**
+ * Robolectric implementation of {@link android.view.SubMenu}.
+ */
 public class RoboSubMenu extends RoboMenu implements SubMenu {
 
   @Override

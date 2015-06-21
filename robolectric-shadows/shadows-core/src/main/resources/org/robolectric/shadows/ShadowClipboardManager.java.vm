@@ -13,6 +13,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import static org.robolectric.internal.Shadow.directlyOn;
 
+/**
+ * Shadow for {@link android.content.ClipboardManager}.
+ */
 @SuppressWarnings("UnusedDeclaration")
 @Implements(ClipboardManager.class)
 public class ShadowClipboardManager {

@@ -5,6 +5,9 @@ import android.view.RenderNode;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
+/**
+ * Shadow for {@link android.view.RenderNode}.
+ */
 @Implements(value = RenderNode.class, isInAndroidSdk = false)
 public class ShadowRenderNode {
   private float translationX;

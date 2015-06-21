@@ -11,11 +11,13 @@ import org.robolectric.annotation.Implements;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Shadow for {@link android.view.SurfaceView}.
+ */
 @Implements(SurfaceView.class)
 @SuppressWarnings({"UnusedDeclaration"})
 public class ShadowSurfaceView extends ShadowView {
-
-  private FakeSurfaceHolder fakeSurfaceHolder = new FakeSurfaceHolder();
+  private final FakeSurfaceHolder fakeSurfaceHolder = new FakeSurfaceHolder();
 
   @Implementation
   public void onAttachedToWindow() {
@@ -31,14 +33,13 @@ public class ShadowSurfaceView extends ShadowView {
   }
 
   /**
-   * Fake version of {@link SurfaceHolder} that gives access to the stored callbacks,
-   * so they can be called by tests.
+   * Robolectric implementation of {@link android.view.SurfaceHolder}.
    */
   public static class FakeSurfaceHolder implements SurfaceHolder {
+    private final Set<Callback> callbacks = new HashSet<>();
 
-    final private Set<Callback> callbacks = new HashSet<>();
-
-    @Override public void addCallback(Callback callback) {
+    @Override
+    public void addCallback(Callback callback) {
       callbacks.add(callback);
     }
 
@@ -46,45 +47,57 @@ public class ShadowSurfaceView extends ShadowView {
       return callbacks;
     }
 
-    @Override public void removeCallback(Callback callback) {
+    @Override
+    public void removeCallback(Callback callback) {
       callbacks.remove(callback);
     }
 
-    @Override public boolean isCreating() {
+    @Override
+    public boolean isCreating() {
       return false;
     }
 
-    @Override public void setType(int i) {
+    @Override
+    public void setType(int i) {
     }
 
-    @Override public void setFixedSize(int i, int i1) {
+    @Override
+    public void setFixedSize(int i, int i1) {
     }
 
-    @Override public void setSizeFromLayout() {
+    @Override
+    public void setSizeFromLayout() {
     }
 
-    @Override public void setFormat(int i) {
+    @Override
+    public void setFormat(int i) {
     }
 
-    @Override public void setKeepScreenOn(boolean b) {
+    @Override
+    public void setKeepScreenOn(boolean b) {
     }
 
-    @Override public Canvas lockCanvas() {
+    @Override
+    public Canvas lockCanvas() {
       return null;
     }
 
-    @Override public Canvas lockCanvas(Rect rect) {
+    @Override
+    public Canvas lockCanvas(Rect rect) {
       return null;
     }
 
-    @Override public void unlockCanvasAndPost(Canvas canvas) {
+    @Override
+    public void unlockCanvasAndPost(Canvas canvas) {
     }
 
-    @Override public Rect getSurfaceFrame() {
+    @Override
+    public Rect getSurfaceFrame() {
       return null;
     }
 
-    @Override public Surface getSurface() {
+    @Override
+    public Surface getSurface() {
       return null;
     }
   }

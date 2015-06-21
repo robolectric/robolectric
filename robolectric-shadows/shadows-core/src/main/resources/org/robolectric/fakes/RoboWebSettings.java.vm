@@ -3,7 +3,7 @@ package org.robolectric.fakes;
 import android.webkit.WebSettings;
 
 /**
- * Concrete implementation of the abstract WebSettings class.
+ * Robolectric implementation of {@link android.webkit.WebSettings}.
  */
 public class RoboWebSettings extends WebSettings {
   private boolean allowContentAccess = true;

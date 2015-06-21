@@ -5,6 +5,9 @@ import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 
+/**
+ * Robolectric implementation of {@link android.view.LayoutInflater}.
+ */
 public class RoboLayoutInflater extends LayoutInflater {
   private static final String[] sClassPrefixList = {
       "android.widget.",

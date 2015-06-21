@@ -11,6 +11,9 @@ import android.os.Handler;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Robolectric implementation of {@link android.hardware.SensorManager}.
+ */
 public class RoboSensorManager extends SensorManager {
 
   @Override

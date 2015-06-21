@@ -9,6 +9,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Shadow for {@link android.os.SystemProperties}.
+ */
 @Implements(value = SystemProperties.class, isInAndroidSdk = false)
 public class ShadowSystemProperties {
   private static final Map<String, Object> VALUES = new HashMap<>();

@@ -18,27 +18,24 @@ import static org.robolectric.util.ReflectionHelpers.*;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 /**
- * Shadow for MessageQueue that puts {@link Message}s into the scheduler queue instead of sending them to be handled on a
- * separate thread. {@link Message}s that are scheduled to be dispatched can be triggered by calling
- * {@link ShadowLooper#idleMainLooper}.
+ * Shadow for {@link android.os.MessageQueue}.
+ *
+ * <p>This class puts {@link android.os.Message}s into the scheduler queue instead of sending
+ * them to be handled on a separate thread. {@link android.os.Message}s that are scheduled to
+ * be dispatched can be triggered by calling {@link ShadowLooper#idleMainLooper}.</p>
  * 
  * @see ShadowLooper
  */
-@Generated("org.robolectric.shadows.ShadowMessageQueue.java.vm")
 @Implements(MessageQueue.class)
 public class ShadowMessageQueue {
   @RealObject
   private MessageQueue realQueue;
 
 #if ($api >= 21)
-#set($ptrClass = "long")
 #set($recycle = "recycleUnchecked")
 #else
-#set($ptrClass = "int")
 #set($recycle = "recycle")
 #end
-
-#set($Integer = 0)
 
   // Stub out the native peer - scheduling
   // is handled by the Scheduler class which is user-driven

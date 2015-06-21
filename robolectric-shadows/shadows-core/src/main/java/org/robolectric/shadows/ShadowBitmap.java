@@ -15,6 +15,9 @@ import java.io.OutputStream;
 
 import static org.robolectric.Shadows.shadowOf;
 
+/**
+ * Shadow for {@link android.graphics.Bitmap}.
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Bitmap.class)
 public class ShadowBitmap {

@@ -7,6 +7,9 @@ import org.robolectric.annotation.Implements;
 
 import java.util.Locale;
 
+/**
+ * Shadow for {@link android.text.format.DateFormat}.
+ */
 @Implements(DateFormat.class)
 public class ShadowDateFormat {
 

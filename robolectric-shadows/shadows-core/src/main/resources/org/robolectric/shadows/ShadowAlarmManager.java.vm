@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Shadows the {@code android.app.AlarmManager} class.
+ * Shadow for {@link android.app.AlarmManager}.
  */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AlarmManager.class)

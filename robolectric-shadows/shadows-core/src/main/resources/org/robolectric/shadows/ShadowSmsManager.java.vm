@@ -10,6 +10,9 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.internal.Shadow;
 
+/**
+ * Shadow for {@link android.telephony.SmsManager}.
+ */
 @Implements(SmsManager.class)
 public class ShadowSmsManager {
   @RealObject

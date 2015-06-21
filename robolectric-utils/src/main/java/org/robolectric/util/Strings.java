@@ -3,6 +3,9 @@ package org.robolectric.util;
 import java.io.IOException;
 import java.io.InputStream;
 
+/**
+ * Utility methods for dealing with strings.
+ */
 public class Strings {
 
   public static String fromStream(InputStream inputStream) throws IOException {

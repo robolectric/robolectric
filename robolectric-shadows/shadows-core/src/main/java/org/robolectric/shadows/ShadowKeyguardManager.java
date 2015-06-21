@@ -7,7 +7,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.internal.Shadow;
 
 /**
- * Shadows the {@code android.app.KeyguardManager} class.
+ * Shadow for {@link android.app.KeyguardManager}.
  */
 @Implements(KeyguardManager.class)
 public class ShadowKeyguardManager {

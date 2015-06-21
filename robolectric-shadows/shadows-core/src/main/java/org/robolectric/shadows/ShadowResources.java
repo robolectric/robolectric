@@ -49,7 +49,7 @@ import static org.robolectric.internal.Shadow.directlyOn;
 import static org.robolectric.Shadows.shadowOf;
 
 /**
- * Shadow of {@code Resources} that simulates the loading of resources
+ * Shadow for {@link android.content.res.Resources}.
  */
 @Implements(Resources.class)
 public class ShadowResources {

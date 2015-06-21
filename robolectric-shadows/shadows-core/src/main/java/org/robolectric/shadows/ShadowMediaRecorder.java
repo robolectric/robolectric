@@ -7,7 +7,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 /**
- * Shadows the {@code MediaRecorder} class.
+ * Shadow for {@link android.media.MediaRecorder}.
  */
 @Implements(MediaRecorder.class)
 public class ShadowMediaRecorder {

@@ -16,6 +16,12 @@ package org.robolectric.util;
  * limitations under the License.
  */
 
+/**
+ * Container to ease passing around a tuple of two objects.
+ *
+ * @param <F> First type.
+ * @param <S> Second type.
+ */
 public class Pair<F, S> {
   public final F first;
   public final S second;

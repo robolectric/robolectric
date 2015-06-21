@@ -6,16 +6,19 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
+/**
+ * Shadow for {@link android.os.ResultReceiver}.
+ */
 @Implements(ResultReceiver.class)
 public class ShadowResultReceiver {
-  // TODO: Use handler to make asynchronous
-
   @RealObject private ResultReceiver realResultReceiver;
 
   @Implementation
   public void send(int resultCode, android.os.Bundle resultData) {
-    ReflectionHelpers.callInstanceMethod(realResultReceiver, "onReceiveResult", new ReflectionHelpers.ClassParameter(Integer.TYPE, resultCode),
-        new ReflectionHelpers.ClassParameter(Bundle.class, resultData));
+    ReflectionHelpers.callInstanceMethod(realResultReceiver, "onReceiveResult",
+        ClassParameter.from(Integer.TYPE, resultCode),
+        ClassParameter.from(Bundle.class, resultData));
   }
 }

@@ -5,9 +5,11 @@ import android.telephony.TelephonyManager;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
+/**
+ * Shadow for {@link android.telephony.PhoneStateListener}.
+ */
 @Implements(TelephonyManager.class)
 public class ShadowTelephonyManager {
-
   private PhoneStateListener listener;
   private int eventFlags;
   private String deviceId;

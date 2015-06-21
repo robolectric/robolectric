@@ -30,6 +30,9 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
+/**
+ * Shadow for {@link android.widget.SimpleCursorAdapter}.
+ */
 @Implements(SimpleCursorAdapter.class)
 public class ShadowSimpleCursorAdapter extends ShadowResourceCursorAdapter {
   @RealObject private SimpleCursorAdapter realSimpleCursorAdapter;

@@ -12,6 +12,9 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.util.TempDirectory;
 
+/**
+ * Shadow for {@link android.os.Environment}.
+ */
 @Implements(Environment.class)
 public class ShadowEnvironment {
   private static String externalStorageState = Environment.MEDIA_REMOVED;

@@ -7,6 +7,9 @@ import org.robolectric.annotation.Implements;
 import java.net.Socket;
 import java.net.SocketException;
 
+/**
+ * Shadow for {@link dalvik.system.SocketTagger}.
+ */
 @Implements(value = SocketTagger.class, isInAndroidSdk = false)
 public class ShadowSocketTagger {
 

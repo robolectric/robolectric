@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Shadow for {@code RemoteViews} that simulates its implementation.
+ * Shadow for {@link android.widget.RemoteViews}.
  */
 @Implements(RemoteViews.class)
 public class ShadowRemoteViews {

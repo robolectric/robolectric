@@ -7,11 +7,13 @@ import org.robolectric.annotation.Implements;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Shadow for {@link android.view.ViewTreeObserver}.
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ViewTreeObserver.class)
 public class ShadowViewTreeObserver {
-
-  private ArrayList<ViewTreeObserver.OnGlobalLayoutListener> globalLayoutListeners = new ArrayList<>();
+  private final ArrayList<ViewTreeObserver.OnGlobalLayoutListener> globalLayoutListeners = new ArrayList<>();
 
   @Implementation
   public void addOnGlobalLayoutListener(ViewTreeObserver.OnGlobalLayoutListener listener) {

@@ -12,14 +12,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Shadow for {@link android.hardware.SensorManager}.
+ */
 @Implements(SensorManager.class)
 public class ShadowSensorManager {
-
-  private ArrayList<SensorEventListener> listeners = new ArrayList<>();
-
   public boolean forceListenersToFail = false;
-
   private final Map<Integer, Sensor> sensorMap = new HashMap<>();
+  private final ArrayList<SensorEventListener> listeners = new ArrayList<>();
 
   /**
    * Provide a Sensor for the indicated sensor type.
@@ -37,13 +37,12 @@ public class ShadowSensorManager {
 
   @Implementation
   public boolean registerListener(SensorEventListener listener, Sensor sensor, int rate) {
-
-    if(forceListenersToFail)
+    if (forceListenersToFail) {
       return false;
-
-    if(!listeners.contains(listener))
+    }
+    if (!listeners.contains(listener)) {
       listeners.add(listener);
-
+    }
     return true;
   }
 

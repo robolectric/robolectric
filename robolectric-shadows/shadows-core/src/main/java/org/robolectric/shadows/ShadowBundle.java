@@ -8,7 +8,9 @@ import org.robolectric.util.ReflectionHelpers;
 
 import java.util.Map;
 
-
+/**
+ * Shadow for {@link android.os.Bundle}.
+ */
 @Implements(Bundle.class)
 public class ShadowBundle {
 

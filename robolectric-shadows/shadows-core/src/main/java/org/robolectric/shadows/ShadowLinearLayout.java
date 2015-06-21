@@ -5,7 +5,9 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
 
-
+/**
+ * Shadow for {@link android.widget.LinearLayout}.
+ */
 @Implements(LinearLayout.class)
 public class ShadowLinearLayout extends ShadowViewGroup {
   @RealObject LinearLayout realObject;

@@ -1,11 +1,17 @@
 package org.robolectric.annotation;
 
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 /**
- * Indicates that a method declaration is intended to Shadow a method with the same signature on the associated
- * Android class.
+ * Indicates that a method declaration is intended to Shadow a method with the same signature
+ * on the associated Android class.
  */
-@java.lang.annotation.Documented
-@java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy.RUNTIME)
-@java.lang.annotation.Target({java.lang.annotation.ElementType.METHOD})
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.METHOD})
 public @interface Implementation {
 }

@@ -4,9 +4,16 @@ import android.widget.AbsoluteLayout;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
+/**
+ * Shadow for {@link android.widget.AbsoluteLayout}.
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AbsoluteLayout.class)
 public class ShadowAbsoluteLayout extends ShadowViewGroup {
+
+  /**
+   * Shadow for {@link android.widget.AbsoluteLayout.LayoutParams}.
+   */
   @Implements(AbsoluteLayout.LayoutParams.class)
   public static class ShadowLayoutParams extends ShadowViewGroup.ShadowLayoutParams {
     @RealObject

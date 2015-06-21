@@ -33,12 +33,7 @@ import static org.robolectric.internal.Shadow.directlyOn;
 import static org.robolectric.internal.Shadow.invokeConstructor;
 
 /**
- * Shadow implementation of {@code View} that simulates the behavior of this
- * class.
- *
- * <p>
- * Supports listeners, focusability (but not focus order), resource loading,
- * visibility, onclick, tags, and tracks the size and shape of the view.
+ * Shadow for {@link android.view.View}.
  */
 @Implements(View.class)
 public class ShadowView {

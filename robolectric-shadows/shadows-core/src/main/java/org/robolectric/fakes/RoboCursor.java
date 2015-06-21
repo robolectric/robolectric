@@ -6,6 +6,9 @@ import android.net.Uri;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Robolectric implementation of {@link android.database.Cursor}.
+ */
 public class RoboCursor extends BaseCursor {
   public Uri uri;
   public String[] projection;

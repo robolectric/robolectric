@@ -6,6 +6,9 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
+/**
+ * Test helper used to record events and assert on the order in which they happen.
+ */
 public class Transcript {
   private List<String> events = new ArrayList<>();
 

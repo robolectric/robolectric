@@ -25,7 +25,7 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 
 /**
- * Shadows the {@code android.webkit.CookieManager} class.
+ * Shadow for {@code android.webkit.CookieManager}.
  */
 @Implements(CookieManager.class)
 public class ShadowCookieManager {

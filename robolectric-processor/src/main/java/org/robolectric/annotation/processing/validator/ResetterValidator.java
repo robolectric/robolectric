@@ -11,6 +11,9 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
+/**
+ * Validator that checks usages of {@link org.robolectric.annotation.Resetter}.
+ */
 public class ResetterValidator extends FoundOnImplementsValidator {
   public ResetterValidator(RobolectricModel model, ProcessingEnvironment env) {
     super(model, env, "org.robolectric.annotation.Resetter");

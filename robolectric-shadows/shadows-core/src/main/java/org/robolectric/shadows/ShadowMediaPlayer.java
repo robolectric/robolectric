@@ -30,7 +30,7 @@ import static org.robolectric.shadows.ShadowMediaPlayer.State.*;
 import static org.robolectric.shadows.util.DataSource.toDataSource;
 
 /**
- * Shadows the Android {@code MediaPlayer} class.
+ * Shadow for {@link android.media.MediaPlayer}.
  * 
  * Automated testing of media playback can be a difficult thing - especially
  * testing that your code properly handles asynchronous errors and events. This

@@ -16,6 +16,9 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.TimeZone;
 
+/**
+ * Shadow for {@link android.text.format.Time}.
+ */
 @Implements(Time.class)
 public class ShadowTime {
   @RealObject

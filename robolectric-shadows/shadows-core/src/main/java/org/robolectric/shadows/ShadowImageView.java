@@ -10,6 +10,9 @@ import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
+/**
+ * Shadow for {@link android.widget.ImageView}.
+ */
 @Implements(ImageView.class)
 public class ShadowImageView extends ShadowView {
   private Drawable imageDrawable;

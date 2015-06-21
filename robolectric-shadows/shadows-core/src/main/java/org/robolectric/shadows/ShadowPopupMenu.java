@@ -10,6 +10,9 @@ import org.robolectric.annotation.RealObject;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.internal.Shadow.directlyOn;
 
+/**
+ * Shadow for {@link android.widget.PopupMenu}.
+ */
 @Implements(PopupMenu.class)
 public class ShadowPopupMenu {
 
