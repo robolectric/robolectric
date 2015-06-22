@@ -37,6 +37,11 @@ public class InstrumentationConfigurationTest {
   }
 
   @Test
+  public void shouldInstrumentOrgKxmlClasses() {
+    assertThat(config.shouldInstrument(wrap("org.kxml2.io.KXmlParser"))).isTrue();
+  }
+
+  @Test
   public void shouldNotAcquireRClasses() throws Exception {
     assertThat(config.shouldAcquire("com.whatever.Rfoo")).isTrue();
     assertThat(config.shouldAcquire("com.whatever.fooR")).isTrue();
