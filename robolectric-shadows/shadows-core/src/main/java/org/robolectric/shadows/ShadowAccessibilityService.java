@@ -28,4 +28,3 @@ public class ShadowAccessibilityService extends ShadowService {
       return globalActionsPerformed;
     }
 }
-

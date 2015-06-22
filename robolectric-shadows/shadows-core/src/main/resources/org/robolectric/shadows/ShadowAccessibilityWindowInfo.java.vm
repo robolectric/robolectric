@@ -1,0 +1,99 @@
+#if ($api >= 21)
+package org.robolectric.shadows;
+
+import android.graphics.Rect;
+import android.view.accessibility.AccessibilityNodeInfo;
+import android.view.accessibility.AccessibilityWindowInfo;
+
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.util.ReflectionHelpers;
+
+/**
+ * Shadow of {@link android.view.accessibility.AccessibilityWindowInfo} that allows a test to set
+ * properties that are locked in the original class.
+ */
+@Implements(AccessibilityWindowInfo.class)
+public class ShadowAccessibilityWindowInfo {
+  private AccessibilityNodeInfo rootNode;
+
+  private int type = AccessibilityWindowInfo.TYPE_APPLICATION;
+
+  private Rect boundsInScreen = new Rect();
+
+  private boolean isAccessibilityFocused;
+
+  private boolean isActive;
+
+  private int id;
+
+  public void __constructor__() {
+
+  }
+
+  @Implementation
+  public static AccessibilityWindowInfo obtain() {
+    return ReflectionHelpers.callConstructor(AccessibilityWindowInfo.class);
+  }
+
+  @Implementation
+  public AccessibilityNodeInfo getRoot() {
+    if (rootNode == null) {
+      return null;
+    }
+    return AccessibilityNodeInfo.obtain(rootNode);
+  }
+
+  @Implementation
+  public int getType() {
+    return type;
+  }
+
+  @Implementation
+  public void getBoundsInScreen(Rect outBounds) {
+    outBounds.set(boundsInScreen);
+  }
+
+  @Implementation
+  public boolean isAccessibilityFocused() {
+    return isAccessibilityFocused;
+  }
+
+  @Implementation
+  public boolean isActive() {
+    return isActive;
+  }
+
+  @Implementation
+  public int getId() {
+    return id;
+  }
+
+  public void setRoot(AccessibilityNodeInfo root) {
+    if (rootNode != null) {
+      rootNode.recycle();
+    }
+    rootNode = AccessibilityNodeInfo.obtain(root);
+  }
+
+  public void setType(int t) {
+    type = t;
+  }
+
+  public void setBoundsInScreen(Rect b) {
+    boundsInScreen.set(b);
+  }
+
+  public void setAccessibilityFocused(boolean value) {
+    isAccessibilityFocused = value;
+  }
+
+  public void setActive(boolean value) {
+    isActive = value;
+  }
+
+  public void setId(int value) {
+    id = value;
+  }
+}
+#end

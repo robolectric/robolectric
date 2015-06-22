@@ -1,0 +1,669 @@
+package org.robolectric.shadows;
+
+import android.graphics.Rect;
+import android.os.Bundle;
+import android.text.TextUtils;
+import android.util.Pair;
+import android.view.View;
+import android.view.accessibility.AccessibilityNodeInfo;
+
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.internal.ShadowExtractor;
+import org.robolectric.util.ReflectionHelpers;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Shadow of {@link android.view.accessibility.AccessibilityNodeInfo} that allows a test to set
+ * properties that are locked in the original class. It also keeps track of calls to
+ * {@code obtain()} and {@code recycle()} to look for bugs that mismatches.
+ */
+@Implements(AccessibilityNodeInfo.class)
+public class ShadowAccessibilityNodeInfo {
+  // Map of obtained instances of the class along with stack traces of how they were obtained
+  private static final Map<StrictEqualityNodeWrapper, StackTraceElement[]> obtainedInstances =
+      new HashMap<>();
+
+  // Bitmasks for actions
+  public static final int UNDEFINED_SELECTION_INDEX = -1;
+
+  private static final int CLICKABLE_MASK = 0x00000001;
+
+  private static final int LONGCLICKABLE_MASK = 0x00000002;
+
+  private static final int FOCUSABLE_MASK = 0x00000004;
+
+  private static final int FOCUSED_MASK = 0x00000008;
+
+  private static final int VISIBLE_TO_USER_MASK = 0x00000010;
+
+  private static final int SCROLLABLE_MASK = 0x00000020;
+
+  private static final int PASTEABLE_MASK = 0x00000040;
+
+  private static final int EDITABLE_MASK = 0x00000080;
+  
+  private static final int TEXT_SELECTION_SETABLE_MASK = 0x00000100;
+
+  private List<AccessibilityNodeInfo> children;
+
+  private Rect boundsInScreen = new Rect();
+
+  private List<Pair<Integer, Bundle>> performedActionAndArgsList;
+
+  // Storage of flags
+  private int actionFlags;
+
+  private AccessibilityNodeInfo parent;
+
+  private AccessibilityNodeInfo labelFor;
+
+  private AccessibilityNodeInfo labeledBy;
+
+  private View view;
+
+  private CharSequence contentDescription;
+
+  private CharSequence text;
+
+  private CharSequence className;
+
+  private int textSelectionStart = UNDEFINED_SELECTION_INDEX;
+
+  private int textSelectionEnd = UNDEFINED_SELECTION_INDEX;
+
+  @RealObject
+  private AccessibilityNodeInfo realAccessibilityNodeInfo;
+
+  @Implementation
+  public static AccessibilityNodeInfo obtain(AccessibilityNodeInfo info) {
+    final ShadowAccessibilityNodeInfo shadowInfo =
+        ((ShadowAccessibilityNodeInfo) ShadowExtractor.extract(info));
+    final AccessibilityNodeInfo obtainedInstance = shadowInfo.getClone();
+
+    obtainedInstances.put(
+        new StrictEqualityNodeWrapper(obtainedInstance), Thread.currentThread().getStackTrace());
+    return obtainedInstance;
+  }
+
+  @Implementation
+  public static AccessibilityNodeInfo obtain(View view) {
+    // We explicitly avoid allocating the AccessibilityNodeInfo from the actual pool by using the
+    // private constructor. Not doing so affects test suites which use both shadow and
+    // non-shadow objects.
+    final AccessibilityNodeInfo obtainedInstance =
+        ReflectionHelpers.callConstructor(AccessibilityNodeInfo.class);
+    final ShadowAccessibilityNodeInfo shadowObtained =
+        ((ShadowAccessibilityNodeInfo) ShadowExtractor.extract(obtainedInstance));
+
+    /*
+     * We keep a separate list of actions for each object newly obtained
+     * from a view, and perform a shallow copy during getClone. That way the
+     * list of actions performed contains all actions performed on the view
+     * by the tree of nodes initialized from it. Note that initializing two
+     * nodes with the same view will not merge the two lists, as so the list
+     * of performed actions will not contain all actions performed on the
+     * underlying view.
+     */
+    shadowObtained.performedActionAndArgsList = new LinkedList<>();
+
+    shadowObtained.view = view;
+    obtainedInstances.put(
+        new StrictEqualityNodeWrapper(obtainedInstance), Thread.currentThread().getStackTrace());
+    return obtainedInstance;
+  }
+
+  @Implementation
+  public static AccessibilityNodeInfo obtain() {
+    return obtain(new View(RuntimeEnvironment.application.getApplicationContext()));
+  }
+
+  /**
+   * Check for leaked objects that were {@code obtain}ed but never
+   * {@code recycle}d.
+   *
+   * @param printUnrecycledNodesToSystemErr - if true, stack traces of calls
+   *        to {@code obtain} that lack matching calls to {@code recycle} are
+   *        dumped to System.err.
+   * @return {@code true} if there are unrecycled nodes
+   */
+  public static boolean areThereUnrecycledNodes(boolean printUnrecycledNodesToSystemErr) {
+    if (printUnrecycledNodesToSystemErr) {
+      for (final StrictEqualityNodeWrapper wrapper : obtainedInstances.keySet()) {
+        final ShadowAccessibilityNodeInfo shadow =
+            ((ShadowAccessibilityNodeInfo) ShadowExtractor.extract(wrapper.mInfo));
+
+        System.err.println(String.format(
+            "Leaked contentDescription = %s. Stack trace:", shadow.getContentDescription()));
+        for (final StackTraceElement stackTraceElement : obtainedInstances.get(wrapper)) {
+          System.err.println(stackTraceElement.toString());
+        }
+      }
+    }
+
+    return (obtainedInstances.size() != 0);
+  }
+
+  /**
+   * Clear list of obtained instance objects. {@code areThereUnrecycledNodes}
+   * will always return false if called immediately afterwards.
+   */
+  public static void resetObtainedInstances() {
+    obtainedInstances.clear();
+  }
+
+  @Implementation
+  public void recycle() {
+    final StrictEqualityNodeWrapper wrapper =
+        new StrictEqualityNodeWrapper(realAccessibilityNodeInfo);
+    if (!obtainedInstances.containsKey(wrapper)) {
+      throw new IllegalStateException();
+    }
+
+    if (labelFor != null) {
+      labelFor.recycle();
+    }
+
+    if (labeledBy != null) {
+      labeledBy.recycle();
+    }
+
+    obtainedInstances.remove(wrapper);
+  }
+
+  @Implementation
+  public int getChildCount() {
+    if (children == null) {
+      return 0;
+    }
+
+    return children.size();
+  }
+
+  @Implementation
+  public AccessibilityNodeInfo getChild(int index) {
+    if (children == null) {
+      return null;
+    }
+
+    final AccessibilityNodeInfo child = children.get(index);
+    if (child == null) {
+      return null;
+    }
+
+    return obtain(child);
+  }
+
+  @Implementation
+  public AccessibilityNodeInfo getParent() {
+    if (parent == null) {
+      return null;
+    }
+
+    return obtain(parent);
+  }
+
+  @Implementation
+  public boolean isClickable() {
+    return ((actionFlags & CLICKABLE_MASK) != 0);
+  }
+
+  @Implementation
+  public boolean isLongClickable() {
+    return ((actionFlags & LONGCLICKABLE_MASK) != 0);
+  }
+
+  @Implementation
+  public boolean isFocusable() {
+    return ((actionFlags & FOCUSABLE_MASK) != 0);
+  }
+
+  @Implementation
+  public boolean isFocused() {
+    return ((actionFlags & FOCUSED_MASK) != 0);
+  }
+
+  @Implementation
+  public boolean isVisibleToUser() {
+    return ((actionFlags & VISIBLE_TO_USER_MASK) != 0);
+  }
+
+  @Implementation
+  public boolean isScrollable() {
+    return ((actionFlags & SCROLLABLE_MASK) != 0);
+  }
+
+  public boolean isPasteable() {
+    return ((actionFlags & PASTEABLE_MASK) != 0);
+  }
+
+  @Implementation
+  public boolean isEditable() {
+    return ((actionFlags & EDITABLE_MASK) != 0);
+  }
+  
+  public boolean isTextSelectionSetable() {
+    return ((actionFlags & TEXT_SELECTION_SETABLE_MASK) != 0);
+  }
+
+  public void setTextSelectionSetable(boolean isTextSelectionSetable) {
+    actionFlags = (actionFlags & ~TEXT_SELECTION_SETABLE_MASK) | 
+        (isTextSelectionSetable ? TEXT_SELECTION_SETABLE_MASK : 0);
+  }
+
+  @Implementation
+  public void setClickable(boolean isClickable) {
+    actionFlags = (actionFlags & ~CLICKABLE_MASK) | (isClickable ? CLICKABLE_MASK : 0);
+  }
+
+  @Implementation
+  public void setLongClickable(boolean isLongClickable) {
+    actionFlags =
+        (actionFlags & ~LONGCLICKABLE_MASK) | (isLongClickable ? LONGCLICKABLE_MASK : 0);
+  }
+
+  @Implementation
+  public void setFocusable(boolean isFocusable) {
+    actionFlags = (actionFlags & ~FOCUSABLE_MASK) | (isFocusable ? FOCUSABLE_MASK : 0);
+  }
+
+  @Implementation
+  public void setFocused(boolean isFocused) {
+    actionFlags = (actionFlags & ~FOCUSED_MASK) | (isFocused ? FOCUSED_MASK : 0);
+  }
+
+  @Implementation
+  public void setScrollable(boolean isScrollable) {
+    actionFlags = (actionFlags & ~SCROLLABLE_MASK) | (isScrollable ? SCROLLABLE_MASK : 0);
+  }
+
+  public void setPasteable(boolean isPasteable) {
+    actionFlags = (actionFlags & ~PASTEABLE_MASK) | (isPasteable ? PASTEABLE_MASK : 0);
+  }
+
+  @Implementation
+  public void setEditable(boolean isEditable) {
+    actionFlags = (actionFlags & ~EDITABLE_MASK) | (isEditable ? EDITABLE_MASK : 0);
+    // If setting editable, also set it selectable
+    setTextSelectionSetable(true);
+  }
+
+  @Implementation
+  public void setVisibleToUser(boolean isVisibleToUser) {
+    actionFlags =
+        (actionFlags & ~VISIBLE_TO_USER_MASK) | (isVisibleToUser ? VISIBLE_TO_USER_MASK : 0);
+  }
+
+  @Implementation
+  public void setContentDescription(CharSequence description) {
+    contentDescription = description;
+  }
+
+  @Implementation
+  public CharSequence getContentDescription() {
+    return contentDescription;
+  }
+
+  @Implementation
+  public void setClassName(CharSequence name) {
+    className = name;
+  }
+
+  @Implementation
+  public CharSequence getClassName() {
+    return className;
+  }
+
+  @Implementation
+  public void setText(CharSequence t) {
+    text = t;
+  }
+
+  @Implementation
+  public CharSequence getText() {
+    return text;
+  }
+
+  @Implementation
+  public void setTextSelection(int start, int end) {
+      textSelectionStart = start;
+      textSelectionEnd = end;
+  }
+  
+  /**
+   * Gets the text selection start.
+   *
+   * @return The text selection start if there is selection or UNDEFINED_SELECTION_INDEX.
+   */
+  @Implementation
+  public int getTextSelectionStart() {
+      return textSelectionStart;
+  }
+
+  /**
+   * Gets the text selection end.
+   *
+   * @return The text selection end if there is selection or UNDEFINED_SELECTION_INDEX.
+   */
+  @Implementation
+  public int getTextSelectionEnd() {
+      return textSelectionEnd;
+  }
+
+  @Implementation
+  public AccessibilityNodeInfo getLabelFor() {
+    if (labelFor == null) {
+      return null;
+    }
+
+    return obtain(labelFor);
+  }
+
+  public void setLabelFor(AccessibilityNodeInfo info) {
+    if (labelFor != null) {
+      labelFor.recycle();
+    }
+
+    labelFor = obtain(info);
+  }
+
+  @Implementation
+  public AccessibilityNodeInfo getLabeledBy() {
+    if (labeledBy == null) {
+      return null;
+    }
+
+    return obtain(labeledBy);
+  }
+
+  public void setLabeledBy(AccessibilityNodeInfo info) {
+    if (labeledBy != null) {
+      labeledBy.recycle();
+    }
+
+    labeledBy = obtain(info);
+  }
+
+  @Implementation
+  public void getBoundsInScreen(Rect outBounds) {
+    outBounds.set(boundsInScreen);
+  }
+
+  @Implementation
+  public void setBoundsInScreen(Rect b) {
+    boundsInScreen.set(b);
+  }
+
+  /**
+   * Obtain flags for actions supported. Currently only supports ACTION_CLICK, ACTION_LONG_CLICK,
+   * ACTION_SCROLL_FORWARD, ACTION_PASTE, ACTION_FOCUS, ACTION_SET_SELECTION, ACTION_SCROLL_BACKWARD
+   * Returned value is derived from the getters.
+   *
+   * @return Action mask. 0 if no actions supported.
+   */
+  @Implementation
+  public int getActions() {
+    int actions = 0;
+    actions |= (isClickable()) ? AccessibilityNodeInfo.ACTION_CLICK : 0;
+    actions |= (isLongClickable()) ? AccessibilityNodeInfo.ACTION_LONG_CLICK : 0;
+    actions |= (isScrollable()) ? AccessibilityNodeInfo.ACTION_SCROLL_FORWARD : 0;
+    actions |= (isScrollable()) ? AccessibilityNodeInfo.ACTION_SCROLL_BACKWARD : 0;
+#if ($api >= 18)
+    actions |= (isPasteable()) ? AccessibilityNodeInfo.ACTION_PASTE : 0;
+    actions |= (isTextSelectionSetable()) ? AccessibilityNodeInfo.ACTION_SET_SELECTION : 0;
+#end
+    actions |= (isFocusable()) ? AccessibilityNodeInfo.ACTION_FOCUS : 0;
+    return actions;
+  }
+
+  @Implementation
+  public boolean performAction(int action) {
+    return performAction(action, null);
+  }
+
+  @Implementation
+  public boolean performAction(int action, Bundle arguments) {
+    if (performedActionAndArgsList == null) {
+      performedActionAndArgsList = new LinkedList<>();
+    }
+
+    performedActionAndArgsList.add(new Pair<Integer, Bundle>(new Integer(action), arguments));
+    boolean actionResult = true;
+    switch (action) {
+      case AccessibilityNodeInfo.ACTION_CLICK:
+        actionResult = isClickable();
+        break;
+      case AccessibilityNodeInfo.ACTION_LONG_CLICK:
+        actionResult = isLongClickable();
+        break;
+      case AccessibilityNodeInfo.ACTION_FOCUS:
+        actionResult = isFocusable();
+        break;
+#if ($api >= 18)
+      case AccessibilityNodeInfo.ACTION_PASTE:
+        actionResult = isPasteable();
+        break;
+      case AccessibilityNodeInfo.ACTION_SET_SELECTION:
+        actionResult = isEditable();
+        break;
+#end
+      case AccessibilityNodeInfo.ACTION_SCROLL_BACKWARD:
+      case AccessibilityNodeInfo.ACTION_SCROLL_FORWARD:
+        actionResult = isScrollable();
+        break;
+      default:
+        break;
+    }
+
+    return actionResult;
+  }
+
+  /**
+   * Equality check based on reference equality for mParent and mView and
+   * value equality for other fields.
+   */
+  @Implementation
+  @Override
+  public boolean equals(Object object) {
+    if (!(object instanceof AccessibilityNodeInfo)) {
+      return false;
+    }
+
+    final AccessibilityNodeInfo info = (AccessibilityNodeInfo) object;
+    final ShadowAccessibilityNodeInfo otherShadow =
+        (ShadowAccessibilityNodeInfo) ShadowExtractor.extract(info);
+
+    boolean areEqual = true;
+    if (children == null) {
+      areEqual = areEqual && (otherShadow.children == null);
+    } else {
+      areEqual =
+          areEqual && (otherShadow.children != null) && children.equals(otherShadow.children);
+    }
+    areEqual = areEqual && (parent == otherShadow.parent);
+
+    areEqual = areEqual && (actionFlags == otherShadow.actionFlags);
+    /*
+     * These checks have the potential to become infinite loops if there are
+     * loops in the labelFor or labeledBy logic. Rather than deal with this
+     * complexity, allow the failure since it will indicate a problem that
+     * needs addressing.
+     */
+    if (labelFor == null) {
+      areEqual = areEqual && (otherShadow.labelFor == null);
+    } else {
+      areEqual = areEqual && (labelFor.equals(otherShadow.labelFor));
+    }
+
+    if (labeledBy == null) {
+      areEqual = areEqual && (otherShadow.labeledBy == null);
+    } else {
+      areEqual = areEqual && (labeledBy.equals(otherShadow.labeledBy));
+    }
+
+    areEqual = areEqual && boundsInScreen.equals(otherShadow.boundsInScreen);
+    areEqual = areEqual
+            && (TextUtils.equals(contentDescription, otherShadow.contentDescription));
+    areEqual = areEqual && (TextUtils.equals(text, otherShadow.text));
+
+    areEqual = areEqual && (TextUtils.isEmpty(text) == TextUtils.isEmpty(otherShadow.text));
+    if (!TextUtils.isEmpty(text)) {
+      areEqual = areEqual && (text.toString().equals(otherShadow.text.toString()));
+    }
+
+    areEqual = areEqual && TextUtils.equals(className, otherShadow.className);
+    areEqual = areEqual && (view == otherShadow.view);
+    areEqual = areEqual && (textSelectionStart == otherShadow.textSelectionStart);
+    areEqual = areEqual && (textSelectionStart == otherShadow.textSelectionEnd);
+
+    return areEqual;
+  }
+
+  @Implementation
+  @Override
+  public int hashCode() {
+    // This is 0 for a reason. If you change it, you will break the obtained
+    // instances map in a manner that is remarkably difficult to debug.
+    // Having a dynamic hash code keeps this object from being located
+    // in the map if it was mutated after being obtained.
+    return (view == null) ? 0 : view.hashCode();
+  }
+
+  /**
+   * Add a child node to this one. Also initializes the parent field of the
+   * child.
+   *
+   * @param child The node to be added as a child.
+   */
+  public void addChild(AccessibilityNodeInfo child) {
+    if (children == null) {
+      children = new LinkedList<>();
+    }
+
+    children.add(child);
+    ((ShadowAccessibilityNodeInfo) ShadowExtractor.extract(child)).parent =
+        realAccessibilityNodeInfo;
+  }
+
+  /**
+   * @return The list of arguments for the various calls to performAction. Unmodifiable.
+   */
+  public List<Integer> getPerformedActions() {
+    if (performedActionAndArgsList == null) {
+      performedActionAndArgsList = new LinkedList<>();
+    }
+
+    // Here we take the actions out of the pairs and stick them into a separate LinkedList to return
+    List<Integer> actionsOnly = new LinkedList<Integer>();
+    Iterator<Pair<Integer, Bundle>> iter = performedActionAndArgsList.iterator();
+    while (iter.hasNext()) {
+      actionsOnly.add(iter.next().first);
+    }
+
+    return Collections.unmodifiableList(actionsOnly);
+  }
+
+  /**
+   * @return The list of arguments for the various calls to performAction. Unmodifiable.
+   */
+  public List<Pair<Integer, Bundle>> getPerformedActionsWithArgs() {
+    if (performedActionAndArgsList == null) {
+      performedActionAndArgsList = new LinkedList<>();
+    }
+    return Collections.unmodifiableList(performedActionAndArgsList);
+  }
+
+  /**
+   * @return A shallow copy.
+   */
+  private AccessibilityNodeInfo getClone() {
+    // We explicitly avoid allocating the AccessibilityNodeInfo from the actual pool by using
+    // the private constructor. Not doing so affects test suites which use both shadow and
+    // non-shadow objects.
+    final AccessibilityNodeInfo newInfo =
+        ReflectionHelpers.callConstructor(AccessibilityNodeInfo.class);
+    final ShadowAccessibilityNodeInfo newShadow =
+        (ShadowAccessibilityNodeInfo) ShadowExtractor.extract(newInfo);
+
+    newShadow.boundsInScreen = new Rect(boundsInScreen);
+    newShadow.actionFlags = actionFlags;
+    newShadow.contentDescription = contentDescription;
+    newShadow.text = text;
+    newShadow.performedActionAndArgsList = performedActionAndArgsList;
+    newShadow.parent = parent;
+    newShadow.className = className;
+    newShadow.labeledBy = labeledBy;
+    newShadow.view = view;
+    newShadow.textSelectionStart = textSelectionStart;
+    newShadow.textSelectionEnd = textSelectionEnd;
+    if (children != null) {
+      newShadow.children = new LinkedList<>();
+      newShadow.children.addAll(children);
+    } else {
+      newShadow.children = null;
+    }
+
+    return newInfo;
+  }
+
+  /**
+   * Private class to keep different nodes referring to the same view straight
+   * in the mObtainedInstances map.
+   */
+  private static class StrictEqualityNodeWrapper {
+    public final AccessibilityNodeInfo mInfo;
+
+    public StrictEqualityNodeWrapper(AccessibilityNodeInfo info) {
+      mInfo = info;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+      if (object == null) {
+        return false;
+      }
+
+      final StrictEqualityNodeWrapper wrapper = (StrictEqualityNodeWrapper) object;
+      return mInfo == wrapper.mInfo;
+    }
+
+    @Override
+    public int hashCode() {
+      return mInfo.hashCode();
+    }
+  }
+
+  /**
+   * Shadow of AccessibilityAction.
+   */
+#if ($api >= 21)
+  @Implements(AccessibilityNodeInfo.AccessibilityAction.class)
+  public static final class ShadowAccessibilityAction {
+    private int id;
+    private CharSequence label;
+
+    public void __constructor__(int id, CharSequence label) {
+      this.id = id;
+      this.label = label;
+    }
+
+    @Implementation
+    public int getId() {
+      return id;
+    }
+
+    @Implementation
+    public CharSequence getLabel() {
+      return label;
+    }
+  }
+#end
+}
