@@ -53,7 +53,7 @@ public class RobolectricTestRunnerTest {
         new int[] {1}, "foo", "from-test", "test/res", "test/assets", new Class[]{Test1.class}, BuildConfigConstants.class);
 
     assertConfig(configFor(Test5.class, "withOverrideAnnotation"),
-        new int[] {9}, "foo", "from-method5", "test/res", "method5/assets", new Class[]{Test1.class, Test5.class}, BuildConfigConstants5.class);
+        new int[] {14}, "foo", "from-method5", "test/res", "method5/assets", new Class[]{Test1.class, Test5.class}, BuildConfigConstants5.class);
   }
 
   @Test
@@ -65,7 +65,7 @@ public class RobolectricTestRunnerTest {
         new int[] {1}, "foo", "from-class6", "class6/res", "test/assets", new Class[]{Test1.class, Test6.class}, BuildConfigConstants5.class);
 
     assertConfig(configFor(Test6.class, "withOverrideAnnotation"),
-        new int[] {9}, "foo", "from-method5", "class6/res", "method5/assets", new Class[]{Test1.class, Test5.class, Test6.class}, BuildConfigConstants5.class);
+        new int[] {14}, "foo", "from-method5", "class6/res", "method5/assets", new Class[]{Test1.class, Test5.class, Test6.class}, BuildConfigConstants6.class);
   }
 
   @Test
@@ -218,7 +218,7 @@ public class RobolectricTestRunnerTest {
     }
 
     @Test
-    @Config(sdk = 9, shadows = Test5.class, qualifiers = "from-method5", assetDir = "method5/assets", constants = BuildConfigConstants5.class)
+    @Config(sdk = 14, shadows = Test5.class, qualifiers = "from-method5", assetDir = "method5/assets", constants = BuildConfigConstants5.class)
     public void withOverrideAnnotation() throws Exception {
     }
   }
@@ -228,10 +228,11 @@ public class RobolectricTestRunnerTest {
   public static class BuildConfigConstants3 {}
   public static class BuildConfigConstants4 {}
   public static class BuildConfigConstants5 {}
+  public static class BuildConfigConstants6 {}
 
 
   @Ignore
-  @Config(qualifiers = "from-class6", shadows = Test6.class, resourceDir = "class6/res", constants = BuildConfigConstants5.class)
+  @Config(qualifiers = "from-class6", shadows = Test6.class, resourceDir = "class6/res", constants = BuildConfigConstants6.class)
   public static class Test6 extends Test5 {
   }
 
