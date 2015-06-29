@@ -51,7 +51,7 @@ public class Scheduler {
    */
   public synchronized void unPause() {
     paused = false;
-    advanceToLastPostedRunnable();
+    advanceBy(0);
   }
 
   /**
