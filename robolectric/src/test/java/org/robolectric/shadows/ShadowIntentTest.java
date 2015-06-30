@@ -1,5 +1,12 @@
 package org.robolectric.shadows;
 
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNull;
+import static junit.framework.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
@@ -10,23 +17,16 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Set;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNull;
-import static junit.framework.Assert.assertTrue;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertSame;
-import static org.robolectric.Shadows.shadowOf;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Set;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowIntentTest {
@@ -526,9 +526,9 @@ public class ShadowIntentTest {
   @Test
   public void constructor_shouldSetComponentAndActionAndData() {
     Intent intent = new Intent("roboaction", Uri.parse("http://www.robolectric.org"), RuntimeEnvironment.application, Activity.class);
-    assertThat(shadowOf(intent).getComponent()).isEqualTo(new ComponentName("org.robolectric", "android.app.Activity"));
-    assertThat(shadowOf(intent).getAction()).isEqualTo("roboaction");
-    assertThat(shadowOf(intent).getData()).isEqualTo(Uri.parse("http://www.robolectric.org"));
+    assertThat(intent.getComponent()).isEqualTo(new ComponentName("org.robolectric", "android.app.Activity"));
+    assertThat(intent.getAction()).isEqualTo("roboaction");
+    assertThat(intent.getData()).isEqualTo(Uri.parse("http://www.robolectric.org"));
   }
 
   @Test
@@ -564,6 +564,13 @@ public class ShadowIntentTest {
     assertThat(intent.putExtra("CharSequence array",
         new CharSequence[] { new TestCharSequence("test") }))
         .isEqualTo(intent);
+  }
+
+  @Test
+  public void cloneFilter_shouldIncludeAction() {
+    Intent intent = new Intent("FOO");
+    intent.cloneFilter();
+    assertThat(intent.getAction()).isEqualTo("FOO");
   }
 
   @Test
