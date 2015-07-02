@@ -5,7 +5,9 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
@@ -15,15 +17,37 @@ import org.robolectric.util.Scheduler;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowLooperTest {
 
+  @Rule
+  public TestName testName = new TestName();
+
+  // Helper method that starts the thread with the same name as the
+  // current test, so that you will know which test invoked it if
+  // it has an exception.
+  private HandlerThread getHandlerThread() {
+    HandlerThread ht = new HandlerThread(testName.getMethodName());
+    ht.start();
+    return ht;
+  }
+
   @Test
-  public void testMainLooperAndMyLooperAreTheSameInstanceOnMainThread() throws Exception {
-    assertSame(Looper.myLooper(), Looper.getMainLooper());
+  public void mainLooper_andMyLooper_shouldBeSame_onMainThread() {
+    assertThat(Looper.myLooper()).isSameAs(Looper.getMainLooper());
+  }
+
+  @Test
+  public void differentThreads_getDifferentLoopers() {
+    HandlerThread ht = getHandlerThread();
+    assertThat(ht.getLooper()).isNotSameAs(Looper.getMainLooper());
+  }
+
+  @Test
+  public void mainLooperThread_shouldBeTestThread() {
+    assertThat(shadowOf(Looper.getMainLooper()).getThread()).isSameAs(Thread.currentThread());
   }
 
   @Test
@@ -36,11 +60,11 @@ public class ShadowLooperTest {
       }
     }, 2000);
 
-    assertFalse(wasRun[0]);
+    assertThat(wasRun[0]).as("first").isFalse();
     ShadowLooper.idleMainLooper(1999);
-    assertFalse(wasRun[0]);
+    assertThat(wasRun[0]).as("second").isFalse();
     ShadowLooper.idleMainLooper(1);
-    assertTrue(wasRun[0]);
+    assertThat(wasRun[0]).as("last").isTrue();
   }
 
   @Test
@@ -54,30 +78,7 @@ public class ShadowLooperTest {
       }
     }, 2000);
 
-    assertTrue(wasRun[0]);
-  }
-
-  @Test
-  public void differentThreadsGetDifferentLoopers() {
-    Looper mainLooper = Looper.getMainLooper();
-    Looper thisThreadsLooper = Looper.myLooper();
-
-    assertSame("junit test's thread should use the main looper", mainLooper, thisThreadsLooper);
-
-    final Looper[] thread1Looper = new Looper[1];
-    new Thread() {
-      @Override
-      public void run() {
-        Looper.prepare();
-        thread1Looper[0] = Looper.myLooper();
-      }
-    }.start();
-
-    while(thread1Looper[0] == null) {
-      Thread.yield();
-    }
-
-    assertNotSame(mainLooper, thread1Looper[0]);
+    assertThat(wasRun[0]).isTrue();
   }
 
   @Test(expected = RuntimeException.class)
@@ -87,27 +88,25 @@ public class ShadowLooperTest {
 
   @Test
   public void shouldNotQueueMessagesIfLooperIsQuit() throws Exception {
-    HandlerThread ht = new HandlerThread("test1");
-    ht.start();
+    HandlerThread ht = getHandlerThread();
     Looper looper = ht.getLooper();
     looper.quit();
-    assertTrue(shadowOf(looper).hasQuit());
-    assertFalse(shadowOf(looper).post(new Runnable() {
+    assertThat(shadowOf(looper).hasQuit()).as("hasQuit").isTrue();
+    assertThat(shadowOf(looper).post(new Runnable() {
       @Override public void run() { }
-    }, 0));
+    }, 0)).as("post").isFalse();
 
-    assertFalse(shadowOf(looper).postAtFrontOfQueue(new Runnable() {
+    assertThat(shadowOf(looper).postAtFrontOfQueue(new Runnable() {
       @Override
       public void run() {
       }
-    }));
-    assertFalse(shadowOf(looper).getScheduler().areAnyRunnable());
+    })).as("postAtFrontOfQueue").isFalse();
+    assertThat(shadowOf(looper).getScheduler().areAnyRunnable()).as("areAnyRunnable").isFalse();
   }
 
   @Test
   public void shouldThrowawayRunnableQueueIfLooperQuits() throws Exception {
-    HandlerThread ht = new HandlerThread("shouldThrowawayRunnableQueueIfLooperQuits");
-    ht.start();
+    HandlerThread ht = getHandlerThread();
     Looper looper = ht.getLooper();
     shadowOf(looper).pause();
     shadowOf(looper).post(new Runnable() {
@@ -116,15 +115,14 @@ public class ShadowLooperTest {
       }
     }, 0);
     looper.quit();
-    assertTrue(shadowOf(looper).hasQuit());
-    assertFalse(shadowOf(looper).getScheduler().areAnyRunnable());
+    assertThat(shadowOf(looper).hasQuit()).as("hasQuit").isTrue();
+    assertThat(shadowOf(looper).getScheduler().areAnyRunnable()).as("areAnyRunnable").isFalse();
     assertThat(shadowOf(looper.getQueue()).getHead()).as("queue").isNull();
   }
 
   @Test
   public void shouldResetQueue_whenLooperIsReset() {
-    HandlerThread ht = new HandlerThread("shouldResetQueue_whenLooperIsReset");
-    ht.start();
+    HandlerThread ht = getHandlerThread();
     Looper looper = ht.getLooper();
     Handler h = new Handler(looper);
     ShadowLooper sLooper = shadowOf(looper);
@@ -136,15 +134,10 @@ public class ShadowLooperTest {
     });
     assertThat(shadowOf(looper.getQueue()).getHead()).as("queue").isNotNull();
     sLooper.reset();
-    assertFalse(sLooper.getScheduler().areAnyRunnable());
+    assertThat(sLooper.getScheduler().areAnyRunnable()).as("areAnyRunnable").isFalse();
     assertThat(shadowOf(looper.getQueue()).getHead()).as("queue").isNull();
   }
   
-  @Test
-  public void testLoopThread() {
-    assertTrue(shadowOf(Looper.getMainLooper()).getThread() == Thread.currentThread());
-  }
-
   @Test public void soStaticRefsToLoopersInAppWorksAcrossTests_shouldRetainSameLooperForMainThreadBetweenResetsButGiveItAFreshScheduler() throws Exception {
     Looper mainLooper = Looper.getMainLooper();
     Scheduler scheduler = shadowOf(mainLooper).getScheduler();
@@ -155,16 +148,16 @@ public class ShadowLooperTest {
     Application application = new Application();
     ReflectionHelpers.callInstanceMethod(application, "attach", ReflectionHelpers.ClassParameter.from(Context.class, RuntimeEnvironment.application.getBaseContext()));
 
-    assertThat(Looper.getMainLooper()).isSameAs(mainLooper);
-    assertThat(application.getMainLooper()).isSameAs(mainLooper);
-    assertThat(shadowOf(mainLooper).getScheduler()).isNotSameAs(scheduler);
-    assertThat(shadowOf(mainLooper).hasQuit()).isFalse();
+    assertThat(Looper.getMainLooper()).as("Looper.getMainLooper()").isSameAs(mainLooper);
+    assertThat(application.getMainLooper()).as("app.getMainLooper()").isSameAs(mainLooper);
+    assertThat(shadowOf(mainLooper).getScheduler()).as("scheduler").isNotSameAs(scheduler);
+    assertThat(shadowOf(mainLooper).hasQuit()).as("quit").isFalse();
   }
 
   @Test
   public void getMainLooperReturnsNonNullOnMainThreadWhenRobolectricApplicationIsNull() {
       RuntimeEnvironment.application = null;
-      assertNotNull(Looper.getMainLooper());
+      assertThat(Looper.getMainLooper()).isNotNull();
   }
 
   @Test
@@ -183,11 +176,11 @@ public class ShadowLooperTest {
                   nullPointerExceptionAtomicReference.set(nullPointerException);
               }
           }
-      });
+      }, testName.getMethodName());
       backgroundThread.start();
       backgroundThread.join();
 
-      assertThat(nullPointerExceptionAtomicReference.get()).isInstanceOf(NullPointerException.class);
-      assertNull(mainLooperAtomicReference.get());
+      assertThat(nullPointerExceptionAtomicReference.get()).as("exception").isInstanceOf(NullPointerException.class);
+      assertThat(mainLooperAtomicReference.get()).as("mainLooper").isNull();
   }
 }
