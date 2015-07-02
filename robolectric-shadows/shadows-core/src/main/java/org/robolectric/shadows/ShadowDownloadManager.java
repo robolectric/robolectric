@@ -45,14 +45,16 @@ public class ShadowDownloadManager {
 
   @Implementation
   public Cursor query(DownloadManager.Query query) {
+    ResultCursor result = new ResultCursor();
     ShadowQuery shadow = Shadows.shadowOf(query);
     long[] ids = shadow.getIds();
 
-    ResultCursor result = new ResultCursor();
-    for (long id : ids) {
-      DownloadManager.Request request = requestMap.get(id);
-      if (request != null) {
-        result.requests.add(request);
+    if (ids != null) {
+      for (long id : ids) {
+        DownloadManager.Request request = requestMap.get(id);
+        if (request != null) {
+          result.requests.add(request);
+        }
       }
     }
     return result;
