@@ -1,5 +1,7 @@
 package org.robolectric;
 
+import android.app.Application;
+
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.model.InitializationError;
@@ -23,73 +25,73 @@ public class RobolectricTestRunnerTest {
   @Test
   public void whenClassHasConfigAnnotation_getConfig_shouldMergeClassAndMethodConfig() throws Exception {
     assertConfig(configFor(Test1.class, "withoutAnnotation"),
-        new int[] {1}, "foo", "from-test", "test/res", "test/assets", new Class[]{Test1.class}, BuildConfigConstants.class);
+        new int[] {1}, "foo", TestFakeApp.class, "com.example.test", "from-test", "test/res", "test/assets", new Class[]{Test1.class}, new String[]{"libs/test"}, BuildConfigConstants.class);
 
     assertConfig(configFor(Test1.class, "withDefaultsAnnotation"),
-        new int[] {1}, "foo", "from-test", "test/res", "test/assets", new Class[]{Test1.class}, BuildConfigConstants.class);
+        new int[] {1}, "foo", TestFakeApp.class, "com.example.test", "from-test", "test/res", "test/assets", new Class[]{Test1.class}, new String[]{"libs/test"}, BuildConfigConstants.class);
 
     assertConfig(configFor(Test1.class, "withOverrideAnnotation"),
-        new int[] {9}, "furf", "from-method", "method/res", "method/assets", new Class[]{Test1.class, Test2.class}, BuildConfigConstants2.class);
+        new int[] {9}, "furf", TestApplication.class, "com.example.method", "from-method", "method/res", "method/assets", new Class[]{Test1.class, Test2.class}, new String[]{"libs/method", "libs/test"}, BuildConfigConstants2.class);
   }
 
   @Test
   public void whenClassDoesntHaveConfigAnnotation_getConfig_shouldUseMethodConfig() throws Exception {
     assertConfig(configFor(Test2.class, "withoutAnnotation"),
-        new int[0], "--default", "", "res", "assets", new Class[]{}, Void.class);
+        new int[0], "--default", Application.class, "", "", "res", "assets", new Class[]{}, new String[]{}, Void.class);
 
     assertConfig(configFor(Test2.class, "withDefaultsAnnotation"),
-        new int[0], "--default", "", "res", "assets", new Class[]{}, Void.class);
+        new int[0], "--default", Application.class, "", "", "res", "assets", new Class[]{}, new String[]{}, Void.class);
 
     assertConfig(configFor(Test2.class, "withOverrideAnnotation"),
-        new int[] {9}, "furf", "from-method", "method/res", "method/assets", new Class[]{Test1.class}, BuildConfigConstants.class);
+        new int[] {9}, "furf", TestFakeApp.class, "com.example.method", "from-method", "method/res", "method/assets", new Class[]{Test1.class}, new String[]{"libs/method"}, BuildConfigConstants.class);
   }
 
   @Test
   public void whenClassDoesntHaveConfigAnnotation_getConfig_shouldMergeParentClassAndMethodConfig() throws Exception {
     assertConfig(configFor(Test5.class, "withoutAnnotation"),
-        new int[] {1}, "foo", "from-test", "test/res", "test/assets", new Class[]{Test1.class}, BuildConfigConstants.class);
+        new int[] {1}, "foo", TestFakeApp.class, "com.example.test", "from-test", "test/res", "test/assets", new Class[]{Test1.class}, new String[]{"libs/test"}, BuildConfigConstants.class);
 
     assertConfig(configFor(Test5.class, "withDefaultsAnnotation"),
-        new int[] {1}, "foo", "from-test", "test/res", "test/assets", new Class[]{Test1.class}, BuildConfigConstants.class);
+        new int[] {1}, "foo", TestFakeApp.class, "com.example.test", "from-test", "test/res", "test/assets", new Class[]{Test1.class}, new String[]{"libs/test"}, BuildConfigConstants.class);
 
     assertConfig(configFor(Test5.class, "withOverrideAnnotation"),
-        new int[] {9}, "foo", "from-method5", "test/res", "method5/assets", new Class[]{Test1.class, Test5.class}, BuildConfigConstants5.class);
+        new int[] {14}, "foo", TestFakeApp.class, "com.example.test", "from-method5", "test/res", "method5/assets", new Class[]{Test1.class, Test5.class}, new String[]{"libs/test"}, BuildConfigConstants5.class);
   }
 
   @Test
   public void whenClassAndParentClassHaveConfigAnnotation_getConfig_shouldMergeParentClassAndMethodConfig() throws Exception {
     assertConfig(configFor(Test6.class, "withoutAnnotation"),
-        new int[] {1}, "foo", "from-class6", "class6/res", "test/assets", new Class[]{Test1.class, Test6.class}, BuildConfigConstants5.class);
+        new int[] {1}, "foo", TestFakeApp.class, "com.example.test", "from-class6", "class6/res", "test/assets", new Class[]{Test1.class, Test6.class}, new String[]{"libs/test"}, BuildConfigConstants6.class);
 
     assertConfig(configFor(Test6.class, "withDefaultsAnnotation"),
-        new int[] {1}, "foo", "from-class6", "class6/res", "test/assets", new Class[]{Test1.class, Test6.class}, BuildConfigConstants5.class);
+        new int[] {1}, "foo", TestFakeApp.class, "com.example.test", "from-class6", "class6/res", "test/assets", new Class[]{Test1.class, Test6.class}, new String[]{"libs/test"}, BuildConfigConstants6.class);
 
     assertConfig(configFor(Test6.class, "withOverrideAnnotation"),
-        new int[] {9}, "foo", "from-method5", "class6/res", "method5/assets", new Class[]{Test1.class, Test5.class, Test6.class}, BuildConfigConstants5.class);
+        new int[] {14}, "foo", TestFakeApp.class, "com.example.test", "from-method5", "class6/res", "method5/assets", new Class[]{Test1.class, Test5.class, Test6.class}, new String[]{"libs/test"}, BuildConfigConstants5.class);
   }
 
   @Test
   public void whenClassAndSubclassHaveConfigAnnotation_getConfig_shouldMergeClassSubclassAndMethodConfig() throws Exception {
     assertConfig(configFor(Test3.class, "withoutAnnotation"),
-        new int[] {1}, "foo", "from-subclass", "test/res", "test/assets", new Class[]{Test1.class}, BuildConfigConstants.class);
+        new int[] {1}, "foo", TestFakeApp.class, "com.example.test", "from-subclass", "test/res", "test/assets", new Class[]{Test1.class}, new String[]{"libs/test"}, BuildConfigConstants.class);
 
     assertConfig(configFor(Test3.class, "withDefaultsAnnotation"),
-        new int[] {1}, "foo", "from-subclass", "test/res", "test/assets", new Class[]{Test1.class}, BuildConfigConstants.class);
+        new int[] {1}, "foo", TestFakeApp.class, "com.example.test", "from-subclass", "test/res", "test/assets", new Class[]{Test1.class}, new String[]{"libs/test"}, BuildConfigConstants.class);
 
     assertConfig(configFor(Test3.class, "withOverrideAnnotation"),
-        new int[] {9},"furf", "from-method", "method/res", "method/assets", new Class[]{Test1.class, Test2.class}, BuildConfigConstants2.class);
+        new int[] {9},"furf", TestApplication.class, "com.example.method", "from-method", "method/res", "method/assets", new Class[]{Test1.class, Test2.class}, new String[]{"libs/method", "libs/test"}, BuildConfigConstants2.class);
   }
 
   @Test
   public void whenClassDoesntHaveConfigAnnotationButSubclassDoes_getConfig_shouldMergeSubclassAndMethodConfig() throws Exception {
     assertConfig(configFor(Test4.class, "withoutAnnotation"),
-        new int[0],  "--default", "from-subclass", "res", "assets", new Class[]{}, Void.class);
+        new int[0],  "--default", Application.class, "", "from-subclass", "res", "assets", new Class[]{}, new String[]{}, Void.class);
 
     assertConfig(configFor(Test4.class, "withDefaultsAnnotation"),
-        new int[0],  "--default", "from-subclass", "res", "assets", new Class[]{}, Void.class);
+        new int[0],  "--default", Application.class, "", "from-subclass", "res", "assets", new Class[]{}, new String[]{}, Void.class);
 
     assertConfig(configFor(Test4.class, "withOverrideAnnotation"),
-        new int[] {9}, "furf", "from-method", "method/res", "method/assets", new Class[]{Test1.class}, BuildConfigConstants.class);
+        new int[] {9}, "furf", TestFakeApp.class, "com.example.method", "from-method", "method/res", "method/assets", new Class[]{Test1.class}, new String[]{"libs/method"}, BuildConfigConstants.class);
   }
 
   @Test
@@ -101,16 +103,18 @@ public class RobolectricTestRunnerTest {
             "resourceDir: from/properties/file/res\n" +
             "assetDir: from/properties/file/assets\n" +
             "shadows: org.robolectric.shadows.ShadowView, org.robolectric.shadows.ShadowViewGroup\n" +
-            "application: org.robolectric.TestFakeApp");
+            "application: org.robolectric.TestFakeApp\n" +
+            "packageName: com.example.test\n" +
+            "libraries: libs/test, libs/test2");
     
     assertConfig(configFor(Test7.class, "withoutAnnotation", properties),
-        new int[] {432}, "--none", "from-properties-file", "from/properties/file/res", "from/properties/file/assets", new Class[] {ShadowView.class, ShadowViewGroup.class}, BuildConfigConstants3.class);
+        new int[] {432}, "--none", TestFakeApp.class, "com.example.test", "from-properties-file", "from/properties/file/res", "from/properties/file/assets", new Class[] {ShadowView.class, ShadowViewGroup.class}, new String[]{"libs/test", "libs/test2"}, BuildConfigConstants3.class);
   }
 
   @Test
   public void withEmptyShadowList_shouldLoadDefaultsFromPropertiesFile() throws Exception {
     Properties properties = properties("shadows:");
-    assertConfig(configFor(Test7.class, "withoutAnnotation", properties), new int[0],  "--default", "", "res", "assets", new Class[] {}, BuildConfigConstants3.class);
+    assertConfig(configFor(Test7.class, "withoutAnnotation", properties), new int[0],  "--default", Application.class, "", "", "res", "assets", new Class[] {}, new String[]{}, BuildConfigConstants3.class);
   }
 
   @Test
@@ -157,12 +161,12 @@ public class RobolectricTestRunnerTest {
     return new RobolectricTestRunner(testClass).getConfig(info);
   }
 
-  private void assertConfig(Config config, int[] sdk, String manifest, String qualifiers, String resourceDir, String assetsDir, Class[] shadows, Class constants) {
-    assertThat(stringify(config)).isEqualTo(stringify(sdk, manifest, qualifiers, resourceDir, assetsDir, shadows, constants));
+  private void assertConfig(Config config, int[] sdk, String manifest, Class<? extends Application> application, String packageName, String qualifiers, String resourceDir, String assetsDir, Class<?>[] shadows, String[] libraries, Class<?> constants) {
+    assertThat(stringify(config)).isEqualTo(stringify(sdk, manifest, application, packageName, qualifiers, resourceDir, assetsDir, shadows, libraries, constants));
   }
 
   @Ignore
-  @Config(sdk = 1, manifest = "foo", shadows = Test1.class, qualifiers = "from-test", resourceDir = "test/res", assetDir = "test/assets", constants = BuildConfigConstants.class)
+  @Config(sdk = 1, manifest = "foo", application = TestFakeApp.class, packageName = "com.example.test", shadows = Test1.class, libraries = "libs/test", qualifiers = "from-test", resourceDir = "test/res", assetDir = "test/assets", constants = BuildConfigConstants.class)
   public static class Test1 {
     @Test
     public void withoutAnnotation() throws Exception {
@@ -174,7 +178,7 @@ public class RobolectricTestRunnerTest {
     }
 
     @Test
-    @Config(sdk = 9, manifest = "furf", shadows = Test2.class, qualifiers = "from-method", resourceDir = "method/res", assetDir = "method/assets", constants = BuildConfigConstants2.class)
+    @Config(sdk = 9, manifest = "furf", application = TestApplication.class, packageName = "com.example.method", shadows = Test2.class, libraries = "libs/method", qualifiers = "from-method", resourceDir = "method/res", assetDir = "method/assets", constants = BuildConfigConstants2.class)
     public void withOverrideAnnotation() throws Exception {
     }
   }
@@ -191,7 +195,7 @@ public class RobolectricTestRunnerTest {
     }
 
     @Test
-    @Config(sdk = 9, manifest = "furf", shadows = Test1.class, qualifiers = "from-method", resourceDir = "method/res", assetDir = "method/assets", constants = BuildConfigConstants.class)
+    @Config(sdk = 9, manifest = "furf", application = TestFakeApp.class, packageName = "com.example.method", shadows = Test1.class, libraries = "libs/method", qualifiers = "from-method", resourceDir = "method/res", assetDir = "method/assets", constants = BuildConfigConstants.class)
     public void withOverrideAnnotation() throws Exception {
     }
   }
@@ -218,7 +222,7 @@ public class RobolectricTestRunnerTest {
     }
 
     @Test
-    @Config(sdk = 9, shadows = Test5.class, qualifiers = "from-method5", assetDir = "method5/assets", constants = BuildConfigConstants5.class)
+    @Config(sdk = 14, shadows = Test5.class, qualifiers = "from-method5", assetDir = "method5/assets", constants = BuildConfigConstants5.class)
     public void withOverrideAnnotation() throws Exception {
     }
   }
@@ -228,10 +232,11 @@ public class RobolectricTestRunnerTest {
   public static class BuildConfigConstants3 {}
   public static class BuildConfigConstants4 {}
   public static class BuildConfigConstants5 {}
+  public static class BuildConfigConstants6 {}
 
 
   @Ignore
-  @Config(qualifiers = "from-class6", shadows = Test6.class, resourceDir = "class6/res", constants = BuildConfigConstants5.class)
+  @Config(qualifiers = "from-class6", shadows = Test6.class, resourceDir = "class6/res", constants = BuildConfigConstants6.class)
   public static class Test6 extends Test5 {
   }
 
@@ -243,15 +248,18 @@ public class RobolectricTestRunnerTest {
   private String stringify(Config config) {
     int[] sdk = config.sdk();
     String manifest = config.manifest();
+    Class<? extends Application> application = config.application();
+    String packageName = config.packageName();
     String qualifiers = config.qualifiers();
     String resourceDir = config.resourceDir();
     String assetsDir = config.assetDir();
     Class<?>[] shadows = config.shadows();
-    Class constants = config.constants();
-    return stringify(sdk, manifest, qualifiers, resourceDir, assetsDir, shadows, constants);
+    String[] libraries = config.libraries();
+    Class<?> constants = config.constants();
+    return stringify(sdk, manifest, application, packageName, qualifiers, resourceDir, assetsDir, shadows, libraries, constants);
   }
 
-  private String stringify(int[] sdk, String manifest, String qualifiers, String resourceDir, String assetsDir, Class<?>[] shadows, Class constants) {
+  private String stringify(int[] sdk, String manifest, Class<? extends Application> application, String packageName, String qualifiers, String resourceDir, String assetsDir, Class<?>[] shadows, String[] libraries, Class<?> constants) {
       String[] stringClasses = new String[shadows.length];
       for (int i = 0; i < stringClasses.length; i++) {
           stringClasses[i] = shadows[i].toString();
@@ -259,13 +267,19 @@ public class RobolectricTestRunnerTest {
 
       Arrays.sort(stringClasses);
 
+      String[] sortedLibraries = libraries.clone();
+      Arrays.sort(sortedLibraries);
+
       return "sdk=" + Arrays.toString(sdk) + "\n" +
         "manifest=" + manifest + "\n" +
+        "application=" + application + "\n" +
+        "packageName=" + packageName + "\n" +
         "qualifiers=" + qualifiers + "\n" +
         "resourceDir=" + resourceDir + "\n" +
         "assetDir=" + assetsDir + "\n" +
-        "shadows=" +  Arrays.toString(stringClasses) + "\n" +
-        "constants=" + constants.toString();
+        "shadows=" + Arrays.toString(stringClasses) + "\n" +
+        "libraries=" + Arrays.toString(sortedLibraries) + "\n" +
+        "constants=" + constants;
   }
 
   private Properties properties(String s) throws IOException {
