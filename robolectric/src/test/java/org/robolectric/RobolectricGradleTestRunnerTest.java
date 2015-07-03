@@ -33,7 +33,7 @@ public class RobolectricGradleTestRunnerTest {
   private static String convertPath(String path) {
     return path.replace('/', File.separatorChar);
   }
-  
+
   @Test
   public void getAppManifest_forApplications_shouldCreateManifest() throws Exception {
     final RobolectricGradleTestRunner runner = new RobolectricGradleTestRunner(ConstantsTest.class);
@@ -96,6 +96,17 @@ public class RobolectricGradleTestRunnerTest {
   }
 
   @Test
+  public void getAppManifest_withChangedResourceDir() throws Exception {
+    final RobolectricGradleTestRunner runner = new RobolectricGradleTestRunner(ConfigParansTest.class);
+    final AndroidManifest manifest = runner.getAppManifest(runner.getConfig(ConfigParansTest.class.getMethod("withoutAnnotation")));
+
+    assertThat(manifest.getPackageName()).isEqualTo("fake.package.name");
+    assertThat(manifest.getAssetsDirectory().getPath()).isEqualTo(convertPath("fake/assets/dir"));
+    assertThat(manifest.getResDirectory().getPath()).isEqualTo(convertPath("src/test/res"));
+    assertThat(manifest.getAndroidManifestFile().getPath()).isEqualTo(convertPath("fake/manifest/file.xml"));
+  }
+
+  @Test
   public void getAppManifest_shouldThrowException_whenConstantsNotSpecified() throws Exception {
     final RobolectricGradleTestRunner runner = new RobolectricGradleTestRunner(NoConstantsTest.class);
     exception.expect(RuntimeException.class);
@@ -120,7 +131,8 @@ public class RobolectricGradleTestRunnerTest {
     public void withoutAnnotation() throws Exception {
     }
 
-    @Test @Config(constants = BuildConfigOverride.class)
+    @Test
+    @Config(constants = BuildConfigOverride.class)
     public void withOverrideAnnotation() throws Exception {
     }
   }
@@ -137,6 +149,15 @@ public class RobolectricGradleTestRunnerTest {
   @Ignore
   @Config(constants = BuildConfig.class, packageName = "fake.package.name")
   public static class PackageNameTest {
+
+    @Test
+    public void withoutAnnotation() throws Exception {
+    }
+  }
+
+  @Ignore
+  @Config(constants = BuildConfig.class, resourceDir = "src/test/res", packageName = "fake.package.name", assetDir = "fake/assets/dir", manifest = "fake/manifest/file.xml")
+  public static class ConfigParansTest {
 
     @Test
     public void withoutAnnotation() throws Exception {
