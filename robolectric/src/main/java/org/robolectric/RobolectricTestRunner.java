@@ -2,6 +2,7 @@ package org.robolectric;
 
 import android.app.Application;
 import android.os.Build;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.TestOnly;
 import org.junit.AfterClass;
@@ -516,17 +517,20 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       super(testClass);
     }
 
-    @Override protected Object createTest() throws Exception {
+    @Override
+    protected Object createTest() throws Exception {
       Object test = super.createTest();
       testLifecycle.prepareTest(test);
       return test;
     }
 
-    @Override public Statement classBlock(RunNotifier notifier) {
+    @Override
+    public Statement classBlock(RunNotifier notifier) {
       return super.classBlock(notifier);
     }
 
-    @Override public Statement methodBlock(FrameworkMethod method) {
+    @Override
+    public Statement methodBlock(FrameworkMethod method) {
       return super.methodBlock(method);
     }
   }
@@ -539,7 +543,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     private final List<FsFile> libraryDirs;
 
     public ManifestIdentifier(FsFile manifestFile, FsFile resDir, FsFile assetDir, String packageName,
-        List<FsFile> libraryDirs) {
+                              List<FsFile> libraryDirs) {
       this.manifestFile = manifestFile;
       this.resDir = resDir;
       this.assetDir = assetDir;
@@ -555,10 +559,10 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       ManifestIdentifier that = (ManifestIdentifier) o;
 
       return assetDir.equals(that.assetDir)
-          && libraryDirs.equals(that.libraryDirs)
-          && manifestFile.equals(that.manifestFile)
-          && resDir.equals(that.resDir)
-          && ((packageName == null && that.packageName == null) || (packageName != null && packageName.equals(that.packageName)));
+              && libraryDirs.equals(that.libraryDirs)
+              && manifestFile.equals(that.manifestFile)
+              && resDir.equals(that.resDir)
+              && ((packageName == null && that.packageName == null) || (packageName != null && packageName.equals(that.packageName)));
     }
 
     @Override
@@ -574,12 +578,12 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
   private static <A extends Annotation> A defaultsFor(Class<A> annotation) {
     return annotation.cast(
-        Proxy.newProxyInstance(annotation.getClassLoader(), new Class[] { annotation },
-            new InvocationHandler() {
-              public Object invoke(Object proxy, @NotNull Method method, Object[] args)
-                  throws Throwable {
-                return method.getDefaultValue();
-              }
-            }));
+            Proxy.newProxyInstance(annotation.getClassLoader(), new Class[]{annotation},
+                    new InvocationHandler() {
+                      public Object invoke(Object proxy, @NotNull Method method, Object[] args)
+                              throws Throwable {
+                        return method.getDefaultValue();
+                      }
+                    }));
   }
 }
