@@ -133,4 +133,10 @@ public class ShadowDownloadManagerTest {
     assertThat(cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_URI))).isEqualTo(uri.toString());
     assertThat(cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI))).isEqualTo(destination.toString());
   }
+
+  @Test
+  public void query_shouldHandleEmptyIds() {
+    ShadowDownloadManager manager = new ShadowDownloadManager();
+    assertThat(manager.query(new DownloadManager.Query())).isNotNull();
+  }
 }
