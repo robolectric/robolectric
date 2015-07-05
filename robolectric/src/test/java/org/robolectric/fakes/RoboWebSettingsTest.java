@@ -33,6 +33,7 @@ public class RoboWebSettingsTest {
     assertThat(webSettings.getSaveFormData()).isFalse();
     assertThat(webSettings.getTextZoom()).isEqualTo(100);
     assertThat(webSettings.getDefaultTextEncodingName()).isEqualTo("UTF-8");
+    assertThat(webSettings.getDefaultFontSize()).isEqualTo(16);
 
     // deprecated methods
     assertThat(webSettings.getPluginsEnabled()).isFalse();
@@ -278,5 +279,11 @@ public class RoboWebSettingsTest {
   public void setDefaultTextEncodingName_shouldGetSetValue() {
     webSettings.setDefaultTextEncodingName("UTF-16");
     assertThat(webSettings.getDefaultTextEncodingName()).isEqualTo("UTF-16");
+  }
+
+  @Test
+  public void setDefaultFontSize_shouldGetSetValues() {
+    webSettings.setDefaultFontSize(2);
+    assertThat(webSettings.getDefaultFontSize()).isEqualTo(2);
   }
 }
