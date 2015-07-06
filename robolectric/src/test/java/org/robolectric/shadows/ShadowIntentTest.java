@@ -123,7 +123,7 @@ public class ShadowIntentTest {
   @Test
   public void testSerializableOfParcelableExtra() throws Exception {
     Intent intent = new Intent();
-    ArrayList<Parcelable> serializable = new ArrayList();
+    ArrayList<Parcelable> serializable = new ArrayList<>();
     serializable.add(new TestParcelable(12));
     assertSame(intent, intent.putExtra("foo", serializable));
     assertEquals(serializable, intent.getExtras().get("foo"));
@@ -345,135 +345,6 @@ public class ShadowIntentTest {
   }
 
   @Test
-  public void equals_shouldTestActionComponentNameDataAndExtras() throws Exception {
-    Intent intentA = new Intent()
-        .setAction("action")
-        .setData(Uri.parse("content:1"))
-        .setComponent(new ComponentName("pkg", "cls"))
-        .putExtra("extra", "blah")
-        .setType("image/*")
-        .addCategory("category.name");
-
-    Intent intentB = new Intent()
-        .setAction("action")
-        .setData(Uri.parse("content:1"))
-        .setComponent(new ComponentName("pkg", "cls"))
-        .putExtra("extra", "blah")
-        .setType("image/*")
-        .addCategory("category.name");
-
-    assertThat(intentA).isEqualTo(intentB);
-
-    intentB.setAction("other action");
-    assertThat(intentA).isNotEqualTo(intentB);
-
-    intentB.setAction("action");
-    intentB.setData(Uri.parse("content:other"));
-    assertThat(intentA).isNotEqualTo(intentB);
-
-    intentB.setData(Uri.parse("content:1"));
-    intentB.setComponent(new ComponentName("other-pkg", "other-cls"));
-    assertThat(intentA).isNotEqualTo(intentB);
-
-    intentB.setComponent(new ComponentName("pkg", "cls"));
-    intentB.putExtra("extra", "foo");
-    assertThat(intentA).isNotEqualTo(intentB);
-
-    intentB.putExtra("extra", "blah");
-    intentB.setType("other/*");
-    assertThat(intentA).isNotEqualTo(intentB);
-
-    intentB.setType("image/*");
-    assertThat(intentA).isEqualTo(intentB);
-
-    intentB.removeCategory("category.name");
-    assertThat(intentA).isNotEqualTo(intentB);
-  }
-
-  @Test
-  public void equals_shouldTestPackageName() throws Exception {
-    Intent intentA = new Intent()
-        .setAction("action")
-        .setPackage("package");
-
-    Intent intentB = new Intent()
-        .setAction("action")
-        .setPackage("package");
-
-    assertThat(intentA).isEqualTo(intentB);
-
-    intentB.setPackage("other package");
-    assertThat(intentA).isNotEqualTo(intentB);
-  }
-
-  @Test
-  public void hashCode_shouldTestActionComponentNameDataAndExtras() throws Exception {
-    Intent intentA = new Intent()
-        .setAction("action")
-        .setData(Uri.parse("content:1"))
-        .setComponent(new ComponentName("pkg", "cls"))
-        .putExtra("extra", "blah")
-        .setType("image/*")
-        .addCategory("category.name");
-
-    Intent intentB = new Intent()
-        .setAction("action")
-        .setData(Uri.parse("content:1"))
-        .setComponent(new ComponentName("pkg", "cls"))
-        .putExtra("extra", "blah")
-        .setType("image/*")
-        .addCategory("category.name");
-
-    assertThat(intentA.hashCode()).isEqualTo(intentB.hashCode());
-
-    intentB.setAction("other action");
-    assertThat(intentA.hashCode()).isNotEqualTo(intentB.hashCode());
-
-    intentB.setAction("action");
-    intentB.setData(Uri.parse("content:other"));
-    assertThat(intentA.hashCode()).isNotEqualTo(intentB.hashCode());
-
-    intentB.setData(Uri.parse("content:1"));
-    intentB.setComponent(new ComponentName("other-pkg", "other-cls"));
-    assertThat(intentA.hashCode()).isNotEqualTo(intentB.hashCode());
-
-    intentB.setComponent(new ComponentName("pkg", "cls"));
-    intentB.putExtra("extra", "foo");
-    assertThat(intentA.hashCode()).isNotEqualTo(intentB.hashCode());
-
-    intentB.putExtra("extra", "blah");
-    intentB.setType("other/*");
-    assertThat(intentA.hashCode()).isNotEqualTo(intentB.hashCode());
-
-    intentB.setType("image/*");
-    assertThat(intentA.hashCode()).isEqualTo(intentB.hashCode());
-
-    intentB.removeCategory("category.name");
-    assertThat(intentA.hashCode()).isNotEqualTo(intentB.hashCode());
-  }
-
-  @Test
-  public void hashCode_shouldTestPackageName() throws Exception {
-    Intent intentA = new Intent()
-        .setAction("action")
-        .setPackage("package");
-
-    Intent intentB = new Intent()
-        .setAction("action")
-        .setPackage("package");
-
-    assertThat(intentA.hashCode()).isEqualTo(intentB.hashCode());
-
-    intentB.setPackage("other package");
-    assertThat(intentA.hashCode()).isNotEqualTo(intentB.hashCode());
-  }
-
-  @Test
-  public void equals_whenOtherObjectIsNotAnIntent_shouldReturnFalse() throws Exception {
-    assertThat((Object) new Intent()).isNotEqualTo(new Object());
-  }
-
-  @Test
   public void createChooser_shouldWrapIntent() throws Exception {
     Intent originalIntent = new Intent(Intent.ACTION_BATTERY_CHANGED, Uri.parse("foo://blah"));
     Intent chooserIntent = Intent.createChooser(originalIntent, "The title");
@@ -481,13 +352,14 @@ public class ShadowIntentTest {
     expectedIntent.putExtra(Intent.EXTRA_INTENT, originalIntent);
     expectedIntent.putExtra(Intent.EXTRA_TITLE, "The title");
     assertEquals(expectedIntent, chooserIntent);
+    assertThat(expectedIntent.getStringExtra(Intent.EXTRA_TITLE)).isEqualTo("The title");
   }
 
   @Test
   public void setUri_setsUri() throws Exception {
     Intent intent = new Intent();
     intent.setData(Uri.parse("http://foo"));
-    assertThat(intent.toURI()).isEqualTo("http://foo");
+    assertThat(intent.getData()).isEqualTo(Uri.parse("http://foo"));
   }
 
   @Test
@@ -564,6 +436,11 @@ public class ShadowIntentTest {
     assertThat(intent.putExtra("CharSequence array",
         new CharSequence[] { new TestCharSequence("test") }))
         .isEqualTo(intent);
+  }
+
+  @Test
+  public void equals_shouldOnlyBeIdentity() {
+    assertThat(new Intent()).isNotEqualTo(new Intent());
   }
 
   @Test
