@@ -190,7 +190,7 @@
           <artifactId>maven-javadoc-plugin</artifactId>
           <version>2.10.1</version>
           <configuration>
-            <excludePackageNames>org.robolectric.res:org.robolectric.manifest:org.robolectric.internal:org.robolectric.annotation.internal:org.robolectric.annotation.processing:android:com.google</excludePackageNames>
+            <excludePackageNames>org.robolectric.res:org.robolectric.manifest:org.robolectric.internal:org.robolectric.annotation.internal:android:com.google</excludePackageNames>
           </configuration>
         </plugin>
 
