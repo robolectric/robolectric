@@ -10,7 +10,7 @@
 
   <groupId>org.robolectric</groupId>
   <artifactId>robolectric-parent</artifactId>
-  <version>3.0</version>
+  <version>3.1-SNAPSHOT</version>
   <packaging>pom</packaging>
   <description>An alternative Android testing framework.</description>
   <url>http://robolectric.org/</url>

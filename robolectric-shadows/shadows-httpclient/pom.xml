@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.robolectric</groupId>
     <artifactId>robolectric-shadows</artifactId>
-    <version>3.0</version>
+    <version>3.1-SNAPSHOT</version>
   </parent>
 
   <artifactId>shadows-httpclient</artifactId>
