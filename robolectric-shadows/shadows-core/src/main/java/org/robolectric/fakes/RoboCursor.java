@@ -17,8 +17,8 @@ public class RoboCursor extends BaseCursor {
   public String sortOrder;
   protected Object[][] results = new Object[0][0];
   protected List<String> columnNames= new ArrayList<>();
-  int resultsIndex = -1;
-  boolean closeWasCalled;
+  private int resultsIndex = -1;
+  private boolean closeWasCalled;
 
   @Override
   public void setQuery(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
@@ -32,8 +32,8 @@ public class RoboCursor extends BaseCursor {
   @Override
   public int getColumnIndexOrThrow(String columnName) throws IllegalArgumentException{
     int col = getColumnIndex(columnName);
-    if(col == -1){
-      throw new IllegalArgumentException("No column with name: "+columnName);
+    if (col == -1) {
+      throw new IllegalArgumentException("No column with name: " + columnName);
     }
     return col;
   }
@@ -97,6 +97,26 @@ public class RoboCursor extends BaseCursor {
   @Override
   public int getType(int columnIndex) {
     return DatabaseUtils.getTypeOfObject(results[0][columnIndex]);
+  }
+
+  @Override
+  public boolean isBeforeFirst() {
+    return resultsIndex < 0;
+  }
+
+  @Override
+  public boolean isAfterLast() {
+    return resultsIndex > results.length - 1;
+  }
+
+  @Override
+  public boolean isFirst() {
+    return resultsIndex == 0;
+  }
+
+  @Override
+  public boolean isLast() {
+    return resultsIndex == results.length - 1;
   }
 
   public void setColumnNames(List<String> columnNames) {
