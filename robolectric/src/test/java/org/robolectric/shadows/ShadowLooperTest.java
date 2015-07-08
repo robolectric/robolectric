@@ -5,6 +5,9 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
+
+import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -14,6 +17,7 @@ import org.robolectric.TestRunners;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -22,6 +26,9 @@ import static org.robolectric.Shadows.shadowOf;
 @RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowLooperTest {
 
+  // testName is used when creating background threads. Makes it
+  // easier to debug exceptions on background threads when you
+  // know what test they are associated with.
   @Rule
   public TestName testName = new TestName();
 
@@ -34,6 +41,37 @@ public class ShadowLooperTest {
     return ht;
   }
 
+  // Useful class for checking that a thread's loop() has exited.
+  private class QuitThread extends Thread {
+    private boolean hasContinued = false;
+    private Looper looper;
+    private CountDownLatch started = new CountDownLatch(1);
+    
+    public QuitThread() {
+      super(testName.getMethodName());
+    }
+    
+//    public QuitThread(String name) {
+//      super(name);
+//    }
+    
+    @Override
+    public void run() {
+      Looper.prepare();
+      looper = Looper.myLooper();
+      started.countDown();
+      Looper.loop();
+      hasContinued = true;
+    }
+  }
+  
+  private QuitThread getQuitThread() throws InterruptedException {
+    QuitThread qt = new QuitThread();
+    qt.start();
+    qt.started.await();
+    return qt;
+  }
+  
   @Test
   public void mainLooper_andMyLooper_shouldBeSame_onMainThread() {
     assertThat(Looper.myLooper()).isSameAs(Looper.getMainLooper());
@@ -47,9 +85,25 @@ public class ShadowLooperTest {
 
   @Test
   public void mainLooperThread_shouldBeTestThread() {
-    assertThat(shadowOf(Looper.getMainLooper()).getThread()).isSameAs(Thread.currentThread());
+    assertThat(Looper.getMainLooper().getThread()).isSameAs(Thread.currentThread());
   }
 
+  @Test
+  public void shadowMainLooper_shouldBeShadowOfMainLooper() {
+    assertThat(ShadowLooper.getShadowMainLooper()).isSameAs(shadowOf(Looper.getMainLooper()));
+  }
+  
+  @Test
+  public void getLooperForThread_returnsLooperForAThreadThatHasOne() throws InterruptedException {
+    QuitThread qt = getQuitThread();
+    assertThat(ShadowLooper.getLooperForThread(qt)).isSameAs(qt.looper);
+  }
+  
+  @Test
+  public void getLooperForThread_returnsLooperForMainThread() {
+    assertThat(ShadowLooper.getLooperForThread(Thread.currentThread())).isSameAs(Looper.getMainLooper());
+  }
+  
   @Test
   public void idleMainLooper_executesScheduledTasks() {
     final boolean[] wasRun = new boolean[]{false};
@@ -121,6 +175,31 @@ public class ShadowLooperTest {
   }
 
   @Test
+  public void threadShouldContinue_whenLooperQuits() throws InterruptedException {
+    QuitThread test = getQuitThread();
+    assertThat(test.hasContinued).as("beforeJoin").isFalse();
+    test.looper.quit();
+    test.join(5000);
+    assertThat(test.hasContinued).as("afterJoin").isTrue();
+  }
+
+//  @Test
+//  public void threadShouldContinue_whenLooperResets() throws InterruptedException {
+//    QuitThread test = new QuitThread();
+//    test.start();
+//    synchronized(test) {
+//      // Set a timeout as a defense against unforseen failure that prevents
+//      // notify() getting called
+//      test.wait(5000);
+//    }
+//    assertThat(test.looper).isNotNull();
+//    assertThat(test.hasContinued).isFalse();
+//    test.sLooper.reset();
+//    test.join(5000);
+//    assertThat(test.hasContinued).isTrue();
+//  }
+//
+  @Test
   public void shouldResetQueue_whenLooperIsReset() {
     HandlerThread ht = getHandlerThread();
     Looper looper = ht.getLooper();
@@ -136,6 +215,39 @@ public class ShadowLooperTest {
     sLooper.reset();
     assertThat(sLooper.getScheduler().areAnyRunnable()).as("areAnyRunnable").isFalse();
     assertThat(shadowOf(looper.getQueue()).getHead()).as("queue").isNull();
+  }
+
+  @Test
+  public void resetThreadLoopers_shouldQuitAllNonMainLoopers() throws InterruptedException {
+    QuitThread test = getQuitThread();
+    assertThat(test.hasContinued).isFalse();
+    ShadowLooper.resetThreadLoopers();
+    test.join(5000);
+    assertThat(test.hasContinued).isTrue();
+  }
+ 
+  @Ignore("Not yet implemented") 
+  @Test(timeout = 1000)
+  public void whenTestHarnessUsesDifferentThread_shouldStillHaveMainLooper() {
+    assertThat(Looper.myLooper()).isNotNull();
+  }
+  
+  @Test
+  public void resetThreadLoopers_fromNonMainThread_shouldThrowISE() throws InterruptedException {
+    final AtomicReference<Throwable> ex = new AtomicReference<>();
+    Thread t = new Thread() {
+      @Override
+      public void run() {
+        try {
+          ShadowLooper.resetThreadLoopers();
+        } catch (Throwable t) {
+          ex.set(t);
+        }
+      }
+    };
+    t.start();
+    t.join();
+    assertThat(ex.get()).isInstanceOf(IllegalStateException.class);
   }
   
   @Test public void soStaticRefsToLoopersInAppWorksAcrossTests_shouldRetainSameLooperForMainThreadBetweenResetsButGiveItAFreshScheduler() throws Exception {
@@ -161,26 +273,20 @@ public class ShadowLooperTest {
   }
 
   @Test
-  public void getMainLooperThrowsNullPointerExceptionOnBackgroundThreadWhenRobolectricApplicationIsNull() throws Exception {
-      RuntimeEnvironment.application = null;
-      final AtomicReference<Looper> mainLooperAtomicReference = new AtomicReference<>();
-      final AtomicReference<NullPointerException> nullPointerExceptionAtomicReference = new AtomicReference<>();
+  public void getMainLooper_shouldBeInitialized_onBackgroundThread_evenWhenRobolectricApplicationIsNull() throws Exception {
+    RuntimeEnvironment.application = null;
+    final AtomicReference<Looper> mainLooperAtomicReference = new AtomicReference<>();
 
-      Thread backgroundThread = new Thread(new Runnable() {
-          @Override
-          public void run() {
-              try {
-                  Looper mainLooper = Looper.getMainLooper();
-                  mainLooperAtomicReference.set(mainLooper);
-              } catch (NullPointerException nullPointerException) {
-                  nullPointerExceptionAtomicReference.set(nullPointerException);
-              }
-          }
-      }, testName.getMethodName());
-      backgroundThread.start();
-      backgroundThread.join();
+    Thread backgroundThread = new Thread(new Runnable() {
+      @Override
+      public void run() {
+        Looper mainLooper = Looper.getMainLooper();
+        mainLooperAtomicReference.set(mainLooper);
+      }
+    }, testName.getMethodName());
+    backgroundThread.start();
+    backgroundThread.join();
 
-      assertThat(nullPointerExceptionAtomicReference.get()).as("exception").isInstanceOf(NullPointerException.class);
-      assertThat(mainLooperAtomicReference.get()).as("mainLooper").isNull();
+    assertThat(mainLooperAtomicReference.get()).as("mainLooper").isSameAs(Looper.getMainLooper());
   }
 }

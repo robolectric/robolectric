@@ -54,7 +54,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Shadow for {@link android.app.Application}.
  */
-@SuppressWarnings({"UnusedDeclaration"})
 @Implements(Application.class)
 public class ShadowApplication extends ShadowContextWrapper {
   @RealObject private Application realApplication;
@@ -70,7 +69,7 @@ public class ShadowApplication extends ShadowContextWrapper {
   private List<ServiceConnection> unboundServiceConnections = new ArrayList<>();
   private List<Wrapper> registeredReceivers = new ArrayList<>();
   private Map<String, Intent> stickyIntents = new LinkedHashMap<>();
-  private Looper mainLooper = ShadowLooper.myLooper();
+  private Looper mainLooper = Looper.myLooper();
   private Handler mainHandler = new Handler(mainLooper);
   private Scheduler backgroundScheduler = new Scheduler();
   private Map<String, Map<String, Object>> sharedPreferenceMap = new HashMap<>();
