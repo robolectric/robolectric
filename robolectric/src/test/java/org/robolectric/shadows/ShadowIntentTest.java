@@ -299,7 +299,7 @@ public class ShadowIntentTest {
     intent.removeCategory("category.name.2");
     assertFalse(intent.hasCategory("category.name.2"));
 
-    assertEquals(0, intent.getCategories().size());
+    assertThat(intent.getCategories()).isNull();
 
     assertSame(self, intent);
   }
@@ -348,11 +348,9 @@ public class ShadowIntentTest {
   public void createChooser_shouldWrapIntent() throws Exception {
     Intent originalIntent = new Intent(Intent.ACTION_BATTERY_CHANGED, Uri.parse("foo://blah"));
     Intent chooserIntent = Intent.createChooser(originalIntent, "The title");
-    Intent expectedIntent = new Intent(Intent.ACTION_CHOOSER);
-    expectedIntent.putExtra(Intent.EXTRA_INTENT, originalIntent);
-    expectedIntent.putExtra(Intent.EXTRA_TITLE, "The title");
-    assertEquals(expectedIntent, chooserIntent);
-    assertThat(expectedIntent.getStringExtra(Intent.EXTRA_TITLE)).isEqualTo("The title");
+    assertThat(chooserIntent.getAction()).isEqualTo(Intent.ACTION_CHOOSER);
+    assertThat(chooserIntent.getStringExtra(Intent.EXTRA_TITLE)).isEqualTo("The title");
+    assertThat(chooserIntent.getParcelableExtra(Intent.EXTRA_INTENT)).isSameAs(originalIntent);
   }
 
   @Test

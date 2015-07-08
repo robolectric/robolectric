@@ -1,5 +1,16 @@
 package org.robolectric.shadows;
 
+import static android.content.pm.PackageManager.PERMISSION_DENIED;
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.robolectric.Shadows.shadowOf;
+
 import android.app.Activity;
 import android.app.Application;
 import android.content.ActivityNotFoundException;
@@ -11,22 +22,25 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.res.Resources;
-
-import org.robolectric.annotation.Config;
-import org.robolectric.fakes.RoboSensorManager;
-
 import android.os.Build;
 import android.os.IBinder;
 import android.os.IInterface;
 import android.os.Parcel;
 import android.os.RemoteException;
+import android.os.UserManager;
 import android.print.PrintManager;
 import android.view.accessibility.AccessibilityManager;
-import android.os.UserManager;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.*;
+import org.robolectric.DefaultTestLifecycle;
+import org.robolectric.R;
+import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.Shadows;
+import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
+import org.robolectric.fakes.RoboSensorManager;
 import org.robolectric.fakes.RoboVibrator;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.EmptyResourceLoader;
@@ -44,18 +58,6 @@ import java.io.File;
 import java.io.FileDescriptor;
 import java.io.IOException;
 import java.util.List;
-
-import static android.content.pm.PackageManager.PERMISSION_DENIED;
-import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowApplicationTest {
@@ -394,10 +396,13 @@ public class ShadowApplicationTest {
     assertThat(startedComponent.getClassName()).isEqualTo("package.test.TestClass");
 
     Intent stopServiceIntent = new Intent().setComponent(startedComponent);
+    stopServiceIntent.putExtra("someExtra", "someValue");
     boolean wasRunning = activity.stopService(stopServiceIntent);
 
     assertTrue(wasRunning);
-    assertThat(shadowApplication.getNextStoppedService()).isEqualTo(startServiceIntent);
+    final Intent nextStoppedService = shadowApplication.getNextStoppedService();
+    assertThat(nextStoppedService.filterEquals(startServiceIntent)).isTrue();
+    assertThat(nextStoppedService.getStringExtra("someExtra")).isEqualTo("someValue");
   }
 
   @Test
