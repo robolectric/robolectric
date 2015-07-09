@@ -1,5 +1,10 @@
 package org.robolectric.shadows;
 
+import static android.content.pm.PackageManager.PERMISSION_DENIED;
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.internal.Shadow.newInstanceOf;
+
 import android.app.Application;
 import android.appwidget.AppWidgetManager;
 import android.content.ActivityNotFoundException;
@@ -25,11 +30,11 @@ import android.widget.ListPopupWindow;
 import android.widget.PopupWindow;
 import android.widget.Toast;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.BroadcastReceiverData;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.util.Scheduler;
@@ -46,11 +51,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static android.content.pm.PackageManager.PERMISSION_DENIED;
-import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.internal.Shadow.newInstanceOf;
-
 /**
  * Shadow for {@link android.app.Application}.
  */
@@ -63,8 +63,8 @@ public class ShadowApplication extends ShadowContextWrapper {
   private ResourceLoader resourceLoader;
   private ContentResolver contentResolver;
   private List<Intent> startedActivities = new ArrayList<>();
-  private List<Intent> startedServices = new ArrayList<>();
-  private List<Intent> stoppedServies = new ArrayList<>();
+  private List<Intent.FilterComparison> startedServices = new ArrayList<>();
+  private List<Intent.FilterComparison> stoppedServices = new ArrayList<>();
   private List<Intent> broadcastIntents = new ArrayList<>();
   private List<ServiceConnection> boundServiceConnections = new ArrayList<>();
   private List<ServiceConnection> unboundServiceConnections = new ArrayList<>();
@@ -84,7 +84,7 @@ public class ShadowApplication extends ShadowContextWrapper {
   private AssetManager assetManager;
   private Set<String> grantedPermissions = new HashSet<>();
 
-  private Map<Intent, ServiceConnectionDataWrapper> serviceConnectionDataForIntent = new HashMap<>();
+  private Map<Intent.FilterComparison, ServiceConnectionDataWrapper> serviceConnectionDataForIntent = new HashMap<>();
   private Map<ServiceConnection, ServiceConnectionDataWrapper> serviceConnectionDataForServiceConnection = new HashMap<>();
   //default values for bindService
   private ServiceConnectionDataWrapper defaultServiceConnectionData = new ServiceConnectionDataWrapper(null, null);
@@ -266,7 +266,7 @@ public class ShadowApplication extends ShadowContextWrapper {
   @Implementation
   @Override
   public ComponentName startService(Intent intent) {
-    startedServices.add(intent);
+    startedServices.add(new Intent.FilterComparison(intent));
     if (intent.getComponent() != null) {
       return intent.getComponent();
     }
@@ -276,9 +276,8 @@ public class ShadowApplication extends ShadowContextWrapper {
   @Implementation
   @Override
   public boolean stopService(Intent name) {
-    stoppedServies.add(name);
-
-    return startedServices.contains(name);
+    stoppedServices.add(new Intent.FilterComparison(name));
+    return startedServices.contains(new Intent.FilterComparison(name));
   }
 
   public void setComponentNameAndServiceForBindService(ComponentName name, IBinder service) {
@@ -286,7 +285,8 @@ public class ShadowApplication extends ShadowContextWrapper {
   }
 
   public void setComponentNameAndServiceForBindServiceForIntent(Intent intent, ComponentName name, IBinder service) {
-    serviceConnectionDataForIntent.put(intent, new ServiceConnectionDataWrapper(name, service));
+    serviceConnectionDataForIntent.put(new Intent.FilterComparison(intent),
+            new ServiceConnectionDataWrapper(name, service));
   }
 
   @Implementation
@@ -296,13 +296,14 @@ public class ShadowApplication extends ShadowContextWrapper {
     if (unbindableActions.contains(intent.getAction())) {
       return false;
     }
-    startedServices.add(intent);
+    startedServices.add(new Intent.FilterComparison(intent));
     shadowOf(Looper.getMainLooper()).post(new Runnable() {
       @Override
       public void run() {
         final ServiceConnectionDataWrapper serviceConnectionDataWrapper;
-        if (serviceConnectionDataForIntent.containsKey(intent)) {
-          serviceConnectionDataWrapper = serviceConnectionDataForIntent.get(intent);
+        final Intent.FilterComparison filterComparison = new Intent.FilterComparison(intent);
+        if (serviceConnectionDataForIntent.containsKey(filterComparison)) {
+          serviceConnectionDataWrapper = serviceConnectionDataForIntent.get(filterComparison);
         } else {
           serviceConnectionDataWrapper = defaultServiceConnectionData;
         }
@@ -377,7 +378,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     if (startedServices.isEmpty()) {
       return null;
     } else {
-      return startedServices.remove(0);
+      return startedServices.remove(0).getIntent();
     }
   }
 
@@ -392,7 +393,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     if (startedServices.isEmpty()) {
       return null;
     } else {
-      return startedServices.get(0);
+      return startedServices.get(0).getIntent();
     }
   }
 
@@ -410,10 +411,10 @@ public class ShadowApplication extends ShadowContextWrapper {
    */
   @Override
   public Intent getNextStoppedService() {
-    if (stoppedServies.isEmpty()) {
+    if (stoppedServices.isEmpty()) {
       return null;
     } else {
-      return stoppedServies.remove(0);
+      return stoppedServices.remove(0).getIntent();
     }
   }
 
@@ -819,9 +820,7 @@ public class ShadowApplication extends ShadowContextWrapper {
   }
 
   public void grantPermissions(String... permissionNames) {
-    for (String permissionName : permissionNames) {
-      grantedPermissions.add(permissionName);
-    }
+    Collections.addAll(grantedPermissions, permissionNames);
   }
 
   public void denyPermissions(String... permissionNames) {

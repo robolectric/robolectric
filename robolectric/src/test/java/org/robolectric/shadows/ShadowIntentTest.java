@@ -1,5 +1,12 @@
 package org.robolectric.shadows;
 
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNull;
+import static junit.framework.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
@@ -10,23 +17,16 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Set;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNull;
-import static junit.framework.Assert.assertTrue;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertSame;
-import static org.robolectric.Shadows.shadowOf;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Set;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowIntentTest {
@@ -123,7 +123,7 @@ public class ShadowIntentTest {
   @Test
   public void testSerializableOfParcelableExtra() throws Exception {
     Intent intent = new Intent();
-    ArrayList<Parcelable> serializable = new ArrayList();
+    ArrayList<Parcelable> serializable = new ArrayList<>();
     serializable.add(new TestParcelable(12));
     assertSame(intent, intent.putExtra("foo", serializable));
     assertEquals(serializable, intent.getExtras().get("foo"));
@@ -299,7 +299,7 @@ public class ShadowIntentTest {
     intent.removeCategory("category.name.2");
     assertFalse(intent.hasCategory("category.name.2"));
 
-    assertEquals(0, intent.getCategories().size());
+    assertThat(intent.getCategories()).isNull();
 
     assertSame(self, intent);
   }
@@ -345,149 +345,19 @@ public class ShadowIntentTest {
   }
 
   @Test
-  public void equals_shouldTestActionComponentNameDataAndExtras() throws Exception {
-    Intent intentA = new Intent()
-        .setAction("action")
-        .setData(Uri.parse("content:1"))
-        .setComponent(new ComponentName("pkg", "cls"))
-        .putExtra("extra", "blah")
-        .setType("image/*")
-        .addCategory("category.name");
-
-    Intent intentB = new Intent()
-        .setAction("action")
-        .setData(Uri.parse("content:1"))
-        .setComponent(new ComponentName("pkg", "cls"))
-        .putExtra("extra", "blah")
-        .setType("image/*")
-        .addCategory("category.name");
-
-    assertThat(intentA).isEqualTo(intentB);
-
-    intentB.setAction("other action");
-    assertThat(intentA).isNotEqualTo(intentB);
-
-    intentB.setAction("action");
-    intentB.setData(Uri.parse("content:other"));
-    assertThat(intentA).isNotEqualTo(intentB);
-
-    intentB.setData(Uri.parse("content:1"));
-    intentB.setComponent(new ComponentName("other-pkg", "other-cls"));
-    assertThat(intentA).isNotEqualTo(intentB);
-
-    intentB.setComponent(new ComponentName("pkg", "cls"));
-    intentB.putExtra("extra", "foo");
-    assertThat(intentA).isNotEqualTo(intentB);
-
-    intentB.putExtra("extra", "blah");
-    intentB.setType("other/*");
-    assertThat(intentA).isNotEqualTo(intentB);
-
-    intentB.setType("image/*");
-    assertThat(intentA).isEqualTo(intentB);
-
-    intentB.removeCategory("category.name");
-    assertThat(intentA).isNotEqualTo(intentB);
-  }
-
-  @Test
-  public void equals_shouldTestPackageName() throws Exception {
-    Intent intentA = new Intent()
-        .setAction("action")
-        .setPackage("package");
-
-    Intent intentB = new Intent()
-        .setAction("action")
-        .setPackage("package");
-
-    assertThat(intentA).isEqualTo(intentB);
-
-    intentB.setPackage("other package");
-    assertThat(intentA).isNotEqualTo(intentB);
-  }
-
-  @Test
-  public void hashCode_shouldTestActionComponentNameDataAndExtras() throws Exception {
-    Intent intentA = new Intent()
-        .setAction("action")
-        .setData(Uri.parse("content:1"))
-        .setComponent(new ComponentName("pkg", "cls"))
-        .putExtra("extra", "blah")
-        .setType("image/*")
-        .addCategory("category.name");
-
-    Intent intentB = new Intent()
-        .setAction("action")
-        .setData(Uri.parse("content:1"))
-        .setComponent(new ComponentName("pkg", "cls"))
-        .putExtra("extra", "blah")
-        .setType("image/*")
-        .addCategory("category.name");
-
-    assertThat(intentA.hashCode()).isEqualTo(intentB.hashCode());
-
-    intentB.setAction("other action");
-    assertThat(intentA.hashCode()).isNotEqualTo(intentB.hashCode());
-
-    intentB.setAction("action");
-    intentB.setData(Uri.parse("content:other"));
-    assertThat(intentA.hashCode()).isNotEqualTo(intentB.hashCode());
-
-    intentB.setData(Uri.parse("content:1"));
-    intentB.setComponent(new ComponentName("other-pkg", "other-cls"));
-    assertThat(intentA.hashCode()).isNotEqualTo(intentB.hashCode());
-
-    intentB.setComponent(new ComponentName("pkg", "cls"));
-    intentB.putExtra("extra", "foo");
-    assertThat(intentA.hashCode()).isNotEqualTo(intentB.hashCode());
-
-    intentB.putExtra("extra", "blah");
-    intentB.setType("other/*");
-    assertThat(intentA.hashCode()).isNotEqualTo(intentB.hashCode());
-
-    intentB.setType("image/*");
-    assertThat(intentA.hashCode()).isEqualTo(intentB.hashCode());
-
-    intentB.removeCategory("category.name");
-    assertThat(intentA.hashCode()).isNotEqualTo(intentB.hashCode());
-  }
-
-  @Test
-  public void hashCode_shouldTestPackageName() throws Exception {
-    Intent intentA = new Intent()
-        .setAction("action")
-        .setPackage("package");
-
-    Intent intentB = new Intent()
-        .setAction("action")
-        .setPackage("package");
-
-    assertThat(intentA.hashCode()).isEqualTo(intentB.hashCode());
-
-    intentB.setPackage("other package");
-    assertThat(intentA.hashCode()).isNotEqualTo(intentB.hashCode());
-  }
-
-  @Test
-  public void equals_whenOtherObjectIsNotAnIntent_shouldReturnFalse() throws Exception {
-    assertThat((Object) new Intent()).isNotEqualTo(new Object());
-  }
-
-  @Test
   public void createChooser_shouldWrapIntent() throws Exception {
     Intent originalIntent = new Intent(Intent.ACTION_BATTERY_CHANGED, Uri.parse("foo://blah"));
     Intent chooserIntent = Intent.createChooser(originalIntent, "The title");
-    Intent expectedIntent = new Intent(Intent.ACTION_CHOOSER);
-    expectedIntent.putExtra(Intent.EXTRA_INTENT, originalIntent);
-    expectedIntent.putExtra(Intent.EXTRA_TITLE, "The title");
-    assertEquals(expectedIntent, chooserIntent);
+    assertThat(chooserIntent.getAction()).isEqualTo(Intent.ACTION_CHOOSER);
+    assertThat(chooserIntent.getStringExtra(Intent.EXTRA_TITLE)).isEqualTo("The title");
+    assertThat(chooserIntent.getParcelableExtra(Intent.EXTRA_INTENT)).isSameAs(originalIntent);
   }
 
   @Test
   public void setUri_setsUri() throws Exception {
     Intent intent = new Intent();
     intent.setData(Uri.parse("http://foo"));
-    assertThat(intent.toURI()).isEqualTo("http://foo");
+    assertThat(intent.getData()).isEqualTo(Uri.parse("http://foo"));
   }
 
   @Test
@@ -526,9 +396,9 @@ public class ShadowIntentTest {
   @Test
   public void constructor_shouldSetComponentAndActionAndData() {
     Intent intent = new Intent("roboaction", Uri.parse("http://www.robolectric.org"), RuntimeEnvironment.application, Activity.class);
-    assertThat(shadowOf(intent).getComponent()).isEqualTo(new ComponentName("org.robolectric", "android.app.Activity"));
-    assertThat(shadowOf(intent).getAction()).isEqualTo("roboaction");
-    assertThat(shadowOf(intent).getData()).isEqualTo(Uri.parse("http://www.robolectric.org"));
+    assertThat(intent.getComponent()).isEqualTo(new ComponentName("org.robolectric", "android.app.Activity"));
+    assertThat(intent.getAction()).isEqualTo("roboaction");
+    assertThat(intent.getData()).isEqualTo(Uri.parse("http://www.robolectric.org"));
   }
 
   @Test
@@ -564,6 +434,18 @@ public class ShadowIntentTest {
     assertThat(intent.putExtra("CharSequence array",
         new CharSequence[] { new TestCharSequence("test") }))
         .isEqualTo(intent);
+  }
+
+  @Test
+  public void equals_shouldOnlyBeIdentity() {
+    assertThat(new Intent()).isNotEqualTo(new Intent());
+  }
+
+  @Test
+  public void cloneFilter_shouldIncludeAction() {
+    Intent intent = new Intent("FOO");
+    intent.cloneFilter();
+    assertThat(intent.getAction()).isEqualTo("FOO");
   }
 
   @Test

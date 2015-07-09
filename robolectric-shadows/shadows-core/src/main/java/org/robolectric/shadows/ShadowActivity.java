@@ -1,5 +1,9 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.internal.Shadow.directlyOn;
+import static org.robolectric.internal.Shadow.invokeConstructor;
+
 import android.R;
 import android.app.Activity;
 import android.app.Application;
@@ -13,24 +17,28 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.text.Selection;
 import android.text.SpannableStringBuilder;
-import android.view.*;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.fakes.RoboMenuItem;
-import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.annotation.HiddenApi;
-import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.fakes.RoboMenuItem;
+import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResName;
+import org.robolectric.util.ReflectionHelpers;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
-
-import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.internal.Shadow.directlyOn;
-import static org.robolectric.internal.Shadow.invokeConstructor;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Shadow for {@link android.app.Activity}.
@@ -46,7 +54,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   private Activity parent;
   private boolean finishWasCalled;
   private List<IntentForResult> startedActivitiesForResults = new ArrayList<>();
-  private Map<Intent, Integer> intentRequestCodeMap = new HashMap<>();
+  private Map<Intent.FilterComparison, Integer> intentRequestCodeMap = new HashMap<>();
   private int requestedOrientation = -1;
   private View currentFocus;
   private Integer lastShownDialogId = null;
@@ -429,20 +437,20 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
   @Implementation
   public void startActivityForResult(Intent intent, int requestCode) {
-    intentRequestCodeMap.put(intent, requestCode);
+    intentRequestCodeMap.put(new Intent.FilterComparison(intent), requestCode);
     startedActivitiesForResults.add(new IntentForResult(intent, requestCode));
     getApplicationContext().startActivity(intent);
   }
 
   @Implementation
   public void startActivityForResult(Intent intent, int requestCode, Bundle options) {
-    intentRequestCodeMap.put(intent, requestCode);
+    intentRequestCodeMap.put(new Intent.FilterComparison(intent), requestCode);
     startedActivitiesForResults.add(new IntentForResult(intent, requestCode, options));
     getApplicationContext().startActivity(intent);
   }
 
   public void receiveResult(Intent requestIntent, int resultCode, Intent resultIntent) {
-    Integer requestCode = intentRequestCodeMap.get(requestIntent);
+    Integer requestCode = intentRequestCodeMap.get(new Intent.FilterComparison(requestIntent));
     if (requestCode == null) {
       throw new RuntimeException("No intent matches " + requestIntent + " among " + intentRequestCodeMap.keySet());
     }
