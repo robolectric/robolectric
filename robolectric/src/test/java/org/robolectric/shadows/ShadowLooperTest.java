@@ -6,7 +6,6 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -200,10 +199,10 @@ public class ShadowLooperTest {
   @Test
   public void resetThreadLoopers_shouldQuitAllNonMainLoopers() throws InterruptedException {
     QuitThread test = getQuitThread();
-    assertThat(test.hasContinued).isFalse();
+    assertThat(test.hasContinued).as("hasContinued:before").isFalse();
     ShadowLooper.resetThreadLoopers();
     test.join(5000);
-    assertThat(test.hasContinued).isTrue();
+    assertThat(test.hasContinued).as("hasContinued:after").isTrue();
   }
  
   @Ignore("Not yet implemented (ref #1407)") 

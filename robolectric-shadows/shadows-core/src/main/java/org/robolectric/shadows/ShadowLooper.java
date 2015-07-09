@@ -33,7 +33,6 @@ public class ShadowLooper {
   // is called. This also allows us to implement the useful getLooperForThread() method.
   private static Map<Thread, Looper> loopingLoopers = Collections.synchronizedMap(new WeakHashMap<Thread, Looper>());
 
-  private Scheduler scheduler = new Scheduler();
   private @RealObject Looper realObject;
 
   boolean quit;
@@ -99,7 +98,7 @@ public class ShadowLooper {
     synchronized (realObject) {
       quit = true;
       realObject.notifyAll();
-      scheduler.reset();
+      getScheduler().reset();
     }
   }
   
@@ -192,7 +191,7 @@ public class ShadowLooper {
    * scheduler's clock;
    */
   public void idle() {
-    scheduler.advanceBy(0);
+    getScheduler().advanceBy(0);
   }
 
   /**
@@ -202,11 +201,11 @@ public class ShadowLooper {
    * @param intervalMillis milliseconds to advance
    */
   public void idle(long intervalMillis) {
-    scheduler.advanceBy(intervalMillis);
+    getScheduler().advanceBy(intervalMillis);
   }
 
   public void idleConstantly(boolean shouldIdleConstantly) {
-    scheduler.idleConstantly(shouldIdleConstantly);
+    getScheduler().idleConstantly(shouldIdleConstantly);
   }
 
   /**
@@ -214,7 +213,7 @@ public class ShadowLooper {
    * start time of the last scheduled {@link Runnable}.
    */
   public void runToEndOfTasks() {
-    scheduler.advanceToLastPostedRunnable();
+    getScheduler().advanceToLastPostedRunnable();
   }
 
   /**
@@ -222,7 +221,7 @@ public class ShadowLooper {
    * start time. If more than one {@link Runnable} is scheduled to run at this time then they will all be run.
    */
   public void runToNextTask() {
-    scheduler.advanceToNextPostedRunnable();
+    getScheduler().advanceToNextPostedRunnable();
   }
 
   /**
@@ -231,7 +230,7 @@ public class ShadowLooper {
    * same time.
    */
   public void runOneTask() {
-    scheduler.runOneTask();
+    getScheduler().runOneTask();
   }
 
   /**
@@ -246,7 +245,7 @@ public class ShadowLooper {
   @Deprecated
   public boolean post(Runnable runnable, long delayMillis) {
     if (!quit) {
-      scheduler.postDelayed(runnable, delayMillis);
+      getScheduler().postDelayed(runnable, delayMillis);
       return true;
     } else {
       return false;
@@ -264,7 +263,7 @@ public class ShadowLooper {
   @Deprecated
   public boolean postAtFrontOfQueue(Runnable runnable) {
     if (!quit) {
-      scheduler.postAtFrontOfQueue(runnable);
+      getScheduler().postAtFrontOfQueue(runnable);
       return true;
     } else {
       return false;
@@ -272,15 +271,15 @@ public class ShadowLooper {
   }
 
   public void pause() {
-    scheduler.pause();
+    getScheduler().pause();
   }
 
   public void unPause() {
-    scheduler.unPause();
+    getScheduler().unPause();
   }
 
   public boolean isPaused() {
-    return scheduler.isPaused();
+    return getScheduler().isPaused();
   }
 
   public boolean setPaused(boolean shouldPause) {
@@ -297,20 +296,20 @@ public class ShadowLooper {
    * Causes all enqueued tasks to be discarded, and pause state to be reset
    */
   public void reset() {
-    scheduler = new Scheduler();
     shadowOf(realObject.getQueue()).reset();
     quit = false;
   }
 
   /**
    * Returns the {@link org.robolectric.util.Scheduler} that is being used to manage the enqueued tasks.
+   * This scheduler is managed by the Looper's associated queue.
    *
    * @return the {@link org.robolectric.util.Scheduler} that is being used to manage the enqueued tasks.
    */
   public Scheduler getScheduler() {
-    return scheduler;
+    return shadowOf(realObject.getQueue()).getScheduler();
   }
-
+  
   public void runPaused(Runnable r) {
     boolean wasPaused = setPaused(true);
     try {
