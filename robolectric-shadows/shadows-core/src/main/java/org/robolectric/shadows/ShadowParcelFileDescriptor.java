@@ -28,7 +28,7 @@ public class ShadowParcelFileDescriptor {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-    Shadows.shadowOf(pfd).file = new RandomAccessFile(file, "rw");
+    Shadows.shadowOf(pfd).file = new RandomAccessFile(file, mode == ParcelFileDescriptor.MODE_READ_ONLY ? "r" : "rw");
     return pfd;
   }
 
