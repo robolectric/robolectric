@@ -15,7 +15,7 @@ import org.robolectric.internal.fakes.RoboInstrumentation;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
-public class Api19RuntimeAdapter implements RuntimeAdapter {
+public class Api16RuntimeAdapter implements RuntimeAdapter{
 
   @Override
   public void callActivityAttach(Object component, Context baseContext, Class<?> activityThreadClass, Application application, Intent intent, ActivityInfo activityInfo, String activityTitle, Class<?> nonConfigurationInstancesClass) {
@@ -40,11 +40,12 @@ public class Api19RuntimeAdapter implements RuntimeAdapter {
       Rect contentInsets, Rect visibleInsets, Rect stableInsets, Rect outsets, boolean reportDraw,
       Configuration newConfig) {
     ReflectionHelpers.callInstanceMethod(ViewRootImpl.class, component, "dispatchResized",
-        ClassParameter.from(Rect.class, frame),
-        ClassParameter.from(Rect.class, overscanInsets),
+        ClassParameter.from(int.class, frame.width()),
+        ClassParameter.from(int.class, frame.height()),
         ClassParameter.from(Rect.class, contentInsets),
         ClassParameter.from(Rect.class, visibleInsets),
         ClassParameter.from(boolean.class, reportDraw),
         ClassParameter.from(Configuration.class, newConfig));
   }
 }
+

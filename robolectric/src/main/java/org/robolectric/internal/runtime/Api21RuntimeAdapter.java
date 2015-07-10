@@ -7,7 +7,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
+import android.graphics.Rect;
 import android.os.IBinder;
+import android.view.ViewRootImpl;
+
 import com.android.internal.app.IVoiceInteractor;
 import org.robolectric.internal.fakes.RoboInstrumentation;
 import org.robolectric.util.ReflectionHelpers;
@@ -32,5 +35,19 @@ public class Api21RuntimeAdapter implements RuntimeAdapter {
         ClassParameter.from(nonConfigurationInstancesClass, null),
         ClassParameter.from(Configuration.class, application.getResources().getConfiguration()),
         ClassParameter.from(IVoiceInteractor.class, null));
+  }
+
+  @Override
+  public void callViewRootImplDispatchResized(Object component, Rect frame, Rect overscanInsets,
+      Rect contentInsets, Rect visibleInsets, Rect stableInsets, Rect outsets, boolean reportDraw,
+      Configuration newConfig) {
+    ReflectionHelpers.callInstanceMethod(ViewRootImpl.class, component, "dispatchResized",
+        ClassParameter.from(Rect.class, frame),
+        ClassParameter.from(Rect.class, overscanInsets),
+        ClassParameter.from(Rect.class, contentInsets),
+        ClassParameter.from(Rect.class, visibleInsets),
+        ClassParameter.from(Rect.class, stableInsets),
+        ClassParameter.from(boolean.class, reportDraw),
+        ClassParameter.from(Configuration.class, newConfig));
   }
 }

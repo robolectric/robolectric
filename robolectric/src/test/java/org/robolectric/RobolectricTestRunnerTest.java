@@ -106,7 +106,7 @@ public class RobolectricTestRunnerTest {
             "application: org.robolectric.TestFakeApp\n" +
             "packageName: com.example.test\n" +
             "libraries: libs/test, libs/test2");
-    
+
     assertConfig(configFor(Test7.class, "withoutAnnotation", properties),
         new int[] {432}, "--none", TestFakeApp.class, "com.example.test", "from-properties-file", "from/properties/file/res", "from/properties/file/assets", new Class[] {ShadowView.class, ShadowViewGroup.class}, new String[]{"libs/test", "libs/test2"}, BuildConfigConstants3.class);
   }
