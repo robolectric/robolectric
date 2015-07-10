@@ -18,7 +18,10 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
 
-public class Validator implements ElementVisitor<Void, Element> {
+/**
+ * Base class for validators.
+ */
+public abstract class Validator implements ElementVisitor<Void, Element> {
   final protected RobolectricModel model;
   final protected Elements elements;
   final protected Types types;

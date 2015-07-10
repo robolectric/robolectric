@@ -30,7 +30,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Shadow implementation for the Android {@code AccountManager} class.
+ * Shadow for {@link android.accounts.AccountManager}.
  */
 @Implements(AccountManager.class)
 public class ShadowAccountManager {
@@ -416,6 +416,7 @@ public class ShadowAccountManager {
    * Non-android accessor.
    *
    * @param account User account.
+   * @param previousName Previous account name.
    */
   public void setPreviousAccountName(Account account, String previousName) {
     previousNames.put(account, previousName);
@@ -426,5 +427,4 @@ public class ShadowAccountManager {
     return previousNames.get(account);
   }
 #end
-
 }

@@ -8,9 +8,11 @@ import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
+/**
+ * Shadow for {@link android.content.pm.ResolveInfo}.
+ */
 @Implements(ResolveInfo.class)
 public class ShadowResolveInfo {
-
   private String label;
 
   /**

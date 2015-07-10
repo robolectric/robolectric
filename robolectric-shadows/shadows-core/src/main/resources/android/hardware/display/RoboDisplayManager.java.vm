@@ -10,6 +10,9 @@ import android.os.RemoteException;
 import android.view.DisplayInfo;
 import android.view.Surface;
 
+/**
+ * Robolectric implementation of {@link android.hardware.display.IDisplayManager}.
+ */
 public class RoboDisplayManager implements IDisplayManager {
 
 #if ($api >= 21)

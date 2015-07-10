@@ -15,9 +15,9 @@ import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 /**
- * Shadow for {@code Looper} that enqueues posted {@link Runnable}s to be run (on this thread) later. {@code Runnable}s
- * that are scheduled to run immediately can be triggered by calling {@link #idle()}
- * todo: provide better support for advancing the clock and running queued tasks
+ * Shadow for {@link android.os.Looper} that enqueues posted {@link Runnable}s to be run
+ * (on this thread) later. {@code Runnable}s that are scheduled to run immediately can be
+ * triggered by calling {@link #idle()}.
  *
  * @see ShadowMessageQueue
  */
@@ -164,8 +164,7 @@ public class ShadowLooper {
    * Runs any immediately runnable tasks previously queued on the UI thread,
    * e.g. by {@link android.app.Activity#runOnUiThread(Runnable)} or {@link android.os.AsyncTask#onPostExecute(Object)}.
    *
-   * <p>
-   * Note: calling this method does not pause or un-pause the scheduler.
+   * <p>Note: calling this method does not pause or un-pause the scheduler.</p>
    */
   public static void runUiThreadTasks() {
     ShadowApplication.getInstance().getForegroundThreadScheduler().advanceBy(0);

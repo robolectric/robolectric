@@ -1,10 +1,16 @@
 package org.robolectric.annotation;
 
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 /**
  * Indicates that the annotated method is used to reset static state in a shadow.
  */
-@java.lang.annotation.Documented
-@java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy.RUNTIME)
-@java.lang.annotation.Target({java.lang.annotation.ElementType.METHOD})
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.METHOD})
 public @interface Resetter {
 }

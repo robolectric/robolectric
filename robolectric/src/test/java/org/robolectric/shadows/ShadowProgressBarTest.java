@@ -15,7 +15,7 @@ import static org.junit.Assert.*;
 import static org.robolectric.RuntimeEnvironment.application;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowProgressBarTest {
 
   private int[] testValues = {0, 1, 2, 100};

@@ -6,9 +6,12 @@ import org.robolectric.annotation.RealObject;
 
 import java.util.BitSet;
 
+/**
+ * Shadow for {@link android.net.wifi.WifiConfiguration}.
+ */
 @Implements(WifiConfiguration.class)
 public class ShadowWifiConfiguration {
-  @RealObject WifiConfiguration realObject;
+  @RealObject private WifiConfiguration realObject;
 
   public void __constructor__() {
     realObject.networkId = -1;
@@ -29,7 +32,7 @@ public class ShadowWifiConfiguration {
 //        }
   }
 
-  public WifiConfiguration copy(){
+  public WifiConfiguration copy() {
     WifiConfiguration config = new WifiConfiguration();
     config.networkId = realObject.networkId;
     config.SSID = realObject.SSID;

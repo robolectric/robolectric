@@ -5,6 +5,9 @@ import android.graphics.PorterDuffColorFilter;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
+/**
+ * Shadow for {@link android.graphics.PorterDuffColorFilter}.
+ */
 @Implements(PorterDuffColorFilter.class)
 public class ShadowPorterDuffColorFilter {
   private int color;

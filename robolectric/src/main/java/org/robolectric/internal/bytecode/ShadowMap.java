@@ -1,106 +1,74 @@
 package org.robolectric.internal.bytecode;
 
 import org.robolectric.annotation.Implements;
+import org.robolectric.internal.ShadowProvider;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
+import java.util.ServiceLoader;
 
 public class ShadowMap {
   public static final ShadowMap EMPTY = new ShadowMap(Collections.<String, ShadowConfig>emptyMap());
-  private static final Set<String> unloadableClassNames = new HashSet<>();
-
   private final Map<String, ShadowConfig> map;
+  private static final Map<String, String> SHADOWS = new HashMap<>();
+
+  static {
+    for (ShadowProvider provider : ServiceLoader.load(ShadowProvider.class)) {
+      SHADOWS.putAll(provider.getShadowMap());
+    }
+  }
 
   ShadowMap(Map<String, ShadowConfig> map) {
     this.map = new HashMap<>(map);
   }
 
-  private static void warnAbout(String unloadableClassName) {
-    boolean alreadyReported;
-    synchronized (unloadableClassNames) {
-      alreadyReported = unloadableClassNames.add(unloadableClassName);
-    }
-    if (alreadyReported) {
-      System.out.println("Warning: an error occurred while binding shadow class: " + unloadableClassName);
-    }
-  }
-
-  private static ShadowInfo getShadowInfo(Class<?> shadowClass) {
-    Implements implementsAnnotation = shadowClass.getAnnotation(Implements.class);
-    if (implementsAnnotation == null) {
-      throw new IllegalArgumentException(shadowClass + " is not annotated with @Implements");
-    }
-
-    String className = implementsAnnotation.className();
-    try {
-      if (className.isEmpty()) {
-        className = implementsAnnotation.value().getName();
-      }
-      ShadowConfig shadowConfig = createShadowConfig(shadowClass.getName(),
-          implementsAnnotation.callThroughByDefault(),
-          implementsAnnotation.inheritImplementationMethods(),
-          implementsAnnotation.looseSignatures());
-      return new ShadowInfo(className, shadowConfig);
-    } catch (TypeNotPresentException typeLoadingException) {
-      String unloadableClassName = shadowClass.getSimpleName();
-      if (typeLoadingException.typeName().startsWith("com.google.android.maps")) {
-        warnAbout(unloadableClassName);
-        return null;
-      } else if (isIgnorableClassLoadingException(typeLoadingException)) {
-        //this allows users of the robolectric.jar file to use the non-Google APIs version of the api
-        warnAbout(unloadableClassName);
-      } else {
-        throw typeLoadingException;
-      }
-    }
-    return null;
-  }
-
-  private static ShadowConfig createShadowConfig(String shadowClassName,
-      boolean callThroughByDefault, boolean inheritImplementationMethods, boolean looseSignatures) {
-    return new ShadowConfig(shadowClassName, callThroughByDefault, inheritImplementationMethods, looseSignatures);
-  }
-
-  private static boolean isIgnorableClassLoadingException(Throwable typeLoadingException) {
-    if (typeLoadingException != null) {
-      if (typeLoadingException instanceof NoClassDefFoundError
-          || typeLoadingException instanceof ClassNotFoundException
-          || typeLoadingException instanceof TypeNotPresentException) {
-        return isIgnorableClassLoadingException(typeLoadingException.getCause());
-      }
-    }
-    return false;
-  }
-
   public ShadowConfig get(Class<?> clazz) {
-    String className = clazz.getName();
-    ShadowConfig shadowConfig = map.get(className);
-    ClassLoader classLoader = clazz.getClassLoader();
-    if (shadowConfig == null && classLoader != null) {
-      String shadowClassName = convertToShadowName(className);
-      Class<?> shadowClass;
-      try {
-        shadowClass = classLoader.loadClass(shadowClassName);
-      } catch (ClassNotFoundException e) {
+    ShadowConfig shadowConfig = map.get(clazz.getName());
+
+    if (shadowConfig == null && clazz.getClassLoader() != null) {
+      Class<?> shadowClass = getShadowClass(clazz);
+      if (shadowClass == null) {
         return null;
       }
+
       ShadowInfo shadowInfo = getShadowInfo(shadowClass);
-      if (shadowInfo != null && shadowInfo.shadowedClassName.equals(className)) {
+      if (shadowInfo != null && shadowInfo.shadowedClassName.equals(clazz.getName())) {
         return shadowInfo.getShadowConfig();
       }
     }
     return shadowConfig;
   }
 
-  public static String convertToShadowName(String className) {
-    String shadowClassName =
-        "org.robolectric.shadows.Shadow" + className.substring(className.lastIndexOf(".") + 1);
-    shadowClassName = shadowClassName.replaceAll("\\$", "\\$Shadow");
-    return shadowClassName;
+  private static Class<?> getShadowClass(Class<?> clazz) {
+    try {
+      final String className = clazz.getCanonicalName();
+      if (className != null) {
+        final String shadowName = SHADOWS.get(className);
+        if (shadowName != null) {
+          return clazz.getClassLoader().loadClass(shadowName);
+        }
+      }
+    } catch (ClassNotFoundException e) {
+      return null;
+    } catch (IncompatibleClassChangeError e) {
+      return null;
+    }
+    return null;
+  }
+
+  private static ShadowInfo getShadowInfo(Class<?> clazz) {
+    Implements annotation = clazz.getAnnotation(Implements.class);
+    if (annotation == null) {
+      throw new IllegalArgumentException(clazz + " is not annotated with @Implements");
+    }
+
+    String className = annotation.className();
+    if (className.isEmpty()) {
+      className = annotation.value().getName();
+    }
+    return new ShadowInfo(className, new ShadowConfig(clazz.getName(), annotation));
   }
 
   public Builder newBuilder() {
@@ -168,7 +136,7 @@ public class ShadowMap {
     }
 
     public Builder addShadowClass(String realClassName, String shadowClassName, boolean callThroughByDefault, boolean inheritImplementationMethods, boolean looseSignatures) {
-      addShadowConfig(realClassName, createShadowConfig(shadowClassName, callThroughByDefault, inheritImplementationMethods, looseSignatures));
+      addShadowConfig(realClassName, new ShadowConfig(shadowClassName, callThroughByDefault, inheritImplementationMethods, looseSignatures));
       return this;
     }
 
@@ -179,7 +147,6 @@ public class ShadowMap {
     public ShadowMap build() {
       return new ShadowMap(map);
     }
-
   }
 
   private static class ShadowInfo {

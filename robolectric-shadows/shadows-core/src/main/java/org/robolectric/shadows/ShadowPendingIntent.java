@@ -19,7 +19,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Shadow of {@code PendingIntent} that creates and sends {@code Intent}s appropriately.
+ * Shadow for {@code android.app.PendingIntent}.
  */
 @Implements(PendingIntent.class)
 public class ShadowPendingIntent {

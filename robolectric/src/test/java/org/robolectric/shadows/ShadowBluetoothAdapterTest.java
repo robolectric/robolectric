@@ -3,18 +3,21 @@ package org.robolectric.shadows;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.os.Build;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
 import org.robolectric.internal.Shadow;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowBluetoothAdapterTest {
   private BluetoothAdapter bluetoothAdapter;
   private ShadowBluetoothAdapter shadowBluetoothAdapter;
@@ -60,6 +63,10 @@ public class ShadowBluetoothAdapterTest {
   }
 
   @Test
+  @Config(sdk = {
+      Build.VERSION_CODES.JELLY_BEAN_MR2,
+      Build.VERSION_CODES.KITKAT,
+      Build.VERSION_CODES.LOLLIPOP })
   public void testLeScan() {
     BluetoothAdapter.LeScanCallback callback1 = newLeScanCallback();
     BluetoothAdapter.LeScanCallback callback2 = newLeScanCallback();
@@ -76,6 +83,10 @@ public class ShadowBluetoothAdapterTest {
   }
 
   @Test
+  @Config(sdk = {
+      Build.VERSION_CODES.JELLY_BEAN_MR2,
+      Build.VERSION_CODES.KITKAT,
+      Build.VERSION_CODES.LOLLIPOP })
   public void testGetSingleLeScanCallback() {
     BluetoothAdapter.LeScanCallback callback1 = newLeScanCallback();
     BluetoothAdapter.LeScanCallback callback2 = newLeScanCallback();

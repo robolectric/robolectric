@@ -1,13 +1,18 @@
 package org.robolectric.shadows;
 
+import android.os.Build;
+
 import libcore.icu.ICU;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
+@Config(sdk = {
+    Build.VERSION_CODES.LOLLIPOP })
 public class ShadowICUTest {
 
   @Test

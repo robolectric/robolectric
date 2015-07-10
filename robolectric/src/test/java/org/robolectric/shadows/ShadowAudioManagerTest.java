@@ -8,7 +8,7 @@ import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowAudioManagerTest {
   private final AudioManager audioManager = new AudioManager(RuntimeEnvironment.application);
   private final ShadowAudioManager shadowAudioManager = Shadows.shadowOf(audioManager);

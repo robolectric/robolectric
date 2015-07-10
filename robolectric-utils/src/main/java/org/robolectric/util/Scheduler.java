@@ -23,7 +23,7 @@ import java.util.ListIterator;
  * </ul>
  */
 public class Scheduler {
-  private long currentTime = 0;
+  private long currentTime = 100;
   private boolean paused = false;
   private boolean isConstantlyIdling = false;
   private boolean isExecutingRunnable = false;
@@ -51,7 +51,7 @@ public class Scheduler {
    */
   public synchronized void unPause() {
     paused = false;
-    advanceToLastPostedRunnable();
+    advanceBy(0);
   }
 
   /**

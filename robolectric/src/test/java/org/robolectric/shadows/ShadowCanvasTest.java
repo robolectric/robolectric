@@ -20,7 +20,7 @@ import static org.junit.Assert.assertEquals;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowPath.Point.Type.LINE_TO;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowCanvasTest {
   private Bitmap targetBitmap;
   private Bitmap imageBitmap;

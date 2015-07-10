@@ -18,7 +18,7 @@ import java.util.Map;
 import static org.robolectric.internal.Shadow.*;
 
 /**
- * Shadows the Android {@code Camera} class.
+ * Shadow for {@link android.hardware.Camera}.
  */
 @Implements(Camera.class)
 public class ShadowCamera {

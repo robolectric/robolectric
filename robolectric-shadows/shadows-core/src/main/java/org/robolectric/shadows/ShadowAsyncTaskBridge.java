@@ -6,7 +6,7 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /**
- * This must be placed in the same package as the underlying AsyncTask because it calls protected methods.
+ * Bridge between shadows and {@link android.os.AsyncTask}.
  */
 @DoNotInstrument
 public class ShadowAsyncTaskBridge<Params, Progress, Result> {

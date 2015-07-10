@@ -13,7 +13,7 @@ import org.robolectric.TestRunners;
 import static org.junit.Assert.*;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowLayerDrawableTest {
   /**
    * drawables

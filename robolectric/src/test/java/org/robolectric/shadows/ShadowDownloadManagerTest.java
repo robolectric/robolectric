@@ -14,7 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowDownloadManager.ShadowRequest;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowDownloadManagerTest {
 
   private final Uri uri = Uri.parse("http://example.com/foo.mp4");
@@ -132,5 +132,11 @@ public class ShadowDownloadManagerTest {
     cursor.moveToNext();
     assertThat(cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_URI))).isEqualTo(uri.toString());
     assertThat(cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI))).isEqualTo(destination.toString());
+  }
+
+  @Test
+  public void query_shouldHandleEmptyIds() {
+    ShadowDownloadManager manager = new ShadowDownloadManager();
+    assertThat(manager.query(new DownloadManager.Query())).isNotNull();
   }
 }

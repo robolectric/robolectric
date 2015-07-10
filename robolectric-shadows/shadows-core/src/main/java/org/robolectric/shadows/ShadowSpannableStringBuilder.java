@@ -5,17 +5,15 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
+/**
+ * Shadow for {@link android.text.SpannableStringBuilder}.
+ */
 @Implements(SpannableStringBuilder.class)
 public class ShadowSpannableStringBuilder {
   @RealObject SpannableStringBuilder realSpannableStringBuilder;
 
-  // this sucks because while ssb.equals(equivalentString) is true, equivalentString.equals(ssb) is not! sorry. [xw]
   @Implementation @Override public boolean equals(Object obj) {
-    if (obj == null) {
-      return false;
-    }
-    // todo: we should check that the spans match too...
-    return realSpannableStringBuilder.toString().equals(obj.toString());
+    return obj != null && realSpannableStringBuilder.toString().equals(obj.toString());
   }
 
   @Implementation @Override public int hashCode() {

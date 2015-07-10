@@ -12,8 +12,7 @@ import org.robolectric.internal.Shadow;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /**
- * Shadow of {@code Paint} that has some extra accessors so that tests can tell whether a {@code Paint} object was
- * created with the expected parameters.
+ * Shadow for {@link android.graphics.Paint}.
  */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Paint.class)

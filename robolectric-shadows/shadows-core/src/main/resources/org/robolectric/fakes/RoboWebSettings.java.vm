@@ -3,7 +3,7 @@ package org.robolectric.fakes;
 import android.webkit.WebSettings;
 
 /**
- * Concrete implementation of the abstract WebSettings class.
+ * Robolectric implementation of {@link android.webkit.WebSettings}.
  */
 public class RoboWebSettings extends WebSettings {
   private boolean allowContentAccess = true;
@@ -39,6 +39,7 @@ public class RoboWebSettings extends WebSettings {
   private boolean displayZoomControls;
   private WebSettings.LayoutAlgorithm layoutAlgorithm = WebSettings.LayoutAlgorithm.NARROW_COLUMNS;
   private String defaultTextEncoding = "UTF-8";
+  private int defaultFontSize = 16;
 
   @Override
   public void setAllowContentAccess(boolean allow) {
@@ -396,5 +397,15 @@ public class RoboWebSettings extends WebSettings {
   @Override
   public void setDefaultTextEncodingName(String defaultTextEncoding) {
     this.defaultTextEncoding = defaultTextEncoding;
+  }
+
+  @Override
+  public int getDefaultFontSize() {
+    return defaultFontSize;
+  }
+
+  @Override
+  public void setDefaultFontSize(int defaultFontSize) {
+    this.defaultFontSize = defaultFontSize;
   }
 }

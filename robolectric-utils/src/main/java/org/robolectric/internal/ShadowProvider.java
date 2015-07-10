@@ -1,5 +1,7 @@
 package org.robolectric.internal;
 
+import java.util.Map;
+
 /**
  * Interface implemented by packages that provide shadows to Robolectric.
  */
@@ -16,4 +18,11 @@ public interface ShadowProvider {
    * @return  Array of Java package names.
    */
   String[] getProvidedPackageNames();
+
+  /**
+   * Return the mapping of class name to shadow name.
+   *
+   * @return  Shadow mapping.
+   */
+  Map<String, String> getShadowMap();
 }

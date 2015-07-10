@@ -14,7 +14,7 @@ import static org.robolectric.RuntimeEnvironment.*;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.internal.Shadow.newInstanceOf;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowTelephonyManagerTest {
 
   private TelephonyManager manager;

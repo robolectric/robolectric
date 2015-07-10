@@ -8,9 +8,14 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.graphics.Rect;
 import android.os.Bundle;
+import android.view.Display;
+import android.view.ViewRootImpl;
+
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.ShadowsAdapter;
+import org.robolectric.internal.Shadow;
 import org.robolectric.internal.runtime.RuntimeAdapter;
 import org.robolectric.internal.runtime.RuntimeAdapterFactory;
 import org.robolectric.manifest.AndroidManifest;
@@ -178,6 +183,14 @@ public class ActivityController<T extends Activity> extends ComponentController<
       }
     });
 
+    ViewRootImpl root = component.getWindow().getDecorView().getViewRootImpl();
+    Display display = Shadow.newInstanceOf(Display.class);
+    Rect frame = new Rect();
+    display.getRectSize(frame);
+    Rect insets = new Rect(0, 0, 0, 0);
+    final RuntimeAdapter runtimeAdapter = RuntimeAdapterFactory.getInstance();
+    runtimeAdapter.callViewRootImplDispatchResized(
+        root, frame, insets, insets, insets, insets, insets, true, null);
     return this;
   }
 

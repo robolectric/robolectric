@@ -22,7 +22,7 @@ import static org.junit.Assert.assertTrue;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowHandlerTest {
   private Transcript transcript;
   TestRunnable scratchRunnable = new TestRunnable();
@@ -137,7 +137,7 @@ public class ShadowHandlerTest {
   @Test
   public void testPostDelayedThenRunMainLooperToNextTask_shouldRunOneTask() throws Exception {
     new Handler().postDelayed(scratchRunnable, 1);
-    ShadowHandler.runMainLooperToNextTask();
+    ShadowLooper.runMainLooperToNextTask();
     assertThat(scratchRunnable.wasRun).isTrue();
   }
 
@@ -199,6 +199,33 @@ public class ShadowHandlerTest {
     assertThat(task1.wasRun).isFalse();
     ShadowLooper.runMainLooperOneTask();
     assertThat(task1.wasRun).isTrue();
+  }
+
+  @Test
+  public void testNestedPost_shouldRunLast() throws Exception {
+    ShadowLooper.pauseMainLooper();
+    final List<Integer> order = new ArrayList<>();
+    final Handler h = new Handler();
+    h.post(new Runnable() {
+      @Override
+      public void run() {
+        order.add(1);
+        h.post(new Runnable() {
+          @Override
+          public void run() {
+            order.add(3);
+          }
+        });
+      }
+    });
+    h.post(new Runnable() {
+      @Override
+      public void run() {
+        order.add(2);
+      }
+    });
+    ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+    assertThat(order).containsExactly(1, 2, 3);
   }
 
   @Test
@@ -344,16 +371,17 @@ public class ShadowHandlerTest {
       }
     };
 
+    final long startTime = Robolectric.getForegroundThreadScheduler().getCurrentTime();
     Message msg = handler.obtainMessage(123);
     handler.sendMessageDelayed(msg, 200);
     handler.removeMessages(123);
     Message newMsg = handler.obtainMessage(123);
     assertThat(newMsg).as("new message").isSameAs(msg);
     handler.sendMessageDelayed(newMsg, 400);
-    ShadowLooper.unPauseMainLooper();
+    ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
     // Original implementation had a bug which caused reused messages to still
     // be invoked at their original post time.
-    assertThat(runAt).as("handledAt").containsExactly(400L);
+    assertThat(runAt).as("handledAt").containsExactly(startTime + 400L);
   }
 
   @Test
@@ -465,13 +493,14 @@ public class ShadowHandlerTest {
       }
     });
 
+    final long startTime = Robolectric.getForegroundThreadScheduler().getCurrentTime();
     h.sendEmptyMessage(0);
     h.sendEmptyMessageDelayed(0, 4000l);
     Robolectric.getForegroundThreadScheduler().advanceToLastPostedRunnable();
     h.sendEmptyMessageDelayed(0, 12000l);
     Robolectric.getForegroundThreadScheduler().advanceToLastPostedRunnable();
 
-    assertThat(whens).as("whens").containsExactly(0l, 4000l, 16000l);
+    assertThat(whens).as("whens").containsExactly(startTime, startTime + 4000, startTime + 16000);
   }
 
   @Test

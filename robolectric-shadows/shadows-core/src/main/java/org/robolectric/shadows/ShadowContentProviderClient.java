@@ -15,21 +15,23 @@ import android.os.Bundle;
 import android.os.CancellationSignal;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
+
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
+/**
+ * Shadow for {@link android.content.ContentProviderClient}.
+ */
 @Implements(ContentProviderClient.class)
 public class ShadowContentProviderClient {
-
-  private ContentProvider provider;
   private boolean stable;
+  private boolean released;
+  private ContentProvider provider;
 
-  private boolean released = false;
-
-  public void __constructor__(ContentResolver contentResolver, IContentProvider contentProvider,
-      boolean stable) {
+  public void __constructor__(ContentResolver contentResolver, IContentProvider contentProvider, boolean stable) {
     this.stable = stable;
   }
 
@@ -50,13 +52,13 @@ public class ShadowContentProviderClient {
 
   @Implementation
   public Cursor query(Uri url, String[] projection, String selection, String[] selectionArgs,
-      String sortOrder) throws RemoteException {
+                      String sortOrder) throws RemoteException {
     return provider.query(url, projection, selection, selectionArgs, sortOrder);
   }
 
   @Implementation
   public Cursor query(Uri url, String[] projection, String selection, String[] selectionArgs,
-      String sortOrder, CancellationSignal cancellationSignal) throws RemoteException {
+                      String sortOrder, CancellationSignal cancellationSignal) throws RemoteException {
     return provider.query(url, projection, selection, selectionArgs, sortOrder, cancellationSignal);
   }
 
@@ -96,7 +98,7 @@ public class ShadowContentProviderClient {
 
   @Implementation
   public final AssetFileDescriptor openTypedAssetFileDescriptor(Uri uri,
-      String mimeType, Bundle opts) throws RemoteException, FileNotFoundException {
+                                                                String mimeType, Bundle opts) throws RemoteException, FileNotFoundException {
     return provider.openTypedAssetFile(uri, mimeType, opts);
   }
 

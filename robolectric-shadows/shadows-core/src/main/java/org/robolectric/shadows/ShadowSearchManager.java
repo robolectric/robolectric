@@ -6,6 +6,9 @@ import android.content.ComponentName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
+/**
+ * Shadow for {@link android.app.SearchManager}.
+ */
 @Implements(SearchManager.class)
 public class ShadowSearchManager {
 

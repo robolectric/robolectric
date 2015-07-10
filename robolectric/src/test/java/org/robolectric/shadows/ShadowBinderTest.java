@@ -10,7 +10,7 @@ import org.robolectric.TestRunners;
 import static junit.framework.Assert.assertTrue;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowBinderTest {
   @Test
   public void transactCallsOnTransact() throws Exception {

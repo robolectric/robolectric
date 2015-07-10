@@ -16,6 +16,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Shadow for {@link android.net.ConnectivityManager}.
+ */
 @Implements(ConnectivityManager.class)
 public class ShadowConnectivityManager {
 

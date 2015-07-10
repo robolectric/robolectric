@@ -20,6 +20,9 @@ import android.util.FloatMath;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
+/**
+ * Shadow for {@link android.util.FloatMath}.
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(FloatMath.class)
 public class ShadowFloatMath {

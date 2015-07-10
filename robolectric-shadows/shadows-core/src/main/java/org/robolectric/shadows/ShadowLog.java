@@ -13,6 +13,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Shadow for {@link android.util.Log}.
+ */
 @Implements(Log.class)
 public class ShadowLog {
   private static final int extraLogLength = "l/: \n".length();

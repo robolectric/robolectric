@@ -7,9 +7,11 @@ import android.os.RemoteException;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
+/**
+ * Shadow for {@link android.os.Messenger}.
+ */
 @Implements(Messenger.class)
 public class ShadowMessenger {
-
   private Handler handler;
 
   public void __constructor__(Handler handler) {

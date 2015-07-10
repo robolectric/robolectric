@@ -1,0 +1,7 @@
+/**
+ * Shadows for the Google Play Services Library.
+ *
+ * <p>To use this in your project, add the artifact {@code org.robolectric:shadows-play-services}
+ * to your project.</p>
+ */
+package org.robolectric.shadows.gms;

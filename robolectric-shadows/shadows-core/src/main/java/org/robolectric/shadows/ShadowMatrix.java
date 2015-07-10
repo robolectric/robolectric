@@ -14,6 +14,9 @@ import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
+/**
+ * Shadow for {@link android.graphics.Matrix}.
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Matrix.class)
 public class ShadowMatrix {
@@ -88,7 +91,7 @@ public class ShadowMatrix {
 
   @Implementation
   public void setScale(float sx, float sy, float px, float py) {
-    setOps.put(SCALE, sx + " " + sy + " " + py + " " + py);
+    setOps.put(SCALE, sx + " " + sy + " " + px + " " + py);
   }
 
   @Implementation

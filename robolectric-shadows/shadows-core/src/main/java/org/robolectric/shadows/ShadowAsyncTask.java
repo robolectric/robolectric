@@ -13,6 +13,9 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+/**
+ * Shadow for {@link android.os.AsyncTask}.
+ */
 @Implements(AsyncTask.class)
 public class ShadowAsyncTask<Params, Progress, Result> {
 

@@ -8,6 +8,7 @@ import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.os.Build;
 import android.util.DisplayMetrics;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,7 +18,7 @@ import org.robolectric.internal.Shadow;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowBitmapTest {
   @Test
   public void shouldCreateScaledBitmap() throws Exception {
@@ -70,6 +71,11 @@ public class ShadowBitmapTest {
   }
 
   @Test
+  @org.robolectric.annotation.Config(sdk = {
+      Build.VERSION_CODES.JELLY_BEAN_MR1,
+      Build.VERSION_CODES.JELLY_BEAN_MR2,
+      Build.VERSION_CODES.KITKAT,
+      Build.VERSION_CODES.LOLLIPOP })
   public void shouldCreateMutableBitmapWithDisplayMetrics() throws Exception {
     final DisplayMetrics metrics = new DisplayMetrics();
     metrics.densityDpi = 1000;
@@ -148,6 +154,11 @@ public class ShadowBitmapTest {
   }
 
   @Test(expected = NullPointerException.class)
+  @org.robolectric.annotation.Config(sdk = {
+      Build.VERSION_CODES.JELLY_BEAN_MR1,
+      Build.VERSION_CODES.JELLY_BEAN_MR2,
+      Build.VERSION_CODES.KITKAT,
+      Build.VERSION_CODES.LOLLIPOP })
   public void byteCountIsAccurate() {
     Bitmap b1 = Bitmap.createBitmap(10, 10, Config.ARGB_8888);
     assertThat(b1.getByteCount()).isEqualTo(400);
@@ -160,6 +171,11 @@ public class ShadowBitmapTest {
   }
 
   @Test
+  @org.robolectric.annotation.Config(sdk = {
+      Build.VERSION_CODES.JELLY_BEAN_MR1,
+      Build.VERSION_CODES.JELLY_BEAN_MR2,
+      Build.VERSION_CODES.KITKAT,
+      Build.VERSION_CODES.LOLLIPOP })
   public void shouldSetDensity() {
     final Bitmap bitmap = Bitmap.createBitmap(new DisplayMetrics(), 100, 100, Config.ARGB_8888);
     bitmap.setDensity(1000);

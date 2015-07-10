@@ -9,7 +9,7 @@ import org.robolectric.TestRunners;
 
 import static org.junit.Assert.assertEquals;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowResultReceiverTest {
   @Test
   public void callingSend_shouldCallOverridenOnReceiveResultWithTheSameArguments() throws Exception {

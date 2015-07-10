@@ -8,6 +8,9 @@ import android.database.DataSetObserver;
 import android.net.Uri;
 import android.os.Bundle;
 
+/**
+ * Robolectric implementation of {@link android.database.Cursor}.
+ */
 public class BaseCursor implements Cursor {
   @Override
   public int getCount() {

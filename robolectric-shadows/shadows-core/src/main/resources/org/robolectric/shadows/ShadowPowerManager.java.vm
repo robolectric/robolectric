@@ -12,7 +12,7 @@ import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowApplication.getInstance;
 
 /**
- * Shadows the {@code android.os.PowerManager} class.
+ * Shadow for {@link android.os.PowerManager}.
  */
 @Implements(PowerManager.class)
 public class ShadowPowerManager {

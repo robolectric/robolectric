@@ -13,6 +13,9 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
+/**
+ * Shadow for {@link android.app.Service}.
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Service.class)
 public class ShadowService extends ShadowContextWrapper {

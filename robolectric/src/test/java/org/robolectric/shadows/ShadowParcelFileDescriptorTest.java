@@ -12,23 +12,46 @@ import java.io.FileOutputStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowParcelFileDescriptorTest {
   private File file;
+  private File readOnlyFile;
 
   @Before
   public void setup() throws Exception {
     file = new File(RuntimeEnvironment.application.getFilesDir(), "test");
     FileOutputStream os = new FileOutputStream(file);
     os.close();
+    readOnlyFile = new File(RuntimeEnvironment.application.getFilesDir(), "test_readonly");
+    os = new FileOutputStream(readOnlyFile);
+    os.close();
+    readOnlyFile.setReadOnly();
   }
 
   @Test
   public void testOpens() throws Exception {
-    ParcelFileDescriptor pfd = ParcelFileDescriptor.open(file, -1);
+    ParcelFileDescriptor pfd = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_WRITE);
     assertThat(pfd).isNotNull();
     assertThat(pfd.getFileDescriptor().valid()).isTrue();
     pfd.close();
+  }
+
+  @Test
+  public void testOpens_readOnlyFile() throws Exception {
+    ParcelFileDescriptor pfd = ParcelFileDescriptor.open(readOnlyFile, ParcelFileDescriptor.MODE_READ_ONLY);
+    assertThat(pfd).isNotNull();
+    assertThat(pfd.getFileDescriptor().valid()).isTrue();
+    pfd.close();
+  }
+
+  @Test
+  public void testOpens_canWriteWritableFile() throws Exception {
+    ParcelFileDescriptor pfd = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_WRITE);
+    assertThat(pfd).isNotNull();
+    assertThat(pfd.getFileDescriptor().valid()).isTrue();
+    FileOutputStream os = new FileOutputStream(pfd.getFileDescriptor());
+    os.write(5);
+    os.close();
   }
 
   @Test

@@ -47,13 +47,26 @@ public class ResName {
   public static @NotNull ResName qualifyResName(@NotNull String possiblyQualifiedResourceName, String defaultPackageName, String defaultType) {
     int indexOfColon = possiblyQualifiedResourceName.indexOf(':');
     int indexOfSlash = possiblyQualifiedResourceName.indexOf('/');
-    String packageName = indexOfColon == -1 ? null : possiblyQualifiedResourceName.substring(0, indexOfColon);
-    String type = indexOfSlash == -1 ? null : possiblyQualifiedResourceName.substring(indexOfColon == -1 ? 0 : indexOfColon + 1, indexOfSlash);
-    int indexBeforeName = indexOfColon > indexOfSlash ? indexOfColon : indexOfSlash;
+    String type = null;
+    String packageName = null;
+    String name = possiblyQualifiedResourceName;
+    if (indexOfColon > indexOfSlash) {
+      if (indexOfSlash > 0) {
+        type = possiblyQualifiedResourceName.substring(0, indexOfSlash);
+      }
+      packageName = possiblyQualifiedResourceName.substring(indexOfSlash + 1, indexOfColon);
+      name =  possiblyQualifiedResourceName.substring(indexOfColon + 1);
+    } else if (indexOfSlash > indexOfColon) {
+      if (indexOfColon > 0) {
+        packageName = possiblyQualifiedResourceName.substring(0, indexOfColon);
+      }
+      type = possiblyQualifiedResourceName.substring(indexOfColon + 1, indexOfSlash);
+      name = possiblyQualifiedResourceName.substring(indexOfSlash + 1);
+    }
 
     return new ResName(packageName == null ? defaultPackageName : packageName,
         type == null ? defaultType : type,
-        possiblyQualifiedResourceName.substring(indexBeforeName + 1));
+        name);
   }
 
   public static Integer getResourceId(ResourceIndex resourceIndex, String possiblyQualifiedResourceName, String contextPackageName) {

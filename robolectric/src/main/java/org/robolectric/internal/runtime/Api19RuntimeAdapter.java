@@ -7,7 +7,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
+import android.graphics.Rect;
 import android.os.IBinder;
+import android.view.ViewRootImpl;
+
 import org.robolectric.internal.fakes.RoboInstrumentation;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
@@ -30,5 +33,18 @@ public class Api19RuntimeAdapter implements RuntimeAdapter {
         ClassParameter.from(String.class, "id"),
         ClassParameter.from(nonConfigurationInstancesClass, null),
         ClassParameter.from(Configuration.class, application.getResources().getConfiguration()));
+  }
+
+  @Override
+  public void callViewRootImplDispatchResized(Object component, Rect frame, Rect overscanInsets,
+      Rect contentInsets, Rect visibleInsets, Rect stableInsets, Rect outsets, boolean reportDraw,
+      Configuration newConfig) {
+    ReflectionHelpers.callInstanceMethod(ViewRootImpl.class, component, "dispatchResized",
+        ClassParameter.from(Rect.class, frame),
+        ClassParameter.from(Rect.class, overscanInsets),
+        ClassParameter.from(Rect.class, contentInsets),
+        ClassParameter.from(Rect.class, visibleInsets),
+        ClassParameter.from(boolean.class, reportDraw),
+        ClassParameter.from(Configuration.class, newConfig));
   }
 }

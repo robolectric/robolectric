@@ -18,9 +18,8 @@ import static org.robolectric.internal.Shadow.*;
 import static org.robolectric.util.ReflectionHelpers.*;
 
 /**
- * Shadow for Message that removes the message from its corresponding scheduler.
+ * Shadow for {@link android.os.Message}.
  */
-@Generated("org.robolectric.shadows.ShadowMessage.java.vm")
 @Implements(Message.class)
 public class ShadowMessage {
   @RealObject

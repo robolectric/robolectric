@@ -1,5 +1,16 @@
 package org.robolectric.shadows;
 
+import static android.content.pm.PackageManager.PERMISSION_DENIED;
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.robolectric.Shadows.shadowOf;
+
 import android.app.Activity;
 import android.app.Application;
 import android.content.ActivityNotFoundException;
@@ -11,18 +22,25 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.res.Resources;
-import org.robolectric.fakes.RoboSensorManager;
+import android.os.Build;
 import android.os.IBinder;
 import android.os.IInterface;
 import android.os.Parcel;
 import android.os.RemoteException;
+import android.os.UserManager;
 import android.print.PrintManager;
 import android.view.accessibility.AccessibilityManager;
-import android.os.UserManager;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.*;
+import org.robolectric.DefaultTestLifecycle;
+import org.robolectric.R;
+import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.Shadows;
+import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
+import org.robolectric.fakes.RoboSensorManager;
 import org.robolectric.fakes.RoboVibrator;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.EmptyResourceLoader;
@@ -41,19 +59,7 @@ import java.io.FileDescriptor;
 import java.io.IOException;
 import java.util.List;
 
-import static android.content.pm.PackageManager.PERMISSION_DENIED;
-import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.robolectric.Shadows.shadowOf;
-
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowApplicationTest {
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
@@ -115,10 +121,24 @@ public class ShadowApplicationTest {
     checkSystemService(Context.DEVICE_POLICY_SERVICE, android.app.admin.DevicePolicyManager.class);
     checkSystemService(Context.DROPBOX_SERVICE, android.os.DropBoxManager.class);
     checkSystemService(Context.MEDIA_ROUTER_SERVICE, android.media.MediaRouter.class);
-    checkSystemService(Context.DISPLAY_SERVICE, android.hardware.display.DisplayManager.class);
     checkSystemService(Context.ACCESSIBILITY_SERVICE, android.view.accessibility.AccessibilityManager.class);
-    checkSystemService(Context.PRINT_SERVICE, PrintManager.class);
+  }
+
+  @Test
+  @Config(sdk = {
+      Build.VERSION_CODES.KITKAT,
+      Build.VERSION_CODES.LOLLIPOP })
+  public void shouldProvideServicesIntroducedInJellyBeanMr1() throws Exception {
+    checkSystemService(Context.DISPLAY_SERVICE, android.hardware.display.DisplayManager.class);
     checkSystemService(Context.USER_SERVICE, UserManager.class);
+  }
+
+  @Test
+  @Config(sdk = {
+      Build.VERSION_CODES.KITKAT,
+      Build.VERSION_CODES.LOLLIPOP })
+  public void shouldProvideServicesIntroducedInKitKat() throws Exception {
+    checkSystemService(Context.PRINT_SERVICE, PrintManager.class);
   }
 
   @Test public void shouldProvideLayoutInflater() throws Exception {
@@ -126,12 +146,23 @@ public class ShadowApplicationTest {
     assertThat(systemService).isInstanceOf(RoboLayoutInflater.class);
   }
 
-  @Test public void shouldCorrectlyInstantiatedAccessibilityService() throws Exception {
+  @Test
+  @Config(sdk = {
+      Build.VERSION_CODES.KITKAT,
+      Build.VERSION_CODES.LOLLIPOP })
+  public void shouldCorrectlyInstantiatedAccessibilityService() throws Exception {
     AccessibilityManager accessibilityManager = (AccessibilityManager) RuntimeEnvironment.application.getSystemService(Context.ACCESSIBILITY_SERVICE);
 
-    AccessibilityManager.TouchExplorationStateChangeListener mockListener = mock(AccessibilityManager.TouchExplorationStateChangeListener.class);
-    assertThat(accessibilityManager.addTouchExplorationStateChangeListener(mockListener)).isTrue();
-    assertThat(accessibilityManager.removeTouchExplorationStateChangeListener(mockListener)).isTrue();
+    AccessibilityManager.TouchExplorationStateChangeListener listener = createTouchListener();
+    assertThat(accessibilityManager.addTouchExplorationStateChangeListener(listener)).isTrue();
+    assertThat(accessibilityManager.removeTouchExplorationStateChangeListener(listener)).isTrue();
+  }
+
+  private static AccessibilityManager.TouchExplorationStateChangeListener createTouchListener() {
+    return new AccessibilityManager.TouchExplorationStateChangeListener() {
+      @Override
+      public void onTouchExplorationStateChanged(boolean enabled) { }
+    };
   }
 
   private void checkSystemService(String name, Class expectedClass) {
@@ -365,10 +396,13 @@ public class ShadowApplicationTest {
     assertThat(startedComponent.getClassName()).isEqualTo("package.test.TestClass");
 
     Intent stopServiceIntent = new Intent().setComponent(startedComponent);
+    stopServiceIntent.putExtra("someExtra", "someValue");
     boolean wasRunning = activity.stopService(stopServiceIntent);
 
     assertTrue(wasRunning);
-    assertThat(shadowApplication.getNextStoppedService()).isEqualTo(startServiceIntent);
+    final Intent nextStoppedService = shadowApplication.getNextStoppedService();
+    assertThat(nextStoppedService.filterEquals(startServiceIntent)).isTrue();
+    assertThat(nextStoppedService.getStringExtra("someExtra")).isEqualTo("someValue");
   }
 
   @Test

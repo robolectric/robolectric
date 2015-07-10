@@ -5,6 +5,9 @@ import android.view.InputEvent;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
+/**
+ * Shadow for {@link android.view.InputEvent}.
+ */
 @Implements(InputEvent.class)
 public class ShadowInputEvent {
   protected InputDevice device;

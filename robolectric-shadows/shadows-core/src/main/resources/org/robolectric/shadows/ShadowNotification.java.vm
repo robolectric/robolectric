@@ -16,6 +16,9 @@ import java.util.ArrayList;
 
 import static org.robolectric.internal.Shadow.directlyOn;
 
+/**
+ * Shadow for {@link android.app.Notification}.
+ */
 @Implements(Notification.class)
 public class ShadowNotification {
 #if ($api >= 18)

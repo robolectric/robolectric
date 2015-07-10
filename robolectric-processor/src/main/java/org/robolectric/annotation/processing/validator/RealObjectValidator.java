@@ -14,6 +14,9 @@ import javax.lang.model.type.TypeVisitor;
 import javax.lang.model.util.SimpleTypeVisitor6;
 import javax.tools.Diagnostic.Kind;
 
+/**
+ * Validator that checks usages of {@link org.robolectric.annotation.RealObject}.
+ */
 public class RealObjectValidator extends FoundOnImplementsValidator {
 
   public RealObjectValidator(RobolectricModel model, ProcessingEnvironment env) {

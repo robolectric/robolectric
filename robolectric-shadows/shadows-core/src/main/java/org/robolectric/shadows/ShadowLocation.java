@@ -8,8 +8,7 @@ import org.robolectric.annotation.HiddenApi;
 import org.robolectric.internal.ShadowExtractor;
 
 /**
- * Shadow of {@code Location} that treats it primarily as a data-holder
- * todo: support Location's static utility methods
+ * Shadow for {@link android.location.Location}.
  */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Location.class)

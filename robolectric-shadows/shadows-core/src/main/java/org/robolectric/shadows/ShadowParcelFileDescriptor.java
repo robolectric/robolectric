@@ -12,6 +12,9 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.lang.reflect.Constructor;
 
+/**
+ * Shadow for {@link android.os.ParcelFileDescriptor}.
+ */
 @Implements(ParcelFileDescriptor.class)
 public class ShadowParcelFileDescriptor {
   private RandomAccessFile file;
@@ -25,7 +28,7 @@ public class ShadowParcelFileDescriptor {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-    Shadows.shadowOf(pfd).file = new RandomAccessFile(file, "rw");
+    Shadows.shadowOf(pfd).file = new RandomAccessFile(file, mode == ParcelFileDescriptor.MODE_READ_ONLY ? "r" : "rw");
     return pfd;
   }
 

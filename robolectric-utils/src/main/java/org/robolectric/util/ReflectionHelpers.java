@@ -254,6 +254,10 @@ public class ReflectionHelpers {
 
   /**
    * Create a new instance of a class
+   *
+   * @param cl The class object.
+   * @param <T> The class type.
+   * @return New class instance.
    */
   public static <T> T newInstance(Class<T> cl) {
     try {
@@ -319,10 +323,15 @@ public class ReflectionHelpers {
     modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
   }
 
-  private static interface InsideTraversal<R> {
-    public R run(Class<?> traversalClass) throws Exception;
+  private interface InsideTraversal<R> {
+    R run(Class<?> traversalClass) throws Exception;
   }
 
+  /**
+   * Typed parameter used with reflective method calls.
+   *
+   * @param <V> The value of the method parameter.
+   */
   public static class ClassParameter<V> {
     public final Class<? extends V> clazz;
     public final V val;
@@ -363,6 +372,11 @@ public class ReflectionHelpers {
     }
   }
 
+  /**
+   * String parameter used with reflective method calls.
+   *
+   * @param <V> The value of the method parameter.
+   */
   public static class StringParameter<V> {
     public final String className;
     public final V val;

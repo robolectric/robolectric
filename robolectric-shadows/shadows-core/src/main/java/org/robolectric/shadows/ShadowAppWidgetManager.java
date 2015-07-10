@@ -22,6 +22,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Shadow for {@link android.appwidget.AppWidgetManager}.
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AppWidgetManager.class)
 public class ShadowAppWidgetManager {

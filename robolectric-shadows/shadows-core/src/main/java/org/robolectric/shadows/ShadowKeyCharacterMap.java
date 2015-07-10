@@ -5,6 +5,9 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;
 
+/**
+ * Shadow for {@link android.view.KeyCharacterMap}.
+ */
 @Implements(KeyCharacterMap.class)
 public class ShadowKeyCharacterMap {
   @Implementation

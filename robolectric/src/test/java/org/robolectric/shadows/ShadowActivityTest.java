@@ -18,13 +18,16 @@ import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.Display;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewRootImpl;
 import android.view.Window;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -559,6 +562,21 @@ public class ShadowActivityTest {
     TestActivity activity = new TestActivity();
     activity.setVolumeControlStream(AudioManager.STREAM_ALARM);
     assertThat(activity.getVolumeControlStream()).isEqualTo(AudioManager.STREAM_ALARM);
+  }
+
+  @Test
+  public void decorViewSizeEqualToDisplaySize() {
+    Activity activity = buildActivity(Activity.class).create().visible().get();
+    View decorView = activity.getWindow().getDecorView();
+    assertThat(decorView).isNotEqualTo(null);
+    ViewRootImpl root = decorView.getViewRootImpl();
+    assertThat(root).isNotEqualTo(null);
+    assertThat(decorView.getWidth()).isNotEqualTo(0);
+    assertThat(decorView.getHeight()).isNotEqualTo(0);
+    Display display = Shadow.newInstanceOf(Display.class);
+    ShadowDisplay shadowDisplay = Shadows.shadowOf(display);
+    assertThat(decorView.getWidth()).isEqualTo(shadowDisplay.getWidth());
+    assertThat(decorView.getHeight()).isEqualTo(shadowDisplay.getHeight());
   }
 
   private static class TestActivity extends Activity {

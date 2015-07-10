@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowMatrixTest {
   @Test
   public void preOperationsAreStacked() {
@@ -64,6 +64,15 @@ public class ShadowMatrixTest {
     assertThat(shadow.getSetOperations().get("scale")).isEqualTo("1.0 1.0");
     assertThat(shadow.getPreOperations().get(0)).isEqualTo("scale 2.0 2.0 2.0 2.0");
     assertThat(shadow.getPostOperations().get(0)).isEqualTo("scale 3.0 3.0 3.0 3.0");
+  }
+
+  @Test
+  public void setScale_shouldAddOpsToMatrix() {
+    final Matrix matrix = new Matrix();
+    matrix.setScale(1, 2, 3, 4);
+
+    final ShadowMatrix shadow = shadowOf(matrix);
+    assertThat(shadow.getSetOperations().get("scale")).isEqualTo("1.0 2.0 3.0 4.0");
   }
 
   @Test

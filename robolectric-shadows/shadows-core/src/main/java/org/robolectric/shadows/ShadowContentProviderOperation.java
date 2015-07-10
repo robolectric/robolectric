@@ -11,11 +11,10 @@ import org.robolectric.util.ReflectionHelpers;
 import java.util.Map;
 
 /**
- * Shadow for {@link ContentProviderOperation}. Gives access to operation internal properties.
+ * Shadow for {@link android.content.ContentProviderOperation}.
  */
 @Implements(ContentProviderOperation.class)
 public class ShadowContentProviderOperation {
-
   public final static int TYPE_INSERT = 1;
   public final static int TYPE_UPDATE = 2;
   public final static int TYPE_DELETE = 3;

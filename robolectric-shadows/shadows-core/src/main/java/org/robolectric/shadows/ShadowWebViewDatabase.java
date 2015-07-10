@@ -6,6 +6,9 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.internal.Shadow;
 
+/**
+ * Shadow for {@link android.webkit.WebViewDatabase}.
+ */
 @Implements(value = WebViewDatabase.class, callThroughByDefault = false)
 public class ShadowWebViewDatabase {
 

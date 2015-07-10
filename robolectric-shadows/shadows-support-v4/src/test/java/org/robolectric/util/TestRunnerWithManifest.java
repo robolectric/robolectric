@@ -27,7 +27,7 @@ public class TestRunnerWithManifest extends RobolectricTestRunner {
   }
 
   @Override
-  protected AndroidManifest createAppManifest(FsFile manifestFile, FsFile resDir, FsFile assetsDir) {
+  protected AndroidManifest createAppManifest(FsFile manifestFile, FsFile resDir, FsFile assetsDir, String packageName) {
     return new AndroidManifest(resourceFile("AndroidManifest.xml"), resourceFile("res"), resourceFile("assets"));
   }
 }

@@ -11,7 +11,7 @@ import java.io.File;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowStatFsTest {
   @Test
   public void shouldRegisterStats() throws Exception {

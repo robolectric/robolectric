@@ -10,14 +10,14 @@ import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import java.io.PrintStream;
 
 import static org.robolectric.internal.Shadow.directlyOn;
 
 /**
- * Shadow for {@code ViewGroup} that simulates its implementation
+ * Shadow for {@link android.view.ViewGroup}.
  */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ViewGroup.class)
@@ -33,17 +33,17 @@ public class ShadowViewGroup extends ShadowView {
   public void addView(final View child, final int index, final ViewGroup.LayoutParams params) {
     Shadows.shadowOf(Looper.getMainLooper()).runPaused(new Runnable() {
       @Override public void run() {
-        directlyOn(realViewGroup, ViewGroup.class, "addView", new ReflectionHelpers.ClassParameter(View.class, child),
-            new ReflectionHelpers.ClassParameter(int.class, index), new ReflectionHelpers.ClassParameter(ViewGroup.LayoutParams.class, params));
+        directlyOn(realViewGroup, ViewGroup.class, "addView",
+            ClassParameter.from(View.class, child),
+            ClassParameter.from(int.class, index),
+            ClassParameter.from(ViewGroup.LayoutParams.class, params));
       }
     });
   }
 
   /**
-   * Returns a string representation of this {@code ViewGroup} by concatenating all of the strings contained in all
-   * of the descendants of this {@code ViewGroup}.
-   * <p>
-   * Robolectric extension.
+   * Returns a string representation of this {@code ViewGroup} by concatenating all of the
+   * strings contained in all of the descendants of this {@code ViewGroup}.
    */
   @Override
   public String innerText() {
@@ -126,7 +126,9 @@ public class ShadowViewGroup extends ShadowView {
     return false;
   }
 
-  // todo: remove?
+  /**
+   * Shadow for {@link android.view.ViewGroup.LayoutParams}.
+   */
   @SuppressWarnings({"UnusedDeclaration"})
   @Implements(ViewGroup.LayoutParams.class)
   public static class ShadowLayoutParams {
@@ -142,9 +144,8 @@ public class ShadowViewGroup extends ShadowView {
     }
   }
 
-  // todo: remove?
   /**
-   * Shadow for {@link android.view.ViewGroup.MarginLayoutParams} that simulates its implementation.
+   * Shadow for {@link android.view.ViewGroup.MarginLayoutParams}.
    */
   @SuppressWarnings("UnusedDeclaration")
   @Implements(ViewGroup.MarginLayoutParams.class)

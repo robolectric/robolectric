@@ -11,8 +11,7 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 /**
- * Shadow of {@code Settings} that allows the status of various System and Secure settings to be simulated, changed and
- * queried.
+ * Shadow for {@link android.provider.Settings}.
  */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Settings.class)

@@ -10,6 +10,9 @@ import org.robolectric.util.Join;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Shadow for {@link android.graphics.ColorMatrix}.
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ColorMatrix.class)
 public class ShadowColorMatrix {

@@ -9,39 +9,35 @@ Robolectric is a testing framework that de-fangs the Android SDK so you can test
 Here's an example of a simple test written using Robolectric:
 
 ```java
-@RunWith(RobolectricTestRunner.class)
+@RunWith(RobolectricGradleTestRunner.class)
+@Config(constants = BuildConfig.class)
 public class MyActivityTest {
 
   @Test
   public void clickingButton_shouldChangeResultsViewText() throws Exception {
     Activity activity = Robolectric.setupActivity(MyActivity.class);
 
-    Button pressMeButton = (Button) activity.findViewById(R.id.press_me_button);
+    Button button = (Button) activity.findViewById(R.id.press_me_button);
     TextView results = (TextView) activity.findViewById(R.id.results_text_view);
 
-    pressMeButton.performClick();
-    String resultsText = results.getText().toString();
-    assertThat(resultsText, equalTo("Testing Android Rocks!"));
+    button.performClick();
+    assertThat(results.getText().toString(), equalTo("Testing Android Rocks!"));
   }
 }
 ```
 
-For more information about how to install and use Robolectric on your project, extend its functionality, and join the community of
-contributors, please visit
-[http://robolectric.org](http://robolectric.org).
+For more information about how to install and use Robolectric on your project, extend its functionality, and join the community of contributors, please visit [http://robolectric.org](http://robolectric.org).
 
 ## Install
 
 ### Starting a New Project
 
-If you'd like to start a new project with Robolectric you can use deckard (for either [maven](http://github.com/robolectric/deckard-maven)
-or [gradle](http://github.com/robolectric/deckard-gradle)). These project will guide you through setting
-up both Android and Robolectric on your machine.
+If you'd like to start a new project with Robolectric you can use deckard (for either [maven](http://github.com/robolectric/deckard-maven) or [gradle](http://github.com/robolectric/deckard-gradle)). These project will guide you through setting up both Android and Robolectric on your machine.
 
 ### Gradle
 
 ```groovy
-testCompile "org.robolectric:robolectric:2.4"
+testCompile "org.robolectric:robolectric:3.0"
 ```
 
 ### Maven
@@ -50,28 +46,10 @@ testCompile "org.robolectric:robolectric:2.4"
 <dependency>
    <groupId>org.robolectric</groupId>
    <artifactId>robolectric</artifactId>
-   <version>2.4</version>
+   <version>3.0</version>
    <scope>test</scope>
 </dependency>
 ```
-
-Robolectric requires the Google APIs for Android (specifically, the maps JAR) and Android support-v4 library. To download this onto your development machine use the Android SDK tools and then run the following to install them to your local Maven repository (you will need to have the 'Android Support Repository' installed):
-
-```
-mvn install:install-file -DgroupId=com.google.android.maps \
-  -DartifactId=maps \
-  -Dversion=18_r3 \
-  -Dpackaging=jar \
-  -Dfile="$ANDROID_HOME/add-ons/addon-google_apis-google-18/libs/maps.jar"
-
-mvn install:install-file -DgroupId=com.android.support \
-  -DartifactId=support-v4 \
-  -Dversion=19.0.1 \
-  -Dpackaging=jar \
-  -Dfile="$ANDROID_HOME/extras/android/m2repository/com/android/support/support-v4/19.0.1/support-v4-19.0.1.jar"
-```
-
-You will need to either replace or have `ANDROID_HOME` set to your local Android SDK for Maven to be able to install the jar.
 
 ## Building And Contributing
 
@@ -101,7 +79,7 @@ repositories {
 }
 
 dependencies {
-    testCompile "org.robolectric:robolectric:3.0-SNAPSHOT"
+    testCompile "org.robolectric:robolectric:3.1-SNAPSHOT"
 }
 ```
 
@@ -116,7 +94,7 @@ dependencies {
 <dependency>
    <groupId>org.robolectric</groupId>
    <artifactId>robolectric</artifactId>
-   <version>3.0-SNAPSHOT</version>
+   <version>3.1-SNAPSHOT</version>
    <scope>test</scope>
 </dependency>
 ```

@@ -13,6 +13,9 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+/**
+ * Shadow for {@link android.bluetooth.BluetoothAdapter}.
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(BluetoothAdapter.class)
 public class ShadowBluetoothAdapter {

@@ -46,6 +46,9 @@ import com.android.internal.app.IVoiceInteractor;
 
 import java.util.List;
 
+/**
+ * Robolectric implementation of {@link android.app.ActivityManager}.
+ */
 public class RobolectricActivityManager implements IActivityManager {
 
 #if ($api >= 15 && $api < 17)

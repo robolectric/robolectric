@@ -21,6 +21,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.List;
 
+/**
+ * Shadow for {@link android.view.accessibility.AccessibilityManager}.
+ */
 @Implements(AccessibilityManager.class)
 public class ShadowAccessibilityManager {
 

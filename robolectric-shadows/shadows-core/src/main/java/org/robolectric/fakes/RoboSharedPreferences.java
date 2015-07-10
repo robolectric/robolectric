@@ -9,8 +9,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Robolectric implementation of {@link android.content.SharedPreferences}.
+ */
 public class RoboSharedPreferences implements SharedPreferences {
-
   public Map<String, Map<String, Object>> content;
   protected String filename;
   public int mode;

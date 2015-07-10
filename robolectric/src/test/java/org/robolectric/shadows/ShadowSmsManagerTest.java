@@ -1,17 +1,24 @@
 package org.robolectric.shadows;
 
 import android.app.PendingIntent;
+import android.os.Build;
 import android.telephony.SmsManager;
 import com.google.android.collect.Lists;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
+@Config(sdk = {
+    Build.VERSION_CODES.JELLY_BEAN_MR2,
+    Build.VERSION_CODES.KITKAT,
+    Build.VERSION_CODES.LOLLIPOP })
+
 public class ShadowSmsManagerTest {
   private SmsManager smsManager = SmsManager.getDefault();
   private final String scAddress = "serviceCenterAddress";

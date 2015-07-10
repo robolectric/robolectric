@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.robolectric</groupId>
     <artifactId>robolectric-shadows</artifactId>
-    <version>3.0-SNAPSHOT</version>
+    <version>3.1-SNAPSHOT</version>
   </parent>
 
   <artifactId>shadows-multidex</artifactId>
@@ -57,7 +57,7 @@
             <sourceDirectory>target/generated-shadows</sourceDirectory>
           </additionalSourceDirectories>
           <outputDirectory>target/generated-sources</outputDirectory>
-          <compilerArguments>-source ${maven.compiler.source} -target ${maven.compiler.target} -Aorg.robolectric.annotation.processing.shadowPackage=org.robolectric.multidex</compilerArguments>
+          <compilerArguments>-source ${maven.compiler.source} -target ${maven.compiler.target} -Aorg.robolectric.annotation.processing.shadowPackage=org.robolectric.shadows.multidex</compilerArguments>
         </configuration>
         <executions>
           <execution>
