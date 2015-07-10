@@ -51,10 +51,6 @@ public class ShadowLooperTest {
       super(testName.getMethodName());
     }
     
-//    public QuitThread(String name) {
-//      super(name);
-//    }
-    
     @Override
     public void run() {
       Looper.prepare();
@@ -183,22 +179,6 @@ public class ShadowLooperTest {
     assertThat(test.hasContinued).as("afterJoin").isTrue();
   }
 
-//  @Test
-//  public void threadShouldContinue_whenLooperResets() throws InterruptedException {
-//    QuitThread test = new QuitThread();
-//    test.start();
-//    synchronized(test) {
-//      // Set a timeout as a defense against unforseen failure that prevents
-//      // notify() getting called
-//      test.wait(5000);
-//    }
-//    assertThat(test.looper).isNotNull();
-//    assertThat(test.hasContinued).isFalse();
-//    test.sLooper.reset();
-//    test.join(5000);
-//    assertThat(test.hasContinued).isTrue();
-//  }
-//
   @Test
   public void shouldResetQueue_whenLooperIsReset() {
     HandlerThread ht = getHandlerThread();
@@ -226,7 +206,7 @@ public class ShadowLooperTest {
     assertThat(test.hasContinued).isTrue();
   }
  
-  @Ignore("Not yet implemented") 
+  @Ignore("Not yet implemented (ref #1407)") 
   @Test(timeout = 1000)
   public void whenTestHarnessUsesDifferentThread_shouldStillHaveMainLooper() {
     assertThat(Looper.myLooper()).isNotNull();
@@ -250,7 +230,8 @@ public class ShadowLooperTest {
     assertThat(ex.get()).isInstanceOf(IllegalStateException.class);
   }
   
-  @Test public void soStaticRefsToLoopersInAppWorksAcrossTests_shouldRetainSameLooperForMainThreadBetweenResetsButGiveItAFreshScheduler() throws Exception {
+  @Test
+  public void soStaticRefsToLoopersInAppWorksAcrossTests_shouldRetainSameLooperForMainThreadBetweenResetsButGiveItAFreshScheduler() throws Exception {
     Looper mainLooper = Looper.getMainLooper();
     Scheduler scheduler = shadowOf(mainLooper).getScheduler();
     shadowOf(mainLooper).quit = true;
