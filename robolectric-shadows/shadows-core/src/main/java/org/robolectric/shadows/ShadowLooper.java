@@ -2,6 +2,10 @@ package org.robolectric.shadows;
 
 import android.os.Looper;
 
+import java.util.Collections;
+import java.util.Map;
+import java.util.WeakHashMap;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -9,9 +13,9 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
-import org.robolectric.util.SoftThreadLocal;
 
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.internal.Shadow.*;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 /**
@@ -24,65 +28,56 @@ import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 @Implements(Looper.class)
 public class ShadowLooper {
   private static final Thread MAIN_THREAD = Thread.currentThread();
-  private static SoftThreadLocal<Looper> looperForThread = makeThreadLocalLoopers();
+  // Replaced SoftThreadLocal with a WeakHashMap, because ThreadLocal make it impossible to access their contents from other
+  // threads, but we need to be able to access the loopers for all threads so that we can shut them down when resetThreadLoopers()
+  // is called. This also allows us to implement the useful getLooperForThread() method.
+  private static Map<Thread, Looper> loopingLoopers = Collections.synchronizedMap(new WeakHashMap<Thread, Looper>());
+
   private Scheduler scheduler = new Scheduler();
-  private Thread myThread = Thread.currentThread();
   private @RealObject Looper realObject;
 
   boolean quit;
 
-  private static SoftThreadLocal<Looper> makeThreadLocalLoopers() {
-    return new SoftThreadLocal<Looper>() {
-      @Override protected Looper create() {
-        return createLooper();
-      }
-    };
-  }
-
-  private static Looper createLooper() {
-    return ReflectionHelpers.callConstructor(Looper.class, from(boolean.class, Thread.currentThread() != MAIN_THREAD));
-  }
-
   @Resetter
   public static synchronized void resetThreadLoopers() {
-    // Blech. We need to share the main looper because somebody might refer to it in a static
-    // field. We also need to keep it in a soft reference so we don't max out permgen.
-
+    // Blech. We need to keep the main looper because somebody might refer to it in a static
+    // field. The other loopers need to be wrapped in WeakReferences so that they are not prevented from
+    // being garbage collected.
     if (Thread.currentThread() != MAIN_THREAD) {
-      throw new RuntimeException("you should only be calling this from the main thread!");
+      throw new IllegalStateException("you should only be calling this from the main thread!");
     }
-
-    Looper mainLooper = looperForThread.get();
-    looperForThread = makeThreadLocalLoopers();
-    looperForThread.set(mainLooper);
-    shadowOf(mainLooper).reset();
+    synchronized (loopingLoopers) {
+      for (Looper looper : loopingLoopers.values()) {
+        synchronized (looper) {
+          if (!shadowOf(looper).quit) {
+            looper.quit();
+          }
+        }
+      }
+    }
+    // Because resetStaticState() is called by ParallelUniverse on startup before prepareMainLooper() is
+    // called, this might be null on that occasion.
+    Looper mainLooper = Looper.getMainLooper();
+    if (mainLooper != null) {
+      shadowOf(mainLooper).reset();
+    }
   }
 
   @Implementation
-  public static Looper getMainLooper() {
-    ShadowApplication shadowApplication = ShadowApplication.getInstance();
-    if ((shadowApplication == null) && (Thread.currentThread() == MAIN_THREAD)) {
-      Looper mainLooper = looperForThread.get();
-      return mainLooper;
-    } else {
-      // might still throw NullPointerException
-      // better than returning null because this fails early.
-      return shadowApplication.getMainLooper();
+  public void __constructor__(boolean quitAllowed) {
+    invokeConstructor(Looper.class, realObject, from(boolean.class, quitAllowed));
+    if (Thread.currentThread() != MAIN_THREAD) {
+      loopingLoopers.put(Thread.currentThread(), realObject);
     }
   }
-
+    
   @Implementation
   public static void loop() {
-    shadowOf(myLooper()).doLoop();
-  }
-
-  @Implementation
-  public static synchronized Looper myLooper() {
-    return looperForThread.get();
+    shadowOf(Looper.myLooper()).doLoop();
   }
 
   private void doLoop() {
-    if (this != shadowOf(getMainLooper())) {
+    if (this != getShadowMainLooper()) {
       synchronized (realObject) {
         while (!quit) {
           try {
@@ -96,19 +91,18 @@ public class ShadowLooper {
 
   @Implementation
   public void quit() {
-    if (this == shadowOf(getMainLooper())) throw new RuntimeException("Main thread not allowed to quit");
+    if (this == getShadowMainLooper()) throw new RuntimeException("Main thread not allowed to quit");
+    quitUnchecked();
+  }
+
+  public void quitUnchecked() {
     synchronized (realObject) {
       quit = true;
-      scheduler.reset();
       realObject.notifyAll();
+      scheduler.reset();
     }
   }
-
-  @Implementation
-  public Thread getThread() {
-    return myThread;
-  }
-
+  
   @HiddenApi @Implementation
   public int postSyncBarrier() {
     return 1;
@@ -124,6 +118,14 @@ public class ShadowLooper {
     }
   }
 
+  public static ShadowLooper getShadowMainLooper() {
+    return shadowOf(Looper.getMainLooper());
+  }
+  
+  public static Looper getLooperForThread(Thread thread) {
+    return thread == MAIN_THREAD ? Looper.getMainLooper() : loopingLoopers.get(thread);
+  }
+  
   public static void pauseLooper(Looper looper) {
     shadowOf(looper).pause();
   }
@@ -145,19 +147,19 @@ public class ShadowLooper {
   }
 
   public static void idleMainLooper(long interval) {
-    shadowOf(Looper.getMainLooper()).idle(interval);
+    getShadowMainLooper().idle(interval);
   }
 
   public static void idleMainLooperConstantly(boolean shouldIdleConstantly) {
-    shadowOf(Looper.getMainLooper()).idleConstantly(shouldIdleConstantly);
+    getShadowMainLooper().idleConstantly(shouldIdleConstantly);
   }
 
   public static void runMainLooperOneTask() {
-    shadowOf(Looper.getMainLooper()).runOneTask();
+    getShadowMainLooper().runOneTask();
   }
 
   public static void runMainLooperToNextTask() {
-    shadowOf(Looper.getMainLooper()).runToNextTask();
+    getShadowMainLooper().runToNextTask();
   }
     
   /**
@@ -165,13 +167,24 @@ public class ShadowLooper {
    * e.g. by {@link android.app.Activity#runOnUiThread(Runnable)} or {@link android.os.AsyncTask#onPostExecute(Object)}.
    *
    * <p>Note: calling this method does not pause or un-pause the scheduler.</p>
+   
+   * @see #runUiThreadTasksIncludingDelayedTasks
    */
   public static void runUiThreadTasks() {
-    ShadowApplication.getInstance().getForegroundThreadScheduler().advanceBy(0);
+    getShadowMainLooper().idle();
   }
 
+  /**
+   * Runs all runnable tasks (pending and future) that have been queued on the UI thread. Such tasks may be queued by
+   * e.g. {@link android.app.Activity#runOnUiThread(Runnable)} or {@link android.os.AsyncTask#onPostExecute(Object)}.
+   *
+   * <p>Note: calling this method does not pause or un-pause the scheduler, however the clock is advanced as
+   * future tasks are run.</p>
+   * 
+   * @see #runUiThreadTasks
+   */
   public static void runUiThreadTasksIncludingDelayedTasks() {
-    ShadowApplication.getInstance().getForegroundThreadScheduler().advanceToLastPostedRunnable();
+    getShadowMainLooper().runToEndOfTasks();
   }
 
   /**

@@ -8,6 +8,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.MessageQueue;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,6 +28,7 @@ public class ShadowMessageQueueTest {
   private Message testMessage;
   private TestHandler handler;
   private Scheduler scheduler;
+  private String quitField;
   
   private static class TestHandler extends Handler {
     public List<Message> handled = new ArrayList<>();
@@ -45,41 +47,40 @@ public class ShadowMessageQueueTest {
     queue = callConstructor(MessageQueue.class, from(boolean.class, true));
     shadowQueue = shadowOf(queue);
     testMessage = handler.obtainMessage();
+    quitField = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT ? "mQuitting" : "mQuiting";
   }
 
-  private static void shouldAssert(String method, ClassParameter<?>... params) {
+  private static ClassParameter<?> getPtrClass() {
+    return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP ? from(long.class, 1) : from(int.class, 1);
+  }
+  
+  private void shouldAssert(String method, ClassParameter<?>... params) {
     boolean ran = false;
+    String isStatic = "";
     try {
-      callStaticMethod(MessageQueue.class, method, params);
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+        isStatic = "static ";
+        callStaticMethod(MessageQueue.class, method, params);
+      } else {
+        callInstanceMethod(queue, method, params);
+      }
       ran = true;
     } catch (Throwable t) {
-      assertThat(t).as(method).isInstanceOf(AssertionError.class);
+      if (!(t instanceof AssertionError)) {
+        Assertions.fail("Expected an assertion when invoking " + isStatic + "method " + method + ", got: " + t, t);
+      }
     }
     assertThat(ran).as(method).overridingErrorMessage("Should have asserted but no exception was thrown").isFalse();
   }
   
   @Test
-  @Config(sdk = Build.VERSION_CODES.KITKAT)
-  public void nativePollOnce_shouldAssert_19() {
-    shouldAssert("nativePollOnce", from(int.class, 1), from(int.class, 2));
+  public void nativePollOnce_shouldAssert() {
+    shouldAssert("nativePollOnce", getPtrClass(), from(int.class, 2));
   }
   
   @Test
-  @Config(sdk = Build.VERSION_CODES.KITKAT)
-  public void nativeWake_shouldAssert_19() {
-    shouldAssert("nativeWake", from(int.class, 1));
-  }
-  
-  @Test
-  @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
-  public void nativePollOnce_shouldAssert_21() {
-    shouldAssert("nativePollOnce", from(long.class, 1), from(int.class, 2));
-  }
-  
-  @Test
-  @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
-  public void nativeWake_shouldAssert_21() {
-    shouldAssert("nativeWake", from(long.class, 1));
+  public void nativeWake_shouldAssert() {
+    shouldAssert("nativeWake", getPtrClass());
   }
   
   @Test
@@ -115,26 +116,21 @@ public class ShadowMessageQueueTest {
     assertThat(enqueueMessage(testMessage, 100)).as("retval").isTrue();
   }
 
+  @Test
   public void enqueueMessage_setsWhen() {
     enqueueMessage(testMessage, 123);
     assertThat(testMessage.getWhen()).as("when").isEqualTo(123);
   }
   
   @Test
-  @Config(sdk = {
-      Build.VERSION_CODES.KITKAT,
-      Build.VERSION_CODES.LOLLIPOP })
   public void enqueueMessage_returnsFalse_whenQuitting() {
-    setField(queue, "mQuitting", true);
+    setField(queue, quitField, true);
     assertThat(enqueueMessage(testMessage, 1)).as("enqueueMessage()").isFalse();
   }
 
   @Test
-  @Config(sdk = {
-      Build.VERSION_CODES.KITKAT,
-      Build.VERSION_CODES.LOLLIPOP })
   public void enqueueMessage_doesntSchedule_whenQuitting() {
-    setField(queue, "mQuitting", true);
+    setField(queue, quitField, true);
     enqueueMessage(testMessage, 1);
     assertThat(scheduler.size()).as("scheduler_size").isEqualTo(0);
   }
@@ -168,18 +164,7 @@ public class ShadowMessageQueueTest {
   }
   
   @Test
-  @Config(sdk = Build.VERSION_CODES.KITKAT)
-  public void dispatchedMessage_isMarkedInUse_andRecycled_19() {
-    dispatchedMessage_isMarkedInUse_andRecycled();
-  }
-
-  @Test
-  @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
-  public void dispatchedMessage_isMarkedInUse_andRecycled_21() {
-    dispatchedMessage_isMarkedInUse_andRecycled();
-  }
-
-  private void dispatchedMessage_isMarkedInUse_andRecycled() {
+  public void dispatchedMessage_isMarkedInUse_andRecycled() {
     Handler handler = new Handler() {
       @Override
       public void handleMessage(Message msg) {

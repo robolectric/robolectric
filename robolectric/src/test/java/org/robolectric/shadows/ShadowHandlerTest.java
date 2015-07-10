@@ -367,7 +367,7 @@ public class ShadowHandlerTest {
     Handler handler = new Handler() {
       @Override
       public void handleMessage(Message msg) {
-        runAt.add(shadowOf(ShadowLooper.myLooper()).getScheduler().getCurrentTime());
+        runAt.add(shadowOf(Looper.myLooper()).getScheduler().getCurrentTime());
       }
     };
 

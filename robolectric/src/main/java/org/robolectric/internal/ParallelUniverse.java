@@ -6,6 +6,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.os.Looper;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.robolectric.Robolectric;
@@ -91,6 +92,10 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     Class<?> contextImplClass = ReflectionHelpers.loadClass(getClass().getClassLoader(), shadowsAdapter.getShadowContextImplClassName());
 
     Class<?> activityThreadClass = ReflectionHelpers.loadClass(getClass().getClassLoader(), shadowsAdapter.getShadowActivityThreadClassName());
+    // Looper needs to be prepared before the activity thread is created
+    if (Looper.myLooper() == null) {
+      Looper.prepareMainLooper();
+    }
     Object activityThread = ReflectionHelpers.newInstance(activityThreadClass);
     RuntimeEnvironment.setActivityThread(activityThread);
 
