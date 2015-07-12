@@ -2,287 +2,225 @@ package org.robolectric.shadows;
 
 import android.os.Bundle;
 import android.os.Parcelable;
-import junit.framework.AssertionFailedError;
-import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
 
 import java.util.ArrayList;
 
-import static org.junit.Assert.*;
-
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowBundleTest {
-
-  private Bundle bundle;
-
-  @Before public void setUp() throws Exception {
-    bundle = new Bundle();
-  }
+  private final Bundle bundle = new Bundle();
 
   @Test
-  public void testContainsKey() throws Exception {
-    assertFalse(bundle.containsKey("foo"));
+  public void containsKey() {
+    assertThat(bundle.containsKey("foo")).isFalse();
     bundle.putString("foo", "bar");
-    assertTrue(bundle.containsKey("foo"));
+    assertThat(bundle.containsKey("foo")).isTrue();
   }
 
   @Test
-  public void testInt() {
+  public void getInt() {
     bundle.putInt("foo", 5);
-    assertEquals(5,bundle.getInt("foo"));
-    assertEquals(0,bundle.getInt("bar"));
-    assertEquals(7, bundle.getInt("bar", 7));
+    assertThat(bundle.getInt("foo")).isEqualTo(5);
+    assertThat(bundle.getInt("bar")).isEqualTo(0);
+    assertThat(bundle.getInt("bar", 7)).isEqualTo(7);
   }
 
   @Test
-  public void testSize() {
-    assertEquals(0, bundle.size());
+  public void size() {
+    assertThat(bundle.size()).isEqualTo(0);
     bundle.putInt("foo", 5);
-    assertEquals(1, bundle.size());
+    assertThat(bundle.size()).isEqualTo(1);
     bundle.putInt("bar", 5);
-    assertEquals(2, bundle.size());
+    assertThat(bundle.size()).isEqualTo(2);
   }
 
   @Test
-  public void testLong() {
+  public void getLong() {
     bundle.putLong("foo", 5);
-    assertEquals(5, bundle.getLong("foo"));
-    assertEquals(0,bundle.getLong("bar"));
-    assertEquals(7, bundle.getLong("bar", 7));
+    assertThat(bundle.getLong("foo")).isEqualTo(5);
+    assertThat(bundle.getLong("bar")).isEqualTo(0);
+    assertThat(bundle.getLong("bar", 7)).isEqualTo(7);
   }
 
   @Test
-  public void testDouble() {
+  public void getDouble() {
     bundle.putDouble("foo", 5);
-    assertEquals(Double.valueOf(5), Double.valueOf(bundle.getDouble("foo")));
-    assertEquals(Double.valueOf(0),Double.valueOf(bundle.getDouble("bar")));
-    assertEquals(Double.valueOf(7), Double.valueOf(bundle.getDouble("bar", 7)));
+    assertThat(bundle.getDouble("foo")).isEqualTo(5);
+    assertThat(bundle.getDouble("bar")).isEqualTo(0);
+    assertThat(bundle.getDouble("bar", 7)).isEqualTo(7);
   }
 
   @Test
-  public void testBoolean() {
+  public void getBoolean() {
     bundle.putBoolean("foo", true);
-    assertEquals(true, bundle.getBoolean("foo"));
-    assertEquals(false, bundle.getBoolean("bar"));
-    assertEquals(true, bundle.getBoolean("bar", true));
+    assertThat(bundle.getBoolean("foo")).isTrue();
+    assertThat(bundle.getBoolean("bar")).isFalse();
+    assertThat(bundle.getBoolean("bar", true)).isTrue();
   }
 
   @Test
-  public void testFloat() {
+  public void getFloat() {
     bundle.putFloat("foo", 5f);
-    assertEquals(Float.valueOf(5), Float.valueOf(bundle.getFloat("foo")));
-    assertEquals(Float.valueOf(0),Float.valueOf(bundle.getFloat("bar")));
-    assertEquals(Float.valueOf(7), Float.valueOf(bundle.getFloat("bar", 7)));
+    assertThat(bundle.getFloat("foo")).isEqualTo(5);
+    assertThat(bundle.getFloat("bar")).isEqualTo(0);
+    assertThat(bundle.getFloat("bar", 7)).isEqualTo(7);
   }
 
   @Test
-  public void testGetOfWrongType() {
+  public void getWrongType() {
     bundle.putFloat("foo", 5f);
-    assertEquals(0, bundle.getChar("foo"));
-    assertEquals(null, bundle.getCharArray("foo"));
-    assertEquals(0, bundle.getInt("foo"));
-    assertEquals(null, bundle.getIntArray("foo"));
-    assertEquals(null, bundle.getIntegerArrayList("foo"));
-    assertEquals(0, bundle.getShort("foo"));
-    assertEquals(null, bundle.getShortArray("foo"));
-    assertEquals(false, bundle.getBoolean("foo"));
-    assertEquals(null, bundle.getBooleanArray("foo"));
-    assertEquals(0, bundle.getLong("foo"));
-    assertEquals(null, bundle.getLongArray("foo"));
-    assertEquals(null, bundle.getFloatArray("foo"));
-    assertEquals(0, bundle.getDouble("foo"), 0.005);
-    assertEquals(null, bundle.getDoubleArray("foo"));
-    assertEquals(null, bundle.getString("foo"));
-    assertEquals(null, bundle.getStringArray("foo"));
-    assertEquals(null, bundle.getStringArrayList("foo"));
-    assertEquals(null, bundle.getBundle("foo"));
-    assertEquals(null, bundle.getParcelable("foo"));
-    assertEquals(null, bundle.getParcelableArray("foo"));
-    assertEquals(null, bundle.getParcelableArrayList("foo"));
+    assertThat(bundle.getCharArray("foo")).isNull();
+    assertThat(bundle.getInt("foo")).isEqualTo(0);
+    assertThat(bundle.getIntArray("foo")).isNull();
+    assertThat(bundle.getIntegerArrayList("foo")).isNull();
+    assertThat(bundle.getShort("foo")).isEqualTo((short) 0);
+    assertThat(bundle.getShortArray("foo")).isNull();
+    assertThat(bundle.getBoolean("foo")).isFalse();
+    assertThat(bundle.getBooleanArray("foo")).isNull();
+    assertThat(bundle.getLong("foo")).isEqualTo(0);
+    assertThat(bundle.getLongArray("foo")).isNull();
+    assertThat(bundle.getFloatArray("foo")).isNull();
+    assertThat(bundle.getDouble("foo")).isEqualTo(0);
+    assertThat(bundle.getDoubleArray("foo")).isNull();
+    assertThat(bundle.getString("foo")).isNull();
+    assertThat(bundle.getStringArray("foo")).isNull();
+    assertThat(bundle.getStringArrayList("foo")).isNull();
+    assertThat(bundle.getBundle("foo")).isNull();
+    assertThat(bundle.getParcelable("foo")).isNull();
+    assertThat(bundle.getParcelableArray("foo")).isNull();
+    assertThat(bundle.getParcelableArrayList("foo")).isNull();
 
     bundle.putInt("foo", 1);
-    assertEquals(0, bundle.getFloat("foo"), 0.005f);
+    assertThat(bundle.getFloat("foo")).isEqualTo(0);
   }
 
   @Test
-  public void testRemove() {
+  public void remove() {
     bundle.putFloat("foo", 5f);
     bundle.putFloat("foo2", 5f);
-
     bundle.remove("foo");
 
-    assertFalse(bundle.containsKey("foo"));
-    assertTrue(bundle.containsKey("foo2"));
+    assertThat(bundle.containsKey("foo")).isFalse();
+    assertThat(bundle.containsKey("foo2")).isTrue();
   }
 
   @Test
-  public void testClear() {
+  public void clear() {
     bundle.putFloat("foo", 5f);
-
     bundle.clear();
 
-    assertEquals(0, bundle.size());
+    assertThat(bundle.size()).isEqualTo(0);
   }
 
   @Test
-  public void testIsEmpty() {
-    assertTrue(bundle.isEmpty());
+  public void isEmpty() {
+    assertThat(bundle.isEmpty()).isTrue();
     bundle.putBoolean("foo", true);
-    assertFalse(bundle.isEmpty());
+    assertThat(bundle.isEmpty()).isFalse();
   }
 
   @Test
-  public void testStringArray() {
+  public void stringArray() {
     bundle.putStringArray("foo", new String[] { "a" });
-    Assert.assertArrayEquals(new String[] { "a" }, bundle.getStringArray("foo"));
-    assertNull(bundle.getStringArray("bar"));
+    assertThat(bundle.getStringArray("foo")).isEqualTo(new String[]{"a"});
+    assertThat(bundle.getStringArray("bar")).isNull();
   }
 
   @Test
-  public void testStringArrayList() {
+  public void stringArrayList() {
     ArrayList<String> list = new ArrayList<>();
     list.add("a");
 
     bundle.putStringArrayList("foo", new ArrayList<>(list));
-    Assert.assertEquals(list, bundle.getStringArrayList("foo"));
-    assertNull(bundle.getStringArrayList("bar"));
+    assertThat(bundle.getStringArrayList("foo")).isEqualTo(list);
+    assertThat(bundle.getStringArrayList("bar")).isNull();
   }
 
   @Test
-  public void testIntegerArrayList() {
+  public void intArrayList() {
     ArrayList<Integer> list = new ArrayList<>();
     list.add(100);
 
     bundle.putIntegerArrayList("foo", new ArrayList<>(list));
-    Assert.assertEquals(list, bundle.getIntegerArrayList("foo"));
-    assertNull(bundle.getIntegerArrayList("bar"));
+    assertThat(bundle.getIntegerArrayList("foo")).isEqualTo(list);
+    assertThat(bundle.getIntegerArrayList("bar")).isNull();
   }
 
   @Test
-  public void testBundle() {
-    Bundle innerBundle = new Bundle();
-    innerBundle.putInt("int", 7);
-    bundle.putBundle("bundle", innerBundle);
-
-    assertEquals(innerBundle, bundle.getBundle("bundle"));
-    assertNull(bundle.getBundle("bar"));
-  }
-
-  @Test
-  public void testBooleanArray() {
+  public void booleanArray() {
     boolean [] arr = new boolean[] { false, true };
     bundle.putBooleanArray("foo", arr);
 
-    assertArrayEquals(arr, bundle.getBooleanArray("foo"));
-    assertNull(bundle.getBooleanArray("bar"));
+    assertThat(bundle.getBooleanArray("foo")).isEqualTo(arr);
+    assertThat(bundle.getBooleanArray("bar")).isNull();
   }
 
   @Test
-  public void testByteArray() {
+  public void byteArray() {
     byte [] arr = new byte[] { 12, 24 };
     bundle.putByteArray("foo", arr);
 
-    Assert.assertArrayEquals(arr, bundle.getByteArray("foo"));
-    assertNull(bundle.getByteArray("bar"));
+    assertThat(bundle.getByteArray("foo")).isEqualTo(arr);
+    assertThat(bundle.getByteArray("bar")).isNull();
   }
 
   @Test
-  public void testCharArray() {
+  public void charArray() {
     char [] arr = new char[] { 'c', 'j' };
     bundle.putCharArray("foo", arr);
 
-    Assert.assertArrayEquals(arr, bundle.getCharArray("foo"));
-    assertNull(bundle.getCharArray("bar"));
+    assertThat(bundle.getCharArray("foo")).isEqualTo(arr);
+    assertThat(bundle.getCharArray("bar")).isNull();
   }
 
   @Test
-  public void testDoubleArray() {
+  public void doubleArray() {
     double [] arr = new double[] { 1.2, 3.4 };
     bundle.putDoubleArray("foo", arr);
 
-    assertArrayEquals(arr, bundle.getDoubleArray("foo"));
-    assertNull(bundle.getDoubleArray("bar"));
+    assertThat(bundle.getDoubleArray("foo")).isEqualTo(arr);
+    assertThat(bundle.getDoubleArray("bar")).isNull();
   }
 
   @Test
-  public void testIntArray() {
+  public void intArray() {
     int [] arr = new int[] { 87, 65 };
     bundle.putIntArray("foo", arr);
 
-    Assert.assertArrayEquals(arr, bundle.getIntArray("foo"));
-    assertNull(bundle.getIntArray("bar"));
+    assertThat(bundle.getIntArray("foo")).isEqualTo(arr);
+    assertThat(bundle.getIntArray("bar")).isNull();
   }
 
   @Test
-  public void testLongArray() {
+  public void longArray() {
     long [] arr = new long[] { 23, 11 };
     bundle.putLongArray("foo", arr);
 
-    Assert.assertArrayEquals(arr, bundle.getLongArray("foo"));
-    assertNull(bundle.getLongArray("bar"));
+    assertThat(bundle.getLongArray("foo")).isEqualTo(arr);
+    assertThat(bundle.getLongArray("bar")).isNull();
   }
 
   @Test
-  public void testShortArray() {
+  public void shortArray() {
     short [] arr = new short[] { 89, 37 };
     bundle.putShortArray("foo", arr);
 
-    Assert.assertArrayEquals(arr, bundle.getShortArray("foo"));
-    assertNull(bundle.getShortArray("bar"));
+    assertThat(bundle.getShortArray("foo")).isEqualTo(arr);
+    assertThat(bundle.getShortArray("bar")).isNull();
   }
 
   @Test
-  public void testParcelableArray() {
+  public void parcelableArray() {
     Bundle innerBundle = new Bundle();
     innerBundle.putInt("value", 1);
     Parcelable[] arr = new Parcelable[] { innerBundle };
     bundle.putParcelableArray("foo", arr);
 
-    Assert.assertArrayEquals(arr, bundle.getParcelableArray("foo"));
-    assertNull(bundle.getParcelableArray("bar"));
-  }
-
-  @Test
-  public void testCopyConstructor() {
-    bundle.putInt("value", 1);
-    Bundle copiedBundle = new Bundle(bundle);
-
-    Assert.assertEquals(copiedBundle, bundle);
-  }
-
-  private void assertArrayEquals(double[] expected, double[] actual) {
-    if (expected != null && actual == null) {
-      throw new AssertionFailedError();
-    } else if (expected == null && actual != null) {
-      throw new AssertionFailedError();
-    } else {
-      for (int i = 0; i < expected.length; i++) {
-        if (expected[i] != actual[i])
-          throw new AssertionFailedError();
-      }
-
-      if (expected.length != actual.length)
-        throw new AssertionFailedError();
-    }
-  }
-
-  private void assertArrayEquals(boolean[] expected, boolean[] actual) {
-    if (expected != null && actual == null) {
-      throw new AssertionFailedError();
-    } else if (expected == null && actual != null) {
-      throw new AssertionFailedError();
-    } else {
-      for (int i = 0; i < expected.length; i++) {
-        if (expected[i] != actual[i])
-          throw new AssertionFailedError();
-      }
-
-      if (expected.length != actual.length)
-        throw new AssertionFailedError();
-    }
+    assertThat(bundle.getParcelableArray("foo")).isEqualTo(arr);
+    assertThat(bundle.getParcelableArray("bar")).isNull();
   }
 }

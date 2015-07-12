@@ -35,7 +35,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import static org.robolectric.Shadows.shadowOf;
@@ -356,8 +355,7 @@ public class ShadowContentResolver {
   }
 
   @Implementation
-  public static void addPeriodicSync(Account account, String authority, Bundle extras,
-                     long pollFrequency) {
+  public static void addPeriodicSync(Account account, String authority, Bundle extras, long pollFrequency) {
     validateSyncExtrasBundle(extras);
     removePeriodicSync(account, authority, extras);
     getStatus(account, authority, true).syncs.add(new PeriodicSync(account, authority, extras, pollFrequency));
@@ -369,7 +367,7 @@ public class ShadowContentResolver {
     Status status = getStatus(account, authority);
     if (status != null) {
       for (int i = 0; i < status.syncs.size(); ++i) {
-        if (Objects.equals(extras, status.syncs.get(i).extras)) {
+        if (isBundleEqual(extras, status.syncs.get(i).extras)) {
           status.syncs.remove(i);
           break;
         }
@@ -580,6 +578,21 @@ public class ShadowContentResolver {
     } else {
       return null;
     }
+  }
+
+  private static boolean isBundleEqual(Bundle bundle1, Bundle bundle2) {
+    if (bundle1 == null || bundle2 == null) {
+      return false;
+    }
+    if (bundle1.size() != bundle2.size()) {
+      return false;
+    }
+    for (String key : bundle1.keySet()) {
+      if (!bundle1.get(key).equals(bundle2.get(key))) {
+        return false;
+      }
+    }
+    return true;
   }
 
   public static class InsertStatement {

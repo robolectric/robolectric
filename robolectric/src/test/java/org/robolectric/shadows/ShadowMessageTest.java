@@ -14,7 +14,6 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
@@ -22,8 +21,8 @@ public class ShadowMessageTest {
 
   @Test
   public void testGetDataShouldLazilyCreateBundle() throws Exception {
-    assertNotNull(new Message().getData());
-    assertTrue(new Message().getData().isEmpty());
+    assertThat(new Message().getData()).isNotNull();
+    assertThat(new Message().getData().isEmpty()).isTrue();
   }
 
   @Test
@@ -36,7 +35,7 @@ public class ShadowMessageTest {
 
   @Test
   public void testPeekData() throws Exception {
-    assertNull(new Message().peekData());
+    assertThat(new Message().peekData()).isNull();
 
     Message m = new Message();
     Bundle b = new Bundle();
@@ -69,14 +68,15 @@ public class ShadowMessageTest {
     assertThat(m2.arg2).isEqualTo(m.arg2);
     assertThat(m2.obj).isEqualTo(m.obj);
     assertThat(m2.what).isEqualTo(m.what);
-    assertThat(m2.getData()).isEqualTo(m.getData());
-    assertNull(m2.getTarget());
+    assertThat(m2.getTarget()).isNull();
+    assertThat(m2.getData()).isNotNull();
+    assertThat(m2.getData().isEmpty()).isTrue();
   }
 
   @Test
   public void testObtain() throws Exception {
     Message m = Message.obtain();
-    assertNotNull(m);
+    assertThat(m).isNotNull();
   }
 
   @Test
@@ -156,8 +156,9 @@ public class ShadowMessageTest {
     assertThat(m2.arg2).isEqualTo(m.arg2);
     assertThat(m2.obj).isEqualTo(m.obj);
     assertThat(m2.what).isEqualTo(m.what);
-    assertThat(m2.getData()).isEqualTo(m.getData());
     assertThat(m2.getTarget()).isEqualTo(m.getTarget());
+    assertThat(m2.getData()).isNotNull();
+    assertThat(m2.getData().isEmpty()).isTrue();
   }
 
   @Test
@@ -165,7 +166,7 @@ public class ShadowMessageTest {
     ShadowLooper.pauseMainLooper();
     Handler h = new Handler();
     Message.obtain(h, 123).sendToTarget();
-    assertTrue(h.hasMessages(123));
+    assertThat(h.hasMessages(123)).isTrue();
   }
   
   @Test
@@ -178,8 +179,7 @@ public class ShadowMessageTest {
   }
   
   @Test
-  @Config(sdk = {
-      Build.VERSION_CODES.LOLLIPOP })
+  @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
   public void testIsInUse() {
     ShadowLooper.pauseMainLooper();
     Handler h = new Handler();
