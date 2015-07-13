@@ -65,9 +65,8 @@ public class MultiApiRobolectricTestRunnerTest {
     runNotifier.addListener(runListener);
     runner.run(runNotifier);
 
-    // The test should be ignored on all but the single API runner that corresponds to its
-    // @Config value
-    verify(runListener, times(4)).testIgnored(any(Description.class));
+    verify(runListener, never()).testIgnored(any(Description.class));
+    // Since test method should only be run once
     verify(runListener, times(1)).testFinished(any(Description.class));
   }
 
@@ -82,9 +81,8 @@ public class MultiApiRobolectricTestRunnerTest {
     runNotifier.addListener(runListener);
     runner.run(runNotifier);
 
-    // Each one of the five methods should be ignored for all runners except the one for the
-    // corresponding API level
-    verify(runListener, times(20)).testIgnored(any(Description.class));
+    verify(runListener, never()).testIgnored(any(Description.class));
+    // Each of the 5 methods should be run once only each
     verify(runListener, times(5)).testFinished(any(Description.class));
   }
 

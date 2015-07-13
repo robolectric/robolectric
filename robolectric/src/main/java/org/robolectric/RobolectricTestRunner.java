@@ -177,7 +177,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     final Config config = getConfig(method.getMethod());
     if (shouldIgnore(method, config)) {
       eachNotifier.fireTestIgnored();
-    } else {
+    } else if(shouldRunApiVersion(config)) {
       eachNotifier.fireTestStarted();
       try {
         AndroidManifest appManifest = getAppManifest(config);
@@ -194,6 +194,10 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
         eachNotifier.fireTestFinished();
       }
     }
+  }
+
+  protected boolean shouldRunApiVersion(Config config) {
+    return true;
   }
 
   protected boolean shouldIgnore(FrameworkMethod method, Config config) {
