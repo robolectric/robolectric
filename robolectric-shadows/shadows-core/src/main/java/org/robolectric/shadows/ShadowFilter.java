@@ -25,6 +25,10 @@ public class ShadowFilter {
           ClassParameter.from(CharSequence.class, constraint),
           ClassParameter.from(forName, filtering));
 
+      if (listener != null) {
+        int count = ReflectionHelpers.getField(filtering, "count");
+        listener.onFilterComplete(count);
+      }
     } catch (ClassNotFoundException e) {
       throw new RuntimeException("Cannot load android.widget.Filter$FilterResults");
     }
