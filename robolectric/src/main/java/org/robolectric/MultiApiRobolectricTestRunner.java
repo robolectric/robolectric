@@ -19,36 +19,6 @@ import java.util.List;
  */
 public class MultiApiRobolectricTestRunner extends Suite {
 
-  public static final int[] JELLY_BEAN_UP = {
-      Build.VERSION_CODES.JELLY_BEAN,
-      Build.VERSION_CODES.JELLY_BEAN_MR1,
-      Build.VERSION_CODES.JELLY_BEAN_MR2,
-      Build.VERSION_CODES.KITKAT,
-      Build.VERSION_CODES.LOLLIPOP
-  };
-
-  public static final int[] JELLY_BEAN_MR1_UP = {
-      Build.VERSION_CODES.JELLY_BEAN_MR1,
-      Build.VERSION_CODES.JELLY_BEAN_MR2,
-      Build.VERSION_CODES.KITKAT,
-      Build.VERSION_CODES.LOLLIPOP
-  };
-
-  public static final int[] JELLY_BEAN_MR2_UP = {
-      Build.VERSION_CODES.JELLY_BEAN_MR2,
-      Build.VERSION_CODES.KITKAT,
-      Build.VERSION_CODES.LOLLIPOP
-  };
-
-  public static final int[] KIT_KAT_UP = {
-      Build.VERSION_CODES.KITKAT,
-      Build.VERSION_CODES.LOLLIPOP
-  };
-
-  public static final int[] LOLLIPOP_UP = {
-      Build.VERSION_CODES.LOLLIPOP
-  };
-
   protected static class TestRunnerForApiVersion extends RobolectricTestRunner {
 
     private final String name;
@@ -80,11 +50,8 @@ public class MultiApiRobolectricTestRunner extends Suite {
       return "TestClassRunnerForParameters " + name;
     }
 
-    protected boolean shouldIgnore(FrameworkMethod method, Config config) {
-      return super.shouldIgnore(method, config) || !shouldRunApiVersion(config);
-    }
-
-    private boolean shouldRunApiVersion(Config config) {
+    @Override
+    protected boolean shouldRunApiVersion(Config config) {
       if (config.sdk().length == 0) {
         return true;
       }
@@ -130,6 +97,7 @@ public class MultiApiRobolectricTestRunner extends Suite {
     super(klass, Collections.<Runner>emptyList());
 
     for (Integer integer : SdkConfig.getSupportedApis()) {
+
       runners.add(createTestRunner(integer));
 
     }
