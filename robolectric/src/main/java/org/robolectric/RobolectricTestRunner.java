@@ -444,7 +444,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       return config.sdk()[0];
     } else if (manifest != null) {
       return manifest.getTargetSdkVersion();
-
     } else {
       return SdkConfig.FALLBACK_SDK_VERSION;
     }
