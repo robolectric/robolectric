@@ -26,7 +26,7 @@ public class ShadowFilter {
           ClassParameter.from(forName, filtering));
 
       if (listener != null) {
-        int count = ReflectionHelpers.getField(filtering, "count");
+        int count = filtering == null ? -1 : (int) ReflectionHelpers.getField(filtering, "count");
         listener.onFilterComplete(count);
       }
     } catch (ClassNotFoundException e) {
