@@ -13,6 +13,7 @@ import org.robolectric.manifest.AndroidManifest;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * A test runner for Robolectric that will run a test against multiple API versions.
@@ -96,12 +97,14 @@ public class MultiApiRobolectricTestRunner extends Suite {
   public MultiApiRobolectricTestRunner(Class<?> klass) throws Throwable {
     super(klass, Collections.<Runner>emptyList());
 
-    for (Integer integer : SdkConfig.getSupportedApis()) {
-
+    for (Integer integer : getSupportedApis()) {
       runners.add(createTestRunner(integer));
-
     }
    }
+
+  protected Set<Integer> getSupportedApis() {
+    return SdkConfig.getSupportedApis();
+  }
 
   protected TestRunnerForApiVersion createTestRunner(Integer integer) throws InitializationError {
     return new TestRunnerForApiVersion(getTestClass().getJavaClass(), integer);
