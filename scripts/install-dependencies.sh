@@ -70,15 +70,16 @@ if [ -z "${ANDROID_HOME}" ]; then
   exit 1
 fi
 
-# Unzip support-v4 aar
-jar xf $ANDROID_REPOSITORY/com/android/support/support-v4/22.2.0/support-v4-22.2.0.aar libs/internal_impl-22.2.0.jar
-
-# Install jar lib for support-v4
-install_jar "com.android.support" "internal_impl" "22.2.0" "./libs/internal_impl-22.2.0.jar"
-rm -rf ./libs
+# Install appcompat-v7
+install_aar "com.android.support" "appcompat-v7" "22.2.0" "${ANDROID_REPOSITORY}/com/android/support/appcompat-v7/22.2.0/appcompat-v7-22.2.0.aar"
 
 # Install support-v4
 install_aar "com.android.support" "support-v4" "22.2.0" "${ANDROID_REPOSITORY}/com/android/support/support-v4/22.2.0/support-v4-22.2.0.aar"
+
+# Install support-v4-impl jar
+jar xf $ANDROID_REPOSITORY/com/android/support/support-v4/22.2.0/support-v4-22.2.0.aar libs/internal_impl-22.2.0.jar
+install_jar "com.android.support" "internal_impl" "22.2.0" "./libs/internal_impl-22.2.0.jar"
+rm -rf ./libs
 
 # Install multidex
 install_aar "com.android.support" "multidex" "1.0.0" "${ANDROID_REPOSITORY}/com/android/support/multidex/1.0.0/multidex-1.0.0.aar"
