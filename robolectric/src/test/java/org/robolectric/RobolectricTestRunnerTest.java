@@ -105,16 +105,17 @@ public class RobolectricTestRunnerTest {
             "shadows: org.robolectric.shadows.ShadowView, org.robolectric.shadows.ShadowViewGroup\n" +
             "application: org.robolectric.TestFakeApp\n" +
             "packageName: com.example.test\n" +
-            "libraries: libs/test, libs/test2");
+            "libraries: libs/test, libs/test2\n" +
+            "constants: org.robolectric.RobolectricTestRunnerTest$BuildConfigConstants3");
 
-    assertConfig(configFor(Test7.class, "withoutAnnotation", properties),
+    assertConfig(configFor(Test2.class, "withoutAnnotation", properties),
         new int[] {432}, "--none", TestFakeApp.class, "com.example.test", "from-properties-file", "from/properties/file/res", "from/properties/file/assets", new Class[] {ShadowView.class, ShadowViewGroup.class}, new String[]{"libs/test", "libs/test2"}, BuildConfigConstants3.class);
   }
 
   @Test
   public void withEmptyShadowList_shouldLoadDefaultsFromPropertiesFile() throws Exception {
     Properties properties = properties("shadows:");
-    assertConfig(configFor(Test7.class, "withoutAnnotation", properties), new int[0],  "--default", Application.class, "", "", "res", "assets", new Class[] {}, new String[]{}, BuildConfigConstants3.class);
+    assertConfig(configFor(Test2.class, "withoutAnnotation", properties), new int[0],  "--default", Application.class, "", "", "res", "assets", new Class[] {}, new String[]{}, null);
   }
 
   @Test
@@ -238,11 +239,6 @@ public class RobolectricTestRunnerTest {
   @Ignore
   @Config(qualifiers = "from-class6", shadows = Test6.class, resourceDir = "class6/res", constants = BuildConfigConstants6.class)
   public static class Test6 extends Test5 {
-  }
-
-  @Ignore
-  @Config(constants = BuildConfigConstants3.class)
-  public static class Test7 extends Test2 {
   }
 
   private String stringify(Config config) {
