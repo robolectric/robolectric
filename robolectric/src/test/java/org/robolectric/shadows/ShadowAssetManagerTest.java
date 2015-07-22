@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.app.Activity;
+import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import org.junit.Before;
 import org.junit.Rule;
@@ -88,6 +89,13 @@ public class ShadowAssetManagerTest {
   public void open_withAccessMode_shouldOpenFile() throws IOException {
     final String contents = Strings.fromStream(assetManager.open("assetsHome.txt", AssetManager.ACCESS_BUFFER));
     assertThat(contents).isEqualTo("assetsHome!");
+  }
+
+  @Test
+  public void openFd_shouldProvideFileDescriptorForAsset() throws Exception {
+    AssetFileDescriptor assetFileDescriptor = assetManager.openFd("assetsHome.txt");
+    assertThat(Strings.fromStream(assetFileDescriptor.createInputStream())).isEqualTo("assetsHome!");
+    assertThat(assetFileDescriptor.getLength()).isEqualTo(11);
   }
 
   @Test
