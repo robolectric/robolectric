@@ -89,7 +89,7 @@
       <dependency>
         <groupId>org.robolectric</groupId>
         <artifactId>android-all</artifactId>
-        <version>5.0.0_r2-robolectric-0</version>
+        <version>5.0.0_r2-robolectric-1</version>
         <scope>provided</scope>
       </dependency>
 

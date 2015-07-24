@@ -3,6 +3,7 @@ package org.robolectric.shadows.maps;
 import android.app.Activity;
 import android.graphics.Point;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.view.MotionEvent;
 import android.view.View;
 import com.google.android.maps.GeoPoint;
@@ -14,6 +15,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.TestRunnerWithManifest;
 
@@ -21,6 +23,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.shadows.maps.ShadowMapView.toE6;
 
 @RunWith(TestRunnerWithManifest.class)
+@Config(sdk = {
+    Build.VERSION_CODES.JELLY_BEAN,
+    Build.VERSION_CODES.JELLY_BEAN_MR1,
+    Build.VERSION_CODES.JELLY_BEAN_MR2,
+    Build.VERSION_CODES.KITKAT})
 public class ShadowMapViewTest {
   private MapView mapView;
   private MyOverlay overlay1;

@@ -184,7 +184,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
         if (instrumentingClassLoaderFactory == null) {
           instrumentingClassLoaderFactory = new InstrumentingClassLoaderFactory(createClassLoaderConfig(), getJarResolver());
         }
-        SdkEnvironment sdkEnvironment = instrumentingClassLoaderFactory.getSdkEnvironment(new SdkConfig(pickSdkVersion(config, appManifest)));
+        SdkEnvironment sdkEnvironment = instrumentingClassLoaderFactory.getSdkEnvironment(new SdkConfig(pickSdkVersion(config, appManifest)), isLayoutLibEnabled(config));
         methodBlock(method, config, appManifest, sdkEnvironment).evaluate();
       } catch (AssumptionViolatedException e) {
         eachNotifier.addFailedAssumption(e);
@@ -288,6 +288,10 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     } catch (InitializationError initializationError) {
       throw new RuntimeException(initializationError);
     }
+  }
+
+  protected boolean isLayoutLibEnabled(Config config) {
+    return config.rendering().equals("true");
   }
 
   protected AndroidManifest getAppManifest(Config config) {

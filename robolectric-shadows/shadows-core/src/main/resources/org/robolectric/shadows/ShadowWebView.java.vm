@@ -45,8 +45,9 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
   private int goBackInvocations = 0;
   private LoadData lastLoadData;
   private LoadDataWithBaseURL lastLoadDataWithBaseURL;
+#if ($api < 21)
   private WebView.PictureListener pictureListener;
-
+#end
   @HiddenApi @Implementation
   public void ensureProviderCreated() {
     final ClassLoader classLoader = getClass().getClassLoader();
@@ -170,6 +171,7 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
     return webViewClient;
   }
 
+#if ($api < 21)
   @Implementation
   public void setPictureListener(WebView.PictureListener listener) {
     pictureListener = listener;
@@ -178,6 +180,7 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
   public WebView.PictureListener getPictureListener() {
     return pictureListener;
   }
+#end
 
   @Implementation
   public void addJavascriptInterface(Object obj, String interfaceName) {

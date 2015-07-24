@@ -25,6 +25,7 @@ public @interface Config {
   String DEFAULT = "--default";
   String DEFAULT_RES_FOLDER = "res";
   String DEFAULT_ASSET_FOLDER = "assets";
+  String dEFAULT_RENDERING_ENABLED = "false";
 
   /**
    * The Android SDK level to emulate. If not specified, Robolectric defaults to API 16.
@@ -111,6 +112,8 @@ public @interface Config {
    */
   String[] libraries() default {};
 
+  String rendering() default dEFAULT_RENDERING_ENABLED;
+
   class Implementation implements Config {
     private final int[] sdk;
     private final String manifest;
@@ -122,6 +125,7 @@ public @interface Config {
     private final Class<?>[] shadows;
     private final Class<? extends Application> application;
     private final String[] libraries;
+    private final String rendering;
 
     public static Config fromProperties(Properties properties) {
       if (properties == null || properties.size() == 0) return null;
@@ -135,7 +139,8 @@ public @interface Config {
           parseClasses(properties.getProperty("shadows", "")),
           parseApplication(properties.getProperty("application", "android.app.Application")),
           parseStringArrayProperty(properties.getProperty("libraries", "")),
-          parseClass(properties.getProperty("constants", ""))
+          parseClass(properties.getProperty("constants", "")),
+          properties.getProperty("rendering", Config.dEFAULT_RENDERING_ENABLED)
       );
     }
 
@@ -178,7 +183,7 @@ public @interface Config {
       return result;
     }
 
-    public Implementation(int[] sdk, String manifest, String qualifiers, String packageName, String resourceDir, String assetDir, Class<?>[] shadows, Class<? extends Application> application, String[] libraries, Class<?> constants) {
+    public Implementation(int[] sdk, String manifest, String qualifiers, String packageName, String resourceDir, String assetDir, Class<?>[] shadows, Class<? extends Application> application, String[] libraries, Class<?> constants, String rendering) {
       this.sdk = sdk;
       this.manifest = manifest;
       this.qualifiers = qualifiers;
@@ -189,6 +194,7 @@ public @interface Config {
       this.application = application;
       this.libraries = libraries;
       this.constants = constants;
+      this.rendering = rendering;
     }
 
     public Implementation(Config other) {
@@ -202,6 +208,7 @@ public @interface Config {
       this.shadows = other.shadows();
       this.application = other.application();
       this.libraries = other.libraries();
+      this.rendering = other.rendering();
     }
 
     public Implementation(Config baseConfig, Config overlayConfig) {
@@ -212,6 +219,7 @@ public @interface Config {
       this.resourceDir = pick(baseConfig.resourceDir(), overlayConfig.resourceDir(), Config.DEFAULT_RES_FOLDER);
       this.assetDir = pick(baseConfig.assetDir(), overlayConfig.assetDir(), Config.DEFAULT_ASSET_FOLDER);
       this.constants = pick(baseConfig.constants(), overlayConfig.constants(), Void.class);
+      this.rendering = pick(baseConfig.rendering(), overlayConfig.rendering(), Config.dEFAULT_RENDERING_ENABLED);
 
       Set<Class<?>> shadows = new HashSet<>();
       shadows.addAll(Arrays.asList(baseConfig.shadows()));
@@ -287,6 +295,11 @@ public @interface Config {
     @NotNull @Override
     public Class<? extends Annotation> annotationType() {
       return Config.class;
+    }
+
+    @Override
+    public String rendering() {
+      return rendering;
     }
   }
 }

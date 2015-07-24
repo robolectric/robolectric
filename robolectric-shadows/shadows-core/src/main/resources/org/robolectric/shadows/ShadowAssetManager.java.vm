@@ -4,8 +4,10 @@ import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
+import android.os.ParcelFileDescriptor;
 import android.util.TypedValue;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -174,6 +176,13 @@ public final class ShadowAssetManager {
   }
 
   @Implementation
+  public final AssetFileDescriptor openFd(String fileName) throws IOException {
+    File file = new File(appManifest.getAssetsDirectory().join(fileName).getPath());
+    ParcelFileDescriptor parcelFileDescriptor = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY);
+    return new AssetFileDescriptor(parcelFileDescriptor, 0, file.length());
+  }
+
+  @Implementation
   public final String[] list(String path) throws IOException {
     FsFile file = appManifest.getAssetsDirectory().join(path);
     if (file.isDirectory()) {
@@ -323,12 +332,12 @@ public final class ShadowAssetManager {
       return style.hashCode();
     }
   }
-
+#if ($api < 21)
   @HiddenApi @Implementation
   public static void copyTheme($ptrClass dest, long source) {
     throw new UnsupportedOperationException();
   }
-
+#end
   /////////////////////////
 
   synchronized public void setTheme($ptrClass internalThemeId, Resources.Theme theme) {

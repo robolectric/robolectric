@@ -70,7 +70,7 @@ public class InstrumentationConfiguration {
       interceptedMethods.add(methodReference);
       return this;
     }
-    
+
     public Builder addInstrumentedClass(String name) {
       instrumentedClasses.add(name);
       return this;
@@ -180,8 +180,8 @@ public class InstrumentationConfiguration {
    * @return  True if the class should be instrumented.
    */
   public boolean shouldInstrument(ClassInfo classInfo) {
-    return !(classInfo.isInterface() 
-              || classInfo.isAnnotation() 
+    return !(classInfo.isInterface()
+              || classInfo.isAnnotation()
               || classInfo.hasAnnotation(DoNotInstrument.class))
           && (isInInstrumentedPackage(classInfo)
               || instrumentedClasses.contains(classInfo.getName())

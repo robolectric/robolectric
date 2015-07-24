@@ -30,14 +30,15 @@ public class InstrumentingClassLoaderFactory {
     this.dependencyResolver = dependencyResolver;
   }
 
-  public synchronized SdkEnvironment getSdkEnvironment(SdkConfig sdkConfig) {
+  public synchronized SdkEnvironment getSdkEnvironment(SdkConfig sdkConfig, boolean layoutLibIncluded) {
 
-    Pair<InstrumentationConfiguration, SdkConfig> key = Pair.create(instrumentationConfig, sdkConfig);
-
+    Pair<InstrumentationConfiguration, SdkConfig> key =
+        Pair.create(instrumentationConfig, sdkConfig);
     SdkEnvironment sdkEnvironment = sdkToEnvironment.get(key);
     if (sdkEnvironment == null) {
       URL[] urls = dependencyResolver.getLocalArtifactUrls(sdkConfig.getSdkClasspathDependencies());
-      ClassLoader robolectricClassLoader = new InstrumentingClassLoader(instrumentationConfig, urls);
+      ClassLoader robolectricClassLoader =
+          new InstrumentingClassLoader(instrumentationConfig, layoutLibIncluded, urls);
       sdkEnvironment = new SdkEnvironment(sdkConfig, robolectricClassLoader);
       sdkToEnvironment.put(key, sdkEnvironment);
     }

@@ -30,16 +30,32 @@
     <dependency>
       <groupId>org.robolectric</groupId>
       <artifactId>robolectric-annotations</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.robolectric</groupId>
+          <artifactId>android-all</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
-
     <dependency>
       <groupId>org.robolectric</groupId>
       <artifactId>robolectric-utils</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.robolectric</groupId>
+          <artifactId>android-all</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
-
     <dependency>
       <groupId>org.robolectric</groupId>
       <artifactId>robolectric-resources</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.robolectric</groupId>
+          <artifactId>android-all</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <!-- Project Dependencies -->
@@ -222,7 +238,9 @@
             <sourceDirectory>target/generated-shadows</sourceDirectory>
           </additionalSourceDirectories>
           <outputDirectory>target/generated-sources</outputDirectory>
-          <compilerArguments>-source ${maven.compiler.source} -target ${maven.compiler.target} -Aorg.robolectric.annotation.processing.shadowPackage=org.robolectric</compilerArguments>
+          <compilerArguments>-source ${maven.compiler.source} -target
+            ${maven.compiler.target}
+            -Aorg.robolectric.annotation.processing.shadowPackage=org.robolectric</compilerArguments>
         </configuration>
         <executions>
           <execution>
@@ -364,9 +382,29 @@
       </build>
       <dependencies>
         <dependency>
+          <groupId>com.android.tools.layoutlib</groupId>
+          <artifactId>layoutlib-api</artifactId>
+          <version>24.2.3</version>
+        </dependency>
+        <dependency>
+          <groupId>com.android.tools</groupId>
+          <artifactId>sdk-common</artifactId>
+          <version>24.2.3</version>
+        </dependency>
+        <dependency>
+          <groupId>com.android.tools</groupId>
+          <artifactId>common</artifactId>
+          <version>24.2.3</version>
+        </dependency>
+        <dependency>
+          <groupId>com.android.tools</groupId>
+          <artifactId>sdklib</artifactId>
+          <version>24.2.3</version>
+        </dependency>
+        <dependency>
           <groupId>org.robolectric</groupId>
           <artifactId>android-all</artifactId>
-          <version>5.0.0_r2-robolectric-0</version>
+          <version>5.0.0_r2-robolectric-1</version>
         </dependency>
       </dependencies>
       <properties>
@@ -389,9 +427,29 @@
       </build>
       <dependencies>
         <dependency>
+          <groupId>com.android.tools.layoutlib</groupId>
+          <artifactId>layoutlib-api</artifactId>
+          <version>24.2.3</version>
+        </dependency>
+        <dependency>
+          <groupId>com.android.tools</groupId>
+          <artifactId>sdk-common</artifactId>
+          <version>24.2.3</version>
+        </dependency>
+        <dependency>
+          <groupId>com.android.tools</groupId>
+          <artifactId>common</artifactId>
+          <version>24.2.3</version>
+        </dependency>
+        <dependency>
+          <groupId>com.android.tools</groupId>
+          <artifactId>sdklib</artifactId>
+          <version>24.2.3</version>
+        </dependency>
+        <dependency>
           <groupId>org.robolectric</groupId>
           <artifactId>android-all</artifactId>
-          <version>5.0.0_r2-robolectric-0</version>
+          <version>5.0.0_r2-robolectric-1</version>
         </dependency>
       </dependencies>
       <properties>

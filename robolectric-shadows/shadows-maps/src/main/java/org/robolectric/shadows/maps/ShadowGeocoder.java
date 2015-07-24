@@ -5,6 +5,8 @@ import android.location.Geocoder;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.internal.ShadowExtractor;
+import org.robolectric.shadows.ShadowAddress;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -69,7 +71,7 @@ public class ShadowGeocoder {
 
   private Address makeAddress() {
     Address address = new Address(Locale.getDefault());
-    Shadows.shadowOf(address).setSimulatedHasLatLong(hasLatitude, hasLongitude);
+    ((ShadowAddress) ShadowExtractor.extract(address)).setSimulatedHasLatLong(hasLatitude, hasLongitude);
     return address;
   }
 

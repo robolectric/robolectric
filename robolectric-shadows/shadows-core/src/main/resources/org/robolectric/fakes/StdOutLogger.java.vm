@@ -1,0 +1,69 @@
+package org.robolectric.fakes;
+#if ($api >= 21)
+import com.android.utils.ILogger;
+import com.android.ide.common.rendering.api.LayoutLog;
+
+/**
+ * Class implementing the 3 different log interface we use!
+ *
+ * At least ILogger and ISdkLog are identical...
+ *
+ */
+public class StdOutLogger extends LayoutLog implements ILogger {
+  // LayoutLog
+  @Override
+  public void error(String tag, String message, Object data) {
+    if (tag != null) {
+      System.err.println("ERROR: [" + tag + "] " + message);
+    } else {
+      System.err.println("ERROR: " + message);
+    }
+  }
+
+  @Override
+  public void error(String tag, String message, Throwable throwable, Object data) {
+    error(tag, message, data);
+    throwable.printStackTrace();
+  }
+
+  @Override
+  public void fidelityWarning(String tag, String message, Throwable throwable, Object data) {
+    if (tag != null) {
+      System.out.println("warning: [" + tag + "] " + message);
+    } else {
+      System.out.println("warning: " + message);
+    }
+    if (throwable != null) {
+      throwable.printStackTrace();
+    }
+  }
+
+  @Override
+  public void warning(String tag, String message, Object data) {
+    fidelityWarning(tag, message, null/*throwable*/, data);
+  }
+
+  // ILogger / ISdkLog
+  public void error(Throwable t, String errorFormat, Object... args) {
+    error(null/*tag*/, String.format(errorFormat, args), t, null/*data*/);
+  }
+
+  public void printf(String msgFormat, Object... args) {
+    System.out.println(String.format(msgFormat, args));
+  }
+
+  public void warning(String warningFormat, Object... args) {
+    warning(null/*tag*/, String.format(warningFormat, args), null/*data*/);
+  }
+
+  @Override
+  public void info(String msgFormat, Object... args) {
+    System.out.print("Info: " + String.format(msgFormat, args));
+  }
+
+  @Override
+  public void verbose(String msgFormat, Object... args) {
+    System.out.print("Verbose: " + String.format(msgFormat, args));
+  }
+}
+#end

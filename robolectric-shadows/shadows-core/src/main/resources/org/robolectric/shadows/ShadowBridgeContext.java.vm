@@ -1,0 +1,60 @@
+package org.robolectric.shadows;
+#if ($api == 21)
+import com.android.layoutlib.bridge.android.BridgeContext;
+import com.android.layoutlib.bridge.android.BridgePowerManager;
+
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.util.ReflectionHelpers;
+
+import android.os.Handler;
+import android.os.PowerManager;
+import android.view.accessibility.AccessibilityManager;
+import android.view.textservice.TextServicesManager;
+
+import static org.robolectric.internal.Shadow.newInstanceOf;
+/**
+ * Shadow for {@link com.android.layoutlib.bridge.android.BridgeContext}
+ */
+@Implements(className = ShadowBridgeContext.CLASS_NAME)
+public class ShadowBridgeContext {
+  public static final String CLASS_NAME = "com.android.layoutlib.bridge.android.BridgeContext";
+
+  @RealObject private BridgeContext realContext;
+  
+  @Implementation
+  public Object getSystemService(String service) {
+    if ("layout_inflater".equals(service)) {
+      return ReflectionHelpers.getField(realContext, "mBridgeInflater");
+    }
+    if ("textservices".equals(service)) {
+      return TextServicesManager.getInstance();
+    }
+    if ("window".equals(service)) {
+      return ReflectionHelpers.getField(realContext, "mWindowManager");
+    }
+    if ("input_method".equals(service)) {
+      return null;
+    }
+    if ("power".equals(service)) {
+      return new PowerManager(realContext, new BridgePowerManager(), new Handler());
+    }
+    if ("display".equals(service)) {
+      return ReflectionHelpers.getField(realContext, "mDisplayManager");
+    }
+    if ("accessibility".equals(service)) {
+      return AccessibilityManager.getInstance(realContext);
+    }
+    if ("user".equals(service)) {
+      try {
+        Class<?> clazz = Class.forName("android.os.UserManager");
+        return newInstanceOf(clazz);
+      } catch (ClassNotFoundException e) {
+        e.printStackTrace();
+      }
+    }
+    throw new UnsupportedOperationException("Unsupported Service: " + service);
+  }
+}
+#end

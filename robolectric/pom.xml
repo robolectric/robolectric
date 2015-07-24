@@ -32,28 +32,52 @@
     <!-- Robolectric Dependencies -->
     <dependency>
       <groupId>org.robolectric</groupId>
-      <artifactId>robolectric-annotations</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.robolectric</groupId>
-      <artifactId>robolectric-resources</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.robolectric</groupId>
-      <artifactId>robolectric-utils</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.robolectric</groupId>
       <artifactId>android-all</artifactId>
-      <scope>provided</scope>
+      <version>5.0.0_r2-robolectric-1</version>
     </dependency>
 
     <dependency>
       <groupId>org.robolectric</groupId>
       <artifactId>shadows-core</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.robolectric</groupId>
+          <artifactId>android-all</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.robolectric</groupId>
+      <artifactId>robolectric-annotations</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.robolectric</groupId>
+          <artifactId>android-all</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.robolectric</groupId>
+      <artifactId>robolectric-resources</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.robolectric</groupId>
+          <artifactId>android-all</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.robolectric</groupId>
+      <artifactId>robolectric-utils</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.robolectric</groupId>
+          <artifactId>android-all</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>

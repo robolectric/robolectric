@@ -29,6 +29,7 @@
       <groupId>org.robolectric</groupId>
       <artifactId>android-all</artifactId>
       <scope>provided</scope>
+      <version>5.0.0_r2-robolectric-1</version>
     </dependency>
 
     <dependency>

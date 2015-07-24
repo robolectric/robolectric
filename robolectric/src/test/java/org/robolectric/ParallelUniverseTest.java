@@ -24,7 +24,7 @@ import static org.mockito.Mockito.*;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ParallelUniverseTest {
-  
+
   private ParallelUniverse pu;
 
   @Before
@@ -42,33 +42,33 @@ public class ParallelUniverseTest {
   @Test
   public void setUpApplicationState_setsVersionQualifierFromSdkConfig() {
     String givenQualifiers = "";
-    Config c = new Config.Implementation(new int[0], Config.DEFAULT, givenQualifiers, "org.robolectric", "res", "assets", new Class[0], Application.class, new String[0], null);
+    Config c = new Config.Implementation(new int[0], Config.DEFAULT, givenQualifiers, "org.robolectric", "res", "assets", new Class[0], Application.class, new String[0], null, "false");
     pu.setUpApplicationState(null, new DefaultTestLifecycle(), null, null, c);
     assertThat(getQualifiersfromSystemResources()).isEqualTo("v18");
     assertThat(getQualifiersFromAppAssetManager()).isEqualTo("v18");
     assertThat(getQualifiersFromSystemAssetManager()).isEqualTo("v18");
   }
-  
+
   @Test
   public void setUpApplicationState_setsVersionQualifierFromConfigQualifiers() {
     String givenQualifiers = "land-v17";
-    Config c = new Config.Implementation(new int[0], Config.DEFAULT, givenQualifiers, "org.robolectric", "res", "assets", new Class[0], Application.class, new String[0], null);
+    Config c = new Config.Implementation(new int[0], Config.DEFAULT, givenQualifiers, "org.robolectric", "res", "assets", new Class[0], Application.class, new String[0], null, "false");
     pu.setUpApplicationState(null, new DefaultTestLifecycle(), null, null, c);
     assertThat(getQualifiersfromSystemResources()).isEqualTo("land-v17");
     assertThat(getQualifiersFromAppAssetManager()).isEqualTo("land-v17");
     assertThat(getQualifiersFromSystemAssetManager()).isEqualTo("land-v17");
   }
-  
+
   @Test
   public void setUpApplicationState_setsVersionQualifierFromSdkConfigWithOtherQualifiers() {
     String givenQualifiers = "large-land";
-    Config c = new Config.Implementation(new int[0], Config.DEFAULT, givenQualifiers, "res", "assets", "", new Class[0], Application.class, new String[0], null);
+    Config c = new Config.Implementation(new int[0], Config.DEFAULT, givenQualifiers, "res", "assets", "", new Class[0], Application.class, new String[0], null, "false");
     pu.setUpApplicationState(null, new DefaultTestLifecycle(), null, null, c);
     assertThat(getQualifiersfromSystemResources()).isEqualTo("large-land-v18");
     assertThat(getQualifiersFromAppAssetManager()).isEqualTo("large-land-v18");
     assertThat(getQualifiersFromSystemAssetManager()).isEqualTo("large-land-v18");
   }
-  
+
   @Test
   public void tearDownApplication_shouldNotResetPackageManager() {
     RobolectricPackageManager pm = mock(RobolectricPackageManager.class);
@@ -76,14 +76,14 @@ public class ParallelUniverseTest {
     pu.tearDownApplication();
     verify(pm, never()).reset();
   }
-  
+
   @Test
   public void tearDownApplication_invokesOnTerminate() {
     RuntimeEnvironment.application = mock(Application.class);
     pu.tearDownApplication();
     verify(RuntimeEnvironment.application).onTerminate();
   }
-  
+
   private String getQualifiersfromSystemResources() {
     Resources systemResources = Resources.getSystem();
     Configuration configuration = systemResources.getConfiguration();

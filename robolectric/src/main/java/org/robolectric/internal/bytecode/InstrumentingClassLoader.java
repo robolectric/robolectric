@@ -11,6 +11,7 @@ import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.commons.JSRInlinerAdapter;
 import org.objectweb.asm.commons.Method;
 import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.FieldNode;
@@ -44,8 +45,36 @@ import static org.objectweb.asm.Type.OBJECT;
 import static org.objectweb.asm.Type.VOID;
 import static org.robolectric.util.Util.readBytes;
 
+import android.app.Activity;
+import android.app.Application;
+import android.content.ContextWrapper;
+import android.content.res.AssetManager;
+import android.content.res.BridgeResources;
+import android.content.res.BridgeTypedArray;
+import android.content.res.Resources;
+import android.content.res.Resources.Theme;
+import android.content.res.TypedArray;
+import android.graphics.BidiRenderer;
+import android.graphics.Bitmap;
+import android.graphics.Paint;
+import android.text.TextPaint;
+import android.view.Surface;
+import android.view.Window;
+import android.view.accessibility.AccessibilityManager;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
+import com.android.internal.telephony.cat.TextColor;
+import com.android.layoutlib.bridge.android.BridgeContext;
+import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
+import com.googlecode.eyesfree.utils.ClassLoadingManager;
+
+import dalvik.system.VMRuntime;
+
 /**
- * Class loader that modifies the bytecode of Android classes to insert calls to Robolectric's shadow classes.
+ * Class loader that modifies the bytecode of Android classes to insert calls to Robolectric's
+ * shadow classes.
  */
 public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
   private static final Type OBJECT_TYPE = Type.getType(Object.class);
@@ -67,9 +96,23 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
   private final Map<String, Class> classes = new HashMap<>();
   private final Map<String, String> classesToRemap;
   private final Set<InstrumentationConfiguration.MethodRef> methodsToIntercept;
+  private final boolean isGraphicsEnabled;
 
   public InstrumentingClassLoader(InstrumentationConfiguration config, URL... urls) {
     super(InstrumentingClassLoader.class.getClassLoader());
+    this.config = config;
+    this.isGraphicsEnabled = false;
+    this.urls = new URLClassLoader(urls, null);
+    classesToRemap = convertToSlashes(config.classNameTranslations());
+    methodsToIntercept = convertToSlashes(config.methodsToIntercept());
+    for (URL url : urls) {
+      Logger.debug("Loading classes from: %s", url);
+    }
+  }
+
+  public InstrumentingClassLoader(InstrumentationConfiguration config, boolean graphics, URL... urls) {
+    super(InstrumentingClassLoader.class.getClassLoader());
+    this.isGraphicsEnabled = graphics;
     this.config = config;
     this.urls = new URLClassLoader(urls, null);
     classesToRemap = convertToSlashes(config.classNameTranslations());
@@ -380,7 +423,33 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
 
       Set<String> foundMethods = new HashSet<>();
       List<MethodNode> methods = new ArrayList<>(classNode.methods);
+      String delegateAnnotationName = "L" + LayoutlibDelegate.class.getName().replace('.', '/') + ";";
       for (MethodNode method : methods) {
+        if (isGraphicsEnabled) {
+          if (method.name.equals("draw")) {
+            continue;
+          }
+          if (method.visibleAnnotations != null) {
+            for (Object visibleAnnotation : method.visibleAnnotations) {
+              AnnotationNode node = (AnnotationNode) visibleAnnotation;
+              if (node.desc.equals(delegateAnnotationName))
+                continue;
+            }
+          }
+
+          if (internalClassName.replace('/', '.').startsWith("android.graphics.")
+              || internalClassName.replace('/', '.').equals(Surface.class.getName())
+              || internalClassName.replace('/', '.').startsWith(Surface.class.getName())
+              || internalClassName.replace('/', '.').startsWith(LinearLayout.class.getName())
+              || internalClassName.replace('/', '.').startsWith(TextView.class.getName())
+              || internalClassName.replace('/', '.').startsWith(ImageView.class.getName())
+              || internalClassName.replace('/', '.').startsWith(TextPaint.class.getName())
+              || internalClassName.replace('/', '.').startsWith(VMRuntime.class.getName())
+              || internalClassName.replace('/', '.').startsWith(Theme.class.getName())) {
+            return;
+          }
+        }
+
         foundMethods.add(method.name + method.desc);
 
         filterNasties(method);

@@ -12,6 +12,11 @@ import org.robolectric.annotation.Config;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
+@Config(sdk = {
+    Build.VERSION_CODES.JELLY_BEAN,
+    Build.VERSION_CODES.JELLY_BEAN_MR1,
+    Build.VERSION_CODES.JELLY_BEAN_MR2,
+    Build.VERSION_CODES.KITKAT})
 public class ShadowLocaleDataTest {
 
   @Test
