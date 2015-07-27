@@ -45,6 +45,8 @@ public interface RobolectricPackageManager {
 
   void addActivityIcon(Intent intent, Drawable d);
 
+  Drawable getApplicationIcon(String packageName) throws PackageManager.NameNotFoundException;
+
   void setApplicationIcon(String packageName, Drawable d);
 
   Intent getLaunchIntentForPackage(String packageName);
