@@ -42,7 +42,7 @@ public class SupportFragmentController<F extends Fragment> extends ComponentCont
             @Override
             public void run() {
                 if (!attached) attach();
-                activityController.create().get().getSupportFragmentManager().beginTransaction().add(fragment, null).commit();
+                activityController.create(bundle).get().getSupportFragmentManager().beginTransaction().add(fragment, null).commit();
             }
         });
         return this;

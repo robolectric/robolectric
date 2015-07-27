@@ -43,11 +43,9 @@ public class SupportFragmentControllerTest {
         final LoginFragment fragment = new LoginFragment();
         SupportFragmentController.of(fragment).create();
 
-        assertThat(fragment.getView()).isNotNull();
         assertThat(fragment.getActivity()).isNotNull();
         assertThat(fragment.isAdded()).isTrue();
         assertThat(fragment.isResumed()).isFalse();
-        assertThat(fragment.getView().findViewById(R.id.tacos)).isNotNull();
     }
 
     @Test
@@ -55,12 +53,10 @@ public class SupportFragmentControllerTest {
         final LoginFragment fragment = new LoginFragment();
         SupportFragmentController.of(fragment, LoginActivity.class).create();
 
-        assertThat(fragment.getView()).isNotNull();
         assertThat(fragment.getActivity()).isNotNull();
         assertThat(fragment.getActivity()).isInstanceOf(LoginActivity.class);
         assertThat(fragment.isAdded()).isTrue();
         assertThat(fragment.isResumed()).isFalse();
-        assertThat(fragment.getView().findViewById(R.id.tacos)).isNotNull();
     }
 
     @Test
@@ -72,6 +68,7 @@ public class SupportFragmentControllerTest {
         assertThat(fragment.getActivity()).isNotNull();
         assertThat(fragment.isAdded()).isTrue();
         assertThat(fragment.isResumed()).isTrue();
+        assertThat(fragment.getView().findViewById(R.id.tacos)).isNotNull();
     }
 
     @Test
