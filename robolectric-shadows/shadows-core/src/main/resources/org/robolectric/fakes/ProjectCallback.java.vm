@@ -20,10 +20,10 @@ import java.util.Map;
  *
  */
 public class ProjectCallback implements IProjectCallback {
-  private Map<ResourceType, Map<String, Integer>> mIdMap =
+  private Map<ResourceType, Map<String, Integer>> idMap =
       new HashMap<ResourceType, Map<String, Integer>>();
 
-  private Map<Integer, Pair<ResourceType, String>> mReverseIdMap =
+  private Map<Integer, Pair<ResourceType, String>> reverseIdMap =
       new HashMap<Integer, Pair<ResourceType, String>>();
 
   public ProjectCallback() {}
@@ -59,16 +59,16 @@ public class ProjectCallback implements IProjectCallback {
 
   public Integer getResourceId(ResourceType type, String name) {
     // since we don't have access to compiled id, generate one on the fly.
-    Map<String, Integer> typeMap = mIdMap.get(type);
+    Map<String, Integer> typeMap = idMap.get(type);
     if (typeMap == null) {
       typeMap = new HashMap<String, Integer>();
-      mIdMap.put(type, typeMap);
+      idMap.put(type, typeMap);
     }
     Integer value = typeMap.get(name);
     if (value == null) {
       value = typeMap.size() + 1;
       typeMap.put(name, value);
-      mReverseIdMap.put(value, Pair.of(type, name));
+      reverseIdMap.put(value, Pair.of(type, name));
     }
     return value;
   }
@@ -81,7 +81,7 @@ public class ProjectCallback implements IProjectCallback {
   }
 
   public Pair<ResourceType, String> resolveResourceId(int id) {
-    return mReverseIdMap.get(id);
+    return reverseIdMap.get(id);
   }
 
   public String resolveResourceId(int[] id) {

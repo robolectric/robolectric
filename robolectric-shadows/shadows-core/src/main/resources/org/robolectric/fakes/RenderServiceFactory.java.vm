@@ -55,9 +55,9 @@ import java.util.Map;
  *
  */
 public class RenderServiceFactory {
-  private LayoutLibrary mLibrary;
+  private LayoutLibrary library;
 
-  private FrameworkResources mResources;
+  private FrameworkResources resources;
 
   public static RenderServiceFactory create(File platformFolder) {
     // create the factory
@@ -143,7 +143,7 @@ public class RenderServiceFactory {
     Map<ResourceType, Map<String, ResourceValue>> configedProjectRes =
         projectResources.getConfiguredResources(config);
     Map<ResourceType, Map<String, ResourceValue>> configedFrameworkRes =
-        mResources.getConfiguredResources(config);
+        resources.getConfiguredResources(config);
     return ResourceResolver.create(
         configedProjectRes, configedFrameworkRes, themeName, isProjectTheme);
   }
@@ -158,7 +158,7 @@ public class RenderServiceFactory {
    */
   public RenderService createService(
       ResourceResolver resources, FolderConfiguration config, IProjectCallback projectCallback) {
-    RenderService renderService = new RenderService(mLibrary, resources, config, projectCallback);
+    RenderService renderService = new RenderService(library, resources, config, projectCallback);
     return renderService;
   }
 
@@ -178,7 +178,7 @@ public class RenderServiceFactory {
       boolean isProjectTheme, FolderConfiguration config, IProjectCallback projectCallback) {
     ResourceResolver resources =
         createResourceResolver(config, projectResources, themeName, isProjectTheme);
-    RenderService renderService = new RenderService(mLibrary, resources, config, projectCallback);
+    RenderService renderService = new RenderService(library, resources, config, projectCallback);
     return renderService;
   }
 
@@ -209,16 +209,16 @@ public class RenderServiceFactory {
       throw new IllegalArgumentException("platform build.prop does not exist.");
     }
     StdOutLogger log = new StdOutLogger();
-    mLibrary = ShadowLayoutLibrary.load(layoutLibJar.getAbsolutePath(), log, "LayoutLibRenderer");
-    if (mLibrary.getStatus() != LoadStatus.LOADED) {
-      throw new IllegalArgumentException(mLibrary.getLoadMessage());
+    library = ShadowLayoutLibrary.load(layoutLibJar.getAbsolutePath(), log, "LayoutLibRenderer");
+    if (library.getStatus() != LoadStatus.LOADED) {
+      throw new IllegalArgumentException(library.getLoadMessage());
     }
     // load the framework resources
-    mResources = loadResources(resFolder, log);
+    resources = loadResources(resFolder, log);
     // get all the attr values.
     HashMap<String, Map<String, Integer>> enumMap = new HashMap<String, Map<String, Integer>>();
     FolderConfiguration config = new FolderConfiguration();
-    Map<ResourceType, Map<String, ResourceValue>> res = mResources.getConfiguredResources(config);
+    Map<ResourceType, Map<String, ResourceValue>> res = resources.getConfiguredResources(config);
     // get the ATTR values
     Map<String, ResourceValue> attrItems = res.get(ResourceType.ATTR);
     for (ResourceValue value : attrItems.values()) {
@@ -249,7 +249,7 @@ public class RenderServiceFactory {
     }
     // we need to parse the build.prop for this
     Map<String, String> buildPropMap = ProjectProperties.parsePropertyFile(buildProp, log);
-    return mLibrary.init(buildPropMap, fontFolder, enumMap, log);
+    return library.init(buildPropMap, fontFolder, enumMap, log);
   }
 
   private FrameworkResources loadResources(File resFolder, ILogger log) {

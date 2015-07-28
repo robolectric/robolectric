@@ -29,39 +29,39 @@ import java.io.FileNotFoundException;
  */
 public class RenderService {
   // The following fields are set through the constructor and are required.
-  private final IProjectCallback mProjectCallback;
-  private final ResourceResolver mResourceResolver;
-  private final LayoutLibrary mLayoutLib;
-  private final FolderConfiguration mConfig;
+  private final IProjectCallback projectCallback;
+  private final ResourceResolver resourceResolver;
+  private final LayoutLibrary layoutLib;
+  private final FolderConfiguration config;
 
   // The following fields are optional or configurable using the various chained
   // setters:
-  private int mWidth;
-  private int mHeight;
-  private int mMinSdkVersion = -1;
-  private int mTargetSdkVersion = -1;
-  private float mXdpi = -1;
-  private float mYdpi = -1;
-  private RenderingMode mRenderingMode = RenderingMode.NORMAL;
-  private LayoutLog mLogger;
-  private Integer mOverrideBgColor;
-  private boolean mShowDecorations = true;
-  private String mAppLabel;
-  private String mAppIconName;
-  private IImageFactory mImageFactory;
-  private SessionParams mParams;
+  private int width;
+  private int height;
+  private int minSdkVersion = -1;
+  private int targetSdkVersion = -1;
+  private float Xdpi = -1;
+  private float Ydpi = -1;
+  private RenderingMode renderingMode = RenderingMode.NORMAL;
+  private LayoutLog logger;
+  private Integer overrideBgColor;
+  private boolean showDecorations = true;
+  private String appLabel;
+  private String appIconName;
+  private IImageFactory imageFactory;
+  private SessionParams params;
 
   /** Use the {@link RenderServiceFactory#create} factory instead */
-  RenderService(LayoutLibrary layoutLibrary, ResourceResolver resources, FolderConfiguration config,
-      IProjectCallback projectCallback) {
-    mLayoutLib = layoutLibrary;
-    mResourceResolver = resources;
-    mConfig = config;
-    mProjectCallback = projectCallback;
+  RenderService(LayoutLibrary layoutLibrary, ResourceResolver resources, FolderConfiguration c,
+      IProjectCallback callback) {
+    layoutLib = layoutLibrary;
+    resourceResolver = resources;
+    config = c;
+    projectCallback = callback;
   }
 
   public SessionParams getSessionParams() {
-    return mParams;
+    return params;
   }
 
   /**
@@ -71,8 +71,8 @@ public class RenderService {
    * @param logger the log to be used
    * @return this (such that chains of setters can be stringed together)
    */
-  public RenderService setLog(LayoutLog logger) {
-    mLogger = logger;
+  public RenderService setLog(LayoutLog l) {
+    logger = l;
     return this;
   }
 
@@ -83,8 +83,8 @@ public class RenderService {
    * @param renderingMode the rendering mode to be used
    * @return this (such that chains of setters can be stringed together)
    */
-  public RenderService setRenderingMode(RenderingMode renderingMode) {
-    mRenderingMode = renderingMode;
+  public RenderService setRenderingMode(RenderingMode mode) {
+    renderingMode = mode;
     return this;
   }
 
@@ -96,8 +96,8 @@ public class RenderService {
    *            in the form of a AARRGGBB bitmask, or null to use no custom background.
    * @return this (such that chains of setters can be stringed together)
    */
-  public RenderService setOverrideBgColor(Integer overrideBgColor) {
-    mOverrideBgColor = overrideBgColor;
+  public RenderService setOverrideBgColor(Integer color) {
+    overrideBgColor = color;
     return this;
   }
 
@@ -108,54 +108,54 @@ public class RenderService {
    * @param showDecorations true if the rendering should include system bars etc.
    * @return this (such that chains of setters can be stringed together)
    */
-  public RenderService setDecorations(boolean showDecorations) {
-    mShowDecorations = showDecorations;
+  public RenderService setDecorations(boolean show) {
+    showDecorations = show;
     return this;
   }
 
   public RenderService setAppInfo(String label, String icon) {
-    mAppLabel = label;
-    mAppIconName = icon;
+    appLabel = label;
+    appIconName = icon;
     return this;
   }
 
-  public RenderService setMinSdkVersion(int minSdkVersion) {
-    mMinSdkVersion = minSdkVersion;
+  public RenderService setMinSdkVersion(int min) {
+    minSdkVersion = min;
     return this;
   }
 
-  public RenderService setTargetSdkVersion(int targetSdkVersion) {
-    mTargetSdkVersion = targetSdkVersion;
+  public RenderService setTargetSdkVersion(int target) {
+    targetSdkVersion = target;
     return this;
   }
 
   public RenderService setExactDeviceDpi(float xdpi, float ydpi) {
-    mXdpi = xdpi;
-    mYdpi = ydpi;
+    Xdpi = xdpi;
+    Ydpi = ydpi;
     return this;
   }
 
-  public RenderService setImageFactory(IImageFactory imageFactory) {
-    mImageFactory = imageFactory;
+  public RenderService setImageFactory(IImageFactory factory) {
+    imageFactory = factory;
     return this;
   }
 
   /** Initializes any remaining optional fields after all setters have been called */
   private void finishConfiguration() {
-    if (mLogger == null) {
+    if (logger == null) {
       // Silent logging
-      mLogger = new LayoutLog();
+      logger = new LayoutLog();
     }
   }
 
   public SessionParams getParamsFromFile(String layoutName) throws FileNotFoundException, XmlPullParserException {
     finishConfiguration();
-    if (mResourceResolver == null) {
+    if (resourceResolver == null) {
       // Abort the rendering if the resources are not found.
       return null;
     }
     // find the layout to run
-    ResourceValue value = mResourceResolver.getProjectResource(ResourceType.LAYOUT, layoutName);
+    ResourceValue value = resourceResolver.getProjectResource(ResourceType.LAYOUT, layoutName);
     if (value == null || value.getValue() == null) {
       throw new IllegalArgumentException("layout does not exist");
     }
@@ -165,27 +165,27 @@ public class RenderService {
     parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, true);
     parser.setInput(new FileInputStream(layoutFile), "UTF-8"); // $NON-NLS-1$
     figureSomeValuesOut();
-    HardwareConfig config = new HardwareConfig(mConfig.getScreenWidthQualifier().getValue(),
-        mConfig.getScreenHeightQualifier().getValue(), mConfig.getDensityQualifier().getValue(),
-        mXdpi, mYdpi, mConfig.getScreenSizeQualifier().getValue(),
-        mConfig.getScreenOrientationQualifier().getValue(), false);
-    SessionParams params = new SessionParams(parser, mRenderingMode, this/* projectKey*/, config,
-        mResourceResolver, mProjectCallback, mMinSdkVersion, mTargetSdkVersion, mLogger);
+    HardwareConfig hardwareConfigconfig = new HardwareConfig(config.getScreenWidthQualifier().getValue(),
+        config.getScreenHeightQualifier().getValue(), config.getDensityQualifier().getValue(),
+        Xdpi, Ydpi, config.getScreenSizeQualifier().getValue(),
+        config.getScreenOrientationQualifier().getValue(), false);
+    SessionParams params = new SessionParams(parser, renderingMode, this/* projectKey*/, hardwareConfigconfig,
+        resourceResolver, projectCallback, minSdkVersion, targetSdkVersion, logger);
     params.setExtendedViewInfoMode(true);
-    if (!mShowDecorations) {
+    if (!showDecorations) {
       params.setForceNoDecor();
     } else {
-      if (mAppLabel == null) {
-        mAppLabel = "Random App";
+      if (appLabel == null) {
+        appLabel = "Random App";
       }
-      params.setAppLabel(mAppLabel);
-      params.setAppIcon(mAppIconName); // ok to be null
+      params.setAppLabel(appLabel);
+      params.setAppIcon(appIconName); // ok to be null
     }
-    if (mOverrideBgColor != null) {
-      params.setOverrideBgColor(mOverrideBgColor.intValue());
+    if (overrideBgColor != null) {
+      params.setOverrideBgColor(overrideBgColor.intValue());
     }
     // set the Image Overlay as the image factory.
-    params.setImageFactory(mImageFactory);
+    params.setImageFactory(imageFactory);
     return params;
   }
 
@@ -198,12 +198,12 @@ public class RenderService {
   public RenderSession createRenderSession(String layoutName)
       throws FileNotFoundException, XmlPullParserException {
     finishConfiguration();
-    if (mResourceResolver == null) {
+    if (resourceResolver == null) {
       // Abort the rendering if the resources are not found.
       return null;
     }
     // find the layout to run
-    ResourceValue value = mResourceResolver.getProjectResource(ResourceType.LAYOUT, layoutName);
+    ResourceValue value = resourceResolver.getProjectResource(ResourceType.LAYOUT, layoutName);
     if (value == null || value.getValue() == null) {
       throw new IllegalArgumentException("layout does not exist");
     }
@@ -213,70 +213,70 @@ public class RenderService {
     parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, true);
     parser.setInput(new FileInputStream(layoutFile), "UTF-8"); // $NON-NLS-1$
     figureSomeValuesOut();
-    HardwareConfig config = new HardwareConfig(mConfig.getScreenWidthQualifier().getValue(),
-        mConfig.getScreenHeightQualifier().getValue(), mConfig.getDensityQualifier().getValue(),
-        mXdpi, mYdpi, mConfig.getScreenSizeQualifier().getValue(),
-        mConfig.getScreenOrientationQualifier().getValue(), false);
-    SessionParams params = new SessionParams(parser, mRenderingMode, this/* projectKey*/, config,
-        mResourceResolver, mProjectCallback, mMinSdkVersion, mTargetSdkVersion, mLogger);
-    mParams = params;
+    HardwareConfig hardwareConfigconfig = new HardwareConfig(config.getScreenWidthQualifier().getValue(),
+        config.getScreenHeightQualifier().getValue(), config.getDensityQualifier().getValue(),
+        Xdpi, Ydpi, config.getScreenSizeQualifier().getValue(),
+        config.getScreenOrientationQualifier().getValue(), false);
+    SessionParams p = new SessionParams(parser, renderingMode, this/* projectKey*/, hardwareConfigconfig,
+        resourceResolver, projectCallback, minSdkVersion, targetSdkVersion, logger);
+    params = p;
     // Request margin and baseline information.
     // TODO: Be smarter about setting this; start without it, and on the first request
     // for an extended view info, re-render in the same session, and then set a flag
     // which will cause this to create extended view info each time from then on in the
     // same session
     params.setExtendedViewInfoMode(true);
-    if (!mShowDecorations) {
+    if (!showDecorations) {
       params.setForceNoDecor();
     } else {
-      if (mAppLabel == null) {
-        mAppLabel = "Random App";
+      if (appLabel == null) {
+        appLabel = "Random App";
       }
-      params.setAppLabel(mAppLabel);
-      params.setAppIcon(mAppIconName); // ok to be null
+      params.setAppLabel(appLabel);
+      params.setAppIcon(appIconName); // ok to be null
     }
-    if (mOverrideBgColor != null) {
-      params.setOverrideBgColor(mOverrideBgColor.intValue());
+    if (overrideBgColor != null) {
+      params.setOverrideBgColor(overrideBgColor.intValue());
     }
     // set the Image Overlay as the image factory.
-    params.setImageFactory(mImageFactory);
+    params.setImageFactory(imageFactory);
     try {
-      return mLayoutLib.createSession(params);
+      return layoutLib.createSession(params);
     } catch (RuntimeException t) {
       // Exceptions from the bridge
-      mLogger.error(null, t.getLocalizedMessage(), t, null);
+      logger.error(null, t.getLocalizedMessage(), t, null);
       throw t;
     }
   }
 
   private void figureSomeValuesOut() {
-    int size1 = mConfig.getScreenDimensionQualifier().getValue1();
-    int size2 = mConfig.getScreenDimensionQualifier().getValue2();
-    ScreenOrientation orientation = mConfig.getScreenOrientationQualifier().getValue();
+    int size1 = config.getScreenDimensionQualifier().getValue1();
+    int size2 = config.getScreenDimensionQualifier().getValue2();
+    ScreenOrientation orientation = config.getScreenOrientationQualifier().getValue();
     switch (orientation) {
       case LANDSCAPE:
-        mWidth = size1 < size2 ? size2 : size1;
-        mHeight = size1 < size2 ? size1 : size2;
+        width = size1 < size2 ? size2 : size1;
+        height = size1 < size2 ? size1 : size2;
         break;
       case PORTRAIT:
-        mWidth = size1 < size2 ? size1 : size2;
-        mHeight = size1 < size2 ? size2 : size1;
+        width = size1 < size2 ? size1 : size2;
+        height = size1 < size2 ? size2 : size1;
         break;
       case SQUARE:
-        mWidth = mHeight = size1;
+        width = height = size1;
         break;
     }
-    if (mMinSdkVersion == -1) {
-      mMinSdkVersion = mConfig.getVersionQualifier().getVersion();
+    if (minSdkVersion == -1) {
+      minSdkVersion = config.getVersionQualifier().getVersion();
     }
-    if (mTargetSdkVersion == -1) {
-      mTargetSdkVersion = mConfig.getVersionQualifier().getVersion();
+    if (targetSdkVersion == -1) {
+      targetSdkVersion = config.getVersionQualifier().getVersion();
     }
-    if (mXdpi == -1) {
-      mXdpi = mConfig.getDensityQualifier().getValue().getDpiValue();
+    if (Xdpi == -1) {
+      Xdpi = config.getDensityQualifier().getValue().getDpiValue();
     }
-    if (mYdpi == -1) {
-      mYdpi = mConfig.getDensityQualifier().getValue().getDpiValue();
+    if (Ydpi == -1) {
+      Ydpi = config.getDensityQualifier().getValue().getDpiValue();
     }
   }
 
@@ -293,14 +293,14 @@ public class RenderService {
     }
     finishConfiguration();
     figureSomeValuesOut();
-    HardwareConfig config = new HardwareConfig(mConfig.getScreenWidthQualifier().getValue(),
-        mConfig.getScreenHeightQualifier().getValue(), mConfig.getDensityQualifier().getValue(),
-        mXdpi, mYdpi, mConfig.getScreenSizeQualifier().getValue(),
-        mConfig.getScreenOrientationQualifier().getValue(), false);
-    DrawableParams params = new DrawableParams(drawableResourceValue, this, config,
-        mResourceResolver, mProjectCallback, mMinSdkVersion, mTargetSdkVersion, mLogger);
+    HardwareConfig hardwareConfigconfig = new HardwareConfig(config.getScreenWidthQualifier().getValue(),
+        config.getScreenHeightQualifier().getValue(), config.getDensityQualifier().getValue(),
+        Xdpi, Ydpi, config.getScreenSizeQualifier().getValue(),
+        config.getScreenOrientationQualifier().getValue(), false);
+    DrawableParams params = new DrawableParams(drawableResourceValue, this, hardwareConfigconfig,
+        resourceResolver, projectCallback, minSdkVersion, targetSdkVersion, logger);
     params.setForceNoDecor();
-    Result result = mLayoutLib.renderDrawable(params);
+    Result result = layoutLib.renderDrawable(params);
     if (result != null && result.isSuccess()) {
       Object data = result.getData();
       if (data instanceof BufferedImage) {
