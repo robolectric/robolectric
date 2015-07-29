@@ -25,7 +25,7 @@ public @interface Config {
   String DEFAULT = "--default";
   String DEFAULT_RES_FOLDER = "res";
   String DEFAULT_ASSET_FOLDER = "assets";
-  boolean dEFAULT_RENDERING_ENABLED = false;
+  boolean DEFAULT_RENDERING_ENABLED = false;
 
   /**
    * The Android SDK level to emulate. If not specified, Robolectric defaults to API 16.
@@ -112,7 +112,7 @@ public @interface Config {
    */
   String[] libraries() default {};
 
-  boolean rendering() default dEFAULT_RENDERING_ENABLED;
+  boolean rendering() default DEFAULT_RENDERING_ENABLED;
 
   class Implementation implements Config {
     private final int[] sdk;
@@ -140,7 +140,7 @@ public @interface Config {
           parseApplication(properties.getProperty("application", "android.app.Application")),
           parseStringArrayProperty(properties.getProperty("libraries", "")),
           parseClass(properties.getProperty("constants", "")),
-          (boolean)properties.getOrDefault("rendering", dEFAULT_RENDERING_ENABLED));
+          (boolean)properties.getOrDefault("rendering", DEFAULT_RENDERING_ENABLED));
     }
 
     private static Class<?> parseClass(String className) {
@@ -218,7 +218,7 @@ public @interface Config {
       this.resourceDir = pick(baseConfig.resourceDir(), overlayConfig.resourceDir(), Config.DEFAULT_RES_FOLDER);
       this.assetDir = pick(baseConfig.assetDir(), overlayConfig.assetDir(), Config.DEFAULT_ASSET_FOLDER);
       this.constants = pick(baseConfig.constants(), overlayConfig.constants(), Void.class);
-      this.rendering = pick(baseConfig.rendering(), overlayConfig.rendering(), Config.dEFAULT_RENDERING_ENABLED);
+      this.rendering = pick(baseConfig.rendering(), overlayConfig.rendering(), Config.DEFAULT_RENDERING_ENABLED);
 
       Set<Class<?>> shadows = new HashSet<>();
       shadows.addAll(Arrays.asList(baseConfig.shadows()));
