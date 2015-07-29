@@ -3,12 +3,6 @@ package org.robolectric.fakes;
 import com.android.utils.ILogger;
 import com.android.ide.common.rendering.api.LayoutLog;
 
-/**
- * Class implementing the 3 different log interface we use!
- *
- * At least ILogger and ISdkLog are identical...
- *
- */
 public class StdOutLogger extends LayoutLog implements ILogger {
   // LayoutLog
   @Override

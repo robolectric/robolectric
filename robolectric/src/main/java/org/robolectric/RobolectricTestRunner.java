@@ -291,7 +291,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   }
 
   protected boolean isLayoutLibEnabled(Config config) {
-    return config.rendering().equals("true");
+    return config.rendering();
   }
 
   protected AndroidManifest getAppManifest(Config config) {

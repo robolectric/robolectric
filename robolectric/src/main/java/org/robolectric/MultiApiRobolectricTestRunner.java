@@ -65,6 +65,14 @@ public class MultiApiRobolectricTestRunner extends Suite {
     }
 
     @Override
+    protected boolean isLayoutLibEnabled(Config config) {
+      if (apiVersion < 21) {
+        return false;
+      }
+      return config.rendering();
+    }
+
+    @Override
     protected int pickSdkVersion(Config config, AndroidManifest appManifest) {
       return apiVersion;
     }

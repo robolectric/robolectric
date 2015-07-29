@@ -51,12 +51,11 @@ public class RenderService {
   private IImageFactory imageFactory;
   private SessionParams params;
 
-  /** Use the {@link RenderServiceFactory#create} factory instead */
-  RenderService(LayoutLibrary layoutLibrary, ResourceResolver resources, FolderConfiguration c,
+  RenderService(LayoutLibrary layoutLibrary, ResourceResolver resources, FolderConfiguration folderConfiguration,
       IProjectCallback callback) {
     layoutLib = layoutLibrary;
     resourceResolver = resources;
-    config = c;
+    config = folderConfiguration;
     projectCallback = callback;
   }
 
@@ -64,50 +63,21 @@ public class RenderService {
     return params;
   }
 
-  /**
-   * Sets the {@link LayoutLog} to be used during rendering. If none is specified, a
-   * silent logger will be used.
-   *
-   * @param logger the log to be used
-   * @return this (such that chains of setters can be stringed together)
-   */
   public RenderService setLog(LayoutLog l) {
     logger = l;
     return this;
   }
 
-  /**
-   * Sets the {@link RenderingMode} to be used during rendering. If none is specified,
-   * the default is {@link RenderingMode#NORMAL}.
-   *
-   * @param renderingMode the rendering mode to be used
-   * @return this (such that chains of setters can be stringed together)
-   */
   public RenderService setRenderingMode(RenderingMode mode) {
     renderingMode = mode;
     return this;
   }
 
-  /**
-   * Sets the overriding background color to be used, if any. The color should be a
-   * bitmask of AARRGGBB. The default is null.
-   *
-   * @param overrideBgColor the overriding background color to be used in the rendering,
-   *            in the form of a AARRGGBB bitmask, or null to use no custom background.
-   * @return this (such that chains of setters can be stringed together)
-   */
   public RenderService setOverrideBgColor(Integer color) {
     overrideBgColor = color;
     return this;
   }
 
-  /**
-   * Sets whether the rendering should include decorations such as a system bar, an
-   * application bar etc depending on the SDK target and theme. The default is true.
-   *
-   * @param showDecorations true if the rendering should include system bars etc.
-   * @return this (such that chains of setters can be stringed together)
-   */
   public RenderService setDecorations(boolean show) {
     showDecorations = show;
     return this;
@@ -140,7 +110,6 @@ public class RenderService {
     return this;
   }
 
-  /** Initializes any remaining optional fields after all setters have been called */
   private void finishConfiguration() {
     if (logger == null) {
       // Silent logging
@@ -164,7 +133,7 @@ public class RenderService {
     parser = new XmlParser();
     parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, true);
     parser.setInput(new FileInputStream(layoutFile), "UTF-8"); // $NON-NLS-1$
-    figureSomeValuesOut();
+    versionAndConstantsSetUp();
     HardwareConfig hardwareConfigconfig = new HardwareConfig(config.getScreenWidthQualifier().getValue(),
         config.getScreenHeightQualifier().getValue(), config.getDensityQualifier().getValue(),
         Xdpi, Ydpi, config.getScreenSizeQualifier().getValue(),
@@ -189,12 +158,6 @@ public class RenderService {
     return params;
   }
 
-  /**
-   * Renders the model and returns the result as a {@link RenderSession}.
-   * @return the {@link RenderSession} resulting from rendering the current model
-   * @throws XmlPullParserException
-   * @throws FileNotFoundException
-   */
   public RenderSession createRenderSession(String layoutName)
       throws FileNotFoundException, XmlPullParserException {
     finishConfiguration();
@@ -212,7 +175,7 @@ public class RenderService {
     parser = new XmlParser();
     parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, true);
     parser.setInput(new FileInputStream(layoutFile), "UTF-8"); // $NON-NLS-1$
-    figureSomeValuesOut();
+    versionAndConstantsSetUp();
     HardwareConfig hardwareConfigconfig = new HardwareConfig(config.getScreenWidthQualifier().getValue(),
         config.getScreenHeightQualifier().getValue(), config.getDensityQualifier().getValue(),
         Xdpi, Ydpi, config.getScreenSizeQualifier().getValue(),
@@ -249,7 +212,7 @@ public class RenderService {
     }
   }
 
-  private void figureSomeValuesOut() {
+  private void versionAndConstantsSetUp() {
     int size1 = config.getScreenDimensionQualifier().getValue1();
     int size2 = config.getScreenDimensionQualifier().getValue2();
     ScreenOrientation orientation = config.getScreenOrientationQualifier().getValue();
@@ -280,19 +243,12 @@ public class RenderService {
     }
   }
 
-  /**
-   * Renders the given resource value (which should refer to a drawable) and returns it
-   * as an image
-   *
-   * @param drawableResourceValue the drawable resource value to be rendered, or null
-   * @return the image, or null if something went wrong
-   */
   public BufferedImage renderDrawable(ResourceValue drawableResourceValue) {
     if (drawableResourceValue == null) {
       return null;
     }
     finishConfiguration();
-    figureSomeValuesOut();
+    versionAndConstantsSetUp();
     HardwareConfig hardwareConfigconfig = new HardwareConfig(config.getScreenWidthQualifier().getValue(),
         config.getScreenHeightQualifier().getValue(), config.getDensityQualifier().getValue(),
         Xdpi, Ydpi, config.getScreenSizeQualifier().getValue(),

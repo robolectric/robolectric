@@ -4,6 +4,7 @@ import android.graphics.Paint;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
 import org.robolectric.internal.Shadow;
 
 import static org.assertj.core.api.Assertions.assertThat;

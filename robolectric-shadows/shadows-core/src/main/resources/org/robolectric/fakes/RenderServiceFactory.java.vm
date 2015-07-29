@@ -47,13 +47,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * RenderService Factory. This is initialized for a given platform from the SDK.
- *
- * Also contains some utility method to create {@link FolderConfiguration} and
- * {@link ResourceResolver}
- *
- */
 public class RenderServiceFactory {
   private LayoutLibrary library;
 
@@ -68,42 +61,23 @@ public class RenderServiceFactory {
     return null;
   }
 
-  /**
-   * Creates a config. This must be a valid config like a device would return. This is to
-   * prevent issues where some resources don't exist in all cases and not in the default
-   * (for instance only available in hdpi and mdpi but not in default).
-   *
-   * @param size1
-   * @param size2
-   * @param screenSize
-   * @param screenRatio
-   * @param orientation
-   * @param density
-   * @param touchScreen
-   * @param keyboardState
-   * @param keyboard
-   * @param navigationState
-   * @param navigation
-   * @param apiLevel
-   * @return
-   */
-  public static FolderConfiguration createConfig(int size1, int size2, ScreenSize screenSize,
+  public static FolderConfiguration createConfig(int w, int h, ScreenSize screenSize,
       ScreenRatio screenRatio, ScreenOrientation orientation, Density density,
       TouchScreen touchScreen, KeyboardState keyboardState, Keyboard keyboard,
       NavigationState navigationState, Navigation navigation, int apiLevel) {
     FolderConfiguration config = new FolderConfiguration();
-    int width = size1, height = size2;
+    int width = w, height = h;
     switch (orientation) {
       case LANDSCAPE:
-        width = size1 < size2 ? size2 : size1;
-        height = size1 < size2 ? size1 : size2;
+        width = w < h ? h : w;
+        height = w < h ? w : h;
         break;
       case PORTRAIT:
-        width = size1 < size2 ? size1 : size2;
-        height = size1 < size2 ? size2 : size1;
+        width = w < h ? w : h;
+        height = w < h ? h : w;
         break;
       case SQUARE:
-        width = height = size1;
+        width = height = w;
         break;
     }
     int wdp = (width * Density.DEFAULT_DENSITY) / density.getDpiValue();
@@ -129,15 +103,6 @@ public class RenderServiceFactory {
     return config;
   }
 
-  /**
-   * Returns a {@link ResourceResolver} for a given config and project resource.
-   *
-   * @param config
-   * @param projectResources
-   * @param themeName
-   * @param isProjectTheme
-   * @return
-   */
   public ResourceResolver createResourceResolver(FolderConfiguration config,
       ResourceRepository projectResources, String themeName, boolean isProjectTheme) {
     Map<ResourceType, Map<String, ResourceValue>> configedProjectRes =
@@ -148,32 +113,12 @@ public class RenderServiceFactory {
         configedProjectRes, configedFrameworkRes, themeName, isProjectTheme);
   }
 
-  /**
-   * Creates a RenderService
-   *
-   * @param resources
-   * @param config
-   * @param projectCallback
-   * @return
-   */
   public RenderService createService(
       ResourceResolver resources, FolderConfiguration config, IProjectCallback projectCallback) {
     RenderService renderService = new RenderService(library, resources, config, projectCallback);
     return renderService;
   }
 
-  /**
-   * Creates a RenderService. This is less efficient than
-   * {@link #createService(ResourceResolver, FolderConfiguration, IProjectCallback)} since the
-   * {@link ResourceResolver} object is not cached by the caller.
-   *
-   * @param projectResources
-   * @param themeName
-   * @param isProjectTheme
-   * @param config
-   * @param projectCallback
-   * @return
-   */
   public RenderService createService(ResourceRepository projectResources, String themeName,
       boolean isProjectTheme, FolderConfiguration config, IProjectCallback projectCallback) {
     ResourceResolver resources =

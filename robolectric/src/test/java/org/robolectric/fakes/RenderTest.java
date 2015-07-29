@@ -71,7 +71,7 @@ public class RenderTest {
   private final static String PROJECT = "./src/test/resources/";
 
   @Test
-  @Config(rendering="true")
+  @Config(rendering=true)
   public void XMLLayoutsShouldbeProperlyInflated() throws Exception{
     final String SDK = System.getenv("ANDROID_HOME");
     File f = new File(SDK + "/platforms/android-21");

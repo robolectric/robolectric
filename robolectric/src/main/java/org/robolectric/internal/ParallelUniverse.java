@@ -4,9 +4,33 @@ import android.app.Application;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.content.res.AssetManager;
+import android.content.res.BridgeResources;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Looper;
+import android.util.DisplayMetrics;
+
+import com.android.ide.common.rendering.api.HardwareConfig;
+import com.android.ide.common.rendering.api.RenderResources;
+import com.android.ide.common.rendering.api.SessionParams;
+import com.android.ide.common.resources.ResourceItem;
+import com.android.ide.common.resources.ResourceRepository;
+import com.android.ide.common.resources.ResourceResolver;
+import com.android.ide.common.resources.configuration.FolderConfiguration;
+import com.android.io.FolderWrapper;
+import com.android.layoutlib.bridge.android.BridgeContext;
+import com.android.layoutlib.bridge.impl.RenderAction;
+import com.android.layoutlib.bridge.impl.RenderSessionImpl;
+import com.android.resources.Density;
+import com.android.resources.Keyboard;
+import com.android.resources.KeyboardState;
+import com.android.resources.Navigation;
+import com.android.resources.NavigationState;
+import com.android.resources.ScreenOrientation;
+import com.android.resources.ScreenRatio;
+import com.android.resources.ScreenSize;
+import com.android.resources.TouchScreen;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.robolectric.Robolectric;
@@ -15,13 +39,20 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.ShadowsAdapter;
 import org.robolectric.TestLifecycle;
 import org.robolectric.annotation.Config;
+import org.robolectric.fakes.ProjectCallback;
+import org.robolectric.fakes.RenderService;
+import org.robolectric.fakes.RenderServiceFactory;
 import org.robolectric.internal.fakes.RoboInstrumentation;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResBundle;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.builder.DefaultPackageManager;
+import org.robolectric.shadows.ShadowResources;
 import org.robolectric.util.ReflectionHelpers;
+import org.xmlpull.v1.XmlPullParserException;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.lang.reflect.Method;
 import java.security.Security;
 
@@ -29,6 +60,7 @@ import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 public class ParallelUniverse implements ParallelUniverseInterface {
   private static final String DEFAULT_PACKAGE_NAME = "org.robolectric.default";
+  private final static String PROJECT = "./src/test/resources/";
   private final RobolectricTestRunner robolectricTestRunner;
   private final ShadowsAdapter shadowsAdapter = Robolectric.getShadowsAdapter();
 
@@ -141,6 +173,11 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       appResources.updateConfiguration(configuration, appResources.getDisplayMetrics());
       shadowsAdapter.setAssetsQualifiers(appResources.getAssets(), qualifiers);
 
+      if (Integer.valueOf(qualifiers.substring(1)) >= 21) {
+        final String SDK = System.getenv("ANDROID_HOME");
+        File f = new File(SDK + "/platforms/android-21");
+        RenderServiceFactory factory = RenderServiceFactory.create(f);
+      }
       RuntimeEnvironment.application = application;
       application.onCreate();
     }
@@ -161,5 +198,66 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   @Override
   public void setSdkConfig(SdkConfig sdkConfig) {
     this.sdkConfig = sdkConfig;
+  }
+
+  private Configuration getConfiguration(SessionParams params) {
+    Configuration config = new Configuration();
+    HardwareConfig hardwareConfig = params.getHardwareConfig();
+    ScreenSize screenSize = hardwareConfig.getScreenSize();
+    if (screenSize != null) {
+      switch (screenSize) {
+        case SMALL:
+          config.screenLayout |= 0x1;
+          break;
+        case NORMAL:
+          config.screenLayout |= 0x2;
+          break;
+        case LARGE:
+          config.screenLayout |= 0x3;
+          break;
+        case XLARGE:
+          config.screenLayout |= 0x4;
+      }
+
+    }
+
+    Density density = hardwareConfig.getDensity();
+    if (density == null) {
+      density = Density.MEDIUM;
+    }
+
+    config.screenWidthDp = (hardwareConfig.getScreenWidth() / density.getDpiValue());
+    config.screenHeightDp = (hardwareConfig.getScreenHeight() / density.getDpiValue());
+    if (config.screenHeightDp < config.screenWidthDp) {
+      config.smallestScreenWidthDp = config.screenHeightDp;
+    } else {
+      config.smallestScreenWidthDp = config.screenWidthDp;
+    }
+    config.densityDpi = density.getDpiValue();
+
+
+    config.compatScreenWidthDp = config.screenWidthDp;
+    config.compatScreenHeightDp = config.screenHeightDp;
+
+    ScreenOrientation orientation = hardwareConfig.getOrientation();
+    if (orientation != null) {
+      switch (orientation) {
+        case PORTRAIT:
+          config.orientation = 1;
+          break;
+        case LANDSCAPE:
+          config.orientation = 2;
+          break;
+        case SQUARE:
+          config.orientation = 3;
+      }
+
+    } else {
+      config.orientation = 0;
+    }
+
+
+
+    return config;
   }
 }

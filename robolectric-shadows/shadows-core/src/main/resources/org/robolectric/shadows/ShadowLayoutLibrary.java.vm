@@ -37,23 +37,6 @@ public class ShadowLayoutLibrary {
           log.error(null, "layoutlib.jar is missing!"); // $NON-NLS-1$
         }
       } else {
-        //URL[] urls = new URL[1];
-        // TODO: The icu jar has to be in the same location as layoutlib.jar. Get rid of
-        // this dependency.
-        /*File icu4j = new File(f.getParent(), LayoutLibrary.FN_ICU_JAR);
-        if (icu4j.isFile()) {
-          urls = new URL[2];
-          urls[1] = SdkUtils.fileToUrl(icu4j);
-        } else {
-          urls = new URL[1];
-        }*/
-        //urls[0] = SdkUtils.fileToUrl(f);
-
-        // create a class loader. Because this jar reference interfaces
-        // that are in the editors plugin, it's important to provide
-        // a parent class loader.
-        //classLoader = new URLClassLoader(urls, Bridge.class.getClassLoader());
-        //classLoader = Bridge.class.getClassLoader();
         classLoader = Bridge.class.getClassLoader();
         // load the class
         Class<?> clazz = classLoader.loadClass(LayoutLibrary.CLASS_BRIDGE);

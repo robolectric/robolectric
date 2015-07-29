@@ -23,11 +23,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.shadows.maps.ShadowMapView.toE6;
 
 @RunWith(TestRunnerWithManifest.class)
-@Config(sdk = {
-    Build.VERSION_CODES.JELLY_BEAN,
-    Build.VERSION_CODES.JELLY_BEAN_MR1,
-    Build.VERSION_CODES.JELLY_BEAN_MR2,
-    Build.VERSION_CODES.KITKAT})
 public class ShadowMapViewTest {
   private MapView mapView;
   private MyOverlay overlay1;

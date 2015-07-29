@@ -25,7 +25,7 @@ public @interface Config {
   String DEFAULT = "--default";
   String DEFAULT_RES_FOLDER = "res";
   String DEFAULT_ASSET_FOLDER = "assets";
-  String dEFAULT_RENDERING_ENABLED = "false";
+  boolean dEFAULT_RENDERING_ENABLED = false;
 
   /**
    * The Android SDK level to emulate. If not specified, Robolectric defaults to API 16.
@@ -112,7 +112,7 @@ public @interface Config {
    */
   String[] libraries() default {};
 
-  String rendering() default dEFAULT_RENDERING_ENABLED;
+  boolean rendering() default dEFAULT_RENDERING_ENABLED;
 
   class Implementation implements Config {
     private final int[] sdk;
@@ -125,7 +125,7 @@ public @interface Config {
     private final Class<?>[] shadows;
     private final Class<? extends Application> application;
     private final String[] libraries;
-    private final String rendering;
+    private final boolean rendering;
 
     public static Config fromProperties(Properties properties) {
       if (properties == null || properties.size() == 0) return null;
@@ -140,8 +140,7 @@ public @interface Config {
           parseApplication(properties.getProperty("application", "android.app.Application")),
           parseStringArrayProperty(properties.getProperty("libraries", "")),
           parseClass(properties.getProperty("constants", "")),
-          properties.getProperty("rendering", Config.dEFAULT_RENDERING_ENABLED)
-      );
+          (boolean)properties.getOrDefault("rendering", dEFAULT_RENDERING_ENABLED));
     }
 
     private static Class<?> parseClass(String className) {
@@ -183,7 +182,7 @@ public @interface Config {
       return result;
     }
 
-    public Implementation(int[] sdk, String manifest, String qualifiers, String packageName, String resourceDir, String assetDir, Class<?>[] shadows, Class<? extends Application> application, String[] libraries, Class<?> constants, String rendering) {
+    public Implementation(int[] sdk, String manifest, String qualifiers, String packageName, String resourceDir, String assetDir, Class<?>[] shadows, Class<? extends Application> application, String[] libraries, Class<?> constants, boolean rendering) {
       this.sdk = sdk;
       this.manifest = manifest;
       this.qualifiers = qualifiers;
@@ -298,7 +297,7 @@ public @interface Config {
     }
 
     @Override
-    public String rendering() {
+    public boolean rendering() {
       return rendering;
     }
   }
