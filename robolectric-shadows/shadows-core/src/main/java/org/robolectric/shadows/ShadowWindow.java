@@ -2,19 +2,13 @@ package org.robolectric.shadows;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.os.IBinder;
-import android.os.SystemProperties;
 import android.view.Window;
-import android.view.WindowManager;
-import android.view.WindowManagerImpl;
 import android.widget.ProgressBar;
 
-import com.android.internal.R.color;
 import com.android.internal.policy.impl.PhoneWindow;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import static org.robolectric.internal.Shadow.directlyOn;
