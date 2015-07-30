@@ -8,6 +8,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
 
+import android.content.Context;
 import android.os.Handler;
 import android.os.PowerManager;
 import android.view.accessibility.AccessibilityManager;
@@ -22,31 +23,31 @@ public class ShadowBridgeContext {
   public static final String CLASS_NAME = "com.android.layoutlib.bridge.android.BridgeContext";
 
   @RealObject private BridgeContext realContext;
-  
+
   @Implementation
   public Object getSystemService(String service) {
-    if ("layout_inflater".equals(service)) {
+    if (Context.LAYOUT_INFLATER_SERVICE.equals(service)) {
       return ReflectionHelpers.getField(realContext, "mBridgeInflater");
     }
-    if ("textservices".equals(service)) {
+    if (Context.TEXT_SERVICES_MANAGER_SERVICE.equals(service)) {
       return TextServicesManager.getInstance();
     }
-    if ("window".equals(service)) {
+    if (Context.WINDOW_SERVICE.equals(service)) {
       return ReflectionHelpers.getField(realContext, "mWindowManager");
     }
-    if ("input_method".equals(service)) {
+    if (Context.INPUT_METHOD_SERVICE.equals(service)) {
       return null;
     }
-    if ("power".equals(service)) {
+    if (Context.POWER_SERVICE.equals(service)) {
       return new PowerManager(realContext, new BridgePowerManager(), new Handler());
     }
-    if ("display".equals(service)) {
+    if (Context.DISPLAY_SERVICE.equals(service)) {
       return ReflectionHelpers.getField(realContext, "mDisplayManager");
     }
-    if ("accessibility".equals(service)) {
+    if (Context.ACCESSIBILITY_SERVICE.equals(service)) {
       return AccessibilityManager.getInstance(realContext);
     }
-    if ("user".equals(service)) {
+    if (Context.USER_SERVICE.equals(service)) {
       try {
         Class<?> clazz = Class.forName("android.os.UserManager");
         return newInstanceOf(clazz);
