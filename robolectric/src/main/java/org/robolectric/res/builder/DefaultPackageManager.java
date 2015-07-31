@@ -46,7 +46,7 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
     this.shadowsAdapter = shadowsAdapter;
   }
 
-  private static class IntentComparator implements Comparator<Intent> {
+  static class IntentComparator implements Comparator<Intent> {
 
     @Override
     public int compare(Intent i1, Intent i2) {
@@ -59,8 +59,8 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
       if (action1 == null && action2 != null) return -1;
       if (action1 != null && action2 == null) return 1;
       if (action1 != null && action2 != null) {
-        if (!i1.getAction().equals(i2.getAction())) {
-          return i1.getAction().compareTo(i2.getAction());
+        if (!action1.equals(action2)) {
+          return action1.compareTo(action2);
         }
       }
       Uri data1 = i1.getData();
