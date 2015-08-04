@@ -89,8 +89,11 @@ install_aar "com.google.android.gms" "play-services" "6.5.87" "${GOOGLE_REPOSITO
 # Install maps
 install_maps "com.google.android.maps" "maps" "18" "4"
 
+# Install a render-enabled android jar
+mvn dependency:resolve
+install_jar "org.robolectric" "android-all" "5.0.0_r2-robolectric-1-render" "${HOME}/.m2/repository/org/robolectric/android-all/5.0.0_r2-robolectric-1/android-all-5.0.0_r2-robolectric-1.jar"
 # Update the Android jar with layoutlib.jar
 mkdir /tmp/robolectric-dependencies.layoutlib21
 cd /tmp/robolectric-dependencies.layoutlib21; jar xf ${ANDROID_HOME}/platforms/android-21/data/layoutlib.jar; rm android/view/accessibility/AccessibilityManager*
-jar uf ~/.m2/repository/org/robolectric/android-all/5.0.0_r2-robolectric-1/android-all-5.0.0_r2-robolectric-1.jar . 
-ls; rm -rf /tmp/robolectric-dependencies.layoutlib21
+jar uf ~/.m2/repository/org/robolectric/android-all/5.0.0_r2-robolectric-1-render/android-all-5.0.0_r2-robolectric-1-render.jar . 
+rm -rf /tmp/robolectric-dependencies.layoutlib21

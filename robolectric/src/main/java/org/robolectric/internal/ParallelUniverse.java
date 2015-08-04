@@ -31,6 +31,7 @@ import com.android.resources.ScreenOrientation;
 import com.android.resources.ScreenRatio;
 import com.android.resources.ScreenSize;
 import com.android.resources.TouchScreen;
+import com.ibm.icu.impl.coll.SharedObject.Reference;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.robolectric.Robolectric;
@@ -173,14 +174,118 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       appResources.updateConfiguration(configuration, appResources.getDisplayMetrics());
       shadowsAdapter.setAssetsQualifiers(appResources.getAssets(), qualifiers);
 
-      if (Integer.valueOf(qualifiers.substring(1)) >= 21) {
+      if (sdkConfig.isRendering()) {
         final String SDK = System.getenv("ANDROID_HOME");
         File f = new File(SDK + "/platforms/android-21");
         RenderServiceFactory factory = RenderServiceFactory.create(f);
+        ResourceRepository projectRes =
+            new ResourceRepository(new FolderWrapper(PROJECT + "/res"), false/*isFramework*/) {
+              @Override
+              protected ResourceItem createResourceItem(String name) {
+                return new ResourceItem(name);
+              }
+            };
+        projectRes.loadResources();
+        // create the rendering config
+        FolderConfiguration folderConfig =
+            RenderServiceFactory.createConfig(1280, 800, ScreenSize.XLARGE, ScreenRatio.LONG,
+                ScreenOrientation.PORTRAIT, Density.MEDIUM, TouchScreen.FINGER, KeyboardState.SOFT,
+                Keyboard.QWERTY, NavigationState.EXPOSED, Navigation.NONAV, 21/*api level*/);
+        // create the resource resolver once for the given config.
+        ResourceResolver resources =
+            factory.createResourceResolver(folderConfig, projectRes, "Theme", false/*isProjectTheme*/);
+        // create the render service
+        RenderService renderService = factory.createService(resources, folderConfig, new ProjectCallback());
+        SessionParams params;
+
+        try {
+          params = renderService.getParamsFromFile("activity_main");
+          HardwareConfig hardwareConfig = params.getHardwareConfig();
+
+          DisplayMetrics metrics = new DisplayMetrics();
+          metrics.densityDpi = (metrics.noncompatDensityDpi = hardwareConfig.getDensity().getDpiValue());
+
+          metrics.density = (metrics.noncompatDensity = metrics.densityDpi / 160.0F);
+
+          metrics.scaledDensity = (metrics.noncompatScaledDensity = metrics.density);
+
+          metrics.widthPixels = (metrics.noncompatWidthPixels = hardwareConfig.getScreenWidth());
+          metrics.heightPixels = (metrics.noncompatHeightPixels = hardwareConfig.getScreenHeight());
+          metrics.xdpi = (metrics.noncompatXdpi = hardwareConfig.getXdpi());
+          metrics.ydpi = (metrics.noncompatYdpi = hardwareConfig.getYdpi());
+          BridgeContext bridgeContext = new BridgeContext(params.getProjectKey(), metrics, resources, params.getProjectCallback(), getConfiguration(params), params.getTargetSdkVersion(), params.isRtlSupported());
+          bridgeContext.initResources();
+          ReflectionHelpers.setStaticField(RenderAction.class, "sCurrentContext", bridgeContext);
+        } catch (FileNotFoundException e) {
+          // TODO(yuzhong): Auto-generated catch block
+          e.printStackTrace();
+        } catch (XmlPullParserException e) {
+          // TODO(yuzhong): Auto-generated catch block
+          e.printStackTrace();
+        }
+
       }
       RuntimeEnvironment.application = application;
       application.onCreate();
     }
+  }
+
+  private Configuration getConfiguration(SessionParams params)
+  {
+    Configuration config = new Configuration();
+
+    HardwareConfig hardwareConfig = params.getHardwareConfig();
+
+    ScreenSize screenSize = hardwareConfig.getScreenSize();
+    if (screenSize != null) {
+      switch (screenSize)
+      {
+      case SMALL:
+        config.screenLayout |= 0x1;
+        break;
+      case NORMAL:
+        config.screenLayout |= 0x2;
+        break;
+      case LARGE:
+        config.screenLayout |= 0x3;
+        break;
+      case XLARGE:
+        config.screenLayout |= 0x4;
+      }
+    }
+    Density density = hardwareConfig.getDensity();
+    if (density == null) {
+      density = Density.MEDIUM;
+    }
+    config.screenWidthDp = (hardwareConfig.getScreenWidth() / density.getDpiValue());
+    config.screenHeightDp = (hardwareConfig.getScreenHeight() / density.getDpiValue());
+    if (config.screenHeightDp < config.screenWidthDp) {
+      config.smallestScreenWidthDp = config.screenHeightDp;
+    } else {
+      config.smallestScreenWidthDp = config.screenWidthDp;
+    }
+    config.densityDpi = density.getDpiValue();
+
+    config.compatScreenWidthDp = config.screenWidthDp;
+    config.compatScreenHeightDp = config.screenHeightDp;
+
+    ScreenOrientation orientation = hardwareConfig.getOrientation();
+    if (orientation != null) {
+      switch (orientation)
+      {
+      case PORTRAIT:
+        config.orientation = 1;
+        break;
+      case LANDSCAPE:
+        config.orientation = 2;
+        break;
+      case SQUARE:
+        config.orientation = 3;
+      }
+    } else {
+      config.orientation = 0;
+    }
+    return config;
   }
 
   @Override

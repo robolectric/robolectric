@@ -12,10 +12,12 @@ import java.util.Set;
 
 public class SdkConfig {
   private final int apiLevel;
-  private final String artifactVersionString;
+  private String artifactVersionString;
+  private boolean isRendering;
   private static final String ROBOLECTRIC_VERSION;
   private static final Map<Integer, SdkVersion> SUPPORTED_APIS;
   public static final int FALLBACK_SDK_VERSION = Build.VERSION_CODES.JELLY_BEAN;
+  public static final String RENDER_SUFFIX = "-render";
 
   static {
     SUPPORTED_APIS = new HashMap<>();
@@ -42,10 +44,19 @@ public class SdkConfig {
       throw new UnsupportedOperationException("Robolectric does not support API level " + apiLevel + ".");
     }
     this.artifactVersionString = version.toString();
+    this.isRendering = false;
   }
 
   public int getApiLevel() {
     return apiLevel;
+  }
+
+  public void setRendering(boolean rendering) {
+    this.isRendering = rendering;
+  }
+
+  public boolean isRendering() {
+    return this.isRendering;
   }
 
   public DependencyJar getSystemResourceDependency() {
@@ -53,9 +64,15 @@ public class SdkConfig {
   }
 
   public DependencyJar[] getSdkClasspathDependencies() {
+    String shadowCoreDependencySurfix = Integer.toString(apiLevel);
+    if (isRendering) {
+       artifactVersionString = artifactVersionString + RENDER_SUFFIX;
+       shadowCoreDependencySurfix = shadowCoreDependencySurfix + RENDER_SUFFIX;
+    }
+
     return new DependencyJar[] {
         createDependency("org.robolectric", "android-all", artifactVersionString, null),
-        createDependency("org.robolectric", "shadows-core", ROBOLECTRIC_VERSION, Integer.toString(apiLevel)),
+        createDependency("org.robolectric", "shadows-core", ROBOLECTRIC_VERSION, shadowCoreDependencySurfix),
         createDependency("org.json", "json", "20080701", null),
         createDependency("org.ccil.cowan.tagsoup", "tagsoup", "1.2", null)
     };

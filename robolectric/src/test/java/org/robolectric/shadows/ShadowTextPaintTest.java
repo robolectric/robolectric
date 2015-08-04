@@ -14,6 +14,7 @@ public class ShadowTextPaintTest {
   @Test
   public void measureText_returnsStringLengthAsMeasurement() throws Exception {
     TextPaint paint = new TextPaint();
+    paint.getFontMetrics();
     assertEquals(4f, paint.measureText("1234"));
   }
 }

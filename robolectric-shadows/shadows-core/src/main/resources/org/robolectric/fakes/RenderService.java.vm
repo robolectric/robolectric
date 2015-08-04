@@ -117,6 +117,54 @@ public class RenderService {
     }
   }
 
+  public SessionParams getParamsFromFile(String layoutName)
+      throws FileNotFoundException, XmlPullParserException {
+    finishConfiguration();
+    if (resourceResolver == null) {
+      // Abort the rendering if the resources are not found.
+      return null;
+    }
+    // find the layout to run
+    ResourceValue value = resourceResolver.getProjectResource(ResourceType.LAYOUT, layoutName);
+    if (value == null || value.getValue() == null) {
+      throw new IllegalArgumentException("layout does not exist");
+    }
+    File layoutFile = new File(value.getValue());
+    ILayoutPullParser parser = null;
+    parser = new XmlParser();
+    parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, true);
+    parser.setInput(new FileInputStream(layoutFile), "UTF-8"); // $NON-NLS-1$
+    versionAndConstantsSetUp();
+    HardwareConfig hardwareConfigconfig = new HardwareConfig(config.getScreenWidthQualifier().getValue(),
+        config.getScreenHeightQualifier().getValue(), config.getDensityQualifier().getValue(),
+        Xdpi, Ydpi, config.getScreenSizeQualifier().getValue(),
+        config.getScreenOrientationQualifier().getValue(), false);
+    SessionParams p = new SessionParams(parser, renderingMode, this/* projectKey*/, hardwareConfigconfig,
+        resourceResolver, projectCallback, minSdkVersion, targetSdkVersion, logger);
+    params = p;
+    // Request margin and baseline information.
+    // TODO: Be smarter about setting this; start without it, and on the first request
+    // for an extended view info, re-render in the same session, and then set a flag
+    // which will cause this to create extended view info each time from then on in the
+    // same session
+    params.setExtendedViewInfoMode(true);
+    if (!showDecorations) {
+      params.setForceNoDecor();
+    } else {
+      if (appLabel == null) {
+        appLabel = "Random App";
+      }
+      params.setAppLabel(appLabel);
+      params.setAppIcon(appIconName); // ok to be null
+    }
+    if (overrideBgColor != null) {
+      params.setOverrideBgColor(overrideBgColor.intValue());
+    }
+    // set the Image Overlay as the image factory.
+    params.setImageFactory(imageFactory);
+    return params;
+  }
+
   public RenderSession createRenderSession(String layoutName)
       throws FileNotFoundException, XmlPullParserException {
     finishConfiguration();

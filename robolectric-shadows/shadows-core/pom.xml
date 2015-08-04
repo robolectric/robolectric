@@ -402,7 +402,7 @@
         <dependency>
           <groupId>org.robolectric</groupId>
           <artifactId>android-all</artifactId>
-          <version>5.0.0_r2-robolectric-1</version>
+          <version>5.0.0_r2-robolectric-1-render</version>
         </dependency>
       </dependencies>
       <properties>
@@ -447,7 +447,7 @@
         <dependency>
           <groupId>org.robolectric</groupId>
           <artifactId>android-all</artifactId>
-          <version>5.0.0_r2-robolectric-1</version>
+          <version>5.0.0_r2-robolectric-1-render</version>
         </dependency>
       </dependencies>
       <properties>

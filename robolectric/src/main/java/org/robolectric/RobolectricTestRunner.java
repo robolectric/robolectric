@@ -184,7 +184,9 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
         if (instrumentingClassLoaderFactory == null) {
           instrumentingClassLoaderFactory = new InstrumentingClassLoaderFactory(createClassLoaderConfig(), getJarResolver());
         }
-        SdkEnvironment sdkEnvironment = instrumentingClassLoaderFactory.getSdkEnvironment(new SdkConfig(pickSdkVersion(config, appManifest)), isLayoutLibEnabled(config));
+        SdkConfig sdkConfig = new SdkConfig(pickSdkVersion(config, appManifest));
+        sdkConfig.setRendering(config.rendering());
+        SdkEnvironment sdkEnvironment = instrumentingClassLoaderFactory.getSdkEnvironment(sdkConfig, isLayoutLibEnabled(config));
         methodBlock(method, config, appManifest, sdkEnvironment).evaluate();
       } catch (AssumptionViolatedException e) {
         eachNotifier.addFailedAssumption(e);
