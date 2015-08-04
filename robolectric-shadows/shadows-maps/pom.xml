@@ -47,7 +47,6 @@
       <artifactId>shadows-core</artifactId>
       <scope>provided</scope>
       <version>3.1-SNAPSHOT</version>
-      <classifier>19</classifier>
       <exclusions>
         <exclusion>
           <groupId>org.robolectric</groupId>
