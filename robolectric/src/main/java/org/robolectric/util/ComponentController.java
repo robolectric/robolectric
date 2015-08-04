@@ -9,7 +9,7 @@ import org.robolectric.ShadowsAdapter;
 import org.robolectric.ShadowsAdapter.ShadowLooperAdapter;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
-abstract class ComponentController<C extends ComponentController<C, T>, T> {
+public abstract class ComponentController<C extends ComponentController<C, T>, T> {
   protected final C myself;
   protected final T component;
   protected final ShadowLooperAdapter shadowMainLooper;
