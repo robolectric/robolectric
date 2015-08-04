@@ -65,6 +65,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.android.internal.os.BackgroundThread;
 import com.android.internal.telephony.cat.TextColor;
 import com.android.layoutlib.bridge.android.BridgeContext;
 import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
@@ -423,9 +424,9 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
 
       Set<String> foundMethods = new HashSet<>();
       List<MethodNode> methods = new ArrayList<>(classNode.methods);
-      String delegateAnnotationName = "L" + LayoutlibDelegate.class.getName().replace('.', '/') + ";";
       for (MethodNode method : methods) {
         if (isGraphicsEnabled) {
+          String delegateAnnotationName = "L" + LayoutlibDelegate.class.getName().replace('.', '/') + ";";
           if (method.name.equals("draw")) {
             continue;
           }

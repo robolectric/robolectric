@@ -107,10 +107,13 @@ public class RenderTest {
 
     assertThat(result.isSuccess()).isEqualTo(true);
     BufferedImage image = session.getImage();
-    ImageIO.write(image, "png", new File("./target/maven-archiver/test.png"));
     // read the views
+    assertThat(image.getWidth()).isNotEqualTo(0);
+    assertThat(session.getRootViews().size()).isNotEqualTo(0);
     displayViewObjects(session.getRootViews());
     session.dispose();
+    image.flush();
+    image = null;
   }
 
   private static void displayViewObjects(List<ViewInfo> rootViews) {

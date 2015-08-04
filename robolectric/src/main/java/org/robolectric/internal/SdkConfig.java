@@ -64,15 +64,13 @@ public class SdkConfig {
   }
 
   public DependencyJar[] getSdkClasspathDependencies() {
-    String shadowCoreDependencySurfix = Integer.toString(apiLevel);
     if (isRendering) {
        artifactVersionString = artifactVersionString + RENDER_SUFFIX;
-       shadowCoreDependencySurfix = shadowCoreDependencySurfix + RENDER_SUFFIX;
     }
 
     return new DependencyJar[] {
         createDependency("org.robolectric", "android-all", artifactVersionString, null),
-        createDependency("org.robolectric", "shadows-core", ROBOLECTRIC_VERSION, shadowCoreDependencySurfix),
+        createDependency("org.robolectric", "shadows-core", ROBOLECTRIC_VERSION, Integer.toString(apiLevel)),
         createDependency("org.json", "json", "20080701", null),
         createDependency("org.ccil.cowan.tagsoup", "tagsoup", "1.2", null)
     };
@@ -83,7 +81,7 @@ public class SdkConfig {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     SdkConfig sdkConfig = (SdkConfig) o;
-    return artifactVersionString.equals(sdkConfig.artifactVersionString);
+    return (artifactVersionString.equals(sdkConfig.artifactVersionString) && isRendering == sdkConfig.isRendering());
   }
 
   @Override

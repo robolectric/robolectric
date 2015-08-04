@@ -49,8 +49,8 @@ import static org.mockito.Mockito.verify;
 import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.WithDefaults.class)
-@Config(rendering=true, manifest="src/test/resources/TestAndroidManifestRendering.xml")
+@RunWith(TestRunners.MultiApiWithDefaults.class)
+@Config(rendering=false)
 public class ShadowTextViewTest {
   private static final String INITIAL_TEXT = "initial text";
   private static final String NEW_TEXT = "new text";
@@ -402,13 +402,11 @@ public class ShadowTextViewTest {
     textView.setText("test");
     textView.getPaint().setTypeface(Typeface.DEFAULT);
     textView.setTypeface(Typeface.DEFAULT);
-    System.out.println(textView.getTypeface());
     textView.getPaint().getFontMetrics();
     textView.measure(100, 100);
 
     MotionEvent event = MotionEvent.obtain(0, 0, 0, 0, 0, 0);
     textView.dispatchTouchEvent(event);
-    System.out.println(textView.getWidth());
 
     assertEquals(testMovementMethod.event, event);
   }

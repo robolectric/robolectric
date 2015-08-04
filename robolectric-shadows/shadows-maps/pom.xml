@@ -37,7 +37,7 @@
       <exclusions>
         <exclusion>
           <groupId>org.robolectric</groupId>
-          <artifactId>layoutlib</artifactId>
+          <artifactId>android-all</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -51,7 +51,7 @@
       <exclusions>
         <exclusion>
           <groupId>org.robolectric</groupId>
-          <artifactId>layoutlib</artifactId>
+          <artifactId>android-all</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
