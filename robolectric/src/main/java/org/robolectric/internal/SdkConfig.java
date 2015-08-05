@@ -65,10 +65,10 @@ public class SdkConfig {
 
   public DependencyJar[] getSdkClasspathDependencies() {
     if (isRendering) {
-      System.out.print("I am rendering!");
       artifactVersionString = artifactVersionString + RENDER_SUFFIX;
     }
 
+    System.out.println(artifactVersionString);
     return new DependencyJar[] {
         createDependency("org.robolectric", "android-all", artifactVersionString, null),
         createDependency("org.robolectric", "shadows-core", ROBOLECTRIC_VERSION, Integer.toString(apiLevel)),
