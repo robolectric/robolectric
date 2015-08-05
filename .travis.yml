@@ -9,9 +9,6 @@ cache:
     directories:
         - $HOME/.m2
 
-before_cache:
-        - rm -f $HOME/.m2/repository/org/robolectric/android-all/5.0.0_r2-robolectric-1
-        
 before_install:
     - echo "y" | android update sdk --no-ui --filter platform-tools,tools
     - echo "y" | android update sdk --no-ui --filter build-tools-20.0.0

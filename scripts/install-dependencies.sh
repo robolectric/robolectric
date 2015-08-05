@@ -90,6 +90,7 @@ install_aar "com.google.android.gms" "play-services" "6.5.87" "${GOOGLE_REPOSITO
 install_maps "com.google.android.maps" "maps" "18" "4"
 
 # Install a render-enabled android jar
+rm -rf $HOME/.m2/repository/org/robolectric/android-all/5.0.0_r2-robolectric-1
 mvn dependency:get -DgroupId=org.robolectric -DartifactId=android-all -Dversion=5.0.0_r2-robolectric-1 -Dpackaging=jar -Dtransitive=false -DremoteRepositories=https://oss.sonatype.org/content/groups/public/
 install_jar "org.robolectric" "android-all" "5.0.0_r2-robolectric-1-render" "${HOME}/.m2/repository/org/robolectric/android-all/5.0.0_r2-robolectric-1/android-all-5.0.0_r2-robolectric-1.jar"
 # Update the Android jar with layoutlib.jar
