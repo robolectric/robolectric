@@ -68,7 +68,6 @@ public class SdkConfig {
       artifactVersionString = artifactVersionString + RENDER_SUFFIX;
     }
 
-    System.out.println(artifactVersionString);
     return new DependencyJar[] {
         createDependency("org.robolectric", "android-all", artifactVersionString, null),
         createDependency("org.robolectric", "shadows-core", ROBOLECTRIC_VERSION, Integer.toString(apiLevel)),
