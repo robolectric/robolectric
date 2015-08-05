@@ -94,6 +94,11 @@ mvn dependency:get -DgroupId=org.robolectric -DartifactId=android-all -Dversion=
 install_jar "org.robolectric" "android-all" "5.0.0_r2-robolectric-1-render" "${HOME}/.m2/repository/org/robolectric/android-all/5.0.0_r2-robolectric-1/android-all-5.0.0_r2-robolectric-1.jar"
 # Update the Android jar with layoutlib.jar
 mkdir /tmp/robolectric-dependencies.layoutlib21
+layoutlib = ${ANDROID_HOME}/platforms/android-21/data/layoutlib.jar
+if [ ! -d "$dir" ]; then
+  echo "Android SDK platform 21 doesn't exist, please download it from the Android SDK Manager"
+  exit 1
+fi
 cd /tmp/robolectric-dependencies.layoutlib21; jar xf ${ANDROID_HOME}/platforms/android-21/data/layoutlib.jar; rm android/view/accessibility/AccessibilityManager*
 jar uf ~/.m2/repository/org/robolectric/android-all/5.0.0_r2-robolectric-1-render/android-all-5.0.0_r2-robolectric-1-render.jar . 
 echo "Updating android lib";rm -rf /tmp/robolectric-dependencies.layoutlib21
