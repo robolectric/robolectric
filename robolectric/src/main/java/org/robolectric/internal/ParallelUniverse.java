@@ -297,7 +297,9 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     if (sdkConfig.isRendering()) {
       BridgeContext bridgeContext =
           (BridgeContext) ReflectionHelpers.getStaticField(RenderAction.class, "sCurrentContext");
-      bridgeContext.disposeResources();
+      if (bridgeContext != null) {
+        bridgeContext.disposeResources();
+      }
     }
   }
 
