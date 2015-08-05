@@ -65,7 +65,8 @@ public class SdkConfig {
 
   public DependencyJar[] getSdkClasspathDependencies() {
     if (isRendering) {
-       artifactVersionString = artifactVersionString + RENDER_SUFFIX;
+      System.out.print("I am rendering!");
+      artifactVersionString = artifactVersionString + RENDER_SUFFIX;
     }
 
     return new DependencyJar[] {
