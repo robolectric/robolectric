@@ -293,6 +293,12 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     if (RuntimeEnvironment.application != null) {
       RuntimeEnvironment.application.onTerminate();
     }
+
+    if (sdkConfig.isRendering()) {
+      BridgeContext bridgeContext =
+          (BridgeContext) ReflectionHelpers.getStaticField(RenderAction.class, "sCurrentContext");
+      bridgeContext.disposeResources();
+    }
   }
 
   @Override

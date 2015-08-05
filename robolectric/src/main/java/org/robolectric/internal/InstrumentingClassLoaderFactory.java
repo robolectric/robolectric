@@ -40,7 +40,9 @@ public class InstrumentingClassLoaderFactory {
       ClassLoader robolectricClassLoader =
           new InstrumentingClassLoader(instrumentationConfig, layoutLibIncluded, urls);
       sdkEnvironment = new SdkEnvironment(sdkConfig, robolectricClassLoader);
-      sdkToEnvironment.put(key, sdkEnvironment);
+      if (!layoutLibIncluded) {
+        sdkToEnvironment.put(key, sdkEnvironment);
+      }
     }
     return sdkEnvironment;
   }
