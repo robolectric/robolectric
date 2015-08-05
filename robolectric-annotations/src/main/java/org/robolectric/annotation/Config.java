@@ -129,6 +129,10 @@ public @interface Config {
 
     public static Config fromProperties(Properties properties) {
       if (properties == null || properties.size() == 0) return null;
+      boolean isRendering = false;
+      if (properties.get("rendering") != null) {
+         isRendering = (boolean)properties.get("rendering");
+      }
       return new Implementation(
           parseIntArrayProperty(properties.getProperty("sdk", "")),
           properties.getProperty("manifest", DEFAULT),
@@ -140,7 +144,7 @@ public @interface Config {
           parseApplication(properties.getProperty("application", "android.app.Application")),
           parseStringArrayProperty(properties.getProperty("libraries", "")),
           parseClass(properties.getProperty("constants", "")),
-          (boolean)properties.getOrDefault("rendering", DEFAULT_RENDERING_ENABLED));
+          isRendering);
     }
 
     private static Class<?> parseClass(String className) {
