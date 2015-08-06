@@ -114,6 +114,7 @@ public class RenderTest {
     session.dispose();
     image.flush();
     image = null;
+    System.gc();
   }
 
   private static void displayViewObjects(List<ViewInfo> rootViews) {
