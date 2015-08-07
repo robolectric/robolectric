@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.ContextWrapper;
 import android.content.DialogInterface;
+import android.os.Build;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
@@ -14,6 +15,8 @@ import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
+import org.robolectric.util.CustomView;
 import org.robolectric.util.Transcript;
 
 import java.util.ArrayList;
@@ -120,6 +123,17 @@ public class ShadowAlertDialogTest {
 
     AlertDialog alert = builder.create();
     assertThat(shadowOf(alert).getView()).isEqualTo(view);
+  }
+
+  @Test
+  @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
+  public void shouldSetView_withLayoutId() throws Exception {
+    AlertDialog.Builder builder = new AlertDialog.Builder(application);
+    builder.setView(R.layout.custom_layout);
+
+    AlertDialog alert = builder.create();
+    View view = shadowOf(alert).getView();
+    assertThat(view.getClass()).isEqualTo(CustomView.class);
   }
 
   @Test
