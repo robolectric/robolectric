@@ -36,4 +36,20 @@ public class ShadowPorterDuffColorFilterTest {
     filter.setMode(PorterDuff.Mode.DST_IN);
     assertThat(filter.getMode()).isEqualTo(PorterDuff.Mode.DST_IN);
   }
+
+  @Test
+  public void hashCode_returnsDifferentValuesForDifferentModes() {
+    PorterDuffColorFilter addFilter = new PorterDuffColorFilter(Color.RED, PorterDuff.Mode.ADD);
+    PorterDuffColorFilter dstFilter = new PorterDuffColorFilter(Color.RED, PorterDuff.Mode.DST);
+
+    assertThat(addFilter.hashCode()).isNotEqualTo(dstFilter.hashCode());
+  }
+
+  @Test
+  public void hashCode_returnsDifferentValuesForDifferentColors() {
+    PorterDuffColorFilter blueFilter = new PorterDuffColorFilter(Color.BLUE, PorterDuff.Mode.ADD);
+    PorterDuffColorFilter redFilter = new PorterDuffColorFilter(Color.RED, PorterDuff.Mode.ADD);
+
+    assertThat(blueFilter.hashCode()).isNotEqualTo(redFilter.hashCode());
+  }
 }

@@ -28,6 +28,11 @@ public class ShadowPorterDuffColorFilter {
     this.mode = mode;
   }
 
+  @Implementation
+  public int hashCode() {
+    return 31 * mode.hashCode() + color;
+  }
+
   /**
    * Non-Android accessor.
    *
