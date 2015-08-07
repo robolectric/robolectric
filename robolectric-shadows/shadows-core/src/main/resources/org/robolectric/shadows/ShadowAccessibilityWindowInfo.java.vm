@@ -1,5 +1,6 @@
-#if ($api >= 21)
 package org.robolectric.shadows;
+
+#if ($api >= 21)
 
 import android.graphics.Rect;
 import android.view.accessibility.AccessibilityNodeInfo;
@@ -96,4 +97,9 @@ public class ShadowAccessibilityWindowInfo {
     id = value;
   }
 }
+#else
+public class ShadowAccessibilityWindowInfo {
+  // Dummy class, this was added in API21
+}
 #end
+

@@ -665,5 +665,9 @@ public class ShadowAccessibilityNodeInfo {
       return label;
     }
   }
+#else
+  public static final class ShadowAccessibilityAction {
+    // Dummy class, this was added in API21
+  }
 #end
 }
