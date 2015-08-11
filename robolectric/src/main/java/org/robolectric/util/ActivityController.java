@@ -184,13 +184,18 @@ public class ActivityController<T extends Activity> extends ComponentController<
     });
 
     ViewRootImpl root = component.getWindow().getDecorView().getViewRootImpl();
-    Display display = Shadow.newInstanceOf(Display.class);
-    Rect frame = new Rect();
-    display.getRectSize(frame);
-    Rect insets = new Rect(0, 0, 0, 0);
-    final RuntimeAdapter runtimeAdapter = RuntimeAdapterFactory.getInstance();
-    runtimeAdapter.callViewRootImplDispatchResized(
-        root, frame, insets, insets, insets, insets, insets, true, null);
+    if (root != null) {
+      // If a test pause thread before creating an activity, root will be null as runPaused is waiting
+      // Related to issue #1582
+      Display display = Shadow.newInstanceOf(Display.class);
+      Rect frame = new Rect();
+      display.getRectSize(frame);
+      Rect insets = new Rect(0, 0, 0, 0);
+      final RuntimeAdapter runtimeAdapter = RuntimeAdapterFactory.getInstance();
+      runtimeAdapter.callViewRootImplDispatchResized(
+          root, frame, insets, insets, insets, insets, insets, true, null);
+    }
+
     return this;
   }
 
