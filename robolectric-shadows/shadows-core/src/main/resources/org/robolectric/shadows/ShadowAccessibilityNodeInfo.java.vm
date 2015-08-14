@@ -35,7 +35,7 @@ public class ShadowAccessibilityNodeInfo {
   private static final Map<StrictEqualityNodeWrapper, StackTraceElement[]> obtainedInstances =
       new HashMap<>();
 
-  private static final SparseArray<StrictEqualityNodeWrapper> orderedInstance = new SparseArray<>();
+  private static final SparseArray<StrictEqualityNodeWrapper> orderedInstances = new SparseArray<>();
 
   // Bitmasks for actions
   public static final int UNDEFINED_SELECTION_INDEX = -1;
@@ -45,7 +45,7 @@ public class ShadowAccessibilityNodeInfo {
 
     @Override
     public AccessibilityNodeInfo createFromParcel(Parcel source) {
-      return obtain(orderedInstance.get(source.readInt()).mInfo);
+      return obtain(orderedInstances.valueAt(source.readInt()).mInfo);
     }
 
     @Override
@@ -103,6 +103,10 @@ public class ShadowAccessibilityNodeInfo {
   @RealObject
   private AccessibilityNodeInfo realAccessibilityNodeInfo;
 
+  public void __constructor__() {
+    ReflectionHelpers.setStaticField(AccessibilityNodeInfo.class, "CREATOR", ShadowAccessibilityNodeInfo.CREATOR);
+  }
+
   @Implementation
   public static AccessibilityNodeInfo obtain(AccessibilityNodeInfo info) {
     final ShadowAccessibilityNodeInfo shadowInfo =
@@ -112,9 +116,7 @@ public class ShadowAccessibilityNodeInfo {
     sAllocationCount++;
     StrictEqualityNodeWrapper wrapper = new StrictEqualityNodeWrapper(obtainedInstance);
     obtainedInstances.put(wrapper, Thread.currentThread().getStackTrace());
-    orderedInstance.put(sAllocationCount, wrapper);
-    ReflectionHelpers.setStaticField(
-        AccessibilityNodeInfo.class, "CREATOR", ShadowAccessibilityNodeInfo.CREATOR);    
+    orderedInstances.put(sAllocationCount, wrapper);  
     return obtainedInstance;
   }
 
@@ -143,9 +145,7 @@ public class ShadowAccessibilityNodeInfo {
     sAllocationCount++;
     StrictEqualityNodeWrapper wrapper = new StrictEqualityNodeWrapper(obtainedInstance);
     obtainedInstances.put(wrapper, Thread.currentThread().getStackTrace());
-    orderedInstance.put(sAllocationCount, wrapper);
-    ReflectionHelpers.setStaticField(
-        AccessibilityNodeInfo.class, "CREATOR", ShadowAccessibilityNodeInfo.CREATOR);
+    orderedInstances.put(sAllocationCount, wrapper);
     return obtainedInstance;
   }
 
@@ -186,7 +186,8 @@ public class ShadowAccessibilityNodeInfo {
    */
   public static void resetObtainedInstances() {
     obtainedInstances.clear();
-    orderedInstance.clear();
+    orderedInstances.clear();
+    sAllocationCount = 0;
   }
 
   @Implementation
@@ -207,14 +208,15 @@ public class ShadowAccessibilityNodeInfo {
 
     obtainedInstances.remove(wrapper);
     int keyOfWrapper = -1;
-    for (int i = 0; i < orderedInstance.size(); i++) {
-      int key = orderedInstance.keyAt(i);
-      if (orderedInstance.get(key).equals(wrapper)) {
+    for (int i = 0; i < orderedInstances.size(); i++) {
+      int key = orderedInstances.keyAt(i);
+      if (orderedInstances.get(key).equals(wrapper)) {
         keyOfWrapper = key;
         break;
       }
     }
-    orderedInstance.remove(keyOfWrapper);
+    orderedInstances.remove(keyOfWrapper);
+    sAllocationCount--;
   }
 
   @Implementation
@@ -716,14 +718,13 @@ public class ShadowAccessibilityNodeInfo {
   @Implementation
   public void writeToParcel(Parcel dest, int flags) {
     StrictEqualityNodeWrapper wrapper = new StrictEqualityNodeWrapper(realAccessibilityNodeInfo);
-    int keyofWrapper = -1;
-    for (int i = 0; i < orderedInstance.size(); i++) {
-      int key = orderedInstance.keyAt(i);
-      if (orderedInstance.get(key).equals(wrapper)) {
-         keyofWrapper = key;
-         break;
+    int indexOfWrapper = -1;
+    for (int i = 0; i < orderedInstances.size(); i++) {
+      if (orderedInstances.valueAt(i).equals(wrapper)) {
+        indexOfWrapper = i;
+        break;
       }
     }
-    dest.writeInt(keyofWrapper);
+    dest.writeInt(indexOfWrapper);
   }
 }

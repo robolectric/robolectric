@@ -24,7 +24,7 @@ public class ShadowAccessibilityEvent {
   private static final Map<StrictEqualityEventWrapper, StackTraceElement[]> obtainedInstances =
       new HashMap<>();
 
-  private static final SparseArray<StrictEqualityEventWrapper> orderedInstance = new SparseArray<>();
+  private static final SparseArray<StrictEqualityEventWrapper> orderedInstances = new SparseArray<>();
 
   private static int sAllocationCount = 0;
   private int eventType;
@@ -36,12 +36,16 @@ public class ShadowAccessibilityEvent {
   @RealObject
   private AccessibilityEvent realAccessibilityEvent;
 
+  public void __constructor__() {
+    ReflectionHelpers.setStaticField(AccessibilityEvent.class, "CREATOR", ShadowAccessibilityEvent.CREATOR);
+  }
+
   public static final Parcelable.Creator<AccessibilityEvent> CREATOR =
       new Parcelable.Creator<AccessibilityEvent>() {
 
     @Override
     public AccessibilityEvent createFromParcel(Parcel source) {
-      return obtain(orderedInstance.get(source.readInt()).mEvent);
+      return obtain(orderedInstances.valueAt(source.readInt()).mEvent);
     }
 
     @Override
@@ -58,8 +62,7 @@ public class ShadowAccessibilityEvent {
     sAllocationCount++;
     StrictEqualityEventWrapper wrapper = new StrictEqualityEventWrapper(obtainedInstance);
     obtainedInstances.put(wrapper, Thread.currentThread().getStackTrace());
-    orderedInstance.put(sAllocationCount, wrapper);
-    ReflectionHelpers.setStaticField(AccessibilityEvent.class, "CREATOR", ShadowAccessibilityEvent.CREATOR);
+    orderedInstances.put(sAllocationCount, wrapper);
     return obtainedInstance;
   }
 
@@ -76,9 +79,8 @@ public class ShadowAccessibilityEvent {
     sAllocationCount++;
     StrictEqualityEventWrapper wrapper = new StrictEqualityEventWrapper(obtainedInstance);
     obtainedInstances.put(wrapper, Thread.currentThread().getStackTrace());
-    orderedInstance.put(sAllocationCount, wrapper);
+    orderedInstances.put(sAllocationCount, wrapper);
     shadowObtained.eventType = eventType;
-    ReflectionHelpers.setStaticField(AccessibilityEvent.class, "CREATOR", ShadowAccessibilityEvent.CREATOR);
     return obtainedInstance;
   }
 
@@ -117,7 +119,8 @@ public class ShadowAccessibilityEvent {
    */
   public static void resetObtainedInstances() {
     obtainedInstances.clear();
-    orderedInstance.clear();
+    orderedInstances.clear();
+    sAllocationCount = 0;
   }
 
   @Implementation
@@ -130,14 +133,15 @@ public class ShadowAccessibilityEvent {
 
     obtainedInstances.remove(wrapper);
     int keyOfWrapper = -1;
-    for (int i = 0; i < orderedInstance.size(); i++) {
-      int key = orderedInstance.keyAt(i);
-      if (orderedInstance.get(key).equals(wrapper)) {
+    for (int i = 0; i < orderedInstances.size(); i++) {
+      int key = orderedInstances.keyAt(i);
+      if (orderedInstances.get(key).equals(wrapper)) {
         keyOfWrapper = key;
         break;
       }
     }
-    orderedInstance.remove(keyOfWrapper);
+    orderedInstances.remove(keyOfWrapper);
+    sAllocationCount--;
   }
 
   @Implementation
@@ -272,14 +276,13 @@ public class ShadowAccessibilityEvent {
   @Implementation
   public void writeToParcel(Parcel dest, int flags) {
     StrictEqualityEventWrapper wrapper = new StrictEqualityEventWrapper(realAccessibilityEvent);
-    int keyofWrapper = -1;
-    for (int i = 0; i < orderedInstance.size(); i++) {
-      int key = orderedInstance.keyAt(i);
-      if (orderedInstance.get(key).equals(wrapper)) {
-         keyofWrapper = key;
-         break;
+    int indexOfWrapper = -1;
+    for (int i = 0; i < orderedInstances.size(); i++) {
+      if (orderedInstances.valueAt(i).equals(wrapper)) {
+        indexOfWrapper = i;
+        break;
       }
     }
-    dest.writeInt(keyofWrapper);
+    dest.writeInt(indexOfWrapper);
   }
 }
