@@ -1,8 +1,7 @@
 package org.robolectric.shadows;
 
+import android.os.Parcel;
 import android.view.accessibility.AccessibilityEvent;
-import android.view.accessibility.AccessibilityNodeInfo;
-import android.view.accessibility.AccessibilityWindowInfo;
 
 import org.junit.After;
 import org.junit.Before;
@@ -39,6 +38,18 @@ public class ShadowAccessibilityEventTest {
     AccessibilityEvent newEvent = ShadowAccessibilityEvent.obtain(event);
     assertThat(shadow.equals(newEvent)).isEqualTo(true);
     newEvent.recycle();
+  }
+
+  @Test
+  public void shouldWriteAndReadFromParcelCorrectly() {
+    Parcel p = Parcel.obtain();
+    event.setContentDescription("test");
+    event.writeToParcel(p, 0);
+    p.setDataPosition(0);
+    AccessibilityEvent anotherEvent = AccessibilityEvent.CREATOR.createFromParcel(p);
+    assertThat(event).isEqualTo(anotherEvent);
+    event.setContentDescription(null);
+    anotherEvent.recycle();
   }
 
   @After
