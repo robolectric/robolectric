@@ -1,14 +1,17 @@
 package org.robolectric.shadows;
-
 #if ($api >= 21)
-
 import android.graphics.Rect;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityWindowInfo;
 
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.internal.ShadowExtractor;
 import org.robolectric.util.ReflectionHelpers;
+
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Shadow of {@link android.view.accessibility.AccessibilityWindowInfo} that allows a test to set
@@ -16,33 +19,34 @@ import org.robolectric.util.ReflectionHelpers;
  */
 @Implements(AccessibilityWindowInfo.class)
 public class ShadowAccessibilityWindowInfo {
-  private AccessibilityNodeInfo rootNode;
+  private List<AccessibilityWindowInfo> children = null;
 
-  private int type = AccessibilityWindowInfo.TYPE_APPLICATION;
+  private AccessibilityWindowInfo parent = null;
+
+  private AccessibilityNodeInfo rootNode = null;
 
   private Rect boundsInScreen = new Rect();
 
-  private boolean isAccessibilityFocused;
+  private int type = AccessibilityWindowInfo.TYPE_APPLICATION;
 
-  private boolean isActive;
+  private int layer = 0;
 
-  private int id;
+  private int id = 0;
 
-  public void __constructor__() {
+  private boolean isAccessibilityFocused = false;
 
-  }
+  private boolean isActive = false;
+
+  private boolean isFocused = false;
+
+  @RealObject
+  private AccessibilityWindowInfo mRealAccessibilityWindowInfo;
+
+  public void __constructor__() {}
 
   @Implementation
   public static AccessibilityWindowInfo obtain() {
     return ReflectionHelpers.callConstructor(AccessibilityWindowInfo.class);
-  }
-
-  @Implementation
-  public AccessibilityNodeInfo getRoot() {
-    if (rootNode == null) {
-      return null;
-    }
-    return AccessibilityNodeInfo.obtain(rootNode);
   }
 
   @Implementation
@@ -51,13 +55,31 @@ public class ShadowAccessibilityWindowInfo {
   }
 
   @Implementation
-  public void getBoundsInScreen(Rect outBounds) {
-    outBounds.set(boundsInScreen);
+  public int getChildCount() {
+    if (children == null) {
+      return 0;
+    }
+
+    return children.size();
   }
 
   @Implementation
-  public boolean isAccessibilityFocused() {
-    return isAccessibilityFocused;
+  public AccessibilityWindowInfo getChild(int index) {
+    if (children == null) {
+      return null;
+    }
+
+    return children.get(index);
+  }
+
+  @Implementation
+  public AccessibilityWindowInfo getParent() {
+    return parent;
+  }
+
+  @Implementation
+  public AccessibilityNodeInfo getRoot() {
+    return (rootNode == null) ? null : AccessibilityNodeInfo.obtain(rootNode);
   }
 
   @Implementation
@@ -70,19 +92,45 @@ public class ShadowAccessibilityWindowInfo {
     return id;
   }
 
-  public void setRoot(AccessibilityNodeInfo root) {
-    if (rootNode != null) {
-      rootNode.recycle();
+  @Implementation
+  public void getBoundsInScreen(Rect outBounds) {
+    if (boundsInScreen == null) {
+      outBounds.setEmpty();
+    } else {
+      outBounds.set(boundsInScreen);
     }
-    rootNode = AccessibilityNodeInfo.obtain(root);
   }
 
-  public void setType(int t) {
-    type = t;
+  @Implementation
+  public int getLayer() {
+    return layer;
   }
 
-  public void setBoundsInScreen(Rect b) {
-    boundsInScreen.set(b);
+  @Implementation
+  public boolean isFocused() {
+    return isFocused;
+  }
+
+  @Implementation
+  public boolean isAccessibilityFocused() {
+    return isAccessibilityFocused;
+  }
+
+  @Implementation
+  public void recycle() {
+    // This shadow does not track recycling of windows.
+  }
+
+  public void setRoot(AccessibilityNodeInfo root) {
+    rootNode = root;
+  }
+
+  public void setType(int value) {
+    type = value;
+  }
+
+  public void setBoundsInScreen(Rect bounds) {
+    boundsInScreen.set(bounds);
   }
 
   public void setAccessibilityFocused(boolean value) {
@@ -95,6 +143,24 @@ public class ShadowAccessibilityWindowInfo {
 
   public void setId(int value) {
     id = value;
+  }
+
+  public void setLayer(int value) {
+    layer = value;
+  }
+
+  public void setFocused(boolean focused) {
+    isFocused = focused;
+  }
+
+  public void addChild(AccessibilityWindowInfo child) {
+    if (children == null) {
+      children = new LinkedList<>();
+    }
+
+    children.add(child);
+    ((ShadowAccessibilityWindowInfo) ShadowExtractor.extract(child)).parent =
+        mRealAccessibilityWindowInfo;
   }
 }
 #else

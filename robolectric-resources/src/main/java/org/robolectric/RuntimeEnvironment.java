@@ -2,6 +2,8 @@ package org.robolectric;
 
 import android.app.Application;
 import android.content.pm.PackageManager;
+
+import org.robolectric.res.ResBundle;
 import org.robolectric.res.builder.RobolectricPackageManager;
 
 public class RuntimeEnvironment {
@@ -40,5 +42,9 @@ public class RuntimeEnvironment {
 
     public static void setQualifiers(String newQualifiers) {
         qualifiers = newQualifiers;
+    }
+
+    public static int getApiLevel() {
+      return ResBundle.getVersionQualifierApiLevel(qualifiers);
     }
 }

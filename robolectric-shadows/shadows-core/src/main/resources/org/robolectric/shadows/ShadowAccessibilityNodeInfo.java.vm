@@ -2,8 +2,11 @@ package org.robolectric.shadows;
 
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.text.TextUtils;
 import android.util.Pair;
+import android.util.SparseArray;
 import android.view.View;
 import android.view.accessibility.AccessibilityNodeInfo;
 
@@ -32,8 +35,25 @@ public class ShadowAccessibilityNodeInfo {
   private static final Map<StrictEqualityNodeWrapper, StackTraceElement[]> obtainedInstances =
       new HashMap<>();
 
+  private static final SparseArray<StrictEqualityNodeWrapper> orderedInstances = new SparseArray<>();
+
   // Bitmasks for actions
   public static final int UNDEFINED_SELECTION_INDEX = -1;
+
+  public static final Parcelable.Creator<AccessibilityNodeInfo> CREATOR =
+      new Parcelable.Creator<AccessibilityNodeInfo>() {
+
+    @Override
+    public AccessibilityNodeInfo createFromParcel(Parcel source) {
+      return obtain(orderedInstances.get(source.readInt()).mInfo);
+    }
+
+    @Override
+    public AccessibilityNodeInfo[] newArray(int size) {
+      return new AccessibilityNodeInfo[size];
+    }};
+
+  private static int sAllocationCount = 0;
 
   private static final int CLICKABLE_MASK = 0x00000001;
 
@@ -83,14 +103,20 @@ public class ShadowAccessibilityNodeInfo {
   @RealObject
   private AccessibilityNodeInfo realAccessibilityNodeInfo;
 
+  public void __constructor__() {
+    ReflectionHelpers.setStaticField(AccessibilityNodeInfo.class, "CREATOR", ShadowAccessibilityNodeInfo.CREATOR);
+  }
+
   @Implementation
   public static AccessibilityNodeInfo obtain(AccessibilityNodeInfo info) {
     final ShadowAccessibilityNodeInfo shadowInfo =
         ((ShadowAccessibilityNodeInfo) ShadowExtractor.extract(info));
     final AccessibilityNodeInfo obtainedInstance = shadowInfo.getClone();
 
-    obtainedInstances.put(
-        new StrictEqualityNodeWrapper(obtainedInstance), Thread.currentThread().getStackTrace());
+    sAllocationCount++;
+    StrictEqualityNodeWrapper wrapper = new StrictEqualityNodeWrapper(obtainedInstance);
+    obtainedInstances.put(wrapper, Thread.currentThread().getStackTrace());
+    orderedInstances.put(sAllocationCount, wrapper);  
     return obtainedInstance;
   }
 
@@ -116,8 +142,10 @@ public class ShadowAccessibilityNodeInfo {
     shadowObtained.performedActionAndArgsList = new LinkedList<>();
 
     shadowObtained.view = view;
-    obtainedInstances.put(
-        new StrictEqualityNodeWrapper(obtainedInstance), Thread.currentThread().getStackTrace());
+    sAllocationCount++;
+    StrictEqualityNodeWrapper wrapper = new StrictEqualityNodeWrapper(obtainedInstance);
+    obtainedInstances.put(wrapper, Thread.currentThread().getStackTrace());
+    orderedInstances.put(sAllocationCount, wrapper);
     return obtainedInstance;
   }
 
@@ -158,6 +186,8 @@ public class ShadowAccessibilityNodeInfo {
    */
   public static void resetObtainedInstances() {
     obtainedInstances.clear();
+    orderedInstances.clear();
+    sAllocationCount = 0;
   }
 
   @Implementation
@@ -177,6 +207,16 @@ public class ShadowAccessibilityNodeInfo {
     }
 
     obtainedInstances.remove(wrapper);
+    int keyOfWrapper = -1;
+    for (int i = 0; i < orderedInstances.size(); i++) {
+      int key = orderedInstances.keyAt(i);
+      if (orderedInstances.get(key).equals(wrapper)) {
+        keyOfWrapper = key;
+        break;
+      }
+    }
+    orderedInstances.remove(keyOfWrapper);
+    sAllocationCount--;
   }
 
   @Implementation
@@ -670,4 +710,21 @@ public class ShadowAccessibilityNodeInfo {
     // Dummy class, this was added in API21
   }
 #end
+  @Implementation
+  public int describeContents() {
+    return 0;
+  }
+
+  @Implementation
+  public void writeToParcel(Parcel dest, int flags) {
+    StrictEqualityNodeWrapper wrapper = new StrictEqualityNodeWrapper(realAccessibilityNodeInfo);
+    int keyOfWrapper = -1;
+    for (int i = 0; i < orderedInstances.size(); i++) {
+      if (orderedInstances.valueAt(i).equals(wrapper)) {
+        keyOfWrapper = orderedInstances.keyAt(i);
+        break;
+      }
+    }
+    dest.writeInt(keyOfWrapper);
+  }
 }
