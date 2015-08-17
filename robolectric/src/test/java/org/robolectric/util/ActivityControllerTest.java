@@ -16,6 +16,9 @@ import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
+import org.robolectric.internal.runtime.Api19RuntimeAdapter;
+import org.robolectric.internal.runtime.RuntimeAdapter;
+import org.robolectric.internal.runtime.RuntimeAdapterFactory;
 import org.robolectric.shadows.CoreShadowsAdapter;
 import org.robolectric.shadows.ShadowLooper;
 
@@ -193,6 +196,16 @@ public class ActivityControllerTest {
   public void attach_shouldWorkWithAPI19() {
     MyActivity activity = Robolectric.buildActivity(MyActivity.class).create().get();
     assertThat(activity).isNotNull();
+  }
+
+  @Test
+  @Config(sdk = Build.VERSION_CODES.KITKAT)
+  public void shouldUseCorrectRuntimeAdapter() {
+    ReflectionHelpers.setStaticField(Build.VERSION.class, "SDK_INT", 15);
+    MyActivity activity = Robolectric.buildActivity(MyActivity.class).setup().get();
+    assertThat(activity).isNotNull();
+    RuntimeAdapter adapter = RuntimeAdapterFactory.getInstance();
+    assertThat(adapter.getClass().getName()).isEqualTo(Api19RuntimeAdapter.class.getName());
   }
 
   public static class MyActivity extends Activity {

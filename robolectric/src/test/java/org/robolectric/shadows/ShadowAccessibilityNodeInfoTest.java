@@ -1,7 +1,9 @@
 package org.robolectric.shadows;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 
+import android.os.Parcel;
 import android.view.accessibility.AccessibilityNodeInfo;
 
 import org.junit.After;
@@ -28,6 +30,23 @@ public class ShadowAccessibilityNodeInfoTest {
   @Test
   public void shouldHaveObtainedNode() {
     assertThat(ShadowAccessibilityNodeInfo.areThereUnrecycledNodes(false)).isEqualTo(true);
+  }
+
+  @Test
+  public void ShouldHaveClonedCorrectly() {
+    AccessibilityNodeInfo anotherNode = AccessibilityNodeInfo.obtain(node);
+    assertEquals(node, anotherNode);
+  }
+
+  @Test
+  public void shouldWriteAndReadFromParcelCorrectly() {
+    Parcel p = Parcel.obtain();
+    node.setContentDescription("test");
+    node.writeToParcel(p, 0);
+    p.setDataPosition(0);
+    AccessibilityNodeInfo anotherNode = AccessibilityNodeInfo.CREATOR.createFromParcel(p);
+    assertThat(node).isEqualTo(anotherNode);
+    node.setContentDescription(null);
   }
 
   @Test
