@@ -45,7 +45,7 @@ public class ShadowAccessibilityEvent {
 
     @Override
     public AccessibilityEvent createFromParcel(Parcel source) {
-      return obtain(orderedInstances.valueAt(source.readInt()).mEvent);
+      return obtain(orderedInstances.get(source.readInt()).mEvent);
     }
 
     @Override
@@ -276,13 +276,13 @@ public class ShadowAccessibilityEvent {
   @Implementation
   public void writeToParcel(Parcel dest, int flags) {
     StrictEqualityEventWrapper wrapper = new StrictEqualityEventWrapper(realAccessibilityEvent);
-    int indexOfWrapper = -1;
+    int keyOfWrapper = -1;
     for (int i = 0; i < orderedInstances.size(); i++) {
       if (orderedInstances.valueAt(i).equals(wrapper)) {
-        indexOfWrapper = i;
+        keyOfWrapper = orderedInstances.keyAt(i);
         break;
       }
     }
-    dest.writeInt(indexOfWrapper);
+    dest.writeInt(keyOfWrapper);
   }
 }
