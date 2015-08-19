@@ -5,6 +5,7 @@ import android.os.Parcelable;
 import android.text.TextUtils;
 import android.util.SparseArray;
 import android.view.accessibility.AccessibilityEvent;
+import android.view.accessibility.AccessibilityRecord;
 
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -19,7 +20,7 @@ import java.util.Map;
  * Shadow of {@link android.view.accessibility.AccessibilityEvent}.
  */
 @Implements(AccessibilityEvent.class)
-public class ShadowAccessibilityEvent {
+public class ShadowAccessibilityEvent extends ShadowAccessibilityRecord {
   // Map of obtained instances of the class along with stack traces of how they were obtained
   private static final Map<StrictEqualityEventWrapper, StackTraceElement[]> obtainedInstances =
       new HashMap<>();
@@ -142,6 +143,7 @@ public class ShadowAccessibilityEvent {
     }
     orderedInstances.remove(keyOfWrapper);
     sAllocationCount--;
+    setParcelableData(null);
   }
 
   @Implementation
@@ -210,6 +212,13 @@ public class ShadowAccessibilityEvent {
     areEqual &= TextUtils.equals(contentDescription, otherShadow.contentDescription);
     areEqual &= TextUtils.equals(packageName, otherShadow.packageName);
     areEqual &= TextUtils.equals(className, otherShadow.className);
+    boolean parcelableDataEqual = false;
+    if (getParcelableData() == null && otherShadow.getParcelableData() == null){
+      parcelableDataEqual = true;
+    } else if (getParcelableData().equals(otherShadow.getParcelableData())) {
+      parcelableDataEqual = true;
+    }
+    areEqual &= parcelableDataEqual;
 
     return areEqual;
   }
@@ -238,6 +247,7 @@ public class ShadowAccessibilityEvent {
     newShadow.packageName = packageName;
     newShadow.className = className;
     newShadow.enabled = enabled;
+    newShadow.setParcelableData(getParcelableData());
 
     return newEvent;
   }
