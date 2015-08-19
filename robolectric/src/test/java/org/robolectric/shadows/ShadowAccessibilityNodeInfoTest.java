@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
-import android.graphics.Rect;
 import android.os.Parcel;
 import android.view.accessibility.AccessibilityNodeInfo;
 
@@ -31,13 +30,6 @@ public class ShadowAccessibilityNodeInfoTest {
   @Test
   public void shouldHaveObtainedNode() {
     assertThat(ShadowAccessibilityNodeInfo.areThereUnrecycledNodes(false)).isEqualTo(true);
-  }
-
-  @Test
-  public void shouldHaveZeroBounds() {
-    Rect outBounds = new Rect();
-    node.getBoundsInParent(outBounds);
-    assertThat(outBounds.left).isEqualTo(0);
   }
 
   @Test
