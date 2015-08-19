@@ -88,6 +88,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     shadowsAdapter.overrideQualifiers(configuration, qualifiers);
     systemResources.updateConfiguration(configuration, systemResources.getDisplayMetrics());
     RuntimeEnvironment.setQualifiers(qualifiers);
+    RuntimeEnvironment.setApiLevel(sdkConfig.getApiLevel());
 
     Class<?> contextImplClass = ReflectionHelpers.loadClass(getClass().getClassLoader(), shadowsAdapter.getShadowContextImplClassName());
 
