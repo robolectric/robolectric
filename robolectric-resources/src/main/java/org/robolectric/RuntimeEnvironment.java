@@ -3,7 +3,6 @@ package org.robolectric;
 import android.app.Application;
 import android.content.pm.PackageManager;
 
-import org.robolectric.res.ResBundle;
 import org.robolectric.res.builder.RobolectricPackageManager;
 
 public class RuntimeEnvironment {
@@ -12,6 +11,7 @@ public class RuntimeEnvironment {
     private static String qualifiers;
     private static Object activityThread;
     private static RobolectricPackageManager packageManager;
+    private static int apiLevel;
 
     public static Object getActivityThread() {
         return activityThread;
@@ -44,7 +44,11 @@ public class RuntimeEnvironment {
         qualifiers = newQualifiers;
     }
 
+    public static void setApiLevel(int level) {
+        apiLevel = level;
+    }
+
     public static int getApiLevel() {
-      return ResBundle.getVersionQualifierApiLevel(qualifiers);
+        return apiLevel;
     }
 }
