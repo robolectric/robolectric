@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import android.app.Notification;
 import android.os.Parcel;
 import android.view.accessibility.AccessibilityEvent;
 
@@ -30,6 +31,16 @@ public class ShadowAccessibilityEventTest {
   @Test
   public void shouldHaveObtainedEvent() {
     assertThat(ShadowAccessibilityEvent.areThereUnrecycledEvents(false)).isEqualTo(true);
+  }
+
+  @Test
+  public void shouldRecordParcelables() {
+    final Notification notification = new Notification();
+    event.setParcelableData(notification);
+    AccessibilityEvent anotherEvent = AccessibilityEvent.obtain(event);
+    assertThat(anotherEvent.getParcelableData() instanceof Notification).isEqualTo(true);
+    assertThat(anotherEvent.getParcelableData()).isEqualTo(notification);
+    anotherEvent.recycle();
   }
 
   @Test

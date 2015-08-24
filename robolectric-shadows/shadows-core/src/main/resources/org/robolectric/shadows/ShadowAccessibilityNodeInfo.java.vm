@@ -76,6 +76,8 @@ public class ShadowAccessibilityNodeInfo {
   private List<AccessibilityNodeInfo> children;
 
   private Rect boundsInScreen = new Rect();
+  
+  private Rect boundsInParent = new Rect();
 
   private List<Pair<Integer, Bundle>> performedActionAndArgsList;
 
@@ -152,6 +154,12 @@ public class ShadowAccessibilityNodeInfo {
   @Implementation
   public static AccessibilityNodeInfo obtain() {
     return obtain(new View(RuntimeEnvironment.application.getApplicationContext()));
+  }
+
+  @Implementation
+  public static AccessibilityNodeInfo obtain(View root, int virtualDescendantId) {
+    AccessibilityNodeInfo node = obtain(root);
+    return node;
   }
 
   /**
@@ -252,6 +260,11 @@ public class ShadowAccessibilityNodeInfo {
   }
 
   @Implementation
+  public boolean refresh() {
+      return true;
+  }
+
+  @Implementation
   public boolean isClickable() {
     return ((actionFlags & CLICKABLE_MASK) != 0);
   }
@@ -332,8 +345,12 @@ public class ShadowAccessibilityNodeInfo {
   @Implementation
   public void setEditable(boolean isEditable) {
     actionFlags = (actionFlags & ~EDITABLE_MASK) | (isEditable ? EDITABLE_MASK : 0);
-    // If setting editable, also set it selectable
-    setTextSelectionSetable(true);
+    /* If a shadow node is editable, then its text is also selectable. However, if a shadow node is
+     * not editable, then no assumptions can be made about text selectability.
+     */
+    if (isEditable) {
+      setTextSelectionSetable(true);
+    }
   }
 
   @Implementation
@@ -434,12 +451,36 @@ public class ShadowAccessibilityNodeInfo {
 
   @Implementation
   public void getBoundsInScreen(Rect outBounds) {
+    if (boundsInScreen == null) {
+      boundsInScreen = new Rect();
+    }
     outBounds.set(boundsInScreen);
   }
 
   @Implementation
+  public void getBoundsInParent(Rect outBounds) {
+    if (boundsInParent == null) {
+      boundsInParent = new Rect();
+    }
+    outBounds.set(boundsInParent);
+  }
+
+  @Implementation
   public void setBoundsInScreen(Rect b) {
-    boundsInScreen.set(b);
+    if (boundsInScreen == null) {
+      boundsInScreen = new Rect(b);
+    } else {
+      boundsInScreen.set(b);
+    }
+  }
+  
+  @Implementation
+  public void setBoundsInParent(Rect b) {
+    if (boundsInParent == null) {
+      boundsInParent = new Rect(b);
+    } else {
+      boundsInParent.set(b);
+    }
   }
 
   /**
@@ -591,6 +632,18 @@ public class ShadowAccessibilityNodeInfo {
     children.add(child);
     ((ShadowAccessibilityNodeInfo) ShadowExtractor.extract(child)).parent =
         realAccessibilityNodeInfo;
+  }
+
+  @Implementation
+  public void addChild(View child) {
+    AccessibilityNodeInfo node = AccessibilityNodeInfo.obtain(child);
+    addChild(node);
+  }
+
+  @Implementation
+  public void addChild(View root, int virtualDescendantId) {
+    AccessibilityNodeInfo node = AccessibilityNodeInfo.obtain(root, virtualDescendantId);
+    addChild(node);
   }
 
   /**
