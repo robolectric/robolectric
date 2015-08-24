@@ -439,7 +439,6 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
           }
 
           if (internalClassName.replace('/', '.').startsWith("android.graphics.")
-              || internalClassName.replace('/', '.').equals(Surface.class.getName())
               || internalClassName.replace('/', '.').startsWith(Surface.class.getName())
               || internalClassName.replace('/', '.').startsWith(LinearLayout.class.getName())
               || internalClassName.replace('/', '.').startsWith(TextView.class.getName())

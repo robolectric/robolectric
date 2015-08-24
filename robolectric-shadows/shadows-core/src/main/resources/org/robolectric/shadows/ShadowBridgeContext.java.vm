@@ -19,7 +19,7 @@ import static org.robolectric.internal.Shadow.newInstanceOf;
  * Shadow for {@link com.android.layoutlib.bridge.android.BridgeContext}
  */
 @Implements(className = ShadowBridgeContext.CLASS_NAME)
-public class ShadowBridgeContext {
+public class ShadowBridgeContext{
   public static final String CLASS_NAME = "com.android.layoutlib.bridge.android.BridgeContext";
 
   @RealObject private BridgeContext realContext;

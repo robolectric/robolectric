@@ -1,0 +1,2027 @@
+Building Robolectric...
+[INFO] Scanning for projects...
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Build Order:
+[INFO] 
+[INFO] robolectric-parent
+[INFO] robolectric-annotations
+[INFO] robolectric-utils
+[INFO] robolectric-resources
+[INFO] robolectric-shadows
+[INFO] robolectric-processor
+[INFO] shadows-core
+[INFO] robolectric
+[INFO] shadows-maps
+[INFO] shadows-multidex
+[INFO] shadows-support-v4
+[INFO] shadows-httpclient
+[INFO] shadows-play-services
+[INFO] 
+[INFO] Using the builder org.apache.maven.lifecycle.internal.builder.singlethreaded.SingleThreadedBuilder with a thread count of 1
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building robolectric-parent 3.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:2.4.1:clean (default-clean) @ robolectric-parent ---
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.0:enforce (enforce-maven) @ robolectric-parent ---
+[INFO] 
+[INFO] --- maven-install-plugin:2.4:install (default-install) @ robolectric-parent ---
+[INFO] Installing /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/pom.xml to /usr/local/google/home/yuzhong/.m2/repository/org/robolectric/robolectric-parent/3.1-SNAPSHOT/robolectric-parent-3.1-SNAPSHOT.pom
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building robolectric-annotations 3.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:2.4.1:clean (default-clean) @ robolectric-annotations ---
+[INFO] Deleting /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-annotations/target
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.0:enforce (enforce-maven) @ robolectric-annotations ---
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ robolectric-annotations ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-annotations/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:compile (default-compile) @ robolectric-annotations ---
+[INFO] Compiling 10 source files to /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-annotations/target/classes
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ robolectric-annotations ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-annotations/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:testCompile (default-testCompile) @ robolectric-annotations ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.13:test (default-test) @ robolectric-annotations ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- maven-jar-plugin:2.3.1:jar (default-jar) @ robolectric-annotations ---
+[INFO] Building jar: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-annotations/target/robolectric-annotations-3.1-SNAPSHOT.jar
+[INFO] 
+[INFO] --- maven-install-plugin:2.4:install (default-install) @ robolectric-annotations ---
+[INFO] Installing /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-annotations/target/robolectric-annotations-3.1-SNAPSHOT.jar to /usr/local/google/home/yuzhong/.m2/repository/org/robolectric/robolectric-annotations/3.1-SNAPSHOT/robolectric-annotations-3.1-SNAPSHOT.jar
+[INFO] Installing /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-annotations/pom.xml to /usr/local/google/home/yuzhong/.m2/repository/org/robolectric/robolectric-annotations/3.1-SNAPSHOT/robolectric-annotations-3.1-SNAPSHOT.pom
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building robolectric-utils 3.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:2.4.1:clean (default-clean) @ robolectric-utils ---
+[INFO] Deleting /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-utils/target
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.0:enforce (enforce-maven) @ robolectric-utils ---
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ robolectric-utils ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-utils/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:compile (default-compile) @ robolectric-utils ---
+[INFO] Compiling 23 source files to /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-utils/target/classes
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ robolectric-utils ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-utils/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:testCompile (default-testCompile) @ robolectric-utils ---
+[INFO] Compiling 3 source files to /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-utils/target/test-classes
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.13:test (default-test) @ robolectric-utils ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- maven-jar-plugin:2.3.1:jar (default-jar) @ robolectric-utils ---
+[INFO] Building jar: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-utils/target/robolectric-utils-3.1-SNAPSHOT.jar
+[INFO] 
+[INFO] --- maven-install-plugin:2.4:install (default-install) @ robolectric-utils ---
+[INFO] Installing /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-utils/target/robolectric-utils-3.1-SNAPSHOT.jar to /usr/local/google/home/yuzhong/.m2/repository/org/robolectric/robolectric-utils/3.1-SNAPSHOT/robolectric-utils-3.1-SNAPSHOT.jar
+[INFO] Installing /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-utils/pom.xml to /usr/local/google/home/yuzhong/.m2/repository/org/robolectric/robolectric-utils/3.1-SNAPSHOT/robolectric-utils-3.1-SNAPSHOT.pom
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building robolectric-resources 3.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:2.4.1:clean (default-clean) @ robolectric-resources ---
+[INFO] Deleting /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-resources/target
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.0:enforce (enforce-maven) @ robolectric-resources ---
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ robolectric-resources ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-resources/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:compile (default-compile) @ robolectric-resources ---
+[INFO] Compiling 58 source files to /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-resources/target/classes
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ robolectric-resources ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-resources/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:testCompile (default-testCompile) @ robolectric-resources ---
+[INFO] Compiling 2 source files to /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-resources/target/test-classes
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.13:test (default-test) @ robolectric-resources ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- maven-jar-plugin:2.3.1:jar (default-jar) @ robolectric-resources ---
+[INFO] Building jar: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-resources/target/robolectric-resources-3.1-SNAPSHOT.jar
+[INFO] 
+[INFO] --- maven-install-plugin:2.4:install (default-install) @ robolectric-resources ---
+[INFO] Installing /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-resources/target/robolectric-resources-3.1-SNAPSHOT.jar to /usr/local/google/home/yuzhong/.m2/repository/org/robolectric/robolectric-resources/3.1-SNAPSHOT/robolectric-resources-3.1-SNAPSHOT.jar
+[INFO] Installing /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-resources/pom.xml to /usr/local/google/home/yuzhong/.m2/repository/org/robolectric/robolectric-resources/3.1-SNAPSHOT/robolectric-resources-3.1-SNAPSHOT.pom
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building robolectric-shadows 3.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:2.4.1:clean (default-clean) @ robolectric-shadows ---
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.0:enforce (enforce-maven) @ robolectric-shadows ---
+[INFO] 
+[INFO] --- maven-install-plugin:2.4:install (default-install) @ robolectric-shadows ---
+[INFO] Installing /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/pom.xml to /usr/local/google/home/yuzhong/.m2/repository/org/robolectric/robolectric-shadows/3.1-SNAPSHOT/robolectric-shadows-3.1-SNAPSHOT.pom
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building robolectric-processor 3.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:2.4.1:clean (default-clean) @ robolectric-processor ---
+[INFO] Deleting /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-processor/target
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.0:enforce (enforce-maven) @ robolectric-processor ---
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ robolectric-processor ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 1 resource
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:compile (default-compile) @ robolectric-processor ---
+[INFO] Compiling 14 source files to /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-processor/target/classes
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ robolectric-processor ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 44 resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:testCompile (default-testCompile) @ robolectric-processor ---
+[INFO] Compiling 17 source files to /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-processor/target/test-classes
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.13:test (default-test) @ robolectric-processor ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- maven-jar-plugin:2.3.1:jar (default-jar) @ robolectric-processor ---
+[INFO] Building jar: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-processor/target/robolectric-processor-3.1-SNAPSHOT.jar
+[INFO] 
+[INFO] --- maven-install-plugin:2.4:install (default-install) @ robolectric-processor ---
+[INFO] Installing /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-processor/target/robolectric-processor-3.1-SNAPSHOT.jar to /usr/local/google/home/yuzhong/.m2/repository/org/robolectric/robolectric-processor/3.1-SNAPSHOT/robolectric-processor-3.1-SNAPSHOT.jar
+[INFO] Installing /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-processor/pom.xml to /usr/local/google/home/yuzhong/.m2/repository/org/robolectric/robolectric-processor/3.1-SNAPSHOT/robolectric-processor-3.1-SNAPSHOT.pom
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building shadows-core 3.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:2.4.1:clean (default-clean) @ shadows-core ---
+[INFO] Deleting /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.0:enforce (enforce-maven) @ shadows-core ---
+[INFO] 
+[INFO] --- robolectric-velocity-plugin:1.1.0:process-templates (generate-shadows) @ shadows-core ---
+[INFO] 
+[INFO] --- build-helper-maven-plugin:1.9.1:add-source (add-source-directories) @ shadows-core ---
+[INFO] Source directory: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/generated-shadows added.
+[INFO] Source directory: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/generated-sources added.
+[INFO] 
+[INFO] --- maven-processor-plugin:2.2.1:process (default) @ shadows-core ---
+[INFO] Source directory: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/generated-sources added
+[INFO] Adding compiler arg: -source
+[INFO] Adding compiler arg: 1.7
+[INFO] Adding compiler arg: -target
+[INFO] Adding compiler arg: 1.7
+[INFO] Adding compiler arg: -Aorg.robolectric.annotation.processing.shadowPackage=org.robolectric
+[INFO] No processors specified. Using default discovery mechanism.
+[INFO] javac option: -cp
+[INFO] javac option: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-processor/target/robolectric-processor-3.1-SNAPSHOT.jar:/usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-annotations/target/robolectric-annotations-3.1-SNAPSHOT.jar:/usr/local/google/home/yuzhong/.m2/repository/com/google/guava/guava/16.0.1/guava-16.0.1.jar:/usr/local/google/home/yuzhong/.m2/repository/org/sonatype/sisu/sisu-inject-bean/1.4.3.1/sisu-inject-bean-1.4.3.1.jar:/usr/local/google/home/yuzhong/.m2/repository/org/sonatype/sisu/sisu-guice/2.9.1/sisu-guice-2.9.1-noaop.jar:/usr/local/google/home/yuzhong/.m2/repository/org/sonatype/aether/aether-util/1.8/aether-util-1.8.jar:/usr/local/google/home/yuzhong/.m2/repository/org/codehaus/plexus/plexus-interpolation/1.14/plexus-interpolation-1.14.jar:/usr/local/google/home/yuzhong/.m2/repository/org/codehaus/plexus/plexus-component-annotations/1.5.5/plexus-component-annotations-1.5.5.jar:/usr/local/google/home/yuzhong/.m2/repository/org/sonatype/plexus/plexus-sec-dispatcher/1.3/plexus-sec-dispatcher-1.3.jar:/usr/local/google/home/yuzhong/.m2/repository/org/sonatype/plexus/plexus-cipher/1.4/plexus-cipher-1.4.jar:/usr/local/google/home/yuzhong/.m2/repository/org/apache/maven/plugin-tools/maven-plugin-annotations/3.1/maven-plugin-annotations-3.1.jar:/usr/local/google/home/yuzhong/.m2/repository/org/codehaus/plexus/plexus-utils/3.0.1/plexus-utils-3.0.1.jar:/usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/natives:/usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/src/main/resources:/usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/classes:/usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-utils/target/robolectric-utils-3.1-SNAPSHOT.jar:/usr/local/google/home/yuzhong/.m2/repository/com/google/android/apps/common/testing/accessibility/framework/accessibility-test-framework/1.0/accessibility-test-framework-1.0.jar:/usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-resources/target/robolectric-resources-3.1-SNAPSHOT.jar:/usr/local/google/home/yuzhong/.m2/repository/com/ximpleware/vtd-xml/2.11/vtd-xml-2.11.jar:/usr/local/google/home/yuzhong/.m2/repository/com/intellij/annotations/12.0/annotations-12.0.jar:/usr/local/google/home/yuzhong/.m2/repository/com/ibm/icu/icu4j/53.1/icu4j-53.1.jar:/usr/local/google/home/yuzhong/.m2/repository/com/almworks/sqlite4java/sqlite4java/0.282/sqlite4java-0.282.jar:/usr/local/google/home/yuzhong/.m2/repository/com/github/axet/litedb/libsqlite/0.282-3/libsqlite-0.282-3-natives-windows-x86.jar:/usr/local/google/home/yuzhong/.m2/repository/com/github/axet/litedb/libsqlite/0.282-3/libsqlite-0.282-3-natives-windows-x86_64.jar:/usr/local/google/home/yuzhong/.m2/repository/com/github/axet/litedb/libsqlite/0.282-3/libsqlite-0.282-3-natives-mac-x86_64.jar:/usr/local/google/home/yuzhong/.m2/repository/com/github/axet/litedb/libsqlite/0.282-3/libsqlite-0.282-3-natives-linux-x86.jar:/usr/local/google/home/yuzhong/.m2/repository/com/github/axet/litedb/libsqlite/0.282-3/libsqlite-0.282-3-natives-linux-x86_64.jar:/usr/local/google/home/yuzhong/.m2/repository/com/android/tools/layoutlib/layoutlib-api/24.2.3/layoutlib-api-24.2.3.jar:/usr/local/google/home/yuzhong/.m2/repository/com/android/tools/sdk-common/24.2.3/sdk-common-24.2.3.jar:/usr/local/google/home/yuzhong/.m2/repository/com/android/tools/common/24.2.3/common-24.2.3.jar:/usr/local/google/home/yuzhong/.m2/repository/com/android/tools/sdklib/24.2.3/sdklib-24.2.3.jar:/usr/local/google/home/yuzhong/.m2/repository/org/robolectric/android-all/5.0.0_r2-robolectric-1-render/android-all-5.0.0_r2-robolectric-1-render.jar:
+[INFO] javac option: -proc:only
+[INFO] javac option: -source
+[INFO] javac option: 1.7
+[INFO] javac option: -target
+[INFO] javac option: 1.7
+[INFO] javac option: -Aorg.robolectric.annotation.processing.shadowPackage=org.robolectric
+[INFO] javac option: -d
+[INFO] javac option: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/classes
+[INFO] javac option: -s
+[INFO] javac option: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/generated-sources
+[INFO] diagnostic warning: [options] bootstrap class path not set in conjunction with -source 1.7
+[INFO] diagnostic Note: Initialising Robolectric annotation processor
+[INFO] diagnostic Note: Generating output file: org.robolectric.Shadows
+[INFO] diagnostic Note: Writing META-INF/services/org.robolectric.internal.ShadowProvider
+[INFO] 
+[INFO] --- maven-nativedependencies-plugin:0.0.7:copy (unpacknatives) @ shadows-core ---
+[INFO] Saving natives in /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/natives
+[INFO] Storing artifacts in separate dirs according to classifier
+[INFO] G:com.github.axet.litedb - A:libsqlite - C:natives-windows-x86
+[info] Copying natives from libsqlite-0.282-3-natives-windows-x86.jar
+[info] Copying native - META-INF/
+[info] Copying native - META-INF/MANIFEST.MF
+[info] Copying native - sqlite4java.dll
+[INFO] G:com.github.axet.litedb - A:libsqlite - C:natives-windows-x86_64
+[info] Copying natives from libsqlite-0.282-3-natives-windows-x86_64.jar
+[info] Copying native - META-INF/
+[info] Copying native - META-INF/MANIFEST.MF
+[info] Copying native - sqlite4java.dll
+[INFO] G:com.github.axet.litedb - A:libsqlite - C:natives-mac-x86_64
+[info] Copying natives from libsqlite-0.282-3-natives-mac-x86_64.jar
+[info] Copying native - META-INF/
+[info] Copying native - META-INF/MANIFEST.MF
+[info] Copying native - libsqlite4java.jnilib
+[INFO] G:com.github.axet.litedb - A:libsqlite - C:natives-linux-x86
+[info] Copying natives from libsqlite-0.282-3-natives-linux-x86.jar
+[info] Copying native - META-INF/
+[info] Copying native - META-INF/MANIFEST.MF
+[info] Copying native - libsqlite4java.so
+[INFO] G:com.github.axet.litedb - A:libsqlite - C:natives-linux-x86_64
+[info] Copying natives from libsqlite-0.282-3-natives-linux-x86_64.jar
+[info] Copying native - META-INF/
+[info] Copying native - META-INF/MANIFEST.MF
+[info] Copying native - libsqlite4java.so
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ shadows-core ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 10 resources
+[INFO] Copying 1 resource
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:compile (default-compile) @ shadows-core ---
+[INFO] Compiling 259 source files to /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/classes
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ shadows-core ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:testCompile (default-testCompile) @ shadows-core ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.13:test (default-test) @ shadows-core ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- maven-jar-plugin:2.3.1:jar (default-jar) @ shadows-core ---
+[INFO] Building jar: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/dist/shadows-core-3.1-SNAPSHOT.jar
+[INFO] 
+[INFO] --- maven-install-plugin:2.4:install (default-install) @ shadows-core ---
+[INFO] Installing /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/dist/shadows-core-3.1-SNAPSHOT.jar to /usr/local/google/home/yuzhong/.m2/repository/org/robolectric/shadows-core/3.1-SNAPSHOT/shadows-core-3.1-SNAPSHOT.jar
+[INFO] Installing /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/pom.xml to /usr/local/google/home/yuzhong/.m2/repository/org/robolectric/shadows-core/3.1-SNAPSHOT/shadows-core-3.1-SNAPSHOT.pom
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building robolectric 3.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:2.4.1:clean (default-clean) @ robolectric ---
+[INFO] Deleting /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric/target
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.0:enforce (enforce-maven) @ robolectric ---
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ robolectric ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 1 resource
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:compile (default-compile) @ robolectric ---
+[INFO] Compiling 49 source files to /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric/target/classes
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ robolectric ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 134 resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:testCompile (default-testCompile) @ robolectric ---
+[INFO] Compiling 378 source files to /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric/target/test-classes
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.13:test (default-test) @ robolectric ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- maven-jar-plugin:2.3.1:jar (default-jar) @ robolectric ---
+[INFO] Building jar: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric/target/robolectric-3.1-SNAPSHOT.jar
+[INFO] 
+[INFO] --- maven-install-plugin:2.4:install (default-install) @ robolectric ---
+[INFO] Installing /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric/target/robolectric-3.1-SNAPSHOT.jar to /usr/local/google/home/yuzhong/.m2/repository/org/robolectric/robolectric/3.1-SNAPSHOT/robolectric-3.1-SNAPSHOT.jar
+[INFO] Installing /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric/pom.xml to /usr/local/google/home/yuzhong/.m2/repository/org/robolectric/robolectric/3.1-SNAPSHOT/robolectric-3.1-SNAPSHOT.pom
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building shadows-maps 3.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:2.4.1:clean (default-clean) @ shadows-maps ---
+[INFO] Deleting /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-maps/target
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.0:enforce (enforce-maven) @ shadows-maps ---
+[INFO] 
+[INFO] --- maven-processor-plugin:2.2.4:process (default) @ shadows-maps ---
+[WARNING] source directory [/usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-maps/target/generated-shadows] doesn't exist! Processor task will be skipped!
+[WARNING] No processors specified. Using default discovery mechanism.
+[WARNING] diagnostic: warning: [options] bootstrap class path not set in conjunction with -source 1.7
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ shadows-maps ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-maps/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:compile (default-compile) @ shadows-maps ---
+[INFO] Compiling 10 source files to /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-maps/target/classes
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ shadows-maps ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 1 resource
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:testCompile (default-testCompile) @ shadows-maps ---
+[INFO] Compiling 5 source files to /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-maps/target/test-classes
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.13:test (default-test) @ shadows-maps ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- maven-jar-plugin:2.3.1:jar (default-jar) @ shadows-maps ---
+[INFO] Building jar: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-maps/target/shadows-maps-3.1-SNAPSHOT.jar
+[INFO] 
+[INFO] --- maven-install-plugin:2.4:install (default-install) @ shadows-maps ---
+[INFO] Installing /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-maps/target/shadows-maps-3.1-SNAPSHOT.jar to /usr/local/google/home/yuzhong/.m2/repository/org/robolectric/shadows-maps/3.1-SNAPSHOT/shadows-maps-3.1-SNAPSHOT.jar
+[INFO] Installing /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-maps/pom.xml to /usr/local/google/home/yuzhong/.m2/repository/org/robolectric/shadows-maps/3.1-SNAPSHOT/shadows-maps-3.1-SNAPSHOT.pom
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building shadows-multidex 3.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:2.4.1:clean (default-clean) @ shadows-multidex ---
+[INFO] Deleting /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-multidex/target
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.0:enforce (enforce-maven) @ shadows-multidex ---
+[INFO] 
+[INFO] --- maven-processor-plugin:2.2.4:process (default) @ shadows-multidex ---
+[WARNING] source directory [/usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-multidex/target/generated-shadows] doesn't exist! Processor task will be skipped!
+[WARNING] No processors specified. Using default discovery mechanism.
+[WARNING] diagnostic: warning: [options] bootstrap class path not set in conjunction with -source 1.7
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ shadows-multidex ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-multidex/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:compile (default-compile) @ shadows-multidex ---
+[INFO] Compiling 3 source files to /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-multidex/target/classes
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ shadows-multidex ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-multidex/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:testCompile (default-testCompile) @ shadows-multidex ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.13:test (default-test) @ shadows-multidex ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- maven-jar-plugin:2.3.1:jar (default-jar) @ shadows-multidex ---
+[INFO] Building jar: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-multidex/target/shadows-multidex-3.1-SNAPSHOT.jar
+[INFO] 
+[INFO] --- maven-install-plugin:2.4:install (default-install) @ shadows-multidex ---
+[INFO] Installing /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-multidex/target/shadows-multidex-3.1-SNAPSHOT.jar to /usr/local/google/home/yuzhong/.m2/repository/org/robolectric/shadows-multidex/3.1-SNAPSHOT/shadows-multidex-3.1-SNAPSHOT.jar
+[INFO] Installing /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-multidex/pom.xml to /usr/local/google/home/yuzhong/.m2/repository/org/robolectric/shadows-multidex/3.1-SNAPSHOT/shadows-multidex-3.1-SNAPSHOT.pom
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building shadows-support-v4 3.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:2.4.1:clean (default-clean) @ shadows-support-v4 ---
+[INFO] Deleting /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-support-v4/target
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.0:enforce (enforce-maven) @ shadows-support-v4 ---
+[INFO] 
+[INFO] --- maven-processor-plugin:2.2.4:process (default) @ shadows-support-v4 ---
+[WARNING] source directory [/usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-support-v4/target/generated-shadows] doesn't exist! Processor task will be skipped!
+[WARNING] No processors specified. Using default discovery mechanism.
+[WARNING] diagnostic: warning: [options] bootstrap class path not set in conjunction with -source 1.7
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ shadows-support-v4 ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-support-v4/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:compile (default-compile) @ shadows-support-v4 ---
+[INFO] Compiling 10 source files to /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-support-v4/target/classes
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ shadows-support-v4 ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 3 resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:testCompile (default-testCompile) @ shadows-support-v4 ---
+[INFO] Compiling 14 source files to /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-support-v4/target/test-classes
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.13:test (default-test) @ shadows-support-v4 ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- maven-jar-plugin:2.3.1:jar (default-jar) @ shadows-support-v4 ---
+[INFO] Building jar: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-support-v4/target/shadows-support-v4-3.1-SNAPSHOT.jar
+[INFO] 
+[INFO] --- maven-install-plugin:2.4:install (default-install) @ shadows-support-v4 ---
+[INFO] Installing /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-support-v4/target/shadows-support-v4-3.1-SNAPSHOT.jar to /usr/local/google/home/yuzhong/.m2/repository/org/robolectric/shadows-support-v4/3.1-SNAPSHOT/shadows-support-v4-3.1-SNAPSHOT.jar
+[INFO] Installing /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-support-v4/pom.xml to /usr/local/google/home/yuzhong/.m2/repository/org/robolectric/shadows-support-v4/3.1-SNAPSHOT/shadows-support-v4-3.1-SNAPSHOT.pom
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building shadows-httpclient 3.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:2.4.1:clean (default-clean) @ shadows-httpclient ---
+[INFO] Deleting /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-httpclient/target
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.0:enforce (enforce-maven) @ shadows-httpclient ---
+[INFO] 
+[INFO] --- maven-processor-plugin:2.2.4:process (default) @ shadows-httpclient ---
+[WARNING] source directory [/usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-httpclient/target/generated-shadows] doesn't exist! Processor task will be skipped!
+[WARNING] No processors specified. Using default discovery mechanism.
+[WARNING] diagnostic: warning: [options] bootstrap class path not set in conjunction with -source 1.7
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ shadows-httpclient ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-httpclient/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:compile (default-compile) @ shadows-httpclient ---
+[INFO] Compiling 15 source files to /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-httpclient/target/classes
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ shadows-httpclient ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 1 resource
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:testCompile (default-testCompile) @ shadows-httpclient ---
+[INFO] Compiling 7 source files to /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-httpclient/target/test-classes
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.13:test (default-test) @ shadows-httpclient ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- maven-jar-plugin:2.3.1:jar (default-jar) @ shadows-httpclient ---
+[INFO] Building jar: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-httpclient/target/shadows-httpclient-3.1-SNAPSHOT.jar
+[INFO] 
+[INFO] --- maven-install-plugin:2.4:install (default-install) @ shadows-httpclient ---
+[INFO] Installing /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-httpclient/target/shadows-httpclient-3.1-SNAPSHOT.jar to /usr/local/google/home/yuzhong/.m2/repository/org/robolectric/shadows-httpclient/3.1-SNAPSHOT/shadows-httpclient-3.1-SNAPSHOT.jar
+[INFO] Installing /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-httpclient/pom.xml to /usr/local/google/home/yuzhong/.m2/repository/org/robolectric/shadows-httpclient/3.1-SNAPSHOT/shadows-httpclient-3.1-SNAPSHOT.pom
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building shadows-play-services 3.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:2.4.1:clean (default-clean) @ shadows-play-services ---
+[INFO] Deleting /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-play-services/target
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.0:enforce (enforce-maven) @ shadows-play-services ---
+[INFO] 
+[INFO] --- maven-processor-plugin:2.2.4:process (default) @ shadows-play-services ---
+[WARNING] source directory [/usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-play-services/target/generated-shadows] doesn't exist! Processor task will be skipped!
+[WARNING] No processors specified. Using default discovery mechanism.
+[WARNING] diagnostic: warning: [options] bootstrap class path not set in conjunction with -source 1.7
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ shadows-play-services ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-play-services/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:compile (default-compile) @ shadows-play-services ---
+[INFO] Compiling 3 source files to /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-play-services/target/classes
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ shadows-play-services ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-play-services/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:testCompile (default-testCompile) @ shadows-play-services ---
+[INFO] Compiling 1 source file to /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-play-services/target/test-classes
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.13:test (default-test) @ shadows-play-services ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- maven-jar-plugin:2.3.1:jar (default-jar) @ shadows-play-services ---
+[INFO] Building jar: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-play-services/target/shadows-play-services-3.1-SNAPSHOT.jar
+[INFO] 
+[INFO] --- maven-install-plugin:2.4:install (default-install) @ shadows-play-services ---
+[INFO] Installing /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-play-services/target/shadows-play-services-3.1-SNAPSHOT.jar to /usr/local/google/home/yuzhong/.m2/repository/org/robolectric/shadows-play-services/3.1-SNAPSHOT/shadows-play-services-3.1-SNAPSHOT.jar
+[INFO] Installing /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-play-services/pom.xml to /usr/local/google/home/yuzhong/.m2/repository/org/robolectric/shadows-play-services/3.1-SNAPSHOT/shadows-play-services-3.1-SNAPSHOT.pom
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary:
+[INFO] 
+[INFO] robolectric-parent ................................ SUCCESS [  0.285 s]
+[INFO] robolectric-annotations ........................... SUCCESS [  0.885 s]
+[INFO] robolectric-utils ................................. SUCCESS [  1.350 s]
+[INFO] robolectric-resources ............................. SUCCESS [  1.939 s]
+[INFO] robolectric-shadows ............................... SUCCESS [  0.004 s]
+[INFO] robolectric-processor ............................. SUCCESS [  1.212 s]
+[INFO] shadows-core ...................................... SUCCESS [  7.391 s]
+[INFO] robolectric ....................................... SUCCESS [  7.403 s]
+[INFO] shadows-maps ...................................... SUCCESS [  1.258 s]
+[INFO] shadows-multidex .................................. SUCCESS [  0.521 s]
+[INFO] shadows-support-v4 ................................ SUCCESS [  1.910 s]
+[INFO] shadows-httpclient ................................ SUCCESS [  1.712 s]
+[INFO] shadows-play-services ............................. SUCCESS [  0.896 s]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 26.979 s
+[INFO] Finished at: 2015-08-05T15:46:50-08:00
+[INFO] Final Memory: 234M/1765M
+[INFO] ------------------------------------------------------------------------
+Building shadows for API 16...
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] Using the builder org.apache.maven.lifecycle.internal.builder.singlethreaded.SingleThreadedBuilder with a thread count of 1
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building shadows-core 3.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:2.4.1:clean (default-clean) @ shadows-core ---
+[INFO] Deleting /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.0:enforce (enforce-maven) @ shadows-core ---
+[INFO] 
+[INFO] --- robolectric-velocity-plugin:1.1.0:process-templates (generate-shadows) @ shadows-core ---
+[INFO] 
+[INFO] --- build-helper-maven-plugin:1.9.1:add-source (add-source-directories) @ shadows-core ---
+[INFO] Source directory: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/generated-shadows added.
+[INFO] Source directory: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/generated-sources added.
+[INFO] 
+[INFO] --- maven-processor-plugin:2.2.1:process (default) @ shadows-core ---
+[INFO] Source directory: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/generated-sources added
+[INFO] Adding compiler arg: -source
+[INFO] Adding compiler arg: 1.7
+[INFO] Adding compiler arg: -target
+[INFO] Adding compiler arg: 1.7
+[INFO] Adding compiler arg: -Aorg.robolectric.annotation.processing.shadowPackage=org.robolectric
+[INFO] No processors specified. Using default discovery mechanism.
+[INFO] javac option: -cp
+[INFO] javac option: /usr/local/google/home/yuzhong/.m2/repository/org/robolectric/robolectric-processor/3.1-SNAPSHOT/robolectric-processor-3.1-SNAPSHOT.jar:/usr/local/google/home/yuzhong/.m2/repository/org/robolectric/robolectric-annotations/3.1-SNAPSHOT/robolectric-annotations-3.1-SNAPSHOT.jar:/usr/local/google/home/yuzhong/.m2/repository/com/google/guava/guava/16.0.1/guava-16.0.1.jar:/usr/local/google/home/yuzhong/.m2/repository/org/sonatype/sisu/sisu-inject-bean/1.4.3.1/sisu-inject-bean-1.4.3.1.jar:/usr/local/google/home/yuzhong/.m2/repository/org/sonatype/sisu/sisu-guice/2.9.1/sisu-guice-2.9.1-noaop.jar:/usr/local/google/home/yuzhong/.m2/repository/org/sonatype/aether/aether-util/1.8/aether-util-1.8.jar:/usr/local/google/home/yuzhong/.m2/repository/org/codehaus/plexus/plexus-interpolation/1.14/plexus-interpolation-1.14.jar:/usr/local/google/home/yuzhong/.m2/repository/org/codehaus/plexus/plexus-component-annotations/1.5.5/plexus-component-annotations-1.5.5.jar:/usr/local/google/home/yuzhong/.m2/repository/org/sonatype/plexus/plexus-sec-dispatcher/1.3/plexus-sec-dispatcher-1.3.jar:/usr/local/google/home/yuzhong/.m2/repository/org/sonatype/plexus/plexus-cipher/1.4/plexus-cipher-1.4.jar:/usr/local/google/home/yuzhong/.m2/repository/org/apache/maven/plugin-tools/maven-plugin-annotations/3.1/maven-plugin-annotations-3.1.jar:/usr/local/google/home/yuzhong/.m2/repository/org/codehaus/plexus/plexus-utils/3.0.1/plexus-utils-3.0.1.jar:/usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/natives:/usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/src/main/resources:/usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/classes:/usr/local/google/home/yuzhong/.m2/repository/org/robolectric/robolectric-utils/3.1-SNAPSHOT/robolectric-utils-3.1-SNAPSHOT.jar:/usr/local/google/home/yuzhong/.m2/repository/com/google/android/apps/common/testing/accessibility/framework/accessibility-test-framework/1.0/accessibility-test-framework-1.0.jar:/usr/local/google/home/yuzhong/.m2/repository/org/robolectric/robolectric-resources/3.1-SNAPSHOT/robolectric-resources-3.1-SNAPSHOT.jar:/usr/local/google/home/yuzhong/.m2/repository/com/ximpleware/vtd-xml/2.11/vtd-xml-2.11.jar:/usr/local/google/home/yuzhong/.m2/repository/com/intellij/annotations/12.0/annotations-12.0.jar:/usr/local/google/home/yuzhong/.m2/repository/com/ibm/icu/icu4j/53.1/icu4j-53.1.jar:/usr/local/google/home/yuzhong/.m2/repository/com/almworks/sqlite4java/sqlite4java/0.282/sqlite4java-0.282.jar:/usr/local/google/home/yuzhong/.m2/repository/com/github/axet/litedb/libsqlite/0.282-3/libsqlite-0.282-3-natives-windows-x86.jar:/usr/local/google/home/yuzhong/.m2/repository/com/github/axet/litedb/libsqlite/0.282-3/libsqlite-0.282-3-natives-windows-x86_64.jar:/usr/local/google/home/yuzhong/.m2/repository/com/github/axet/litedb/libsqlite/0.282-3/libsqlite-0.282-3-natives-mac-x86_64.jar:/usr/local/google/home/yuzhong/.m2/repository/com/github/axet/litedb/libsqlite/0.282-3/libsqlite-0.282-3-natives-linux-x86.jar:/usr/local/google/home/yuzhong/.m2/repository/com/github/axet/litedb/libsqlite/0.282-3/libsqlite-0.282-3-natives-linux-x86_64.jar:/usr/local/google/home/yuzhong/.m2/repository/org/robolectric/android-all/4.1.2_r1-robolectric-0/android-all-4.1.2_r1-robolectric-0.jar:
+[INFO] javac option: -proc:only
+[INFO] javac option: -source
+[INFO] javac option: 1.7
+[INFO] javac option: -target
+[INFO] javac option: 1.7
+[INFO] javac option: -Aorg.robolectric.annotation.processing.shadowPackage=org.robolectric
+[INFO] javac option: -d
+[INFO] javac option: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/classes
+[INFO] javac option: -s
+[INFO] javac option: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/generated-sources
+[INFO] diagnostic warning: [options] bootstrap class path not set in conjunction with -source 1.7
+[INFO] diagnostic Note: Initialising Robolectric annotation processor
+[INFO] diagnostic Note: Generating output file: org.robolectric.Shadows
+[INFO] diagnostic Note: Writing META-INF/services/org.robolectric.internal.ShadowProvider
+[INFO] 
+[INFO] --- maven-nativedependencies-plugin:0.0.7:copy (unpacknatives) @ shadows-core ---
+[INFO] Saving natives in /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/natives
+[INFO] Storing artifacts in separate dirs according to classifier
+[INFO] G:com.github.axet.litedb - A:libsqlite - C:natives-windows-x86
+[info] Copying natives from libsqlite-0.282-3-natives-windows-x86.jar
+[info] Copying native - META-INF/
+[info] Copying native - META-INF/MANIFEST.MF
+[info] Copying native - sqlite4java.dll
+[INFO] G:com.github.axet.litedb - A:libsqlite - C:natives-windows-x86_64
+[info] Copying natives from libsqlite-0.282-3-natives-windows-x86_64.jar
+[info] Copying native - META-INF/
+[info] Copying native - META-INF/MANIFEST.MF
+[info] Copying native - sqlite4java.dll
+[INFO] G:com.github.axet.litedb - A:libsqlite - C:natives-mac-x86_64
+[info] Copying natives from libsqlite-0.282-3-natives-mac-x86_64.jar
+[info] Copying native - META-INF/
+[info] Copying native - META-INF/MANIFEST.MF
+[info] Copying native - libsqlite4java.jnilib
+[INFO] G:com.github.axet.litedb - A:libsqlite - C:natives-linux-x86
+[info] Copying natives from libsqlite-0.282-3-natives-linux-x86.jar
+[info] Copying native - META-INF/
+[info] Copying native - META-INF/MANIFEST.MF
+[info] Copying native - libsqlite4java.so
+[INFO] G:com.github.axet.litedb - A:libsqlite - C:natives-linux-x86_64
+[info] Copying natives from libsqlite-0.282-3-natives-linux-x86_64.jar
+[info] Copying native - META-INF/
+[info] Copying native - META-INF/MANIFEST.MF
+[info] Copying native - libsqlite4java.so
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ shadows-core ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 10 resources
+[INFO] Copying 1 resource
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:compile (default-compile) @ shadows-core ---
+[INFO] Compiling 259 source files to /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/classes
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ shadows-core ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:testCompile (default-testCompile) @ shadows-core ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.13:test (default-test) @ shadows-core ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] --- maven-jar-plugin:2.3.1:jar (default-jar) @ shadows-core ---
+[INFO] Building jar: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/dist/shadows-core-3.1-SNAPSHOT-16.jar
+[INFO] 
+[INFO] --- maven-install-plugin:2.4:install (default-install) @ shadows-core ---
+[INFO] No primary artifact to install, installing attached artifacts instead.
+[INFO] Installing /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/pom.xml to /usr/local/google/home/yuzhong/.m2/repository/org/robolectric/shadows-core/3.1-SNAPSHOT/shadows-core-3.1-SNAPSHOT.pom
+[INFO] Installing /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/dist/shadows-core-3.1-SNAPSHOT-16.jar to /usr/local/google/home/yuzhong/.m2/repository/org/robolectric/shadows-core/3.1-SNAPSHOT/shadows-core-3.1-SNAPSHOT-16.jar
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 7.596 s
+[INFO] Finished at: 2015-08-05T15:46:59-08:00
+[INFO] Final Memory: 40M/563M
+[INFO] ------------------------------------------------------------------------
+Building shadows for API 17...
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] Using the builder org.apache.maven.lifecycle.internal.builder.singlethreaded.SingleThreadedBuilder with a thread count of 1
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building shadows-core 3.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:2.4.1:clean (default-clean) @ shadows-core ---
+[INFO] Deleting /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.0:enforce (enforce-maven) @ shadows-core ---
+[INFO] 
+[INFO] --- robolectric-velocity-plugin:1.1.0:process-templates (generate-shadows) @ shadows-core ---
+[INFO] 
+[INFO] --- build-helper-maven-plugin:1.9.1:add-source (add-source-directories) @ shadows-core ---
+[INFO] Source directory: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/generated-shadows added.
+[INFO] Source directory: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/generated-sources added.
+[INFO] 
+[INFO] --- maven-processor-plugin:2.2.1:process (default) @ shadows-core ---
+[INFO] Source directory: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/generated-sources added
+[INFO] Adding compiler arg: -source
+[INFO] Adding compiler arg: 1.7
+[INFO] Adding compiler arg: -target
+[INFO] Adding compiler arg: 1.7
+[INFO] Adding compiler arg: -Aorg.robolectric.annotation.processing.shadowPackage=org.robolectric
+[INFO] No processors specified. Using default discovery mechanism.
+[INFO] javac option: -cp
+[INFO] javac option: /usr/local/google/home/yuzhong/.m2/repository/org/robolectric/robolectric-processor/3.1-SNAPSHOT/robolectric-processor-3.1-SNAPSHOT.jar:/usr/local/google/home/yuzhong/.m2/repository/org/robolectric/robolectric-annotations/3.1-SNAPSHOT/robolectric-annotations-3.1-SNAPSHOT.jar:/usr/local/google/home/yuzhong/.m2/repository/com/google/guava/guava/16.0.1/guava-16.0.1.jar:/usr/local/google/home/yuzhong/.m2/repository/org/sonatype/sisu/sisu-inject-bean/1.4.3.1/sisu-inject-bean-1.4.3.1.jar:/usr/local/google/home/yuzhong/.m2/repository/org/sonatype/sisu/sisu-guice/2.9.1/sisu-guice-2.9.1-noaop.jar:/usr/local/google/home/yuzhong/.m2/repository/org/sonatype/aether/aether-util/1.8/aether-util-1.8.jar:/usr/local/google/home/yuzhong/.m2/repository/org/codehaus/plexus/plexus-interpolation/1.14/plexus-interpolation-1.14.jar:/usr/local/google/home/yuzhong/.m2/repository/org/codehaus/plexus/plexus-component-annotations/1.5.5/plexus-component-annotations-1.5.5.jar:/usr/local/google/home/yuzhong/.m2/repository/org/sonatype/plexus/plexus-sec-dispatcher/1.3/plexus-sec-dispatcher-1.3.jar:/usr/local/google/home/yuzhong/.m2/repository/org/sonatype/plexus/plexus-cipher/1.4/plexus-cipher-1.4.jar:/usr/local/google/home/yuzhong/.m2/repository/org/apache/maven/plugin-tools/maven-plugin-annotations/3.1/maven-plugin-annotations-3.1.jar:/usr/local/google/home/yuzhong/.m2/repository/org/codehaus/plexus/plexus-utils/3.0.1/plexus-utils-3.0.1.jar:/usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/natives:/usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/src/main/resources:/usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/classes:/usr/local/google/home/yuzhong/.m2/repository/org/robolectric/robolectric-utils/3.1-SNAPSHOT/robolectric-utils-3.1-SNAPSHOT.jar:/usr/local/google/home/yuzhong/.m2/repository/com/google/android/apps/common/testing/accessibility/framework/accessibility-test-framework/1.0/accessibility-test-framework-1.0.jar:/usr/local/google/home/yuzhong/.m2/repository/org/robolectric/robolectric-resources/3.1-SNAPSHOT/robolectric-resources-3.1-SNAPSHOT.jar:/usr/local/google/home/yuzhong/.m2/repository/com/ximpleware/vtd-xml/2.11/vtd-xml-2.11.jar:/usr/local/google/home/yuzhong/.m2/repository/com/intellij/annotations/12.0/annotations-12.0.jar:/usr/local/google/home/yuzhong/.m2/repository/com/ibm/icu/icu4j/53.1/icu4j-53.1.jar:/usr/local/google/home/yuzhong/.m2/repository/com/almworks/sqlite4java/sqlite4java/0.282/sqlite4java-0.282.jar:/usr/local/google/home/yuzhong/.m2/repository/com/github/axet/litedb/libsqlite/0.282-3/libsqlite-0.282-3-natives-windows-x86.jar:/usr/local/google/home/yuzhong/.m2/repository/com/github/axet/litedb/libsqlite/0.282-3/libsqlite-0.282-3-natives-windows-x86_64.jar:/usr/local/google/home/yuzhong/.m2/repository/com/github/axet/litedb/libsqlite/0.282-3/libsqlite-0.282-3-natives-mac-x86_64.jar:/usr/local/google/home/yuzhong/.m2/repository/com/github/axet/litedb/libsqlite/0.282-3/libsqlite-0.282-3-natives-linux-x86.jar:/usr/local/google/home/yuzhong/.m2/repository/com/github/axet/litedb/libsqlite/0.282-3/libsqlite-0.282-3-natives-linux-x86_64.jar:/usr/local/google/home/yuzhong/.m2/repository/org/robolectric/android-all/4.2.2_r1.2-robolectric-0/android-all-4.2.2_r1.2-robolectric-0.jar:
+[INFO] javac option: -proc:only
+[INFO] javac option: -source
+[INFO] javac option: 1.7
+[INFO] javac option: -target
+[INFO] javac option: 1.7
+[INFO] javac option: -Aorg.robolectric.annotation.processing.shadowPackage=org.robolectric
+[INFO] javac option: -d
+[INFO] javac option: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/classes
+[INFO] javac option: -s
+[INFO] javac option: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/generated-sources
+[INFO] diagnostic warning: [options] bootstrap class path not set in conjunction with -source 1.7
+[INFO] diagnostic Note: Initialising Robolectric annotation processor
+[INFO] diagnostic Note: Generating output file: org.robolectric.Shadows
+[INFO] diagnostic Note: Writing META-INF/services/org.robolectric.internal.ShadowProvider
+[INFO] 
+[INFO] --- maven-nativedependencies-plugin:0.0.7:copy (unpacknatives) @ shadows-core ---
+[INFO] Saving natives in /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/natives
+[INFO] Storing artifacts in separate dirs according to classifier
+[INFO] G:com.github.axet.litedb - A:libsqlite - C:natives-windows-x86
+[info] Copying natives from libsqlite-0.282-3-natives-windows-x86.jar
+[info] Copying native - META-INF/
+[info] Copying native - META-INF/MANIFEST.MF
+[info] Copying native - sqlite4java.dll
+[INFO] G:com.github.axet.litedb - A:libsqlite - C:natives-windows-x86_64
+[info] Copying natives from libsqlite-0.282-3-natives-windows-x86_64.jar
+[info] Copying native - META-INF/
+[info] Copying native - META-INF/MANIFEST.MF
+[info] Copying native - sqlite4java.dll
+[INFO] G:com.github.axet.litedb - A:libsqlite - C:natives-mac-x86_64
+[info] Copying natives from libsqlite-0.282-3-natives-mac-x86_64.jar
+[info] Copying native - META-INF/
+[info] Copying native - META-INF/MANIFEST.MF
+[info] Copying native - libsqlite4java.jnilib
+[INFO] G:com.github.axet.litedb - A:libsqlite - C:natives-linux-x86
+[info] Copying natives from libsqlite-0.282-3-natives-linux-x86.jar
+[info] Copying native - META-INF/
+[info] Copying native - META-INF/MANIFEST.MF
+[info] Copying native - libsqlite4java.so
+[INFO] G:com.github.axet.litedb - A:libsqlite - C:natives-linux-x86_64
+[info] Copying natives from libsqlite-0.282-3-natives-linux-x86_64.jar
+[info] Copying native - META-INF/
+[info] Copying native - META-INF/MANIFEST.MF
+[info] Copying native - libsqlite4java.so
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ shadows-core ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 10 resources
+[INFO] Copying 1 resource
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:compile (default-compile) @ shadows-core ---
+[INFO] Compiling 259 source files to /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/classes
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ shadows-core ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:testCompile (default-testCompile) @ shadows-core ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.13:test (default-test) @ shadows-core ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] --- maven-jar-plugin:2.3.1:jar (default-jar) @ shadows-core ---
+[INFO] Building jar: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/dist/shadows-core-3.1-SNAPSHOT-17.jar
+[INFO] 
+[INFO] --- maven-install-plugin:2.4:install (default-install) @ shadows-core ---
+[INFO] No primary artifact to install, installing attached artifacts instead.
+[INFO] Installing /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/pom.xml to /usr/local/google/home/yuzhong/.m2/repository/org/robolectric/shadows-core/3.1-SNAPSHOT/shadows-core-3.1-SNAPSHOT.pom
+[INFO] Installing /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/dist/shadows-core-3.1-SNAPSHOT-17.jar to /usr/local/google/home/yuzhong/.m2/repository/org/robolectric/shadows-core/3.1-SNAPSHOT/shadows-core-3.1-SNAPSHOT-17.jar
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 8.744 s
+[INFO] Finished at: 2015-08-05T15:47:09-08:00
+[INFO] Final Memory: 41M/561M
+[INFO] ------------------------------------------------------------------------
+Building shadows for API 18...
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] Using the builder org.apache.maven.lifecycle.internal.builder.singlethreaded.SingleThreadedBuilder with a thread count of 1
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building shadows-core 3.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:2.4.1:clean (default-clean) @ shadows-core ---
+[INFO] Deleting /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.0:enforce (enforce-maven) @ shadows-core ---
+[INFO] 
+[INFO] --- robolectric-velocity-plugin:1.1.0:process-templates (generate-shadows) @ shadows-core ---
+[INFO] 
+[INFO] --- build-helper-maven-plugin:1.9.1:add-source (add-source-directories) @ shadows-core ---
+[INFO] Source directory: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/generated-shadows added.
+[INFO] Source directory: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/generated-sources added.
+[INFO] 
+[INFO] --- maven-processor-plugin:2.2.1:process (default) @ shadows-core ---
+[INFO] Source directory: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/generated-sources added
+[INFO] Adding compiler arg: -source
+[INFO] Adding compiler arg: 1.7
+[INFO] Adding compiler arg: -target
+[INFO] Adding compiler arg: 1.7
+[INFO] Adding compiler arg: -Aorg.robolectric.annotation.processing.shadowPackage=org.robolectric
+[INFO] No processors specified. Using default discovery mechanism.
+[INFO] javac option: -cp
+[INFO] javac option: /usr/local/google/home/yuzhong/.m2/repository/org/robolectric/robolectric-processor/3.1-SNAPSHOT/robolectric-processor-3.1-SNAPSHOT.jar:/usr/local/google/home/yuzhong/.m2/repository/org/robolectric/robolectric-annotations/3.1-SNAPSHOT/robolectric-annotations-3.1-SNAPSHOT.jar:/usr/local/google/home/yuzhong/.m2/repository/com/google/guava/guava/16.0.1/guava-16.0.1.jar:/usr/local/google/home/yuzhong/.m2/repository/org/sonatype/sisu/sisu-inject-bean/1.4.3.1/sisu-inject-bean-1.4.3.1.jar:/usr/local/google/home/yuzhong/.m2/repository/org/sonatype/sisu/sisu-guice/2.9.1/sisu-guice-2.9.1-noaop.jar:/usr/local/google/home/yuzhong/.m2/repository/org/sonatype/aether/aether-util/1.8/aether-util-1.8.jar:/usr/local/google/home/yuzhong/.m2/repository/org/codehaus/plexus/plexus-interpolation/1.14/plexus-interpolation-1.14.jar:/usr/local/google/home/yuzhong/.m2/repository/org/codehaus/plexus/plexus-component-annotations/1.5.5/plexus-component-annotations-1.5.5.jar:/usr/local/google/home/yuzhong/.m2/repository/org/sonatype/plexus/plexus-sec-dispatcher/1.3/plexus-sec-dispatcher-1.3.jar:/usr/local/google/home/yuzhong/.m2/repository/org/sonatype/plexus/plexus-cipher/1.4/plexus-cipher-1.4.jar:/usr/local/google/home/yuzhong/.m2/repository/org/apache/maven/plugin-tools/maven-plugin-annotations/3.1/maven-plugin-annotations-3.1.jar:/usr/local/google/home/yuzhong/.m2/repository/org/codehaus/plexus/plexus-utils/3.0.1/plexus-utils-3.0.1.jar:/usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/natives:/usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/src/main/resources:/usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/classes:/usr/local/google/home/yuzhong/.m2/repository/org/robolectric/robolectric-utils/3.1-SNAPSHOT/robolectric-utils-3.1-SNAPSHOT.jar:/usr/local/google/home/yuzhong/.m2/repository/com/google/android/apps/common/testing/accessibility/framework/accessibility-test-framework/1.0/accessibility-test-framework-1.0.jar:/usr/local/google/home/yuzhong/.m2/repository/org/robolectric/robolectric-resources/3.1-SNAPSHOT/robolectric-resources-3.1-SNAPSHOT.jar:/usr/local/google/home/yuzhong/.m2/repository/com/ximpleware/vtd-xml/2.11/vtd-xml-2.11.jar:/usr/local/google/home/yuzhong/.m2/repository/com/intellij/annotations/12.0/annotations-12.0.jar:/usr/local/google/home/yuzhong/.m2/repository/com/ibm/icu/icu4j/53.1/icu4j-53.1.jar:/usr/local/google/home/yuzhong/.m2/repository/com/almworks/sqlite4java/sqlite4java/0.282/sqlite4java-0.282.jar:/usr/local/google/home/yuzhong/.m2/repository/com/github/axet/litedb/libsqlite/0.282-3/libsqlite-0.282-3-natives-windows-x86.jar:/usr/local/google/home/yuzhong/.m2/repository/com/github/axet/litedb/libsqlite/0.282-3/libsqlite-0.282-3-natives-windows-x86_64.jar:/usr/local/google/home/yuzhong/.m2/repository/com/github/axet/litedb/libsqlite/0.282-3/libsqlite-0.282-3-natives-mac-x86_64.jar:/usr/local/google/home/yuzhong/.m2/repository/com/github/axet/litedb/libsqlite/0.282-3/libsqlite-0.282-3-natives-linux-x86.jar:/usr/local/google/home/yuzhong/.m2/repository/com/github/axet/litedb/libsqlite/0.282-3/libsqlite-0.282-3-natives-linux-x86_64.jar:/usr/local/google/home/yuzhong/.m2/repository/org/robolectric/android-all/4.3_r2-robolectric-0/android-all-4.3_r2-robolectric-0.jar:
+[INFO] javac option: -proc:only
+[INFO] javac option: -source
+[INFO] javac option: 1.7
+[INFO] javac option: -target
+[INFO] javac option: 1.7
+[INFO] javac option: -Aorg.robolectric.annotation.processing.shadowPackage=org.robolectric
+[INFO] javac option: -d
+[INFO] javac option: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/classes
+[INFO] javac option: -s
+[INFO] javac option: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/generated-sources
+[INFO] diagnostic warning: [options] bootstrap class path not set in conjunction with -source 1.7
+[INFO] diagnostic Note: Initialising Robolectric annotation processor
+[INFO] diagnostic Note: Generating output file: org.robolectric.Shadows
+[INFO] diagnostic Note: Writing META-INF/services/org.robolectric.internal.ShadowProvider
+[INFO] 
+[INFO] --- maven-nativedependencies-plugin:0.0.7:copy (unpacknatives) @ shadows-core ---
+[INFO] Saving natives in /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/natives
+[INFO] Storing artifacts in separate dirs according to classifier
+[INFO] G:com.github.axet.litedb - A:libsqlite - C:natives-windows-x86
+[info] Copying natives from libsqlite-0.282-3-natives-windows-x86.jar
+[info] Copying native - META-INF/
+[info] Copying native - META-INF/MANIFEST.MF
+[info] Copying native - sqlite4java.dll
+[INFO] G:com.github.axet.litedb - A:libsqlite - C:natives-windows-x86_64
+[info] Copying natives from libsqlite-0.282-3-natives-windows-x86_64.jar
+[info] Copying native - META-INF/
+[info] Copying native - META-INF/MANIFEST.MF
+[info] Copying native - sqlite4java.dll
+[INFO] G:com.github.axet.litedb - A:libsqlite - C:natives-mac-x86_64
+[info] Copying natives from libsqlite-0.282-3-natives-mac-x86_64.jar
+[info] Copying native - META-INF/
+[info] Copying native - META-INF/MANIFEST.MF
+[info] Copying native - libsqlite4java.jnilib
+[INFO] G:com.github.axet.litedb - A:libsqlite - C:natives-linux-x86
+[info] Copying natives from libsqlite-0.282-3-natives-linux-x86.jar
+[info] Copying native - META-INF/
+[info] Copying native - META-INF/MANIFEST.MF
+[info] Copying native - libsqlite4java.so
+[INFO] G:com.github.axet.litedb - A:libsqlite - C:natives-linux-x86_64
+[info] Copying natives from libsqlite-0.282-3-natives-linux-x86_64.jar
+[info] Copying native - META-INF/
+[info] Copying native - META-INF/MANIFEST.MF
+[info] Copying native - libsqlite4java.so
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ shadows-core ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 10 resources
+[INFO] Copying 1 resource
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:compile (default-compile) @ shadows-core ---
+[INFO] Compiling 259 source files to /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/classes
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ shadows-core ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:testCompile (default-testCompile) @ shadows-core ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.13:test (default-test) @ shadows-core ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] --- maven-jar-plugin:2.3.1:jar (default-jar) @ shadows-core ---
+[INFO] Building jar: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/dist/shadows-core-3.1-SNAPSHOT-18.jar
+[INFO] 
+[INFO] --- maven-install-plugin:2.4:install (default-install) @ shadows-core ---
+[INFO] No primary artifact to install, installing attached artifacts instead.
+[INFO] Installing /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/pom.xml to /usr/local/google/home/yuzhong/.m2/repository/org/robolectric/shadows-core/3.1-SNAPSHOT/shadows-core-3.1-SNAPSHOT.pom
+[INFO] Installing /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/dist/shadows-core-3.1-SNAPSHOT-18.jar to /usr/local/google/home/yuzhong/.m2/repository/org/robolectric/shadows-core/3.1-SNAPSHOT/shadows-core-3.1-SNAPSHOT-18.jar
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 7.596 s
+[INFO] Finished at: 2015-08-05T15:47:18-08:00
+[INFO] Final Memory: 43M/557M
+[INFO] ------------------------------------------------------------------------
+Building shadows for API 19...
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] Using the builder org.apache.maven.lifecycle.internal.builder.singlethreaded.SingleThreadedBuilder with a thread count of 1
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building shadows-core 3.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:2.4.1:clean (default-clean) @ shadows-core ---
+[INFO] Deleting /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.0:enforce (enforce-maven) @ shadows-core ---
+[INFO] 
+[INFO] --- robolectric-velocity-plugin:1.1.0:process-templates (generate-shadows) @ shadows-core ---
+[INFO] 
+[INFO] --- build-helper-maven-plugin:1.9.1:add-source (add-source-directories) @ shadows-core ---
+[INFO] Source directory: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/generated-shadows added.
+[INFO] Source directory: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/generated-sources added.
+[INFO] 
+[INFO] --- maven-processor-plugin:2.2.1:process (default) @ shadows-core ---
+[INFO] Source directory: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/generated-sources added
+[INFO] Adding compiler arg: -source
+[INFO] Adding compiler arg: 1.7
+[INFO] Adding compiler arg: -target
+[INFO] Adding compiler arg: 1.7
+[INFO] Adding compiler arg: -Aorg.robolectric.annotation.processing.shadowPackage=org.robolectric
+[INFO] No processors specified. Using default discovery mechanism.
+[INFO] javac option: -cp
+[INFO] javac option: /usr/local/google/home/yuzhong/.m2/repository/org/robolectric/robolectric-processor/3.1-SNAPSHOT/robolectric-processor-3.1-SNAPSHOT.jar:/usr/local/google/home/yuzhong/.m2/repository/org/robolectric/robolectric-annotations/3.1-SNAPSHOT/robolectric-annotations-3.1-SNAPSHOT.jar:/usr/local/google/home/yuzhong/.m2/repository/com/google/guava/guava/16.0.1/guava-16.0.1.jar:/usr/local/google/home/yuzhong/.m2/repository/org/sonatype/sisu/sisu-inject-bean/1.4.3.1/sisu-inject-bean-1.4.3.1.jar:/usr/local/google/home/yuzhong/.m2/repository/org/sonatype/sisu/sisu-guice/2.9.1/sisu-guice-2.9.1-noaop.jar:/usr/local/google/home/yuzhong/.m2/repository/org/sonatype/aether/aether-util/1.8/aether-util-1.8.jar:/usr/local/google/home/yuzhong/.m2/repository/org/codehaus/plexus/plexus-interpolation/1.14/plexus-interpolation-1.14.jar:/usr/local/google/home/yuzhong/.m2/repository/org/codehaus/plexus/plexus-component-annotations/1.5.5/plexus-component-annotations-1.5.5.jar:/usr/local/google/home/yuzhong/.m2/repository/org/sonatype/plexus/plexus-sec-dispatcher/1.3/plexus-sec-dispatcher-1.3.jar:/usr/local/google/home/yuzhong/.m2/repository/org/sonatype/plexus/plexus-cipher/1.4/plexus-cipher-1.4.jar:/usr/local/google/home/yuzhong/.m2/repository/org/apache/maven/plugin-tools/maven-plugin-annotations/3.1/maven-plugin-annotations-3.1.jar:/usr/local/google/home/yuzhong/.m2/repository/org/codehaus/plexus/plexus-utils/3.0.1/plexus-utils-3.0.1.jar:/usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/natives:/usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/src/main/resources:/usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/classes:/usr/local/google/home/yuzhong/.m2/repository/org/robolectric/robolectric-utils/3.1-SNAPSHOT/robolectric-utils-3.1-SNAPSHOT.jar:/usr/local/google/home/yuzhong/.m2/repository/com/google/android/apps/common/testing/accessibility/framework/accessibility-test-framework/1.0/accessibility-test-framework-1.0.jar:/usr/local/google/home/yuzhong/.m2/repository/org/robolectric/robolectric-resources/3.1-SNAPSHOT/robolectric-resources-3.1-SNAPSHOT.jar:/usr/local/google/home/yuzhong/.m2/repository/com/ximpleware/vtd-xml/2.11/vtd-xml-2.11.jar:/usr/local/google/home/yuzhong/.m2/repository/com/intellij/annotations/12.0/annotations-12.0.jar:/usr/local/google/home/yuzhong/.m2/repository/com/ibm/icu/icu4j/53.1/icu4j-53.1.jar:/usr/local/google/home/yuzhong/.m2/repository/com/almworks/sqlite4java/sqlite4java/0.282/sqlite4java-0.282.jar:/usr/local/google/home/yuzhong/.m2/repository/com/github/axet/litedb/libsqlite/0.282-3/libsqlite-0.282-3-natives-windows-x86.jar:/usr/local/google/home/yuzhong/.m2/repository/com/github/axet/litedb/libsqlite/0.282-3/libsqlite-0.282-3-natives-windows-x86_64.jar:/usr/local/google/home/yuzhong/.m2/repository/com/github/axet/litedb/libsqlite/0.282-3/libsqlite-0.282-3-natives-mac-x86_64.jar:/usr/local/google/home/yuzhong/.m2/repository/com/github/axet/litedb/libsqlite/0.282-3/libsqlite-0.282-3-natives-linux-x86.jar:/usr/local/google/home/yuzhong/.m2/repository/com/github/axet/litedb/libsqlite/0.282-3/libsqlite-0.282-3-natives-linux-x86_64.jar:/usr/local/google/home/yuzhong/.m2/repository/org/robolectric/android-all/4.4_r1-robolectric-0/android-all-4.4_r1-robolectric-0.jar:
+[INFO] javac option: -proc:only
+[INFO] javac option: -source
+[INFO] javac option: 1.7
+[INFO] javac option: -target
+[INFO] javac option: 1.7
+[INFO] javac option: -Aorg.robolectric.annotation.processing.shadowPackage=org.robolectric
+[INFO] javac option: -d
+[INFO] javac option: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/classes
+[INFO] javac option: -s
+[INFO] javac option: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/generated-sources
+[INFO] diagnostic warning: [options] bootstrap class path not set in conjunction with -source 1.7
+[INFO] diagnostic Note: Initialising Robolectric annotation processor
+[INFO] diagnostic Note: Generating output file: org.robolectric.Shadows
+[INFO] diagnostic Note: Writing META-INF/services/org.robolectric.internal.ShadowProvider
+[INFO] 
+[INFO] --- maven-nativedependencies-plugin:0.0.7:copy (unpacknatives) @ shadows-core ---
+[INFO] Saving natives in /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/natives
+[INFO] Storing artifacts in separate dirs according to classifier
+[INFO] G:com.github.axet.litedb - A:libsqlite - C:natives-windows-x86
+[info] Copying natives from libsqlite-0.282-3-natives-windows-x86.jar
+[info] Copying native - META-INF/
+[info] Copying native - META-INF/MANIFEST.MF
+[info] Copying native - sqlite4java.dll
+[INFO] G:com.github.axet.litedb - A:libsqlite - C:natives-windows-x86_64
+[info] Copying natives from libsqlite-0.282-3-natives-windows-x86_64.jar
+[info] Copying native - META-INF/
+[info] Copying native - META-INF/MANIFEST.MF
+[info] Copying native - sqlite4java.dll
+[INFO] G:com.github.axet.litedb - A:libsqlite - C:natives-mac-x86_64
+[info] Copying natives from libsqlite-0.282-3-natives-mac-x86_64.jar
+[info] Copying native - META-INF/
+[info] Copying native - META-INF/MANIFEST.MF
+[info] Copying native - libsqlite4java.jnilib
+[INFO] G:com.github.axet.litedb - A:libsqlite - C:natives-linux-x86
+[info] Copying natives from libsqlite-0.282-3-natives-linux-x86.jar
+[info] Copying native - META-INF/
+[info] Copying native - META-INF/MANIFEST.MF
+[info] Copying native - libsqlite4java.so
+[INFO] G:com.github.axet.litedb - A:libsqlite - C:natives-linux-x86_64
+[info] Copying natives from libsqlite-0.282-3-natives-linux-x86_64.jar
+[info] Copying native - META-INF/
+[info] Copying native - META-INF/MANIFEST.MF
+[info] Copying native - libsqlite4java.so
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ shadows-core ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 10 resources
+[INFO] Copying 1 resource
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:compile (default-compile) @ shadows-core ---
+[INFO] Compiling 259 source files to /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/classes
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ shadows-core ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:testCompile (default-testCompile) @ shadows-core ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.13:test (default-test) @ shadows-core ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] --- maven-jar-plugin:2.3.1:jar (default-jar) @ shadows-core ---
+[INFO] Building jar: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/dist/shadows-core-3.1-SNAPSHOT-19.jar
+[INFO] 
+[INFO] --- maven-install-plugin:2.4:install (default-install) @ shadows-core ---
+[INFO] No primary artifact to install, installing attached artifacts instead.
+[INFO] Installing /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/pom.xml to /usr/local/google/home/yuzhong/.m2/repository/org/robolectric/shadows-core/3.1-SNAPSHOT/shadows-core-3.1-SNAPSHOT.pom
+[INFO] Installing /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/dist/shadows-core-3.1-SNAPSHOT-19.jar to /usr/local/google/home/yuzhong/.m2/repository/org/robolectric/shadows-core/3.1-SNAPSHOT/shadows-core-3.1-SNAPSHOT-19.jar
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 7.678 s
+[INFO] Finished at: 2015-08-05T15:47:27-08:00
+[INFO] Final Memory: 44M/565M
+[INFO] ------------------------------------------------------------------------
+Building shadows for API 21...
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] Using the builder org.apache.maven.lifecycle.internal.builder.singlethreaded.SingleThreadedBuilder with a thread count of 1
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building shadows-core 3.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:2.4.1:clean (default-clean) @ shadows-core ---
+[INFO] Deleting /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.0:enforce (enforce-maven) @ shadows-core ---
+[INFO] 
+[INFO] --- robolectric-velocity-plugin:1.1.0:process-templates (generate-shadows) @ shadows-core ---
+[INFO] 
+[INFO] --- build-helper-maven-plugin:1.9.1:add-source (add-source-directories) @ shadows-core ---
+[INFO] Source directory: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/generated-shadows added.
+[INFO] Source directory: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/generated-sources added.
+[INFO] 
+[INFO] --- maven-processor-plugin:2.2.1:process (default) @ shadows-core ---
+[INFO] Source directory: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/generated-sources added
+[INFO] Adding compiler arg: -source
+[INFO] Adding compiler arg: 1.7
+[INFO] Adding compiler arg: -target
+[INFO] Adding compiler arg: 1.7
+[INFO] Adding compiler arg: -Aorg.robolectric.annotation.processing.shadowPackage=org.robolectric
+[INFO] No processors specified. Using default discovery mechanism.
+[INFO] javac option: -cp
+[INFO] javac option: /usr/local/google/home/yuzhong/.m2/repository/org/robolectric/robolectric-processor/3.1-SNAPSHOT/robolectric-processor-3.1-SNAPSHOT.jar:/usr/local/google/home/yuzhong/.m2/repository/org/robolectric/robolectric-annotations/3.1-SNAPSHOT/robolectric-annotations-3.1-SNAPSHOT.jar:/usr/local/google/home/yuzhong/.m2/repository/com/google/guava/guava/16.0.1/guava-16.0.1.jar:/usr/local/google/home/yuzhong/.m2/repository/org/sonatype/sisu/sisu-inject-bean/1.4.3.1/sisu-inject-bean-1.4.3.1.jar:/usr/local/google/home/yuzhong/.m2/repository/org/sonatype/sisu/sisu-guice/2.9.1/sisu-guice-2.9.1-noaop.jar:/usr/local/google/home/yuzhong/.m2/repository/org/sonatype/aether/aether-util/1.8/aether-util-1.8.jar:/usr/local/google/home/yuzhong/.m2/repository/org/codehaus/plexus/plexus-interpolation/1.14/plexus-interpolation-1.14.jar:/usr/local/google/home/yuzhong/.m2/repository/org/codehaus/plexus/plexus-component-annotations/1.5.5/plexus-component-annotations-1.5.5.jar:/usr/local/google/home/yuzhong/.m2/repository/org/sonatype/plexus/plexus-sec-dispatcher/1.3/plexus-sec-dispatcher-1.3.jar:/usr/local/google/home/yuzhong/.m2/repository/org/sonatype/plexus/plexus-cipher/1.4/plexus-cipher-1.4.jar:/usr/local/google/home/yuzhong/.m2/repository/org/apache/maven/plugin-tools/maven-plugin-annotations/3.1/maven-plugin-annotations-3.1.jar:/usr/local/google/home/yuzhong/.m2/repository/org/codehaus/plexus/plexus-utils/3.0.1/plexus-utils-3.0.1.jar:/usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/natives:/usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/src/main/resources:/usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/classes:/usr/local/google/home/yuzhong/.m2/repository/org/robolectric/robolectric-utils/3.1-SNAPSHOT/robolectric-utils-3.1-SNAPSHOT.jar:/usr/local/google/home/yuzhong/.m2/repository/com/google/android/apps/common/testing/accessibility/framework/accessibility-test-framework/1.0/accessibility-test-framework-1.0.jar:/usr/local/google/home/yuzhong/.m2/repository/org/robolectric/robolectric-resources/3.1-SNAPSHOT/robolectric-resources-3.1-SNAPSHOT.jar:/usr/local/google/home/yuzhong/.m2/repository/com/ximpleware/vtd-xml/2.11/vtd-xml-2.11.jar:/usr/local/google/home/yuzhong/.m2/repository/com/intellij/annotations/12.0/annotations-12.0.jar:/usr/local/google/home/yuzhong/.m2/repository/com/ibm/icu/icu4j/53.1/icu4j-53.1.jar:/usr/local/google/home/yuzhong/.m2/repository/com/almworks/sqlite4java/sqlite4java/0.282/sqlite4java-0.282.jar:/usr/local/google/home/yuzhong/.m2/repository/com/github/axet/litedb/libsqlite/0.282-3/libsqlite-0.282-3-natives-windows-x86.jar:/usr/local/google/home/yuzhong/.m2/repository/com/github/axet/litedb/libsqlite/0.282-3/libsqlite-0.282-3-natives-windows-x86_64.jar:/usr/local/google/home/yuzhong/.m2/repository/com/github/axet/litedb/libsqlite/0.282-3/libsqlite-0.282-3-natives-mac-x86_64.jar:/usr/local/google/home/yuzhong/.m2/repository/com/github/axet/litedb/libsqlite/0.282-3/libsqlite-0.282-3-natives-linux-x86.jar:/usr/local/google/home/yuzhong/.m2/repository/com/github/axet/litedb/libsqlite/0.282-3/libsqlite-0.282-3-natives-linux-x86_64.jar:/usr/local/google/home/yuzhong/.m2/repository/com/android/tools/layoutlib/layoutlib-api/24.2.3/layoutlib-api-24.2.3.jar:/usr/local/google/home/yuzhong/.m2/repository/com/android/tools/sdk-common/24.2.3/sdk-common-24.2.3.jar:/usr/local/google/home/yuzhong/.m2/repository/com/android/tools/common/24.2.3/common-24.2.3.jar:/usr/local/google/home/yuzhong/.m2/repository/com/android/tools/sdklib/24.2.3/sdklib-24.2.3.jar:/usr/local/google/home/yuzhong/.m2/repository/org/robolectric/android-all/5.0.0_r2-robolectric-1-render/android-all-5.0.0_r2-robolectric-1-render.jar:
+[INFO] javac option: -proc:only
+[INFO] javac option: -source
+[INFO] javac option: 1.7
+[INFO] javac option: -target
+[INFO] javac option: 1.7
+[INFO] javac option: -Aorg.robolectric.annotation.processing.shadowPackage=org.robolectric
+[INFO] javac option: -d
+[INFO] javac option: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/classes
+[INFO] javac option: -s
+[INFO] javac option: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/generated-sources
+[INFO] diagnostic warning: [options] bootstrap class path not set in conjunction with -source 1.7
+[INFO] diagnostic Note: Initialising Robolectric annotation processor
+[INFO] diagnostic Note: Generating output file: org.robolectric.Shadows
+[INFO] diagnostic Note: Writing META-INF/services/org.robolectric.internal.ShadowProvider
+[INFO] 
+[INFO] --- maven-nativedependencies-plugin:0.0.7:copy (unpacknatives) @ shadows-core ---
+[INFO] Saving natives in /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/natives
+[INFO] Storing artifacts in separate dirs according to classifier
+[INFO] G:com.github.axet.litedb - A:libsqlite - C:natives-windows-x86
+[info] Copying natives from libsqlite-0.282-3-natives-windows-x86.jar
+[info] Copying native - META-INF/
+[info] Copying native - META-INF/MANIFEST.MF
+[info] Copying native - sqlite4java.dll
+[INFO] G:com.github.axet.litedb - A:libsqlite - C:natives-windows-x86_64
+[info] Copying natives from libsqlite-0.282-3-natives-windows-x86_64.jar
+[info] Copying native - META-INF/
+[info] Copying native - META-INF/MANIFEST.MF
+[info] Copying native - sqlite4java.dll
+[INFO] G:com.github.axet.litedb - A:libsqlite - C:natives-mac-x86_64
+[info] Copying natives from libsqlite-0.282-3-natives-mac-x86_64.jar
+[info] Copying native - META-INF/
+[info] Copying native - META-INF/MANIFEST.MF
+[info] Copying native - libsqlite4java.jnilib
+[INFO] G:com.github.axet.litedb - A:libsqlite - C:natives-linux-x86
+[info] Copying natives from libsqlite-0.282-3-natives-linux-x86.jar
+[info] Copying native - META-INF/
+[info] Copying native - META-INF/MANIFEST.MF
+[info] Copying native - libsqlite4java.so
+[INFO] G:com.github.axet.litedb - A:libsqlite - C:natives-linux-x86_64
+[info] Copying natives from libsqlite-0.282-3-natives-linux-x86_64.jar
+[info] Copying native - META-INF/
+[info] Copying native - META-INF/MANIFEST.MF
+[info] Copying native - libsqlite4java.so
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ shadows-core ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 10 resources
+[INFO] Copying 1 resource
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:compile (default-compile) @ shadows-core ---
+[INFO] Compiling 259 source files to /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/classes
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ shadows-core ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:testCompile (default-testCompile) @ shadows-core ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.13:test (default-test) @ shadows-core ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] --- maven-jar-plugin:2.3.1:jar (default-jar) @ shadows-core ---
+[INFO] Building jar: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/dist/shadows-core-3.1-SNAPSHOT-21.jar
+[INFO] 
+[INFO] --- maven-install-plugin:2.4:install (default-install) @ shadows-core ---
+[INFO] No primary artifact to install, installing attached artifacts instead.
+[INFO] Installing /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/pom.xml to /usr/local/google/home/yuzhong/.m2/repository/org/robolectric/shadows-core/3.1-SNAPSHOT/shadows-core-3.1-SNAPSHOT.pom
+[INFO] Installing /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/dist/shadows-core-3.1-SNAPSHOT-21.jar to /usr/local/google/home/yuzhong/.m2/repository/org/robolectric/shadows-core/3.1-SNAPSHOT/shadows-core-3.1-SNAPSHOT-21.jar
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 7.767 s
+[INFO] Finished at: 2015-08-05T15:47:36-08:00
+[INFO] Final Memory: 69M/570M
+[INFO] ------------------------------------------------------------------------
+Running Tests...
+[INFO] Scanning for projects...
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Build Order:
+[INFO] 
+[INFO] robolectric-parent
+[INFO] robolectric-annotations
+[INFO] robolectric-utils
+[INFO] robolectric-resources
+[INFO] robolectric-shadows
+[INFO] robolectric-processor
+[INFO] shadows-core
+[INFO] robolectric
+[INFO] shadows-maps
+[INFO] shadows-multidex
+[INFO] shadows-support-v4
+[INFO] shadows-httpclient
+[INFO] shadows-play-services
+[INFO] 
+[INFO] Using the builder org.apache.maven.lifecycle.internal.builder.singlethreaded.SingleThreadedBuilder with a thread count of 1
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building robolectric-parent 3.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.0:enforce (enforce-maven) @ robolectric-parent ---
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building robolectric-annotations 3.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.0:enforce (enforce-maven) @ robolectric-annotations ---
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ robolectric-annotations ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-annotations/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:compile (default-compile) @ robolectric-annotations ---
+[INFO] Compiling 1 source file to /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-annotations/target/classes
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ robolectric-annotations ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-annotations/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:testCompile (default-testCompile) @ robolectric-annotations ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.13:test (default-test) @ robolectric-annotations ---
+[INFO] No tests to run.
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building robolectric-utils 3.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.0:enforce (enforce-maven) @ robolectric-utils ---
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ robolectric-utils ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-utils/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:compile (default-compile) @ robolectric-utils ---
+[INFO] Compiling 1 source file to /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-utils/target/classes
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ robolectric-utils ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-utils/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:testCompile (default-testCompile) @ robolectric-utils ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.13:test (default-test) @ robolectric-utils ---
+[INFO] Surefire report directory: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-utils/target/surefire-reports
+
+-------------------------------------------------------
+ T E S T S
+-------------------------------------------------------
+Running org.robolectric.util.TempDirectoryTest
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.068 sec
+Running org.robolectric.util.StringsTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0 sec
+Running org.robolectric.util.ReflectionHelpersTest
+Tests run: 26, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.018 sec
+
+Results :
+
+Tests run: 31, Failures: 0, Errors: 0, Skipped: 0
+
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building robolectric-resources 3.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.0:enforce (enforce-maven) @ robolectric-resources ---
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ robolectric-resources ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-resources/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:compile (default-compile) @ robolectric-resources ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ robolectric-resources ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-resources/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:testCompile (default-testCompile) @ robolectric-resources ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.13:test (default-test) @ robolectric-resources ---
+[INFO] Surefire report directory: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-resources/target/surefire-reports
+
+-------------------------------------------------------
+ T E S T S
+-------------------------------------------------------
+Running org.robolectric.shadows.ConverterTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.061 sec
+Running org.robolectric.manifest.ActivityDataTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0 sec
+
+Results :
+
+Tests run: 7, Failures: 0, Errors: 0, Skipped: 0
+
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building robolectric-shadows 3.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.0:enforce (enforce-maven) @ robolectric-shadows ---
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building robolectric-processor 3.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.0:enforce (enforce-maven) @ robolectric-processor ---
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ robolectric-processor ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 1 resource
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:compile (default-compile) @ robolectric-processor ---
+[INFO] Compiling 3 source files to /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-processor/target/classes
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ robolectric-processor ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 44 resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:testCompile (default-testCompile) @ robolectric-processor ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.13:test (default-test) @ robolectric-processor ---
+[INFO] Surefire report directory: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-processor/target/surefire-reports
+
+-------------------------------------------------------
+ T E S T S
+-------------------------------------------------------
+Running org.robolectric.annotation.processing.validator.ResetterValidatorTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.686 sec
+Running org.robolectric.annotation.processing.validator.RealObjectValidatorTest
+Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.309 sec
+Running org.robolectric.annotation.processing.RobolectricProcessorTest
+Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.511 sec
+Running org.robolectric.annotation.processing.validator.ImplementationValidatorTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.008 sec
+Running org.robolectric.annotation.processing.validator.ImplementsValidatorTest
+Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.068 sec
+
+Results :
+
+Tests run: 39, Failures: 0, Errors: 0, Skipped: 0
+
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building shadows-core 3.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.0:enforce (enforce-maven) @ shadows-core ---
+[INFO] 
+[INFO] --- robolectric-velocity-plugin:1.1.0:process-templates (generate-shadows) @ shadows-core ---
+[INFO] 
+[INFO] --- build-helper-maven-plugin:1.9.1:add-source (add-source-directories) @ shadows-core ---
+[INFO] Source directory: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/generated-shadows added.
+[INFO] Source directory: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/generated-sources added.
+[INFO] 
+[INFO] --- maven-processor-plugin:2.2.1:process (default) @ shadows-core ---
+[INFO] Source directory: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/generated-sources added
+[INFO] Adding compiler arg: -source
+[INFO] Adding compiler arg: 1.7
+[INFO] Adding compiler arg: -target
+[INFO] Adding compiler arg: 1.7
+[INFO] Adding compiler arg: -Aorg.robolectric.annotation.processing.shadowPackage=org.robolectric
+[INFO] No processors specified. Using default discovery mechanism.
+[INFO] javac option: -cp
+[INFO] javac option: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-processor/target/classes:/usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-annotations/target/classes:/usr/local/google/home/yuzhong/.m2/repository/com/google/guava/guava/16.0.1/guava-16.0.1.jar:/usr/local/google/home/yuzhong/.m2/repository/org/sonatype/sisu/sisu-inject-bean/1.4.3.1/sisu-inject-bean-1.4.3.1.jar:/usr/local/google/home/yuzhong/.m2/repository/org/sonatype/sisu/sisu-guice/2.9.1/sisu-guice-2.9.1-noaop.jar:/usr/local/google/home/yuzhong/.m2/repository/org/sonatype/aether/aether-util/1.8/aether-util-1.8.jar:/usr/local/google/home/yuzhong/.m2/repository/org/codehaus/plexus/plexus-interpolation/1.14/plexus-interpolation-1.14.jar:/usr/local/google/home/yuzhong/.m2/repository/org/codehaus/plexus/plexus-component-annotations/1.5.5/plexus-component-annotations-1.5.5.jar:/usr/local/google/home/yuzhong/.m2/repository/org/sonatype/plexus/plexus-sec-dispatcher/1.3/plexus-sec-dispatcher-1.3.jar:/usr/local/google/home/yuzhong/.m2/repository/org/sonatype/plexus/plexus-cipher/1.4/plexus-cipher-1.4.jar:/usr/local/google/home/yuzhong/.m2/repository/org/apache/maven/plugin-tools/maven-plugin-annotations/3.1/maven-plugin-annotations-3.1.jar:/usr/local/google/home/yuzhong/.m2/repository/org/codehaus/plexus/plexus-utils/3.0.1/plexus-utils-3.0.1.jar:/usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/natives:/usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/src/main/resources:/usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/classes:/usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-utils/target/classes:/usr/local/google/home/yuzhong/.m2/repository/com/google/android/apps/common/testing/accessibility/framework/accessibility-test-framework/1.0/accessibility-test-framework-1.0.jar:/usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-resources/target/classes:/usr/local/google/home/yuzhong/.m2/repository/com/ximpleware/vtd-xml/2.11/vtd-xml-2.11.jar:/usr/local/google/home/yuzhong/.m2/repository/com/intellij/annotations/12.0/annotations-12.0.jar:/usr/local/google/home/yuzhong/.m2/repository/com/ibm/icu/icu4j/53.1/icu4j-53.1.jar:/usr/local/google/home/yuzhong/.m2/repository/com/almworks/sqlite4java/sqlite4java/0.282/sqlite4java-0.282.jar:/usr/local/google/home/yuzhong/.m2/repository/com/github/axet/litedb/libsqlite/0.282-3/libsqlite-0.282-3-natives-windows-x86.jar:/usr/local/google/home/yuzhong/.m2/repository/com/github/axet/litedb/libsqlite/0.282-3/libsqlite-0.282-3-natives-windows-x86_64.jar:/usr/local/google/home/yuzhong/.m2/repository/com/github/axet/litedb/libsqlite/0.282-3/libsqlite-0.282-3-natives-mac-x86_64.jar:/usr/local/google/home/yuzhong/.m2/repository/com/github/axet/litedb/libsqlite/0.282-3/libsqlite-0.282-3-natives-linux-x86.jar:/usr/local/google/home/yuzhong/.m2/repository/com/github/axet/litedb/libsqlite/0.282-3/libsqlite-0.282-3-natives-linux-x86_64.jar:/usr/local/google/home/yuzhong/.m2/repository/com/android/tools/layoutlib/layoutlib-api/24.2.3/layoutlib-api-24.2.3.jar:/usr/local/google/home/yuzhong/.m2/repository/com/android/tools/sdk-common/24.2.3/sdk-common-24.2.3.jar:/usr/local/google/home/yuzhong/.m2/repository/com/android/tools/common/24.2.3/common-24.2.3.jar:/usr/local/google/home/yuzhong/.m2/repository/com/android/tools/sdklib/24.2.3/sdklib-24.2.3.jar:/usr/local/google/home/yuzhong/.m2/repository/org/robolectric/android-all/5.0.0_r2-robolectric-1-render/android-all-5.0.0_r2-robolectric-1-render.jar:
+[INFO] javac option: -proc:only
+[INFO] javac option: -source
+[INFO] javac option: 1.7
+[INFO] javac option: -target
+[INFO] javac option: 1.7
+[INFO] javac option: -Aorg.robolectric.annotation.processing.shadowPackage=org.robolectric
+[INFO] javac option: -d
+[INFO] javac option: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/classes
+[INFO] javac option: -s
+[INFO] javac option: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/generated-sources
+[INFO] diagnostic warning: [options] bootstrap class path not set in conjunction with -source 1.7
+[INFO] diagnostic Note: Initialising Robolectric annotation processor
+[INFO] diagnostic Note: Generating output file: org.robolectric.Shadows
+[INFO] diagnostic Note: Writing META-INF/services/org.robolectric.internal.ShadowProvider
+[INFO] 
+[INFO] --- maven-nativedependencies-plugin:0.0.7:copy (unpacknatives) @ shadows-core ---
+[INFO] Saving natives in /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/natives
+[INFO] Storing artifacts in separate dirs according to classifier
+[INFO] G:com.github.axet.litedb - A:libsqlite - C:natives-windows-x86
+[info] Copying natives from libsqlite-0.282-3-natives-windows-x86.jar
+[info] Copying native - META-INF/
+[info] Copying native - META-INF/MANIFEST.MF
+[info] Copying native - sqlite4java.dll
+[INFO] G:com.github.axet.litedb - A:libsqlite - C:natives-windows-x86_64
+[info] Copying natives from libsqlite-0.282-3-natives-windows-x86_64.jar
+[info] Copying native - META-INF/
+[info] Copying native - META-INF/MANIFEST.MF
+[info] Copying native - sqlite4java.dll
+[INFO] G:com.github.axet.litedb - A:libsqlite - C:natives-mac-x86_64
+[info] Copying natives from libsqlite-0.282-3-natives-mac-x86_64.jar
+[info] Copying native - META-INF/
+[info] Copying native - META-INF/MANIFEST.MF
+[info] Copying native - libsqlite4java.jnilib
+[INFO] G:com.github.axet.litedb - A:libsqlite - C:natives-linux-x86
+[info] Copying natives from libsqlite-0.282-3-natives-linux-x86.jar
+[info] Copying native - META-INF/
+[info] Copying native - META-INF/MANIFEST.MF
+[info] Copying native - libsqlite4java.so
+[INFO] G:com.github.axet.litedb - A:libsqlite - C:natives-linux-x86_64
+[info] Copying natives from libsqlite-0.282-3-natives-linux-x86_64.jar
+[info] Copying native - META-INF/
+[info] Copying native - META-INF/MANIFEST.MF
+[info] Copying native - libsqlite4java.so
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ shadows-core ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 10 resources
+[INFO] Copying 1 resource
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:compile (default-compile) @ shadows-core ---
+[INFO] Compiling 53 source files to /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/target/classes
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ shadows-core ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric-shadows/shadows-core/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:testCompile (default-testCompile) @ shadows-core ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.13:test (default-test) @ shadows-core ---
+[INFO] No tests to run.
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building robolectric 3.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.0:enforce (enforce-maven) @ robolectric ---
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ robolectric ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 1 resource
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:compile (default-compile) @ robolectric ---
+[INFO] Compiling 1 source file to /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric/target/classes
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ robolectric ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 134 resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:testCompile (default-testCompile) @ robolectric ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.13:test (default-test) @ robolectric ---
+[INFO] Surefire report directory: /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric/target/surefire-reports
+
+-------------------------------------------------------
+ T E S T S
+-------------------------------------------------------
+Running org.robolectric.shadows.ShadowRadioGroupTest
+[INFO] snapshot org.robolectric:shadows-core:3.1-SNAPSHOT: checking for updates from sonatype
+[INFO] snapshot org.robolectric:robolectric-shadows:3.1-SNAPSHOT: checking for updates from sonatype
+[INFO] snapshot org.robolectric:robolectric-parent:3.1-SNAPSHOT: checking for updates from sonatype
+[INFO] snapshot org.robolectric:robolectric-annotations:3.1-SNAPSHOT: checking for updates from sonatype
+[INFO] snapshot org.robolectric:robolectric-annotations:3.1-SNAPSHOT: checking for updates from sonatype-nexus-snapshots
+[INFO] snapshot org.robolectric:robolectric-utils:3.1-SNAPSHOT: checking for updates from sonatype
+[INFO] snapshot org.robolectric:robolectric-utils:3.1-SNAPSHOT: checking for updates from sonatype-nexus-snapshots
+[INFO] snapshot org.robolectric:robolectric-resources:3.1-SNAPSHOT: checking for updates from sonatype
+[INFO] snapshot org.robolectric:robolectric-resources:3.1-SNAPSHOT: checking for updates from sonatype-nexus-snapshots
+Tests run: 15, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 9.295 sec
+Running org.robolectric.shadows.ShadowPairTest
+Tests run: 20, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.091 sec
+Running org.robolectric.shadows.ShadowMergeCursorTest
+Tests run: 50, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.623 sec
+Running org.robolectric.util.SchedulerTest
+Tests run: 19, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.033 sec
+Running org.robolectric.RobolectricTestRunnerClassLoaderConfigTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 sec
+Running org.robolectric.shadows.ShadowConnectivityManagerTest
+Tests run: 49, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.213 sec
+Running org.robolectric.shadows.ShadowInputMethodManagerTest
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.075 sec
+Running org.robolectric.shadows.ShadowHandlerThreadTest
+Tests run: 25, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.097 sec
+Running org.robolectric.shadows.ShadowWifiConfigurationTest
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.073 sec
+Running org.robolectric.shadows.ShadowDisplayTest
+Tests run: 19, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.056 sec
+Running org.robolectric.fakes.RoboMenuItemTest
+Tests run: 14, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.139 sec
+Running org.robolectric.shadows.ShadowNotificationBigTextStyleTest
+Tests run: 40, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.275 sec
+Running org.robolectric.MultiApiRobolectricTestRunnerTest
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.118 sec
+Running org.robolectric.shadows.ShadowLocationTest
+Tests run: 45, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.13 sec
+Running org.robolectric.shadows.ShadowBitmapTest
+Tests run: 112, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.357 sec
+Running org.robolectric.shadows.ShadowAbsSpinnerTest
+Tests run: 20, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.595 sec
+Running org.robolectric.shadows.ShadowMediaPlayerTest
+Tests run: 405, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.934 sec
+Running org.robolectric.shadows.ShadowTelephonyManagerTest
+Tests run: 40, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.114 sec
+Running org.robolectric.shadows.ShadowContentProviderResultTest
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.02 sec
+Running org.robolectric.res.PackageResourceLoaderTest
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.01 sec
+Running org.robolectric.shadows.ShadowSQLiteConnectionTest
+Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.951 sec
+Running org.robolectric.shadows.ShadowBitmapDrawableTest
+Tests run: 50, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.236 sec
+Running org.robolectric.shadows.ShadowTypefaceTest
+Tests run: 35, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.081 sec
+Running org.robolectric.shadows.ShadowApplicationTest
+Tests run: 166, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.008 sec
+Running org.robolectric.shadows.ShadowTouchDelegateTest
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.02 sec
+Running org.robolectric.shadows.ShadowWindowManagerGlobalTest
+Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.013 sec
+Running org.robolectric.shadows.ShadowContextWrapperTest
+Tests run: 175, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.936 sec
+Running org.robolectric.shadows.ShadowAsyncTaskTest
+Tests run: 40, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.099 sec
+Running org.robolectric.shadows.ShadowAbsSpinnerAdapterViewBehaviorTest
+Tests run: 35, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.383 sec
+Running org.robolectric.shadows.SQLiteCursorTest
+Tests run: 235, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.809 sec
+Running org.robolectric.shadows.ShadowAccountManagerTest
+Tests run: 171, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.388 sec
+Running org.robolectric.util.UtilTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0 sec
+Running org.robolectric.shadows.ShadowContentProviderOperationBuilderTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.059 sec
+Running org.robolectric.internal.bytecode.ShadowWranglerUnitTest
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0 sec
+Running org.robolectric.RobolectricTestRunnerSelfTest
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.02 sec
+Running org.robolectric.shadows.ShadowCornerPathEffectTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.013 sec
+Running org.robolectric.shadows.ShadowTextToSpeechTest
+Tests run: 45, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.238 sec
+Running org.robolectric.shadows.ShadowDrawableTest
+Tests run: 80, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.161 sec
+Running org.robolectric.shadows.ShadowCharArrayBufferTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.014 sec
+Running org.robolectric.shadows.ShadowRadioButtonTest
+Tests run: 30, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.368 sec
+Running org.robolectric.shadows.ShadowConfigurationTest
+Tests run: 25, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.037 sec
+Running org.robolectric.shadows.ShadowResourcesTest
+Tests run: 59, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.145 sec
+Running org.robolectric.shadows.ShadowViewFlipperTest
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.047 sec
+Running org.robolectric.shadows.ShadowSensorManagerTest
+Tests run: 35, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.055 sec
+Running org.robolectric.shadows.ShadowServiceTest
+Tests run: 60, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.124 sec
+Running org.robolectric.shadows.ShadowBaseAdapterTest
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.015 sec
+Running org.robolectric.res.RoboAttributeSetTest
+Tests run: 39, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.077 sec
+Running org.robolectric.internal.bytecode.RobolectricInternalsTest
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.007 sec
+Running org.robolectric.res.DefaultRobolectricPackageManagerTest
+Tests run: 40, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.275 sec
+Running org.robolectric.internal.dependency.CachedDependencyResolverFileCacheTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 sec
+Running org.robolectric.shadows.ShadowContextTest
+Tests run: 105, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.231 sec
+Running org.robolectric.shadows.ShadowTextUtilsTest
+Tests run: 35, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.076 sec
+Running org.robolectric.internal.bytecode.ClassicSuperHandlingTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 sec
+Running org.robolectric.res.ResourceRemapperTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 sec
+Running org.robolectric.shadows.SQLiteDatabaseTest
+Tests run: 290, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 86.713 sec
+Running org.robolectric.shadows.ShadowAsyncTaskLoaderTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 sec
+Running org.robolectric.shadows.ShadowAccountTest
+Tests run: 35, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.086 sec
+Running org.robolectric.LibraryHandlingTest
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.006 sec
+Running org.robolectric.shadows.ShadowAssetManagerTest
+Tests run: 50, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.187 sec
+Running org.robolectric.shadows.ShadowLooperTest
+Tests run: 95, Failures: 0, Errors: 0, Skipped: 5, Time elapsed: 0.207 sec
+Running org.robolectric.shadows.ShadowAccessibilityNodeInfoTest
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.015 sec
+Running org.robolectric.shadows.ShadowLocationManagerTest
+Tests run: 145, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.299 sec
+Running org.robolectric.RobolectricTest
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.068 sec
+Running org.robolectric.shadows.ShadowAlarmManagerTest
+Tests run: 46, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.091 sec
+Running org.robolectric.shadows.ViewStubTest
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.113 sec
+Running org.robolectric.shadows.ShadowSmsManagerTest
+Tests run: 33, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.078 sec
+Running org.robolectric.shadows.ShadowResultReceiverTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.015 sec
+Running org.robolectric.shadows.ShadowCursorWindowTest
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.062 sec
+Running org.robolectric.internal.bytecode.ShadowWranglerTest
+Tests run: 15, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.019 sec
+Running org.robolectric.shadows.ShadowPendingIntentTest
+Tests run: 75, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.138 sec
+Running org.robolectric.TestRunnerSequenceTest
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.832 sec
+Running org.robolectric.res.builder.XmlBlockLoaderTest
+Tests run: 54, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.134 sec
+Running org.robolectric.shadows.ViewInnerTextTest
+Tests run: 15, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.106 sec
+Running org.robolectric.shadows.ShadowAccessibilityWindowInfoTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.033 sec
+Running org.robolectric.shadows.ShadowInputDeviceTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.114 sec
+Running org.robolectric.shadows.ShadowAppWidgetHostTest
+Tests run: 35, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.187 sec
+Running org.robolectric.shadows.ShadowJsonReaderTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.033 sec
+Running org.robolectric.internal.dependency.CachedDependencyResolverTest
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.009 sec
+Running org.robolectric.util.FragmentControllerTest
+Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.519 sec
+Running org.robolectric.shadows.ShadowScrollViewTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.22 sec
+Running org.robolectric.shadows.ShadowLinearLayoutTest
+Tests run: 15, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.044 sec
+Running org.robolectric.shadows.ShadowProgressBarTest
+Tests run: 45, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.359 sec
+Running org.robolectric.shadows.ShadowListViewTest
+Tests run: 160, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.735 sec
+Running org.robolectric.shadows.ShadowAutoCompleteTextViewTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.353 sec
+Running org.robolectric.shadows.ShadowActivityThreadTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.138 sec
+Running org.robolectric.shadows.ShadowCookieManagerTest
+Tests run: 115, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.33 sec
+Running org.robolectric.shadows.ShadowOverScrollerTest
+Tests run: 20, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.032 sec
+Running org.robolectric.manifest.AndroidManifestTest
+Tests run: 21, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.067 sec
+Running org.robolectric.shadows.ShadowRelativeLayoutTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.031 sec
+Running org.robolectric.shadows.ShadowListViewAdapterViewBehaviorTest
+Tests run: 35, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.272 sec
+Running org.robolectric.shadows.ShadowSpannedStringTest
+Tests run: 15, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.023 sec
+Running org.robolectric.fakes.RoboSharedPreferencesTest
+Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.024 sec
+Running org.robolectric.shadows.ShadowMessageTest
+Tests run: 80, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.141 sec
+Running org.robolectric.res.ResNameTest
+Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0 sec
+Running org.robolectric.shadows.ShadowContentValuesTest
+Tests run: 50, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.081 sec
+Running org.robolectric.shadows.ShadowSpannableStringTest
+Tests run: 20, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.091 sec
+Running org.robolectric.shadows.ShadowContentResolverTest
+Tests run: 190, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.162 sec
+Running org.robolectric.res.PluralResourceLoaderTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 sec
+Running org.robolectric.shadows.ShadowColorTest
+Tests run: 40, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.061 sec
+Running org.robolectric.shadows.ShadowAudioManagerTest
+Tests run: 60, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.132 sec
+Running org.robolectric.IncludedDependenciesTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.012 sec
+Running org.robolectric.shadows.ShadowIntentTest
+Tests run: 205, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.332 sec
+Running org.robolectric.shadows.ShadowDialogPreferenceTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.932 sec
+Running org.robolectric.TemporaryBindingsTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 sec
+Running org.robolectric.internal.bytecode.InvocationProfileTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 sec
+Running org.robolectric.shadows.ShadowTextPaintTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.009 sec
+Running org.robolectric.shadows.ShadowLinkMovementMethodTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.018 sec
+Running org.robolectric.shadows.ShadowMatrixTest
+Tests run: 35, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.055 sec
+Running org.robolectric.shadows.SQLiteQueryBuilderTest
+Tests run: 15, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.517 sec
+Running org.robolectric.shadows.ShadowTypedArrayTest
+Tests run: 85, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.331 sec
+Running org.robolectric.shadows.ShadowPorterDuffColorFilterTest
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 sec
+Running org.robolectric.shadows.ShadowDialogTest
+Tests run: 66, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.244 sec
+Running org.robolectric.shadows.ShadowSurfaceTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.017 sec
+Running org.robolectric.shadows.ShadowMediaRecorderTest
+Tests run: 115, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.212 sec
+Running org.robolectric.shadows.ShadowPreferenceGroupTest
+Tests run: 50, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.16 sec
+Running org.robolectric.shadows.ShadowIntentServiceTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.024 sec
+Running org.robolectric.shadows.ShadowCheckBoxTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.039 sec
+Running org.robolectric.shadows.ShadowViewGroupTest
+Tests run: 115, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.485 sec
+Running org.robolectric.shadows.ShadowTimePickerDialogTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.355 sec
+Running org.robolectric.shadows.ShadowNetworkInfoTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.024 sec
+Running org.robolectric.shadows.ShadowCameraSizeTest
+Tests run: 15, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.029 sec
+Running org.robolectric.internal.bytecode.ThreadSafetyTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.02 sec
+Running org.robolectric.internal.bytecode.StaticInitializerTest
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 sec
+Running org.robolectric.shadows.ShadowUriTest
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.02 sec
+Running org.robolectric.shadows.ShadowPopupWindowTest
+Tests run: 80, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.343 sec
+Running org.robolectric.RobolectricTestRunnerTest
+Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.006 sec
+Running org.robolectric.shadows.ShadowWebViewTest
+Tests run: 80, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.506 sec
+Running org.robolectric.shadows.ShadowFilterTest
+Tests run: 15, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.026 sec
+Running org.robolectric.shadows.ShadowCameraTest
+Tests run: 115, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.23 sec
+Running org.robolectric.shadows.ShadowCursorWrapperTest
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.411 sec
+Running org.robolectric.shadows.ShadowRemoteCallbackListTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.02 sec
+Running org.robolectric.shadows.ShadowRectTest
+Tests run: 120, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.232 sec
+Running org.robolectric.shadows.ShadowCookieSyncManagerTest
+Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.036 sec
+Running org.robolectric.fakes.RoboWebSettingsTest
+Tests run: 34, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.091 sec
+Running org.robolectric.shadows.ShadowWifiManagerTest
+Tests run: 90, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.315 sec
+Running org.robolectric.shadows.ShadowCheckedTextViewTest
+Tests run: 15, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.113 sec
+Running org.robolectric.shadows.ShadowMediaMetadataRetrieverTest
+Tests run: 40, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.105 sec
+Running org.robolectric.shadows.VelocityTrackerTest
+Tests run: 40, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.115 sec
+Running org.robolectric.shadows.ShadowSystemClockTest
+Tests run: 20, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.039 sec
+Running org.robolectric.shadows.ShadowBinderTest
+Tests run: 30, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.059 sec
+Running org.robolectric.res.DrawableResourceLoaderTest
+Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.694 sec
+Running org.robolectric.shadows.ShadowBitmapFactoryTest
+Tests run: 115, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.329 sec
+Running org.robolectric.shadows.ShadowProgressDialogTest
+Tests run: 25, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.386 sec
+Running org.robolectric.shadows.ShadowNotificationBuilderTest
+Tests run: 102, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.444 sec
+Running org.robolectric.res.StringResourcesTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0 sec
+Running org.robolectric.shadows.ShadowActivityManagerTest
+Tests run: 45, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.152 sec
+Running org.robolectric.shadows.ShadowPowerManagerTest
+Tests run: 36, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.082 sec
+Running org.robolectric.shadows.ShadowHandlerTest
+Tests run: 150, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.334 sec
+Running org.robolectric.internal.bytecode.RealApisTest
+abc = abc
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 sec
+Running org.robolectric.shadows.ShadowDateFormatTest
+Tests run: 25, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.04 sec
+Running org.robolectric.shadows.ShadowContentProviderClientTest
+Tests run: 23, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.102 sec
+Running org.robolectric.res.ResourceExtractorTest
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.058 sec
+Running org.robolectric.shadows.ShadowActivityGroupTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.022 sec
+Running org.robolectric.res.OverlayResourceIndexTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0 sec
+Running org.robolectric.fakes.RenderTest
+android.widget.LinearLayout [0, 50, 185, 67]
+	android.widget.TextView [0, 0, 63, 17]
+	android.widget.TextView [63, 0, 127, 17]
+	android.widget.TextView [127, 0, 185, 17]
+Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 3.385 sec <<< FAILURE!
+XMLLayoutsShouldbeProperlyInflated(org.robolectric.fakes.RenderTest)  Time elapsed: 3.385 sec  <<< ERROR!
+java.lang.NullPointerException: null
+	at org.robolectric.internal.ParallelUniverse.tearDownApplication(ParallelUniverse.java:300)
+	at org.robolectric.RobolectricTestRunner$2.evaluate(RobolectricTestRunner.java:260)
+	at org.robolectric.RobolectricTestRunner.runChild(RobolectricTestRunner.java:190)
+	at org.robolectric.RobolectricTestRunner.runChild(RobolectricTestRunner.java:54)
+	at org.junit.runners.ParentRunner$3.run(ParentRunner.java:193)
+	at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:52)
+	at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:191)
+	at org.junit.runners.ParentRunner.access$000(ParentRunner.java:42)
+	at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:184)
+	at org.robolectric.RobolectricTestRunner$1.evaluate(RobolectricTestRunner.java:152)
+	at org.junit.runners.ParentRunner.run(ParentRunner.java:236)
+	at org.apache.maven.surefire.junit4.JUnit4Provider.execute(JUnit4Provider.java:264)
+	at org.apache.maven.surefire.junit4.JUnit4Provider.executeTestSet(JUnit4Provider.java:153)
+	at org.apache.maven.surefire.junit4.JUnit4Provider.invoke(JUnit4Provider.java:124)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:483)
+	at org.apache.maven.surefire.util.ReflectionUtils.invokeMethodWithArray2(ReflectionUtils.java:208)
+	at org.apache.maven.surefire.booter.ProviderFactory$ProviderProxy.invoke(ProviderFactory.java:158)
+	at org.apache.maven.surefire.booter.ProviderFactory.invokeProvider(ProviderFactory.java:86)
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:153)
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:95)
+
+Running org.robolectric.res.AttributeTest
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 sec
+Running org.robolectric.shadows.ShadowMessageQueueTest
+Tests run: 65, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.11 sec
+Running org.robolectric.internal.bytecode.InstrumentationConfigurationTest
+Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.006 sec
+Running org.robolectric.internal.bytecode.ShadowingTest
+Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.052 sec
+Running org.robolectric.internal.bytecode.CustomRobolectricTestRunnerTest
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.528 sec
+Running org.robolectric.shadows.ShadowPathTest
+Tests run: 25, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.154 sec
+Running org.robolectric.shadows.ShadowTabActivityTest
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.931 sec
+Running org.robolectric.shadows.ShadowMarginLayoutParamsTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.018 sec
+Running org.robolectric.shadows.ShadowPreferenceManagerTest
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.034 sec
+Running org.robolectric.internal.ClassNameResolverTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0 sec
+Running org.robolectric.shadows.ShadowHttpResponseCacheTest
+Tests run: 20, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.042 sec
+Running org.robolectric.shadows.ShadowICUTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 sec
+Running org.robolectric.util.concurrent.RoboExecutorServiceTest
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.008 sec
+Running org.robolectric.shadows.ShadowExpandableListViewTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.343 sec
+Running org.robolectric.shadows.ShadowLogTest
+Tests run: 120, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.559 sec
+Running org.robolectric.shadows.ShadowDebugTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.023 sec
+Running org.robolectric.shadows.ShadowLocaleDataTest
+Tests run: 16, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.051 sec
+Running org.robolectric.shadows.ShadowAnimationSetTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 5, Time elapsed: 0.001 sec
+Running org.robolectric.json.JSONArrayTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 sec
+Running org.robolectric.shadows.ShadowScrollerTest
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.03 sec
+Running org.robolectric.shadows.ShadowImageViewTest
+Tests run: 45, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.178 sec
+Running org.robolectric.res.PreferenceIntegrationTest
+Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.966 sec
+Running org.robolectric.shadows.ShadowAccessibilityManagerTest
+Tests run: 25, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.125 sec
+Running org.robolectric.shadows.ShadowContentProviderOperationTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.065 sec
+Running org.robolectric.shadows.ShadowProcessTest
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.015 sec
+Running org.robolectric.shadows.ShadowLruTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.015 sec
+Running org.robolectric.shadows.ShadowStrictModeTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.065 sec
+Running org.robolectric.shadows.ShadowTimeTest
+Tests run: 28, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.014 sec
+Running org.robolectric.shadows.ShadowEnvironmentTest
+Tests run: 30, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.072 sec
+Running org.robolectric.shadows.ShadowMatrixCursorTest
+Tests run: 75, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.149 sec
+Running org.robolectric.shadows.ShadowObjectAnimatorTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.028 sec
+Running org.robolectric.ParallelUniverseTest
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.047 sec
+Running org.robolectric.shadows.ShadowStateListDrawableTest
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.018 sec
+Running org.robolectric.shadows.ShadowDatabaseUtilsTest
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.053 sec
+Running org.robolectric.shadows.ShadowTextViewTest
+Tests run: 215, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.788 sec
+Running org.robolectric.ParameterizedRobolectricTestRunnerNormalTest
+Tests run: 16, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.02 sec
+Running org.robolectric.shadows.ShadowMimeTypeMapTest
+Tests run: 40, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.065 sec
+Running org.robolectric.shadows.ShadowAppWidgetHostViewTest
+Tests run: 20, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.113 sec
+Running org.robolectric.shadows.ShadowAudioEffectTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.032 sec
+Running org.robolectric.res.DrawableResourceLoaderNoRunnerTest
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.023 sec
+Running org.robolectric.shadows.SQLiteStatementTest
+Tests run: 35, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 13.796 sec
+Running org.robolectric.shadows.ShadowClipboardManagerTest
+Tests run: 60, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.134 sec
+Running org.robolectric.annotation.OverrideSdkVersionTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 sec
+Running org.robolectric.shadows.ShadowViewTest
+Accessibility Issue: View is missing speakable text needed for a screen reader
+Accessibility Issue: View is missing speakable text needed for a screen reader
+Accessibility Issue: View is missing speakable text needed for a screen reader
+Accessibility Issue: View is missing speakable text needed for a screen reader
+Accessibility Issue: View is missing speakable text needed for a screen reader
+Tests run: 295, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.259 sec
+Running org.robolectric.util.ServiceControllerTest
+Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.377 sec
+Running org.robolectric.res.ResBundleTest
+Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0 sec
+Running org.robolectric.shadows.ShadowCanvasTest
+Tests run: 100, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.156 sec
+Running org.robolectric.shadows.ShadowLayoutParamsTest
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.031 sec
+Running org.robolectric.ParameterizedRobolectricTestRunnerUriTest
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.006 sec
+Running org.robolectric.shadows.ShadowViewConfigurationTest
+Tests run: 15, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.022 sec
+Running org.robolectric.shadows.ShadowListPopupWindowTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.103 sec
+Running org.robolectric.shadows.ShadowLayoutInflaterTest
+Tests run: 225, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 10.301 sec
+Running org.robolectric.shadows.ShadowScanResultTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.017 sec
+Running org.robolectric.shadows.ShadowGradientDrawableTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.027 sec
+Running org.robolectric.shadows.ShadowGestureDetectorTest
+Tests run: 30, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.078 sec
+Running org.robolectric.shadows.ShadowArrayAdapterTest
+Tests run: 30, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.063 sec
+Running org.robolectric.shadows.ShadowCountDownTimerTest
+Tests run: 25, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.039 sec
+Running org.robolectric.shadows.ShadowTabSpecTest
+Tests run: 30, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.093 sec
+Running org.robolectric.fakes.RoboCursorTest
+Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.019 sec
+Running org.robolectric.internal.bytecode.InstrumentingClassLoaderTest
+Tests run: 50, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.073 sec
+Running org.robolectric.shadows.ShadowRatingBarTest
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.075 sec
+Running org.robolectric.fakes.RoboMenuTest
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.008 sec
+Running org.robolectric.shadows.ShadowKeyguardManagerTest
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.036 sec
+Running org.robolectric.shadows.ShadowToastTest
+Tests run: 45, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.091 sec
+Running org.robolectric.shadows.ShadowNfcAdapterTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.858 sec
+Running org.robolectric.shadows.ShadowThemeTest
+Tests run: 65, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.483 sec
+Running org.robolectric.MultiApiRobolectricTestRunnerUriTest
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.012 sec
+Running org.robolectric.shadows.ShadowVideoViewTest
+Tests run: 65, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.793 sec
+Running org.robolectric.shadows.ShadowInputEventTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.425 sec
+Running org.robolectric.fakes.RoboVibratorTest
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 sec
+Running org.robolectric.shadows.ShadowPreferenceActivityTest
+Tests run: 25, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.519 sec
+Running org.robolectric.shadows.ShadowDatePickerDialogTest
+Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.802 sec
+Running org.robolectric.shadows.ShadowValueAnimatorTest
+Tests run: 15, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.039 sec
+Running org.robolectric.shadows.ShadowFrameLayoutTest
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.024 sec
+Running org.robolectric.shadows.ShadowWifiInfoTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.075 sec
+Running org.robolectric.shadows.ShadowEditTextTest
+Tests run: 35, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.953 sec
+Running org.robolectric.shadows.ShadowTrafficStatsTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.025 sec
+Running org.robolectric.shadows.ShadowAccessibilityEventTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.004 sec
+Running org.robolectric.shadows.ShadowChoreographerTest
+Tests run: 15, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.783 sec
+Running org.robolectric.shadows.ShadowEditTextPreferenceTest
+Tests run: 20, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.107 sec
+Running org.robolectric.shadows.ShadowAbsoluteLayoutTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.016 sec
+Running org.robolectric.shadows.ShadowMessengerTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.015 sec
+Running org.robolectric.shadows.ShadowLayoutAnimationControllerTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.016 sec
+Running org.robolectric.shadows.ShadowBundleTest
+Tests run: 110, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.967 sec
+Running org.robolectric.internal.bytecode.ShadowMapTest
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 sec
+Running org.robolectric.res.RawResourceLoaderTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 sec
+Running org.robolectric.shadows.ShadowWallpaperManagerTest
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.026 sec
+Running org.robolectric.shadows.ShadowContentUrisTest
+Tests run: 25, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.048 sec
+Running org.robolectric.shadows.ShadowIntentFilterTest
+Tests run: 105, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.15 sec
+Running org.robolectric.shadows.ShadowAppWidgetManagerTest
+Tests run: 60, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.863 sec
+Running org.robolectric.shadows.ShadowActivityTest
+Tests run: 55, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.995 sec
+Running org.robolectric.shadows.ShadowNotificationManagerTest
+Tests run: 40, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.079 sec
+Running org.robolectric.res.ResourceLoaderTest
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.02 sec
+Running org.robolectric.shadows.ShadowStatFsTest
+Tests run: 23, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.033 sec
+Running org.robolectric.shadows.ShadowAbstractCursorTest
+Tests run: 95, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.107 sec
+Running org.robolectric.shadows.ShadowShapeDrawableTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.015 sec
+Running org.robolectric.shadows.SQLiteOpenHelperTest
+Tests run: 75, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 17.075 sec
+Running org.robolectric.shadows.ShadowPaintTest
+Tests run: 20, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.032 sec
+Running org.robolectric.shadows.ShadowAlertDialogTest
+Tests run: 95, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 9.839 sec
+Running org.robolectric.util.ActivityControllerTest
+Tests run: 24, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.541 sec
+Running org.robolectric.shadows.ShadowBluetoothAdapterTest
+Tests run: 31, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.045 sec
+Running org.robolectric.shadows.ShadowIntentFilterAuthorityEntryTest
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.015 sec
+Running org.robolectric.shadows.ShadowResolveInfoTest
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.015 sec
+Running org.robolectric.shadows.ShadowDateIntervalFormatTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.153 sec
+Running org.robolectric.shadows.ShadowParcelTest
+Tests run: 250, Failures: 0, Errors: 0, Skipped: 10, Time elapsed: 1.959 sec
+Running org.robolectric.shadows.ShadowAccessibilityServiceTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 sec
+Running org.robolectric.shadows.ShadowPopupMenuTest
+Tests run: 30, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.924 sec
+Running org.robolectric.shadows.ShadowLayerDrawableTest
+Tests run: 25, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.042 sec
+Running org.robolectric.shadows.ShadowJsResultTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.012 sec
+Running org.robolectric.shadows.ShadowJsPromptResultTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.011 sec
+Running org.robolectric.QualifiersTest
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.004 sec
+Running org.robolectric.shadows.ShadowSyncResultTest
+Tests run: 25, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.793 sec
+Running org.robolectric.shadows.ShadowSpannableStringBuilderTest
+Tests run: 55, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.079 sec
+Running org.robolectric.shadows.ShadowAnimationUtilsTest
+Tests run: 15, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.322 sec
+Running org.robolectric.res.builder.DefaultPackageManagerIntentComparatorTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.026 sec
+Running org.robolectric.shadows.ShadowSettingsTest
+Tests run: 41, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.073 sec
+Running org.robolectric.DefaultTestLifecycleTest
+Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.023 sec
+Running org.robolectric.shadows.ShadowSeekBarTest
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.844 sec
+Running org.robolectric.shadows.ShadowMotionEventTest
+Tests run: 35, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.048 sec
+Running org.robolectric.shadows.ShadowViewTreeObserverTest
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.016 sec
+Running org.robolectric.shadows.ShadowTabHostTest
+Tests run: 55, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.699 sec
+Running org.robolectric.ParameterizedRobolectricTestRunnerConfigTest
+Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.014 sec
+Running org.robolectric.shadows.ShadowAbsSeekBarTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.034 sec
+Running org.robolectric.shadows.ShadowDateUtilsTest
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.812 sec
+Running org.robolectric.shadows.ShadowCameraParametersTest
+Tests run: 80, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.169 sec
+Running org.robolectric.shadows.ShadowMediaStoreTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.03 sec
+Running org.robolectric.shadows.ShadowParcelFileDescriptorTest
+Tests run: 30, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.797 sec
+Running org.robolectric.internal.bytecode.MethodSignatureTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0 sec
+Running org.robolectric.util.SQLiteLibraryLoaderTest
+Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.074 sec
+Running org.robolectric.shadows.ShadowPasswordTransformationMethodTest
+Tests run: 25, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.035 sec
+Running org.robolectric.shadows.ShadowHtmlTest
+Tests run: 20, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.954 sec
+Running org.robolectric.util.FragmentTestUtilTest
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.888 sec
+Running org.robolectric.shadows.ShadowScaleGestureDetectorTest
+Tests run: 25, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.052 sec
+Running org.robolectric.shadows.ShadowStaticLayoutTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.009 sec
+Running org.robolectric.internal.bytecode.AndroidTranslatorClassInstrumentedTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.011 sec
+Running org.robolectric.shadows.ShadowCursorAdapterTest
+Tests run: 45, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.279 sec
+Running org.robolectric.shadows.ShadowSimpleCursorAdapterTest
+Tests run: 15, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.101 sec
+Running org.robolectric.shadows.ShadowContentProviderTest
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.987 sec
+Running org.robolectric.shadows.ShadowSurfaceViewTest
+Tests run: 15, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.294 sec
+Running org.robolectric.RobolectricGradleTestRunnerTest
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.012 sec
+Running org.robolectric.shadows.ShadowNonAppLibraryTest
+Tests run: 20, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.031 sec
+Running org.robolectric.shadows.ShadowRemoteViewsTest
+Tests run: 25, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.941 sec
+Running org.robolectric.shadows.ShadowWindowTest
+Tests run: 22, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.987 sec
+Running org.robolectric.shadows.ShadowViewAnimatorTest
+Tests run: 30, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.827 sec
+Running org.robolectric.res.FileFsFileTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 sec
+Running org.robolectric.shadows.ShadowContentObserverTest
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.018 sec
+Running org.robolectric.shadows.ShadowSslErrorHandlerTest
+Tests run: 15, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.025 sec
+Running org.robolectric.shadows.ShadowListPreferenceTest
+Tests run: 25, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.769 sec
+Running org.robolectric.shadows.ShadowDownloadManagerTest
+Tests run: 80, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.143 sec
+Running org.robolectric.shadows.ShadowNumberPickerTest
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.022 sec
+Running org.robolectric.shadows.ShadowNotificationTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.009 sec
+
+Results :
+
+Tests in error: 
+   » NullPointer
+
+Tests run: 10531, Failures: 0, Errors: 1, Skipped: 20
+
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary:
+[INFO] 
+[INFO] robolectric-parent ................................ SUCCESS [  0.194 s]
+[INFO] robolectric-annotations ........................... SUCCESS [  0.540 s]
+[INFO] robolectric-utils ................................. SUCCESS [  0.803 s]
+[INFO] robolectric-resources ............................. SUCCESS [  0.308 s]
+[INFO] robolectric-shadows ............................... SUCCESS [  0.002 s]
+[INFO] robolectric-processor ............................. SUCCESS [  2.108 s]
+[INFO] shadows-core ...................................... SUCCESS [  5.337 s]
+[INFO] robolectric ....................................... FAILURE [04:29 min]
+[INFO] shadows-maps ...................................... SKIPPED
+[INFO] shadows-multidex .................................. SKIPPED
+[INFO] shadows-support-v4 ................................ SKIPPED
+[INFO] shadows-httpclient ................................ SKIPPED
+[INFO] shadows-play-services ............................. SKIPPED
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 04:38 min
+[INFO] Finished at: 2015-08-05T15:52:16-08:00
+[INFO] Final Memory: 73M/785M
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:2.13:test (default-test) on project robolectric: There are test failures.
+[ERROR] 
+[ERROR] Please refer to /usr/local/google/home/yuzhong/workspace/robolectricNew/robolectric/robolectric/target/surefire-reports for the individual test results.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
+[ERROR] 
+[ERROR] After correcting the problems, you can resume the build with the command
+[ERROR]   mvn <goals> -rf :robolectric

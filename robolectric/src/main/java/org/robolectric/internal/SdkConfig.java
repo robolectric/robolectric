@@ -56,7 +56,7 @@ public class SdkConfig {
   }
 
   public boolean isRendering() {
-    return this.isRendering;
+    return (this.isRendering && this.apiLevel >= 21);
   }
 
   public DependencyJar getSystemResourceDependency() {
@@ -64,7 +64,7 @@ public class SdkConfig {
   }
 
   public DependencyJar[] getSdkClasspathDependencies() {
-    if (isRendering) {
+    if (this.isRendering()) {
       artifactVersionString = artifactVersionString + RENDER_SUFFIX;
     }
 

@@ -28,6 +28,9 @@ public class ShadowProviderGenerator extends Generator {
   private final Elements elements;
   private final RobolectricModel model;
 
+  private static final String EXCLUDED_CLASS_NAME = "com.android.layoutlib.bridge.android.BridgeContext";
+  private static final String EXCLUDED_CLASS = "BridgeContext";
+
   public ShadowProviderGenerator(RobolectricModel model, ProcessingEnvironment environment) {
     this.messager = environment.getMessager();
     this.elements = environment.getElementUtils();
@@ -51,7 +54,9 @@ public class ShadowProviderGenerator extends Generator {
       writer = new PrintWriter(jfo.openWriter());
       writer.print("package " + shadowPackage + ";\n");
       for (String name : model.getImports()) {
-        writer.println("import " + name + ';');
+        if (!name.equals(EXCLUDED_CLASS_NAME)) {
+          writer.println("import " + name + ';');
+        }
       }
       writer.println();
       writer.println("/**");
@@ -109,10 +114,12 @@ public class ShadowProviderGenerator extends Generator {
         }
         final String actual = model.getReferentFor(actualType) + paramUseStr;
         final String shadow = model.getReferentFor(entry.getKey()) + paramUseStr;
-        writer.println("  public static " + paramDefStr + shadow + " shadowOf(" + actual + " actual) {");
-        writer.println("    return (" + shadow + ") ShadowExtractor.extract(actual);");
-        writer.println("  }");
-        writer.println();
+        if (!actual.equals(EXCLUDED_CLASS)) {
+          writer.println("  public static " + paramDefStr + shadow + " shadowOf(" + actual + " actual) {");
+          writer.println("    return (" + shadow + ") ShadowExtractor.extract(actual);");
+          writer.println("  }");
+          writer.println();
+        }
       }
 
       writer.println("  public void reset() {");

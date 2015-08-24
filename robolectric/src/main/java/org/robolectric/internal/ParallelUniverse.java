@@ -1,5 +1,6 @@
 package org.robolectric.internal;
 
+import android.R.integer;
 import android.app.Application;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
@@ -176,7 +177,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
       if (sdkConfig.isRendering()) {
         final String SDK = System.getenv("ANDROID_HOME");
-        File f = new File(SDK + "/platforms/android-21");
+        File f = new File(SDK + "/platforms/android-" + sdkConfig.getApiLevel());
         RenderServiceFactory factory = RenderServiceFactory.create(f);
         ResourceRepository projectRes =
             new ResourceRepository(new FolderWrapper(PROJECT + "/res"), false/*isFramework*/) {
@@ -192,8 +193,31 @@ public class ParallelUniverse implements ParallelUniverseInterface {
                 ScreenOrientation.PORTRAIT, Density.MEDIUM, TouchScreen.FINGER, KeyboardState.SOFT,
                 Keyboard.QWERTY, NavigationState.EXPOSED, Navigation.NONAV, 21/*api level*/);
         // create the resource resolver once for the given config.
+        String themeKey = null;
+        boolean isProjectTheme;
+        if (appManifest.getThemeRef() != null && appManifest.getThemeRef().length() > 1) {
+          String themeRef = appManifest.getThemeRef().substring(1); //Remove '@'
+          if (themeRef.contains("android")) {
+            // Framework theme
+            isProjectTheme = false;
+          } else {
+            // Project theme
+            isProjectTheme = true;
+          }
+          int indexOfSlash = themeRef.indexOf('/');
+          if (indexOfSlash >= 0) {
+            themeKey = themeRef.substring(indexOfSlash + 1);
+          } else {
+            themeKey = "Theme";
+            isProjectTheme = false;
+          }
+        } else {
+          isProjectTheme = false;
+          themeKey = "Theme";
+        }
+
         ResourceResolver resources =
-            factory.createResourceResolver(folderConfig, projectRes, "Theme", false/*isProjectTheme*/);
+            factory.createResourceResolver(folderConfig, projectRes, themeKey, isProjectTheme);
         // create the render service
         RenderService renderService = factory.createService(resources, folderConfig, new ProjectCallback());
         SessionParams params;

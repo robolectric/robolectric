@@ -6,6 +6,9 @@ import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
 import android.os.ParcelFileDescriptor;
 import android.util.TypedValue;
+#if ($api >= 21)
+import com.android.tools.layoutlib.create.OverrideMethod;
+#end
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -332,12 +335,20 @@ public final class ShadowAssetManager {
       return style.hashCode();
     }
   }
-#if ($api < 21)
+
   @HiddenApi @Implementation
   public static void copyTheme($ptrClass dest, long source) {
-    throw new UnsupportedOperationException();
-  }
+#if ($api >= 21)
+    try {
+      Class cls = Class.forName(ShadowBridgeContext.CLASS_NAME);
+      OverrideMethod.invokeV("android.content.res.AssetManager#copyTheme(JJ)V", true, null);
+    } catch (ClassNotFoundException e) {
+      throw new UnsupportedOperationException();
+    }
+#else
+      throw new UnsupportedOperationException();
 #end
+  }
   /////////////////////////
 
   synchronized public void setTheme($ptrClass internalThemeId, Resources.Theme theme) {
