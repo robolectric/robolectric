@@ -90,6 +90,18 @@ public class AndroidManifestTest {
     assertThat(config.getBroadcastReceivers().get(7).getActions()).contains("org.robolectric.ACTION_RECEIVER_PERMISSION_PACKAGE");
   }
 
+  @Test
+  public void parseManifest_shouldReadServices() throws Exception {
+    AndroidManifest config = newConfig("TestAndroidManifestWithServices.xml");
+    assertThat(config.getServices()).hasSize(2);
+
+    assertThat(config.getServices().get(0).getClassName()).isEqualTo("com.foo.Service");
+    assertThat(config.getServices().get(0).getActions()).contains("org.robolectric.ACTION_DIFFERENT_PACKAGE");
+
+    assertThat(config.getServices().get(1).getClassName()).isEqualTo("com.bar.ServiceWithoutIntentFilter");
+    assertThat(config.getServices().get(1).getActions()).isEmpty();
+  }
+
   @Test(expected = IllegalAccessError.class)
   public void testManifestWithNoApplicationElement() throws Exception {
     AndroidManifest config = newConfig("TestAndroidManifestNoApplicationElement.xml");
