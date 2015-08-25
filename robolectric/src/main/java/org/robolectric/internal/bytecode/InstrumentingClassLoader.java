@@ -445,7 +445,8 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
               || internalClassName.replace('/', '.').startsWith(ImageView.class.getName())
               || internalClassName.replace('/', '.').startsWith(TextPaint.class.getName())
               || internalClassName.replace('/', '.').startsWith(VMRuntime.class.getName())
-              || internalClassName.replace('/', '.').startsWith(Theme.class.getName())) {
+              || internalClassName.replace('/', '.').startsWith(Theme.class.getName())
+              ) {
             return;
           }
         }

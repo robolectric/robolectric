@@ -62,6 +62,8 @@ import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 public class ParallelUniverse implements ParallelUniverseInterface {
   private static final String DEFAULT_PACKAGE_NAME = "org.robolectric.default";
+  private static RenderService renderService;
+  private static ResourceResolver renderResources;
   private final static String PROJECT = "./src/test/resources/";
   private final RobolectricTestRunner robolectricTestRunner;
   private final ShadowsAdapter shadowsAdapter = Robolectric.getShadowsAdapter();
@@ -123,6 +125,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     systemResources.updateConfiguration(configuration, systemResources.getDisplayMetrics());
     RuntimeEnvironment.setQualifiers(qualifiers);
     RuntimeEnvironment.setApiLevel(sdkConfig.getApiLevel());
+    RuntimeEnvironment.setRendering(sdkConfig.isRendering());
 
     Class<?> contextImplClass = ReflectionHelpers.loadClass(getClass().getClassLoader(), shadowsAdapter.getShadowContextImplClassName());
 
@@ -180,8 +183,12 @@ public class ParallelUniverse implements ParallelUniverseInterface {
         final String SDK = System.getenv("ANDROID_HOME");
         File f = new File(SDK + "/platforms/android-" + sdkConfig.getApiLevel());
         RenderServiceFactory factory = RenderServiceFactory.create(f);
+        String appResDir = "";
+        if (appManifest != null) {
+          appResDir = appManifest.getResDirectory().getPath();
+        }
         ResourceRepository projectRes =
-            new ResourceRepository(new FolderWrapper(PROJECT + "/res"), false/*isFramework*/) {
+            new ResourceRepository(new FolderWrapper(appResDir), false/*isFramework*/) {
               @Override
               protected ResourceItem createResourceItem(String name) {
                 return new ResourceItem(name);
@@ -217,45 +224,51 @@ public class ParallelUniverse implements ParallelUniverseInterface {
           themeKey = "Theme";
         }
 
-        ResourceResolver resources =
-            factory.createResourceResolver(folderConfig, projectRes, themeKey, isProjectTheme);
         // create the render service
-        RenderService renderService = factory.createService(resources, folderConfig, new ProjectCallback());
-        SessionParams params;
-
-        try {
-          params = renderService.getParamsFromFile("activity_main");
-          HardwareConfig hardwareConfig = params.getHardwareConfig();
-
-          DisplayMetrics metrics = new DisplayMetrics();
-          metrics.densityDpi = (metrics.noncompatDensityDpi = hardwareConfig.getDensity().getDpiValue());
-
-          metrics.density = (metrics.noncompatDensity = metrics.densityDpi / 160.0F);
-
-          metrics.scaledDensity = (metrics.noncompatScaledDensity = metrics.density);
-
-          metrics.widthPixels = (metrics.noncompatWidthPixels = hardwareConfig.getScreenWidth());
-          metrics.heightPixels = (metrics.noncompatHeightPixels = hardwareConfig.getScreenHeight());
-          metrics.xdpi = (metrics.noncompatXdpi = hardwareConfig.getXdpi());
-          metrics.ydpi = (metrics.noncompatYdpi = hardwareConfig.getYdpi());
-          BridgeContext bridgeContext = new BridgeContext(params.getProjectKey(), metrics, resources, params.getProjectCallback(), getConfiguration(params), params.getTargetSdkVersion(), params.isRtlSupported());
-          bridgeContext.initResources();
-          ReflectionHelpers.setStaticField(RenderAction.class, "sCurrentContext", bridgeContext);
-        } catch (FileNotFoundException e) {
-          // TODO(yuzhong): Auto-generated catch block
-          e.printStackTrace();
-        } catch (XmlPullParserException e) {
-          // TODO(yuzhong): Auto-generated catch block
-          e.printStackTrace();
+        if (renderService == null) {
+          renderResources = factory.createResourceResolver(folderConfig, projectRes, themeKey, isProjectTheme);
+          renderService = factory.createService(renderResources, folderConfig, new ProjectCallback());
         }
 
+        try {
+          initBridgeResources("activity_main");
+        } catch (FileNotFoundException e) {
+          e.printStackTrace();
+        } catch (XmlPullParserException e) {
+          e.printStackTrace();
+        }
       }
       RuntimeEnvironment.application = application;
       application.onCreate();
+    } else if (sdkConfig.isRendering() && appManifest == null) {
+      throw new RuntimeException("Please provide a manifest for rendering");
     }
   }
 
-  private Configuration getConfiguration(SessionParams params)
+  public static void initBridgeResources(String layoutName) throws FileNotFoundException, XmlPullParserException {
+    SessionParams params;
+    params = renderService.getParamsFromFile(layoutName);
+    HardwareConfig hardwareConfig = params.getHardwareConfig();
+
+    DisplayMetrics metrics = new DisplayMetrics();
+    metrics.densityDpi = (metrics.noncompatDensityDpi = hardwareConfig.getDensity().getDpiValue());
+
+    metrics.density = (metrics.noncompatDensity = metrics.densityDpi / 160.0F);
+
+    metrics.scaledDensity = (metrics.noncompatScaledDensity = metrics.density);
+
+    metrics.widthPixels = (metrics.noncompatWidthPixels = hardwareConfig.getScreenWidth());
+    metrics.heightPixels = (metrics.noncompatHeightPixels = hardwareConfig.getScreenHeight());
+    metrics.xdpi = (metrics.noncompatXdpi = hardwareConfig.getXdpi());
+    metrics.ydpi = (metrics.noncompatYdpi = hardwareConfig.getYdpi());
+    BridgeContext bridgeContext =
+        new BridgeContext(params.getProjectKey(), metrics, renderResources, params.getProjectCallback(),
+            getConfiguration(params), params.getTargetSdkVersion(), params.isRtlSupported());
+    bridgeContext.initResources();
+    ReflectionHelpers.setStaticField(RenderAction.class, "sCurrentContext", bridgeContext);
+  }
+
+  private static Configuration getConfiguration(SessionParams params)
   {
     Configuration config = new Configuration();
 

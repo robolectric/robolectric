@@ -12,6 +12,7 @@ public class RuntimeEnvironment {
     private static Object activityThread;
     private static RobolectricPackageManager packageManager;
     private static int apiLevel;
+    private static boolean isRendering;
 
     public static Object getActivityThread() {
         return activityThread;
@@ -50,5 +51,13 @@ public class RuntimeEnvironment {
 
     public static int getApiLevel() {
         return apiLevel;
+    }
+
+    public static boolean isRendering() {
+      return isRendering;
+    }
+
+    public static void setRendering(boolean rendering) {
+      isRendering = rendering;
     }
 }

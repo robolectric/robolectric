@@ -339,10 +339,14 @@ public final class ShadowAssetManager {
   @HiddenApi @Implementation
   public static void copyTheme($ptrClass dest, long source) {
 #if ($api >= 21)
-    try {
-      Class cls = Class.forName(ShadowBridgeContext.CLASS_NAME);
-      OverrideMethod.invokeV("android.content.res.AssetManager#copyTheme(JJ)V", true, null);
-    } catch (ClassNotFoundException e) {
+    if (RuntimeEnvironment.isRendering()) {
+      try {
+        Class cls = Class.forName(ShadowBridgeContext.CLASS_NAME);
+        OverrideMethod.invokeV("android.content.res.AssetManager#copyTheme(JJ)V", true, null);
+      } catch (ClassNotFoundException e) {
+        throw new UnsupportedOperationException();
+      }
+    } else {
       throw new UnsupportedOperationException();
     }
 #else
