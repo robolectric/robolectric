@@ -61,6 +61,7 @@ public class AndroidManifest {
   private int applicationFlags;
   private final List<ContentProviderData> providers = new ArrayList<>();
   private final List<BroadcastReceiverData> receivers = new ArrayList<>();
+  private final List<ServiceData> services = new ArrayList<>();
   private final Map<String, ActivityData> activityDatas = new LinkedHashMap<>();
   private final List<String> usedPermissions = new ArrayList<>();
   private MetaData applicationMetaData;
@@ -153,6 +154,7 @@ public class AndroidManifest {
 
       parseApplicationFlags(manifestDocument);
       parseReceivers(manifestDocument);
+      parseServices(manifestDocument);
       parseActivities(manifestDocument);
       parseApplicationMetaData(manifestDocument);
       parseContentProviders(manifestDocument);
@@ -211,6 +213,35 @@ public class AndroidManifest {
         }
       }
       receivers.add(receiver);
+    }
+  }
+
+  private void parseServices(final Document manifestDocument) {
+    Node application = manifestDocument.getElementsByTagName("application").item(0);
+    if (application == null) return;
+
+    for (Node serviceNode : getChildrenTags(application, "service")) {
+      Node namedItem = serviceNode.getAttributes().getNamedItem("android:name");
+      if (namedItem == null) continue;
+
+      String serviceName = resolveClassRef(namedItem.getTextContent());
+      MetaData metaData = new MetaData(getChildrenTags(serviceNode, "meta-data"));
+
+      ServiceData service = new ServiceData(serviceName, metaData);
+      List<Node> intentFilters = getChildrenTags(serviceNode, "intent-filter");
+      for (Node intentFilterNode : intentFilters) {
+        for (Node actionNode : getChildrenTags(intentFilterNode, "action")) {
+          Node nameNode = actionNode.getAttributes().getNamedItem("android:name");
+          if (nameNode != null) {
+            service.addAction(nameNode.getTextContent());
+          }
+        }
+        Node permissionItem = serviceNode.getAttributes().getNamedItem("android:permission");
+        if (permissionItem != null) {
+          service.setPermission(permissionItem.getTextContent());
+        }
+      }
+      services.add(service);
     }
   }
 
@@ -344,6 +375,9 @@ public class AndroidManifest {
     }
     for (BroadcastReceiverData receiver : receivers) {
       receiver.getMetaData().init(resLoader, packageName);
+    }
+    for (ServiceData service : services) {
+      service.getMetaData().init(resLoader, packageName);
     }
   }
 
@@ -579,6 +613,11 @@ public class AndroidManifest {
   public List<BroadcastReceiverData> getBroadcastReceivers() {
     parseAndroidManifest();
     return receivers;
+  }
+
+  public List<ServiceData> getServices() {
+    parseAndroidManifest();
+    return services;
   }
 
   private static String getTagAttributeText(final Document doc, final String tag, final String attribute) {
