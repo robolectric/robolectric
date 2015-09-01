@@ -9,6 +9,10 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
+import org.robolectric.annotation.Config;
+import org.robolectric.internal.DeepCloner;
+import org.robolectric.internal.SdkEnvironment;
+import org.robolectric.manifest.AndroidManifest;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -58,7 +62,7 @@ public final class ParameterizedRobolectricTestRunner extends Suite {
   private static class TestClassRunnerForParameters extends RobolectricTestRunner {
 
     private final String name;
-    private final Object[] parameters;
+    private Object[] parameters;
 
     TestClassRunnerForParameters(Class<?> type, Object[] parameters, String name) throws InitializationError {
       super(type);
@@ -95,6 +99,16 @@ public final class ParameterizedRobolectricTestRunner extends Suite {
     @Override
     protected void validateConstructor(List<Throwable> errors) {
       validateOnlyOneConstructor(errors);
+    }
+
+    @Override
+    Statement methodBlock(FrameworkMethod method, Config config, AndroidManifest appManifest, SdkEnvironment sdkEnvironment) {
+      configureShadows(sdkEnvironment, config);
+
+      DeepCloner deepCloner = new DeepCloner(sdkEnvironment.getRobolectricClassLoader());
+      parameters = deepCloner.clone(parameters);
+
+      return super.methodBlock(method, config, appManifest, sdkEnvironment);
     }
 
     @Override

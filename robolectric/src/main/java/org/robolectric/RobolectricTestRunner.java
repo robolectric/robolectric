@@ -206,7 +206,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
   private ParallelUniverseInterface parallelUniverseInterface;
 
-  private Statement methodBlock(final FrameworkMethod method, final Config config, final AndroidManifest appManifest, final SdkEnvironment sdkEnvironment) {
+  Statement methodBlock(final FrameworkMethod method, final Config config, final AndroidManifest appManifest, final SdkEnvironment sdkEnvironment) {
     return new Statement() {
       @Override
       public void evaluate() throws Throwable {
