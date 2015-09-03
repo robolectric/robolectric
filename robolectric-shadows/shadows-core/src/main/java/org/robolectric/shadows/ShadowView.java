@@ -518,7 +518,10 @@ public class ShadowView {
       // standard situations.
       if ((animation.getStartTime() == startTime && animation.getStartOffset() == startOffset) &&
           animation.getTransformation(startTime == Animation.START_ON_FIRST_FRAME ?
-              SystemClock.uptimeMillis() : (startTime + startOffset + elapsedTime), new Transformation())) {
+              SystemClock.uptimeMillis() : (startTime + startOffset + elapsedTime), new Transformation()) &&
+              // We can't handle infinitely repeating animations in the current scheduling model,
+              // so abort after one iteration.
+              !(animation.getRepeatCount() == Animation.INFINITE && elapsedTime >= animation.getDuration())) {
         // Update startTime if it had a value of Animation.START_ON_FIRST_FRAME
         startTime = animation.getStartTime();
         elapsedTime += ShadowChoreographer.getFrameInterval() / TimeUtils.NANOS_PER_MS;
