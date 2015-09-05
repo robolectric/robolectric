@@ -49,7 +49,6 @@ import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
-@Config(rendering=false)
 public class ShadowTextViewTest {
   private static final String INITIAL_TEXT = "initial text";
   private static final String NEW_TEXT = "new text";
