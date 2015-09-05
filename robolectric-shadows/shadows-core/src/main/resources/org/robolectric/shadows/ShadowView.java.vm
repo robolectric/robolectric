@@ -1,6 +1,10 @@
 package org.robolectric.shadows;
 
 import android.content.Context;
+#if ($api >= 21)
+import android.content.res.BridgeTypedArray;
+#end
+import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Point;
@@ -17,14 +21,29 @@ import android.view.ViewParent;
 import android.view.animation.Animation;
 import android.view.animation.Transformation;
 
+#if ($api >= 21)
+import com.android.ide.common.rendering.api.ResourceValue;
+import com.android.layoutlib.bridge.android.BridgeXmlBlockParser;
+#end
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.internal.ShadowExtractor;
+import org.robolectric.res.Fs;
+import org.robolectric.res.FsFile;
+import org.robolectric.res.MergedResourceIndex;
+import org.robolectric.res.ResName;
+import org.robolectric.res.ResourceExtractor;
+import org.robolectric.res.ResourceIndex;
+import org.robolectric.res.ResourcePath;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.util.AccessibilityUtil;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
+import java.io.File;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
 
@@ -103,13 +122,52 @@ public class ShadowView {
     return shadowOf(view).innerText();
   }
 
-  public void __constructor__(Context context, AttributeSet attributeSet, int defStyle) {
+#if ($api == 21)
+  @SuppressWarnings("deprecation")
+  public void updateViewId(AttributeSet attributeSet, int defStyleValue) {
+    final TypedArray a = realView.getContext().obtainStyledAttributes(attributeSet, com.android.internal.R.styleable.View, defStyleValue, 0);
+    if (RuntimeEnvironment.isRendering()
+        && attributeSet.getClass().getName().equals(ShadowBridgeXmlBlockParser.CLASS_NAME)
+        && a instanceof BridgeTypedArray
+        && a.hasValue(com.android.internal.R.styleable.View_id)) {
+      ShadowBridgeXmlBlockParser shadowAttr = (ShadowBridgeXmlBlockParser) ShadowExtractor.extract(attributeSet);
+      if (shadowAttr.getLayoutResId() != ShadowBridgeXmlBlockParser.NOT_DEFINED_LAYOUT_RES_ID) {
+        int resId = shadowAttr.getLayoutResId();
+        ShadowResources shadowResources = (ShadowResources) ShadowExtractor.extract(realView.getContext().getResources());
+        if (realView.getContext().getClass().getName().equals(ShadowBridgeContext.CLASS_NAME)) {
+          // Use runtime context instead
+          shadowResources = (ShadowResources) ShadowExtractor.extract(RuntimeEnvironment.application.getResources());
+        }
+        ResName resName = shadowResources.resolveResName(resId);
+        String rName = resName.packageName.concat(".R");
+        try {
+          Class rclassClass = Class.forName(rName);
+          FsFile resFsFile = Fs.newFile(new File(RuntimeEnvironment.getResourceDir()));
+          ResourcePath rPath = new ResourcePath(rclassClass, rclassClass.getPackage().getName(), resFsFile.join("res"), resFsFile.join("assets"));
+          ResourceIndex index = new MergedResourceIndex(new ResourceExtractor(rPath));
+          ResourceValue[] bridgeResourceValues = ReflectionHelpers.getField(a, "mResourceData");
+          ResourceValue idValue = bridgeResourceValues[com.android.internal.R.styleable.View_id];
+          if (idValue.getValue() == null && !idValue.isFramework()) {
+            String idNeeded = idValue.getType() + "/" + idValue.getName();
+            int idFoundInR = resName.getResourceId(index, idNeeded, rclassClass.getPackage().getName());
+            realView.setId(idFoundInR);
+          }
+        } catch (ClassNotFoundException e) {
+          // Resource R file not found
+          System.err.println("Can't locate R.java file");
+        }
+      }
+    }
+  }  
+#end
+
+  public void __constructor__(Context context, AttributeSet attributeSet, int defStyleValue) {
     if (context == null) throw new NullPointerException("no context");
     this.attributeSet = attributeSet;
     invokeConstructor(View.class, realView,
         ClassParameter.from(Context.class, context),
         ClassParameter.from(AttributeSet.class, attributeSet),
-        ClassParameter.from(int.class, defStyle));
+        ClassParameter.from(int.class, defStyleValue));
   }
 
   /**

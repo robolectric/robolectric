@@ -17,6 +17,7 @@ import com.android.ide.common.resources.configuration.FolderConfiguration;
 import com.android.resources.ResourceType;
 import com.android.resources.ScreenOrientation;
 
+import org.robolectric.shadows.ShadowBridgeXmlBlockParser;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import java.awt.image.BufferedImage;
@@ -28,6 +29,8 @@ import java.io.FileNotFoundException;
  * The {@link RenderService} provides rendering service and easy config.
  */
 public class RenderService {
+  private static int currentLayoutId = ShadowBridgeXmlBlockParser.NOT_DEFINED_LAYOUT_RES_ID;
+
   // The following fields are set through the constructor and are required.
   private final IProjectCallback projectCallback;
   private final ResourceResolver resourceResolver;
@@ -165,7 +168,7 @@ public class RenderService {
     return params;
   }
 
-  public RenderSession createRenderSession(String layoutName)
+  public RenderSession createRenderSession(String layoutName, int layoutResId)
       throws FileNotFoundException, XmlPullParserException {
     finishConfiguration();
     if (resourceResolver == null) {
@@ -190,6 +193,7 @@ public class RenderService {
     SessionParams p = new SessionParams(parser, renderingMode, this/* projectKey*/, hardwareConfigconfig,
         resourceResolver, projectCallback, minSdkVersion, targetSdkVersion, logger);
     params = p;
+    currentLayoutId = layoutResId;
     // Request margin and baseline information.
     // TODO: Be smarter about setting this; start without it, and on the first request
     // for an extended view info, re-render in the same session, and then set a flag
@@ -271,6 +275,10 @@ public class RenderService {
       }
     }
     return null;
+  }
+  
+  public static int getCurrentLayoutId() {
+    return currentLayoutId;
   }
 }
 #end

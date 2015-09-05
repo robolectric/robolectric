@@ -1,9 +1,14 @@
 package org.robolectric.shadows;
 
+import android.R.integer;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
+
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /**
  * Robolectric implementation of {@link android.view.LayoutInflater}.
@@ -39,6 +44,13 @@ public class RoboLayoutInflater extends LayoutInflater {
     for (String prefix : sClassPrefixList) {
       try {
         View view = createView(name, prefix, attrs);
+        if (RuntimeEnvironment.isRendering()) {
+          Class shadowViewClass = Class.forName("org.robolectric.shadows.ShadowView");
+          Object shadowView = ReflectionHelpers.getField(view, "__robo_data__");
+          ReflectionHelpers.callInstanceMethod(shadowViewClass, shadowView, "updateViewId",
+              ClassParameter.from(AttributeSet.class, attrs),
+              ClassParameter.from(int.class, 0));
+        }
         if (view != null) {
           return view;
         }

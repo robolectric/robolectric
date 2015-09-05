@@ -45,31 +45,14 @@ import static org.objectweb.asm.Type.OBJECT;
 import static org.objectweb.asm.Type.VOID;
 import static org.robolectric.util.Util.readBytes;
 
-import android.app.Activity;
-import android.app.Application;
-import android.content.ContextWrapper;
-import android.content.res.AssetManager;
-import android.content.res.BridgeResources;
-import android.content.res.BridgeTypedArray;
-import android.content.res.Resources;
 import android.content.res.Resources.Theme;
-import android.content.res.TypedArray;
-import android.graphics.BidiRenderer;
-import android.graphics.Bitmap;
-import android.graphics.Paint;
 import android.text.TextPaint;
 import android.view.Surface;
-import android.view.Window;
-import android.view.accessibility.AccessibilityManager;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.android.internal.os.BackgroundThread;
-import com.android.internal.telephony.cat.TextColor;
-import com.android.layoutlib.bridge.android.BridgeContext;
 import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
-import com.googlecode.eyesfree.utils.ClassLoadingManager;
 
 import dalvik.system.VMRuntime;
 

@@ -26,6 +26,9 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
+#if ($api>=21)
+import org.robolectric.internal.ShadowExtractor;
+#end
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.res.Attribute;
 import org.robolectric.res.Plural;
@@ -341,7 +344,7 @@ public class ShadowResources {
     return checkResName(id, resName);
   }
 
-  private @NotNull ResName resolveResName(int id) {
+  @NotNull ResName resolveResName(int id) {
     ResName resName = shadowOf(realResources.getAssets()).resolveResName(id, getQualifiers());
     return checkResName(id, resName);
   }
@@ -432,6 +435,15 @@ public class ShadowResources {
     return displayMetrics;
   }
 
+  public XmlResourceParser createRoboXmlResourceParser(int id, String type) throws Resources.NotFoundException {
+    ResName resName = resolveResName(id);
+    XmlBlock block = getResourceLoader().getXml(resName, getQualifiers());
+    if (block == null) {
+      throw new Resources.NotFoundException();
+    }
+    return ResourceParser.from(block, resName.packageName, getResourceLoader().getResourceIndex());
+  }
+
   @SuppressWarnings("unchecked")
   @HiddenApi @Implementation
   public XmlResourceParser loadXmlResourceParser(int id, String type) throws Resources.NotFoundException {
@@ -442,20 +454,28 @@ public class ShadowResources {
       try {
         // Rendering, use Bridge loader
         Class cls = Class.forName(ShadowBridgeContext.CLASS_NAME);
-        System.out.println(block.getFilename());
         String jarFileName = block.getFilename();
         int exclamationIndex = jarFileName.indexOf('!');
         String pathInSDK = jarFileName.substring(exclamationIndex+1);
         String fullPath = System.getenv("ANDROID_HOME") + "/platforms/android-" + RuntimeEnvironment.getApiLevel() + "/data" + pathInSDK;
+        if (!block.getPackageName().equals("android")) {
+          // This is project resource ,just load file
+          fullPath = jarFileName;
+        }
         File f = new File(fullPath);
         XmlPullParser parser = ParserFactory.create(f);
         Class<XmlResourceParser> bridgeXmlBlockParserClass = (Class<XmlResourceParser>) Class.forName("com.android.layoutlib.bridge.android.BridgeXmlBlockParser");
         Class renderActionClass = Class.forName("com.android.layoutlib.bridge.impl.RenderAction");
 
-        return ReflectionHelpers.callConstructor(bridgeXmlBlockParserClass,
+        Object result = ReflectionHelpers.callConstructor(bridgeXmlBlockParserClass,
             ClassParameter.from(XmlPullParser.class, parser),
             ClassParameter.from(cls, ReflectionHelpers.getStaticField(renderActionClass, "sCurrentContext")),
             ClassParameter.from(boolean.class, block.getPackageName().equals("android")));
+        if (type.equals("layout")) {
+          ShadowBridgeXmlBlockParser shadow = (ShadowBridgeXmlBlockParser) ShadowExtractor.extract(result);
+          shadow.setLayoutResId(id);
+        }
+        return (XmlResourceParser) result;
       } catch (ClassNotFoundException e) {
         //Not rendering, use Robolectric loader
         if (block == null) {
@@ -543,6 +563,7 @@ public class ShadowResources {
     }
   }
 
+
   @Implementation
   public final Resources.Theme newTheme() {
     Resources.Theme theme = directlyOn(realResources, Resources.class).newTheme();
@@ -558,7 +579,7 @@ public class ShadowResources {
         ClassParameter.from(TypedValue.class, value), ClassParameter.from(int.class, id));
 
     // todo: this kinda sucks, find some better way...
-    if (drawable != null) {
+    if (drawable != null && !RuntimeEnvironment.isRendering()) {
       shadowOf(drawable).createdFromResId = id;
       if (drawable instanceof BitmapDrawable) {
         Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
@@ -580,7 +601,7 @@ public class ShadowResources {
         ClassParameter.from(TypedValue.class, value), ClassParameter.from(int.class, id), ClassParameter.from(Resources.Theme.class, theme));
 
     // todo: this kinda sucks, find some better way...
-    if (drawable != null) {
+    if (drawable != null && !RuntimeEnvironment.isRendering()) {
       shadowOf(drawable).createdFromResId = id;
       if (drawable instanceof BitmapDrawable) {
         Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();

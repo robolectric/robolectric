@@ -64,7 +64,6 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   private static final String DEFAULT_PACKAGE_NAME = "org.robolectric.default";
   private static RenderService renderService;
   private static ResourceResolver renderResources;
-  private final static String PROJECT = "./src/test/resources/";
   private final RobolectricTestRunner robolectricTestRunner;
   private final ShadowsAdapter shadowsAdapter = Robolectric.getShadowsAdapter();
 
@@ -186,6 +185,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
         String appResDir = "";
         if (appManifest != null) {
           appResDir = appManifest.getResDirectory().getPath();
+          RuntimeEnvironment.setResourceDir(appResDir);
         }
         ResourceRepository projectRes =
             new ResourceRepository(new FolderWrapper(appResDir), false/*isFramework*/) {

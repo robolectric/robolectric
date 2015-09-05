@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import android.os.Build;
 import android.text.TextPaint;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,5 +17,13 @@ public class ShadowTextPaintTest {
     TextPaint paint = new TextPaint();
     paint.getFontMetrics();
     assertEquals(4.0f, paint.measureText("1234"));
+  }
+
+  @Test
+  @Config(rendering = true, sdk = Build.VERSION_CODES.LOLLIPOP)
+  public void measureText_returnRealMeasurements() throws Exception {
+    TextPaint paint = new TextPaint();
+    paint.getFontMetrics();
+    assertEquals(44.0f, paint.measureText("1234"));
   }
 }

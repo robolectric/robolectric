@@ -1,5 +1,6 @@
 package org.robolectric;
 
+import android.R.string;
 import android.app.Application;
 import android.content.pm.PackageManager;
 
@@ -13,6 +14,7 @@ public class RuntimeEnvironment {
     private static RobolectricPackageManager packageManager;
     private static int apiLevel;
     private static boolean isRendering;
+    private static String resourceDir;
 
     public static Object getActivityThread() {
         return activityThread;
@@ -59,5 +61,13 @@ public class RuntimeEnvironment {
 
     public static void setRendering(boolean rendering) {
       isRendering = rendering;
+    }
+
+    public static void setResourceDir(String dir){
+      resourceDir = dir;
+    }
+
+    public static String getResourceDir() {
+      return resourceDir;
     }
 }
