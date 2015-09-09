@@ -68,7 +68,14 @@ public class RobolectricActivityManager implements IActivityManager {
   }
 #end
 
-#if ($api >= 21)
+#if ($api >= 22)
+
+  @Override
+  public void systemBackupRestored() {
+
+  }
+
+#elseif ($api >= 21)
   @Override
   public int startActivity(IApplicationThread caller, String callingPackage, Intent intent, String resolvedType, IBinder resultTo, String resultWho, int requestCode, int flags, ProfilerInfo profilerInfo, Bundle options) throws RemoteException {
     return 0;
