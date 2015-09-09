@@ -75,7 +75,17 @@ public class ShadowLocaleData {
     localeData.decimalSeparator = '.';
     localeData.groupingSeparator = ',';
     localeData.patternSeparator = ';';
+
+#if ($api >= 22)
+    // Lollipop MR1 uses a String
+    localeData.percent = "%";
+#else
+    // Upto Lollipop was a char
     localeData.percent = '%';
+#end
+
+
+
     localeData.perMill = 0x2030;
     localeData.monetarySeparator = '.';
 
