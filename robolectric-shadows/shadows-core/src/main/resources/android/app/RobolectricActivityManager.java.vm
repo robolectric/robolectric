@@ -42,6 +42,7 @@ import android.os.StrictMode;
 #if ($api >= 21)
 import android.service.voice.IVoiceInteractionSession;
 import com.android.internal.app.IVoiceInteractor;
+import android.app.IActivityContainer;
 #end
 
 #if ($api >= 22)
@@ -71,6 +72,25 @@ public class RobolectricActivityManager implements IActivityManager {
 
   }
 #end
+
+#if ($api >= 21)
+
+  @Override
+  public int startActivity(IApplicationThread caller, String callingPackage, Intent intent, String resolvedType, IBinder resultTo, String resultWho, int requestCode, int flags, ProfilerInfo profilerInfo, Bundle options) throws RemoteException {
+    return 0;
+  }
+
+  @Override
+  public int startActivityAsUser(IApplicationThread caller, String callingPackage, Intent intent, String resolvedType, IBinder resultTo, String resultWho, int requestCode, int flags, ProfilerInfo profilerInfo, Bundle options, int userId) throws RemoteException {
+    return 0;
+  }
+
+  @Override
+  public WaitResult startActivityAndWait(IApplicationThread caller, String callingPackage, Intent intent, String resolvedType, IBinder resultTo, String resultWho, int requestCode, int flags, ProfilerInfo profilerInfo, Bundle options, int userId) throws RemoteException {
+    return null;
+  }
+#end
+
 
 #if ($api >= 22)
 
@@ -103,6 +123,7 @@ public class RobolectricActivityManager implements IActivityManager {
   public void registerTaskStackListener(ITaskStackListener listener) {
 
   }
+#elseif ($api >= 21)
 
 #elseif ($api >= 18)
   @Override
@@ -225,23 +246,8 @@ public class RobolectricActivityManager implements IActivityManager {
   }
 
   @Override
-  public int startActivity(IApplicationThread caller, String callingPackage, Intent intent, String resolvedType, IBinder resultTo, String resultWho, int requestCode, int flags, ProfilerInfo profilerInfo, Bundle options) throws RemoteException {
-    return 0;
-  }
-
-  @Override
-  public int startActivityAsUser(IApplicationThread caller, String callingPackage, Intent intent, String resolvedType, IBinder resultTo, String resultWho, int requestCode, int flags, ProfilerInfo profilerInfo, Bundle options, int userId) throws RemoteException {
-    return 0;
-  }
-
-  @Override
   public int startActivityAsCaller(IApplicationThread caller, String callingPackage, Intent intent, String resolvedType, IBinder resultTo, String resultWho, int requestCode, int flags, ProfilerInfo profilerInfo, Bundle options, int userId) throws RemoteException {
     return 0;
-  }
-
-  @Override
-  public WaitResult startActivityAndWait(IApplicationThread caller, String callingPackage, Intent intent, String resolvedType, IBinder resultTo, String resultWho, int requestCode, int flags, ProfilerInfo profilerInfo, Bundle options, int userId) throws RemoteException {
-    return null;
   }
 #end
 
@@ -1537,11 +1543,6 @@ public class RobolectricActivityManager implements IActivityManager {
   public boolean removeTask(int taskId, int flags) throws RemoteException {
     return false;
   }
-
-  @Override
-  public IActivityContainer getEnclosingActivityContainer(IBinder activityToken) throws RemoteException {
-    return null;
-  }
 #end
 
 #if ($api < 21)
@@ -1590,5 +1591,11 @@ public class RobolectricActivityManager implements IActivityManager {
   public void reportTopActivityExtras(IBinder token, Bundle extras) throws RemoteException {
 
   }
+#elseif ($api == 21)
+  @Override
+  public IActivityContainer getEnclosingActivityContainer(IBinder activityToken) throws RemoteException {
+    return null;
+  }
 #end
+
 }
