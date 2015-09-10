@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.os.Bundle;
 import android.view.ActionMode;
 import android.view.ContextMenu;
 import android.view.View;
@@ -194,6 +195,11 @@ public class StubViewRoot implements ViewParent {
 
   @Override
   public boolean onNestedPreFling(View view, float v, float v1) {
+    return false;
+  }
+
+  @Override
+  public boolean onNestedPrePerformAccessibilityAction(View view, int i, Bundle bundle) {
     return false;
   }
 }
