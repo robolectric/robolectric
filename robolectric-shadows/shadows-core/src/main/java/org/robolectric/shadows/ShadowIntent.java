@@ -14,10 +14,10 @@ public class ShadowIntent {
 
   /**
    * Non-Android accessor that returns the {@code Class} object set by
-   * {@link #setClass(android.content.Context, Class)}
+   * {@link Intent#setClass(android.content.Context, Class)}
    *
    * @return the {@code Class} object set by
-   *         {@link #setClass(android.content.Context, Class)}
+   *         {@link Intent#setClass(android.content.Context, Class)}
    */
   public Class<?> getIntentClass() {
     try {
