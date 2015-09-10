@@ -96,7 +96,7 @@ public class RobolectricActivityManager implements IActivityManager {
 
   @Override
   public int checkPermissionWithToken(String permission, int pid, int uid, IBinder callerToken) {
-
+    return -1;
   }
 
   @Override
@@ -759,6 +759,7 @@ public class RobolectricActivityManager implements IActivityManager {
 #if ($api >= 22)
   @Override
   public int checkUriPermission(Uri uri, int pid, int uid, final int modeFlags, int userId, IBinder callerToken) {
+    return -1;
   }
 
   @Override
