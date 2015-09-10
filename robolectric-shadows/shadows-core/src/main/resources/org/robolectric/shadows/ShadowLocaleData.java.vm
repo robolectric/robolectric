@@ -84,8 +84,6 @@ public class ShadowLocaleData {
     localeData.percent = '%';
 #end
 
-
-
     localeData.perMill = 0x2030;
     localeData.monetarySeparator = '.';
 
