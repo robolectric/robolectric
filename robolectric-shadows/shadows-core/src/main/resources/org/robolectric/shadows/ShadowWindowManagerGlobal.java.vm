@@ -21,6 +21,12 @@ public class ShadowWindowManagerGlobal {
   public static Object getWindowSession(Looper looper) {
     return null;
   }
+
+  @Implementation
+  public static Object getWindowManagerService() {
+    return null;
+  }
+
 }
 #else
 public class ShadowWindowManagerGlobal {
