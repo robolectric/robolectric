@@ -453,31 +453,31 @@
                 <configuration>
                   <artifacts>
                     <artifact>
-                      <file>dist/shadows-core-3.0-SNAPSHOT-16.jar</file>
+                      <file>dist/shadows-core-${version}-16.jar</file>
                       <type>jar</type>
                       <classifier>16</classifier>
                     </artifact>
 
                     <artifact>
-                      <file>dist/shadows-core-3.0-SNAPSHOT-17.jar</file>
+                      <file>dist/shadows-core-${version}-17.jar</file>
                       <type>jar</type>
                       <classifier>17</classifier>
                     </artifact>
 
                     <artifact>
-                      <file>dist/shadows-core-3.0-SNAPSHOT-18.jar</file>
+                      <file>dist/shadows-core-${version}-18.jar</file>
                       <type>jar</type>
                       <classifier>18</classifier>
                     </artifact>
 
                     <artifact>
-                      <file>dist/shadows-core-3.0-SNAPSHOT-19.jar</file>
+                      <file>dist/shadows-core-${version}-19.jar</file>
                       <type>jar</type>
                       <classifier>19</classifier>
                     </artifact>
 
                     <artifact>
-                      <file>dist/shadows-core-3.0-SNAPSHOT-21.jar</file>
+                      <file>dist/shadows-core-${version}-21.jar</file>
                       <type>jar</type>
                       <classifier>21</classifier>
                     </artifact>
