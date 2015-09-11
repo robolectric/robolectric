@@ -36,8 +36,13 @@ public class Converter<T> {
   }
 
   public static void convertAndFill(Attribute attribute, TypedValue outValue, ResourceLoader resourceLoader, String qualifiers, boolean resolveRefs) {
-    if (attribute == null || attribute.isNull()) {
+    if (attribute == null || attribute.isNull() || attribute.isEmpty()) {
       outValue.type = TypedValue.TYPE_NULL;
+      if (attribute != null && attribute.isEmpty()) {
+        outValue.data = TypedValue.DATA_NULL_EMPTY;
+      } else {
+        outValue.data = TypedValue.DATA_NULL_UNDEFINED;
+      }
       return;
     }
 
