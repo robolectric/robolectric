@@ -32,6 +32,7 @@ public class ShadowAudioManager {
   private AudioManager.OnAudioFocusChangeListener lastAbandonedAudioFocusListener;
   private HashMap<Integer, AudioStream> streamStatus = new HashMap<>();
   private int ringerMode = AudioManager.RINGER_MODE_NORMAL;
+  private int mode = AudioManager.MODE_NORMAL;
   private boolean wiredHeadsetOn;
   private boolean bluetoothA2dpOn;
 
@@ -87,6 +88,16 @@ public class ShadowAudioManager {
       return;
     }
     this.ringerMode = ringerMode;
+  }
+
+  @Implementation
+  public void setMode(int mode) {
+    this.mode = mode;
+  }
+
+  @Implementation
+  public int getMode() {
+    return this.mode;
   }
 
   public void setStreamMaxVolume(int streamMaxVolume) {
