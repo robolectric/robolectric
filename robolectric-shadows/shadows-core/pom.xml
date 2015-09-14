@@ -507,6 +507,12 @@
                       <type>jar</type>
                       <classifier>21</classifier>
                     </artifact>
+
+                    <artifact>
+                      <file>dist/shadows-core-${project.version}-22.jar</file>
+                      <type>jar</type>
+                      <classifier>22</classifier>
+                    </artifact>
                   </artifacts>
                 </configuration>
               </execution>
