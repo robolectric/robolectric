@@ -11,9 +11,14 @@ public interface ParallelUniverseInterface {
 
   void setUpApplicationState(Method method, TestLifecycle testLifecycle, ResourceLoader systemResourceLoader, AndroidManifest appManifest, Config config);
 
+  Thread getMainThread();
+
+  void setMainThread(Thread newMainThread);
+
   void tearDownApplication();
 
   Object getCurrentApplication();
 
   void setSdkConfig(SdkConfig sdkConfig);
+
 }

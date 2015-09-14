@@ -79,6 +79,7 @@ public class RobolectricTestRunnerSelfTest {
 
   @Before
   public void clearOrder() {
+    onTerminateCalledFromMain = null;
     order.clear();
     RobolectricPackageManager mockManager = mock(RobolectricPackageManager.class);
     doAnswer(new Answer<Void>() {
@@ -90,11 +91,28 @@ public class RobolectricTestRunnerSelfTest {
     
     RuntimeEnvironment.setRobolectricPackageManager(mockManager);
   }
+
+  @Test
+  public void testMethod_shouldBeInvoked_onMainThread() {
+    assertThat(RuntimeEnvironment.isMainThread()).isTrue();
+  }
+
+  @Test(timeout = 1000)
+  public void whenTestHarnessUsesDifferentThread_shouldStillReportAsMainThread() {
+    assertThat(RuntimeEnvironment.isMainThread()).isTrue();
+  }
+
+
   @AfterClass
-  public static void resetStaticState_shouldBeCalled_afterAppTearDown() throws InitializationError {
+  public static void resetStaticState_shouldBeCalled_afterAppTearDown() {
     assertThat(order).containsExactly("onTerminate", "reset");
   }
-    
+
+  @AfterClass
+  public static void resetStaticState_shouldBeCalled_onMainThread() {
+    assertThat(onTerminateCalledFromMain).isTrue();
+  }
+
   public static class RunnerForTesting extends TestRunners.WithDefaults {
     public static RunnerForTesting instance;
 
@@ -115,18 +133,22 @@ public class RobolectricTestRunnerSelfTest {
   }
 
   private static List<String> order = new ArrayList<>();
-  
+  private static Boolean onTerminateCalledFromMain = null;
+
   public static class MyTestApplication extends Application {
     private boolean onCreateWasCalled;
+    private Boolean onCreateCalledFromMain;
 
     @Override
     public void onCreate() {
       this.onCreateWasCalled = true;
+      this.onCreateCalledFromMain = Boolean.valueOf(RuntimeEnvironment.isMainThread());
     }
     
     @Override
     public void onTerminate() {
       order.add("onTerminate");
+      onTerminateCalledFromMain = Boolean.valueOf(RuntimeEnvironment.isMainThread());
     }
   }
 }

@@ -41,6 +41,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
   @Override
   public void resetStaticState(Config config) {
+    RuntimeEnvironment.setMainThread(Thread.currentThread());
     Robolectric.reset();
 
     if (!loggingInitialized) {
@@ -67,6 +68,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   @Override
   public void setUpApplicationState(Method method, TestLifecycle testLifecycle, ResourceLoader systemResourceLoader, AndroidManifest appManifest, Config config) {
     RuntimeEnvironment.application = null;
+    RuntimeEnvironment.setMainThread(Thread.currentThread());
     RuntimeEnvironment.setRobolectricPackageManager(new DefaultPackageManager(shadowsAdapter));
     RuntimeEnvironment.getRobolectricPackageManager().addPackage(DEFAULT_PACKAGE_NAME);
     ResourceLoader resourceLoader;
@@ -94,6 +96,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
     Class<?> activityThreadClass = ReflectionHelpers.loadClass(getClass().getClassLoader(), shadowsAdapter.getShadowActivityThreadClassName());
     // Looper needs to be prepared before the activity thread is created
+//    if (Looper.getMainLooper() == null) {
     if (Looper.myLooper() == null) {
       Looper.prepareMainLooper();
     }
@@ -145,6 +148,16 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       RuntimeEnvironment.application = application;
       application.onCreate();
     }
+  }
+
+  @Override
+  public Thread getMainThread() {
+    return RuntimeEnvironment.getMainThread();
+  }
+
+  @Override
+  public void setMainThread(Thread newMainThread) {
+    RuntimeEnvironment.setMainThread(newMainThread);
   }
 
   @Override
