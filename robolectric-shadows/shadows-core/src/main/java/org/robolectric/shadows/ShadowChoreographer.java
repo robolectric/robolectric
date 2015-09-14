@@ -50,6 +50,11 @@ public class ShadowChoreographer {
   }
 
   @Implementation
+  public void removeCallbacks(int callbackType, Runnable action, Object token) {
+    handler.removeCallbacks(action, token);
+  }
+
+  @Implementation
   public void postFrameCallbackDelayed(final Choreographer.FrameCallback callback, long delayMillis) {
     handler.postAtTime(new Runnable() {
       @Override public void run() {

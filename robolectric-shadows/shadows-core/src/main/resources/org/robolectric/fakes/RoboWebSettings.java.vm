@@ -408,4 +408,218 @@ public class RoboWebSettings extends WebSettings {
   public void setDefaultFontSize(int defaultFontSize) {
     this.defaultFontSize = defaultFontSize;
   }
+
+#if ($api >= 22)
+  // API 22
+  private boolean loadsImagesAutomatically;
+
+  @Override
+  public boolean getLoadsImagesAutomatically() {
+    return loadsImagesAutomatically;
+  }
+
+  public void setLoadsImagesAutomatically(boolean loadsImagesAutomatically) {
+    this.loadsImagesAutomatically = loadsImagesAutomatically;
+  }
+
+  private int defaultFixedFontSize;
+
+  @Override
+  public int getDefaultFixedFontSize() {
+    return defaultFixedFontSize;
+  }
+
+  public void setDefaultFixedFontSize(int defaultFixedFontSize) {
+    this.defaultFixedFontSize = defaultFixedFontSize;
+  }
+
+  private int minimumLogicalFontSize;
+
+  @Override
+  public int getMinimumLogicalFontSize() {
+    return minimumLogicalFontSize;
+  }
+
+  public void setMinimumLogicalFontSize(int minimumLogicalFontSize) {
+    this.minimumLogicalFontSize = minimumLogicalFontSize;
+  }
+
+  private int minimumFontSize;
+
+  @Override
+  public int getMinimumFontSize() {
+    return minimumFontSize;
+  }
+
+  public void setMinimumFontSize(int minimumFontSize) {
+    this.minimumFontSize = minimumFontSize;
+  }
+
+  private String fantasyFontFamily;
+
+  @Override
+  public String getFantasyFontFamily() {
+    return fantasyFontFamily;
+  }
+
+  public void setFantasyFontFamily(String fantasyFontFamily) {
+    this.fantasyFontFamily = fantasyFontFamily;
+  }
+
+  private String cursiveFontFamily;
+
+  @Override
+  public String getCursiveFontFamily() {
+    return cursiveFontFamily;
+  }
+
+  public void setCursiveFontFamily(String cursiveFontFamily) {
+    this.cursiveFontFamily = cursiveFontFamily;
+  }
+
+  private String serifFontFamily;
+
+  @Override
+  public String getSerifFontFamily() {
+    return serifFontFamily;
+  }
+
+  public void setSerifFontFamily(String serifFontFamily) {
+    this.serifFontFamily = serifFontFamily;
+  }
+
+  private String sansSerifFontFamily;
+
+  @Override
+  public String getSansSerifFontFamily() {
+    return sansSerifFontFamily;
+  }
+
+  public void setSansSerifFontFamily(String sansSerifFontFamily) {
+    this.sansSerifFontFamily = sansSerifFontFamily;
+  }
+
+  private String fixedFontFamily;
+
+  @Override
+  public String getFixedFontFamily() {
+    return fixedFontFamily;
+  }
+
+  public void setFixedFontFamily(String fixedFontFamily) {
+    this.fixedFontFamily = fixedFontFamily;
+  }
+
+  private String standardFontFamily;
+
+  @Override
+  public String getStandardFontFamily() {
+    return standardFontFamily;
+  }
+
+  public void setStandardFontFamily(String standardFontFamily) {
+    this.standardFontFamily = standardFontFamily;
+  }
+
+  @Override
+  public LayoutAlgorithm getLayoutAlgorithm() {
+    return layoutAlgorithm;
+  }
+
+  @Override
+  public boolean supportMultipleWindows() {
+    return supportMultipleWindows;
+  }
+
+  int userAgent;
+
+  @Override
+  public int getUserAgent() {
+    return userAgent;
+  }
+
+  @Override
+  public void setUserAgent(int userAgent) {
+    this.userAgent =  userAgent;
+  }
+
+  private ZoomDensity defaultZoom;
+
+  @Override
+  public void setDefaultZoom(ZoomDensity zoom) {
+    this.defaultZoom = defaultZoom;
+  }
+
+  @Override
+  public ZoomDensity getDefaultZoom() {
+    return defaultZoom;
+  }
+
+  private boolean acceptThirdPartyCookies;  
+
+  @Override
+  public boolean getAcceptThirdPartyCookies() {
+    return acceptThirdPartyCookies;
+  }
+
+  @Override
+  public void setAcceptThirdPartyCookies(boolean acceptThirdPartyCookies) {
+    this.acceptThirdPartyCookies = acceptThirdPartyCookies;
+  }
+
+  private boolean savePassword;  
+
+  @Override
+  public boolean getSavePassword() {
+    return savePassword;
+  }
+
+  @Override
+  public void setSavePassword(boolean savePassword) {
+    this.savePassword = savePassword;
+  }
+
+  private boolean useWebViewBackgroundForOverscrollBackground;
+
+  @Override
+  public boolean getUseWebViewBackgroundForOverscrollBackground() {
+    return useWebViewBackgroundForOverscrollBackground;
+  }
+
+  @Override
+  public void setUseWebViewBackgroundForOverscrollBackground(boolean useWebViewBackgroundForOverscrollBackground) {
+    this.useWebViewBackgroundForOverscrollBackground = useWebViewBackgroundForOverscrollBackground;
+  }
+
+  private boolean enableSmoothTransition;
+
+  @Override
+  public boolean enableSmoothTransition() {
+    return enableSmoothTransition;
+  }
+
+  @Override
+  public void setEnableSmoothTransition(boolean enableSmoothTransition) {
+    this.enableSmoothTransition = enableSmoothTransition;
+  }
+
+  @Override
+  public boolean supportZoom() {
+    return supportZoom;
+  }
+
+  private boolean navDump;
+
+  @Override
+  public boolean getNavDump() {
+    return navDump;
+  }
+
+  @Override
+  public void setNavDump(boolean navDump) {
+    this.navDump = navDump;
+  }
+
+  // End API 22
+#end
 }

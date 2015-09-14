@@ -8,6 +8,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.Choreographer;
@@ -24,6 +25,7 @@ import org.robolectric.annotation.HiddenApi;
 import org.robolectric.util.AccessibilityUtil;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.TimeUtils;
 
 import java.io.PrintStream;
 import java.lang.reflect.Method;
@@ -477,18 +479,57 @@ public class ShadowView {
   public void setAnimation(final Animation animation) {
     directly().setAnimation(animation);
 
-    if (animation == null) return;
+    if (animation != null) {
+      new AnimationRunner(animation);
+    }
+  }
 
-    ShadowChoreographer.getInstance().postCallbackDelayed(Choreographer.CALLBACK_ANIMATION, new Runnable() {
-      @Override
-      public void run() {
-        boolean complete = false;
-        while(!complete) {
-          complete = !animation.getTransformation(ShadowChoreographer.getInstance().getFrameTime(), new Transformation());
-        }
+  private AnimationRunner animationRunner;
 
+  private class AnimationRunner implements Runnable {
+    private final Animation animation;
+    private long startTime, startOffset, elapsedTime;
+
+    AnimationRunner(Animation animation) {
+      this.animation = animation;
+      start();
+    }
+
+    private void start() {
+      startTime = animation.getStartTime();
+      startOffset = animation.getStartOffset();
+      Choreographer choreographer = ShadowChoreographer.getInstance();
+      if (animationRunner != null) {
+        choreographer.removeCallbacks(Choreographer.CALLBACK_ANIMATION, animationRunner, null);
       }
-    }, null, animation.getStartTime());
+      animationRunner = this;
+      int startDelay;
+      if (startTime == Animation.START_ON_FIRST_FRAME) {
+        startDelay = (int) startOffset;
+      } else {
+        startDelay = (int) ((startTime + startOffset) - SystemClock.uptimeMillis());
+      }
+      choreographer.postCallbackDelayed(Choreographer.CALLBACK_ANIMATION, this, null, startDelay);
+    }
+
+    @Override
+    public void run() {
+      // Abort if start time has been messed with, as this simulation is only designed to handle
+      // standard situations.
+      if ((animation.getStartTime() == startTime && animation.getStartOffset() == startOffset) &&
+          animation.getTransformation(startTime == Animation.START_ON_FIRST_FRAME ?
+              SystemClock.uptimeMillis() : (startTime + startOffset + elapsedTime), new Transformation()) &&
+              // We can't handle infinitely repeating animations in the current scheduling model,
+              // so abort after one iteration.
+              !(animation.getRepeatCount() == Animation.INFINITE && elapsedTime >= animation.getDuration())) {
+        // Update startTime if it had a value of Animation.START_ON_FIRST_FRAME
+        startTime = animation.getStartTime();
+        elapsedTime += ShadowChoreographer.getFrameInterval() / TimeUtils.NANOS_PER_MS;
+        ShadowChoreographer.getInstance().postCallback(Choreographer.CALLBACK_ANIMATION, this, null);
+      } else {
+        animationRunner = null;
+      }
+    }
   }
 
   @Implementation

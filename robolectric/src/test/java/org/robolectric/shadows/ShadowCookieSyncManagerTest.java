@@ -25,22 +25,4 @@ public class ShadowCookieSyncManagerTest {
     CookieSyncManager.createInstance(new Activity());
     assertThat(CookieSyncManager.getInstance()).isNotNull();
   }
-
-  @Test
-  @Config(sdk = {
-      Build.VERSION_CODES.LOLLIPOP })
-  public void testSyncAndReset() {
-    CookieSyncManager.createInstance(new Activity());
-    CookieSyncManager mgr = CookieSyncManager.getInstance();
-
-    ShadowCookieSyncManager shadowCookieSyncManager = shadowOf(mgr);
-    ShadowCookieManager shadowCookieManager = shadowOf(CookieManager.getInstance());
-    assertThat(shadowCookieSyncManager.synced()).isFalse();
-
-    // TODO: API 21 -> sync moved to flush
-    mgr.sync();
-    assertThat(shadowCookieManager.isFlushed()).isTrue();
-    shadowCookieManager.reset();
-    assertThat(shadowCookieManager.isFlushed()).isFalse();
-  }
 }

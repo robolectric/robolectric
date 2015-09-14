@@ -12,6 +12,17 @@ import java.util.Hashtable;
 
 public class MavenDependencyResolver implements DependencyResolver {
   private final Project project = new Project();
+  private final String repositoryUrl;
+  private final String repositoryId;
+
+  public MavenDependencyResolver() {
+    this("https://oss.sonatype.org/content/groups/public/", "sonatype");
+  }
+
+  public MavenDependencyResolver(String repositoryUrl, String repositoryId) {
+    this.repositoryUrl = repositoryUrl;
+    this.repositoryId = repositoryId;
+  }
 
   /**
    * Get an array of local artifact URLs for the given dependencies. The order of the URLs is guaranteed to be the
@@ -22,8 +33,8 @@ public class MavenDependencyResolver implements DependencyResolver {
     DependenciesTask dependenciesTask = new DependenciesTask();
     configureMaven(dependenciesTask);
     RemoteRepository sonatypeRepository = new RemoteRepository();
-    sonatypeRepository.setUrl("https://oss.sonatype.org/content/groups/public/");
-    sonatypeRepository.setId("sonatype");
+    sonatypeRepository.setUrl(repositoryUrl);
+    sonatypeRepository.setId(repositoryId);
     dependenciesTask.addConfiguredRemoteRepository(sonatypeRepository);
     dependenciesTask.setProject(project);
     for (DependencyJar dependencyJar : dependencies) {

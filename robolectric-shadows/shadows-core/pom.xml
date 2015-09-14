@@ -375,6 +375,32 @@
     </profile>
 
     <profile>
+      <id>android-22</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
+            <configuration>
+              <classifier>${api}</classifier>
+              <outputDirectory>dist</outputDirectory>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+      <dependencies>
+        <dependency>
+          <groupId>org.robolectric</groupId>
+          <artifactId>android-all</artifactId>
+          <version>5.1.1_r9-robolectric-0</version>
+        </dependency>
+      </dependencies>
+      <properties>
+        <api>22</api>
+      </properties>
+    </profile>
+
+    <profile>
       <id>android-latest</id>
       <build>
         <plugins>
@@ -391,11 +417,11 @@
         <dependency>
           <groupId>org.robolectric</groupId>
           <artifactId>android-all</artifactId>
-          <version>5.0.0_r2-robolectric-0</version>
+          <version>5.1.1_r9-robolectric-0</version>
         </dependency>
       </dependencies>
       <properties>
-        <api>21</api>
+        <api>22</api>
       </properties>
       <activation>
         <activeByDefault>true</activeByDefault>

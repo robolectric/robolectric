@@ -151,6 +151,10 @@ public class Attribute {
     return "@null".equals(value);
   }
 
+  public boolean isEmpty() {
+    return "@empty".equals(value);
+  }
+
   @Override
   public String toString() {
     return "Attribute{" +
