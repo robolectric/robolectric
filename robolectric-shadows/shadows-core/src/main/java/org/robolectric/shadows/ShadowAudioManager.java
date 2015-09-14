@@ -3,6 +3,8 @@ package org.robolectric.shadows;
 import android.media.AudioManager;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.util.ReflectionHelpers;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -90,6 +92,13 @@ public class ShadowAudioManager {
     this.ringerMode = ringerMode;
   }
 
+  public static boolean isValidRingerMode(int ringerMode) {
+    if (ringerMode < 0 || ringerMode > (int)ReflectionHelpers.getStaticField(AudioManager.class, "RINGER_MODE_MAX")) {
+      return false;
+    }
+    return true;
+  }
+
   @Implementation
   public void setMode(int mode) {
     this.mode = mode;
@@ -98,7 +107,7 @@ public class ShadowAudioManager {
   @Implementation
   public int getMode() {
     return this.mode;
-  }
+  } 
 
   public void setStreamMaxVolume(int streamMaxVolume) {
     for (Map.Entry<Integer, AudioStream> entry : streamStatus.entrySet()) {
