@@ -204,6 +204,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     return method.getAnnotation(Ignore.class) != null;
   }
 
+  private ParallelUniverseInterface parallelUniverseInterface;
+
   private Statement methodBlock(final FrameworkMethod method, final Config config, final AndroidManifest appManifest, final SdkEnvironment sdkEnvironment) {
     return new Statement() {
       @Override
@@ -226,45 +228,49 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
           throw new RuntimeException(e);
         }
 
-        ParallelUniverseInterface parallelUniverseInterface = getHooksInterface(sdkEnvironment);
+        parallelUniverseInterface = getHooksInterface(sdkEnvironment);
         try {
-          // Only invoke @BeforeClass once per class
-          if (!loadedTestClasses.contains(bootstrappedTestClass)) {
-            invokeBeforeClass(bootstrappedTestClass);
-          }
-          assureTestLifecycle(sdkEnvironment);
-
-          parallelUniverseInterface.resetStaticState(config);
-          parallelUniverseInterface.setSdkConfig(sdkEnvironment.getSdkConfig());
-
-          int sdkVersion = pickSdkVersion(config, appManifest);
-          ReflectionHelpers.setStaticField(sdkEnvironment.bootstrappedClass(Build.VERSION.class), "SDK_INT", sdkVersion);
-
-          ResourceLoader systemResourceLoader = sdkEnvironment.getSystemResourceLoader(getJarResolver());
-          setUpApplicationState(bootstrappedMethod, parallelUniverseInterface, systemResourceLoader, appManifest, config);
-          testLifecycle.beforeTest(bootstrappedMethod);
-        } catch (Exception e) {
-          e.printStackTrace();
-          throw new RuntimeException(e);
-        }
-
-        final Statement statement = helperTestRunner.methodBlock(new FrameworkMethod(bootstrappedMethod));
-
-        // todo: this try/finally probably isn't right -- should mimic RunAfters? [xw]
-        try {
-          statement.evaluate();
-        } finally {
           try {
-            parallelUniverseInterface.tearDownApplication();
+            // Only invoke @BeforeClass once per class
+            if (!loadedTestClasses.contains(bootstrappedTestClass)) {
+              invokeBeforeClass(bootstrappedTestClass);
+            }
+            assureTestLifecycle(sdkEnvironment);
+
+            parallelUniverseInterface.resetStaticState(config);
+            parallelUniverseInterface.setSdkConfig(sdkEnvironment.getSdkConfig());
+
+            int sdkVersion = pickSdkVersion(config, appManifest);
+            ReflectionHelpers.setStaticField(sdkEnvironment.bootstrappedClass(Build.VERSION.class), "SDK_INT", sdkVersion);
+
+            ResourceLoader systemResourceLoader = sdkEnvironment.getSystemResourceLoader(getJarResolver());
+            setUpApplicationState(bootstrappedMethod, parallelUniverseInterface, systemResourceLoader, appManifest, config);
+            testLifecycle.beforeTest(bootstrappedMethod);
+          } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+          }
+
+          final Statement statement = helperTestRunner.methodBlock(new FrameworkMethod(bootstrappedMethod));
+
+          // todo: this try/finally probably isn't right -- should mimic RunAfters? [xw]
+          try {
+            statement.evaluate();
           } finally {
             try {
-              internalAfterTest(bootstrappedMethod);
+              parallelUniverseInterface.tearDownApplication();
             } finally {
-              parallelUniverseInterface.resetStaticState(config); // afterward too, so stuff doesn't hold on to classes?
-              // todo: is this really needed?
-              Thread.currentThread().setContextClassLoader(RobolectricTestRunner.class.getClassLoader());
+              try {
+                internalAfterTest(bootstrappedMethod);
+              } finally {
+                parallelUniverseInterface.resetStaticState(config); // afterward too, so stuff doesn't hold on to classes?
+                // todo: is this really needed?
+                Thread.currentThread().setContextClassLoader(RobolectricTestRunner.class.getClassLoader());
+              }
             }
           }
+        } finally {
+          parallelUniverseInterface = null;
         }
       }
     };
@@ -531,6 +537,23 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
     @Override public Statement methodBlock(FrameworkMethod method) {
       return super.methodBlock(method);
+    }
+
+    @Override
+    protected Statement methodInvoker(FrameworkMethod method, Object test) {
+      final Statement invoker = super.methodInvoker(method, test);
+      return new Statement() {
+        @Override
+        public void evaluate() throws Throwable {
+          Thread orig = parallelUniverseInterface.getMainThread();
+          parallelUniverseInterface.setMainThread(Thread.currentThread());
+          try {
+            invoker.evaluate();
+          } finally {
+            parallelUniverseInterface.setMainThread(orig);
+          }
+        }
+      };
     }
   }
 

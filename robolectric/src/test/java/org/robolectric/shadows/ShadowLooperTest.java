@@ -6,7 +6,6 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -205,7 +204,6 @@ public class ShadowLooperTest {
     assertThat(test.hasContinued).as("hasContinued:after").isTrue();
   }
  
-  @Ignore("Not yet implemented (ref #1407)") 
   @Test(timeout = 1000)
   public void whenTestHarnessUsesDifferentThread_shouldStillHaveMainLooper() {
     assertThat(Looper.myLooper()).isNotNull();
@@ -248,8 +246,27 @@ public class ShadowLooperTest {
 
   @Test
   public void getMainLooperReturnsNonNullOnMainThreadWhenRobolectricApplicationIsNull() {
-      RuntimeEnvironment.application = null;
-      assertThat(Looper.getMainLooper()).isNotNull();
+    RuntimeEnvironment.application = null;
+    assertThat(Looper.getMainLooper()).isNotNull();
+  }
+
+  @Test
+  public void myLooper_returnsMainLooper_ifMainThreadIsSwitched() throws InterruptedException {
+    final AtomicReference<Looper> myLooper = new AtomicReference<>();
+    Thread t = new Thread(testName.getMethodName()) {
+      @Override
+      public void run() {
+        myLooper.set(Looper.myLooper());
+      }
+    };
+    RuntimeEnvironment.setMainThread(t);
+    t.start();
+    try {
+      t.join(1000);
+      assertThat(myLooper.get()).isSameAs(Looper.getMainLooper());
+    } finally {
+      RuntimeEnvironment.setMainThread(Thread.currentThread());
+    }
   }
 
   @Test

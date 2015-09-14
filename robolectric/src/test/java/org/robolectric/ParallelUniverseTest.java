@@ -18,6 +18,7 @@ import org.robolectric.res.builder.RobolectricPackageManager;
 
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -27,10 +28,45 @@ public class ParallelUniverseTest {
   
   private ParallelUniverse pu;
 
+  private static Config getDefaultConfig() {
+    return new Config.Implementation(new int[0], Config.DEFAULT, "", "org.robolectric", "res", "assets", new Class[0], Application.class, new String[0], null);
+  }
+
   @Before
   public void setUp() throws InitializationError {
     pu = new ParallelUniverse(new RobolectricTestRunner(ParallelUniverseTest.class));
     pu.setSdkConfig(new SdkConfig(18));
+  }
+
+  @Test
+  public void setUpApplicationState_setsMainThread() {
+    RuntimeEnvironment.setMainThread(new Thread());
+    Config c = getDefaultConfig();
+    pu.setUpApplicationState(null, new DefaultTestLifecycle(), null, null, c);
+    assertThat(RuntimeEnvironment.isMainThread()).isTrue();
+  }
+
+  @Test
+  public void resetStaticStatic_setsMainThread(){
+    RuntimeEnvironment.setMainThread(new Thread());
+    pu.resetStaticState(getDefaultConfig());
+    assertThat(RuntimeEnvironment.isMainThread()).isTrue();
+  }
+
+  @Test
+  public void setUpApplicationState_setsMainThread_onAnotherThread() throws InterruptedException {
+    final AtomicBoolean res = new AtomicBoolean();
+    Thread t = new Thread() {
+      @Override
+      public void run() {
+        Config c = new Config.Implementation(new int[0], Config.DEFAULT, "", "org.robolectric", "res", "assets", new Class[0], Application.class, new String[0], null);
+        pu.setUpApplicationState(null, new DefaultTestLifecycle(), null, null, c);
+        res.set(RuntimeEnvironment.isMainThread());
+      }
+    };
+    t.start();
+    t.join(1000);
+    assertThat(res.get()).isTrue();
   }
 
   @Test
