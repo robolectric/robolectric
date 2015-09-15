@@ -31,6 +31,10 @@ echo Installing shadows for API 21...
 cd "%PROJECT%\robolectric-shadows\shadows-core"
 call mvn -D skipTests -P android-21 clean install
 
+echo Installing shadows for API 22s...
+cd "%PROJECT%\robolectric-shadows\shadows-core"
+call mvn -D skipTests -P android-22 clean install
+
 rem Build everything with tests (tests require the shadows)
 echo Installing base installation (with tests)...
 cd "%PROJECT%"
