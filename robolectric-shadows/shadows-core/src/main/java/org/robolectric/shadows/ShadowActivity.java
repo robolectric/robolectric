@@ -69,6 +69,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   private boolean mIsTaskRoot = true;
   private Menu optionsMenu;
   private Application testApplication;
+  private ComponentName callingActivity;
 
   public void __constructor__() {
     invokeConstructor(Activity.class, realActivity);
@@ -115,9 +116,13 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     return getApplication();
   }
 
+  public void setCallingActivity(ComponentName activityName) {
+    callingActivity = activityName;
+  }
+
   @Implementation
   public ComponentName getCallingActivity() {
-    return null;
+    return callingActivity;
   }
 
   @Implementation
