@@ -27,6 +27,7 @@ public class DefaultPackageManagerTest {
     ServiceInfo serviceInfo = packageManager.getServiceInfo(new ComponentName("org.robolectric", "com.foo.Service"), PackageManager.GET_SERVICES);
     assertEquals(serviceInfo.packageName, "org.robolectric");
     assertEquals(serviceInfo.name, "com.foo.Service");
+    assertEquals(serviceInfo.permission, "com.foo.MY_PERMISSION");
     assertNotNull(serviceInfo.applicationInfo);  
   }
   

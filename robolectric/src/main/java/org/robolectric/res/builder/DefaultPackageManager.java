@@ -220,6 +220,7 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
     serviceInfo.packageName = packageName;
     serviceInfo.name = serviceName;
     serviceInfo.applicationInfo = getApplicationInfo(packageName, flags);
+    serviceInfo.permission = serviceData.getPermission();
     if ((flags & GET_META_DATA) != 0) {
       serviceInfo.metaData = metaDataToBundle(serviceData.getMetaData().getValueMap());
     }
