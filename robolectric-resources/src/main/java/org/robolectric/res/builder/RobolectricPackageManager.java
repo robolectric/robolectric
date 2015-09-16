@@ -19,6 +19,8 @@ public interface RobolectricPackageManager {
 
   ActivityInfo getReceiverInfo(ComponentName className, int flags) throws PackageManager.NameNotFoundException;
 
+  ServiceInfo getServiceInfo(ComponentName className, int flags) throws PackageManager.NameNotFoundException;
+  
   List<PackageInfo> getInstalledPackages(int flags);
 
   List<ResolveInfo> queryIntentActivities(Intent intent, int flags);
