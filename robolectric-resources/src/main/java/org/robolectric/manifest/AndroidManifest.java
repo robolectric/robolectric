@@ -207,11 +207,13 @@ public class AndroidManifest {
             receiver.addAction(nameNode.getTextContent());
           }
         }
-        Node permissionItem = receiverNode.getAttributes().getNamedItem("android:permission");
-        if (permissionItem != null) {
-          receiver.setPermission(permissionItem.getTextContent());
-        }
       }
+      
+      Node permissionItem = receiverNode.getAttributes().getNamedItem("android:permission");
+      if (permissionItem != null) {
+        receiver.setPermission(permissionItem.getTextContent());
+      }
+      
       receivers.add(receiver);
     }
   }
@@ -236,10 +238,11 @@ public class AndroidManifest {
             service.addAction(nameNode.getTextContent());
           }
         }
-        Node permissionItem = serviceNode.getAttributes().getNamedItem("android:permission");
-        if (permissionItem != null) {
-          service.setPermission(permissionItem.getTextContent());
-        }
+      }
+      
+      Node permissionItem = serviceNode.getAttributes().getNamedItem("android:permission");
+      if (permissionItem != null) {
+        service.setPermission(permissionItem.getTextContent());
       }
       serviceDatas.put(serviceName, service);
     }

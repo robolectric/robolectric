@@ -103,6 +103,7 @@ public class AndroidManifestTest {
     
     assertThat(config.getServiceData("com.foo.Service").getClassName()).isEqualTo("com.foo.Service");
     assertThat(config.getServiceData("com.bar.ServiceWithoutIntentFilter").getClassName()).isEqualTo("com.bar.ServiceWithoutIntentFilter");
+    assertEquals(config.getServiceData("com.foo.Service").getPermission(), "com.foo.Permission");
   }
 
   @Test(expected = IllegalAccessError.class)
