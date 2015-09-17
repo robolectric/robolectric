@@ -678,7 +678,7 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
   @Override
   public int checkPermission(String permName, String pkgName) {
     PackageInfo permissionsInfo = packageInfos.get(pkgName);
-    if (permissionsInfo == null) {
+    if (permissionsInfo == null || permissionsInfo.requestedPermissions == null) {
       return PackageManager.PERMISSION_DENIED;
     }
     for (String permission : permissionsInfo.requestedPermissions) {
