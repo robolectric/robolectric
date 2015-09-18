@@ -76,6 +76,10 @@ public class ShadowAccessibilityNodeInfoTest {
     assertThat(shadow.getActions()).isEqualTo(AccessibilityNodeInfo.ACTION_PASTE);
     node.setClickable(true);
     assertThat(shadow.isClickable()).isEqualTo(true);
+    node.setClickable(false);
+    shadow.setPasteable(false);
+    node.addAction(AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS);
+    assertThat(shadow.getActions()).isEqualTo(AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS);
   }
 
   @Test
