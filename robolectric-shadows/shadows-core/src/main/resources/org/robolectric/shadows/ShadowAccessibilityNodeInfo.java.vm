@@ -72,6 +72,10 @@ public class ShadowAccessibilityNodeInfo {
   private static final int EDITABLE_MASK = 0x00000080;
   
   private static final int TEXT_SELECTION_SETABLE_MASK = 0x00000100;
+  
+  private static final int CLEAR_A11YFOCUSABLE_MASK = 0x00000200;
+
+  private static final int A11YFOCUSABLE_MASK = 0x00000400;
 
   private List<AccessibilityNodeInfo> children;
 
@@ -306,6 +310,24 @@ public class ShadowAccessibilityNodeInfo {
   public boolean isTextSelectionSetable() {
     return ((actionFlags & TEXT_SELECTION_SETABLE_MASK) != 0);
   }
+  
+  public boolean isA11yFocusClearable() {
+    return ((actionFlags & CLEAR_A11YFOCUSABLE_MASK) != 0);
+  }
+  
+  public boolean isA11yFocusable() {
+    return ((actionFlags & A11YFOCUSABLE_MASK) != 0);
+  }
+
+  public void setA11yFocusClearable(boolean focusClearable) {
+    actionFlags = (actionFlags & ~CLEAR_A11YFOCUSABLE_MASK) | 
+        (focusClearable ? CLEAR_A11YFOCUSABLE_MASK : 0);
+  }
+  
+  public void setA11yFocusable(boolean focusable) {
+    actionFlags = (actionFlags & ~A11YFOCUSABLE_MASK) | 
+        (focusable ? A11YFOCUSABLE_MASK : 0);
+  }
 
   public void setTextSelectionSetable(boolean isTextSelectionSetable) {
     actionFlags = (actionFlags & ~TEXT_SELECTION_SETABLE_MASK) | 
@@ -483,6 +505,37 @@ public class ShadowAccessibilityNodeInfo {
     }
   }
 
+  @Implementation
+  public void addAction (int action) {
+    switch (action) {
+      case AccessibilityNodeInfo.ACTION_CLICK:
+        setClickable(true);
+        break;
+      case AccessibilityNodeInfo.ACTION_LONG_CLICK:
+        setLongClickable(true);
+        break;
+      case AccessibilityNodeInfo.ACTION_SCROLL_FORWARD:
+        setScrollable(true);
+        break;
+#if ($api >= 18)
+      case AccessibilityNodeInfo.ACTION_SET_SELECTION:
+        setTextSelectionSetable(true);
+        break;
+      case AccessibilityNodeInfo.ACTION_PASTE:
+        setPasteable(true);
+        break;
+#end
+      case AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS:
+        setA11yFocusable(true);
+        break;
+      case AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS:
+        setA11yFocusClearable(true);
+        break;
+      default:
+        break;
+    }
+  }
+
   /**
    * Obtain flags for actions supported. Currently only supports ACTION_CLICK, ACTION_LONG_CLICK,
    * ACTION_SCROLL_FORWARD, ACTION_PASTE, ACTION_FOCUS, ACTION_SET_SELECTION, ACTION_SCROLL_BACKWARD
@@ -501,7 +554,8 @@ public class ShadowAccessibilityNodeInfo {
     actions |= (isPasteable()) ? AccessibilityNodeInfo.ACTION_PASTE : 0;
     actions |= (isTextSelectionSetable()) ? AccessibilityNodeInfo.ACTION_SET_SELECTION : 0;
 #end
-    actions |= (isFocusable()) ? AccessibilityNodeInfo.ACTION_FOCUS : 0;
+    actions |= (isA11yFocusable()) ? AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS : 0;
+    actions |= (isA11yFocusClearable()) ? AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS : 0;
     return actions;
   }
 
@@ -540,6 +594,10 @@ public class ShadowAccessibilityNodeInfo {
       case AccessibilityNodeInfo.ACTION_SCROLL_FORWARD:
         actionResult = isScrollable();
         break;
+      case AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS:
+        actionResult = isA11yFocusable();
+      case AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS:
+        actionResult = isA11yFocusClearable();      
       default:
         break;
     }
