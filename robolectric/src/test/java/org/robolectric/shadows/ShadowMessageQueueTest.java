@@ -116,7 +116,7 @@ public class ShadowMessageQueueTest {
         from(Handler.class, handler),
         from(int.class, what),
         from(Object.class, token)
-        );    
+    );
   }
   
   
@@ -219,7 +219,7 @@ public class ShadowMessageQueueTest {
   @Test
   public void reset_shouldSetNewScheduler() {
     Scheduler old = shadowQueue.getScheduler();
-    shadowQueue.reset();
+    shadowOf(looper).reset();
     assertThat(shadowQueue.getScheduler()).isNotSameAs(old);
   }
-  }
+}

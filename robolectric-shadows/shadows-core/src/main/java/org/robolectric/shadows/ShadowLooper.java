@@ -72,6 +72,7 @@ public class ShadowLooper {
     } else {
       loopingLoopers.put(Thread.currentThread(), realObject);
     }
+    resetScheduler();
   }
 
   @Implementation
@@ -306,11 +307,22 @@ public class ShadowLooper {
     return wasPaused;
   }
 
+  public void resetScheduler() {
+    ShadowMessageQueue sQueue = shadowOf(realObject.getQueue());
+    if (this == getShadowMainLooper() || !Boolean.getBoolean("robolectric.scheduling.advanced")) {
+      sQueue.setScheduler(new Scheduler());
+    } else {
+      sQueue.setScheduler(getShadowMainLooper().getScheduler());
+    }
+  }
+
   /**
    * Causes all enqueued tasks to be discarded, and pause state to be reset
    */
   public void reset() {
     shadowOf(realObject.getQueue()).reset();
+    resetScheduler();
+
     quit = false;
   }
 

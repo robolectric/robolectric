@@ -15,6 +15,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.internal.ParallelUniverse;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.res.builder.RobolectricPackageManager;
+import org.robolectric.shadows.ShadowApplication;
 
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -36,6 +37,27 @@ public class ParallelUniverseTest {
   public void setUp() throws InitializationError {
     pu = new ParallelUniverse(new RobolectricTestRunner(ParallelUniverseTest.class));
     pu.setSdkConfig(new SdkConfig(18));
+  }
+
+  @Test
+  public void setUpApplicationState_setsBackgroundScheduler_toBeSameAsForeground_whenAdvancedScheduling() {
+    System.setProperty("robolectric.scheduling.advanced", "true");
+    try {
+      pu.setUpApplicationState(null, new DefaultTestLifecycle(), null, null, getDefaultConfig());
+      final ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
+      assertThat(shadowApplication.getBackgroundThreadScheduler())
+          .isSameAs(shadowApplication.getForegroundThreadScheduler());
+    } finally {
+      System.getProperties().remove("robolectric.scheduling.advanced");
+    }
+  }
+
+  @Test
+  public void setUpApplicationState_setsBackgroundScheduler_toBeDifferentToForeground_byDefault() {
+    pu.setUpApplicationState(null, new DefaultTestLifecycle(), null, null, getDefaultConfig());
+    final ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
+    assertThat(shadowApplication.getBackgroundThreadScheduler())
+        .isNotSameAs(shadowApplication.getForegroundThreadScheduler());
   }
 
   @Test

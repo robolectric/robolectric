@@ -71,7 +71,7 @@ public class ShadowApplication extends ShadowContextWrapper {
   private Map<String, Intent> stickyIntents = new LinkedHashMap<>();
   private Looper mainLooper = Looper.myLooper();
   private Handler mainHandler = new Handler(mainLooper);
-  private Scheduler backgroundScheduler = new Scheduler();
+  private Scheduler backgroundScheduler = Boolean.getBoolean("robolectric.scheduling.advanced") ? getForegroundThreadScheduler() : new Scheduler();
   private Map<String, Map<String, Object>> sharedPreferenceMap = new HashMap<>();
   private ArrayList<Toast> shownToasts = new ArrayList<>();
   private PowerManager.WakeLock latestWakeLock;
@@ -170,7 +170,7 @@ public class ShadowApplication extends ShadowContextWrapper {
    * @return  Foreground scheduler.
    */
   public Scheduler getForegroundThreadScheduler() {
-    return shadowOf(Looper.getMainLooper()).getScheduler();
+    return ShadowLooper.getShadowMainLooper().getScheduler();
   }
 
   /**
