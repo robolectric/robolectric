@@ -7,10 +7,7 @@ import android.app.Application;
 import android.app.Dialog;
 import android.app.Fragment;
 import android.appwidget.AppWidgetProvider;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.SharedPreferences;
+import android.content.*;
 import android.content.pm.ActivityInfo;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteCursor;
@@ -815,6 +812,24 @@ public class ShadowActivityTest {
 
     assertThat(activity.getParentActivityIntent().getComponent().getClassName())
         .isEqualTo(ParentActivity.class.getName());
+  }
+
+  @Test
+  public void getCallingActivity_defaultsToNull() {
+    Activity activity = new Activity();
+
+    assertNull(activity.getCallingActivity());
+  }
+
+  @Test
+  public void getCallingActivity_returnsSetValue() {
+    Activity activity = new Activity();
+    ComponentName componentName = new ComponentName("com.example.package", "SomeActivity");
+
+    ShadowActivity shadowActivity = shadowOf(activity);
+    shadowActivity.setCallingActivity(componentName);
+
+    assertEquals(componentName, activity.getCallingActivity());
   }
 
   /////////////////////////////

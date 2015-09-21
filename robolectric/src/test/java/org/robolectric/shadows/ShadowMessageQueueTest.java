@@ -5,6 +5,7 @@ import java.util.List;
 
 import android.os.Build;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.os.MessageQueue;
 
@@ -13,7 +14,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
-import org.robolectric.annotation.Config;
 import org.robolectric.util.Scheduler;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -23,6 +23,7 @@ import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowMessageQueueTest {
+  private Looper looper;
   private MessageQueue queue;
   private ShadowMessageQueue shadowQueue;
   private Message testMessage;
@@ -33,19 +34,33 @@ public class ShadowMessageQueueTest {
   private static class TestHandler extends Handler {
     public List<Message> handled = new ArrayList<>();
     
+    public TestHandler(Looper looper) {
+      super(looper);
+    }
+    
     @Override
     public void handleMessage(Message msg) {
       handled.add(msg);
     }
   }
   
+  private static Looper newLooper() {
+    return newLooper(true);
+  }
+  
+  private static Looper newLooper(boolean canQuit) {
+    return callConstructor(Looper.class, from(boolean.class, canQuit));
+  }
+  
   @Before
   public void setUp() throws Exception {
-    handler = new TestHandler();
-    scheduler = shadowOf(handler.getLooper()).getScheduler();
-    scheduler.pause();
-    queue = callConstructor(MessageQueue.class, from(boolean.class, true));
+    // Queues and loopers are closely linked; can't easily test one without the other.
+    looper = newLooper();
+    handler = new TestHandler(looper);
+    queue = looper.getQueue(); 
     shadowQueue = shadowOf(queue);
+    scheduler = shadowQueue.getScheduler();
+    scheduler.pause();
     testMessage = handler.obtainMessage();
     quitField = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT ? "mQuitting" : "mQuiting";
   }
@@ -165,7 +180,7 @@ public class ShadowMessageQueueTest {
   
   @Test
   public void dispatchedMessage_isMarkedInUse_andRecycled() {
-    Handler handler = new Handler() {
+    Handler handler = new Handler(looper) {
       @Override
       public void handleMessage(Message msg) {
         boolean inUse = callInstanceMethod(msg, "isInUse");
@@ -196,8 +211,15 @@ public class ShadowMessageQueueTest {
     handler.sendMessage(msg2);
     assertThat(handler.hasMessages(1234)).as("before-1234").isTrue();
     assertThat(handler.hasMessages(5678)).as("before-5678").isTrue();
-    shadowOf(handler.getLooper().getQueue()).reset();
+    shadowQueue.reset();
     assertThat(handler.hasMessages(1234)).as("after-1234").isFalse();
     assertThat(handler.hasMessages(5678)).as("after-5678").isFalse();
   }
-}
+
+  @Test
+  public void reset_shouldSetNewScheduler() {
+    Scheduler old = shadowQueue.getScheduler();
+    shadowQueue.reset();
+    assertThat(shadowQueue.getScheduler()).isNotSameAs(old);
+  }
+  }

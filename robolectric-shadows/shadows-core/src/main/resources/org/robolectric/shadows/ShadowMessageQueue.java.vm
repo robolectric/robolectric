@@ -31,6 +31,7 @@ public class ShadowMessageQueue {
   @RealObject
   private MessageQueue realQueue;
 
+  private Scheduler scheduler = new Scheduler();
 #if ($api >= 21)
 #set($recycle = "recycleUnchecked")
 #else
@@ -68,6 +69,10 @@ public class ShadowMessageQueue {
     return false;
   }
 
+  public Scheduler getScheduler() {
+    return scheduler;
+  }
+
   public Message getHead() {
     return getField(realQueue, "mMessages");
   }
@@ -78,13 +83,13 @@ public class ShadowMessageQueue {
 
   public void reset() {
     setHead(null);
+    scheduler = new Scheduler();
   }
   
   @Implementation
   public boolean enqueueMessage(final Message msg, long when) {
     final boolean retval = directlyOn(realQueue, MessageQueue.class, "enqueueMessage", from(Message.class, msg), from(long.class, when));
     if (retval) {
-      final Scheduler scheduler = shadowOf(msg.getTarget().getLooper()).getScheduler();
       final Runnable callback = new Runnable() {
         @Override
         public void run() {

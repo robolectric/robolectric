@@ -70,6 +70,16 @@ public class ShadowAlarmManagerTest {
   }
   
   @Test
+  public void setShouldNotReplaceAlarmsScheduledOnDifferentTime() {
+    Intent intent = new Intent(activity, activity.getClass());
+    long firstAtMillis = 1;
+    long secondAtMillis = 2;
+    alarmManager.set(AlarmManager.ELAPSED_REALTIME, firstAtMillis, PendingIntent.getActivity(activity, 0, intent, 0));
+    alarmManager.set(AlarmManager.ELAPSED_REALTIME, secondAtMillis, PendingIntent.getActivity(activity, 0, intent, 0));
+    assertEquals(2, shadowAlarmManager.getScheduledAlarms().size());
+  }
+
+  @Test
   public void setRepeatingShouldReplaceDuplicates() {
     alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME, 0, AlarmManager.INTERVAL_HOUR, PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
     alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME, 0, AlarmManager.INTERVAL_HOUR, PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
