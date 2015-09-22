@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 
+import static org.robolectric.util.Scheduler.IdleState.*;
+
 /**
  * Class that manages a queue of Runnables that are scheduled to run now (or at some time in
  * the future). Runnables that are scheduled to run on the UI thread (tasks, animations, etc)
@@ -23,35 +25,91 @@ import java.util.ListIterator;
  * </ul>
  */
 public class Scheduler {
+
+  /**
+   * Describes the current state of a {@link Scheduler}.
+   */
+  public static enum IdleState {
+    /**
+     * The <tt>Scheduler</tt> will not automatically advance the clock nor execute any runnables.
+     */
+    PAUSED,
+    /**
+     * The <tt>Scheduler</tt>'s clock won't automatically advance the clock but will automatically
+     * execute any runnables scheduled to execute at or before the current time.
+     */
+    UNPAUSED,
+    /**
+     * The <tt>Scheduler</tt> will automatically execute any runnables (past, present or future)
+     * as soon as they are posted and advance the clock if necessary.
+     */
+    CONSTANT_IDLE
+  }
+
   private long currentTime = 100;
-  private boolean paused = false;
-  private boolean isConstantlyIdling = false;
   private boolean isExecutingRunnable = false;
   private final Thread associatedThread = Thread.currentThread();
   private final List<ScheduledRunnable> runnables = new ArrayList<>();
+  private IdleState idleState = UNPAUSED;
 
   /**
-   * Get the current time (as seen by the scheduler).
+   * Retrieves the current idling state of this <tt>Scheduler</tt>.
+   * @return The current idle state of this <tt>Scheduler</tt>.
+   * @see #setIdleState(IdleState)
+   * @see #isPaused()
+   */
+  public synchronized IdleState getIdleState() {
+    return idleState;
+  }
+
+  /**
+   * Sets the current idling state of this <tt>Scheduler</tt>. If transitioning to the
+   * {@link IdleState#UNPAUSED} state any tasks scheduled to be run at or before the current time
+   * will be run, and if transitioning to the {@link IdleState#CONSTANT_IDLE} state all scheduled
+   * tasks will be run and the clock advanced to the time of the last runnable.
+   * @param idleState The new idle state of this <tt>Scheduler</tt>.
+   * @see #setIdleState(IdleState)
+   * @see #isPaused()
+   */
+  public synchronized void setIdleState(IdleState idleState) {
+    this.idleState = idleState;
+    switch (idleState) {
+      case UNPAUSED:
+        advanceBy(0);
+        break;
+      case CONSTANT_IDLE:
+        advanceToLastPostedRunnable();
+        break;
+    }
+  }
+
+  /**
+   * Get the current time (as seen by the scheduler), in milliseconds.
    *
-   * @return  Current time.
+   * @return  Current time in milliseconds.
    */
   public synchronized long getCurrentTime() {
     return currentTime;
   }
 
   /**
-   * Pause the scheduler.
+   * Pause the scheduler. Equivalent to <tt>setIdleState(PAUSED)</tt>.
+   *
+   * @see #unPause()
+   * @see #setIdleState(IdleState)
    */
   public synchronized void pause() {
-    paused = true;
+    setIdleState(PAUSED);
   }
 
   /**
-   * Un-pause the scheduler.
+   * Un-pause the scheduler. Equivalent to <tt>setIdleState(UNPAUSED)</tt>.
+   *
+   * @see #pause()
+   * @see #setIdleState(IdleState)
    */
   public synchronized void unPause() {
-    paused = false;
-    advanceBy(0);
+    setIdleState(UNPAUSED);
   }
 
   /**
@@ -60,7 +118,7 @@ public class Scheduler {
    * @return  <tt>true</tt> if it is paused.
    */
   public synchronized boolean isPaused() {
-    return paused;
+    return idleState == PAUSED;
   }
 
   /**
@@ -79,7 +137,7 @@ public class Scheduler {
    * @param delayMillis Delay in millis.
    */
   public synchronized void postDelayed(Runnable runnable, long delayMillis) {
-    if ((!isConstantlyIdling && (paused || delayMillis > 0)) || Thread.currentThread() != associatedThread) {
+    if ((idleState != CONSTANT_IDLE && (isPaused() || delayMillis > 0)) || Thread.currentThread() != associatedThread) {
       queueRunnableAndSort(runnable, currentTime + delayMillis);
     } else {
       runOrQueueRunnable(runnable, currentTime + delayMillis);
@@ -92,7 +150,7 @@ public class Scheduler {
    * @param runnable  Runnable to add.
    */
   public synchronized void postAtFrontOfQueue(Runnable runnable) {
-    if (paused || Thread.currentThread() != associatedThread) {
+    if (isPaused() || Thread.currentThread() != associatedThread) {
       runnables.add(0, new ScheduledRunnable(runnable, currentTime));
     } else {
       runOrQueueRunnable(runnable, currentTime);
@@ -194,8 +252,7 @@ public class Scheduler {
    */
   public synchronized void reset() {
     runnables.clear();
-    paused = false;
-    isConstantlyIdling = false;
+    idleState = UNPAUSED;
   }
 
   /**
@@ -208,12 +265,18 @@ public class Scheduler {
   }
 
   /**
-   * Set the idle state of the Scheduler.
+   * Set the idle state of the Scheduler. If necessary, the clock will be advanced and runnables
+   * executed as required by the newly-set state.
    *
-   * @param shouldIdleConstantly  True if the scheduler should idle.
+   * @param shouldIdleConstantly  If <tt>true</tt> the idle state will be set to
+   *                              {@link IdleState#CONSTANT_IDLE}, otherwise it will be set to
+   *                              {@link IdleState#UNPAUSED}.
+   * @deprecated This method is ambiguous in how it should behave when turning off constant idle.
+   * Use {@link #setIdleState(IdleState)} instead to explicitly set the state.
    */
+  @Deprecated
   public void idleConstantly(boolean shouldIdleConstantly) {
-    isConstantlyIdling = shouldIdleConstantly;
+    setIdleState(shouldIdleConstantly ? CONSTANT_IDLE : UNPAUSED);
   }
 
   private boolean nextTaskIsScheduledBefore(long endingTime) {
@@ -237,10 +300,13 @@ public class Scheduler {
     // The runnable we just ran may have queued other runnables. If there are
     // any pending immediate execution we should run these now too, unless we are
     // paused.
-    if (isConstantlyIdling) {
-      advanceToLastPostedRunnable();
-    } else if (!paused) {
-      advanceBy(0);
+    switch (idleState) {
+      case CONSTANT_IDLE:
+        advanceToLastPostedRunnable();
+        break;
+      case UNPAUSED:
+        advanceBy(0);
+        break;
     }
   }
 
