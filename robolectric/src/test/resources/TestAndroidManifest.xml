@@ -20,8 +20,14 @@
     <activity android:name="org.robolectric.shadows.ShadowActivityTest$ChildActivity"
         android:parentActivityName="org.robolectric.shadows.ShadowActivityTest$ParentActivity"/>
 
-      <activity android:name="org.robolectric.res.DefaultRobolectricPackageManagerTest$ActivityWithMetadata">
-          <meta-data android:name="someName" android:value="someValue"/>
-      </activity>
+    <activity android:name="org.robolectric.res.DefaultRobolectricPackageManagerTest$ActivityWithMetadata">
+        <meta-data android:name="someName" android:value="someValue"/>
+    </activity>
+
+    <activity android:name="org.robolectric.shadows.ShadowActivityTest$LabelTestActivity1" />
+    <activity android:name="org.robolectric.shadows.ShadowActivityTest$LabelTestActivity2"
+              android:label="@string/activity_name"/>
+    <activity android:name=".shadows.ShadowActivityTest$LabelTestActivity3"
+              android:label="@string/activity_name"/>
   </application>
 </manifest>
