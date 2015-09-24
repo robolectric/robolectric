@@ -2,12 +2,12 @@ package org.robolectric.util;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.robolectric.Robolectric;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.util.Scheduler.IdleState.*;
 
 public class SchedulerTest {
   private final Scheduler scheduler = new Scheduler();
@@ -22,6 +22,72 @@ public class SchedulerTest {
   }
 
   @Test
+  public void whenIdleStateIsConstantIdle_isPausedReturnsFalse() {
+    scheduler.setIdleState(CONSTANT_IDLE);
+    assertThat(scheduler.isPaused()).isFalse();
+  }
+
+  @Test
+  public void whenIdleStateIsUnPaused_isPausedReturnsFalse() {
+    scheduler.setIdleState(UNPAUSED);
+    assertThat(scheduler.isPaused()).isFalse();
+  }
+
+  @Test
+  public void whenIdleStateIsPaused_isPausedReturnsTrue() {
+    scheduler.setIdleState(PAUSED);
+    assertThat(scheduler.isPaused()).isTrue();
+  }
+
+  @Test
+  public void pause_setsIdleState() {
+    scheduler.setIdleState(UNPAUSED);
+    scheduler.pause();
+    assertThat(scheduler.getIdleState()).isSameAs(PAUSED);
+  }
+
+  @Test
+  @SuppressWarnings("deprecation")
+  public void idleConstantly_setsIdleState() {
+    scheduler.setIdleState(UNPAUSED);
+    scheduler.idleConstantly(true);
+    assertThat(scheduler.getIdleState()).isSameAs(CONSTANT_IDLE);
+    scheduler.idleConstantly(false);
+    assertThat(scheduler.getIdleState()).isSameAs(UNPAUSED);
+  }
+
+  @Test
+  public void unPause_setsIdleState() {
+    scheduler.setIdleState(PAUSED);
+    scheduler.unPause();
+    assertThat(scheduler.getIdleState()).isSameAs(UNPAUSED);
+  }
+
+  @Test
+  public void setIdleStateToUnPause_shouldRunPendingTasks() {
+    scheduler.postDelayed(new AddToTranscript("one"), 0);
+    scheduler.postDelayed(new AddToTranscript("two"), 0);
+    scheduler.postDelayed(new AddToTranscript("three"), 1000);
+    transcript.assertNoEventsSoFar();
+    final long time = scheduler.getCurrentTime();
+    scheduler.setIdleState(UNPAUSED);
+    transcript.assertEventsSoFar("one", "two");
+    assertThat(scheduler.getCurrentTime()).as("time").isEqualTo(time);
+  }
+
+  @Test
+  public void setIdleStateToConstantIdle_shouldRunAllTasks() {
+    scheduler.postDelayed(new AddToTranscript("one"), 0);
+    scheduler.postDelayed(new AddToTranscript("two"), 0);
+    scheduler.postDelayed(new AddToTranscript("three"), 1000);
+    transcript.assertNoEventsSoFar();
+    final long time = scheduler.getCurrentTime();
+    scheduler.setIdleState(CONSTANT_IDLE);
+    transcript.assertEventsSoFar("one", "two", "three");
+    assertThat(scheduler.getCurrentTime()).as("time").isEqualTo(time + 1000);
+  }
+
+  @Test
   public void unPause_shouldRunPendingTasks() {
     scheduler.postDelayed(new AddToTranscript("one"), 0);
     scheduler.postDelayed(new AddToTranscript("two"), 0);
@@ -32,7 +98,20 @@ public class SchedulerTest {
     transcript.assertEventsSoFar("one", "two");
     assertThat(scheduler.getCurrentTime()).as("time").isEqualTo(time);
   }
-  
+
+  @Test
+  @SuppressWarnings("deprecation")
+  public void idleConstantlyTrue_shouldRunAllTasks() {
+    scheduler.postDelayed(new AddToTranscript("one"), 0);
+    scheduler.postDelayed(new AddToTranscript("two"), 0);
+    scheduler.postDelayed(new AddToTranscript("three"), 1000);
+    transcript.assertNoEventsSoFar();
+    final long time = scheduler.getCurrentTime();
+    scheduler.idleConstantly(true);
+    transcript.assertEventsSoFar("one", "two", "three");
+    assertThat(scheduler.getCurrentTime()).as("time").isEqualTo(time + 1000);
+  }
+
   @Test
   public void advanceTo_shouldAdvanceTimeEvenIfThereIsNoWork() throws Exception {
     scheduler.advanceTo(1000);
@@ -76,7 +155,7 @@ public class SchedulerTest {
 
   @Test
   public void postDelayed_whileIdlingConstantly_executesImmediately() {
-    scheduler.idleConstantly(true);
+    scheduler.setIdleState(CONSTANT_IDLE);
     scheduler.postDelayed(new AddToTranscript("one"), 1000);
 
     transcript.assertEventsSoFar("one");
@@ -84,7 +163,7 @@ public class SchedulerTest {
   
   @Test
   public void postDelayed_whileIdlingConstantly_advancesTime() {
-    scheduler.idleConstantly(true);
+    scheduler.setIdleState(CONSTANT_IDLE);
     scheduler.postDelayed(new AddToTranscript("one"), 1000);
 
     assertThat(scheduler.getCurrentTime()).isEqualTo(1000 + startTime);
@@ -320,7 +399,7 @@ public class SchedulerTest {
   @Test
   public void nestedPostDelayed_whenIdlingConstantly_automaticallyExecutes3After() {
     final List<Integer> order = new ArrayList<>();
-    scheduler.idleConstantly(true);
+    scheduler.setIdleState(CONSTANT_IDLE);
     scheduler.postDelayed(new Runnable() {
       @Override
       public void run() {
@@ -353,7 +432,7 @@ public class SchedulerTest {
 
     try {
       scheduler.unPause();
-    } catch (RuntimeException e) { }
+    } catch (RuntimeException ignored) { }
 
     scheduler.post(new Runnable() {
       @Override
