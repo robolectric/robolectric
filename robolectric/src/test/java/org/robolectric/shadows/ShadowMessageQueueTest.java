@@ -215,11 +215,4 @@ public class ShadowMessageQueueTest {
     assertThat(handler.hasMessages(1234)).as("after-1234").isFalse();
     assertThat(handler.hasMessages(5678)).as("after-5678").isFalse();
   }
-
-  @Test
-  public void reset_shouldSetNewScheduler() {
-    Scheduler old = shadowQueue.getScheduler();
-    shadowOf(looper).reset();
-    assertThat(shadowQueue.getScheduler()).isNotSameAs(old);
-  }
 }

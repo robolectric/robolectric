@@ -6,6 +6,8 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
 
+import org.robolectric.RoboSettings;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -309,10 +311,10 @@ public class ShadowLooper {
 
   public void resetScheduler() {
     ShadowMessageQueue sQueue = shadowOf(realObject.getQueue());
-    if (this == getShadowMainLooper() || !Boolean.getBoolean("robolectric.scheduling.advanced")) {
-      sQueue.setScheduler(new Scheduler());
+    if (this == getShadowMainLooper() || RoboSettings.isUseGlobalScheduler()) {
+      sQueue.setScheduler(RuntimeEnvironment.getMasterScheduler());
     } else {
-      sQueue.setScheduler(getShadowMainLooper().getScheduler());
+      sQueue.setScheduler(new Scheduler());
     }
   }
 

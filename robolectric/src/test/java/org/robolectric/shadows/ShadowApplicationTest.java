@@ -35,6 +35,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.DefaultTestLifecycle;
 import org.robolectric.R;
+import org.robolectric.RoboSettings;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
@@ -52,6 +53,7 @@ import org.robolectric.res.ResourceIndex;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.TypedResource;
 import org.robolectric.test.TemporaryFolder;
+import org.robolectric.util.Scheduler;
 import org.robolectric.util.TestBroadcastReceiver;
 
 import java.io.File;
@@ -594,6 +596,30 @@ public class ShadowApplicationTest {
     final ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
     assertThat(shadowApplication.getForegroundThreadScheduler()).isSameAs(Robolectric.getForegroundThreadScheduler());
     assertThat(shadowApplication.getBackgroundThreadScheduler()).isSameAs(Robolectric.getBackgroundThreadScheduler());
+  }
+
+  @Test
+  public void getForegroundThreadScheduler_shouldMatchRuntimeEnvironment() {
+    Scheduler s = new Scheduler();
+    RuntimeEnvironment.setMasterScheduler(s);
+    final ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
+    assertThat(shadowApplication.getForegroundThreadScheduler()).isSameAs(s);
+  }
+
+  @Test
+  public void getBackgroundThreadScheduler_shouldDifferFromRuntimeEnvironment_byDefault() {
+    Scheduler s = new Scheduler();
+    RuntimeEnvironment.setMasterScheduler(s);
+    final ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
+    assertThat(shadowApplication.getBackgroundThreadScheduler()).isNotSameAs(RuntimeEnvironment.getMasterScheduler());
+  }
+
+  @Test
+  public void getBackgroundThreadScheduler_shouldDifferFromRuntimeEnvironment_withAdvancedScheduling() {
+    Scheduler s = new Scheduler();
+    RuntimeEnvironment.setMasterScheduler(s);
+    final ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
+    assertThat(shadowApplication.getBackgroundThreadScheduler()).isNotSameAs(s);
   }
 
   /////////////////////////////

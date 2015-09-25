@@ -1,6 +1,7 @@
 package org.robolectric;
 
 import org.junit.Test;
+import org.robolectric.util.Scheduler;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -68,5 +69,12 @@ public class RuntimeEnvironmentTest {
     Thread t = new Thread();
     RuntimeEnvironment.setMainThread(t);
     assertThat(RuntimeEnvironment.isMainThread(t)).isTrue();
+  }
+
+  @Test
+  public void getSetMasterScheduler() {
+    Scheduler s = new Scheduler();
+    RuntimeEnvironment.setMasterScheduler(s);
+    assertThat(RuntimeEnvironment.getMasterScheduler()).isSameAs(s);
   }
 }
