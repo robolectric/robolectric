@@ -10,6 +10,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.Scheduler;
 import org.robolectric.util.TestRunnable;
 import org.robolectric.util.Transcript;
 
@@ -81,6 +82,8 @@ public class ShadowHandlerTest {
 
     Looper looper2 = newLooper(true);
     ShadowLooper.pauseLooper(looper2);
+    // Make sure looper has a different scheduler to the first
+    shadowOf(looper2.getQueue()).setScheduler(new Scheduler());
 
     Handler handler1 = new Handler(looper1);
     handler1.post(new Say("first thing"));

@@ -15,6 +15,8 @@ import org.robolectric.annotation.Config;
 import org.robolectric.internal.ParallelUniverse;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.res.builder.RobolectricPackageManager;
+import org.robolectric.shadows.ShadowApplication;
+import org.robolectric.shadows.ShadowLooper;
 
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -38,11 +40,46 @@ public class ParallelUniverseTest {
     pu.setSdkConfig(new SdkConfig(18));
   }
 
+  private void setUpApplicationStateDefaults() {
+    pu.setUpApplicationState(null, new DefaultTestLifecycle(), null, null, getDefaultConfig());
+  }
+
+  @Test
+  public void setUpApplicationState_configuresGlobalScheduler() {
+    RuntimeEnvironment.setMasterScheduler(null);
+    setUpApplicationStateDefaults();
+    assertThat(RuntimeEnvironment.getMasterScheduler())
+        .isNotNull()
+        .isSameAs(ShadowLooper.getShadowMainLooper().getScheduler())
+        .isSameAs(ShadowApplication.getInstance().getForegroundThreadScheduler());
+  }
+
+  @Test
+  public void setUpApplicationState_setsBackgroundScheduler_toBeSameAsForeground_whenAdvancedScheduling() {
+    RoboSettings.setUseGlobalScheduler(true);
+    try {
+      setUpApplicationStateDefaults();
+      final ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
+      assertThat(shadowApplication.getBackgroundThreadScheduler())
+          .isSameAs(shadowApplication.getForegroundThreadScheduler())
+          .isSameAs(RuntimeEnvironment.getMasterScheduler());
+    } finally {
+      RoboSettings.setUseGlobalScheduler(false);
+    }
+  }
+
+  @Test
+  public void setUpApplicationState_setsBackgroundScheduler_toBeDifferentToForeground_byDefault() {
+    setUpApplicationStateDefaults();
+    final ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
+    assertThat(shadowApplication.getBackgroundThreadScheduler())
+        .isNotSameAs(shadowApplication.getForegroundThreadScheduler());
+  }
+
   @Test
   public void setUpApplicationState_setsMainThread() {
     RuntimeEnvironment.setMainThread(new Thread());
-    Config c = getDefaultConfig();
-    pu.setUpApplicationState(null, new DefaultTestLifecycle(), null, null, c);
+    setUpApplicationStateDefaults();
     assertThat(RuntimeEnvironment.isMainThread()).isTrue();
   }
 
@@ -59,8 +96,7 @@ public class ParallelUniverseTest {
     Thread t = new Thread() {
       @Override
       public void run() {
-        Config c = new Config.Implementation(new int[0], Config.DEFAULT, "", "org.robolectric", "res", "assets", new Class[0], Application.class, new String[0], null);
-        pu.setUpApplicationState(null, new DefaultTestLifecycle(), null, null, c);
+        setUpApplicationStateDefaults();
         res.set(RuntimeEnvironment.isMainThread());
       }
     };

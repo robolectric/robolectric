@@ -20,7 +20,9 @@ import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResBundle;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.builder.DefaultPackageManager;
+import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.Scheduler;
 
 import java.lang.reflect.Method;
 import java.security.Security;
@@ -68,6 +70,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   @Override
   public void setUpApplicationState(Method method, TestLifecycle testLifecycle, ResourceLoader systemResourceLoader, AndroidManifest appManifest, Config config) {
     RuntimeEnvironment.application = null;
+    RuntimeEnvironment.setMasterScheduler(new Scheduler());
     RuntimeEnvironment.setMainThread(Thread.currentThread());
     RuntimeEnvironment.setRobolectricPackageManager(new DefaultPackageManager(shadowsAdapter));
     RuntimeEnvironment.getRobolectricPackageManager().addPackage(DEFAULT_PACKAGE_NAME);
@@ -100,6 +103,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     if (Looper.myLooper() == null) {
       Looper.prepareMainLooper();
     }
+    ShadowLooper.getShadowMainLooper().resetScheduler();
     Object activityThread = ReflectionHelpers.newInstance(activityThreadClass);
     RuntimeEnvironment.setActivityThread(activityThread);
 

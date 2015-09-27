@@ -29,6 +29,8 @@ import android.view.LayoutInflater;
 import android.widget.ListPopupWindow;
 import android.widget.PopupWindow;
 import android.widget.Toast;
+
+import org.robolectric.RoboSettings;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
@@ -71,7 +73,7 @@ public class ShadowApplication extends ShadowContextWrapper {
   private Map<String, Intent> stickyIntents = new LinkedHashMap<>();
   private Looper mainLooper = Looper.myLooper();
   private Handler mainHandler = new Handler(mainLooper);
-  private Scheduler backgroundScheduler = new Scheduler();
+  private Scheduler backgroundScheduler = RoboSettings.isUseGlobalScheduler() ? getForegroundThreadScheduler() : new Scheduler();
   private Map<String, Map<String, Object>> sharedPreferenceMap = new HashMap<>();
   private ArrayList<Toast> shownToasts = new ArrayList<>();
   private PowerManager.WakeLock latestWakeLock;
@@ -170,7 +172,7 @@ public class ShadowApplication extends ShadowContextWrapper {
    * @return  Foreground scheduler.
    */
   public Scheduler getForegroundThreadScheduler() {
-    return shadowOf(Looper.getMainLooper()).getScheduler();
+    return RuntimeEnvironment.getMasterScheduler();
   }
 
   /**

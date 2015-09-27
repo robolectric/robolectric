@@ -6,6 +6,8 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
 
+import org.robolectric.RoboSettings;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -72,6 +74,7 @@ public class ShadowLooper {
     } else {
       loopingLoopers.put(Thread.currentThread(), realObject);
     }
+    resetScheduler();
   }
 
   @Implementation
@@ -306,11 +309,22 @@ public class ShadowLooper {
     return wasPaused;
   }
 
+  public void resetScheduler() {
+    ShadowMessageQueue sQueue = shadowOf(realObject.getQueue());
+    if (this == getShadowMainLooper() || RoboSettings.isUseGlobalScheduler()) {
+      sQueue.setScheduler(RuntimeEnvironment.getMasterScheduler());
+    } else {
+      sQueue.setScheduler(new Scheduler());
+    }
+  }
+
   /**
    * Causes all enqueued tasks to be discarded, and pause state to be reset
    */
   public void reset() {
     shadowOf(realObject.getQueue()).reset();
+    resetScheduler();
+
     quit = false;
   }
 
