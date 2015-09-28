@@ -4,13 +4,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.concurrent.TimeUnit;
 
+import static java.util.concurrent.TimeUnit.*;
 import static org.robolectric.util.Scheduler.IdleState.*;
 
 /**
  * Class that manages a queue of Runnables that are scheduled to run now (or at some time in
  * the future). Runnables that are scheduled to run on the UI thread (tasks, animations, etc)
- * eventually get routed to a Scheduler instance.
+ * eventually get routed to a Scheduler instance. If
+ * {@link org.robolectric.RoboSettings#isUseMasterScheduler()} is <tt>true</tt>, then there will
+ * only be one instance of this class which is used by all components in the test.
  * 
  * The execution of a scheduler can be in one of three states:
  * <ul><li>paused ({@link #pause()}): if paused, then no posted events will be run unless the Scheduler
@@ -23,6 +27,10 @@ import static org.robolectric.util.Scheduler.IdleState.*;
  * <tt>true</tt>, then the Scheduler will continue looping through posted events
  * (including future events), advancing its clock as it goes.</li>
  * </ul>
+ *
+ * The scheduler has nanosecond precision internally, but because the most common post operations
+ * are done in milliseconds (and for backwards compatibility) all of the API methods assume
+ * milliseconds if the required precision is not specified.
  */
 public class Scheduler {
 
@@ -46,7 +54,8 @@ public class Scheduler {
     CONSTANT_IDLE
   }
 
-  private long currentTime = 100;
+  /** Time for this scheduler, measured in nanoseconds. */
+  private long currentTime = 100000000;
   private boolean isExecutingRunnable = false;
   private final Thread associatedThread = Thread.currentThread();
   private final List<ScheduledRunnable> runnables = new ArrayList<>();
@@ -84,12 +93,25 @@ public class Scheduler {
   }
 
   /**
-   * Get the current time (as seen by the scheduler), in milliseconds.
+   * Get the current time (as seen by the scheduler), in milliseconds. Equivalent to
+   * {@link #getCurrentTime(TimeUnit) getCurrentTime(MILLISECONDS}}.
    *
-   * @return  Current time in milliseconds.
+   * @return  Current time of this scheduler in milliseconds.
+   * @see #getCurrentTime(TimeUnit)
    */
   public synchronized long getCurrentTime() {
-    return currentTime;
+    return getCurrentTime(MILLISECONDS);
+  }
+
+  /**
+   * Get the current time (as seen by the scheduler), in the specified units.
+   *
+   * @param units the time units in which to return the current time.
+   * @return  Current time in the given time units.
+   * @see #getCurrentTime()
+   */
+  public synchronized long getCurrentTime(TimeUnit units) {
+    return units.convert(currentTime, NANOSECONDS);
   }
 
   /**
@@ -131,16 +153,30 @@ public class Scheduler {
   }
 
   /**
-   * Add a runnable to the queue to be run after a delay.
+   * Add a runnable to the queue to be run after a delay. Equivalent to
+   * {@link #postDelayed(Runnable, long, TimeUnit) postDelayed(runnable,delayMillis,MILLISECONDS}}.
    *
-   * @param runnable    Runnable to add.
-   * @param delayMillis Delay in millis.
+   * @param runnable    the {@link Runnable} to add to the queue.
+   * @param delayMillis delay in milliseconds.
+   * @see #postDelayed(Runnable, long, TimeUnit)
    */
   public synchronized void postDelayed(Runnable runnable, long delayMillis) {
-    if ((idleState != CONSTANT_IDLE && (isPaused() || delayMillis > 0)) || Thread.currentThread() != associatedThread) {
-      queueRunnableAndSort(runnable, currentTime + delayMillis);
+    postDelayed(runnable, delayMillis, MILLISECONDS);
+  }
+
+  /**
+   * Add a runnable to the queue to be run after a delay.
+   *
+   * @param runnable Runnable to add.
+   * @param delay    delay (in the specified time units).
+   * @param units    the time units used to measure the delay.
+   */
+  public synchronized void postDelayed(Runnable runnable, long delay, TimeUnit units) {
+    final long postTimeNanos = currentTime + units.toNanos(delay);
+    if ((idleState != CONSTANT_IDLE && (isPaused() || delay > 0)) || Thread.currentThread() != associatedThread) {
+      queueRunnableAndSort(runnable, postTimeNanos);
     } else {
-      runOrQueueRunnable(runnable, currentTime + delayMillis);
+      runOrQueueRunnable(runnable, postTimeNanos);
     }
   }
 
@@ -178,7 +214,7 @@ public class Scheduler {
    * @return  True if a runnable was executed.
    */
   public synchronized boolean advanceToLastPostedRunnable() {
-    return size() >= 1 && advanceTo(runnables.get(runnables.size() - 1).scheduledTime);
+    return size() >= 1 && advanceTo(runnables.get(runnables.size() - 1).scheduledTime, NANOSECONDS);
   }
 
   /**
@@ -187,43 +223,77 @@ public class Scheduler {
    * @return  True if a runnable was executed.
    */
   public synchronized boolean advanceToNextPostedRunnable() {
-    return size() >= 1 && advanceTo(runnables.get(0).scheduledTime);
+    return size() >= 1 && advanceTo(runnables.get(0).scheduledTime, NANOSECONDS);
   }
 
   /**
-   * Run all runnables that are scheduled to run in the next time interval.
+   * Run all runnables that are scheduled to run in the next time interval. The clock is advanced
+   * by the specified amount. Equivalent to
+   * {@link #advanceBy(long, TimeUnit) advanceBy(interval, MILLISECONDS)}.
    *
    * @param   interval  Time interval (in millis).
-   * @return  True if a runnable was executed.
+   * @return  True if a runnable was executed while the clock was being advanced.
+   * @see #advanceBy(long, TimeUnit)
+   * @see #advanceTo(long)
    */
   public synchronized boolean advanceBy(long interval) {
-    long endingTime = currentTime + interval;
-    return advanceTo(endingTime);
+    return advanceBy(interval, MILLISECONDS);
+  }
+
+  /**
+   * Run all runnables that are scheduled to run in the next time interval. The clock is advanced
+   * by the specified amount.
+   *
+   * @param   interval  time interval (in the given units).
+   * @param   units the time units in which the interval is specified.
+   * @return  <tt>true</tt> if a runnable was executed.
+   * @see #advanceBy(long)
+   * @see #advanceTo(long, TimeUnit)
+   */
+  public synchronized boolean advanceBy(long interval, TimeUnit units) {
+    return advanceTo(currentTime + units.toNanos(interval), NANOSECONDS);
+  }
+
+  /**
+   * Run all runnables that are scheduled before the endTime. Equivalent to
+   * {@link #advanceTo(long, TimeUnit) advanceTo(endTime, MILLISECONDS)}.
+   *
+   * @param   endTime  future time to advance to, in milliseconds.
+   * @return  <tt>true</tt> if a runnable was executed.
+   * @see #advanceTo(long, TimeUnit)
+   * @see #advanceBy(long)
+   */
+  public synchronized boolean advanceTo(long endTime) {
+    return advanceTo(endTime, MILLISECONDS);
   }
 
   /**
    * Run all runnables that are scheduled before the endTime.
    *
-   * @param   endTime   Future time.
-   * @return  True if a runnable was executed.
+   * @param   endTime future time to advance to.
+   * @param   units   units in which <tt>endTime</tt> is measured.
+   * @return  <tt>true</tt> if a runnable was executed.
+   * @see #advanceTo(long)
+   * @see #advanceBy(long, TimeUnit)
    */
-  public synchronized boolean advanceTo(long endTime) {
-    if (endTime - currentTime < 0 || size() < 1) {
-      currentTime = endTime;
+  public synchronized boolean advanceTo(long endTime, TimeUnit units) {
+    final long endTimeNanos = units.toNanos(endTime);
+    if (endTimeNanos - currentTime < 0 || size() < 1) {
+      currentTime = endTimeNanos;
       return false;
     }
 
     int runCount = 0;
-    while (nextTaskIsScheduledBefore(endTime)) {
+    while (nextTaskIsScheduledBefore(endTimeNanos)) {
       runOneTask();
       ++runCount;
     }
-    currentTime = endTime;
+    currentTime = endTimeNanos;
     return runCount > 0;
   }
 
   /**
-   * Run the next runnable in the queue.
+   * Run the next runnable in the queue, advancing the clock if necessary.
    *
    * @return  True if a runnable was executed.
    */
@@ -241,14 +311,15 @@ public class Scheduler {
   /**
    * Determine if any enqueued runnables are enqueued before the current time.
    *
-   * @return  True if any runnables can be executed.
+   * @return  <tt>true</tt> if any runnables can be executed.
    */
   public synchronized boolean areAnyRunnable() {
     return nextTaskIsScheduledBefore(currentTime);
   }
 
   /**
-   * Reset the internal state of the Scheduler.
+   * Reset the internal state of the Scheduler. Clears the runnable queue and sets the
+   * <tt>idleState</tt> back to {@link IdleState#UNPAUSED UNPAUSED}.
    */
   public synchronized void reset() {
     runnables.clear();
@@ -315,8 +386,9 @@ public class Scheduler {
     Collections.sort(runnables);
   }
 
-  private class ScheduledRunnable implements Comparable<ScheduledRunnable> {
+  private class ScheduledRunnable implements Comparable<ScheduledRunnable>, Runnable {
     private final Runnable runnable;
+    /** Scheduled time in nanoseconds. */
     private final long scheduledTime;
 
     private ScheduledRunnable(Runnable runnable, long scheduledTime) {
@@ -329,6 +401,7 @@ public class Scheduler {
       return (int) (scheduledTime - runnable.scheduledTime);
     }
 
+    @Override
     public void run() {
       isExecutingRunnable = true;
       try {
@@ -336,6 +409,11 @@ public class Scheduler {
       } finally {
         isExecutingRunnable = false;
       }
+    }
+
+    @Override
+    public String toString() {
+      return "[" + scheduledTime + "]: " + runnable;
     }
   }
 }
