@@ -1,62 +1,75 @@
 package org.robolectric.shadows;
 
 import android.os.SystemClock;
+
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.HiddenApi;
+import org.robolectric.annotation.Resetter;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * Shadow for {@link android.os.SystemClock}.
  *
- * <p>The concept of current time is base on the current time of the UI Scheduler for
- * consistency with previous implementations. This is not ideal, since both schedulers
- * (background and foreground), can see different values for the current time.</p>
+ * <p>The concept of current time is base on the current time of the master scheduler
+ * (see {@link RuntimeEnvironment#getMasterScheduler()}. Note that unless you set the global
+ * scheduling option, the background scheduler will have its own concept of current time which may
+ * not be consistent with the master scheduler. See {@link org.robolectric.RoboSettings}.
  */
 @Implements(SystemClock.class)
 public class ShadowSystemClock {
-  private static long bootedAt = 0;
-  private static long nanoTime = 0;
-  private static final int MILLIS_PER_NANO = 1000000;
-
-  static long now() {
-    if (ShadowApplication.getInstance() == null) {
-      return 0;
-    }
-    return ShadowApplication.getInstance().getForegroundThreadScheduler().getCurrentTime();
-  }
+  /** Specifies the offset (in nanoseconds) between the current master clock and the wall clock. */
+  private static long wallClockOffsetNanos = 0;
 
   @Implementation
   public static void sleep(long millis) {
-    if (ShadowApplication.getInstance() == null) {
-      return;
-    }
-
-    nanoTime = millis * MILLIS_PER_NANO;
-    ShadowApplication.getInstance().getForegroundThreadScheduler().advanceBy(millis);
+    // TODO: This implementation of sleep() is flawed as it will cause events to execute, which
+    // obviously they should not if the thread is sleeping. It will also effectively cause all
+    // loopers to sleep in the same way.
+    RuntimeEnvironment.getMasterScheduler().advanceBy(millis);
   }
 
+  /**
+   * Implements {@link SystemClock#setCurrentTimeMillis(long)}. Equivalent to
+   * {@link #setCurrentTime(long, TimeUnit) setCurrentTime(millis, TimeUnit.MILLISECONDS}}.
+   * @param millis the new wall clock time in milliseconds.
+   * @return <tt>true</tt> if the clock was successfully set.
+   */
   @Implementation
   public static boolean setCurrentTimeMillis(long millis) {
-    if (ShadowApplication.getInstance() == null) {
-      return false;
-    }
+    return setCurrentTime(millis, TimeUnit.MILLISECONDS);
+  }
 
-    if (now() > millis) {
-      return false;
-    }
-    nanoTime = millis * MILLIS_PER_NANO;
-    ShadowApplication.getInstance().getForegroundThreadScheduler().advanceTo(millis);
+  /**
+   * Sets the current (wall clock) time with the specified precision.
+   *
+   * @param newCurrentTime the new wall clock time.
+   * @param units the units in which the new time is specified.
+   * @return <tt>true</tt> if the clock was successfully set. At present this call always succeeds.
+   */
+  public static boolean setCurrentTime(long newCurrentTime, TimeUnit units) {
+    // TODO: Need to issue system notifications when the wall clock time changes.
+    final long nanoTime    = units.toNanos(newCurrentTime);
+    final long currentTime = RuntimeEnvironment.getMasterScheduler().getCurrentTime(TimeUnit.NANOSECONDS);
+    wallClockOffsetNanos = nanoTime - currentTime;
     return true;
   }
 
   @Implementation
   public static long uptimeMillis() {
-    return now() - bootedAt;
+    return RuntimeEnvironment.getMasterScheduler().getCurrentTime();
   }
 
   @Implementation
   public static long elapsedRealtime() {
     return uptimeMillis();
+  }
+
+  @Implementation
+  public static long elapsedRealtimeNanos() {
+    return nanoTime();
   }
 
   @Implementation
@@ -67,13 +80,23 @@ public class ShadowSystemClock {
   @HiddenApi
   @Implementation
   public static long currentThreadTimeMicro() {
-    return uptimeMillis() * 1000;
+    return RuntimeEnvironment.getMasterScheduler().getCurrentTime(TimeUnit.MICROSECONDS);
+  }
+
+  /**
+   * Retrieves the simulated wall clock time in nanoseconds.
+   *
+   * @return The simulated wall clock time, in nanoseconds.
+   */
+  public static long currentTimeNanos() {
+    return RuntimeEnvironment.getMasterScheduler().getCurrentTime(TimeUnit.NANOSECONDS) +
+        wallClockOffsetNanos;
   }
 
   @HiddenApi
   @Implementation
   public static long currentTimeMicro() {
-    return now() * 1000;
+    return TimeUnit.NANOSECONDS.toMicros(currentTimeNanos());
   }
 
   /**
@@ -81,9 +104,8 @@ public class ShadowSystemClock {
    *
    * @return Current time in millis.
    */
-  @SuppressWarnings("unused")
-  public static long currentTimeMillis() {
-    return nanoTime / MILLIS_PER_NANO;
+ public static long currentTimeMillis() {
+    return TimeUnit.NANOSECONDS.toMillis(currentTimeNanos());
   }
 
   /**
@@ -91,12 +113,16 @@ public class ShadowSystemClock {
    *
    * @return Current time with nanos.
    */
-  @SuppressWarnings("unused")
   public static long nanoTime() {
-    return nanoTime;
+    return RuntimeEnvironment.getMasterScheduler().getCurrentTime(TimeUnit.NANOSECONDS);
   }
 
-  public static void setNanoTime(long nanoTime) {
-    ShadowSystemClock.nanoTime = nanoTime;
+  @Resetter
+  public static void reset() {
+    wallClockOffsetNanos = 0;
   }
+//
+//  public static void setNanoTime(long nanoTime) {
+//    ShadowSystemClock.nanoTime = nanoTime;
+//  }
 }
