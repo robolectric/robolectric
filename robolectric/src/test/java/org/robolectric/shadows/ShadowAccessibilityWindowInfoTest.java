@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityWindowInfo;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,6 +18,8 @@ public class ShadowAccessibilityWindowInfoTest {
 
   @Before
   public void setUp() {
+    ShadowAccessibilityWindowInfo.resetObtainedInstances();
+    assertThat(ShadowAccessibilityWindowInfo.areThereUnrecycledWindows(true)).isEqualTo(false);
     window = ShadowAccessibilityWindowInfo.obtain();
     assertThat(window == null).isEqualTo(false);
     shadow = shadowOf(window);
