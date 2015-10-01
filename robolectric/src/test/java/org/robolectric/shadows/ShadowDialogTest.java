@@ -7,6 +7,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
+import junit.framework.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
@@ -16,12 +17,11 @@ import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.Transcript;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNull;
-import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
+import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.TestUtil.assertInstanceOf;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
@@ -74,7 +74,7 @@ public class ShadowDialogTest {
   @Test
   public void shouldSetCancelable() {
     Dialog dialog = new Dialog(RuntimeEnvironment.application);
-    ShadowDialog shadow = Shadows.shadowOf(dialog);
+    ShadowDialog shadow = shadowOf(dialog);
 
     dialog.setCancelable(false);
     assertThat(shadow.isCancelable()).isFalse();
@@ -90,7 +90,7 @@ public class ShadowDialogTest {
   @Test
   public void shouldDefaultCancelableToTrueAsTheSDKDoes() throws Exception {
     Dialog dialog = new Dialog(RuntimeEnvironment.application);
-    ShadowDialog shadow = Shadows.shadowOf(dialog);
+    ShadowDialog shadow = shadowOf(dialog);
 
     assertThat(shadow.isCancelable()).isTrue();
   }
@@ -179,6 +179,19 @@ public class ShadowDialogTest {
   public void show_shouldWorkWithAPI19() {
     Dialog dialog = new Dialog(RuntimeEnvironment.application);
     dialog.show();
+  }
+
+  @Test
+  public void canSetAndGetOnCancelListener() {
+    Dialog dialog = new Dialog(RuntimeEnvironment.application);
+    DialogInterface.OnCancelListener onCancelListener = new DialogInterface.OnCancelListener() {
+      @Override
+      public void onCancel(DialogInterface dialog) {
+
+      }
+    };
+    dialog.setOnCancelListener(onCancelListener);
+    assertSame(onCancelListener, shadowOf(dialog).getOnCancelListener());
   }
 
   private static class TestDialog extends Dialog {
