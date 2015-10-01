@@ -6,6 +6,7 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Looper;
 import android.view.Window;
 import android.widget.LinearLayout;
@@ -42,6 +43,40 @@ public class ActivityControllerTest {
   public void canCreateActivityNotListedInManifest() {
     ActivityController<Activity> activityController = Robolectric.buildActivity(Activity.class);
     assertThat(activityController.setup()).isNotNull();
+  }
+
+  public static class TestDelayedPostActivity extends Activity {
+    TestRunnable r1 = new TestRunnable();
+    TestRunnable r2 = new TestRunnable();
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+      super.onCreate(savedInstanceState);
+      Handler h = new Handler();
+      h.post(r1);
+      h.postDelayed(r2, 60000);
+    }
+  }
+
+  @Test
+  public void pendingTasks_areRunEagerly_whenActivityIsStarted_andSchedulerUnPaused() {
+    final Scheduler s = Robolectric.getForegroundThreadScheduler();
+    final long startTime = s.getCurrentTime();
+    TestDelayedPostActivity activity = Robolectric.setupActivity(TestDelayedPostActivity.class);
+    assertThat(activity.r1.wasRun).as("immediate task").isTrue();
+    assertThat(s.getCurrentTime()).as("currentTime").isEqualTo(startTime);
+  }
+
+  @Test
+  public void delayedTasks_areNotRunEagerly_whenActivityIsStarted_andSchedulerUnPaused() {
+    // Regression test for issue #1509
+    final Scheduler s = Robolectric.getForegroundThreadScheduler();
+    final long startTime = s.getCurrentTime();
+    TestDelayedPostActivity activity = Robolectric.setupActivity(TestDelayedPostActivity.class);
+    assertThat(activity.r2.wasRun).as("before flush").isFalse();
+    assertThat(s.getCurrentTime()).as("currentTime before flush").isEqualTo(startTime);
+    s.advanceToLastPostedRunnable();
+    assertThat(activity.r2.wasRun).as("after flush").isTrue();
+    assertThat(s.getCurrentTime()).as("currentTime after flush").isEqualTo(startTime + 60000);
   }
 
   @Test
