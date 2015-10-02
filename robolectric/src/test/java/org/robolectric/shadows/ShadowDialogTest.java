@@ -191,7 +191,7 @@ public class ShadowDialogTest {
       }
     };
     dialog.setOnCancelListener(onCancelListener);
-    assertSame(onCancelListener, shadowOf(dialog).getOnCancelListener());
+    assertThat(onCancelListener).isSameAs(shadowOf(dialog).getOnCancelListener());
   }
 
   private static class TestDialog extends Dialog {
