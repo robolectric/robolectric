@@ -5,7 +5,6 @@ import android.os.Parcelable;
 import android.text.TextUtils;
 import android.util.SparseArray;
 import android.view.accessibility.AccessibilityEvent;
-import android.view.accessibility.AccessibilityRecord;
 
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -103,8 +102,8 @@ public class ShadowAccessibilityEvent extends ShadowAccessibilityRecord {
             ((ShadowAccessibilityEvent) ShadowExtractor.extract(wrapper.mEvent));
 
         System.err.println(String.format(
-            "Leaked AccessibilityEvent. Stack trace of allocation:",
-            shadow.getContentDescription()));
+            "Leaked AccessibilityEvent type: %d. Stack trace of allocation:",
+            shadow.getEventType()));
         for (final StackTraceElement stackTraceElement : obtainedInstances.get(wrapper)) {
           System.err.println(stackTraceElement.toString());
         }
@@ -121,7 +120,6 @@ public class ShadowAccessibilityEvent extends ShadowAccessibilityRecord {
   public static void resetObtainedInstances() {
     obtainedInstances.clear();
     orderedInstances.clear();
-    sAllocationCount = 0;
   }
 
   @Implementation
@@ -142,7 +140,6 @@ public class ShadowAccessibilityEvent extends ShadowAccessibilityRecord {
       }
     }
     orderedInstances.remove(keyOfWrapper);
-    sAllocationCount--;
     setParcelableData(null);
   }
 
