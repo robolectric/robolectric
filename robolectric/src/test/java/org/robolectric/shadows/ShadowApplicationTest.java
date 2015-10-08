@@ -29,7 +29,11 @@ import android.os.Parcel;
 import android.os.RemoteException;
 import android.os.UserManager;
 import android.print.PrintManager;
+import android.view.Gravity;
 import android.view.accessibility.AccessibilityManager;
+import android.widget.LinearLayout;
+import android.widget.PopupWindow;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -620,6 +624,16 @@ public class ShadowApplicationTest {
     RuntimeEnvironment.setMasterScheduler(s);
     final ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
     assertThat(shadowApplication.getBackgroundThreadScheduler()).isNotSameAs(s);
+  }
+
+  @Test
+  public void getLatestPopupWindow() {
+    PopupWindow pw = new PopupWindow(new LinearLayout(RuntimeEnvironment.application));
+
+    pw.showAtLocation(new LinearLayout(RuntimeEnvironment.application), Gravity.CENTER, 0, 0);
+
+    PopupWindow latestPopupWindow = ShadowApplication.getInstance().getLatestPopupWindow();
+    assertThat(latestPopupWindow).isSameAs(pw);
   }
 
   /////////////////////////////
