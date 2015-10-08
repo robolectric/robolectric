@@ -41,7 +41,7 @@ public class FragmentController<F extends Fragment> extends ComponentController<
       @Override
       public void run() {
         if (!attached) attach();
-        activityController.create().get().getFragmentManager().beginTransaction().add(fragment, null).commit();
+        activityController.create(bundle).get().getFragmentManager().beginTransaction().add(fragment, null).commit();
       }
     });
     return this;
@@ -98,6 +98,16 @@ public class FragmentController<F extends Fragment> extends ComponentController<
       @Override
       public void run() {
         activityController.stop();
+      }
+    });
+    return this;
+  }
+
+  public FragmentController<F> saveInstanceState(final Bundle outState) {
+    shadowMainLooper.runPaused(new Runnable() {
+      @Override
+      public void run() {
+        activityController.saveInstanceState(outState);
       }
     });
     return this;
