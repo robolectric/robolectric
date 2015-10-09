@@ -49,4 +49,12 @@ public class ShadowPaintTest {
     paint.setTextAlign(Paint.Align.CENTER);
     assertThat(paint.getTextAlign()).isEqualTo(Paint.Align.CENTER);
   }
+
+  @Test
+  public void measureTextActuallyMeasuresLength() throws Exception {
+    Paint paint = Shadow.newInstanceOf(Paint.class);
+    assertThat(paint.measureText("Hello")).isEqualTo(5);
+    assertThat(paint.measureText("Hello", 1, 3)).isEqualTo(2);
+    assertThat(paint.measureText(new StringBuilder("Hello"), 1, 4)).isEqualTo(3);
+  }
 }
