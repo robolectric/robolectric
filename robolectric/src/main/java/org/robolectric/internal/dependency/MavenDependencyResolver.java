@@ -31,7 +31,7 @@ public class MavenDependencyResolver implements DependencyResolver {
    */
   @Override
   public URL[] getLocalArtifactUrls(DependencyJar... dependencies) {
-    DependenciesTask dependenciesTask = new DependenciesTask();
+    DependenciesTask dependenciesTask = createDependenciesTask();
     configureMaven(dependenciesTask);
     RemoteRepository remoteRepository = new RemoteRepository();
     remoteRepository.setUrl(repositoryUrl);
@@ -79,6 +79,10 @@ public class MavenDependencyResolver implements DependencyResolver {
       key += ":" + dependency.getClassifier();
     }
     return key;
+  }
+
+  protected DependenciesTask createDependenciesTask() {
+    return new DependenciesTask();
   }
 
   protected void configureMaven(DependenciesTask dependenciesTask) {
