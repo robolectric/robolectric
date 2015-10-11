@@ -24,6 +24,7 @@
 #   4.4_r1      - Kit Kat
 #   5.0.0_r2    - Lollipop
 #   5.1.1_r9    - Lollipop MR1
+#   6.0.0_r1    - Marshmallow
 #
 # Environment Variables:
 #   BUILD_ROOT        - Path to AOSP source directory
@@ -34,7 +35,7 @@
 #   2. repo init -u https://android.googlesource.com/platform/manifest -b <android-version>
 #   3. repo sync
 #   4. source build/envsetup.sh
-#   5. lunch aosp_x86-eng (or something like android_x86-eng)
+#   5. lunch aosp_x64-eng
 #   6. make -j8  # probably can just run 'make -j8 snod', but we haven't tested it http://elinux.org/Android_Build_System#Make_targets
 #   7. run this script
 #   8. Profit!
@@ -91,6 +92,8 @@ build_platform() {
     elif [[ "${ANDROID_VERSION}" == "5.0.0_r2" ]]; then
         ARTIFACTS=("core-libart" "services" "telephony-common" "framework" "android.policy" "ext")
     elif [[ "${ANDROID_VERSION}" == "5.1.1_r9" ]]; then
+        ARTIFACTS=("core-libart" "services" "telephony-common" "framework" "android.policy" "ext")
+    elif [[ "${ANDROID_VERSION}" == "6.0.0_r1" ]]; then
         ARTIFACTS=("core-libart" "services" "telephony-common" "framework" "android.policy" "ext")
     else
         echo "Robolectric: No match for version: ${ANDROID_VERSION}"
@@ -258,4 +261,3 @@ mavenize
 
 echo "DONE!!"
 echo "Your artifacts are located here: ${OUT}"
-
