@@ -4,6 +4,7 @@ import org.apache.maven.artifact.ant.DependenciesTask;
 import org.apache.maven.artifact.ant.RemoteRepository;
 import org.apache.maven.model.Dependency;
 import org.apache.tools.ant.Project;
+import org.robolectric.RoboSettings;
 import org.robolectric.util.Util;
 
 import java.net.MalformedURLException;
@@ -16,8 +17,7 @@ public class MavenDependencyResolver implements DependencyResolver {
   private final String repositoryId;
 
   public MavenDependencyResolver() {
-    this(System.getProperty("robolectric.dependency.repo.url", "https://oss.sonatype.org/content/groups/public/"),
-        System.getProperty("robolectric.dependency.repo.id", "sonatype"));
+    this(RoboSettings.getMavenRepositoryUrl(), RoboSettings.getMavenRepositoryId());
   }
 
   public MavenDependencyResolver(String repositoryUrl, String repositoryId) {
