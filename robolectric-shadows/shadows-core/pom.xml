@@ -401,6 +401,32 @@
     </profile>
 
     <profile>
+      <id>android-23</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
+            <configuration>
+              <classifier>${api}</classifier>
+              <outputDirectory>dist</outputDirectory>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+      <dependencies>
+        <dependency>
+          <groupId>org.robolectric</groupId>
+          <artifactId>android-all</artifactId>
+          <version>6.0.0_r1-robolectric-0</version>
+        </dependency>
+      </dependencies>
+      <properties>
+        <api>23</api>
+      </properties>
+    </profile>
+
+    <profile>
       <id>android-latest</id>
       <build>
         <plugins>
@@ -417,11 +443,11 @@
         <dependency>
           <groupId>org.robolectric</groupId>
           <artifactId>android-all</artifactId>
-          <version>5.1.1_r9-robolectric-0</version>
+          <version>6.0.0_r1-robolectric-0</version>
         </dependency>
       </dependencies>
       <properties>
-        <api>22</api>
+        <api>23</api>
       </properties>
       <activation>
         <activeByDefault>true</activeByDefault>
@@ -512,6 +538,12 @@
                       <file>dist/shadows-core-${project.version}-22.jar</file>
                       <type>jar</type>
                       <classifier>22</classifier>
+                    </artifact>
+
+                    <artifact>
+                      <file>dist/shadows-core-${project.version}-23.jar</file>
+                      <type>jar</type>
+                      <classifier>23</classifier>
                     </artifact>
                   </artifacts>
                 </configuration>
