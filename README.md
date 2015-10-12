@@ -57,7 +57,7 @@ Robolectric is built using Maven. Both Eclipse (with the M2Eclipse plug-in) and 
 
 Mavenize all required dependencies by running:
 
-    ./scripts/install-dependencies.sh
+    ./scripts/install-dependencies.rb
 
 Because Robolectric's shadows are compiled against the Android APIs that they target, you must build the shadows for all API levels before being able to run any of the tests. You can build all of Robolectric by running:
 
