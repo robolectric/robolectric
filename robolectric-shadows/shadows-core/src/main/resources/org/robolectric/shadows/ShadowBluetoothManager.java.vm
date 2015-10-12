@@ -1,0 +1,24 @@
+package org.robolectric.shadows;
+
+#if ($api >= 18)
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothManager;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Implementation;
+
+/**
+ * Shadow for {@link android.bluetooth.BluetoothManager}.
+ */
+@Implements(BluetoothManager.class)
+public class ShadowBluetoothManager {
+
+    @Implementation
+    public BluetoothAdapter getAdapter() {
+      return BluetoothAdapter.getDefaultAdapter();
+    }
+}
+#else
+public class ShadowBluetoothManager {
+  // Dummy class, this was added in API 18
+}
+#end
