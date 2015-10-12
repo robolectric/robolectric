@@ -198,4 +198,9 @@ public class ShadowWifiManagerTest {
   public void shouldThrowIllegalArgumentExceptionWhenSignalLevelToHigh() {
     ShadowWifiManager.setSignalLevelInPercent(1.01f);
   }
+
+  @Test
+  public void startScan_shouldNotThrowException() {
+    assertThat(wifiManager.startScan()).isTrue();
+  }
 }

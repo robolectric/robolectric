@@ -118,6 +118,11 @@ public class ShadowWifiManager {
     return (int)(sSignalLevelInPercent*(numLevels-1));
   }
 
+  @Implementation
+  public boolean startScan() {
+    return true;
+  }
+
   public static void setSignalLevelInPercent(float level) {
     if (level < 0 || level > 1) {
       throw new IllegalArgumentException(
