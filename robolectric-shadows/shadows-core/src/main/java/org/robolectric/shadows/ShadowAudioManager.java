@@ -37,6 +37,7 @@ public class ShadowAudioManager {
   private int mode = AudioManager.MODE_NORMAL;
   private boolean wiredHeadsetOn;
   private boolean bluetoothA2dpOn;
+  private boolean isSpeakerphoneOn;
 
   public ShadowAudioManager() {
     for (int stream : ALL_STREAMS) {
@@ -139,6 +140,16 @@ public class ShadowAudioManager {
   @Implementation
   public boolean isBluetoothA2dpOn() {
     return bluetoothA2dpOn;
+  }
+
+  @Implementation
+  public void setSpeakerphoneOn(boolean on) {
+    isSpeakerphoneOn = on;
+  }
+
+  @Implementation
+  public boolean isSpeakerphoneOn() {
+    return isSpeakerphoneOn;
   }
 
   public AudioFocusRequest getLastAudioFocusRequest() {
