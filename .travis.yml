@@ -14,7 +14,7 @@ before_install:
     - echo "y" | android update sdk --no-ui --filter build-tools-20.0.0
     - echo "y" | android update sdk --no-ui --filter android-18
     - echo "y" | android update sdk --no-ui --filter addon-google_apis-google-18,extra-android-m2repository,extra-google-m2repository
-    - ./scripts/install-dependencies.sh
+    - ./scripts/install-dependencies.rb
 
 script:
     - ./scripts/install-robolectric.sh
