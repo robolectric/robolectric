@@ -45,12 +45,9 @@ public class ShadowAlarmManager {
     Intent intent = Shadows.shadowOf(operation).getSavedIntent();
     for (ScheduledAlarm scheduledAlarm : scheduledAlarms) {
       Intent scheduledIntent = Shadows.shadowOf(scheduledAlarm.operation).getSavedIntent();
-      long intentTriggerTime = scheduledAlarm.triggerAtTime;
-      if (triggerAtTime == intentTriggerTime) {
-        if (scheduledIntent.filterEquals(intent)) {
-          scheduledAlarms.remove(scheduledAlarm);
-          break;
-        }
+      if (scheduledIntent.filterEquals(intent)) {
+        scheduledAlarms.remove(scheduledAlarm);
+        break;
       }
     }
     scheduledAlarms.add(new ScheduledAlarm(type, triggerAtTime, interval, operation));
