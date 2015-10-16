@@ -15,14 +15,17 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Transcript;
 
 import java.util.ArrayDeque;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowAsyncTaskTest {
@@ -35,7 +38,7 @@ public class ShadowAsyncTaskTest {
     Robolectric.getForegroundThreadScheduler().pause();
   }
 
-  @Test
+  @Test(timeout=1000)
   public void reset_shouldEmptyExecutorQueue() {
     ArrayDeque<Runnable> serialQueue = ReflectionHelpers.getField(AsyncTask.SERIAL_EXECUTOR, "mTasks");
 
@@ -53,7 +56,14 @@ public class ShadowAsyncTaskTest {
     assertThat(queueSize).as("beforeReset").isGreaterThan(0);
     ShadowAsyncTask.reset();
     assertThat(serialQueue).as("afterReset").isEmpty();
-    assertThat(ReflectionHelpers.getField(AsyncTask.SERIAL_EXECUTOR, "mActive")).as("afterReset.active").isNull();
+    // Although reset() synchronizes with all of the runnables as they exit, there is a slight
+    // delay between the runnable triggering the end flag and the serial executor clearing the last
+    // active task. This seems to make more difference on some machines (eg, Travis). Spin for a
+    // little bit to give the thread a chance to clean up after itself; if it doesn't this test
+    // will timeout and fail.
+    while (ReflectionHelpers.getField(AsyncTask.SERIAL_EXECUTOR, "mActive") != null) {
+      Thread.yield();
+    }
   }
 
   @Test
@@ -108,6 +118,7 @@ public class ShadowAsyncTaskTest {
 
     ShadowLooper.runUiThreadTasks();
     transcript.assertEventsSoFar("onPostExecute c");
+    assertThat(shadowOf(asyncTask).getBackgroundException()).as("bgException").isNull();
   }
 
   @Test
@@ -126,6 +137,7 @@ public class ShadowAsyncTaskTest {
 
     ShadowLooper.runUiThreadTasks();
     transcript.assertEventsSoFar("onCancelled null");
+    assertThat(shadowOf(asyncTask).getBackgroundException()).as("bgException").isNull();
   }
 
   @Test
@@ -144,6 +156,7 @@ public class ShadowAsyncTaskTest {
 
     ShadowLooper.runUiThreadTasks();
     transcript.assertEventsSoFar("onCancelled null");
+    assertThat(shadowOf(asyncTask).getBackgroundException()).as("bgException").isNull();
   }
 
   @Test
@@ -162,6 +175,7 @@ public class ShadowAsyncTaskTest {
 
     ShadowLooper.runUiThreadTasks();
     transcript.assertEventsSoFar("onCancelled c");
+    assertThat(shadowOf(asyncTask).getBackgroundException()).as("bgException").isNull();
   }
 
   @Test
@@ -183,6 +197,7 @@ public class ShadowAsyncTaskTest {
 
     assertThat(asyncTask.cancel(true)).as("cancel").isFalse();
     assertThat(asyncTask.isCancelled()).as("isCancelled").isTrue();
+    assertThat(shadowOf(asyncTask).getBackgroundException()).as("bgException").isNull();
   }
 
   @Test
@@ -210,6 +225,45 @@ public class ShadowAsyncTaskTest {
         "onProgressUpdate 66%",
         "onProgressUpdate 99%",
         "onPostExecute done");
+  }
+
+  @Test
+  public void progressUpdates_shouldStopBeingQueued_onceAborted() throws Exception {
+    AsyncTask<String, String, String> asyncTask = new MyAsyncTask() {
+      @Override
+      protected String doInBackground(String... strings) {
+        publishProgress("33%");
+        shadowOf(this).abort();
+        publishProgress("66%");
+        publishProgress("99%");
+        return "done";
+      }
+    };
+
+    asyncTask.execute("a", "b");
+    transcript.assertEventsSoFar("onPreExecute");
+
+    ShadowApplication.runBackgroundTasks();
+    transcript.assertNoEventsSoFar();
+    assertThat(asyncTask.get(100, TimeUnit.MILLISECONDS)).as("Result should get stored in the AsyncTask").isEqualTo("done");
+
+    ShadowLooper.runUiThreadTasks();
+    transcript.assertEventsSoFar("onProgressUpdate 33%");
+  }
+
+  @Test(timeout=1000)
+  public void whenDoInBackgroundThrows_exceptionIsCaptured() {
+    final RuntimeException e = new RuntimeException("Hi there");
+    AsyncTask<String,String,String> task = new AsyncTask<String, String, String>() {
+      @Override
+      protected String doInBackground(String... params) {
+        throw e;
+      }
+    };
+
+    task.execute("a");
+    ShadowApplication.runBackgroundTasks();
+    assertThat(shadowOf(task).getBackgroundException().getCause()).isSameAs(e);
   }
 
   @Test
