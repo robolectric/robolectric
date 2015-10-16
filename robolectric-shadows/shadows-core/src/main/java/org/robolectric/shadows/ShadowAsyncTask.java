@@ -10,6 +10,7 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.internal.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
+import java.sql.Ref;
 import java.util.Collections;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -20,6 +21,8 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.internal.Shadow.directlyOn;
@@ -74,10 +77,15 @@ public class ShadowAsyncTask<Params, Progress, Result> {
   // Flag indicating that the current request was aborted.
   private AtomicBoolean aborted = new AtomicBoolean(false);
 
+  private AtomicReference<Throwable> thrown = new AtomicReference<>();
+
   /**
    * Aborts the current task. Similar to the standard method {@link AsyncTask#cancel(boolean)}, but
    * this method will ensure that {@link AsyncTask#onCancelled(Object)} is not called. Called by
    * {@link #reset()} when it terminates all running tasks.
+   *
+   * Once this method has been called, the AsyncTask may be left in an inconsistent state & so its
+   * state-related methods cannot be relied on.
    *
    * Note that while this method will prevent further task-related events being scheduled, it will
    * not wait for the background thread to exit (if it has been started already by
@@ -88,21 +96,13 @@ public class ShadowAsyncTask<Params, Progress, Result> {
     startFlag.countDown();
   }
 
+  // Wrapper class that delegates functionality to the class that it wraps. Only need to implement
+  // delegation for the few methods that are actually called by AsyncTask.
   private class FutureTaskWrapper extends FutureTask<Result> {
     private FutureTask<Result> wrapped;
     public FutureTaskWrapper(FutureTask<Result> wrapped) {
       super(wrapped, null);
       this.wrapped = wrapped;
-    }
-
-    @Override
-    public boolean isCancelled() {
-      return wrapped.isCancelled();
-    }
-
-    @Override
-    public boolean isDone() {
-      return wrapped.isDone();
     }
 
     @Override
@@ -121,26 +121,6 @@ public class ShadowAsyncTask<Params, Progress, Result> {
     }
 
     @Override
-    protected void done() {
-      ReflectionHelpers.callInstanceMethod(wrapped, "done");
-    }
-
-    @Override
-    protected void set(Result result) {
-      ReflectionHelpers.callInstanceMethod(wrapped, "set", from(Object.class, result));
-    }
-
-    @Override
-    protected void setException(Throwable t) {
-      ReflectionHelpers.callInstanceMethod(wrapped, "setException", from(Throwable.class, t));
-    }
-
-    @Override
-    protected boolean runAndReset() {
-      return ReflectionHelpers.callInstanceMethod(wrapped, "runAndReset");
-    }
-
-    @Override
     public void run() {
       try {
         // This could be run on the main thread if eg you have an executor which simply
@@ -155,7 +135,13 @@ public class ShadowAsyncTask<Params, Progress, Result> {
         if (aborted.get()) {
           return;
         }
+        // wrapped.run() will call its own chained callable, and then
+        // when it's finished (or cancelled) it will call wrapped.done(), which takes care of the
+        // post-execution step of posting back to the UI thread. In other words, by the time
+        // run() exits, all of the
         wrapped.run();
+      } catch (Throwable t) {
+        thrown.set(t);
       } finally {
         endFlag.countDown();
       }
@@ -171,11 +157,23 @@ public class ShadowAsyncTask<Params, Progress, Result> {
   }
 
   @Implementation
+  public void publishProgress(Progress... values) {
+    if (aborted.get()) {
+      return;
+    }
+    directlyOn(realAsyncTask, AsyncTask.class, "publishProgress", from(Object[].class, values));
+  }
+
+  @Implementation
   public void finish(Result r) {
     if (aborted.get()) {
       return;
     }
     directlyOn(realAsyncTask, AsyncTask.class, "finish", from(Object.class, r));
+  }
+
+  public Throwable getBackgroundException() {
+    return thrown.get();
   }
 
   @Implementation
@@ -185,8 +183,8 @@ public class ShadowAsyncTask<Params, Progress, Result> {
     }
     directlyOn(realAsyncTask, AsyncTask.class, "executeOnExecutor", from(Executor.class, exec), from(Object[].class, params));
     // Once the real execute() has been called, we cannot stop the task from being started on the background
-    // thread. If we need to reset, then we keep track of the tasks so that we can wait for them
-    // to finish before proceeding.
+    // thread. If we need to reset, then we keep track of the tasks that have been queued so that we
+    // can wait for them to exit before proceeding.
     runningTasks.add(realAsyncTask);
     ShadowApplication.getInstance().getBackgroundThreadScheduler().post(new Runnable() {
       public void run() {
