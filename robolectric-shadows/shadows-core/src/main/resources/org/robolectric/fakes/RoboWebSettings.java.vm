@@ -6,80 +6,34 @@ import android.webkit.WebSettings;
  * Robolectric implementation of {@link android.webkit.WebSettings}.
  */
 public class RoboWebSettings extends WebSettings {
-  private boolean allowContentAccess = true;
-  private boolean allowFileAccess = true;
-  private boolean allowFileAccessFromFile = true;
-  private boolean allowUniversalAccessFromFile = true;
-  private boolean appCacheEnabled = false;
   private boolean blockNetworkImage = false;
-  private boolean blockNetworkLoads = false;
-  private boolean builtInZoomControls = true;
-  private boolean databaseEnabled = false;
-  private boolean domStorageEnabled = false;
-  private boolean geolocationEnabled = false;
   private boolean javaScriptEnabled = false;
   private boolean javaScriptCanOpenWindowAutomatically = false;
   private boolean lightTouchEnabled = false;
-  private boolean loadWithOverviewMode = false;
   private boolean needInitialFocus = false;
   private RenderPriority renderPriority = RenderPriority.NORMAL;
   private boolean pluginsEnabled = false;
   private boolean saveFormData = false;
-  private String appCachePath = "appcache";
-  private String databasePath = "database";
-  private String geolocationDatabasePath = "geolocation";
-  private WebSettings.PluginState pluginState = WebSettings.PluginState.OFF;
   private boolean supportMultipleWindows = false;
   private boolean supportZoom = true;
-  private String userAgentString = "Mozilla/5.0 (Linux; U; Android 4.0.3; ko-kr; LG-L160L Build/IML74K) AppleWebkit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30";
   private boolean useWideViewPort = false;
   private int cacheMode;
-  private long appCacheMaxSize;
-  private int textZoom = 100;
-  private boolean displayZoomControls;
   private WebSettings.LayoutAlgorithm layoutAlgorithm = WebSettings.LayoutAlgorithm.NARROW_COLUMNS;
   private String defaultTextEncoding = "UTF-8";
   private int defaultFontSize = 16;
-
-  @Override
-  public void setAllowContentAccess(boolean allow) {
-    allowContentAccess = allow;
-  }
-
-  @Override
-  public boolean getAllowContentAccess() {
-    return allowContentAccess;
-  }
-
-  @Override
-  public boolean getAllowFileAccessFromFileURLs() {
-    return allowFileAccessFromFile;
-  }
-
-  @Override
-  public boolean getAllowUniversalAccessFromFileURLs() {
-    return allowUniversalAccessFromFile;
-  }
-
-  @Override
-  public void setAllowFileAccessFromFileURLs(boolean allow) {
-    allowFileAccessFromFile = allow;
-  }
-
-  @Override
-  public void setAllowUniversalAccessFromFileURLs(boolean allow) {
-    allowUniversalAccessFromFile = allow;
-  }
-
-  @Override
-  public boolean getAllowFileAccess() {
-    return allowFileAccess;
-  }
-
-  @Override
-  public void setAllowFileAccess(boolean allow) {
-    allowFileAccess = allow;
-  }
+  private boolean loadsImagesAutomatically;
+  private int defaultFixedFontSize;
+  private int minimumLogicalFontSize;
+  private int minimumFontSize;
+  private String fantasyFontFamily;
+  private String cursiveFontFamily;
+  private String serifFontFamily;
+  private String sansSerifFontFamily;
+  private String fixedFontFamily;
+  private String standardFontFamily;
+  private boolean savePassword;  
+  private int userAgent;
+  private boolean navDump;
 
   @Override
   public synchronized boolean getBlockNetworkImage() {
@@ -89,46 +43,6 @@ public class RoboWebSettings extends WebSettings {
   @Override
   public synchronized void setBlockNetworkImage(boolean flag) {
     blockNetworkImage = flag;
-  }
-
-  @Override
-  public synchronized boolean getBlockNetworkLoads() {
-    return blockNetworkLoads;
-  }
-
-  @Override
-  public synchronized void setBlockNetworkLoads(boolean flag) {
-    blockNetworkLoads = flag;
-  }
-
-  @Override
-  public boolean getBuiltInZoomControls() {
-    return builtInZoomControls;
-  }
-
-  @Override
-  public void setBuiltInZoomControls(boolean enabled) {
-    builtInZoomControls = enabled;
-  }
-
-  @Override
-  public synchronized boolean getDatabaseEnabled() {
-    return databaseEnabled;
-  }
-
-  @Override
-  public synchronized void setDatabaseEnabled(boolean flag) {
-    databaseEnabled = flag;
-  }
-
-  @Override
-  public synchronized boolean getDomStorageEnabled() {
-    return domStorageEnabled;
-  }
-
-  @Override
-  public synchronized void setDomStorageEnabled(boolean flag) {
-    domStorageEnabled = flag;
   }
 
   @Override
@@ -150,31 +64,6 @@ public class RoboWebSettings extends WebSettings {
   public void setLightTouchEnabled(boolean flag) {
     lightTouchEnabled = flag;
   }
-
-  @Override
-  public boolean getLoadWithOverviewMode() {
-    return loadWithOverviewMode;
-  }
-
-  @Override
-  public void setLoadWithOverviewMode(boolean flag) {
-    loadWithOverviewMode = flag;
-  }
-
-#if ($api >= 17)
-  // > API 17
-  private boolean mediaPlaybackRequiresUserGesture = true;
-
-  @Override
-  public boolean getMediaPlaybackRequiresUserGesture() {
-    return mediaPlaybackRequiresUserGesture;
-  }
-
-  @Override
-  public void setMediaPlaybackRequiresUserGesture(boolean require) {
-    mediaPlaybackRequiresUserGesture = require;
-  }
-#end
 
   public boolean getNeedInitialFocus() {
     return needInitialFocus;
@@ -204,28 +93,8 @@ public class RoboWebSettings extends WebSettings {
     pluginsEnabled = flag;
   }
 
-  @Override
-  public synchronized WebSettings.PluginState getPluginState() {
-    return pluginState;
-  }
-
-  @Override
-  public synchronized void setPluginState(WebSettings.PluginState state) {
-    pluginState = state;
-  }
-
   public boolean getSupportMultipleWindows() {
     return supportMultipleWindows;
-  }
-
-  @Override
-  public synchronized void setDatabasePath(String path) {
-    databasePath = path;
-  }
-
-  @Override
-  public synchronized String getDatabasePath() {
-    return databasePath;
   }
 
   @Override
@@ -243,16 +112,6 @@ public class RoboWebSettings extends WebSettings {
   }
 
   @Override
-  public synchronized void setUserAgentString(String ua) {
-    userAgentString = ua;
-  }
-
-  @Override
-  public synchronized String getUserAgentString() {
-    return userAgentString;
-  }
-
-  @Override
   public void setCacheMode(int mode) {
     this.cacheMode = mode;
   }
@@ -261,33 +120,6 @@ public class RoboWebSettings extends WebSettings {
   public int getCacheMode() {
     return cacheMode;
   }
-
-
-#if ($api >= 21)
-  // API 21
-  private int mixedContentMode;
-
-  @Override
-  public void setMixedContentMode(int mixedContentMode) {
-    this.mixedContentMode = mixedContentMode;
-  }
-
-  @Override
-  public int getMixedContentMode() {
-    return mixedContentMode;
-  }
-
-  @Override
-  public void setVideoOverlayForEmbeddedEncryptedVideoEnabled(boolean b) {
-
-  }
-
-  @Override
-  public boolean getVideoOverlayForEmbeddedEncryptedVideoEnabled() {
-    return false;
-  }
-  // End API 21
-#end
 
   @Override
   public boolean getUseWideViewPort() {
@@ -300,33 +132,6 @@ public class RoboWebSettings extends WebSettings {
   }
 
   @Override
-  public void setAppCacheMaxSize(long appCacheMaxSize) {
-    this.appCacheMaxSize = appCacheMaxSize;
-  }
-
-  public long getAppCacheMaxSize() {
-    return appCacheMaxSize;
-  }
-
-  public String getAppCachePath() {
-    return appCachePath;
-  }
-
-  @Override
-  public void setAppCachePath(String appCachePath) {
-    this.appCachePath = appCachePath;
-  }
-
-  public boolean getAppCacheEnabled() {
-    return appCacheEnabled;
-  }
-
-  @Override
-  public void setAppCacheEnabled(boolean appCacheEnabled) {
-    this.appCacheEnabled = appCacheEnabled;
-  }
-
-  @Override
   public boolean getSaveFormData() {
     return saveFormData;
   }
@@ -334,24 +139,6 @@ public class RoboWebSettings extends WebSettings {
   @Override
   public void setSaveFormData(boolean saveFormData) {
     this.saveFormData = saveFormData;
-  }
-
-  public String getGeolocationDatabasePath() {
-    return geolocationDatabasePath;
-  }
-
-  @Override
-  public void setGeolocationDatabasePath(String geolocationDatabasePath) {
-    this.geolocationDatabasePath = geolocationDatabasePath;
-  }
-
-  public boolean getGeolocationEnabled() {
-    return geolocationEnabled;
-  }
-
-  @Override
-  public void setGeolocationEnabled(boolean geolocationEnabled) {
-    this.geolocationEnabled = geolocationEnabled;
   }
 
   @Override
@@ -365,28 +152,8 @@ public class RoboWebSettings extends WebSettings {
   }
 
   @Override
-  public int getTextZoom() {
-    return textZoom;
-  }
-
-  @Override
-  public void setTextZoom(int textZoom) {
-    this.textZoom = textZoom;
-  }
-
-  @Override
   public synchronized void setLayoutAlgorithm(WebSettings.LayoutAlgorithm algorithm) {
     this.layoutAlgorithm = algorithm;
-  }
-
-  @Override
-  public void setDisplayZoomControls(boolean enabled) {
-    displayZoomControls = enabled;
-  }
-
-  @Override
-  public boolean getDisplayZoomControls() {
-    return displayZoomControls;
   }
 
   @Override
@@ -409,10 +176,6 @@ public class RoboWebSettings extends WebSettings {
     this.defaultFontSize = defaultFontSize;
   }
 
-#if ($api >= 22)
-  // API 22
-  private boolean loadsImagesAutomatically;
-
   @Override
   public boolean getLoadsImagesAutomatically() {
     return loadsImagesAutomatically;
@@ -421,8 +184,6 @@ public class RoboWebSettings extends WebSettings {
   public void setLoadsImagesAutomatically(boolean loadsImagesAutomatically) {
     this.loadsImagesAutomatically = loadsImagesAutomatically;
   }
-
-  private int defaultFixedFontSize;
 
   @Override
   public int getDefaultFixedFontSize() {
@@ -433,8 +194,6 @@ public class RoboWebSettings extends WebSettings {
     this.defaultFixedFontSize = defaultFixedFontSize;
   }
 
-  private int minimumLogicalFontSize;
-
   @Override
   public int getMinimumLogicalFontSize() {
     return minimumLogicalFontSize;
@@ -443,8 +202,6 @@ public class RoboWebSettings extends WebSettings {
   public void setMinimumLogicalFontSize(int minimumLogicalFontSize) {
     this.minimumLogicalFontSize = minimumLogicalFontSize;
   }
-
-  private int minimumFontSize;
 
   @Override
   public int getMinimumFontSize() {
@@ -455,8 +212,6 @@ public class RoboWebSettings extends WebSettings {
     this.minimumFontSize = minimumFontSize;
   }
 
-  private String fantasyFontFamily;
-
   @Override
   public String getFantasyFontFamily() {
     return fantasyFontFamily;
@@ -465,8 +220,6 @@ public class RoboWebSettings extends WebSettings {
   public void setFantasyFontFamily(String fantasyFontFamily) {
     this.fantasyFontFamily = fantasyFontFamily;
   }
-
-  private String cursiveFontFamily;
 
   @Override
   public String getCursiveFontFamily() {
@@ -477,8 +230,6 @@ public class RoboWebSettings extends WebSettings {
     this.cursiveFontFamily = cursiveFontFamily;
   }
 
-  private String serifFontFamily;
-
   @Override
   public String getSerifFontFamily() {
     return serifFontFamily;
@@ -487,8 +238,6 @@ public class RoboWebSettings extends WebSettings {
   public void setSerifFontFamily(String serifFontFamily) {
     this.serifFontFamily = serifFontFamily;
   }
-
-  private String sansSerifFontFamily;
 
   @Override
   public String getSansSerifFontFamily() {
@@ -499,8 +248,6 @@ public class RoboWebSettings extends WebSettings {
     this.sansSerifFontFamily = sansSerifFontFamily;
   }
 
-  private String fixedFontFamily;
-
   @Override
   public String getFixedFontFamily() {
     return fixedFontFamily;
@@ -509,8 +256,6 @@ public class RoboWebSettings extends WebSettings {
   public void setFixedFontFamily(String fixedFontFamily) {
     this.fixedFontFamily = fixedFontFamily;
   }
-
-  private String standardFontFamily;
 
   @Override
   public String getStandardFontFamily() {
@@ -531,7 +276,20 @@ public class RoboWebSettings extends WebSettings {
     return supportMultipleWindows;
   }
 
-  int userAgent;
+  @Override
+  public boolean getSavePassword() {
+    return savePassword;
+  }
+
+  @Override
+  public void setSavePassword(boolean savePassword) {
+    this.savePassword = savePassword;
+  }
+
+  @Override
+  public boolean supportZoom() {
+    return supportZoom;
+  }
 
   @Override
   public int getUserAgent() {
@@ -543,7 +301,106 @@ public class RoboWebSettings extends WebSettings {
     this.userAgent =  userAgent;
   }
 
+  @Override
+  public boolean getNavDump() {
+    return navDump;
+  }
+
+  @Override
+  public void setNavDump(boolean navDump) {
+    this.navDump = navDump;
+  }
+
+#if ($api >= 3)
+  private boolean allowFileAccess = true;
+  private boolean builtInZoomControls = true;
+  private String userAgentString = "Mozilla/5.0 (Linux; U; Android 4.0.3; ko-kr; LG-L160L Build/IML74K) AppleWebkit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30";
+
+  @Override
+  public boolean getAllowFileAccess() {
+    return allowFileAccess;
+  }
+
+  @Override
+  public void setAllowFileAccess(boolean allow) {
+    allowFileAccess = allow;
+  }
+
+  @Override
+  public boolean getBuiltInZoomControls() {
+    return builtInZoomControls;
+  }
+
+  @Override
+  public void setBuiltInZoomControls(boolean enabled) {
+    builtInZoomControls = enabled;
+  }
+
+  @Override
+  public synchronized void setUserAgentString(String ua) {
+    userAgentString = ua;
+  }
+
+  @Override
+  public synchronized String getUserAgentString() {
+    return userAgentString;
+  }
+  // End API 3
+#end
+
+#if ($api >= 5)
+  private boolean databaseEnabled = false;
+  private String databasePath = "database";
+  private String geolocationDatabasePath = "geolocation";
+  private boolean geolocationEnabled = false;
+
+  @Override
+  public synchronized boolean getDatabaseEnabled() {
+    return databaseEnabled;
+  }
+
+  @Override
+  public synchronized void setDatabaseEnabled(boolean flag) {
+    databaseEnabled = flag;
+  }
+
+  @Override
+  public synchronized void setDatabasePath(String path) {
+    databasePath = path;
+  }
+
+  @Override
+  public synchronized String getDatabasePath() {
+    return databasePath;
+  }
+
+  public String getGeolocationDatabasePath() {
+    return geolocationDatabasePath;
+  }
+
+  @Override
+  public void setGeolocationDatabasePath(String geolocationDatabasePath) {
+    this.geolocationDatabasePath = geolocationDatabasePath;
+  }
+
+  public boolean getGeolocationEnabled() {
+    return geolocationEnabled;
+  }
+
+  @Override
+  public void setGeolocationEnabled(boolean geolocationEnabled) {
+    this.geolocationEnabled = geolocationEnabled;
+  }
+  // End API 5
+#end
+
+#if ($api >= 7)
   private ZoomDensity defaultZoom;
+  private boolean domStorageEnabled = false;
+  private boolean loadWithOverviewMode = false;
+  private boolean appCacheEnabled = false;
+  private long appCacheMaxSize;
+  private String appCachePath = "appcache";
 
   @Override
   public void setDefaultZoom(ZoomDensity zoom) {
@@ -555,30 +412,82 @@ public class RoboWebSettings extends WebSettings {
     return defaultZoom;
   }
 
-  private boolean acceptThirdPartyCookies;  
-
   @Override
-  public boolean getAcceptThirdPartyCookies() {
-    return acceptThirdPartyCookies;
+  public synchronized boolean getDomStorageEnabled() {
+    return domStorageEnabled;
   }
 
   @Override
-  public void setAcceptThirdPartyCookies(boolean acceptThirdPartyCookies) {
-    this.acceptThirdPartyCookies = acceptThirdPartyCookies;
-  }
-
-  private boolean savePassword;  
-
-  @Override
-  public boolean getSavePassword() {
-    return savePassword;
+  public synchronized void setDomStorageEnabled(boolean flag) {
+    domStorageEnabled = flag;
   }
 
   @Override
-  public void setSavePassword(boolean savePassword) {
-    this.savePassword = savePassword;
+  public boolean getLoadWithOverviewMode() {
+    return loadWithOverviewMode;
   }
 
+  @Override
+  public void setLoadWithOverviewMode(boolean flag) {
+    loadWithOverviewMode = flag;
+  }
+
+  public boolean getAppCacheEnabled() {
+    return appCacheEnabled;
+  }
+
+  @Override
+  public void setAppCacheEnabled(boolean appCacheEnabled) {
+    this.appCacheEnabled = appCacheEnabled;
+  }
+  
+  @Override
+  public void setAppCacheMaxSize(long appCacheMaxSize) {
+    this.appCacheMaxSize = appCacheMaxSize;
+  }
+
+  public long getAppCacheMaxSize() {
+    return appCacheMaxSize;
+  }
+  
+  public String getAppCachePath() {
+    return appCachePath;
+  }
+
+  @Override
+  public void setAppCachePath(String appCachePath) {
+    this.appCachePath = appCachePath;
+  }
+  // End API 7
+#end
+
+#if ($api >= 8)
+  private boolean blockNetworkLoads = false;
+  private WebSettings.PluginState pluginState = WebSettings.PluginState.OFF;
+
+  @Override
+  public synchronized boolean getBlockNetworkLoads() {
+    return blockNetworkLoads;
+  }
+
+  @Override
+  public synchronized void setBlockNetworkLoads(boolean flag) {
+    blockNetworkLoads = flag;
+  }
+
+  @Override
+  public synchronized WebSettings.PluginState getPluginState() {
+    return pluginState;
+  }
+
+  @Override
+  public synchronized void setPluginState(WebSettings.PluginState state) {
+    pluginState = state;
+  }
+  // End API 8
+#end
+
+#if ($api >= 9)
   private boolean useWebViewBackgroundForOverscrollBackground;
 
   @Override
@@ -590,8 +499,13 @@ public class RoboWebSettings extends WebSettings {
   public void setUseWebViewBackgroundForOverscrollBackground(boolean useWebViewBackgroundForOverscrollBackground) {
     this.useWebViewBackgroundForOverscrollBackground = useWebViewBackgroundForOverscrollBackground;
   }
+  // End API 9
+#end
 
+#if ($api >= 11)
   private boolean enableSmoothTransition;
+  private boolean allowContentAccess = true;
+  private boolean displayZoomControls;
 
   @Override
   public boolean enableSmoothTransition() {
@@ -602,24 +516,119 @@ public class RoboWebSettings extends WebSettings {
   public void setEnableSmoothTransition(boolean enableSmoothTransition) {
     this.enableSmoothTransition = enableSmoothTransition;
   }
-
+  
   @Override
-  public boolean supportZoom() {
-    return supportZoom;
-  }
-
-  private boolean navDump;
-
-  @Override
-  public boolean getNavDump() {
-    return navDump;
+  public void setAllowContentAccess(boolean allow) {
+    allowContentAccess = allow;
   }
 
   @Override
-  public void setNavDump(boolean navDump) {
-    this.navDump = navDump;
+  public boolean getAllowContentAccess() {
+    return allowContentAccess;
   }
 
-  // End API 22
+  @Override
+  public void setDisplayZoomControls(boolean enabled) {
+    displayZoomControls = enabled;
+  }
+
+  @Override
+  public boolean getDisplayZoomControls() {
+    return displayZoomControls;
+  }
+  // End API 11
+#end
+
+#if ($api >= 14)
+  private int textZoom = 100;
+  
+  @Override
+  public int getTextZoom() {
+    return textZoom;
+  }
+
+  @Override
+  public void setTextZoom(int textZoom) {
+    this.textZoom = textZoom;
+  }
+  // End API 14
+#end
+
+#if ($api >= 16)
+  private boolean allowFileAccessFromFile = true;
+  private boolean allowUniversalAccessFromFile = true;
+
+  @Override
+  public boolean getAllowFileAccessFromFileURLs() {
+    return allowFileAccessFromFile;
+  }
+
+  @Override
+  public void setAllowFileAccessFromFileURLs(boolean allow) {
+    allowFileAccessFromFile = allow;
+  }
+
+  @Override
+  public boolean getAllowUniversalAccessFromFileURLs() {
+    return allowUniversalAccessFromFile;
+  }
+
+  @Override
+  public void setAllowUniversalAccessFromFileURLs(boolean allow) {
+    allowUniversalAccessFromFile = allow;
+  }
+  //End API 16
+#end
+
+#if ($api >= 17)
+  private boolean mediaPlaybackRequiresUserGesture = true;
+
+  @Override
+  public boolean getMediaPlaybackRequiresUserGesture() {
+    return mediaPlaybackRequiresUserGesture;
+  }
+
+  @Override
+  public void setMediaPlaybackRequiresUserGesture(boolean require) {
+    mediaPlaybackRequiresUserGesture = require;
+  }
+  //End API 17
+#end
+
+#if ($api >= 21)
+  private int mixedContentMode;
+  private boolean acceptThirdPartyCookies;
+  private boolean videoOverlayForEmbeddedEncryptedVideoEnabled;
+  
+  @Override
+  public void setMixedContentMode(int mixedContentMode) {
+    this.mixedContentMode = mixedContentMode;
+  }
+
+  @Override
+  public int getMixedContentMode() {
+    return mixedContentMode;
+  }
+
+  @Override
+  public void setVideoOverlayForEmbeddedEncryptedVideoEnabled(boolean b) {
+    videoOverlayForEmbeddedEncryptedVideoEnabled = b;
+  }
+
+  @Override
+  public boolean getVideoOverlayForEmbeddedEncryptedVideoEnabled() {
+    return videoOverlayForEmbeddedEncryptedVideoEnabled;
+  }
+  
+  @Override
+  public boolean getAcceptThirdPartyCookies() {
+    return acceptThirdPartyCookies;
+  }
+
+  @Override
+  public void setAcceptThirdPartyCookies(boolean acceptThirdPartyCookies) {
+    this.acceptThirdPartyCookies = acceptThirdPartyCookies;
+  }
+  // End API 21
 #end
 }
