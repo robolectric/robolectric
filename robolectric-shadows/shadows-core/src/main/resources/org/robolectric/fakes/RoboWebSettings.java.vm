@@ -409,8 +409,6 @@ public class RoboWebSettings extends WebSettings {
     this.defaultFontSize = defaultFontSize;
   }
 
-#if ($api >= 22)
-  // API 22
   private boolean loadsImagesAutomatically;
 
   @Override
@@ -543,6 +541,8 @@ public class RoboWebSettings extends WebSettings {
     this.userAgent =  userAgent;
   }
 
+#if ($api >= 7)
+  // API 7
   private ZoomDensity defaultZoom;
 
   @Override
@@ -554,6 +554,8 @@ public class RoboWebSettings extends WebSettings {
   public ZoomDensity getDefaultZoom() {
     return defaultZoom;
   }
+  // End API 7
+#end
 
   private boolean acceptThirdPartyCookies;  
 
@@ -591,6 +593,8 @@ public class RoboWebSettings extends WebSettings {
     this.useWebViewBackgroundForOverscrollBackground = useWebViewBackgroundForOverscrollBackground;
   }
 
+#if ($api >= 11)
+  // API 11
   private boolean enableSmoothTransition;
 
   @Override
@@ -602,6 +606,8 @@ public class RoboWebSettings extends WebSettings {
   public void setEnableSmoothTransition(boolean enableSmoothTransition) {
     this.enableSmoothTransition = enableSmoothTransition;
   }
+  // End API 11
+#end
 
   @Override
   public boolean supportZoom() {
@@ -619,7 +625,4 @@ public class RoboWebSettings extends WebSettings {
   public void setNavDump(boolean navDump) {
     this.navDump = navDump;
   }
-
-  // End API 22
-#end
 }
