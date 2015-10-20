@@ -529,18 +529,6 @@ public class RoboWebSettings extends WebSettings {
     return supportMultipleWindows;
   }
 
-  int userAgent;
-
-  @Override
-  public int getUserAgent() {
-    return userAgent;
-  }
-
-  @Override
-  public void setUserAgent(int userAgent) {
-    this.userAgent =  userAgent;
-  }
-
 #if ($api >= 7)
   // API 7
   private ZoomDensity defaultZoom;
@@ -557,18 +545,6 @@ public class RoboWebSettings extends WebSettings {
   // End API 7
 #end
 
-  private boolean acceptThirdPartyCookies;  
-
-  @Override
-  public boolean getAcceptThirdPartyCookies() {
-    return acceptThirdPartyCookies;
-  }
-
-  @Override
-  public void setAcceptThirdPartyCookies(boolean acceptThirdPartyCookies) {
-    this.acceptThirdPartyCookies = acceptThirdPartyCookies;
-  }
-
   private boolean savePassword;  
 
   @Override
@@ -579,18 +555,6 @@ public class RoboWebSettings extends WebSettings {
   @Override
   public void setSavePassword(boolean savePassword) {
     this.savePassword = savePassword;
-  }
-
-  private boolean useWebViewBackgroundForOverscrollBackground;
-
-  @Override
-  public boolean getUseWebViewBackgroundForOverscrollBackground() {
-    return useWebViewBackgroundForOverscrollBackground;
-  }
-
-  @Override
-  public void setUseWebViewBackgroundForOverscrollBackground(boolean useWebViewBackgroundForOverscrollBackground) {
-    this.useWebViewBackgroundForOverscrollBackground = useWebViewBackgroundForOverscrollBackground;
   }
 
 #if ($api >= 11)
@@ -614,6 +578,44 @@ public class RoboWebSettings extends WebSettings {
     return supportZoom;
   }
 
+#if ($api >= 22)
+  // API 22
+  int userAgent;
+
+  @Override
+  public int getUserAgent() {
+    return userAgent;
+  }
+
+  @Override
+  public void setUserAgent(int userAgent) {
+    this.userAgent =  userAgent;
+  }
+
+  private boolean acceptThirdPartyCookies;  
+
+  @Override
+  public boolean getAcceptThirdPartyCookies() {
+    return acceptThirdPartyCookies;
+  }
+
+  @Override
+  public void setAcceptThirdPartyCookies(boolean acceptThirdPartyCookies) {
+    this.acceptThirdPartyCookies = acceptThirdPartyCookies;
+  }
+
+  private boolean useWebViewBackgroundForOverscrollBackground;
+
+  @Override
+  public boolean getUseWebViewBackgroundForOverscrollBackground() {
+    return useWebViewBackgroundForOverscrollBackground;
+  }
+
+  @Override
+  public void setUseWebViewBackgroundForOverscrollBackground(boolean useWebViewBackgroundForOverscrollBackground) {
+    this.useWebViewBackgroundForOverscrollBackground = useWebViewBackgroundForOverscrollBackground;
+  }
+
   private boolean navDump;
 
   @Override
@@ -625,4 +627,6 @@ public class RoboWebSettings extends WebSettings {
   public void setNavDump(boolean navDump) {
     this.navDump = navDump;
   }
+  // End API 22
+#end
 }
