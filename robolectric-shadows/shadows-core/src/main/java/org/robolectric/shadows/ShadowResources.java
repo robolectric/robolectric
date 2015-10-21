@@ -54,6 +54,7 @@ import static org.robolectric.Shadows.shadowOf;
 @Implements(Resources.class)
 public class ShadowResources {
   private static Resources system = null;
+  private static List<Field> resettableFields;
 
   private float density = 1.0f;
   private DisplayMetrics displayMetrics;
@@ -63,19 +64,31 @@ public class ShadowResources {
 
   @Resetter
   public static void reset() {
-    for (Field field : Resources.class.getDeclaredFields()) {
-      if (Modifier.isStatic(field.getModifiers()) && field.getType().equals(LongSparseArray.class)) {
-        try {
-          field.setAccessible(true);
-          LongSparseArray<?> longSparseArray = (LongSparseArray<?>) field.get(null);
-          if (longSparseArray != null) {
-            longSparseArray.clear();
-          }
-        } catch (IllegalAccessException e) {
-          throw new RuntimeException(e);
+    if (resettableFields == null) {
+      resettableFields = obtainResettableFields();
+    }
+    for (Field field : resettableFields) {
+      try {
+        LongSparseArray<?> longSparseArray = (LongSparseArray<?>) field.get(null);
+        if (longSparseArray != null) {
+          longSparseArray.clear();
         }
+      } catch (IllegalAccessException e) {
+        throw new RuntimeException(e);
       }
     }
+  }
+
+  private static List<Field> obtainResettableFields() {
+    List<Field> resettableFields = new ArrayList<>();
+    Field[] allFields = Resources.class.getDeclaredFields();
+    for (Field field : allFields) {
+      if (Modifier.isStatic(field.getModifiers()) && field.getType().equals(LongSparseArray.class)) {
+        field.setAccessible(true);
+        resettableFields.add(field);
+      }
+    }
+    return resettableFields;
   }
 
   public static void setSystemResources(ResourceLoader systemResourceLoader) {
