@@ -286,6 +286,18 @@ public class RoboWebSettings extends WebSettings {
   public boolean getVideoOverlayForEmbeddedEncryptedVideoEnabled() {
     return false;
   }
+  
+  private boolean acceptThirdPartyCookies;  
+
+  @Override
+  public boolean getAcceptThirdPartyCookies() {
+    return acceptThirdPartyCookies;
+  }
+
+  @Override
+  public void setAcceptThirdPartyCookies(boolean acceptThirdPartyCookies) {
+    this.acceptThirdPartyCookies = acceptThirdPartyCookies;
+  }
   // End API 21
 #end
 
@@ -590,18 +602,6 @@ public class RoboWebSettings extends WebSettings {
   @Override
   public void setUserAgent(int userAgent) {
     this.userAgent =  userAgent;
-  }
-
-  private boolean acceptThirdPartyCookies;  
-
-  @Override
-  public boolean getAcceptThirdPartyCookies() {
-    return acceptThirdPartyCookies;
-  }
-
-  @Override
-  public void setAcceptThirdPartyCookies(boolean acceptThirdPartyCookies) {
-    this.acceptThirdPartyCookies = acceptThirdPartyCookies;
   }
 
   private boolean useWebViewBackgroundForOverscrollBackground;
