@@ -49,6 +49,9 @@ public class RobolectricGradleTestRunner extends RobolectricTestRunner {
       Logger.error("This is required when using RobolectricGradleTestRunner!");
       throw new RuntimeException("No 'constants' field in @Config annotation!");
     }
+    if (config.manifest().equals(Config.NONE)) {
+      return null;
+    }
 
     final String type = getType(config);
     final String flavor = getFlavor(config);
