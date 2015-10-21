@@ -597,8 +597,9 @@ public class RoboWebSettings extends WebSettings {
 
 #if ($api >= 21)
   private int mixedContentMode;
-  private boolean acceptThirdPartyCookies;  
-
+  private boolean acceptThirdPartyCookies;
+  private boolean videoOverlayForEmbeddedEncryptedVideoEnabled;
+  
   @Override
   public void setMixedContentMode(int mixedContentMode) {
     this.mixedContentMode = mixedContentMode;
@@ -611,11 +612,12 @@ public class RoboWebSettings extends WebSettings {
 
   @Override
   public void setVideoOverlayForEmbeddedEncryptedVideoEnabled(boolean b) {
+    videoOverlayForEmbeddedEncryptedVideoEnabled = b;
   }
 
   @Override
   public boolean getVideoOverlayForEmbeddedEncryptedVideoEnabled() {
-    return false;
+    return videoOverlayForEmbeddedEncryptedVideoEnabled;
   }
   
   @Override
