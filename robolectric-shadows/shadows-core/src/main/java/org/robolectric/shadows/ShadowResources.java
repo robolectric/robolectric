@@ -54,7 +54,7 @@ import static org.robolectric.Shadows.shadowOf;
 @Implements(Resources.class)
 public class ShadowResources {
   private static Resources system = null;
-  private static List<Field> resettableFields;
+  private static List<LongSparseArray<?>> resettableArrays;
 
   private float density = 1.0f;
   private DisplayMetrics displayMetrics;
@@ -64,31 +64,31 @@ public class ShadowResources {
 
   @Resetter
   public static void reset() {
-    if (resettableFields == null) {
-      resettableFields = obtainResettableFields();
+    if (resettableArrays == null) {
+      resettableArrays = obtainResettableArrays();
     }
-    for (Field field : resettableFields) {
-      try {
-        LongSparseArray<?> longSparseArray = (LongSparseArray<?>) field.get(null);
-        if (longSparseArray != null) {
-          longSparseArray.clear();
-        }
-      } catch (IllegalAccessException e) {
-        throw new RuntimeException(e);
-      }
+    for (LongSparseArray<?> sparseArray : resettableArrays) {
+      sparseArray.clear();
     }
   }
 
-  private static List<Field> obtainResettableFields() {
-    List<Field> resettableFields = new ArrayList<>();
+  private static List<LongSparseArray<?>> obtainResettableArrays() {
+    List<LongSparseArray<?>> resettableArrays = new ArrayList<>();
     Field[] allFields = Resources.class.getDeclaredFields();
     for (Field field : allFields) {
       if (Modifier.isStatic(field.getModifiers()) && field.getType().equals(LongSparseArray.class)) {
         field.setAccessible(true);
-        resettableFields.add(field);
+        try {
+          LongSparseArray<?> longSparseArray = (LongSparseArray<?>) field.get(null);
+          if (longSparseArray != null) {
+            resettableArrays.add(longSparseArray);
+          }
+        } catch (IllegalAccessException e) {
+          throw new RuntimeException(e);
+        }
       }
     }
-    return resettableFields;
+    return resettableArrays;
   }
 
   public static void setSystemResources(ResourceLoader systemResourceLoader) {
