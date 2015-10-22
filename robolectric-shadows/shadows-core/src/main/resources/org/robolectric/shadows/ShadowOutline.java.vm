@@ -1,0 +1,23 @@
+package org.robolectric.shadows;
+
+#if ($api >= 21)
+import android.graphics.Path;
+import android.graphics.Outline;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Implementation;
+
+/**
+ * Shadow for {@link android.graphics.Outline}.
+ */
+@Implements(Outline.class)
+public class ShadowOutline {
+
+  @Implementation
+  public void setConvexPath(Path convexPath) {
+  }
+}
+#else
+public class ShadowOutline {
+  // Dummy class, this was added in API 21
+}
+#end

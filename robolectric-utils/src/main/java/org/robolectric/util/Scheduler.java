@@ -12,9 +12,9 @@ import static org.robolectric.util.Scheduler.IdleState.*;
 /**
  * Class that manages a queue of Runnables that are scheduled to run now (or at some time in
  * the future). Runnables that are scheduled to run on the UI thread (tasks, animations, etc)
- * eventually get routed to a Scheduler instance. If
- * {@link org.robolectric.RoboSettings#isUseMasterScheduler()} is <tt>true</tt>, then there will
- * only be one instance of this class which is used by all components in the test.
+ * eventually get routed to a Scheduler instance. If org.robolectric.RoboSettings#isUseGlobalScheduler()
+ * is <tt>true</tt>, then there will only be one instance of this class which is used by all components
+ * in the test.
  * 
  * The execution of a scheduler can be in one of three states:
  * <ul><li>paused ({@link #pause()}): if paused, then no posted events will be run unless the Scheduler

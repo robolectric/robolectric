@@ -16,6 +16,7 @@ import org.robolectric.util.ReflectionHelpers;
 @Implements(NfcAdapter.class)
 public class ShadowNfcAdapter {
   @RealObject NfcAdapter nfcAdapter;
+  private boolean enabled;
   private Activity enabledActivity;
   private PendingIntent intent;
   private IntentFilter[] filters;
@@ -44,6 +45,15 @@ public class ShadowNfcAdapter {
   @Implementation
   public void setNdefPushMessageCallback(NfcAdapter.CreateNdefMessageCallback callback, Activity activity, Activity... activities) {
     this.callback = callback;
+  }
+
+  @Implementation
+  public boolean isEnabled() {
+    return enabled;
+  }
+
+  public void setEnabled(boolean enabled) {
+    this.enabled = enabled;
   }
 
   public Activity getEnabledActivity() {

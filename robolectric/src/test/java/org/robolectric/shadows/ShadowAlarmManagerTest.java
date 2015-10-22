@@ -6,7 +6,6 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
@@ -16,74 +15,56 @@ import org.robolectric.annotation.Config;
 
 import java.util.Date;
 
-import static junit.framework.Assert.assertEquals;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowAlarmManagerTest {
 
-  private MyActivity activity;
-  private AlarmManager alarmManager;
-  private ShadowAlarmManager shadowAlarmManager;
-
-  @Before
-  public void setUp() throws Exception {
-    activity = new MyActivity();
-    alarmManager = (AlarmManager) RuntimeEnvironment.application.getSystemService(Context.ALARM_SERVICE);
-    shadowAlarmManager = Shadows.shadowOf(alarmManager);
-  }
+  private final Activity activity = new Activity();
+  private final AlarmManager alarmManager = (AlarmManager) RuntimeEnvironment.application.getSystemService(Context.ALARM_SERVICE);
+  private final ShadowAlarmManager shadowAlarmManager = Shadows.shadowOf(alarmManager);
 
   @Test
-  public void shouldSupportSet() throws Exception {
+  public void set_shouldRegisterAlarm() throws Exception {
     assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNull();
     alarmManager.set(AlarmManager.ELAPSED_REALTIME, 0, PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
-
-    ShadowAlarmManager.ScheduledAlarm scheduledAlarm = shadowAlarmManager.getNextScheduledAlarm();
-    assertThat(scheduledAlarm).isNotNull();
+    assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNotNull();
   }
 
   @Test
   @Config(sdk = Build.VERSION_CODES.KITKAT)
-  public void shouldSupportSetExact_forApiLevel19() throws Exception {
-	  assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNull();
-	  alarmManager.setExact(AlarmManager.ELAPSED_REALTIME, 0, PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
-	  
-	  ShadowAlarmManager.ScheduledAlarm scheduledAlarm = shadowAlarmManager.getNextScheduledAlarm();
-	  assertThat(scheduledAlarm).isNotNull();
-  }
-
-  @Test
-  public void shouldSupportSetRepeating() throws Exception {
+  public void setExact_shouldRegisterAlarm_forApi19() throws Exception {
     assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNull();
-    alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME, 0, AlarmManager.INTERVAL_HOUR,
-                  PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
-
-    ShadowAlarmManager.ScheduledAlarm scheduledAlarm = shadowAlarmManager.getNextScheduledAlarm();
-    assertThat(scheduledAlarm).isNotNull();
-  }
-  
-  @Test
-  public void setShouldReplaceDuplicates() {
-    alarmManager.set(AlarmManager.ELAPSED_REALTIME, 0, PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
-    alarmManager.set(AlarmManager.ELAPSED_REALTIME, 0, PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
-    assertEquals(1, shadowAlarmManager.getScheduledAlarms().size());
-  }
-  
-  @Test
-  public void setShouldNotReplaceAlarmsScheduledOnDifferentTime() {
-    Intent intent = new Intent(activity, activity.getClass());
-    long firstAtMillis = 1;
-    long secondAtMillis = 2;
-    alarmManager.set(AlarmManager.ELAPSED_REALTIME, firstAtMillis, PendingIntent.getActivity(activity, 0, intent, 0));
-    alarmManager.set(AlarmManager.ELAPSED_REALTIME, secondAtMillis, PendingIntent.getActivity(activity, 0, intent, 0));
-    assertEquals(2, shadowAlarmManager.getScheduledAlarms().size());
+    alarmManager.setExact(AlarmManager.ELAPSED_REALTIME, 0, PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
+    assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNotNull();
   }
 
   @Test
-  public void setRepeatingShouldReplaceDuplicates() {
+  public void setRepeating_shouldRegisterAlarm() throws Exception {
+    assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNull();
+    alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME, 0, AlarmManager.INTERVAL_HOUR, PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
+    assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNotNull();
+  }
+  
+  @Test
+  public void set_shouldReplaceAlarmsWithSameIntentReceiver() {
+    alarmManager.set(AlarmManager.ELAPSED_REALTIME, 500, PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
+    alarmManager.set(AlarmManager.ELAPSED_REALTIME, 1000, PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
+    assertThat(shadowAlarmManager.getScheduledAlarms()).hasSize(1);
+  }
+  
+  @Test
+  public void set_shouldReplaceDuplicates() {
+    alarmManager.set(AlarmManager.ELAPSED_REALTIME, 0, PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
+    alarmManager.set(AlarmManager.ELAPSED_REALTIME, 0, PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
+    assertThat(shadowAlarmManager.getScheduledAlarms()).hasSize(1);
+  }
+
+  @Test
+  public void setRepeating_shouldReplaceDuplicates() {
     alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME, 0, AlarmManager.INTERVAL_HOUR, PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
     alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME, 0, AlarmManager.INTERVAL_HOUR, PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
-    assertEquals(1, shadowAlarmManager.getScheduledAlarms().size());
+    assertThat(shadowAlarmManager.getScheduledAlarms()).hasSize(1);
   }
 
   @Test
@@ -100,7 +81,7 @@ public class ShadowAlarmManagerTest {
   }
 
   @Test
-  public void shouldSupportGetNextScheduledAlarmForRepeatingAlarms() throws Exception {
+  public void getNextScheduledAlarm_shouldReturnRepeatingAlarms() throws Exception {
     assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNull();
 
     long now = new Date().getTime();
@@ -113,7 +94,7 @@ public class ShadowAlarmManagerTest {
   }
 
   @Test
-  public void shouldSupportPeekScheduledAlarm() throws Exception {
+  public void peekNextScheduledAlarm_shouldReturnNextAlarm() throws Exception {
     assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNull();
 
     long now = new Date().getTime();
@@ -135,33 +116,34 @@ public class ShadowAlarmManagerTest {
     PendingIntent pendingIntent2 = PendingIntent.getBroadcast(RuntimeEnvironment.application.getApplicationContext(), 0, newIntent2, PendingIntent.FLAG_UPDATE_CURRENT);
     alarmManager.set(AlarmManager.RTC, 1337, pendingIntent2);
 
-    assertEquals(2, shadowAlarmManager.getScheduledAlarms().size());
+    assertThat(shadowAlarmManager.getScheduledAlarms()).hasSize(2);
 
     Intent newIntent3 = new Intent(RuntimeEnvironment.application.getApplicationContext(), String.class);
     PendingIntent newPendingIntent = PendingIntent.getBroadcast(RuntimeEnvironment.application.getApplicationContext(), 0, newIntent3, PendingIntent.FLAG_UPDATE_CURRENT);
     alarmManager.cancel(newPendingIntent);
-    assertEquals(1, shadowAlarmManager.getScheduledAlarms().size());
+    assertThat(shadowAlarmManager.getScheduledAlarms()).hasSize(1);
   }
 
   @Test
   public void cancel_removesMatchingPendingIntentsWithActions() {
     Intent newIntent = new Intent("someAction");
     PendingIntent pendingIntent = PendingIntent.getBroadcast(RuntimeEnvironment.application.getApplicationContext(), 0, newIntent, 0);
+
     alarmManager.set(AlarmManager.RTC, 1337, pendingIntent);
-    assertEquals(1, shadowAlarmManager.getScheduledAlarms().size());
+    assertThat(shadowAlarmManager.getScheduledAlarms()).hasSize(1);
+
     alarmManager.cancel(PendingIntent.getBroadcast(RuntimeEnvironment.application, 0, new Intent("anotherAction"), 0));
-    assertEquals(1, shadowAlarmManager.getScheduledAlarms().size());
+    assertThat(shadowAlarmManager.getScheduledAlarms()).hasSize(1);
+
     alarmManager.cancel(PendingIntent.getBroadcast(RuntimeEnvironment.application, 0, new Intent("someAction"), 0));
-    assertEquals(0, shadowAlarmManager.getScheduledAlarms().size());
+    assertThat(shadowAlarmManager.getScheduledAlarms()).hasSize(0);
   }
 
-  private void assertScheduledAlarm(long now, PendingIntent pendingIntent,
-                    ShadowAlarmManager.ScheduledAlarm scheduledAlarm) {
+  private void assertScheduledAlarm(long now, PendingIntent pendingIntent, ShadowAlarmManager.ScheduledAlarm scheduledAlarm) {
     assertRepeatingScheduledAlarm(now, 0L, pendingIntent, scheduledAlarm);
   }
 
-  private void assertRepeatingScheduledAlarm(long now, long interval, PendingIntent pendingIntent,
-                    ShadowAlarmManager.ScheduledAlarm scheduledAlarm) {
+  private void assertRepeatingScheduledAlarm(long now, long interval, PendingIntent pendingIntent, ShadowAlarmManager.ScheduledAlarm scheduledAlarm) {
     assertThat(scheduledAlarm).isNotNull();
     assertThat(scheduledAlarm.operation).isNotNull();
     assertThat(scheduledAlarm.operation).isSameAs(pendingIntent);
@@ -169,7 +151,4 @@ public class ShadowAlarmManagerTest {
     assertThat(scheduledAlarm.triggerAtTime).isEqualTo(now);
     assertThat(scheduledAlarm.interval).isEqualTo(interval);
   }
-
-  private static class MyActivity extends Activity { }
-
 }

@@ -105,8 +105,8 @@ public class RuntimeEnvironment {
    * the background scheduler and for all other {@link android.os.Looper Looper}s
    * @return The current master scheduler.
    * @see #setMasterScheduler(Scheduler)
-   * @see Robolectric#getForegroundThreadScheduler
-   * @see Robolectric#getBackgroundThreadScheduler
+   * see org.robolectric.Robolectric#getForegroundThreadScheduler()
+   * see org.robolectric.Robolectric#getBackgroundThreadScheduler()
    */
   public static Scheduler getMasterScheduler() {
     return masterScheduler;
@@ -118,8 +118,8 @@ public class RuntimeEnvironment {
    * Changing the master scheduler during a test will have unpredictable results.
    * @param masterScheduler the new master scheduler.
    * @see #getMasterScheduler()
-   * @see Robolectric#getForegroundThreadScheduler()
-   * @see Robolectric#getBackgroundThreadScheduler()
+   * see org.robolectric.Robolectric#getForegroundThreadScheduler()
+   * see org.robolectric.Robolectric#getBackgroundThreadScheduler()
    */
   public static void setMasterScheduler(Scheduler masterScheduler) {
     RuntimeEnvironment.masterScheduler = masterScheduler;

@@ -6,6 +6,7 @@ import android.nfc.NfcAdapter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -16,14 +17,24 @@ import static org.robolectric.Shadows.shadowOf;
 public class ShadowNfcAdapterTest {
 
   @Test
-  public void testNdefPushMessageCallback() {
+  public void setNdefPushMesageCallback_shouldUseCallback() {
     final NfcAdapter.CreateNdefMessageCallback callback = mock(NfcAdapter.CreateNdefMessageCallback.class);
+    final Activity activity = Robolectric.setupActivity(Activity.class);
+    final NfcAdapter adapter = NfcAdapter.getDefaultAdapter(activity);
 
-    final Activity activty = Robolectric.setupActivity(Activity.class);
-    NfcAdapter adapter = NfcAdapter.getDefaultAdapter(activty);
-    adapter.setNdefPushMessageCallback(callback, activty);
+    adapter.setNdefPushMessageCallback(callback, activity);
+    assertThat(shadowOf(adapter).getNdefPushMessageCallback()).isSameAs(callback);
+  }
 
-    final ShadowNfcAdapter shadowNfcAdapter = shadowOf(adapter);
-    assertThat(shadowNfcAdapter.getNdefPushMessageCallback()).isSameAs(callback);
+  @Test
+  public void isEnabled_shouldReturnEnabledState() {
+    final NfcAdapter adapter = NfcAdapter.getDefaultAdapter(RuntimeEnvironment.application);
+    assertThat(adapter.isEnabled()).isFalse();
+
+    shadowOf(adapter).setEnabled(true);
+    assertThat(adapter.isEnabled()).isTrue();
+
+    shadowOf(adapter).setEnabled(false);
+    assertThat(adapter.isEnabled()).isFalse();
   }
 }
