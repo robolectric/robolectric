@@ -54,6 +54,18 @@ public class ShadowImageViewTest {
   }
 
   @Test
+  public void shouldInvalidateOnDifferentDrawableSet(){
+    Drawable d = imageView.getResources().getDrawable(R.drawable.third_image);
+    imageView.setImageDrawable(d);
+
+    assertThat(Shadows.shadowOf(imageView).wasInvalidated()).isTrue();
+    Shadows.shadowOf(imageView).clearWasInvalidated();
+
+    imageView.setImageDrawable(d);
+    assertThat(Shadows.shadowOf(imageView).wasInvalidated()).isFalse();
+  }
+
+  @Test
   public void visualizeWithEmpty() throws Exception {
     assertEquals("", ShadowView.visualize(new ImageView(application)));
   }
