@@ -23,6 +23,28 @@ public class RoboExecutorService implements ExecutorService {
   private boolean isShutdown;
   private final HashSet<Runnable> runnables = new HashSet<>();
 
+  static class AdvancingFutureTask<V> extends FutureTask<V> {
+    private final Scheduler scheduler;
+
+    public AdvancingFutureTask(Scheduler scheduler, Callable<V> callable) {
+      super(callable);
+      this.scheduler = scheduler;
+    }
+
+    public AdvancingFutureTask(Scheduler scheduler, Runnable runnable, V result) {
+      super(runnable, result);
+      this.scheduler = scheduler;
+    }
+
+    @Override
+    public V get() throws InterruptedException, ExecutionException {
+      while (!isDone()) {
+        scheduler.advanceToNextPostedRunnable();
+      }
+      return super.get();
+    }
+  }
+
   public RoboExecutorService() {
     this.scheduler = ShadowApplication.getInstance().getBackgroundThreadScheduler();
   }
@@ -56,17 +78,18 @@ public class RoboExecutorService implements ExecutorService {
 
   @Override
   public boolean awaitTermination(long l, TimeUnit timeUnit) throws InterruptedException {
-    throw new UnsupportedOperationException();
+    // If not shut down first, timeout would occur with normal behavior.
+    return isShutdown();
   }
 
   @Override
   public <T> Future<T> submit(Callable<T> tCallable) {
-    return schedule(new FutureTask<>(tCallable));
+    return schedule(new AdvancingFutureTask<T>(scheduler, tCallable));
   }
 
   @Override
   public <T> Future<T> submit(Runnable runnable, T t) {
-    return schedule(new FutureTask<>(runnable, t));
+    return schedule(new AdvancingFutureTask<T>(scheduler, runnable, t));
   }
 
   @Override
