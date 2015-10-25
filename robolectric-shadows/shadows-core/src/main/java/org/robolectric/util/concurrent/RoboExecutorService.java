@@ -1,6 +1,8 @@
 package org.robolectric.util.concurrent;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -18,6 +20,30 @@ import org.robolectric.util.Scheduler;
  */
 public class RoboExecutorService implements ExecutorService {
   private final Scheduler scheduler;
+  private boolean isShutdown;
+  private final HashSet<Runnable> runnables = new HashSet<>();
+
+  static class AdvancingFutureTask<V> extends FutureTask<V> {
+    private final Scheduler scheduler;
+
+    public AdvancingFutureTask(Scheduler scheduler, Callable<V> callable) {
+      super(callable);
+      this.scheduler = scheduler;
+    }
+
+    public AdvancingFutureTask(Scheduler scheduler, Runnable runnable, V result) {
+      super(runnable, result);
+      this.scheduler = scheduler;
+    }
+
+    @Override
+    public V get() throws InterruptedException, ExecutionException {
+      while (!isDone()) {
+        scheduler.advanceToNextPostedRunnable();
+      }
+      return super.get();
+    }
+  }
 
   public RoboExecutorService() {
     this.scheduler = ShadowApplication.getInstance().getBackgroundThreadScheduler();
@@ -25,37 +51,45 @@ public class RoboExecutorService implements ExecutorService {
 
   @Override
   public void shutdown() {
-    throw new UnsupportedOperationException();
+    shutdownNow();
   }
 
   @Override
   public List<Runnable> shutdownNow() {
-    throw new UnsupportedOperationException();
+    isShutdown = true;
+    List<Runnable> notExecutedRunnables = new ArrayList<>();
+    for (Runnable runnable : runnables) {
+      scheduler.remove(runnable);
+      notExecutedRunnables.add(runnable);
+    }
+    runnables.clear();
+    return notExecutedRunnables;
   }
 
   @Override
   public boolean isShutdown() {
-    throw new UnsupportedOperationException();
+    return isShutdown;
   }
 
   @Override
   public boolean isTerminated() {
-    throw new UnsupportedOperationException();
+    return isShutdown;
   }
 
   @Override
   public boolean awaitTermination(long l, TimeUnit timeUnit) throws InterruptedException {
-    throw new UnsupportedOperationException();
+    // If not shut down first, timeout would occur with normal behavior.
+    return isShutdown();
   }
 
   @Override
   public <T> Future<T> submit(Callable<T> tCallable) {
-    return schedule(new FutureTask<>(tCallable));
+    return schedule(new AdvancingFutureTask<T>(scheduler, tCallable));
   }
 
   @Override
   public <T> Future<T> submit(Runnable runnable, T t) {
-    return schedule(new FutureTask<>(runnable, t));
+    return schedule(new AdvancingFutureTask<T>(scheduler, runnable, t));
   }
 
   @Override
@@ -64,12 +98,15 @@ public class RoboExecutorService implements ExecutorService {
   }
 
   private <T> Future<T> schedule(final FutureTask<T> futureTask) {
-    scheduler.post(new Runnable() {
+    Runnable runnable = new Runnable() {
       @Override
       public void run() {
         futureTask.run();
+        runnables.remove(this);
       }
-    });
+    };
+    runnables.add(runnable);
+    scheduler.post(runnable);
 
     return futureTask;
   }
