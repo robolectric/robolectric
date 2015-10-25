@@ -10,7 +10,6 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.internal.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
-import java.sql.Ref;
 import java.util.Collections;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -21,7 +20,6 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.robolectric.Shadows.shadowOf;
