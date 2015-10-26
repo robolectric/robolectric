@@ -105,6 +105,14 @@ public class RobolectricGradleTestRunnerTest {
     runner.getAppManifest(runner.getConfig(NoConstantsTest.class.getMethod("withoutAnnotation")));
   }
 
+  @Test
+  public void getAppManifest_shouldReturnNull_whenManifestIsNone() throws Exception {
+    final RobolectricGradleTestRunner runner = new RobolectricGradleTestRunner(NoManifestTest.class);
+    AndroidManifest manifest = runner.getAppManifest(runner.getConfig(NoManifestTest.class.getMethod("withoutManifest")));
+
+    assertThat(manifest).isNull();
+  }
+
   private void delete(File file) {
     final File[] files = file.listFiles();
     if (files != null) {
@@ -143,6 +151,14 @@ public class RobolectricGradleTestRunnerTest {
 
     @Test
     public void withoutAnnotation() throws Exception {
+    }
+  }
+
+  @Ignore
+  @Config(constants = BuildConfig.class, manifest = Config.NONE)
+  public static class NoManifestTest {
+    @Test
+    public void withoutManifest() {
     }
   }
 
