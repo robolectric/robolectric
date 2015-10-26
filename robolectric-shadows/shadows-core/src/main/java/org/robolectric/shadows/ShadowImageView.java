@@ -35,7 +35,7 @@ public class ShadowImageView extends ShadowView {
   @Implementation
   public void setImageDrawable(Drawable drawable) {
 
-    if(this.imageDrawable != drawable) {
+    if (this.imageDrawable != drawable) {
       this.imageDrawable = drawable;
       invalidate();
     }
