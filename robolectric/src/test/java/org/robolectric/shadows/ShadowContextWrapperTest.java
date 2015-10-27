@@ -38,7 +38,7 @@ import org.robolectric.util.Transcript;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowContextWrapperTest {
   public Transcript transcript;
   private ContextWrapper contextWrapper;
