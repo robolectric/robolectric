@@ -24,12 +24,14 @@ import static java.util.Arrays.asList;
 
 abstract public class Fs {
   public static Fs fromJar(URL url) {
-	  return new JarFs(new File(fixFileURL(url).getPath()));
+    return new JarFs(new File(fixFileURL(url).getPath()));
   }
   
   private static URI fixFileURL(URL u) {
-	  if (!"file".equals(u.getProtocol())) throw new IllegalArgumentException();
-	  return new File(u.getFile()).toURI();
+    if (!"file".equals(u.getProtocol())) {
+      throw new IllegalArgumentException();
+    }
+    return new File(u.getFile()).toURI();
   }
 
   public static FsFile fileFromPath(String urlString) {
