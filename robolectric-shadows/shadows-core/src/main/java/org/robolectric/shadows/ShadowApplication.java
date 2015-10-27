@@ -2,6 +2,8 @@ package org.robolectric.shadows;
 
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+import static com.google.common.util.concurrent.Futures.immediateFuture;
+import static com.google.common.util.concurrent.MoreExecutors.sameThreadExecutor;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.internal.Shadow.newInstanceOf;
 
@@ -29,7 +31,10 @@ import android.view.LayoutInflater;
 import android.widget.ListPopupWindow;
 import android.widget.PopupWindow;
 import android.widget.Toast;
-
+import com.google.common.base.Function;
+import com.google.common.util.concurrent.AsyncFunction;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 import org.robolectric.RoboSettings;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
@@ -51,6 +56,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -446,6 +452,16 @@ public class ShadowApplication extends ShadowContextWrapper {
     sendOrderedBroadcastWithPermission(intent, receiverPermission);
   }
 
+  @Override
+  @Implementation
+  public void sendOrderedBroadcast(Intent intent, String receiverPermission, BroadcastReceiver resultReceiver,
+                                   Handler scheduler, int initialCode, String initialData, Bundle initialExtras) {
+    List<Wrapper> receivers = getAppropriateWrappers(intent, receiverPermission);
+    sortByPriority(receivers);
+    receivers.add(new Wrapper(resultReceiver, null, this.realApplication, null, scheduler));
+    postOrderedToWrappers(receivers, intent, initialCode, initialData, initialExtras);
+  }
+
   /*
     Returns the BroadcaseReceivers wrappers, matching intent's action and permissions.
    */
@@ -476,15 +492,92 @@ public class ShadowApplication extends ShadowContextWrapper {
     scheduler.post(new Runnable() {
       @Override
       public void run() {
+        receiver.setPendingResult(ShadowBroadcastPendingResult.create(0, null, null, false));
         shReceiver.onReceive(realApplication, broadcastIntent, abort);
       }
     });
   }
 
-  private void postToWrappers(List<Wrapper> wrappers, Intent intent, String receiverPermission) {
+  private void postToWrappers(List<Wrapper> wrappers, Intent intent) {
     AtomicBoolean abort = new AtomicBoolean(false); // abort state is shared among all broadcast receivers
     for (Wrapper wrapper: wrappers) {
       postIntent(intent, wrapper, abort);
+    }
+  }
+
+  private void postOrderedToWrappers(List<Wrapper> wrappers, final Intent intent, int initialCode, String data, Bundle extras) {
+    final AtomicBoolean abort = new AtomicBoolean(false); // abort state is shared among all broadcast receivers
+    ListenableFuture<BroadcastResultHolder> future = immediateFuture(new BroadcastResultHolder(initialCode, data, extras));
+    for (final Wrapper wrapper : wrappers) {
+      future = postIntent(wrapper, intent, future, abort);
+    }
+    final ListenableFuture<?> finalFuture = future;
+    future.addListener(new Runnable() {
+      @Override
+      public void run() {
+        mainHandler.post(new Runnable() {
+          @Override
+          public void run() {
+            try {
+              finalFuture.get();
+            } catch (InterruptedException | ExecutionException e) {
+              throw new RuntimeException(e);
+            }
+          }
+        });
+      }
+    }, sameThreadExecutor());
+  }
+
+  /** Enforces that BroadcastReceivers invoked during an ordered broadcast run serially, passing along their results.*/
+  private ListenableFuture<BroadcastResultHolder> postIntent(final Wrapper wrapper,
+                                                             final Intent intent,
+                                                             ListenableFuture<BroadcastResultHolder> oldResult,
+                                                             final AtomicBoolean abort) {
+    final Handler scheduler = (wrapper.scheduler != null) ? wrapper.scheduler : this.mainHandler;
+    return Futures.transform(oldResult, new AsyncFunction<BroadcastResultHolder, BroadcastResultHolder>() {
+      @Override
+      public ListenableFuture<BroadcastResultHolder> apply(BroadcastResultHolder broadcastResultHolder) throws Exception {
+        final BroadcastReceiver.PendingResult result = ShadowBroadcastPendingResult.create(
+                broadcastResultHolder.resultCode,
+                broadcastResultHolder.resultData,
+                broadcastResultHolder.resultExtras,
+                true /*ordered */);
+        wrapper.broadcastReceiver.setPendingResult(result);
+        scheduler.post(new Runnable() {
+          @Override
+          public void run() {
+            Shadows.shadowOf(wrapper.broadcastReceiver).onReceive(realApplication, intent, abort);
+          }
+        });
+        return BroadcastResultHolder.transform(result);
+      }
+
+    }, sameThreadExecutor());
+  }
+
+  private static final class BroadcastResultHolder {
+    private final int resultCode;
+    private final String resultData;
+    private final Bundle resultExtras;
+
+    private BroadcastResultHolder(int resultCode, String resultData, Bundle resultExtras) {
+      this.resultCode = resultCode;
+      this.resultData = resultData;
+      this.resultExtras = resultExtras;
+    }
+
+    private static ListenableFuture<BroadcastResultHolder> transform(BroadcastReceiver.PendingResult result) {
+      return Futures.transform(Shadows.shadowOf(result).getFuture(),
+              new Function<BroadcastReceiver.PendingResult, BroadcastResultHolder>() {
+
+                @Override
+                public BroadcastResultHolder apply(BroadcastReceiver.PendingResult pendingResult) {
+                  return new BroadcastResultHolder(pendingResult.getResultCode(),
+                          pendingResult.getResultData(),
+                          pendingResult.getResultExtras(false));
+                }
+              }, sameThreadExecutor());
     }
   }
 
@@ -498,20 +591,24 @@ public class ShadowApplication extends ShadowContextWrapper {
    */
   private void sendBroadcastWithPermission(Intent intent, String receiverPermission) {
     List<Wrapper> wrappers = getAppropriateWrappers(intent, receiverPermission);
-    postToWrappers(wrappers, intent, receiverPermission);
+    postToWrappers(wrappers, intent);
   }
 
   private void sendOrderedBroadcastWithPermission(Intent intent, String receiverPermission) {
     List<Wrapper> wrappers = getAppropriateWrappers(intent, receiverPermission);
     // sort by the decrease of priorities
+    sortByPriority(wrappers);
+
+    postOrderedToWrappers(wrappers, intent, 0, null, null);
+  }
+
+  private void sortByPriority(List<Wrapper> wrappers) {
     Collections.sort(wrappers, new Comparator<Wrapper>() {
       @Override
       public int compare(Wrapper o1, Wrapper o2) {
         return Integer.compare(o2.getIntentFilter().getPriority(), o1.getIntentFilter().getPriority());
       }
     });
-
-    postToWrappers(wrappers, intent, receiverPermission);
   }
 
   public List<Intent> getBroadcastIntents() {
