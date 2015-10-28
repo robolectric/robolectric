@@ -5,6 +5,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static java.util.concurrent.TimeUnit.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -501,6 +502,50 @@ public class SchedulerTest {
     });
 
     assertThat(runnablesThatWereRun).containsExactly(1, 2);
+  }
+
+  // Regression test for #2115
+  @Test(timeout=1000)
+  public void schedulerAllowsConcurrentTimeRead_whileLockIsHeld() throws InterruptedException {
+    final AtomicLong l = new AtomicLong();
+    Thread t = new Thread("schedulerAllowsConcurrentTimeRead") {
+      @Override
+      public void run() {
+        l.set(scheduler.getCurrentTime());
+      }
+    };
+    synchronized (scheduler) {
+      t.start();
+      t.join();
+    }
+  }
+
+  @Test(timeout=1000)
+  public void schedulerAllowsConcurrentStateRead_whileLockIsHeld() throws InterruptedException {
+    Thread t = new Thread("schedulerAllowsConcurrentStateRead") {
+      @Override
+      public void run() {
+        scheduler.getIdleState();
+      }
+    };
+    synchronized (scheduler) {
+      t.start();
+      t.join();
+    }
+  }
+
+  @Test(timeout=1000)
+  public void schedulerAllowsConcurrentIsPaused_whileLockIsHeld() throws InterruptedException {
+    Thread t = new Thread("schedulerAllowsConcurrentIsPaused") {
+      @Override
+      public void run() {
+        scheduler.isPaused();
+      }
+    };
+    synchronized (scheduler) {
+      t.start();
+      t.join();
+    }
   }
 
   @Test
