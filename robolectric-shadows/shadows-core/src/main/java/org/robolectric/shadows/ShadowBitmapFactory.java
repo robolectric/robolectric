@@ -41,12 +41,7 @@ import static org.robolectric.internal.Shadow.directlyOn;
 @Implements(BitmapFactory.class)
 public class ShadowBitmapFactory {
   private static Map<String, Point> widthAndHeightMap = new HashMap<>();
-
-  static {
-    // Stops ImageIO from creating temp files when reading images
-    // from input stream.
-    ImageIO.setUseCache(false);
-  }
+  private static boolean initialized;
 
   @Implementation
   public static Bitmap decodeResourceStream(Resources res, TypedValue value, InputStream is, Rect pad, BitmapFactory.Options opts) {
@@ -219,6 +214,13 @@ public class ShadowBitmapFactory {
   }
 
   private static Point getImageSizeFromStream(InputStream is) {
+    if (!initialized) {
+      // Stops ImageIO from creating temp files when reading images
+      // from input stream.
+      ImageIO.setUseCache(false);
+      initialized = true;
+    }
+
     try {
       ImageInputStream imageStream = ImageIO.createImageInputStream(is);
       Iterator<ImageReader> readers = ImageIO.getImageReaders(imageStream);
