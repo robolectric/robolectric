@@ -444,24 +444,6 @@ public class SchedulerTest {
     assertThat(runnablesThatWereRun).containsExactly(1, 2);
   }
 
-  @Test
-  public void scheduledRunnableCompareTo_handlesLargeDifferences() {
-    // Found an overflow bug in the original implementation of compareTo() when casting diff to int -
-    // if the diff is > INT_MAX the result of casing to INT will be negative, which results in it
-    // sorting the opposite of what we want.
-    // ScheduledRunnable is private; cannot create directly. Test indirectly using postDelayed().
-    TestRunnable r1 = new TestRunnable();
-    TestRunnable r2 = new TestRunnable();
-    scheduler.postDelayed(r1, 100);
-    scheduler.postDelayed(r2, 60, SECONDS); // Difference between 60s and 100ms in nanos is > INT_MAX
-
-    scheduler.runOneTask();
-    assertThat(r1.wasRun).as("first task run first").isTrue();
-    assertThat(r2.wasRun).as("second task not run yet").isFalse();
-    scheduler.runOneTask();
-    assertThat(r2.wasRun).as("second task run second").isTrue();
-  }
-
   private class AddToTranscript implements Runnable {
     private String event;
 

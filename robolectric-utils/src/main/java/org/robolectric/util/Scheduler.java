@@ -326,7 +326,7 @@ public class Scheduler {
 
     @Override
     public int compareTo(ScheduledRunnable runnable) {
-      return Long.compare(scheduledTime, runnable.scheduledTime);
+      return (int) (scheduledTime - runnable.scheduledTime);
     }
 
     public void run() {
