@@ -3,7 +3,7 @@ package org.robolectric.shadows;
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static com.google.common.util.concurrent.Futures.immediateFuture;
-import static com.google.common.util.concurrent.MoreExecutors.sameThreadExecutor;
+import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.internal.Shadow.newInstanceOf;
 
@@ -526,7 +526,7 @@ public class ShadowApplication extends ShadowContextWrapper {
           }
         });
       }
-    }, sameThreadExecutor());
+    }, directExecutor());
   }
 
   /** Enforces that BroadcastReceivers invoked during an ordered broadcast run serially, passing along their results.*/
@@ -553,7 +553,7 @@ public class ShadowApplication extends ShadowContextWrapper {
         return BroadcastResultHolder.transform(result);
       }
 
-    }, sameThreadExecutor());
+    }, directExecutor());
   }
 
   private static final class BroadcastResultHolder {
@@ -577,7 +577,7 @@ public class ShadowApplication extends ShadowContextWrapper {
                           pendingResult.getResultData(),
                           pendingResult.getResultExtras(false));
                 }
-              }, sameThreadExecutor());
+              }, directExecutor());
     }
   }
 
