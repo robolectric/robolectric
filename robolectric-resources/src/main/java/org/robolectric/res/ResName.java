@@ -99,10 +99,6 @@ public class ResName {
     return new ResName(packageName, type, name);
   }
 
-  public ResName qualify(String string) {
-    return new ResName(qualifyResourceName(string.replace("@", ""), packageName, null));
-  }
-
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
