@@ -16,10 +16,14 @@ public class ResName {
   public final @NotNull String type;
   public final @NotNull String name;
 
+  public final int hashCode;
+
   public ResName(@NotNull String packageName, @NotNull String type, @NotNull String name) {
     this.packageName = packageName;
     this.type = type;
     this.name = name.indexOf('.') != -1 ? name.replace('.', '_').trim() : name.trim();
+
+    hashCode = computeHashCode();
   }
 
   public ResName(@NotNull String fullyQualifiedName) {
@@ -32,6 +36,7 @@ public class ResName {
     String nameStr = matcher.group(NAME);
     name = nameStr.indexOf('.') != -1 ? nameStr.replace('.', '_') : nameStr;
 
+    hashCode = computeHashCode();
     if (packageName.equals("xmlns")) throw new IllegalStateException("\"" + fullyQualifiedName + "\" unexpected");
   }
 
@@ -105,6 +110,8 @@ public class ResName {
 
     ResName resName = (ResName) o;
 
+    if (hashCode() != resName.hashCode()) return false;
+
     if (!packageName.equals(resName.packageName)) return false;
     if (!type.equals(resName.type)) return false;
     if (!name.equals(resName.name)) return false;
@@ -114,10 +121,7 @@ public class ResName {
 
   @Override
   public int hashCode() {
-    int result = packageName.hashCode();
-    result = 31 * result + type.hashCode();
-    result = 31 * result + name.hashCode();
-    return result;
+    return hashCode;
   }
 
   @Override
@@ -142,5 +146,12 @@ public class ResName {
     if (!type.equals(expectedType)) {
       throw new RuntimeException("expected " + getFullyQualifiedName() + " to be a " + expectedType + ", is a " + type);
     }
+  }
+
+  private int computeHashCode() {
+    int result = packageName.hashCode();
+    result = 31 * result + type.hashCode();
+    result = 31 * result + name.hashCode();
+    return result;
   }
 }
