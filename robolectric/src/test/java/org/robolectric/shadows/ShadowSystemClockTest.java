@@ -6,10 +6,8 @@ import android.os.SystemClock;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
-import org.robolectric.internal.Shadow;
 import org.robolectric.internal.bytecode.RobolectricInternals;
 import org.robolectric.util.Scheduler;
 
@@ -51,7 +49,7 @@ public class ShadowSystemClockTest {
   @Test
   public void wallClock_tracksSystemClock() {
     final long startTime = scheduler.getCurrentTime(TimeUnit.NANOSECONDS);
-    ShadowSystemClock.setCurrentTime(1034100100, TimeUnit.NANOSECONDS);
+    ShadowSystemClock.setCurrentWallTime(1034100100, TimeUnit.NANOSECONDS);
     scheduler.advanceBy(100100100, TimeUnit.NANOSECONDS);
     assertThat(scheduler.getCurrentTime(TimeUnit.NANOSECONDS)).as("systemTime").isEqualTo(startTime + 100100100);
     assertThat(ShadowSystemClock.currentTimeMillis()).as("milliWall").isEqualTo(1134);
