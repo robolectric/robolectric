@@ -2,6 +2,7 @@ package org.robolectric.util;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.LinearLayout;
 import org.robolectric.Robolectric;
@@ -108,6 +109,17 @@ public class FragmentController<F extends Fragment> extends ComponentController<
       @Override
       public void run() {
         activityController.saveInstanceState(outState);
+      }
+    });
+    return this;
+  }
+
+  @Override
+  public FragmentController<F> withIntent(final Intent intent) {
+    shadowMainLooper.runPaused(new Runnable() {
+      @Override
+      public void run() {
+        activityController.withIntent(intent);
       }
     });
     return this;

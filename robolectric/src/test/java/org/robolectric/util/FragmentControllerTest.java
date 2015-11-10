@@ -2,6 +2,7 @@ package org.robolectric.util;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -102,6 +103,20 @@ public class FragmentControllerTest {
     verify(fragment).onResume();
     verify(fragment).onPause();
     verify(fragment).onStop();
+  }
+
+  @Test
+  public void withIntent() {
+    final LoginFragment fragment = new LoginFragment();
+    final FragmentController<LoginFragment> controller = FragmentController.of(fragment, LoginActivity.class);
+
+    Intent intent = new Intent("test_action");
+    intent.putExtra("test_key", "test_value");
+    controller.withIntent(intent).create();
+
+    Intent intentInFragment = controller.get().getActivity().getIntent();
+    assertThat(intentInFragment.getAction()).isEqualTo("test_action");
+    assertThat(intentInFragment.getExtras().getString("test_key")).isEqualTo("test_value");
   }
 
   private static class LoginFragment extends Fragment {
