@@ -18,6 +18,11 @@
   <string name="surrounding_quotes">"This'll work"</string>
   <string name="escaped_apostrophe">This\'ll also work</string>
   <string name="escaped_quotes">Click \"OK\"</string>
+  <string name="leading_and_trailing_new_lines">
+    Some text
+  </string>
+  <string name="non_breaking_space">Closing soon:\u00A05pm</string>
+  <string name="space">Closing soon:\u00205pm</string>
   <string name="app_name">Testing App</string>
   <string name="activity_name">Testing App Activity</string>
   <string name="minute_singular">minute</string>
