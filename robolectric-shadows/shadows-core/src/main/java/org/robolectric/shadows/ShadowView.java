@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -342,9 +343,8 @@ public class ShadowView {
     if (!realView.isEnabled()) {
       throw new RuntimeException("View is not enabled and cannot be clicked");
     }
-    if (!AccessibilityUtil.passesAccessibilityChecksIfEnabled(realView)) {
-      throw new RuntimeException("View has accessibility issues.");
-    }
+
+    AccessibilityUtil.assertAccessibilityForViewIfEnabled(realView, false);
     return realView.performClick();
   }
 
@@ -555,6 +555,18 @@ public class ShadowView {
     return true;
   }
 
+  @Implementation
+  public boolean getGlobalVisibleRect(Rect rect) {
+    // Indicate that view has a visible rect
+    return true;
+  }
+  
+  @Implementation
+  public boolean getGlobalVisibleRect(Rect rect, Point globalOffset) {
+    // Indicate that view has a visible rect
+    return true;
+  }
+  
   public int lastHapticFeedbackPerformed() {
     return hapticFeedbackPerformed;
   }
