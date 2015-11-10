@@ -61,7 +61,10 @@ public class ShadowLocaleData {
     localeData.mediumTimeFormat = "h:mm:ss a";
     localeData.shortTimeFormat = "h:mm a";
 
-#if ($api >= 18)
+#if ($api >= 23)
+    localeData.timeFormat_hm = "h:mm a";
+    localeData.timeFormat_Hm = "HH:mm";
+#elseif ($api >= 18)
     localeData.timeFormat12 = "h:mm a";
     localeData.timeFormat24 = "HH:mm";
 #end

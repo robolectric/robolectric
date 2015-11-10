@@ -69,7 +69,8 @@ public class ShadowLocaleDataTest {
 
   @Test
   @Config(sdk = {
-      Build.VERSION_CODES.LOLLIPOP_MR1})
+      Build.VERSION_CODES.LOLLIPOP_MR1,
+      Build.VERSION_CODES.M})
   public void shouldSupportLocaleEn_US_percentPost22() throws Exception {
     LocaleData localeData = LocaleData.get(Locale.US);
     assertThat(localeData.percent).isEqualTo("%");
@@ -81,7 +82,8 @@ public class ShadowLocaleDataTest {
       Build.VERSION_CODES.JELLY_BEAN_MR2,
       Build.VERSION_CODES.KITKAT,
       Build.VERSION_CODES.LOLLIPOP,
-      Build.VERSION_CODES.LOLLIPOP_MR1})
+      Build.VERSION_CODES.LOLLIPOP_MR1,
+      Build.VERSION_CODES.M})
   public void shouldSupportLocaleEn_US_since_jelly_bean_mr1() throws Exception {
     LocaleData localeData = LocaleData.get(Locale.US);
 
@@ -100,25 +102,25 @@ public class ShadowLocaleDataTest {
       Build.VERSION_CODES.JELLY_BEAN_MR2,
       Build.VERSION_CODES.KITKAT,
       Build.VERSION_CODES.LOLLIPOP,
-      Build.VERSION_CODES.LOLLIPOP_MR1})
+      Build.VERSION_CODES.LOLLIPOP_MR1,
+      Build.VERSION_CODES.M})
   public void shouldSupportLocaleEn_US_since_jelly_bean_mr2() throws Exception {
     LocaleData localeData = LocaleData.get(Locale.US);
 
-    assertThat(localeData.timeFormat12).isEqualTo("h:mm a");
-    assertThat(localeData.timeFormat24).isEqualTo("HH:mm");
-
+    assertThat(localeData.timeFormat_Hm).isEqualTo("h:mm a");
+    assertThat(localeData.timeFormat_hm).isEqualTo("HH:mm");
   }
 
   @Test
   @Config(sdk = {
       Build.VERSION_CODES.LOLLIPOP,
-      Build.VERSION_CODES.LOLLIPOP_MR1})
+      Build.VERSION_CODES.LOLLIPOP_MR1,
+      Build.VERSION_CODES.M})
   public void shouldSupportLocaleEn_US_since_lollipop() throws Exception {
     LocaleData localeData = LocaleData.get(Locale.US);
 
     assertThat(localeData.minusSign).isEqualTo("-");
   }
-
 
   @Test
   public void shouldDefaultToTheDefaultLocale() throws Exception {

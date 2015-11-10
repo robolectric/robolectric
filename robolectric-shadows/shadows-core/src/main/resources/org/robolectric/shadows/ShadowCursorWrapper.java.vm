@@ -209,6 +209,13 @@ public class ShadowCursorWrapper implements Cursor {
     return wrappedCursor.getWantsAllOnMoveCalls();
   }
 
+#if ($api >= 23)
+  @Implementation
+  public void setExtras(Bundle extras) {
+    wrappedCursor.setExtras(extras);
+  }
+#end
+
   @Implementation
   public Bundle getExtras() {
     return wrappedCursor.getExtras();

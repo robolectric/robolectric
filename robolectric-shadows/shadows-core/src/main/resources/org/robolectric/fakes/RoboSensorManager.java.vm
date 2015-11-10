@@ -58,4 +58,16 @@ public class RoboSensorManager extends SensorManager {
   protected List<Sensor> getFullSensorList() {
     return null;
   }
+
+#if ($api >= 23)
+  @Override
+  protected boolean initDataInjectionImpl(boolean enable) {
+    return false;
+  }
+
+  @Override
+  protected boolean injectSensorDataImpl(Sensor sensor, float[] values, int accuracy, long timestamp) {
+    return false;
+  }
+#end
 }
