@@ -2,7 +2,11 @@ package org.robolectric.shadows;
 
 import android.graphics.drawable.Drawable;
 import android.widget.ProgressBar;
+#if ($api >= 23)
+import com.android.internal.policy.PhoneWindow;
+#else
 import com.android.internal.policy.impl.PhoneWindow;
+#end
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -11,7 +15,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import static org.robolectric.internal.Shadow.directlyOn;
 
 /**
- * Shadow for {@link com.android.internal.policy.impl.PhoneWindow}.
+ * Shadow for {@link com.android.internal.policy.PhoneWindow}.
  */
 @Implements(value = PhoneWindow.class, isInAndroidSdk = false)
 public class ShadowPhoneWindow extends ShadowWindow {

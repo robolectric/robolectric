@@ -5,14 +5,15 @@ package org.robolectric.shadows;
 import android.os.Build;
 import android.text.format.DateUtils;
 import libcore.icu.DateIntervalFormat;
+import android.icu.util.TimeZone;
+import android.icu.util.ULocale;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 
 import java.util.Calendar;
-import java.util.Locale;
-import java.util.TimeZone;
 
 import static org.junit.Assert.assertEquals;
 
@@ -31,7 +32,7 @@ public class ShadowDateIntervalFormatTest {
     calendar.set(Calendar.DAY_OF_MONTH, 20);
 
     long timeInMillis = calendar.getTimeInMillis();
-    String actual = DateIntervalFormat.formatDateRange(Locale.getDefault(), TimeZone.getDefault(), timeInMillis, timeInMillis, DateUtils.FORMAT_NUMERIC_DATE);
+    String actual = DateIntervalFormat.formatDateRange(ULocale.getDefault(), TimeZone.getDefault(), timeInMillis, timeInMillis, DateUtils.FORMAT_NUMERIC_DATE);
 
     assertEquals("1/20/2013", actual);
   }

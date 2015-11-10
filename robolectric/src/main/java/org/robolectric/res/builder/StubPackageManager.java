@@ -9,6 +9,7 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.ContainerEncryptionParams;
 import android.content.pm.FeatureInfo;
+import android.content.pm.IntentFilterVerificationInfo;
 import android.content.pm.IPackageDataObserver;
 import android.content.pm.IPackageDeleteObserver;
 import android.content.pm.IPackageInstallObserver;
@@ -21,6 +22,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageInstaller;
 import android.content.pm.PackageItemInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.MoveCallback;
 import android.content.pm.PermissionGroupInfo;
 import android.content.pm.PermissionInfo;
 import android.content.pm.ProviderInfo;
@@ -33,7 +35,9 @@ import android.content.res.XmlResourceParser;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Handler;
 import android.os.UserHandle;
+import android.os.storage.VolumeInfo;
 
 import java.util.List;
 
@@ -140,6 +144,16 @@ public class StubPackageManager extends PackageManager {
   }
 
   @Override
+  public boolean isPermissionRevokedByPolicy(String permName, String pkgName) {
+    return false;
+  }
+
+  @Override
+  public String getPermissionControllerPackageName() {
+    return null;
+  }
+
+  @Override
   public boolean addPermission(PermissionInfo info) {
     return false;
   }
@@ -154,13 +168,27 @@ public class StubPackageManager extends PackageManager {
   }
 
   @Override
-  public void grantPermission(String packageName, String permissionName) {
+  public void grantRuntimePermission(String packageName, String permissionName, UserHandle user) {
 
   }
 
   @Override
-  public void revokePermission(String packageName, String permissionName) {
+  public void revokeRuntimePermission(String packageName, String permissionName, UserHandle user) {
 
+  }
+
+  @Override
+  public int getPermissionFlags(String permissionName, String packageName, UserHandle user) {
+    return 0;
+  }
+
+  @Override
+  public void updatePermissionFlags(String permissionName, String packageName, int flagMask, int flagValues, UserHandle user) {
+
+  }
+
+  public boolean shouldShowRequestPermissionRationale(String permission) {
+    return false;
   }
 
   @Override
@@ -464,7 +492,17 @@ public class StubPackageManager extends PackageManager {
   }
 
   @Override
+  public void freeStorageAndNotify(String volumeUuid, long freeStorageSize, IPackageDataObserver observer) {
+
+  }
+
+  @Override
   public void freeStorage(long freeStorageSize, IntentSender pi) {
+
+  }
+
+  @Override
+  public void freeStorage(String volumeUuid, long freeStorageSize, IntentSender pi) {
 
   }
 
@@ -538,6 +576,16 @@ public class StubPackageManager extends PackageManager {
   }
 
   @Override
+  public void addOnPermissionsChangeListener(OnPermissionsChangedListener listener) {
+
+  }
+
+  @Override
+  public void removeOnPermissionsChangeListener(OnPermissionsChangedListener listener) {
+
+  }
+
+  @Override
   public KeySet getKeySetByAlias(String s, String s1) {
     return null;
   }
@@ -560,6 +608,50 @@ public class StubPackageManager extends PackageManager {
   @Override
   public void movePackage(String packageName, IPackageMoveObserver observer, int flags) {
 
+  }
+
+  @Override
+  public int getMoveStatus(int moveId) {
+    return 0;
+  }
+
+  @Override
+  public void registerMoveCallback(MoveCallback callback, Handler handler) {
+  }
+
+  @Override
+  public void unregisterMoveCallback(MoveCallback callback) {
+
+  }
+
+  @Override
+  public int movePackage(String packageName, VolumeInfo vol) {
+    return 0;
+  }
+
+  @Override
+  public VolumeInfo getPackageCurrentVolume(ApplicationInfo app) {
+    return null;
+  }
+
+  @Override
+  public List<VolumeInfo> getPackageCandidateVolumes(ApplicationInfo app) {
+    return null;
+  }
+
+  @Override
+  public int movePrimaryStorage(VolumeInfo vol) {
+    return 0;
+  }
+
+  @Override
+  public VolumeInfo getPrimaryStorageCurrentVolume() {
+    return null;
+  }
+
+  @Override
+  public List<VolumeInfo> getPrimaryStorageCandidateVolumes() {
+    return null;
   }
 
   @Override
@@ -609,6 +701,41 @@ public class StubPackageManager extends PackageManager {
   @Override
   public void extendVerificationTimeout(int id, int verificationCodeAtTimeout, long millisecondsToDelay) {
 
+  }
+
+  @Override
+  public void verifyIntentFilter(int verificationId, int verificationCode, List<String> outFailedDomains) {
+
+  }
+
+  @Override
+  public int getIntentVerificationStatus(String packageName, int userId) {
+    return 0;
+  }
+
+  @Override
+  public boolean updateIntentVerificationStatus(String packageName, int status, int userId) {
+    return false;
+  }
+
+  @Override
+  public List<IntentFilterVerificationInfo> getIntentFilterVerifications(String packageName) {
+    return null;
+  }
+
+  @Override
+  public List<IntentFilter> getAllIntentFilters(String packageName) {
+    return null;
+  }
+
+  @Override
+  public String getDefaultBrowserPackageName(int userId) {
+    return null;
+  }
+
+  @Override
+  public boolean setDefaultBrowserPackageName(String packageName, int userId) {
+    return false;
   }
 
   @Override
