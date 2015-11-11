@@ -3,6 +3,7 @@ package org.robolectric.util;
 import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheckPreset;
 import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheckResult;
 import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheckResult.AccessibilityCheckResultDescriptor;
+import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheckResult.AccessibilityCheckResultType;
 import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheckResultUtils;
 import com.google.android.apps.common.testing.accessibility.framework.AccessibilityViewCheckResult;
 import com.google.android.apps.common.testing.accessibility.framework.DuplicateClickableBoundsViewCheck;
@@ -17,6 +18,7 @@ import org.robolectric.annotation.AccessibilityChecks;
 import org.robolectric.annotation.AccessibilityChecks.ForRobolectricVersion;
 
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -40,14 +42,62 @@ public class AccessibilityUtil {
   private AccessibilityUtil() {}
 
   /**
-   * Check a {@code View} for accessibility. 
+   * Check a hierarchy of {@code View}s for accessibility. Only performs checks if (in decreasing
+   * priority order) accessibility checking is enabled using an {@link AccessibilityChecks}
+   * annotation, if the system property {@code robolectric.accessibility.enablechecks} is set to
+   * {@code true}, or if the environment variable {@code robolectric.accessibility.enablechecks}
+   * is set to {@code true}.
    *
    * @param view The {@code View} to examine
+   *
+   * @return A list of results from the check. If there are no results or checking is disabled, 
+   * the list is empty.
    */
-  public static void assertAccessibilityForView(View view) {
-    assertAccessibilityForViewIfEnabled(view, true);
+  public static List<AccessibilityViewCheckResult> checkViewIfCheckingEnabled(View view) {
+    AccessibilityChecks classChecksAnnotation = getAnnotation();
+    if (!isAccessibilityCheckingEnabled(classChecksAnnotation)) {
+      return Collections.emptyList();
+    }
+
+    return checkView(view);
   }
-  
+
+  /**
+   * Check a hierarchy of {@code View}s for accessibility, based on currently set options.
+   *
+   * @param view The {@code View} to examine
+   *
+   * @return A list of results from the check. If there are no results, the list is empty.
+   */
+  public static List<AccessibilityViewCheckResult> checkView(View view) {
+    return checkView(view, getAnnotation());
+  }
+
+  /**
+   * Check a hierarchy of {@code View}s for accessibility. Only performs checks if (in decreasing
+   * priority order) accessibility checking is enabled using an {@link AccessibilityChecks}
+   * annotation, if the system property {@code robolectric.accessibility.enablechecks} is set to
+   * {@code true}, or if the environment variable {@code robolectric.accessibility.enablechecks}
+   * is set to {@code true}.
+   *
+   * Implicitly calls {code setThrowExceptionForErrors(false)} to disable exception throwing. This
+   * method is deprecated, both because of this side effect and because the other methods offer
+   * more control over execution.
+   *
+   * @param view The {@code View} to examine
+   *
+   * @return A list of results from the check. If there are no results or checking is disabled,
+   * the list is empty.
+   */
+  @Deprecated
+  public static boolean passesAccessibilityChecksIfEnabled(View view) {
+    setThrowExceptionForErrors(false);
+    List<AccessibilityViewCheckResult> results = checkViewIfCheckingEnabled(view);
+    List<AccessibilityViewCheckResult> errors = AccessibilityCheckResultUtils.getResultsForType(
+        results, AccessibilityCheckResultType.ERROR);
+    return (errors.size() == 0);
+  }
+
   /**
    * Specify that a specific subset of accessibility checks be run. The subsets are specified based
    * on which Robolectric version particular checks were released with. By default, all checks are
@@ -119,35 +169,59 @@ public class AccessibilityUtil {
     validator.setThrowExceptionForErrors(throwExceptionForErrors);
   }
 
-  /**
-   * Check a {@code View} for accessibility. Only performs checks if 
-   * accessibility is enabled using an {@link AccessibilityChecks} annotation
-   * or the environment variable {@code a11y_checks_enabled} is set to 
-   * {@code true}. {@link AccessibilityChecks} values override those from 
-   * environment variables.
-   *
-   * @param view The {@code View} to examine
-   * @param forceRunChecks If {@code true}, checks are forcibly run, overriding the value in
-   * the environment variable, test argument, or annotation.
-   */
-  public static void assertAccessibilityForViewIfEnabled(View view, boolean forceRunChecks) {
-    boolean checksEnabled = false;
-
-    if (!forceRunChecks) {
-      String checksEnabledString = System.getenv("robolectric.accessibility.enablechecks");
-      if (checksEnabledString != null) {
-        checksEnabled = checksEnabledString.equals("true");
+  private static List<AccessibilityViewCheckResult> checkView(View view,
+      AccessibilityChecks classChecksAnnotation) {
+    /*
+     * Accessibility Checking requires the v4 support library. If the support library isn't present,
+     * throw a descriptive exception now.
+     */
+    if (!v4SupportPresenceVerified) {
+      try {
+        View.class.getClassLoader().loadClass(COMPAT_V4_CLASS_NAME);
+      } catch (ClassNotFoundException e) {
+        throw new RuntimeException(
+            "Accessibility Checking requires the Android support library (v4).\n"
+            + "Either include it in the project or disable accessibility checking.");
       }
+      v4SupportPresenceVerified = true;
+    }
 
-      /* Allow test arg to enable checking (and override environment variables) */
-      checksEnabledString = System.getProperty("robolectric.accessibility.enablechecks");
-      if (checksEnabledString != null) {
-        checksEnabled = checksEnabledString.equals("true");
+    initializeValidator();
+    if (!forVersionSet) {
+      if (classChecksAnnotation != null) {
+        validator.setCheckPreset(
+            convertRoboVersionToA11yTestVersion(classChecksAnnotation.forRobolectricVersion()));
+      } else {
+        validator.setCheckPreset(AccessibilityCheckPreset.LATEST);
       }
     }
-    /* Update values from annotations in the stack, if any */
-    StackTraceElement[] stack = new Throwable().fillInStackTrace().getStackTrace();
+    return validator.checkAndReturnResults(view);
+  }
+
+  private static boolean isAccessibilityCheckingEnabled(AccessibilityChecks classChecksAnnotation) {
+    boolean checksEnabled = false;
+
+    String checksEnabledString = System.getenv("robolectric.accessibility.enablechecks");
+    if (checksEnabledString != null) {
+      checksEnabled = checksEnabledString.equals("true");
+    }
+
+    /* Allow test arg to enable checking (and override environment variables) */
+    checksEnabledString = System.getProperty("robolectric.accessibility.enablechecks");
+    if (checksEnabledString != null) {
+      checksEnabled = checksEnabledString.equals("true");
+    }
+
+    if (classChecksAnnotation != null) {
+      checksEnabled = classChecksAnnotation.enabled();
+    }
+
+    return checksEnabled;
+  }
+
+  private static AccessibilityChecks getAnnotation() {
     AccessibilityChecks classChecksAnnotation = null;
+    StackTraceElement[] stack = new Throwable().fillInStackTrace().getStackTrace();
     for (StackTraceElement element : stack) {
       /* Look for annotations on the method or the class */
       Class<?> clazz;
@@ -160,8 +234,8 @@ public class AccessibilityUtil {
         if (classChecksAnnotation == null) {
           classChecksAnnotation = clazz.getAnnotation(AccessibilityChecks.class);
         }
+        /* Stop looking when we find an annotation */
         if (classChecksAnnotation != null) {
-          checksEnabled = classChecksAnnotation.enabled();
           break;
         }
         /* If we've crawled up the stack far enough to find the test, stop looking */
@@ -176,37 +250,7 @@ public class AccessibilityUtil {
        */
       catch (ClassNotFoundException | SecurityException | NoSuchMethodException e) {}
     }
-
-    if (!checksEnabled && !forceRunChecks) {
-      return;
-    }
-    
-    /* 
-     * Accessibility Checking requires the v4 support library. If the support library isn't present,
-     * throw a descriptive exception now.
-     */
-    if (!v4SupportPresenceVerified) {
-      try {
-        View.class.getClassLoader().loadClass(COMPAT_V4_CLASS_NAME);
-      } catch (ClassNotFoundException e) {
-        throw new RuntimeException(
-            "Accessibility Checking requires the Android support library (v4).\n"
-            + "Either include it in the project or disable accessibility checking.");
-      }
-      v4SupportPresenceVerified = true;
-    }
-    
-    initializeValidator();
-    if (!forVersionSet) {
-      if (classChecksAnnotation != null) {
-        validator.setCheckPreset(
-            convertRoboVersionToA11yTestVersion(classChecksAnnotation.forRobolectricVersion()));
-      } else {
-        validator.setCheckPreset(AccessibilityCheckPreset.LATEST);
-      }
-    }
-    List<AccessibilityViewCheckResult> results = validator.checkAndReturnResults(view);
-    AccessibilityCheckResultDescriptor descriptor = new AccessibilityCheckResultDescriptor();
+    return classChecksAnnotation;
   }
 
   private static void initializeValidator() {
