@@ -60,6 +60,7 @@ public class ShadowView {
   private int hapticFeedbackPerformed = -1;
   private boolean onLayoutWasCalled;
   private View.OnCreateContextMenuListener onCreateContextMenuListener;
+  private Rect globalVisibleRect;
 
   /**
    * Calls {@code performClick()} on a {@code View} after ensuring that it and its ancestors are visible and that it
@@ -344,7 +345,7 @@ public class ShadowView {
       throw new RuntimeException("View is not enabled and cannot be clicked");
     }
 
-    AccessibilityUtil.assertAccessibilityForViewIfEnabled(realView, false);
+    AccessibilityUtil.checkViewIfCheckingEnabled(realView);
     return realView.performClick();
   }
 
@@ -556,17 +557,33 @@ public class ShadowView {
   }
 
   @Implementation
-  public boolean getGlobalVisibleRect(Rect rect) {
-    // Indicate that view has a visible rect
-    return true;
-  }
-  
-  @Implementation
   public boolean getGlobalVisibleRect(Rect rect, Point globalOffset) {
-    // Indicate that view has a visible rect
-    return true;
+    if (globalVisibleRect == null) {
+      /*
+       * The global visible rect is not initialized. The value is not reliable as Robolectric does
+       * not perform layouts in most cases. Use a substitute concept of visibility if no rect
+       * had been set explicitly.
+       */
+      rect.setEmpty();
+      return realView.isShown();
+    }
+
+    if (globalVisibleRect != null && !globalVisibleRect.isEmpty()) {
+      rect.set(globalVisibleRect);
+      if (globalOffset != null) {
+        rect.offset(-globalOffset.x, -globalOffset.y);
+      }
+      return true;
+    }
+    rect.setEmpty();
+    return false;
   }
-  
+
+  public void setGlobalVisibleRect(Rect rect) {
+    globalVisibleRect = new Rect();
+    globalVisibleRect.set(rect);
+  }
+
   public int lastHapticFeedbackPerformed() {
     return hapticFeedbackPerformed;
   }
