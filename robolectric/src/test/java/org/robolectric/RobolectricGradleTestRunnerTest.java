@@ -14,22 +14,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class RobolectricGradleTestRunnerTest {
   @Rule
   public ExpectedException exception = ExpectedException.none();
-  private final static String TEST_SUBJECT_LOCATION = RobolectricGradleTestRunner.class.getProtectionDomain().getCodeSource().getLocation().getFile();
 
   @Before
   public void setup() {
-    FileFsFile.from(TEST_SUBJECT_LOCATION, "res").getFile().mkdirs();
-    FileFsFile.from(TEST_SUBJECT_LOCATION, "assets").getFile().mkdirs();
-    FileFsFile.from(TEST_SUBJECT_LOCATION, "manifests").getFile().mkdirs();
+    FileFsFile.from("build", "intermediates", "res").getFile().mkdirs();
+    FileFsFile.from("build", "intermediates", "assets").getFile().mkdirs();
+    FileFsFile.from("build", "intermediates", "manifests").getFile().mkdirs();
   }
 
   @After
   public void teardown() throws IOException {
-    delete(FileFsFile.from(TEST_SUBJECT_LOCATION, "res").getFile());
-    delete(FileFsFile.from(TEST_SUBJECT_LOCATION, "assets").getFile());
-    delete(FileFsFile.from(TEST_SUBJECT_LOCATION, "manifests").getFile());
-    delete(FileFsFile.from(TEST_SUBJECT_LOCATION, "res", "merged").getFile());
-    delete(FileFsFile.from(TEST_SUBJECT_LOCATION, "bundles").getFile());
+    delete(FileFsFile.from("build", "intermediates", "res").getFile());
+    delete(FileFsFile.from("build", "intermediates", "assets").getFile());
+    delete(FileFsFile.from("build", "intermediates", "manifests").getFile());
+    delete(FileFsFile.from("build", "intermediates", "res", "merged").getFile());
   }
 
   private static String convertPath(String path) {
@@ -42,25 +40,24 @@ public class RobolectricGradleTestRunnerTest {
     final AndroidManifest manifest = runner.getAppManifest(runner.getConfig(ConstantsTest.class.getMethod("withoutAnnotation")));
 
     assertThat(manifest.getPackageName()).isEqualTo("org.sandwich.foo");
-    assertThat(manifest.getResDirectory().getPath()).endsWith(convertPath("/res/flavor1/type1"));
-    assertThat(manifest.getAssetsDirectory().getPath()).endsWith(convertPath("/assets/flavor1/type1"));
-    assertThat(manifest.getAndroidManifestFile().getPath()).endsWith(convertPath("/manifests/full/flavor1/type1/AndroidManifest.xml"));
+    assertThat(manifest.getResDirectory().getPath()).isEqualTo(convertPath("build/intermediates/res/flavor1/type1"));
+    assertThat(manifest.getAssetsDirectory().getPath()).isEqualTo(convertPath("build/intermediates/assets/flavor1/type1"));
+    assertThat(manifest.getAndroidManifestFile().getPath()).isEqualTo(convertPath("build/intermediates/manifests/full/flavor1/type1/AndroidManifest.xml"));
   }
 
   @Test
   public void getAppManifest_forLibraries_shouldCreateManifest() throws Exception {
-    delete(FileFsFile.from(TEST_SUBJECT_LOCATION, "res").getFile());
-    delete(FileFsFile.from(TEST_SUBJECT_LOCATION, "assets").getFile());
-    delete(FileFsFile.from(TEST_SUBJECT_LOCATION, "manifests").getFile());
-    FileFsFile.from(TEST_SUBJECT_LOCATION, "bundles").getFile().mkdirs();
+    delete(FileFsFile.from("build", "intermediates", "res").getFile());
+    delete(FileFsFile.from("build", "intermediates", "assets").getFile());
+    delete(FileFsFile.from("build", "intermediates", "manifests").getFile());
 
     final RobolectricGradleTestRunner runner = new RobolectricGradleTestRunner(ConstantsTest.class);
     final AndroidManifest manifest = runner.getAppManifest(runner.getConfig(ConstantsTest.class.getMethod("withoutAnnotation")));
 
     assertThat(manifest.getPackageName()).isEqualTo("org.sandwich.foo");
-    assertThat(manifest.getResDirectory().getPath()).endsWith(convertPath("/flavor1/type1/res"));
-    assertThat(manifest.getAssetsDirectory().getPath()).endsWith(convertPath("/flavor1/type1/assets"));
-    assertThat(manifest.getAndroidManifestFile().getPath()).endsWith(convertPath("/flavor1/type1/AndroidManifest.xml"));
+    assertThat(manifest.getResDirectory().getPath()).isEqualTo(convertPath("build/intermediates/bundles/flavor1/type1/res"));
+    assertThat(manifest.getAssetsDirectory().getPath()).isEqualTo(convertPath("build/intermediates/bundles/flavor1/type1/assets"));
+    assertThat(manifest.getAndroidManifestFile().getPath()).isEqualTo(convertPath("build/intermediates/bundles/flavor1/type1/AndroidManifest.xml"));
   }
 
   @Test
@@ -69,9 +66,9 @@ public class RobolectricGradleTestRunnerTest {
     final AndroidManifest manifest = runner.getAppManifest(runner.getConfig(ConstantsTest.class.getMethod("withOverrideAnnotation")));
 
     assertThat(manifest.getPackageName()).isEqualTo("org.sandwich.bar");
-    assertThat(manifest.getResDirectory().getPath()).endsWith(convertPath("/res/flavor2/type2"));
-    assertThat(manifest.getAssetsDirectory().getPath()).endsWith(convertPath("/assets/flavor2/type2"));
-    assertThat(manifest.getAndroidManifestFile().getPath()).endsWith(convertPath("/manifests/full/flavor2/type2/AndroidManifest.xml"));
+    assertThat(manifest.getResDirectory().getPath()).isEqualTo(convertPath("build/intermediates/res/flavor2/type2"));
+    assertThat(manifest.getAssetsDirectory().getPath()).isEqualTo(convertPath("build/intermediates/assets/flavor2/type2"));
+    assertThat(manifest.getAndroidManifestFile().getPath()).isEqualTo(convertPath("build/intermediates/manifests/full/flavor2/type2/AndroidManifest.xml"));
   }
 
   @Test
@@ -80,22 +77,22 @@ public class RobolectricGradleTestRunnerTest {
     final AndroidManifest manifest = runner.getAppManifest(runner.getConfig(PackageNameTest.class.getMethod("withoutAnnotation")));
 
     assertThat(manifest.getPackageName()).isEqualTo("fake.package.name");
-    assertThat(manifest.getResDirectory().getPath()).endsWith(convertPath("/res/flavor1/type1"));
-    assertThat(manifest.getAssetsDirectory().getPath()).endsWith(convertPath("/assets/flavor1/type1"));
-    assertThat(manifest.getAndroidManifestFile().getPath()).endsWith(convertPath("/manifests/full/flavor1/type1/AndroidManifest.xml"));
+    assertThat(manifest.getResDirectory().getPath()).isEqualTo(convertPath("build/intermediates/res/flavor1/type1"));
+    assertThat(manifest.getAssetsDirectory().getPath()).isEqualTo(convertPath("build/intermediates/assets/flavor1/type1"));
+    assertThat(manifest.getAndroidManifestFile().getPath()).isEqualTo(convertPath("build/intermediates/manifests/full/flavor1/type1/AndroidManifest.xml"));
   }
 
   @Test
   public void getAppManifest_withMergedResources_shouldHaveMergedResPath() throws Exception {
-    FileFsFile.from(TEST_SUBJECT_LOCATION, "res", "merged").getFile().mkdirs();
+    FileFsFile.from("build", "intermediates", "res", "merged").getFile().mkdirs();
 
     final RobolectricGradleTestRunner runner = new RobolectricGradleTestRunner(PackageNameTest.class);
     final AndroidManifest manifest = runner.getAppManifest(runner.getConfig(PackageNameTest.class.getMethod("withoutAnnotation")));
 
     assertThat(manifest.getPackageName()).isEqualTo("fake.package.name");
-    assertThat(manifest.getResDirectory().getPath()).endsWith(convertPath("/res/merged/flavor1/type1"));
-    assertThat(manifest.getAssetsDirectory().getPath()).endsWith(convertPath("/assets/flavor1/type1"));
-    assertThat(manifest.getAndroidManifestFile().getPath()).endsWith(convertPath("/manifests/full/flavor1/type1/AndroidManifest.xml"));
+    assertThat(manifest.getResDirectory().getPath()).isEqualTo(convertPath("build/intermediates/res/merged/flavor1/type1"));
+    assertThat(manifest.getAssetsDirectory().getPath()).isEqualTo(convertPath("build/intermediates/assets/flavor1/type1"));
+    assertThat(manifest.getAndroidManifestFile().getPath()).isEqualTo(convertPath("build/intermediates/manifests/full/flavor1/type1/AndroidManifest.xml"));
   }
 
   @Test
