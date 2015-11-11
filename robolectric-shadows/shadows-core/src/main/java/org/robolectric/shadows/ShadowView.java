@@ -60,6 +60,7 @@ public class ShadowView {
   private int hapticFeedbackPerformed = -1;
   private boolean onLayoutWasCalled;
   private View.OnCreateContextMenuListener onCreateContextMenuListener;
+  private final Rect globalVisibleRect = new Rect();
 
   /**
    * Calls {@code performClick()} on a {@code View} after ensuring that it and its ancestors are visible and that it
@@ -344,7 +345,7 @@ public class ShadowView {
       throw new RuntimeException("View is not enabled and cannot be clicked");
     }
 
-    AccessibilityUtil.assertAccessibilityForViewIfEnabled(realView, false);
+    AccessibilityUtil.checkViewIfCheckingEnabled(realView);
     return realView.performClick();
   }
 
@@ -557,16 +558,21 @@ public class ShadowView {
 
   @Implementation
   public boolean getGlobalVisibleRect(Rect rect) {
-    // Indicate that view has a visible rect
+    rect.set(globalVisibleRect);
     return true;
   }
   
   @Implementation
   public boolean getGlobalVisibleRect(Rect rect, Point globalOffset) {
-    // Indicate that view has a visible rect
+    rect.set(globalVisibleRect);
+    rect.offset(-globalOffset.x, -globalOffset.y);
     return true;
   }
   
+  public void setGlobalVisibleRect(Rect rect) {
+    globalVisibleRect.set(rect);
+  }
+
   public int lastHapticFeedbackPerformed() {
     return hapticFeedbackPerformed;
   }
