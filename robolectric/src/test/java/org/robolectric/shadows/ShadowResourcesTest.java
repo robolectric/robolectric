@@ -73,6 +73,17 @@ public class ShadowResourcesTest {
   }
 
   @Test
+  public void getStringShouldStripNewLines() {
+    assertThat(resources.getString(R.string.leading_and_trailing_new_lines)).isEqualTo("Some text");
+  }
+
+  @Test
+  public void getStringShouldConvertCodePoints() {
+    assertThat(resources.getString(R.string.non_breaking_space)).isEqualTo("Closing soon:\u00A05pm");
+    assertThat(resources.getString(R.string.space)).isEqualTo("Closing soon: 5pm");
+  }
+
+  @Test
   public void getText_withHtml() throws Exception {
     assertThat(resources.getText(R.string.some_html, "value")).isEqualTo("Hello, world");
   }

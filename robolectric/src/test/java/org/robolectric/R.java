@@ -114,8 +114,11 @@ public final class R {
     public static final int surrounding_quotes = 0x10119;
     public static final int escaped_apostrophe = 0x1011a;
     public static final int escaped_quotes = 0x1011b;
-    public static final int say_it_with_item = 0x1011c;
-    public static final int test_menu_2 = 0x1011d;
+    public static final int leading_and_trailing_new_lines = 0x1011c;
+    public static final int non_breaking_space = 0x1011d;
+    public static final int space = 0x1011e;
+    public static final int say_it_with_item = 0x1011f;
+    public static final int test_menu_2 = 0x10120;
   }
 
   public static final class plurals {
