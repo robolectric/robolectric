@@ -26,6 +26,8 @@ public class ShadowMessage {
   private Message realMessage;
   private Runnable scheduledRunnable;
 
+  private static final Object lock = getStaticField(Message.class, "sPoolSync");
+
   private void unschedule() {
     Handler target = realMessage.getTarget();
 
@@ -131,10 +133,9 @@ public class ShadowMessage {
    */
   @Resetter
   public static void reset() {
-    Object lock = getStaticField(Message.class, "sPoolSync");
     synchronized (lock) {
-	  setStaticField(Message.class, "sPoolSize", 0);
-	  setStaticField(Message.class, "sPool", null);
-	}
+      setStaticField(Message.class, "sPoolSize", 0);
+      setStaticField(Message.class, "sPool", null);
+    }
   }
 }
