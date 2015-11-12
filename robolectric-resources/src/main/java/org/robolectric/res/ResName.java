@@ -40,16 +40,19 @@ public class ResName {
     if (packageName.equals("xmlns")) throw new IllegalStateException("\"" + fullyQualifiedName + "\" unexpected");
   }
 
-  public static @NotNull String qualifyResourceName(@NotNull String possiblyQualifiedResourceName, String defaultPackageName, String defaultType) {
+  /**
+   * Returns null if the resource could not be qualified.
+   */
+  public static String qualifyResourceName(@NotNull String possiblyQualifiedResourceName, String defaultPackageName, String defaultType) {
     ResName resName = qualifyResName(possiblyQualifiedResourceName, defaultPackageName, defaultType);
-    return resName.getFullyQualifiedName();
+    return resName != null ? resName.getFullyQualifiedName() : null;
   }
 
-  public static @NotNull ResName qualifyResName(@NotNull String possiblyQualifiedResourceName, ResName defaults) {
+  public static ResName qualifyResName(@NotNull String possiblyQualifiedResourceName, ResName defaults) {
     return qualifyResName(possiblyQualifiedResourceName, defaults.packageName, defaults.type);
   }
 
-  public static @NotNull ResName qualifyResName(@NotNull String possiblyQualifiedResourceName, String defaultPackageName, String defaultType) {
+  public static ResName qualifyResName(@NotNull String possiblyQualifiedResourceName, String defaultPackageName, String defaultType) {
     int indexOfColon = possiblyQualifiedResourceName.indexOf(':');
     int indexOfSlash = possiblyQualifiedResourceName.indexOf('/');
     String type = null;
@@ -69,6 +72,10 @@ public class ResName {
       name = possiblyQualifiedResourceName.substring(indexOfSlash + 1);
     }
 
+    if ((type == null && defaultType == null) || packageName == null && defaultPackageName == null) {
+      return null;
+    }
+
     return new ResName(packageName == null ? defaultPackageName : packageName,
         type == null ? defaultType : type,
         name);
@@ -83,7 +90,11 @@ public class ResName {
       return null;
     }
 
+    // Was not able to fully qualify the resource name
     String fullyQualifiedResourceName = qualifyResourceName(possiblyQualifiedResourceName, contextPackageName, null);
+    if (fullyQualifiedResourceName == null) {
+      return null;
+    }
 
     fullyQualifiedResourceName = fullyQualifiedResourceName.replaceAll("[@+]", "");
     Integer resourceId = resourceIndex.getResourceId(new ResName(fullyQualifiedResourceName));
