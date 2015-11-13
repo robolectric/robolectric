@@ -28,7 +28,10 @@ public class StringResources {
    * 3) Escapes
    */
   public static String proccessStringResources(String inputValue) {
-    return escape(convertCodePoints(inputValue.trim()));
+    return escape(convertCodePoints(inputValue.trim()
+            .replace("\\n", String.valueOf('\n'))
+            .replace("\\t", String.valueOf('\t'))
+    ));
   }
 
   /**
