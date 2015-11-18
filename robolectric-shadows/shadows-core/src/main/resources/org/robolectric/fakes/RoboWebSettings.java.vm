@@ -555,7 +555,7 @@ public class RoboWebSettings extends WebSettings {
     return defaultZoom;
   }
 
-  private boolean acceptThirdPartyCookies;  
+  private boolean acceptThirdPartyCookies;
 
   @Override
   public boolean getAcceptThirdPartyCookies() {
@@ -567,7 +567,7 @@ public class RoboWebSettings extends WebSettings {
     this.acceptThirdPartyCookies = acceptThirdPartyCookies;
   }
 
-  private boolean savePassword;  
+  private boolean savePassword;
 
   @Override
   public boolean getSavePassword() {
@@ -621,5 +621,18 @@ public class RoboWebSettings extends WebSettings {
   }
 
   // End API 22
+#end
+
+#if ($api >= 23)
+  @Override
+  public void setOffscreenPreRaster(boolean enabled) {
+
+  }
+
+  public boolean getOffscreenPreRaster() {
+    return false;
+  }
+
+  // End API 23
 #end
 }
