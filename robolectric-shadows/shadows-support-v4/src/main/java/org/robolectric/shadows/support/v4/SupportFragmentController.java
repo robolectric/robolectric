@@ -1,5 +1,6 @@
 package org.robolectric.shadows.support.v4;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -101,6 +102,17 @@ public class SupportFragmentController<F extends Fragment> extends ComponentCont
       @Override
       public void run() {
         activityController.stop();
+      }
+    });
+    return this;
+  }
+
+  @Override
+  public SupportFragmentController<F> withIntent(final Intent intent) {
+    shadowMainLooper.runPaused(new Runnable() {
+      @Override
+      public void run() {
+        activityController.withIntent(intent);
       }
     });
     return this;

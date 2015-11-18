@@ -369,7 +369,7 @@ public class ShadowResources {
   @Implementation
   public CharSequence getText(int id) throws Resources.NotFoundException {
     CharSequence text = directlyOn(realResources, Resources.class).getText(id);
-    return StringResources.escape(text.toString());
+    return text.toString();
   }
 
   @Implementation

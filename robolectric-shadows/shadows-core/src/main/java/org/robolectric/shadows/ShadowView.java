@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -59,6 +60,7 @@ public class ShadowView {
   private int hapticFeedbackPerformed = -1;
   private boolean onLayoutWasCalled;
   private View.OnCreateContextMenuListener onCreateContextMenuListener;
+  private Rect globalVisibleRect;
 
   /**
    * Calls {@code performClick()} on a {@code View} after ensuring that it and its ancestors are visible and that it
@@ -342,9 +344,8 @@ public class ShadowView {
     if (!realView.isEnabled()) {
       throw new RuntimeException("View is not enabled and cannot be clicked");
     }
-    if (!AccessibilityUtil.passesAccessibilityChecksIfEnabled(realView)) {
-      throw new RuntimeException("View has accessibility issues.");
-    }
+
+    AccessibilityUtil.checkViewIfCheckingEnabled(realView);
     return realView.performClick();
   }
 
@@ -553,6 +554,34 @@ public class ShadowView {
   public boolean performHapticFeedback(int hapticFeedbackType) {
     hapticFeedbackPerformed = hapticFeedbackType;
     return true;
+  }
+
+  @Implementation
+  public boolean getGlobalVisibleRect(Rect rect, Point globalOffset) {
+    if (globalVisibleRect == null) {
+      /*
+       * The global visible rect is not initialized. The value is not reliable as Robolectric does
+       * not perform layouts in most cases. Use a substitute concept of visibility if no rect
+       * had been set explicitly.
+       */
+      rect.setEmpty();
+      return realView.isShown();
+    }
+
+    if (!globalVisibleRect.isEmpty()) {
+      rect.set(globalVisibleRect);
+      if (globalOffset != null) {
+        rect.offset(-globalOffset.x, -globalOffset.y);
+      }
+      return true;
+    }
+    rect.setEmpty();
+    return false;
+  }
+
+  public void setGlobalVisibleRect(Rect rect) {
+    globalVisibleRect = new Rect();
+    globalVisibleRect.set(rect);
   }
 
   public int lastHapticFeedbackPerformed() {
