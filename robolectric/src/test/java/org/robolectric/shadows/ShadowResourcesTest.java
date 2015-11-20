@@ -78,6 +78,11 @@ public class ShadowResourcesTest {
   }
 
   @Test
+  public void preserveEscapedNewlineAndTab() {
+    assertThat(resources.getString(R.string.new_lines_and_tabs, 4)).isEqualTo("4\tmph\nfaster");
+  }
+
+  @Test
   public void getStringShouldConvertCodePoints() {
     assertThat(resources.getString(R.string.non_breaking_space)).isEqualTo("Closing soon:\u00A05pm");
     assertThat(resources.getString(R.string.space)).isEqualTo("Closing soon: 5pm");
