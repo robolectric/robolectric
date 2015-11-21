@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.os.Looper;
 
 import org.assertj.core.api.Assertions;
@@ -369,6 +370,27 @@ public class ShadowAsyncTaskTest {
     assertThat(looper.get()).as("looper").isNull();
   }
 
+  // Regression test for issue #2115
+  @Test(timeout=1000)
+  public void postingFromDoInBackground_shouldntDeadlock() throws Exception {
+    Robolectric.getBackgroundThreadScheduler().unPause();
+    Robolectric.getForegroundThreadScheduler().unPause();
+    final AtomicBoolean flag = new AtomicBoolean(false);
+    new AsyncTask<Void,Void,Void>() {
+      @Override
+      protected Void doInBackground(Void... voids) {
+        new Handler(Looper.getMainLooper()).
+            post(new Runnable() {
+              @Override
+              public void run() {
+              }
+            });
+        flag.set(true);
+        return null;
+      }
+    }.execute().get();
+    assertThat(flag.get()).isTrue();
+  }
 
   private class MyAsyncTask extends AsyncTask<String, String, String> {
     @Override
