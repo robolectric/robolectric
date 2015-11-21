@@ -2,10 +2,7 @@ package org.robolectric.shadows;
 
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-import static junit.framework.Assert.assertEquals;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
 import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -108,16 +105,17 @@ public class ShadowContextWrapperTest {
     handlerThread.start();
 
     Handler handler = new Handler(handlerThread.getLooper());
-    assertNotSame(handler.getLooper(), Looper.getMainLooper());
-
+    assertThat(handler.getLooper()).isNotSameAs(Looper.getMainLooper());
+    ShadowLooper sLooper = shadowOf(handler.getLooper());
+    sLooper.pause();
     BroadcastReceiver receiver = broadcastReceiver("Larry");
     contextWrapper.registerReceiver(receiver, intentFilter("foo", "baz"), null, handler);
 
-    assertThat(shadowOf(handler.getLooper()).getScheduler().size()).isEqualTo(0);
+    assertThat(sLooper.getScheduler().size()).isEqualTo(0);
     contextWrapper.sendBroadcast(new Intent("foo"));
-    assertThat(shadowOf(handler.getLooper()).getScheduler().size()).isEqualTo(1);
+    assertThat(sLooper.getScheduler().size()).isEqualTo(1);
     shadowOf(handlerThread.getLooper()).idle();
-    assertThat(shadowOf(handler.getLooper()).getScheduler().size()).isEqualTo(0);
+    assertThat(sLooper.getScheduler().size()).isEqualTo(0);
 
     transcript.assertEventsSoFar("Larry notified of foo");
   }
@@ -271,8 +269,7 @@ public class ShadowContextWrapperTest {
     contextWrapper.sendBroadcast(broadcastIntent);
 
     List<Intent> broadcastIntents = shadowOf(contextWrapper).getBroadcastIntents();
-    assertTrue(broadcastIntents.size() == 1);
-    assertEquals(broadcastIntent, broadcastIntents.get(0));
+    assertThat(broadcastIntents).containsExactly(broadcastIntent);
   }
 
   @Test
@@ -395,7 +392,7 @@ public class ShadowContextWrapperTest {
   @Test
   public void bindServiceDelegatesToShadowApplication() {
     contextWrapper.bindService(new Intent("foo"), new TestService(), Context.BIND_AUTO_CREATE);
-    assertEquals("foo", shadowOf(RuntimeEnvironment.application).getNextStartedService().getAction());
+    assertThat(shadowOf(RuntimeEnvironment.application).getNextStartedService().getAction()).isEqualTo("foo");
   }
 
   @Test
