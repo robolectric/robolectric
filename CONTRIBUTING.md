@@ -12,7 +12,7 @@ Create a feature branch to make your changes:
     
 Mavenize all required dependencies:
 
-    ./scripts/install-dependencies.sh
+    ./scripts/install-dependencies.rb
 
 Perform a full build of all shadows:
 
