@@ -92,6 +92,19 @@ public class ShadowConnectivityManager {
     return networkPreference;
   }
 
+  /**
+   * Count {@link ConnectivityManager#TYPE_MOBILE} networks as metered.
+   * Other types will be considered unmetered.
+   */
+  @Implementation
+  public boolean isActiveNetworkMetered() {
+    if (activeNetwork != null) {
+      return activeNetwork.getType() == ConnectivityManager.TYPE_MOBILE;
+    } else {
+      return false;
+    }
+  }
+
   public void setNetworkInfo(int networkType, NetworkInfo networkInfo) {
     networkTypeToNetworkInfo.put(networkType, networkInfo);
   }
