@@ -59,9 +59,8 @@ def install_map(group_id, artifact_id, api, revision)
     puts "Make sure that 'Google APIs' is up to date in the SDK manager for API #{api}. Expected revision #{revision} but was #{version}."
     exit 1
   end
-
   puts "Installing #{group_id}:#{artifact_id}"
-  install(group_id, artifact_id, version, path)
+  install(group_id, artifact_id, "#{api}_r#{revision}", path)
 end
 
 # Local repository paths
