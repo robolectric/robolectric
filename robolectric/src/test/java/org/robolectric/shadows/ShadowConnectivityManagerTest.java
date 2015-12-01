@@ -153,4 +153,28 @@ public class ShadowConnectivityManagerTest {
     // Verify that exception is thrown.
     connectivityManager.unregisterNetworkCallback(null);
   }
+
+  @Test
+  public void isActiveNetworkMetered_defaultsToTrue() {
+    assertThat(connectivityManager.isActiveNetworkMetered()).isTrue();
+  }
+
+  @Test
+  public void isActiveNetworkMetered_mobileIsMetered() {
+    shadowConnectivityManager.setActiveNetworkInfo(connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE));
+    assertThat(connectivityManager.isActiveNetworkMetered()).isTrue();
+  }
+
+  @Test
+  public void isActiveNetworkMetered_nonMobileIsUnmetered() {
+    shadowConnectivityManager.setActiveNetworkInfo(connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI));
+    assertThat(connectivityManager.isActiveNetworkMetered()).isFalse();
+  }
+
+  @Test
+  public void isActiveNetworkMetered_noActiveNetwork() {
+    shadowConnectivityManager.setActiveNetworkInfo(null);
+    assertThat(connectivityManager.isActiveNetworkMetered()).isFalse();
+  }
+
 }
