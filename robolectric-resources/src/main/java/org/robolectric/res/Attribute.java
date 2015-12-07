@@ -90,7 +90,7 @@ public class Attribute {
     if (!resName.type.equals("attr")) throw new IllegalStateException("\"" + resName.getFullyQualifiedName() + "\" unexpected");
 
     this.resName = resName;
-    this.value = value;
+    this.value = value.trim();
     this.contextPackageName = contextPackageName;
   }
 
