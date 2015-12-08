@@ -15,8 +15,27 @@ import static org.assertj.core.api.Assertions.assertThat;
     Build.VERSION_CODES.LOLLIPOP })
 public class ShadowICUTest {
 
-  @Test
-  public void getBestDateTimePattern_returnsReasonableValue() {
-    assertThat(ICU.getBestDateTimePattern("hm", null)).isEqualTo("h:mm a");
-  }
+    @Test
+    public void getBestDateTimePattern_returnsReasonableValue() {
+        assertThat(ICU.getBestDateTimePattern("hm", null)).isEqualTo("hm");
+    }
+
+    @Test
+    public void datePickerShouldNotCrashWhenAskingForBestDateTimePattern() {
+        ActivityController<DatePickerActivity> activityController = Robolectric.buildActivity(DatePickerActivity.class);
+        activityController.setup();
+    }
+
+    private static class DatePickerActivity extends Activity {
+        @Override
+        protected void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            LinearLayout view = new LinearLayout(this);
+            view.setId(1);
+            DatePicker datePicker = new DatePicker(this);
+            view.addView(datePicker);
+
+            setContentView(view);
+        }
+    }
 }
