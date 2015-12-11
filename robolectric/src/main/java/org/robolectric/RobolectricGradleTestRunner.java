@@ -38,8 +38,12 @@ public class RobolectricGradleTestRunner extends RobolectricTestRunner {
     final FileFsFile assets;
     final FileFsFile manifest;
 
-    // res/merged added in Android Gradle plugin 1.3-beta1
-    if (FileFsFile.from(BUILD_OUTPUT, "res", "merged").exists()) {
+    if (FileFsFile.from(BUILD_OUTPUT, "data-binding-layout-out").exists()) {
+      // Android gradle plugin 1.5.0+ puts the merged layouts in data-binding-layout-out.
+      // https://github.com/robolectric/robolectric/issues/2143
+      res = FileFsFile.from(BUILD_OUTPUT, "data-binding-layout-out", flavor, type);
+    } else if (FileFsFile.from(BUILD_OUTPUT, "res", "merged").exists()) {
+      // res/merged added in Android Gradle plugin 1.3-beta1
       res = FileFsFile.from(BUILD_OUTPUT, "res", "merged", flavor, type);
     } else if (FileFsFile.from(BUILD_OUTPUT, "res").exists()) {
       res = FileFsFile.from(BUILD_OUTPUT, "res", flavor, type);
