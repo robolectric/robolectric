@@ -31,7 +31,6 @@ public class StyleData implements Style {
   }
 
   @Override public Attribute getAttrValue(ResName resName) {
-    resName.mustBe("attr");
     Attribute attribute = items.get(resName);
 
     // yuck. hack to work around library package remapping
