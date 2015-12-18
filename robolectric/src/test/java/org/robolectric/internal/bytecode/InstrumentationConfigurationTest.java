@@ -67,6 +67,15 @@ public class InstrumentationConfigurationTest {
     assertThat(customConfig.shouldInstrument(wrap(notInstrumentName))).isFalse();
   }
 
+  @Test
+  public void equals_ShouldCheckClassNames() throws Exception {
+    String instrumentName = "com.whatever.SomeClassNameToInstrument";
+    InstrumentationConfiguration baseConfig = InstrumentationConfiguration.newBuilder().build();
+    InstrumentationConfiguration customConfig = InstrumentationConfiguration.newBuilder().addInstrumentedClass(instrumentName).build();
+
+    assertThat(baseConfig).isNotEqualTo(customConfig);
+  }
+
   private ClassInfo wrap(final String className) {
     ClassInfo info = mock(ClassInfo.class);
     when(info.getName()).thenReturn(className);

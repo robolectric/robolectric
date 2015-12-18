@@ -38,8 +38,7 @@
     <dependency>
       <groupId>com.google.android.apps.common.testing.accessibility.framework</groupId>
       <artifactId>accessibility-test-framework</artifactId>
-      <version>1.0</version>
-      <scope>compile</scope>
+      <version>2.1</version>
     </dependency>
   </dependencies>
 

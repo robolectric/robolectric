@@ -131,6 +131,13 @@ public class ShadowContextWrapper extends ShadowContext {
   }
 
   @Implementation
+  public void sendOrderedBroadcast(Intent intent, String receiverPermission, BroadcastReceiver resultReceiver,
+                                   Handler scheduler, int initialCode, String initialData, Bundle initialExtras) {
+    getApplicationContext().sendOrderedBroadcast(intent, receiverPermission, resultReceiver, scheduler, initialCode,
+            initialData, initialExtras);
+  }
+
+  @Implementation
   public void sendStickyBroadcast(Intent intent) {
     getApplicationContext().sendStickyBroadcast(intent);
   }

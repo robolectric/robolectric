@@ -261,7 +261,9 @@ public class InstrumentationConfiguration {
     if (!classNameTranslations.equals(that.classNameTranslations)) return false;
     if (!classesToNotAquire.equals(that.classesToNotAquire)) return false;
     if (!instrumentedPackages.equals(that.instrumentedPackages)) return false;
+    if (!instrumentedClasses.equals(that.instrumentedClasses)) return false;
     if (!interceptedMethods.equals(that.interceptedMethods)) return false;
+
 
     return true;
   }
@@ -269,6 +271,7 @@ public class InstrumentationConfiguration {
   @Override
   public int hashCode() {
     int result = instrumentedPackages.hashCode();
+    result = 31 * result + instrumentedClasses.hashCode();
     result = 31 * result + classNameTranslations.hashCode();
     result = 31 * result + interceptedMethods.hashCode();
     result = 31 * result + classesToNotAquire.hashCode();

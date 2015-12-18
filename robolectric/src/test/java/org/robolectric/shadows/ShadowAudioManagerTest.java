@@ -175,4 +175,11 @@ public class ShadowAudioManagerTest {
     audioManager.setMode(AudioManager.MODE_RINGTONE);
     assertThat(audioManager.getMode()).isEqualTo(AudioManager.MODE_RINGTONE);
   }
+
+  @Test
+  public void isSpeakerphoneOn_shouldReturnSpeakerphoneState() {
+    assertThat(audioManager.isSpeakerphoneOn()).isFalse();
+    audioManager.setSpeakerphoneOn(true);
+    assertThat(audioManager.isSpeakerphoneOn()).isTrue();
+  }
 }

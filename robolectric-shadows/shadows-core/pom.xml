@@ -54,6 +54,11 @@
       <version>53.1</version>
     </dependency>
 
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+    </dependency>
+
     <!-- SQLite Dependencies -->
     <dependency>
       <groupId>com.almworks.sqlite4java</groupId>

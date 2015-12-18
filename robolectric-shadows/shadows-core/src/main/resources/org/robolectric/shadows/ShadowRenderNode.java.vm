@@ -13,6 +13,8 @@ public class ShadowRenderNode {
   private float translationX;
   private float translationY;
   private float translationZ;
+  private float pivotX;
+  private float pivotY;
 
   @Implementation
   public boolean setTranslationX(float translationX) {
@@ -45,6 +47,28 @@ public class ShadowRenderNode {
   @Implementation
   public float getTranslationZ() {
     return translationZ;
+  }
+
+  @Implementation
+  public boolean setPivotX(float pivotX) {
+    this.pivotX = pivotX;
+    return true;
+  }
+
+  @Implementation
+  public float getPivotX() {
+    return pivotX;
+  }
+
+  @Implementation
+  public boolean setPivotY(float pivotY) {
+    this.pivotY = pivotY;
+    return true;
+  }
+
+  @Implementation
+  public float getPivotY() {
+    return pivotY;
   }
 }
 

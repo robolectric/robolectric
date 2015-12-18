@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -218,19 +219,14 @@ public class ShadowViewTest {
     shadowOf(view).checkedPerformClick();
   }
 
+  /* 
+   * This test will throw an exception because the accessibility checks depend on the  Android
+   * Support Library. If the support library is included at some point, a single test from
+   * AccessibilityUtilTest could be moved here to make sure the accessibility checking is run.
+   */
   @Test(expected = RuntimeException.class)
   @AccessibilityChecks
-  public void checkedClick_shouldThrowIfViewNotAccessible() throws Exception {
-    view.setContentDescription(null);
-    shadowOf(view).setMyParent(new StubViewRoot());
-    shadowOf(view).checkedPerformClick();
-  }
-
-  @Test
-  @AccessibilityChecks
-  public void checkedClick_shouldNotThrowIfViewIsOK() throws Exception {
-    view.setContentDescription("Something");
-    shadowOf(view).setMyParent(new StubViewRoot());
+  public void checkedClick_withA11yChecksAnnotation_shouldThrow() throws Exception {
     shadowOf(view).checkedPerformClick();
   }
 
