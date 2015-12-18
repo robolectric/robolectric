@@ -151,7 +151,7 @@ public class ShadowConnectivityManagerTest {
   @Test(expected=IllegalArgumentException.class) @Config(sdk = 21)
   public void unregisterCallback_shouldNotAllowNullCallback() throws Exception {
     // Verify that exception is thrown.
-    connectivityManager.unregisterNetworkCallback(null);
+    connectivityManager.unregisterNetworkCallback((ConnectivityManager.NetworkCallback)null);
   }
 
   @Test
