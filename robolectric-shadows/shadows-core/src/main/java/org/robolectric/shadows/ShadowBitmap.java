@@ -36,6 +36,7 @@ public class ShadowBitmap {
   private int[] createdFromColors;
   private Matrix createdFromMatrix;
   private boolean createdFromFilter;
+  private boolean hasAlpha;
 
   private int width;
   private int height;
@@ -398,6 +399,16 @@ public class ShadowBitmap {
 
   public String getDescription() {
     return description;
+  }
+
+  @Implementation
+  public final boolean hasAlpha() {
+    return hasAlpha;
+  }
+
+  @Implementation
+  public void setHasAlpha(boolean hasAlpha) {
+    this.hasAlpha = hasAlpha;
   }
 
   @Implementation

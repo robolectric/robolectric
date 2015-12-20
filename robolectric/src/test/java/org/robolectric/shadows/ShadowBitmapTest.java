@@ -40,6 +40,14 @@ public class ShadowBitmapTest {
   }
 
   @Test
+  public void hasAlpha() {
+    Bitmap bitmap = Bitmap.createBitmap(100, 200, Config.ARGB_8888);
+    assertThat(bitmap.hasAlpha()).isFalse();
+    bitmap.setHasAlpha(true);
+    assertThat(bitmap.hasAlpha()).isTrue();
+  }
+
+  @Test
   public void shouldCreateBitmapWithColors() throws Exception {
     int[] colors = new int[] {
         Color.parseColor("#ff0000"), Color.parseColor("#00ff00"), Color.parseColor("#0000ff"),
