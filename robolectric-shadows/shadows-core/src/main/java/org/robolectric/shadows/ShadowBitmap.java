@@ -3,6 +3,8 @@ package org.robolectric.shadows;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.util.DisplayMetrics;
+import android.util.Log;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -46,6 +48,7 @@ public class ShadowBitmap {
   private boolean mutable;
   private String description = "";
   private boolean recycled = false;
+  private boolean hasMipMap;
 
   /**
    * Returns a textual representation of the appearance of the object.
@@ -409,6 +412,16 @@ public class ShadowBitmap {
   @Implementation
   public void setHasAlpha(boolean hasAlpha) {
     this.hasAlpha = hasAlpha;
+  }
+
+  @Implementation
+  public final boolean hasMipMap() {
+    return hasMipMap;
+  }
+
+  @Implementation
+  public final void setHasMipMap(boolean hasMipMap) {
+    this.hasMipMap = hasMipMap;
   }
 
   @Implementation

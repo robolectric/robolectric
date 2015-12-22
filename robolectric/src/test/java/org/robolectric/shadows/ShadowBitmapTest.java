@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import android.graphics.Bitmap;
-import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.ColorMatrix;
@@ -13,6 +12,7 @@ import android.util.DisplayMetrics;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
 import org.robolectric.internal.Shadow;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -31,20 +31,36 @@ public class ShadowBitmapTest {
 
   @Test
   public void shouldCreateActiveBitmap() throws Exception {
-    Bitmap bitmap = Bitmap.createBitmap(100, 200, Config.ARGB_8888);
+    Bitmap bitmap = Bitmap.createBitmap(100, 200, Bitmap.Config.ARGB_8888);
     assertThat(bitmap.isRecycled()).isFalse();
     assertThat(bitmap.getPixel(0, 0)).isZero();
     assertThat(bitmap.getWidth()).isEqualTo(100);
     assertThat(bitmap.getHeight()).isEqualTo(200);
-    assertThat(bitmap.getConfig()).isEqualTo(Config.ARGB_8888);
+    assertThat(bitmap.getConfig()).isEqualTo(Bitmap.Config.ARGB_8888);
   }
 
   @Test
   public void hasAlpha() {
-    Bitmap bitmap = Bitmap.createBitmap(100, 200, Config.ARGB_8888);
+    Bitmap bitmap = Bitmap.createBitmap(100, 200, Bitmap.Config.ARGB_8888);
     assertThat(bitmap.hasAlpha()).isFalse();
     bitmap.setHasAlpha(true);
     assertThat(bitmap.hasAlpha()).isTrue();
+  }
+
+  @Test
+  @Config(sdk = {
+      Build.VERSION_CODES.JELLY_BEAN_MR1,
+      Build.VERSION_CODES.JELLY_BEAN_MR2,
+      Build.VERSION_CODES.KITKAT,
+      Build.VERSION_CODES.LOLLIPOP,
+      Build.VERSION_CODES.LOLLIPOP_MR1,
+      Build.VERSION_CODES.M,
+  })
+  public void hasMipmap() {
+    Bitmap bitmap = Bitmap.createBitmap(100, 200, Bitmap.Config.ARGB_8888);
+    assertThat(bitmap.hasMipMap()).isFalse();
+    bitmap.setHasMipMap(true);
+    assertThat(bitmap.hasMipMap()).isTrue();
   }
 
   @Test
@@ -53,10 +69,10 @@ public class ShadowBitmapTest {
         Color.parseColor("#ff0000"), Color.parseColor("#00ff00"), Color.parseColor("#0000ff"),
         Color.parseColor("#990000"), Color.parseColor("#009900"), Color.parseColor("#000099")
     };
-    Bitmap bitmap = Bitmap.createBitmap(colors, 3, 2, Config.ARGB_8888);
+    Bitmap bitmap = Bitmap.createBitmap(colors, 3, 2, Bitmap.Config.ARGB_8888);
     assertThat(bitmap.getWidth()).isEqualTo(3);
     assertThat(bitmap.getHeight()).isEqualTo(2);
-    assertThat(bitmap.getConfig()).isEqualTo(Config.ARGB_8888);
+    assertThat(bitmap.getConfig()).isEqualTo(Bitmap.Config.ARGB_8888);
     assertThat(bitmap.getPixel(0, 0)).isEqualTo(Color.parseColor("#ff0000"));
     assertThat(bitmap.getPixel(0, 1)).isEqualTo(Color.parseColor("#990000"));
     assertThat(bitmap.getPixel(1, 0)).isEqualTo(Color.parseColor("#00ff00"));
@@ -74,28 +90,30 @@ public class ShadowBitmapTest {
 
   @Test
   public void shouldCreateMutableBitmap() throws Exception {
-    Bitmap mutableBitmap = Bitmap.createBitmap(100, 200, Config.ARGB_8888);
+    Bitmap mutableBitmap = Bitmap.createBitmap(100, 200, Bitmap.Config.ARGB_8888);
     assertThat(mutableBitmap.isMutable()).isTrue();
   }
 
   @Test
-  @org.robolectric.annotation.Config(sdk = {
+  @Config(sdk = {
       Build.VERSION_CODES.JELLY_BEAN_MR1,
       Build.VERSION_CODES.JELLY_BEAN_MR2,
       Build.VERSION_CODES.KITKAT,
-      Build.VERSION_CODES.LOLLIPOP })
+      Build.VERSION_CODES.LOLLIPOP,
+      Build.VERSION_CODES.LOLLIPOP_MR1,
+      Build.VERSION_CODES.M})
   public void shouldCreateMutableBitmapWithDisplayMetrics() throws Exception {
     final DisplayMetrics metrics = new DisplayMetrics();
     metrics.densityDpi = 1000;
 
-    final Bitmap bitmap = Bitmap.createBitmap(metrics, 100, 100, Config.ARGB_8888);
+    final Bitmap bitmap = Bitmap.createBitmap(metrics, 100, 100, Bitmap.Config.ARGB_8888);
     assertThat(bitmap.isMutable()).isTrue();
     assertThat(bitmap.getDensity()).isEqualTo(1000);
   }
 
   @Test
   public void shouldRecycleBitmap() throws Exception {
-    Bitmap bitmap = Bitmap.createBitmap(100, 200, Config.ARGB_8888);
+    Bitmap bitmap = Bitmap.createBitmap(100, 200, Bitmap.Config.ARGB_8888);
     bitmap.recycle();
     assertThat(bitmap.isRecycled()).isTrue();
   }
@@ -144,55 +162,58 @@ public class ShadowBitmapTest {
   @Test
   public void shouldCopyBitmap() {
     Bitmap bitmap = Shadow.newInstanceOf(Bitmap.class);
-    Bitmap bitmapCopy = bitmap.copy(Config.ARGB_8888, true);
-    assertThat(shadowOf(bitmapCopy).getConfig()).isEqualTo(Config.ARGB_8888);
+    Bitmap bitmapCopy = bitmap.copy(Bitmap.Config.ARGB_8888, true);
+    assertThat(shadowOf(bitmapCopy).getConfig()).isEqualTo(Bitmap.Config.ARGB_8888);
     assertThat(shadowOf(bitmapCopy).isMutable()).isTrue();
   }
 
   @Test(expected = NullPointerException.class)
   public void rowBytesIsAccurate() {
-    Bitmap b1 = Bitmap.createBitmap(10, 10, Config.ARGB_8888);
+    Bitmap b1 = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888);
     assertThat(b1.getRowBytes()).isEqualTo(40);
-    Bitmap b2 = Bitmap.createBitmap(10, 10, Config.RGB_565);
+    Bitmap b2 = Bitmap.createBitmap(10, 10, Bitmap.Config.RGB_565);
     assertThat(b2.getRowBytes()).isEqualTo(20);
 
-    // Null config is not allowed.
+    // Null Bitmap.Config is not allowed.
     Bitmap b3 = Bitmap.createBitmap(10, 10, null);
     b3.getRowBytes();
   }
 
   @Test(expected = NullPointerException.class)
-  @org.robolectric.annotation.Config(sdk = {
+  @Config(sdk = {
       Build.VERSION_CODES.JELLY_BEAN_MR1,
       Build.VERSION_CODES.JELLY_BEAN_MR2,
       Build.VERSION_CODES.KITKAT,
-      Build.VERSION_CODES.LOLLIPOP })
+      Build.VERSION_CODES.LOLLIPOP,
+      Build.VERSION_CODES.M})
   public void byteCountIsAccurate() {
-    Bitmap b1 = Bitmap.createBitmap(10, 10, Config.ARGB_8888);
+    Bitmap b1 = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888);
     assertThat(b1.getByteCount()).isEqualTo(400);
-    Bitmap b2 = Bitmap.createBitmap(10, 10, Config.RGB_565);
+    Bitmap b2 = Bitmap.createBitmap(10, 10, Bitmap.Config.RGB_565);
     assertThat(b2.getByteCount()).isEqualTo(200);
 
-    // Null config is not allowed.
+    // Null Bitmap.Config is not allowed.
     Bitmap b3 = Bitmap.createBitmap(10, 10, null);
     b3.getByteCount();
   }
 
   @Test
-  @org.robolectric.annotation.Config(sdk = {
+  @Config(sdk = {
       Build.VERSION_CODES.JELLY_BEAN_MR1,
       Build.VERSION_CODES.JELLY_BEAN_MR2,
       Build.VERSION_CODES.KITKAT,
-      Build.VERSION_CODES.LOLLIPOP })
+      Build.VERSION_CODES.LOLLIPOP,
+      Build.VERSION_CODES.LOLLIPOP_MR1,
+      Build.VERSION_CODES.M})
   public void shouldSetDensity() {
-    final Bitmap bitmap = Bitmap.createBitmap(new DisplayMetrics(), 100, 100, Config.ARGB_8888);
+    final Bitmap bitmap = Bitmap.createBitmap(new DisplayMetrics(), 100, 100, Bitmap.Config.ARGB_8888);
     bitmap.setDensity(1000);
     assertThat(bitmap.getDensity()).isEqualTo(1000);
   }
 
   @Test
   public void shouldSetPixel() {
-    Bitmap bitmap = Bitmap.createBitmap(new int[] { 1 }, 1, 1, Config.ARGB_8888);
+    Bitmap bitmap = Bitmap.createBitmap(new int[] { 1 }, 1, 1, Bitmap.Config.ARGB_8888);
     shadowOf(bitmap).setMutable(true);
     bitmap.setPixel(0, 0, 2);
     assertThat(bitmap.getPixel(0, 0)).isEqualTo(2);
@@ -201,7 +222,7 @@ public class ShadowBitmapTest {
 
   @Test
   public void shouldSetPixel_allocateOnTheFly() {
-    Bitmap bitmap = Bitmap.createBitmap(1, 1, Config.ARGB_8888);
+    Bitmap bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
     shadowOf(bitmap).setMutable(true);
     bitmap.setPixel(0, 0, 2);
     assertThat(bitmap.getPixel(0, 0)).isEqualTo(2);
@@ -210,13 +231,13 @@ public class ShadowBitmapTest {
 
   @Test(expected = IllegalStateException.class)
   public void shouldThrowExceptionForSetPixelOnImmutableBitmap() {
-    Bitmap bitmap = Bitmap.createBitmap(new int[] { 1 }, 1, 1, Config.ARGB_8888);
+    Bitmap bitmap = Bitmap.createBitmap(new int[] { 1 }, 1, 1, Bitmap.Config.ARGB_8888);
     bitmap.setPixel(0, 0, 2);
   }
 
   @Test
   public void bitmapsAreReused() {
-    Bitmap b = Bitmap.createBitmap(10, 10, Config.ARGB_8888);
+    Bitmap b = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888);
     Bitmap b1 = Bitmap.createBitmap(b, 0, 0, 10, 10);
     assertThat(b1).isSameAs(b);
     Bitmap b2 = Bitmap.createBitmap(b, 0, 0, 10, 10, null, false);
@@ -227,7 +248,7 @@ public class ShadowBitmapTest {
 
   @Test
   public void equalsSizeTransformReturnsOriginal() {
-    Bitmap b1 = Bitmap.createBitmap(10, 10, Config.ARGB_8888);
+    Bitmap b1 = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888);
     Bitmap b2 = Bitmap.createBitmap(b1, 0, 0, 10, 10, null, false);
     assertThat(b1).isSameAs(b2);
     Bitmap b3 = Bitmap.createBitmap(b1, 0, 0, 10, 10, null, true);
@@ -236,18 +257,18 @@ public class ShadowBitmapTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void throwsExceptionForInvalidDimensions() {
-    Bitmap b = Bitmap.createBitmap(10, 20, Config.ARGB_8888);
+    Bitmap b = Bitmap.createBitmap(10, 20, Bitmap.Config.ARGB_8888);
     Bitmap.createBitmap(b, 0, 0, 20, 10, null, false);
   }
   
   @Test(expected = IllegalArgumentException.class)
   public void throwsExceptionForNegativeWidth() {
-    Bitmap.createBitmap(-100, 10, Config.ARGB_8888);
+    Bitmap.createBitmap(-100, 10, Bitmap.Config.ARGB_8888);
   }
   
   @Test(expected = IllegalArgumentException.class)
   public void throwsExceptionForZeroHeight() {
-    Bitmap.createBitmap(100, 0, Config.ARGB_8888);
+    Bitmap.createBitmap(100, 0, Bitmap.Config.ARGB_8888);
   }
 
   private static Bitmap create(String name) {
