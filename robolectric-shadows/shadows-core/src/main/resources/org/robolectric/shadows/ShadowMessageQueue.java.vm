@@ -96,31 +96,37 @@ public class ShadowMessageQueue {
     final boolean retval = directlyOn(realQueue, MessageQueue.class, "enqueueMessage", from(Message.class, msg), from(long.class, when));
     if (retval) {
       final Runnable callback = new Runnable() {
-        @Override
-        public void run() {
+
+        public boolean doDispatch() {
           synchronized (realQueue) {
             Message m = getHead();
             if (m == null) {
-              return;
+              return false;
             }
 
             Message n = shadowOf(m).getNext();
             if (m == msg) {
               setHead(n);
-              dispatchMessage(msg);
-              return;
+              return true;
             }
 
             while (n != null) {
               if (n == msg) {
                 n = shadowOf(n).getNext();
                 shadowOf(m).setNext(n);
-                dispatchMessage(msg);
-                return;
+                return true;
               }
               m = n;
               n = shadowOf(m).getNext();
             }
+          }
+          return false;
+        }
+
+        @Override
+        public void run() {
+          if (doDispatch()) {
+            dispatchMessage(msg);
           }
         }
       };
