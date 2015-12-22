@@ -124,10 +124,6 @@ public class ShadowLooper {
     return 1;
   }
 
-  @HiddenApi @Implementation
-  public void removeSyncBarrier(int token) {
-  }
-
   public boolean hasQuit() {
     synchronized (realObject) {
       return quit;
