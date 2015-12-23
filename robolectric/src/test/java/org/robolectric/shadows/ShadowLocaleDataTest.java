@@ -98,17 +98,12 @@ public class ShadowLocaleDataTest {
   }
 
   @Test
-  @Config(sdk = {
-      Build.VERSION_CODES.JELLY_BEAN_MR2,
-      Build.VERSION_CODES.KITKAT,
-      Build.VERSION_CODES.LOLLIPOP,
-      Build.VERSION_CODES.LOLLIPOP_MR1,
-      Build.VERSION_CODES.M})
-  public void shouldSupportLocaleEn_US_since_jelly_bean_mr2() throws Exception {
+  @Config(sdk = Build.VERSION_CODES.M)
+  public void shouldSupportLocaleEn_US_since_m() throws Exception {
     LocaleData localeData = LocaleData.get(Locale.US);
 
-    assertThat(localeData.timeFormat_Hm).isEqualTo("h:mm a");
-    assertThat(localeData.timeFormat_hm).isEqualTo("HH:mm");
+    assertThat(localeData.timeFormat_Hm).isEqualTo("HH:mm");
+    assertThat(localeData.timeFormat_hm).isEqualTo("h:mm a");
   }
 
   @Test
