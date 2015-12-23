@@ -86,6 +86,28 @@ public class InstrumentationConfiguration {
       this.classesToNotInstrument.add(className);
       return this;
     }
+    
+    public Builder withConfig(Config config) {
+      for (Class<?> clazz : config.shadows()) {
+        Implements annotation = clazz.getAnnotation(Implements.class);
+        if (annotation == null) {
+          throw new IllegalArgumentException(clazz + " is not annotated with @Implements");
+        }
+
+        String className = annotation.className();
+        if (className.isEmpty()) {
+          className = annotation.value().getName();
+        }
+
+        if (!className.isEmpty()) {
+          addInstrumentedClass(className);
+        }
+      }
+      for (String packageName : config.instrumentedPackages()) {
+        addInstrumentedPackage(packageName);
+      }
+      return this;
+    }
 
     public InstrumentationConfiguration build() {
       interceptedMethods.addAll(Arrays.asList(

@@ -11,8 +11,11 @@ import java.util.Map;
 
 public class InstrumentingClassLoaderFactory {
 
+  // We need to cache class loader more than the number of supported APIs as different tests may have different configurations.
+  private static final int CACHE_SIZE_FACTOR = 5;
+
   // Typical test suites will use a single test runner, therefore have a maximum of one SdkEnvironment per API level.
-  private static final int CACHE_SIZE = SdkConfig.getSupportedApis().size();
+  private static final int CACHE_SIZE = SdkConfig.getSupportedApis().size() * CACHE_SIZE_FACTOR;
 
   // Simple LRU Cache. SdkEnvironments are unique across InstrumentingClassloaderConfig and SdkConfig
   private static final LinkedHashMap<Pair<InstrumentationConfiguration, SdkConfig>, SdkEnvironment> sdkToEnvironment = new LinkedHashMap<Pair<InstrumentationConfiguration, SdkConfig>, SdkEnvironment>() {

@@ -5,7 +5,6 @@ import android.graphics.Paint;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -49,18 +48,6 @@ public class AndroidTranslatorClassInstrumentedTest {
     CustomPaint customPaint = new CustomPaint();
     assertThat(customPaint.getColor()).isEqualTo(10);
     assertThat(customPaint.getColorName()).isEqualTo("rainbow");
-  }
-
-  /*
-   * Test "foreign class" not getting its methods shadowed when it's
-   * not in the InstrumentingClassLoader CustomClassNames arrayList
-   */
-  @Test
-  @Config(shadows = {ShadowCustomXmasPaint.class, ShadowPaintForTests.class})
-  public void testCustomMethodNotShadowed() throws Exception {
-    CustomXmasPaint customXmasPaint = new CustomXmasPaint();
-    assertThat(customXmasPaint.getColor()).isEqualTo(999);
-    assertThat(customXmasPaint.getColorName()).isEqualTo("XMAS");
   }
 
   @Instrument
@@ -114,6 +101,7 @@ public class AndroidTranslatorClassInstrumentedTest {
   @Implements(CustomPaint.class)
   public static class ShadowCustomPaint extends ShadowPaintForTests {
 
+    @Override
     @Implementation
     public int getColor() {
       return 10;
@@ -122,33 +110,6 @@ public class AndroidTranslatorClassInstrumentedTest {
     @Implementation
     public String getColorName() {
       return "rainbow";
-    }
-  }
-
-  @SuppressWarnings({"UnusedDeclaration"})
-  public static class CustomXmasPaint extends Paint {
-
-    @Override
-    public int getColor() {
-      return 999;
-    }
-
-    public String getColorName() {
-      return "XMAS";
-    }
-  }
-
-  @Implements(CustomXmasPaint.class)
-  public static class ShadowCustomXmasPaint extends ShadowPaintForTests {
-
-    @Implementation
-    public int getColor() {
-      return -999;
-    }
-
-    @Implementation
-    public String getColorName() {
-      return "XMAS Color Test";
     }
   }
 }

@@ -57,7 +57,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   private static final Map<Pair<AndroidManifest, SdkConfig>, ResourceLoader> resourceLoadersByManifestAndConfig = new HashMap<>();
   private static final Map<ManifestIdentifier, AndroidManifest> appManifestsByFile = new HashMap<>();
   private static ShadowMap mainShadowMap;
-  private InstrumentingClassLoaderFactory instrumentingClassLoaderFactory;
   private TestLifecycle<Application> testLifecycle;
   private DependencyResolver dependencyResolver;
 
@@ -128,8 +127,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     return new AndroidManifest(manifestFile, resDir, assetDir, packageName);
   }
 
-  public InstrumentationConfiguration createClassLoaderConfig() {
-    return InstrumentationConfiguration.newBuilder().build();
+  public InstrumentationConfiguration createClassLoaderConfig(Config config) {
+    return InstrumentationConfiguration.newBuilder().withConfig(config).build();
   }
 
   protected Class<? extends TestLifecycle> getTestLifecycleClass() {
@@ -181,9 +180,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       eachNotifier.fireTestStarted();
       try {
         AndroidManifest appManifest = getAppManifest(config);
-        if (instrumentingClassLoaderFactory == null) {
-          instrumentingClassLoaderFactory = new InstrumentingClassLoaderFactory(createClassLoaderConfig(), getJarResolver());
-        }
+        InstrumentingClassLoaderFactory instrumentingClassLoaderFactory = new InstrumentingClassLoaderFactory(createClassLoaderConfig(config), getJarResolver());
         SdkEnvironment sdkEnvironment = instrumentingClassLoaderFactory.getSdkEnvironment(new SdkConfig(pickSdkVersion(config, appManifest)));
         methodBlock(method, config, appManifest, sdkEnvironment).evaluate();
       } catch (AssumptionViolatedException e) {
