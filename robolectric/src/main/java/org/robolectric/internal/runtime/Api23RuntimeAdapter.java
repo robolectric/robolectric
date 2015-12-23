@@ -48,6 +48,7 @@ public class Api23RuntimeAdapter implements RuntimeAdapter {
         ClassParameter.from(Rect.class, contentInsets),
         ClassParameter.from(Rect.class, visibleInsets),
         ClassParameter.from(Rect.class, stableInsets),
+        ClassParameter.from(Rect.class, outsets),
         ClassParameter.from(boolean.class, reportDraw),
         ClassParameter.from(Configuration.class, newConfig));
   }
