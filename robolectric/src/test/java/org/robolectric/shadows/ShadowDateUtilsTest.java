@@ -21,7 +21,8 @@ public class ShadowDateUtilsTest {
   @Config(sdk = {
       Build.VERSION_CODES.KITKAT,
       Build.VERSION_CODES.LOLLIPOP,
-      Build.VERSION_CODES.LOLLIPOP_MR1})
+      Build.VERSION_CODES.LOLLIPOP_MR1,
+      Build.VERSION_CODES.M})
   public void formatDateTime_withCurrentYear_worksSinceKitKat() {
     final long millisAtStartOfYear = getMillisAtStartOfYear();
 
