@@ -19,8 +19,7 @@ import static org.junit.Assert.assertEquals;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
 @Config(sdk = {
-    Build.VERSION_CODES.KITKAT,
-    Build.VERSION_CODES.LOLLIPOP })
+    Build.VERSION_CODES.M })
 public class ShadowDateIntervalFormatTest {
 
   @Test
