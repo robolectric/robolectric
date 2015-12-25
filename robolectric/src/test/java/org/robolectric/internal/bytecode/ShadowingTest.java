@@ -16,12 +16,16 @@ import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.internal.bytecode.testing.AFinalClass;
+import org.robolectric.internal.bytecode.testing.Foo;
 import org.robolectric.internal.bytecode.testing.Pony;
+import org.robolectric.internal.bytecode.testing.ShadowFoo;
 import org.robolectric.annotation.internal.Instrument;
 import org.robolectric.internal.ShadowConstants;
 import org.robolectric.internal.Shadow;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -210,5 +214,42 @@ public class ShadowingTest {
 
   @Implements(ApiImplementedClass.class)
   public static class ShadowApiImplementedClass {
+  }
+
+  @Test
+  public void shouldNotInstrumentClassIfNotAddedToConfig() {
+    assertEquals(1, new NonInstrumentedClass().plus(0));
+  }
+
+  @Test
+  @Config(shadows = {ShadowNonInstrumentedClass.class})
+  public void shouldInstrumentClassIfAddedToConfig() {
+    assertEquals(2, new NonInstrumentedClass().plus(0));
+  }
+
+  public static class NonInstrumentedClass {
+    public int plus(int x) {
+      return x + 1;
+    }
+  }
+
+  @Implements(NonInstrumentedClass.class)
+  public static class ShadowNonInstrumentedClass {
+    @Implementation
+    public int plus(int x) {
+      return x + 2;
+    }
+  }
+
+  public void shouldNotInstrumentPackageIfNotAddedToConfig() throws Exception {
+    Class<?> clazz = Class.forName(AFinalClass.class.getName());
+    assertEquals(1, clazz.getModifiers() & Modifier.FINAL);
+  }
+
+  @Test
+  @Config(instrumentedPackages = {"org.robolectric.internal.bytecode.testing"})
+  public void shouldInstrumentPackageIfAddedToConfig() throws Exception {
+    Class<?> clazz = Class.forName(AFinalClass.class.getName());
+    assertEquals(0, clazz.getModifiers() & Modifier.FINAL);
   }
 }

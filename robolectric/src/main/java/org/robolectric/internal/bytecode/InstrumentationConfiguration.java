@@ -25,6 +25,10 @@ import org.robolectric.res.builder.XmlBlock;
 import org.robolectric.util.TempDirectory;
 import org.robolectric.util.Transcript;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -84,6 +88,28 @@ public class InstrumentationConfiguration {
 
     public Builder doNotInstrumentClass(String className) {
       this.classesToNotInstrument.add(className);
+      return this;
+    }
+
+    public Builder withConfig(Config config) {
+      for (Class<?> clazz : config.shadows()) {
+        Implements annotation = clazz.getAnnotation(Implements.class);
+        if (annotation == null) {
+          throw new IllegalArgumentException(clazz + " is not annotated with @Implements");
+        }
+
+        String className = annotation.className();
+        if (className.isEmpty()) {
+          className = annotation.value().getName();
+        }
+
+        if (!className.isEmpty()) {
+          addInstrumentedClass(className);
+        }
+      }
+      for (String packageName : config.instrumentedPackages()) {
+        addInstrumentedPackage(packageName);
+      }
       return this;
     }
 
@@ -163,22 +189,24 @@ public class InstrumentationConfiguration {
     return new Builder();
   }
 
-  private final List<String> instrumentedPackages = new ArrayList<>();
-  private final HashSet<String> instrumentedClasses = new HashSet<>();
-  private final HashSet<String> classesToNotInstrument = new HashSet<>();
-  private final Map<String, String> classNameTranslations = new HashMap<>();
-  private final HashSet<MethodRef> interceptedMethods = new HashSet<>();
-  private final Set<String> classesToNotAquire = new HashSet<>();
-  private final Set<String> packagesToNotAquire = new HashSet<>();
+  private final List<String> instrumentedPackages;
+  private final Set<String> instrumentedClasses;
+  private final Set<String> classesToNotInstrument;
+  private final Map<String, String> classNameTranslations;
+  private final Set<MethodRef> interceptedMethods;
+  private final Set<String> classesToNotAquire;
+  private final Set<String> packagesToNotAquire;
+  private int cachedHashCode;
 
   private InstrumentationConfiguration(Map<String, String> classNameTranslations, Collection<MethodRef> interceptedMethods, Collection<String> instrumentedPackages, Collection<String> instrumentedClasses, Collection<String> classesToNotAquire, Collection<String> packagesToNotAquire, Collection<String> classesToNotInstrument) {
-    this.classNameTranslations.putAll(classNameTranslations);
-    this.interceptedMethods.addAll(interceptedMethods);
-    this.instrumentedPackages.addAll(instrumentedPackages);
-    this.instrumentedClasses.addAll(instrumentedClasses);
-    this.classesToNotAquire.addAll(classesToNotAquire);
-    this.packagesToNotAquire.addAll(packagesToNotAquire);
-    this.classesToNotInstrument.addAll(classesToNotInstrument);
+    this.classNameTranslations = ImmutableMap.copyOf(classNameTranslations);
+    this.interceptedMethods = ImmutableSet.copyOf(interceptedMethods);
+    this.instrumentedPackages = ImmutableList.copyOf(instrumentedPackages);
+    this.instrumentedClasses = ImmutableSet.copyOf(instrumentedClasses);
+    this.classesToNotAquire = ImmutableSet.copyOf(classesToNotAquire);
+    this.packagesToNotAquire = ImmutableSet.copyOf(packagesToNotAquire);
+    this.classesToNotInstrument = ImmutableSet.copyOf(classesToNotInstrument);
+    this.cachedHashCode = 0;
   }
 
   /**
@@ -279,11 +307,16 @@ public class InstrumentationConfiguration {
 
   @Override
   public int hashCode() {
+    if (cachedHashCode != 0) {
+      return cachedHashCode;
+    }
+
     int result = instrumentedPackages.hashCode();
     result = 31 * result + instrumentedClasses.hashCode();
     result = 31 * result + classNameTranslations.hashCode();
     result = 31 * result + interceptedMethods.hashCode();
     result = 31 * result + classesToNotAquire.hashCode();
+    cachedHashCode = result;
     return result;
   }
 

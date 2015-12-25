@@ -103,6 +103,13 @@ public @interface Config {
    * @return A list of additional shadow classes to enable.
    */
   Class<?>[] shadows() default {};
+  
+  /**
+   * A list of instrumented packages, in addition to those that are already instrumented.
+   * 
+   * @return A list of additional instrumented packages.
+   */
+  String[] instrumentedPackages() default {};
 
   /**
    * A list of folders containing Android Libraries on which this project depends.
@@ -120,6 +127,7 @@ public @interface Config {
     private final String packageName;
     private final Class<?> constants;
     private final Class<?>[] shadows;
+    private final String[] instrumentedPackages;
     private final Class<? extends Application> application;
     private final String[] libraries;
 
@@ -133,6 +141,7 @@ public @interface Config {
           properties.getProperty("resourceDir", Config.DEFAULT_RES_FOLDER),
           properties.getProperty("assetDir", Config.DEFAULT_ASSET_FOLDER),
           parseClasses(properties.getProperty("shadows", "")),
+          parseStringArrayProperty(properties.getProperty("instrumentedPackages", "")),
           parseApplication(properties.getProperty("application", "android.app.Application")),
           parseStringArrayProperty(properties.getProperty("libraries", "")),
           parseClass(properties.getProperty("constants", ""))
@@ -178,7 +187,7 @@ public @interface Config {
       return result;
     }
 
-    public Implementation(int[] sdk, String manifest, String qualifiers, String packageName, String resourceDir, String assetDir, Class<?>[] shadows, Class<? extends Application> application, String[] libraries, Class<?> constants) {
+    public Implementation(int[] sdk, String manifest, String qualifiers, String packageName, String resourceDir, String assetDir, Class<?>[] shadows, String[] instrumentedPackages, Class<? extends Application> application, String[] libraries, Class<?> constants) {
       this.sdk = sdk;
       this.manifest = manifest;
       this.qualifiers = qualifiers;
@@ -186,6 +195,7 @@ public @interface Config {
       this.resourceDir = resourceDir;
       this.assetDir = assetDir;
       this.shadows = shadows;
+      this.instrumentedPackages = instrumentedPackages;
       this.application = application;
       this.libraries = libraries;
       this.constants = constants;
@@ -200,6 +210,7 @@ public @interface Config {
       this.assetDir = other.assetDir();
       this.constants = other.constants();
       this.shadows = other.shadows();
+      this.instrumentedPackages = other.instrumentedPackages();
       this.application = other.application();
       this.libraries = other.libraries();
     }
@@ -218,6 +229,11 @@ public @interface Config {
       shadows.addAll(Arrays.asList(overlayConfig.shadows()));
       this.shadows = shadows.toArray(new Class[shadows.size()]);
 
+      Set<String> instrumentedPackages = new HashSet<>();
+      instrumentedPackages.addAll(Arrays.asList(baseConfig.instrumentedPackages()));
+      instrumentedPackages.addAll(Arrays.asList(overlayConfig.instrumentedPackages()));
+      this.instrumentedPackages = instrumentedPackages.toArray(new String[instrumentedPackages.size()]);
+      
       this.application = pick(baseConfig.application(), overlayConfig.application(), Application.class);
 
       Set<String> libraries = new HashSet<>();
@@ -279,6 +295,11 @@ public @interface Config {
       return shadows;
     }
 
+    @Override
+    public String[] instrumentedPackages() {
+      return instrumentedPackages;
+    }
+    
     @Override
     public String[] libraries() {
       return libraries;
