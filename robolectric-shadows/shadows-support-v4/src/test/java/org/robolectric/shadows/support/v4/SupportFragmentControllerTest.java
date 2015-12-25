@@ -117,6 +117,18 @@ public class SupportFragmentControllerTest {
     assertThat(intentInFragment.getExtras().getString("test_key")).isEqualTo("test_value");
   }
 
+  @Test
+  public void visible() {
+    final LoginFragment fragment = new LoginFragment();
+    final SupportFragmentController<LoginFragment> controller = SupportFragmentController.of(fragment, LoginActivity.class);
+
+    controller.create().start().resume();
+    assertThat(fragment.isVisible()).isFalse();
+
+    controller.visible();
+    assertThat(fragment.isVisible()).isTrue();
+  }
+
   private static class LoginFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
