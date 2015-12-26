@@ -24,6 +24,7 @@ import android.widget.TextView;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.robolectric.R;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
@@ -41,6 +42,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.robolectric.Robolectric.buildActivity;
@@ -245,7 +247,9 @@ public class ShadowTextViewTest {
 
     textView.setText(NEW_TEXT);
 
-    verify(mockTextWatcher).onTextChanged(new SpannableStringBuilder(NEW_TEXT), 0, INITIAL_TEXT.length(), NEW_TEXT.length());
+    ArgumentCaptor<SpannableStringBuilder> builderCaptor = ArgumentCaptor.forClass(SpannableStringBuilder.class);
+    verify(mockTextWatcher).onTextChanged(builderCaptor.capture(), eq(0), eq(INITIAL_TEXT.length()), eq(NEW_TEXT.length()));
+    assertThat(builderCaptor.getValue().toString()).isEqualTo(NEW_TEXT);
   }
 
   @Test
@@ -274,7 +278,7 @@ public class ShadowTextViewTest {
 
     textView.append(NEW_TEXT);
 
-    verify(mockTextWatcher).beforeTextChanged(new SpannableStringBuilder(INITIAL_TEXT), 0, INITIAL_TEXT.length(), INITIAL_TEXT.length());
+    verify(mockTextWatcher).beforeTextChanged(eq(INITIAL_TEXT), eq(0), eq(INITIAL_TEXT.length()), eq(INITIAL_TEXT.length()));
   }
 
   @Test
@@ -285,7 +289,9 @@ public class ShadowTextViewTest {
 
     textView.append(NEW_TEXT);
 
-    verify(mockTextWatcher).onTextChanged(new SpannableStringBuilder(INITIAL_TEXT + NEW_TEXT), 0, INITIAL_TEXT.length(), INITIAL_TEXT.length());
+    ArgumentCaptor<SpannableStringBuilder> builderCaptor = ArgumentCaptor.forClass(SpannableStringBuilder.class);
+    verify(mockTextWatcher).onTextChanged(builderCaptor.capture(), eq(0), eq(INITIAL_TEXT.length()), eq(INITIAL_TEXT.length()));
+    assertThat(builderCaptor.getValue().toString()).isEqualTo(INITIAL_TEXT + NEW_TEXT);
   }
 
   @Test
@@ -409,8 +415,12 @@ public class ShadowTextViewTest {
   public void whenSettingTextToNull_WatchersSeeEmptyString() {
     TextWatcher mockTextWatcher = mock(TextWatcher.class);
     textView.addTextChangedListener(mockTextWatcher);
+
     textView.setText(null);
-    verify(mockTextWatcher).onTextChanged(new SpannableStringBuilder(""), 0, 0, 0);
+
+    ArgumentCaptor<SpannableStringBuilder> builderCaptor = ArgumentCaptor.forClass(SpannableStringBuilder.class);
+    verify(mockTextWatcher).onTextChanged(builderCaptor.capture(), eq(0), eq(0), eq(0));
+    assertThat(builderCaptor.getValue().toString()).isEmpty();
   }
 
   @Test
