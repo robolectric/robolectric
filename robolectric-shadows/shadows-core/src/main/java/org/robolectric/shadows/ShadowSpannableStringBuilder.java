@@ -12,10 +12,6 @@ import org.robolectric.annotation.RealObject;
 public class ShadowSpannableStringBuilder {
   @RealObject SpannableStringBuilder realSpannableStringBuilder;
 
-  @Implementation @Override public boolean equals(Object obj) {
-    return obj != null && realSpannableStringBuilder.toString().equals(obj.toString());
-  }
-
   @Implementation @Override public int hashCode() {
     return realSpannableStringBuilder.toString().hashCode();
   }

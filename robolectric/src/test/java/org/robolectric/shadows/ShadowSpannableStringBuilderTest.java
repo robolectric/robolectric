@@ -2,6 +2,8 @@ package org.robolectric.shadows;
 
 import android.text.SpannableStringBuilder;
 import android.text.style.TypefaceSpan;
+import android.text.style.UnderlineSpan;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
@@ -88,8 +90,15 @@ public class ShadowSpannableStringBuilderTest {
   }
 
   @Test
-  public void equals_returnFalseWhenComparingToNull() {
+  public void equals_returnsFalseWhenComparingToNull() {
     SpannableStringBuilder builder = new SpannableStringBuilder("abc");
     assertThat(builder.equals(null)).isFalse();
+  }
+
+  @Test
+  public void equals_returnsFalseWhenComparingToString() {
+    SpannableStringBuilder spannableString = new SpannableStringBuilder("abc");
+    spannableString.setSpan(new UnderlineSpan(), 0, spannableString.length(), 0);
+    assertThat(spannableString.equals("abc")).isFalse();
   }
 }
