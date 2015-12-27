@@ -1,9 +1,7 @@
 package org.robolectric.shadows;
 
 import android.app.ProgressDialog;
-import android.view.View;
 import android.widget.TextView;
-import com.android.internal.R;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -17,8 +15,7 @@ import static org.robolectric.internal.Shadow.directlyOn;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ProgressDialog.class)
 public class ShadowProgressDialog extends ShadowAlertDialog {
-  @RealObject
-  private ProgressDialog realProgressDialog;
+  @RealObject ProgressDialog realProgressDialog;
 
   private int mProgressStyle;
 
