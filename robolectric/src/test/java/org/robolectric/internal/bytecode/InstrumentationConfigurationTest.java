@@ -57,7 +57,7 @@ public class InstrumentationConfigurationTest {
     assertThat(config.shouldAcquire("org.specs2.whatever.foo")).isFalse();
     assertThat(config.shouldAcquire("com.almworks.sqlite4java.whatever.Cls$anything$else")).isFalse();
   }
-  
+
   @Test
   public void shouldInstrumentCustomClasses() throws Exception {
     String instrumentName = "com.whatever.SomeClassNameToInstrument";
@@ -74,6 +74,13 @@ public class InstrumentationConfigurationTest {
     InstrumentationConfiguration customConfig = InstrumentationConfiguration.newBuilder().addInstrumentedClass(instrumentName).build();
 
     assertThat(baseConfig).isNotEqualTo(customConfig);
+  }
+
+  public void shouldNotInstrumentListedClasses() throws Exception {
+    String instrumentName = "android.foo.bar";
+    InstrumentationConfiguration customConfig = InstrumentationConfiguration.newBuilder().doNotInstrumentClass(instrumentName).build();
+
+    assertThat(customConfig.shouldInstrument(wrap(instrumentName))).isFalse();
   }
 
   private ClassInfo wrap(final String className) {

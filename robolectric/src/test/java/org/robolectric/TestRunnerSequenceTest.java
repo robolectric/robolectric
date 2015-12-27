@@ -99,7 +99,7 @@ public class TestRunnerSequenceTest {
       super(testClass);
     }
 
-    @Override public InstrumentationConfiguration createClassLoaderConfig() {
+    @Override public InstrumentationConfiguration createClassLoaderConfig(Config config) {
       return InstrumentationConfiguration.newBuilder()
           .doNotAquireClass(StateHolder.class.getName())
           .build();

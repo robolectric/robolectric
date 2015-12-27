@@ -143,7 +143,7 @@ public class CustomRobolectricTestRunnerTest {
       super(testClass);
     }
 
-    @Override public InstrumentationConfiguration createClassLoaderConfig() {
+    @Override public InstrumentationConfiguration createClassLoaderConfig(Config config) {
       return InstrumentationConfiguration.newBuilder()
           .doNotAquireClass(CustomRobolectricTestRunnerTest.class.getName())
           .build();

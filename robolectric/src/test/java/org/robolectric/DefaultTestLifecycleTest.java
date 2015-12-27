@@ -85,13 +85,13 @@ public class DefaultTestLifecycleTest {
 
   @Test public void shouldLoadConfigApplicationIfSpecified() throws Exception {
     Application application = defaultTestLifecycle.createApplication(null,
-        newConfigWith("<application android:name=\"" + "ClassNameToIgnore" + "\"/>"), new Config.Implementation(new int[0], "", "", "", "", "", new Class[0], TestFakeApp.class, new String[0], null));
+        newConfigWith("<application android:name=\"" + "ClassNameToIgnore" + "\"/>"), new Config.Implementation(new int[0], "", "", "", "", "", new Class[0], new String[0], TestFakeApp.class, new String[0], null));
     assertThat(application).isExactlyInstanceOf(TestFakeApp.class);
   }
 
   @Test public void shouldLoadConfigInnerClassApplication() throws Exception {
     Application application = defaultTestLifecycle.createApplication(null,
-        newConfigWith("<application android:name=\"" + "ClassNameToIgnore" + "\"/>"), new Config.Implementation(new int[0], "", "", "", "", "", new Class[0], TestFakeAppInner.class, new String[0], null));
+        newConfigWith("<application android:name=\"" + "ClassNameToIgnore" + "\"/>"), new Config.Implementation(new int[0], "", "", "", "", "", new Class[0], new String[0], TestFakeAppInner.class, new String[0], null));
     assertThat(application).isExactlyInstanceOf(TestFakeAppInner.class);
   }
 
