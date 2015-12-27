@@ -71,4 +71,23 @@ public class ResNameTest {
     assertThat(resName.type).isEqualTo("style");
     assertThat(resName.packageName).isEqualTo("android");
   }
+
+  @Test
+  public void fullyQualifiedNameWithWhiteSpaceInTypeShouldBeHandledCorrectly() {
+    String name = "android: string/ok";
+    ResName resName = new ResName(name);
+
+    assertThat(resName.name).isEqualTo("ok");
+    assertThat(resName.type).isEqualTo("string");
+    assertThat(resName.packageName).isEqualTo("android");
+  }
+
+  @Test
+  public void resourceNameWithWhiteSpaceInTypeShouldBeHandledCorrectly() {
+    ResName resName = new ResName("android", " string", "ok");
+
+    assertThat(resName.name).isEqualTo("ok");
+    assertThat(resName.type).isEqualTo("string");
+    assertThat(resName.packageName).isEqualTo("android");
+  }
 }
