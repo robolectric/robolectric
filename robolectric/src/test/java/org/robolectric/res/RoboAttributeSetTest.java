@@ -42,6 +42,18 @@ public class RoboAttributeSetTest {
   }
 
   @Test
+  public void getSystemAttributeResourceValueWithLeadingWhitespace_shouldReturnTheResourceValue() throws Exception {
+    createTestAttributeSet(new Attribute("android:attr/text", " @android:string/ok", TEST_PACKAGE));
+    assertThat(roboAttributeSet.getAttributeResourceValue(ANDROID_NS, "text", 0)).isEqualTo(android.R.string.ok);
+  }
+
+  @Test
+  public void getAttributeResourceValueWithLeadingWhitespace_shouldReturnTheResourceValue() throws Exception {
+    createTestAttributeSet(new Attribute("android:attr/text", " @string/ok", TEST_PACKAGE));
+    assertThat(roboAttributeSet.getAttributeResourceValue(ANDROID_NS, "text", 0)).isEqualTo(R.string.ok);
+  }
+
+  @Test
   public void getSystemAttributeResourceValue_shouldNotReturnTheResourceValueIfNameSpaceDoesNotMatch() throws Exception {
     createTestAttributeSet(new Attribute("com.another.domain:attr/text", "@android:string/ok", TEST_PACKAGE));
     assertThat(roboAttributeSet.getAttributeResourceValue(ANDROID_NS, "text", 0)).isEqualTo(0);
