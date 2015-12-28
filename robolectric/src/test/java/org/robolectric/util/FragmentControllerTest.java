@@ -19,6 +19,9 @@ import static org.mockito.Mockito.verify;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class FragmentControllerTest {
+
+  private static final int VIEW_ID_CUSTOMIZED_LOGIN_ACTIVITY = 123;
+
   @Test
   public void initialNotAttached() {
     final LoginFragment fragment = new LoginFragment();
@@ -43,6 +46,18 @@ public class FragmentControllerTest {
   public void attachedAfterCreate() {
     final LoginFragment fragment = new LoginFragment();
     FragmentController.of(fragment).create();
+
+    assertThat(fragment.getView()).isNotNull();
+    assertThat(fragment.getActivity()).isNotNull();
+    assertThat(fragment.isAdded()).isTrue();
+    assertThat(fragment.isResumed()).isFalse();
+    assertThat(fragment.getView().findViewById(R.id.tacos)).isNotNull();
+  }
+
+  @Test
+  public void attachedAfterCreate_customizedViewId() {
+    final LoginFragment fragment = new LoginFragment();
+    FragmentController.of(fragment, CustomizedViewIdLoginActivity.class).create(VIEW_ID_CUSTOMIZED_LOGIN_ACTIVITY, null);
 
     assertThat(fragment.getView()).isNotNull();
     assertThat(fragment.getActivity()).isNotNull();
@@ -144,6 +159,17 @@ public class FragmentControllerTest {
       super.onCreate(savedInstanceState);
       LinearLayout view = new LinearLayout(this);
       view.setId(1);
+
+      setContentView(view);
+    }
+  }
+
+  private static class CustomizedViewIdLoginActivity extends Activity {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+      super.onCreate(savedInstanceState);
+      LinearLayout view = new LinearLayout(this);
+      view.setId(VIEW_ID_CUSTOMIZED_LOGIN_ACTIVITY);
 
       setContentView(view);
     }
