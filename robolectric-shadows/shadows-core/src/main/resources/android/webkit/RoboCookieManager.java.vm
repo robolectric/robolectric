@@ -108,7 +108,7 @@ public class RoboCookieManager extends CookieManager {
       List<Cookie> matchedCookies = new ArrayList<>();
       Date now = new Date();
       for (Cookie cookie : store) {
-        if (!cookie.isExpiredAt(now) && cookie.isSameHost(domain)) {
+        if (cookie.isSameHost(domain)) {
             matchedCookies.add(cookie);
         }
       }
