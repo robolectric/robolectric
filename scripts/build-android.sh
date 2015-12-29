@@ -98,7 +98,7 @@ build_platform() {
     elif [[ "${ANDROID_VERSION}" == "5.1.1_r9" ]]; then
         ARTIFACTS=("core-libart" "services" "telephony-common" "framework" "android.policy" "ext")
     elif [[ "${ANDROID_VERSION}" == "6.0.0_r1" ]]; then
-        ARTIFACTS=("core-libart" "services" "services.accessibility" "telephony-common" "framework" "ext")
+        ARTIFACTS=("core-libart" "services" "services.accessibility" "telephony-common" "framework" "ext" "icu4j-icudata-jarjar")
         LIB_PHONE_NUMBERS_PKG="com/google/i18n/phonenumbers"
         LIB_PHONE_NUMBERS_PATH="external/libphonenumber/libphonenumber/src"
     else
