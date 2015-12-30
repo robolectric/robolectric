@@ -24,4 +24,15 @@ public class ShadowWifiInfoTest {
     wifiInfo = wifiManager.getConnectionInfo();
     assertThat(wifiInfo.getMacAddress()).isEqualTo("mac address");
   }
+
+  @Test
+  public void shouldReturnRssi() {
+    WifiManager wifiManager = (WifiManager) application.getSystemService(WIFI_SERVICE);
+    WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+    shadowOf(wifiInfo).setRssi(123);
+
+    wifiManager = (WifiManager) application.getSystemService(WIFI_SERVICE);
+    wifiInfo = wifiManager.getConnectionInfo();
+    assertThat(wifiInfo.getRssi()).isEqualTo(123);
+  }
 }
