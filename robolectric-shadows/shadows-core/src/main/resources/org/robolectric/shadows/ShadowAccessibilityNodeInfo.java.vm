@@ -41,6 +41,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import static org.robolectric.Shadows.shadowOf;
 /**
  * Shadow of {@link android.view.accessibility.AccessibilityNodeInfo} that allows a test to set
  * properties that are locked in the original class. It also keeps track of calls to
@@ -170,6 +171,8 @@ public class ShadowAccessibilityNodeInfo {
   private int maxTextLength; //21
 
   private CharSequence error; //21
+  
+  private AccessibilityWindowInfo accessibilityWindowInfo;
 #end
 #if ($api >= 22)
   private AccessibilityNodeInfo traversalAfter; //22
@@ -178,6 +181,8 @@ public class ShadowAccessibilityNodeInfo {
 #end
 
   private OnPerformActionListener actionListener;
+  
+  private boolean visitedWhenCheckingChildren = false;
 
   @RealObject
   private AccessibilityNodeInfo realAccessibilityNodeInfo;
@@ -903,6 +908,15 @@ public class ShadowAccessibilityNodeInfo {
 
 #if ($api >= 21)
   @Implementation
+  public AccessibilityWindowInfo getWindow() {
+    return accessibilityWindowInfo;
+  }
+
+  public void setAccessibilityWindowInfo(AccessibilityWindowInfo info) {
+    accessibilityWindowInfo = info;
+  }
+
+  @Implementation
   public List<AccessibilityAction> getActionList() {
     if (actionsArray == null) {
       return Collections.emptyList();
@@ -928,6 +942,31 @@ public class ShadowAccessibilityNodeInfo {
       : true;
   }
 
+  private boolean childrenEqualityCheck(
+      ShadowAccessibilityNodeInfo otherShadow,
+      LinkedList<ShadowAccessibilityNodeInfo> visitedNodes) {
+    if (children.size() != otherShadow.children.size()) {
+      return false;
+    }
+    boolean childrenEquality = true;
+    for (int i = 0; i < children.size(); i++) {
+      ShadowAccessibilityNodeInfo childShadow =
+          (ShadowAccessibilityNodeInfo) ShadowExtractor.extract(children.get(i));
+      if (!childShadow.visitedWhenCheckingChildren) {
+        ShadowAccessibilityNodeInfo otherChildShadow =
+            (ShadowAccessibilityNodeInfo) ShadowExtractor.extract(otherShadow.children.get(i));
+        visitedNodes.add(childShadow);
+        childShadow.visitedWhenCheckingChildren = true;
+        if (!childShadow.equals(otherShadow.children.get(i))) {
+           childrenEquality = false;
+           break;
+        }
+        childrenEquality = childShadow.childrenEqualityCheck(otherChildShadow, visitedNodes);
+      }
+    }
+    return childrenEquality;
+  }
+
   /**
    * Equality check based on reference equality for mParent and mView and
    * value equality for other fields.
@@ -947,20 +986,37 @@ public class ShadowAccessibilityNodeInfo {
     if (children == null) {
       areEqual &= (otherShadow.children == null);
     } else {
-      areEqual &= (otherShadow.children != null) && children.equals(otherShadow.children);
+      LinkedList<ShadowAccessibilityNodeInfo> visitedNodes = new LinkedList<>();
+      areEqual &=
+          (otherShadow.children != null) && childrenEqualityCheck(otherShadow, visitedNodes);
+      if (!shadowOf(parent).visitedWhenCheckingChildren) {
+        areEqual &= (
+            parent == null
+                ? otherShadow.parent == null : shadowOf(parent).equals(otherShadow.parent));
+      }
+      while (!visitedNodes.isEmpty()) {
+        ShadowAccessibilityNodeInfo visitedNode = visitedNodes.remove();
+        visitedNode.visitedWhenCheckingChildren = false;
+      }
     }
-    areEqual &= (parent == otherShadow.parent);
-
     areEqual &= (propertyFlags == otherShadow.propertyFlags);
 
 #if ($api >= 21)
     boolean actionsArrayEquality = false;
     if (actionsArray == null && otherShadow.actionsArray == null) {
       actionsArrayEquality = true;
+    } else if (actionsArray == null || otherShadow.actionsArray == null) {
+      actionsArrayEquality = false;
     } else {
       actionsArrayEquality = actionsArray.equals(otherShadow.actionsArray);
     }
     areEqual &= actionsArrayEquality;
+    if (accessibilityWindowInfo == null) {
+      areEqual &= (otherShadow.accessibilityWindowInfo == null);
+    } else {
+      areEqual &= (otherShadow.accessibilityWindowInfo != null) 
+                      && accessibilityWindowInfo.equals(otherShadow.accessibilityWindowInfo);
+    }
 #else
     areEqual &= (actionsMask == otherShadow.actionsMask);
 #end

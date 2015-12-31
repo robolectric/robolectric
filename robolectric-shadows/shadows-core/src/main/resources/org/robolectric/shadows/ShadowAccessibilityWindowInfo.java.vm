@@ -130,8 +130,8 @@ public class ShadowAccessibilityWindowInfo {
     }
 
     final AccessibilityWindowInfo window = (AccessibilityWindowInfo) object;
-    final AccessibilityWindowInfo otherShadow =
-        (AccessibilityWindowInfo) ShadowExtractor.extract(window);
+    final ShadowAccessibilityWindowInfo otherShadow =
+        (ShadowAccessibilityWindowInfo) ShadowExtractor.extract(window);
 
     boolean areEqual = (type == otherShadow.getType());
     areEqual &= (parent == otherShadow.getParent());
