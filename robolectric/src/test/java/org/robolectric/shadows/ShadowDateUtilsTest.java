@@ -47,7 +47,7 @@ public class ShadowDateUtilsTest {
       Build.VERSION_CODES.JELLY_BEAN_MR2,
       Build.VERSION_CODES.KITKAT,
       Build.VERSION_CODES.LOLLIPOP })
-  public void formatDateTime_withPastYear_works() {
+  public void formatDateTime_withPastYear() {
       String actual = DateUtils.formatDateTime(RuntimeEnvironment.application, 1420099200000L, DateUtils.FORMAT_NUMERIC_DATE);
       assertThat(actual).isEqualTo("1/1/2015");
   }
