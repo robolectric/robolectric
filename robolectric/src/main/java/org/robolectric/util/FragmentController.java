@@ -37,15 +37,25 @@ public class FragmentController<F extends Fragment> extends ComponentController<
     return this;
   }
 
-  public FragmentController<F> create(final Bundle bundle) {
+  /**
+   * Creates the activity with {@link Bundle} and adds the fragment to the view with ID {@code contentViewId}.
+   */
+  public FragmentController<F> create(final int contentViewId, final Bundle bundle) {
     shadowMainLooper.runPaused(new Runnable() {
       @Override
       public void run() {
         if (!attached) attach();
-        activityController.create(bundle).get().getFragmentManager().beginTransaction().add(1, fragment).commit();
+        activityController.create(bundle).get().getFragmentManager().beginTransaction().add(contentViewId, fragment).commit();
       }
     });
     return this;
+  }
+
+  /**
+   * Creates the activity with {@link Bundle} and adds the fragment to it. Note that the fragment will be added to the view with ID 1.
+   */
+  public FragmentController<F> create(Bundle bundle) {
+    return create(1, bundle);
   }
 
   @Override
