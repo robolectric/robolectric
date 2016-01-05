@@ -34,10 +34,12 @@ public class ShadowDateUtilsTest {
       Build.VERSION_CODES.JELLY_BEAN_MR1,
       Build.VERSION_CODES.JELLY_BEAN_MR2})
   public void formatDateTime_withCurrentYear_worksPreKitKat() {
+    Calendar calendar = Calendar.getInstance();
+    final int currentYear = calendar.get(Calendar.YEAR);
     final long millisAtStartOfYear = getMillisAtStartOfYear();
 
     String actual = DateUtils.formatDateTime(RuntimeEnvironment.application, millisAtStartOfYear, DateUtils.FORMAT_NUMERIC_DATE);
-    assertThat(actual).isEqualTo("1/1/2016");
+    assertThat(actual).isEqualTo("1/1/" + currentYear);
   }
 
   @Test
