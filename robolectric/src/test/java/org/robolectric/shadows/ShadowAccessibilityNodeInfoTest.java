@@ -8,6 +8,7 @@ import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.view.accessibility.AccessibilityNodeInfo;
+import android.view.accessibility.AccessibilityWindowInfo;
 import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction;
 
 import org.junit.After;
@@ -65,6 +66,40 @@ public class ShadowAccessibilityNodeInfoTest {
   }
 
   @Test
+  public void shouldNotHaveInfiniteLoopWithSameLoopedChildren() {
+    node = AccessibilityNodeInfo.obtain();
+    shadow = (ShadowAccessibilityNodeInfo) ShadowExtractor.extract(node);
+    AccessibilityNodeInfo child = AccessibilityNodeInfo.obtain();
+    shadow.addChild(child);
+    ShadowAccessibilityNodeInfo childShadow =
+        (ShadowAccessibilityNodeInfo) ShadowExtractor.extract(child);
+    childShadow.addChild(node);
+    AccessibilityNodeInfo anotherNode = ShadowAccessibilityNodeInfo.obtain(node);
+    assertThat(node.equals(anotherNode)).isEqualTo(true);
+  }
+
+  @Test
+  public void shouldNotHaveInfiniteLoopWithDifferentLoopedChildren() {
+    node = AccessibilityNodeInfo.obtain();
+    shadow = (ShadowAccessibilityNodeInfo) ShadowExtractor.extract(node);
+    AccessibilityNodeInfo child1 = AccessibilityNodeInfo.obtain();
+    shadow.addChild(child1);
+    ShadowAccessibilityNodeInfo child1Shadow =
+        (ShadowAccessibilityNodeInfo) ShadowExtractor.extract(child1);
+    child1Shadow.addChild(node);
+    AccessibilityNodeInfo anotherNode = ShadowAccessibilityNodeInfo.obtain(node);
+    AccessibilityNodeInfo child2 = ShadowAccessibilityNodeInfo.obtain();
+    child2.setText("test");
+    ShadowAccessibilityNodeInfo child2Shadow =
+        (ShadowAccessibilityNodeInfo) ShadowExtractor.extract(child2);
+    ShadowAccessibilityNodeInfo anotherNodeShadow =
+        (ShadowAccessibilityNodeInfo) ShadowExtractor.extract(anotherNode);
+    anotherNodeShadow.addChild(child2);
+    child2Shadow.addChild(anotherNode);
+    assertThat(node.equals(anotherNode)).isEqualTo(false);
+  }
+
+  @Test
   @Config(sdk = {
       android.os.Build.VERSION_CODES.LOLLIPOP,
       android.os.Build.VERSION_CODES.LOLLIPOP_MR1})
@@ -82,6 +117,10 @@ public class ShadowAccessibilityNodeInfoTest {
     assertThat(shadow.getActions()).isEqualTo(AccessibilityNodeInfo.ACTION_SET_SELECTION);
     assertThat(shadow.getTextSelectionStart()).isEqualTo(0);
     assertThat(shadow.getTextSelectionEnd()).isEqualTo(1);
+    AccessibilityWindowInfo window = ShadowAccessibilityWindowInfo.obtain();
+    shadow.setAccessibilityWindowInfo(window);
+    assertThat(node.getWindow()).isEqualTo(window);
+    shadow.setAccessibilityWindowInfo(null);
     // Remove action was added in API 21
     node.removeAction(AccessibilityAction.ACTION_SET_SELECTION);
     shadow.setPasteable(true);
