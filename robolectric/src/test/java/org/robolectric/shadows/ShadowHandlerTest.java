@@ -165,6 +165,7 @@ public class ShadowHandlerTest {
     new Handler().postDelayed(task1, 1);
     new Handler().postDelayed(task2, 1);
 
+    ShadowLooper.pauseMainLooper();
     ShadowLooper.runMainLooperOneTask();
     assertThat(task1.wasRun).isTrue();
     assertThat(task2.wasRun).isFalse();

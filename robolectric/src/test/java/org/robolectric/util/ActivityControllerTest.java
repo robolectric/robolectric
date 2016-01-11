@@ -80,6 +80,17 @@ public class ActivityControllerTest {
   }
 
   @Test
+  public void delayedTasks_areRunEagerly_whenActivityIsStarted_andSchedulerIdling() {
+    final Scheduler s = Robolectric.getForegroundThreadScheduler();
+    s.setIdleState(Scheduler.IdleState.CONSTANT_IDLE);
+    final long startTime = s.getCurrentTime();
+    TestDelayedPostActivity activity = Robolectric.setupActivity(TestDelayedPostActivity.class);
+    assertThat(activity.r1.wasRun).as("r1").isTrue();
+    assertThat(activity.r2.wasRun).as("r2").isTrue();
+    assertThat(s.getCurrentTime()).as("currentTime").isEqualTo(startTime + 60000);
+  }
+
+  @Test
   public void shouldSetIntent() throws Exception {
     MyActivity myActivity = controller.create().get();
     assertThat(myActivity.getIntent()).isNotNull();

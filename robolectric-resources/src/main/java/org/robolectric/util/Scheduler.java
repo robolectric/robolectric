@@ -39,6 +39,23 @@ import static org.robolectric.util.Scheduler.IdleState.*;
  */
 public class Scheduler {
 
+  int isBlocked = 0;
+
+  public void block() {
+    isBlocked++;
+  }
+
+  public void unBlock() {
+    if (isBlocked == 0) {
+      throw new IllegalStateException("Attempted to unblock scheduler " + this +
+                                      " that was not blocked");
+    }
+    if (isBlocked == 1) {
+      runPendingTasks();
+    }
+    isBlocked--;
+  }
+
   /**
    * Describes the current state of a {@link Scheduler}.
    */
@@ -172,10 +189,12 @@ public class Scheduler {
    */
   public void postDelayed(Runnable runnable, long delay, TimeUnit units) {
     final long postTimeNanos = currentTime + units.toNanos(delay);
-    if ((idleState != CONSTANT_IDLE && (isPaused() || delay > 0)) || !RuntimeEnvironment.isMainThread()) {
+    if (RuntimeEnvironment.isMainThread()) {
+      block();
       queueRunnableAndSort(runnable, postTimeNanos);
+      unBlock();
     } else {
-      runOrQueueRunnable(runnable, postTimeNanos);
+      queueRunnableAndSort(runnable, postTimeNanos);
     }
   }
 
@@ -185,10 +204,12 @@ public class Scheduler {
    * @param runnable  Runnable to add.
    */
   public void postAtFrontOfQueue(Runnable runnable) {
-    if (isPaused() || !RuntimeEnvironment.isMainThread()) {
+    if (RuntimeEnvironment.isMainThread()) {
+      block();
       runnables.add(0, new ScheduledRunnable(runnable, currentTime));
+      unBlock();
     } else {
-      runOrQueueRunnable(runnable, currentTime);
+      runnables.add(0, new ScheduledRunnable(runnable, currentTime));
     }
   }
 
@@ -366,25 +387,6 @@ public class Scheduler {
     return size() > 0 && runnables.get(0).scheduledTime <= endingTime;
   }
 
-  private void runOrQueueRunnable(Runnable runnable, long scheduledTime) {
-    if (isExecutingRunnable) {
-      queueRunnableAndSort(runnable, scheduledTime);
-      return;
-    }
-    isExecutingRunnable = true;
-    try {
-      runnable.run();
-    } finally {
-      isExecutingRunnable = false;
-    }
-    if (scheduledTime > currentTime) {
-      currentTime = scheduledTime;
-    }
-    // The runnable we just ran may have queued other runnables. If there are
-    // any pending immediate execution.
-    runPendingTasks();
-  }
-
   private void queueRunnableAndSort(Runnable runnable, long scheduledTime) {
     synchronized (runnables) {
       runnables.add(new ScheduledRunnable(runnable, scheduledTime));
@@ -397,10 +399,13 @@ public class Scheduler {
    *
    * @see {@link #getIdleState()}
    */
-  private void runPendingTasks() {
+  // Visible for testing
+  void runPendingTasks() {
     switch (idleState) {
       case CONSTANT_IDLE:
-        advanceToLastPostedRunnable();
+//        advanceToLastPostedRunnable();
+        // This fixes the broken test (.
+        while (advanceToLastPostedRunnable()) {}
         break;
       case UNPAUSED:
         advanceBy(0);
@@ -424,11 +429,11 @@ public class Scheduler {
 
     @Override
     public void run() {
-      isExecutingRunnable = true;
+      block();
       try {
         runnable.run();
       } finally {
-        isExecutingRunnable = false;
+        unBlock();
       }
     }
 

@@ -1,20 +1,23 @@
 package org.robolectric.util;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.robolectric.RuntimeEnvironment;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static java.util.concurrent.TimeUnit.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.*;
 import static org.robolectric.util.Scheduler.IdleState.*;
 
 public class SchedulerTest {
@@ -389,6 +392,29 @@ public class SchedulerTest {
   }
 
   @Test
+  public void nestedPostInFuture_whileUnpaused_automaticallyExecutes3After() {
+    final List<Integer> order = new ArrayList<>();
+    scheduler.unPause();
+    scheduler.postDelayed(new Runnable() {
+      @Override
+      public void run() {
+        order.add(1);
+        scheduler.post(new Runnable() {
+          @Override
+          public void run() {
+            order.add(3);
+          }
+        });
+        order.add(2);
+      }
+    }, 1000);
+    assertThat(order).as("before advance").isEmpty();
+    scheduler.advanceToNextPostedRunnable();
+    assertThat(order).as("order").containsExactly(1, 2, 3);
+    assertThat(scheduler.size()).as("size").isEqualTo(0);
+  }
+
+  @Test
   public void nestedPostAtFront_whilePaused_runsBeforeSubsequentPost() {
     final List<Integer> order = new ArrayList<>();
     scheduler.postDelayed(new Runnable() {
@@ -705,6 +731,184 @@ public class SchedulerTest {
     t.start();
     t.join();
     transcript.assertEventsSoFar("post");
+  }
+
+  @Test
+  public void newScheduler_shouldNotBeBlocked() {
+    assertThat(scheduler.isBlocked).isEqualTo(0);
+  }
+
+  @Test
+  public void block_shouldIncrementBlockCounter() {
+    for (int i = 1; i < 4; i++) {
+      scheduler.block();
+      assertThat(scheduler.isBlocked).as("iteration " + i).isEqualTo(i);
+    }
+  }
+
+  @Test
+  public void unBlock_shouldDecrementBlockCounter() {
+    scheduler.isBlocked = 4;
+    for (int i = 3; i >= 0; i--) {
+      scheduler.unBlock();
+      assertThat(scheduler.isBlocked).as("iteration " + i).isEqualTo(i);
+    }
+  }
+
+  @Test
+  public void unBlock_whenNotBlocked_shouldThrowISE() {
+    try {
+      scheduler.unBlock();
+      Assertions.failBecauseExceptionWasNotThrown(IllegalStateException.class);
+    } catch (IllegalStateException e) {
+      assertThat(e.getMessage()).contains("not blocked");
+    }
+  }
+
+  @Test
+  public void lastUnBlock_shouldCallRunPendingTasks_afterDecrement() {
+    scheduler.isBlocked = 1;
+    final AtomicInteger wasBlocked = new AtomicInteger();
+    final Scheduler spy = spy(scheduler);
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) {
+        wasBlocked.set(spy.isBlocked);
+        return null;
+      }
+    }).when(spy).runPendingTasks();
+    spy.unBlock();
+    verify(spy).runPendingTasks();
+    assertThat(wasBlocked.get()).as("isBlocked").isEqualTo(1);
+  }
+
+  @Test
+  public void unBlock_shouldNotCallRunPendingTasks_whenOtherBlocksActive() {
+    Scheduler spy = spy(scheduler);
+    for (int i = 2; i < 5; i++) {
+      spy.isBlocked = i;
+      spy.unBlock();
+      verify(spy, never()).runPendingTasks();
+      spy.reset();
+    }
+  }
+
+  @Test
+  public void post_fromBackgroundThread_shouldNotBlockOrUnblock() throws InterruptedException {
+    final Scheduler spy = spy(scheduler);
+    Thread t = createTestThread(new Runnable() {
+      @Override
+      public void run() {
+        spy.post(new TestRunnable());
+      }
+    });
+    synchronized (scheduler) {
+      t.start();
+      t.join();
+    }
+    verify(spy, never()).block();
+    verify(spy, never()).unBlock();
+  }
+
+  @Test
+  public void post_fromMainThread_shouldBlock_beforePosting() {
+    final Scheduler spy = spy(scheduler);
+    final AtomicInteger size = new AtomicInteger();
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) {
+        size.set(spy.size());
+        return null;
+      }
+    }).when(spy).block();
+    // This is to prevent ISE because block() hasn't run properly.
+    doNothing().when(spy).unBlock();
+    spy.post(new TestRunnable());
+    verify(spy).block();
+    assertThat(size.get()).as("sizeDuringBlock").isEqualTo(0);
+  }
+
+  @Test
+  public void post_fromMainThread_shouldUnBlock_afterPosting() {
+    final Scheduler spy = spy(scheduler);
+    final AtomicInteger size = new AtomicInteger();
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) {
+        size.set(spy.size());
+        return null;
+      }
+    }).when(spy).unBlock();
+    // This is to prevent ISE because block() hasn't run properly.
+    doNothing().when(spy).block();
+    spy.post(new TestRunnable());
+    verify(spy).unBlock();
+    assertThat(size.get()).as("sizeDuringUnBlock").isEqualTo(1);
+  }
+
+  @Test
+  public void postAtFront_fromBackgroundThread_shouldNotBlockOrUnblock() throws InterruptedException {
+    final Scheduler spy = spy(scheduler);
+    Thread t = createTestThread(new Runnable() {
+      @Override
+      public void run() {
+        spy.postAtFrontOfQueue(new TestRunnable());
+      }
+    });
+    synchronized (scheduler) {
+      t.start();
+      t.join();
+    }
+    verify(spy, never()).block();
+    verify(spy, never()).unBlock();
+  }
+
+  @Test
+  public void postAtFront_fromMainThread_shouldBlock_beforePosting() {
+    final Scheduler spy = spy(scheduler);
+    final AtomicInteger size = new AtomicInteger();
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) {
+        size.set(spy.size());
+        return null;
+      }
+    }).when(spy).block();
+    // This is to prevent ISE because block() hasn't run properly.
+    doNothing().when(spy).unBlock();
+    spy.postAtFrontOfQueue(new TestRunnable());
+    verify(spy).block();
+    assertThat(size.get()).as("sizeDuringBlock").isEqualTo(0);
+  }
+
+  @Test
+  public void postAtFront_fromMainThread_shouldUnBlock_afterPosting() {
+    final Scheduler spy = spy(scheduler);
+    final AtomicInteger size = new AtomicInteger();
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) {
+        size.set(spy.size());
+        return null;
+      }
+    }).when(spy).unBlock();
+    // This is to prevent ISE because block() hasn't run properly.
+    doNothing().when(spy).block();
+    spy.postAtFrontOfQueue(new TestRunnable());
+    verify(spy).unBlock();
+    assertThat(size.get()).as("sizeDuringUnBlock").isEqualTo(1);
+  }
+
+  @Test
+  public void runOneTask_whilePaused_shouldOnlyRunOneTask_withSimultaneousTasks() {
+    TestRunnable task1 = new TestRunnable();
+    TestRunnable task2 = new TestRunnable();
+
+    scheduler.postDelayed(task1, 1);
+    scheduler.postDelayed(task2, 1);
+    scheduler.runOneTask();
+    assertThat(task1.wasRun).isTrue();
+    assertThat(task2.wasRun).isFalse();
   }
 
   private class AddToTranscript implements Runnable {

@@ -370,7 +370,7 @@ public class ShadowAsyncTaskTest {
     assertThat(looper.get()).as("looper").isNull();
   }
 
-  // Regression test for issue #2115
+  // Regression test for issue raised by karlicoss in #2166
   @Test(timeout=1000)
   public void postingFromDoInBackground_shouldntDeadlock() throws Exception {
     Robolectric.getBackgroundThreadScheduler().unPause();
