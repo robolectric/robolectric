@@ -989,11 +989,12 @@ public class ShadowAccessibilityNodeInfo {
       LinkedList<ShadowAccessibilityNodeInfo> visitedNodes = new LinkedList<>();
       areEqual &=
           (otherShadow.children != null) && childrenEqualityCheck(otherShadow, visitedNodes);
-      if (!shadowOf(parent).visitedWhenCheckingChildren) {
-        areEqual &= (
-            parent == null
-                ? otherShadow.parent == null : shadowOf(parent).equals(otherShadow.parent));
+      if (parent == null) {
+        areEqual &= (otherShadow.parent == null);
+      } else if (!shadowOf(parent).visitedWhenCheckingChildren){
+        areEqual &= (shadowOf(parent).equals(otherShadow.parent));
       }
+
       while (!visitedNodes.isEmpty()) {
         ShadowAccessibilityNodeInfo visitedNode = visitedNodes.remove();
         visitedNode.visitedWhenCheckingChildren = false;
