@@ -128,7 +128,7 @@ public class ShadowMessageQueue {
       if (when == 0) {
         scheduler.postAtFrontOfQueue(callback);
       } else {
-        scheduler.postDelayed(callback, when - scheduler.getCurrentTime());
+        scheduler.postDelayed(callback, when + scheduler.getCurrentTime());
       }
     }
     return retval;
