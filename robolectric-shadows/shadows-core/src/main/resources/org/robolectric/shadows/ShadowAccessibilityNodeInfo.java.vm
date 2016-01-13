@@ -1087,7 +1087,7 @@ public class ShadowAccessibilityNodeInfo {
       areEqual &= (traversalAfter.equals(otherShadow.traversalAfter));
     }
     if (traversalBefore == null) {
-      areEqual &= (otherShadow.traversalAfter == null);
+      areEqual &= (otherShadow.traversalBefore == null);
     } else {
       areEqual &= (traversalBefore.equals(otherShadow.traversalBefore));
     }
@@ -1221,8 +1221,8 @@ public class ShadowAccessibilityNodeInfo {
     newShadow.error = error;
 #end
 #if ($api >= 22)
-    newShadow.traversalAfter = traversalAfter;
-    newShadow.traversalBefore = traversalBefore;
+    newShadow.traversalAfter = (traversalAfter == null) ? null : obtain(traversalAfter);
+    newShadow.traversalBefore = (traversalBefore == null) ? null : obtain(traversalBefore);
 #end
     return newInfo;
   }
