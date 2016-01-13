@@ -42,6 +42,15 @@ public class ShadowParcelFileDescriptor {
   }
 
   @Implementation
+  public long getStatSize() {
+    try {
+      return file.length();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Implementation
   public void close() throws IOException {
     file.close();
   }
