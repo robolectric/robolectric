@@ -57,13 +57,13 @@ public class ShadowSQLiteConnection {
   }
 
   @Implementation
-  public static long nativeOpen(String path, int openFlags, String label, boolean enableTrace, boolean enableProfile) {
+  public static $ptrClass nativeOpen(String path, int openFlags, String label, boolean enableTrace, boolean enableProfile) {
     SQLiteLibraryLoader.load();
     return CONNECTIONS.open(path);
   }
 
   @Implementation
-  public static long nativePrepareStatement($ptrClass connectionPtr, String sql) {
+  public static $ptrClass nativePrepareStatement($ptrClass connectionPtr, String sql) {
     final String newSql = convertSQLWithLocalizedUnicodeCollator(sql);
     return CONNECTIONS.prepareStatement(connectionPtr, newSql);
   }
