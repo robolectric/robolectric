@@ -28,7 +28,7 @@ public class ShadowCursorWindow {
   private static final WindowData WINDOW_DATA = new WindowData();
 
   @Implementation
-  public static long nativeCreate(String name, int cursorWindowSize) {
+  public static $ptrClass nativeCreate(String name, int cursorWindowSize) {
     return WINDOW_DATA.create(name, cursorWindowSize);
   }
 
