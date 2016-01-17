@@ -20,7 +20,7 @@ public class ResName {
 
   public ResName(@NotNull String packageName, @NotNull String type, @NotNull String name) {
     this.packageName = packageName;
-    this.type = type;
+    this.type = type.trim();
     this.name = name.indexOf('.') != -1 ? name.replace('.', '_').trim() : name.trim();
 
     hashCode = computeHashCode();
@@ -32,7 +32,7 @@ public class ResName {
       throw new IllegalStateException("\"" + fullyQualifiedName + "\" is not fully qualified");
     }
     packageName = matcher.group(NAMESPACE);
-    type = matcher.group(TYPE);
+    type = matcher.group(TYPE).trim();
     String nameStr = matcher.group(NAME);
     name = nameStr.indexOf('.') != -1 ? nameStr.replace('.', '_') : nameStr;
 
