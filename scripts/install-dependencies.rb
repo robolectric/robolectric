@@ -40,7 +40,7 @@ def concat_maven_file_segments(repo_root_dir, group_id, artifact_id, version, ex
 end
 
 def install(group_id, artifact_id, version, archive)
-  system("mvn -q -e install:install-file -DgroupId='#{group_id}' -DartifactId='#{artifact_id}' -Dversion='#{version}' -Dfile='#{archive}' -Dpackaging=jar")
+  system("mvn -q install:install-file -DgroupId='#{group_id}' -DartifactId='#{artifact_id}' -Dversion='#{version}' -Dfile='#{archive}' -Dpackaging=jar")
 end
 
 def install_jar(group_id, artifact_id, version, archive, &block)
