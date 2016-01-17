@@ -3,6 +3,7 @@ package org.robolectric.internal.bytecode;
 import android.R;
 import org.robolectric.internal.ShadowedObject;
 import org.robolectric.internal.ShadowProvider;
+import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.internal.dependency.DependencyJar;
 import org.robolectric.RobolectricTestRunner;
@@ -152,6 +153,7 @@ public class InstrumentationConfiguration {
           DoNotInstrument.class,
           Config.class,
           Transcript.class,
+          DependencyResolver.class,
           DirectObjectMarker.class,
           DependencyJar.class,
           ParallelUniverseInterface.class,
@@ -170,7 +172,8 @@ public class InstrumentationConfiguration {
           "org.specs2",  // allows for android projects with mixed scala\java tests to be
           "scala.",      //  run with Maven Surefire (see the RoboSpecs project on github)
           "kotlin.",
-          "com.almworks.sqlite4java" // Fix #958: SQLite native library must be loaded once.
+          "com.almworks.sqlite4java", // Fix #958: SQLite native library must be loaded once.
+          "org.powermock"
       ));
       classNameTranslations.put("java.net.ExtendedResponseCache", RoboExtendedResponseCache.class.getName());
       classNameTranslations.put("java.net.ResponseSource", RoboResponseSource.class.getName());
