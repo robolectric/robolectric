@@ -24,14 +24,6 @@
     <module>robolectric-utils</module>
   </modules>
 
-  <!-- TODO: Remove when finalized -->
-  <repositories>
-    <repository>
-      <id>robolectric-staging</id>
-      <url>https://oss.sonatype.org/content/repositories/orgrobolectric-1065</url>
-    </repository>
-  </repositories>
-
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.7</maven.compiler.source>
