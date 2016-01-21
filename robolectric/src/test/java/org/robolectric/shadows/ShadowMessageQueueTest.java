@@ -65,39 +65,6 @@ public class ShadowMessageQueueTest {
     quitField = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT ? "mQuitting" : "mQuiting";
   }
 
-  private static ClassParameter<?> getPtrClass() {
-    return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP ? from(long.class, 1) : from(int.class, 1);
-  }
-  
-  private void shouldAssert(String method, ClassParameter<?>... params) {
-    boolean ran = false;
-    String isStatic = "";
-    try {
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-        isStatic = "static ";
-        callStaticMethod(MessageQueue.class, method, params);
-      } else {
-        callInstanceMethod(queue, method, params);
-      }
-      ran = true;
-    } catch (Throwable t) {
-      if (!(t instanceof AssertionError)) {
-        Assertions.fail("Expected an assertion when invoking " + isStatic + "method " + method + ", got: " + t, t);
-      }
-    }
-    assertThat(ran).as(method).overridingErrorMessage("Should have asserted but no exception was thrown").isFalse();
-  }
-  
-  @Test
-  public void nativePollOnce_shouldAssert() {
-    shouldAssert("nativePollOnce", getPtrClass(), from(int.class, 2));
-  }
-  
-  @Test
-  public void nativeWake_shouldAssert() {
-    shouldAssert("nativeWake", getPtrClass());
-  }
-  
   @Test
   public void test_setGetHead() {
     shadowQueue.setHead(testMessage);
@@ -118,7 +85,6 @@ public class ShadowMessageQueueTest {
         from(Object.class, token)
     );
   }
-  
   
   @Test
   public void enqueueMessage_setsHead() {

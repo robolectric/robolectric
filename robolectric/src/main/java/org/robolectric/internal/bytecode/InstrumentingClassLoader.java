@@ -427,7 +427,8 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
         classNode.methods.add(directCallConstructor);
       }
 
-      if (!isEnum()) {
+      // TODO: Do not override final #equals and #hashCode for all classes
+      if (!isEnum() && !classNode.name.equals("android/icu/text/DateFormat$Field")) {
         instrumentSpecial(foundMethods, "equals", "(Ljava/lang/Object;)Z");
         instrumentSpecial(foundMethods, "hashCode", "()I");
       }

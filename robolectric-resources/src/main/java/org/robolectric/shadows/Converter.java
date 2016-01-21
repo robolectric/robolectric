@@ -19,17 +19,6 @@ import java.util.Map;
 
 public class Converter<T> {
   private static int nextStringCookie = 0xbaaa5;
-  private static final Map<String, ResType> ATTR_TYPE_MAP = new LinkedHashMap<>();
-
-  static {
-    ATTR_TYPE_MAP.put("boolean", ResType.BOOLEAN);
-    ATTR_TYPE_MAP.put("color", ResType.COLOR);
-    ATTR_TYPE_MAP.put("dimension", ResType.DIMEN);
-    ATTR_TYPE_MAP.put("float", ResType.FLOAT);
-    ATTR_TYPE_MAP.put("integer", ResType.INTEGER);
-    ATTR_TYPE_MAP.put("string", ResType.CHAR_SEQUENCE);
-    ATTR_TYPE_MAP.put("fraction", ResType.FRACTION);
-  }
 
   synchronized private static int getNextStringCookie() {
     return nextStringCookie++;
@@ -58,8 +47,6 @@ public class Converter<T> {
   public static void convertAndFill(Attribute attribute, TypedValue outValue, ResourceLoader resourceLoader, String qualifiers, AttrData attrData, boolean resolveRefs) {
     // short-circuit Android caching of loaded resources cuz our string positions don't remain stable...
     outValue.assetCookie = getNextStringCookie();
-    String format = attrData.getFormat();
-    String[] types = format.split("\\|");
 
     // TODO: Handle resource and style references
     if (attribute.isStyleReference()) {
@@ -126,45 +113,47 @@ public class Converter<T> {
       break;
     }
 
-
     if (attribute.isNull()) {
       outValue.type = TypedValue.TYPE_NULL;
       return;
     }
 
-    // Special case for attrs that can be integers or enums, like numColumns.
-    // todo: generalize this!
-    if (format.equals("integer|enum") || format.equals("dimension|enum")) {
-      if (attribute.value.matches("^\\d.*")) {
-        types = new String[]{types[0]};
-      } else {
-        types = new String[]{"enum"};
-      }
-    }
-
+    String format = attrData.getFormat();
+    String[] types = format.split("\\|");
     for (String type : types) {
       if ("reference".equals(type)) continue; // already handled above
-
-      Converter converter = ATTR_TYPE_MAP.containsKey(type)
-          ? getConverter(ATTR_TYPE_MAP.get(type))
-          : null;
-
-      if (converter == null) {
-        if (type.equals("enum")) {
-          converter = new EnumConverter(attrData);
-        } else if (type.equals("flag")) {
-          converter = new FlagConverter(attrData);
-        }
-      }
+      Converter converter = getConverterFor(attrData, type);
 
       if (converter != null) {
-        try {
-          converter.fillTypedValue(attribute.value, outValue);
-        } catch (Exception e) {
-          throw new RuntimeException("error converting " + attribute.value + " using " + converter.getClass().getSimpleName(), e);
+        if (converter.fillTypedValue(attribute.value, outValue)) {
+          return;
         }
-        return;
       }
+    }
+  }
+
+  private static Converter getConverterFor(AttrData attrData, String type) {
+    switch (type) {
+      case "enum":
+        return new EnumConverter(attrData);
+      case "flag":
+        return new FlagConverter(attrData);
+      case "boolean":
+        return new FromBoolean();
+      case "color":
+        return new FromColor();
+      case "dimension":
+        return new FromDimen();
+      case "float":
+        return new FromFloat();
+      case "integer":
+        return new FromInt();
+      case "string":
+        return new FromCharSequence();
+      case "fraction":
+        return new FromFraction();
+      default:
+        throw new UnsupportedOperationException("Type not supported: " + type);
     }
   }
 
@@ -178,8 +167,10 @@ public class Converter<T> {
       case CHAR_SEQUENCE:
         return new FromCharSequence();
       case COLOR:
+      case DRAWABLE:
         return new FromColor();
       case COLOR_STATE_LIST:
+      case LAYOUT:
         return new FromFilePath();
       case DIMEN:
         return new FromDimen();
@@ -191,11 +182,6 @@ public class Converter<T> {
         return new FromInt();
       case FRACTION:
         return new FromFraction();
-      case DRAWABLE: // TODO: maybe call this DRAWABLE_VALUE instead to avoid confusion?
-        return new FromDrawableValue();
-      case LAYOUT: // TODO: LOLLIPOP: should we rename this?  it's also used for drawable xml files
-        return new FromFilePath();
-
       case CHAR_SEQUENCE_ARRAY:
       case INTEGER_ARRAY:
         return new FromArray();
@@ -216,8 +202,8 @@ public class Converter<T> {
     throw cantDo("getItems");
   }
 
-  public void fillTypedValue(T data, TypedValue typedValue) {
-    throw cantDo("fillTypedValue");
+  public boolean fillTypedValue(T data, TypedValue typedValue) {
+    return false;
   }
 
   private UnsupportedOperationException cantDo(String operation) {
@@ -231,9 +217,9 @@ public class Converter<T> {
     }
 
     @Override
-    public void fillTypedValue(AttrData data, TypedValue typedValue) {
+    public boolean fillTypedValue(AttrData data, TypedValue typedValue) {
       typedValue.type = TypedValue.TYPE_STRING;
-      throw new RuntimeException("huh?");
+      return false;
     }
   }
 
@@ -249,20 +235,26 @@ public class Converter<T> {
     }
 
     @Override
-    public void fillTypedValue(String data, TypedValue typedValue) {
+    public boolean fillTypedValue(String data, TypedValue typedValue) {
       typedValue.type = TypedValue.TYPE_STRING;
       typedValue.data = 0;
       typedValue.assetCookie = getNextStringCookie();
       typedValue.string = data;
+      return true;
     }
   }
 
   public static class FromColor extends Converter<String> {
     @Override
-    public void fillTypedValue(String data, TypedValue typedValue) {
-      typedValue.type = TypedValue.TYPE_INT_COLOR_ARGB8;
-      typedValue.data = ResourceHelper.getColor(data);
-      typedValue.assetCookie = 0;
+    public boolean fillTypedValue(String data, TypedValue typedValue) {
+      try {
+        typedValue.type = TypedValue.TYPE_INT_COLOR_ARGB8;
+        typedValue.data = ResourceHelper.getColor(data);
+        typedValue.assetCookie = 0;
+        return true;
+      } catch (NumberFormatException nfe) {
+        return false;
+      }
     }
 
     @Override
@@ -271,27 +263,16 @@ public class Converter<T> {
     }
   }
 
-  public static class FromDrawableValue extends Converter<String> {
-    @Override
-    public void fillTypedValue(String data, TypedValue typedValue) {
-      typedValue.type = TypedValue.TYPE_INT_COLOR_ARGB8;
-      typedValue.data = ResourceHelper.getColor(data);
-      typedValue.assetCookie = 0;
-    }
 
-    @Override
-    public int asInt(TypedResource typedResource) {
-      return ResourceHelper.getColor(typedResource.asString().trim());
-    }
-  }
 
   private static class FromFilePath extends Converter<String> {
     @Override
-    public void fillTypedValue(String data, TypedValue typedValue) {
+    public boolean fillTypedValue(String data, TypedValue typedValue) {
       typedValue.type = TypedValue.TYPE_STRING;
       typedValue.data = 0;
       typedValue.string = data;
       typedValue.assetCookie = getNextStringCookie();
+      return true;
     }
   }
 
@@ -304,10 +285,15 @@ public class Converter<T> {
 
   private static class FromInt extends Converter<String> {
     @Override
-    public void fillTypedValue(String data, TypedValue typedValue) {
-      typedValue.type = TypedValue.TYPE_INT_HEX;
-      typedValue.data = convertInt(data);
-      typedValue.assetCookie = 0;
+    public boolean fillTypedValue(String data, TypedValue typedValue) {
+      try {
+        typedValue.type = TypedValue.TYPE_INT_HEX;
+        typedValue.data = convertInt(data);
+        typedValue.assetCookie = 0;
+        return true;
+      } catch (NumberFormatException nfe) {
+        return false;
+      }
     }
 
     @Override
@@ -318,41 +304,55 @@ public class Converter<T> {
 
   private static class FromFraction extends Converter<String> {
     @Override
-    public void fillTypedValue(String data, TypedValue typedValue) {
-      ResourceHelper.parseFloatAttribute(null, data, typedValue, false);
+    public boolean fillTypedValue(String data, TypedValue typedValue) {
+      return ResourceHelper.parseFloatAttribute(null, data, typedValue, false);
     }
   }
 
   private static class FromFile extends Converter<FsFile> {
     @Override
-    public void fillTypedValue(FsFile data, TypedValue typedValue) {
+    public boolean fillTypedValue(FsFile data, TypedValue typedValue) {
       typedValue.type = TypedValue.TYPE_STRING;
       typedValue.data = 0;
       typedValue.string = data.getPath();
       typedValue.assetCookie = getNextStringCookie();
+      return true;
     }
   }
 
   private static class FromFloat extends Converter<String> {
     @Override
-    public void fillTypedValue(String data, TypedValue typedValue) {
-      ResourceHelper.parseFloatAttribute(null, data, typedValue, false);
+    public boolean fillTypedValue(String data, TypedValue typedValue) {
+      return ResourceHelper.parseFloatAttribute(null, data, typedValue, false);
     }
   }
 
   private static class FromBoolean extends Converter<String> {
     @Override
-    public void fillTypedValue(String data, TypedValue typedValue) {
+    public boolean fillTypedValue(String data, TypedValue typedValue) {
       typedValue.type = TypedValue.TYPE_INT_BOOLEAN;
-      typedValue.data = convertBool(data) ? 1 : 0;
       typedValue.assetCookie = 0;
+
+      if ("true".equalsIgnoreCase(data)) {
+        typedValue.data = 1;
+      } else if ("false".equalsIgnoreCase(data)) {
+        typedValue.data = 0;
+      } else {
+        try {
+          int intValue = Integer.parseInt(data);
+          typedValue.data = intValue == 0 ? 0 : 1;
+        } catch (NumberFormatException e) {
+          return false;
+        }
+      }
+      return true;
     }
   }
 
   private static class FromDimen extends Converter<String> {
     @Override
-    public void fillTypedValue(String data, TypedValue typedValue) {
-      ResourceHelper.parseFloatAttribute(null, data, typedValue, false);
+    public boolean fillTypedValue(String data, TypedValue typedValue) {
+      return ResourceHelper.parseFloatAttribute(null, data, typedValue, false);
     }
   }
 
@@ -365,26 +365,7 @@ public class Converter<T> {
       return (int) Long.parseLong(rawValue);
     } catch (NumberFormatException nfe) {
       // try parsing hex number
-      try {
-        return Long.decode(rawValue).intValue();
-      } catch (NumberFormatException e) {
-        throw new RuntimeException(rawValue + " is not an integer.", nfe);
-      }
-    }
-  }
-
-  private static boolean convertBool(String rawValue) {
-    if ("true".equalsIgnoreCase(rawValue)) {
-      return true;
-    } else if ("false".equalsIgnoreCase(rawValue)) {
-      return false;
-    }
-
-    try {
-      int intValue = Integer.parseInt(rawValue);
-      return intValue != 0;
-    } catch (NumberFormatException e) {
-      throw new RuntimeException(e);
+      return Long.decode(rawValue).intValue();
     }
   }
 
@@ -394,10 +375,15 @@ public class Converter<T> {
     }
 
     @Override
-    public void fillTypedValue(String data, TypedValue typedValue) {
-      typedValue.type = TypedValue.TYPE_INT_HEX;
-      typedValue.data = findValueFor(data);
-      typedValue.assetCookie = 0;
+    public boolean fillTypedValue(String data, TypedValue typedValue) {
+      try {
+        typedValue.type = TypedValue.TYPE_INT_HEX;
+        typedValue.data = findValueFor(data);
+        typedValue.assetCookie = 0;
+        return true;
+      } catch (Exception e) {
+        return false;
+      }
     }
   }
 
@@ -407,15 +393,20 @@ public class Converter<T> {
     }
 
     @Override
-    public void fillTypedValue(String data, TypedValue typedValue) {
-      int flags = 0;
-      for (String key : data.split("\\|")) {
-        flags |= findValueFor(key);
-      }
+    public boolean fillTypedValue(String data, TypedValue typedValue) {
+      try {
+        int flags = 0;
+        for (String key : data.split("\\|")) {
+          flags |= findValueFor(key);
+        }
 
-      typedValue.type = TypedValue.TYPE_INT_HEX;
-      typedValue.data = flags;
-      typedValue.assetCookie = 0;
+        typedValue.type = TypedValue.TYPE_INT_HEX;
+        typedValue.data = flags;
+        typedValue.assetCookie = 0;
+        return true;
+      } catch (Exception e) {
+        return false;
+      }
     }
   }
 
