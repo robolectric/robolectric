@@ -35,8 +35,14 @@
 #   2. repo init -u https://android.googlesource.com/platform/manifest -b <android-version>
 #   3. repo sync
 #   4. source build/envsetup.sh
+#
+# For Lollipop and below:
 #   5. lunch aosp_x86-eng
-#   6. ANDROID_COMPILE_WITH_JACK=false make -j8  # probably can just run 'make -j8 snod', but we haven't tested it http://elinux.org/Android_Build_System#Make_targets
+#   6. make -j8  # probably can just run 'make -j8 snod', but we haven't tested it http://elinux.org/Android_Build_System#Make_targets
+# For Marshmallow and above:
+#   5. tapas core-libart services services.accessibility telephony-common framework ext icu4j-icudata-jarjar
+#   6. ANDROID_COMPILE_WITH_JACK=false make -j8
+#
 #   7. run this script
 #   8. Profit!
 #
@@ -77,6 +83,9 @@ ANDROID_CLASSES=android-classes-${ANDROID_VERSION}.jar
 LIB_PHONE_NUMBERS_PKG="com/android/i18n/phonenumbers"
 LIB_PHONE_NUMBERS_PATH="external/libphonenumber/java/src"
 
+# Architecture for tzdata
+TZDATA_ARCH="generic_x86"
+
 # Final artifact names
 ANDROID_ALL=android-all-${ROBOLECTRIC_VERSION}.jar
 ANDROID_ALL_POM=android-all-${ROBOLECTRIC_VERSION}.pom
@@ -101,6 +110,7 @@ build_platform() {
         ARTIFACTS=("core-libart" "services" "services.accessibility" "telephony-common" "framework" "ext" "icu4j-icudata-jarjar")
         LIB_PHONE_NUMBERS_PKG="com/google/i18n/phonenumbers"
         LIB_PHONE_NUMBERS_PATH="external/libphonenumber/libphonenumber/src"
+        TZDATA_ARCH="generic"
     else
         echo "Robolectric: No match for version: ${ANDROID_VERSION}"
         exit 1
@@ -143,7 +153,7 @@ build_android_classes() {
 build_tzdata() {
     echo "Robolectric: Building tzdata..."
     mkdir -p ${OUT}/android-all-classes/usr/share/zoneinfo
-    cp ${ANDROID_SOURCES_BASE}/out/target/product/generic_x86/system/usr/share/zoneinfo/tzdata ${OUT}/android-all-classes/usr/share/zoneinfo
+    cp ${ANDROID_SOURCES_BASE}/out/target/product/${TZDATA_ARCH}/system/usr/share/zoneinfo/tzdata ${OUT}/android-all-classes/usr/share/zoneinfo
 }
 
 build_jarjared_classes() {
