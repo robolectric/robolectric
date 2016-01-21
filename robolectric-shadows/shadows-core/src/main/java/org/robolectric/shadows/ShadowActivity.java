@@ -431,6 +431,16 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   @Implementation
+  public void startActivities(Intent[] intents) {
+    super.startActivities(intents);
+  }
+
+  @Implementation
+  public void startActivities(Intent[] intents, Bundle options) {
+    super.startActivities(intents, options);
+  }
+
+  @Implementation
   public void startActivityForResult(Intent intent, int requestCode) {
     intentRequestCodeMap.put(new Intent.FilterComparison(intent), requestCode);
     startedActivitiesForResults.add(new IntentForResult(intent, requestCode));
