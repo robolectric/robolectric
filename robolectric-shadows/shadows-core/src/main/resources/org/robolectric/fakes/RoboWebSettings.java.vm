@@ -31,7 +31,7 @@ public class RoboWebSettings extends WebSettings {
   private String sansSerifFontFamily;
   private String fixedFontFamily;
   private String standardFontFamily;
-  private boolean savePassword;  
+  private boolean savePassword;
   private int userAgent;
   private boolean navDump;
 
@@ -440,7 +440,7 @@ public class RoboWebSettings extends WebSettings {
   public void setAppCacheEnabled(boolean appCacheEnabled) {
     this.appCacheEnabled = appCacheEnabled;
   }
-  
+
   @Override
   public void setAppCacheMaxSize(long appCacheMaxSize) {
     this.appCacheMaxSize = appCacheMaxSize;
@@ -449,7 +449,7 @@ public class RoboWebSettings extends WebSettings {
   public long getAppCacheMaxSize() {
     return appCacheMaxSize;
   }
-  
+
   public String getAppCachePath() {
     return appCachePath;
   }
@@ -516,7 +516,7 @@ public class RoboWebSettings extends WebSettings {
   public void setEnableSmoothTransition(boolean enableSmoothTransition) {
     this.enableSmoothTransition = enableSmoothTransition;
   }
-  
+
   @Override
   public void setAllowContentAccess(boolean allow) {
     allowContentAccess = allow;
@@ -541,7 +541,7 @@ public class RoboWebSettings extends WebSettings {
 
 #if ($api >= 14)
   private int textZoom = 100;
-  
+
   @Override
   public int getTextZoom() {
     return textZoom;
@@ -599,7 +599,7 @@ public class RoboWebSettings extends WebSettings {
   private int mixedContentMode;
   private boolean acceptThirdPartyCookies;
   private boolean videoOverlayForEmbeddedEncryptedVideoEnabled;
-  
+
   @Override
   public void setMixedContentMode(int mixedContentMode) {
     this.mixedContentMode = mixedContentMode;
@@ -619,7 +619,7 @@ public class RoboWebSettings extends WebSettings {
   public boolean getVideoOverlayForEmbeddedEncryptedVideoEnabled() {
     return videoOverlayForEmbeddedEncryptedVideoEnabled;
   }
-  
+
   @Override
   public boolean getAcceptThirdPartyCookies() {
     return acceptThirdPartyCookies;
@@ -630,5 +630,18 @@ public class RoboWebSettings extends WebSettings {
     this.acceptThirdPartyCookies = acceptThirdPartyCookies;
   }
   // End API 21
+#end
+
+#if ($api >= 23)
+  @Override
+  public void setOffscreenPreRaster(boolean enabled) {
+
+  }
+
+  public boolean getOffscreenPreRaster() {
+    return false;
+  }
+
+  // End API 23
 #end
 }

@@ -457,7 +457,6 @@ public final class ShadowAssetManager {
     }
 
     @Override public Attribute getAttrValue(ResName resName) {
-      resName.mustBe("attr");
       for (StyleData style : styles) {
         Attribute value = style.getAttrValue(resName);
         if (value != null) return value;

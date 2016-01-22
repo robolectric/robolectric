@@ -1,5 +1,7 @@
 package org.robolectric.internal.bytecode;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodType;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.internal.ShadowConstants;
 
@@ -7,6 +9,9 @@ public class RobolectricInternals {
 
   @SuppressWarnings("UnusedDeclaration")
   private static ClassHandler classHandler; // initialized via magic by SdkEnvironment
+
+  @SuppressWarnings("UnusedDeclaration")
+  private static ShadowInvalidator shadowInvalidator;
 
   @SuppressWarnings("UnusedDeclaration")
   public static void classInitializing(Class clazz) throws Exception {
@@ -23,8 +28,17 @@ public class RobolectricInternals {
     return classHandler.methodInvoked(signature, isStatic, theClass);
   }
 
+  public static MethodHandle getShadowCreator(Class<?> caller) {
+    return classHandler.getShadowCreator(caller);
+  }
+
+  public static MethodHandle findShadowMethod(Class<?> theClass, String name,
+      MethodType type, boolean isStatic) throws IllegalAccessException {
+    return classHandler.findShadowMethod(theClass, name, type, isStatic);
+  }
+
   @SuppressWarnings("UnusedDeclaration")
-  public static Throwable cleanStackTrace(Throwable exception) throws Throwable {
+  public static Throwable cleanStackTrace(Throwable exception) {
     return classHandler.stripStackTrace(exception);
   }
 
@@ -38,5 +52,9 @@ public class RobolectricInternals {
 
   public static void performStaticInitialization(Class<?> clazz) {
     ReflectionHelpers.callStaticMethod(clazz, ShadowConstants.STATIC_INITIALIZER_METHOD_NAME);
+  }
+
+  public static ShadowInvalidator getShadowInvalidator() {
+    return shadowInvalidator;
   }
 }

@@ -1,7 +1,8 @@
 package org.robolectric.shadows;
 
 import android.animation.ValueAnimator;
-import android.os.Looper;
+
+import com.google.common.collect.Ordering;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,9 +36,7 @@ public class ShadowValueAnimatorTest {
     });
     animator.start();
 
-    Robolectric.flushForegroundThreadScheduler();
-
-    assertThat(values).containsExactly(0, 0, 0, 0, 2, 3, 5, 6, 7, 9, 9, 10);
+    assertThat(values).isSortedAccordingTo(Ordering.natural());
   }
 
   @Test

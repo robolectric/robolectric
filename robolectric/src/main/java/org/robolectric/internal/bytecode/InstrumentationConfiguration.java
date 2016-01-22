@@ -114,22 +114,7 @@ public class InstrumentationConfiguration {
     }
 
     public InstrumentationConfiguration build() {
-      interceptedMethods.addAll(Arrays.asList(
-          new MethodRef(LinkedHashMap.class, "eldest"),
-          new MethodRef(System.class, "loadLibrary"),
-          new MethodRef("android.os.StrictMode", "trackActivity"),
-          new MethodRef("android.os.StrictMode", "incrementExpectedActivityCount"),
-          new MethodRef("java.lang.AutoCloseable", "*"),
-          new MethodRef("android.util.LocaleUtil", "getLayoutDirectionFromLocale"),
-          new MethodRef("com.android.internal.policy.PolicyManager", "*"),
-          new MethodRef("android.view.FallbackEventHandler", "*"),
-          new MethodRef("android.view.IWindowSession", "*"),
-          new MethodRef("java.lang.System", "nanoTime"),
-          new MethodRef("java.lang.System", "currentTimeMillis"),
-          new MethodRef("java.lang.System", "arraycopy"),
-          new MethodRef("java.lang.System", "logE"),
-          new MethodRef("java.util.Locale", "adjustLanguageCode")
-      ));
+      interceptedMethods.addAll(Intrinsics.allRefs());
       classesToNotAquire.addAll(stringify(
           TestLifecycle.class,
           ShadowWrangler.class,
@@ -145,6 +130,7 @@ public class InstrumentationConfiguration {
           XmlBlock.class,
           ClassHandler.class,
           ClassHandler.Plan.class,
+          ShadowInvalidator.class,
           RealObject.class,
           Implements.class,
           Implementation.class,
@@ -318,50 +304,5 @@ public class InstrumentationConfiguration {
     result = 31 * result + classesToNotAquire.hashCode();
     cachedHashCode = result;
     return result;
-  }
-
-  /**
-   * Reference to a specific method on a class.
-   */
-  public static class MethodRef {
-    public final String className;
-    public final String methodName;
-
-    public MethodRef(Class<?> clazz, String methodName) {
-      this(clazz.getName(), methodName);
-    }
-
-    public MethodRef(String className, String methodName) {
-      this.className = className;
-      this.methodName = methodName;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
-
-      MethodRef methodRef = (MethodRef) o;
-
-      if (!className.equals(methodRef.className)) return false;
-      if (!methodName.equals(methodRef.methodName)) return false;
-
-      return true;
-    }
-
-    @Override
-    public int hashCode() {
-      int result = className.hashCode();
-      result = 31 * result + methodName.hashCode();
-      return result;
-    }
-
-    @Override
-    public String toString() {
-      return "MethodRef{" +
-          "className='" + className + '\'' +
-          ", methodName='" + methodName + '\'' +
-          '}';
-    }
   }
 }
