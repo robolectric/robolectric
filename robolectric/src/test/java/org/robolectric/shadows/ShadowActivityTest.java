@@ -136,6 +136,30 @@ public class ShadowActivityTest {
   }
 
   @Test
+  public void startActivities_shouldStartAllActivities() {
+    activity = create(DialogLifeCycleActivity.class);
+
+    final Intent view = new Intent(Intent.ACTION_VIEW);
+    final Intent pick = new Intent(Intent.ACTION_PICK);
+    activity.startActivities(new Intent[] {view, pick});
+
+    assertThat(shadowOf(activity).getNextStartedActivity()).isEqualTo(pick);
+    assertThat(shadowOf(activity).getNextStartedActivity()).isEqualTo(view);
+  }
+
+  @Test
+  public void startActivities_withBundle_shouldStartAllActivities() {
+    activity = create(DialogLifeCycleActivity.class);
+
+    final Intent view = new Intent(Intent.ACTION_VIEW);
+    final Intent pick = new Intent(Intent.ACTION_PICK);
+    activity.startActivities(new Intent[] {view, pick}, new Bundle());
+
+    assertThat(shadowOf(activity).getNextStartedActivity()).isEqualTo(pick);
+    assertThat(shadowOf(activity).getNextStartedActivity()).isEqualTo(view);
+  }
+
+  @Test
   public void startActivityForResultAndReceiveResult_shouldSendResponsesBackToActivity() throws Exception {
     final Transcript transcript = new Transcript();
     Activity activity = new Activity() {

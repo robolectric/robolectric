@@ -139,7 +139,9 @@ public class FragmentControllerTest {
     final LoginFragment fragment = new LoginFragment();
     final FragmentController<LoginFragment> controller = FragmentController.of(fragment, LoginActivity.class);
 
-    controller.create().start().resume();
+    controller.create();
+    assertThat(controller.get().getView()).isNotNull();
+    controller.start().resume();
     assertThat(fragment.isVisible()).isFalse();
 
     controller.visible();

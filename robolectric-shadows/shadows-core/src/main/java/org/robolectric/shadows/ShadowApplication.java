@@ -535,7 +535,7 @@ public class ShadowApplication extends ShadowContextWrapper {
                                                              ListenableFuture<BroadcastResultHolder> oldResult,
                                                              final AtomicBoolean abort) {
     final Handler scheduler = (wrapper.scheduler != null) ? wrapper.scheduler : this.mainHandler;
-    return Futures.transform(oldResult, new AsyncFunction<BroadcastResultHolder, BroadcastResultHolder>() {
+    return Futures.transformAsync(oldResult, new AsyncFunction<BroadcastResultHolder, BroadcastResultHolder>() {
       @Override
       public ListenableFuture<BroadcastResultHolder> apply(BroadcastResultHolder broadcastResultHolder) throws Exception {
         final BroadcastReceiver.PendingResult result = ShadowBroadcastPendingResult.create(

@@ -1346,8 +1346,10 @@ public class ShadowAccessibilityNodeInfo {
   }  
 #end
   /**
-  * Configure the return result of an action if it is performed
-  */
+   * Configure the return result of an action if it is performed
+   *
+   * @param listener The listener.
+   */
   public void setOnPerformActionListener(OnPerformActionListener listener) {
     actionListener = listener;
   }

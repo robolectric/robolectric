@@ -1,5 +1,6 @@
 package org.robolectric.internal;
 
+import org.robolectric.internal.bytecode.ShadowInvalidator;
 import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.internal.bytecode.ShadowWrangler;
@@ -15,12 +16,15 @@ import java.util.Map;
 public class SdkEnvironment {
   private final SdkConfig sdkConfig;
   private final ClassLoader robolectricClassLoader;
+  private final ShadowInvalidator shadowInvalidator;
   public final Map<ShadowMap, ShadowWrangler> classHandlersByShadowMap = new HashMap<>();
+  private ShadowMap shadowMap = ShadowMap.EMPTY;
   private ResourceLoader systemResourceLoader;
 
   public SdkEnvironment(SdkConfig sdkConfig, ClassLoader robolectricClassLoader) {
     this.sdkConfig = sdkConfig;
     this.robolectricClassLoader = robolectricClassLoader;
+    shadowInvalidator = new ShadowInvalidator();
   }
 
   public PackageResourceLoader createSystemResourceLoader(DependencyResolver dependencyResolver) {
@@ -54,7 +58,17 @@ public class SdkEnvironment {
     return robolectricClassLoader;
   }
 
+  public ShadowInvalidator getShadowInvalidator() {
+    return shadowInvalidator;
+  }
+
   public SdkConfig getSdkConfig() {
     return sdkConfig;
+  }
+
+  public ShadowMap replaceShadowMap(ShadowMap shadowMap) {
+    ShadowMap oldMap = this.shadowMap;
+    this.shadowMap = shadowMap;
+    return oldMap;
   }
 }

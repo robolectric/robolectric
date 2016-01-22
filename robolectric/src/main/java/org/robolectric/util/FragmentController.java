@@ -17,7 +17,7 @@ public class FragmentController<F extends Fragment> extends ComponentController<
   private final F fragment;
   private final ActivityController<? extends Activity> activityController;
 
-  private FragmentController(ShadowsAdapter shadowsAdapter, F fragment, Class<? extends Activity> activityClass) {
+  protected FragmentController(ShadowsAdapter shadowsAdapter, F fragment, Class<? extends Activity> activityClass) {
     super(shadowsAdapter, fragment);
     this.fragment = fragment;
     this.activityController = Robolectric.buildActivity(activityClass);

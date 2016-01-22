@@ -101,6 +101,7 @@ public class ShadowContextImpl extends ShadowContext {
 
   private Map<String, Object> systemServices = new HashMap<String, Object>();
 
+#if ($api < 23)
   @Implements(className = ShadowServiceFetcher.CLASS_NAME, looseSignatures = true)
   public static class ShadowServiceFetcher {
     public static final String CLASS_NAME = "android.app.ContextImpl$ServiceFetcher";
@@ -110,6 +111,8 @@ public class ShadowContextImpl extends ShadowContext {
       return null;
     }
   }
+#end
+
 
   @Implementation
   public Object getSystemService(String name) {
