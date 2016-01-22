@@ -9,6 +9,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
@@ -16,16 +18,18 @@ import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.internal.ShadowExtractor;
 import org.robolectric.internal.bytecode.testing.AFinalClass;
-import org.robolectric.internal.bytecode.testing.Foo;
 import org.robolectric.internal.bytecode.testing.Pony;
-import org.robolectric.internal.bytecode.testing.ShadowFoo;
 import org.robolectric.annotation.internal.Instrument;
 import org.robolectric.internal.ShadowConstants;
 import org.robolectric.internal.Shadow;
+import org.robolectric.util.Scheduler;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -35,6 +39,13 @@ import static org.mockito.Mockito.mock;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ShadowingTest {
+
+  @Before
+  public void setUp() {
+    // In a proper Robolectric environment, this will be done for us, but we're not
+    // running in a full RL environment so we need to do it manually to avoid test pollution.
+    Scheduler.setMasterScheduler(new Scheduler());
+  }
 
   @Test
   @Config(shadows = {ShadowAccountManagerForTests.class})
@@ -143,6 +154,93 @@ public class ShadowingTest {
   @Config(shadows = {Pony.ShadowPony.class})
   public void shouldCallRealForUnshadowedMethod() throws Exception {
     assertEquals("Off I saunter to the salon!", new Pony().saunter("the salon"));
+  }
+
+  @Test
+  public void whenUnshadowedMethodInvoked_shouldBlockMasterScheduler() {
+    BlockTester bt = new BlockTester();
+    Scheduler s = Scheduler.getMasterScheduler();
+    assertThat(s.isBlocked()).as("before").isEqualTo(0);
+    bt.method();
+    assertThat(bt.blockCount).as("during").isEqualTo(1);
+    assertThat(s.isBlocked()).as("after").isEqualTo(0);
+  }
+
+  @Test
+  public void whenUnshadowedMethodInvoked_fromBG_shouldNotBlockMasterScheduler() throws InterruptedException {
+    final AtomicInteger before = new AtomicInteger(-1);
+    final AtomicInteger during = new AtomicInteger(-1);
+    final AtomicInteger after = new AtomicInteger(-1);
+    Thread t = new Thread(new Runnable() {
+      @Override
+      public void run() {
+        BlockTester bt = new BlockTester();
+        Scheduler s = Scheduler.getMasterScheduler();
+        before.set(s.isBlocked());
+        bt.method();
+        during.set(bt.blockCount);
+        after.set(s.isBlocked());
+      }
+    });
+    t.start();
+    t.join(1000);
+    assertThat(before.get()).as("before").isEqualTo(0);
+    assertThat(during.get()).as("during").isEqualTo(0);
+    assertThat(after.get()).as("after").isEqualTo(0);
+  }
+
+  @Test
+  @Config(shadows = {ShadowBlockTester.class})
+  public void whenShadowedMethodInvoked_fromMain_shouldBlockMasterScheduler() {
+    BlockTester bt = new BlockTester();
+    Scheduler s = Scheduler.getMasterScheduler();
+    assertThat(s.isBlocked()).as("before").isEqualTo(0);
+    bt.method();
+    ShadowBlockTester sbt = (ShadowBlockTester)ShadowExtractor.extract(bt);
+    assertThat(sbt.blockCount).as("during").isEqualTo(1);
+    assertThat(s.isBlocked()).as("after").isEqualTo(0);
+  }
+
+  @Test
+  @Config(shadows = {ShadowBlockTester.class})
+  public void whenShadowedMethodInvoked_fromBG_shouldNotBlockMasterScheduler() throws InterruptedException {
+    final AtomicInteger before = new AtomicInteger(-1);
+    final AtomicInteger during = new AtomicInteger(-1);
+    final AtomicInteger after = new AtomicInteger(-1);
+    Thread t = new Thread(new Runnable() {
+      @Override
+      public void run() {
+        BlockTester bt = new BlockTester();
+        Scheduler s = Scheduler.getMasterScheduler();
+        before.set(s.isBlocked());
+        bt.method();
+        ShadowBlockTester sbt = (ShadowBlockTester)ShadowExtractor.extract(bt);
+        during.set(sbt.blockCount);
+        after.set(s.isBlocked());
+      }
+    });
+    t.start();
+    t.join(1000);
+    assertThat(before.get()).as("before").isEqualTo(0);
+    assertThat(during.get()).as("during").isEqualTo(0);
+    assertThat(after.get()).as("after").isEqualTo(0);
+  }
+
+  @Instrument
+  public static class BlockTester {
+    public int blockCount = -1;
+    public void method() {
+      blockCount = Scheduler.getMasterScheduler().isBlocked();
+    }
+  }
+
+  @Implements(BlockTester.class)
+  public static class ShadowBlockTester {
+    public int blockCount = -1;
+    @Implementation
+    public void method() {
+      blockCount = Scheduler.getMasterScheduler().isBlocked();
+    }
   }
 
   @Implements(TextView.class)

@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 import org.robolectric.RoboSettings;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -15,7 +14,7 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.util.Scheduler;
 
-import static org.robolectric.RuntimeEnvironment.isMainThread;
+import static org.robolectric.util.Scheduler.isMainThread;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.internal.Shadow.*;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
@@ -47,7 +46,7 @@ public class ShadowLooper {
     // Blech. We need to keep the main looper because somebody might refer to it in a static
     // field. The other loopers need to be wrapped in WeakReferences so that they are not prevented from
     // being garbage collected.
-    if (!isMainThread()) {
+    if (!Scheduler.isMainThread()) {
       throw new IllegalStateException("you should only be calling this from the main thread!");
     }
     synchronized (loopingLoopers) {
@@ -69,7 +68,7 @@ public class ShadowLooper {
   @Implementation
   public void __constructor__(boolean quitAllowed) {
     invokeConstructor(Looper.class, realObject, from(boolean.class, quitAllowed));
-    if (isMainThread()) {
+    if (Scheduler.isMainThread()) {
       mainLooper = realObject;
     } else {
       loopingLoopers.put(Thread.currentThread(), realObject);
@@ -139,7 +138,7 @@ public class ShadowLooper {
   }
   
   public static Looper getLooperForThread(Thread thread) {
-    return isMainThread(thread) ? mainLooper : loopingLoopers.get(thread);
+    return Scheduler.isMainThread(thread) ? mainLooper : loopingLoopers.get(thread);
   }
   
   public static void pauseLooper(Looper looper) {
@@ -312,7 +311,7 @@ public class ShadowLooper {
   public void resetScheduler() {
     ShadowMessageQueue sQueue = shadowOf(realObject.getQueue());
     if (this == getShadowMainLooper() || RoboSettings.isUseGlobalScheduler()) {
-      sQueue.setScheduler(RuntimeEnvironment.getMasterScheduler());
+      sQueue.setScheduler(Scheduler.getMasterScheduler());
     } else {
       sQueue.setScheduler(new Scheduler());
     }

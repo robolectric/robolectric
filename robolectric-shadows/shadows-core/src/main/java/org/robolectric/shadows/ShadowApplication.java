@@ -178,7 +178,7 @@ public class ShadowApplication extends ShadowContextWrapper {
    * @return  Foreground scheduler.
    */
   public Scheduler getForegroundThreadScheduler() {
-    return RuntimeEnvironment.getMasterScheduler();
+    return Scheduler.getMasterScheduler();
   }
 
   /**

@@ -249,7 +249,7 @@ public class ShadowLooperTest {
     shadowOf(mainLooper).quit = true;
     assertThat(RuntimeEnvironment.application.getMainLooper()).isSameAs(mainLooper);
     Scheduler s = new Scheduler();
-    RuntimeEnvironment.setMasterScheduler(s);
+    Scheduler.setMasterScheduler(s);
     ShadowLooper.resetThreadLoopers();
     Application application = new Application();
     ReflectionHelpers.callInstanceMethod(application, "attach", ReflectionHelpers.ClassParameter.from(Context.class, RuntimeEnvironment.application.getBaseContext()));
@@ -274,7 +274,7 @@ public class ShadowLooperTest {
   public void reset_setsGlobalScheduler_forMainLooper_byDefault() {
     ShadowLooper sMainLooper = ShadowLooper.getShadowMainLooper();
     Scheduler s = new Scheduler();
-    RuntimeEnvironment.setMasterScheduler(s);
+    Scheduler.setMasterScheduler(s);
     sMainLooper.reset();
     assertThat(sMainLooper.getScheduler()).isSameAs(s);
   }
@@ -284,7 +284,7 @@ public class ShadowLooperTest {
     setAdvancedScheduling();
     ShadowLooper sMainLooper = ShadowLooper.getShadowMainLooper();
     Scheduler s = new Scheduler();
-    RuntimeEnvironment.setMasterScheduler(s);
+    Scheduler.setMasterScheduler(s);
     sMainLooper.reset();
     assertThat(sMainLooper.getScheduler()).isSameAs(s);
   }
@@ -297,7 +297,7 @@ public class ShadowLooperTest {
     sLooper.reset();
     assertThat(sLooper.getScheduler())
         .isNotSameAs(old)
-        .isNotSameAs(RuntimeEnvironment.getMasterScheduler());
+        .isNotSameAs(Scheduler.getMasterScheduler());
   }
 
   @Test
@@ -305,7 +305,7 @@ public class ShadowLooperTest {
     HandlerThread ht = getHandlerThread();
     ShadowLooper sLooper = shadowOf(ht.getLooper());
     Scheduler s = new Scheduler();
-    RuntimeEnvironment.setMasterScheduler(s);
+    Scheduler.setMasterScheduler(s);
     setAdvancedScheduling();
     sLooper.reset();
     assertThat(sLooper.getScheduler()).isSameAs(s);
@@ -320,13 +320,13 @@ public class ShadowLooperTest {
         myLooper.set(Looper.myLooper());
       }
     };
-    RuntimeEnvironment.setMainThread(t);
+    Scheduler.setMainThread(t);
     t.start();
     try {
       t.join(1000);
       assertThat(myLooper.get()).isSameAs(Looper.getMainLooper());
     } finally {
-      RuntimeEnvironment.setMainThread(Thread.currentThread());
+      Scheduler.setMainThread(Thread.currentThread());
     }
   }
 
@@ -351,14 +351,14 @@ public class ShadowLooperTest {
   @Test
   public void schedulerOnAnotherLooper_shouldNotBeMaster_byDefault() {
     HandlerThread ht = getHandlerThread();
-    assertThat(shadowOf(ht.getLooper()).getScheduler()).isNotSameAs(RuntimeEnvironment.getMasterScheduler());
+    assertThat(shadowOf(ht.getLooper()).getScheduler()).isNotSameAs(Scheduler.getMasterScheduler());
   }
 
   @Test
   public void schedulerOnAnotherLooper_shouldBeMaster_ifAdvancedSchedulingEnabled() {
     setAdvancedScheduling();
     HandlerThread ht = getHandlerThread();
-    assertThat(shadowOf(ht.getLooper()).getScheduler()).isSameAs(RuntimeEnvironment.getMasterScheduler());
+    assertThat(shadowOf(ht.getLooper()).getScheduler()).isSameAs(Scheduler.getMasterScheduler());
   }
 
   @Test
@@ -383,7 +383,7 @@ public class ShadowLooperTest {
     }, 200);
     assertThat(events).as("start").isEmpty();
     Scheduler s = ShadowLooper.getShadowMainLooper().getScheduler();
-    assertThat(s).isSameAs(RuntimeEnvironment.getMasterScheduler())
+    assertThat(s).isSameAs(Scheduler.getMasterScheduler())
       .isSameAs(shadowOf(ht.getLooper()).getScheduler());
     final long startTime = s.getCurrentTime();
     s.runOneTask();

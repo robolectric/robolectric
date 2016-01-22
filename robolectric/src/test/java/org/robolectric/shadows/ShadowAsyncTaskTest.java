@@ -9,13 +9,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.util.Join;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.Scheduler;
 import org.robolectric.util.Transcript;
 
 import java.util.ArrayDeque;
+import java.util.Vector;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -361,7 +362,7 @@ public class ShadowAsyncTaskTest {
     new AsyncTask<Void,Void,Void>() {
       @Override
       protected Void doInBackground(Void... voids) {
-        mainThread.set(RuntimeEnvironment.isMainThread());
+        mainThread.set(Scheduler.isMainThread());
         looper.set(Looper.myLooper());
         return null;
       }
@@ -370,12 +371,12 @@ public class ShadowAsyncTaskTest {
     assertThat(looper.get()).as("looper").isNull();
   }
 
-  // Regression test for issue raised by karlicoss in #2166
+  // Regression test for issues raised by karlicoss in #2166
   @Test(timeout=1000)
-  public void postingFromDoInBackground_shouldntDeadlock() throws Exception {
+  public void postingFromDoInBackground_whileUnPaused_shouldRunPostedTask_withoutDeadlock() throws Exception {
     Robolectric.getBackgroundThreadScheduler().unPause();
     Robolectric.getForegroundThreadScheduler().unPause();
-    final AtomicBoolean flag = new AtomicBoolean(false);
+    final Vector v = new Vector();
     new AsyncTask<Void,Void,Void>() {
       @Override
       protected Void doInBackground(Void... voids) {
@@ -383,13 +384,14 @@ public class ShadowAsyncTaskTest {
             post(new Runnable() {
               @Override
               public void run() {
+                v.add("inner");
               }
             });
-        flag.set(true);
+        v.add("outer");
         return null;
       }
-    }.execute().get();
-    assertThat(flag.get()).isTrue();
+    }.execute();
+    assertThat(v).containsExactly("outer", "inner");
   }
 
   private class MyAsyncTask extends AsyncTask<String, String, String> {

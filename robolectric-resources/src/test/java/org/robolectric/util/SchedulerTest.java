@@ -7,10 +7,11 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.robolectric.RuntimeEnvironment;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -29,7 +30,7 @@ public class SchedulerTest {
   @Before
   public void setUp() throws Exception {
     // Normally RobolectricTestRunner would do this for us.
-    RuntimeEnvironment.setMainThread(Thread.currentThread());
+    Scheduler.setMainThread(Thread.currentThread());
     scheduler.pause();
     startTime = scheduler.getCurrentTime(NANOSECONDS);
   }
@@ -586,7 +587,7 @@ public class SchedulerTest {
   public void schedulerAllowsConcurrentPostWithinPost() throws InterruptedException {
     // This would normally be done for us by RobolectricTestRunner but we're not running in that
     // context.
-    RuntimeEnvironment.setMainThread(Thread.currentThread());
+    Scheduler.setMainThread(Thread.currentThread());
     final Thread t = createTestThread(new Runnable() {
       @Override
       public void run() {
@@ -709,7 +710,7 @@ public class SchedulerTest {
     Thread t = createTestThread(new Runnable() {
       @Override
       public void run() {
-        RuntimeEnvironment.setMainThread(Thread.currentThread());
+        Scheduler.setMainThread(Thread.currentThread());
         scheduler.post(new AddToTranscript("post"));
       }
     });
@@ -724,7 +725,7 @@ public class SchedulerTest {
     Thread t = createTestThread(new Runnable() {
       @Override
       public void run() {
-        RuntimeEnvironment.setMainThread(Thread.currentThread());
+        Scheduler.setMainThread(Thread.currentThread());
         scheduler.postAtFrontOfQueue(new AddToTranscript("post"));
       }
     });
@@ -911,6 +912,73 @@ public class SchedulerTest {
     assertThat(task2.wasRun).isFalse();
   }
 
+  @Test
+  public void setMainThread_forCurrentThread() {
+    Scheduler.setMainThread(Thread.currentThread());
+    assertThat(Scheduler.getMainThread()).isSameAs(Thread.currentThread());
+  }
+
+  @Test
+  public void setMainThread_forNewThread() {
+    Thread t = new Thread();
+    Scheduler.setMainThread(t);
+    assertThat(Scheduler.getMainThread()).isSameAs(t);
+  }
+
+  @Test
+  public void isMainThread_forNewThread_withoutSwitch() throws InterruptedException {
+    final AtomicBoolean res = new AtomicBoolean();
+    final CountDownLatch finished = new CountDownLatch(1);
+    Thread t = new Thread() {
+      @Override
+      public void run() {
+        res.set(Scheduler.isMainThread());
+        finished.countDown();
+      }
+    };
+    Scheduler.setMainThread(Thread.currentThread());
+    t.start();
+    if (!finished.await(1000, MILLISECONDS)) {
+      throw new InterruptedException("Thread " + t + " didn't finish timely");
+    }
+    assertThat(Scheduler.isMainThread()).as("testThread").isTrue();
+    assertThat(res.get()).as("thread t").isFalse();
+  }
+
+  @Test
+  public void isMainThread_forNewThread_withSwitch() throws InterruptedException {
+    final AtomicBoolean res = new AtomicBoolean();
+    final CountDownLatch finished = new CountDownLatch(1);
+    Thread t = new Thread() {
+      @Override
+      public void run() {
+        res.set(Scheduler.isMainThread());
+        finished.countDown();
+      }
+    };
+    Scheduler.setMainThread(t);
+    t.start();
+    if (!finished.await(1000, MILLISECONDS)) {
+      throw new InterruptedException("Thread " + t + " didn't finish timely");
+    }
+    assertThat(Scheduler.isMainThread()).as("testThread").isFalse();
+    assertThat(res.get()).as("thread t").isTrue();
+  }
+
+  @Test
+  public void isMainThread_withArg_forNewThread_withSwitch() throws InterruptedException {
+    Thread t = new Thread();
+    Scheduler.setMainThread(t);
+    assertThat(Scheduler.isMainThread(t)).isTrue();
+  }
+
+  @Test
+  public void getSetMasterScheduler() {
+    Scheduler s = new Scheduler();
+    Scheduler.setMasterScheduler(s);
+    assertThat(Scheduler.getMasterScheduler()).isSameAs(s);
+  }
+
   private class AddToTranscript implements Runnable {
     private String event;
 
@@ -923,5 +991,4 @@ public class SchedulerTest {
       transcript.add(event);
     }
   }
-
 }

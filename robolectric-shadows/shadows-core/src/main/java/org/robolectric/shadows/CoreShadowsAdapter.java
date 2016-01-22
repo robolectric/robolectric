@@ -42,9 +42,9 @@ public class CoreShadowsAdapter implements ShadowsAdapter {
     final ShadowLooper shadow = Shadows.shadowOf(Looper.getMainLooper());
     return new ShadowLooperAdapter() {
       public void runPaused(Runnable runnable) {
-        RuntimeEnvironment.getMasterScheduler().block();
+        Scheduler.getMasterScheduler().block();
         runnable.run();
-        RuntimeEnvironment.getMasterScheduler().unBlock();
+        Scheduler.getMasterScheduler().unBlock();
       }
     };
   }

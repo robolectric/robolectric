@@ -1,6 +1,8 @@
 package org.robolectric.internal.bytecode;
 
 import org.junit.Test;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.util.Scheduler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -76,6 +78,15 @@ public class InstrumentationConfigurationTest {
     assertThat(baseConfig).isNotEqualTo(customConfig);
   }
 
+  // Need to have access to the same Scheduler class from both sides of the
+  // ParallelUniverseInterface, or else the scheduling won't work properly (master scheduler).
+  @Test
+  public void shouldNotAcquireScheduler() throws Exception {
+    assertThat(config.shouldAcquire(Scheduler.class.getName())).as("Scheduler").isFalse();
+    assertThat(config.shouldAcquire(Scheduler.IdleState.class.getName())).as("IdleState").isFalse();
+  }
+
+  @Test
   public void shouldNotInstrumentListedClasses() throws Exception {
     String instrumentName = "android.foo.bar";
     InstrumentationConfiguration customConfig = InstrumentationConfiguration.newBuilder().doNotInstrumentClass(instrumentName).build();

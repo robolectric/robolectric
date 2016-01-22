@@ -39,7 +39,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.DefaultTestLifecycle;
 import org.robolectric.R;
-import org.robolectric.RoboSettings;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
@@ -605,7 +604,7 @@ public class ShadowApplicationTest {
   @Test
   public void getForegroundThreadScheduler_shouldMatchRuntimeEnvironment() {
     Scheduler s = new Scheduler();
-    RuntimeEnvironment.setMasterScheduler(s);
+    Scheduler.setMasterScheduler(s);
     final ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
     assertThat(shadowApplication.getForegroundThreadScheduler()).isSameAs(s);
   }
@@ -613,15 +612,15 @@ public class ShadowApplicationTest {
   @Test
   public void getBackgroundThreadScheduler_shouldDifferFromRuntimeEnvironment_byDefault() {
     Scheduler s = new Scheduler();
-    RuntimeEnvironment.setMasterScheduler(s);
+    Scheduler.setMasterScheduler(s);
     final ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
-    assertThat(shadowApplication.getBackgroundThreadScheduler()).isNotSameAs(RuntimeEnvironment.getMasterScheduler());
+    assertThat(shadowApplication.getBackgroundThreadScheduler()).isNotSameAs(Scheduler.getMasterScheduler());
   }
 
   @Test
   public void getBackgroundThreadScheduler_shouldDifferFromRuntimeEnvironment_withAdvancedScheduling() {
     Scheduler s = new Scheduler();
-    RuntimeEnvironment.setMasterScheduler(s);
+    Scheduler.setMasterScheduler(s);
     final ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
     assertThat(shadowApplication.getBackgroundThreadScheduler()).isNotSameAs(s);
   }

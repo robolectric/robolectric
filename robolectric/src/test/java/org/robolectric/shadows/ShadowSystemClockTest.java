@@ -6,7 +6,6 @@ import android.os.SystemClock;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.internal.bytecode.RobolectricInternals;
 import org.robolectric.util.Scheduler;
@@ -24,7 +23,7 @@ public class ShadowSystemClockTest {
 
   @Before
   public void setUp() {
-    scheduler = RuntimeEnvironment.getMasterScheduler();
+    scheduler = Scheduler.getMasterScheduler();
   }
 
   @Test

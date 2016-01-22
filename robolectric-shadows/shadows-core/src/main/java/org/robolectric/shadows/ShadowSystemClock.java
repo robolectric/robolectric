@@ -2,11 +2,11 @@ package org.robolectric.shadows;
 
 import android.os.SystemClock;
 
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.util.Scheduler;
 
 import java.util.concurrent.TimeUnit;
 
@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
  * measures time since boot but not including deep sleep. This clock is used for most
  * interval timing within Android (eg, {@link android.os.Looper}s and {@link SystemClock#sleep(long)}).
  * Robolectric gets this time from the foreground/master scheduler (see
- * {@link RuntimeEnvironment#getMasterScheduler()}.</li>
+ * {@link Scheduler#getMasterScheduler()}.</li>
  * <li>The realtime clock {{@link SystemClock#elapsedRealtime()}}, which measures actual time since
  * boot including any deep sleep. This is used for measuring intervals that must span deep sleep.
  * In Robolectric (at present), this clock is identical the system clock - ie, there is (as yet) no
@@ -56,7 +56,7 @@ public class ShadowSystemClock {
     // TODO: This implementation of sleep() is flawed as it will cause events to execute, which
     // obviously they should not if the thread is sleeping. It will also effectively cause all
     // loopers to sleep in the same way.
-    RuntimeEnvironment.getMasterScheduler().advanceBy(millis);
+    Scheduler.getMasterScheduler().advanceBy(millis);
   }
 
   /**
@@ -67,7 +67,7 @@ public class ShadowSystemClock {
    * wall clock which is inconsistent with the behaviour in real Android. This behaviour has been
    * fixed in 3.1, which means if you were relyin on this broken behaviour to set the
    * system/scheduler clock it will no longer work. If you need to set the system/scheduler time,
-   * access the master scheduler directly (see {@link RuntimeEnvironment#getMasterScheduler()}).</li>
+   * access the master scheduler directly (see {@link Scheduler#getMasterScheduler()}).</li>
    * <li>Also, prior to 3.1 this method would not allow you to wind the clock backwards, which
    * (again) is not consistent with Android - this restriction has been removed in 3.1.</li></ul>
    *
@@ -95,14 +95,14 @@ public class ShadowSystemClock {
   public static boolean setCurrentWallTime(long newCurrentTime, TimeUnit units) {
     // TODO: Need to issue system notifications when the wall clock time changes.
     final long nanoTime    = units.toNanos(newCurrentTime);
-    final long currentTime = RuntimeEnvironment.getMasterScheduler().getCurrentTime(TimeUnit.NANOSECONDS);
+    final long currentTime = Scheduler.getMasterScheduler().getCurrentTime(TimeUnit.NANOSECONDS);
     wallClockOffsetNanos = nanoTime - currentTime;
     return true;
   }
 
   @Implementation
   public static long uptimeMillis() {
-    return RuntimeEnvironment.getMasterScheduler().getCurrentTime();
+    return Scheduler.getMasterScheduler().getCurrentTime();
   }
 
   @Implementation
@@ -123,7 +123,7 @@ public class ShadowSystemClock {
   @HiddenApi
   @Implementation
   public static long currentThreadTimeMicro() {
-    return RuntimeEnvironment.getMasterScheduler().getCurrentTime(TimeUnit.MICROSECONDS);
+    return Scheduler.getMasterScheduler().getCurrentTime(TimeUnit.MICROSECONDS);
   }
 
   /**
@@ -132,7 +132,7 @@ public class ShadowSystemClock {
    * @return The simulated wall clock time, in nanoseconds.
    */
   public static long currentTimeNanos() {
-    return RuntimeEnvironment.getMasterScheduler().getCurrentTime(TimeUnit.NANOSECONDS) +
+    return Scheduler.getMasterScheduler().getCurrentTime(TimeUnit.NANOSECONDS) +
         wallClockOffsetNanos;
   }
 
@@ -164,7 +164,7 @@ public class ShadowSystemClock {
    * @return The current system time in nanoseconds.
    */
   public static long nanoTime() {
-    return RuntimeEnvironment.getMasterScheduler().getCurrentTime(TimeUnit.NANOSECONDS);
+    return Scheduler.getMasterScheduler().getCurrentTime(TimeUnit.NANOSECONDS);
   }
 
   @Resetter
@@ -177,7 +177,7 @@ public class ShadowSystemClock {
    *
    * @param nanoTime
    * @deprecated As of Robolectric 3.1, the nano time is slaved directly to the master scheduler -
-   * see {@link RuntimeEnvironment#getMasterScheduler()} for methods to adjust the time.
+   * see {@link Scheduler#getMasterScheduler()} for methods to adjust the time.
    */
   @Deprecated
   public static void setNanoTime(long nanoTime) {

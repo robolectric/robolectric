@@ -16,6 +16,7 @@ import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.Scheduler;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -94,12 +95,12 @@ public class RobolectricTestRunnerSelfTest {
 
   @Test
   public void testMethod_shouldBeInvoked_onMainThread() {
-    assertThat(RuntimeEnvironment.isMainThread()).isTrue();
+    assertThat(Scheduler.isMainThread()).isTrue();
   }
 
   @Test(timeout = 1000)
   public void whenTestHarnessUsesDifferentThread_shouldStillReportAsMainThread() {
-    assertThat(RuntimeEnvironment.isMainThread()).isTrue();
+    assertThat(Scheduler.isMainThread()).isTrue();
   }
 
 
@@ -142,13 +143,13 @@ public class RobolectricTestRunnerSelfTest {
     @Override
     public void onCreate() {
       this.onCreateWasCalled = true;
-      this.onCreateCalledFromMain = Boolean.valueOf(RuntimeEnvironment.isMainThread());
+      this.onCreateCalledFromMain = Boolean.valueOf(Scheduler.isMainThread());
     }
     
     @Override
     public void onTerminate() {
       order.add("onTerminate");
-      onTerminateCalledFromMain = Boolean.valueOf(RuntimeEnvironment.isMainThread());
+      onTerminateCalledFromMain = Boolean.valueOf(Scheduler.isMainThread());
     }
   }
 }

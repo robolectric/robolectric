@@ -43,7 +43,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
   @Override
   public void resetStaticState(Config config) {
-    RuntimeEnvironment.setMainThread(Thread.currentThread());
+    Scheduler.setMainThread(Thread.currentThread());
     Robolectric.reset();
 
     if (!loggingInitialized) {
@@ -70,8 +70,8 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   @Override
   public void setUpApplicationState(Method method, TestLifecycle testLifecycle, ResourceLoader systemResourceLoader, AndroidManifest appManifest, Config config) {
     RuntimeEnvironment.application = null;
-    RuntimeEnvironment.setMasterScheduler(new Scheduler());
-    RuntimeEnvironment.setMainThread(Thread.currentThread());
+    Scheduler.setMasterScheduler(new Scheduler());
+    Scheduler.setMainThread(Thread.currentThread());
     RuntimeEnvironment.setRobolectricPackageManager(new DefaultPackageManager(shadowsAdapter));
     RuntimeEnvironment.getRobolectricPackageManager().addPackage(DEFAULT_PACKAGE_NAME);
     ResourceLoader resourceLoader;
@@ -156,12 +156,12 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
   @Override
   public Thread getMainThread() {
-    return RuntimeEnvironment.getMainThread();
+    return Scheduler.getMainThread();
   }
 
   @Override
   public void setMainThread(Thread newMainThread) {
-    RuntimeEnvironment.setMainThread(newMainThread);
+    Scheduler.setMainThread(newMainThread);
   }
 
   @Override

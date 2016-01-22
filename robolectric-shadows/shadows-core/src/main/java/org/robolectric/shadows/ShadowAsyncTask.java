@@ -2,13 +2,13 @@ package org.robolectric.shadows;
 
 import android.os.AsyncTask;
 
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.internal.Shadow;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.Scheduler;
 
 import java.util.Collections;
 import java.util.Set;
@@ -123,7 +123,7 @@ public class ShadowAsyncTask<Params, Progress, Result> {
       try {
         // This could be run on the main thread if eg you have an executor which simply
         // calls the run() method on the runnable directly.
-        if (!RuntimeEnvironment.isMainThread()) {
+        if (!Scheduler.isMainThread()) {
           try {
             startFlag.await();
           } catch (InterruptedException e) {

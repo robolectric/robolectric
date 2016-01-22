@@ -22,6 +22,7 @@ import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.res.builder.XmlBlock;
+import org.robolectric.util.Scheduler;
 import org.robolectric.util.TempDirectory;
 import org.robolectric.util.Transcript;
 
@@ -145,6 +146,8 @@ public class InstrumentationConfiguration {
           XmlBlock.class,
           ClassHandler.class,
           ClassHandler.Plan.class,
+          Scheduler.class,
+          Scheduler.IdleState.class,
           RealObject.class,
           Implements.class,
           Implementation.class,

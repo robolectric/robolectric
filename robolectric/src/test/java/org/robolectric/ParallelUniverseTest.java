@@ -17,6 +17,7 @@ import org.robolectric.internal.SdkConfig;
 import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowLooper;
+import org.robolectric.util.Scheduler;
 
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -46,9 +47,9 @@ public class ParallelUniverseTest {
 
   @Test
   public void setUpApplicationState_configuresGlobalScheduler() {
-    RuntimeEnvironment.setMasterScheduler(null);
+    Scheduler.setMasterScheduler(null);
     setUpApplicationStateDefaults();
-    assertThat(RuntimeEnvironment.getMasterScheduler())
+    assertThat(Scheduler.getMasterScheduler())
         .isNotNull()
         .isSameAs(ShadowLooper.getShadowMainLooper().getScheduler())
         .isSameAs(ShadowApplication.getInstance().getForegroundThreadScheduler());
@@ -62,7 +63,7 @@ public class ParallelUniverseTest {
       final ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
       assertThat(shadowApplication.getBackgroundThreadScheduler())
           .isSameAs(shadowApplication.getForegroundThreadScheduler())
-          .isSameAs(RuntimeEnvironment.getMasterScheduler());
+          .isSameAs(Scheduler.getMasterScheduler());
     } finally {
       RoboSettings.setUseGlobalScheduler(false);
     }
@@ -78,16 +79,16 @@ public class ParallelUniverseTest {
 
   @Test
   public void setUpApplicationState_setsMainThread() {
-    RuntimeEnvironment.setMainThread(new Thread());
+    Scheduler.setMainThread(new Thread());
     setUpApplicationStateDefaults();
-    assertThat(RuntimeEnvironment.isMainThread()).isTrue();
+    assertThat(Scheduler.isMainThread()).isTrue();
   }
 
   @Test
   public void resetStaticStatic_setsMainThread(){
-    RuntimeEnvironment.setMainThread(new Thread());
+    Scheduler.setMainThread(new Thread());
     pu.resetStaticState(getDefaultConfig());
-    assertThat(RuntimeEnvironment.isMainThread()).isTrue();
+    assertThat(Scheduler.isMainThread()).isTrue();
   }
 
   @Test
@@ -97,7 +98,7 @@ public class ParallelUniverseTest {
       @Override
       public void run() {
         setUpApplicationStateDefaults();
-        res.set(RuntimeEnvironment.isMainThread());
+        res.set(Scheduler.isMainThread());
       }
     };
     t.start();

@@ -1,13 +1,15 @@
 package org.robolectric.internal.bytecode;
 
 import android.content.Context;
+
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.internal.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Function;
 import org.robolectric.internal.ShadowConstants;
-import org.robolectric.internal.Shadow;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.Scheduler;
 
 import java.lang.reflect.*;
 import java.util.*;
@@ -26,7 +28,6 @@ public class ShadowWrangler implements ClassHandler {
       return null;
     }
   };
-  public static final Plan CALL_REAL_CODE_PLAN = null;
   private static final boolean STRIP_SHADOW_STACK_TRACES = true;
   private static final ShadowConfig NO_SHADOW_CONFIG = new ShadowConfig(Object.class.getName(), true, false, false);
   private static final Object NO_SHADOW = new Object();
@@ -115,6 +116,21 @@ public class ShadowWrangler implements ClassHandler {
     return plan;
   }
 
+  private RealMethodPlan getRealMethodPlan(InvocationProfile invocationProfile) {
+    final Class<?> theClass = invocationProfile.clazz;
+    Method realMethod;
+    try {
+      realMethod = theClass.getDeclaredMethod(Shadow.directMethodName(invocationProfile.methodName),
+          invocationProfile.getParamClasses(theClass.getClassLoader()));
+    } catch (NoSuchMethodException e) {
+      throw new IllegalStateException("Couldn't find method for " + invocationProfile + " in " + theClass, e);
+    } catch (ClassNotFoundException e) {
+      throw new IllegalStateException("Couldn't load parameter classes for " + invocationProfile + " in " + theClass, e);
+    }
+    realMethod.setAccessible(true);
+    return new RealMethodPlan(realMethod);
+  }
+
   private Plan calculatePlan(String signature, boolean isStatic, Class<?> theClass) {
     final InvocationProfile invocationProfile = new InvocationProfile(signature, isStatic, theClass.getClassLoader());
     ShadowConfig shadowConfig = getShadowConfig(invocationProfile.clazz);
@@ -130,7 +146,7 @@ public class ShadowWrangler implements ClassHandler {
     }
 
     if (shadowConfig == null) {
-      return CALL_REAL_CODE_PLAN;
+      return getRealMethodPlan(invocationProfile);
     } else {
       try {
         final ClassLoader classLoader = theClass.getClassLoader();
@@ -146,19 +162,20 @@ public class ShadowWrangler implements ClassHandler {
         }
 
         if (shadowMethod == null) {
-          return shadowConfig.callThroughByDefault ? CALL_REAL_CODE_PLAN : strict(invocationProfile) ? CALL_REAL_CODE_PLAN : DO_NOTHING_PLAN;
+          return shadowConfig.callThroughByDefault ? getRealMethodPlan(invocationProfile) : strict(invocationProfile) ?
+              getRealMethodPlan(invocationProfile) : DO_NOTHING_PLAN;
         }
 
         final Class<?> declaredShadowedClass = getShadowedClass(shadowMethod);
 
         if (declaredShadowedClass.equals(Object.class)) {
           // e.g. for equals(), hashCode(), toString()
-          return CALL_REAL_CODE_PLAN;
+          return getRealMethodPlan(invocationProfile);
         }
 
         boolean shadowClassMismatch = !declaredShadowedClass.equals(invocationProfile.clazz);
         if (shadowClassMismatch && (!shadowConfig.inheritImplementationMethods || strict(invocationProfile))) {
-          return CALL_REAL_CODE_PLAN;
+          return getRealMethodPlan(invocationProfile);
         } else {
           return new ShadowMethodPlan(shadowMethod);
         }
@@ -338,7 +355,8 @@ public class ShadowWrangler implements ClassHandler {
           continue;
         }
 
-        if (className.equals(ShadowMethodPlan.class.getName())) {
+        if (className.equals(ShadowMethodPlan.class.getName()) ||
+            className.equals(RealMethodPlan.class.getName())) {
           continue;
         }
 
@@ -423,6 +441,34 @@ public class ShadowWrangler implements ClassHandler {
     }
   }
 
+  private static class RealMethodPlan implements Plan {
+    private final Method realMethod;
+
+    public RealMethodPlan(Method realMethod) {
+      this.realMethod = realMethod;
+    }
+
+    @Override
+    public Object run(Object instance, Object roboData, Object[] params) throws Throwable {
+      final Scheduler s = Scheduler.getMasterScheduler();
+      if (Scheduler.isMainThread()) {
+        s.block();
+      }
+      try {
+        return realMethod.invoke(instance, params);
+      } catch (IllegalArgumentException e) {
+        throw new IllegalArgumentException("attempted to invoke " + realMethod
+            + (instance == null ? "" : " on instance of " + instance.getClass() + ", but " + instance.getClass().getSimpleName() + " doesn't extend " + realMethod.getDeclaringClass().getSimpleName()));
+      } catch (InvocationTargetException e) {
+        throw e.getCause();
+      } finally {
+        if (s.isMainThread()) {
+          s.unBlock();
+        }
+      }
+    }
+  }
+
   private static class ShadowMethodPlan implements Plan {
     private final Method shadowMethod;
 
@@ -434,6 +480,10 @@ public class ShadowWrangler implements ClassHandler {
     public Object run(Object instance, Object roboData, Object[] params) throws Throwable {
       //noinspection UnnecessaryLocalVariable
       Object shadow = roboData;
+      final Scheduler s = Scheduler.getMasterScheduler();
+      if (Scheduler.isMainThread()) {
+        s.block();
+      }
       try {
         return shadowMethod.invoke(shadow, params);
       } catch (IllegalArgumentException e) {
@@ -441,6 +491,10 @@ public class ShadowWrangler implements ClassHandler {
             + (shadow == null ? "" : " on instance of " + shadow.getClass() + ", but " + shadow.getClass().getSimpleName() + " doesn't extend " + shadowMethod.getDeclaringClass().getSimpleName()));
       } catch (InvocationTargetException e) {
         throw e.getCause();
+      } finally {
+        if (Scheduler.isMainThread()) {
+          s.unBlock();
+        }
       }
     }
   }
