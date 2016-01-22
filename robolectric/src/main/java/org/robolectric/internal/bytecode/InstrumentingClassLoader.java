@@ -1,8 +1,13 @@
 package org.robolectric.internal.bytecode;
 
+import java.lang.invoke.CallSite;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
+import org.objectweb.asm.Handle;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -16,6 +21,7 @@ import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.InsnNode;
+import org.objectweb.asm.tree.InvokeDynamicInsnNode;
 import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
@@ -39,6 +45,7 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
+import static java.lang.invoke.MethodType.methodType;
 import static org.objectweb.asm.Type.ARRAY;
 import static org.objectweb.asm.Type.OBJECT;
 import static org.objectweb.asm.Type.VOID;
@@ -61,12 +68,32 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
   private static final String DIRECT_OBJECT_MARKER_TYPE_DESC = Type.getObjectType(DirectObjectMarker.class.getName().replace('.', '/')).getDescriptor();
   private static final String ROBO_INIT_METHOD_NAME = "$$robo$init";
   private static final String GET_ROBO_DATA_SIGNATURE = "()Ljava/lang/Object;";
+  private static final Handle BOOTSTRAP_INIT;
+  private static final Handle BOOTSTRAP;
+  private static final Handle BOOTSTRAP_STATIC;
+  private static final Handle BOOTSTRAP_INTRINSIC;
+
+  static {
+    String className = Type.getInternalName(InvokeDynamicSupport.class);
+
+    MethodType boostrap =
+        methodType(CallSite.class, MethodHandles.Lookup.class, String.class, MethodType.class);
+    String bootstrapMethod =
+        boostrap.appendParameterTypes(MethodHandle.class).toMethodDescriptorString();
+    String bootstrapIntristic =
+        boostrap.appendParameterTypes(String.class).toMethodDescriptorString();
+
+    BOOTSTRAP_INIT = new Handle(H_INVOKESTATIC, className, "bootstrapInit", boostrap.toMethodDescriptorString());
+    BOOTSTRAP = new Handle(H_INVOKESTATIC, className, "bootstrap", bootstrapMethod);
+    BOOTSTRAP_STATIC = new Handle(H_INVOKESTATIC, className, "bootstrapStatic", bootstrapMethod);
+    BOOTSTRAP_INTRINSIC = new Handle(H_INVOKESTATIC, className, "bootstrapIntrinsic", bootstrapIntristic);
+  }
 
   private final URLClassLoader urls;
   private final InstrumentationConfiguration config;
   private final Map<String, Class> classes = new HashMap<>();
   private final Map<String, String> classesToRemap;
-  private final Set<InstrumentationConfiguration.MethodRef> methodsToIntercept;
+  private final Set<MethodRef> methodsToIntercept;
 
   public InstrumentingClassLoader(InstrumentationConfiguration config, URL... urls) {
     super(InstrumentingClassLoader.class.getClassLoader());
@@ -346,10 +373,10 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
     return newMap;
   }
 
-  private Set<InstrumentationConfiguration.MethodRef> convertToSlashes(Set<InstrumentationConfiguration.MethodRef> methodRefs) {
-    HashSet<InstrumentationConfiguration.MethodRef> transformed = new HashSet<>();
-    for (InstrumentationConfiguration.MethodRef methodRef : methodRefs) {
-      transformed.add(new InstrumentationConfiguration.MethodRef(internalize(methodRef.className), methodRef.methodName));
+  private Set<MethodRef> convertToSlashes(Set<MethodRef> methodRefs) {
+    HashSet<MethodRef> transformed = new HashSet<>();
+    for (MethodRef methodRef : methodRefs) {
+      transformed.add(new MethodRef(internalize(methodRef.className), methodRef.methodName));
     }
     return transformed;
   }
@@ -377,6 +404,9 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
     public void instrument() {
       makePublic(classNode);
       classNode.access = classNode.access & ~ACC_FINAL;
+
+      // Need Java version >=7 to allow invokedynamic
+      classNode.version = Math.max(classNode.version, V1_7);
 
       Set<String> foundMethods = new HashSet<>();
       List<MethodNode> methods = new ArrayList<>(classNode.methods);
@@ -408,7 +438,7 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
         classNode.methods.add(defaultConstructor);
       }
 
-      {
+      if (!InvokeDynamic.ENABLED) {
         MethodNode directCallConstructor = new MethodNode(ACC_PUBLIC,
             "<init>", "(" + DIRECT_OBJECT_MARKER_TYPE_DESC + classType.getDescriptor() + ")V", null, null);
         MyGenerator m = new MyGenerator(directCallConstructor);
@@ -443,7 +473,12 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
         m.ifNonNull(alreadyInitialized);
         m.loadThis();                                         // this
         m.loadThis();                                         // this, this
-        m.invokeStatic(ROBOLECTRIC_INTERNALS_TYPE, INITIALIZING_METHOD); // this, __robo_data__
+        if (InvokeDynamic.ENABLED) {
+          m.invokeDynamic("initializing", Type.getMethodDescriptor(OBJECT_TYPE, classType), BOOTSTRAP_INIT);
+        } else {
+          m.invokeStatic(ROBOLECTRIC_INTERNALS_TYPE, INITIALIZING_METHOD);
+        }
+        // this, __robo_data__
         m.putField(classType, ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);
         m.mark(alreadyInitialized);
         m.returnValue();
@@ -510,7 +545,7 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
 
       m.loadThis();
       m.invokeVirtual(classType, new Method(ROBO_INIT_METHOD_NAME, "()V"));
-      generateCallToClassHandler(method, ShadowConstants.CONSTRUCTOR_METHOD_NAME, m);
+      generateShadowCall(method, ShadowConstants.CONSTRUCTOR_METHOD_NAME, m);
 
       m.endMethod();
       classNode.methods.add(methodNode);
@@ -559,7 +594,6 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
     }
 
     private void instrumentNormalMethod(MethodNode method) {
-      makePrivate(method);
       if ((method.access & ACC_ABSTRACT) == 0) method.access = method.access | ACC_FINAL;
       if ((method.access & ACC_NATIVE) != 0) {
         method.access = method.access & ~ACC_NATIVE;
@@ -575,11 +609,12 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
 
       MethodNode delegatorMethodNode = new MethodNode(method.access, originalName, method.desc, method.signature, exceptionArray(method));
       delegatorMethodNode.access &= ~(ACC_NATIVE | ACC_ABSTRACT | ACC_FINAL);
-      makePublic(delegatorMethodNode);
+
+      makePrivate(method);
 
       MyGenerator m = new MyGenerator(delegatorMethodNode);
 
-      generateCallToClassHandler(method, originalName, m);
+      generateShadowCall(method, originalName, m);
 
       m.endMethod();
 
@@ -629,7 +664,11 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
             if (isGregorianCalendar(targetMethod)) {
               replaceNastyGregorianCalendarConstructor(instructions, targetMethod);
             } else if (shouldIntercept(targetMethod)) {
-              interceptNastyMethod(instructions, targetMethod);
+              if (InvokeDynamic.ENABLED) {
+                invokeDynamicNastyMethod(instructions, targetMethod);
+              } else {
+                interceptNastyMethod(instructions, targetMethod);
+              }
             }
             break;
 
@@ -657,6 +696,20 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
 
       // Call GregorianCalendar(int, int, int)
       instructions.add(new MethodInsnNode(INVOKESPECIAL, targetMethod.owner, targetMethod.name, "(III)V", targetMethod.itf));
+    }
+
+    private void invokeDynamicNastyMethod(ListIterator<AbstractInsnNode> instructions, MethodInsnNode targetMethod) {
+      instructions.remove(); // remove the method invocation
+
+      Type type = Type.getObjectType(targetMethod.owner);
+      String description = targetMethod.desc;
+      if (targetMethod.getOpcode() != INVOKESTATIC) {
+        String thisType = type.getDescriptor();
+        description = "(" + thisType + description.substring(1, description.length());
+      }
+
+      String owner = type.getClassName();
+      instructions.add(new InvokeDynamicInsnNode(targetMethod.name, description, BOOTSTRAP_INTRINSIC, owner));
     }
 
     private void interceptNastyMethod(ListIterator<AbstractInsnNode> instructions, MethodInsnNode targetMethod) {
@@ -770,6 +823,36 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
       m.returnValue();
       m.endMethod();
       return methodNode;
+    }
+
+    private void generateShadowCall(MethodNode originalMethod, String originalMethodName, MyGenerator m) {
+      if (InvokeDynamic.ENABLED) {
+        generateInvokeDynamic(originalMethod, originalMethodName, m);
+      } else {
+        generateCallToClassHandler(originalMethod, originalMethodName, m);
+      }
+    }
+
+    private int getTag(MethodNode m) {
+      return Modifier.isStatic(m.access) ? H_INVOKESTATIC : H_INVOKESPECIAL;
+    }
+
+    private void generateInvokeDynamic(MethodNode originalMethod, String originalMethodName, MyGenerator m) {
+      Handle original =
+          new Handle(getTag(originalMethod), classType.getInternalName(), originalMethod.name,
+              originalMethod.desc);
+
+      if (m.isStatic()) {
+        m.loadArgs();
+        m.invokeDynamic(originalMethodName, originalMethod.desc, BOOTSTRAP_STATIC, original);
+      } else {
+        String desc = "(" + classType.getDescriptor() + originalMethod.desc.substring(1);
+        m.loadThis();
+        m.loadArgs();
+        m.invokeDynamic(originalMethodName, desc, BOOTSTRAP, original);
+      }
+
+      m.returnValue();
     }
 
     private void generateCallToClassHandler(MethodNode originalMethod, String originalMethodName, MyGenerator m) {
@@ -943,8 +1026,8 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
 
   private boolean shouldIntercept(MethodInsnNode targetMethod) {
     if (targetMethod.name.equals("<init>")) return false; // sorry, can't strip out calls to super() in constructor
-    return methodsToIntercept.contains(new InstrumentationConfiguration.MethodRef(targetMethod.owner, targetMethod.name))
-        || methodsToIntercept.contains(new InstrumentationConfiguration.MethodRef(targetMethod.owner, "*"));
+    return methodsToIntercept.contains(new MethodRef(targetMethod.owner, targetMethod.name))
+        || methodsToIntercept.contains(new MethodRef(targetMethod.owner, "*"));
   }
 
   /**
