@@ -588,11 +588,24 @@ public class ShadowContentResolver {
       return false;
     }
     for (String key : bundle1.keySet()) {
-      if (!bundle1.get(key).equals(bundle2.get(key))) {
+      Object value1 = bundle1.get(key);
+      Object value2 = bundle2.get(key);
+      if (value1 == null || value2 == null) {
+        return false;
+      }
+      if (isBundle(value1) && isBundle(value2)) {
+        if (!isBundleEqual((Bundle) value1, (Bundle) value2)) {
+          return false;
+        }
+      } else if (!value1.equals(value2)) {
         return false;
       }
     }
     return true;
+  }
+  
+  private static boolean isBundle(Object expected) {
+      return expected != null && expected instanceof Bundle;
   }
 
   public static class InsertStatement {
