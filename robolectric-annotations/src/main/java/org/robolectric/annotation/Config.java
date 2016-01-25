@@ -103,10 +103,17 @@ public @interface Config {
    * @return A list of additional shadow classes to enable.
    */
   Class<?>[] shadows() default {};
-  
+
+  /**
+   * A list of classes that should not be instrumented.
+   *
+   * @return A list of classes that should not be instrumented.
+   */
+  Class<?>[] classesToNotInstrument() default {};
+
   /**
    * A list of instrumented packages, in addition to those that are already instrumented.
-   * 
+   *
    * @return A list of additional instrumented packages.
    */
   String[] instrumentedPackages() default {};
@@ -127,6 +134,7 @@ public @interface Config {
     private final String packageName;
     private final Class<?> constants;
     private final Class<?>[] shadows;
+    private final Class<?>[] classesToNotInstrument;
     private final String[] instrumentedPackages;
     private final Class<? extends Application> application;
     private final String[] libraries;
@@ -141,6 +149,7 @@ public @interface Config {
           properties.getProperty("resourceDir", Config.DEFAULT_RES_FOLDER),
           properties.getProperty("assetDir", Config.DEFAULT_ASSET_FOLDER),
           parseClasses(properties.getProperty("shadows", "")),
+          parseClasses(properties.getProperty("classesToNotInstrument", "")),
           parseStringArrayProperty(properties.getProperty("instrumentedPackages", "")),
           parseApplication(properties.getProperty("application", "android.app.Application")),
           parseStringArrayProperty(properties.getProperty("libraries", "")),
@@ -160,7 +169,7 @@ public @interface Config {
     private static Class<?>[] parseClasses(String input) {
       if (input.isEmpty()) return new Class[0];
       final String[] classNames = input.split("[, ]+");
-      final Class[] classes = new Class[classNames.length];
+      final Class<?>[] classes = new Class[classNames.length];
       for (int i = 0; i < classNames.length; i++) {
         classes[i] = parseClass(classNames[i]);
       }
@@ -187,7 +196,7 @@ public @interface Config {
       return result;
     }
 
-    public Implementation(int[] sdk, String manifest, String qualifiers, String packageName, String resourceDir, String assetDir, Class<?>[] shadows, String[] instrumentedPackages, Class<? extends Application> application, String[] libraries, Class<?> constants) {
+    public Implementation(int[] sdk, String manifest, String qualifiers, String packageName, String resourceDir, String assetDir, Class<?>[] shadows, Class<?>[] classesToNotInstrument, String[] instrumentedPackages, Class<? extends Application> application, String[] libraries, Class<?> constants) {
       this.sdk = sdk;
       this.manifest = manifest;
       this.qualifiers = qualifiers;
@@ -195,6 +204,7 @@ public @interface Config {
       this.resourceDir = resourceDir;
       this.assetDir = assetDir;
       this.shadows = shadows;
+      this.classesToNotInstrument = classesToNotInstrument;
       this.instrumentedPackages = instrumentedPackages;
       this.application = application;
       this.libraries = libraries;
@@ -210,6 +220,7 @@ public @interface Config {
       this.assetDir = other.assetDir();
       this.constants = other.constants();
       this.shadows = other.shadows();
+      this.classesToNotInstrument = other.classesToNotInstrument();
       this.instrumentedPackages = other.instrumentedPackages();
       this.application = other.application();
       this.libraries = other.libraries();
@@ -229,11 +240,16 @@ public @interface Config {
       shadows.addAll(Arrays.asList(overlayConfig.shadows()));
       this.shadows = shadows.toArray(new Class[shadows.size()]);
 
+      Set<Class<?>> classesToNotInstrument = new HashSet<>();
+      classesToNotInstrument.addAll(Arrays.asList(baseConfig.classesToNotInstrument()));
+      classesToNotInstrument.addAll(Arrays.asList(overlayConfig.classesToNotInstrument()));
+      this.classesToNotInstrument = classesToNotInstrument.toArray(new Class[classesToNotInstrument.size()]);
+
       Set<String> instrumentedPackages = new HashSet<>();
       instrumentedPackages.addAll(Arrays.asList(baseConfig.instrumentedPackages()));
       instrumentedPackages.addAll(Arrays.asList(overlayConfig.instrumentedPackages()));
       this.instrumentedPackages = instrumentedPackages.toArray(new String[instrumentedPackages.size()]);
-      
+
       this.application = pick(baseConfig.application(), overlayConfig.application(), Application.class);
 
       Set<String> libraries = new HashSet<>();
@@ -295,11 +311,16 @@ public @interface Config {
       return shadows;
     }
 
+	@Override
+	public Class<?>[] classesToNotInstrument() {
+	  return classesToNotInstrument;
+	}
+
     @Override
     public String[] instrumentedPackages() {
       return instrumentedPackages;
     }
-    
+
     @Override
     public String[] libraries() {
       return libraries;

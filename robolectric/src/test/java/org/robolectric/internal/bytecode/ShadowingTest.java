@@ -17,9 +17,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.internal.bytecode.testing.AFinalClass;
-import org.robolectric.internal.bytecode.testing.Foo;
 import org.robolectric.internal.bytecode.testing.Pony;
-import org.robolectric.internal.bytecode.testing.ShadowFoo;
 import org.robolectric.annotation.internal.Instrument;
 import org.robolectric.internal.ShadowConstants;
 import org.robolectric.internal.Shadow;
@@ -225,6 +223,12 @@ public class ShadowingTest {
   @Config(shadows = {ShadowNonInstrumentedClass.class})
   public void shouldInstrumentClassIfAddedToConfig() {
     assertEquals(2, new NonInstrumentedClass().plus(0));
+  }
+
+  @Test
+  @Config(shadows = {ShadowNonInstrumentedClass.class}, classesToNotInstrument = {NonInstrumentedClass.class})
+  public void shouldNotInstrumentClassIfMarkedAsNotInstrument() {
+    assertEquals(1, new NonInstrumentedClass().plus(0));
   }
 
   public static class NonInstrumentedClass {

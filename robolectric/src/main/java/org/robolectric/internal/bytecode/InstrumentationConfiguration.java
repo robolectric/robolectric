@@ -35,7 +35,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -45,6 +44,8 @@ import java.util.Set;
  * Configuration rules for {@link org.robolectric.internal.bytecode.InstrumentingClassLoader}.
  */
 public class InstrumentationConfiguration {
+
+  private static final int HASH_CODE_UNCALCULATED = 0;
 
   public static final class Builder {
 
@@ -109,6 +110,9 @@ public class InstrumentationConfiguration {
       }
       for (String packageName : config.instrumentedPackages()) {
         addInstrumentedPackage(packageName);
+      }
+      for (Class<?> aClass : config.classesToNotInstrument()) {
+        doNotInstrumentClass(aClass.getName());
       }
       return this;
     }
@@ -192,7 +196,7 @@ public class InstrumentationConfiguration {
     this.classesToNotAquire = ImmutableSet.copyOf(classesToNotAquire);
     this.packagesToNotAquire = ImmutableSet.copyOf(packagesToNotAquire);
     this.classesToNotInstrument = ImmutableSet.copyOf(classesToNotInstrument);
-    this.cachedHashCode = 0;
+    this.cachedHashCode = HASH_CODE_UNCALCULATED;
   }
 
   /**
@@ -281,19 +285,21 @@ public class InstrumentationConfiguration {
 
     InstrumentationConfiguration that = (InstrumentationConfiguration) o;
 
+    if (cachedHashCode != HASH_CODE_UNCALCULATED && that.cachedHashCode != HASH_CODE_UNCALCULATED && cachedHashCode != that.cachedHashCode) return false;
     if (!classNameTranslations.equals(that.classNameTranslations)) return false;
     if (!classesToNotAquire.equals(that.classesToNotAquire)) return false;
     if (!instrumentedPackages.equals(that.instrumentedPackages)) return false;
     if (!instrumentedClasses.equals(that.instrumentedClasses)) return false;
     if (!interceptedMethods.equals(that.interceptedMethods)) return false;
-
+    if (!packagesToNotAquire.equals(that.packagesToNotAquire)) return false;
+    if (!classesToNotInstrument.equals(that.classesToNotInstrument)) return false;
 
     return true;
   }
 
   @Override
   public int hashCode() {
-    if (cachedHashCode != 0) {
+    if (cachedHashCode != HASH_CODE_UNCALCULATED) {
       return cachedHashCode;
     }
 
@@ -302,6 +308,8 @@ public class InstrumentationConfiguration {
     result = 31 * result + classNameTranslations.hashCode();
     result = 31 * result + interceptedMethods.hashCode();
     result = 31 * result + classesToNotAquire.hashCode();
+    result = 31 * result + packagesToNotAquire.hashCode();
+    result = 31 * result + classesToNotInstrument.hashCode();
     cachedHashCode = result;
     return result;
   }
