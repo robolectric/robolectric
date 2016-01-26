@@ -127,6 +127,8 @@ public class ShadowConnectivityManager {
   /**
    * Count {@link ConnectivityManager#TYPE_MOBILE} networks as metered.
    * Other types will be considered unmetered.
+   *
+   * @return True if the active network is metered.
    */
   @Implementation
   public boolean isActiveNetworkMetered() {
