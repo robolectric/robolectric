@@ -76,6 +76,13 @@ public class ShadowParcelTest {
   }
 
   @Test
+  public void testWriteEmptyString() {
+    parcel.writeString("");
+    parcel.setDataPosition(0);
+    assertThat(parcel.readString()).isEmpty();
+  }
+
+  @Test
   public void testReadWriteMultipleStrings() {
     for (int i = 0; i < 10; ++i) {
       parcel.writeString(Integer.toString(i));
@@ -479,6 +486,16 @@ public class ShadowParcelTest {
     parcel.setDataPosition(4);
 
     assertThat(parcel.readFloat()).isEqualTo(5);
+  }
+
+  @Test
+  public void testSetDataPositionToEmptyString() {
+    parcel.writeString("");
+    parcel.setDataPosition(parcel.dataPosition());
+    parcel.writeString("something else");
+
+    parcel.setDataPosition(0);
+    assertThat(parcel.readString()).isEmpty();
   }
 
   @Test
