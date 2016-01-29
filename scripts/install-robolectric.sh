@@ -29,7 +29,7 @@ cd "$PROJECT"/robolectric-shadows/shadows-core; mvn -P android-21 clean $SOURCE_
 echo "Building shadows for API 22..."
 cd "$PROJECT"/robolectric-shadows/shadows-core; mvn -P android-22 clean $SOURCE_ARG $JAVADOC_ARG install
 
-echo "Building shadows for API 22..."
+echo "Building shadows for API 23..."
 cd "$PROJECT"/robolectric-shadows/shadows-core; mvn -P android-23 clean $SOURCE_ARG $JAVADOC_ARG install
 
 echo "Running Tests..."
