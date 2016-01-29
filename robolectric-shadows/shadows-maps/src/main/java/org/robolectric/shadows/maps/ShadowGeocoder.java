@@ -5,9 +5,11 @@ import android.location.Geocoder;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.util.ReflectionHelpers;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -47,7 +49,7 @@ public class ShadowGeocoder {
     address.setAdminArea(state);
     address.setPostalCode(zip);
     address.setCountryCode(countryCode);
-    return oneElementList(address);
+    return Arrays.asList(address);
   }
 
   @Implementation
@@ -60,16 +62,16 @@ public class ShadowGeocoder {
     if (returnNoResults) {
       return new ArrayList<>();
     } else {
-      Address address = makeAddress();
-      address.setLatitude(simulatedLatitude);
-      address.setLongitude(simulatedLongitude);
-      return oneElementList(address);
+      return Arrays.asList(makeAddress());
     }
   }
 
   private Address makeAddress() {
     Address address = new Address(Locale.getDefault());
-    Shadows.shadowOf(address).setSimulatedHasLatLong(hasLatitude, hasLongitude);
+    address.setLatitude(simulatedLatitude);
+    address.setLongitude(simulatedLongitude);
+    ReflectionHelpers.setField(address, "mHasLatitude", hasLatitude);
+    ReflectionHelpers.setField(address, "mHasLongitude", hasLongitude);
     return address;
   }
 
@@ -131,12 +133,6 @@ public class ShadowGeocoder {
 
   public String getLastLocationName() {
     return lastLocationName;
-  }
-
-  private List<Address> oneElementList(Address address) {
-    ArrayList<Address> addresses = new ArrayList<>();
-    addresses.add(address);
-    return addresses;
   }
 
   public void setSimulatedHasLatLong(boolean hasLatitude, boolean hasLongitude) {
