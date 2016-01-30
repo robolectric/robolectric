@@ -3,6 +3,7 @@
 ## Getting Started
 
 Dependencies:
+
 1. Maven 3
 2. Android SDK with Tools, Extras, and 'Google APIs' for APIs 22 and 23 installed
 
