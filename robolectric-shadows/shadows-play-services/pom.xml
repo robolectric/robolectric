@@ -34,21 +34,21 @@
     <dependency>
       <groupId>com.android.support</groupId>
       <artifactId>support-v4</artifactId>
-      <version>22.2.1</version>
+      <version>23.1.1</version>
       <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>com.android.support</groupId>
       <artifactId>internal_impl</artifactId>
-      <version>22.2.1</version>
+      <version>23.1.1</version>
       <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>com.google.android.gms</groupId>
       <artifactId>play-services</artifactId>
-      <version>6.5.87</version>
+      <version>8.4.0</version>
       <scope>provided</scope>
     </dependency>
 
