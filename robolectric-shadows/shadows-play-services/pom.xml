@@ -47,7 +47,7 @@
 
     <dependency>
       <groupId>com.google.android.gms</groupId>
-      <artifactId>play-services</artifactId>
+      <artifactId>play-services-base</artifactId>
       <version>8.4.0</version>
       <scope>provided</scope>
     </dependency>
