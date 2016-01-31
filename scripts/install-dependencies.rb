@@ -20,7 +20,7 @@ def concat_maven_file_segments(repo_root_dir, group_id, artifact_id, version, ex
   # Generate dependency path segments
   dep_path_segments = []  
   artifact_file_name = "#{artifact_id}-#{version}.#{extension}"
-    # Start with the root repo dir
+  # Start with the root repo dir
   dep_path_segments << repo_root_dir
 
   # Add the split group id segments into the path segments
