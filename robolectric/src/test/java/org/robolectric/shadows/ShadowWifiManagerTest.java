@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.content.Context;
+import android.net.DhcpInfo;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
@@ -61,6 +62,13 @@ public class ShadowWifiManagerTest {
     List<ScanResult> scanResults = new ArrayList<>();
     shadowWifiManager.setScanResults(scanResults);
     assertThat(wifiManager.getScanResults()).isSameAs(scanResults);
+  }
+
+  @Test
+  public void shouldReturnDhcpInfo() {
+    DhcpInfo dhcpInfo = new DhcpInfo();
+    shadowWifiManager.setDhcpInfo(dhcpInfo);
+    assertThat(wifiManager.getDhcpInfo()).isSameAs(dhcpInfo);
   }
 
   @Test
