@@ -9,7 +9,6 @@ import android.icu.util.ULocale;
 import android.os.Build;
 import android.text.format.DateUtils;
 import libcore.icu.DateIntervalFormat;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
@@ -18,6 +17,8 @@ import org.robolectric.annotation.Config;
 import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
+
+import static org.junit.Assert.assertNotNull;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
 @Config(sdk = {
@@ -41,7 +42,7 @@ public class ShadowDateIntervalFormatTest {
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        Assert.assertNotNull(date);
+        assertNotNull(date);
 
     }
 
