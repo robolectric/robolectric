@@ -18,32 +18,25 @@ import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 
-import static org.junit.Assert.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
 @Config(sdk = {
     Build.VERSION_CODES.M })
 public class ShadowDateIntervalFormatTest {
+  @Test
+  public void testDateInterval_FormatDateRange() throws ParseException {
+    Calendar calendar = Calendar.getInstance();
+    calendar.set(Calendar.YEAR, 2013);
+    calendar.set(Calendar.MONTH, Calendar.JANUARY);
+    calendar.set(Calendar.DAY_OF_MONTH, 20);
 
-    @Test
-    public void testDateInterval_FormatDateRange() {
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.YEAR, 2013);
-        calendar.set(Calendar.MONTH, Calendar.JANUARY);
-        calendar.set(Calendar.DAY_OF_MONTH, 20);
+    long timeInMillis = calendar.getTimeInMillis();
+    String actual = DateIntervalFormat.formatDateRange(ULocale.getDefault(), TimeZone.getDefault(), timeInMillis, timeInMillis, DateUtils.FORMAT_NUMERIC_DATE);
 
-        long timeInMillis = calendar.getTimeInMillis();
-        String actual = DateIntervalFormat.formatDateRange(ULocale.getDefault(), TimeZone.getDefault(), timeInMillis, timeInMillis, DateUtils.FORMAT_NUMERIC_DATE);
+    DateFormat format = new SimpleDateFormat("MM/dd/yyyy", ULocale.getDefault());
+    Date date = format.parse(actual);
 
-        DateFormat format = new SimpleDateFormat("MM/dd/yyyy", ULocale.getDefault());
-        Date date = null;
-        try {
-            date = format.parse(actual);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        assertNotNull(date);
-
-    }
-
+    assertThat(date).isNotNull();
+  }
 }
