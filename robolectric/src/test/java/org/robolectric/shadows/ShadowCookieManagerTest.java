@@ -188,4 +188,20 @@ public class ShadowCookieManagerTest {
     cookieManager.removeSessionCookie();
     assertThat(cookieManager.getCookie(url)).isEqualTo("name=value");
   }
+
+  @Test
+  public void shouldIgnoreCookiesSetInThePast() {
+    cookieManager.setCookie(url, "name=value; Expires=Wed, 09 Jun 2000 10:18:14 GMT");
+    assertThat(cookieManager.getCookie(url)).isNull();
+  }
+
+  @Test
+  public void shouldRespectSecureCookies() {
+    cookieManager.setCookie(httpsUrl, "name1=value1; Expires=Wed, 09 Jun 2020 10:18:14 GMT");
+    cookieManager.setCookie(httpUrl, "name2=value2; Expires=Wed, 09 Jun 2020 10:18:14 GMT");
+
+    String cookie = cookieManager.getCookie(httpUrl);
+    assertThat(cookie.contains("name2=value2")).isTrue();
+    assertThat(cookie.contains("name1=value1")).isFalse();
+  }
 }
