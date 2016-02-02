@@ -44,16 +44,13 @@ public class LocalDependencyResolver implements DependencyResolver {
   }
 
   /**
-   * Validates {@code file} as a File that exists and is a file, and is readable.
+   * Validates {@code file} is an existing file that is readable.
    *
    * @param file the File to test
    * @return the provided file, if all validation passes
    * @throws IllegalArgumentException if validation fails
    */
   private static File validateFile(File file) throws IllegalArgumentException {
-    if (!file.exists()) {
-      throw new IllegalArgumentException("File does not exist: " + file);
-    }
     if (!file.isFile()) {
       throw new IllegalArgumentException("Path is not a file: " + file);
     }
