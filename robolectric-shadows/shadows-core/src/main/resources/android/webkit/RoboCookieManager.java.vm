@@ -75,7 +75,7 @@ public class RoboCookieManager extends CookieManager {
       } else if (url.contains("//.")) {
         matchedCookies = filter(url.substring(url.indexOf("//.") + 3));
       } else {
-        matchedCookies = filter(getCookieHost(url));
+        matchedCookies = filter(getCookieHost(url), url.startsWith(HTTPS));
       }
       if (matchedCookies.isEmpty()) {
         return null;
@@ -105,10 +105,15 @@ public class RoboCookieManager extends CookieManager {
     }
 
     private List<Cookie> filter(String domain) {
+      return filter(domain, false);
+    }
+
+    private List<Cookie> filter(String domain, boolean isSecure) {
       List<Cookie> matchedCookies = new ArrayList<>();
       Date now = new Date();
       for (Cookie cookie : store) {
-        if (cookie.isSameHost(domain)) {
+        if (cookie.isSameHost(domain) 
+          && (isSecure == cookie.isSecure() || isSecure)) {
             matchedCookies.add(cookie);
         }
       }
@@ -190,11 +195,14 @@ public class RoboCookieManager extends CookieManager {
         }
       }
 
+      boolean isSecure = url.startsWith(HTTPS);
       String hostname = getCookieHost(url);
       List<Cookie> cookies = new ArrayList<>();
 
       for (String cookie : parsedFields) {
-        cookies.add(new Cookie(hostname, cookie, expiration));
+        if (expiration == null || expiration.compareTo(new Date()) >= 0) {
+          cookies.add(new Cookie(hostname, isSecure, cookie, expiration));
+        }
       }
 
       return cookies;
@@ -234,9 +242,11 @@ public class RoboCookieManager extends CookieManager {
       private final String mValue;
       private final Date mExpiration;
       private final String mHostname;
+      private final boolean mIsSecure;
 
-      public Cookie(String hostname, String cookie, Date expiration) {
+      public Cookie(String hostname, boolean isSecure, String cookie, Date expiration) {
         mHostname = hostname;
+        mIsSecure = isSecure;
         mExpiration = expiration;
 
         int equalsIndex = cookie.indexOf("=");
@@ -267,6 +277,10 @@ public class RoboCookieManager extends CookieManager {
 
       public boolean isSameHost(String host) {
         return mHostname.endsWith(host);
+      }
+
+      public boolean isSecure() {
+        return mIsSecure;
       }
     }
   }
