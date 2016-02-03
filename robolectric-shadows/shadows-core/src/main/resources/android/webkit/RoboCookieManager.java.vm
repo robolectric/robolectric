@@ -20,6 +20,7 @@ public class RoboCookieManager extends CookieManager {
     private static final String HTTP = "http://";
     private static final String HTTPS = "https://";
     private static final String EXPIRATION_FIELD_NAME = "Expires";
+    private static final String SECURE_ATTR_NAME = "SECURE";
     private final List<Cookie> store = new ArrayList<>();
     private boolean accept;
 
@@ -63,6 +64,11 @@ public class RoboCookieManager extends CookieManager {
 #end
 
     public String getCookie(String url) {
+      // Return null value for empty url
+      if (url == null || url.equals("")) {
+        return null;
+      }
+
       try {
         url = URLDecoder.decode(url, "UTF-8");
       } catch (UnsupportedEncodingException e) {
@@ -185,17 +191,19 @@ public class RoboCookieManager extends CookieManager {
 
       List<String> parsedFields = new ArrayList<>();
       Date expiration = null;
+      boolean isSecure = false;
 
       for (String field : fields) {
         field = field.trim();
         if (field.startsWith(EXPIRATION_FIELD_NAME)) {
           expiration = getExpiration(field);
+        } else if (field.toUpperCase().equals(SECURE_ATTR_NAME)) {
+          isSecure = true;
         } else {
           parsedFields.add(field);
         }
       }
 
-      boolean isSecure = url.startsWith(HTTPS);
       String hostname = getCookieHost(url);
       List<Cookie> cookies = new ArrayList<>();
 
@@ -233,7 +241,14 @@ public class RoboCookieManager extends CookieManager {
         DateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
         return dateFormat.parse(date);
       } catch (ParseException e) {
-        return null;
+        // No-op. Try to parse additional date formats.
+      }
+
+      try {
+        DateFormat dateFormat = new SimpleDateFormat("EEE, dd-MMM-yyyy HH:mm:ss zzz");
+        return dateFormat.parse(date);
+      } catch (ParseException e) {
+        return null; // Was not parsed by any date formatter.
       }
     }
 
