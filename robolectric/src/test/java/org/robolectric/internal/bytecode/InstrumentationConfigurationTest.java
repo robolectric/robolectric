@@ -76,6 +76,7 @@ public class InstrumentationConfigurationTest {
     assertThat(baseConfig).isNotEqualTo(customConfig);
   }
 
+  @Test
   public void shouldNotInstrumentListedClasses() throws Exception {
     String instrumentName = "android.foo.bar";
     InstrumentationConfiguration customConfig = InstrumentationConfiguration.newBuilder().doNotInstrumentClass(instrumentName).build();
