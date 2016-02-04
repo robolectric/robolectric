@@ -1,5 +1,3 @@
-// Copyright 2015 Google Inc. All Rights Reserved.
-
 package org.robolectric.shadows;
 
 import android.icu.text.DateFormat;
