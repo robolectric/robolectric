@@ -1,9 +1,11 @@
 package org.robolectric.shadows;
 
 import android.telephony.CellInfo;
+import android.telephony.CellLocation;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import java.util.List;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
@@ -29,6 +31,7 @@ public class ShadowTelephonyManager {
 #if ($api >= 17)
   private List<CellInfo> allCellInfo;
 #end
+  private CellLocation cellLocation;
 
   @Implementation
   public void listen(PhoneStateListener listener, int events) {
@@ -174,4 +177,13 @@ public class ShadowTelephonyManager {
     this.allCellInfo = allCellInfo;
   }
 #end
+
+  @Implementation
+  public CellLocation getCellLocation() {
+    return this.cellLocation;
+  }
+
+  public void setCellLocation(CellLocation cellLocation) {
+    this.cellLocation = cellLocation;
+  }
 }
