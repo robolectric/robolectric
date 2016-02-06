@@ -30,6 +30,17 @@ public class ShadowDateUtilsTest {
   }
 
   @Test
+  @Config(sdk = {Build.VERSION_CODES.M})
+  public void formatDateTime_withCurrentYear_worksSinceM() {
+    Calendar calendar = Calendar.getInstance();
+    final int currentYear = calendar.get(Calendar.YEAR);
+    final long millisAtStartOfYear = getMillisAtStartOfYear();
+
+    String actual = DateUtils.formatDateTime(RuntimeEnvironment.application, millisAtStartOfYear, DateUtils.FORMAT_NUMERIC_DATE);
+    assertThat(actual).isEqualTo("1/1/" + currentYear);
+  }
+
+  @Test
   @Config(sdk = {
       Build.VERSION_CODES.JELLY_BEAN,
       Build.VERSION_CODES.JELLY_BEAN_MR1,
@@ -49,7 +60,9 @@ public class ShadowDateUtilsTest {
       Build.VERSION_CODES.JELLY_BEAN_MR1,
       Build.VERSION_CODES.JELLY_BEAN_MR2,
       Build.VERSION_CODES.KITKAT,
-      Build.VERSION_CODES.LOLLIPOP })
+      Build.VERSION_CODES.LOLLIPOP,
+      Build.VERSION_CODES.LOLLIPOP_MR1,
+      Build.VERSION_CODES.M})
   public void formatDateTime_withPastYear() {
       String actual = DateUtils.formatDateTime(RuntimeEnvironment.application, 1420099200000L, DateUtils.FORMAT_NUMERIC_DATE);
       assertThat(actual).isEqualTo("1/1/2015");
