@@ -1,9 +1,11 @@
 package org.robolectric.shadows;
 
+import android.telephony.CellLocation;
 import android.telephony.CellInfo;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import java.util.ArrayList;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -13,6 +15,7 @@ import org.robolectric.TestRunners;
 import static android.content.Context.TELEPHONY_SERVICE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
 import static org.robolectric.RuntimeEnvironment.*;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.internal.Shadow.newInstanceOf;
@@ -119,6 +122,15 @@ public class ShadowTelephonyManagerTest {
     assertEquals(TelephonyManager.PHONE_TYPE_CDMA, telephonyManager.getPhoneType());
     shadowTelephonyManager.setPhoneType( TelephonyManager.PHONE_TYPE_GSM );
     assertEquals(TelephonyManager.PHONE_TYPE_GSM, telephonyManager.getPhoneType());
+  }
+
+  @Test
+  public void shouldGiveCellLocation() {
+    TelephonyManager telephonyManager = (TelephonyManager) application.getSystemService(TELEPHONY_SERVICE);
+    assertThat(telephonyManager.getCellLocation()).isNull();
+    CellLocation mockCellLocation = mock(CellLocation.class);
+    shadowOf(telephonyManager).setCellLocation(mockCellLocation);
+    assertThat(telephonyManager.getCellLocation()).isEqualTo(mockCellLocation);
   }
 
   private class MyPhoneStateListener extends PhoneStateListener {
