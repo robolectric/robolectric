@@ -10,7 +10,7 @@ import com.google.android.gms.common.GooglePlayServicesUtil;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@Config(manifest = Config.NONE, shadows = {ShadowGooglePlayServicesUtil.class})
 public class ShadowGooglePlayServicesUtilTest {
 
   @Test
