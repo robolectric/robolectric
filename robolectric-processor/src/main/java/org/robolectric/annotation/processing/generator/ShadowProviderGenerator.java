@@ -27,12 +27,15 @@ public class ShadowProviderGenerator extends Generator {
   private final Messager messager;
   private final Elements elements;
   private final RobolectricModel model;
+  private final boolean shouldInstrumentPackages;
 
-  public ShadowProviderGenerator(RobolectricModel model, ProcessingEnvironment environment) {
+  public ShadowProviderGenerator(RobolectricModel model, ProcessingEnvironment environment, 
+      boolean shouldInstrumentPackages) {
     this.messager = environment.getMessager();
     this.elements = environment.getElementUtils();
     this.filer = environment.getFiler();
     this.model = model;
+    this.shouldInstrumentPackages = shouldInstrumentPackages;
   }
 
   @Override
@@ -130,7 +133,11 @@ public class ShadowProviderGenerator extends Generator {
 
       writer.println("  @Override");
       writer.println("  public String[] getProvidedPackageNames() {");
-      writer.println("    return new String[] {" + Joiner.on(",").join(model.getShadowedPackages()) + "};");
+      String providedPackages = "";
+      if (shouldInstrumentPackages) {
+        providedPackages = Joiner.on(",").join(model.getShadowedPackages());
+      }
+      writer.println("    return new String[] {" + providedPackages + "};");
       writer.println("  }");
 
       writer.println('}');
