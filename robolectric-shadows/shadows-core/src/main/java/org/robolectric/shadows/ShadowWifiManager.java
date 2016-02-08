@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import android.net.DhcpInfo;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
@@ -29,6 +30,7 @@ public class ShadowWifiManager {
   private List<ScanResult> scanResults;
   private final Map<Integer, WifiConfiguration> networkIdToConfiguredNetworks = new LinkedHashMap<>();
   private Pair<Integer, Boolean> lastEnabledNetwork;
+  private DhcpInfo dhcpInfo;
 
   @Implementation
   public boolean setWifiEnabled(boolean wifiEnabled) {
@@ -115,6 +117,11 @@ public class ShadowWifiManager {
     return true;
   }
 
+  @Implementation
+  public DhcpInfo getDhcpInfo() {
+    return dhcpInfo;
+  }
+
   public static void setSignalLevelInPercent(float level) {
     if (level < 0 || level > 1) {
       throw new IllegalArgumentException("level needs to be between 0 and 1");
@@ -128,6 +135,10 @@ public class ShadowWifiManager {
 
   public void setScanResults(List<ScanResult> scanResults) {
     this.scanResults = scanResults;
+  }
+
+  public void setDhcpInfo(DhcpInfo dhcpInfo) {
+    this.dhcpInfo = dhcpInfo;
   }
 
   public Pair<Integer, Boolean> getLastEnabledNetwork() {

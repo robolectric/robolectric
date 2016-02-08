@@ -1,15 +1,21 @@
 package org.robolectric.shadows;
 
+import android.telephony.CellLocation;
+import android.telephony.CellInfo;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
+import java.util.ArrayList;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 import org.robolectric.TestRunners;
 
 import static android.content.Context.TELEPHONY_SERVICE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
 import static org.robolectric.RuntimeEnvironment.*;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.internal.Shadow.newInstanceOf;
@@ -54,6 +60,31 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
+  public void shouldGiveSimOperatorName() {
+    TelephonyManager telephonyManager = (TelephonyManager) application.getSystemService(TELEPHONY_SERVICE);
+    ShadowTelephonyManager shadowTelephonyManager = shadowOf(telephonyManager);
+    shadowTelephonyManager.setSimOperatorName("SomeSimOperatorName");
+    assertEquals("SomeSimOperatorName", telephonyManager.getSimOperatorName());
+  }
+
+  @Test
+  public void shouldGiveNetworkType() {
+    TelephonyManager telephonyManager = (TelephonyManager) application.getSystemService(TELEPHONY_SERVICE);
+    ShadowTelephonyManager shadowTelephonyManager = shadowOf(telephonyManager);
+    shadowTelephonyManager.setNetworkType(TelephonyManager.NETWORK_TYPE_CDMA);
+    assertEquals(TelephonyManager.NETWORK_TYPE_CDMA, telephonyManager.getNetworkType());
+  }
+
+  @Test @Config(sdk = 17)
+  public void shouldGiveAllCellInfo() {
+    TelephonyManager telephonyManager = (TelephonyManager) application.getSystemService(TELEPHONY_SERVICE);
+    ShadowTelephonyManager shadowTelephonyManager = shadowOf(telephonyManager);
+    ArrayList<CellInfo> allCellInfo = new ArrayList<CellInfo>();
+    shadowTelephonyManager.setAllCellInfo(allCellInfo);
+    assertEquals(allCellInfo, telephonyManager.getAllCellInfo());
+  }
+
+  @Test
   public void shouldGiveNetworkCountryIso() {
     TelephonyManager telephonyManager = (TelephonyManager) application.getSystemService(TELEPHONY_SERVICE);
     ShadowTelephonyManager shadowTelephonyManager = shadowOf(telephonyManager);
@@ -76,7 +107,7 @@ public class ShadowTelephonyManagerTest {
     shadowTelephonyManager.setLine1Number("123-244-2222");
     assertEquals("123-244-2222", telephonyManager.getLine1Number());
   }
-  
+
   @Test(expected = SecurityException.class)
   public void getDeviceId_shouldThrowSecurityExceptionWhenReadPhoneStatePermissionNotGranted() throws Exception {
     shadowManager.setReadPhoneStatePermission(false);
@@ -91,6 +122,15 @@ public class ShadowTelephonyManagerTest {
     assertEquals(TelephonyManager.PHONE_TYPE_CDMA, telephonyManager.getPhoneType());
     shadowTelephonyManager.setPhoneType( TelephonyManager.PHONE_TYPE_GSM );
     assertEquals(TelephonyManager.PHONE_TYPE_GSM, telephonyManager.getPhoneType());
+  }
+
+  @Test
+  public void shouldGiveCellLocation() {
+    TelephonyManager telephonyManager = (TelephonyManager) application.getSystemService(TELEPHONY_SERVICE);
+    assertThat(telephonyManager.getCellLocation()).isNull();
+    CellLocation mockCellLocation = mock(CellLocation.class);
+    shadowOf(telephonyManager).setCellLocation(mockCellLocation);
+    assertThat(telephonyManager.getCellLocation()).isEqualTo(mockCellLocation);
   }
 
   private class MyPhoneStateListener extends PhoneStateListener {

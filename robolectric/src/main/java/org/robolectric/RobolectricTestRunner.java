@@ -96,9 +96,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
         dependencyResolver = new LocalDependencyResolver(new File(dependencyDir));
       } else {
         File cacheDir = new File(new File(System.getProperty("java.io.tmpdir")), "robolectric");
-        cacheDir.mkdir();
 
-        if (cacheDir.exists()) {
+        if (cacheDir.exists() || cacheDir.mkdir()) {
           Logger.info("Dependency cache location: %s", cacheDir.getAbsolutePath());
           dependencyResolver = new CachedDependencyResolver(new MavenDependencyResolver(), cacheDir, 60 * 60 * 24 * 1000);
         } else {
