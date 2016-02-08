@@ -2,7 +2,13 @@ package org.robolectric.shadows;
 
 import android.app.Activity;
 import android.graphics.Typeface;
-import android.text.*;
+import android.text.Editable;
+import android.text.InputFilter;
+import android.text.InputType;
+import android.text.Selection;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
+import android.text.TextWatcher;
 import android.text.method.ArrowKeyMovementMethod;
 import android.text.method.MovementMethod;
 import android.text.method.PasswordTransformationMethod;
@@ -31,7 +37,12 @@ import java.util.Random;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
