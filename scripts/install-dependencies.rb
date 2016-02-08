@@ -8,7 +8,7 @@
 # Assumptions:
 #  1. You've got one or more Android SDKs and Google APIs installed locally.
 #  2. Your ANDROID_HOME environment variable points to the Android SDK install directory.
-#  3. You have installed the Android Repository and Google Repository libraries from the SDK installer.
+#  3. You have installed the Android Support Repository and Google Repository libraries from the SDK installer.
 #
 require 'tmpdir'
 
