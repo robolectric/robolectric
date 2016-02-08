@@ -20,6 +20,7 @@ public class RoboCookieManager extends CookieManager {
     private static final String HTTP = "http://";
     private static final String HTTPS = "https://";
     private static final String EXPIRATION_FIELD_NAME = "Expires";
+    private static final String SECURE_ATTR_NAME = "SECURE";
     private final List<Cookie> store = new ArrayList<>();
     private boolean accept;
 
@@ -63,6 +64,11 @@ public class RoboCookieManager extends CookieManager {
 #end
 
     public String getCookie(String url) {
+      // Return null value for empty url
+      if (url == null || url.equals("")) {
+        return null;
+      }
+
       try {
         url = URLDecoder.decode(url, "UTF-8");
       } catch (UnsupportedEncodingException e) {
@@ -75,7 +81,7 @@ public class RoboCookieManager extends CookieManager {
       } else if (url.contains("//.")) {
         matchedCookies = filter(url.substring(url.indexOf("//.") + 3));
       } else {
-        matchedCookies = filter(getCookieHost(url));
+        matchedCookies = filter(getCookieHost(url), url.startsWith(HTTPS));
       }
       if (matchedCookies.isEmpty()) {
         return null;
@@ -105,10 +111,15 @@ public class RoboCookieManager extends CookieManager {
     }
 
     private List<Cookie> filter(String domain) {
+      return filter(domain, false);
+    }
+
+    private List<Cookie> filter(String domain, boolean isSecure) {
       List<Cookie> matchedCookies = new ArrayList<>();
       Date now = new Date();
       for (Cookie cookie : store) {
-        if (cookie.isSameHost(domain)) {
+        if (cookie.isSameHost(domain) 
+          && (isSecure == cookie.isSecure() || isSecure)) {
             matchedCookies.add(cookie);
         }
       }
@@ -180,11 +191,14 @@ public class RoboCookieManager extends CookieManager {
 
       List<String> parsedFields = new ArrayList<>();
       Date expiration = null;
+      boolean isSecure = false;
 
       for (String field : fields) {
         field = field.trim();
         if (field.startsWith(EXPIRATION_FIELD_NAME)) {
           expiration = getExpiration(field);
+        } else if (field.toUpperCase().equals(SECURE_ATTR_NAME)) {
+          isSecure = true;
         } else {
           parsedFields.add(field);
         }
@@ -194,7 +208,9 @@ public class RoboCookieManager extends CookieManager {
       List<Cookie> cookies = new ArrayList<>();
 
       for (String cookie : parsedFields) {
-        cookies.add(new Cookie(hostname, cookie, expiration));
+        if (expiration == null || expiration.compareTo(new Date()) >= 0) {
+          cookies.add(new Cookie(hostname, isSecure, cookie, expiration));
+        }
       }
 
       return cookies;
@@ -225,7 +241,14 @@ public class RoboCookieManager extends CookieManager {
         DateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
         return dateFormat.parse(date);
       } catch (ParseException e) {
-        return null;
+        // No-op. Try to parse additional date formats.
+      }
+
+      try {
+        DateFormat dateFormat = new SimpleDateFormat("EEE, dd-MMM-yyyy HH:mm:ss zzz");
+        return dateFormat.parse(date);
+      } catch (ParseException e) {
+        return null; // Was not parsed by any date formatter.
       }
     }
 
@@ -234,9 +257,11 @@ public class RoboCookieManager extends CookieManager {
       private final String mValue;
       private final Date mExpiration;
       private final String mHostname;
+      private final boolean mIsSecure;
 
-      public Cookie(String hostname, String cookie, Date expiration) {
+      public Cookie(String hostname, boolean isSecure, String cookie, Date expiration) {
         mHostname = hostname;
+        mIsSecure = isSecure;
         mExpiration = expiration;
 
         int equalsIndex = cookie.indexOf("=");
@@ -267,6 +292,10 @@ public class RoboCookieManager extends CookieManager {
 
       public boolean isSameHost(String host) {
         return mHostname.endsWith(host);
+      }
+
+      public boolean isSecure() {
+        return mIsSecure;
       }
     }
   }

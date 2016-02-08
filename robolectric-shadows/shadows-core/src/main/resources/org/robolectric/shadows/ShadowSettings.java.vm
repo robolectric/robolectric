@@ -59,6 +59,13 @@ public class ShadowSettings {
       }
     }
 
+#if ($api >= 17)
+    @Implementation
+    public static String getStringForUser(ContentResolver cr, String name, int userHandle) {
+      return getString(cr, name);
+    }
+#end
+
     @Implementation
     public static boolean putLong(ContentResolver cr, String name, long value) {
       get(cr).put(name, value);

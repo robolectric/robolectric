@@ -1,45 +1,30 @@
 package org.robolectric.internal.bytecode;
 
 import android.R;
-import org.robolectric.internal.ShadowedObject;
-import org.robolectric.internal.ShadowProvider;
-import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.internal.dependency.DependencyJar;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.internal.SdkConfig;
-import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.TestLifecycle;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.internal.fakes.RoboExtendedResponseCache;
-import org.robolectric.internal.fakes.RoboCharsets;
-import org.robolectric.internal.fakes.RoboResponseSource;
 import org.robolectric.annotation.internal.DoNotInstrument;
 import org.robolectric.annotation.internal.Instrument;
-import org.robolectric.internal.ParallelUniverseInterface;
+import org.robolectric.internal.*;
+import org.robolectric.internal.dependency.DependencyJar;
+import org.robolectric.internal.fakes.RoboCharsets;
+import org.robolectric.internal.fakes.RoboExtendedResponseCache;
+import org.robolectric.internal.fakes.RoboResponseSource;
+import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.res.builder.XmlBlock;
 import org.robolectric.util.TempDirectory;
 import org.robolectric.util.Transcript;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.ServiceLoader;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Configuration rules for {@link org.robolectric.internal.bytecode.InstrumentingClassLoader}.
@@ -51,18 +36,18 @@ public class InstrumentationConfiguration {
     private final Collection<String> instrumentedPackages = new HashSet<>();
     private final Collection<MethodRef> interceptedMethods = new HashSet<>();
     private final Map<String, String> classNameTranslations = new HashMap<>();
-    private final Collection<String> classesToNotAquire = new HashSet<>();
-    private final Collection<String> packagesToNotAquire = new HashSet<>();
+    private final Collection<String> classesToNotAcquire = new HashSet<>();
+    private final Collection<String> packagesToNotAcquire = new HashSet<>();
     private final Collection<String> instrumentedClasses = new HashSet<>();
     private final Collection<String> classesToNotInstrument = new HashSet<>();
 
     public Builder doNotAquireClass(String className) {
-      this.classesToNotAquire.add(className);
+      this.classesToNotAcquire.add(className);
       return this;
     }
 
     public Builder doNotAquirePackage(String packageName) {
-      this.packagesToNotAquire.add(packageName);
+      this.packagesToNotAcquire.add(packageName);
       return this;
     }
 
@@ -115,7 +100,7 @@ public class InstrumentationConfiguration {
 
     public InstrumentationConfiguration build() {
       interceptedMethods.addAll(Intrinsics.allRefs());
-      classesToNotAquire.addAll(stringify(
+      classesToNotAcquire.addAll(stringify(
           TestLifecycle.class,
           ShadowWrangler.class,
           AndroidManifest.class,
@@ -144,7 +129,7 @@ public class InstrumentationConfiguration {
           ShadowedObject.class,
           TempDirectory.class
       ));
-      packagesToNotAquire.addAll(Arrays.asList(
+      packagesToNotAcquire.addAll(Arrays.asList(
           "java.",
           "javax.",
           "sun.",
@@ -167,7 +152,7 @@ public class InstrumentationConfiguration {
         instrumentedPackages.addAll(Arrays.asList(provider.getProvidedPackageNames()));
       }
 
-      return new InstrumentationConfiguration(classNameTranslations, interceptedMethods, instrumentedPackages, instrumentedClasses, classesToNotAquire, packagesToNotAquire, classesToNotInstrument);
+      return new InstrumentationConfiguration(classNameTranslations, interceptedMethods, instrumentedPackages, instrumentedClasses, classesToNotAcquire, packagesToNotAcquire, classesToNotInstrument);
     }
   }
 
@@ -230,7 +215,14 @@ public class InstrumentationConfiguration {
     // Android SDK code almost universally refers to com.android.internal.R, except
     // when refering to android.R.stylable, as in HorizontalScrollView. arghgh.
     // See https://github.com/robolectric/robolectric/issues/521
-    if (name.equals("android.R$styleable")) return true;
+    if (name.equals("android.R$styleable")) {
+      return true;
+    }
+
+    // Hack. Fixes https://github.com/robolectric/robolectric/issues/1864
+    if (name.equals("javax.net.ssl.DistinguishedNameParser")) {
+      return true;
+    }
 
     for (String packageName : packagesToNotAquire) {
       if (name.startsWith(packageName)) return false;
