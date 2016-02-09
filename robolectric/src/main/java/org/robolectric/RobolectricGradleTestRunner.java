@@ -23,7 +23,7 @@ public class RobolectricGradleTestRunner extends RobolectricTestRunner {
   }
 
   @Override
-  protected AndroidManifest getAppManifest(Config config) {
+  protected AndroidManifest getAppManifest(final Config config) {
     if (config.constants() == Void.class) {
       Logger.error("Field 'constants' not specified in @Config annotation");
       Logger.error("This is required when using RobolectricGradleTestRunner!");
@@ -67,7 +67,12 @@ public class RobolectricGradleTestRunner extends RobolectricTestRunner {
     Logger.debug("   Robolectric res directory: " + res.getPath());
     Logger.debug("   Robolectric manifest path: " + manifest.getPath());
     Logger.debug("    Robolectric package name: " + packageName);
-    return new AndroidManifest(manifest, res, assets, packageName);
+    return new AndroidManifest(manifest, res, assets, packageName) {
+      @Override
+      public String getRClassName() throws Exception {
+        return config.constants().getPackage().getName().concat(".R");
+      }
+    };
   }
 
   private static String getType(Config config) {
