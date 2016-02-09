@@ -11,7 +11,7 @@ import org.robolectric.annotation.Implements;
 @Implements(value = StaticLayout.class, looseSignatures = true)
 public class ShadowStaticLayout {
 
-#if ($api == 21 && $api == 22)
+#if ($api == 21 || $api == 22)
   @Implementation @HiddenApi
   public static int[] nLineBreakOpportunities(String locale, char[] text, int length, int[] recycle) {
     return new int[] {-1};
