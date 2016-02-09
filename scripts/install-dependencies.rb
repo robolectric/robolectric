@@ -8,7 +8,7 @@
 # Assumptions:
 #  1. You've got one or more Android SDKs and Google APIs installed locally.
 #  2. Your ANDROID_HOME environment variable points to the Android SDK install directory.
-#  3. You have installed the Android Repository and Google Repository libraries from the SDK installer.
+#  3. You have installed the Android Support Repository and Google Repository libraries from the SDK installer.
 #
 require 'tmpdir'
 
@@ -20,7 +20,7 @@ def concat_maven_file_segments(repo_root_dir, group_id, artifact_id, version, ex
   # Generate dependency path segments
   dep_path_segments = []  
   artifact_file_name = "#{artifact_id}-#{version}.#{extension}"
-    # Start with the root repo dir
+  # Start with the root repo dir
   dep_path_segments << repo_root_dir
 
   # Add the split group id segments into the path segments
@@ -104,9 +104,13 @@ ANDROID_SUPPORT_GROUP_ID = "com.android.support"
 MULTIDEX_ARTIFACT_ID = "multidex"
 SUPPORT_V4_ARTIFACT_ID = "support-v4"
 APPCOMPAT_V7_ARTIFACT_ID = "appcompat-v7"
-SUPPORT_LIBRARY_VERSION = "22.2.1"
-MULTIDEX_VERSION = "1.0.0"
 INTERNAL_IMPL_ARTIFACT_ID = "internal_impl"
+
+# Android Support library versions (plus trailing version)
+SUPPORT_LIBRARY_TRAILING_VERSION = "22.2.1"
+SUPPORT_LIBRARY_VERSION = "23.1.1"
+MULTIDEX_TRAILING_VERSION = "1.0.0"
+MULTIDEX_VERSION = "1.0.1"
 
 # Play Services constants
 PLAY_SERVICES_GROUP_ID = "com.google.android.gms"
@@ -135,7 +139,11 @@ MAPS_REVISION_VERSION = "4"
 # Mavenize all dependencies
 install_map(MAPS_GROUP_ID, MAPS_ARTIFACT_ID, MAPS_API_VERSION, MAPS_REVISION_VERSION)
 
+install_aar(ANDROID_REPO, ANDROID_SUPPORT_GROUP_ID, MULTIDEX_ARTIFACT_ID, MULTIDEX_TRAILING_VERSION)
+
 install_aar(ANDROID_REPO, ANDROID_SUPPORT_GROUP_ID, MULTIDEX_ARTIFACT_ID, MULTIDEX_VERSION)
+
+install_aar(ANDROID_REPO, ANDROID_SUPPORT_GROUP_ID, APPCOMPAT_V7_ARTIFACT_ID, SUPPORT_LIBRARY_TRAILING_VERSION)
 
 install_aar(ANDROID_REPO, ANDROID_SUPPORT_GROUP_ID, APPCOMPAT_V7_ARTIFACT_ID, SUPPORT_LIBRARY_VERSION)
 
@@ -144,6 +152,11 @@ install_aar(GOOGLE_REPO, PLAY_SERVICES_GROUP_ID, PLAY_SERVICES_LEGACY, PLAY_SERV
 install_aar(GOOGLE_REPO, PLAY_SERVICES_GROUP_ID, PLAY_SERVICES_BASEMENT, PLAY_SERVICES_VERSION)
 
 install_aar(GOOGLE_REPO, PLAY_SERVICES_GROUP_ID, PLAY_SERVICES_BASE, PLAY_SERVICES_VERSION)
+
+install_aar(ANDROID_REPO, ANDROID_SUPPORT_GROUP_ID, SUPPORT_V4_ARTIFACT_ID, SUPPORT_LIBRARY_TRAILING_VERSION) do |dir|
+
+  install_jar(ANDROID_SUPPORT_GROUP_ID, INTERNAL_IMPL_ARTIFACT_ID, SUPPORT_LIBRARY_TRAILING_VERSION, "#{dir}/libs/#{INTERNAL_IMPL_ARTIFACT_ID}-#{SUPPORT_LIBRARY_TRAILING_VERSION}.jar")
+end
 
 install_aar(ANDROID_REPO, ANDROID_SUPPORT_GROUP_ID, SUPPORT_V4_ARTIFACT_ID, SUPPORT_LIBRARY_VERSION) do |dir|
 

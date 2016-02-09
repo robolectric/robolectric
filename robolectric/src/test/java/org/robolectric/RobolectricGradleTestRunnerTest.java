@@ -102,6 +102,13 @@ public class RobolectricGradleTestRunnerTest {
     runner.getAppManifest(runner.getConfig(NoConstantsTest.class.getMethod("withoutAnnotation")));
   }
 
+  @Test
+  public void rClassShouldBeInTheSamePackageAsBuildConfig() throws Exception {
+    RobolectricGradleTestRunner runner = new RobolectricGradleTestRunner(RFileTest.class);
+    AndroidManifest manifest = runner.getAppManifest(runner.getConfig(RFileTest.class.getMethod("withoutAnnotation")));
+    assertThat(manifest.getRClass().getPackage().getName()).isEqualTo("org.robolectric.gradleapp");
+  }
+
   private void delete(File file) {
     final File[] files = file.listFiles();
     if (files != null) {
@@ -140,6 +147,14 @@ public class RobolectricGradleTestRunnerTest {
 
     @Test
     public void withoutAnnotation() throws Exception {
+    }
+  }
+
+  @Ignore
+  @Config(constants = org.robolectric.gradleapp.BuildConfig.class)
+  public static class RFileTest {
+    @Test
+    public void withoutAnnotation() {
     }
   }
 
