@@ -343,6 +343,25 @@ public class ShadowBitmap {
     colors[y * getWidth() + x] = color;
   }
 
+  /**
+   * Note that this method will return a RuntimeException unless:
+   * - {@code pixels} has the same length as the number of pixels of the bitmap.
+   * - {@code x = 0}
+   * - {@code y = 0}
+   * - {@code width} and {@code height} height match the current bitmap's dimensions.
+   */
+  @Implementation
+  public void getPixels(int[] pixels, int offset, int stride, int x, int y, int width, int height) {
+    if (x != 0 ||
+        y != 0 ||
+        width != getWidth() ||
+        height != getHeight() ||
+        pixels.length != colors.length) {
+      throw new RuntimeException("Not implemented.");
+    }
+    System.arraycopy(colors, 0, pixels, 0, colors.length);
+  }
+
   @Implementation
   public int getRowBytes() {
     return getBytesPerPixel(config) * getWidth();
