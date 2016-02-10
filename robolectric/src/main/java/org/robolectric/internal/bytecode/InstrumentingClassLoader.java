@@ -1,9 +1,5 @@
 package org.robolectric.internal.bytecode;
 
-import java.lang.invoke.CallSite;
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
@@ -26,14 +22,18 @@ import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
-import org.robolectric.internal.ShadowedObject;
+import org.objectweb.asm.tree.VarInsnNode;
 import org.robolectric.internal.Shadow;
 import org.robolectric.internal.ShadowConstants;
-import org.objectweb.asm.tree.VarInsnNode;
+import org.robolectric.internal.ShadowedObject;
 import org.robolectric.util.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.invoke.CallSite;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -457,12 +457,18 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
         classNode.methods.add(directCallConstructor);
       }
 
-      // TODO: Do not override final #equals and #hashCode for all classes
-      if (!isEnum() && !classNode.name.equals("android/icu/text/DateFormat$Field")) {
-        instrumentSpecial(foundMethods, "equals", "(Ljava/lang/Object;)Z");
-        instrumentSpecial(foundMethods, "hashCode", "()I");
-      }
-      instrumentSpecial(foundMethods, "toString", "()Ljava/lang/String;");
+
+      instrumentSpecial(classNode, foundMethods, "equals", "(Ljava/lang/Object;)Z");
+      instrumentSpecial(classNode, foundMethods, "hashCode", "()I");
+      instrumentSpecial(classNode, foundMethods, "toString", "()Ljava/lang/String;");
+
+//
+//      // TODO: Do not override final #equals and #hashCode for all classes
+//      if (!isEnum() && !classNode.name.equals("android/icu/text/DateFormat$Field")) {
+//        instrumentSpecial(foundMethods, "equals", "(Ljava/lang/Object;)Z");
+//        instrumentSpecial(foundMethods, "hashCode", "()I");
+//      }
+//      instrumentSpecial(foundMethods, "toString", "()Ljava/lang/String;");
 
       {
         MethodNode initMethodNode = new MethodNode(ACC_PROTECTED, ROBO_INIT_METHOD_NAME, "()V", null, null);
@@ -503,18 +509,50 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
       }
     }
 
+    private boolean isOverridingFinalMethod(ClassNode classNode, String methodName, String methodSignature) {
+      while(true) {
+        List<MethodNode> methods = new ArrayList<>(classNode.methods);
+
+        for (MethodNode method : methods) {
+          if(method.name.equals(methodName) && method.desc.equals(methodSignature)) {
+            if ((method.access & ACC_FINAL) != 0) {
+              return true;
+            }
+          }
+        }
+
+        if(classNode.superName == null) {
+          return false;
+        }
+
+        try {
+          byte[] byteCode = getByteCode(classNode.superName);
+          ClassReader classReader = new ClassReader(byteCode);
+          classNode = new ClassNode();
+          classReader.accept(classNode, 0);
+        } catch (ClassNotFoundException e) {
+          e.printStackTrace();
+        }
+
+      }
+    }
+
     private boolean isSyntheticAccessorMethod(MethodNode method) {
       return (method.access & ACC_SYNTHETIC) != 0;
     }
 
-    private void instrumentSpecial(Set<String> foundMethods, final String methodName, String methodDesc) {
+    private void instrumentSpecial(ClassNode classNode, Set<String> foundMethods, final String methodName, String methodDesc) {
+      if (isOverridingFinalMethod(classNode, methodName, methodDesc)) {
+        return;
+      }
+
       if (!foundMethods.contains(methodName + methodDesc)) {
         MethodNode methodNode = new MethodNode(ACC_PUBLIC, methodName, methodDesc, null, null);
         MyGenerator m = new MyGenerator(methodNode);
         m.invokeMethod("java/lang/Object", methodNode);
         m.returnValue();
         m.endMethod();
-        classNode.methods.add(methodNode);
+        this.classNode.methods.add(methodNode);
         instrumentNormalMethod(methodNode);
       }
     }
