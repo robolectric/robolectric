@@ -8,13 +8,19 @@ import org.robolectric.annotation.Implements;
 /**
  * Shadow for {@link android.text.StaticLayout}.
  */
-@Implements(StaticLayout.class)
+@Implements(value = StaticLayout.class, looseSignatures = true)
 public class ShadowStaticLayout {
 
-#if ($api >= 21)
+#if ($api == 21 || $api == 22)
   @Implementation @HiddenApi
   public static int[] nLineBreakOpportunities(String locale, char[] text, int length, int[] recycle) {
     return new int[] {-1};
+  }
+#elseif ($api >= 23)
+  @Implementation @HiddenApi
+  public static int nComputeLineBreaks(Object nativePtr, Object recycle,
+            Object recycleBreaks, Object recycleWidths, Object recycleFlags, Object recycleLength) {
+    return 1;
   }
 #end
 }
