@@ -229,6 +229,28 @@ public class ShadowBitmapTest {
     assertThat(shadowOf(bitmap).getCreatedFromColors()).isNull();
   }
 
+  @Test
+  public void testGetPixels() {
+    // Create a dummy bitmap.
+    Bitmap bmp = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888);
+    for (int y = 0; y < bmp.getHeight(); ++y) {
+      for (int x = 0; x < bmp.getWidth(); ++x) {
+        bmp.setPixel(x, y, 0xff << 24 + x << 16 + y << 8);
+      }
+    }
+
+    // Use getPixels to get pixels as an array (getPixels was the missing Shadowed Function).
+    int[] pixels = new int[bmp.getWidth() * bmp.getHeight()];
+    bmp.getPixels(pixels, 0, bmp.getWidth(), 0, 0, bmp.getWidth(), bmp.getHeight());
+
+    // Every entry should match regardless of accessing it by getPixel vs getPixels.
+    for (int y = 0; y < bmp.getHeight(); ++y) {
+      for (int x = 0; x < bmp.getWidth(); ++x) {
+        assertThat(bmp.getPixel(x, y)).isEqualTo(pixels[y * bmp.getWidth() + x]);
+      }
+    }
+  }
+
   @Test(expected = IllegalStateException.class)
   public void shouldThrowExceptionForSetPixelOnImmutableBitmap() {
     Bitmap bitmap = Bitmap.createBitmap(new int[] { 1 }, 1, 1, Bitmap.Config.ARGB_8888);
