@@ -1,10 +1,28 @@
 package org.robolectric.internal.bytecode;
 
-import org.objectweb.asm.*;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.FieldVisitor;
+import org.objectweb.asm.Handle;
+import org.objectweb.asm.Label;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.commons.JSRInlinerAdapter;
 import org.objectweb.asm.commons.Method;
-import org.objectweb.asm.tree.*;
+import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.FieldInsnNode;
+import org.objectweb.asm.tree.FieldNode;
+import org.objectweb.asm.tree.InsnList;
+import org.objectweb.asm.tree.InsnNode;
+import org.objectweb.asm.tree.InvokeDynamicInsnNode;
+import org.objectweb.asm.tree.LdcInsnNode;
+import org.objectweb.asm.tree.MethodInsnNode;
+import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.tree.TypeInsnNode;
+import org.objectweb.asm.tree.VarInsnNode;
 import org.robolectric.internal.Shadow;
 import org.robolectric.internal.ShadowConstants;
 import org.robolectric.internal.ShadowedObject;
@@ -19,10 +37,18 @@ import java.lang.invoke.MethodType;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
+import java.util.Set;
 
 import static java.lang.invoke.MethodType.methodType;
-import static org.objectweb.asm.Type.*;
+import static org.objectweb.asm.Type.ARRAY;
+import static org.objectweb.asm.Type.OBJECT;
+import static org.objectweb.asm.Type.VOID;
 import static org.robolectric.util.Util.readBytes;
 
 /**
