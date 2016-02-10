@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.media.AudioManager;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;
@@ -38,6 +39,7 @@ public class ShadowAudioManager {
   private boolean wiredHeadsetOn;
   private boolean bluetoothA2dpOn;
   private boolean isSpeakerphoneOn;
+  private boolean isMicrophoneMuted = false;
 
   public ShadowAudioManager() {
     for (int stream : ALL_STREAMS) {
@@ -150,6 +152,16 @@ public class ShadowAudioManager {
   @Implementation
   public boolean isSpeakerphoneOn() {
     return isSpeakerphoneOn;
+  }
+
+  @Implementation
+  public void setMicrophoneMute(boolean on) {
+    isMicrophoneMuted = on;
+  }
+
+  @Implementation
+  public boolean isMicrophoneMute() {
+    return isMicrophoneMuted;
   }
 
   public AudioFocusRequest getLastAudioFocusRequest() {
