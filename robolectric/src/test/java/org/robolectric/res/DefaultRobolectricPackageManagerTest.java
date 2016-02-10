@@ -18,6 +18,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
