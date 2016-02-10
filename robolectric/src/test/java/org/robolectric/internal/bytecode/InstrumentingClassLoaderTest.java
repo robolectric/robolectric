@@ -1,6 +1,7 @@
 package org.robolectric.internal.bytecode;
 
 import android.os.Build;
+
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.robolectric.RobolectricTestRunner;

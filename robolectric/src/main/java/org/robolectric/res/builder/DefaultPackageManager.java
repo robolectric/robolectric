@@ -6,16 +6,33 @@ import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
+import android.content.pm.PackageInstaller;
 import android.content.pm.PackageManager;
 import android.content.pm.ProviderInfo;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.PatternMatcher;
 import android.util.Pair;
+
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
+
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.ShadowsAdapter;
+import org.robolectric.manifest.ActivityData;
+import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.manifest.BroadcastReceiverData;
+import org.robolectric.manifest.ContentProviderData;
+import org.robolectric.manifest.IntentFilterData;
+import org.robolectric.manifest.ServiceData;
+import org.robolectric.res.ResName;
+import org.robolectric.res.ResourceIndex;
+import org.robolectric.res.ResourceLoader;
+import org.robolectric.util.TempDirectory;
 
 import java.io.File;
 import java.nio.file.Paths;
@@ -30,18 +47,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-
-import org.robolectric.ShadowsAdapter;
-import org.robolectric.manifest.ActivityData;
-import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.manifest.BroadcastReceiverData;
-import org.robolectric.manifest.ContentProviderData;
-import org.robolectric.manifest.IntentFilterData;
-import org.robolectric.manifest.ServiceData;
-import org.robolectric.res.ResName;
-import org.robolectric.res.ResourceIndex;
-import org.robolectric.res.ResourceLoader;
-import org.robolectric.util.TempDirectory;
 
 public class DefaultPackageManager extends StubPackageManager implements RobolectricPackageManager {
 
@@ -123,6 +128,11 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
   private Map<Pair<String, Integer>, Drawable> drawables = new LinkedHashMap<>();
   private boolean queryIntentImplicitly = false;
   private HashMap<String, Integer> applicationEnabledSettingMap = new HashMap<>();
+
+  @Override
+  public PackageInstaller getPackageInstaller() {
+    return new RoboPackageInstaller();
+  }
 
   @Override
   public PackageInfo getPackageInfo(String packageName, int flags) throws NameNotFoundException {
@@ -726,5 +736,27 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
       }
     }
     return bundle;
+  }
+
+  private class RoboPackageInstaller extends PackageInstaller {
+    public RoboPackageInstaller() {
+      super(RuntimeEnvironment.application, DefaultPackageManager.this, null, null, -1);
+    }
+
+    @Override
+    public List<SessionInfo> getAllSessions() {
+      return ImmutableList.copyOf(Iterables.transform(packageInfos.keySet(), packageNameToSessionInfo()));
+    }
+
+    private Function<String, PackageInstaller.SessionInfo> packageNameToSessionInfo() {
+      return new Function<String, PackageInstaller.SessionInfo>() {
+        @Override
+        public PackageInstaller.SessionInfo apply(String packageName) {
+          PackageInstaller.SessionInfo sessionInfo = new PackageInstaller.SessionInfo();
+          sessionInfo.appPackageName = packageName;
+          return sessionInfo;
+        }
+      };
+    }
   }
 }
