@@ -33,7 +33,7 @@
     <dependency>
       <groupId>org.robolectric</groupId>
       <artifactId>android-all</artifactId>
-      <version>5.0.0_r2-robolectric-1-render</version>
+      <version>5.1.1_r9-robolectric-0-render</version>
     </dependency>
 
     <dependency>
@@ -94,6 +94,12 @@
     </dependency>
 
     <dependency>
+      <groupId>com.thoughtworks.xstream</groupId>
+      <artifactId>xstream</artifactId>
+      <version>1.4.8</version>
+    </dependency>
+
+    <dependency>
       <groupId>com.intellij</groupId>
       <artifactId>annotations</artifactId>
     </dependency>
@@ -132,7 +138,7 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <argLine>-Xmx2048m -XX:MaxPermSize=1024m</argLine>
+          <argLine>-Xms1024m -Xmx2048m -XX:MaxPermSize=1024m</argLine>
         </configuration>
       </plugin>
 

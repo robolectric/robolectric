@@ -164,4 +164,22 @@ public class ShadowAudioManagerTest {
     audioManager.setRingerMode(AudioManager.RINGER_MODE_NORMAL + 1);
     assertThat(audioManager.getRingerMode()).isEqualTo(AudioManager.RINGER_MODE_VIBRATE);
   }
+
+  @Test
+  public void getMode_default() {
+    assertThat(audioManager.getMode()).isEqualTo(AudioManager.MODE_NORMAL);
+  }
+
+  @Test
+  public void setMode_shouldSetAudioMode() {
+    audioManager.setMode(AudioManager.MODE_RINGTONE);
+    assertThat(audioManager.getMode()).isEqualTo(AudioManager.MODE_RINGTONE);
+  }
+
+  @Test
+  public void isSpeakerphoneOn_shouldReturnSpeakerphoneState() {
+    assertThat(audioManager.isSpeakerphoneOn()).isFalse();
+    audioManager.setSpeakerphoneOn(true);
+    assertThat(audioManager.isSpeakerphoneOn()).isTrue();
+  }
 }

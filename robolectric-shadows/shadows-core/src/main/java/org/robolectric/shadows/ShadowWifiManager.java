@@ -21,13 +21,13 @@ import java.util.Map;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(WifiManager.class)
 public class ShadowWifiManager {
-  private static float sSignalLevelInPercent=1f;
+  private static float sSignalLevelInPercent = 1f;
   private boolean accessWifiStatePermission = true;
   private boolean wifiEnabled = true;
+  private boolean wasSaved = false;
   private WifiInfo wifiInfo;
   private List<ScanResult> scanResults;
-  private Map<Integer, WifiConfiguration> networkIdToConfiguredNetworks = new LinkedHashMap<>();
-  public boolean wasSaved;
+  private final Map<Integer, WifiConfiguration> networkIdToConfiguredNetworks = new LinkedHashMap<>();
   private Pair<Integer, Boolean> lastEnabledNetwork;
 
   @Implementation
@@ -74,13 +74,6 @@ public class ShadowWifiManager {
     return networkId;
   }
 
-  private WifiConfiguration makeCopy(WifiConfiguration config, int networkId) {
-    WifiConfiguration copy = Shadows.shadowOf(config).copy();
-    copy.networkId = networkId;
-    return copy;
-  }
-
-
   @Implementation
   public int updateNetwork(WifiConfiguration config) {
     if (config == null || config.networkId < 0) {
@@ -113,27 +106,24 @@ public class ShadowWifiManager {
   }
 
   @Implementation
-  public static int calculateSignalLevel (int rssi, int numLevels)
-  {
-    return (int)(sSignalLevelInPercent*(numLevels-1));
+  public static int calculateSignalLevel(int rssi, int numLevels) {
+    return (int) (sSignalLevelInPercent * (numLevels - 1));
+  }
+
+  @Implementation
+  public boolean startScan() {
+    return true;
   }
 
   public static void setSignalLevelInPercent(float level) {
     if (level < 0 || level > 1) {
-      throw new IllegalArgumentException(
-          "level needs to be between 0 and 1");
+      throw new IllegalArgumentException("level needs to be between 0 and 1");
     }
     sSignalLevelInPercent = level;
   }
 
   public void setAccessWifiStatePermission(boolean accessWifiStatePermission) {
     this.accessWifiStatePermission = accessWifiStatePermission;
-  }
-
-  private void checkAccessWifiStatePermission() {
-    if (!accessWifiStatePermission) {
-      throw new SecurityException();
-    }
   }
 
   public void setScanResults(List<ScanResult> scanResults) {
@@ -144,6 +134,21 @@ public class ShadowWifiManager {
     return lastEnabledNetwork;
   }
 
+  public boolean wasConfigurationSaved() {
+    return wasSaved;
+  }
+
+  private void checkAccessWifiStatePermission() {
+    if (!accessWifiStatePermission) {
+      throw new SecurityException();
+    }
+  }
+
+  private WifiConfiguration makeCopy(WifiConfiguration config, int networkId) {
+    WifiConfiguration copy = Shadows.shadowOf(config).copy();
+    copy.networkId = networkId;
+    return copy;
+  }
 
   @Implements(WifiManager.WifiLock.class)
   public static class ShadowWifiLock {

@@ -411,6 +411,52 @@
     </profile>
 
     <profile>
+      <id>android-22</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
+            <configuration>
+              <classifier>${api}</classifier>
+              <outputDirectory>dist</outputDirectory>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+      <dependencies>
+        <dependency>
+          <groupId>com.android.tools.layoutlib</groupId>
+          <artifactId>layoutlib-api</artifactId>
+          <version>24.2.3</version>
+        </dependency>
+        <dependency>
+          <groupId>com.android.tools</groupId>
+          <artifactId>sdk-common</artifactId>
+          <version>24.2.3</version>
+        </dependency>
+        <dependency>
+          <groupId>com.android.tools</groupId>
+          <artifactId>common</artifactId>
+          <version>24.2.3</version>
+        </dependency>
+        <dependency>
+          <groupId>com.android.tools</groupId>
+          <artifactId>sdklib</artifactId>
+          <version>24.2.3</version>
+        </dependency>
+        <dependency>
+          <groupId>org.robolectric</groupId>
+          <artifactId>android-all</artifactId>
+          <version>5.1.1_r9-robolectric-1-render</version>
+        </dependency>
+      </dependencies>
+      <properties>
+        <api>22</api>
+      </properties>
+    </profile>
+
+    <profile>
       <id>android-latest</id>
       <build>
         <plugins>
@@ -447,11 +493,11 @@
         <dependency>
           <groupId>org.robolectric</groupId>
           <artifactId>android-all</artifactId>
-          <version>5.0.0_r2-robolectric-1-render</version>
+          <version>5.1.1_r9-robolectric-1-render</version>
         </dependency>
       </dependencies>
       <properties>
-        <api>21</api>
+        <api>22</api>
       </properties>
       <activation>
         <activeByDefault>true</activeByDefault>
@@ -509,33 +555,39 @@
                 <configuration>
                   <artifacts>
                     <artifact>
-                      <file>dist/shadows-core-3.0-SNAPSHOT-16.jar</file>
+                      <file>dist/shadows-core-${project.version}-16.jar</file>
                       <type>jar</type>
                       <classifier>16</classifier>
                     </artifact>
 
                     <artifact>
-                      <file>dist/shadows-core-3.0-SNAPSHOT-17.jar</file>
+                      <file>dist/shadows-core-${project.version}-17.jar</file>
                       <type>jar</type>
                       <classifier>17</classifier>
                     </artifact>
 
                     <artifact>
-                      <file>dist/shadows-core-3.0-SNAPSHOT-18.jar</file>
+                      <file>dist/shadows-core-${project.version}-18.jar</file>
                       <type>jar</type>
                       <classifier>18</classifier>
                     </artifact>
 
                     <artifact>
-                      <file>dist/shadows-core-3.0-SNAPSHOT-19.jar</file>
+                      <file>dist/shadows-core-${project.version}-19.jar</file>
                       <type>jar</type>
                       <classifier>19</classifier>
                     </artifact>
 
                     <artifact>
-                      <file>dist/shadows-core-3.0-SNAPSHOT-21.jar</file>
+                      <file>dist/shadows-core-${project.version}-21.jar</file>
                       <type>jar</type>
                       <classifier>21</classifier>
+                    </artifact>
+
+                    <artifact>
+                      <file>dist/shadows-core-${project.version}-22.jar</file>
+                      <type>jar</type>
+                      <classifier>22</classifier>
                     </artifact>
                   </artifacts>
                 </configuration>

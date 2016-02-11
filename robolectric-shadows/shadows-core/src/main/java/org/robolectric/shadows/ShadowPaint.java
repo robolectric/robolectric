@@ -271,4 +271,19 @@ public class ShadowPaint {
   public float measureText(String text) {
     return text.length();
   }
+
+  @Implementation
+  public float measureText(CharSequence text, int start, int end) {
+    return end - start;
+  }
+
+  @Implementation
+  public float measureText(String text, int start, int end) {
+    return end - start;
+  }
+
+  @Implementation
+  public float measureText(char[] text, int index, int count) {
+    return count;
+  }
 }

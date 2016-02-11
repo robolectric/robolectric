@@ -6,14 +6,16 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
 
+import org.robolectric.RoboSettings;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.annotation.HiddenApi;
-import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 
+import static org.robolectric.RuntimeEnvironment.isMainThread;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.internal.Shadow.*;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
@@ -27,13 +29,15 @@ import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
  */
 @Implements(Looper.class)
 public class ShadowLooper {
-  private static final Thread MAIN_THREAD = Thread.currentThread();
   // Replaced SoftThreadLocal with a WeakHashMap, because ThreadLocal make it impossible to access their contents from other
   // threads, but we need to be able to access the loopers for all threads so that we can shut them down when resetThreadLoopers()
   // is called. This also allows us to implement the useful getLooperForThread() method.
+  // Note that the main looper is handled differently and is not put in this hash, because we need to be able to
+  // "switch" the thread that the main looper is associated with.
   private static Map<Thread, Looper> loopingLoopers = Collections.synchronizedMap(new WeakHashMap<Thread, Looper>());
 
-  private Scheduler scheduler = new Scheduler();
+  private static Looper mainLooper;
+
   private @RealObject Looper realObject;
 
   boolean quit;
@@ -43,7 +47,7 @@ public class ShadowLooper {
     // Blech. We need to keep the main looper because somebody might refer to it in a static
     // field. The other loopers need to be wrapped in WeakReferences so that they are not prevented from
     // being garbage collected.
-    if (Thread.currentThread() != MAIN_THREAD) {
+    if (!isMainThread()) {
       throw new IllegalStateException("you should only be calling this from the main thread!");
     }
     synchronized (loopingLoopers) {
@@ -57,7 +61,6 @@ public class ShadowLooper {
     }
     // Because resetStaticState() is called by ParallelUniverse on startup before prepareMainLooper() is
     // called, this might be null on that occasion.
-    Looper mainLooper = Looper.getMainLooper();
     if (mainLooper != null) {
       shadowOf(mainLooper).reset();
     }
@@ -66,11 +69,24 @@ public class ShadowLooper {
   @Implementation
   public void __constructor__(boolean quitAllowed) {
     invokeConstructor(Looper.class, realObject, from(boolean.class, quitAllowed));
-    if (Thread.currentThread() != MAIN_THREAD) {
+    if (isMainThread()) {
+      mainLooper = realObject;
+    } else {
       loopingLoopers.put(Thread.currentThread(), realObject);
     }
+    resetScheduler();
   }
-    
+
+  @Implementation
+  public static Looper getMainLooper() {
+    return mainLooper;
+  }
+
+  @Implementation
+  public static Looper myLooper() {
+    return getLooperForThread(Thread.currentThread());
+  }
+
   @Implementation
   public static void loop() {
     shadowOf(Looper.myLooper()).doLoop();
@@ -99,7 +115,7 @@ public class ShadowLooper {
     synchronized (realObject) {
       quit = true;
       realObject.notifyAll();
-      scheduler.reset();
+      getScheduler().reset();
     }
   }
   
@@ -123,7 +139,7 @@ public class ShadowLooper {
   }
   
   public static Looper getLooperForThread(Thread thread) {
-    return thread == MAIN_THREAD ? Looper.getMainLooper() : loopingLoopers.get(thread);
+    return isMainThread(thread) ? mainLooper : loopingLoopers.get(thread);
   }
   
   public static void pauseLooper(Looper looper) {
@@ -192,7 +208,7 @@ public class ShadowLooper {
    * scheduler's clock;
    */
   public void idle() {
-    scheduler.advanceBy(0);
+    getScheduler().advanceBy(0);
   }
 
   /**
@@ -202,11 +218,11 @@ public class ShadowLooper {
    * @param intervalMillis milliseconds to advance
    */
   public void idle(long intervalMillis) {
-    scheduler.advanceBy(intervalMillis);
+    getScheduler().advanceBy(intervalMillis);
   }
 
   public void idleConstantly(boolean shouldIdleConstantly) {
-    scheduler.idleConstantly(shouldIdleConstantly);
+    getScheduler().idleConstantly(shouldIdleConstantly);
   }
 
   /**
@@ -214,7 +230,7 @@ public class ShadowLooper {
    * start time of the last scheduled {@link Runnable}.
    */
   public void runToEndOfTasks() {
-    scheduler.advanceToLastPostedRunnable();
+    getScheduler().advanceToLastPostedRunnable();
   }
 
   /**
@@ -222,7 +238,7 @@ public class ShadowLooper {
    * start time. If more than one {@link Runnable} is scheduled to run at this time then they will all be run.
    */
   public void runToNextTask() {
-    scheduler.advanceToNextPostedRunnable();
+    getScheduler().advanceToNextPostedRunnable();
   }
 
   /**
@@ -231,7 +247,7 @@ public class ShadowLooper {
    * same time.
    */
   public void runOneTask() {
-    scheduler.runOneTask();
+    getScheduler().runOneTask();
   }
 
   /**
@@ -246,7 +262,7 @@ public class ShadowLooper {
   @Deprecated
   public boolean post(Runnable runnable, long delayMillis) {
     if (!quit) {
-      scheduler.postDelayed(runnable, delayMillis);
+      getScheduler().postDelayed(runnable, delayMillis);
       return true;
     } else {
       return false;
@@ -264,7 +280,7 @@ public class ShadowLooper {
   @Deprecated
   public boolean postAtFrontOfQueue(Runnable runnable) {
     if (!quit) {
-      scheduler.postAtFrontOfQueue(runnable);
+      getScheduler().postAtFrontOfQueue(runnable);
       return true;
     } else {
       return false;
@@ -272,15 +288,15 @@ public class ShadowLooper {
   }
 
   public void pause() {
-    scheduler.pause();
+    getScheduler().pause();
   }
 
   public void unPause() {
-    scheduler.unPause();
+    getScheduler().unPause();
   }
 
   public boolean isPaused() {
-    return scheduler.isPaused();
+    return getScheduler().isPaused();
   }
 
   public boolean setPaused(boolean shouldPause) {
@@ -293,24 +309,35 @@ public class ShadowLooper {
     return wasPaused;
   }
 
+  public void resetScheduler() {
+    ShadowMessageQueue sQueue = shadowOf(realObject.getQueue());
+    if (this == getShadowMainLooper() || RoboSettings.isUseGlobalScheduler()) {
+      sQueue.setScheduler(RuntimeEnvironment.getMasterScheduler());
+    } else {
+      sQueue.setScheduler(new Scheduler());
+    }
+  }
+
   /**
    * Causes all enqueued tasks to be discarded, and pause state to be reset
    */
   public void reset() {
-    scheduler = new Scheduler();
     shadowOf(realObject.getQueue()).reset();
+    resetScheduler();
+
     quit = false;
   }
 
   /**
    * Returns the {@link org.robolectric.util.Scheduler} that is being used to manage the enqueued tasks.
+   * This scheduler is managed by the Looper's associated queue.
    *
    * @return the {@link org.robolectric.util.Scheduler} that is being used to manage the enqueued tasks.
    */
   public Scheduler getScheduler() {
-    return scheduler;
+    return shadowOf(realObject.getQueue()).getScheduler();
   }
-
+  
   public void runPaused(Runnable r) {
     boolean wasPaused = setPaused(true);
     try {

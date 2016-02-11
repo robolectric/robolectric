@@ -1,14 +1,29 @@
 package org.robolectric.shadows;
 
+import android.R.integer;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.text.TextUtils;
+#if ($api >= 21)
+import android.util.ArraySet;
+#end
 import android.util.Pair;
 import android.util.SparseArray;
 import android.view.View;
 import android.view.accessibility.AccessibilityNodeInfo;
+#if ($api >= 21)
+import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction;
+#end
+#if ($api >= 19)
+import android.view.accessibility.AccessibilityNodeInfo.CollectionInfo;
+import android.view.accessibility.AccessibilityNodeInfo.CollectionItemInfo;
+import android.view.accessibility.AccessibilityNodeInfo.RangeInfo;
+#end
+#if ($api >= 21)
+import android.view.accessibility.AccessibilityWindowInfo;
+#end
 
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
@@ -16,7 +31,9 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.internal.ShadowExtractor;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -70,19 +87,47 @@ public class ShadowAccessibilityNodeInfo {
   private static final int PASTEABLE_MASK = 0x00000040;
 
   private static final int EDITABLE_MASK = 0x00000080;
-  
+
   private static final int TEXT_SELECTION_SETABLE_MASK = 0x00000100;
+
+  private static final int CHECKABLE_MASK = 0x00001000; //14
+
+  private static final int CHECKED_MASK = 0x00002000; //14
+
+  private static final int ENABLED_MASK = 0x00010000; //14
+
+  private static final int PASSWORD_MASK = 0x00040000; //14
+
+  private static final int SELECTED_MASK = 0x00080000; //14
+
+  private static final int A11YFOCUSED_MASK = 0x00000800;  //16
+#if ($api >= 19)
+  private static final int MULTILINE_MASK = 0x00020000; //19
+
+  private static final int CONTENT_INVALID_MASK = 0x00004000; //19
+
+  private static final int DISMISSABLE_MASK = 0x00008000; //19
+
+  private static final int CAN_OPEN_POPUP_MASK = 0x00100000; //19
+#end
 
   private List<AccessibilityNodeInfo> children;
 
   private Rect boundsInScreen = new Rect();
-  
+
   private Rect boundsInParent = new Rect();
 
   private List<Pair<Integer, Bundle>> performedActionAndArgsList;
 
+  // In API prior to 21, actions are stored in a flag, after 21 they are stored in array of
+  // AccessibilityAction so custom actions can be supported.
+#if ($api >= 21)
+  private ArrayList<AccessibilityAction> actionsArray;
+#else
+  private int actionsMask;
+#end
   // Storage of flags
-  private int actionFlags;
+  private int propertyFlags;
 
   private AccessibilityNodeInfo parent;
 
@@ -102,6 +147,38 @@ public class ShadowAccessibilityNodeInfo {
 
   private int textSelectionEnd = UNDEFINED_SELECTION_INDEX;
 
+  private boolean refreshReturnValue = true;
+
+  private int movementGranularities; //16
+
+  private CharSequence packageName; //14
+#if ($api >= 18)
+  private String viewIdResourceName; //18
+#end
+#if ($api >= 19)
+  private CollectionInfo collectionInfo; //19
+
+  private CollectionItemInfo collectionItemInfo; //19
+
+  private int inputType; //19
+
+  private int liveRegion; //19
+
+  private RangeInfo rangeInfo; //19
+#end
+#if ($api >= 21)
+  private int maxTextLength; //21
+
+  private CharSequence error; //21
+#end
+#if ($api >= 22)
+  private AccessibilityNodeInfo traversalAfter; //22
+
+  private AccessibilityNodeInfo traversalBefore; //22
+#end
+
+  private OnPerformActionListener actionListener;
+
   @RealObject
   private AccessibilityNodeInfo realAccessibilityNodeInfo;
 
@@ -118,7 +195,7 @@ public class ShadowAccessibilityNodeInfo {
     sAllocationCount++;
     StrictEqualityNodeWrapper wrapper = new StrictEqualityNodeWrapper(obtainedInstance);
     obtainedInstances.put(wrapper, Thread.currentThread().getStackTrace());
-    orderedInstances.put(sAllocationCount, wrapper);  
+    orderedInstances.put(sAllocationCount, wrapper);
     return obtainedInstance;
   }
 
@@ -195,7 +272,6 @@ public class ShadowAccessibilityNodeInfo {
   public static void resetObtainedInstances() {
     obtainedInstances.clear();
     orderedInstances.clear();
-    sAllocationCount = 0;
   }
 
   @Implementation
@@ -213,7 +289,15 @@ public class ShadowAccessibilityNodeInfo {
     if (labeledBy != null) {
       labeledBy.recycle();
     }
+#if ($api >= 22)
+    if (traversalAfter != null) {
+      traversalAfter.recycle();
+    }
 
+    if (traversalBefore != null) {
+      traversalBefore.recycle();
+    }
+#end
     obtainedInstances.remove(wrapper);
     int keyOfWrapper = -1;
     for (int i = 0; i < orderedInstances.size(); i++) {
@@ -224,7 +308,6 @@ public class ShadowAccessibilityNodeInfo {
       }
     }
     orderedInstances.remove(keyOfWrapper);
-    sAllocationCount--;
   }
 
   @Implementation
@@ -261,102 +344,211 @@ public class ShadowAccessibilityNodeInfo {
 
   @Implementation
   public boolean refresh() {
-      return true;
+      return refreshReturnValue;
+  }
+
+  public void setRefreshReturnValue(boolean refreshReturnValue) {
+    this.refreshReturnValue = refreshReturnValue;
   }
 
   @Implementation
   public boolean isClickable() {
-    return ((actionFlags & CLICKABLE_MASK) != 0);
+    return ((propertyFlags & CLICKABLE_MASK) != 0);
   }
 
   @Implementation
   public boolean isLongClickable() {
-    return ((actionFlags & LONGCLICKABLE_MASK) != 0);
+    return ((propertyFlags & LONGCLICKABLE_MASK) != 0);
   }
 
   @Implementation
   public boolean isFocusable() {
-    return ((actionFlags & FOCUSABLE_MASK) != 0);
+    return ((propertyFlags & FOCUSABLE_MASK) != 0);
   }
 
   @Implementation
   public boolean isFocused() {
-    return ((actionFlags & FOCUSED_MASK) != 0);
+    return ((propertyFlags & FOCUSED_MASK) != 0);
   }
 
   @Implementation
   public boolean isVisibleToUser() {
-    return ((actionFlags & VISIBLE_TO_USER_MASK) != 0);
+    return ((propertyFlags & VISIBLE_TO_USER_MASK) != 0);
   }
 
   @Implementation
   public boolean isScrollable() {
-    return ((actionFlags & SCROLLABLE_MASK) != 0);
+    return ((propertyFlags & SCROLLABLE_MASK) != 0);
   }
 
   public boolean isPasteable() {
-    return ((actionFlags & PASTEABLE_MASK) != 0);
+    return ((propertyFlags & PASTEABLE_MASK) != 0);
   }
 
   @Implementation
   public boolean isEditable() {
-    return ((actionFlags & EDITABLE_MASK) != 0);
-  }
-  
-  public boolean isTextSelectionSetable() {
-    return ((actionFlags & TEXT_SELECTION_SETABLE_MASK) != 0);
+    return ((propertyFlags & EDITABLE_MASK) != 0);
   }
 
+  public boolean isTextSelectionSetable() {
+    return ((propertyFlags & TEXT_SELECTION_SETABLE_MASK) != 0);
+  }
+
+  @Implementation
+  public boolean isCheckable() {
+    return ((propertyFlags & CHECKABLE_MASK) != 0);
+  }
+
+  @Implementation
+  public void setCheckable(boolean checkable) {
+    propertyFlags = (propertyFlags & ~CHECKABLE_MASK) |
+        (checkable ? CHECKABLE_MASK : 0);
+  }
+
+  @Implementation
+  public void setChecked(boolean checked) {
+    propertyFlags = (propertyFlags & ~CHECKED_MASK) |
+        (checked ? CHECKED_MASK : 0);
+  }
+
+  @Implementation
+  public boolean isChecked() {
+    return ((propertyFlags & CHECKED_MASK) != 0);
+  }
+
+  @Implementation
+  public void setEnabled(boolean enabled) {
+    propertyFlags = (propertyFlags & ~ENABLED_MASK) |
+        (enabled ? ENABLED_MASK : 0);
+  }
+
+  @Implementation
+  public boolean isEnabled() {
+    return ((propertyFlags & ENABLED_MASK) != 0);
+  }
+
+  @Implementation
+  public void setPassword(boolean password) {
+    propertyFlags = (propertyFlags & ~PASSWORD_MASK) |
+        (password ? PASSWORD_MASK : 0);
+  }
+
+  @Implementation
+  public boolean isPassword() {
+    return ((propertyFlags & PASSWORD_MASK) != 0);
+  }
+
+  @Implementation
+  public void setSelected(boolean selected) {
+    propertyFlags = (propertyFlags & ~SELECTED_MASK) |
+        (selected ? SELECTED_MASK : 0);
+  }
+
+  @Implementation
+  public boolean isSelected() {
+    return ((propertyFlags & SELECTED_MASK) != 0);
+  }
+
+  @Implementation
+  public void setAccessibilityFocused(boolean focused) {
+    propertyFlags = (propertyFlags & ~A11YFOCUSED_MASK) |
+        (focused ? A11YFOCUSED_MASK : 0);
+  }
+
+  @Implementation
+  public boolean isAccessibilityFocused() {
+    return ((propertyFlags & A11YFOCUSED_MASK) != 0);
+  }
+#if ($api >= 21)
+  @Implementation
+  public void setMultiLine(boolean multiLine) {
+    propertyFlags = (propertyFlags & ~MULTILINE_MASK) |
+        (multiLine ? MULTILINE_MASK : 0);
+  }
+
+  @Implementation
+  public boolean isMultiLine() {
+    return ((propertyFlags & MULTILINE_MASK) != 0);
+  }
+
+  @Implementation
+  public void setContentInvalid(boolean contentInvalid) {
+    propertyFlags = (propertyFlags & ~CONTENT_INVALID_MASK) |
+        (contentInvalid ? CONTENT_INVALID_MASK : 0);
+  }
+
+  @Implementation
+  public boolean isContentInvalid() {
+    return ((propertyFlags & CONTENT_INVALID_MASK) != 0);
+  }
+
+  @Implementation
+  public void setDismissable(boolean dismissable) {
+    propertyFlags = (propertyFlags & ~DISMISSABLE_MASK) |
+        (dismissable ? DISMISSABLE_MASK : 0);
+  }
+
+  @Implementation
+  public boolean isDismissable() {
+    return ((propertyFlags & DISMISSABLE_MASK) != 0);
+  }
+
+  @Implementation
+  public void setCanOpenPopup(boolean opensPopup) {
+    propertyFlags = (propertyFlags & ~CAN_OPEN_POPUP_MASK) |
+        (opensPopup ? CAN_OPEN_POPUP_MASK : 0);
+  }
+
+  @Implementation
+  public boolean canOpenPopup() {
+    return ((propertyFlags & CAN_OPEN_POPUP_MASK) != 0);
+  }
+#end
+
   public void setTextSelectionSetable(boolean isTextSelectionSetable) {
-    actionFlags = (actionFlags & ~TEXT_SELECTION_SETABLE_MASK) | 
+    propertyFlags = (propertyFlags & ~TEXT_SELECTION_SETABLE_MASK) |
         (isTextSelectionSetable ? TEXT_SELECTION_SETABLE_MASK : 0);
   }
 
   @Implementation
   public void setClickable(boolean isClickable) {
-    actionFlags = (actionFlags & ~CLICKABLE_MASK) | (isClickable ? CLICKABLE_MASK : 0);
+    propertyFlags = (propertyFlags & ~CLICKABLE_MASK) | (isClickable ? CLICKABLE_MASK : 0);
   }
 
   @Implementation
   public void setLongClickable(boolean isLongClickable) {
-    actionFlags =
-        (actionFlags & ~LONGCLICKABLE_MASK) | (isLongClickable ? LONGCLICKABLE_MASK : 0);
+    propertyFlags =
+        (propertyFlags & ~LONGCLICKABLE_MASK) | (isLongClickable ? LONGCLICKABLE_MASK : 0);
   }
 
   @Implementation
   public void setFocusable(boolean isFocusable) {
-    actionFlags = (actionFlags & ~FOCUSABLE_MASK) | (isFocusable ? FOCUSABLE_MASK : 0);
+    propertyFlags = (propertyFlags & ~FOCUSABLE_MASK) | (isFocusable ? FOCUSABLE_MASK : 0);
   }
 
   @Implementation
   public void setFocused(boolean isFocused) {
-    actionFlags = (actionFlags & ~FOCUSED_MASK) | (isFocused ? FOCUSED_MASK : 0);
+    propertyFlags = (propertyFlags & ~FOCUSED_MASK) | (isFocused ? FOCUSED_MASK : 0);
   }
 
   @Implementation
   public void setScrollable(boolean isScrollable) {
-    actionFlags = (actionFlags & ~SCROLLABLE_MASK) | (isScrollable ? SCROLLABLE_MASK : 0);
+    propertyFlags = (propertyFlags & ~SCROLLABLE_MASK) | (isScrollable ? SCROLLABLE_MASK : 0);
   }
 
   public void setPasteable(boolean isPasteable) {
-    actionFlags = (actionFlags & ~PASTEABLE_MASK) | (isPasteable ? PASTEABLE_MASK : 0);
+    propertyFlags = (propertyFlags & ~PASTEABLE_MASK) | (isPasteable ? PASTEABLE_MASK : 0);
   }
 
   @Implementation
   public void setEditable(boolean isEditable) {
-    actionFlags = (actionFlags & ~EDITABLE_MASK) | (isEditable ? EDITABLE_MASK : 0);
-    /* If a shadow node is editable, then its text is also selectable. However, if a shadow node is
-     * not editable, then no assumptions can be made about text selectability.
-     */
-    if (isEditable) {
-      setTextSelectionSetable(true);
-    }
+    propertyFlags = (propertyFlags & ~EDITABLE_MASK) | (isEditable ? EDITABLE_MASK : 0);
   }
 
   @Implementation
   public void setVisibleToUser(boolean isVisibleToUser) {
-    actionFlags =
-        (actionFlags & ~VISIBLE_TO_USER_MASK) | (isVisibleToUser ? VISIBLE_TO_USER_MASK : 0);
+    propertyFlags =
+        (propertyFlags & ~VISIBLE_TO_USER_MASK) | (isVisibleToUser ? VISIBLE_TO_USER_MASK : 0);
   }
 
   @Implementation
@@ -394,7 +586,7 @@ public class ShadowAccessibilityNodeInfo {
       textSelectionStart = start;
       textSelectionEnd = end;
   }
-  
+
   /**
    * Gets the text selection start.
    *
@@ -450,6 +642,156 @@ public class ShadowAccessibilityNodeInfo {
   }
 
   @Implementation
+  public int getMovementGranularities() {
+    return movementGranularities;
+  }
+
+  @Implementation
+  public void setMovementGranularities(int movementGranularities) {
+    this.movementGranularities = movementGranularities;
+  }
+
+  @Implementation
+  public CharSequence getPackageName() {
+    return packageName;
+  }
+
+  @Implementation
+  public void setPackageName(CharSequence packageName) {
+    this.packageName = packageName;
+  }
+
+#if ($api >= 18)
+  @Implementation
+  public String getViewIdResourceName() {
+    return viewIdResourceName;
+  }
+
+  @Implementation
+  public void setViewIdResourceName(String viewIdResourceName) {
+    this.viewIdResourceName = viewIdResourceName;
+  }
+#end
+#if ($api >= 19)
+  @Implementation
+  public CollectionInfo getCollectionInfo() {
+    return collectionInfo;
+  }
+
+  @Implementation
+  public void setCollectionInfo(CollectionInfo collectionInfo) {
+    this.collectionInfo = collectionInfo;
+  }
+
+  @Implementation
+  public CollectionItemInfo getCollectionItemInfo() {
+    return collectionItemInfo;
+  }
+
+  @Implementation
+  public void setCollectionItemInfo(CollectionItemInfo collectionItemInfo) {
+    this.collectionItemInfo = collectionItemInfo;
+  }
+
+  @Implementation
+  public int getInputType() {
+    return inputType;
+  }
+
+  @Implementation
+  public void setInputType(int inputType) {
+    this.inputType = inputType;
+  }
+
+  @Implementation
+  public int getLiveRegion() {
+    return liveRegion;
+  }
+
+  @Implementation
+  public void setLiveRegion(int liveRegion) {
+    this.liveRegion = liveRegion;
+  }
+
+  @Implementation
+  public RangeInfo getRangeInfo() {
+    return rangeInfo;
+  }
+
+  @Implementation
+  public void setRangeInfo(RangeInfo rangeInfo) {
+    this.rangeInfo = rangeInfo;
+  }
+#end
+#if ($api >= 21)
+  @Implementation
+  public int getMaxTextLength() {
+    return maxTextLength;
+  }
+
+  @Implementation
+  public void setMaxTextLength(int maxTextLength) {
+    this.maxTextLength = maxTextLength;
+  }
+
+  @Implementation
+  public CharSequence getError() {
+    return error;
+  }
+
+  @Implementation
+  public void setError(CharSequence error) {
+    this.error = error;
+  }
+#end
+#if ($api >= 22)
+  @Implementation
+  public AccessibilityNodeInfo getTraversalAfter() {
+    if (traversalAfter == null) {
+      return null;
+    }
+
+    return obtain(traversalAfter);
+  }
+
+  @Implementation
+  public void setTraversalAfter(AccessibilityNodeInfo info) {
+    if (this.traversalAfter != null) {
+      this.traversalAfter.recycle();
+    }
+    
+    this.traversalAfter = obtain(info);
+  }
+
+  @Implementation
+  public AccessibilityNodeInfo getTraversalBefore() {
+    if (traversalBefore == null) {
+      return null;
+    }
+
+    return obtain(traversalBefore);
+  }
+
+  @Implementation
+  public void setTraversalBefore(AccessibilityNodeInfo info) {
+    if (this.traversalBefore != null) {
+      this.traversalBefore.recycle();
+    }
+    
+    this.traversalBefore = obtain(info);
+  }
+#end
+  @Implementation
+  public void setSource (View source) {
+    this.view = source;
+  }
+
+  @Implementation
+  public void setSource (View root, int virtualDescendantId) {
+    this.view = root;
+  }
+
+  @Implementation
   public void getBoundsInScreen(Rect outBounds) {
     if (boundsInScreen == null) {
       boundsInScreen = new Rect();
@@ -473,7 +815,7 @@ public class ShadowAccessibilityNodeInfo {
       boundsInScreen.set(b);
     }
   }
-  
+
   @Implementation
   public void setBoundsInParent(Rect b) {
     if (boundsInParent == null) {
@@ -483,6 +825,53 @@ public class ShadowAccessibilityNodeInfo {
     }
   }
 
+  @Implementation
+  public void addAction(int action) {
+#if ($api >= 21)
+  if ((action & getActionTypeMaskFromFramework()) != 0) {
+    throw new IllegalArgumentException("Action is not a combination of the standard " +
+            "actions: " + action);
+  }
+  int remainingIds = action;
+  while (remainingIds > 0) {
+    final int id = 1 << Integer.numberOfTrailingZeros(remainingIds);
+    remainingIds &= ~id;
+    AccessibilityAction convertedAction = getActionFromIdFromFrameWork(id);
+    addAction(convertedAction);
+  }
+#else
+    actionsMask |= action;
+#end
+  }
+
+#if ($api >= 21)
+  @Implementation
+  public void addAction(AccessibilityAction action) {
+    if (action == null) {
+      return;
+    }
+
+    if (actionsArray == null) {
+      actionsArray = new ArrayList<>();
+    }
+    actionsArray.remove(action);
+    actionsArray.add(action);
+  }
+
+  @Implementation
+  public void removeAction(int action) {
+    AccessibilityAction convertedAction = getActionFromIdFromFrameWork(action);
+    removeAction(convertedAction);
+  }
+
+  @Implementation
+  public boolean removeAction(AccessibilityAction action) {
+    if (action == null || actionsArray == null) {
+      return false;
+    }
+    return actionsArray.remove(action);
+  }
+#end
   /**
    * Obtain flags for actions supported. Currently only supports ACTION_CLICK, ACTION_LONG_CLICK,
    * ACTION_SCROLL_FORWARD, ACTION_PASTE, ACTION_FOCUS, ACTION_SET_SELECTION, ACTION_SCROLL_BACKWARD
@@ -492,18 +881,36 @@ public class ShadowAccessibilityNodeInfo {
    */
   @Implementation
   public int getActions() {
-    int actions = 0;
-    actions |= (isClickable()) ? AccessibilityNodeInfo.ACTION_CLICK : 0;
-    actions |= (isLongClickable()) ? AccessibilityNodeInfo.ACTION_LONG_CLICK : 0;
-    actions |= (isScrollable()) ? AccessibilityNodeInfo.ACTION_SCROLL_FORWARD : 0;
-    actions |= (isScrollable()) ? AccessibilityNodeInfo.ACTION_SCROLL_BACKWARD : 0;
-#if ($api >= 18)
-    actions |= (isPasteable()) ? AccessibilityNodeInfo.ACTION_PASTE : 0;
-    actions |= (isTextSelectionSetable()) ? AccessibilityNodeInfo.ACTION_SET_SELECTION : 0;
+#if ($api >= 21)
+    int returnValue = 0;
+    if (actionsArray == null) {
+      return returnValue;
+    }
+
+    // Custom actions are only returned by getActionsList
+    final int actionSize = actionsArray.size();
+    for (int i = 0; i < actionSize; i++) {
+      int actionId = actionsArray.get(i).getId();
+        if (actionId <= getLastLegacyActionFromFrameWork()) {
+          returnValue |= actionId;
+      }
+    }
+    return returnValue;
+#else
+    return actionsMask;
 #end
-    actions |= (isFocusable()) ? AccessibilityNodeInfo.ACTION_FOCUS : 0;
-    return actions;
   }
+
+#if ($api >= 21)
+  @Implementation
+  public List<AccessibilityAction> getActionList() {
+    if (actionsArray == null) {
+      return Collections.emptyList();
+    }
+
+    return actionsArray;
+  }
+#end
 
   @Implementation
   public boolean performAction(int action) {
@@ -517,34 +924,8 @@ public class ShadowAccessibilityNodeInfo {
     }
 
     performedActionAndArgsList.add(new Pair<Integer, Bundle>(new Integer(action), arguments));
-    boolean actionResult = true;
-    switch (action) {
-      case AccessibilityNodeInfo.ACTION_CLICK:
-        actionResult = isClickable();
-        break;
-      case AccessibilityNodeInfo.ACTION_LONG_CLICK:
-        actionResult = isLongClickable();
-        break;
-      case AccessibilityNodeInfo.ACTION_FOCUS:
-        actionResult = isFocusable();
-        break;
-#if ($api >= 18)
-      case AccessibilityNodeInfo.ACTION_PASTE:
-        actionResult = isPasteable();
-        break;
-      case AccessibilityNodeInfo.ACTION_SET_SELECTION:
-        actionResult = isEditable();
-        break;
-#end
-      case AccessibilityNodeInfo.ACTION_SCROLL_BACKWARD:
-      case AccessibilityNodeInfo.ACTION_SCROLL_FORWARD:
-        actionResult = isScrollable();
-        break;
-      default:
-        break;
-    }
-
-    return actionResult;
+    return (actionListener != null) ? actionListener.onPerformAccessibilityAction(action, arguments)
+      : true;
   }
 
   /**
@@ -564,14 +945,25 @@ public class ShadowAccessibilityNodeInfo {
 
     boolean areEqual = true;
     if (children == null) {
-      areEqual = areEqual && (otherShadow.children == null);
+      areEqual &= (otherShadow.children == null);
     } else {
-      areEqual =
-          areEqual && (otherShadow.children != null) && children.equals(otherShadow.children);
+      areEqual &= (otherShadow.children != null) && children.equals(otherShadow.children);
     }
-    areEqual = areEqual && (parent == otherShadow.parent);
+    areEqual &= (parent == otherShadow.parent);
 
-    areEqual = areEqual && (actionFlags == otherShadow.actionFlags);
+    areEqual &= (propertyFlags == otherShadow.propertyFlags);
+
+#if ($api >= 21)
+    boolean actionsArrayEquality = false;
+    if (actionsArray == null && otherShadow.actionsArray == null) {
+      actionsArrayEquality = true;
+    } else {
+      actionsArrayEquality = actionsArray.equals(otherShadow.actionsArray);
+    }
+    areEqual &= actionsArrayEquality;
+#else
+    areEqual &= (actionsMask == otherShadow.actionsMask);
+#end
     /*
      * These checks have the potential to become infinite loops if there are
      * loops in the labelFor or labeledBy logic. Rather than deal with this
@@ -579,32 +971,70 @@ public class ShadowAccessibilityNodeInfo {
      * needs addressing.
      */
     if (labelFor == null) {
-      areEqual = areEqual && (otherShadow.labelFor == null);
+      areEqual &= (otherShadow.labelFor == null);
     } else {
-      areEqual = areEqual && (labelFor.equals(otherShadow.labelFor));
+      areEqual &= (labelFor.equals(otherShadow.labelFor));
     }
 
     if (labeledBy == null) {
-      areEqual = areEqual && (otherShadow.labeledBy == null);
+      areEqual &= (otherShadow.labeledBy == null);
     } else {
-      areEqual = areEqual && (labeledBy.equals(otherShadow.labeledBy));
+      areEqual &= (labeledBy.equals(otherShadow.labeledBy));
     }
 
-    areEqual = areEqual && boundsInScreen.equals(otherShadow.boundsInScreen);
-    areEqual = areEqual
-            && (TextUtils.equals(contentDescription, otherShadow.contentDescription));
-    areEqual = areEqual && (TextUtils.equals(text, otherShadow.text));
+    areEqual &= boundsInScreen.equals(otherShadow.boundsInScreen);
+    areEqual &= (TextUtils.equals(contentDescription, otherShadow.contentDescription));
+    areEqual &= (TextUtils.equals(text, otherShadow.text));
 
-    areEqual = areEqual && (TextUtils.isEmpty(text) == TextUtils.isEmpty(otherShadow.text));
-    if (!TextUtils.isEmpty(text)) {
-      areEqual = areEqual && (text.toString().equals(otherShadow.text.toString()));
+    areEqual &= TextUtils.equals(className, otherShadow.className);
+    areEqual &= (view == otherShadow.view);
+    areEqual &= (textSelectionStart == otherShadow.textSelectionStart);
+    areEqual &= (textSelectionEnd == otherShadow.textSelectionEnd);
+
+    areEqual &= (refreshReturnValue == otherShadow.refreshReturnValue);
+    areEqual &= (movementGranularities == otherShadow.movementGranularities);
+    areEqual &= (TextUtils.isEmpty(packageName) == TextUtils.isEmpty(otherShadow.packageName));
+    if (!TextUtils.isEmpty(packageName)) {
+      areEqual &= (packageName.toString().equals(otherShadow.packageName.toString()));
     }
-
-    areEqual = areEqual && TextUtils.equals(className, otherShadow.className);
-    areEqual = areEqual && (view == otherShadow.view);
-    areEqual = areEqual && (textSelectionStart == otherShadow.textSelectionStart);
-    areEqual = areEqual && (textSelectionStart == otherShadow.textSelectionEnd);
-
+#if ($api >= 18)
+    areEqual &= TextUtils.equals(viewIdResourceName, otherShadow.viewIdResourceName);
+#end
+#if ($api >= 19)
+    if (collectionInfo == null) {
+      areEqual &= (otherShadow.collectionInfo == null);
+    } else {
+      areEqual &= (collectionInfo.equals(otherShadow.collectionInfo));
+    }
+    if (collectionItemInfo == null) {
+      areEqual &= (otherShadow.collectionItemInfo == null);
+    } else {
+      areEqual &= (collectionItemInfo.equals(otherShadow.collectionItemInfo));
+    }
+    areEqual &= (inputType == otherShadow.inputType);
+    areEqual &= (liveRegion == otherShadow.liveRegion);
+    if (rangeInfo == null) {
+      areEqual &= (otherShadow.rangeInfo == null);
+    } else {
+      areEqual &= (rangeInfo.equals(otherShadow.rangeInfo));
+    }
+#end
+#if ($api >= 21)
+    areEqual &= (maxTextLength == otherShadow.maxTextLength);
+    areEqual &= TextUtils.equals(error, otherShadow.error);
+#end
+#if ($api >= 22)
+    if (traversalAfter == null) {
+      areEqual &= (otherShadow.traversalAfter == null);
+    } else {
+      areEqual &= (traversalAfter.equals(otherShadow.traversalAfter));
+    }
+    if (traversalBefore == null) {
+      areEqual &= (otherShadow.traversalAfter == null);
+    } else {
+      areEqual &= (traversalBefore.equals(otherShadow.traversalBefore));
+    }
+#end
     return areEqual;
   }
 
@@ -615,7 +1045,7 @@ public class ShadowAccessibilityNodeInfo {
     // instances map in a manner that is remarkably difficult to debug.
     // Having a dynamic hash code keeps this object from being located
     // in the map if it was mutated after being obtained.
-    return (view == null) ? 0 : view.hashCode();
+    return 0;
   }
 
   /**
@@ -687,7 +1117,7 @@ public class ShadowAccessibilityNodeInfo {
         (ShadowAccessibilityNodeInfo) ShadowExtractor.extract(newInfo);
 
     newShadow.boundsInScreen = new Rect(boundsInScreen);
-    newShadow.actionFlags = actionFlags;
+    newShadow.propertyFlags = propertyFlags;
     newShadow.contentDescription = contentDescription;
     newShadow.text = text;
     newShadow.performedActionAndArgsList = performedActionAndArgsList;
@@ -697,6 +1127,18 @@ public class ShadowAccessibilityNodeInfo {
     newShadow.view = view;
     newShadow.textSelectionStart = textSelectionStart;
     newShadow.textSelectionEnd = textSelectionEnd;
+    newShadow.actionListener = actionListener;
+#if ($api >= 21)
+    if (actionsArray != null) {
+      newShadow.actionsArray = new ArrayList<>();
+      newShadow.actionsArray.addAll(actionsArray);
+    } else {
+      newShadow.actionsArray = null;
+    }
+#else
+    newShadow.actionsMask = actionsMask;
+#end
+
     if (children != null) {
       newShadow.children = new LinkedList<>();
       newShadow.children.addAll(children);
@@ -704,6 +1146,27 @@ public class ShadowAccessibilityNodeInfo {
       newShadow.children = null;
     }
 
+    newShadow.refreshReturnValue = refreshReturnValue;
+    newShadow.movementGranularities = movementGranularities;
+    newShadow.packageName = packageName;
+#if ($api >= 18)
+    newShadow.viewIdResourceName = viewIdResourceName;
+#end
+#if ($api >= 19)
+    newShadow.collectionInfo = collectionInfo;
+    newShadow.collectionItemInfo = collectionItemInfo;
+    newShadow.inputType = inputType;
+    newShadow.liveRegion = liveRegion;
+    newShadow.rangeInfo = rangeInfo;
+#end
+#if ($api >= 21)
+    newShadow.maxTextLength = maxTextLength;
+    newShadow.error = error;
+#end
+#if ($api >= 22)
+    newShadow.traversalAfter = traversalAfter;
+    newShadow.traversalBefore = traversalBefore;
+#end
     return newInfo;
   }
 
@@ -744,6 +1207,9 @@ public class ShadowAccessibilityNodeInfo {
     private CharSequence label;
 
     public void __constructor__(int id, CharSequence label) {
+      if (((id & (int)ReflectionHelpers.getStaticField(AccessibilityNodeInfo.class, "ACTION_TYPE_MASK")) == 0) && Integer.bitCount(id) != 1) {
+        throw new IllegalArgumentException("Invalid standard action id");
+      }
       this.id = id;
       this.label = label;
     }
@@ -756,6 +1222,31 @@ public class ShadowAccessibilityNodeInfo {
     @Implementation
     public CharSequence getLabel() {
       return label;
+    }
+
+    @Override
+    @Implementation
+    public boolean equals(Object other) {
+      if (other == null) {
+        return false;
+      }
+
+      if (other == this) {
+        return true;
+      }
+
+      if (other.getClass() != AccessibilityAction.class) {
+        return false;
+      }
+
+      return id == ((AccessibilityAction) other).getId();
+    }
+
+    @Override
+    public String toString() {
+      String actionSybolicName = ReflectionHelpers.callStaticMethod(
+          AccessibilityNodeInfo.class, "getActionSymbolicName", ClassParameter.from(int.class, id));
+      return "AccessibilityAction: " + actionSybolicName + " - " + label;
     }
   }
 #else
@@ -779,5 +1270,32 @@ public class ShadowAccessibilityNodeInfo {
       }
     }
     dest.writeInt(keyOfWrapper);
+  }
+
+#if ($api >= 21)
+  private static int getActionTypeMaskFromFramework() {
+    // Get the mask to determine whether an int is a legit ID for an action, defined by Android
+    return (int)ReflectionHelpers.getStaticField(AccessibilityNodeInfo.class, "ACTION_TYPE_MASK");
+  }
+  
+  private static AccessibilityAction getActionFromIdFromFrameWork(int id) {
+    // Convert an action ID to Android standard Accessibility Action defined by Android
+    return ReflectionHelpers.callStaticMethod(
+        AccessibilityNodeInfo.class, "getActionSingleton", ClassParameter.from(int.class, id));
+  }
+  
+  private static int getLastLegacyActionFromFrameWork() {
+    return (int)ReflectionHelpers.getStaticField(AccessibilityNodeInfo.class, "LAST_LEGACY_STANDARD_ACTION");
+  }  
+#end
+  /**
+  * Configure the return result of an action if it is performed
+  */
+  public void setOnPerformActionListener(OnPerformActionListener listener) {
+    actionListener = listener;
+  }
+
+  public interface OnPerformActionListener {
+    boolean onPerformAccessibilityAction(int action, Bundle arguments);
   }
 }

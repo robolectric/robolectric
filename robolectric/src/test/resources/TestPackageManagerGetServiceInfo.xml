@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="org.robolectric">
+  <uses-sdk android:targetSdkVersion="18"/>
+  <application>
+    <service android:name="com.foo.Service" android:permission="com.foo.MY_PERMISSION">
+      <intent-filter>
+        <action android:name="org.robolectric.ACTION_DIFFERENT_PACKAGE"/>
+      </intent-filter>
+      <meta-data android:name="metadatasample" android:value="sample"/>
+    </service>
+  </application>
+</manifest>

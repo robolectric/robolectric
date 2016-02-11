@@ -6,17 +6,18 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 
-import org.junit.Before;
-import org.junit.Ignore;
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
+import org.robolectric.RoboSettings;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 
+import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -143,7 +144,9 @@ public class ShadowLooperTest {
     looper.quit();
     assertThat(shadowOf(looper).hasQuit()).as("hasQuit").isTrue();
     assertThat(shadowOf(looper).post(new Runnable() {
-      @Override public void run() { }
+      @Override
+      public void run() {
+      }
     }, 0)).as("post").isFalse();
 
     assertThat(shadowOf(looper).postAtFrontOfQueue(new Runnable() {
@@ -198,18 +201,27 @@ public class ShadowLooperTest {
   }
 
   @Test
+  public void shouldSetNewScheduler_whenLooperIsReset() {
+    HandlerThread ht = getHandlerThread();
+    Looper looper = ht.getLooper();
+    ShadowLooper sLooper = shadowOf(looper);
+    Scheduler old = sLooper.getScheduler();
+    sLooper.reset();
+    assertThat(old).isNotSameAs(sLooper.getScheduler());
+  }
+
+  @Test
   public void resetThreadLoopers_shouldQuitAllNonMainLoopers() throws InterruptedException {
     QuitThread test = getQuitThread();
-    assertThat(test.hasContinued).isFalse();
+    assertThat(test.hasContinued).as("hasContinued:before").isFalse();
     ShadowLooper.resetThreadLoopers();
     test.join(5000);
-    assertThat(test.hasContinued).isTrue();
+    assertThat(test.hasContinued).as("hasContinued:after").isTrue();
   }
  
-  @Ignore("Not yet implemented (ref #1407)") 
   @Test(timeout = 1000)
   public void whenTestHarnessUsesDifferentThread_shouldStillHaveMainLooper() {
-    assertThat(Looper.myLooper()).isNotNull();
+    assertThat(Looper.myLooper()).isSameAs(Looper.getMainLooper());
   }
   
   @Test
@@ -236,21 +248,86 @@ public class ShadowLooperTest {
     Scheduler scheduler = shadowOf(mainLooper).getScheduler();
     shadowOf(mainLooper).quit = true;
     assertThat(RuntimeEnvironment.application.getMainLooper()).isSameAs(mainLooper);
-
+    Scheduler s = new Scheduler();
+    RuntimeEnvironment.setMasterScheduler(s);
     ShadowLooper.resetThreadLoopers();
     Application application = new Application();
     ReflectionHelpers.callInstanceMethod(application, "attach", ReflectionHelpers.ClassParameter.from(Context.class, RuntimeEnvironment.application.getBaseContext()));
 
     assertThat(Looper.getMainLooper()).as("Looper.getMainLooper()").isSameAs(mainLooper);
     assertThat(application.getMainLooper()).as("app.getMainLooper()").isSameAs(mainLooper);
-    assertThat(shadowOf(mainLooper).getScheduler()).as("scheduler").isNotSameAs(scheduler);
+    assertThat(shadowOf(mainLooper).getScheduler()).as("scheduler").isNotSameAs(scheduler).isSameAs(s);
     assertThat(shadowOf(mainLooper).hasQuit()).as("quit").isFalse();
   }
 
   @Test
   public void getMainLooperReturnsNonNullOnMainThreadWhenRobolectricApplicationIsNull() {
-      RuntimeEnvironment.application = null;
-      assertThat(Looper.getMainLooper()).isNotNull();
+    RuntimeEnvironment.application = null;
+    assertThat(Looper.getMainLooper()).isNotNull();
+  }
+
+  private void setAdvancedScheduling() {
+    RoboSettings.setUseGlobalScheduler(true);
+  }
+
+  @Test
+  public void reset_setsGlobalScheduler_forMainLooper_byDefault() {
+    ShadowLooper sMainLooper = ShadowLooper.getShadowMainLooper();
+    Scheduler s = new Scheduler();
+    RuntimeEnvironment.setMasterScheduler(s);
+    sMainLooper.reset();
+    assertThat(sMainLooper.getScheduler()).isSameAs(s);
+  }
+
+  @Test
+  public void reset_setsGlobalScheduler_forMainLooper_withAdvancedScheduling() {
+    setAdvancedScheduling();
+    ShadowLooper sMainLooper = ShadowLooper.getShadowMainLooper();
+    Scheduler s = new Scheduler();
+    RuntimeEnvironment.setMasterScheduler(s);
+    sMainLooper.reset();
+    assertThat(sMainLooper.getScheduler()).isSameAs(s);
+  }
+
+  @Test
+  public void reset_setsNewScheduler_forNonMainLooper_byDefault() {
+    HandlerThread ht = getHandlerThread();
+    ShadowLooper sLooper = shadowOf(ht.getLooper());
+    Scheduler old = sLooper.getScheduler();
+    sLooper.reset();
+    assertThat(sLooper.getScheduler())
+        .isNotSameAs(old)
+        .isNotSameAs(RuntimeEnvironment.getMasterScheduler());
+  }
+
+  @Test
+  public void reset_setsSchedulerToMaster_forNonMainLooper_withAdvancedScheduling() {
+    HandlerThread ht = getHandlerThread();
+    ShadowLooper sLooper = shadowOf(ht.getLooper());
+    Scheduler s = new Scheduler();
+    RuntimeEnvironment.setMasterScheduler(s);
+    setAdvancedScheduling();
+    sLooper.reset();
+    assertThat(sLooper.getScheduler()).isSameAs(s);
+  }
+
+  @Test
+  public void myLooper_returnsMainLooper_ifMainThreadIsSwitched() throws InterruptedException {
+    final AtomicReference<Looper> myLooper = new AtomicReference<>();
+    Thread t = new Thread(testName.getMethodName()) {
+      @Override
+      public void run() {
+        myLooper.set(Looper.myLooper());
+      }
+    };
+    RuntimeEnvironment.setMainThread(t);
+    t.start();
+    try {
+      t.join(1000);
+      assertThat(myLooper.get()).isSameAs(Looper.getMainLooper());
+    } finally {
+      RuntimeEnvironment.setMainThread(Thread.currentThread());
+    }
   }
 
   @Test
@@ -269,5 +346,56 @@ public class ShadowLooperTest {
     backgroundThread.join();
 
     assertThat(mainLooperAtomicReference.get()).as("mainLooper").isSameAs(Looper.getMainLooper());
+  }
+
+  @Test
+  public void schedulerOnAnotherLooper_shouldNotBeMaster_byDefault() {
+    HandlerThread ht = getHandlerThread();
+    assertThat(shadowOf(ht.getLooper()).getScheduler()).isNotSameAs(RuntimeEnvironment.getMasterScheduler());
+  }
+
+  @Test
+  public void schedulerOnAnotherLooper_shouldBeMaster_ifAdvancedSchedulingEnabled() {
+    setAdvancedScheduling();
+    HandlerThread ht = getHandlerThread();
+    assertThat(shadowOf(ht.getLooper()).getScheduler()).isSameAs(RuntimeEnvironment.getMasterScheduler());
+  }
+
+  @Test
+  public void withAdvancedScheduling_shouldDispatchMessagesOnBothLoopers_whenAdvancingForegroundThread() {
+    setAdvancedScheduling();
+    ShadowLooper.pauseMainLooper();
+    HandlerThread ht = getHandlerThread();
+    Handler handler1 = new Handler(ht.getLooper());
+    Handler handler2 = new Handler();
+    final ArrayList<String> events = new ArrayList<>();
+    handler1.postDelayed(new Runnable() {
+      @Override
+      public void run() {
+        events.add("handler1");
+      }
+    }, 100);
+    handler2.postDelayed(new Runnable() {
+      @Override
+      public void run() {
+        events.add("handler2");
+      }
+    }, 200);
+    assertThat(events).as("start").isEmpty();
+    Scheduler s = ShadowLooper.getShadowMainLooper().getScheduler();
+    assertThat(s).isSameAs(RuntimeEnvironment.getMasterScheduler())
+      .isSameAs(shadowOf(ht.getLooper()).getScheduler());
+    final long startTime = s.getCurrentTime();
+    s.runOneTask();
+    assertThat(events).as("firstEvent").containsExactly("handler1");
+    assertThat(s.getCurrentTime()).as("firstEvent:time").isEqualTo(100 + startTime);
+    s.runOneTask();
+    assertThat(events).as("secondEvent").containsExactly("handler1", "handler2");
+    assertThat(s.getCurrentTime()).as("secondEvent:time").isEqualTo(200 + startTime);
+  }
+
+  @After
+  public void tearDown() {
+    RoboSettings.setUseGlobalScheduler(false);
   }
 }

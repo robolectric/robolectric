@@ -63,13 +63,16 @@ public class ShadowContextImpl extends ShadowContext {
     SYSTEM_SERVICE_MAP.put(Context.DEVICE_POLICY_SERVICE, "android.app.admin.DevicePolicyManager");
     SYSTEM_SERVICE_MAP.put(Context.DROPBOX_SERVICE, "android.os.DropBoxManager");
     SYSTEM_SERVICE_MAP.put(Context.MEDIA_ROUTER_SERVICE, "android.media.MediaRouter");
+    SYSTEM_SERVICE_MAP.put(Context.ACCESSIBILITY_SERVICE, "android.view.accessibility.AccessibilityManager");
+    SYSTEM_SERVICE_MAP.put(Context.ACCOUNT_SERVICE, "android.accounts.AccountManager");
+    SYSTEM_SERVICE_MAP.put(Context.NFC_SERVICE, "android.nfc.NfcManager");
 #if ($api >= 17)
     SYSTEM_SERVICE_MAP.put(Context.DISPLAY_SERVICE, "android.hardware.display.DisplayManager");
     SYSTEM_SERVICE_MAP.put(Context.USER_SERVICE, "android.os.UserManager");
 #end
-    SYSTEM_SERVICE_MAP.put(Context.ACCESSIBILITY_SERVICE, "android.view.accessibility.AccessibilityManager");
-    SYSTEM_SERVICE_MAP.put(Context.ACCOUNT_SERVICE, "android.accounts.AccountManager");
-    SYSTEM_SERVICE_MAP.put(Context.NFC_SERVICE, "android.nfc.NfcManager");
+#if ($api >= 18)
+    SYSTEM_SERVICE_MAP.put(Context.BLUETOOTH_SERVICE, "android.bluetooth.BluetoothManager");
+#end
 #if ($api >= 19)
     SYSTEM_SERVICE_MAP.put(Context.PRINT_SERVICE, "android.print.PrintManager");
 #end

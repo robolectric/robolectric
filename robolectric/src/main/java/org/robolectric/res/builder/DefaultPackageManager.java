@@ -9,6 +9,8 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ProviderInfo;
 import android.content.pm.ResolveInfo;
+import android.content.pm.ServiceInfo;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -35,6 +37,7 @@ import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.BroadcastReceiverData;
 import org.robolectric.manifest.ContentProviderData;
 import org.robolectric.manifest.IntentFilterData;
+import org.robolectric.manifest.ServiceData;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceIndex;
 import org.robolectric.res.ResourceLoader;
@@ -201,6 +204,27 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
       }
     }
     return activityInfo;
+  }
+  
+  @Override
+  public ServiceInfo getServiceInfo(ComponentName className, int flags) throws NameNotFoundException {
+    String packageName = className.getPackageName();
+    AndroidManifest androidManifest = androidManifests.get(packageName);
+    String serviceName = className.getClassName();
+    ServiceData serviceData = androidManifest.getServiceData(serviceName);
+    if (serviceData == null) {
+      throw new NameNotFoundException();
+    }
+    
+    ServiceInfo serviceInfo = new ServiceInfo();
+    serviceInfo.packageName = packageName;
+    serviceInfo.name = serviceName;
+    serviceInfo.applicationInfo = getApplicationInfo(packageName, flags);
+    serviceInfo.permission = serviceData.getPermission();
+    if ((flags & GET_META_DATA) != 0) {
+      serviceInfo.metaData = metaDataToBundle(serviceData.getMetaData().getValueMap());
+    }
+    return serviceInfo;   
   }
 
   @Override
@@ -654,7 +678,7 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
   @Override
   public int checkPermission(String permName, String pkgName) {
     PackageInfo permissionsInfo = packageInfos.get(pkgName);
-    if (permissionsInfo == null) {
+    if (permissionsInfo == null || permissionsInfo.requestedPermissions == null) {
       return PackageManager.PERMISSION_DENIED;
     }
     for (String permission : permissionsInfo.requestedPermissions) {

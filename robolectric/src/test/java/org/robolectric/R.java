@@ -82,6 +82,7 @@ public final class R {
     public static final int world = 0x1003a;
 
     public static final int list_view_with_enum_scrollbar = 0x1003b;
+    public static final int action_search = 0x1003c;
   }
 
   public static final class string {
@@ -205,14 +206,14 @@ public final class R {
     public static final int webview_holder = 0x1061d;
     public static final int with_invalid_onclick = 0x1061e;
     public static final int styles_button_with_style_layout = 0x1061f;
-    public static final int custom_title = 0x10621;
-    public static final int remote_views = 0x10622;
-    public static final int main_layout = 0x10623;
-    public static final int activity_main = 0x10624;
-    public static final int activity_main_1 = 0x10625;
-    public static final int ordinal_scrollbar = 0x10626;
-    public static final int custom_layout5 = 0x10627;
-    public static final int custom_layout6 = 0x10628;
+    public static final int custom_title = 0x10620;
+    public static final int remote_views = 0x10621;
+    public static final int main_layout = 0x10622;
+    public static final int activity_main = 0x10623;
+    public static final int activity_main_1 = 0x10624;
+    public static final int ordinal_scrollbar = 0x10625;
+    public static final int custom_layout5 = 0x10626;
+    public static final int custom_layout6 = 0x10627;
   }
 
   public static final class anim {

@@ -10,6 +10,8 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ProviderInfo;
 import android.content.pm.ResolveInfo;
+import android.content.pm.ServiceInfo;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -34,7 +36,10 @@ import org.robolectric.test.TemporaryFolder;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.robolectric.Robolectric.setupActivity;
 
 @RunWith(RobolectricTestRunner.class)
@@ -640,6 +645,42 @@ public class DefaultRobolectricPackageManagerTest {
     ApplicationInfo applicationInfo = rpm.getApplicationInfo("org.robolectric", 0);
     String appName = ShadowApplication.getInstance().getApplicationContext().getString(applicationInfo.labelRes);
     assertThat(appName).isEqualTo("Testing App");
+  }
+  
+  @Test
+  @Config(manifest = "src/test/resources/TestPackageManagerGetServiceInfo.xml")
+  public void getServiceInfo_shouldReturnServiceInfoIfExists() throws Exception {
+    ServiceInfo serviceInfo = rpm.getServiceInfo(new ComponentName("org.robolectric", "com.foo.Service"), PackageManager.GET_SERVICES);
+    assertEquals(serviceInfo.packageName, "org.robolectric");
+    assertEquals(serviceInfo.name, "com.foo.Service");
+    assertEquals(serviceInfo.permission, "com.foo.MY_PERMISSION");
+    assertNotNull(serviceInfo.applicationInfo);  
+  }
+  
+  @Test
+  @Config(manifest = "src/test/resources/TestPackageManagerGetServiceInfo.xml")
+  public void getServiceInfo_shouldReturnServiceInfoWithMetaDataWhenFlagsSet() throws Exception {
+    ServiceInfo serviceInfo = rpm.getServiceInfo(new ComponentName("org.robolectric", "com.foo.Service"), PackageManager.GET_META_DATA);
+    assertNotNull(serviceInfo.metaData);
+  }
+  
+  @Test
+  @Config(manifest = "src/test/resources/TestPackageManagerGetServiceInfo.xml")
+  public void getServiceInfo_shouldReturnServiceInfoWithoutMetaDataWhenFlagsNotSet() throws Exception {
+    ServiceInfo serviceInfo = rpm.getServiceInfo(new ComponentName("org.robolectric", "com.foo.Service"), PackageManager.GET_SERVICES);
+    assertNull(serviceInfo.metaData);
+  }
+  
+  @Test
+  @Config(manifest = "src/test/resources/TestPackageManagerGetServiceInfo.xml")
+  public void getServiceInfo_shouldThrowNameNotFoundExceptionIfNotExist() throws Exception {
+    ComponentName nonExistComponent = new ComponentName("org.robolectric", "com.foo.NonExistService");
+    try {
+      rpm.getServiceInfo(nonExistComponent, PackageManager.GET_SERVICES);
+    } catch (NameNotFoundException e) {
+      return;
+    }
+    fail("NameNotFoundException is expected.");
   }
 
   /////////////////////////////

@@ -8,6 +8,7 @@ import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 
 import static junit.framework.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowTextPaintTest {
@@ -24,6 +25,6 @@ public class ShadowTextPaintTest {
   public void measureText_returnRealMeasurements() throws Exception {
     TextPaint paint = new TextPaint();
     paint.getFontMetrics();
-    assertEquals(44.0f, paint.measureText("1234"));
+    assertThat(paint.measureText("1234")).isGreaterThan(0);
   }
 }

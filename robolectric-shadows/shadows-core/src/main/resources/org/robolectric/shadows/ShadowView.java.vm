@@ -124,7 +124,7 @@ public class ShadowView {
     return shadowOf(view).innerText();
   }
 
-#if ($api == 21)
+#if ($api >= 21)
   @SuppressWarnings("deprecation")
   public void updateViewId(AttributeSet attributeSet, int defStyleValue) {
     final TypedArray a = realView.getContext().obtainStyledAttributes(attributeSet, com.android.internal.R.styleable.View, defStyleValue, 0);

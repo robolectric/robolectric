@@ -39,8 +39,8 @@ import java.util.List;
 import javax.imageio.ImageIO;
 
 
-@RunWith(TestRunners.WithDefaults.class)
-@Config(rendering=true)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
+@Config(rendering=true, sdk = {21, 22})
 public class RenderTest {
   // path to the SDK and the project to render
   private final static String PROJECT = "./src/test/resources/";
@@ -128,7 +128,8 @@ public class RenderTest {
         } else if (realView instanceof ImageView) {
           ImageView imageView = (ImageView) realView;
           com.android.layoutlib.bridge.Bridge.prepareThread();
-          imageView.setImageDrawable((RuntimeEnvironment.application.getResources()
+          imageView.setImageDrawable(
+              (RuntimeEnvironment.application.getResources()
               .getDrawable(R.drawable.third_image)));
           com.android.layoutlib.bridge.Bridge.cleanupThread();
         }

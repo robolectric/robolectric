@@ -1,5 +1,8 @@
 package org.robolectric.shadows;
-#if ($api == 21)
+#if ($api >= 21)
+import com.android.ide.common.rendering.api.AssetRepository;
+import com.android.ide.common.rendering.api.IProjectCallback;
+import com.android.ide.common.rendering.api.RenderResources;
 import com.android.layoutlib.bridge.android.BridgeContext;
 import com.android.layoutlib.bridge.android.BridgePowerManager;
 
@@ -7,10 +10,13 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.os.Handler;
 import android.os.PowerManager;
+import android.util.DisplayMetrics;
 import android.view.accessibility.AccessibilityManager;
 import android.view.textservice.TextServicesManager;
 
@@ -56,6 +62,23 @@ public class ShadowBridgeContext{
       }
     }
     throw new UnsupportedOperationException("Unsupported Service: " + service);
+  }
+  public static BridgeContext obtain(Object projectKey, DisplayMetrics metrics,
+      RenderResources renderResources, AssetRepository assets, IProjectCallback projectCallback,
+      Configuration config, int targetSdkVersion, boolean hasRtlSupport) {
+    return ReflectionHelpers.callConstructor(BridgeContext.class, 
+        ClassParameter.from(Object.class, projectKey),
+        ClassParameter.from(DisplayMetrics.class, metrics),
+        ClassParameter.from(RenderResources.class, renderResources),
+#end
+#if ($api >= 22)
+        ClassParameter.from(AssetRepository.class, assets),
+#end
+#if ($api >= 21)
+        ClassParameter.from(IProjectCallback.class, projectCallback),
+        ClassParameter.from(Configuration.class, config),
+        ClassParameter.from(int.class, targetSdkVersion),
+        ClassParameter.from(boolean.class, hasRtlSupport));
   }
 }
 #end

@@ -29,12 +29,17 @@ import android.os.Parcel;
 import android.os.RemoteException;
 import android.os.UserManager;
 import android.print.PrintManager;
+import android.view.Gravity;
 import android.view.accessibility.AccessibilityManager;
+import android.widget.LinearLayout;
+import android.widget.PopupWindow;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.DefaultTestLifecycle;
 import org.robolectric.R;
+import org.robolectric.RoboSettings;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
@@ -52,6 +57,7 @@ import org.robolectric.res.ResourceIndex;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.TypedResource;
 import org.robolectric.test.TemporaryFolder;
+import org.robolectric.util.Scheduler;
 import org.robolectric.util.TestBroadcastReceiver;
 
 import java.io.File;
@@ -594,6 +600,40 @@ public class ShadowApplicationTest {
     final ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
     assertThat(shadowApplication.getForegroundThreadScheduler()).isSameAs(Robolectric.getForegroundThreadScheduler());
     assertThat(shadowApplication.getBackgroundThreadScheduler()).isSameAs(Robolectric.getBackgroundThreadScheduler());
+  }
+
+  @Test
+  public void getForegroundThreadScheduler_shouldMatchRuntimeEnvironment() {
+    Scheduler s = new Scheduler();
+    RuntimeEnvironment.setMasterScheduler(s);
+    final ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
+    assertThat(shadowApplication.getForegroundThreadScheduler()).isSameAs(s);
+  }
+
+  @Test
+  public void getBackgroundThreadScheduler_shouldDifferFromRuntimeEnvironment_byDefault() {
+    Scheduler s = new Scheduler();
+    RuntimeEnvironment.setMasterScheduler(s);
+    final ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
+    assertThat(shadowApplication.getBackgroundThreadScheduler()).isNotSameAs(RuntimeEnvironment.getMasterScheduler());
+  }
+
+  @Test
+  public void getBackgroundThreadScheduler_shouldDifferFromRuntimeEnvironment_withAdvancedScheduling() {
+    Scheduler s = new Scheduler();
+    RuntimeEnvironment.setMasterScheduler(s);
+    final ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
+    assertThat(shadowApplication.getBackgroundThreadScheduler()).isNotSameAs(s);
+  }
+
+  @Test
+  public void getLatestPopupWindow() {
+    PopupWindow pw = new PopupWindow(new LinearLayout(RuntimeEnvironment.application));
+
+    pw.showAtLocation(new LinearLayout(RuntimeEnvironment.application), Gravity.CENTER, 0, 0);
+
+    PopupWindow latestPopupWindow = ShadowApplication.getInstance().getLatestPopupWindow();
+    assertThat(latestPopupWindow).isSameAs(pw);
   }
 
   /////////////////////////////

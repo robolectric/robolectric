@@ -1,40 +1,30 @@
 package org.robolectric.shadows;
 
+import android.content.Context;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.util.Pair;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static android.content.Context.WIFI_SERVICE;
-import static junit.framework.Assert.assertTrue;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
-import static org.robolectric.RuntimeEnvironment.application;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowWifiManagerTest {
-
-  private WifiManager wifiManager;
-  private ShadowWifiManager shadowWifiManager;
-
-  @Before
-  public void setUp() throws Exception {
-    wifiManager = (WifiManager) application.getSystemService(WIFI_SERVICE);
-    shadowWifiManager = shadowOf(wifiManager);
-  }
+  private final WifiManager wifiManager = (WifiManager) RuntimeEnvironment.application.getSystemService(Context.WIFI_SERVICE);
+  private final ShadowWifiManager shadowWifiManager = shadowOf(wifiManager);
 
   @Test
   public void shouldReturnWifiInfo() {
-    assertEquals(wifiManager.getConnectionInfo().getClass(), WifiInfo.class);
+    assertThat(wifiManager.getConnectionInfo().getClass()).isEqualTo(WifiInfo.class);
   }
 
   @Test(expected = SecurityException.class)
@@ -57,13 +47,11 @@ public class ShadowWifiManagerTest {
 
   @Test
   public void shouldEnableNetworks() throws Exception {
-    int networkId = 666;
-    wifiManager.enableNetwork(networkId, true);
+    wifiManager.enableNetwork(666, true);
     Pair<Integer, Boolean> lastEnabled = shadowWifiManager.getLastEnabledNetwork();
     assertThat(lastEnabled).isEqualTo(new Pair<>(666, true));
 
-    int anotherNetworkId = 777;
-    wifiManager.enableNetwork(anotherNetworkId, false);
+    wifiManager.enableNetwork(777, false);
     lastEnabled = shadowWifiManager.getLastEnabledNetwork();
     assertThat(lastEnabled).isEqualTo(new Pair<>(777, false));
   }
@@ -118,20 +106,19 @@ public class ShadowWifiManagerTest {
     config.networkId = -1;
     assertThat(wifiManager.updateNetwork(config)).isEqualTo(-1);
     assertThat(wifiManager.updateNetwork(null)).isEqualTo(-1);
-    assertTrue(wifiManager.getConfiguredNetworks().isEmpty());
+    assertThat(wifiManager.getConfiguredNetworks()).isEmpty();
   }
 
   @Test
   public void shouldSaveConfigurations() throws Exception {
-    shadowWifiManager.wasSaved = false;
     assertThat(wifiManager.saveConfiguration()).isTrue();
-    assertThat(shadowWifiManager.wasSaved).isTrue();
+    assertThat(shadowWifiManager.wasConfigurationSaved()).isTrue();
   }
 
   @Test
   public void shouldCreateWifiLock() throws Exception {
-    assertNotNull(wifiManager.createWifiLock("TAG"));
-    assertNotNull(wifiManager.createWifiLock(1, "TAG"));
+    assertThat(wifiManager.createWifiLock("TAG")).isNotNull();
+    assertThat(wifiManager.createWifiLock(1, "TAG")).isNotNull();
   }
 
   @Test
@@ -139,11 +126,11 @@ public class ShadowWifiManagerTest {
     WifiManager.WifiLock lock = wifiManager.createWifiLock("TAG");
     lock.acquire();
     lock.acquire();
-    assertTrue(lock.isHeld());
+    assertThat(lock.isHeld()).isTrue();
     lock.release();
-    assertTrue(lock.isHeld());
+    assertThat(lock.isHeld()).isTrue();
     lock.release();
-    assertFalse(lock.isHeld());
+    assertThat(lock.isHeld()).isFalse();
   }
 
   @Test
@@ -151,11 +138,11 @@ public class ShadowWifiManagerTest {
     WifiManager.WifiLock lock = wifiManager.createWifiLock("TAG");
     lock.setReferenceCounted(false);
     lock.acquire();
-    assertTrue(lock.isHeld());
+    assertThat(lock.isHeld()).isTrue();
     lock.acquire();
-    assertTrue(lock.isHeld());
+    assertThat(lock.isHeld()).isTrue();
     lock.release();
-    assertFalse(lock.isHeld());
+    assertThat(lock.isHeld()).isFalse();
   }
 
   @Test(expected = RuntimeException.class)
@@ -173,20 +160,20 @@ public class ShadowWifiManagerTest {
   @Test
   public void shouldCalculateSignalLevelSetBefore() {
     ShadowWifiManager.setSignalLevelInPercent(0.5f);
-    assertEquals(2, WifiManager.calculateSignalLevel(0, 5));
-    assertEquals(2, WifiManager.calculateSignalLevel(2, 5));
+    assertThat(WifiManager.calculateSignalLevel(0, 5)).isEqualTo(2);
+    assertThat(WifiManager.calculateSignalLevel(2, 5)).isEqualTo(2);
 
     ShadowWifiManager.setSignalLevelInPercent(0.9f);
-    assertEquals(3, WifiManager.calculateSignalLevel(0, 5));
-    assertEquals(3, WifiManager.calculateSignalLevel(2, 5));
+    assertThat(WifiManager.calculateSignalLevel(0, 5)).isEqualTo(3);
+    assertThat(WifiManager.calculateSignalLevel(2, 5)).isEqualTo(3);
 
     ShadowWifiManager.setSignalLevelInPercent(1f);
-    assertEquals(3, WifiManager.calculateSignalLevel(0, 4));
-    assertEquals(3, WifiManager.calculateSignalLevel(2, 4));
+    assertThat(WifiManager.calculateSignalLevel(0, 4)).isEqualTo(3);
+    assertThat(WifiManager.calculateSignalLevel(2, 4)).isEqualTo(3);
 
     ShadowWifiManager.setSignalLevelInPercent(0);
-    assertEquals(0, WifiManager.calculateSignalLevel(0, 5));
-    assertEquals(0, WifiManager.calculateSignalLevel(2, 5));
+    assertThat(WifiManager.calculateSignalLevel(0, 5)).isEqualTo(0);
+    assertThat(WifiManager.calculateSignalLevel(2, 5)).isEqualTo(0);
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -197,5 +184,10 @@ public class ShadowWifiManagerTest {
   @Test(expected = IllegalArgumentException.class)
   public void shouldThrowIllegalArgumentExceptionWhenSignalLevelToHigh() {
     ShadowWifiManager.setSignalLevelInPercent(1.01f);
+  }
+
+  @Test
+  public void startScan_shouldNotThrowException() {
+    assertThat(wifiManager.startScan()).isTrue();
   }
 }

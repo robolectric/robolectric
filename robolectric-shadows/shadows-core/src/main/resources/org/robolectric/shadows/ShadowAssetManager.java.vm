@@ -410,7 +410,7 @@ public final class ShadowAssetManager {
   private Resource resolveResource(TypedResource value, String qualifiers, ResName resName) {
     while (isReference(value)) {
       String s = value.asString();
-      if (s.equals("@null")) {
+      if (s.equals("@null") || s.equals("@empty")) {
         value = null;
       } else {
         String refStr = s.substring(1).replace("+", "");

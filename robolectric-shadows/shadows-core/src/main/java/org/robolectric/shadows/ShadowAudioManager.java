@@ -3,6 +3,8 @@ package org.robolectric.shadows;
 import android.media.AudioManager;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.util.ReflectionHelpers;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,8 +34,10 @@ public class ShadowAudioManager {
   private AudioManager.OnAudioFocusChangeListener lastAbandonedAudioFocusListener;
   private HashMap<Integer, AudioStream> streamStatus = new HashMap<>();
   private int ringerMode = AudioManager.RINGER_MODE_NORMAL;
+  private int mode = AudioManager.MODE_NORMAL;
   private boolean wiredHeadsetOn;
   private boolean bluetoothA2dpOn;
+  private boolean isSpeakerphoneOn;
 
   public ShadowAudioManager() {
     for (int stream : ALL_STREAMS) {
@@ -89,6 +93,23 @@ public class ShadowAudioManager {
     this.ringerMode = ringerMode;
   }
 
+  public static boolean isValidRingerMode(int ringerMode) {
+    if (ringerMode < 0 || ringerMode > (int)ReflectionHelpers.getStaticField(AudioManager.class, "RINGER_MODE_MAX")) {
+      return false;
+    }
+    return true;
+  }
+
+  @Implementation
+  public void setMode(int mode) {
+    this.mode = mode;
+  }
+
+  @Implementation
+  public int getMode() {
+    return this.mode;
+  } 
+
   public void setStreamMaxVolume(int streamMaxVolume) {
     for (Map.Entry<Integer, AudioStream> entry : streamStatus.entrySet()) {
       entry.getValue().setMaxVolume(streamMaxVolume);
@@ -119,6 +140,16 @@ public class ShadowAudioManager {
   @Implementation
   public boolean isBluetoothA2dpOn() {
     return bluetoothA2dpOn;
+  }
+
+  @Implementation
+  public void setSpeakerphoneOn(boolean on) {
+    isSpeakerphoneOn = on;
+  }
+
+  @Implementation
+  public boolean isSpeakerphoneOn() {
+    return isSpeakerphoneOn;
   }
 
   public AudioFocusRequest getLastAudioFocusRequest() {

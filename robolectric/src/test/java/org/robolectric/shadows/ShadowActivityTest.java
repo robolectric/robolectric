@@ -7,6 +7,7 @@ import android.app.Application;
 import android.app.Dialog;
 import android.app.Fragment;
 import android.appwidget.AppWidgetProvider;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -16,28 +17,33 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteCursor;
 import android.media.AudioManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewRootImpl;
 import android.view.Window;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.SearchView;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.*;
-import org.robolectric.annotation.Config;
+import org.robolectric.R;
+import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.Shadows;
+import org.robolectric.TestRunners;
+import org.robolectric.internal.Shadow;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
 import org.robolectric.test.TemporaryFolder;
 import org.robolectric.util.ActivityController;
-import org.robolectric.internal.Shadow;
 import org.robolectric.util.TestRunnable;
 import org.robolectric.util.Transcript;
 
@@ -54,19 +60,17 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Robolectric.setupActivity;
 import static org.robolectric.RuntimeEnvironment.application;
-import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(RobolectricTestRunner.class)
-@Config(manifest = "src/test/resources/TestAndroidManifest.xml")
+@RunWith(TestRunners.WithDefaults.class)
 public class ShadowActivityTest {
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
   private Activity activity;
 
   @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifestWithLabels.xml")
   public void shouldUseApplicationLabelFromManifestAsTitleForActivity() throws Exception {
     activity = create(LabelTestActivity1.class);
     assertThat(activity.getTitle()).isNotNull();
@@ -74,7 +78,6 @@ public class ShadowActivityTest {
   }
 
   @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifestWithLabels.xml")
   public void shouldUseActivityLabelFromManifestAsTitleForActivity() throws Exception {
     activity = create(LabelTestActivity2.class);
     assertThat(activity.getTitle()).isNotNull();
@@ -82,7 +85,6 @@ public class ShadowActivityTest {
   }
 
   @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifestWithLabels.xml")
   public void shouldUseActivityLabelFromManifestAsTitleForActivityWithShortName() throws Exception {
     activity = create(LabelTestActivity3.class);
     assertThat(activity.getTitle()).isNotNull();
@@ -733,12 +735,20 @@ public class ShadowActivityTest {
   }
 
   @Test
-  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void canGetOptionsMenu() throws Exception {
     Activity activity = buildActivity(OptionsMenuActivity.class).create().visible().get();
     Menu optionsMenu = shadowOf(activity).getOptionsMenu();
     assertThat(optionsMenu).isNotNull();
     assertThat(optionsMenu.getItem(0).getTitle()).isEqualTo("Algebraic!");
+  }
+
+  @Test
+  public void canGetOptionsMenuWithActionMenu() throws Exception {
+    ActionMenuActivity activity = buildActivity(ActionMenuActivity.class).create().visible().get();
+
+    SearchView searchView = activity.mSearchView;
+    // This blows up when ShadowPopupMenu existed.
+    searchView.setIconifiedByDefault(false);
   }
 
   @Test
@@ -817,6 +827,24 @@ public class ShadowActivityTest {
         .isEqualTo(ParentActivity.class.getName());
   }
 
+  @Test
+  public void getCallingActivity_defaultsToNull() {
+    Activity activity = new Activity();
+
+    assertNull(activity.getCallingActivity());
+  }
+
+  @Test
+  public void getCallingActivity_returnsSetValue() {
+    Activity activity = new Activity();
+    ComponentName componentName = new ComponentName("com.example.package", "SomeActivity");
+
+    ShadowActivity shadowActivity = shadowOf(activity);
+    shadowActivity.setCallingActivity(componentName);
+
+    assertEquals(componentName, activity.getCallingActivity());
+  }
+
   /////////////////////////////
 
   private void destroy(Activity activity) {
@@ -862,6 +890,27 @@ public class ShadowActivityTest {
     public boolean onCreateOptionsMenu(Menu menu) {
       super.onCreateOptionsMenu(menu);
       menu.add("Algebraic!");
+      return true;
+    }
+  }
+
+  private static class ActionMenuActivity extends Activity {
+    SearchView mSearchView;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+      super.onCreate(savedInstanceState);
+      getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
+      setContentView(new FrameLayout(this));
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+      MenuInflater inflater = getMenuInflater();
+      inflater.inflate(R.menu.action_menu, menu);
+
+      MenuItem searchMenuItem = menu.findItem(R.id.action_search);
+      mSearchView = (SearchView) searchMenuItem.getActionView();
       return true;
     }
   }

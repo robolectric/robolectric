@@ -29,7 +29,7 @@
     <maven.compiler.source>1.7</maven.compiler.source>
     <maven.compiler.target>1.7</maven.compiler.target>
     <libsqlite.version>0.282-3</libsqlite.version>
-    <robolectric.api.level>21</robolectric.api.level>
+    <robolectric.api.level>22</robolectric.api.level>
   </properties>
 
   <dependencyManagement>
@@ -89,7 +89,7 @@
       <dependency>
         <groupId>org.robolectric</groupId>
         <artifactId>android-all</artifactId>
-        <version>5.0.0_r2-robolectric-1</version>
+        <version>5.1.1_r9-robolectric-0</version>
         <scope>provided</scope>
       </dependency>
 

@@ -28,8 +28,11 @@ import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
  */
 @Implements(MessageQueue.class)
 public class ShadowMessageQueue {
+
   @RealObject
   private MessageQueue realQueue;
+
+  private Scheduler scheduler;
 
 #if ($api >= 21)
 #set($recycle = "recycleUnchecked")
@@ -68,10 +71,18 @@ public class ShadowMessageQueue {
     return false;
   }
 
+  public Scheduler getScheduler() {
+    return scheduler;
+  }
+
+  public void setScheduler(Scheduler scheduler) {
+    this.scheduler = scheduler;
+  }
+
   public Message getHead() {
     return getField(realQueue, "mMessages");
   }
-  
+
   public void setHead(Message msg) {
     setField(realQueue, "mMessages", msg);
   }
@@ -84,7 +95,6 @@ public class ShadowMessageQueue {
   public boolean enqueueMessage(final Message msg, long when) {
     final boolean retval = directlyOn(realQueue, MessageQueue.class, "enqueueMessage", from(Message.class, msg), from(long.class, when));
     if (retval) {
-      final Scheduler scheduler = shadowOf(msg.getTarget().getLooper()).getScheduler();
       final Runnable callback = new Runnable() {
         @Override
         public void run() {

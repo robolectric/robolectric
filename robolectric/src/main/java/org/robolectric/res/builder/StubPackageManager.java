@@ -568,6 +568,11 @@ public class StubPackageManager extends PackageManager {
   }
 
   @Override
+  public boolean isUpgrade() {
+    return false;
+  }
+
+  @Override
   public PackageInstaller getPackageInstaller() {
     return null;
   }
@@ -584,6 +589,11 @@ public class StubPackageManager extends PackageManager {
 
   @Override
   public Drawable loadItemIcon(PackageItemInfo packageItemInfo, ApplicationInfo applicationInfo) {
+    return null;
+  }
+
+  @Override
+  public Drawable loadUnbadgedItemIcon(PackageItemInfo packageItemInfo, ApplicationInfo applicationInfo) {
     return null;
   }
 

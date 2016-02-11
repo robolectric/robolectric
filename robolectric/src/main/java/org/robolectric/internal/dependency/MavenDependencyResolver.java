@@ -4,6 +4,7 @@ import org.apache.maven.artifact.ant.DependenciesTask;
 import org.apache.maven.artifact.ant.RemoteRepository;
 import org.apache.maven.model.Dependency;
 import org.apache.tools.ant.Project;
+import org.robolectric.RoboSettings;
 import org.robolectric.util.Util;
 
 import java.net.MalformedURLException;
@@ -16,7 +17,7 @@ public class MavenDependencyResolver implements DependencyResolver {
   private final String repositoryId;
 
   public MavenDependencyResolver() {
-    this("https://oss.sonatype.org/content/groups/public/", "sonatype");
+    this(RoboSettings.getMavenRepositoryUrl(), RoboSettings.getMavenRepositoryId());
   }
 
   public MavenDependencyResolver(String repositoryUrl, String repositoryId) {
@@ -30,12 +31,12 @@ public class MavenDependencyResolver implements DependencyResolver {
    */
   @Override
   public URL[] getLocalArtifactUrls(DependencyJar... dependencies) {
-    DependenciesTask dependenciesTask = new DependenciesTask();
+    DependenciesTask dependenciesTask = createDependenciesTask();
     configureMaven(dependenciesTask);
-    RemoteRepository sonatypeRepository = new RemoteRepository();
-    sonatypeRepository.setUrl(repositoryUrl);
-    sonatypeRepository.setId(repositoryId);
-    dependenciesTask.addConfiguredRemoteRepository(sonatypeRepository);
+    RemoteRepository remoteRepository = new RemoteRepository();
+    remoteRepository.setUrl(repositoryUrl);
+    remoteRepository.setId(repositoryId);
+    dependenciesTask.addConfiguredRemoteRepository(remoteRepository);
     dependenciesTask.setProject(project);
     for (DependencyJar dependencyJar : dependencies) {
       Dependency dependency = new Dependency();
@@ -78,6 +79,10 @@ public class MavenDependencyResolver implements DependencyResolver {
       key += ":" + dependency.getClassifier();
     }
     return key;
+  }
+
+  protected DependenciesTask createDependenciesTask() {
+    return new DependenciesTask();
   }
 
   protected void configureMaven(DependenciesTask dependenciesTask) {

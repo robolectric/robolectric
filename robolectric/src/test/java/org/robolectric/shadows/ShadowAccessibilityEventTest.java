@@ -3,11 +3,13 @@ package org.robolectric.shadows;
 import android.app.Notification;
 import android.os.Parcel;
 import android.view.accessibility.AccessibilityEvent;
+import android.widget.TextView;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -61,6 +63,16 @@ public class ShadowAccessibilityEventTest {
     assertThat(event).isEqualTo(anotherEvent);
     event.setContentDescription(null);
     anotherEvent.recycle();
+  }
+
+  @Test
+  public void shouldHaveCurrentSourceId() {
+    TextView rootView = new TextView(RuntimeEnvironment.application);
+    event.setSource(rootView);
+    assertThat(shadow.getSourceRoot()).isEqualTo(rootView);
+    assertThat(shadow.getVirtualDescendantId()).isEqualTo(ShadowAccessibilityRecord.NO_VIRTUAL_ID);
+    event.setSource(rootView, 1);
+    assertThat(shadow.getVirtualDescendantId()).isEqualTo(1);
   }
 
   @After

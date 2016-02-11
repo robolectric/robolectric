@@ -11,6 +11,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import java.lang.reflect.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ShadowWrangler implements ClassHandler {
   public static final Function<Object, Object> DO_NOTHING_HANDLER = new Function<Object, Object>() {
@@ -37,7 +38,7 @@ public class ShadowWrangler implements ClassHandler {
       return size() > 500;
     }
   };
-  private final Map<Class, ShadowConfig> shadowConfigCache = new HashMap<>();
+  private final Map<Class, ShadowConfig> shadowConfigCache = new ConcurrentHashMap<>();
   public static final HashMap<String, Object> PRIMITIVE_RETURN_VALUES = new HashMap<>();
 
   static {

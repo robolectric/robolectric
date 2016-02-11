@@ -55,7 +55,7 @@ public class ShadowLocaleDataTest {
     assertThat(localeData.decimalSeparator).isEqualTo('.');
     assertThat(localeData.groupingSeparator).isEqualTo(',');
     assertThat(localeData.patternSeparator).isEqualTo(';');
-    assertThat(localeData.percent).isEqualTo('%');
+
     assertThat(localeData.perMill).isEqualTo('‰');
     assertThat(localeData.monetarySeparator).isEqualTo('.');
 
@@ -74,10 +74,19 @@ public class ShadowLocaleDataTest {
 
   @Test
   @Config(sdk = {
+      Build.VERSION_CODES.LOLLIPOP_MR1})
+  public void shouldSupportLocaleEn_US_percentPost22() throws Exception {
+    LocaleData localeData = LocaleData.get(Locale.US);
+    assertThat(localeData.percent).isEqualTo("%");
+  }
+
+  @Test
+  @Config(sdk = {
       Build.VERSION_CODES.JELLY_BEAN_MR1,
       Build.VERSION_CODES.JELLY_BEAN_MR2,
       Build.VERSION_CODES.KITKAT,
-      Build.VERSION_CODES.LOLLIPOP })
+      Build.VERSION_CODES.LOLLIPOP,
+      Build.VERSION_CODES.LOLLIPOP_MR1})
   public void shouldSupportLocaleEn_US_since_jelly_bean_mr1() throws Exception {
     LocaleData localeData = LocaleData.get(Locale.US);
 
@@ -95,7 +104,8 @@ public class ShadowLocaleDataTest {
   @Config(sdk = {
       Build.VERSION_CODES.JELLY_BEAN_MR2,
       Build.VERSION_CODES.KITKAT,
-      Build.VERSION_CODES.LOLLIPOP })
+      Build.VERSION_CODES.LOLLIPOP,
+      Build.VERSION_CODES.LOLLIPOP_MR1})
   public void shouldSupportLocaleEn_US_since_jelly_bean_mr2() throws Exception {
     LocaleData localeData = LocaleData.get(Locale.US);
 
@@ -106,7 +116,8 @@ public class ShadowLocaleDataTest {
 
   @Test
   @Config(sdk = {
-      Build.VERSION_CODES.LOLLIPOP })
+      Build.VERSION_CODES.LOLLIPOP,
+      Build.VERSION_CODES.LOLLIPOP_MR1})
   public void shouldSupportLocaleEn_US_since_lollipop() throws Exception {
     LocaleData localeData = LocaleData.get(Locale.US);
 

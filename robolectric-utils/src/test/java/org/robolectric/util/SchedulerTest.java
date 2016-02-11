@@ -2,12 +2,13 @@ package org.robolectric.util;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.robolectric.Robolectric;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.util.concurrent.TimeUnit.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.util.Scheduler.IdleState.*;
 
 public class SchedulerTest {
   private final Scheduler scheduler = new Scheduler();
@@ -18,7 +19,130 @@ public class SchedulerTest {
   @Before
   public void setUp() throws Exception {
     scheduler.pause();
-    startTime = scheduler.getCurrentTime();
+    startTime = scheduler.getCurrentTime(NANOSECONDS);
+  }
+
+  @Test
+  public void postDelayed_worksWithDifferentTimeUnits() {
+    Runnable r = new AddToTranscript("dummy");
+    scheduler.postDelayed(r, 12, NANOSECONDS);
+    scheduler.advanceToNextPostedRunnable();
+    startTime += 12;
+    assertThat(scheduler.getCurrentTime(NANOSECONDS)).as("nano step").isEqualTo(startTime);
+    scheduler.postDelayed(r, 12, MICROSECONDS);
+    scheduler.advanceToNextPostedRunnable();
+    startTime += 12000;
+    assertThat(scheduler.getCurrentTime(NANOSECONDS)).as("micro step").isEqualTo(startTime);
+    scheduler.postDelayed(r, 12, MILLISECONDS);
+    scheduler.advanceToNextPostedRunnable();
+    startTime += 12000000;
+    assertThat(scheduler.getCurrentTime(NANOSECONDS)).as("milli step").isEqualTo(startTime);
+    scheduler.postDelayed(r, 12, SECONDS);
+    scheduler.advanceToNextPostedRunnable();
+    startTime += 12000000000L;
+    assertThat(scheduler.getCurrentTime(NANOSECONDS)).as("full step").isEqualTo(startTime);
+  }
+
+  @Test
+  public void getCurrentTime_worksWithDifferentTimeUnits() {
+    scheduler.advanceTo(1234);
+    assertThat(scheduler.getCurrentTime(MILLISECONDS)).as("millis").isEqualTo(1234);
+    assertThat(scheduler.getCurrentTime(MICROSECONDS)).as("micros").isEqualTo(1234000);
+    assertThat(scheduler.getCurrentTime(NANOSECONDS)).as("nanos").isEqualTo(1234000000);
+    assertThat(scheduler.getCurrentTime(SECONDS)).as("seconds").isEqualTo(1);
+  }
+
+  @Test
+  public void advanceTo_worksWithDifferentTimeUnits() {
+    scheduler.advanceTo(1234567, NANOSECONDS);
+    assertThat(scheduler.getCurrentTime()).as("millis").isEqualTo(1);
+    scheduler.advanceTo(1234123, MICROSECONDS);
+    assertThat(scheduler.getCurrentTime()).as("micros").isEqualTo(1234);
+    scheduler.advanceTo(5678, MILLISECONDS);
+    assertThat(scheduler.getCurrentTime()).as("millis").isEqualTo(5678);
+    scheduler.advanceTo(1234, SECONDS);
+    assertThat(scheduler.getCurrentTime()).as("millis").isEqualTo(1234000);
+  }
+
+  @Test
+  public void advanceBy_worksWithDifferentTimeUnits() {
+    scheduler.advanceBy(12, NANOSECONDS);
+    startTime += 12;
+    assertThat(scheduler.getCurrentTime(NANOSECONDS)).as("nano step").isEqualTo(startTime);
+    scheduler.advanceBy(12, MICROSECONDS);
+    startTime += 12000;
+    assertThat(scheduler.getCurrentTime(NANOSECONDS)).as("micro step").isEqualTo(startTime);
+    scheduler.advanceBy(12, MILLISECONDS);
+    startTime += 12000000;
+    assertThat(scheduler.getCurrentTime(NANOSECONDS)).as("milli step").isEqualTo(startTime);
+    scheduler.advanceBy(12, SECONDS);
+    startTime += 12000000000L;
+    assertThat(scheduler.getCurrentTime(NANOSECONDS)).as("full step").isEqualTo(startTime);
+  }
+
+  @Test
+  public void whenIdleStateIsConstantIdle_isPausedReturnsFalse() {
+    scheduler.setIdleState(CONSTANT_IDLE);
+    assertThat(scheduler.isPaused()).isFalse();
+  }
+
+  @Test
+  public void whenIdleStateIsUnPaused_isPausedReturnsFalse() {
+    scheduler.setIdleState(UNPAUSED);
+    assertThat(scheduler.isPaused()).isFalse();
+  }
+
+  @Test
+  public void whenIdleStateIsPaused_isPausedReturnsTrue() {
+    scheduler.setIdleState(PAUSED);
+    assertThat(scheduler.isPaused()).isTrue();
+  }
+
+  @Test
+  public void pause_setsIdleState() {
+    scheduler.setIdleState(UNPAUSED);
+    scheduler.pause();
+    assertThat(scheduler.getIdleState()).isSameAs(PAUSED);
+  }
+
+  @Test
+  @SuppressWarnings("deprecation")
+  public void idleConstantly_setsIdleState() {
+    scheduler.setIdleState(UNPAUSED);
+    scheduler.idleConstantly(true);
+    assertThat(scheduler.getIdleState()).isSameAs(CONSTANT_IDLE);
+    scheduler.idleConstantly(false);
+    assertThat(scheduler.getIdleState()).isSameAs(UNPAUSED);
+  }
+
+  @Test
+  public void unPause_setsIdleState() {
+    scheduler.setIdleState(PAUSED);
+    scheduler.unPause();
+    assertThat(scheduler.getIdleState()).isSameAs(UNPAUSED);
+  }
+
+  @Test
+  public void setIdleStateToUnPause_shouldRunPendingTasks() {
+    scheduler.postDelayed(new AddToTranscript("one"), 0);
+    scheduler.postDelayed(new AddToTranscript("two"), 0);
+    scheduler.postDelayed(new AddToTranscript("three"), 1000);
+    transcript.assertNoEventsSoFar();
+    scheduler.setIdleState(UNPAUSED);
+    transcript.assertEventsSoFar("one", "two");
+    assertThat(scheduler.getCurrentTime(NANOSECONDS)).as("time").isEqualTo(startTime);
+  }
+
+  @Test
+  public void setIdleStateToConstantIdle_shouldRunAllTasks() {
+    scheduler.postDelayed(new AddToTranscript("one"), 0);
+    scheduler.postDelayed(new AddToTranscript("two"), 0);
+    scheduler.postDelayed(new AddToTranscript("three"), 1000);
+    transcript.assertNoEventsSoFar();
+    scheduler.setIdleState(CONSTANT_IDLE);
+    transcript.assertEventsSoFar("one", "two", "three");
+    assertThat(scheduler.getCurrentTime(NANOSECONDS)).as("time")
+        .isEqualTo(startTime + MILLISECONDS.toNanos(1000));
   }
 
   @Test
@@ -27,12 +151,24 @@ public class SchedulerTest {
     scheduler.postDelayed(new AddToTranscript("two"), 0);
     scheduler.postDelayed(new AddToTranscript("three"), 1000);
     transcript.assertNoEventsSoFar();
-    final long time = scheduler.getCurrentTime();
     scheduler.unPause();
     transcript.assertEventsSoFar("one", "two");
-    assertThat(scheduler.getCurrentTime()).as("time").isEqualTo(time);
+    assertThat(scheduler.getCurrentTime(NANOSECONDS)).as("time").isEqualTo(startTime);
   }
-  
+
+  @Test
+  @SuppressWarnings("deprecation")
+  public void idleConstantlyTrue_shouldRunAllTasks() {
+    scheduler.postDelayed(new AddToTranscript("one"), 0);
+    scheduler.postDelayed(new AddToTranscript("two"), 0);
+    scheduler.postDelayed(new AddToTranscript("three"), 1000);
+    transcript.assertNoEventsSoFar();
+    scheduler.idleConstantly(true);
+    transcript.assertEventsSoFar("one", "two", "three");
+    assertThat(scheduler.getCurrentTime(NANOSECONDS)).as("time")
+        .isEqualTo(startTime + MILLISECONDS.toNanos(1000));
+  }
+
   @Test
   public void advanceTo_shouldAdvanceTimeEvenIfThereIsNoWork() throws Exception {
     scheduler.advanceTo(1000);
@@ -76,7 +212,7 @@ public class SchedulerTest {
 
   @Test
   public void postDelayed_whileIdlingConstantly_executesImmediately() {
-    scheduler.idleConstantly(true);
+    scheduler.setIdleState(CONSTANT_IDLE);
     scheduler.postDelayed(new AddToTranscript("one"), 1000);
 
     transcript.assertEventsSoFar("one");
@@ -84,10 +220,10 @@ public class SchedulerTest {
   
   @Test
   public void postDelayed_whileIdlingConstantly_advancesTime() {
-    scheduler.idleConstantly(true);
+    scheduler.setIdleState(CONSTANT_IDLE);
     scheduler.postDelayed(new AddToTranscript("one"), 1000);
 
-    assertThat(scheduler.getCurrentTime()).isEqualTo(1000 + startTime);
+    assertThat(scheduler.getCurrentTime(NANOSECONDS)).isEqualTo(startTime + MILLISECONDS.toNanos(1000));
   }
   
   @Test
@@ -314,13 +450,14 @@ public class SchedulerTest {
     scheduler.advanceToLastPostedRunnable();
     assertThat(order).as("order:after").containsExactly(1, 2, 3);
     assertThat(scheduler.size()).as("size:after").isEqualTo(0);    
-    assertThat(scheduler.getCurrentTime()).as("time:after").isEqualTo(1 + startTime);
+    assertThat(scheduler.getCurrentTime(NANOSECONDS)).as("time:after")
+        .isEqualTo(startTime + MILLISECONDS.toNanos(1));
   }
 
   @Test
   public void nestedPostDelayed_whenIdlingConstantly_automaticallyExecutes3After() {
     final List<Integer> order = new ArrayList<>();
-    scheduler.idleConstantly(true);
+    scheduler.setIdleState(CONSTANT_IDLE);
     scheduler.postDelayed(new Runnable() {
       @Override
       public void run() {
@@ -337,7 +474,8 @@ public class SchedulerTest {
 
     assertThat(order).as("order").containsExactly(1, 2, 3);
     assertThat(scheduler.size()).as("size").isEqualTo(0);
-    assertThat(scheduler.getCurrentTime()).as("time").isEqualTo(1 + startTime);
+    assertThat(scheduler.getCurrentTime(NANOSECONDS)).as("time")
+        .isEqualTo(startTime + MILLISECONDS.toNanos(1));
   }
 
   @Test
@@ -353,7 +491,7 @@ public class SchedulerTest {
 
     try {
       scheduler.unPause();
-    } catch (RuntimeException e) { }
+    } catch (RuntimeException ignored) { }
 
     scheduler.post(new Runnable() {
       @Override
@@ -363,6 +501,24 @@ public class SchedulerTest {
     });
 
     assertThat(runnablesThatWereRun).containsExactly(1, 2);
+  }
+
+  @Test
+  public void scheduledRunnableCompareTo_handlesLargeDifferences() {
+    // Found an overflow bug in the original implementation of compareTo() when casting diff to int -
+    // if the diff is > INT_MAX the result of casing to INT will be negative, which results in it
+    // sorting the opposite of what we want.
+    // ScheduledRunnable is private; cannot create directly. Test indirectly using postDelayed().
+    TestRunnable r1 = new TestRunnable();
+    TestRunnable r2 = new TestRunnable();
+    scheduler.postDelayed(r1, 100);
+    scheduler.postDelayed(r2, 60, SECONDS); // Difference between 60s and 100ms in nanos is > INT_MAX
+
+    scheduler.runOneTask();
+    assertThat(r1.wasRun).as("first task run first").isTrue();
+    assertThat(r2.wasRun).as("second task not run yet").isFalse();
+    scheduler.runOneTask();
+    assertThat(r2.wasRun).as("second task run second").isTrue();
   }
 
   private class AddToTranscript implements Runnable {

@@ -1,19 +1,16 @@
 package org.robolectric.internal;
 
-import android.R.integer;
 import android.app.Application;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.content.res.AssetManager;
-import android.content.res.BridgeResources;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Looper;
 import android.util.DisplayMetrics;
+import android.view.accessibility.AccessibilityEvent;
 
 import com.android.ide.common.rendering.api.HardwareConfig;
-import com.android.ide.common.rendering.api.RenderResources;
 import com.android.ide.common.rendering.api.SessionParams;
 import com.android.ide.common.resources.ResourceItem;
 import com.android.ide.common.resources.ResourceRepository;
@@ -22,7 +19,6 @@ import com.android.ide.common.resources.configuration.FolderConfiguration;
 import com.android.io.FolderWrapper;
 import com.android.layoutlib.bridge.android.BridgeContext;
 import com.android.layoutlib.bridge.impl.RenderAction;
-import com.android.layoutlib.bridge.impl.RenderSessionImpl;
 import com.android.resources.Density;
 import com.android.resources.Keyboard;
 import com.android.resources.KeyboardState;
@@ -32,7 +28,6 @@ import com.android.resources.ScreenOrientation;
 import com.android.resources.ScreenRatio;
 import com.android.resources.ScreenSize;
 import com.android.resources.TouchScreen;
-import com.ibm.icu.impl.coll.SharedObject.Reference;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.robolectric.Robolectric;
@@ -49,9 +44,13 @@ import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResBundle;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.builder.DefaultPackageManager;
-import org.robolectric.shadows.ShadowResources;
+import org.robolectric.shadows.ShadowAccessibilityEvent;
+import org.robolectric.shadows.ShadowBridgeContext;
+import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.util.ReflectionHelpers;
 import org.xmlpull.v1.XmlPullParserException;
+import org.robolectric.util.Scheduler;
+
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -76,6 +75,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
   @Override
   public void resetStaticState(Config config) {
+    RuntimeEnvironment.setMainThread(Thread.currentThread());
     Robolectric.reset();
 
     if (!loggingInitialized) {
@@ -102,6 +102,8 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   @Override
   public void setUpApplicationState(Method method, TestLifecycle testLifecycle, ResourceLoader systemResourceLoader, AndroidManifest appManifest, Config config) {
     RuntimeEnvironment.application = null;
+    RuntimeEnvironment.setMasterScheduler(new Scheduler());
+    RuntimeEnvironment.setMainThread(Thread.currentThread());
     RuntimeEnvironment.setRobolectricPackageManager(new DefaultPackageManager(shadowsAdapter));
     RuntimeEnvironment.getRobolectricPackageManager().addPackage(DEFAULT_PACKAGE_NAME);
     ResourceLoader resourceLoader;
@@ -130,9 +132,11 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
     Class<?> activityThreadClass = ReflectionHelpers.loadClass(getClass().getClassLoader(), shadowsAdapter.getShadowActivityThreadClassName());
     // Looper needs to be prepared before the activity thread is created
+//    if (Looper.getMainLooper() == null) {
     if (Looper.myLooper() == null) {
       Looper.prepareMainLooper();
     }
+    ShadowLooper.getShadowMainLooper().resetScheduler();
     Object activityThread = ReflectionHelpers.newInstance(activityThreadClass);
     RuntimeEnvironment.setActivityThread(activityThread);
 
@@ -232,7 +236,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
         try {
           initBridgeResources("activity_main");
-        } catch (FileNotFoundException e) {
+          } catch (FileNotFoundException e) {
           e.printStackTrace();
         } catch (XmlPullParserException e) {
           e.printStackTrace();
@@ -262,7 +266,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     metrics.xdpi = (metrics.noncompatXdpi = hardwareConfig.getXdpi());
     metrics.ydpi = (metrics.noncompatYdpi = hardwareConfig.getYdpi());
     BridgeContext bridgeContext =
-        new BridgeContext(params.getProjectKey(), metrics, renderResources, params.getProjectCallback(),
+        ShadowBridgeContext.obtain(params.getProjectKey(), metrics, renderResources, null, params.getProjectCallback(),
             getConfiguration(params), params.getTargetSdkVersion(), params.isRtlSupported());
     bridgeContext.initResources();
     ReflectionHelpers.setStaticField(RenderAction.class, "sCurrentContext", bridgeContext);
@@ -324,6 +328,16 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       config.orientation = 0;
     }
     return config;
+  }
+
+  @Override
+  public Thread getMainThread() {
+    return RuntimeEnvironment.getMainThread();
+  }
+
+  @Override
+  public void setMainThread(Thread newMainThread) {
+    RuntimeEnvironment.setMainThread(newMainThread);
   }
 
   @Override

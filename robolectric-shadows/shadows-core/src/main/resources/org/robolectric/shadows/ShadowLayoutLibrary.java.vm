@@ -1,5 +1,5 @@
 package org.robolectric.shadows;
-#if ($api == 21)
+#if ($api >= 21)
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;

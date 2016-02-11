@@ -15,9 +15,12 @@ import org.robolectric.annotation.Config;
 import org.robolectric.internal.ParallelUniverse;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.res.builder.RobolectricPackageManager;
+import org.robolectric.shadows.ShadowApplication;
+import org.robolectric.shadows.ShadowLooper;
 
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -27,10 +30,79 @@ public class ParallelUniverseTest {
 
   private ParallelUniverse pu;
 
+  private static Config getDefaultConfig() {
+    return new Config.Implementation(new int[0], Config.DEFAULT, "", "org.robolectric", "res", "assets", new Class[0], Application.class, new String[0], null, false);
+  }
+
   @Before
   public void setUp() throws InitializationError {
     pu = new ParallelUniverse(new RobolectricTestRunner(ParallelUniverseTest.class));
     pu.setSdkConfig(new SdkConfig(18));
+  }
+
+  private void setUpApplicationStateDefaults() {
+    pu.setUpApplicationState(null, new DefaultTestLifecycle(), null, null, getDefaultConfig());
+  }
+
+  @Test
+  public void setUpApplicationState_configuresGlobalScheduler() {
+    RuntimeEnvironment.setMasterScheduler(null);
+    setUpApplicationStateDefaults();
+    assertThat(RuntimeEnvironment.getMasterScheduler())
+        .isNotNull()
+        .isSameAs(ShadowLooper.getShadowMainLooper().getScheduler())
+        .isSameAs(ShadowApplication.getInstance().getForegroundThreadScheduler());
+  }
+
+  @Test
+  public void setUpApplicationState_setsBackgroundScheduler_toBeSameAsForeground_whenAdvancedScheduling() {
+    RoboSettings.setUseGlobalScheduler(true);
+    try {
+      setUpApplicationStateDefaults();
+      final ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
+      assertThat(shadowApplication.getBackgroundThreadScheduler())
+          .isSameAs(shadowApplication.getForegroundThreadScheduler())
+          .isSameAs(RuntimeEnvironment.getMasterScheduler());
+    } finally {
+      RoboSettings.setUseGlobalScheduler(false);
+    }
+  }
+
+  @Test
+  public void setUpApplicationState_setsBackgroundScheduler_toBeDifferentToForeground_byDefault() {
+    setUpApplicationStateDefaults();
+    final ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
+    assertThat(shadowApplication.getBackgroundThreadScheduler())
+        .isNotSameAs(shadowApplication.getForegroundThreadScheduler());
+  }
+
+  @Test
+  public void setUpApplicationState_setsMainThread() {
+    RuntimeEnvironment.setMainThread(new Thread());
+    setUpApplicationStateDefaults();
+    assertThat(RuntimeEnvironment.isMainThread()).isTrue();
+  }
+
+  @Test
+  public void resetStaticStatic_setsMainThread(){
+    RuntimeEnvironment.setMainThread(new Thread());
+    pu.resetStaticState(getDefaultConfig());
+    assertThat(RuntimeEnvironment.isMainThread()).isTrue();
+  }
+
+  @Test
+  public void setUpApplicationState_setsMainThread_onAnotherThread() throws InterruptedException {
+    final AtomicBoolean res = new AtomicBoolean();
+    Thread t = new Thread() {
+      @Override
+      public void run() {
+        setUpApplicationStateDefaults();
+        res.set(RuntimeEnvironment.isMainThread());
+      }
+    };
+    t.start();
+    t.join(1000);
+    assertThat(res.get()).isTrue();
   }
 
   @Test

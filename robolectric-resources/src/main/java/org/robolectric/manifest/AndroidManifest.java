@@ -61,7 +61,7 @@ public class AndroidManifest {
   private int applicationFlags;
   private final List<ContentProviderData> providers = new ArrayList<>();
   private final List<BroadcastReceiverData> receivers = new ArrayList<>();
-  private final List<ServiceData> services = new ArrayList<>();
+  private final Map<String, ServiceData> serviceDatas = new LinkedHashMap<>();
   private final Map<String, ActivityData> activityDatas = new LinkedHashMap<>();
   private final List<String> usedPermissions = new ArrayList<>();
   private MetaData applicationMetaData;
@@ -207,11 +207,13 @@ public class AndroidManifest {
             receiver.addAction(nameNode.getTextContent());
           }
         }
-        Node permissionItem = receiverNode.getAttributes().getNamedItem("android:permission");
-        if (permissionItem != null) {
-          receiver.setPermission(permissionItem.getTextContent());
-        }
       }
+      
+      Node permissionItem = receiverNode.getAttributes().getNamedItem("android:permission");
+      if (permissionItem != null) {
+        receiver.setPermission(permissionItem.getTextContent());
+      }
+      
       receivers.add(receiver);
     }
   }
@@ -236,12 +238,13 @@ public class AndroidManifest {
             service.addAction(nameNode.getTextContent());
           }
         }
-        Node permissionItem = serviceNode.getAttributes().getNamedItem("android:permission");
-        if (permissionItem != null) {
-          service.setPermission(permissionItem.getTextContent());
-        }
       }
-      services.add(service);
+      
+      Node permissionItem = serviceNode.getAttributes().getNamedItem("android:permission");
+      if (permissionItem != null) {
+        service.setPermission(permissionItem.getTextContent());
+      }
+      serviceDatas.put(serviceName, service);
     }
   }
 
@@ -376,7 +379,7 @@ public class AndroidManifest {
     for (BroadcastReceiverData receiver : receivers) {
       receiver.getMetaData().init(resLoader, packageName);
     }
-    for (ServiceData service : services) {
+    for (ServiceData service : serviceDatas.values()) {
       service.getMetaData().init(resLoader, packageName);
     }
   }
@@ -617,7 +620,11 @@ public class AndroidManifest {
 
   public List<ServiceData> getServices() {
     parseAndroidManifest();
-    return services;
+    return new ArrayList<ServiceData>(serviceDatas.values());
+  }
+  
+  public ServiceData getServiceData(String serviceClassName) {
+    return serviceDatas.get(serviceClassName);
   }
 
   private static String getTagAttributeText(final Document doc, final String tag, final String attribute) {

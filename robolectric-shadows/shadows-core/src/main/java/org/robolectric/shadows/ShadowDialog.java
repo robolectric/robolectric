@@ -96,6 +96,12 @@ public class ShadowDialog {
     return onCancelListener;
   }
 
+  @Implementation
+  public void setOnCancelListener(DialogInterface.OnCancelListener listener) {
+    this.onCancelListener = listener;
+    directlyOn(realDialog, Dialog.class).setOnCancelListener(listener);
+  }
+
   public boolean hasBeenDismissed() {
     return hasBeenDismissed;
   }
