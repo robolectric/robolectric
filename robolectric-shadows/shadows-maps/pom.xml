@@ -34,25 +34,12 @@
     <dependency>
       <groupId>org.robolectric</groupId>
       <artifactId>robolectric</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.robolectric</groupId>
-          <artifactId>android-all</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
     <dependency>
       <groupId>org.robolectric</groupId>
       <artifactId>shadows-core</artifactId>
       <scope>provided</scope>
-      <version>3.1-SNAPSHOT</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.robolectric</groupId>
-          <artifactId>android-all</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
     <!-- Project Dependencies -->
@@ -60,7 +47,6 @@
       <groupId>org.robolectric</groupId>
       <artifactId>android-all</artifactId>
       <scope>provided</scope>
-      <version>4.4_r1-robolectric-0</version>
     </dependency>
 
     <dependency>

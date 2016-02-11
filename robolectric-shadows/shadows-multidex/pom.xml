@@ -21,7 +21,6 @@
     <dependency>
       <groupId>org.robolectric</groupId>
       <artifactId>android-all</artifactId>
-      <version>5.1.1_r9-robolectric-0-render</version>
       <scope>provided</scope>
     </dependency>
 

@@ -125,7 +125,6 @@ public class ParallelUniverseTest {
   public void setUpApplicationState_setsVersionQualifierFromConfigQualifiers() {
     String givenQualifiers = "land-v17";
     Config c = new Config.Implementation(new int[0], Config.DEFAULT, givenQualifiers, "org.robolectric", "res", "assets", new Class[0], new String[0], Application.class, new String[0], null, false);
->>>>>>> upstream/master
     pu.setUpApplicationState(null, new DefaultTestLifecycle(), null, null, c);
     assertThat(getQualifiersfromSystemResources()).isEqualTo("land-v17");
     assertThat(getQualifiersFromAppAssetManager()).isEqualTo("land-v17");

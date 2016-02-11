@@ -477,6 +477,26 @@
       </build>
       <dependencies>
         <dependency>
+          <groupId>com.android.tools.layoutlib</groupId>
+          <artifactId>layoutlib-api</artifactId>
+          <version>24.2.3</version>
+        </dependency>
+        <dependency>
+          <groupId>com.android.tools</groupId>
+          <artifactId>sdk-common</artifactId>
+          <version>24.2.3</version>
+        </dependency>
+        <dependency>
+          <groupId>com.android.tools</groupId>
+          <artifactId>common</artifactId>
+          <version>24.2.3</version>
+        </dependency>
+        <dependency>
+          <groupId>com.android.tools</groupId>
+          <artifactId>sdklib</artifactId>
+          <version>24.2.3</version>
+        </dependency>
+        <dependency>
           <groupId>org.robolectric</groupId>
           <artifactId>android-all</artifactId>
           <version>6.0.0_r1-robolectric-0-render</version>
