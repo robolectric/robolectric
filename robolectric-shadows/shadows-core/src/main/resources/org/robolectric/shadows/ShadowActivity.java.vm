@@ -1,9 +1,5 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.internal.Shadow.directlyOn;
-import static org.robolectric.internal.Shadow.invokeConstructor;
-
 import android.R;
 import android.app.Activity;
 import android.app.Application;
@@ -23,6 +19,7 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
@@ -39,6 +36,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.internal.Shadow.directlyOn;
+import static org.robolectric.internal.Shadow.invokeConstructor;
 
 /**
  * Shadow for {@link android.app.Activity}.
@@ -214,7 +215,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   /**
-   * @return whether {@link #finish()} was called
+   * @return whether {@link finish()} was called
    */
   @Implementation
   public boolean isFinishing() {
@@ -308,7 +309,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   /**
    * Non-Android accessor.
    *
-   * @return the {@code Intent} set by {@link #setResult(int, android.content.Intent)}
+   * @return the {@code Intent} set by {@link setResult(int, android.content.Intent)}
    */
   public Intent getResultIntent() {
     return resultIntent;
@@ -331,7 +332,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
   /**
    * Non-Android accessor returns the most recent {@code Intent} started by
-   * {@link #startActivityForResult(android.content.Intent, int)} without
+   * {@link startActivityForResult(android.content.Intent, int)} without
    * consuming it.
    *
    * @return the most recently started {@code Intent}, wrapped in
@@ -410,7 +411,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
   /**
    * Container object to hold an Intent, together with the requestCode used
-   * in a call to {@code Activity#startActivityForResult(Intent, int)}
+   * in a call to {@code Activity.startActivityForResult(Intent, int)}
    */
   public class IntentForResult {
     public Intent intent;
@@ -522,7 +523,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
    * Non-Android accessor
    *
    * @return the dialog resource id passed into
-   *         {@code Activity#showDialog(int, Bundle)} or {@code Activity#showDialog(int)}
+   *         {@code Activity.showDialog(int, Bundle)} or {@code Activity.showDialog(int)}
    */
   public Integer getLastShownDialogId() {
     return lastShownDialogId;
@@ -605,7 +606,14 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     startActivityForResult(intent, requestCode, options);
   }
 
-  private final class ActivityInvoker {
+#if ($api >= 23)
+  @Implementation
+  public final void requestPermissions(String[] permissions, int requestCode) {
+
+  }
+#end
+
+    private final class ActivityInvoker {
     private Method method;
 
     public ActivityInvoker call(final String methodName, final Class... argumentClasses) {
