@@ -66,6 +66,7 @@ public class ShadowContextImpl extends ShadowContext {
     SYSTEM_SERVICE_MAP.put(Context.ACCESSIBILITY_SERVICE, "android.view.accessibility.AccessibilityManager");
     SYSTEM_SERVICE_MAP.put(Context.ACCOUNT_SERVICE, "android.accounts.AccountManager");
     SYSTEM_SERVICE_MAP.put(Context.NFC_SERVICE, "android.nfc.NfcManager");
+    SYSTEM_SERVICE_MAP.put(Context.WALLPAPER_SERVICE, "android.app.WallpaperManager");
 #if ($api >= 17)
     SYSTEM_SERVICE_MAP.put(Context.DISPLAY_SERVICE, "android.hardware.display.DisplayManager");
     SYSTEM_SERVICE_MAP.put(Context.USER_SERVICE, "android.os.UserManager");
@@ -132,7 +133,8 @@ public class ShadowContextImpl extends ShadowContext {
         Class<?> clazz = Class.forName(serviceClassName);
         if (serviceClassName.equals("android.app.SearchManager")
             || serviceClassName.equals("android.app.ActivityManager")
-            || serviceClassName.equals("android.app.admin.DevicePolicyManager")) {
+            || serviceClassName.equals("android.app.admin.DevicePolicyManager")
+            || serviceClassName.equals("android.app.WallpaperManager")) {
 
           service = ReflectionHelpers.callConstructor(clazz,
               ClassParameter.from(Context.class, RuntimeEnvironment.application),
