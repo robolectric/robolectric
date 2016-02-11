@@ -66,4 +66,37 @@ public class ShadowProgressDialogTest {
     dialog.setProgress(42);
     assertThat(dialog.getProgress()).isEqualTo(42);
   }
+
+  @Test
+  public void shouldGetProgressStyle() {
+    assertThat(shadow.getProgressStyle()).isEqualTo(ProgressDialog.STYLE_SPINNER);
+
+    dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+    assertThat(shadow.getProgressStyle()).isEqualTo(ProgressDialog.STYLE_HORIZONTAL);
+
+    dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+    assertThat(shadow.getProgressStyle()).isEqualTo(ProgressDialog.STYLE_SPINNER);
+  }
+
+  @Test
+  public void horizontalStyle_shouldGetMessage() {
+    String message = "This is only a test";
+    shadow.callOnCreate(null);
+
+    dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+    dialog.setMessage(message);
+
+    assertThat(shadow.getMessage()).contains(message);
+  }
+
+  @Test
+  public void spinnerStyle_shouldGetMessage() {
+    String message = "This is only a test";
+    shadow.callOnCreate(null);
+
+    dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+    dialog.setMessage(message);
+
+    assertThat(shadow.getMessage()).contains(message);
+  }
 }

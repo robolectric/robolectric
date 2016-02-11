@@ -24,7 +24,7 @@ public enum ResType {
   CHAR_SEQUENCE {
     @Override
     public TypedResource getValueWithType(XpathResourceXmlLoader.XmlNode xmlNode) {
-      return new TypedResource<>(StringResources.escape(xmlNode.getTextContent()), this);
+      return new TypedResource<>(StringResources.proccessStringResources(xmlNode.getTextContent()), this);
     }
   },
 

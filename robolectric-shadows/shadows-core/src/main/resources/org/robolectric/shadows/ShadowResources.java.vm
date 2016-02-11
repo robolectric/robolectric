@@ -65,6 +65,7 @@ import static org.robolectric.Shadows.shadowOf;
 @Implements(Resources.class)
 public class ShadowResources {
   private static Resources system = null;
+  private static List<LongSparseArray<?>> resettableArrays;
 
   private float density = 1.0f;
   private DisplayMetrics displayMetrics;
@@ -74,19 +75,31 @@ public class ShadowResources {
 
   @Resetter
   public static void reset() {
-    for (Field field : Resources.class.getDeclaredFields()) {
+    if (resettableArrays == null) {
+      resettableArrays = obtainResettableArrays();
+    }
+    for (LongSparseArray<?> sparseArray : resettableArrays) {
+      sparseArray.clear();
+    }
+  }
+
+  private static List<LongSparseArray<?>> obtainResettableArrays() {
+    List<LongSparseArray<?>> resettableArrays = new ArrayList<>();
+    Field[] allFields = Resources.class.getDeclaredFields();
+    for (Field field : allFields) {
       if (Modifier.isStatic(field.getModifiers()) && field.getType().equals(LongSparseArray.class)) {
+        field.setAccessible(true);
         try {
-          field.setAccessible(true);
           LongSparseArray<?> longSparseArray = (LongSparseArray<?>) field.get(null);
           if (longSparseArray != null) {
-            longSparseArray.clear();
+            resettableArrays.add(longSparseArray);
           }
         } catch (IllegalAccessException e) {
           throw new RuntimeException(e);
         }
       }
     }
+    return resettableArrays;
   }
 
   public static void setSystemResources(ResourceLoader systemResourceLoader) {
@@ -367,7 +380,7 @@ public class ShadowResources {
   @Implementation
   public CharSequence getText(int id) throws Resources.NotFoundException {
     CharSequence text = directlyOn(realResources, Resources.class).getText(id);
-    return StringResources.escape(text.toString());
+    return text.toString();
   }
 
   @Implementation

@@ -3,6 +3,8 @@ package org.robolectric.shadows;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.util.DisplayMetrics;
+import android.util.Log;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -36,6 +38,7 @@ public class ShadowBitmap {
   private int[] createdFromColors;
   private Matrix createdFromMatrix;
   private boolean createdFromFilter;
+  private boolean hasAlpha;
 
   private int width;
   private int height;
@@ -45,6 +48,7 @@ public class ShadowBitmap {
   private boolean mutable;
   private String description = "";
   private boolean recycled = false;
+  private boolean hasMipMap;
 
   /**
    * Returns a textual representation of the appearance of the object.
@@ -339,6 +343,25 @@ public class ShadowBitmap {
     colors[y * getWidth() + x] = color;
   }
 
+  /**
+   * Note that this method will return a RuntimeException unless:
+   * - {@code pixels} has the same length as the number of pixels of the bitmap.
+   * - {@code x = 0}
+   * - {@code y = 0}
+   * - {@code width} and {@code height} height match the current bitmap's dimensions.
+   */
+  @Implementation
+  public void getPixels(int[] pixels, int offset, int stride, int x, int y, int width, int height) {
+    if (x != 0 ||
+        y != 0 ||
+        width != getWidth() ||
+        height != getHeight() ||
+        pixels.length != colors.length) {
+      throw new RuntimeException("Not implemented.");
+    }
+    System.arraycopy(colors, 0, pixels, 0, colors.length);
+  }
+
   @Implementation
   public int getRowBytes() {
     return getBytesPerPixel(config) * getWidth();
@@ -398,6 +421,26 @@ public class ShadowBitmap {
 
   public String getDescription() {
     return description;
+  }
+
+  @Implementation
+  public final boolean hasAlpha() {
+    return hasAlpha;
+  }
+
+  @Implementation
+  public void setHasAlpha(boolean hasAlpha) {
+    this.hasAlpha = hasAlpha;
+  }
+
+  @Implementation
+  public final boolean hasMipMap() {
+    return hasMipMap;
+  }
+
+  @Implementation
+  public final void setHasMipMap(boolean hasMipMap) {
+    this.hasMipMap = hasMipMap;
   }
 
   @Implementation

@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.os.Parcel;
+import android.text.TextUtils;
 import android.util.Pair;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -283,7 +284,7 @@ public class ShadowParcel {
      * Writes a String to the byte buffer at the current data position
      */
     public void writeString(String s) {
-      int length = s == null ? Integer.SIZE / 8 : s.length();
+      int length = TextUtils.isEmpty(s) ? Integer.SIZE / 8 : s.length();
       writeValue(length, s);
     }
 

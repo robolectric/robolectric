@@ -1,5 +1,14 @@
 package org.robolectric.shadows;
 
+import static android.content.pm.PackageManager.PERMISSION_DENIED;
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+import static junit.framework.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
+import static org.robolectric.Robolectric.buildActivity;
+import static org.robolectric.Shadows.shadowOf;
+
 import android.app.Activity;
 import android.app.Application;
 import android.appwidget.AppWidgetProvider;
@@ -16,24 +25,18 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
+import com.google.common.util.concurrent.SettableFuture;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
+import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.util.Transcript;
 
 import java.util.List;
-
-import static android.content.pm.PackageManager.PERMISSION_DENIED;
-import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-import static junit.framework.Assert.assertEquals;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
-import static org.robolectric.Robolectric.buildActivity;
-import static org.robolectric.Shadows.shadowOf;
+import java.util.concurrent.atomic.AtomicReference;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowContextWrapperTest {
@@ -117,6 +120,79 @@ public class ShadowContextWrapperTest {
     assertThat(shadowOf(handler.getLooper()).getScheduler().size()).isEqualTo(0);
 
     transcript.assertEventsSoFar("Larry notified of foo");
+  }
+
+  @Test
+  public void sendOrderedBroadcast_shouldReturnValues() throws Exception {
+    String action = "test";
+
+    IntentFilter lowFilter = new IntentFilter(action);
+    lowFilter.setPriority(1);
+    BroadcastReceiver lowReceiver = broadcastReceiver("Low");
+    contextWrapper.registerReceiver(lowReceiver, lowFilter);
+
+    IntentFilter highFilter = new IntentFilter(action);
+    highFilter.setPriority(2);
+    BroadcastReceiver highReceiver = broadcastReceiver("High");
+    contextWrapper.registerReceiver(highReceiver, highFilter);
+
+    final FooReceiver resultReceiver = new FooReceiver();
+    contextWrapper.sendOrderedBroadcast(new Intent(action), null, resultReceiver, null, 1, "initial", null);
+    transcript.assertEventsSoFar("High notified of test", "Low notified of test");
+    assertThat(resultReceiver.resultCode).isEqualTo(1);
+  }
+
+  private static final class FooReceiver extends BroadcastReceiver {
+    private int resultCode;
+    private SettableFuture<Void> settableFuture = SettableFuture.create();
+
+    @Override
+    public void onReceive(Context context, Intent intent) {
+      resultCode = getResultCode();
+      settableFuture.set(null);
+    }
+  }
+
+  @Test
+  public void sendOrderedBroadcast_shouldExecuteSerially() {
+    String action = "test";
+    AtomicReference<BroadcastReceiver.PendingResult> midResult = new AtomicReference<>();
+
+    IntentFilter lowFilter = new IntentFilter(action);
+    lowFilter.setPriority(1);
+    BroadcastReceiver lowReceiver = broadcastReceiver("Low");
+    contextWrapper.registerReceiver(lowReceiver, lowFilter);
+
+    IntentFilter midFilter = new IntentFilter(action);
+    midFilter.setPriority(2);
+    AsyncReceiver midReceiver = new AsyncReceiver(midResult);
+    contextWrapper.registerReceiver(midReceiver, midFilter);
+
+    IntentFilter highFilter = new IntentFilter(action);
+    highFilter.setPriority(3);
+    BroadcastReceiver highReceiver = broadcastReceiver("High");
+    contextWrapper.registerReceiver(highReceiver, highFilter);
+
+    contextWrapper.sendOrderedBroadcast(new Intent(action), null);
+    transcript.assertEventsSoFar("High notified of test", "Mid notified of test");
+    assertThat(midResult.get()).isNotNull();
+    midResult.get().finish();
+    Robolectric.flushForegroundThreadScheduler();
+    transcript.assertEventsSoFar("Low notified of test");
+  }
+
+  private class AsyncReceiver extends BroadcastReceiver {
+    private final AtomicReference<PendingResult> reference;
+
+    private AsyncReceiver(AtomicReference<PendingResult> reference) {
+      this.reference = reference;
+    }
+
+    @Override
+    public void onReceive(Context context, Intent intent) {
+      reference.set(goAsync());
+      transcript.add("Mid notified of " + intent.getAction());
+    }
   }
 
   @Test

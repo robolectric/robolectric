@@ -29,7 +29,7 @@
     <maven.compiler.source>1.7</maven.compiler.source>
     <maven.compiler.target>1.7</maven.compiler.target>
     <libsqlite.version>0.282-3</libsqlite.version>
-    <robolectric.api.level>22</robolectric.api.level>
+    <robolectric.api.level>23</robolectric.api.level>
   </properties>
 
   <dependencyManagement>
@@ -89,11 +89,17 @@
       <dependency>
         <groupId>org.robolectric</groupId>
         <artifactId>android-all</artifactId>
-        <version>5.1.1_r9-robolectric-0</version>
+        <version>6.0.0_r1-robolectric-0</version>
         <scope>provided</scope>
       </dependency>
 
       <!-- Project Dependencies -->
+      <dependency>
+        <groupId>org.hamcrest</groupId>
+        <artifactId>hamcrest-core</artifactId>
+        <version>1.3</version>
+      </dependency>
+
       <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
@@ -103,7 +109,7 @@
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>16.0.1</version>
+        <version>19.0-rc2</version>
       </dependency>
 
       <dependency>
@@ -128,6 +134,21 @@
           <groupId>org.bsc.maven</groupId>
           <artifactId>maven-processor-plugin</artifactId>
           <version>2.2.4</version>
+        </plugin>
+
+        <plugin>
+          <artifactId>maven-install-plugin</artifactId>
+          <version>2.5.2</version>
+        </plugin>
+
+        <plugin>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>2.7</version>
+        </plugin>
+
+        <plugin>
+          <artifactId>maven-enforcer-plugin</artifactId>
+          <version>1.4.1</version>
         </plugin>
 
         <plugin>

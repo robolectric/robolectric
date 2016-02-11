@@ -1,5 +1,6 @@
 package org.robolectric.internal.bytecode;
 
+import java.util.Set;
 import org.robolectric.annotation.Implements;
 import org.robolectric.internal.ShadowProvider;
 
@@ -69,6 +70,33 @@ public class ShadowMap {
       className = annotation.value().getName();
     }
     return new ShadowInfo(className, new ShadowConfig(clazz.getName(), annotation));
+  }
+
+  public Set<String> getInvalidatedClasses(ShadowMap previous) {
+    if (this == previous) return Collections.emptySet();
+
+    Map<String, ShadowConfig> invalidated = new HashMap<>();
+    invalidated.putAll(map);
+
+    for (Map.Entry<String, ShadowConfig> entry : previous.map.entrySet()) {
+      String className = entry.getKey();
+      ShadowConfig previousConfig = entry.getValue();
+      ShadowConfig currentConfig = invalidated.get(className);
+      if (currentConfig == null) {
+        invalidated.put(className, previousConfig);
+      } else if (previousConfig.equals(currentConfig)) {
+        invalidated.remove(className);
+      }
+    }
+
+    return invalidated.keySet();
+  }
+
+  public static String convertToShadowName(String className) {
+    String shadowClassName =
+        "org.robolectric.shadows.Shadow" + className.substring(className.lastIndexOf(".") + 1);
+    shadowClassName = shadowClassName.replaceAll("\\$", "\\$Shadow");
+    return shadowClassName;
   }
 
   public Builder newBuilder() {

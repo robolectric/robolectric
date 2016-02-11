@@ -11,6 +11,7 @@ public class ResNameTest {
     assertThat(ResName.qualifyResourceName("some.package:name", "default.package", "deftype")).isEqualTo("some.package:deftype/name");
     assertThat(ResName.qualifyResourceName("type/name", "default.package", "deftype")).isEqualTo("default.package:type/name");
     assertThat(ResName.qualifyResourceName("name", "default.package", "deftype")).isEqualTo("default.package:deftype/name");
+    assertThat(ResName.qualifyResourceName("someRawString", "default.package", null)).isNull();
   }
 
   @Test public void shouldQualifyResNameFromString() throws Exception {
@@ -68,6 +69,25 @@ public class ResNameTest {
     ResName resName = new ResName(name);
     assertThat(resName.name).isEqualTo("TextAppearance_AppCompat_Widget_ActionMode_Subtitle");
     assertThat(resName.type).isEqualTo("style");
+    assertThat(resName.packageName).isEqualTo("android");
+  }
+
+  @Test
+  public void fullyQualifiedNameWithWhiteSpaceInTypeShouldBeHandledCorrectly() {
+    String name = "android: string/ok";
+    ResName resName = new ResName(name);
+
+    assertThat(resName.name).isEqualTo("ok");
+    assertThat(resName.type).isEqualTo("string");
+    assertThat(resName.packageName).isEqualTo("android");
+  }
+
+  @Test
+  public void resourceNameWithWhiteSpaceInTypeShouldBeHandledCorrectly() {
+    ResName resName = new ResName("android", " string", "ok");
+
+    assertThat(resName.name).isEqualTo("ok");
+    assertThat(resName.type).isEqualTo("string");
     assertThat(resName.packageName).isEqualTo("android");
   }
 }

@@ -18,18 +18,20 @@ import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
-import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.robolectric.R;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.ParallelUniverse;
 import org.robolectric.internal.Shadow;
+import org.robolectric.util.ActivityController;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,6 +45,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.robolectric.Robolectric.buildActivity;
@@ -53,15 +56,19 @@ public class ShadowTextViewTest {
   private static final String INITIAL_TEXT = "initial text";
   private static final String NEW_TEXT = "new text";
   private TextView textView;
+  private ActivityController<Activity> activityController;
 
   @Before
   public void setUp() throws Exception {
-    textView = new TextView(buildActivity(Activity.class).create().get());
+    activityController = buildActivity(Activity.class);
+    Activity activity = activityController.create().get();
+    textView = new TextView(activity);
+    activity.setContentView(textView);
+    activityController.start().resume().visible();
   }
 
   @Test
   public void shouldTriggerTheImeListener() {
-    TextView textView = new TextView(RuntimeEnvironment.application);
     TestOnEditorActionListener actionListener = new TestOnEditorActionListener();
     textView.setOnEditorActionListener(actionListener);
 
@@ -73,7 +80,6 @@ public class ShadowTextViewTest {
 
   @Test
   public void shouldCreateGetterForEditorActionListener() {
-    TextView textView = new TextView(RuntimeEnvironment.application);
     TestOnEditorActionListener actionListener = new TestOnEditorActionListener();
 
     textView.setOnEditorActionListener(actionListener);
@@ -86,8 +92,10 @@ public class ShadowTextViewTest {
     textView.setAutoLinkMask(Linkify.ALL);
     textView.setText("here's some text http://google.com/\nblah\thttp://another.com/123?456 blah");
 
-    assertThat(urlStringsFrom(textView.getUrls()))
-        .isEqualTo(asList("http://google.com", "http://another.com/123?456"));
+    assertThat(urlStringsFrom(textView.getUrls())).isEqualTo(asList(
+            "http://google.com",
+            "http://another.com/123?456"
+    ));
   }
 
   @Test
@@ -119,9 +127,7 @@ public class ShadowTextViewTest {
 
   @Test
   public void testGetTextAppearanceId() throws Exception {
-    TextView textView = new TextView(RuntimeEnvironment.application);
-    textView.setTextAppearance(
-        RuntimeEnvironment.application, android.R.style.TextAppearance_Small);
+    textView.setTextAppearance(RuntimeEnvironment.application, android.R.style.TextAppearance_Small);
 
     assertThat(shadowOf(textView).getTextAppearanceId())
         .isEqualTo(android.R.style.TextAppearance_Small);
@@ -129,7 +135,7 @@ public class ShadowTextViewTest {
 
   @Test
   public void shouldSetTextAndTextColorWhileInflatingXmlLayout() throws Exception {
-    Activity activity = buildActivity(Activity.class).create().get();
+    Activity activity = activityController.get();
     activity.setContentView(R.layout.text_views);
 
     TextView black = (TextView) activity.findViewById(R.id.black_text_view);
@@ -149,7 +155,7 @@ public class ShadowTextViewTest {
 
   @Test
   public void shouldSetHintAndHintColorWhileInflatingXmlLayout() throws Exception {
-    Activity activity = buildActivity(Activity.class).create().get();
+    Activity activity = activityController.get();
     activity.setContentView(R.layout.text_views_hints);
 
     TextView black = (TextView) activity.findViewById(R.id.black_text_view_hint);
@@ -169,15 +175,13 @@ public class ShadowTextViewTest {
 
   @Test
   public void shouldNotHaveTransformationMethodByDefault() {
-    TextView view = new TextView(RuntimeEnvironment.application);
-    assertThat(view.getTransformationMethod()).isNull();
+    assertThat(textView.getTransformationMethod()).isNull();
   }
 
   @Test
   public void shouldAllowSettingATransformationMethod() {
-    TextView view = new TextView(RuntimeEnvironment.application);
-    view.setTransformationMethod(PasswordTransformationMethod.getInstance());
-    assertThat(view.getTransformationMethod()).isInstanceOf(PasswordTransformationMethod.class);
+    textView.setTransformationMethod(PasswordTransformationMethod.getInstance());
+    assertThat(textView.getTransformationMethod()).isInstanceOf(PasswordTransformationMethod.class);
   }
 
   @Test
@@ -256,9 +260,9 @@ public class ShadowTextViewTest {
 
     textView.setText(NEW_TEXT);
 
-    verify(mockTextWatcher)
-        .onTextChanged(
-            new SpannableStringBuilder(NEW_TEXT), 0, INITIAL_TEXT.length(), NEW_TEXT.length());
+    ArgumentCaptor<SpannableStringBuilder> builderCaptor = ArgumentCaptor.forClass(SpannableStringBuilder.class);
+    verify(mockTextWatcher).onTextChanged(builderCaptor.capture(), eq(0), eq(INITIAL_TEXT.length()), eq(NEW_TEXT.length()));
+    assertThat(builderCaptor.getValue().toString()).isEqualTo(NEW_TEXT);
   }
 
   @Test
@@ -287,9 +291,7 @@ public class ShadowTextViewTest {
 
     textView.append(NEW_TEXT);
 
-    verify(mockTextWatcher)
-        .beforeTextChanged(new SpannableStringBuilder(INITIAL_TEXT), 0, INITIAL_TEXT.length(),
-            INITIAL_TEXT.length());
+    verify(mockTextWatcher).beforeTextChanged(eq(INITIAL_TEXT), eq(0), eq(INITIAL_TEXT.length()), eq(INITIAL_TEXT.length()));
   }
 
   @Test
@@ -300,9 +302,9 @@ public class ShadowTextViewTest {
 
     textView.append(NEW_TEXT);
 
-    verify(mockTextWatcher)
-        .onTextChanged(new SpannableStringBuilder(INITIAL_TEXT + NEW_TEXT), 0,
-            INITIAL_TEXT.length(), INITIAL_TEXT.length());
+    ArgumentCaptor<SpannableStringBuilder> builderCaptor = ArgumentCaptor.forClass(SpannableStringBuilder.class);
+    verify(mockTextWatcher).onTextChanged(builderCaptor.capture(), eq(0), eq(INITIAL_TEXT.length()), eq(INITIAL_TEXT.length()));
+    assertThat(builderCaptor.getValue().toString()).isEqualTo(INITIAL_TEXT + NEW_TEXT);
   }
 
   @Test
@@ -396,11 +398,7 @@ public class ShadowTextViewTest {
       throws Exception {
     TestMovementMethod testMovementMethod = new TestMovementMethod();
     textView.setMovementMethod(testMovementMethod);
-    textView.setLayoutParams(new ViewGroup.LayoutParams(100, 100));
-    textView.setText("test");
-    textView.getPaint().setTypeface(Typeface.DEFAULT);
-    textView.setTypeface(Typeface.DEFAULT);
-    textView.getPaint().getFontMetrics();
+    textView.setLayoutParams(new FrameLayout.LayoutParams(100, 100));
     textView.measure(100, 100);
 
     MotionEvent event = MotionEvent.obtain(0, 0, 0, 0, 0, 0);
@@ -441,8 +439,12 @@ public class ShadowTextViewTest {
   public void whenSettingTextToNull_WatchersSeeEmptyString() {
     TextWatcher mockTextWatcher = mock(TextWatcher.class);
     textView.addTextChangedListener(mockTextWatcher);
+
     textView.setText(null);
-    verify(mockTextWatcher).onTextChanged(new SpannableStringBuilder(""), 0, 0, 0);
+
+    ArgumentCaptor<SpannableStringBuilder> builderCaptor = ArgumentCaptor.forClass(SpannableStringBuilder.class);
+    verify(mockTextWatcher).onTextChanged(builderCaptor.capture(), eq(0), eq(0), eq(0));
+    assertThat(builderCaptor.getValue().toString()).isEmpty();
   }
 
   @Test
@@ -610,7 +612,8 @@ public class ShadowTextViewTest {
     }
 
     @Override
-    public boolean onGenericMotionEvent(TextView widget, Spannable text, MotionEvent event) {
+    public boolean onGenericMotionEvent(TextView widget, Spannable text,
+                                        MotionEvent event) {
       return false;
     }
   }

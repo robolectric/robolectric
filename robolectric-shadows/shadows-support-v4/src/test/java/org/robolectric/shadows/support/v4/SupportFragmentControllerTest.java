@@ -1,5 +1,6 @@
 package org.robolectric.shadows.support.v4;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -7,7 +8,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
@@ -19,6 +19,9 @@ import static org.mockito.Mockito.verify;
 
 @RunWith(TestRunnerWithManifest.class)
 public class SupportFragmentControllerTest {
+
+  private static final int VIEW_ID_CUSTOMIZED_LOGIN_ACTIVITY = 123;
+
   @Test
   public void initialNotAttached() {
     final LoginFragment fragment = new LoginFragment();
@@ -58,6 +61,26 @@ public class SupportFragmentControllerTest {
     assertThat(fragment.getActivity()).isInstanceOf(LoginActivity.class);
     assertThat(fragment.isAdded()).isTrue();
     assertThat(fragment.isResumed()).isFalse();
+  }
+
+  @Test
+  public void attachedAfterCreate_customizedViewId() {
+    final LoginFragment fragment = new LoginFragment();
+    SupportFragmentController.of(fragment, CustomizedViewIdLoginActivity.class).create(VIEW_ID_CUSTOMIZED_LOGIN_ACTIVITY, null).start();
+
+    assertThat(fragment.getView()).isNotNull();
+    assertThat(fragment.getActivity()).isNotNull();
+    assertThat(fragment.isAdded()).isTrue();
+    assertThat(fragment.isResumed()).isFalse();
+    assertThat(fragment.getView().findViewById(R.id.tacos)).isNotNull();
+  }
+
+  @Test
+  public void hasViewAfterStart() {
+    final LoginFragment fragment = new LoginFragment();
+    SupportFragmentController.of(fragment).create().start();
+
+    assertThat(fragment.getView()).isNotNull();
   }
 
   @Test
@@ -101,6 +124,32 @@ public class SupportFragmentControllerTest {
     verify(fragment).onPause();
     verify(fragment).onStop();
   }
+  
+  @Test
+  public void withIntent() {
+    final LoginFragment fragment = new LoginFragment();
+    final SupportFragmentController<LoginFragment> controller = SupportFragmentController.of(fragment, LoginActivity.class);
+
+    Intent intent = new Intent("test_action");
+    intent.putExtra("test_key", "test_value");
+    controller.withIntent(intent).create();
+
+    Intent intentInFragment = controller.get().getActivity().getIntent();
+    assertThat(intentInFragment.getAction()).isEqualTo("test_action");
+    assertThat(intentInFragment.getExtras().getString("test_key")).isEqualTo("test_value");
+  }
+
+  @Test
+  public void visible() {
+    final LoginFragment fragment = new LoginFragment();
+    final SupportFragmentController<LoginFragment> controller = SupportFragmentController.of(fragment, LoginActivity.class);
+
+    controller.create().start().resume();
+    assertThat(fragment.isVisible()).isFalse();
+
+    controller.visible();
+    assertThat(fragment.isVisible()).isTrue();
+  }
 
   private static class LoginFragment extends Fragment {
     @Override
@@ -115,6 +164,17 @@ public class SupportFragmentControllerTest {
       super.onCreate(savedInstanceState);
       LinearLayout view = new LinearLayout(this);
       view.setId(1);
+
+      setContentView(view);
+    }
+  }
+
+  private static class CustomizedViewIdLoginActivity extends FragmentActivity {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+      super.onCreate(savedInstanceState);
+      LinearLayout view = new LinearLayout(this);
+      view.setId(VIEW_ID_CUSTOMIZED_LOGIN_ACTIVITY);
 
       setContentView(view);
     }

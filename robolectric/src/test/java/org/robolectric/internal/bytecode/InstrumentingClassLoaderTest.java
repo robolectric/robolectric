@@ -3,12 +3,14 @@ package org.robolectric.internal.bytecode;
 import android.os.Build;
 
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.internal.Shadow;
 import org.robolectric.internal.ShadowConstants;
 import org.robolectric.internal.ShadowExtractor;
 import org.robolectric.internal.bytecode.testing.AChild;
 import org.robolectric.internal.bytecode.testing.AClassThatCallsAMethodReturningAForgettableClass;
+import org.robolectric.internal.bytecode.testing.AClassThatExtendsAClassWithFinalEqualsHashCode;
 import org.robolectric.internal.bytecode.testing.AClassThatRefersToAForgettableClass;
 import org.robolectric.internal.bytecode.testing.AClassThatRefersToAForgettableClassInItsConstructor;
 import org.robolectric.internal.bytecode.testing.AClassThatRefersToAForgettableClassInMethodCalls;
@@ -36,16 +38,23 @@ import org.robolectric.internal.bytecode.testing.AnUninstrumentedParent;
 import org.robolectric.util.Transcript;
 import org.robolectric.util.Util;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
+import java.lang.invoke.SwitchPoint;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
+import static java.lang.invoke.MethodHandles.constant;
+import static java.lang.invoke.MethodHandles.dropArguments;
+import static java.lang.invoke.MethodHandles.insertArguments;
+import static java.lang.invoke.MethodType.methodType;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
@@ -55,7 +64,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.robolectric.internal.bytecode.InstrumentationConfiguration.MethodRef;
 
 public class InstrumentingClassLoaderTest {
 
@@ -161,9 +169,11 @@ public class InstrumentingClassLoaderTest {
     Class<?> exampleClass = loadClass(AClassWithStaticMethod.class);
     Method normalMethod = exampleClass.getMethod("staticMethod", String.class);
 
-    assertEquals("response from methodInvoked: AClassWithStaticMethod.staticMethod(java.lang.String value1)",
+    assertEquals(
+        "response from methodInvoked: AClassWithStaticMethod.staticMethod(java.lang.String value1)",
         normalMethod.invoke(null, "value1"));
-    transcript.assertEventsSoFar("methodInvoked: AClassWithStaticMethod.staticMethod(java.lang.String value1)");
+    transcript.assertEventsSoFar(
+        "methodInvoked: AClassWithStaticMethod.staticMethod(java.lang.String value1)");
   }
 
   @Test
@@ -183,18 +193,6 @@ public class InstrumentingClassLoaderTest {
     Method normalMethod = exampleClass.getMethod("normalMethodReturningInteger", int.class);
     Object exampleInstance = exampleClass.newInstance();
     assertEquals(456, normalMethod.invoke(exampleInstance, 123));
-    transcript.assertEventsSoFar("methodInvoked: AClassWithMethodReturningInteger.__constructor__()",
-        "methodInvoked: AClassWithMethodReturningInteger.normalMethodReturningInteger(int 123)");
-  }
-
-  @Test
-  public void whenClassHandlerReturnsNull_callingNormalMethodReturningIntegerShouldWork() throws Exception {
-    Class<?> exampleClass = loadClass(AClassWithMethodReturningInteger.class);
-    classHandler.valueToReturn = null;
-
-    Method normalMethod = exampleClass.getMethod("normalMethodReturningInteger", int.class);
-    Object exampleInstance = exampleClass.newInstance();
-    assertEquals(0, normalMethod.invoke(exampleInstance, 123));
     transcript.assertEventsSoFar("methodInvoked: AClassWithMethodReturningInteger.__constructor__()",
         "methodInvoked: AClassWithMethodReturningInteger.normalMethodReturningInteger(int 123)");
   }
@@ -333,6 +331,11 @@ public class InstrumentingClassLoaderTest {
   }
 
   @Test
+  public void shouldNotInstrumentFinalEqualsHashcode() throws ClassNotFoundException {
+    Class<?> theClass = loadClass(AClassThatExtendsAClassWithFinalEqualsHashCode.class);
+  }
+
+  @Test
   public void shouldInstrumentEqualsAndHashCodeAndToStringEvenWhenUndeclared() throws Exception {
     Class<?> theClass = loadClass(AClassWithoutEqualsHashCodeToString.class);
     Object instance = theClass.newInstance();
@@ -412,7 +415,7 @@ public class InstrumentingClassLoaderTest {
   public void shouldFixTypesInMethodArgsAndReturn() throws Exception {
     setClassLoader(new InstrumentingClassLoader(createRemappingConfig()));
     Class<?> theClass = loadClass(AClassThatRefersToAForgettableClassInMethodCalls.class);
-    assertNotNull(theClass.getMethod("aMethod", int.class, loadClass(AClassToRemember.class), String.class));
+    assertNotNull(theClass.getDeclaredMethod("aMethod", int.class, loadClass(AClassToRemember.class), String.class));
   }
 
   @Test
@@ -441,78 +444,91 @@ public class InstrumentingClassLoaderTest {
 
   @Test
   public void byte_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
+    if (InvokeDynamic.ENABLED) return;
     classHandler.valueToReturnFromIntercept = (byte) 10;
     assertThat(invokeInterceptedMethodOnAClassToForget("byteMethod")).isEqualTo((byte) 10);
   }
 
   @Test
   public void byteArray_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
+    if (InvokeDynamic.ENABLED) return;
     classHandler.valueToReturnFromIntercept = new byte[]{10, 12, 14};
     assertThat(invokeInterceptedMethodOnAClassToForget("byteArrayMethod")).isEqualTo(new byte[]{10, 12, 14});
   }
 
   @Test
   public void int_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
+    if (InvokeDynamic.ENABLED) return;
     classHandler.valueToReturnFromIntercept = 20;
     assertThat(invokeInterceptedMethodOnAClassToForget("intMethod")).isEqualTo(20);
   }
 
   @Test
   public void intArray_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
+    if (InvokeDynamic.ENABLED) return;
     classHandler.valueToReturnFromIntercept = new int[]{20, 22, 24};
     assertThat(invokeInterceptedMethodOnAClassToForget("intArrayMethod")).isEqualTo(new int[]{20, 22, 24});
   }
 
   @Test
   public void long_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
+    if (InvokeDynamic.ENABLED) return;
     classHandler.valueToReturnFromIntercept = 30L;
     assertThat(invokeInterceptedMethodOnAClassToForget("longMethod")).isEqualTo(30L);
   }
 
   @Test
   public void longArray_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
+    if (InvokeDynamic.ENABLED) return;
     classHandler.valueToReturnFromIntercept = new long[] {30L, 32L, 34L};
     assertThat(invokeInterceptedMethodOnAClassToForget("longArrayMethod")).isEqualTo(new long[] {30L, 32L, 34L});
   }
 
   @Test
   public void float_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
+    if (InvokeDynamic.ENABLED) return;
     classHandler.valueToReturnFromIntercept = 40f;
     assertThat(invokeInterceptedMethodOnAClassToForget("floatMethod")).isEqualTo(40f);
   }
 
   @Test
   public void floatArray_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
+    if (InvokeDynamic.ENABLED) return;
     classHandler.valueToReturnFromIntercept = new float[] {50f, 52f, 54f};
     assertThat(invokeInterceptedMethodOnAClassToForget("floatArrayMethod")).isEqualTo(new float[] {50f, 52f, 54f});
   }
 
   @Test
   public void double_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
+    if (InvokeDynamic.ENABLED) return;
     classHandler.valueToReturnFromIntercept = 80.0;
     assertThat(invokeInterceptedMethodOnAClassToForget("doubleMethod")).isEqualTo(80.0);
   }
 
   @Test
   public void doubleArray_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
+    if (InvokeDynamic.ENABLED) return;
     classHandler.valueToReturnFromIntercept = new double[] {90.0, 92.0, 94.0};
     assertThat(invokeInterceptedMethodOnAClassToForget("doubleArrayMethod")).isEqualTo(new double[] {90.0, 92.0, 94.0});
   }
 
   @Test
   public void short_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
+    if (InvokeDynamic.ENABLED) return;
     classHandler.valueToReturnFromIntercept = (short) 60;
     assertThat(invokeInterceptedMethodOnAClassToForget("shortMethod")).isEqualTo((short) 60);
   }
 
   @Test
   public void shortArray_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
+    if (InvokeDynamic.ENABLED) return;
     classHandler.valueToReturnFromIntercept = new short[] {70, 72, 74};
     assertThat(invokeInterceptedMethodOnAClassToForget("shortArrayMethod")).isEqualTo(new short[] {70, 72, 74});
   }
 
   @Test
   public void void_shouldBeHandledAsReturnValueFromInterceptHandler() throws Exception {
+    if (InvokeDynamic.ENABLED) return;
     classHandler.valueToReturnFromIntercept = null;
     assertThat(invokeInterceptedMethodOnAClassToForget("voidReturningMethod")).isNull();
   }
@@ -523,11 +539,14 @@ public class InstrumentingClassLoaderTest {
         .build()));
     Class<?> theClass = loadClass(AClassThatRefersToAForgettableClassInMethodCallsReturningPrimitive.class);
     Object instance = theClass.newInstance();
-    return theClass.getMethod(methodName).invoke(Shadow.directlyOn(instance, (Class<Object>) theClass));
+    Method m = theClass.getDeclaredMethod(methodName);
+    m.setAccessible(true);
+    return m.invoke(Shadow.directlyOn(instance, (Class<Object>) theClass));
   }
 
   @Test
   public void shouldPassArgumentsFromInterceptedMethods() throws Exception {
+    if (InvokeDynamic.ENABLED) return;
     classHandler.valueToReturnFromIntercept = 10L;
 
     setClassLoader(new InstrumentingClassLoader(InstrumentationConfiguration.newBuilder()
@@ -601,7 +620,7 @@ public class InstrumentingClassLoaderTest {
       return "a shadow!";
     }
 
-    public Object methodInvoked(Class clazz, String methodName, Object instance, String[] paramTypes, Object[] params) throws Throwable {
+    public Object methodInvoked(Class clazz, String methodName, Object instance, String[] paramTypes, Object[] params) {
       StringBuilder buf = new StringBuilder();
       buf.append("methodInvoked: ").append(clazz.getSimpleName()).append(".").append(methodName).append("(");
       for (int i = 0; i < paramTypes.length; i++) {
@@ -632,6 +651,44 @@ public class InstrumentingClassLoaderTest {
       };
     }
 
+    @Override public MethodHandle getShadowCreator(Class<?> caller) {
+      return dropArguments(constant(String.class, "a shadow!"), 0, caller);
+    }
+
+    @SuppressWarnings("UnusedDeclaration")
+    private Object invoke(InvocationProfile invocationProfile, Object instance, Object[] params) {
+      return methodInvoked(invocationProfile.clazz, invocationProfile.methodName, instance,
+          invocationProfile.paramTypes, params);
+    }
+
+    @Override public MethodHandle findShadowMethod(Class<?> theClass, String name, MethodType type,
+        boolean isStatic) throws IllegalAccessException {
+      String signature = getSignature(theClass, name, type, isStatic);
+      InvocationProfile invocationProfile = new InvocationProfile(signature, isStatic, getClass().getClassLoader());
+
+      try {
+        MethodHandle mh = MethodHandles.lookup().findVirtual(getClass(), "invoke",
+            methodType(Object.class, InvocationProfile.class, Object.class, Object[].class));
+        mh = insertArguments(mh, 0, this, invocationProfile);
+
+        if (isStatic) {
+          return mh.bindTo(null).asCollector(Object[].class, type.parameterCount());
+        } else {
+          return mh.asCollector(Object[].class, type.parameterCount() - 1);
+        }
+      } catch (NoSuchMethodException e) {
+        throw new AssertionError(e);
+      }
+    }
+
+    public String getSignature(Class<?> caller, String name, MethodType type, boolean isStatic) {
+      String className = caller.getName().replace('.', '/');
+      // Remove implicit first argument
+      if (!isStatic) type = type.dropParameterTypes(0, 1);
+      return className + "/" + name + type.toMethodDescriptorString();
+    }
+
+
     @Override
     public Object intercept(String signature, Object instance, Object[] params, Class theClass) throws Throwable {
       StringBuilder buf = new StringBuilder();
@@ -661,7 +718,9 @@ public class InstrumentingClassLoaderTest {
     if (classLoader == null) {
       classLoader = new InstrumentingClassLoader(InstrumentationConfiguration.newBuilder().build());
     }
-    RobolectricTestRunner.injectClassHandler(classLoader, classHandler);
+    ShadowInvalidator invalidator = Mockito.mock(ShadowInvalidator.class);
+    when(invalidator.getSwitchPoint(any(Class.class))).thenReturn(new SwitchPoint());
+    RobolectricTestRunner.injectEnvironment(classLoader, classHandler, invalidator);
     return classLoader.loadClass(clazz.getName());
   }
 

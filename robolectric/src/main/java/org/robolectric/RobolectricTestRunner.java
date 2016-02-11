@@ -57,6 +57,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   private static final Map<Pair<AndroidManifest, SdkConfig>, ResourceLoader> resourceLoadersByManifestAndConfig = new HashMap<>();
   private static final Map<ManifestIdentifier, AndroidManifest> appManifestsByFile = new HashMap<>();
   private static ShadowMap mainShadowMap;
+
   private InstrumentingClassLoaderFactory instrumentingClassLoaderFactory;
   private TestLifecycle<Application> testLifecycle;
   private DependencyResolver dependencyResolver;
@@ -95,9 +96,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
         dependencyResolver = new LocalDependencyResolver(new File(dependencyDir));
       } else {
         File cacheDir = new File(new File(System.getProperty("java.io.tmpdir")), "robolectric");
-        cacheDir.mkdir();
 
-        if (cacheDir.exists()) {
+        if (cacheDir.exists() || cacheDir.mkdir()) {
           Logger.info("Dependency cache location: %s", cacheDir.getAbsolutePath());
           dependencyResolver = new CachedDependencyResolver(new MavenDependencyResolver(), cacheDir, 60 * 60 * 24 * 1000);
         } else {
@@ -128,18 +128,20 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     return new AndroidManifest(manifestFile, resDir, assetDir, packageName);
   }
 
-  public InstrumentationConfiguration createClassLoaderConfig() {
-    return InstrumentationConfiguration.newBuilder().build();
+  public InstrumentationConfiguration createClassLoaderConfig(Config config) {
+    return InstrumentationConfiguration.newBuilder().withConfig(config).build();
   }
 
   protected Class<? extends TestLifecycle> getTestLifecycleClass() {
     return DefaultTestLifecycle.class;
   }
 
-  public static void injectClassHandler(ClassLoader robolectricClassLoader, ClassHandler classHandler) {
+  public static void injectEnvironment(ClassLoader robolectricClassLoader,
+      ClassHandler classHandler, ShadowInvalidator invalidator) {
     String className = RobolectricInternals.class.getName();
     Class<?> robolectricInternalsClass = ReflectionHelpers.loadClass(robolectricClassLoader, className);
     ReflectionHelpers.setStaticField(robolectricInternalsClass, "classHandler", classHandler);
+    ReflectionHelpers.setStaticField(robolectricInternalsClass, "shadowInvalidator", invalidator);
   }
 
   @Override
@@ -181,11 +183,9 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       eachNotifier.fireTestStarted();
       try {
         AndroidManifest appManifest = getAppManifest(config);
-        if (instrumentingClassLoaderFactory == null) {
-          instrumentingClassLoaderFactory = new InstrumentingClassLoaderFactory(createClassLoaderConfig(), getJarResolver());
-        }
         SdkConfig sdkConfig = new SdkConfig(pickSdkVersion(config, appManifest));
         sdkConfig.setRendering(config.rendering());
+        InstrumentingClassLoaderFactory instrumentingClassLoaderFactory = new InstrumentingClassLoaderFactory(createClassLoaderConfig(config), getJarResolver());
         SdkEnvironment sdkEnvironment = instrumentingClassLoaderFactory.getSdkEnvironment(sdkConfig, isLayoutLibEnabled(config));
         methodBlock(method, config, appManifest, sdkEnvironment).evaluate();
       } catch (AssumptionViolatedException e) {
@@ -430,8 +430,14 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       }
     }
 
+    if (InvokeDynamic.ENABLED) {
+      ShadowMap oldShadowMap = sdkEnvironment.replaceShadowMap(shadowMap);
+      Set<String> invalidatedClasses = shadowMap.getInvalidatedClasses(oldShadowMap);
+      sdkEnvironment.getShadowInvalidator().invalidateClasses(invalidatedClasses);
+    }
+
     ClassHandler classHandler = getClassHandler(sdkEnvironment, shadowMap);
-    injectClassHandler(sdkEnvironment.getRobolectricClassLoader(), classHandler);
+    injectEnvironment(sdkEnvironment.getRobolectricClassLoader(), classHandler, sdkEnvironment.getShadowInvalidator());
   }
 
   private ClassHandler getClassHandler(SdkEnvironment sdkEnvironment, ShadowMap shadowMap) {
@@ -519,11 +525,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   }
 
   protected ShadowMap createShadowMap() {
-    synchronized (RobolectricTestRunner.class) {
-      if (mainShadowMap != null) return mainShadowMap;
-      mainShadowMap = new ShadowMap.Builder().build();
-      return mainShadowMap;
-    }
+    return ShadowMap.EMPTY;
   }
 
   public class HelperTestRunner extends BlockJUnit4ClassRunner {

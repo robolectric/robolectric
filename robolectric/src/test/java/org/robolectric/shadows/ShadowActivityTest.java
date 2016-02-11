@@ -17,6 +17,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteCursor;
 import android.media.AudioManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.Display;
 import android.view.KeyEvent;
@@ -39,6 +40,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
 import org.robolectric.internal.Shadow;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
@@ -133,6 +135,30 @@ public class ShadowActivityTest {
     shadowOf(activity).receiveResult(new Intent().setType("image/*"), Activity.RESULT_OK,
         new Intent().setData(Uri.parse("content:foo")));
     transcript.assertEventsSoFar("onActivityResult called with requestCode -1, resultCode -1, intent data content:foo");
+  }
+
+  @Test
+  public void startActivities_shouldStartAllActivities() {
+    activity = create(DialogLifeCycleActivity.class);
+
+    final Intent view = new Intent(Intent.ACTION_VIEW);
+    final Intent pick = new Intent(Intent.ACTION_PICK);
+    activity.startActivities(new Intent[] {view, pick});
+
+    assertThat(shadowOf(activity).getNextStartedActivity()).isEqualTo(pick);
+    assertThat(shadowOf(activity).getNextStartedActivity()).isEqualTo(view);
+  }
+
+  @Test
+  public void startActivities_withBundle_shouldStartAllActivities() {
+    activity = create(DialogLifeCycleActivity.class);
+
+    final Intent view = new Intent(Intent.ACTION_VIEW);
+    final Intent pick = new Intent(Intent.ACTION_PICK);
+    activity.startActivities(new Intent[] {view, pick}, new Bundle());
+
+    assertThat(shadowOf(activity).getNextStartedActivity()).isEqualTo(pick);
+    assertThat(shadowOf(activity).getNextStartedActivity()).isEqualTo(view);
   }
 
   @Test
@@ -579,6 +605,13 @@ public class ShadowActivityTest {
     ShadowDisplay shadowDisplay = Shadows.shadowOf(display);
     assertThat(decorView.getWidth()).isEqualTo(shadowDisplay.getWidth());
     assertThat(decorView.getHeight()).isEqualTo(shadowDisplay.getHeight());
+  }
+
+  @Test
+  @Config(sdk = {Build.VERSION_CODES.M})
+  public void requestsPermissions() {
+    TestActivity activity = new TestActivity();
+    activity.requestPermissions(new String[0], -1);
   }
 
   private static class TestActivity extends Activity {

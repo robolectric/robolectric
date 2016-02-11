@@ -7,32 +7,37 @@ import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
+import android.content.pm.PackageInstaller;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ProviderInfo;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.*;
+import org.robolectric.R;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowDrawable;
 import org.robolectric.test.TemporaryFolder;
+
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -43,12 +48,45 @@ import static org.junit.Assert.fail;
 import static org.robolectric.Robolectric.setupActivity;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@Config(manifest = Config.NONE, sdk = 23)
 public class DefaultRobolectricPackageManagerTest {
   private static final String TEST_PACKAGE_NAME = "com.some.other.package";
   private static final String TEST_PACKAGE_LABEL = "My Little App";
   private final RobolectricPackageManager rpm = RuntimeEnvironment.getRobolectricPackageManager();
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+  @Test
+  public void getPackageInstaller() {
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = TEST_PACKAGE_NAME;
+    packageInfo.applicationInfo = new ApplicationInfo();
+    packageInfo.applicationInfo.packageName = TEST_PACKAGE_NAME;
+    packageInfo.applicationInfo.name = TEST_PACKAGE_LABEL;
+    rpm.addPackage(packageInfo);
+
+    List<PackageInstaller.SessionInfo> allSessions = RuntimeEnvironment.getPackageManager().getPackageInstaller().getAllSessions();
+
+    List<String> allPackageNames = new LinkedList<>();
+    for (PackageInstaller.SessionInfo session : allSessions) {
+      allPackageNames.add(session.appPackageName);
+    }
+
+    assertThat(allPackageNames).contains(TEST_PACKAGE_NAME);
+  }
+
+  @Test
+  public void packageInstallerAndGetInstalledPackagesAreConsistent() {
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = TEST_PACKAGE_NAME;
+    packageInfo.applicationInfo = new ApplicationInfo();
+    packageInfo.applicationInfo.packageName = TEST_PACKAGE_NAME;
+    packageInfo.applicationInfo.name = TEST_PACKAGE_LABEL;
+    rpm.addPackage(packageInfo);
+
+    List<PackageInstaller.SessionInfo> allSessions = RuntimeEnvironment.getPackageManager().getPackageInstaller().getAllSessions();
+
+    assertThat(allSessions).hasSameSizeAs(rpm.getInstalledPackages(0));
+  }
 
   @Test
   public void getApplicationInfo_ThisApplication() throws Exception {

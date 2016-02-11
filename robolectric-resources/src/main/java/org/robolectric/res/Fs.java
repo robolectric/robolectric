@@ -7,8 +7,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -25,14 +24,14 @@ import static java.util.Arrays.asList;
 
 abstract public class Fs {
   public static Fs fromJar(URL url) {
-    try {
-      if (url.toURI().getPath().contains(" ")) {
-        url = new URL(url.toURI().getPath().replace(" ", "%20"));
-      }
-      return new JarFs(new File(url.toURI().getPath()));
-    } catch (URISyntaxException | MalformedURLException e) {
-      throw new IllegalArgumentException(e);
+    return new JarFs(new File(fixFileURL(url).getPath()));
+  }
+  
+  private static URI fixFileURL(URL u) {
+    if (!"file".equals(u.getProtocol())) {
+      throw new IllegalArgumentException();
     }
+    return new File(u.getFile()).toURI();
   }
 
   public static FsFile fileFromPath(String urlString) {

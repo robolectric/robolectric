@@ -4,8 +4,11 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.view.Window;
 import android.widget.ProgressBar;
-
+#if ($api >= 23)
+import com.android.internal.policy.PhoneWindow;
+#else
 import com.android.internal.policy.impl.PhoneWindow;
+#end
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;

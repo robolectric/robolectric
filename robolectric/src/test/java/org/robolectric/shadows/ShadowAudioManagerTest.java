@@ -1,11 +1,13 @@
 package org.robolectric.shadows;
 
+import android.media.AudioManager;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import android.media.AudioManager;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
@@ -181,5 +183,13 @@ public class ShadowAudioManagerTest {
     assertThat(audioManager.isSpeakerphoneOn()).isFalse();
     audioManager.setSpeakerphoneOn(true);
     assertThat(audioManager.isSpeakerphoneOn()).isTrue();
+  }
+
+  @Test
+  public void microphoneShouldMute() {
+    //Should not be muted by default
+    assertThat(audioManager.isMicrophoneMute()).isFalse();
+    audioManager.setMicrophoneMute(true);
+    assertThat(audioManager.isMicrophoneMute()).isTrue();
   }
 }

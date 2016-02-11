@@ -24,7 +24,25 @@
       <scope>test</scope>
     </dependency>
 
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+
     <!-- Project Dependencies -->
+    <dependency>
+      <groupId>org.ow2.asm</groupId>
+      <artifactId>asm</artifactId>
+      <version>5.0.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.ow2.asm</groupId>
+      <artifactId>asm-commons</artifactId>
+      <version>5.0.1</version>
+    </dependency>
+
     <dependency>
       <groupId>org.robolectric</groupId>
       <artifactId>android-all</artifactId>
@@ -38,8 +56,7 @@
     <dependency>
       <groupId>com.google.android.apps.common.testing.accessibility.framework</groupId>
       <artifactId>accessibility-test-framework</artifactId>
-      <version>1.0</version>
-      <scope>compile</scope>
+      <version>2.1</version>
     </dependency>
   </dependencies>
 

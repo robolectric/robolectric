@@ -32,6 +32,14 @@ public class ShadowAlarmManagerTest {
   }
 
   @Test
+  @Config(sdk = Build.VERSION_CODES.M)
+  public void setAndAllowWhileIdle_shouldRegisterAlarm() throws Exception {
+    assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNull();
+    alarmManager.setAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME, 0, PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
+    assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNotNull();
+  }
+
+  @Test
   @Config(sdk = Build.VERSION_CODES.KITKAT)
   public void setExact_shouldRegisterAlarm_forApi19() throws Exception {
     assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNull();

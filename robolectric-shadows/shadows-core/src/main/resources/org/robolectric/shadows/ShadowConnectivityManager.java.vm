@@ -5,8 +5,10 @@ import android.net.NetworkInfo;
 
 #if ($api >= 21)
 import android.net.NetworkRequest;
+import android.net.Network;
 #end
 
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.HiddenApi;
@@ -22,6 +24,12 @@ import java.util.Set;
 @Implements(ConnectivityManager.class)
 public class ShadowConnectivityManager {
 
+#if ($api >= 21)
+  // Package-private for tests.
+  static final int NET_ID_WIFI = 1;
+  static final int NET_ID_MOBILE = 2;
+#end
+
   private NetworkInfo activeNetwork;
   private boolean backgroundDataSetting;
   private int networkPreference = ConnectivityManager.DEFAULT_NETWORK_PREFERENCE;
@@ -29,16 +37,27 @@ public class ShadowConnectivityManager {
 
 #if ($api >= 21)
   private HashSet<ConnectivityManager.NetworkCallback> networkCallbacks = new HashSet<>();
+  private final Map<Integer, Network> netIdToNetwork = new HashMap<>();
+  private final Map<Integer, NetworkInfo> netIdToNetworkInfo = new HashMap<>();
 #end
 
   public ShadowConnectivityManager() {
-    NetworkInfo wifi = ShadowNetworkInfo.newInstance(NetworkInfo.DetailedState.DISCONNECTED, ConnectivityManager.TYPE_WIFI, 0, true, false);
+    NetworkInfo wifi = ShadowNetworkInfo.newInstance(NetworkInfo.DetailedState.DISCONNECTED,
+        ConnectivityManager.TYPE_WIFI, 0, true, false);
     networkTypeToNetworkInfo.put(ConnectivityManager.TYPE_WIFI, wifi);
 
-    NetworkInfo mobile = ShadowNetworkInfo.newInstance(NetworkInfo.DetailedState.CONNECTED, ConnectivityManager.TYPE_MOBILE, ConnectivityManager.TYPE_MOBILE_MMS, true, true);
+    NetworkInfo mobile = ShadowNetworkInfo.newInstance(NetworkInfo.DetailedState.CONNECTED,
+        ConnectivityManager.TYPE_MOBILE, ConnectivityManager.TYPE_MOBILE_MMS, true, true);
     networkTypeToNetworkInfo.put(ConnectivityManager.TYPE_MOBILE, mobile);
 
     this.activeNetwork = mobile;
+
+#if ($api >= 21)
+    netIdToNetwork.put(NET_ID_WIFI, ShadowNetwork.newInstance(NET_ID_WIFI));
+    netIdToNetwork.put(NET_ID_MOBILE, ShadowNetwork.newInstance(NET_ID_MOBILE));
+    netIdToNetworkInfo.put(NET_ID_WIFI, wifi);
+    netIdToNetworkInfo.put(NET_ID_MOBILE, mobile);
+#end
   }
 
 #if ($api >= 21)
@@ -77,6 +96,19 @@ public class ShadowConnectivityManager {
     return networkTypeToNetworkInfo.get(networkType);
   }
 
+#if ($api >= 21)
+  @Implementation
+  public NetworkInfo getNetworkInfo(Network network) {
+    ShadowNetwork shadowNetwork = Shadows.shadowOf(network);
+    return netIdToNetworkInfo.get(shadowNetwork.getNetId());
+  }
+
+  @Implementation
+  public Network[] getAllNetworks() {
+    return netIdToNetwork.values().toArray(new Network[netIdToNetwork.size()]);
+  }
+#end
+
   @Implementation
   public boolean getBackgroundDataSetting() {
     return backgroundDataSetting;
@@ -90,6 +122,21 @@ public class ShadowConnectivityManager {
   @Implementation
   public int getNetworkPreference() {
     return networkPreference;
+  }
+
+  /**
+   * Count {@link ConnectivityManager#TYPE_MOBILE} networks as metered.
+   * Other types will be considered unmetered.
+   *
+   * @return True if the active network is metered.
+   */
+  @Implementation
+  public boolean isActiveNetworkMetered() {
+    if (activeNetwork != null) {
+      return activeNetwork.getType() == ConnectivityManager.TYPE_MOBILE;
+    } else {
+      return false;
+    }
   }
 
   public void setNetworkInfo(int networkType, NetworkInfo networkInfo) {
@@ -109,4 +156,38 @@ public class ShadowConnectivityManager {
       networkTypeToNetworkInfo.clear();
     }
   }
+
+#if ($api >= 21)
+  /**
+   * Adds new {@code network} to the list of all {@link android.net.Network}s.
+   *
+   * @param network The network.
+   * @param networkInfo The network info paired with the {@link android.net.Network}.
+   */
+  public void addNetwork(Network network, NetworkInfo networkInfo) {
+    ShadowNetwork shadowNetwork = Shadows.shadowOf(network);
+    int netId = shadowNetwork.getNetId();
+    netIdToNetwork.put(netId, network);
+    netIdToNetworkInfo.put(netId, networkInfo);
+  }
+
+  /**
+   * Removes the {@code network} from the list of all {@link android.net.Network}s.
+   * @param network The network.
+   */
+  public void removeNetwork(Network network) {
+    ShadowNetwork shadowNetwork = Shadows.shadowOf(network);
+    int netId = shadowNetwork.getNetId();
+    netIdToNetwork.remove(netId);
+    netIdToNetworkInfo.remove(netId);
+  }
+
+  /**
+   * Clears the list of all {@link android.net.Network}s.
+   */
+  public void clearAllNetworks() {
+    netIdToNetwork.clear();
+    netIdToNetworkInfo.clear();
+  }
+#end
 }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
   <string name="greeting">@string/howdy</string>
   <string name="howdy">Howdy</string>
   <string name="hello">Hello</string>
@@ -18,6 +18,14 @@
   <string name="surrounding_quotes">"This'll work"</string>
   <string name="escaped_apostrophe">This\'ll also work</string>
   <string name="escaped_quotes">Click \"OK\"</string>
+  <string name="leading_and_trailing_new_lines">
+    Some text
+  </string>
+  <string name="new_lines_and_tabs">
+    <xliff:g id="minutes" example="3 min">%1$s</xliff:g>\tmph\nfaster
+  </string>
+  <string name="non_breaking_space">Closing soon:\u00A05pm</string>
+  <string name="space">Closing soon:\u00205pm</string>
   <string name="app_name">Testing App</string>
   <string name="activity_name">Testing App Activity</string>
   <string name="minute_singular">minute</string>

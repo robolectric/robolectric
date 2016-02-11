@@ -29,10 +29,11 @@ public class ShadowMemoryMappedFile {
     private byte[] bytes;
     private static final String TZ_DATA_1 = "/misc/zoneinfo/tzdata";
     private static final String TZ_DATA_2 = "/usr/share/zoneinfo/tzdata";
+    private static final String TZ_DATA_3 = "/misc/zoneinfo/current/tzdata";
 
     @Implementation
     public static MemoryMappedFile mmapRO(String path) throws ErrnoException {
-        if (path.endsWith(TZ_DATA_1) || path.endsWith(TZ_DATA_2)) {
+        if (path.endsWith(TZ_DATA_1) || path.endsWith(TZ_DATA_2) || path.endsWith(TZ_DATA_3)) {
             InputStream is = MemoryMappedFile.class.getResourceAsStream(TZ_DATA_2);
             if (is == null) {
                 throw new ErrnoException("open", -1);

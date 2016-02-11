@@ -2,6 +2,7 @@ package org.robolectric.util;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.LinearLayout;
 import org.robolectric.Robolectric;
@@ -16,7 +17,7 @@ public class FragmentController<F extends Fragment> extends ComponentController<
   private final F fragment;
   private final ActivityController<? extends Activity> activityController;
 
-  private FragmentController(ShadowsAdapter shadowsAdapter, F fragment, Class<? extends Activity> activityClass) {
+  protected FragmentController(ShadowsAdapter shadowsAdapter, F fragment, Class<? extends Activity> activityClass) {
     super(shadowsAdapter, fragment);
     this.fragment = fragment;
     this.activityController = Robolectric.buildActivity(activityClass);
@@ -36,15 +37,25 @@ public class FragmentController<F extends Fragment> extends ComponentController<
     return this;
   }
 
-  public FragmentController<F> create(final Bundle bundle) {
+  /**
+   * Creates the activity with {@link Bundle} and adds the fragment to the view with ID {@code contentViewId}.
+   */
+  public FragmentController<F> create(final int contentViewId, final Bundle bundle) {
     shadowMainLooper.runPaused(new Runnable() {
       @Override
       public void run() {
         if (!attached) attach();
-        activityController.create(bundle).get().getFragmentManager().beginTransaction().add(fragment, null).commit();
+        activityController.create(bundle).get().getFragmentManager().beginTransaction().add(contentViewId, fragment).commit();
       }
     });
     return this;
+  }
+
+  /**
+   * Creates the activity with {@link Bundle} and adds the fragment to it. Note that the fragment will be added to the view with ID 1.
+   */
+  public FragmentController<F> create(Bundle bundle) {
+    return create(1, bundle);
   }
 
   @Override
@@ -93,6 +104,16 @@ public class FragmentController<F extends Fragment> extends ComponentController<
     return this;
   }
 
+  public FragmentController<F> visible() {
+    shadowMainLooper.runPaused(new Runnable() {
+      @Override
+      public void run() {
+        activityController.visible();
+      }
+    });
+    return this;
+  }
+
   public FragmentController<F> stop() {
     shadowMainLooper.runPaused(new Runnable() {
       @Override
@@ -108,6 +129,17 @@ public class FragmentController<F extends Fragment> extends ComponentController<
       @Override
       public void run() {
         activityController.saveInstanceState(outState);
+      }
+    });
+    return this;
+  }
+
+  @Override
+  public FragmentController<F> withIntent(final Intent intent) {
+    shadowMainLooper.runPaused(new Runnable() {
+      @Override
+      public void run() {
+        activityController.withIntent(intent);
       }
     });
     return this;

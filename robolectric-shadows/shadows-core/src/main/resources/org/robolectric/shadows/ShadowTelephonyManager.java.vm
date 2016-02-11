@@ -1,12 +1,16 @@
 package org.robolectric.shadows;
 
+import android.telephony.CellInfo;
+import android.telephony.CellLocation;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
+import java.util.List;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 /**
- * Shadow for {@link android.telephony.PhoneStateListener}.
+ * Shadow for {@link android.telephony.TelephonyManager}.
  */
 @Implements(TelephonyManager.class)
 public class ShadowTelephonyManager {
@@ -17,11 +21,17 @@ public class ShadowTelephonyManager {
   private String networkCountryIso;
   private String networkOperator;
   private String simOperator;
+  private String simOperatorName;
   private boolean readPhoneStatePermission = true;
   private int phoneType = TelephonyManager.PHONE_TYPE_GSM;
   private String simCountryIso;
   private int simState = TelephonyManager.SIM_STATE_READY;
   private String line1Number;
+  private int networkType;
+#if ($api >= 17)
+  private List<CellInfo> allCellInfo;
+#end
+  private CellLocation cellLocation;
 
   @Implementation
   public void listen(PhoneStateListener listener, int events) {
@@ -94,6 +104,15 @@ public class ShadowTelephonyManager {
   }
 
   @Implementation
+  public String getSimOperatorName() {
+    return simOperatorName;
+  }
+
+  public void setSimOperatorName(String simOperatorName) {
+    this.simOperatorName = simOperatorName;
+  }
+
+  @Implementation
   public String getSimCountryIso() {
     return simCountryIso;
   }
@@ -137,5 +156,34 @@ public class ShadowTelephonyManager {
 
   public void setLine1Number(String line1Number) {
     this.line1Number = line1Number;
+  }
+
+  @Implementation
+  public int getNetworkType() {
+    return networkType;
+  }
+
+  public void setNetworkType(int networkType) {
+    this.networkType = networkType;
+  }
+
+#if ($api >= 17)
+  @Implementation
+  public List<CellInfo> getAllCellInfo() {
+    return allCellInfo;
+  }
+
+  public void setAllCellInfo(List<CellInfo> allCellInfo) {
+    this.allCellInfo = allCellInfo;
+  }
+#end
+
+  @Implementation
+  public CellLocation getCellLocation() {
+    return this.cellLocation;
+  }
+
+  public void setCellLocation(CellLocation cellLocation) {
+    this.cellLocation = cellLocation;
   }
 }

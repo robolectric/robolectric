@@ -5,11 +5,13 @@ import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkInfo;
 import android.net.NetworkRequest;
+import android.os.Build;
 import android.telephony.TelephonyManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 
@@ -55,6 +57,35 @@ public class ShadowConnectivityManagerTest {
     assertThat(mobile.getDetailedState()).isEqualTo(NetworkInfo.DetailedState.CONNECTED);
   }
 
+  @Test @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
+  public void getNetworkInfo_shouldReturnSomeForAllNetworks() throws Exception {
+    Network[] allNetworks = connectivityManager.getAllNetworks();
+    for (Network network: allNetworks) {
+      NetworkInfo networkInfo = connectivityManager.getNetworkInfo(network);
+      assertThat(networkInfo).isNotNull();
+    }
+  }
+
+  @Test @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
+  public void getNetworkInfo_shouldReturnAddedNetwork() throws Exception {
+    Network vpnNetwork = ShadowNetwork.newInstance(123);
+    NetworkInfo vpnNetworkInfo = ShadowNetworkInfo.newInstance(NetworkInfo.DetailedState.CONNECTED,
+        ConnectivityManager.TYPE_VPN, 0, true, true);
+    shadowConnectivityManager.addNetwork(vpnNetwork, vpnNetworkInfo);
+
+    NetworkInfo returnedNetworkInfo = connectivityManager.getNetworkInfo(vpnNetwork);
+    assertThat(returnedNetworkInfo).isSameAs(vpnNetworkInfo);
+  }
+
+  @Test @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
+  public void getNetworkInfo_shouldNotReturnRemovedNetwork() throws Exception {
+    Network wifiNetwork = ShadowNetwork.newInstance(ShadowConnectivityManager.NET_ID_WIFI);
+    shadowConnectivityManager.removeNetwork(wifiNetwork);
+
+    NetworkInfo returnedNetworkInfo = connectivityManager.getNetworkInfo(wifiNetwork);
+    assertThat(returnedNetworkInfo).isNull();
+  }
+
   @Test
   public void setConnectionType_shouldReturnTypeCorrectly() {
     shadowOfActiveNetworkInfo.setConnectionType(ConnectivityManager.TYPE_MOBILE);
@@ -76,8 +107,7 @@ public class ShadowConnectivityManagerTest {
     shadowConnectivityManager.setActiveNetworkInfo(null);
     assertThat(connectivityManager.getActiveNetworkInfo()).isNull();
     shadowConnectivityManager.setActiveNetworkInfo(ShadowNetworkInfo.newInstance(null,
-        ConnectivityManager.TYPE_MOBILE_HIPRI,
-        TelephonyManager.NETWORK_TYPE_EDGE, true, false));
+        ConnectivityManager.TYPE_MOBILE_HIPRI, TelephonyManager.NETWORK_TYPE_EDGE, true, false));
 
     NetworkInfo info = connectivityManager.getActiveNetworkInfo();
 
@@ -97,6 +127,53 @@ public class ShadowConnectivityManagerTest {
     assertThat(connectivityManager.getAllNetworkInfo()).isEmpty();
   }
 
+  @Test @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
+  public void getAllNetworks_shouldReturnAllNetworks() throws Exception {
+    Network[] networks = connectivityManager.getAllNetworks();
+    assertThat(networks).hasSize(2);
+  }
+
+  @Test @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
+  public void getAllNetworks_shouldReturnNoNetworksWhenCleared() throws Exception {
+    shadowConnectivityManager.clearAllNetworks();
+    Network[] networks = connectivityManager.getAllNetworks();
+    assertThat(networks).isEmpty();
+  }
+
+  @Test @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
+  public void getAllNetworks_shouldReturnAddedNetworks() throws Exception {
+    // Let's start clear.
+    shadowConnectivityManager.clearAllNetworks();
+
+    // Add a "VPN network".
+    Network vpnNetwork = ShadowNetwork.newInstance(123);
+    NetworkInfo vpnNetworkInfo = ShadowNetworkInfo.newInstance(NetworkInfo.DetailedState.CONNECTED,
+        ConnectivityManager.TYPE_VPN, 0, true, true);
+    shadowConnectivityManager.addNetwork(vpnNetwork, vpnNetworkInfo);
+
+    Network[] networks = connectivityManager.getAllNetworks();
+    assertThat(networks).hasSize(1);
+
+    Network returnedNetwork = networks[0];
+    assertThat(returnedNetwork).isSameAs(vpnNetwork);
+
+    NetworkInfo returnedNetworkInfo = connectivityManager.getNetworkInfo(returnedNetwork);
+    assertThat(returnedNetworkInfo).isSameAs(vpnNetworkInfo);
+  }
+
+  @Test @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
+  public void getAllNetworks_shouldNotReturnRemovedNetworks() throws Exception {
+    Network wifiNetwork = ShadowNetwork.newInstance(ShadowConnectivityManager.NET_ID_WIFI);
+    shadowConnectivityManager.removeNetwork(wifiNetwork);
+
+    Network[] networks = connectivityManager.getAllNetworks();
+    assertThat(networks).hasSize(1);
+
+    Network returnedNetwork = networks[0];
+    ShadowNetwork shadowReturnedNetwork = Shadows.shadowOf(returnedNetwork);
+    assertThat(shadowReturnedNetwork.getNetId()).isNotEqualTo(ShadowConnectivityManager.NET_ID_WIFI);
+  }
+
   @Test
   public void getNetworkPreference_shouldGetDefaultValue() throws Exception {
     assertThat(connectivityManager.getNetworkPreference()).isEqualTo(ConnectivityManager.DEFAULT_NETWORK_PREFERENCE);
@@ -110,7 +187,7 @@ public class ShadowConnectivityManagerTest {
     assertThat(connectivityManager.getNetworkPreference()).isEqualTo(ConnectivityManager.TYPE_WIFI);
   }
 
-  @Test @Config(sdk = 21)
+  @Test @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
   public void getNetworkCallbacks_shouldHaveEmptyDefault() throws Exception {
     assertEquals(0, shadowConnectivityManager.getNetworkCallbacks().size());
   }
@@ -124,7 +201,7 @@ public class ShadowConnectivityManagerTest {
     };
   }
 
-  @Test @Config(sdk = 21)
+  @Test @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
   public void registerCallback_shouldAddCallback() throws Exception {
     NetworkRequest.Builder builder = new NetworkRequest.Builder();
     ConnectivityManager.NetworkCallback callback = createSimpleCallback();
@@ -132,7 +209,7 @@ public class ShadowConnectivityManagerTest {
     assertEquals(1, shadowConnectivityManager.getNetworkCallbacks().size());
   }
 
-  @Test @Config(sdk = 21)
+  @Test @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
   public void unregisterCallback_shouldRemoveCallbacks() throws Exception {
     NetworkRequest.Builder builder = new NetworkRequest.Builder();
     // Add two different callbacks.
@@ -151,6 +228,29 @@ public class ShadowConnectivityManagerTest {
   @Test(expected=IllegalArgumentException.class) @Config(sdk = 21)
   public void unregisterCallback_shouldNotAllowNullCallback() throws Exception {
     // Verify that exception is thrown.
-    connectivityManager.unregisterNetworkCallback(null);
+    connectivityManager.unregisterNetworkCallback((ConnectivityManager.NetworkCallback) null);
+  }
+
+  @Test
+  public void isActiveNetworkMetered_defaultsToTrue() {
+    assertThat(connectivityManager.isActiveNetworkMetered()).isTrue();
+  }
+
+  @Test
+  public void isActiveNetworkMetered_mobileIsMetered() {
+    shadowConnectivityManager.setActiveNetworkInfo(connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE));
+    assertThat(connectivityManager.isActiveNetworkMetered()).isTrue();
+  }
+
+  @Test
+  public void isActiveNetworkMetered_nonMobileIsUnmetered() {
+    shadowConnectivityManager.setActiveNetworkInfo(connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI));
+    assertThat(connectivityManager.isActiveNetworkMetered()).isFalse();
+  }
+
+  @Test
+  public void isActiveNetworkMetered_noActiveNetwork() {
+    shadowConnectivityManager.setActiveNetworkInfo(null);
+    assertThat(connectivityManager.isActiveNetworkMetered()).isFalse();
   }
 }

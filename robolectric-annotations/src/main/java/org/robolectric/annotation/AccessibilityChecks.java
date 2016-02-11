@@ -17,7 +17,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
 public @interface AccessibilityChecks {
-  enum ForRobolectricVersion { VERSION_3_0, LATEST }
+  enum ForRobolectricVersion { VERSION_3_0, VERSION_3_1, LATEST }
 
   /**
    * Enable or disable accessibility checking.
