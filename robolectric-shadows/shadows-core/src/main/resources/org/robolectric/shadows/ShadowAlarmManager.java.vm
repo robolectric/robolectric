@@ -31,6 +31,13 @@ public class ShadowAlarmManager {
   }
 #end
 
+#if ($api >= 23)
+  @Implementation
+  public void setAndAllowWhileIdle(int type, long triggerAtTime, PendingIntent operation) {
+    internalSet(type, triggerAtTime, 0L, operation);
+  }
+#end
+
   @Implementation
   public void setRepeating(int type, long triggerAtTime, long interval, PendingIntent operation) {
     internalSet(type, triggerAtTime, interval, operation);

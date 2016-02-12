@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.util.DisplayMetrics;
-import android.util.Log;
 
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -191,6 +190,11 @@ public class ShadowBitmap {
   }
 
   @Implementation
+  public static Bitmap createBitmap(DisplayMetrics displayMetrics, int width, int height, Bitmap.Config config, boolean hasAlpha) {
+    return createBitmap((DisplayMetrics) null, width, height, config);
+  }
+
+  @Implementation
   public static Bitmap createBitmap(DisplayMetrics displayMetrics, int width, int height, Bitmap.Config config) {
     if (width <= 0 || height <= 0) {
       throw new IllegalArgumentException("width and height must be > 0");
@@ -206,6 +210,7 @@ public class ShadowBitmap {
     if (displayMetrics != null) {
       shadowBitmap.density = displayMetrics.densityDpi;
     }
+    shadowBitmap.setPixels(new int[shadowBitmap.getHeight() * shadowBitmap.getWidth()], 0, shadowBitmap.getWidth(), 0, 0, shadowBitmap.getWidth(), shadowBitmap.getHeight());
     return scaledBitmap;
   }
 
@@ -259,6 +264,12 @@ public class ShadowBitmap {
     shadowBitmap.width = width;
     shadowBitmap.height = height;
     return newBitmap;
+  }
+
+  @Implementation
+  public void setPixels(int[] pixels, int offset, int stride,
+                        int x, int y, int width, int height) {
+    this.colors = pixels;
   }
 
   @Implementation
@@ -341,6 +352,25 @@ public class ShadowBitmap {
       colors = new int[getWidth() * getHeight()];
     }
     colors[y * getWidth() + x] = color;
+  }
+
+  /**
+   * Note that this method will return a RuntimeException unless:
+   * - {@code pixels} has the same length as the number of pixels of the bitmap.
+   * - {@code x = 0}
+   * - {@code y = 0}
+   * - {@code width} and {@code height} height match the current bitmap's dimensions.
+   */
+  @Implementation
+  public void getPixels(int[] pixels, int offset, int stride, int x, int y, int width, int height) {
+    if (x != 0 ||
+        y != 0 ||
+        width != getWidth() ||
+        height != getHeight() ||
+        pixels.length != colors.length) {
+      throw new RuntimeException("Not implemented.");
+    }
+    System.arraycopy(colors, 0, pixels, 0, colors.length);
   }
 
   @Implementation

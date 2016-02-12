@@ -1,11 +1,14 @@
 package org.robolectric.shadows;
 
 import android.app.KeyguardManager;
-import android.content.Context;
+import android.os.Build;
+
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
 
 import static android.content.Context.KEYGUARD_SERVICE;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -16,21 +19,25 @@ import static org.robolectric.Shadows.shadowOf;
 @RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowKeyguardManagerTest {
 
+  private KeyguardManager manager;
+
+  @Before
+  public void setUp() {
+    manager = (KeyguardManager) RuntimeEnvironment.application.getSystemService(KEYGUARD_SERVICE);
+  }
+
   @Test
   public void testIsInRestrcitedInputMode() {
-    Context context = RuntimeEnvironment.application;
-    KeyguardManager mgr = ( KeyguardManager ) context.getSystemService( KEYGUARD_SERVICE );
-    assertThat(mgr.inKeyguardRestrictedInputMode()).isFalse();
-    ShadowKeyguardManager shadowMgr = shadowOf(mgr);
-    shadowMgr.setinRestrictedInputMode( true );
-    assertThat(mgr.inKeyguardRestrictedInputMode()).isTrue();
+
+    assertThat(manager.inKeyguardRestrictedInputMode()).isFalse();
+    ShadowKeyguardManager shadowMgr = shadowOf(manager);
+    shadowMgr.setinRestrictedInputMode(true);
+    assertThat(manager.inKeyguardRestrictedInputMode()).isTrue();
   }
 
   @Test
   public void testShouldBeAbleToDisableTheKeyguardLock() throws Exception {
-    Context context = RuntimeEnvironment.application;
-    KeyguardManager mgr = ( KeyguardManager ) context.getSystemService( KEYGUARD_SERVICE );
-    KeyguardManager.KeyguardLock lock = mgr.newKeyguardLock(KEYGUARD_SERVICE);
+    KeyguardManager.KeyguardLock lock = manager.newKeyguardLock(KEYGUARD_SERVICE);
     assertTrue(shadowOf(lock).isEnabled());
 
     lock.disableKeyguard();
@@ -38,5 +45,16 @@ public class ShadowKeyguardManagerTest {
 
     lock.reenableKeyguard();
     assertTrue(shadowOf(lock).isEnabled());
+  }
+
+  @Test
+  @Config(sdk = Build.VERSION_CODES.M)
+  public void isKeyguardSecure() {
+    assertThat(manager.isKeyguardSecure()).isFalse();
+
+    ShadowKeyguardManager shadowMgr = shadowOf(manager);
+    shadowMgr.setIsKeyguardSecure(true);
+
+    assertThat(manager.isKeyguardSecure()).isTrue();
   }
 }
