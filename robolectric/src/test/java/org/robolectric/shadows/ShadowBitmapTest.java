@@ -293,6 +293,32 @@ public class ShadowBitmapTest {
     Bitmap.createBitmap(100, 0, Bitmap.Config.ARGB_8888);
   }
 
+  @Test
+  public void shouldGetPixelsFromAnyNonNullableCreatedBitmap() {
+    Bitmap bitmap;
+    int width = 10;
+    int height = 10;
+
+    int[] pixels = new int[width * height];
+    bitmap = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888);
+    bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
+
+    bitmap = Bitmap.createBitmap(bitmap);
+    bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
+
+    bitmap = Bitmap.createBitmap(bitmap, 0, 0, width, height);
+    bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
+
+    bitmap = Bitmap.createBitmap(bitmap, 0, 0, width, height, new Matrix(), false);
+    bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
+
+    bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+    bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
+
+    bitmap = Bitmap.createBitmap(pixels, width, height, Bitmap.Config.ARGB_8888);
+    bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
+  }
+
   private static Bitmap create(String name) {
     Bitmap bitmap = Shadow.newInstanceOf(Bitmap.class);
     shadowOf(bitmap).appendDescription(name);
