@@ -359,10 +359,9 @@ public class ShadowLayoutInflaterTest {
   public void testViewBackgroundIdIsSet() throws Exception {
     View mediaView = inflate("main");
     ImageView imageView = (ImageView) mediaView.findViewById(R.id.image);
-    ShadowImageView shadowImageView = shadowOf(imageView);
 
     assertThat(imageView.getBackground()).isResource(R.drawable.image_background);
-    assertThat(shadowImageView.getBackgroundResourceId()).isEqualTo(R.drawable.image_background);
+    assertThat(shadowOf(imageView).getBackgroundResourceId()).isEqualTo(R.drawable.image_background);
   }
 
   @Test
