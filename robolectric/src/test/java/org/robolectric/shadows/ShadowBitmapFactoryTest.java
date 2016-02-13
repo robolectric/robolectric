@@ -63,6 +63,7 @@ public class ShadowBitmapFactoryTest {
     assertEquals(inputStream, shadowBitmap.getCreatedFromStream());
     assertEquals(100, bitmap.getWidth());
     assertEquals(100, bitmap.getHeight());
+    bitmap.getPixels(new int[bitmap.getHeight() * bitmap.getWidth()], 0, 0, 0, 0, bitmap.getWidth(), bitmap.getHeight());
   }
 
   @Test
