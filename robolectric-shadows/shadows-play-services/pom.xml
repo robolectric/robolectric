@@ -51,6 +51,13 @@
       <version>6.5.87</version>
       <scope>provided</scope>
     </dependency>
+
+    <dependency>
+      <groupId>com.google.android.gms</groupId>
+      <artifactId>play-services-basement</artifactId>
+      <version>8.4.0</version>
+      <scope>provided</scope>
+    </dependency>
   </dependencies>
 
   <build>
