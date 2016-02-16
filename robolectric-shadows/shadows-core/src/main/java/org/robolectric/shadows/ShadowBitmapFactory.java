@@ -165,6 +165,7 @@ public class ShadowBitmapFactory {
 
     shadowBitmap.setWidth(p.x);
     shadowBitmap.setHeight(p.y);
+    shadowBitmap.setPixels(new int[p.x * p.y], 0, 0, 0, 0, p.x, p.y);
     if (options != null) {
       options.outWidth = p.x;
       options.outHeight = p.y;

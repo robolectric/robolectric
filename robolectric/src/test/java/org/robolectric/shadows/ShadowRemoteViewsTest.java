@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
@@ -47,7 +48,7 @@ public class ShadowRemoteViewsTest {
 
     View layout = views.apply(activity, null);
     ImageView image = (ImageView) layout.findViewById(R.id.remote_view_2);
-    assertThat(shadowOf(image).getImageBitmap()).isEqualTo(bitmap);
+    assertThat(((BitmapDrawable) image.getDrawable()).getBitmap()).isEqualTo(bitmap);
   }
 
   @Test
