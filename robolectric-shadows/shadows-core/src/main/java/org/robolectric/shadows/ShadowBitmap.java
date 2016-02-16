@@ -240,6 +240,7 @@ public class ShadowBitmap {
     shadowBitmap.createdFromFilter = filter;
     shadowBitmap.width = dstWidth;
     shadowBitmap.height = dstHeight;
+    shadowBitmap.setPixels(new int[shadowBitmap.getHeight() * shadowBitmap.getWidth()], 0, 0, 0, 0, shadowBitmap.getWidth(), shadowBitmap.getHeight());
     return scaledBitmap;
   }
 
