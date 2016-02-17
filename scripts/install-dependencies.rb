@@ -133,8 +133,8 @@ PLAY_SERVICES_BASEMENT = "play-services-basement"
 # Maps API maven constants
 MAPS_GROUP_ID = "com.google.android.maps"
 MAPS_ARTIFACT_ID = "maps"
-MAPS_API_VERSION = "18"
-MAPS_REVISION_VERSION = "4"
+MAPS_API_VERSION = "23"
+MAPS_REVISION_VERSION = "1"
 
 # Mavenize all dependencies
 install_map(MAPS_GROUP_ID, MAPS_ARTIFACT_ID, MAPS_API_VERSION, MAPS_REVISION_VERSION)
