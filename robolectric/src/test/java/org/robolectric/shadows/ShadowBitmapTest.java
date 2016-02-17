@@ -27,6 +27,7 @@ public class ShadowBitmapTest {
     assertThat(shadowOf(scaledBitmap).getDescription()).isEqualTo("Original bitmap scaled to 100 x 200");
     assertThat(scaledBitmap.getWidth()).isEqualTo(100);
     assertThat(scaledBitmap.getHeight()).isEqualTo(200);
+    scaledBitmap.getPixels(new int[20000], 0, 0, 0, 0, 100, 200);
   }
 
   @Test
