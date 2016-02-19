@@ -42,6 +42,17 @@ public class ShadowKeyguardManager {
   public void setIsKeyguardSecure(boolean secure) {
     isKeyguardSecure = secure;
   }
+
+  private boolean isDeviceSecure;
+
+  @Implementation
+  public boolean isDeviceSecure() {
+    return isDeviceSecure;
+  }
+
+  public void setIsDeviceSecure(boolean isDeviceSecure) {
+    this.isDeviceSecure = isDeviceSecure;
+  }
 #end
 
   @Implements(KeyguardManager.KeyguardLock.class)
