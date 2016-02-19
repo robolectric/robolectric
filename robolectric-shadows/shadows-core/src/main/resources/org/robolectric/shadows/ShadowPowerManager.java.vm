@@ -8,6 +8,9 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.internal.Shadow;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowApplication.getInstance;
 
@@ -53,6 +56,19 @@ public class ShadowPowerManager {
 
   public void setIsPowerSaveMode(boolean powerSaveMode) {
     isPowerSaveMode = powerSaveMode;
+  }
+#end
+
+#if ($api >= 21)
+  private Map<Integer, Boolean> supportedWakeLockLevels = new HashMap<>();
+
+  @Implementation
+  public boolean isWakeLockLevelSupported(int level) {
+    return supportedWakeLockLevels.containsKey(level) ? supportedWakeLockLevels.get(level) : false;
+  }
+
+  public void setIsWakeLockLevelSupported(int level, boolean supported) {
+    supportedWakeLockLevels.put(level, supported);
   }
 #end
 
