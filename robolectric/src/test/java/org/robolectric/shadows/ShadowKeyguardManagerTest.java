@@ -57,4 +57,15 @@ public class ShadowKeyguardManagerTest {
 
     assertThat(manager.isKeyguardSecure()).isTrue();
   }
+
+  @Test
+  @Config(sdk = Build.VERSION_CODES.M)
+  public void isDeviceSecure() {
+    assertThat(manager.isDeviceSecure()).isFalse();
+
+    ShadowKeyguardManager shadowMgr = shadowOf(manager);
+    shadowMgr.setIsDeviceSecure(true);
+
+    assertThat(manager.isDeviceSecure()).isTrue();
+  }
 }
