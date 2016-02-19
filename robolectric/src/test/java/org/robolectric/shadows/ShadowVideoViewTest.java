@@ -72,7 +72,7 @@ public class ShadowVideoViewTest {
   }
 
   @Test
-  public void shoulDetermineIsPlaying() throws Exception {
+  public void shouldDetermineIsPlaying() throws Exception {
     assertThat(view.isPlaying()).isFalse();
     view.start();
     assertThat(view.isPlaying()).isTrue();
