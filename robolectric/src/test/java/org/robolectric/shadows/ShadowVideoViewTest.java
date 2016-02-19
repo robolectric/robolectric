@@ -64,6 +64,14 @@ public class ShadowVideoViewTest {
   }
 
   @Test
+  public void shouldSetVideoDuration() throws Exception {
+    assertThat(view.getDuration()).isEqualTo(0);
+    ShadowVideoView shadowVideoView = shadowOf(view);
+    shadowVideoView.setDuration(10);
+    assertThat(view.getDuration()).isEqualTo(10);
+  }
+
+  @Test
   public void shoulDetermineIsPlaying() throws Exception {
     assertThat(view.isPlaying()).isFalse();
     view.start();
