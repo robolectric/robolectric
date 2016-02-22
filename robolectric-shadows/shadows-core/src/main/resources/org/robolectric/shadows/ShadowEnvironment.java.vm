@@ -73,6 +73,12 @@ public class ShadowEnvironment {
     return path != null && Files.exists(path);
   }
 
+  @Implementation
+  public static boolean isExternalStorageRemovable() {
+    final Boolean exists = STORAGE_REMOVABLE.get(getExternalStorageDirectory());
+    return exists != null ? exists : false;
+  }
+
 #if ($api >= 19)
   @Implementation
   public static String getStorageState(File path) {
