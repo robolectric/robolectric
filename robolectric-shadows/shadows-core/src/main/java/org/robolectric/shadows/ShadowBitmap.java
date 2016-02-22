@@ -485,6 +485,21 @@ public class ShadowBitmap {
     return density;
   }
 
+  @Implementation
+  public int getGenerationId() {
+    return 0;
+  }
+
+  @Implementation
+  public Bitmap createAshmemBitmap() {
+    return realBitmap;
+  }
+
+  @Implementation
+  public void eraseColor(int c) {
+
+  }
+
   @Override
   public String toString() {
     return "Bitmap{description='" + description + '\'' + ", width=" + width + ", height=" + height + '}';
