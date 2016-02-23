@@ -76,17 +76,17 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
   static {
     String className = Type.getInternalName(InvokeDynamicSupport.class);
 
-    MethodType boostrap =
+    MethodType bootstrap =
         methodType(CallSite.class, MethodHandles.Lookup.class, String.class, MethodType.class);
     String bootstrapMethod =
-        boostrap.appendParameterTypes(MethodHandle.class).toMethodDescriptorString();
-    String bootstrapIntristic =
-        boostrap.appendParameterTypes(String.class).toMethodDescriptorString();
+        bootstrap.appendParameterTypes(MethodHandle.class).toMethodDescriptorString();
+    String bootstrapIntrinsic =
+        bootstrap.appendParameterTypes(String.class).toMethodDescriptorString();
 
-    BOOTSTRAP_INIT = new Handle(H_INVOKESTATIC, className, "bootstrapInit", boostrap.toMethodDescriptorString());
+    BOOTSTRAP_INIT = new Handle(H_INVOKESTATIC, className, "bootstrapInit", bootstrap.toMethodDescriptorString());
     BOOTSTRAP = new Handle(H_INVOKESTATIC, className, "bootstrap", bootstrapMethod);
     BOOTSTRAP_STATIC = new Handle(H_INVOKESTATIC, className, "bootstrapStatic", bootstrapMethod);
-    BOOTSTRAP_INTRINSIC = new Handle(H_INVOKESTATIC, className, "bootstrapIntrinsic", bootstrapIntristic);
+    BOOTSTRAP_INTRINSIC = new Handle(H_INVOKESTATIC, className, "bootstrapIntrinsic", bootstrapIntrinsic);
   }
 
   private final URLClassLoader urls;
@@ -130,9 +130,6 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
 
     classes.put(name, theClass);
     return theClass;
-  }
-
-  private static class MissingClassMarker {
   }
 
   @Override
@@ -273,95 +270,6 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
     return writer.toByteArray();
   }
 
-  private static class MyGenerator extends GeneratorAdapter {
-    private final boolean isStatic;
-    private final String desc;
-
-    public MyGenerator(MethodNode methodNode) {
-      super(Opcodes.ASM4, methodNode, methodNode.access, methodNode.name, methodNode.desc);
-      this.isStatic = Modifier.isStatic(methodNode.access);
-      this.desc = methodNode.desc;
-    }
-
-    public void loadThisOrNull() {
-      if (isStatic) {
-        loadNull();
-      } else {
-        loadThis();
-      }
-    }
-
-    public boolean isStatic() {
-      return isStatic;
-    }
-
-    public void loadNull() {
-      visitInsn(ACONST_NULL);
-    }
-
-    public Type getReturnType() {
-      return Type.getReturnType(desc);
-    }
-
-    public void pushZero(Type type) {
-      if (type.equals(Type.BOOLEAN_TYPE)) {
-        push(false);
-      } else if (type.equals(Type.INT_TYPE) || type.equals(Type.SHORT_TYPE) || type.equals(Type.BYTE_TYPE) || type.equals(Type.CHAR_TYPE)) {
-        push(0);
-      } else if (type.equals(Type.LONG_TYPE)) {
-        push(0l);
-      } else if (type.equals(Type.FLOAT_TYPE)) {
-        push(0f);
-      } else if (type.equals(Type.DOUBLE_TYPE)) {
-        push(0d);
-      } else if (type.getSort() == ARRAY || type.getSort() == OBJECT) {
-        loadNull();
-      }
-    }
-
-    private void invokeMethod(String internalClassName, MethodNode method) {
-      invokeMethod(internalClassName, method.name, method.desc);
-    }
-
-    private void invokeMethod(String internalClassName, String methodName, String methodDesc) {
-      if (isStatic()) {
-        loadArgs();                                             // this, [args]
-        visitMethodInsn(INVOKESTATIC, internalClassName, methodName, methodDesc);
-      } else {
-        loadThisOrNull();                                       // this
-        loadArgs();                                             // this, [args]
-        visitMethodInsn(INVOKESPECIAL, internalClassName, methodName, methodDesc);
-      }
-    }
-
-    public TryCatch tryStart(Type exceptionType) {
-      return new TryCatch(this, exceptionType);
-    }
-  }
-
-  public static class TryCatch {
-    private final Label start;
-    private final Label end;
-    private final Label handler;
-    private final GeneratorAdapter generatorAdapter;
-
-    public TryCatch(GeneratorAdapter generatorAdapter, Type type) {
-      this.generatorAdapter = generatorAdapter;
-      this.start = generatorAdapter.mark();
-      this.end = new Label();
-      this.handler = new Label();
-      generatorAdapter.visitTryCatchBlock(start, end, handler, type.getInternalName());
-    }
-
-    public void end() {
-      generatorAdapter.mark(end);
-    }
-
-    public void handler() {
-      generatorAdapter.mark(handler);
-    }
-  }
-
   private Map<String, String> convertToSlashes(Map<String, String> map) {
     HashMap<String, String> newMap = new HashMap<>();
     for (Map.Entry<String, String> entry : map.entrySet()) {
@@ -383,6 +291,58 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
 
   private String internalize(String className) {
     return className.replace('.', '/');
+  }
+
+  public static void box(final Type type, ListIterator<AbstractInsnNode> instructions) {
+    if (type.getSort() == Type.OBJECT || type.getSort() == Type.ARRAY) {
+      return;
+    }
+
+    if (type == Type.VOID_TYPE) {
+      instructions.add(new InsnNode(ACONST_NULL));
+    } else {
+      Type boxed = getBoxedType(type);
+      instructions.add(new TypeInsnNode(NEW, boxed.getInternalName()));
+      if (type.getSize() == 2) {
+        // Pp -> Ppo -> oPpo -> ooPpo -> ooPp -> o
+        instructions.add(new InsnNode(DUP_X2));
+        instructions.add(new InsnNode(DUP_X2));
+        instructions.add(new InsnNode(POP));
+      } else {
+        // p -> po -> opo -> oop -> o
+        instructions.add(new InsnNode(DUP_X1));
+        instructions.add(new InsnNode(SWAP));
+      }
+      instructions.add(new MethodInsnNode(INVOKESPECIAL, boxed.getInternalName(), "<init>", "(" + type.getDescriptor() + ")V"));
+    }
+  }
+
+  private static Type getBoxedType(final Type type) {
+    switch (type.getSort()) {
+      case Type.BYTE:
+        return Type.getObjectType("java/lang/Byte");
+      case Type.BOOLEAN:
+        return Type.getObjectType("java/lang/Boolean");
+      case Type.SHORT:
+        return Type.getObjectType("java/lang/Short");
+      case Type.CHAR:
+        return Type.getObjectType("java/lang/Character");
+      case Type.INT:
+        return Type.getObjectType("java/lang/Integer");
+      case Type.FLOAT:
+        return Type.getObjectType("java/lang/Float");
+      case Type.LONG:
+        return Type.getObjectType("java/lang/Long");
+      case Type.DOUBLE:
+        return Type.getObjectType("java/lang/Double");
+    }
+    return type;
+  }
+
+  private boolean shouldIntercept(MethodInsnNode targetMethod) {
+    if (targetMethod.name.equals("<init>")) return false; // sorry, can't strip out calls to super() in constructor
+    return methodsToIntercept.contains(new MethodRef(targetMethod.owner, targetMethod.name))
+        || methodsToIntercept.contains(new MethodRef(targetMethod.owner, "*"));
   }
 
   private class ClassInstrumentor {
@@ -457,18 +417,10 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
         classNode.methods.add(directCallConstructor);
       }
 
-
+      // Do not override final #equals and #hashCode for all classes
       instrumentSpecial(classNode, foundMethods, "equals", "(Ljava/lang/Object;)Z");
       instrumentSpecial(classNode, foundMethods, "hashCode", "()I");
       instrumentSpecial(classNode, foundMethods, "toString", "()Ljava/lang/String;");
-
-//
-//      // TODO: Do not override final #equals and #hashCode for all classes
-//      if (!isEnum() && !classNode.name.equals("android/icu/text/DateFormat$Field")) {
-//        instrumentSpecial(foundMethods, "equals", "(Ljava/lang/Object;)Z");
-//        instrumentSpecial(foundMethods, "hashCode", "()I");
-//      }
-//      instrumentSpecial(foundMethods, "toString", "()Ljava/lang/String;");
 
       {
         MethodNode initMethodNode = new MethodNode(ACC_PROTECTED, ROBO_INIT_METHOD_NAME, "()V", null, null);
@@ -1016,58 +968,6 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
     }
   }
 
-  public static void box(final Type type, ListIterator<AbstractInsnNode> instructions) {
-    if (type.getSort() == Type.OBJECT || type.getSort() == Type.ARRAY) {
-      return;
-    }
-
-    if (type == Type.VOID_TYPE) {
-      instructions.add(new InsnNode(ACONST_NULL));
-    } else {
-      Type boxed = getBoxedType(type);
-      instructions.add(new TypeInsnNode(NEW, boxed.getInternalName()));
-      if (type.getSize() == 2) {
-        // Pp -> Ppo -> oPpo -> ooPpo -> ooPp -> o
-        instructions.add(new InsnNode(DUP_X2));
-        instructions.add(new InsnNode(DUP_X2));
-        instructions.add(new InsnNode(POP));
-      } else {
-        // p -> po -> opo -> oop -> o
-        instructions.add(new InsnNode(DUP_X1));
-        instructions.add(new InsnNode(SWAP));
-      }
-      instructions.add(new MethodInsnNode(INVOKESPECIAL, boxed.getInternalName(), "<init>", "(" + type.getDescriptor() + ")V"));
-    }
-  }
-
-  private static Type getBoxedType(final Type type) {
-    switch (type.getSort()) {
-      case Type.BYTE:
-        return Type.getObjectType("java/lang/Byte");
-      case Type.BOOLEAN:
-        return Type.getObjectType("java/lang/Boolean");
-      case Type.SHORT:
-        return Type.getObjectType("java/lang/Short");
-      case Type.CHAR:
-        return Type.getObjectType("java/lang/Character");
-      case Type.INT:
-        return Type.getObjectType("java/lang/Integer");
-      case Type.FLOAT:
-        return Type.getObjectType("java/lang/Float");
-      case Type.LONG:
-        return Type.getObjectType("java/lang/Long");
-      case Type.DOUBLE:
-        return Type.getObjectType("java/lang/Double");
-    }
-    return type;
-  }
-
-  private boolean shouldIntercept(MethodInsnNode targetMethod) {
-    if (targetMethod.name.equals("<init>")) return false; // sorry, can't strip out calls to super() in constructor
-    return methodsToIntercept.contains(new MethodRef(targetMethod.owner, targetMethod.name))
-        || methodsToIntercept.contains(new MethodRef(targetMethod.owner, "*"));
-  }
-
   /**
    * ClassWriter implementation that verifies classes by comparing type information obtained
    * from loading the classes as resources. This was taken from the ASM ClassWriter unit tests.
@@ -1183,4 +1083,97 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
       }
     }
   }
+
+  private static class MyGenerator extends GeneratorAdapter {
+    private final boolean isStatic;
+    private final String desc;
+
+    public MyGenerator(MethodNode methodNode) {
+      super(Opcodes.ASM4, methodNode, methodNode.access, methodNode.name, methodNode.desc);
+      this.isStatic = Modifier.isStatic(methodNode.access);
+      this.desc = methodNode.desc;
+    }
+
+    public void loadThisOrNull() {
+      if (isStatic) {
+        loadNull();
+      } else {
+        loadThis();
+      }
+    }
+
+    public boolean isStatic() {
+      return isStatic;
+    }
+
+    public void loadNull() {
+      visitInsn(ACONST_NULL);
+    }
+
+    public Type getReturnType() {
+      return Type.getReturnType(desc);
+    }
+
+    public void pushZero(Type type) {
+      if (type.equals(Type.BOOLEAN_TYPE)) {
+        push(false);
+      } else if (type.equals(Type.INT_TYPE) || type.equals(Type.SHORT_TYPE) || type.equals(Type.BYTE_TYPE) || type.equals(Type.CHAR_TYPE)) {
+        push(0);
+      } else if (type.equals(Type.LONG_TYPE)) {
+        push(0l);
+      } else if (type.equals(Type.FLOAT_TYPE)) {
+        push(0f);
+      } else if (type.equals(Type.DOUBLE_TYPE)) {
+        push(0d);
+      } else if (type.getSort() == ARRAY || type.getSort() == OBJECT) {
+        loadNull();
+      }
+    }
+
+    private void invokeMethod(String internalClassName, MethodNode method) {
+      invokeMethod(internalClassName, method.name, method.desc);
+    }
+
+    private void invokeMethod(String internalClassName, String methodName, String methodDesc) {
+      if (isStatic()) {
+        loadArgs();                                             // this, [args]
+        visitMethodInsn(INVOKESTATIC, internalClassName, methodName, methodDesc);
+      } else {
+        loadThisOrNull();                                       // this
+        loadArgs();                                             // this, [args]
+        visitMethodInsn(INVOKESPECIAL, internalClassName, methodName, methodDesc);
+      }
+    }
+
+    public TryCatch tryStart(Type exceptionType) {
+      return new TryCatch(this, exceptionType);
+    }
+  }
+
+  public static class TryCatch {
+    private final Label start;
+    private final Label end;
+    private final Label handler;
+    private final GeneratorAdapter generatorAdapter;
+
+    public TryCatch(GeneratorAdapter generatorAdapter, Type type) {
+      this.generatorAdapter = generatorAdapter;
+      this.start = generatorAdapter.mark();
+      this.end = new Label();
+      this.handler = new Label();
+      generatorAdapter.visitTryCatchBlock(start, end, handler, type.getInternalName());
+    }
+
+    public void end() {
+      generatorAdapter.mark(end);
+    }
+
+    public void handler() {
+      generatorAdapter.mark(handler);
+    }
+  }
+
+  private static class MissingClassMarker {
+  }
+
 }
