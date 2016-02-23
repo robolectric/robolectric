@@ -830,12 +830,20 @@ public class ResourceParser {
         Integer resourceId = resourceIndex.getResourceId(attribute.getResourceReference());
         return resourceId == null ? 0 : resourceId;
       }
-      if (possiblyQualifiedResourceName.startsWith("@")) {
-        possiblyQualifiedResourceName = possiblyQualifiedResourceName.substring(1);
-      }
+      possiblyQualifiedResourceName = removeLeadingSpecialCharsIfAny(possiblyQualifiedResourceName);
       ResName resName = ResName.qualifyResName(possiblyQualifiedResourceName, defaultPackageName, defaultType);
       Integer resourceId = resourceIndex.getResourceId(resName);
       return resourceId == null ? 0 : resourceId;
+    }
+
+    private static String removeLeadingSpecialCharsIfAny(String name){
+      if (name.startsWith("@+")) {
+        return name.substring(2);
+      }
+      if (name.startsWith("@")) {
+        return name.substring(1);
+      }
+      return name;
     }
   }
 }
