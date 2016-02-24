@@ -457,26 +457,6 @@ public class ShadowView {
   }
 
   @Implementation
-  public void setScaleX(float scaleX) {
-    this.scaleX = scaleX;
-  }
-
-  @Implementation
-  public float getScaleX() {
-    return scaleX;
-  }
-
-  @Implementation
-  public void setScaleY(float scaleY) {
-    this.scaleY = scaleY;
-  }
-
-  @Implementation
-  public float getScaleY() {
-    return scaleY;
-  }
-
-  @Implementation
   public void setAnimation(final Animation animation) {
     directly().setAnimation(animation);
 
