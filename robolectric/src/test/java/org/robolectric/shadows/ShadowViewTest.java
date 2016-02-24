@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
-import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -606,6 +605,24 @@ public class ShadowViewTest {
     assertThat(shadowOf(view).getScaleY()).isEqualTo(2.5f);
     shadowOf(view).setScaleY(0.5f);
     assertThat(shadowOf(view).getScaleY()).isEqualTo(0.5f);
+  }
+
+  @Test
+  public void rotationX() {
+    view.setRotationX(10f);
+    assertThat(view.getRotationX()).isEqualTo(10f);
+  }
+
+  @Test
+  public void rotationY() {
+    view.setRotationY(20f);
+    assertThat(view.getRotationY()).isEqualTo(20f);
+  }
+
+  @Test
+  public void rotation() {
+    view.setRotation(30f);
+    assertThat(view.getRotation()).isEqualTo(30f);
   }
 
   @Test

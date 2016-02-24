@@ -10,11 +10,47 @@ import org.robolectric.annotation.Implements;
  */
 @Implements(value = RenderNode.class, isInAndroidSdk = false)
 public class ShadowRenderNode {
+  private float rotation;
+  private float rotationX;
+  private float rotationY;
   private float translationX;
   private float translationY;
   private float translationZ;
   private float pivotX;
   private float pivotY;
+
+  @Implementation
+  public boolean setRotation(float rotation) {
+    this.rotation = rotation;
+    return true;
+  }
+
+  @Implementation
+  public float getRotation() {
+    return rotation;
+  }
+
+  @Implementation
+  public boolean setRotationX(float rotationX) {
+    this.rotationX = rotationX;
+    return true;
+  }
+
+  @Implementation
+  public float getRotationX() {
+    return rotationX;
+  }
+
+  @Implementation
+  public boolean setRotationY(float rotationY) {
+    this.rotationY = rotationY;
+    return true;
+  }
+
+  @Implementation
+  public float getRotationY() {
+    return rotationY;
+  }
 
   @Implementation
   public boolean setTranslationX(float translationX) {
