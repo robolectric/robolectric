@@ -26,11 +26,11 @@ public class ShadowConnectivityManager {
 
 #if ($api >= 21)
   // Package-private for tests.
-  static final int NET_ID_WIFI = 1;
-  static final int NET_ID_MOBILE = 2;
+  static final int NET_ID_WIFI = ConnectivityManager.TYPE_WIFI;
+  static final int NET_ID_MOBILE = ConnectivityManager.TYPE_MOBILE;
 #end
 
-  private NetworkInfo activeNetwork;
+  private NetworkInfo activeNetworkInfo;
   private boolean backgroundDataSetting;
   private int networkPreference = ConnectivityManager.DEFAULT_NETWORK_PREFERENCE;
   private final Map<Integer, NetworkInfo> networkTypeToNetworkInfo = new HashMap<>();
@@ -50,7 +50,7 @@ public class ShadowConnectivityManager {
         ConnectivityManager.TYPE_MOBILE, ConnectivityManager.TYPE_MOBILE_MMS, true, true);
     networkTypeToNetworkInfo.put(ConnectivityManager.TYPE_MOBILE, mobile);
 
-    this.activeNetwork = mobile;
+    this.activeNetworkInfo = mobile;
 
 #if ($api >= 21)
     netIdToNetwork.put(NET_ID_WIFI, ShadowNetwork.newInstance(NET_ID_WIFI));
@@ -83,8 +83,15 @@ public class ShadowConnectivityManager {
 
   @Implementation
   public NetworkInfo getActiveNetworkInfo() {
-    return activeNetwork;
+    return activeNetworkInfo;
   }
+
+#if ($api >= 23)
+  @Implementation
+  public Network getActiveNetwork() {
+    return netIdToNetwork.get(getActiveNetworkInfo().getType());
+  }
+#end
 
   @Implementation
   public NetworkInfo[] getAllNetworkInfo() {
@@ -132,8 +139,8 @@ public class ShadowConnectivityManager {
    */
   @Implementation
   public boolean isActiveNetworkMetered() {
-    if (activeNetwork != null) {
-      return activeNetwork.getType() == ConnectivityManager.TYPE_MOBILE;
+    if (activeNetworkInfo != null) {
+      return activeNetworkInfo.getType() == ConnectivityManager.TYPE_MOBILE;
     } else {
       return false;
     }
@@ -148,14 +155,27 @@ public class ShadowConnectivityManager {
     backgroundDataSetting = b;
   }
 
+#if ($api >= 21)
   public void setActiveNetworkInfo(NetworkInfo info) {
-    activeNetwork = info;
+    activeNetworkInfo = info;
+    if (info != null) {
+      networkTypeToNetworkInfo.put(info.getType(), info);
+      netIdToNetwork.put(info.getType(), ShadowNetwork.newInstance(info.getType()));
+    } else {
+      networkTypeToNetworkInfo.clear();
+      netIdToNetwork.clear();
+    }
+  }
+#else
+  public void setActiveNetworkInfo(NetworkInfo info) {
+    activeNetworkInfo = info;
     if (info != null) {
       networkTypeToNetworkInfo.put(info.getType(), info);
     } else {
       networkTypeToNetworkInfo.clear();
     }
   }
+#end
 
 #if ($api >= 21)
   /**

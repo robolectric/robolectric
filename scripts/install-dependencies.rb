@@ -58,7 +58,7 @@ end
 def install_aar(repo_root_dir, group_id, artifact_id, version, &block)
   # Don't move further if we have an invalid repo root directory
   unless File.exists?(repo_root_dir)
-    puts "Repository #{root_repo_dir} not found!"
+    puts "Repository #{repo_root_dir} not found!"
     puts "Make sure that the 'ANDROID_HOME' Environment Variable is properly set in your development environment pointing to your SDK installation directory."
     exit 1
   end
@@ -133,8 +133,8 @@ PLAY_SERVICES_BASEMENT = "play-services-basement"
 # Maps API maven constants
 MAPS_GROUP_ID = "com.google.android.maps"
 MAPS_ARTIFACT_ID = "maps"
-MAPS_API_VERSION = "18"
-MAPS_REVISION_VERSION = "4"
+MAPS_API_VERSION = "23"
+MAPS_REVISION_VERSION = "1"
 
 # Mavenize all dependencies
 install_map(MAPS_GROUP_ID, MAPS_ARTIFACT_ID, MAPS_API_VERSION, MAPS_REVISION_VERSION)

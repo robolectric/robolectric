@@ -5,10 +5,10 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
-import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.HapticFeedbackConstants;
@@ -32,6 +32,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.AccessibilityChecks;
+import org.robolectric.annotation.Config;
 import org.robolectric.res.Attribute;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.util.TestOnClickListener;
@@ -591,21 +592,87 @@ public class ShadowViewTest {
   }
 
   @Test
-  public void setScaleX_shouldSetScaleX() throws Exception {
-    assertThat(shadowOf(view).getScaleX()).isEqualTo(1f);
-    shadowOf(view).setScaleX(2.5f);
-    assertThat(shadowOf(view).getScaleX()).isEqualTo(2.5f);
-    shadowOf(view).setScaleX(0.5f);
-    assertThat(shadowOf(view).getScaleX()).isEqualTo(0.5f);
+  public void rotationX() {
+    view.setRotationX(10f);
+    assertThat(view.getRotationX()).isEqualTo(10f);
   }
 
   @Test
-  public void setScaleY_shouldSetScaleY() throws Exception {
-    assertThat(shadowOf(view).getScaleX()).isEqualTo(1f);
-    shadowOf(view).setScaleY(2.5f);
-    assertThat(shadowOf(view).getScaleY()).isEqualTo(2.5f);
-    shadowOf(view).setScaleY(0.5f);
-    assertThat(shadowOf(view).getScaleY()).isEqualTo(0.5f);
+  public void rotationY() {
+    view.setRotationY(20f);
+    assertThat(view.getRotationY()).isEqualTo(20f);
+  }
+
+  @Test
+  public void rotation() {
+    view.setRotation(30f);
+    assertThat(view.getRotation()).isEqualTo(30f);
+  }
+
+  @Test
+  @Config(sdk = { Build.VERSION_CODES.LOLLIPOP })
+  public void cameraDistance() {
+    view.setCameraDistance(100f);
+    assertThat(view.getCameraDistance()).isEqualTo(100f);
+  }
+
+  @Test
+  public void scaleX() {
+    assertThat(view.getScaleX()).isEqualTo(1f);
+    view.setScaleX(0.5f);
+    assertThat(view.getScaleX()).isEqualTo(0.5f);
+  }
+
+  @Test
+  public void scaleY() {
+    assertThat(view.getScaleY()).isEqualTo(1f);
+    view.setScaleY(0.5f);
+    assertThat(view.getScaleY()).isEqualTo(0.5f);
+  }
+
+  @Test
+  public void pivotX() {
+    view.setPivotX(10f);
+    assertThat(view.getPivotX()).isEqualTo(10f);
+  }
+
+  @Test
+  public void pivotY() {
+    view.setPivotY(10f);
+    assertThat(view.getPivotY()).isEqualTo(10f);
+  }
+
+  @Test
+  @Config(sdk = { Build.VERSION_CODES.LOLLIPOP })
+  public void elevation() {
+    view.setElevation(10f);
+    assertThat(view.getElevation()).isEqualTo(10f);
+  }
+
+  @Test
+  public void translationX() {
+    view.setTranslationX(10f);
+    assertThat(view.getTranslationX()).isEqualTo(10f);
+  }
+
+  @Test
+  public void translationY() {
+    view.setTranslationY(10f);
+    assertThat(view.getTranslationY()).isEqualTo(10f);
+  }
+
+  @Test
+  @Config(sdk = { Build.VERSION_CODES.LOLLIPOP })
+  public void translationZ() {
+    view.setTranslationZ(10f);
+    assertThat(view.getTranslationZ()).isEqualTo(10f);
+  }
+
+  @Test
+  @Config(sdk = { Build.VERSION_CODES.LOLLIPOP })
+  public void clipToOutline() {
+    view.setClipToOutline(true);
+    assertThat(view.getClipToOutline()).isTrue();
   }
 
   @Test

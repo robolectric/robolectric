@@ -42,6 +42,23 @@ public class ShadowPowerManagerTest {
   }
 
   @Test
+  @Config(sdk = {
+      Build.VERSION_CODES.LOLLIPOP,
+      Build.VERSION_CODES.LOLLIPOP_MR1,
+      Build.VERSION_CODES.M})
+  public void isWakeLockLevelSupported() {
+    assertThat(powerManager.isWakeLockLevelSupported(PowerManager.PARTIAL_WAKE_LOCK)).isFalse();
+
+    shadowPowerManager.setIsWakeLockLevelSupported(PowerManager.PARTIAL_WAKE_LOCK, true);
+
+    assertThat(powerManager.isWakeLockLevelSupported(PowerManager.PARTIAL_WAKE_LOCK)).isTrue();
+
+    shadowPowerManager.setIsWakeLockLevelSupported(PowerManager.PARTIAL_WAKE_LOCK, false);
+
+    assertThat(powerManager.isWakeLockLevelSupported(PowerManager.PARTIAL_WAKE_LOCK)).isFalse();
+  }
+
+  @Test
   public void acquire_shouldLogLatestWakeLock() throws Exception {
     ShadowPowerManager.reset();
     assertThat(ShadowPowerManager.getLatestWakeLock()).isNull();
