@@ -646,6 +646,7 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
       method.name = Shadow.directMethodName(originalName);
 
       MethodNode delegatorMethodNode = new MethodNode(method.access, originalName, method.desc, method.signature, exceptionArray(method));
+      delegatorMethodNode.visibleAnnotations = method.visibleAnnotations;
       delegatorMethodNode.access &= ~(ACC_NATIVE | ACC_ABSTRACT | ACC_FINAL);
 
       makePrivate(method);
