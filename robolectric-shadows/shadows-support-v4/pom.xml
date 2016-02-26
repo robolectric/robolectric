@@ -40,14 +40,14 @@
     <dependency>
       <groupId>com.android.support</groupId>
       <artifactId>support-v4</artifactId>
-      <version>23.1.1</version>
+      <version>23.2.0</version>
       <scope>provided</scope>
     </dependency>
     
     <dependency>
       <groupId>com.android.support</groupId>
       <artifactId>internal_impl</artifactId>
-      <version>23.1.1</version>
+      <version>23.2.0</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>
