@@ -78,7 +78,7 @@
             <sourceDirectory>target/generated-shadows</sourceDirectory>
           </additionalSourceDirectories>
           <outputDirectory>target/generated-sources</outputDirectory>
-          <compilerArguments>-source ${maven.compiler.source} -target ${maven.compiler.target} -Aorg.robolectric.annotation.processing.shadowPackage=org.robolectric.shadows.gms</compilerArguments>
+          <compilerArguments>-source ${maven.compiler.source} -target ${maven.compiler.target} -Aorg.robolectric.annotation.processing.shadowPackage=org.robolectric.shadows.gms -Aorg.robolectric.annotation.processing.shouldInstrumentPackage=false</compilerArguments>
         </configuration>
         <executions>
           <execution>
