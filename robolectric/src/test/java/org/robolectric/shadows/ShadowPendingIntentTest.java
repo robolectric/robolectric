@@ -4,9 +4,8 @@ import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentSender;
-import org.robolectric.fakes.RoboIntentSender;
 import android.os.Bundle;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
@@ -17,15 +16,6 @@ import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowPendingIntentTest {
-
-  @Test
-  public void shouldGetIntentSender() {
-    Intent expectedIntent = new Intent();
-    PendingIntent service = PendingIntent.getService(null, 0, expectedIntent, 0);
-
-    IntentSender intentSender = service.getIntentSender();
-    assertThat(expectedIntent).isEqualTo(((RoboIntentSender) intentSender).intent);
-  }
 
   @Test
   public void getBroadcast_shouldCreateIntentForBroadcast() throws Exception {
