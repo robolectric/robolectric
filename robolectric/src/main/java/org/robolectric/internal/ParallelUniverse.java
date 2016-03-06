@@ -138,6 +138,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       }
       Resources appResources = application.getResources();
       ReflectionHelpers.setField(loadedApk, "mResources", appResources);
+      ReflectionHelpers.setField(loadedApk, "mApplication", application);
       try {
         Context contextImpl = systemContextImpl.createPackageContext(applicationInfo.packageName, Context.CONTEXT_INCLUDE_CODE);
         ReflectionHelpers.setField(activityThreadClass, activityThread, "mInitialApplication", application);
