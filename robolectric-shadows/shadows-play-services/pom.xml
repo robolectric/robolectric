@@ -34,14 +34,14 @@
     <dependency>
       <groupId>com.android.support</groupId>
       <artifactId>support-v4</artifactId>
-      <version>22.2.1</version>
+      <version>23.2.0</version>
       <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>com.android.support</groupId>
       <artifactId>internal_impl</artifactId>
-      <version>22.2.1</version>
+      <version>23.2.0</version>
       <scope>provided</scope>
     </dependency>
 
@@ -78,7 +78,7 @@
             <sourceDirectory>target/generated-shadows</sourceDirectory>
           </additionalSourceDirectories>
           <outputDirectory>target/generated-sources</outputDirectory>
-          <compilerArguments>-source ${maven.compiler.source} -target ${maven.compiler.target} -Aorg.robolectric.annotation.processing.shadowPackage=org.robolectric.shadows.gms</compilerArguments>
+          <compilerArguments>-source ${maven.compiler.source} -target ${maven.compiler.target} -Aorg.robolectric.annotation.processing.shadowPackage=org.robolectric.shadows.gms -Aorg.robolectric.annotation.processing.shouldInstrumentPackage=false</compilerArguments>
         </configuration>
         <executions>
           <execution>

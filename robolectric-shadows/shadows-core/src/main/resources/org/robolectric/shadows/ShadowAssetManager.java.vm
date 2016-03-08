@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.ArrayList;
 import org.jetbrains.annotations.NotNull;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.RealObject;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -52,19 +53,18 @@ public final class ShadowAssetManager {
   public static final int STYLE_CHANGING_CONFIGURATIONS = 4;
   public static final int STYLE_DENSITY = 5;
 
-  private String qualifiers = "";
+  private static ResourceLoader systemResources;
+
   private Map<$ptrClassBoxed, Resources.Theme> themesById = new LinkedHashMap<>();
   private Map<$ptrClassBoxed, List<OverlayedStyle>> appliedStyles = new HashMap<>();
   private int nextInternalThemeId = 1000;
-  private AndroidManifest appManifest;
   private ResourceLoader resourceLoader;
 
-  static AssetManager bind(AssetManager assetManager, AndroidManifest androidManifest, ResourceLoader resourceLoader) {
-    ShadowAssetManager shadowAssetManager = shadowOf(assetManager);
-    if (shadowAssetManager.appManifest != null) throw new RuntimeException("ResourceLoader already set!");
-    shadowAssetManager.appManifest = androidManifest;
-    shadowAssetManager.resourceLoader = resourceLoader;
-    return assetManager;
+  @RealObject
+  AssetManager realObject;
+
+  public static void setSystemResources(ResourceLoader systemResources) {
+    ShadowAssetManager.systemResources = systemResources;
   }
 
   @HiddenApi @Implementation
@@ -92,7 +92,7 @@ public final class ShadowAssetManager {
 
   @HiddenApi @Implementation
   public int getResourceIdentifier(String name, String defType, String defPackage) {
-    ResourceIndex resourceIndex = resourceLoader.getResourceIndex();
+    ResourceIndex resourceIndex = getResourceLoader().getResourceIndex();
     ResName resName = ResName.qualifyResName(name, defPackage, defType);
     Integer resourceId = resourceIndex.getResourceId(resName);
     if (resourceId == null) return 0;
@@ -114,7 +114,7 @@ public final class ShadowAssetManager {
 
   @HiddenApi @Implementation
   public CharSequence[] getResourceTextArray(final int id) {
-    ResName resName = resourceLoader.getResourceIndex().getResName(id);
+    ResName resName = getResourceLoader().getResourceIndex().getResName(id);
     if (resName == null) throw new Resources.NotFoundException("unknown resource " + id);
     TypedResource value = getAndResolve(resName, getQualifiers(), true);
     if (value == null) return null;
@@ -129,7 +129,7 @@ public final class ShadowAssetManager {
 
   @HiddenApi @Implementation
   public boolean getThemeValue($ptrClass theme, int ident, TypedValue outValue, boolean resolveRefs) {
-    ResourceIndex resourceIndex = resourceLoader.getResourceIndex();
+    ResourceIndex resourceIndex = getResourceLoader().getResourceIndex();
     ResName resName = resourceIndex.getResName(ident);
     Resources.Theme theTheme = getThemeByInternalId(theme);
     // Load the style for the theme we represent. E.g. "@style/Theme.Robolectric"
@@ -140,7 +140,7 @@ public final class ShadowAssetManager {
     Style themeStyle = resolveStyle(resourceLoader, null, themeStyleName, getQualifiers());
 
     //// Load the theme attribute for the default style attributes. E.g., attr/buttonStyle
-    //ResName defStyleName = resourceLoader.getResourceIndex().getResName(ident);
+    //ResName defStyleName = getResourceLoader().getResourceIndex().getResName(ident);
     //
     //// Load the style for the default style attribute. E.g. "@style/Widget.Robolectric.Button";
     //String defStyleNameValue = themeStyle.getAttrValue(defStyleName);
@@ -167,24 +167,24 @@ public final class ShadowAssetManager {
 
   @Implementation
   public final InputStream open(String fileName) throws IOException {
-    return appManifest.getAssetsDirectory().join(fileName).getInputStream();
+    return ShadowApplication.getInstance().getAppManifest().getAssetsDirectory().join(fileName).getInputStream();
   }
 
   @Implementation
   public final InputStream open(String fileName, int accessMode) throws IOException {
-    return appManifest.getAssetsDirectory().join(fileName).getInputStream();
+    return ShadowApplication.getInstance().getAppManifest().getAssetsDirectory().join(fileName).getInputStream();
   }
 
   @Implementation
   public final AssetFileDescriptor openFd(String fileName) throws IOException {
-    File file = new File(appManifest.getAssetsDirectory().join(fileName).getPath());
+    File file = new File(ShadowApplication.getInstance().getAppManifest().getAssetsDirectory().join(fileName).getPath());
     ParcelFileDescriptor parcelFileDescriptor = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY);
     return new AssetFileDescriptor(parcelFileDescriptor, 0, file.length());
   }
 
   @Implementation
   public final String[] list(String path) throws IOException {
-    FsFile file = appManifest.getAssetsDirectory().join(path);
+    FsFile file = ShadowApplication.getInstance().getAppManifest().getAssetsDirectory().join(path);
     if (file.isDirectory()) {
       return file.listFileNames();
     }
@@ -194,7 +194,7 @@ public final class ShadowAssetManager {
   @HiddenApi @Implementation
   public final InputStream openNonAsset(int cookie, String fileName, int accessMode) throws IOException {
     final ResName resName = qualifyFromNonAssetFileName(fileName);
-    final DrawableNode drawableNode = resourceLoader.getDrawableNode(resName, getQualifiers());
+    final DrawableNode drawableNode = getResourceLoader().getDrawableNode(resName, getQualifiers());
 
     if (drawableNode == null) {
       throw new IOException("Unable to find resource for " + fileName);
@@ -212,7 +212,7 @@ public final class ShadowAssetManager {
       // Must remove "jar:" prefix, or else qualifyFromFilePath fails on Windows
       return ResName.qualifyFromFilePath("android", fileName.replaceFirst("jar:", ""));
     } else {
-      return ResName.qualifyFromFilePath(appManifest.getPackageName(), fileName);
+      return ResName.qualifyFromFilePath(ShadowApplication.getInstance().getAppManifest().getPackageName(), fileName);
     }
   }
 
@@ -255,7 +255,7 @@ public final class ShadowAssetManager {
 
   @HiddenApi @Implementation
   public int[] getArrayIntResource(int arrayRes) {
-    ResName resName = resourceLoader.getResourceIndex().getResName(arrayRes);
+    ResName resName = getResourceLoader().getResourceIndex().getResName(arrayRes);
     if (resName == null) throw new Resources.NotFoundException("unknown resource " + arrayRes);
     TypedResource value = getAndResolve(resName, getQualifiers(), true);
     if (value == null) return null;
@@ -356,20 +356,20 @@ public final class ShadowAssetManager {
   }
 
   TypedResource getAndResolve(int resId, String qualifiers, boolean resolveRefs) {
-    ResName resName = resourceLoader.getResourceIndex().getResName(resId);
+    ResName resName = getResourceLoader().getResourceIndex().getResName(resId);
     if (resName == null) throw new Resources.NotFoundException("unknown resource " + resId);
     return getAndResolve(resName, qualifiers, resolveRefs);
   }
 
   TypedResource getAndResolve(@NotNull ResName resName, String qualifiers, boolean resolveRefs) {
-    TypedResource value = resourceLoader.getValue(resName, qualifiers);
+    TypedResource value = getResourceLoader().getValue(resName, qualifiers);
     if (resolveRefs) {
       value = resolve(value, qualifiers, resName);
     }
 
     // todo: make the drawable loader put stuff into the normal spot...
     if (value == null && DrawableResourceLoader.isStillHandledHere(resName)) {
-      DrawableNode drawableNode = resourceLoader.getDrawableNode(resName, qualifiers);
+      DrawableNode drawableNode = getResourceLoader().getDrawableNode(resName, qualifiers);
       return new TypedResource<FsFile>(drawableNode.getFsFile(), ResType.FILE);
     }
 
@@ -386,9 +386,9 @@ public final class ShadowAssetManager {
   }
 
   ResName resolveResName(int resId, String qualifiers) {
-    ResName resName = resourceLoader.getResourceIndex().getResName(resId);
+    ResName resName = getResourceLoader().getResourceIndex().getResName(resId);
     if (resName == null) return null;
-    TypedResource value = resourceLoader.getValue(resName, qualifiers);
+    TypedResource value = getResourceLoader().getValue(resName, qualifiers);
     return resolveResource(value, qualifiers, resName).resName;
   }
 
@@ -400,11 +400,18 @@ public final class ShadowAssetManager {
       } else {
         String refStr = s.substring(1).replace("+", "");
         resName = ResName.qualifyResName(refStr, resName);
-        value = resourceLoader.getValue(resName, qualifiers);
+        value = getResourceLoader().getValue(resName, qualifiers);
       }
     }
 
     return new Resource(value, resName);
+  }
+
+  ResourceLoader getResourceLoader() {
+    if (resourceLoader == null) {
+      resourceLoader = ShadowApplication.getInstance().getResourceLoader();
+    }
+    return resourceLoader;
   }
 
   private boolean isReference(TypedResource value) {
@@ -419,7 +426,7 @@ public final class ShadowAssetManager {
   }
 
   public FsFile getAssetsDirectory() {
-    return appManifest.getAssetsDirectory();
+    return ShadowApplication.getInstance().getAppManifest().getAssetsDirectory();
   }
 
   public String getQualifiers() {
@@ -607,4 +614,11 @@ public final class ShadowAssetManager {
 
   }
 
+  @Implementation
+  public static AssetManager getSystem() {
+    AssetManager assetManager = new AssetManager();
+    ShadowAssetManager shadowAssetManager = shadowOf(assetManager);
+    shadowAssetManager.resourceLoader = systemResources;
+    return assetManager;
+  }
 }

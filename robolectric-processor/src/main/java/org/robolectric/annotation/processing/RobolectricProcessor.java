@@ -29,14 +29,19 @@ import java.util.Set;
 /**
  * Annotation processor entry point for Robolectric annotations.
  */
-@SupportedOptions(RobolectricProcessor.PACKAGE_OPT)
+@SupportedOptions({
+  RobolectricProcessor.PACKAGE_OPT, 
+  RobolectricProcessor.SHOULD_INSTRUMENT_PKG_OPT})
 @SupportedAnnotationTypes("org.robolectric.annotation.*")
 @SupportedSourceVersion(SourceVersion.RELEASE_7)
 public class RobolectricProcessor extends AbstractProcessor {
   static final String PACKAGE_OPT = "org.robolectric.annotation.processing.shadowPackage";
-
+  static final String SHOULD_INSTRUMENT_PKG_OPT = 
+      "org.robolectric.annotation.processing.shouldInstrumentPackage";
+  
   private RobolectricModel model;
   private String shadowPackage;
+  private boolean shouldInstrumentPackages;
   private Map<String, String> options;
   private boolean generated = false;
   private final List<Generator> generators = new ArrayList<>();
@@ -74,7 +79,7 @@ public class RobolectricProcessor extends AbstractProcessor {
     addValidator(new RealObjectValidator(model, environment));
     addValidator(new ResetterValidator(model, environment));
 
-    generators.add(new ShadowProviderGenerator(model, environment));
+    generators.add(new ShadowProviderGenerator(model, environment, shouldInstrumentPackages));
     generators.add(new ServiceLoaderGenerator(model, environment));
   }
 
@@ -106,7 +111,10 @@ public class RobolectricProcessor extends AbstractProcessor {
   private void processOptions(Map<String, String> options) {
     if (this.options == null) {
       this.options = options;
-      shadowPackage = options.get(PACKAGE_OPT);
+      this.shadowPackage = options.get(PACKAGE_OPT);
+      this.shouldInstrumentPackages = 
+          "false".equalsIgnoreCase(options.get(SHOULD_INSTRUMENT_PKG_OPT)) 
+          ? false : true;
     }
   }
 }

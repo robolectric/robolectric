@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -11,7 +12,6 @@ import org.robolectric.TestRunners;
 import org.robolectric.res.Attribute;
 import org.robolectric.res.PackageResourceLoader;
 import org.robolectric.res.ResourceLoader;
-import org.robolectric.util.TestUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -242,7 +242,6 @@ public class ShadowContextTest {
   @Test
   public void obtainStyledAttributes_shouldExtractAttributesFromAttributeSet() throws Exception {
     ResourceLoader resourceLoader = new PackageResourceLoader(TEST_RESOURCE_PATH);
-    TestUtil.createResourcesFor(resourceLoader);
 
     RoboAttributeSet roboAttributeSet = new RoboAttributeSet(asList(
         new Attribute(TEST_PACKAGE + ":attr/itemType", "ungulate", TEST_PACKAGE),

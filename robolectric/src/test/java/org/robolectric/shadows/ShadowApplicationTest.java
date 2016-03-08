@@ -76,36 +76,6 @@ public class ShadowApplicationTest {
   }
 
   @Test
-  public void shouldBeBindableToAResourceLoader() throws Exception {
-    ResourceLoader resourceLoader1 = new EmptyResourceLoader() {
-      @Override public TypedResource getValue(ResName resName, String qualifiers) {
-        return new TypedResource("title from resourceLoader1", ResType.CHAR_SEQUENCE);
-      }
-
-      @Override public ResourceIndex getResourceIndex() {
-        return new ImperviousResourceExtractor();
-      }
-    };
-    ResourceLoader resourceLoader2 = new EmptyResourceLoader() {
-      @Override public TypedResource getValue(ResName resName, String qualifiers) {
-        return new TypedResource("title from resourceLoader2", ResType.CHAR_SEQUENCE);
-      }
-
-      @Override public ResourceIndex getResourceIndex() {
-        return new ImperviousResourceExtractor();
-      }
-    };
-
-    final Application app1 = new Application();
-    final Application app2 = new Application();
-    shadowOf(app1).bind(null, resourceLoader1);
-    shadowOf(app2).bind(null, resourceLoader2);
-
-    assertEquals("title from resourceLoader1", new ContextWrapper(app1).getResources().getString(R.string.howdy));
-    assertEquals("title from resourceLoader2", new ContextWrapper(app2).getResources().getString(R.string.howdy));
-  }
-
-  @Test
   public void shouldProvideServices() throws Exception {
     checkSystemService(Context.ACTIVITY_SERVICE, android.app.ActivityManager.class);
     checkSystemService(Context.POWER_SERVICE, android.os.PowerManager.class);

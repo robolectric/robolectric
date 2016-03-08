@@ -5,13 +5,14 @@ import android.app.PendingIntent.CanceledException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
-import org.robolectric.fakes.RoboIntentSender;
 import android.os.Bundle;
 
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.fakes.RoboIntentSender;
 import org.robolectric.util.ReflectionHelpers;
 
 import java.util.ArrayList;
@@ -24,6 +25,9 @@ import java.util.List;
 @Implements(PendingIntent.class)
 public class ShadowPendingIntent {
   private static final List<PendingIntent> createdIntents = new ArrayList<>();
+
+  @RealObject
+  PendingIntent realPendingIntent;
 
   private Intent[] savedIntents;
   private Context savedContext;
@@ -88,9 +92,7 @@ public class ShadowPendingIntent {
 
   @Implementation
   public IntentSender getIntentSender() {
-    RoboIntentSender testIntentSender = new RoboIntentSender();
-    testIntentSender.intent = savedIntents[0];
-    return testIntentSender;
+    return new RoboIntentSender(realPendingIntent);
   }
 
   public boolean isActivityIntent() {
