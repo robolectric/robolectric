@@ -41,12 +41,12 @@ public class InstrumentationConfiguration {
     private final Collection<String> instrumentedClasses = new HashSet<>();
     private final Collection<String> classesToNotInstrument = new HashSet<>();
 
-    public Builder doNotAquireClass(String className) {
+    public Builder doNotAcquireClass(String className) {
       this.classesToNotAcquire.add(className);
       return this;
     }
 
-    public Builder doNotAquirePackage(String packageName) {
+    public Builder doNotAcquirePackage(String packageName) {
       this.packagesToNotAcquire.add(packageName);
       return this;
     }
