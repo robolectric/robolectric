@@ -900,7 +900,7 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
           new Handle(getTag(originalMethod), classType.getInternalName(), originalMethod.name,
               originalMethod.desc);
 
-      if (generator.getIsStatic()) {
+      if (generator.isStatic()) {
         generator.loadArgs();
         generator.invokeDynamic(originalMethodName, originalMethod.desc, BOOTSTRAP_STATIC, original);
       } else {
@@ -955,7 +955,7 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
 
       // prepare for call to classHandler.methodInvoked(String signature, boolean isStatic)
       generator.push(classType.getInternalName() + "/" + originalMethodName + originalMethod.desc);
-      generator.push(generator.getIsStatic());
+      generator.push(generator.isStatic());
       generator.push(classType);                                         // my class
       generator.invokeStatic(ROBOLECTRIC_INTERNALS_TYPE, METHOD_INVOKED_METHOD);
       generator.storeLocal(planLocalVar);
@@ -967,7 +967,7 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
       TryCatch tryCatchForHandler = generator.tryStart(THROWABLE_TYPE);
       generator.loadLocal(planLocalVar); // plan
       generator.loadThisOrNull();        // instance
-      if (generator.getIsStatic()) {        // roboData
+      if (generator.isStatic()) {        // roboData
         generator.loadNull();
       } else {
         generator.loadThis();
@@ -1172,7 +1172,7 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
       }
     }
 
-    public boolean getIsStatic() {
+    public boolean isStatic() {
       return isStatic;
     }
 
@@ -1209,7 +1209,7 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
     }
 
     private void invokeMethod(String internalClassName, String methodName, String methodDesc) {
-      if (getIsStatic()) {
+      if (isStatic()) {
         loadArgs();                                             // this, [args]
         visitMethodInsn(INVOKESTATIC, internalClassName, methodName, methodDesc);
       } else {
