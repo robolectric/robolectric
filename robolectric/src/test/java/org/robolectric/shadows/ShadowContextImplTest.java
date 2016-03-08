@@ -7,9 +7,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.os.Build;
+import android.view.LayoutInflater;
+import android.widget.FrameLayout;
+import android.widget.RemoteViews;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.R;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestApplication;
 import org.robolectric.TestRunners;
@@ -71,5 +75,20 @@ public class ShadowContextImplTest {
     assertThat(ShadowApplication.getInstance().getNextStartedService().getComponent().getClassName()).isEqualTo("ServiceIntent");
   }
 
+  @Test
+  public void createPackageContext() throws Exception {
+    Context packageContext = context.createPackageContext(RuntimeEnvironment.application.getPackageName(), 0);
+
+    LayoutInflater inflater = (LayoutInflater) RuntimeEnvironment.application.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+    inflater.cloneInContext(packageContext);
+
+    inflater.inflate(R.layout.remote_views, new FrameLayout(RuntimeEnvironment.application), false);
+  }
+
+  @Test
+  public void createPackageContextRemoteViews() throws Exception {
+    RemoteViews remoteViews = new RemoteViews(RuntimeEnvironment.application.getPackageName(), R.layout.remote_views);
+    remoteViews.apply(RuntimeEnvironment.application, new FrameLayout(RuntimeEnvironment.application));
+  }
 }
 
