@@ -2,17 +2,17 @@ package org.robolectric.shadows;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.res.Resources;
 import android.preference.Preference;
 import android.preference.PreferenceGroup;
 import android.preference.PreferenceManager;
 import android.util.AttributeSet;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
 import org.robolectric.res.Attribute;
-import org.robolectric.util.TestUtil;
+import org.robolectric.res.EmptyResourceLoader;
 
 import java.util.ArrayList;
 
@@ -32,8 +32,7 @@ public class ShadowPreferenceGroupTest {
   @Before
   public void setUp() throws Exception {
     activity = buildActivity(Activity.class).create().get();
-    Resources resources = TestUtil.emptyResources();
-    attrs = new RoboAttributeSet(new ArrayList<Attribute>(), shadowOf(resources).getResourceLoader());
+    attrs = new RoboAttributeSet(new ArrayList<Attribute>(), new EmptyResourceLoader());
 
     group = new TestPreferenceGroup(activity, attrs);
     shadow = shadowOf(group);

@@ -86,7 +86,7 @@ public class CoreShadowsAdapter implements ShadowsAdapter {
 
   @Override
   public void setSystemResources(ResourceLoader systemResourceLoader) {
-    ShadowResources.setSystemResources(systemResourceLoader);
+    ShadowAssetManager.setSystemResources(systemResourceLoader);
   }
 
   @Override
