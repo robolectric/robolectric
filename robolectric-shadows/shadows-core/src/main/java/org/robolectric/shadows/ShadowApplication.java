@@ -638,7 +638,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     return registerReceiverWithContext(receiver, filter, broadcastPermission, scheduler, realApplication);
   }
 
-  Intent registerReceiverWithContext(BroadcastReceiver receiver, IntentFilter filter, String broadcastPermission, Handler scheduler, Context context) {
+  protected Intent registerReceiverWithContext(BroadcastReceiver receiver, IntentFilter filter, String broadcastPermission, Handler scheduler, Context context) {
     if (receiver != null) {
       registeredReceivers.add(new Wrapper(receiver, filter, context, broadcastPermission, scheduler));
     }
