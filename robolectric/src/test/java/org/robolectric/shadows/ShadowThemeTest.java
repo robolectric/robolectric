@@ -102,7 +102,7 @@ public class ShadowThemeTest {
 
   @Test public void shouldInheritThemeValuesFromImplicitParents() throws Exception {
     TestActivity activity = buildActivity(TestActivityWithAnotherTheme.class).create().get();
-    ResourceLoader resourceLoader = Shadows.shadowOf(activity.getResources()).getResourceLoader();
+    ResourceLoader resourceLoader = Shadows.shadowOf(activity.getResources().getAssets()).getResourceLoader();
     Style style = ShadowAssetManager.resolveStyle(resourceLoader,
         null,
         new ResName(TestUtil.TEST_PACKAGE, "style", "Widget.AnotherTheme.Button.Blarf"), "");
@@ -112,7 +112,7 @@ public class ShadowThemeTest {
 
   @Test public void whenAThemeHasExplicitlyEmptyParentAttr_shouldHaveNoParent() throws Exception {
     TestActivity activity = buildActivity(TestActivityWithAnotherTheme.class).create().get();
-    ResourceLoader resourceLoader = Shadows.shadowOf(activity.getResources()).getResourceLoader();
+    ResourceLoader resourceLoader = Shadows.shadowOf(activity.getResources().getAssets()).getResourceLoader();
     Style style = ShadowAssetManager.resolveStyle(resourceLoader,
         null,
         new ResName(TestUtil.TEST_PACKAGE, "style", "Theme.MyTheme"), "");
@@ -122,7 +122,7 @@ public class ShadowThemeTest {
 
   @Test public void shouldApplyParentStylesFromAttrs() throws Exception {
     TestActivity activity = buildActivity(TestActivityWithAnotherTheme.class).create().get();
-    ResourceLoader resourceLoader = Shadows.shadowOf(activity.getResources()).getResourceLoader();
+    ResourceLoader resourceLoader = Shadows.shadowOf(activity.getResources().getAssets()).getResourceLoader();
     Style theme = ShadowAssetManager.resolveStyle(resourceLoader, null,
         new ResName(TestUtil.TEST_PACKAGE, "style", "Theme.AnotherTheme"), "");
     Style style = ShadowAssetManager.resolveStyle(resourceLoader, theme,

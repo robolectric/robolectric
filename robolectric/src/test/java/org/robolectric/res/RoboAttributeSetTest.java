@@ -26,7 +26,7 @@ public class RoboAttributeSetTest {
   @Before
   public void setUp() throws Exception {
     resources = RuntimeEnvironment.application.getResources();
-    resourceLoader = shadowOf(resources).getResourceLoader();
+    resourceLoader = shadowOf(resources.getAssets()).getResourceLoader();
   }
 
   @Test
@@ -158,7 +158,7 @@ public class RoboAttributeSetTest {
   @Test
   public void getAttributeIntValue_shouldReturnValueFromAttribute() throws Exception {
     roboAttributeSet = new RoboAttributeSet(asList(new Attribute(TEST_PACKAGE + ":attr/sugarinessPercent", "100", TEST_PACKAGE)),
-        shadowOf(resources).getResourceLoader());
+        shadowOf(resources.getAssets()).getResourceLoader());
     assertThat(roboAttributeSet.getAttributeIntValue(TEST_PACKAGE_NS, "sugarinessPercent", 0)).isEqualTo(100);
   }
 

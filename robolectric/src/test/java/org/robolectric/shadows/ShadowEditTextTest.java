@@ -33,7 +33,7 @@ public class ShadowEditTextTest {
   public void setup() {
     List<Attribute> attributes = new ArrayList<>();
     attributes.add(new Attribute("android:attr/maxLength", "5", R.class.getPackage().getName()));
-    RoboAttributeSet attributeSet = new RoboAttributeSet(attributes, shadowOf(application.getResources()).getResourceLoader());
+    RoboAttributeSet attributeSet = new RoboAttributeSet(attributes, shadowOf(application.getResources().getAssets()).getResourceLoader());
     editText = new EditText(application, attributeSet);
   }
 
@@ -120,7 +120,7 @@ public class ShadowEditTextTest {
 
   private AttributeSet attributeSetWithMaxLength(int maxLength) {
     Resources resources = RuntimeEnvironment.application.getResources();
-    ResourceLoader resourceLoader = shadowOf(resources).getResourceLoader();
+    ResourceLoader resourceLoader = shadowOf(resources.getAssets()).getResourceLoader();
     return new RoboAttributeSet(
         asList(new Attribute(new ResName("android", "attr", "maxLength"), maxLength + "", "android")),
         resourceLoader);
@@ -128,7 +128,7 @@ public class ShadowEditTextTest {
 
   private AttributeSet attributeSetWithoutMaxLength() {
     Resources resources = RuntimeEnvironment.application.getResources();
-    ResourceLoader resourceLoader = shadowOf(resources).getResourceLoader();
+    ResourceLoader resourceLoader = shadowOf(resources.getAssets()).getResourceLoader();
     return new RoboAttributeSet(Arrays.<Attribute>asList(),
         resourceLoader);
   }
