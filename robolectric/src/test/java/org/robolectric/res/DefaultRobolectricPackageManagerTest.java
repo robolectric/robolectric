@@ -534,7 +534,6 @@ public class DefaultRobolectricPackageManagerTest {
   @Config(manifest = "src/test/resources/TestAndroidManifestWithAppMetaData.xml")
   public void shouldAssignTheAppMetaDataFromTheManifest() throws Exception {
     ShadowApplication app = ShadowApplication.getInstance();
-    String appName = app.getString(R.string.app_name);
     String packageName = app.getAppManifest().getPackageName();
     ApplicationInfo info = app.getPackageManager().getApplicationInfo(packageName, 0);
     Bundle meta = info.metaData;
@@ -581,11 +580,11 @@ public class DefaultRobolectricPackageManagerTest {
 
     metaValue = meta.get("org.robolectric.metaStringFromRes");
     assertTrue(String.class.isInstance(metaValue));
-    assertEquals(app.getString(R.string.app_name), metaValue);
+    assertEquals(RuntimeEnvironment.application.getString(R.string.app_name), metaValue);
 
     metaValue = meta.get("org.robolectric.metaStringOfIntFromRes");
     assertTrue(String.class.isInstance(metaValue));
-    assertEquals(app.getString(R.string.str_int), metaValue);
+    assertEquals(RuntimeEnvironment.application.getString(R.string.str_int), metaValue);
 
     metaValue = meta.get("org.robolectric.metaStringRes");
     assertTrue(Integer.class.isInstance(metaValue));

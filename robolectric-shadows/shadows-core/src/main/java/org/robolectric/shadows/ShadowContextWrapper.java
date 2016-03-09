@@ -72,18 +72,6 @@ public class ShadowContextWrapper extends ShadowContext {
 
   @Implementation
   @Override
-  public String getString(int resId, Object... formatArgs) {
-    return super.getString(resId, formatArgs);
-  }
-
-  @Implementation
-  @Override
-  public CharSequence getText(int resId) {
-    return super.getText(resId);
-  }
-
-  @Implementation
-  @Override
   public File getExternalCacheDir() {
     return super.getExternalCacheDir();
   }
