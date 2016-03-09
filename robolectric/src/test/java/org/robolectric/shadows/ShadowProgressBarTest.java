@@ -27,7 +27,7 @@ public class ShadowProgressBarTest {
         new Attribute(new ResName(TestUtil.SYSTEM_PACKAGE, "attr", "max"), "100", TestUtil.TEST_PACKAGE),
         new Attribute(new ResName(TestUtil.SYSTEM_PACKAGE, "attr", "indeterminate"), "false", TestUtil.TEST_PACKAGE),
         new Attribute(new ResName(TestUtil.SYSTEM_PACKAGE, "attr", "indeterminateOnly"), "false", TestUtil.TEST_PACKAGE)
-    ), shadowOf(application.getResources()).getResourceLoader());
+    ), shadowOf(application.getResources().getAssets()).getResourceLoader());
 
     progressBar = new ProgressBar(application, attrs);
   }

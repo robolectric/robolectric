@@ -441,7 +441,7 @@ public class ShadowLayoutInflaterTest {
   public View inflate(Context context, String packageName, String key, ViewGroup parent, String qualifiers) {
     ResName resName = new ResName(packageName + ":layout/" + key);
     shadowOf(context.getAssets()).setQualifiers(qualifiers);
-    ResourceLoader resourceLoader = shadowOf(context.getResources()).getResourceLoader();
+    ResourceLoader resourceLoader = shadowOf(context.getResources().getAssets()).getResourceLoader();
     Integer layoutResId = resourceLoader.getResourceIndex().getResourceId(resName);
     if (layoutResId == null) throw new AssertionError("no such resource " + resName);
     return LayoutInflater.from(context).inflate(layoutResId, parent);

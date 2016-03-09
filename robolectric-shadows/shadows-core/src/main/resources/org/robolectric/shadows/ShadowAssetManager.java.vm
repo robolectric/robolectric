@@ -409,7 +409,7 @@ public final class ShadowAssetManager {
     return new Resource(value, resName);
   }
 
-  ResourceLoader getResourceLoader() {
+  public ResourceLoader getResourceLoader() {
     if (resourceLoader == null) {
       resourceLoader = ShadowApplication.getInstance().getResourceLoader();
     }
