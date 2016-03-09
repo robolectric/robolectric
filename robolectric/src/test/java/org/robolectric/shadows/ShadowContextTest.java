@@ -62,10 +62,10 @@ public class ShadowContextTest {
 
   @Test
   public void shouldStubThemeStuff() throws Exception {
-    assertThat(context.obtainStyledAttributes(null)).isNotNull();
-    assertThat(context.obtainStyledAttributes(0, null)).isNotNull();
-    assertThat(context.obtainStyledAttributes(null, null)).isNotNull();
-    assertThat(context.obtainStyledAttributes(null, null, 0, 0)).isNotNull();
+    assertThat(context.obtainStyledAttributes(new int[0])).isNotNull();
+    assertThat(context.obtainStyledAttributes(0, new int[0])).isNotNull();
+    assertThat(context.obtainStyledAttributes(null, new int[0])).isNotNull();
+    assertThat(context.obtainStyledAttributes(null, new int[0], 0, 0)).isNotNull();
   }
 
   @Test
