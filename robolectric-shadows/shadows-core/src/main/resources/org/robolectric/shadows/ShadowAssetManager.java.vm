@@ -303,7 +303,7 @@ public final class ShadowAssetManager {
 
   @HiddenApi @Implementation
   public static void applyThemeStyle($ptrClass theme, int styleRes, boolean force) {
-    ShadowAssetManager assetManager = shadowOf(getInstance().getAssets());
+    ShadowAssetManager assetManager = shadowOf(RuntimeEnvironment.application.getAssets());
 
     final Map<$ptrClassBoxed, List<OverlayedStyle>> appliedStyles = assetManager.appliedStyles;
 

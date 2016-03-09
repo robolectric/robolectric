@@ -136,9 +136,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
         // todo: make this cleaner...
         shadowsAdapter.setPackageName(application, applicationInfo.packageName);
       }
-      Resources appResources = application.getResources();
-      ReflectionHelpers.setField(loadedApk, "mResources", appResources);
-      ReflectionHelpers.setField(loadedApk, "mApplication", application);
+
       try {
         Context contextImpl = systemContextImpl.createPackageContext(applicationInfo.packageName, Context.CONTEXT_INCLUDE_CODE);
         ReflectionHelpers.setField(activityThreadClass, activityThread, "mInitialApplication", application);
@@ -146,6 +144,10 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       } catch (PackageManager.NameNotFoundException e) {
         throw new RuntimeException(e);
       }
+
+      Resources appResources = application.getResources();
+      ReflectionHelpers.setField(loadedApk, "mResources", appResources);
+      ReflectionHelpers.setField(loadedApk, "mApplication", application);
 
       appResources.updateConfiguration(configuration, appResources.getDisplayMetrics());
       shadowsAdapter.setAssetsQualifiers(appResources.getAssets(), qualifiers);

@@ -110,7 +110,7 @@ public class ActivityController<T extends Activity> extends ComponentController<
         }
 
         /* Get the resource ID, use the activity to look up the actual string */
-        title = component.getString(labelRes);
+        title = RuntimeEnvironment.application.getString(labelRes);
       } else {
         title = labelRef; /* Label isn't an identifier, use it directly as the title */
       }

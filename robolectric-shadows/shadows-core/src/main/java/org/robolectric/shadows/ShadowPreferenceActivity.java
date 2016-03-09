@@ -33,7 +33,7 @@ public class ShadowPreferenceActivity extends ShadowActivity {
 
   private PreferenceScreen inflatePreferences(int preferencesResId) {
     ResName resName = getResName(preferencesResId);
-    String qualifiers = shadowOf(getResources().getConfiguration()).getQualifiers();
+    String qualifiers = shadowOf(realOject.getResources().getConfiguration()).getQualifiers();
     PreferenceNode preferenceNode = shadowOf(realOject.getAssets()).getResourceLoader().getPreferenceNode(resName, qualifiers);
     try {
       return (PreferenceScreen) preferenceBuilder.inflate(preferenceNode, realActivity, null);
