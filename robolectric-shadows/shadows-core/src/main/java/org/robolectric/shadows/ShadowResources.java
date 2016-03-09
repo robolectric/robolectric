@@ -16,7 +16,6 @@ import android.util.LongSparseArray;
 import android.util.TypedValue;
 import android.view.Display;
 
-import org.jetbrains.annotations.NotNull;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -26,7 +25,6 @@ import org.robolectric.res.Attribute;
 import org.robolectric.res.Plural;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResType;
-import org.robolectric.res.ResourceIndex;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.TypedResource;
 import org.robolectric.res.builder.ResourceParser;
@@ -110,9 +108,8 @@ public class ShadowResources {
   }
 
   public TypedArray createTypedArray(List<Attribute> set, int[] attrs) {
-    ResourceLoader resourceLoader = getResourceLoader();
-    ResourceIndex resourceIndex = resourceLoader.getResourceIndex();
-    String qualifiers = shadowOf(realResources.getAssets()).getQualifiers();
+    ShadowAssetManager shadowAssetManager = shadowOf(realResources.getAssets());
+    ResourceLoader resourceLoader = shadowAssetManager.getResourceLoader();
 
     CharSequence[] stringData = new CharSequence[attrs.length];
     int[] data = new int[attrs.length * ShadowAssetManager.STYLE_NUM_ENTRIES];
@@ -123,11 +120,11 @@ public class ShadowResources {
       int offset = i * ShadowAssetManager.STYLE_NUM_ENTRIES;
 
       int attr = attrs[i];
-      ResName attrName = resourceIndex.getResName(attr);
+      ResName attrName = resourceLoader.getResourceIndex().getResName(attr);
       if (attrName != null) {
         Attribute attribute = Attribute.find(set, attrName);
         TypedValue typedValue = new TypedValue();
-        Converter.convertAndFill(attribute, typedValue, resourceLoader, qualifiers, true);
+        Converter.convertAndFill(attribute, typedValue, resourceLoader, shadowAssetManager.getQualifiers(), true);
 
         if (attribute != null && !attribute.isNull()) {
           //noinspection PointlessArithmeticExpression
@@ -157,30 +154,22 @@ public class ShadowResources {
 
   @Implementation
   public String getResourceName(int resId) throws Resources.NotFoundException {
-    return getResName(resId).getFullyQualifiedName();
+    return shadowOf(realResources.getAssets()).getResName(resId).getFullyQualifiedName();
   }
 
   @Implementation
   public String getResourcePackageName(int resId) throws Resources.NotFoundException {
-    return getResName(resId).packageName;
+    return shadowOf(realResources.getAssets()).getResName(resId).packageName;
   }
 
   @Implementation
   public String getResourceTypeName(int resId) throws Resources.NotFoundException {
-    return getResName(resId).type;
+    return shadowOf(realResources.getAssets()).getResName(resId).type;
   }
 
   @Implementation
   public String getResourceEntryName(int resId) throws Resources.NotFoundException {
-    return getResName(resId).name;
-  }
-
-  private @NotNull ResName getResName(int id) {
-    return shadowOf(realResources.getAssets()).getResName(id);
-  }
-
-  private String getQualifiers() {
-    return shadowOf(realResources.getAssets()).getQualifiers();
+    return shadowOf(realResources.getAssets()).getResName(resId).name;
   }
 
   @Implementation
@@ -197,19 +186,20 @@ public class ShadowResources {
 
   @Implementation
   public String getQuantityString(int id, int quantity) throws Resources.NotFoundException {
-    ResName resName = getResName(id);
-    Plural plural = getResourceLoader().getPlural(resName, quantity, getQualifiers());
-    String string = plural.getString();
     ShadowAssetManager shadowAssetManager = shadowOf(realResources.getAssets());
+    ResName resName = shadowAssetManager.getResName(id);
+    Plural plural = shadowAssetManager.getResourceLoader().getPlural(resName, quantity, shadowAssetManager.getQualifiers());
+    String string = plural.getString();
     TypedResource<?> typedResource = shadowAssetManager.resolve(
-        new TypedResource<>(string, ResType.CHAR_SEQUENCE), getQualifiers(),
+        new TypedResource<>(string, ResType.CHAR_SEQUENCE), shadowAssetManager.getQualifiers(),
         new ResName(resName.packageName, "string", resName.name));
     return typedResource == null ? null : typedResource.asString();
   }
 
   @Implementation
   public InputStream openRawResource(int id) throws Resources.NotFoundException {
-    return getResourceLoader().getRawValue(getResName(id));
+    ShadowAssetManager shadowAssetManager = shadowOf(realResources.getAssets());
+    return shadowAssetManager.getResourceLoader().getRawValue(shadowAssetManager.getResName(id));
   }
 
   @Implementation
@@ -256,21 +246,18 @@ public class ShadowResources {
 
   @HiddenApi @Implementation
   public XmlResourceParser loadXmlResourceParser(int id, String type) throws Resources.NotFoundException {
-    ResName resName = shadowOf(realResources.getAssets()).resolveResName(id);
-    XmlBlock block = getResourceLoader().getXml(resName, getQualifiers());
+    ShadowAssetManager shadowAssetManager = shadowOf(realResources.getAssets());
+    ResName resName = shadowAssetManager.resolveResName(id);
+    XmlBlock block = shadowAssetManager.getResourceLoader().getXml(resName, shadowAssetManager.getQualifiers());
     if (block == null) {
       throw new Resources.NotFoundException();
     }
-    return ResourceParser.from(block, resName.packageName, getResourceLoader().getResourceIndex());
+    return ResourceParser.from(block, resName.packageName, shadowAssetManager.getResourceLoader().getResourceIndex());
   }
 
   @HiddenApi @Implementation
   public XmlResourceParser loadXmlResourceParser(String file, int id, int assetCookie, String type) throws Resources.NotFoundException {
     return loadXmlResourceParser(id, type);
-  }
-
-  public ResourceLoader getResourceLoader() {
-    return shadowOf(realResources.getAssets()).getResourceLoader();
   }
 
   @Implements(Resources.Theme.class)
