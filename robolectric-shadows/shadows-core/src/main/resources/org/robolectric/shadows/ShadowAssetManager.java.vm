@@ -55,7 +55,8 @@ public final class ShadowAssetManager {
   public static final int STYLE_CHANGING_CONFIGURATIONS = 4;
   public static final int STYLE_DENSITY = 5;
 
-  private static ResourceLoader systemResources;
+  private static ResourceLoader systemResourceLoader;
+  private static ResourceLoader appResourceLoader;
 
   private Map<$ptrClassBoxed, Resources.Theme> themesById = new LinkedHashMap<>();
   private Map<$ptrClassBoxed, List<OverlayedStyle>> appliedStyles = new HashMap<>();
@@ -66,7 +67,27 @@ public final class ShadowAssetManager {
   AssetManager realObject;
 
   public static void setSystemResources(ResourceLoader systemResources) {
-    ShadowAssetManager.systemResources = systemResources;
+    systemResourceLoader = systemResources;
+  }
+
+  public static void setAppResourceLoader(ResourceLoader resourceLoader) {
+    appResourceLoader = resourceLoader;
+  }
+
+  public ResourceLoader getResourceLoader() {
+    if (resourceLoader == null) {
+      resourceLoader = appResourceLoader;
+    }
+
+    return resourceLoader;
+  }
+
+  @Implementation
+  public static AssetManager getSystem() {
+    AssetManager assetManager = new AssetManager();
+    ShadowAssetManager shadowAssetManager = shadowOf(assetManager);
+    shadowAssetManager.resourceLoader = systemResourceLoader;
+    return assetManager;
   }
 
   @HiddenApi @Implementation
@@ -282,19 +303,18 @@ public final class ShadowAssetManager {
 
   @HiddenApi @Implementation
   public static void applyThemeStyle($ptrClass theme, int styleRes, boolean force) {
-    ResourceLoader resourceLoader = getInstance().getResourceLoader();
     ShadowAssetManager assetManager = shadowOf(getInstance().getAssets());
 
     final Map<$ptrClassBoxed, List<OverlayedStyle>> appliedStyles = assetManager.appliedStyles;
-	
+
     if (!appliedStyles.containsKey(theme)) {
       appliedStyles.put(theme, new LinkedList<OverlayedStyle>());
     }
 
-    ResourceIndex resourceIndex = resourceLoader.getResourceIndex();
+    ResourceIndex resourceIndex = assetManager.getResourceLoader().getResourceIndex();
     ResName resName = resourceIndex.getResName(styleRes);
 
-    Style style = resolveStyle(resourceLoader, null, resName, assetManager.getQualifiers());
+    Style style = resolveStyle(assetManager.getResourceLoader(), null, resName, assetManager.getQualifiers());
 
     List<OverlayedStyle> overlayedStyleList = appliedStyles.get(theme);
     OverlayedStyle styleToAdd = new OverlayedStyle(style, force);
@@ -407,13 +427,6 @@ public final class ShadowAssetManager {
     }
 
     return new Resource(value, resName);
-  }
-
-  public ResourceLoader getResourceLoader() {
-    if (resourceLoader == null) {
-      resourceLoader = ShadowApplication.getInstance().getResourceLoader();
-    }
-    return resourceLoader;
   }
 
   private boolean isReference(TypedResource value) {
@@ -614,14 +627,6 @@ public final class ShadowAssetManager {
           + "}";
     }
 
-  }
-
-  @Implementation
-  public static AssetManager getSystem() {
-    AssetManager assetManager = new AssetManager();
-    ShadowAssetManager shadowAssetManager = shadowOf(assetManager);
-    shadowAssetManager.resourceLoader = systemResources;
-    return assetManager;
   }
 
   List<Attribute> buildAttributes(AttributeSet set, int[] attrs, int defStyleAttr, int themeResourceId, int defStyleRes) {
