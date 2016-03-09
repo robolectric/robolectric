@@ -101,7 +101,7 @@ public class TestRunnerSequenceTest {
 
     @Override public InstrumentationConfiguration createClassLoaderConfig(Config config) {
       return InstrumentationConfiguration.newBuilder()
-          .doNotAquireClass(StateHolder.class.getName())
+          .doNotAcquireClass(StateHolder.class.getName())
           .build();
     }
 

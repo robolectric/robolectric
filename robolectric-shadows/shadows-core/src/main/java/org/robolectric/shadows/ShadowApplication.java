@@ -200,7 +200,7 @@ public class ShadowApplication extends ShadowContextWrapper {
   @Implementation
   public AssetManager getAssets() {
     if (assetManager == null) {
-      assetManager = ShadowAssetManager.bind(newInstanceOf(AssetManager.class), appManifest, resourceLoader);
+      assetManager = new AssetManager();
     }
     return assetManager;
   }

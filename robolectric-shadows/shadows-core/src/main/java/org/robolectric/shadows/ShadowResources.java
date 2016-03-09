@@ -17,7 +17,6 @@ import android.util.TypedValue;
 import android.view.Display;
 
 import org.jetbrains.annotations.NotNull;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -29,7 +28,6 @@ import org.robolectric.res.ResName;
 import org.robolectric.res.ResType;
 import org.robolectric.res.ResourceIndex;
 import org.robolectric.res.ResourceLoader;
-import org.robolectric.res.StringResources;
 import org.robolectric.res.Style;
 import org.robolectric.res.TypedResource;
 import org.robolectric.res.builder.ResourceParser;
@@ -60,7 +58,6 @@ public class ShadowResources {
   private DisplayMetrics displayMetrics;
   private Display display;
   @RealObject Resources realResources;
-  private ResourceLoader resourceLoader;
 
   @Resetter
   public static void reset() {
@@ -91,29 +88,15 @@ public class ShadowResources {
     return resettableArrays;
   }
 
-  public static void setSystemResources(ResourceLoader systemResourceLoader) {
-    AssetManager assetManager = new AssetManager();
-    ShadowAssetManager.bind(assetManager, null, systemResourceLoader);
-    DisplayMetrics metrics = new DisplayMetrics();
-    Configuration config = new Configuration();
-    system = ShadowResources.bind(new Resources(assetManager, metrics, config), systemResourceLoader);
-  }
-
-  static Resources bind(Resources resources, ResourceLoader resourceLoader) {
-    ShadowResources shadowResources = shadowOf(resources);
-    if (shadowResources.resourceLoader != null) throw new RuntimeException("ResourceLoader already set!");
-    shadowResources.resourceLoader = resourceLoader;
-    return resources;
-  }
-
   @Implementation
   public static Resources getSystem() {
+    if (system == null) {
+      AssetManager assetManager = AssetManager.getSystem();
+      DisplayMetrics metrics = new DisplayMetrics();
+      Configuration config = new Configuration();
+      system = new Resources(assetManager, metrics, config);
+    }
     return system;
-  }
-
-  public static Resources createFor(ResourceLoader resourceLoader) {
-    AssetManager assetManager = ShadowAssetManager.bind(ReflectionHelpers.callConstructor(AssetManager.class), null, resourceLoader);
-    return bind(new Resources(assetManager, new DisplayMetrics(), new Configuration()), resourceLoader);
   }
 
   private TypedArray attrsToTypedArray(AttributeSet set, int[] attrs, int defStyleAttr, int themeResourceId, int defStyleRes) {
@@ -453,10 +436,7 @@ public class ShadowResources {
   }
 
   public ResourceLoader getResourceLoader() {
-    if (resourceLoader == null) {
-      resourceLoader = shadowOf(RuntimeEnvironment.application).getResourceLoader();
-    }
-    return resourceLoader;
+    return shadowOf(realResources.getAssets()).getResourceLoader();
   }
 
   @Implements(Resources.Theme.class)

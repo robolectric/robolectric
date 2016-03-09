@@ -206,4 +206,9 @@ public class ShadowContextImpl extends ShadowContext {
   public void sendBroadcast(Intent intent) {
     realObject.getApplicationContext().sendBroadcast(intent);
   }
+
+  @Implementation
+  public ClassLoader getClassLoader() {
+    return this.getClass().getClassLoader();
+  }
 }
