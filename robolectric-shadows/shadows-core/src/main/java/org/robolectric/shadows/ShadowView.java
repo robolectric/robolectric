@@ -292,7 +292,7 @@ public class ShadowView {
 
   protected void dumpAttributes(PrintStream out) {
     if (realView.getId() > 0) {
-      dumpAttribute(out, "id", shadowOf(realView.getContext()).getResourceLoader().getNameForId(realView.getId()));
+      dumpAttribute(out, "id", shadowOf(realView.getContext().getAssets()).getResourceLoader().getNameForId(realView.getId()));
     }
 
     switch (realView.getVisibility()) {

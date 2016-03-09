@@ -72,7 +72,7 @@ public class ShadowBitmapFactory {
   }
 
   private static String getResourceName(int id) {
-    return Shadows.shadowOf(RuntimeEnvironment.application).getResourceLoader().getNameForId(id);
+    return Shadows.shadowOf(RuntimeEnvironment.application.getAssets()).getResourceLoader().getNameForId(id);
   }
 
   @Implementation

@@ -44,7 +44,7 @@ abstract public class ShadowContext {
   }
 
   public RoboAttributeSet createAttributeSet(List<Attribute> attributes, Class<? extends View> viewClass) {
-    return new RoboAttributeSet(attributes, getResourceLoader());
+    return new RoboAttributeSet(attributes, shadowOf(realContext.getAssets()).getResourceLoader());
   }
 
   @Implementation
@@ -62,21 +62,12 @@ abstract public class ShadowContext {
     return Environment.getExternalStoragePublicDirectory(type);
   }
 
-  /**
-   * Non-Android accessor.
-   *
-   * @return the {@code ResourceLoader} associated with this {@code Context}
-   */
-  public ResourceLoader getResourceLoader() {
-    return shadowOf((Application) realContext.getApplicationContext()).getResourceLoader();
-  }
-
   public boolean isStrictI18n() {
     return getShadowApplication().isStrictI18n();
   }
 
   public ResName getResName(int resourceId) {
-    return getResourceLoader().getResourceIndex().getResName(resourceId);
+    return shadowOf(realContext.getAssets()).getResourceLoader().getResourceIndex().getResName(resourceId);
   }
 
   public ShadowApplication getShadowApplication() {

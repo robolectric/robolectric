@@ -67,7 +67,7 @@ public class ShadowViewTest {
     transcript = new Transcript();
     view = new View(RuntimeEnvironment.application);
     resources = RuntimeEnvironment.application.getResources();
-    resourceLoader = shadowOf(resources).getResourceLoader();
+    resourceLoader = shadowOf(resources.getAssets()).getResourceLoader();
   }
 
   @Test
