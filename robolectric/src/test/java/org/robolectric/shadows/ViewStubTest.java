@@ -56,7 +56,7 @@ public class ViewStubTest {
   @Test
   public void shouldApplyAttributes() throws Exception {
     Resources resources = RuntimeEnvironment.application.getResources();
-    ResourceLoader resourceLoader = shadowOf(resources).getResourceLoader();
+    ResourceLoader resourceLoader = shadowOf(resources.getAssets()).getResourceLoader();
 
     ViewStub viewStub = new ViewStub(ctxt,
         new RoboAttributeSet(asList(
