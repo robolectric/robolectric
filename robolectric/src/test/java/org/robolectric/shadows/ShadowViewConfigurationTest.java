@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.view.ViewConfiguration;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
@@ -17,7 +18,7 @@ public class ShadowViewConfigurationTest {
 
   @Test
   public void methodsShouldReturnAndroidConstants() {
-    Activity context = new Activity();
+    Activity context = Robolectric.setupActivity(Activity.class);
     ViewConfiguration viewConfiguration = ViewConfiguration.get(context);
 
     assertEquals(10, ViewConfiguration.getScrollBarSize());
@@ -54,7 +55,7 @@ public class ShadowViewConfigurationTest {
 
   @Test
   public void methodsShouldReturnScaledAndroidConstantsDependingOnPixelDensity() {
-    Activity context = new Activity();
+    Activity context = Robolectric.setupActivity(Activity.class);
     shadowOf(context.getResources()).setDensity(1.5f);
     ViewConfiguration viewConfiguration = ViewConfiguration.get(context);
 

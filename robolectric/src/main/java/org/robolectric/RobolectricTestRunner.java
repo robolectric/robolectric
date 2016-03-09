@@ -1,6 +1,5 @@
 package org.robolectric;
 
-import android.app.Application;
 import android.os.Build;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.TestOnly;
@@ -59,7 +58,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   private static ShadowMap mainShadowMap;
 
   private InstrumentingClassLoaderFactory instrumentingClassLoaderFactory;
-  private TestLifecycle<Application> testLifecycle;
+  private TestLifecycle testLifecycle;
   private DependencyResolver dependencyResolver;
 
   static {

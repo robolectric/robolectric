@@ -121,11 +121,11 @@ public class ShadowApplication extends ShadowContextWrapper {
   }
 
   public static void setDisplayMetricsDensity(float densityMultiplier) {
-    shadowOf(getInstance().getResources()).setDensity(densityMultiplier);
+    shadowOf(RuntimeEnvironment.application.getResources()).setDensity(densityMultiplier);
   }
 
   public static void setDefaultDisplay(Display display) {
-    shadowOf(getInstance().getResources()).setDisplay(display);
+    shadowOf(RuntimeEnvironment.application.getResources()).setDisplay(display);
   }
 
   /**

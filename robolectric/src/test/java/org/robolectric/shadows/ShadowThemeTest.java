@@ -7,9 +7,11 @@ import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.Button;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
+import org.robolectric.Robolectric;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.res.ResName;
@@ -42,35 +44,35 @@ public class ShadowThemeTest {
   }
 
   @Test public void whenSetOnActivityInManifest_activityGetsThemeFromActivityInManifest() throws Exception {
-    TestActivity activity = buildActivity(TestActivityWithAnotherTheme.class).create().get();
+    TestActivity activity = Robolectric.setupActivity(TestActivityWithAnotherTheme.class);
     Button theButton = (Button) activity.findViewById(R.id.button);
     ColorDrawable background = (ColorDrawable) theButton.getBackground();
     assertThat(background.getColor()).isEqualTo(0xffff0000);
   }
 
   @Test public void whenNotSetOnActivityInManifest_activityGetsThemeFromApplicationInManifest() throws Exception {
-    TestActivity activity = buildActivity(TestActivity.class).create().get();
+    TestActivity activity = Robolectric.setupActivity(TestActivity.class);
     Button theButton = (Button) activity.findViewById(R.id.button);
     ColorDrawable background = (ColorDrawable) theButton.getBackground();
     assertThat(background.getColor()).isEqualTo(0xff00ff00);
   }
 
   @Test public void shouldResolveReferencesThatStartWithAQuestionMark() throws Exception {
-    TestActivity activity = buildActivity(TestActivityWithAnotherTheme.class).create().get();
+    TestActivity activity = Robolectric.setupActivity(TestActivityWithAnotherTheme.class);
     Button theButton = (Button) activity.findViewById(R.id.button);
     assertThat(theButton.getMinWidth()).isEqualTo(42); // via AnotherTheme.Button -> logoWidth and logoHeight
 //        assertThat(theButton.getMinHeight()).isEqualTo(42); todo 2.0-cleanup
   }
 
   @Test public void shouldLookUpStylesFromStyleResId() throws Exception {
-    TestActivity activity = buildActivity(TestActivityWithAnotherTheme.class).create().get();
+    TestActivity activity = Robolectric.setupActivity(TestActivityWithAnotherTheme.class);
     TypedArray a = activity.obtainStyledAttributes(null, R.styleable.CustomView, 0, R.style.MyCustomView);
     boolean enabled = a.getBoolean(R.styleable.CustomView_aspectRatioEnabled, false);
     assertThat(enabled).isTrue();
   }
 
   @Test public void shouldApplyStylesFromResourceReference() throws Exception {
-    TestActivity activity = buildActivity(TestActivityWithAnotherTheme.class).create().get();
+    TestActivity activity = Robolectric.setupActivity(TestActivityWithAnotherTheme.class);
     TypedArray a = activity.obtainStyledAttributes(null, R.styleable.CustomView, 0, R.attr.animalStyle);
     int animalStyleId = a.getResourceId(R.styleable.CustomView_animalStyle, 0);
     assertThat(animalStyleId).isEqualTo(R.style.Gastropod);
@@ -78,7 +80,7 @@ public class ShadowThemeTest {
   }
 
   @Test public void shouldApplyStylesFromAttributeReference() throws Exception {
-    TestActivity activity = buildActivity(TestActivityWithAThirdTheme.class).create().get();
+    TestActivity activity = Robolectric.setupActivity(TestActivityWithAThirdTheme.class);
     TypedArray a = activity.obtainStyledAttributes(null, R.styleable.CustomView, 0, R.attr.animalStyle);
     int animalStyleId = a.getResourceId(R.styleable.CustomView_animalStyle, 0);
     assertThat(animalStyleId).isEqualTo(R.style.Gastropod);
@@ -86,7 +88,7 @@ public class ShadowThemeTest {
   }
 
   @Test public void shouldGetValuesFromAttributeReference() throws Exception {
-    TestActivity activity = buildActivity(TestActivityWithAThirdTheme.class).create().get();
+    TestActivity activity = Robolectric.setupActivity(TestActivityWithAThirdTheme.class);
 
     TypedValue value1 = new TypedValue();
     TypedValue value2 = new TypedValue();
@@ -101,7 +103,7 @@ public class ShadowThemeTest {
   }
 
   @Test public void shouldInheritThemeValuesFromImplicitParents() throws Exception {
-    TestActivity activity = buildActivity(TestActivityWithAnotherTheme.class).create().get();
+    TestActivity activity = Robolectric.setupActivity(TestActivityWithAnotherTheme.class);
     ResourceLoader resourceLoader = Shadows.shadowOf(activity.getResources().getAssets()).getResourceLoader();
     Style style = ShadowAssetManager.resolveStyle(resourceLoader,
         null,
@@ -111,7 +113,7 @@ public class ShadowThemeTest {
   }
 
   @Test public void whenAThemeHasExplicitlyEmptyParentAttr_shouldHaveNoParent() throws Exception {
-    TestActivity activity = buildActivity(TestActivityWithAnotherTheme.class).create().get();
+    TestActivity activity = Robolectric.setupActivity(TestActivityWithAnotherTheme.class);
     ResourceLoader resourceLoader = Shadows.shadowOf(activity.getResources().getAssets()).getResourceLoader();
     Style style = ShadowAssetManager.resolveStyle(resourceLoader,
         null,
@@ -121,7 +123,7 @@ public class ShadowThemeTest {
 
 
   @Test public void shouldApplyParentStylesFromAttrs() throws Exception {
-    TestActivity activity = buildActivity(TestActivityWithAnotherTheme.class).create().get();
+    TestActivity activity = Robolectric.setupActivity(TestActivityWithAnotherTheme.class);
     ResourceLoader resourceLoader = Shadows.shadowOf(activity.getResources().getAssets()).getResourceLoader();
     Style theme = ShadowAssetManager.resolveStyle(resourceLoader, null,
         new ResName(TestUtil.TEST_PACKAGE, "style", "Theme.AnotherTheme"), "");
@@ -153,7 +155,7 @@ public class ShadowThemeTest {
   }
 
   @Test public void shouldApplyFromStyleAttribute() throws Exception {
-    TestWithStyleAttrActivity activity = buildActivity(TestWithStyleAttrActivity.class).create().get();
+    TestWithStyleAttrActivity activity = Robolectric.setupActivity(TestWithStyleAttrActivity.class);
     View button = activity.findViewById(R.id.button);
     assertThat(button.getLayoutParams().width).isEqualTo(42); // comes via style attr
   }

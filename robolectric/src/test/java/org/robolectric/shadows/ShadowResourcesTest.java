@@ -11,6 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
+import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
@@ -33,7 +34,7 @@ public class ShadowResourcesTest {
 
   @Before
   public void setup() throws Exception {
-    resources = new Activity().getResources();
+    resources = RuntimeEnvironment.application.getResources();
   }
 
   @Test
@@ -276,7 +277,7 @@ public class ShadowResourcesTest {
 
   @Test
   public void testGetNinePatchDrawable() {
-    assertThat(ShadowApplication.getInstance().getResources().getDrawable(R.drawable.nine_patch_drawable)).isInstanceOf(NinePatchDrawable.class);
+    assertThat(RuntimeEnvironment.application.getResources().getDrawable(R.drawable.nine_patch_drawable)).isInstanceOf(NinePatchDrawable.class);
   }
 
   @Test(expected = Resources.NotFoundException.class)
@@ -306,19 +307,19 @@ public class ShadowResourcesTest {
 
   @Test
   public void testDensity() {
-    Activity activity = new Activity();
+    Activity activity = Robolectric.setupActivity(Activity.class);
     assertThat(activity.getResources().getDisplayMetrics().density).isEqualTo(1f);
 
     shadowOf(activity.getResources()).setDensity(1.5f);
     assertThat(activity.getResources().getDisplayMetrics().density).isEqualTo(1.5f);
 
-    Activity anotherActivity = new Activity();
+    Activity anotherActivity = Robolectric.setupActivity(Activity.class);
     assertThat(anotherActivity.getResources().getDisplayMetrics().density).isEqualTo(1.5f);
   }
 
   @Test
   public void displayMetricsShouldNotHaveLotsOfZeros() throws Exception {
-    Activity activity = new Activity();
+    Activity activity = Robolectric.setupActivity(Activity.class);
     assertThat(activity.getResources().getDisplayMetrics().heightPixels).isEqualTo(800);
     assertThat(activity.getResources().getDisplayMetrics().widthPixels).isEqualTo(480);
   }
@@ -335,7 +336,7 @@ public class ShadowResourcesTest {
 
   @Test
   public void applicationResourcesShouldHaveBothSystemAndLocalValues() throws Exception {
-    Activity activity = new Activity();
+    Activity activity = Robolectric.setupActivity(Activity.class);
     assertThat(activity.getResources().getString(android.R.string.copy)).isEqualTo("Copy");
     assertThat(activity.getResources().getString(R.string.copy)).isEqualTo("Local Copy");
   }
@@ -472,7 +473,7 @@ public class ShadowResourcesTest {
 
   @Test
   public void subClassInitializedOK() {
-    SubClassResources subClassResources = new SubClassResources(ShadowApplication.getInstance().getResources());
+    SubClassResources subClassResources = new SubClassResources(RuntimeEnvironment.application.getResources());
     assertThat(subClassResources.openRawResource(R.raw.raw_resource)).isNotNull();
   }
 

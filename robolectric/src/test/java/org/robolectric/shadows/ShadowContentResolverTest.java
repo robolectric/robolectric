@@ -685,8 +685,6 @@ public class ShadowContentResolverTest {
 
   @Test
   public void getProvider_shouldNotReturnAnyProviderWhenManifestIsNull() {
-    Application application = new DefaultTestLifecycle().createApplication(null, null, null);
-    ReflectionHelpers.callInstanceMethod(application, "attach", ReflectionHelpers.ClassParameter.from(Context.class, RuntimeEnvironment.application.getBaseContext()));
     assertThat(ShadowContentResolver.getProvider(Uri.parse("content://"))).isNull();
   }
 

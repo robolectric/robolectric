@@ -63,12 +63,12 @@ public class RobolectricTestRunnerSelfTest {
   @Config(qualifiers = "fr")
   public void internalBeforeTest_testValuesResQualifiers() {
     String expectedQualifiers = "fr" + TestRunners.WithDefaults.SDK_TARGETED_BY_MANIFEST;
-    assertThat(Shadows.shadowOf(ShadowApplication.getInstance().getResources().getAssets()).getQualifiers()).isEqualTo(expectedQualifiers);
+    assertThat(Shadows.shadowOf(RuntimeEnvironment.application.getResources().getAssets()).getQualifiers()).isEqualTo(expectedQualifiers);
   }
 
   @Test
   public void internalBeforeTest_resetsValuesResQualifiers() {
-    assertThat(Shadows.shadowOf(ShadowApplication.getInstance().getResources().getConfiguration()).getQualifiers())
+    assertThat(Shadows.shadowOf(RuntimeEnvironment.application.getResources().getConfiguration()).getQualifiers())
       .isEqualTo("");
   }
 
@@ -126,8 +126,8 @@ public class RobolectricTestRunnerSelfTest {
     }
 
     public static class MyTestLifecycle extends DefaultTestLifecycle {
-      @Override public Application createApplication(Method method, AndroidManifest appManifest, Config config) {
-        return new MyTestApplication();
+      @Override public Class getApplicationClass(Method method, AndroidManifest appManifest, Config config) {
+        return MyTestApplication.class;
       }
     }
   }

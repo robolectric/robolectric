@@ -1,27 +1,14 @@
 package org.robolectric.shadows;
 
-import static android.content.pm.PackageManager.PERMISSION_DENIED;
-import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.robolectric.Shadows.shadowOf;
-
 import android.app.Activity;
 import android.app.Application;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.content.res.Resources;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.IInterface;
@@ -37,9 +24,6 @@ import android.widget.PopupWindow;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.DefaultTestLifecycle;
-import org.robolectric.R;
-import org.robolectric.RoboSettings;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
@@ -48,14 +32,9 @@ import org.robolectric.annotation.Config;
 import org.robolectric.fakes.RoboSensorManager;
 import org.robolectric.fakes.RoboVibrator;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.EmptyResourceLoader;
 import org.robolectric.res.Fs;
 import org.robolectric.res.ResName;
-import org.robolectric.res.ResType;
 import org.robolectric.res.ResourceExtractor;
-import org.robolectric.res.ResourceIndex;
-import org.robolectric.res.ResourceLoader;
-import org.robolectric.res.TypedResource;
 import org.robolectric.test.TemporaryFolder;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TestBroadcastReceiver;
@@ -64,6 +43,16 @@ import java.io.File;
 import java.io.FileDescriptor;
 import java.io.IOException;
 import java.util.List;
+
+import static android.content.pm.PackageManager.PERMISSION_DENIED;
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowApplicationTest {
@@ -484,24 +473,9 @@ public class ShadowApplicationTest {
   }
 
   @Test
-  public void shouldRememberResourcesAfterLazilyLoading() throws Exception {
-    Application application = new DefaultTestLifecycle().createApplication(null, newConfigWith("com.wacka.wa", ""), null);
-    assertSame(application.getResources(), application.getResources());
-  }
-
-  @Test
-  public void shouldBeAbleToResetResources() throws Exception {
-    Application application = new DefaultTestLifecycle().createApplication(null,
-        newConfigWith("com.wacka.wa", ""), null);
-    Resources res = application.getResources();
-    shadowOf(application).resetResources();
-    assertFalse(res == application.getResources());
-  }
-
-  @Test
   public void checkPermission_shouldTrackGrantedAndDeniedPermissions() throws Exception {
-    Application application = new DefaultTestLifecycle().createApplication(null,
-        newConfigWith("com.wacka.wa", ""), null);
+    Application application = RuntimeEnvironment.application;
+
     shadowOf(application).grantPermissions("foo", "bar");
     shadowOf(application).denyPermissions("foo", "qux");
     assertThat(application.checkPermission("foo", -1, -1)).isEqualTo(PERMISSION_DENIED);
@@ -512,8 +486,7 @@ public class ShadowApplicationTest {
 
   @Test
   public void startActivity_whenActivityCheckingEnabled_checksPackageManagerResolveInfo() throws Exception {
-    Application application = new DefaultTestLifecycle().createApplication(null,
-        newConfigWith("com.wacka.wa", ""), null);
+    Application application = RuntimeEnvironment.application;
     shadowOf(application).checkActivities(true);
 
     String action = "com.does.not.exist.android.app.v2.mobile";

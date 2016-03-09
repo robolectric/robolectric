@@ -109,8 +109,8 @@ public class CustomRobolectricTestRunnerTest {
   }
 
   public static class X extends DefaultTestLifecycle {
-    @Override public Application createApplication(Method method, AndroidManifest appManifest, Config config) {
-      return new MyApplication();
+    @Override public Class getApplicationClass(Method method, AndroidManifest appManifest, Config config) {
+      return MyApplication.class;
     }
   }
 
@@ -172,8 +172,8 @@ public class CustomRobolectricTestRunnerTest {
         afterTestMethod = method;
       }
 
-      @Override public Application createApplication(Method method, AndroidManifest appManifest, Config config) {
-        return new CustomApplication();
+      @Override public Class getApplicationClass(Method method, AndroidManifest appManifest, Config config) {
+        return CustomApplication.class;
       }
     }
   }

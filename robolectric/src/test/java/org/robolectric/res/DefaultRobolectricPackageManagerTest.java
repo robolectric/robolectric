@@ -367,15 +367,15 @@ public class DefaultRobolectricPackageManagerTest {
 
     metaValue = meta.get("org.robolectric.metaBooleanFromRes");
     assertTrue(Boolean.class.isInstance(metaValue));
-    assertEquals(app.getResources().getBoolean(R.bool.false_bool_value), metaValue);
+    assertEquals(RuntimeEnvironment.application.getResources().getBoolean(R.bool.false_bool_value), metaValue);
 
     metaValue = meta.get("org.robolectric.metaIntFromRes");
     assertTrue(Integer.class.isInstance(metaValue));
-    assertEquals(app.getResources().getInteger(R.integer.test_integer1), metaValue);
+    assertEquals(RuntimeEnvironment.application.getResources().getInteger(R.integer.test_integer1), metaValue);
 
     metaValue = meta.get("org.robolectric.metaColorFromRes");
     assertTrue(Integer.class.isInstance(metaValue));
-    assertEquals(app.getResources().getColor(R.color.clear), metaValue);
+    assertEquals(RuntimeEnvironment.application.getResources().getColor(R.color.clear), metaValue);
 
     metaValue = meta.get("org.robolectric.metaStringFromRes");
     assertTrue(String.class.isInstance(metaValue));
@@ -568,15 +568,15 @@ public class DefaultRobolectricPackageManagerTest {
 
     metaValue = meta.get("org.robolectric.metaBooleanFromRes");
     assertTrue(Boolean.class.isInstance(metaValue));
-    assertEquals(app.getResources().getBoolean(R.bool.false_bool_value), metaValue);
+    assertEquals(RuntimeEnvironment.application.getResources().getBoolean(R.bool.false_bool_value), metaValue);
 
     metaValue = meta.get("org.robolectric.metaIntFromRes");
     assertTrue(Integer.class.isInstance(metaValue));
-    assertEquals(app.getResources().getInteger(R.integer.test_integer1), metaValue);
+    assertEquals(RuntimeEnvironment.application.getResources().getInteger(R.integer.test_integer1), metaValue);
 
     metaValue = meta.get("org.robolectric.metaColorFromRes");
     assertTrue(Integer.class.isInstance(metaValue));
-    assertEquals(app.getResources().getColor(R.color.clear), metaValue);
+    assertEquals(RuntimeEnvironment.application.getResources().getColor(R.color.clear), metaValue);
 
     metaValue = meta.get("org.robolectric.metaStringFromRes");
     assertTrue(String.class.isInstance(metaValue));

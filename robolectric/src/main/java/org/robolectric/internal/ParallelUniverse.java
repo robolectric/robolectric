@@ -1,6 +1,7 @@
 package org.robolectric.internal;
 
 import android.app.Application;
+import android.app.Instrumentation;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
@@ -99,7 +100,6 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
     Class<?> activityThreadClass = ReflectionHelpers.loadClass(getClass().getClassLoader(), shadowsAdapter.getShadowActivityThreadClassName());
     // Looper needs to be prepared before the activity thread is created
-//    if (Looper.getMainLooper() == null) {
     if (Looper.myLooper() == null) {
       Looper.prepareMainLooper();
     }
@@ -112,7 +112,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
     Context systemContextImpl = ReflectionHelpers.callStaticMethod(contextImplClass, "createSystemContext", ClassParameter.from(activityThreadClass, activityThread));
 
-    final Application application = (Application) testLifecycle.createApplication(method, appManifest, config);
+    final Class<? extends Application> application = testLifecycle.getApplicationClass(method, appManifest, config);
     if (application != null) {
       String packageName = appManifest != null ? appManifest.getPackageName() : null;
       if (packageName == null) packageName = DEFAULT_PACKAGE_NAME;
@@ -131,27 +131,28 @@ public class ParallelUniverse implements ParallelUniverseInterface {
           ClassParameter.from(compatibilityInfoClass, null),
           ClassParameter.from(int.class, Context.CONTEXT_INCLUDE_CODE));
 
-      shadowsAdapter.bind(application, appManifest, resourceLoader);
-      if (appManifest == null) {
-        // todo: make this cleaner...
-        shadowsAdapter.setPackageName(application, applicationInfo.packageName);
-      }
-      Resources appResources = application.getResources();
-      ReflectionHelpers.setField(loadedApk, "mResources", appResources);
-      ReflectionHelpers.setField(loadedApk, "mApplication", application);
       try {
         Context contextImpl = systemContextImpl.createPackageContext(applicationInfo.packageName, Context.CONTEXT_INCLUDE_CODE);
-        ReflectionHelpers.setField(activityThreadClass, activityThread, "mInitialApplication", application);
-        ReflectionHelpers.callInstanceMethod(Application.class, application, "attach", ClassParameter.from(Context.class, contextImpl));
+        RuntimeEnvironment.application = Instrumentation.newApplication(application, contextImpl);
+        ReflectionHelpers.setField(activityThreadClass, activityThread, "mInitialApplication", RuntimeEnvironment.application);
+        shadowsAdapter.bind(RuntimeEnvironment.application, appManifest, resourceLoader);
+        if (appManifest == null) {
+          // todo: make this cleaner...
+          shadowsAdapter.setPackageName(RuntimeEnvironment.application, applicationInfo.packageName);
+        }
       } catch (PackageManager.NameNotFoundException e) {
+        throw new RuntimeException(e);
+      } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
         throw new RuntimeException(e);
       }
 
+      Resources appResources = RuntimeEnvironment.application.getResources();
+      ReflectionHelpers.setField(loadedApk, "mResources", appResources);
+      ReflectionHelpers.setField(loadedApk, "mApplication", RuntimeEnvironment.application);
       appResources.updateConfiguration(configuration, appResources.getDisplayMetrics());
       shadowsAdapter.setAssetsQualifiers(appResources.getAssets(), qualifiers);
 
-      RuntimeEnvironment.application = application;
-      application.onCreate();
+      RuntimeEnvironment.application.onCreate();
     }
   }
 
