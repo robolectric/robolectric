@@ -194,17 +194,17 @@ public class ShadowContextImpl extends ShadowContext {
 
   @Implementation
   public ComponentName startService(Intent service) {
-    return realObject.getApplicationContext().startService(service);
+    return RuntimeEnvironment.application.startService(service);
   }
 
   @Implementation
   public void startActivity(Intent intent) {
-    realObject.getApplicationContext().startActivity(intent);
+    RuntimeEnvironment.application.startActivity(intent);
   }
 
   @Implementation
   public void sendBroadcast(Intent intent) {
-    realObject.getApplicationContext().sendBroadcast(intent);
+    RuntimeEnvironment.application.sendBroadcast(intent);
   }
 
   @Implementation
