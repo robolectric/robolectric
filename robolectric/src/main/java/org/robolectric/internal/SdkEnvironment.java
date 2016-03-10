@@ -28,7 +28,7 @@ public class SdkEnvironment {
   }
 
   public PackageResourceLoader createSystemResourceLoader(DependencyResolver dependencyResolver) {
-    Fs systemResFs = Fs.fromJar(dependencyResolver.getLocalArtifactUrl(sdkConfig.getSystemResourceDependency()));
+    Fs systemResFs = Fs.fromJar(dependencyResolver.getLocalArtifactUrl(sdkConfig.getAndroidSdkDependency()));
     ResourceExtractor resourceExtractor;
     try {
       resourceExtractor = new ResourceExtractor(getRobolectricClassLoader().loadClass("com.android.internal.R"), getRobolectricClassLoader().loadClass("android.R"));

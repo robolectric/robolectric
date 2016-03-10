@@ -2,6 +2,7 @@ package org.robolectric.internal;
 
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.InstrumentingClassLoader;
+import org.robolectric.internal.dependency.DependencyJar;
 import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.util.Pair;
 
@@ -39,7 +40,10 @@ public class InstrumentingClassLoaderFactory {
 
     SdkEnvironment sdkEnvironment = sdkToEnvironment.get(key);
     if (sdkEnvironment == null) {
-      URL[] urls = dependencyResolver.getLocalArtifactUrls(sdkConfig.getSdkClasspathDependencies());
+      URL[] urls = dependencyResolver.getLocalArtifactUrls(
+          sdkConfig.getAndroidSdkDependency(),
+          sdkConfig.getCoreShadowsDependency());
+
       ClassLoader robolectricClassLoader = new InstrumentingClassLoader(instrumentationConfig, urls);
       sdkEnvironment = new SdkEnvironment(sdkConfig, robolectricClassLoader);
       sdkToEnvironment.put(key, sdkEnvironment);

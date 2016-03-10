@@ -50,17 +50,12 @@ public class SdkConfig {
     return apiLevel;
   }
 
-  public DependencyJar getSystemResourceDependency() {
+  public DependencyJar getAndroidSdkDependency() {
     return createDependency("org.robolectric", "android-all", artifactVersionString, null);
   }
 
-  public DependencyJar[] getSdkClasspathDependencies() {
-    return new DependencyJar[] {
-        createDependency("org.robolectric", "android-all", artifactVersionString, null),
-        createDependency("org.robolectric", "shadows-core", ROBOLECTRIC_VERSION, Integer.toString(apiLevel)),
-        createDependency("org.json", "json", "20080701", null),
-        createDependency("org.ccil.cowan.tagsoup", "tagsoup", "1.2", null)
-    };
+  public DependencyJar getCoreShadowsDependency() {
+    return createDependency("org.robolectric", "shadows-core", ROBOLECTRIC_VERSION, Integer.toString(apiLevel));
   }
 
   @Override
