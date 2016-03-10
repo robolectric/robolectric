@@ -70,11 +70,6 @@ public class ShadowContextWrapper extends ShadowContext {
     return 0;
   }
 
-  @Override
-  public ResourceLoader getResourceLoader() {
-    return super.getResourceLoader();
-  }
-
   @Implementation
   @Override
   public String getString(int resId) {

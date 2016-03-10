@@ -67,7 +67,6 @@ public class ShadowApplication extends ShadowContextWrapper {
   @RealObject private Application realApplication;
 
   private AndroidManifest appManifest;
-  private ResourceLoader resourceLoader;
   private ContentResolver contentResolver;
   private List<Intent> startedActivities = new ArrayList<>();
   private List<Intent.FilterComparison> startedServices = new ArrayList<>();
@@ -135,9 +134,8 @@ public class ShadowApplication extends ShadowContextWrapper {
    * @param resourceLoader Resource loader.
    */
   public void bind(AndroidManifest appManifest, ResourceLoader resourceLoader) {
-    if (this.resourceLoader != null) throw new RuntimeException("ResourceLoader already set!");
+    ShadowAssetManager.setAppResourceLoader(resourceLoader);
     this.appManifest = appManifest;
-    this.resourceLoader = resourceLoader;
 
     if (appManifest != null) {
       setPackageName(appManifest.getPackageName());
@@ -200,7 +198,7 @@ public class ShadowApplication extends ShadowContextWrapper {
   @Implementation
   public AssetManager getAssets() {
     if (assetManager == null) {
-      assetManager = ShadowAssetManager.bind(newInstanceOf(AssetManager.class), appManifest, resourceLoader);
+      assetManager = new AssetManager();
     }
     return assetManager;
   }
@@ -293,7 +291,7 @@ public class ShadowApplication extends ShadowContextWrapper {
 
   public void setComponentNameAndServiceForBindServiceForIntent(Intent intent, ComponentName name, IBinder service) {
     serviceConnectionDataForIntent.put(new Intent.FilterComparison(intent),
-            new ServiceConnectionDataWrapper(name, service));
+        new ServiceConnectionDataWrapper(name, service));
   }
 
   @Implementation
@@ -423,15 +421,6 @@ public class ShadowApplication extends ShadowContextWrapper {
     } else {
       return stoppedServices.remove(0).getIntent();
     }
-  }
-
-  /**
-   * Non-Android accessor (and a handy way to get a working {@code ResourceLoader}
-   *
-   * @return the {@code ResourceLoader} associated with this Application
-   */
-  public ResourceLoader getResourceLoader() {
-    return resourceLoader;
   }
 
   @Override
