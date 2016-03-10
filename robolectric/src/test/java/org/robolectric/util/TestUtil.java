@@ -101,7 +101,7 @@ public abstract class TestUtil {
   public static ResourcePath systemResources() {
     if (SYSTEM_RESOURCE_PATH == null) {
       SdkConfig sdkConfig = new SdkConfig(SdkConfig.FALLBACK_SDK_VERSION);
-      Fs fs = Fs.fromJar(new MavenDependencyResolver().getLocalArtifactUrl(sdkConfig.getSystemResourceDependency()));
+      Fs fs = Fs.fromJar(new MavenDependencyResolver().getLocalArtifactUrl(sdkConfig.getAndroidSdkDependency()));
       SYSTEM_RESOURCE_PATH = new ResourcePath(android.R.class, "android", fs.join("res"), fs.join("assets"));
     }
     return SYSTEM_RESOURCE_PATH;
