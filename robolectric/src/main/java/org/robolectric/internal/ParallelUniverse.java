@@ -113,6 +113,8 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     Context systemContextImpl = ReflectionHelpers.callStaticMethod(contextImplClass, "createSystemContext", ClassParameter.from(activityThreadClass, activityThread));
 
     final Application application = (Application) testLifecycle.createApplication(method, appManifest, config);
+    RuntimeEnvironment.application = application;
+
     if (application != null) {
       String packageName = appManifest != null ? appManifest.getPackageName() : null;
       if (packageName == null) packageName = DEFAULT_PACKAGE_NAME;
@@ -150,7 +152,6 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       appResources.updateConfiguration(configuration, appResources.getDisplayMetrics());
       shadowsAdapter.setAssetsQualifiers(appResources.getAssets(), qualifiers);
 
-      RuntimeEnvironment.application = application;
       application.onCreate();
     }
   }
