@@ -16,6 +16,7 @@ import android.util.LongSparseArray;
 import android.util.TypedValue;
 import android.view.Display;
 
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -258,6 +259,14 @@ public class ShadowResources {
   @HiddenApi @Implementation
   public XmlResourceParser loadXmlResourceParser(String file, int id, int assetCookie, String type) throws Resources.NotFoundException {
     return loadXmlResourceParser(id, type);
+  }
+
+  /**
+   * Deprecated. Instead call through {@link ShadowAssetManager#getResourceLoader()};
+   */
+  @Deprecated
+  public ResourceLoader getResourceLoader() {
+    return shadowOf(RuntimeEnvironment.application.getAssets()).getResourceLoader();
   }
 
   @Implements(Resources.Theme.class)
