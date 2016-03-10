@@ -1,12 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.content.pm.PackageManager.PERMISSION_DENIED;
-import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-import static com.google.common.util.concurrent.Futures.immediateFuture;
-import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
-import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.internal.Shadow.newInstanceOf;
-
 import android.app.Application;
 import android.appwidget.AppWidgetManager;
 import android.content.ActivityNotFoundException;
@@ -31,10 +24,13 @@ import android.view.LayoutInflater;
 import android.widget.ListPopupWindow;
 import android.widget.PopupWindow;
 import android.widget.Toast;
+
+import com.google.android.collect.Lists;
 import com.google.common.base.Function;
 import com.google.common.util.concurrent.AsyncFunction;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+
 import org.robolectric.RoboSettings;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
@@ -43,6 +39,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.BroadcastReceiverData;
+import org.robolectric.res.Attribute;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.util.Scheduler;
 
@@ -58,6 +55,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static android.content.pm.PackageManager.PERMISSION_DENIED;
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+import static com.google.common.util.concurrent.Futures.immediateFuture;
+import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
+import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.internal.Shadow.newInstanceOf;
 
 /**
  * Shadow for {@link android.app.Application}.
@@ -210,6 +214,12 @@ public class ShadowApplication extends ShadowContextWrapper {
       resources = new Resources(realApplication.getAssets(), null, new Configuration());
     }
     return resources;
+  }
+
+  public RoboAttributeSet createAttributeSet(Attribute... attrs) {
+    List<Attribute> attributesList = Lists.newArrayList(attrs);
+    return new RoboAttributeSet(attributesList,
+        shadowOf(RuntimeEnvironment.application.getAssets()).getResourceLoader());
   }
 
   /**
