@@ -99,7 +99,6 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
     Class<?> activityThreadClass = ReflectionHelpers.loadClass(getClass().getClassLoader(), shadowsAdapter.getShadowActivityThreadClassName());
     // Looper needs to be prepared before the activity thread is created
-//    if (Looper.getMainLooper() == null) {
     if (Looper.myLooper() == null) {
       Looper.prepareMainLooper();
     }
