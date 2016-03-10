@@ -216,6 +216,9 @@ public class ShadowApplication extends ShadowContextWrapper {
     return resources;
   }
 
+  /**
+   * Creates a {@link RoboAttributeSet} for the given {@link Attribute}(s)
+   */
   public RoboAttributeSet createAttributeSet(Attribute... attrs) {
     List<Attribute> attributesList = Lists.newArrayList(attrs);
     return new RoboAttributeSet(attributesList,
