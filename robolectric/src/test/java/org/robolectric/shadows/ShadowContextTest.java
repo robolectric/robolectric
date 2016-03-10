@@ -21,6 +21,7 @@ import java.io.IOException;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.TestUtil.TEST_PACKAGE;
 import static org.robolectric.util.TestUtil.TEST_RESOURCE_PATH;
 
@@ -262,5 +263,10 @@ public class ShadowContextTest {
     TypedArray typedArray = context.obtainStyledAttributes(roboAttributeSet, new int[]{R.attr.quitKeyCombo, R.attr.itemType});
     assertThat(typedArray.getString(0)).isEqualTo("^q");
     assertThat(typedArray.getInt(1, -1234)).isEqualTo(1 /* ungulate */);
+  }
+
+  @Test
+  public void shouldGetResourceLoader() {
+    assertThat(shadowOf(context).getResourceLoader()).isEqualTo(shadowOf(context.getAssets()).getResourceLoader());
   }
 }
