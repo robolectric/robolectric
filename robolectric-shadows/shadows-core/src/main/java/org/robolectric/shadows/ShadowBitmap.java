@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
+import android.os.Parcel;
 import android.util.DisplayMetrics;
 
 import org.robolectric.annotation.Implementation;
@@ -498,6 +499,26 @@ public class ShadowBitmap {
   @Implementation
   public void eraseColor(int c) {
 
+  }
+
+  @Implementation
+  public void writeToParcel(Parcel p, int flags) {
+    p.writeInt(width);
+    p.writeInt(height);
+    p.writeSerializable(config);
+    p.writeIntArray(colors);
+  }
+
+  @Implementation
+  public static Bitmap nativeCreateFromParcel(Parcel p) {
+    int parceledWidth = p.readInt();
+    int parceledHeight = p.readInt();
+    Bitmap.Config parceledConfig = (Bitmap.Config) p.readSerializable();
+
+    int[] parceledColors = new int[parceledHeight * parceledWidth];
+    p.readIntArray(parceledColors);
+
+    return createBitmap(parceledColors, parceledWidth, parceledHeight, parceledConfig);
   }
 
   @Override
