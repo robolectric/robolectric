@@ -39,6 +39,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.robolectric.annotation.Resetter;
+
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowApplication.getInstance;
 
@@ -160,7 +162,7 @@ public final class ShadowAssetManager {
     ResName themeStyleName = resourceIndex.getResName(styleResourceId);
     if (themeStyleName == null) return false; // is this right?
 
-    Style themeStyle = resolveStyle(resourceLoader, null, themeStyleName, getQualifiers());
+    Style themeStyle = resolveStyle(null, themeStyleName);
 
     //// Load the theme attribute for the default style attributes. E.g., attr/buttonStyle
     //ResName defStyleName = getResourceLoader().getResourceIndex().getResName(ident);
@@ -168,7 +170,7 @@ public final class ShadowAssetManager {
     //// Load the style for the default style attribute. E.g. "@style/Widget.Robolectric.Button";
     //String defStyleNameValue = themeStyle.getAttrValue(defStyleName);
     //ResName defStyleResName = new ResName(defStyleName.packageName, "style", defStyleName.name);
-    //Style style = resolveStyle(resourceLoader, defStyleResName, getQualifiers());
+    //Style style = resolveStyle(resourceLoader, defStyleResName);
     if (themeStyle != null) {
       List<OverlayedStyle> overlayThemeStyles = getOverlayThemeStyles(styleResourceId);
       Attribute attrValue = getOverlayedThemeValue(resName, themeStyle, overlayThemeStyles);
@@ -303,7 +305,7 @@ public final class ShadowAssetManager {
 
   @HiddenApi @Implementation
   public static void applyThemeStyle($ptrClass theme, int styleRes, boolean force) {
-    ShadowAssetManager assetManager = shadowOf(getInstance().getAssets());
+    ShadowAssetManager assetManager = shadowOf(RuntimeEnvironment.application.getAssets());
 
     final Map<$ptrClassBoxed, List<OverlayedStyle>> appliedStyles = assetManager.appliedStyles;
 
@@ -314,7 +316,7 @@ public final class ShadowAssetManager {
     ResourceIndex resourceIndex = assetManager.getResourceLoader().getResourceIndex();
     ResName resName = resourceIndex.getResName(styleRes);
 
-    Style style = resolveStyle(assetManager.getResourceLoader(), null, resName, assetManager.getQualifiers());
+    Style style = assetManager.resolveStyle(null, resName);
 
     List<OverlayedStyle> overlayedStyleList = appliedStyles.get(theme);
     OverlayedStyle styleToAdd = new OverlayedStyle(style, force);
@@ -370,11 +372,11 @@ public final class ShadowAssetManager {
     return themesById.get(internalThemeId);
   }
 
-  static Style resolveStyle(ResourceLoader resourceLoader, Style appTheme, @NotNull ResName themeStyleName, String qualifiers) {
-    TypedResource themeStyleResource = resourceLoader.getValue(themeStyleName, qualifiers);
+  Style resolveStyle(Style appTheme, @NotNull ResName themeStyleName) {
+    TypedResource themeStyleResource = resourceLoader.getValue(themeStyleName, getQualifiers());
     if (themeStyleResource == null) return null;
     StyleData themeStyleData = (StyleData) themeStyleResource.getData();
-    return new StyleResolver(resourceLoader, themeStyleData, appTheme, themeStyleName, qualifiers);
+    return new StyleResolver(resourceLoader, themeStyleData, appTheme, themeStyleName, getQualifiers());
   }
 
   TypedResource getAndResolve(int resId, String qualifiers, boolean resolveRefs) {
@@ -649,7 +651,7 @@ public final class ShadowAssetManager {
     if (themeResourceId != 0) {
       // Load the style for the theme we represent. E.g. "@style/Theme.Robolectric"
       ResName themeStyleName = getResName(themeResourceId);
-      theme = ShadowAssetManager.resolveStyle(resourceLoader, null, themeStyleName, getQualifiers());
+      theme = resolveStyle(null, themeStyleName);
 
       if (defStyleAttr != 0) {
         // Load the theme attribute for the default style attributes. E.g., attr/buttonStyle
@@ -668,7 +670,7 @@ public final class ShadowAssetManager {
 
           if (defStyleAttribute.isResourceReference()) {
             ResName defStyleResName = defStyleAttribute.getResourceReference();
-            defStyleFromAttr = ShadowAssetManager.resolveStyle(resourceLoader, theme, defStyleResName, getQualifiers());
+            defStyleFromAttr = resolveStyle(theme, defStyleResName);
           }
         }
       }
@@ -685,7 +687,7 @@ public final class ShadowAssetManager {
           styleAttributeResName = attrValue.getStyleReference();
         }
       }
-      styleAttrStyle = ShadowAssetManager.resolveStyle(resourceLoader, theme, styleAttributeResName, getQualifiers());
+      styleAttrStyle = resolveStyle(theme, styleAttributeResName);
     }
 
     if (defStyleRes != 0) {
@@ -700,7 +702,7 @@ public final class ShadowAssetManager {
           }
         }
       }
-      defStyleFromRes = ShadowAssetManager.resolveStyle(resourceLoader, theme, resName, getQualifiers());
+      defStyleFromRes = resolveStyle(theme, resName);
     }
 
     List<Attribute> attributes = new ArrayList<>();
@@ -801,5 +803,11 @@ public final class ShadowAssetManager {
       throw new Resources.NotFoundException("Unable to find resource ID #0x" + Integer.toHexString(id));
     }
     return resName;
+  }
+
+  @Resetter
+  public static void reset() {
+    systemResourceLoader = null;
+    appResourceLoader = null;
   }
 }

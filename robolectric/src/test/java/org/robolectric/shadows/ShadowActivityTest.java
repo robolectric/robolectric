@@ -422,7 +422,7 @@ public class ShadowActivityTest {
 
   @Test
   public void retrieveIdOfResource() {
-    Activity activity = new Activity();
+    Activity activity = Robolectric.setupActivity(Activity.class);
 
     int id1 = R.string.hello;
     String string = activity.getString(id1);
@@ -437,7 +437,7 @@ public class ShadowActivityTest {
 
   @Test
   public void retrieveIdOfNonExistingResource() {
-    Activity activity = new Activity();
+    Activity activity = Robolectric.setupActivity(Activity.class);
 
     int id = activity.getResources().getIdentifier("just_alot_of_crap", "string", "org.robolectric");
     assertThat(id).isEqualTo(0);

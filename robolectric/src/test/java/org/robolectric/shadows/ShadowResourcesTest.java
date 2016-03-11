@@ -1,16 +1,26 @@
 package org.robolectric.shadows;
 
 import android.app.Activity;
-import android.content.res.*;
-import android.graphics.drawable.*;
+import android.content.res.ColorStateList;
+import android.content.res.Configuration;
+import android.content.res.Resources;
+import android.content.res.TypedArray;
+import android.content.res.XmlResourceParser;
+import android.graphics.drawable.AnimationDrawable;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.NinePatchDrawable;
 import android.os.Build;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
+
 import org.assertj.core.data.Offset;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
+import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
@@ -33,7 +43,7 @@ public class ShadowResourcesTest {
 
   @Before
   public void setup() throws Exception {
-    resources = new Activity().getResources();
+    resources = RuntimeEnvironment.application.getResources();
   }
 
   @Test
@@ -276,7 +286,7 @@ public class ShadowResourcesTest {
 
   @Test
   public void testGetNinePatchDrawable() {
-    assertThat(ShadowApplication.getInstance().getResources().getDrawable(R.drawable.nine_patch_drawable)).isInstanceOf(NinePatchDrawable.class);
+    assertThat(resources.getDrawable(R.drawable.nine_patch_drawable)).isInstanceOf(NinePatchDrawable.class);
   }
 
   @Test(expected = Resources.NotFoundException.class)
@@ -306,21 +316,19 @@ public class ShadowResourcesTest {
 
   @Test
   public void testDensity() {
-    Activity activity = new Activity();
-    assertThat(activity.getResources().getDisplayMetrics().density).isEqualTo(1f);
+    assertThat(RuntimeEnvironment.application.getResources().getDisplayMetrics().density).isEqualTo(1f);
 
-    shadowOf(activity.getResources()).setDensity(1.5f);
+    shadowOf(RuntimeEnvironment.application.getResources()).setDensity(1.5f);
+    assertThat(RuntimeEnvironment.application.getResources().getDisplayMetrics().density).isEqualTo(1.5f);
+
+    Activity activity = Robolectric.setupActivity(Activity.class);
     assertThat(activity.getResources().getDisplayMetrics().density).isEqualTo(1.5f);
-
-    Activity anotherActivity = new Activity();
-    assertThat(anotherActivity.getResources().getDisplayMetrics().density).isEqualTo(1.5f);
   }
 
   @Test
   public void displayMetricsShouldNotHaveLotsOfZeros() throws Exception {
-    Activity activity = new Activity();
-    assertThat(activity.getResources().getDisplayMetrics().heightPixels).isEqualTo(800);
-    assertThat(activity.getResources().getDisplayMetrics().widthPixels).isEqualTo(480);
+    assertThat(RuntimeEnvironment.application.getResources().getDisplayMetrics().heightPixels).isEqualTo(800);
+    assertThat(RuntimeEnvironment.application.getResources().getDisplayMetrics().widthPixels).isEqualTo(480);
   }
 
   @Test
@@ -335,9 +343,8 @@ public class ShadowResourcesTest {
 
   @Test
   public void applicationResourcesShouldHaveBothSystemAndLocalValues() throws Exception {
-    Activity activity = new Activity();
-    assertThat(activity.getResources().getString(android.R.string.copy)).isEqualTo("Copy");
-    assertThat(activity.getResources().getString(R.string.copy)).isEqualTo("Local Copy");
+    assertThat(RuntimeEnvironment.application.getResources().getString(android.R.string.copy)).isEqualTo("Copy");
+    assertThat(RuntimeEnvironment.application.getResources().getString(R.string.copy)).isEqualTo("Local Copy");
   }
 
   @Test
@@ -385,6 +392,12 @@ public class ShadowResourcesTest {
   @Test(expected = Resources.NotFoundException.class)
   public void testGetXml_nonxmlfile() {
     resources.getXml(R.drawable.an_image);
+  }
+
+  @Test
+  public void shouldGetResourceLoader() {
+    assertThat(shadowOf(resources).getResourceLoader()).isEqualTo(
+        shadowOf(RuntimeEnvironment.application.getAssets()).getResourceLoader());
   }
 
   @Test
@@ -472,7 +485,7 @@ public class ShadowResourcesTest {
 
   @Test
   public void subClassInitializedOK() {
-    SubClassResources subClassResources = new SubClassResources(ShadowApplication.getInstance().getResources());
+    SubClassResources subClassResources = new SubClassResources(RuntimeEnvironment.application.getResources());
     assertThat(subClassResources.openRawResource(R.raw.raw_resource)).isNotNull();
   }
 

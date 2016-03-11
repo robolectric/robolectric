@@ -72,24 +72,6 @@ public class ShadowContextWrapper extends ShadowContext {
 
   @Implementation
   @Override
-  public String getString(int resId) {
-    return super.getString(resId);
-  }
-
-  @Implementation
-  @Override
-  public String getString(int resId, Object... formatArgs) {
-    return super.getString(resId, formatArgs);
-  }
-
-  @Implementation
-  @Override
-  public CharSequence getText(int resId) {
-    return super.getText(resId);
-  }
-
-  @Implementation
-  @Override
   public File getExternalCacheDir() {
     return super.getExternalCacheDir();
   }
@@ -98,11 +80,6 @@ public class ShadowContextWrapper extends ShadowContext {
   @Override
   public File getExternalFilesDir(String type) {
     return super.getExternalFilesDir(type);
-  }
-
-  @Implementation
-  public Resources getResources() {
-    return getApplicationContext().getResources();
   }
 
   @Implementation
@@ -217,11 +194,6 @@ public class ShadowContextWrapper extends ShadowContext {
     }
 
     return sharedPreferencesMap.get(name);
-  }
-
-  @Implementation
-  public AssetManager getAssets() {
-    return getResources().getAssets();
   }
 
   /**

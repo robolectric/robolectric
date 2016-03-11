@@ -11,10 +11,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
-import org.robolectric.res.Attribute;
-import org.robolectric.res.EmptyResourceLoader;
-
-import java.util.ArrayList;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Robolectric.buildActivity;
@@ -32,7 +28,7 @@ public class ShadowPreferenceGroupTest {
   @Before
   public void setUp() throws Exception {
     activity = buildActivity(Activity.class).create().get();
-    attrs = new RoboAttributeSet(new ArrayList<Attribute>(), new EmptyResourceLoader());
+    attrs = ShadowApplication.getInstance().createAttributeSet();
 
     group = new TestPreferenceGroup(activity, attrs);
     shadow = shadowOf(group);
