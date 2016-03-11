@@ -25,7 +25,7 @@ public class ShadowProgressBarTest {
 
   @Before
   public void setUp() {
-    RoboAttributeSet attrs = shadowOf(application).createAttributeSet(
+    RoboAttributeSet attrs = ShadowApplication.getInstance().createAttributeSet(
         new Attribute(new ResName(TestUtil.SYSTEM_PACKAGE, "attr", "max"), "100", TestUtil.TEST_PACKAGE),
         new Attribute(new ResName(TestUtil.SYSTEM_PACKAGE, "attr", "indeterminate"), "false", TestUtil.TEST_PACKAGE),
         new Attribute(new ResName(TestUtil.SYSTEM_PACKAGE, "attr", "indeterminateOnly"), "false", TestUtil.TEST_PACKAGE)

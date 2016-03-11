@@ -18,7 +18,6 @@ import java.util.Random;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.RuntimeEnvironment.application;
-import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowEditTextTest {
@@ -26,7 +25,7 @@ public class ShadowEditTextTest {
 
   @Before
   public void setup() {
-    RoboAttributeSet attributeSet = shadowOf(application).createAttributeSet(
+    RoboAttributeSet attributeSet = ShadowApplication.getInstance().createAttributeSet(
         new Attribute("android:attr/maxLength", "5", R.class.getPackage().getName()));
 
     editText = new EditText(application, attributeSet);
@@ -114,12 +113,12 @@ public class ShadowEditTextTest {
   }
 
   private AttributeSet attributeSetWithMaxLength(int maxLength) {
-    return shadowOf(RuntimeEnvironment.application).createAttributeSet(
+    return ShadowApplication.getInstance().createAttributeSet(
         new Attribute(new ResName("android", "attr", "maxLength"), maxLength + "", "android")
     );
   }
 
   private AttributeSet attributeSetWithoutMaxLength() {
-    return shadowOf(RuntimeEnvironment.application).createAttributeSet();
+    return ShadowApplication.getInstance().createAttributeSet();
   }
 }

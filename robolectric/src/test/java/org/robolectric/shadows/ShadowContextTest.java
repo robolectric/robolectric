@@ -239,7 +239,7 @@ public class ShadowContextTest {
   @Test
   public void obtainStyledAttributes_shouldExtractAttributesFromAttributeSet() throws Exception {
 
-    RoboAttributeSet roboAttributeSet = shadowOf(RuntimeEnvironment.application).createAttributeSet(
+    RoboAttributeSet roboAttributeSet = ShadowApplication.getInstance().createAttributeSet(
         new Attribute(TEST_PACKAGE + ":attr/itemType", "ungulate", TEST_PACKAGE),
         new Attribute(TEST_PACKAGE + ":attr/scrollBars", "horizontal|vertical", TEST_PACKAGE),
         new Attribute(TEST_PACKAGE + ":attr/quitKeyCombo", "^q", TEST_PACKAGE),

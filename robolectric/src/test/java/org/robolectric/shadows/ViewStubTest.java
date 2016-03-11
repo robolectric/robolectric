@@ -57,7 +57,7 @@ public class ViewStubTest {
   @Test
   public void shouldApplyAttributes() throws Exception {
     ViewStub viewStub = new ViewStub(ctxt,
-        shadowOf(RuntimeEnvironment.application).createAttributeSet(
+        ShadowApplication.getInstance().createAttributeSet(
             new Attribute("android:attr/inflatedId", "@+id/include_id", TEST_PACKAGE),
             new Attribute("android:attr/layout", "@layout/media", TEST_PACKAGE)
         )

@@ -340,7 +340,7 @@ public class ShadowViewTest {
 
   @Test
   public void shouldAddOnClickListenerFromAttribute() throws Exception {
-    RoboAttributeSet attrs = shadowOf(RuntimeEnvironment.application).createAttributeSet(
+    RoboAttributeSet attrs = ShadowApplication.getInstance().createAttributeSet(
         new Attribute("android:attr/onClick", "clickMe", R.class.getPackage().getName())
     );
 
@@ -352,7 +352,7 @@ public class ShadowViewTest {
   public void shouldCallOnClickWithAttribute() throws Exception {
     MyActivity myActivity = buildActivity(MyActivity.class).create().get();
 
-    RoboAttributeSet attrs = shadowOf(RuntimeEnvironment.application).createAttributeSet(
+    RoboAttributeSet attrs = ShadowApplication.getInstance().createAttributeSet(
         new Attribute("android:attr/onClick", "clickMe", R.class.getPackage().getName())
     );
 
@@ -365,7 +365,7 @@ public class ShadowViewTest {
   public void shouldThrowExceptionWithBadMethodName() throws Exception {
     MyActivity myActivity = buildActivity(MyActivity.class).create().get();
 
-    RoboAttributeSet attrs = shadowOf(RuntimeEnvironment.application).createAttributeSet(
+    RoboAttributeSet attrs = ShadowApplication.getInstance().createAttributeSet(
         new Attribute("android:onClick", "clickYou", R.class.getPackage().getName())
     );
 
