@@ -65,6 +65,7 @@ public class ShadowResources {
     for (LongSparseArray<?> sparseArray : resettableArrays) {
       sparseArray.clear();
     }
+    system = null;
   }
 
   private static List<LongSparseArray<?>> obtainResettableArrays() {

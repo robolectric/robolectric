@@ -90,8 +90,6 @@ public class ShadowApplication extends ShadowContextWrapper {
   private ShadowDialog latestDialog;
   private ShadowPopupMenu latestPopupMenu;
   private Object bluetoothAdapter = newInstanceOf("android.bluetooth.BluetoothAdapter");
-  private Resources resources;
-  private AssetManager assetManager;
   private Set<String> grantedPermissions = new HashSet<>();
 
   private Map<Intent.FilterComparison, ServiceConnectionDataWrapper> serviceConnectionDataForIntent = new HashMap<>();
@@ -124,11 +122,11 @@ public class ShadowApplication extends ShadowContextWrapper {
   }
 
   public static void setDisplayMetricsDensity(float densityMultiplier) {
-    shadowOf(getInstance().getResources()).setDensity(densityMultiplier);
+    shadowOf(RuntimeEnvironment.application.getResources()).setDensity(densityMultiplier);
   }
 
   public static void setDefaultDisplay(Display display) {
-    shadowOf(getInstance().getResources()).setDisplay(display);
+    shadowOf(RuntimeEnvironment.application.getResources()).setDisplay(display);
   }
 
   /**
@@ -198,24 +196,6 @@ public class ShadowApplication extends ShadowContextWrapper {
     return realApplication;
   }
 
-  @Override
-  @Implementation
-  public AssetManager getAssets() {
-    if (assetManager == null) {
-      assetManager = new AssetManager();
-    }
-    return assetManager;
-  }
-
-  @Override
-  @Implementation
-  public Resources getResources() {
-    if (resources == null) {
-      resources = new Resources(realApplication.getAssets(), null, new Configuration());
-    }
-    return resources;
-  }
-
   /**
    * Creates a {@link RoboAttributeSet} for the given {@link Attribute}(s)
    */
@@ -223,14 +203,6 @@ public class ShadowApplication extends ShadowContextWrapper {
     List<Attribute> attributesList = Lists.newArrayList(attrs);
     return new RoboAttributeSet(attributesList,
         shadowOf(RuntimeEnvironment.application.getAssets()).getResourceLoader());
-  }
-
-  /**
-   * Reset (set to null) resources instance, so they will be reloaded next time they are
-   * {@link #getResources gotten}
-   */
-  public void resetResources(){
-    resources = null;
   }
 
   @Implementation
