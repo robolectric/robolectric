@@ -10,7 +10,7 @@ import android.widget.Button;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.Shadows;
+import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceLoader;
@@ -20,6 +20,7 @@ import org.robolectric.util.TestUtil;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Robolectric.buildActivity;
+import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowThemeTest {
@@ -101,32 +102,30 @@ public class ShadowThemeTest {
   }
 
   @Test public void shouldInheritThemeValuesFromImplicitParents() throws Exception {
-    TestActivity activity = buildActivity(TestActivityWithAnotherTheme.class).create().get();
-    ResourceLoader resourceLoader = Shadows.shadowOf(activity.getResources().getAssets()).getResourceLoader();
-    Style style = ShadowAssetManager.resolveStyle(resourceLoader,
+    TestActivity activity = Robolectric.setupActivity(TestActivityWithAnotherTheme.class);
+    Style style = shadowOf(activity.getAssets()).resolveStyle(
         null,
-        new ResName(TestUtil.TEST_PACKAGE, "style", "Widget.AnotherTheme.Button.Blarf"), "");
+        new ResName(TestUtil.TEST_PACKAGE, "style", "Widget.AnotherTheme.Button.Blarf"));
     assertThat(style.getAttrValue(new ResName("android", "attr", "background")).value)
         .isEqualTo("#ffff0000");
   }
 
   @Test public void whenAThemeHasExplicitlyEmptyParentAttr_shouldHaveNoParent() throws Exception {
-    TestActivity activity = buildActivity(TestActivityWithAnotherTheme.class).create().get();
-    ResourceLoader resourceLoader = Shadows.shadowOf(activity.getResources().getAssets()).getResourceLoader();
-    Style style = ShadowAssetManager.resolveStyle(resourceLoader,
+    TestActivity activity = Robolectric.setupActivity(TestActivityWithAnotherTheme.class);
+    Style style = shadowOf(activity.getAssets()).resolveStyle(
         null,
-        new ResName(TestUtil.TEST_PACKAGE, "style", "Theme.MyTheme"), "");
+        new ResName(TestUtil.TEST_PACKAGE, "style", "Theme.MyTheme"));
     assertThat(style.getAttrValue(new ResName("android", "attr", "background"))).isNull();
   }
 
 
   @Test public void shouldApplyParentStylesFromAttrs() throws Exception {
-    TestActivity activity = buildActivity(TestActivityWithAnotherTheme.class).create().get();
-    ResourceLoader resourceLoader = Shadows.shadowOf(activity.getResources().getAssets()).getResourceLoader();
-    Style theme = ShadowAssetManager.resolveStyle(resourceLoader, null,
-        new ResName(TestUtil.TEST_PACKAGE, "style", "Theme.AnotherTheme"), "");
-    Style style = ShadowAssetManager.resolveStyle(resourceLoader, theme,
-        new ResName(TestUtil.TEST_PACKAGE, "style", "IndirectButtonStyle"), "");
+    TestActivity activity = Robolectric.setupActivity(TestActivityWithAnotherTheme.class);
+    ShadowAssetManager shadowAssetManager = shadowOf(activity.getAssets());
+    Style theme = shadowAssetManager.resolveStyle(null,
+        new ResName(TestUtil.TEST_PACKAGE, "style", "Theme.AnotherTheme"));
+    Style style = shadowAssetManager.resolveStyle(theme,
+        new ResName(TestUtil.TEST_PACKAGE, "style", "IndirectButtonStyle"));
     assertThat(style.getAttrValue(new ResName("android", "attr", "background")).value)
         .isEqualTo("#ffff0000");
   }
