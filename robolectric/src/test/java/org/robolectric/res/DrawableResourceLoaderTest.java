@@ -8,6 +8,9 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.NinePatchDrawable;
+
+import com.google.android.apps.common.testing.accessibility.framework.proto.FrameworkProtos;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -59,7 +62,7 @@ public class DrawableResourceLoaderTest {
 
   @Test
   public void testGetDrawable_rainbow() throws Exception {
-    assertNotNull(ShadowApplication.getInstance().getResources().getDrawable(R.drawable.rainbow));
+    assertNotNull(RuntimeEnvironment.application.getResources().getDrawable(R.drawable.rainbow));
   }
 
   @Test
@@ -82,7 +85,7 @@ public class DrawableResourceLoaderTest {
 
   @Test
   public void testLayerDrawable() {
-    Resources resources = ShadowApplication.getInstance().getResources();
+    Resources resources = RuntimeEnvironment.application.getResources();
     Drawable drawable = resources.getDrawable(R.drawable.rainbow);
     assertThat(drawable).isInstanceOf(LayerDrawable.class);
     assertEquals(8, ((LayerDrawable) drawable).getNumberOfLayers());

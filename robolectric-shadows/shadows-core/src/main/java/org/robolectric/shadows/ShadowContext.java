@@ -28,28 +28,8 @@ abstract public class ShadowContext {
   @RealObject private Context realContext;
   private ShadowApplication shadowApplication;
 
-  @Implementation
-  public String getString(int resId) {
-    return realContext.getResources().getString(resId);
-  }
-
-  @Implementation
-  public CharSequence getText(int resId) {
-    return realContext.getResources().getText(resId);
-  }
-
-  @Implementation
-  public String getString(int resId, Object... formatArgs) {
-    return realContext.getResources().getString(resId, formatArgs);
-  }
-
   public RoboAttributeSet createAttributeSet(List<Attribute> attributes, Class<? extends View> viewClass) {
     return new RoboAttributeSet(attributes, shadowOf(realContext.getAssets()).getResourceLoader());
-  }
-
-  @Implementation
-  public Resources getResources() {
-    throw new RuntimeException("you should override me in a subclass!");
   }
 
   @Implementation
