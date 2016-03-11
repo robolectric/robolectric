@@ -39,6 +39,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.robolectric.annotation.Resetter;
+
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowApplication.getInstance;
 
@@ -303,7 +305,7 @@ public final class ShadowAssetManager {
 
   @HiddenApi @Implementation
   public static void applyThemeStyle($ptrClass theme, int styleRes, boolean force) {
-    ShadowAssetManager assetManager = shadowOf(getInstance().getAssets());
+    ShadowAssetManager assetManager = shadowOf(RuntimeEnvironment.application.getAssets());
 
     final Map<$ptrClassBoxed, List<OverlayedStyle>> appliedStyles = assetManager.appliedStyles;
 
@@ -801,5 +803,11 @@ public final class ShadowAssetManager {
       throw new Resources.NotFoundException("Unable to find resource ID #0x" + Integer.toHexString(id));
     }
     return resName;
+  }
+
+  @Resetter
+  public static void reset() {
+    systemResourceLoader = null;
+    appResourceLoader = null;
   }
 }

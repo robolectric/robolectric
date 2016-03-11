@@ -485,17 +485,7 @@ public class ShadowApplicationTest {
 
   @Test
   public void shouldRememberResourcesAfterLazilyLoading() throws Exception {
-    Application application = new DefaultTestLifecycle().createApplication(null, newConfigWith("com.wacka.wa", ""), null);
-    assertSame(application.getResources(), application.getResources());
-  }
-
-  @Test
-  public void shouldBeAbleToResetResources() throws Exception {
-    Application application = new DefaultTestLifecycle().createApplication(null,
-        newConfigWith("com.wacka.wa", ""), null);
-    Resources res = application.getResources();
-    shadowOf(application).resetResources();
-    assertFalse(res == application.getResources());
+    assertSame(RuntimeEnvironment.application.getResources(), RuntimeEnvironment.application.getResources());
   }
 
   @Test

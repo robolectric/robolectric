@@ -69,7 +69,7 @@ public class CoreShadowsAdapter implements ShadowsAdapter {
       }
 
       public ResourceLoader getResourceLoader() {
-        return shadowOf(component.getAssets()).getResourceLoader();
+        return shadowOf(RuntimeEnvironment.application.getAssets()).getResourceLoader();
       }
     };
   }
