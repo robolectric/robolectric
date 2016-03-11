@@ -1,6 +1,5 @@
 package org.robolectric.res;
 
-import android.content.res.Resources;
 import android.view.Gravity;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,13 +19,11 @@ import static org.robolectric.util.TestUtil.*;
 @RunWith(TestRunners.WithDefaults.class)
 public class RoboAttributeSetTest {
   private RoboAttributeSet roboAttributeSet;
-  private Resources resources;
   private ResourceLoader resourceLoader;
 
   @Before
   public void setUp() throws Exception {
-    resources = RuntimeEnvironment.application.getResources();
-    resourceLoader = shadowOf(resources.getAssets()).getResourceLoader();
+    resourceLoader = shadowOf(RuntimeEnvironment.application.getAssets()).getResourceLoader();
   }
 
   @Test
@@ -158,7 +155,7 @@ public class RoboAttributeSetTest {
   @Test
   public void getAttributeIntValue_shouldReturnValueFromAttribute() throws Exception {
     roboAttributeSet = new RoboAttributeSet(asList(new Attribute(TEST_PACKAGE + ":attr/sugarinessPercent", "100", TEST_PACKAGE)),
-        shadowOf(resources.getAssets()).getResourceLoader());
+        resourceLoader);
     assertThat(roboAttributeSet.getAttributeIntValue(TEST_PACKAGE_NS, "sugarinessPercent", 0)).isEqualTo(100);
   }
 

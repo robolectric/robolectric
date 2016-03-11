@@ -10,8 +10,6 @@ import org.robolectric.R;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.res.Attribute;
-import org.robolectric.res.PackageResourceLoader;
-import org.robolectric.res.ResourceLoader;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -19,10 +17,9 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.TestUtil.TEST_PACKAGE;
-import static org.robolectric.util.TestUtil.TEST_RESOURCE_PATH;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowContextTest {
@@ -241,15 +238,14 @@ public class ShadowContextTest {
 
   @Test
   public void obtainStyledAttributes_shouldExtractAttributesFromAttributeSet() throws Exception {
-    ResourceLoader resourceLoader = new PackageResourceLoader(TEST_RESOURCE_PATH);
 
-    RoboAttributeSet roboAttributeSet = new RoboAttributeSet(asList(
+    RoboAttributeSet roboAttributeSet = ShadowApplication.getInstance().createAttributeSet(
         new Attribute(TEST_PACKAGE + ":attr/itemType", "ungulate", TEST_PACKAGE),
         new Attribute(TEST_PACKAGE + ":attr/scrollBars", "horizontal|vertical", TEST_PACKAGE),
         new Attribute(TEST_PACKAGE + ":attr/quitKeyCombo", "^q", TEST_PACKAGE),
         new Attribute(TEST_PACKAGE + ":attr/aspectRatio", "1.5", TEST_PACKAGE),
         new Attribute(TEST_PACKAGE + ":attr/aspectRatioEnabled", "true", TEST_PACKAGE)
-    ), resourceLoader);
+    );
 
     TypedArray a = context.obtainStyledAttributes(roboAttributeSet, R.styleable.CustomView);
     assertThat(a.getInt(R.styleable.CustomView_itemType, -1234)).isEqualTo(1 /* ungulate */);
@@ -262,5 +258,10 @@ public class ShadowContextTest {
     TypedArray typedArray = context.obtainStyledAttributes(roboAttributeSet, new int[]{R.attr.quitKeyCombo, R.attr.itemType});
     assertThat(typedArray.getString(0)).isEqualTo("^q");
     assertThat(typedArray.getInt(1, -1234)).isEqualTo(1 /* ungulate */);
+  }
+
+  @Test
+  public void shouldGetResourceLoader() {
+    assertThat(shadowOf(context).getResourceLoader()).isEqualTo(shadowOf(context.getAssets()).getResourceLoader());
   }
 }

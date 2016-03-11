@@ -1,20 +1,20 @@
 package org.robolectric.shadows;
 
-import android.app.Application;
 import android.content.Context;
 import android.content.res.Resources;
 import android.os.Environment;
 import android.view.View;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.res.Attribute;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceLoader;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
-import java.io.*;
+import java.io.File;
 import java.util.List;
 
 import static org.robolectric.Shadows.shadowOf;
@@ -60,6 +60,17 @@ abstract public class ShadowContext {
   @Implementation
   public File getExternalFilesDir(String type) {
     return Environment.getExternalStoragePublicDirectory(type);
+  }
+
+  /**
+   * Non-Android accessor.
+   * Deprecated. Instead call through {@link ShadowAssetManager#getResourceLoader()};
+   *
+   * @return the {@code ResourceLoader} associated with this {@code Context}
+   */
+  @Deprecated
+  public ResourceLoader getResourceLoader() {
+    return shadowOf(realContext.getAssets()).getResourceLoader();
   }
 
   public boolean isStrictI18n() {
