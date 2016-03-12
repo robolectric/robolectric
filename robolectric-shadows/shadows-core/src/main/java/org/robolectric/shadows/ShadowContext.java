@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.os.Environment;
 import android.view.View;
 
@@ -26,7 +25,6 @@ import static org.robolectric.Shadows.shadowOf;
 @Implements(Context.class)
 abstract public class ShadowContext {
   @RealObject private Context realContext;
-  private ShadowApplication shadowApplication;
 
   public RoboAttributeSet createAttributeSet(List<Attribute> attributes, Class<? extends View> viewClass) {
     return new RoboAttributeSet(attributes, shadowOf(realContext.getAssets()).getResourceLoader());
@@ -53,16 +51,8 @@ abstract public class ShadowContext {
     return shadowOf(realContext.getAssets()).getResourceLoader();
   }
 
-  public boolean isStrictI18n() {
-    return getShadowApplication().isStrictI18n();
-  }
-
   public ResName getResName(int resourceId) {
     return shadowOf(realContext.getAssets()).getResourceLoader().getResourceIndex().getResName(resourceId);
-  }
-
-  public ShadowApplication getShadowApplication() {
-    return shadowApplication;
   }
 
   public void callAttachBaseContext(Context context) {
