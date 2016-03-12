@@ -11,17 +11,14 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.content.res.AssetManager;
-import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
+
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.res.ResourceLoader;
 import org.robolectric.fakes.RoboSharedPreferences;
 
 import java.io.File;
@@ -120,7 +117,7 @@ public class ShadowContextWrapper extends ShadowContext {
 
   @Implementation
   public int checkPermission(String permission, int pid, int uid) {
-    return getShadowApplication().checkPermission(permission, pid, uid);
+    return ShadowApplication.getInstance().checkPermission(permission, pid, uid);
   }
 
   @Implementation
@@ -190,7 +187,7 @@ public class ShadowContextWrapper extends ShadowContext {
   @Implementation
   public SharedPreferences getSharedPreferences(String name, int mode) {
     if (!sharedPreferencesMap.containsKey(name)) {
-      sharedPreferencesMap.put(name, new RoboSharedPreferences(getShadowApplication().getSharedPreferenceMap(), name, mode));
+      sharedPreferencesMap.put(name, new RoboSharedPreferences(ShadowApplication.getInstance().getSharedPreferenceMap(), name, mode));
     }
 
     return sharedPreferencesMap.get(name);
@@ -212,7 +209,7 @@ public class ShadowContextWrapper extends ShadowContext {
    * @return the next started {@code Intent} for an activity
    */
   public Intent getNextStartedActivity() {
-    return getShadowApplication().getNextStartedActivity();
+    return ShadowApplication.getInstance().getNextStartedActivity();
   }
 
   /**
@@ -222,7 +219,7 @@ public class ShadowContextWrapper extends ShadowContext {
    * @return the next started {@code Intent} for an activity
    */
   public Intent peekNextStartedActivity() {
-    return getShadowApplication().peekNextStartedActivity();
+    return ShadowApplication.getInstance().peekNextStartedActivity();
   }
 
   /**
@@ -232,7 +229,7 @@ public class ShadowContextWrapper extends ShadowContext {
    * @return the next started {@code Intent} for a service
    */
   public Intent getNextStartedService() {
-    return getShadowApplication().getNextStartedService();
+    return ShadowApplication.getInstance().getNextStartedService();
   }
 
   /**
@@ -240,7 +237,7 @@ public class ShadowContextWrapper extends ShadowContext {
    * service intents.
    */
   public void clearStartedServices() {
-    getShadowApplication().clearStartedServices();
+    ShadowApplication.getInstance().clearStartedServices();
   }
 
   /**
@@ -249,7 +246,7 @@ public class ShadowContextWrapper extends ShadowContext {
    * @return the next started {@code Intent} for a service
    */
   public Intent peekNextStartedService() {
-    return getShadowApplication().peekNextStartedService();
+    return ShadowApplication.getInstance().peekNextStartedService();
   }
 
   /**
@@ -259,38 +256,24 @@ public class ShadowContextWrapper extends ShadowContext {
    * @return {@code Intent} for the next service requested to be stopped
    */
   public Intent getNextStoppedService() {
-    return getShadowApplication().getNextStoppedService();
-  }
-
-  @Implementation
-  public Looper getMainLooper() {
-    return getShadowApplication().getMainLooper();
-  }
-
-  public ShadowApplication getShadowApplication() {
-    return ((ShadowApplication) Shadows.shadowOf(getApplicationContext()));
+    return ShadowApplication.getInstance().getNextStoppedService();
   }
 
   @Implementation
   public boolean bindService(Intent intent, final ServiceConnection serviceConnection, int i) {
-    return getShadowApplication().bindService(intent, serviceConnection, i);
+    return ShadowApplication.getInstance().bindService(intent, serviceConnection, i);
   }
 
   @Implementation
   public void unbindService(final ServiceConnection serviceConnection) {
-    getShadowApplication().unbindService(serviceConnection);
-  }
-
-  @Implementation
-  public boolean isRestricted() {
-    return false;
+    ShadowApplication.getInstance().unbindService(serviceConnection);
   }
 
   public void grantPermissions(String... permissionNames) {
-    getShadowApplication().grantPermissions(permissionNames);
+    ShadowApplication.getInstance().grantPermissions(permissionNames);
   }
 
   public void denyPermissions(String... permissionNames) {
-    getShadowApplication().denyPermissions(permissionNames);
+    ShadowApplication.getInstance().denyPermissions(permissionNames);
   }
 }
