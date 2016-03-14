@@ -1,20 +1,26 @@
-package org.robolectric.res;
+package org.robolectric.fakes;
 
+import android.content.Context;
 import android.view.Gravity;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
-import org.robolectric.shadows.RoboAttributeSet;
+import org.robolectric.res.Attribute;
+import org.robolectric.res.ResName;
+import org.robolectric.res.ResourceLoader;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.res.ResourceLoader.ANDROID_NS;
 import static org.robolectric.res.Attribute.ANDROID_RES_NS_PREFIX;
-import static org.robolectric.util.TestUtil.*;
+import static org.robolectric.res.ResourceLoader.ANDROID_NS;
+import static org.robolectric.util.TestUtil.SYSTEM_PACKAGE;
+import static org.robolectric.util.TestUtil.TEST_PACKAGE;
+import static org.robolectric.util.TestUtil.TEST_PACKAGE_NS;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class RoboAttributeSetTest {
@@ -290,5 +296,21 @@ public class RoboAttributeSetTest {
 
   private void createTestAttributeSet(Attribute... attributes) {
     roboAttributeSet = new RoboAttributeSet(asList(attributes), resourceLoader);
+  }
+
+  @Test
+  public void shouldCreateAttributeSet() {
+    Context context = RuntimeEnvironment.application;
+    ResName resName = new ResName("android", "attr", "orientation");
+    String attrValue = "vertical";
+    String contextPackageName = context.getPackageName();
+
+    Attribute attribute = new Attribute(resName, attrValue, contextPackageName);
+
+    RoboAttributeSet attributeSet = RoboAttributeSet.create(context, attribute);
+
+    assertThat(attributeSet.getAttributeCount()).isEqualTo(1);
+    assertThat(attributeSet.getAttributeName(0)).isEqualTo(resName.getFullyQualifiedName());
+    assertThat(attributeSet.getAttributeValue(0)).isEqualTo(attrValue);
   }
 }

@@ -10,7 +10,9 @@ import android.util.AttributeSet;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
+import org.robolectric.fakes.RoboAttributeSet;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Robolectric.buildActivity;
@@ -28,7 +30,7 @@ public class ShadowPreferenceGroupTest {
   @Before
   public void setUp() throws Exception {
     activity = buildActivity(Activity.class).create().get();
-    attrs = ShadowApplication.getInstance().createAttributeSet();
+    attrs = RoboAttributeSet.create(RuntimeEnvironment.application);
 
     group = new TestPreferenceGroup(activity, attrs);
     shadow = shadowOf(group);

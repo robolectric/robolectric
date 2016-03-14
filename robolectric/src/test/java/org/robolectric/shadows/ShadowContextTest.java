@@ -9,6 +9,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
+import org.robolectric.fakes.RoboAttributeSet;
 import org.robolectric.res.Attribute;
 
 import java.io.File;
@@ -239,7 +240,7 @@ public class ShadowContextTest {
   @Test
   public void obtainStyledAttributes_shouldExtractAttributesFromAttributeSet() throws Exception {
 
-    RoboAttributeSet roboAttributeSet = ShadowApplication.getInstance().createAttributeSet(
+    RoboAttributeSet roboAttributeSet = RoboAttributeSet.create(context,
         new Attribute(TEST_PACKAGE + ":attr/itemType", "ungulate", TEST_PACKAGE),
         new Attribute(TEST_PACKAGE + ":attr/scrollBars", "horizontal|vertical", TEST_PACKAGE),
         new Attribute(TEST_PACKAGE + ":attr/quitKeyCombo", "^q", TEST_PACKAGE),

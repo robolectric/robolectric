@@ -20,7 +20,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.internal.Shadow;
 import org.robolectric.res.Attribute;
-import org.robolectric.shadows.RoboAttributeSet;
+import org.robolectric.fakes.RoboAttributeSet;
 import org.robolectric.shadows.ShadowViewGroup;
 import org.robolectric.util.ReflectionHelpers;
 
