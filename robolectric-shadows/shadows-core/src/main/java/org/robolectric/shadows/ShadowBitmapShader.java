@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.graphics.BitmapShader;
+
 import org.robolectric.annotation.Implements;
 
 /**

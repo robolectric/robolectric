@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.os.AsyncTask;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

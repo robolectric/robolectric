@@ -1,23 +1,5 @@
 package org.robolectric.shadows;
 
-import static java.util.Arrays.asList;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.robolectric.RuntimeEnvironment.application;
-import static org.robolectric.Shadows.shadowOf;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.TestRunners;
-import org.robolectric.util.Transcript;
-
 import android.util.SparseBooleanArray;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,6 +8,24 @@ import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.TestRunners;
+import org.robolectric.util.Transcript;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
+import static java.util.Arrays.asList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.robolectric.RuntimeEnvironment.application;
+import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowListViewTest {

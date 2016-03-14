@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.content.res.Resources;
 import android.util.TypedValue;
+
 import org.robolectric.res.AttrData;
 import org.robolectric.res.Attribute;
 import org.robolectric.res.DrawableNode;
@@ -13,9 +14,6 @@ import org.robolectric.res.ResourceIndex;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.TypedResource;
 import org.robolectric.util.Util;
-
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 public class Converter<T> {
   private static int nextStringCookie = 0xbaaa5;

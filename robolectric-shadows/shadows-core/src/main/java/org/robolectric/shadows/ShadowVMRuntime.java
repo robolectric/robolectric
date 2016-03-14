@@ -1,10 +1,11 @@
 package org.robolectric.shadows;
 
-import dalvik.system.VMRuntime;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 import java.lang.reflect.Array;
+
+import dalvik.system.VMRuntime;
 
 /**
  * Shadow for {@link dalvik.system.VMRuntime}.

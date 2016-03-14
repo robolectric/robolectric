@@ -2,7 +2,6 @@ package org.robolectric.annotation.processing.shadows;
 
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.Resetter;
 import org.robolectric.annotation.processing.objects.OuterDummy2;
 
 @Implements(OuterDummy2.class)

@@ -6,6 +6,7 @@ import com.google.testing.compile.CompileTester.LineClause;
 import com.google.testing.compile.CompileTester.SuccessfulCompilationClause;
 import com.google.testing.compile.CompileTester.UnsuccessfulCompilationClause;
 import com.google.testing.compile.JavaFileObjects;
+
 import org.robolectric.annotation.processing.RobolectricProcessor;
 import org.truth0.FailureStrategy;
 import org.truth0.subjects.Subject;

@@ -1,7 +1,7 @@
 package org.robolectric.fakes;
 
 import android.content.SharedPreferences;
-import org.robolectric.fakes.RoboSharedPreferences;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

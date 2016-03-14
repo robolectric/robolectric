@@ -19,6 +19,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import android.view.WindowManager;
-import android.widget.PopupMenu;
 import android.widget.PopupWindow;
 
 import org.robolectric.annotation.Implementation;

@@ -4,9 +4,10 @@ import android.os.IBinder;
 import android.os.ResultReceiver;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+
+import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.HiddenApi;
 import org.robolectric.internal.Shadow;
 
 /**

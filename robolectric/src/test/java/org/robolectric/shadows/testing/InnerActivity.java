@@ -2,6 +2,7 @@ package org.robolectric.shadows.testing;
 
 import android.app.Activity;
 import android.os.Bundle;
+
 import org.robolectric.R;
 
 /**

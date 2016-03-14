@@ -2,11 +2,12 @@ package org.robolectric.shadows;
 
 import android.app.DatePickerDialog;
 import android.content.Context;
+
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
-import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 import static org.robolectric.internal.Shadow.invokeConstructor;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /**
  * Shadow for {@link android.app.DatePickerDialog}.

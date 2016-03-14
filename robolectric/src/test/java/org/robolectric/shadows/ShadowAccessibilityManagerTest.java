@@ -3,14 +3,16 @@ package org.robolectric.shadows;
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.content.pm.ServiceInfo;
 import android.view.accessibility.AccessibilityManager;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static android.content.Context.ACCESSIBILITY_SERVICE;
 import static org.assertj.core.api.Assertions.assertThat;

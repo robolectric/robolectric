@@ -5,6 +5,7 @@ import android.graphics.Paint;
 import android.graphics.PathEffect;
 import android.graphics.Shader;
 import android.graphics.Typeface;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;

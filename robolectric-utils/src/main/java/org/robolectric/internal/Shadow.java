@@ -4,7 +4,6 @@ import org.robolectric.internal.bytecode.DirectObjectMarker;
 import org.robolectric.internal.bytecode.InvokeDynamic;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
-import org.robolectric.util.ReflectionHelpers.StringParameter;
 
 public class Shadow {
   private static final ProxyMaker PROXY_MAKER = new ProxyMaker(new ProxyMaker.MethodMapper() {

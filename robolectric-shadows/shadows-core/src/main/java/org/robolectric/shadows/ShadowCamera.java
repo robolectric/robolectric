@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.graphics.ImageFormat;
 import android.hardware.Camera;
 import android.view.SurfaceHolder;
+
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -15,7 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.robolectric.internal.Shadow.*;
+import static org.robolectric.internal.Shadow.newInstanceOf;
 
 /**
  * Shadow for {@link android.hardware.Camera}.

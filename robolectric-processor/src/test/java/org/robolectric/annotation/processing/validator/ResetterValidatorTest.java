@@ -1,9 +1,9 @@
 package org.robolectric.annotation.processing.validator;
 
-import static org.truth0.Truth.ASSERT;
-import static org.robolectric.annotation.processing.validator.SingleClassSubject.singleClass;
-
 import org.junit.Test;
+
+import static org.robolectric.annotation.processing.validator.SingleClassSubject.singleClass;
+import static org.truth0.Truth.ASSERT;
 
 public class ResetterValidatorTest {
   @Test

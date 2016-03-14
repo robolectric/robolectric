@@ -4,6 +4,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
 import android.view.animation.RotateAnimation;
 import android.view.animation.TranslateAnimation;
+
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;

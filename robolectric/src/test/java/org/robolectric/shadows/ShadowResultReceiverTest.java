@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;

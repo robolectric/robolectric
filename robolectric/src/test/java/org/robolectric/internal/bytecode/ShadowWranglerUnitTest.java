@@ -2,7 +2,6 @@ package org.robolectric.internal.bytecode;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.robolectric.internal.SdkConfig;
 import org.robolectric.util.Function;
 
 import java.util.LinkedHashMap;

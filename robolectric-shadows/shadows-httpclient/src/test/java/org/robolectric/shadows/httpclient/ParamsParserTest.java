@@ -6,7 +6,6 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
 import org.junit.Test;
-import org.robolectric.shadows.httpclient.ParamsParser;
 
 import java.util.Map;
 

@@ -4,6 +4,7 @@ import android.R;
 import android.app.Activity;
 import android.view.animation.AnimationUtils;
 import android.view.animation.LayoutAnimationController;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;

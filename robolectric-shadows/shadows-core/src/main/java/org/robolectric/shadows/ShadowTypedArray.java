@@ -2,11 +2,12 @@ package org.robolectric.shadows;
 
 import android.content.res.Resources;
 import android.content.res.TypedArray;
+
 import org.robolectric.Shadows;
+import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.annotation.HiddenApi;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 

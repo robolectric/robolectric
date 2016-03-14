@@ -1,6 +1,7 @@
 package org.robolectric.internal.bytecode;
 
 import android.app.Application;
+
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -8,7 +9,10 @@ import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.InitializationError;
-import org.robolectric.*;
+import org.robolectric.DefaultTestLifecycle;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.TestLifecycle;
+import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.manifest.AndroidManifest;

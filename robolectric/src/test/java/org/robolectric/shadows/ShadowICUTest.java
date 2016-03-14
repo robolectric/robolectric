@@ -6,13 +6,14 @@ import android.os.Bundle;
 import android.widget.DatePicker;
 import android.widget.LinearLayout;
 
-import libcore.icu.ICU;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ActivityController;
+
+import libcore.icu.ICU;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

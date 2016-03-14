@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.ColorFilter;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
@@ -17,7 +18,10 @@ import java.io.InputStream;
 
 import static junit.framework.Assert.assertFalse;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)

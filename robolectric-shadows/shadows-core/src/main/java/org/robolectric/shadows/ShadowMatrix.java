@@ -2,6 +2,11 @@ package org.robolectric.shadows;
 
 import android.graphics.Matrix;
 import android.graphics.RectF;
+
+import org.robolectric.Shadows;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -9,10 +14,6 @@ import java.util.Deque;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.robolectric.Shadows;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
 
 /**
  * Shadow for {@link android.graphics.Matrix}.

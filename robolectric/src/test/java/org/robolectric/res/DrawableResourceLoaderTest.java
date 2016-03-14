@@ -9,15 +9,12 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.NinePatchDrawable;
 
-import com.google.android.apps.common.testing.accessibility.framework.proto.FrameworkProtos;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
-import org.robolectric.shadows.ShadowApplication;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;

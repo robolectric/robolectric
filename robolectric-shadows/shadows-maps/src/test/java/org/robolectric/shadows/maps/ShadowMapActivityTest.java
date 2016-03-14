@@ -1,7 +1,9 @@
 package org.robolectric.shadows.maps;
 
 import android.os.Bundle;
+
 import com.google.android.maps.MapActivity;
+
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;

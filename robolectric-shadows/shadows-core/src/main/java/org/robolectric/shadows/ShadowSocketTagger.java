@@ -1,11 +1,12 @@
 package org.robolectric.shadows;
 
-import dalvik.system.SocketTagger;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 import java.net.Socket;
 import java.net.SocketException;
+
+import dalvik.system.SocketTagger;
 
 /**
  * Shadow for {@link dalvik.system.SocketTagger}.

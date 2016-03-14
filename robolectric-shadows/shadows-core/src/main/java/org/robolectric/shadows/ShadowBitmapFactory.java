@@ -7,30 +7,32 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.util.TypedValue;
-import java.util.Iterator;
-import javax.imageio.ImageReader;
-import javax.imageio.stream.ImageInputStream;
+
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.internal.Shadow;
+import org.robolectric.util.Join;
 import org.robolectric.util.NamedStream;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.Join;
-import org.robolectric.internal.Shadow;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
-import javax.imageio.ImageIO;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
+
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 
 import static org.robolectric.internal.Shadow.directlyOn;
 

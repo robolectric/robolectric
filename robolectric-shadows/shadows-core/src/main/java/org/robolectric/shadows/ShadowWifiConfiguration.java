@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.net.wifi.WifiConfiguration;
+
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 

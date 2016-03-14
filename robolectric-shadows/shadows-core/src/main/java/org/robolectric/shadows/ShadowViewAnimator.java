@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ViewAnimator;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 

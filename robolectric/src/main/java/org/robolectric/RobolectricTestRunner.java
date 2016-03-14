@@ -2,6 +2,7 @@ package org.robolectric;
 
 import android.app.Application;
 import android.os.Build;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.TestOnly;
 import org.junit.AfterClass;
@@ -16,17 +17,23 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
-import org.robolectric.annotation.*;
+import org.robolectric.annotation.Config;
 import org.robolectric.internal.InstrumentingClassLoaderFactory;
-import org.robolectric.internal.bytecode.*;
-import org.robolectric.internal.dependency.CachedDependencyResolver;
-import org.robolectric.internal.dependency.DependencyResolver;
-import org.robolectric.internal.dependency.LocalDependencyResolver;
-import org.robolectric.internal.dependency.MavenDependencyResolver;
 import org.robolectric.internal.ParallelUniverse;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.internal.SdkEnvironment;
+import org.robolectric.internal.bytecode.ClassHandler;
+import org.robolectric.internal.bytecode.InstrumentationConfiguration;
+import org.robolectric.internal.bytecode.InvokeDynamic;
+import org.robolectric.internal.bytecode.RobolectricInternals;
+import org.robolectric.internal.bytecode.ShadowInvalidator;
+import org.robolectric.internal.bytecode.ShadowMap;
+import org.robolectric.internal.bytecode.ShadowWrangler;
+import org.robolectric.internal.dependency.CachedDependencyResolver;
+import org.robolectric.internal.dependency.DependencyResolver;
+import org.robolectric.internal.dependency.LocalDependencyResolver;
+import org.robolectric.internal.dependency.MavenDependencyResolver;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
@@ -36,16 +43,27 @@ import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.res.RoutingResourceLoader;
 import org.robolectric.util.Logger;
-import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Pair;
+import org.robolectric.util.ReflectionHelpers;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.security.SecureRandom;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * Installs a {@link org.robolectric.internal.bytecode.InstrumentingClassLoader} and

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.ContentResolver;
 import android.os.Build;
 import android.provider.Settings;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

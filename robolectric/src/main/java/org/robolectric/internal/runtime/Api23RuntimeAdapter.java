@@ -12,6 +12,7 @@ import android.os.IBinder;
 import android.view.ViewRootImpl;
 
 import com.android.internal.app.IVoiceInteractor;
+
 import org.robolectric.internal.fakes.RoboInstrumentation;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;

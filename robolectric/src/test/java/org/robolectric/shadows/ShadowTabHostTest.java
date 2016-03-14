@@ -7,6 +7,7 @@ import android.widget.TabHost;
 import android.widget.TabHost.TabContentFactory;
 import android.widget.TabWidget;
 import android.widget.TextView;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;

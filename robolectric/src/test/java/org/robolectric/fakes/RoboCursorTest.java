@@ -3,6 +3,7 @@ package org.robolectric.fakes;
 import android.content.ContentResolver;
 import android.database.Cursor;
 import android.net.Uri;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

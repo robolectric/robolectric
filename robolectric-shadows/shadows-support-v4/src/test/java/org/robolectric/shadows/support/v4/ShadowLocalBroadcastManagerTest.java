@@ -6,15 +6,19 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
 import android.support.v4.content.LocalBroadcastManager;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.internal.ShadowExtractor;
-import org.robolectric.shadows.support.v4.ShadowLocalBroadcastManager;
 import org.robolectric.util.TestRunnerWithManifest;
 import org.robolectric.util.Transcript;
 
-import static junit.framework.Assert.*;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertSame;
+import static junit.framework.Assert.assertTrue;
 
 @RunWith(TestRunnerWithManifest.class)
 public class ShadowLocalBroadcastManagerTest {

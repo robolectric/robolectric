@@ -1,11 +1,12 @@
 package org.robolectric.shadows;
 
 import android.graphics.ColorMatrix;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Join;
+import org.robolectric.util.ReflectionHelpers;
 
 import java.util.ArrayList;
 import java.util.List;

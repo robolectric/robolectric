@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.net.Uri;
 import android.provider.MediaStore;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;

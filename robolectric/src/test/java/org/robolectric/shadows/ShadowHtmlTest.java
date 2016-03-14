@@ -6,6 +6,7 @@ import android.text.Html;
 import android.text.Spanned;
 import android.widget.EditText;
 import android.widget.TextView;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

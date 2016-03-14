@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.net.http.HttpResponseCache;
+
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;

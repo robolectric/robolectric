@@ -1,8 +1,9 @@
 package org.robolectric.res;
 
+import org.junit.Test;
+
 import java.util.Arrays;
 import java.util.Collection;
-import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

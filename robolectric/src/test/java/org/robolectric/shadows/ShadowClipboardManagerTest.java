@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,8 +11,10 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
 import static android.content.ClipboardManager.OnPrimaryClipChangedListener;
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowClipboardManagerTest {

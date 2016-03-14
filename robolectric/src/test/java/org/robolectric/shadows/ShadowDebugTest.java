@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.os.Build;
 import android.os.Debug;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;

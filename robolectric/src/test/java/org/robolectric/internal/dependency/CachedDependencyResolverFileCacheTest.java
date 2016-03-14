@@ -1,5 +1,10 @@
 package org.robolectric.internal.dependency;
 
+import org.junit.Rule;
+import org.junit.Test;
+import org.robolectric.internal.dependency.CachedDependencyResolver.Cache;
+import org.robolectric.test.TemporaryFolder;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -9,12 +14,10 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.URL;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.robolectric.internal.dependency.CachedDependencyResolver.Cache;
-import org.robolectric.test.TemporaryFolder;
-
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class CachedDependencyResolverFileCacheTest {
 

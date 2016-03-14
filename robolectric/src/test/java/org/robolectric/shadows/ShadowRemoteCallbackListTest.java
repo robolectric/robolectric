@@ -4,6 +4,7 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.os.IInterface;
 import android.os.RemoteCallbackList;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;

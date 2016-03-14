@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.content.ContentProviderResult;
 import android.net.Uri;
+
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 

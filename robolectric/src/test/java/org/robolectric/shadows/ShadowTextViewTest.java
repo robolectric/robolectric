@@ -21,6 +21,7 @@ import android.view.MotionEvent;
 import android.view.inputmethod.EditorInfo;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

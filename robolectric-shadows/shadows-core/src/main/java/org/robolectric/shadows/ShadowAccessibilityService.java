@@ -4,7 +4,6 @@ import android.accessibilityservice.AccessibilityService;
 
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.shadows.ShadowService;
 
 import java.util.ArrayList;
 import java.util.List;

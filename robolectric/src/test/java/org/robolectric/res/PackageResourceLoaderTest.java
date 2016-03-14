@@ -1,8 +1,9 @@
 package org.robolectric.res;
 
 import org.junit.Test;
-import static org.robolectric.util.TestUtil.*;
-import static org.assertj.core.api.Assertions.*;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.util.TestUtil.gradleAppResources;
 
 public class PackageResourceLoaderTest {
 

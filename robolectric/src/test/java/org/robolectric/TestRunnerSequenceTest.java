@@ -1,14 +1,15 @@
 package org.robolectric;
 
 import android.app.Application;
+
 import org.junit.Test;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.SdkEnvironment;
+import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.FsFile;
 import org.robolectric.util.Transcript;

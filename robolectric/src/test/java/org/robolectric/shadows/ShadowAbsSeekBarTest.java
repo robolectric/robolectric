@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.content.Context;
 import android.widget.AbsSeekBar;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;

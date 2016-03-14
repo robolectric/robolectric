@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.database.AbstractCursor;
 import android.net.Uri;
+
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;

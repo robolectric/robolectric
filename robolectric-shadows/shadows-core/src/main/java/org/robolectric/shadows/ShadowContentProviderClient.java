@@ -16,11 +16,11 @@ import android.os.CancellationSignal;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 
-import java.io.FileNotFoundException;
-import java.util.ArrayList;
-
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
 
 /**
  * Shadow for {@link android.content.ContentProviderClient}.

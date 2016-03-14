@@ -1,9 +1,10 @@
 package org.robolectric.shadows;
 
 import android.net.wifi.WifiInfo;
+
+import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.HiddenApi;
 
 /**
  * Shadow for {@link android.net.wifi.WifiInfo}.

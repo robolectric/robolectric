@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;

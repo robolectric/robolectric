@@ -2,9 +2,9 @@ package org.robolectric.shadows;
 
 import android.os.Build;
 import android.os.Looper;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.MultiApiRobolectricTestRunner;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 

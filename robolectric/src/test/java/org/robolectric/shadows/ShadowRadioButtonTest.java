@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.graphics.drawable.ColorDrawable;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;

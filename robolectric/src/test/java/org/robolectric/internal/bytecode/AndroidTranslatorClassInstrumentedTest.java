@@ -2,6 +2,7 @@ package org.robolectric.internal.bytecode;
 
 import android.graphics.Bitmap;
 import android.graphics.Paint;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;

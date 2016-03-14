@@ -1,8 +1,9 @@
 package org.robolectric.res;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
-import org.jetbrains.annotations.NotNull;
 
 public class ResBunch {
   private final Map<String, ResBundle<TypedResource>> types = new LinkedHashMap<>();

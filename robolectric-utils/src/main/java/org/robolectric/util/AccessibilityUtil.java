@@ -1,16 +1,15 @@
 package org.robolectric.util;
 
+import android.view.View;
+
 import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheckPreset;
 import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheckResult;
-import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheckResult.AccessibilityCheckResultDescriptor;
 import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheckResult.AccessibilityCheckResultType;
 import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheckResultUtils;
 import com.google.android.apps.common.testing.accessibility.framework.AccessibilityViewCheckResult;
 import com.google.android.apps.common.testing.accessibility.framework.DuplicateClickableBoundsViewCheck;
 import com.google.android.apps.common.testing.accessibility.framework.TouchTargetSizeViewCheck;
 import com.google.android.apps.common.testing.accessibility.framework.integrations.espresso.AccessibilityValidator;
-
-import android.view.View;
 
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;

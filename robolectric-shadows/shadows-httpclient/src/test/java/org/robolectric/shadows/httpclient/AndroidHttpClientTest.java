@@ -1,6 +1,7 @@
 package org.robolectric.shadows.httpclient;
 
 import android.net.http.AndroidHttpClient;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.junit.Test;

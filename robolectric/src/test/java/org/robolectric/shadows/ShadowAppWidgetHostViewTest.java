@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.appwidget.AppWidgetHost;
 import android.appwidget.AppWidgetHostView;
 import android.appwidget.AppWidgetProviderInfo;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

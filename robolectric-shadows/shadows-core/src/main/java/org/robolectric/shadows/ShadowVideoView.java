@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.widget.VideoView;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 

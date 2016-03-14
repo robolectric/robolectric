@@ -1,9 +1,9 @@
 package org.robolectric.internal;
 
 import org.robolectric.internal.bytecode.ShadowInvalidator;
-import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.internal.bytecode.ShadowWrangler;
+import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.res.Fs;
 import org.robolectric.res.PackageResourceLoader;
 import org.robolectric.res.ResourceExtractor;

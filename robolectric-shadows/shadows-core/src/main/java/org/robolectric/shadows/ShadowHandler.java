@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.os.Handler;
 import android.os.Looper;
+
 import org.robolectric.annotation.Implements;
 
 import static org.robolectric.Shadows.shadowOf;

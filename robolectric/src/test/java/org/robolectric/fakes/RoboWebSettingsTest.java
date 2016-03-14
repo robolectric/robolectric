@@ -1,6 +1,7 @@
 package org.robolectric.fakes;
 
 import android.webkit.WebSettings;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;

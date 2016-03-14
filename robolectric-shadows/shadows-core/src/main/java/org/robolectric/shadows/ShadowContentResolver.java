@@ -16,15 +16,15 @@ import android.net.Uri;
 import android.os.Bundle;
 
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.util.NamedStream;
-import org.robolectric.manifest.ContentProviderData;
 import org.robolectric.fakes.BaseCursor;
 import org.robolectric.internal.Shadow;
+import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.manifest.ContentProviderData;
+import org.robolectric.util.NamedStream;
 
 import java.io.IOException;
 import java.io.InputStream;

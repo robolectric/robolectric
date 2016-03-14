@@ -1,8 +1,8 @@
 package org.robolectric.internal.bytecode.testing;
 
-import org.robolectric.internal.bytecode.ShadowWranglerTest;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.internal.bytecode.ShadowWranglerTest;
 
 @Implements(Foo.class)
 public class ShadowFoo extends ShadowWranglerTest.ShadowFooParent {

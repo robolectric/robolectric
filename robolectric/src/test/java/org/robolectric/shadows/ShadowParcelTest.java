@@ -1,13 +1,8 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import android.accounts.Account;
+import android.os.Bundle;
+import android.os.Parcel;
 
 import org.junit.After;
 import org.junit.Before;
@@ -16,9 +11,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
 
-import android.accounts.Account;
-import android.os.Bundle;
-import android.os.Parcel;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowParcelTest {

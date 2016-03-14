@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.widget.ArrayAdapter;
+
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;

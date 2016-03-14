@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.app.TimePickerDialog;
 import android.content.Context;
+
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.internal.Shadow;

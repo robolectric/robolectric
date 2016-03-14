@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.widget.AbsoluteLayout;
+
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 

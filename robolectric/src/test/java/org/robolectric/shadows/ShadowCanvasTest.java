@@ -9,6 +9,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -2,6 +2,7 @@ package org.robolectric.shadows.util;
 
 import com.almworks.sqlite4java.SQLite;
 import com.almworks.sqlite4java.SQLiteException;
+
 import org.robolectric.res.Fs;
 
 import java.io.BufferedInputStream;

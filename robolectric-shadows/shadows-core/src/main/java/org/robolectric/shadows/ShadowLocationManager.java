@@ -9,6 +9,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Looper;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 

@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.ShadowsAdapter;
 import org.robolectric.ShadowsAdapter.ShadowLooperAdapter;

@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.app.ProgressDialog;
 import android.widget.TextView;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;

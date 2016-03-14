@@ -7,17 +7,18 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
-import junit.framework.Assert;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.Transcript;
 
-import static junit.framework.Assert.*;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNull;
+import static junit.framework.Assert.assertTrue;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;

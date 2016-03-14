@@ -1,9 +1,9 @@
 package org.robolectric.shadows;
 
 import android.view.Choreographer;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.robolectric.TestRunners;
 import org.robolectric.util.TimeUtils;
 

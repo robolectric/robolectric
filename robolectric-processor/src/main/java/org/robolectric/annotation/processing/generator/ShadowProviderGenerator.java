@@ -1,8 +1,13 @@
 package org.robolectric.annotation.processing.generator;
 
 import com.google.common.base.Joiner;
+
 import org.robolectric.annotation.processing.RobolectricModel;
 import org.robolectric.annotation.processing.RobolectricProcessor;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Map;
 
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.Messager;
@@ -15,9 +20,6 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.Map;
 
 /**
  * Generator that creates the "ShadowProvider" implementation for a shadow package.

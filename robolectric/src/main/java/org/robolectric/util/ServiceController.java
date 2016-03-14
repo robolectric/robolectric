@@ -4,6 +4,7 @@ import android.app.Application;
 import android.app.Service;
 import android.content.Context;
 import android.os.IBinder;
+
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.ShadowsAdapter;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;

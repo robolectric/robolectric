@@ -2,7 +2,6 @@ package org.robolectric.res;
 
 import org.jetbrains.annotations.NotNull;
 import org.robolectric.res.builder.XmlBlock;
-import org.w3c.dom.Document;
 
 import java.io.InputStream;
 

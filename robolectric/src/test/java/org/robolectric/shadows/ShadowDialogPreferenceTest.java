@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.preference.DialogPreference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceScreen;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;

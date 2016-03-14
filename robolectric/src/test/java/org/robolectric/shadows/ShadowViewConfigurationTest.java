@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
-import android.app.Activity;
 import android.view.ViewConfiguration;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;

@@ -3,7 +3,9 @@ package org.robolectric.shadows;
 import android.app.PendingIntent;
 import android.os.Build;
 import android.telephony.SmsManager;
+
 import com.google.android.collect.Lists;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;

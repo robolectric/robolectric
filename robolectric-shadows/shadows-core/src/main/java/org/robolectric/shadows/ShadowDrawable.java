@@ -10,16 +10,18 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.NinePatchDrawable;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.internal.Shadow;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.robolectric.Shadows.shadowOf;
 

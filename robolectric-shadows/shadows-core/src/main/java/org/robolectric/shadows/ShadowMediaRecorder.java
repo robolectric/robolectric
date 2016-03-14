@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.hardware.Camera;
 import android.media.MediaRecorder;
 import android.view.Surface;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 

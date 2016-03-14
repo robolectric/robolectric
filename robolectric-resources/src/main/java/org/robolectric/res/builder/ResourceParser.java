@@ -2,11 +2,7 @@ package org.robolectric.res.builder;
 
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.util.Arrays;
-import java.util.List;
+
 import org.robolectric.res.Attribute;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
@@ -18,6 +14,12 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.xmlpull.v1.XmlPullParserException;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.util.Arrays;
+import java.util.List;
 
 public class ResourceParser {
   /**

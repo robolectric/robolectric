@@ -2,11 +2,12 @@ package org.robolectric;
 
 import android.app.Activity;
 import android.app.Service;
+
+import org.robolectric.internal.ShadowProvider;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.util.ActivityController;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.ServiceController;
-import org.robolectric.internal.ShadowProvider;
 
 import java.util.ServiceLoader;
 

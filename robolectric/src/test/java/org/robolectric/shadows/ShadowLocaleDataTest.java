@@ -2,12 +2,14 @@ package org.robolectric.shadows;
 
 import android.os.Build;
 
-import java.util.Locale;
-import libcore.icu.LocaleData;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
+
+import java.util.Locale;
+
+import libcore.icu.LocaleData;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

@@ -1,12 +1,12 @@
 package org.robolectric;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.internal.bytecode.InstrumentingClassLoader;
 import org.robolectric.test.DummyClass;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class RobolectricTestRunnerClassLoaderConfigTest {

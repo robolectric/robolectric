@@ -6,7 +6,7 @@ import android.icu.util.TimeZone;
 import android.icu.util.ULocale;
 import android.os.Build;
 import android.text.format.DateUtils;
-import libcore.icu.DateIntervalFormat;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
@@ -15,6 +15,8 @@ import org.robolectric.annotation.Config;
 import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
+
+import libcore.icu.DateIntervalFormat;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

@@ -2,6 +2,7 @@ package org.robolectric.shadows.maps;
 
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapController;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 

@@ -2,6 +2,7 @@ package org.robolectric.test;
 
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+
 import org.assertj.core.api.AbstractAssert;
 
 import static org.assertj.core.api.Assertions.assertThat;

@@ -1,10 +1,11 @@
 package org.robolectric.shadows;
 
+import android.graphics.SurfaceTexture;
+import android.view.Surface;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
-import android.view.Surface;
-import android.graphics.SurfaceTexture;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;

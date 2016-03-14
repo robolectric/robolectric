@@ -1,9 +1,10 @@
 package org.robolectric.internal.bytecode;
 
-import java.lang.annotation.Annotation;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
+
+import java.lang.annotation.Annotation;
 
 public class ClassInfo {
   private final String className;

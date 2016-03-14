@@ -10,7 +10,8 @@ import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
-import static junit.framework.Assert.*;
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertNull;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)

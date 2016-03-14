@@ -1,6 +1,7 @@
 package org.robolectric.internal;
 
 import android.app.Application;
+
 import org.junit.Test;
 import org.robolectric.TestApplication;
 

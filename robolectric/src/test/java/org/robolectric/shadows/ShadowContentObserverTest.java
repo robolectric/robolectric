@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.database.ContentObserver;
 import android.net.Uri;
 import android.os.Handler;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

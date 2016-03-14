@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.graphics.CornerPathEffect;
+
 import org.robolectric.annotation.Implements;
 
 @SuppressWarnings({"UnusedDeclaration"})

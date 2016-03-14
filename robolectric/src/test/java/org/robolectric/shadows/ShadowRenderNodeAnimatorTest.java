@@ -7,15 +7,12 @@ import android.os.Build;
 import android.view.View;
 import android.view.ViewAnimationUtils;
 
-import com.google.common.collect.Ordering;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
 import org.robolectric.Robolectric;
-import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

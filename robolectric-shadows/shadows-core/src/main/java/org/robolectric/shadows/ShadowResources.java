@@ -17,11 +17,11 @@ import android.util.TypedValue;
 import android.view.Display;
 
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.annotation.HiddenApi;
 import org.robolectric.fakes.RoboAttributeSet;
 import org.robolectric.res.Attribute;
 import org.robolectric.res.Plural;
@@ -30,8 +30,8 @@ import org.robolectric.res.ResType;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.TypedResource;
 import org.robolectric.res.builder.ResourceParser;
-import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.res.builder.XmlBlock;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import java.io.FileInputStream;
@@ -42,8 +42,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import static org.robolectric.internal.Shadow.directlyOn;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.internal.Shadow.directlyOn;
 
 /**
  * Shadow for {@link android.content.res.Resources}.

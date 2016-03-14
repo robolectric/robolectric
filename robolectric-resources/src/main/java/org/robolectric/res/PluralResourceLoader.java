@@ -1,8 +1,9 @@
 package org.robolectric.res;
 
-import javax.xml.xpath.XPathExpressionException;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.xml.xpath.XPathExpressionException;
 
 public class PluralResourceLoader extends XpathResourceXmlLoader {
   private ResBundle<PluralRules> pluralRulesResBundle;

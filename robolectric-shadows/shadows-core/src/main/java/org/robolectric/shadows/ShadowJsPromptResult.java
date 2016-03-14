@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.webkit.JsPromptResult;
+
 import org.robolectric.annotation.Implements;
 
 import static org.robolectric.internal.Shadow.newInstanceOf;

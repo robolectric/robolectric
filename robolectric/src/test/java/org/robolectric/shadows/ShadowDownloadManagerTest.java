@@ -4,10 +4,12 @@ import android.app.DownloadManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.util.Pair;
-import java.util.List;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
+
+import java.util.List;
 
 import static android.app.DownloadManager.Request;
 import static org.assertj.core.api.Assertions.assertThat;

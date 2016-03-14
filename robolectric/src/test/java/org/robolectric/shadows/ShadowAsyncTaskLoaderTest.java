@@ -1,13 +1,14 @@
 package org.robolectric.shadows;
 
-import org.junit.Test;
+import android.content.AsyncTaskLoader;
+
 import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.TestRunners;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.TestRunners;
 import org.robolectric.util.Transcript;
-import android.content.AsyncTaskLoader;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ShadowAsyncTaskLoaderTest {

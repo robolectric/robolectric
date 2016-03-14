@@ -1,6 +1,7 @@
 package org.robolectric.internal;
 
 import android.os.Build;
+
 import org.robolectric.internal.dependency.DependencyJar;
 
 import java.io.IOException;

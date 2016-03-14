@@ -1,16 +1,16 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.Collections;
+import android.content.ContentProviderOperation;
+import android.net.Uri;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 
-import android.content.ContentProviderOperation;
-import android.net.Uri;
+import java.util.Collections;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Tests for {@link ShadowContentProviderOperation}.

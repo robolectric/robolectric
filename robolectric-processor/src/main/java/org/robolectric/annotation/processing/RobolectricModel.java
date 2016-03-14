@@ -1,8 +1,15 @@
 package org.robolectric.annotation.processing;
 
-import static com.google.common.collect.Lists.*;
-import static com.google.common.collect.Maps.*;
-import static com.google.common.collect.Sets.*;
+import com.google.common.base.Equivalence;
+import com.google.common.base.Objects;
+import com.google.common.base.Predicate;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimaps;
+
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.processing.validator.ImplementsValidator;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -22,7 +29,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementVisitor;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
@@ -35,16 +41,10 @@ import javax.lang.model.util.SimpleElementVisitor6;
 import javax.lang.model.util.SimpleTypeVisitor6;
 import javax.lang.model.util.Types;
 
-import com.google.common.base.Equivalence;
-import com.google.common.base.Function;
-import com.google.common.base.Objects;
-import com.google.common.base.Predicate;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimaps;
-import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.processing.validator.ImplementsValidator;
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Maps.newTreeMap;
+import static com.google.common.collect.Sets.newTreeSet;
 
 /**
  * Model describing the Robolectric source file.

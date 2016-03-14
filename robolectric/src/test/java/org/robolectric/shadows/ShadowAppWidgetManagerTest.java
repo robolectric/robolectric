@@ -9,6 +9,7 @@ import android.content.ContextWrapper;
 import android.view.View;
 import android.widget.RemoteViews;
 import android.widget.TextView;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -3,6 +3,7 @@ package org.robolectric.shadows.testing;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+
 import org.robolectric.util.Transcript;
 
 public class OnMethodTestActivity extends Activity {

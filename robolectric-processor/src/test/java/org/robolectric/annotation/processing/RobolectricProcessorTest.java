@@ -1,14 +1,8 @@
 package org.robolectric.annotation.processing;
 
-import static org.truth0.Truth.ASSERT;
-import static com.google.testing.compile.JavaFileObjects.*;
-import static com.google.testing.compile.JavaSourceSubjectFactory.javaSource;
-import static com.google.testing.compile.JavaSourcesSubjectFactory.javaSources;
-import static org.robolectric.annotation.processing.RobolectricProcessor.PACKAGE_OPT;
-import static org.robolectric.annotation.processing.RobolectricProcessor.SHOULD_INSTRUMENT_PKG_OPT;
-import static org.robolectric.annotation.processing.validator.Utils.ROBO_SOURCE;
-import static org.robolectric.annotation.processing.validator.Utils.SHADOW_PROVIDER_SOURCE;
-import static org.robolectric.annotation.processing.validator.Utils.SHADOW_EXTRACTOR_SOURCE;
+import com.google.common.collect.ImmutableList;
+
+import org.junit.Test;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -16,9 +10,16 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Test;
-
-import com.google.common.collect.ImmutableList;
+import static com.google.testing.compile.JavaFileObjects.forResource;
+import static com.google.testing.compile.JavaFileObjects.forSourceString;
+import static com.google.testing.compile.JavaSourceSubjectFactory.javaSource;
+import static com.google.testing.compile.JavaSourcesSubjectFactory.javaSources;
+import static org.robolectric.annotation.processing.RobolectricProcessor.PACKAGE_OPT;
+import static org.robolectric.annotation.processing.RobolectricProcessor.SHOULD_INSTRUMENT_PKG_OPT;
+import static org.robolectric.annotation.processing.validator.Utils.ROBO_SOURCE;
+import static org.robolectric.annotation.processing.validator.Utils.SHADOW_EXTRACTOR_SOURCE;
+import static org.robolectric.annotation.processing.validator.Utils.SHADOW_PROVIDER_SOURCE;
+import static org.truth0.Truth.ASSERT;
 
 public class RobolectricProcessorTest {
   private static final Map<String,String> DEFAULT_OPTS = new HashMap<>();

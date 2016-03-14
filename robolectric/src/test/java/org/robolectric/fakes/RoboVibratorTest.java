@@ -1,7 +1,7 @@
 package org.robolectric.fakes;
 
 import android.content.Context;
-import org.robolectric.fakes.RoboVibrator;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

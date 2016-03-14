@@ -9,7 +9,6 @@ import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
 import org.junit.Before;
 import org.junit.Test;
-import org.robolectric.shadows.httpclient.FakeHttpLayer;
 
 import java.io.IOException;
 

@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.webkit.JsResult;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
