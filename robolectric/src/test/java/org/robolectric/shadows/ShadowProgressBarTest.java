@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import android.util.AttributeSet;
 import android.widget.ProgressBar;
 
 import org.junit.Before;
@@ -26,7 +27,7 @@ public class ShadowProgressBarTest {
 
   @Before
   public void setUp() {
-    RoboAttributeSet attrs = RoboAttributeSet.create(RuntimeEnvironment.application,
+    AttributeSet attrs = RoboAttributeSet.create(RuntimeEnvironment.application,
         new Attribute(new ResName(TestUtil.SYSTEM_PACKAGE, "attr", "max"), "100", TestUtil.TEST_PACKAGE),
         new Attribute(new ResName(TestUtil.SYSTEM_PACKAGE, "attr", "indeterminate"), "false", TestUtil.TEST_PACKAGE),
         new Attribute(new ResName(TestUtil.SYSTEM_PACKAGE, "attr", "indeterminateOnly"), "false", TestUtil.TEST_PACKAGE)

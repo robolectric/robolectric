@@ -27,20 +27,22 @@ public class RoboAttributeSet implements AttributeSet {
   private final List<Attribute> attributes;
   private final ResourceLoader resourceLoader;
 
-  public RoboAttributeSet(List<Attribute> attributes, ResourceLoader resourceLoader) {
+  private RoboAttributeSet(List<Attribute> attributes, ResourceLoader resourceLoader) {
     this.attributes = attributes;
     this.resourceLoader = resourceLoader;
   }
 
-  @Deprecated
-  public RoboAttributeSet put(String fullyQualifiedName, String value, String valuePackage) {
-    return put(new Attribute(fullyQualifiedName, value, valuePackage));
+  /**
+   * Creates a {@link RoboAttributeSet} as {@link AttributeSet} for the given
+   * {@link Context} and {@link Attribute}(s)
+   */
+  public static AttributeSet create(Context context, Attribute... attrs) {
+    List<Attribute> attributesList = Lists.newArrayList(attrs);
+    return create(context, attributesList);
   }
 
-  @Deprecated
-  public RoboAttributeSet put(Attribute attribute) {
-    attributes.add(attribute);
-    return this;
+  public static AttributeSet create(Context context, List<Attribute> attributesList) {
+    return new RoboAttributeSet(attributesList, shadowOf(context.getAssets()).getResourceLoader());
   }
 
   @Override
@@ -200,15 +202,6 @@ public class RoboAttributeSet implements AttributeSet {
     }
     Integer i = ResName.getResourceId(resourceLoader.getResourceIndex(), styleAttribute.value, styleAttribute.contextPackageName);
     return i != null ? i : 0;
-  }
-
-  /**
-   * Creates a {@link RoboAttributeSet} for the given {@link Attribute}(s)
-   */
-  public static RoboAttributeSet create(Context context, Attribute... attrs) {
-    List<Attribute> attributesList = Lists.newArrayList(attrs);
-    return new RoboAttributeSet(attributesList,
-        shadowOf(context.getAssets()).getResourceLoader());
   }
 
   private ResName getAttrResName(String namespace, String attrName) {

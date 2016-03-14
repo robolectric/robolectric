@@ -101,7 +101,7 @@ public class ShadowResources {
 
   private TypedArray attrsToTypedArray(AttributeSet set, int[] attrs, int defStyleAttr, int themeResourceId, int defStyleRes) {
     if (set == null) {
-      set = new RoboAttributeSet(new ArrayList<Attribute>(), shadowOf(realResources.getAssets()).getResourceLoader());
+      set = RoboAttributeSet.create(RuntimeEnvironment.application);
     }
 
     List<Attribute> attributes = shadowOf(realResources.getAssets()).buildAttributes(set, attrs, defStyleAttr, themeResourceId, defStyleRes);

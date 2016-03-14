@@ -26,7 +26,7 @@ public class ShadowEditTextTest {
 
   @Before
   public void setup() {
-    RoboAttributeSet attributeSet = RoboAttributeSet.create(RuntimeEnvironment.application,
+    AttributeSet attributeSet = RoboAttributeSet.create(RuntimeEnvironment.application,
         new Attribute("android:attr/maxLength", "5", R.class.getPackage().getName())
     );
 
