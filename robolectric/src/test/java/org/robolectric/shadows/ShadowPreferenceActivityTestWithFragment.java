@@ -1,18 +1,19 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import android.app.Activity;
 import android.app.FragmentManager;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Current Android examples show adding a PreferenceFragment as part of the

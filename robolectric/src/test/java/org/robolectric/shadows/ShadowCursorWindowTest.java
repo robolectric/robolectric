@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.database.CursorWindow;
 import android.database.DatabaseUtils;
 import android.database.MatrixCursor;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;

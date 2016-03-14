@@ -4,13 +4,15 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
-import java.io.FileDescriptor;
-import java.util.HashMap;
-import java.util.Map;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadows.util.DataSource;
+
+import java.io.FileDescriptor;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.robolectric.shadows.util.DataSource.toDataSource;
 

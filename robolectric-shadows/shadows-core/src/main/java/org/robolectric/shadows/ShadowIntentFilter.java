@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.content.IntentFilter;
 import android.net.Uri;
+
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;

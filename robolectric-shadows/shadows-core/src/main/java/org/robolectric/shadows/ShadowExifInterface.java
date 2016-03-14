@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.media.ExifInterface;
+
 import org.robolectric.annotation.Implements;
 
 /**

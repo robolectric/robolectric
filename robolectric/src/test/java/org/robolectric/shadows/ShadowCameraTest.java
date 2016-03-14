@@ -6,6 +6,7 @@ import android.graphics.Rect;
 import android.hardware.Camera;
 import android.view.Surface;
 import android.view.SurfaceHolder;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

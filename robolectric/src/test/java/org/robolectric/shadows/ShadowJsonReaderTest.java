@@ -1,10 +1,12 @@
 package org.robolectric.shadows;
 
 import android.util.JsonReader;
-import java.io.StringReader;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
+
+import java.io.StringReader;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

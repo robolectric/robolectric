@@ -3,6 +3,7 @@ package org.robolectric.shadows.maps;
 import android.app.Activity;
 import android.location.Address;
 import android.location.Geocoder;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

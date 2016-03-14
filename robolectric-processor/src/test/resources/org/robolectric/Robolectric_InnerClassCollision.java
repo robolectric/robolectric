@@ -1,9 +1,5 @@
 package org.robolectric;
 
-import java.util.HashMap;
-import java.util.Map;
-import javax.annotation.Generated;
-
 import org.robolectric.annotation.processing.objects.Dummy;
 import org.robolectric.annotation.processing.objects.OuterDummy;
 import org.robolectric.annotation.processing.objects.UniqueDummy;
@@ -14,6 +10,11 @@ import org.robolectric.annotation.processing.shadows.ShadowUniqueDummy;
 import org.robolectric.annotation.processing.shadows.ShadowUniqueDummy.ShadowUniqueInnerDummy;
 import org.robolectric.internal.ShadowExtractor;
 import org.robolectric.internal.ShadowProvider;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.annotation.Generated;
 
 @Generated("org.robolectric.annotation.processing.RobolectricProcessor")
 @SuppressWarnings({"unchecked","deprecation"})

@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.preference.Preference;
 import android.preference.PreferenceManager;
+
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.internal.Shadow;

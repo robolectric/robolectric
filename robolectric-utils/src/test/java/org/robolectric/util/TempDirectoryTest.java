@@ -1,11 +1,12 @@
 package org.robolectric.util;
 
+import org.junit.Test;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class TempDirectoryTest {
   @Test

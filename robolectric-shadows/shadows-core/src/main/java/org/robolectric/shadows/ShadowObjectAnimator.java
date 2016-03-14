@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.animation.ObjectAnimator;
+
 import org.robolectric.annotation.Implements;
 
 /**

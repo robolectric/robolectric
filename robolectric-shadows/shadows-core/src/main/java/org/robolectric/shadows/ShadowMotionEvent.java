@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.view.MotionEvent;
+
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;

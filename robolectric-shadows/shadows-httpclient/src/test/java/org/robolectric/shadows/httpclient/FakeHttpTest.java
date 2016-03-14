@@ -8,12 +8,12 @@ import org.apache.http.impl.client.DefaultRequestDirector;
 import org.apache.http.protocol.HttpContext;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.shadows.httpclient.FakeHttp;
 import org.robolectric.util.TestRunnerWithManifest;
 
 import java.io.IOException;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(TestRunnerWithManifest.class)
 public class FakeHttpTest {

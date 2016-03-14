@@ -2,12 +2,13 @@ package org.robolectric.shadows;
 
 import android.graphics.drawable.Drawable;
 import android.widget.CompoundButton;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
-import static org.robolectric.internal.Shadow.*;
-import static org.robolectric.util.ReflectionHelpers.ClassParameter.*;
+import static org.robolectric.internal.Shadow.directlyOn;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 /**
  * Shadow for {@link android.widget.CompoundButton}.

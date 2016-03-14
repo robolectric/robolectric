@@ -5,6 +5,7 @@ import android.graphics.Rect;
 import android.os.Build;
 import android.util.DisplayMetrics;
 import android.view.Display;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Shadows;

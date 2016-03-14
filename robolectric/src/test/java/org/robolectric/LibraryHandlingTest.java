@@ -1,6 +1,7 @@
 package org.robolectric;
 
 import android.content.res.Resources;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;

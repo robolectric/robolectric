@@ -3,6 +3,7 @@ package org.robolectric.shadows.support.v4;
 import android.database.DataSetObserver;
 import android.support.v4.view.PagerAdapter;
 import android.view.View;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.util.TestRunnerWithManifest;

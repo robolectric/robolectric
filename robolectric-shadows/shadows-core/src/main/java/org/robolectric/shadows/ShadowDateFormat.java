@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.content.Context;
 import android.text.format.DateFormat;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 

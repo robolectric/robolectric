@@ -5,7 +5,11 @@ import org.junit.Test;
 import org.robolectric.R;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.util.TestUtil.*;
+import static org.robolectric.util.TestUtil.lib1Resources;
+import static org.robolectric.util.TestUtil.lib2Resources;
+import static org.robolectric.util.TestUtil.lib3Resources;
+import static org.robolectric.util.TestUtil.systemResources;
+import static org.robolectric.util.TestUtil.testResources;
 
 public class ResourceExtractorTest {
   private ResourceIndex resourceIndex;

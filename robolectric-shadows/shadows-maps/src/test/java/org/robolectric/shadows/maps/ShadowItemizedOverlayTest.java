@@ -3,11 +3,14 @@ package org.robolectric.shadows.maps;
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.OverlayItem;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.util.TestRunnerWithManifest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(TestRunnerWithManifest.class)
 public class ShadowItemizedOverlayTest {

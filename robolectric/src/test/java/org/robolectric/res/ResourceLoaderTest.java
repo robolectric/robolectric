@@ -4,6 +4,7 @@ import android.preference.PreferenceActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
@@ -12,7 +13,6 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
-import org.robolectric.shadows.ShadowApplication;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;

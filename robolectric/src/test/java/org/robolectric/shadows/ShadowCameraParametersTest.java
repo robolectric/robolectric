@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 
 import android.graphics.ImageFormat;
 import android.hardware.Camera;
+
 import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Test;

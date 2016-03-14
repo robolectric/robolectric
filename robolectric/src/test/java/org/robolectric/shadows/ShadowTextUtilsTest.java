@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.text.TextPaint;
 import android.text.TextUtils;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;

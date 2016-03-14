@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.os.Binder;
 import android.os.Parcel;
 import android.os.RemoteException;
+
 import org.robolectric.annotation.internal.DoNotInstrument;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;

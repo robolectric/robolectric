@@ -1,11 +1,5 @@
 package org.robolectric.internal.dependency;
 
-import java.io.Serializable;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -15,8 +9,19 @@ import org.robolectric.internal.dependency.CachedDependencyResolver.CacheNamingS
 import org.robolectric.internal.dependency.CachedDependencyResolver.CacheValidationStrategy;
 import org.robolectric.test.TemporaryFolder;
 
-import static org.mockito.Mockito.*;
-import static org.junit.Assert.*;
+import java.io.Serializable;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class CachedDependencyResolverTest {
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();

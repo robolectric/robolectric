@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;

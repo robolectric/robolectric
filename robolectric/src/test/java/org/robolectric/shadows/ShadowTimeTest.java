@@ -1,8 +1,5 @@
 package org.robolectric.shadows;
 
-import java.util.Arrays;
-import java.util.TimeZone;
-
 import android.os.Build;
 import android.os.SystemClock;
 import android.text.format.Time;
@@ -14,8 +11,14 @@ import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 
+import java.util.Arrays;
+import java.util.TimeZone;
+
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowTimeTest {

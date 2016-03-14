@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CancellationSignal;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

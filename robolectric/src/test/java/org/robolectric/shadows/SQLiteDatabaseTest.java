@@ -1,11 +1,11 @@
 package org.robolectric.shadows;
 
-import android.os.OperationCanceledException;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.os.CancellationSignal;
+import android.os.OperationCanceledException;
 
 import org.junit.After;
 import org.junit.Before;

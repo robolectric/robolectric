@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.widget.Scroller;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 

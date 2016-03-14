@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 

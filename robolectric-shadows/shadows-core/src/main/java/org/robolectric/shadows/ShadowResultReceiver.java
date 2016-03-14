@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.os.Bundle;
 import android.os.ResultReceiver;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;

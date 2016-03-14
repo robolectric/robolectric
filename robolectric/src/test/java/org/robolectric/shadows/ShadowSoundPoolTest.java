@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.os.Build;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;

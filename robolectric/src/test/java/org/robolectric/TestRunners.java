@@ -2,8 +2,8 @@ package org.robolectric;
 
 import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.internal.ParallelUniverseInterface;
+import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.FsFile;
 import org.robolectric.res.ResourceLoader;

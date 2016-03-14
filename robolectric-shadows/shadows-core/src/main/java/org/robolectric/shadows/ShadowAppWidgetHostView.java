@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.appwidget.AppWidgetHost;
 import android.appwidget.AppWidgetHostView;
 import android.appwidget.AppWidgetProviderInfo;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 

@@ -4,9 +4,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.bytecode.testing.Pony;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.internal.Instrument;
+import org.robolectric.internal.bytecode.testing.Pony;
 
 import static org.junit.Assert.assertEquals;
 

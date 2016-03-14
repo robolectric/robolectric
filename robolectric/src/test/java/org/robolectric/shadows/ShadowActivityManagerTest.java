@@ -3,11 +3,14 @@ package org.robolectric.shadows;
 import android.app.ActivityManager;
 import android.content.ComponentName;
 import android.content.Context;
+
 import com.google.android.collect.Lists;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 

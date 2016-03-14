@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.app.TabActivity;
 import android.widget.TabHost;
 import android.widget.TabWidget;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;

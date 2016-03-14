@@ -7,13 +7,13 @@ import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.Button;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.res.ResName;
-import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.Style;
 import org.robolectric.util.ActivityController;
 import org.robolectric.util.TestUtil;

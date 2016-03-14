@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.content.Context;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 

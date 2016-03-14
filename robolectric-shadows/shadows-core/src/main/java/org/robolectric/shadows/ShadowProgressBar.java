@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.widget.ProgressBar;
+
 import org.robolectric.annotation.Implements;
 
 /**

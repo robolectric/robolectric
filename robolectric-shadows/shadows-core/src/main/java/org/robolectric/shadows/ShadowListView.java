@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.view.View;
 import android.widget.HeaderViewListAdapter;
 import android.widget.ListView;
+
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 

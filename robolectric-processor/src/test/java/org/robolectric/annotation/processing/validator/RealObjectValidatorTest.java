@@ -1,15 +1,15 @@
 package org.robolectric.annotation.processing.validator;
 
-import static com.google.testing.compile.JavaFileObjects.forResource;
-import static com.google.testing.compile.JavaSourcesSubjectFactory.javaSources;
-import static org.truth0.Truth.ASSERT;
-import static org.robolectric.annotation.processing.validator.Utils.SHADOW_EXTRACTOR_SOURCE;
-import static org.robolectric.annotation.processing.validator.SingleClassSubject.singleClass;
+import com.google.common.collect.ImmutableList;
 
 import org.junit.Test;
-
-import com.google.common.collect.ImmutableList;
 import org.robolectric.annotation.processing.RobolectricProcessor;
+
+import static com.google.testing.compile.JavaFileObjects.forResource;
+import static com.google.testing.compile.JavaSourcesSubjectFactory.javaSources;
+import static org.robolectric.annotation.processing.validator.SingleClassSubject.singleClass;
+import static org.robolectric.annotation.processing.validator.Utils.SHADOW_EXTRACTOR_SOURCE;
+import static org.truth0.Truth.ASSERT;
 
 public class RealObjectValidatorTest {
   @Test

@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.os.ParcelFileDescriptor;
+
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;

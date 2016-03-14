@@ -10,6 +10,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.internal.Instrument;
 import org.robolectric.internal.Shadow;
 import org.robolectric.internal.ShadowExtractor;
+
 import java.lang.reflect.Field;
 
 import static org.assertj.core.api.Assertions.assertThat;

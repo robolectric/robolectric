@@ -4,6 +4,7 @@ package org.robolectric.shadows;
 import android.hardware.Camera;
 import android.media.MediaRecorder;
 import android.view.Surface;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

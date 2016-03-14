@@ -3,6 +3,7 @@ package org.robolectric;
 import android.app.Application;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
+
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.ClassNameResolver;
 import org.robolectric.manifest.ActivityData;

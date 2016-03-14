@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;

@@ -1,6 +1,7 @@
 package org.robolectric.shadows.httpclient;
 
 import android.net.Uri;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpRequest;
 import org.apache.http.NameValuePair;

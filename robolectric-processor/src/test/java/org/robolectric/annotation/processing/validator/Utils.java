@@ -1,11 +1,11 @@
 package org.robolectric.annotation.processing.validator;
 
-import static com.google.testing.compile.JavaFileObjects.forResource;
-import static org.truth0.Truth.ASSERT;
+import com.google.testing.compile.CompileTester.UnsuccessfulCompilationClause;
 
 import javax.tools.JavaFileObject;
 
-import com.google.testing.compile.CompileTester.UnsuccessfulCompilationClause;
+import static com.google.testing.compile.JavaFileObjects.forResource;
+import static org.truth0.Truth.ASSERT;
 
 public class Utils {
   // So that we can test compilation without Robolectric.java included, this has not been put in its

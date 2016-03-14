@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.os.AsyncTask;
+
 import org.robolectric.annotation.internal.DoNotInstrument;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;

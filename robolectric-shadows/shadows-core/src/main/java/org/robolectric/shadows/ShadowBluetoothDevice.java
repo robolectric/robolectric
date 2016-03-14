@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.bluetooth.BluetoothDevice;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 

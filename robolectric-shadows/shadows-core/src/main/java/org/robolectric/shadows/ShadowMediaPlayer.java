@@ -1,16 +1,5 @@
 package org.robolectric.shadows;
 
-import java.io.FileDescriptor;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Random;
-import java.util.HashMap;
-import java.util.TreeMap;
-
 import android.content.Context;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -25,8 +14,28 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.internal.Shadow;
 import org.robolectric.shadows.util.DataSource;
 
+import java.io.FileDescriptor;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Random;
+import java.util.TreeMap;
+
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.shadows.ShadowMediaPlayer.State.*;
+import static org.robolectric.shadows.ShadowMediaPlayer.State.END;
+import static org.robolectric.shadows.ShadowMediaPlayer.State.ERROR;
+import static org.robolectric.shadows.ShadowMediaPlayer.State.IDLE;
+import static org.robolectric.shadows.ShadowMediaPlayer.State.INITIALIZED;
+import static org.robolectric.shadows.ShadowMediaPlayer.State.PAUSED;
+import static org.robolectric.shadows.ShadowMediaPlayer.State.PLAYBACK_COMPLETED;
+import static org.robolectric.shadows.ShadowMediaPlayer.State.PREPARED;
+import static org.robolectric.shadows.ShadowMediaPlayer.State.PREPARING;
+import static org.robolectric.shadows.ShadowMediaPlayer.State.STARTED;
+import static org.robolectric.shadows.ShadowMediaPlayer.State.STOPPED;
 import static org.robolectric.shadows.util.DataSource.toDataSource;
 
 /**

@@ -17,6 +17,7 @@
 package org.robolectric.shadows;
 
 import android.util.FloatMath;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 

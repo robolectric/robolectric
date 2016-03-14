@@ -4,12 +4,13 @@ import android.app.DownloadManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.util.Pair;
+
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.fakes.BaseCursor;
+import org.robolectric.util.ReflectionHelpers;
 
 import java.util.ArrayList;
 import java.util.HashMap;

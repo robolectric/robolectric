@@ -1,6 +1,7 @@
 package org.robolectric.annotation;
 
 import android.app.Application;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.annotation.Annotation;

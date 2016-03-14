@@ -1,7 +1,5 @@
 package org.robolectric;
 
-import android.os.Build;
-
 import org.junit.runner.Runner;
 import org.junit.runners.Suite;
 import org.junit.runners.model.FrameworkMethod;

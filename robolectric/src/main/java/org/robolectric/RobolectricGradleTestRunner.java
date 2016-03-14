@@ -1,9 +1,9 @@
 package org.robolectric;
 
-import org.robolectric.res.FileFsFile;
+import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
-import org.junit.runners.model.InitializationError;
+import org.robolectric.res.FileFsFile;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
 

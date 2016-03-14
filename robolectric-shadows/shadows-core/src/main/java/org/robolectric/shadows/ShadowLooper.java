@@ -2,22 +2,22 @@ package org.robolectric.shadows;
 
 import android.os.Looper;
 
-import java.util.Collections;
-import java.util.Map;
-import java.util.WeakHashMap;
-
 import org.robolectric.RoboSettings;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.annotation.HiddenApi;
 import org.robolectric.util.Scheduler;
+
+import java.util.Collections;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 import static org.robolectric.RuntimeEnvironment.isMainThread;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.internal.Shadow.*;
+import static org.robolectric.internal.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 /**

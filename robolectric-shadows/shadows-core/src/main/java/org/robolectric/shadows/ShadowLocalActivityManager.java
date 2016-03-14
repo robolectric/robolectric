@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.app.LocalActivityManager;
+
 import org.robolectric.annotation.Implements;
 
 /**

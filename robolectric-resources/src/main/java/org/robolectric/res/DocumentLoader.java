@@ -2,6 +2,7 @@ package org.robolectric.res;
 
 import com.ximpleware.VTDGen;
 import com.ximpleware.VTDNav;
+
 import org.jetbrains.annotations.NotNull;
 
 public class DocumentLoader {

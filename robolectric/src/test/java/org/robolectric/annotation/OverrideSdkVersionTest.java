@@ -1,10 +1,11 @@
 package org.robolectric.annotation;
 
 import android.os.Build;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.TestRunners;
+import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.shadows.ShadowApplication;
 
 import static org.assertj.core.api.Assertions.assertThat;

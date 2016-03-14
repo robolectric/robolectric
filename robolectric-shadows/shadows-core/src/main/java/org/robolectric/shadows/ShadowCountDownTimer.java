@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.os.CountDownTimer;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;

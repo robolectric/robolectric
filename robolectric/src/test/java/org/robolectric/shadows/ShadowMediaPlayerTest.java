@@ -1,15 +1,5 @@
 package org.robolectric.shadows;
 
-import java.io.File;
-import java.io.FileDescriptor;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
-
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -31,10 +21,29 @@ import org.robolectric.shadows.util.DataSource;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 
+import java.io.File;
+import java.io.FileDescriptor;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadows.ShadowMediaPlayer.State.END;
+import static org.robolectric.shadows.ShadowMediaPlayer.State.ERROR;
+import static org.robolectric.shadows.ShadowMediaPlayer.State.IDLE;
+import static org.robolectric.shadows.ShadowMediaPlayer.State.INITIALIZED;
+import static org.robolectric.shadows.ShadowMediaPlayer.State.PAUSED;
+import static org.robolectric.shadows.ShadowMediaPlayer.State.PLAYBACK_COMPLETED;
+import static org.robolectric.shadows.ShadowMediaPlayer.State.PREPARED;
+import static org.robolectric.shadows.ShadowMediaPlayer.State.PREPARING;
+import static org.robolectric.shadows.ShadowMediaPlayer.State.STARTED;
+import static org.robolectric.shadows.ShadowMediaPlayer.State.STOPPED;
 import static org.robolectric.shadows.ShadowMediaPlayer.addException;
-import static org.robolectric.shadows.ShadowMediaPlayer.State.*;
 import static org.robolectric.shadows.util.DataSource.toDataSource;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)

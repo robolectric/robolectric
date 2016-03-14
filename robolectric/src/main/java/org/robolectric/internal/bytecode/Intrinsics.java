@@ -2,6 +2,10 @@ package org.robolectric.internal.bytecode;
 
 import android.content.Context;
 import android.view.Window;
+
+import org.robolectric.shadows.ShadowSystemClock;
+import org.robolectric.shadows.ShadowWindow;
+
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
@@ -10,8 +14,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import org.robolectric.shadows.ShadowSystemClock;
-import org.robolectric.shadows.ShadowWindow;
 
 import static java.lang.invoke.MethodHandles.constant;
 import static java.lang.invoke.MethodHandles.dropArguments;

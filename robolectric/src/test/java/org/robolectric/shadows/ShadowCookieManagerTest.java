@@ -1,10 +1,10 @@
 package org.robolectric.shadows;
 
 import android.webkit.CookieManager;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
-import org.robolectric.internal.Shadow;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

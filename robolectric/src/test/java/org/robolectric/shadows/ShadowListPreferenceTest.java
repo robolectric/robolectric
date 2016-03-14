@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.app.Activity;
 import android.preference.ListPreference;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

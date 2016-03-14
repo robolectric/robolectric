@@ -1,11 +1,13 @@
 package org.robolectric.manifest;
 
-import org.junit.Test;
-import java.util.HashMap;
-import java.util.ArrayList;
 import android.content.pm.ActivityInfo;
 
-import static org.assertj.core.api.Assertions.*;
+import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ActivityDataTest {
 

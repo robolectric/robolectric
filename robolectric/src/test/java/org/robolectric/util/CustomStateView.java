@@ -3,6 +3,7 @@ package org.robolectric.util;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.TextView;
+
 import org.robolectric.R;
 
 public class CustomStateView extends TextView {

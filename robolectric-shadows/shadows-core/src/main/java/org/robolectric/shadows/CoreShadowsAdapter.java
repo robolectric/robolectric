@@ -5,6 +5,7 @@ import android.app.Application;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.os.Looper;
+
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.ShadowsAdapter;

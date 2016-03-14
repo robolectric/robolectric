@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
@@ -16,13 +17,11 @@ import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.internal.bytecode.testing.AFinalClass;
-import org.robolectric.internal.bytecode.testing.Foo;
-import org.robolectric.internal.bytecode.testing.Pony;
-import org.robolectric.internal.bytecode.testing.ShadowFoo;
 import org.robolectric.annotation.internal.Instrument;
-import org.robolectric.internal.ShadowConstants;
 import org.robolectric.internal.Shadow;
+import org.robolectric.internal.ShadowConstants;
+import org.robolectric.internal.bytecode.testing.AFinalClass;
+import org.robolectric.internal.bytecode.testing.Pony;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;

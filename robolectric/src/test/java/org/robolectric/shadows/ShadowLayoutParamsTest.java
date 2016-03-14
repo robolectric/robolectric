@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.Gallery;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;

@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.widget.ScrollView;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;

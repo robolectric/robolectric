@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

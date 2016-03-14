@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.database.AbstractCursor;
 import android.net.Uri;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

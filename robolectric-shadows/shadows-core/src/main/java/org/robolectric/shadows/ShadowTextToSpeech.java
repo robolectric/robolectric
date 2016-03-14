@@ -2,9 +2,11 @@ package org.robolectric.shadows;
 
 import android.content.Context;
 import android.speech.tts.TextToSpeech;
-import java.util.HashMap;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+
+import java.util.HashMap;
 
 /**
  * Shadow for {@link android.speech.tts.TextToSpeech}.

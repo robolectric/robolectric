@@ -7,7 +7,9 @@ import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.internal.Instrument;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(TestRunners.WithoutDefaults.class)
 public class StaticInitializerTest {

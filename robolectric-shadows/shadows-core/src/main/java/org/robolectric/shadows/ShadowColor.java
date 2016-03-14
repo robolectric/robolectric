@@ -1,8 +1,9 @@
 package org.robolectric.shadows;
 
 import android.graphics.Color;
-import org.robolectric.annotation.Implements;
+
 import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 /**
  * Shadow for {@link android.graphics.Color}.

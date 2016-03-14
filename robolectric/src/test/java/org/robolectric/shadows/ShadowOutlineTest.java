@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.graphics.Outline;
 import android.graphics.Path;
 import android.os.Build;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;

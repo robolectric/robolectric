@@ -1,9 +1,5 @@
 package org.robolectric.shadows;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.RuntimeEnvironment.application;
-import static org.robolectric.Shadows.shadowOf;
-
 import android.app.Notification;
 import android.app.Notification.BigTextStyle;
 import android.app.Notification.Builder;
@@ -12,6 +8,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
 import org.robolectric.shadows.ShadowNotification.ShadowBigTextStyle;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.RuntimeEnvironment.application;
+import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowNotificationBigTextStyleTest {

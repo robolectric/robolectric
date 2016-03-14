@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,7 +42,9 @@ import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.robolectric.util.TestUtil.*;
+import static org.robolectric.util.TestUtil.joinPath;
+import static org.robolectric.util.TestUtil.newConfig;
+import static org.robolectric.util.TestUtil.resourceFile;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)

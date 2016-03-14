@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.content.Intent;
+
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 

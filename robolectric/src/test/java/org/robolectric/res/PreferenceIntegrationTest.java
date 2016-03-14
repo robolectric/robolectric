@@ -3,8 +3,16 @@ package org.robolectric.res;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.*;
+import android.preference.CheckBoxPreference;
+import android.preference.EditTextPreference;
+import android.preference.ListPreference;
+import android.preference.Preference;
+import android.preference.PreferenceActivity;
+import android.preference.PreferenceCategory;
+import android.preference.PreferenceScreen;
+import android.preference.RingtonePreference;
 import android.util.MutableBoolean;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;

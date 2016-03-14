@@ -1,9 +1,10 @@
 package org.robolectric.shadows;
 
+import android.graphics.drawable.GradientDrawable;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
-import android.graphics.drawable.GradientDrawable;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;

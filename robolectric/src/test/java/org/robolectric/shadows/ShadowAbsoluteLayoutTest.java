@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.view.ViewGroup;
 import android.widget.AbsoluteLayout;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;

@@ -1,10 +1,12 @@
 package org.robolectric.shadows;
 
 import android.content.res.Configuration;
-import java.util.Locale;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+
+import java.util.Locale;
 
 import static org.robolectric.internal.Shadow.directlyOn;
 

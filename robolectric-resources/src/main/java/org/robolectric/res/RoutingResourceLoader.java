@@ -1,12 +1,12 @@
 package org.robolectric.res;
 
 import org.jetbrains.annotations.NotNull;
+import org.robolectric.res.builder.XmlBlock;
 
 import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import org.robolectric.res.builder.XmlBlock;
 
 public class RoutingResourceLoader implements ResourceLoader {
   private final Map<String, ResourceLoader> resourceLoaders;

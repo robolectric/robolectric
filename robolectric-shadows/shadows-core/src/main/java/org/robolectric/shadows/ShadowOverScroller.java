@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.os.Looper;
 import android.widget.OverScroller;
+
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;

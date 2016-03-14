@@ -1,6 +1,7 @@
 package org.robolectric.internal.bytecode;
 
 import android.view.View;
+
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

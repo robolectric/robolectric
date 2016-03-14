@@ -1,12 +1,13 @@
 package org.robolectric.test;
 
+import org.junit.rules.ExternalResource;
+import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.res.FileFsFile;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.rules.ExternalResource;
-import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.FileFsFile;
 
 /**
  * The TemporaryAsset Rule allows creation of assets based on an ApplicationManifest.

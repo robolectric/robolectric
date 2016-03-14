@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.app.TabActivity;
 import android.widget.TabHost;
 import android.widget.TabWidget;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;

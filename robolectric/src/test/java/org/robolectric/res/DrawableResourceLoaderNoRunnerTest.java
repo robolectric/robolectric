@@ -7,7 +7,11 @@ import org.robolectric.util.ReflectionHelpers;
 import java.io.File;
 import java.lang.reflect.Field;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class DrawableResourceLoaderNoRunnerTest {
   private static final String JAR_SEPARATOR = "/";

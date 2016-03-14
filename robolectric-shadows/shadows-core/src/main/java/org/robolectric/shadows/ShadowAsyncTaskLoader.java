@@ -1,11 +1,13 @@
 package org.robolectric.shadows;
 
-import android.content.Context;
 import android.content.AsyncTaskLoader;
-import org.robolectric.util.SimpleFuture;
+import android.content.Context;
+
+import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.annotation.Implementation;
+import org.robolectric.util.SimpleFuture;
+
 import java.util.concurrent.Callable;
 
 /**

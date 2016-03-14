@@ -5,7 +5,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 
-import static org.robolectric.util.Scheduler.IdleState.*;
+import static org.robolectric.util.Scheduler.IdleState.CONSTANT_IDLE;
+import static org.robolectric.util.Scheduler.IdleState.PAUSED;
+import static org.robolectric.util.Scheduler.IdleState.UNPAUSED;
 
 /**
  * Class that manages a queue of Runnables that are scheduled to run now (or at some time in

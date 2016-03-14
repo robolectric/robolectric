@@ -1,9 +1,10 @@
 package org.robolectric.internal.bytecode;
 
+import org.robolectric.internal.ShadowConstants;
+import org.robolectric.util.ReflectionHelpers;
+
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodType;
-import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.internal.ShadowConstants;
 
 public class RobolectricInternals {
 

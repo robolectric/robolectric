@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.app.Notification;
 import android.app.NotificationManager;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 

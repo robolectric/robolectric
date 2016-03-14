@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.drawable.ColorDrawable;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

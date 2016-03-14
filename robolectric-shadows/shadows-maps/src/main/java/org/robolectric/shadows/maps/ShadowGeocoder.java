@@ -2,7 +2,7 @@ package org.robolectric.shadows.maps;
 
 import android.location.Address;
 import android.location.Geocoder;
-import org.robolectric.Shadows;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;

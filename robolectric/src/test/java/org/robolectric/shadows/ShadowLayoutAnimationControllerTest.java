@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.view.animation.LayoutAnimationController;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

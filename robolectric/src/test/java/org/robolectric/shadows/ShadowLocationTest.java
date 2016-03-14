@@ -2,13 +2,16 @@ package org.robolectric.shadows;
 
 import android.location.Location;
 import android.location.LocationManager;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
 
-import static junit.framework.Assert.*;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.assertArrayEquals;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
