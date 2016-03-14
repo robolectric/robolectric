@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.util.AttributeSet;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -240,7 +241,7 @@ public class ShadowContextTest {
   @Test
   public void obtainStyledAttributes_shouldExtractAttributesFromAttributeSet() throws Exception {
 
-    RoboAttributeSet roboAttributeSet = RoboAttributeSet.create(context,
+    AttributeSet roboAttributeSet = RoboAttributeSet.create(context,
         new Attribute(TEST_PACKAGE + ":attr/itemType", "ungulate", TEST_PACKAGE),
         new Attribute(TEST_PACKAGE + ":attr/scrollBars", "horizontal|vertical", TEST_PACKAGE),
         new Attribute(TEST_PACKAGE + ":attr/quitKeyCombo", "^q", TEST_PACKAGE),

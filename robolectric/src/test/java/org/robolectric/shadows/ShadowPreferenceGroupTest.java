@@ -24,7 +24,7 @@ public class ShadowPreferenceGroupTest {
   private TestPreferenceGroup group;
   private ShadowPreference shadow;
   private Activity activity;
-  private RoboAttributeSet attrs;
+  private AttributeSet attrs;
   private Preference pref1, pref2;
 
   @Before
