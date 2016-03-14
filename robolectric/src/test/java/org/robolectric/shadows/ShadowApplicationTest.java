@@ -9,7 +9,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.content.res.Resources;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.IInterface;
@@ -34,7 +33,6 @@ import org.robolectric.annotation.Config;
 import org.robolectric.fakes.RoboSensorManager;
 import org.robolectric.fakes.RoboVibrator;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.Attribute;
 import org.robolectric.res.Fs;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceExtractor;
@@ -479,23 +477,6 @@ public class ShadowApplicationTest {
   @Test
   public void shouldRememberResourcesAfterLazilyLoading() throws Exception {
     assertSame(RuntimeEnvironment.application.getResources(), RuntimeEnvironment.application.getResources());
-  }
-
-  @Test
-  public void shouldCreateAttributeSet() {
-    ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
-
-    ResName resName = new ResName("android", "attr", "orientation");
-    String attrValue = "vertical";
-    String contextPackageName = RuntimeEnvironment.application.getPackageName();
-
-    Attribute attribute = new Attribute(resName, attrValue, contextPackageName);
-
-    RoboAttributeSet attributeSet = shadowApplication.createAttributeSet(attribute);
-
-    assertThat(attributeSet.getAttributeCount()).isEqualTo(1);
-    assertThat(attributeSet.getAttributeName(0)).isEqualTo(resName.getFullyQualifiedName());
-    assertThat(attributeSet.getAttributeValue(0)).isEqualTo(attrValue);
   }
 
   @Test

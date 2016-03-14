@@ -12,7 +12,7 @@ import android.util.AttributeSet;
 import org.robolectric.res.Attribute;
 import org.robolectric.res.PreferenceNode;
 import org.robolectric.res.ResName;
-import org.robolectric.shadows.RoboAttributeSet;
+import org.robolectric.fakes.RoboAttributeSet;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;

@@ -1,13 +1,13 @@
 package org.robolectric.shadows;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.os.Environment;
 import android.view.View;
 
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.fakes.RoboAttributeSet;
 import org.robolectric.res.Attribute;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceLoader;

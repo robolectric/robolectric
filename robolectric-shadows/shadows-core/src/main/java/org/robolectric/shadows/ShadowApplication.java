@@ -11,9 +11,6 @@ import android.content.IContentProvider;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.content.res.AssetManager;
-import android.content.res.Configuration;
-import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -25,7 +22,6 @@ import android.widget.ListPopupWindow;
 import android.widget.PopupWindow;
 import android.widget.Toast;
 
-import com.google.android.collect.Lists;
 import com.google.common.base.Function;
 import com.google.common.util.concurrent.AsyncFunction;
 import com.google.common.util.concurrent.Futures;
@@ -39,7 +35,6 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.BroadcastReceiverData;
-import org.robolectric.res.Attribute;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.util.Scheduler;
 
@@ -194,15 +189,6 @@ public class ShadowApplication extends ShadowContextWrapper {
   @Implementation
   public Context getApplicationContext() {
     return realApplication;
-  }
-
-  /**
-   * Creates a {@link RoboAttributeSet} for the given {@link Attribute}(s)
-   */
-  public RoboAttributeSet createAttributeSet(Attribute... attrs) {
-    List<Attribute> attributesList = Lists.newArrayList(attrs);
-    return new RoboAttributeSet(attributesList,
-        shadowOf(RuntimeEnvironment.application.getAssets()).getResourceLoader());
   }
 
   @Implementation
