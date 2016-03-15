@@ -11,6 +11,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
+import org.robolectric.fakes.RoboAttributeSet;
 import org.robolectric.res.Attribute;
 import org.robolectric.res.ResName;
 
@@ -25,8 +26,9 @@ public class ShadowEditTextTest {
 
   @Before
   public void setup() {
-    RoboAttributeSet attributeSet = ShadowApplication.getInstance().createAttributeSet(
-        new Attribute("android:attr/maxLength", "5", R.class.getPackage().getName()));
+    AttributeSet attributeSet = RoboAttributeSet.create(RuntimeEnvironment.application,
+        new Attribute("android:attr/maxLength", "5", R.class.getPackage().getName())
+    );
 
     editText = new EditText(application, attributeSet);
   }
@@ -113,12 +115,12 @@ public class ShadowEditTextTest {
   }
 
   private AttributeSet attributeSetWithMaxLength(int maxLength) {
-    return ShadowApplication.getInstance().createAttributeSet(
+    return RoboAttributeSet.create(RuntimeEnvironment.application,
         new Attribute(new ResName("android", "attr", "maxLength"), maxLength + "", "android")
     );
   }
 
   private AttributeSet attributeSetWithoutMaxLength() {
-    return ShadowApplication.getInstance().createAttributeSet();
+    return RoboAttributeSet.create(RuntimeEnvironment.application);
   }
 }

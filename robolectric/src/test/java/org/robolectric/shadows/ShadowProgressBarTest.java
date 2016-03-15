@@ -1,11 +1,14 @@
 package org.robolectric.shadows;
 
+import android.util.AttributeSet;
 import android.widget.ProgressBar;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
+import org.robolectric.fakes.RoboAttributeSet;
 import org.robolectric.res.Attribute;
 import org.robolectric.res.ResName;
 import org.robolectric.util.TestUtil;
@@ -15,7 +18,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.RuntimeEnvironment.application;
-import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowProgressBarTest {
@@ -25,7 +27,7 @@ public class ShadowProgressBarTest {
 
   @Before
   public void setUp() {
-    RoboAttributeSet attrs = ShadowApplication.getInstance().createAttributeSet(
+    AttributeSet attrs = RoboAttributeSet.create(RuntimeEnvironment.application,
         new Attribute(new ResName(TestUtil.SYSTEM_PACKAGE, "attr", "max"), "100", TestUtil.TEST_PACKAGE),
         new Attribute(new ResName(TestUtil.SYSTEM_PACKAGE, "attr", "indeterminate"), "false", TestUtil.TEST_PACKAGE),
         new Attribute(new ResName(TestUtil.SYSTEM_PACKAGE, "attr", "indeterminateOnly"), "false", TestUtil.TEST_PACKAGE)

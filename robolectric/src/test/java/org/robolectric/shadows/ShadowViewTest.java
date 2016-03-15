@@ -10,6 +10,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.AttributeSet;
 import android.view.ContextMenu;
 import android.view.HapticFeedbackConstants;
 import android.view.MotionEvent;
@@ -34,6 +35,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.AccessibilityChecks;
 import org.robolectric.annotation.Config;
+import org.robolectric.fakes.RoboAttributeSet;
 import org.robolectric.res.Attribute;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.util.TestOnClickListener;
@@ -340,7 +342,7 @@ public class ShadowViewTest {
 
   @Test
   public void shouldAddOnClickListenerFromAttribute() throws Exception {
-    RoboAttributeSet attrs = ShadowApplication.getInstance().createAttributeSet(
+    AttributeSet attrs = RoboAttributeSet.create(RuntimeEnvironment.application,
         new Attribute("android:attr/onClick", "clickMe", R.class.getPackage().getName())
     );
 
@@ -352,7 +354,7 @@ public class ShadowViewTest {
   public void shouldCallOnClickWithAttribute() throws Exception {
     MyActivity myActivity = buildActivity(MyActivity.class).create().get();
 
-    RoboAttributeSet attrs = ShadowApplication.getInstance().createAttributeSet(
+    AttributeSet attrs = RoboAttributeSet.create(RuntimeEnvironment.application,
         new Attribute("android:attr/onClick", "clickMe", R.class.getPackage().getName())
     );
 
@@ -365,7 +367,7 @@ public class ShadowViewTest {
   public void shouldThrowExceptionWithBadMethodName() throws Exception {
     MyActivity myActivity = buildActivity(MyActivity.class).create().get();
 
-    RoboAttributeSet attrs = ShadowApplication.getInstance().createAttributeSet(
+    AttributeSet attrs = RoboAttributeSet.create(RuntimeEnvironment.application,
         new Attribute("android:onClick", "clickYou", R.class.getPackage().getName())
     );
 
