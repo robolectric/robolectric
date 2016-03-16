@@ -56,12 +56,12 @@ public class CoreShadowsAdapter implements ShadowsAdapter {
   public void prepareShadowApplicationWithExistingApplication(Application application) {
     ShadowApplication roboShadow = Shadows.shadowOf(RuntimeEnvironment.application);
     ShadowApplication testShadow = Shadows.shadowOf(application);
-    testShadow.bind(roboShadow.getAppManifest(), roboShadow.getResourceLoader());
+    testShadow.bind(roboShadow.getAppManifest(), shadowOf(RuntimeEnvironment.application.getAssets()).getResourceLoader());
     testShadow.callAttachBaseContext(RuntimeEnvironment.application.getBaseContext());
   }
 
   @Override
-  public ShadowApplicationAdapter getApplicationAdapter(Activity component) {
+  public ShadowApplicationAdapter getApplicationAdapter(final Activity component) {
     final ShadowApplication shadow = Shadows.shadowOf(component.getApplication());
     return new ShadowApplicationAdapter() {
       public AndroidManifest getAppManifest() {
@@ -69,7 +69,7 @@ public class CoreShadowsAdapter implements ShadowsAdapter {
       }
 
       public ResourceLoader getResourceLoader() {
-        return shadow.getResourceLoader();
+        return shadowOf(RuntimeEnvironment.application.getAssets()).getResourceLoader();
       }
     };
   }
@@ -100,18 +100,13 @@ public class CoreShadowsAdapter implements ShadowsAdapter {
   }
 
   @Override
-  public void setPackageName(Application application, String packageName) {
-    shadowOf(application).setPackageName(packageName);
-  }
-
-  @Override
   public void setAssetsQualifiers(AssetManager assets, String qualifiers) {
     shadowOf(assets).setQualifiers(qualifiers);
   }
 
   @Override
   public ResourceLoader getResourceLoader() {
-    return ShadowApplication.getInstance().getResourceLoader();
+    return shadowOf(RuntimeEnvironment.application.getAssets()).getResourceLoader();
   }
 
 }

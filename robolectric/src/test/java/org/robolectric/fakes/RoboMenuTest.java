@@ -3,9 +3,6 @@ package org.robolectric.fakes;
 import android.app.Activity;
 import android.content.Intent;
 import android.view.MenuItem;
-
-import com.google.android.apps.common.testing.accessibility.framework.proto.FrameworkProtos;
-
 import junit.framework.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -1,12 +1,13 @@
 package org.robolectric.shadows;
 
-import android.app.Activity;
 import android.content.ContentResolver;
 import android.os.Build;
 import android.provider.Settings;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 
@@ -14,13 +15,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowSettingsTest {
-  private Activity activity;
   private ContentResolver contentResolver;
 
   @Before
   public void setUp() throws Exception {
-    activity = new Activity();
-    contentResolver = activity.getContentResolver();
+    contentResolver = RuntimeEnvironment.application.getContentResolver();
   }
 
   @Test

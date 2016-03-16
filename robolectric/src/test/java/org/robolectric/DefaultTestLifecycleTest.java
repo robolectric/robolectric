@@ -3,7 +3,6 @@ package org.robolectric;
 import android.app.Application;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,9 +18,10 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.util.TestUtil.newConfig;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
 public class DefaultTestLifecycleTest {
 
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -29,43 +29,47 @@ public class DefaultTestLifecycleTest {
 
   @Test(expected = RuntimeException.class)
   public void shouldThrowWhenManifestContainsBadApplicationClassName() throws Exception {
-    defaultTestLifecycle.getApplicationClass(null,
+    defaultTestLifecycle.createApplication(null,
         newConfigWith("<application android:name=\"org.robolectric.BogusTestApplication\"/>)"), null);
   }
 
   @Test
   public void shouldReturnDefaultAndroidApplicationWhenManifestDeclaresNoAppName() throws Exception {
-    assertThat(defaultTestLifecycle.getApplicationClass(null, newConfigWith(""), null))
-        .isEqualTo(Application.class);
+    assertThat(defaultTestLifecycle.createApplication(null, newConfigWith(""), null))
+        .isExactlyInstanceOf(Application.class);
   }
 
   @Test
   public void shouldReturnSpecifiedApplicationWhenManifestDeclaresAppName() throws Exception {
-    assertThat(defaultTestLifecycle.getApplicationClass(null,
+    assertThat(defaultTestLifecycle.createApplication(null,
         newConfigWith("<application android:name=\"org.robolectric.TestApplication\"/>"), null))
-        .isEqualTo(TestApplication.class);
+        .isExactlyInstanceOf(TestApplication.class);
   }
 
-  @Test
   @Config(manifest = "src/test/resources/TestAndroidManifestWithReceiversCustomPackage.xml")
-  public void shouldAssignThePackageNameFromTheManifest() throws Exception {
-    assertThat(RuntimeEnvironment.application.getPackageName()).isEqualTo("org.robolectric.mypackage");
-    assertThat(RuntimeEnvironment.application).isExactlyInstanceOf(Application.class);
+  @Test public void shouldAssignThePackageNameFromTheManifest() throws Exception {
+    Application application = RuntimeEnvironment.application;
+
+    assertThat(application.getPackageName()).isEqualTo("org.robolectric.mypackage");
+    assertThat(application).isExactlyInstanceOf(Application.class);
   }
 
   @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifestWithReceivers.xml")
   public void shouldRegisterReceiversFromTheManifest() throws Exception {
-    List<ShadowApplication.Wrapper> receivers = ShadowApplication.getInstance().getRegisteredReceivers();
+    AndroidManifest appManifest = newConfig("TestAndroidManifestWithReceivers.xml");
+    Application application = defaultTestLifecycle.createApplication(null, appManifest, null);
+    shadowOf(application).bind(appManifest, null);
+
+    List<ShadowApplication.Wrapper> receivers = shadowOf(application).getRegisteredReceivers();
     assertThat(receivers.size()).isEqualTo(5);
     assertTrue(receivers.get(0).intentFilter.matchAction("org.robolectric.ACTION1"));
   }
 
-  @Test
   @Config(manifest = "src/test/resources/TestAndroidManifestForActivities.xml")
-  public void shouldRegisterActivitiesFromManifestInPackageManager() throws Exception {
+  @Test public void shouldRegisterActivitiesFromManifestInPackageManager() throws Exception {
+    Application application = RuntimeEnvironment.application;
 
-    PackageManager packageManager = RuntimeEnvironment.application.getPackageManager();
+    PackageManager packageManager = application.getPackageManager();
     assertThat(packageManager.resolveActivity(new Intent("org.robolectric.shadows.TestActivity"), -1)).isNotNull();
     assertThat(packageManager.resolveActivity(new Intent("org.robolectric.shadows.TestActivity2"), -1)).isNotNull();
   }
@@ -77,25 +81,25 @@ public class DefaultTestLifecycleTest {
   }
 
   @Test public void shouldLoadConfigApplicationIfSpecified() throws Exception {
-    Class application = defaultTestLifecycle.getApplicationClass(null,
+    Application application = defaultTestLifecycle.createApplication(null,
         newConfigWith("<application android:name=\"" + "ClassNameToIgnore" + "\"/>"), new Config.Implementation(new int[0], "", "", "", "", "", new Class[0], new String[0], TestFakeApp.class, new String[0], null));
-    assertThat(application).isEqualTo(TestFakeApp.class);
+    assertThat(application).isExactlyInstanceOf(TestFakeApp.class);
   }
 
   @Test public void shouldLoadConfigInnerClassApplication() throws Exception {
-    Class application = defaultTestLifecycle.getApplicationClass(null,
+    Application application = defaultTestLifecycle.createApplication(null,
         newConfigWith("<application android:name=\"" + "ClassNameToIgnore" + "\"/>"), new Config.Implementation(new int[0], "", "", "", "", "", new Class[0], new String[0], TestFakeAppInner.class, new String[0], null));
-    assertThat(application).isEqualTo(TestFakeAppInner.class);
+    assertThat(application).isExactlyInstanceOf(TestFakeAppInner.class);
   }
 
   @Test public void shouldLoadTestApplicationIfClassIsPresent() throws Exception {
-    Class application = defaultTestLifecycle.getApplicationClass(null,
+    Application application = defaultTestLifecycle.createApplication(null,
         newConfigWith("<application android:name=\"" + FakeApp.class.getName() + "\"/>"), null);
-    assertThat(application).isEqualTo(TestFakeApp.class);
+    assertThat(application).isExactlyInstanceOf(TestFakeApp.class);
   }
 
   @Test public void whenNoAppManifestPresent_shouldCreateGenericApplication() throws Exception {
-    assertThat(defaultTestLifecycle.getApplicationClass(null, null, null)).isEqualTo(Application.class);
+    assertThat(defaultTestLifecycle.createApplication(null, null, null)).isExactlyInstanceOf(Application.class);
   }
 
   /////////////////////////////

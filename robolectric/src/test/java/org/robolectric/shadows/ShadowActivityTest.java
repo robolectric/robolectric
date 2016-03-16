@@ -101,7 +101,7 @@ public class ShadowActivityTest {
   public void shouldNotComplainIfActivityIsDestroyedWhileAnotherActivityHasRegisteredBroadcastReceivers() throws Exception {
     activity = create(DialogLifeCycleActivity.class);
 
-    DialogLifeCycleActivity activity2 = new DialogLifeCycleActivity();
+    DialogLifeCycleActivity activity2 = Robolectric.setupActivity(DialogLifeCycleActivity.class);
     activity2.registerReceiver(new AppWidgetProvider(), new IntentFilter());
 
     destroy(activity); // should not throw exception
@@ -422,7 +422,7 @@ public class ShadowActivityTest {
 
   @Test
   public void retrieveIdOfResource() {
-    Activity activity = new Activity();
+    Activity activity = Robolectric.setupActivity(Activity.class);
 
     int id1 = R.string.hello;
     String string = activity.getString(id1);
@@ -437,7 +437,7 @@ public class ShadowActivityTest {
 
   @Test
   public void retrieveIdOfNonExistingResource() {
-    Activity activity = new Activity();
+    Activity activity = Robolectric.setupActivity(Activity.class);
 
     int id = activity.getResources().getIdentifier("just_alot_of_crap", "string", "org.robolectric");
     assertThat(id).isEqualTo(0);
@@ -501,7 +501,7 @@ public class ShadowActivityTest {
 
   @Test
   public void shouldGiveSharedPreferences() throws Exception {
-    Activity activity = new Activity();
+    Activity activity = Robolectric.setupActivity(Activity.class);
     SharedPreferences preferences = activity.getPreferences(Context.MODE_PRIVATE);
     assertNotNull(preferences);
     preferences.edit().putString("foo", "bar").commit();
@@ -729,7 +729,7 @@ public class ShadowActivityTest {
 
   @Test
   public void shouldSupportIsTaskRoot() throws Exception {
-    Activity activity = new Activity();
+    Activity activity = Robolectric.setupActivity(Activity.class);
     assertTrue(activity.isTaskRoot()); // as implemented, Activities are considered task roots by default
 
     shadowOf(activity).setIsTaskRoot(false);
@@ -738,14 +738,14 @@ public class ShadowActivityTest {
 
   @Test
   public void getPendingTransitionEnterAnimationResourceId_should() throws Exception {
-    Activity activity = new Activity();
+    Activity activity = Robolectric.setupActivity(Activity.class);
     activity.overridePendingTransition(15, 2);
     assertThat(shadowOf(activity).getPendingTransitionEnterAnimationResourceId()).isEqualTo(15);
   }
 
   @Test
   public void getPendingTransitionExitAnimationResourceId_should() throws Exception {
-    Activity activity = new Activity();
+    Activity activity = Robolectric.setupActivity(Activity.class);
     activity.overridePendingTransition(15, 2);
     assertThat(shadowOf(activity).getPendingTransitionExitAnimationResourceId()).isEqualTo(2);
   }
@@ -862,14 +862,14 @@ public class ShadowActivityTest {
 
   @Test
   public void getCallingActivity_defaultsToNull() {
-    Activity activity = new Activity();
+    Activity activity = Robolectric.setupActivity(Activity.class);
 
     assertNull(activity.getCallingActivity());
   }
 
   @Test
   public void getCallingActivity_returnsSetValue() {
-    Activity activity = new Activity();
+    Activity activity = Robolectric.setupActivity(Activity.class);
     ComponentName componentName = new ComponentName("com.example.package", "SomeActivity");
 
     ShadowActivity shadowActivity = shadowOf(activity);
@@ -885,7 +885,7 @@ public class ShadowActivityTest {
   }
 
   private <T extends Activity> T create(Class<T> activityClass) {
-    return Robolectric.buildActivity(activityClass).create().get();
+    return Robolectric.setupActivity(activityClass);
   }
 
   public AndroidManifest newConfigWith(String contents) throws IOException {

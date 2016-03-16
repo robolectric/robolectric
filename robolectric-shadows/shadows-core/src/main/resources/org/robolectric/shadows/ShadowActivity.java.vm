@@ -89,7 +89,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
     if (themeRef != null) {
       ResName style = ResName.qualifyResName(themeRef.replace("@", ""), appManifest.getPackageName(), "style");
-      Integer themeRes = shadowApplication.getResourceLoader().getResourceIndex().getResourceId(style);
+      Integer themeRes = shadowOf(realActivity.getAssets()).getResourceLoader().getResourceIndex().getResourceId(style);
       if (themeRes == null)
         throw new Resources.NotFoundException("no such theme " + style.getFullyQualifiedName());
       realActivity.setTheme(themeRes);
@@ -109,12 +109,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   @Implementation
   public final Application getApplication() {
     return testApplication != null ? testApplication : RuntimeEnvironment.application;
-  }
-
-  @Override
-  @Implementation
-  public final Application getApplicationContext() {
-    return getApplication();
   }
 
   public void setCallingActivity(ComponentName activityName) {
@@ -276,18 +270,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     return 0;
   }
 
-  @Implementation
-  public SharedPreferences getPreferences(int mode) {
-    return ShadowPreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-  }
-
-  /**
-   * Checks the {@code ApplicationContext} to see if {@code BroadcastListener}s are still registered.
-   */
-  public void assertNoBroadcastListenersRegistered() {
-    shadowOf(getApplicationContext()).assertNoBroadcastListenersRegistered(realActivity, "Activity");
-  }
-
   /**
    * Non-Android accessor.
    *
@@ -433,26 +415,26 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
   @Implementation
   public void startActivities(Intent[] intents) {
-    super.startActivities(intents);
+    getApplication().startActivities(intents);
   }
 
   @Implementation
   public void startActivities(Intent[] intents, Bundle options) {
-    super.startActivities(intents, options);
+    getApplication().startActivities(intents, options);
   }
 
   @Implementation
   public void startActivityForResult(Intent intent, int requestCode) {
     intentRequestCodeMap.put(new Intent.FilterComparison(intent), requestCode);
     startedActivitiesForResults.add(new IntentForResult(intent, requestCode));
-    getApplicationContext().startActivity(intent);
+    getApplication().startActivity(intent);
   }
 
   @Implementation
   public void startActivityForResult(Intent intent, int requestCode, Bundle options) {
     intentRequestCodeMap.put(new Intent.FilterComparison(intent), requestCode);
     startedActivitiesForResults.add(new IntentForResult(intent, requestCode, options));
-    getApplicationContext().startActivity(intent);
+    getApplication().startActivity(intent);
   }
 
   public void receiveResult(Intent requestIntent, int resultCode, Intent resultIntent) {

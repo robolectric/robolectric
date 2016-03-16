@@ -1,10 +1,11 @@
 package org.robolectric.internal;
 
 import android.app.Application;
-import android.app.Instrumentation;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Looper;
@@ -17,16 +18,19 @@ import org.robolectric.ShadowsAdapter;
 import org.robolectric.TestLifecycle;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.fakes.RoboInstrumentation;
+import org.robolectric.manifest.ActivityData;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResBundle;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.builder.DefaultPackageManager;
+import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 
 import java.lang.reflect.Method;
 import java.security.Security;
+import java.util.Map;
 
 import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -112,7 +116,9 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
     Context systemContextImpl = ReflectionHelpers.callStaticMethod(contextImplClass, "createSystemContext", ClassParameter.from(activityThreadClass, activityThread));
 
-    final Class<? extends Application> application = testLifecycle.getApplicationClass(method, appManifest, config);
+    final Application application = (Application) testLifecycle.createApplication(method, appManifest, config);
+    RuntimeEnvironment.application = application;
+
     if (application != null) {
       String packageName = appManifest != null ? appManifest.getPackageName() : null;
       if (packageName == null) packageName = DEFAULT_PACKAGE_NAME;
@@ -131,28 +137,40 @@ public class ParallelUniverse implements ParallelUniverseInterface {
           ClassParameter.from(compatibilityInfoClass, null),
           ClassParameter.from(int.class, Context.CONTEXT_INCLUDE_CODE));
 
+      shadowsAdapter.bind(application, appManifest, resourceLoader);
+
       try {
         Context contextImpl = systemContextImpl.createPackageContext(applicationInfo.packageName, Context.CONTEXT_INCLUDE_CODE);
-        RuntimeEnvironment.application = Instrumentation.newApplication(application, contextImpl);
-        ReflectionHelpers.setField(activityThreadClass, activityThread, "mInitialApplication", RuntimeEnvironment.application);
-        shadowsAdapter.bind(RuntimeEnvironment.application, appManifest, resourceLoader);
-        if (appManifest == null) {
-          // todo: make this cleaner...
-          shadowsAdapter.setPackageName(RuntimeEnvironment.application, applicationInfo.packageName);
-        }
+        ReflectionHelpers.setField(activityThreadClass, activityThread, "mInitialApplication", application);
+        ReflectionHelpers.callInstanceMethod(Application.class, application, "attach", ClassParameter.from(Context.class, contextImpl));
       } catch (PackageManager.NameNotFoundException e) {
-        throw new RuntimeException(e);
-      } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
         throw new RuntimeException(e);
       }
 
-      Resources appResources = RuntimeEnvironment.application.getResources();
+      addManifestActivitiesToPackageManager(appManifest, application);
+
+      Resources appResources = application.getResources();
       ReflectionHelpers.setField(loadedApk, "mResources", appResources);
-      ReflectionHelpers.setField(loadedApk, "mApplication", RuntimeEnvironment.application);
+      ReflectionHelpers.setField(loadedApk, "mApplication", application);
+
       appResources.updateConfiguration(configuration, appResources.getDisplayMetrics());
       shadowsAdapter.setAssetsQualifiers(appResources.getAssets(), qualifiers);
 
-      RuntimeEnvironment.application.onCreate();
+      application.onCreate();
+    }
+  }
+
+  private void addManifestActivitiesToPackageManager(AndroidManifest appManifest, Application application) {
+    if (appManifest != null) {
+      Map<String,ActivityData> activityDatas = appManifest.getActivityDatas();
+
+      RobolectricPackageManager packageManager = (RobolectricPackageManager) application.getPackageManager();
+
+      for (ActivityData data : activityDatas.values()) {
+        String name = data.getName();
+        String activityName = name.startsWith(".") ? appManifest.getPackageName() + name : name;
+        packageManager.addResolveInfoForIntent(new Intent(activityName), new ResolveInfo());
+      }
     }
   }
 

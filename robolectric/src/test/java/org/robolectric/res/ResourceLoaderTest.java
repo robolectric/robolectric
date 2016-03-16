@@ -15,6 +15,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowApplication;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ResourceLoaderTest {
@@ -57,7 +58,7 @@ public class ResourceLoaderTest {
 
   @Test
   public void shouldMakeInternalResourcesAvailable() throws Exception {
-    ResourceLoader resourceLoader = ShadowApplication.getInstance().getResourceLoader();
+    ResourceLoader resourceLoader = shadowOf(RuntimeEnvironment.application.getAssets()).getResourceLoader();
     ResName internalResource = new ResName("android", "string", "badPin");
     Integer resId = resourceLoader.getResourceIndex().getResourceId(internalResource);
     assertThat(resId).isNotNull();
@@ -70,4 +71,6 @@ public class ResourceLoaderTest {
 
     assertThat(RuntimeEnvironment.application.getResources().getString(resId)).isEqualTo("The old PIN you typed isn't correct.");
   }
+
+  private static class TestPreferenceActivity extends PreferenceActivity { }
 }

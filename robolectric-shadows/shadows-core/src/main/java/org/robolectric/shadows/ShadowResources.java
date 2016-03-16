@@ -16,11 +16,13 @@ import android.util.LongSparseArray;
 import android.util.TypedValue;
 import android.view.Display;
 
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.annotation.HiddenApi;
+import org.robolectric.fakes.RoboAttributeSet;
 import org.robolectric.res.Attribute;
 import org.robolectric.res.Plural;
 import org.robolectric.res.ResName;
@@ -64,6 +66,7 @@ public class ShadowResources {
     for (LongSparseArray<?> sparseArray : resettableArrays) {
       sparseArray.clear();
     }
+    system = null;
   }
 
   private static List<LongSparseArray<?>> obtainResettableArrays() {
@@ -98,7 +101,7 @@ public class ShadowResources {
 
   private TypedArray attrsToTypedArray(AttributeSet set, int[] attrs, int defStyleAttr, int themeResourceId, int defStyleRes) {
     if (set == null) {
-      set = new RoboAttributeSet(new ArrayList<Attribute>(), shadowOf(realResources.getAssets()).getResourceLoader());
+      set = RoboAttributeSet.create(RuntimeEnvironment.application);
     }
 
     List<Attribute> attributes = shadowOf(realResources.getAssets()).buildAttributes(set, attrs, defStyleAttr, themeResourceId, defStyleRes);
@@ -258,6 +261,14 @@ public class ShadowResources {
   @HiddenApi @Implementation
   public XmlResourceParser loadXmlResourceParser(String file, int id, int assetCookie, String type) throws Resources.NotFoundException {
     return loadXmlResourceParser(id, type);
+  }
+
+  /**
+   * Deprecated. Instead call through {@link ShadowAssetManager#getResourceLoader()};
+   */
+  @Deprecated
+  public ResourceLoader getResourceLoader() {
+    return shadowOf(RuntimeEnvironment.application.getAssets()).getResourceLoader();
   }
 
   @Implements(Resources.Theme.class)

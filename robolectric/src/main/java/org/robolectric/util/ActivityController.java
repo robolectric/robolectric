@@ -15,13 +15,13 @@ import android.view.ViewRootImpl;
 
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.ShadowsAdapter;
-import org.robolectric.ShadowsAdapter.ShadowActivityAdapter;
-import org.robolectric.ShadowsAdapter.ShadowApplicationAdapter;
 import org.robolectric.internal.Shadow;
 import org.robolectric.internal.runtime.RuntimeAdapter;
 import org.robolectric.internal.runtime.RuntimeAdapterFactory;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResName;
+import org.robolectric.ShadowsAdapter.ShadowActivityAdapter;
+import org.robolectric.ShadowsAdapter.ShadowApplicationAdapter;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 public class ActivityController<T extends Activity> extends ComponentController<ActivityController<T>, T> {
@@ -49,7 +49,7 @@ public class ActivityController<T extends Activity> extends ComponentController<
       this.application.onCreate();
       shadowReference.setTestApplication(this.application);
     }
-    Context baseContext = this.baseContext == null ? application : this.baseContext;
+    Context baseContext = application.getBaseContext();
 
     final String title = getActivityTitle();
     final ClassLoader cl = baseContext.getClassLoader();

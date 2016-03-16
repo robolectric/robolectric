@@ -8,12 +8,16 @@ import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.os.Build;
+import android.os.Parcel;
 import android.util.DisplayMetrics;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.Shadow;
+
+import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
@@ -318,6 +322,40 @@ public class ShadowBitmapTest {
 
     bitmap = Bitmap.createBitmap(pixels, width, height, Bitmap.Config.ARGB_8888);
     bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
+  }
+
+  @Test
+  public void shouldWriteToParcelAndReconstruct() {
+    Bitmap bitmapOriginal;
+    int originalWidth = 10;
+    int originalHeight = 10;
+
+    bitmapOriginal = Bitmap.createBitmap(originalWidth, originalHeight, Bitmap.Config.ARGB_8888);
+
+    Parcel parcel = Parcel.obtain();
+    bitmapOriginal.writeToParcel(parcel, 0);
+
+    parcel.setDataPosition(0);
+
+    Bitmap bitmapReconstructed = Bitmap.CREATOR.createFromParcel(parcel);
+
+    // get reconstructed properties
+    int reconstructedHeight = bitmapReconstructed.getHeight();
+    int reconstructedWidth = bitmapReconstructed.getWidth();
+
+    //compare bitmap properties
+    assertThat(originalHeight).isEqualTo(reconstructedHeight);
+    assertThat(originalWidth).isEqualTo(reconstructedWidth);
+    assertThat(bitmapOriginal.getConfig()).isEqualTo(bitmapReconstructed.getConfig());
+
+    int[] pixelsOriginal = new int[originalWidth * originalHeight];
+    bitmapOriginal.getPixels(pixelsOriginal, 0, originalWidth, 0, 0, originalWidth, originalHeight);
+
+    int[] pixelsReconstructed = new int[reconstructedWidth * reconstructedHeight];
+    bitmapReconstructed.getPixels(pixelsReconstructed, 0, reconstructedWidth, 0, 0,
+        reconstructedWidth, reconstructedHeight);
+
+    assertThat(Arrays.equals(pixelsOriginal, pixelsReconstructed)).isTrue();
   }
 
   private static Bitmap create(String name) {

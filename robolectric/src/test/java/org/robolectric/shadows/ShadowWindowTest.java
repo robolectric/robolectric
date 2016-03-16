@@ -67,7 +67,7 @@ public class ShadowWindowTest {
 
   @Test
   public void getProgressBar_returnsTheProgressBar() {
-    Activity activity = Robolectric.setupActivity(TestActivity.class);
+    Activity activity = Robolectric.buildActivity(TestActivity.class).create().get();
 
     ProgressBar progress = shadowOf(activity.getWindow()).getProgressBar();
 

@@ -24,32 +24,12 @@ public class ShadowService extends ShadowContextWrapper {
   private int lastForegroundNotificationId;
   private Notification lastForegroundNotification;
   private boolean selfStopped = false;
-  private boolean unbindServiceShouldThrowIllegalArgument = false;
   private boolean foregroundStopped;
   private boolean notificationShouldRemoved;
 
   @Implementation
-  public final Application getApplication() {
-    return RuntimeEnvironment.application;
-  }
-
-  @Implementation @Override
-  public Context getApplicationContext() {
-    return RuntimeEnvironment.application;
-  }
-
-  @Implementation
   public void onDestroy() {
-    assertNoBroadcastListenersRegistered();
     removeForegroundNotification();
-  }
-
-  @Override @Implementation
-  public void unbindService(ServiceConnection conn) {
-    if (unbindServiceShouldThrowIllegalArgument) {
-      throw new IllegalArgumentException();
-    }
-    super.unbindService(conn);
   }
 
   @Implementation
@@ -60,10 +40,6 @@ public class ShadowService extends ShadowContextWrapper {
   @Implementation
   public void stopSelf(int id) {
     selfStopped = true;
-  }
-
-  public void setUnbindServiceShouldThrowIllegalArgument(boolean flag) {
-    unbindServiceShouldThrowIllegalArgument = flag;
   }
 
   @Implementation
@@ -96,13 +72,6 @@ public class ShadowService extends ShadowContextWrapper {
   
   public Notification getLastForegroundNotification() {
     return lastForegroundNotification;
-  }
-
-  /**
-   * Utility method that throws a {@code RuntimeException} if any {@code BroadcastListener}s are still registered.
-   */
-  public void assertNoBroadcastListenersRegistered() {
-    ((ShadowApplication) Shadows.shadowOf(getApplicationContext())).assertNoBroadcastListenersRegistered(realService, "Service");
   }
 
   /**

@@ -8,6 +8,9 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.NinePatchDrawable;
+
+import com.google.android.apps.common.testing.accessibility.framework.proto.FrameworkProtos;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

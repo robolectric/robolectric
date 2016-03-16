@@ -22,20 +22,19 @@ public class ShadowPreferenceActivity extends ShadowActivity {
   private final PreferenceBuilder preferenceBuilder = new PreferenceBuilder();
 
   @RealObject
-  private PreferenceActivity realObject;
+  private PreferenceActivity realOject;
 
   @Implementation
   public void addPreferencesFromResource(int preferencesResId) {
     this.preferencesResId = preferencesResId;
     preferenceScreen = inflatePreferences(preferencesResId);
-    realObject.setPreferenceScreen(preferenceScreen);
+    ((PreferenceActivity)realActivity).setPreferenceScreen(preferenceScreen);
   }
 
   private PreferenceScreen inflatePreferences(int preferencesResId) {
     ResName resName = getResName(preferencesResId);
-    String qualifiers = shadowOf(realObject.getResources().getConfiguration()).getQualifiers();
-
-    PreferenceNode preferenceNode = getResourceLoader().getPreferenceNode(resName, qualifiers);
+    String qualifiers = shadowOf(realOject.getResources().getConfiguration()).getQualifiers();
+    PreferenceNode preferenceNode = shadowOf(realOject.getAssets()).getResourceLoader().getPreferenceNode(resName, qualifiers);
     try {
       return (PreferenceScreen) preferenceBuilder.inflate(preferenceNode, realActivity, null);
     } catch (Exception e) {

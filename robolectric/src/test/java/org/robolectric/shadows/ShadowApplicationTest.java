@@ -51,6 +51,7 @@ import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -315,7 +316,7 @@ public class ShadowApplicationTest {
   public void shouldHaveStoppedServiceIntentAndIndicateServiceWasntRunning() {
     ShadowApplication shadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
 
-    Activity activity = new Activity();
+    Activity activity = Robolectric.setupActivity(Activity.class);
 
     Intent intent = getSomeActionIntent("some.action");
 
@@ -335,7 +336,7 @@ public class ShadowApplicationTest {
   public void shouldHaveStoppedServiceIntentAndIndicateServiceWasRunning() {
     ShadowApplication shadowApplication = shadowOf(RuntimeEnvironment.application);
 
-    Activity activity = new Activity();
+    Activity activity = Robolectric.setupActivity(Activity.class);
 
     Intent intent = getSomeActionIntent("some.action");
 
@@ -351,7 +352,7 @@ public class ShadowApplicationTest {
   public void shouldHaveStoppedServiceByStartedComponent() {
     ShadowApplication shadowApplication = shadowOf(RuntimeEnvironment.application);
 
-    Activity activity = new Activity();
+    Activity activity = Robolectric.setupActivity(Activity.class);
 
     ComponentName componentName = new ComponentName("package.test", "package.test.TestClass");
     Intent startServiceIntent = new Intent().setComponent(componentName);
@@ -383,7 +384,7 @@ public class ShadowApplicationTest {
 
   @Test(expected = IllegalStateException.class)
   public void shouldThrowIfContainsRegisteredReceiverOfAction() {
-    Activity activity = new Activity();
+    Activity activity = Robolectric.setupActivity(Activity.class);
     activity.registerReceiver(new TestBroadcastReceiver(), new IntentFilter("Foo"));
 
     shadowOf(RuntimeEnvironment.application).assertNoBroadcastListenersOfActionRegistered(activity, "Foo");
@@ -391,7 +392,7 @@ public class ShadowApplicationTest {
 
   @Test
   public void shouldNotThrowIfDoesNotContainsRegisteredReceiverOfAction() {
-    Activity activity = new Activity();
+    Activity activity = Robolectric.setupActivity(Activity.class);
     activity.registerReceiver(new TestBroadcastReceiver(), new IntentFilter("Foo"));
 
     shadowOf(RuntimeEnvironment.application).assertNoBroadcastListenersOfActionRegistered(activity, "Bar");
@@ -473,9 +474,13 @@ public class ShadowApplicationTest {
   }
 
   @Test
+  public void shouldRememberResourcesAfterLazilyLoading() throws Exception {
+    assertSame(RuntimeEnvironment.application.getResources(), RuntimeEnvironment.application.getResources());
+  }
+
+  @Test
   public void checkPermission_shouldTrackGrantedAndDeniedPermissions() throws Exception {
     Application application = RuntimeEnvironment.application;
-
     shadowOf(application).grantPermissions("foo", "bar");
     shadowOf(application).denyPermissions("foo", "qux");
     assertThat(application.checkPermission("foo", -1, -1)).isEqualTo(PERMISSION_DENIED);

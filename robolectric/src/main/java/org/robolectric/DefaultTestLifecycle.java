@@ -3,7 +3,6 @@ package org.robolectric;
 import android.app.Application;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
-
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.ClassNameResolver;
 import org.robolectric.manifest.ActivityData;
@@ -34,18 +33,21 @@ public class DefaultTestLifecycle implements TestLifecycle {
    * @return An instance of the Application class specified by the ApplicationManifest.xml or an instance of
    *         Application if not specified.
    */
-  public Class getApplicationClass(Method method, AndroidManifest appManifest, Config config) {
+  public Application createApplication(Method method, AndroidManifest appManifest, Config config) {
 
-    Class<? extends Application> applicationClass = null;
+    Application application = null;
     if (config != null && !config.application().getCanonicalName().equals(Application.class.getCanonicalName())) {
       if (config.application().getCanonicalName() != null) {
+        Class<? extends Application> applicationClass = null;
         try {
           applicationClass = new ClassNameResolver<Application>(null, config.application().getName()).resolve();
         } catch (ClassNotFoundException e) {
           throw new RuntimeException(e);
         }
+        application = newInstance(applicationClass);
       }
     } else if (appManifest != null && appManifest.getApplicationName() != null) {
+      Class<? extends Application> applicationClass = null;
       try {
         applicationClass = new ClassNameResolver<Application>(appManifest.getPackageName(), getTestApplicationName(appManifest.getApplicationName())).resolve();
       } catch (ClassNotFoundException e) {
@@ -59,27 +61,23 @@ public class DefaultTestLifecycle implements TestLifecycle {
           throw new RuntimeException(e);
         }
       }
+
+      application = newInstance(applicationClass);
     } else {
-      applicationClass = Application.class;
+      application = new Application();
     }
 
-    addManifestActivitiesToPackageManager(appManifest);
-
-    return applicationClass;
+    return application;
   }
 
-  private void addManifestActivitiesToPackageManager(AndroidManifest appManifest) {
-    if (appManifest != null) {
-      Map<String,ActivityData> activityDatas = appManifest.getActivityDatas();
-
-      RobolectricPackageManager packageManager = RuntimeEnvironment.getRobolectricPackageManager();
-
-      for (ActivityData data : activityDatas.values()) {
-        String name = data.getName();
-        String activityName = name.startsWith(".") ? appManifest.getPackageName() + name : name;
-        packageManager.addResolveInfoForIntent(new Intent(activityName), new ResolveInfo());
-      }
+  private static Application newInstance(Class<? extends Application> applicationClass) {
+    Application application;
+    try {
+      application = applicationClass.newInstance();
+    } catch (InstantiationException | IllegalAccessException e) {
+      throw new RuntimeException(e);
     }
+    return application;
   }
 
   /**

@@ -10,6 +10,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.AttributeSet;
 import android.view.ContextMenu;
 import android.view.HapticFeedbackConstants;
 import android.view.MotionEvent;
@@ -24,6 +25,7 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,6 +35,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.AccessibilityChecks;
 import org.robolectric.annotation.Config;
+import org.robolectric.fakes.RoboAttributeSet;
 import org.robolectric.res.Attribute;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.util.TestOnClickListener;
@@ -40,7 +43,6 @@ import org.robolectric.util.TestOnLongClickListener;
 import org.robolectric.util.TestRunnable;
 import org.robolectric.util.Transcript;
 
-import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static junit.framework.Assert.assertEquals;
@@ -340,8 +342,9 @@ public class ShadowViewTest {
 
   @Test
   public void shouldAddOnClickListenerFromAttribute() throws Exception {
-    RoboAttributeSet attrs = new RoboAttributeSet(new ArrayList<Attribute>(), resourceLoader);
-    attrs.put("android:attr/onClick", "clickMe", R.class.getPackage().getName());
+    AttributeSet attrs = RoboAttributeSet.create(RuntimeEnvironment.application,
+        new Attribute("android:attr/onClick", "clickMe", R.class.getPackage().getName())
+    );
 
     view = new View(RuntimeEnvironment.application, attrs);
     assertNotNull(shadowOf(view).getOnClickListener());
@@ -350,8 +353,10 @@ public class ShadowViewTest {
   @Test
   public void shouldCallOnClickWithAttribute() throws Exception {
     MyActivity myActivity = buildActivity(MyActivity.class).create().get();
-    RoboAttributeSet attrs = new RoboAttributeSet(new ArrayList<Attribute>(), resourceLoader);
-    attrs.put("android:attr/onClick", "clickMe", R.class.getPackage().getName());
+
+    AttributeSet attrs = RoboAttributeSet.create(RuntimeEnvironment.application,
+        new Attribute("android:attr/onClick", "clickMe", R.class.getPackage().getName())
+    );
 
     view = new View(myActivity, attrs);
     view.performClick();
@@ -361,8 +366,10 @@ public class ShadowViewTest {
   @Test(expected = RuntimeException.class)
   public void shouldThrowExceptionWithBadMethodName() throws Exception {
     MyActivity myActivity = buildActivity(MyActivity.class).create().get();
-    RoboAttributeSet attrs = new RoboAttributeSet(new ArrayList<Attribute>(), resourceLoader);
-    attrs.put("android:onClick", "clickYou", R.class.getPackage().getName());
+
+    AttributeSet attrs = RoboAttributeSet.create(RuntimeEnvironment.application,
+        new Attribute("android:onClick", "clickYou", R.class.getPackage().getName())
+    );
 
     view = new View(myActivity, attrs);
     view.performClick();
