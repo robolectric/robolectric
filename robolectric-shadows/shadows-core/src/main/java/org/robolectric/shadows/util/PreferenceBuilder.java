@@ -14,6 +14,7 @@ import org.robolectric.fakes.RoboAttributeSet;
 import org.robolectric.res.Attribute;
 import org.robolectric.res.PreferenceNode;
 import org.robolectric.res.ResName;
+import org.robolectric.fakes.RoboAttributeSet;
 
 import java.lang.reflect.InvocationTargetException;
 

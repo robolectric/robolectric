@@ -1,11 +1,7 @@
 package org.robolectric.fakes;
 
-import android.content.Context;
 import android.util.AttributeSet;
 import android.util.TypedValue;
-
-import com.google.android.collect.Lists;
-
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.res.AttrData;
 import org.robolectric.res.Attribute;
@@ -17,8 +13,6 @@ import org.robolectric.res.TypedResource;
 import org.robolectric.shadows.Converter;
 
 import java.util.List;
-
-import static org.robolectric.Shadows.shadowOf;
 
 /**
  * Robolectric implementation of {@link android.util.AttributeSet}.
