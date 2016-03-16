@@ -1,9 +1,9 @@
 package org.robolectric.util;
 
 import android.app.Application;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.ShadowsAdapter;
 import org.robolectric.ShadowsAdapter.ShadowLooperAdapter;
@@ -15,7 +15,6 @@ public abstract class ComponentController<C extends ComponentController<C, T>, T
   protected final ShadowLooperAdapter shadowMainLooper;
 
   protected Application application;
-  protected Context baseContext;
   protected Intent intent;
 
   protected boolean attached;
@@ -37,11 +36,6 @@ public abstract class ComponentController<C extends ComponentController<C, T>, T
 
   public C withApplication(Application application) {
     this.application = application;
-    return myself;
-  }
-
-  public C withBaseContext(Context baseContext) {
-    this.baseContext = baseContext;
     return myself;
   }
 

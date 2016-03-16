@@ -5,9 +5,8 @@ import android.appwidget.AppWidgetManager;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
-import android.content.ContentResolver;
 import android.content.Context;
-import android.content.IContentProvider;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
@@ -68,7 +67,6 @@ public class ShadowApplication extends ShadowContextWrapper {
   @RealObject private Application realApplication;
 
   private AndroidManifest appManifest;
-  private ContentResolver contentResolver;
   private List<Intent> startedActivities = new ArrayList<>();
   private List<Intent.FilterComparison> startedServices = new ArrayList<>();
   private List<Intent.FilterComparison> stoppedServices = new ArrayList<>();
@@ -79,7 +77,6 @@ public class ShadowApplication extends ShadowContextWrapper {
   private Map<String, Intent> stickyIntents = new LinkedHashMap<>();
   private Handler mainHandler;
   private Scheduler backgroundScheduler = RoboSettings.isUseGlobalScheduler() ? getForegroundThreadScheduler() : new Scheduler();
-  private Map<String, Map<String, Object>> sharedPreferenceMap = new HashMap<>();
   private ArrayList<Toast> shownToasts = new ArrayList<>();
   private PowerManager.WakeLock latestWakeLock;
   private ShadowAlertDialog latestAlertDialog;
@@ -88,6 +85,7 @@ public class ShadowApplication extends ShadowContextWrapper {
   private Object bluetoothAdapter = newInstanceOf("android.bluetooth.BluetoothAdapter");
   private Set<String> grantedPermissions = new HashSet<>();
 
+  private boolean unbindServiceShouldThrowIllegalArgument = false;
   private Map<Intent.FilterComparison, ServiceConnectionDataWrapper> serviceConnectionDataForIntent = new HashMap<>();
   private Map<ServiceConnection, ServiceConnectionDataWrapper> serviceConnectionDataForServiceConnection = new HashMap<>();
   //default values for bindService
@@ -135,7 +133,6 @@ public class ShadowApplication extends ShadowContextWrapper {
     this.appManifest = appManifest;
 
     if (appManifest != null) {
-      setPackageName(appManifest.getPackageName());
       this.registerBroadcastReceivers(appManifest);
     }
   }
@@ -185,7 +182,6 @@ public class ShadowApplication extends ShadowContextWrapper {
     return backgroundScheduler;
   }
 
-  @Override
   @Implementation
   public Context getApplicationContext() {
     return realApplication;
@@ -201,55 +197,18 @@ public class ShadowApplication extends ShadowContextWrapper {
   }
 
   @Implementation
-  @Override
-  public ContentResolver getContentResolver() {
-    if (contentResolver == null) {
-      contentResolver = new ContentResolver(realApplication) {
-        @Override
-        protected IContentProvider acquireProvider(Context c, String name) {
-          return null;
-        }
-
-        @Override
-        public boolean releaseProvider(IContentProvider icp) {
-          return false;
-        }
-
-        @Override
-        protected IContentProvider acquireUnstableProvider(Context c, String name) {
-          return null;
-        }
-
-        @Override
-        public boolean releaseUnstableProvider(IContentProvider icp) {
-          return false;
-        }
-
-        @Override
-        public void unstableProviderDied(IContentProvider icp) {
-
-        }
-      };
-    }
-    return contentResolver;
-  }
-
-  @Implementation
-  @Override
   public void startActivity(Intent intent) {
     verifyActivityInManifest(intent);
     startedActivities.add(intent);
   }
 
   @Implementation
-  @Override
   public void startActivity(Intent intent, Bundle options) {
     verifyActivityInManifest(intent);
     startedActivities.add(intent);
   }
 
   @Implementation
-  @Override
   public ComponentName startService(Intent intent) {
     startedServices.add(new Intent.FilterComparison(intent));
     if (intent.getComponent() != null) {
@@ -259,7 +218,6 @@ public class ShadowApplication extends ShadowContextWrapper {
   }
 
   @Implementation
-  @Override
   public boolean stopService(Intent name) {
     stoppedServices.add(new Intent.FilterComparison(name));
     return startedServices.contains(new Intent.FilterComparison(name));
@@ -303,8 +261,16 @@ public class ShadowApplication extends ShadowContextWrapper {
     return boundServiceConnections;
   }
 
-  @Override @Implementation
+  public void setUnbindServiceShouldThrowIllegalArgument(boolean flag) {
+    unbindServiceShouldThrowIllegalArgument = flag;
+  }
+
+  @Implementation
   public void unbindService(final ServiceConnection serviceConnection) {
+    if (unbindServiceShouldThrowIllegalArgument) {
+      throw new IllegalArgumentException();
+    }
+
     unboundServiceConnections.add(serviceConnection);
     boundServiceConnections.remove(serviceConnection);
     shadowOf(Looper.getMainLooper()).post(new Runnable() {
@@ -403,25 +369,21 @@ public class ShadowApplication extends ShadowContextWrapper {
     }
   }
 
-  @Override
   @Implementation
   public void sendBroadcast(Intent intent) {
     sendBroadcastWithPermission(intent, null);
   }
 
-  @Override
   @Implementation
   public void sendBroadcast(Intent intent, String receiverPermission) {
     sendBroadcastWithPermission(intent, receiverPermission);
   }
 
-  @Override
   @Implementation
   public void sendOrderedBroadcast(Intent intent, String receiverPermission) {
     sendOrderedBroadcastWithPermission(intent, receiverPermission);
   }
 
-  @Override
   @Implementation
   public void sendOrderedBroadcast(Intent intent, String receiverPermission, BroadcastReceiver resultReceiver,
                                    Handler scheduler, int initialCode, String initialData, Bundle initialExtras) {
@@ -595,13 +557,11 @@ public class ShadowApplication extends ShadowContextWrapper {
    *
    * @return {@code null}
    */
-  @Override
   @Implementation
   public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
     return registerReceiverWithContext(receiver, filter, null, null, realApplication);
   }
 
-  @Override
   @Implementation
   public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter, String broadcastPermission, Handler scheduler) {
     return registerReceiverWithContext(receiver, filter, broadcastPermission, scheduler, realApplication);
@@ -615,7 +575,7 @@ public class ShadowApplication extends ShadowContextWrapper {
   }
 
   private void verifyActivityInManifest(Intent intent) {
-    if (checkActivities && getPackageManager().resolveActivity(intent, -1) == null) {
+    if (checkActivities && realApplication.getPackageManager().resolveActivity(intent, -1) == null) {
       throw new ActivityNotFoundException(intent.getAction());
     }
   }
@@ -637,7 +597,6 @@ public class ShadowApplication extends ShadowContextWrapper {
     return result;
   }
 
-  @Override
   @Implementation
   public void unregisterReceiver(BroadcastReceiver broadcastReceiver) {
     boolean found = false;
@@ -654,29 +613,9 @@ public class ShadowApplication extends ShadowContextWrapper {
     }
   }
 
-  /**
-   * Iterates through all of the registered receivers on this {@code Application} and if any of them match the given
-   * {@code Context} object throws a {@code RuntimeException}
-   *
-   * @param context the {@code Context} to check for on each of the remaining registered receivers
-   * @param type    the type to report for the context if an exception is thrown
-   * @throws RuntimeException if there are any recievers registered with the given {@code Context}
-   */
-  public void assertNoBroadcastListenersRegistered(Context context, String type) {
+  public void assertNoBroadcastListenersOfActionRegistered(ContextWrapper context, String action) {
     for (Wrapper registeredReceiver : registeredReceivers) {
-      if (registeredReceiver.context == context) {
-        RuntimeException e = new IllegalStateException(type + " " + context + " leaked has leaked IntentReceiver "
-            + registeredReceiver.broadcastReceiver + " that was originally registered here. " +
-            "Are you missing a call to unregisterReceiver()?");
-        e.setStackTrace(registeredReceiver.exception.getStackTrace());
-        throw e;
-      }
-    }
-  }
-
-  public void assertNoBroadcastListenersOfActionRegistered(Context context, String action) {
-    for (Wrapper registeredReceiver : registeredReceivers) {
-      if (registeredReceiver.context == context) {
+      if (registeredReceiver.context == context.getBaseContext()) {
         Iterator<String> actions = registeredReceiver.intentFilter.actionsIterator();
         while (actions.hasNext()) {
           if (actions.next().equals(action)) {
@@ -735,10 +674,6 @@ public class ShadowApplication extends ShadowContextWrapper {
    */
   public AppWidgetManager getAppWidgetManager() {
     return appWidgetManager;
-  }
-
-  public Map<String, Map<String, Object>> getSharedPreferenceMap() {
-    return sharedPreferenceMap;
   }
 
   public ShadowAlertDialog getLatestAlertDialog() {
