@@ -1,6 +1,7 @@
 <a name="README">[<img src="https://rawgithub.com/robolectric/robolectric/master/images/robolectric-horizontal.png"/>](http://robolectric.org)</a>
 
 [![Build Status](https://secure.travis-ci.org/robolectric/robolectric.png?branch=master)](http://travis-ci.org/robolectric/robolectric)
+[![Gitter](https://badges.gitter.im/robolectric/robolectric.svg)](https://gitter.im/robolectric/robolectric?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 Robolectric is a testing framework that de-fangs the Android SDK so you can test-drive the development of your Android app.
 
