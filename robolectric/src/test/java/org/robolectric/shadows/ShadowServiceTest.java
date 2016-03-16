@@ -41,12 +41,6 @@ public class ShadowServiceTest {
         .setContentText("Hi there");
   }
 
-  @Test(expected = IllegalStateException.class)
-  public void shouldComplainIfServiceIsDestroyedWithRegisteredBroadcastReceivers() throws Exception {
-    service.registerReceiver(new AppWidgetProvider(), new IntentFilter());
-    service.onDestroy();
-  }
-
   @Test
   public void shouldUnbindServiceAtShadowApplication() {
     ShadowApplication shadowApplication = shadowOf(RuntimeEnvironment.application);
