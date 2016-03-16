@@ -2,8 +2,10 @@ package org.robolectric.internal;
 
 import android.app.Application;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Looper;
@@ -16,16 +18,19 @@ import org.robolectric.ShadowsAdapter;
 import org.robolectric.TestLifecycle;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.fakes.RoboInstrumentation;
+import org.robolectric.manifest.ActivityData;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResBundle;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.builder.DefaultPackageManager;
+import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 
 import java.lang.reflect.Method;
 import java.security.Security;
+import java.util.Map;
 
 import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -133,10 +138,6 @@ public class ParallelUniverse implements ParallelUniverseInterface {
           ClassParameter.from(int.class, Context.CONTEXT_INCLUDE_CODE));
 
       shadowsAdapter.bind(application, appManifest, resourceLoader);
-      if (appManifest == null) {
-        // todo: make this cleaner...
-        shadowsAdapter.setPackageName(application, applicationInfo.packageName);
-      }
 
       try {
         Context contextImpl = systemContextImpl.createPackageContext(applicationInfo.packageName, Context.CONTEXT_INCLUDE_CODE);
@@ -146,6 +147,8 @@ public class ParallelUniverse implements ParallelUniverseInterface {
         throw new RuntimeException(e);
       }
 
+      addManifestActivitiesToPackageManager(appManifest, application);
+
       Resources appResources = application.getResources();
       ReflectionHelpers.setField(loadedApk, "mResources", appResources);
       ReflectionHelpers.setField(loadedApk, "mApplication", application);
@@ -154,6 +157,20 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       shadowsAdapter.setAssetsQualifiers(appResources.getAssets(), qualifiers);
 
       application.onCreate();
+    }
+  }
+
+  private void addManifestActivitiesToPackageManager(AndroidManifest appManifest, Application application) {
+    if (appManifest != null) {
+      Map<String,ActivityData> activityDatas = appManifest.getActivityDatas();
+
+      RobolectricPackageManager packageManager = (RobolectricPackageManager) application.getPackageManager();
+
+      for (ActivityData data : activityDatas.values()) {
+        String name = data.getName();
+        String activityName = name.startsWith(".") ? appManifest.getPackageName() + name : name;
+        packageManager.addResolveInfoForIntent(new Intent(activityName), new ResolveInfo());
+      }
     }
   }
 

@@ -35,7 +35,7 @@ public class ServiceController<T extends Service> extends ComponentController<Se
 
   public ServiceController<T> attach() {
     Application application = this.application == null ? RuntimeEnvironment.application : this.application;
-    Context baseContext = this.baseContext == null ? application : this.baseContext;
+    Context baseContext = application.getBaseContext();
 
     ClassLoader cl = baseContext.getClassLoader();
     Class<?> activityThreadClass;

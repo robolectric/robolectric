@@ -100,11 +100,6 @@ public class CoreShadowsAdapter implements ShadowsAdapter {
   }
 
   @Override
-  public void setPackageName(Application application, String packageName) {
-    shadowOf(application).setPackageName(packageName);
-  }
-
-  @Override
   public void setAssetsQualifiers(AssetManager assets, String qualifiers) {
     shadowOf(assets).setQualifiers(qualifiers);
   }

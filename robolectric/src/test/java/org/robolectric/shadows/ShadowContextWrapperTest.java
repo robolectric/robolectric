@@ -330,10 +330,10 @@ public class ShadowContextWrapperTest {
 
   @Test
   public void shouldReturnSameApplicationContextEveryTime() throws Exception {
-    Activity activity = new Activity();
+    Activity activity = Robolectric.setupActivity(Activity.class);
     assertThat(activity.getApplicationContext()).isSameAs(activity.getApplicationContext());
 
-    assertThat(activity.getApplicationContext()).isSameAs(new Activity().getApplicationContext());
+    assertThat(activity.getApplicationContext()).isSameAs(Robolectric.setupActivity(Activity.class).getApplicationContext());
   }
 
   @Test
@@ -345,10 +345,10 @@ public class ShadowContextWrapperTest {
 
   @Test
   public void shouldReturnSameContentResolverEveryTime() throws Exception {
-    Activity activity = new Activity();
+    Activity activity = Robolectric.setupActivity(Activity.class);
     assertThat(activity.getContentResolver()).isSameAs(activity.getContentResolver());
 
-    assertThat(activity.getContentResolver()).isSameAs(new Activity().getContentResolver());
+    assertThat(activity.getContentResolver()).isSameAs(Robolectric.setupActivity(Activity.class).getContentResolver());
   }
 
   @Test
@@ -438,7 +438,7 @@ public class ShadowContextWrapperTest {
 
   @Test
   public void packageManagerShouldNotBeNullWhenWrappingAnApplication() {
-    assertThat(new Application().getPackageManager()).isNotNull();
+    assertThat(RuntimeEnvironment.application.getPackageManager()).isNotNull();
   }
 
   @Test
