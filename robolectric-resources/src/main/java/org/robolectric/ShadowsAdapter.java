@@ -34,8 +34,6 @@ public interface ShadowsAdapter {
 
   void bind(Application application, AndroidManifest appManifest, ResourceLoader resourceLoader);
 
-  void setPackageName(Application application, String packageName);
-
   void setAssetsQualifiers(AssetManager assets, String qualifiers);
 
   ResourceLoader getResourceLoader();
