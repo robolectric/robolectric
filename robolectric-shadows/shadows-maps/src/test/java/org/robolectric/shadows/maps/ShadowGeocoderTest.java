@@ -1,11 +1,12 @@
 package org.robolectric.shadows.maps;
 
-import android.app.Activity;
 import android.location.Address;
 import android.location.Geocoder;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.internal.ShadowExtractor;
 import org.robolectric.util.TestRunnerWithManifest;
 
@@ -21,7 +22,7 @@ public class ShadowGeocoderTest {
 
   @Before
   public void setUp() throws Exception {
-    geocoder = new Geocoder(new Activity());
+    geocoder = new Geocoder(RuntimeEnvironment.application);
   }
 
   @Test
