@@ -12,6 +12,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.internal.ShadowExtractor;
 import org.robolectric.shadows.Provider;
+import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowContext;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
@@ -30,7 +31,7 @@ public class ShadowLocalBroadcastManager {
 
   @Implementation
   public static LocalBroadcastManager getInstance(final Context context) {
-    return shadowOf(context).getShadowApplication().getSingleton(LocalBroadcastManager.class, new Provider<LocalBroadcastManager>() {
+    return ShadowApplication.getInstance().getSingleton(LocalBroadcastManager.class, new Provider<LocalBroadcastManager>() {
       @Override
       public LocalBroadcastManager get() {
         return ReflectionHelpers.callConstructor(LocalBroadcastManager.class, ClassParameter.from(Context.class, context));

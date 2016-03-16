@@ -75,8 +75,7 @@ public class ShadowApplication extends ShadowContextWrapper {
   private List<ServiceConnection> unboundServiceConnections = new ArrayList<>();
   private List<Wrapper> registeredReceivers = new ArrayList<>();
   private Map<String, Intent> stickyIntents = new LinkedHashMap<>();
-  private Looper mainLooper = Looper.myLooper();
-  private Handler mainHandler = new Handler(mainLooper);
+  private Handler mainHandler;
   private Scheduler backgroundScheduler = RoboSettings.isUseGlobalScheduler() ? getForegroundThreadScheduler() : new Scheduler();
   private Map<String, Map<String, Object>> sharedPreferenceMap = new HashMap<>();
   private ArrayList<Toast> shownToasts = new ArrayList<>();
@@ -97,7 +96,6 @@ public class ShadowApplication extends ShadowContextWrapper {
   AppWidgetManager appWidgetManager;
   private List<String> unbindableActions = new ArrayList<>();
 
-  private boolean strictI18n = false;
   private boolean checkActivities;
   private PopupWindow latestPopupWindow;
   private ListPopupWindow latestListPopupWindow;
@@ -445,7 +443,7 @@ public class ShadowApplication extends ShadowContextWrapper {
   }
 
   private void postIntent(Intent intent, Wrapper wrapper, final AtomicBoolean abort) {
-    final Handler scheduler = (wrapper.scheduler != null) ? wrapper.scheduler : this.mainHandler;
+    final Handler scheduler = (wrapper.scheduler != null) ? wrapper.scheduler : getMainHandler();
     final BroadcastReceiver receiver = wrapper.broadcastReceiver;
     final ShadowBroadcastReceiver shReceiver = Shadows.shadowOf(receiver);
     final Intent broadcastIntent = intent;
@@ -475,7 +473,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     future.addListener(new Runnable() {
       @Override
       public void run() {
-        mainHandler.post(new Runnable() {
+        getMainHandler().post(new Runnable() {
           @Override
           public void run() {
             try {
@@ -494,7 +492,7 @@ public class ShadowApplication extends ShadowContextWrapper {
                                                              final Intent intent,
                                                              ListenableFuture<BroadcastResultHolder> oldResult,
                                                              final AtomicBoolean abort) {
-    final Handler scheduler = (wrapper.scheduler != null) ? wrapper.scheduler : this.mainHandler;
+    final Handler scheduler = (wrapper.scheduler != null) ? wrapper.scheduler : getMainHandler();
     return Futures.transformAsync(oldResult, new AsyncFunction<BroadcastResultHolder, BroadcastResultHolder>() {
       @Override
       public ListenableFuture<BroadcastResultHolder> apply(BroadcastResultHolder broadcastResultHolder) throws Exception {
@@ -728,12 +726,6 @@ public class ShadowApplication extends ShadowContextWrapper {
     return appWidgetManager;
   }
 
-  @Override
-  @Implementation
-  public Looper getMainLooper() {
-    return mainLooper;
-  }
-
   public Map<String, Map<String, Object>> getSharedPreferenceMap() {
     return sharedPreferenceMap;
   }
@@ -777,14 +769,6 @@ public class ShadowApplication extends ShadowContextWrapper {
 
   public void clearWakeLocks() {
     latestWakeLock = null;
-  }
-
-  public boolean isStrictI18n() {
-    return strictI18n;
-  }
-
-  public void setStrictI18n(boolean strictI18n) {
-    this.strictI18n = strictI18n;
   }
 
   public AndroidManifest getAppManifest() {
@@ -899,5 +883,12 @@ public class ShadowApplication extends ShadowContextWrapper {
       this.componentNameForBindService = componentNameForBindService;
       this.binderForBindService = binderForBindService;
     }
+  }
+
+  private Handler getMainHandler() {
+    if (mainHandler == null) {
+      mainHandler = new Handler(realApplication.getMainLooper());
+    }
+    return mainHandler;
   }
 }
