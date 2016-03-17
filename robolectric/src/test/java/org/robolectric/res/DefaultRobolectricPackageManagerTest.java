@@ -535,7 +535,7 @@ public class DefaultRobolectricPackageManagerTest {
   public void shouldAssignTheAppMetaDataFromTheManifest() throws Exception {
     ShadowApplication app = ShadowApplication.getInstance();
     String packageName = app.getAppManifest().getPackageName();
-    ApplicationInfo info = app.getPackageManager().getApplicationInfo(packageName, 0);
+    ApplicationInfo info = RuntimeEnvironment.application.getPackageManager().getApplicationInfo(packageName, 0);
     Bundle meta = info.metaData;
 
     Object metaValue = meta.get("org.robolectric.metaName1");

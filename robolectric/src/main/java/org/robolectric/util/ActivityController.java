@@ -49,7 +49,7 @@ public class ActivityController<T extends Activity> extends ComponentController<
       this.application.onCreate();
       shadowReference.setTestApplication(this.application);
     }
-    Context baseContext = this.baseContext == null ? application : this.baseContext;
+    Context baseContext = application.getBaseContext();
 
     final String title = getActivityTitle();
     final ClassLoader cl = baseContext.getClassLoader();

@@ -11,6 +11,7 @@ import android.graphics.Rect;
 import android.os.IBinder;
 import android.view.ViewRootImpl;
 
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.internal.fakes.RoboInstrumentation;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
@@ -21,7 +22,7 @@ public class Api17RuntimeAdapter implements RuntimeAdapter{
   public void callActivityAttach(Object component, Context baseContext, Class<?> activityThreadClass, Application application, Intent intent, ActivityInfo activityInfo, String activityTitle, Class<?> nonConfigurationInstancesClass) {
     ReflectionHelpers.callInstanceMethod(Activity.class, component, "attach",
         ClassParameter.from(Context.class, baseContext),
-        ClassParameter.from(activityThreadClass, null),
+        ClassParameter.from(activityThreadClass, RuntimeEnvironment.getActivityThread()),
         ClassParameter.from(Instrumentation.class, new RoboInstrumentation()),
         ClassParameter.from(IBinder.class, null),
         ClassParameter.from(int.class, 0),
