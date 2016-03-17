@@ -73,11 +73,6 @@ public class RobolectricTestRunnerSelfTest {
       .isEqualTo("");
   }
 
-  @Test
-  public void internalBeforeTest_doesNotSetI18nStrictModeFromSystemIfPropertyAbsent() {
-    assertThat(ShadowApplication.getInstance().isStrictI18n()).isFalse();
-  }
-
   @Before
   public void clearOrder() {
     onTerminateCalledFromMain = null;

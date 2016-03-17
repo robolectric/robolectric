@@ -23,6 +23,7 @@ import android.os.RemoteException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.DefaultTestLifecycle;
@@ -55,7 +56,7 @@ public class ShadowContentResolverTest {
 
   @Before
   public void setUp() throws Exception {
-    contentResolver = new Activity().getContentResolver();
+    contentResolver = Robolectric.setupActivity(Activity.class).getContentResolver();
     shadowContentResolver = shadowOf(contentResolver);
     uri21 = Uri.parse(EXTERNAL_CONTENT_URI.toString() + "/21");
     uri22 = Uri.parse(EXTERNAL_CONTENT_URI.toString() + "/22");
