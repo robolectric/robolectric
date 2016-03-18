@@ -11,7 +11,7 @@ import java.util.List;
  * Shadow for {@link android.content.ContextWrapper}.
  */
 @Implements(ContextWrapper.class)
-public class ShadowContextWrapper extends ShadowContext {
+public class ShadowContextWrapper {
 
   public List<Intent> getBroadcastIntents() {
     return ShadowApplication.getInstance().getBroadcastIntents();
