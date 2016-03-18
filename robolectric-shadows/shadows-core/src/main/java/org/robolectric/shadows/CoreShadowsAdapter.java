@@ -27,9 +27,6 @@ public class CoreShadowsAdapter implements ShadowsAdapter {
   public ShadowActivityAdapter getShadowActivityAdapter(Activity component) {
     final ShadowActivity shadow = Shadows.shadowOf(component);
     return new ShadowActivityAdapter() {
-      public void setTestApplication(Application application) {
-        shadow.setTestApplication(application);
-      }
 
       public void setThemeFromManifest() {
         shadow.setThemeFromManifest();
@@ -53,19 +50,10 @@ public class CoreShadowsAdapter implements ShadowsAdapter {
   }
 
   @Override
-  public void prepareShadowApplicationWithExistingApplication(Application application) {
-    ShadowApplication roboShadow = Shadows.shadowOf(RuntimeEnvironment.application);
-    ShadowApplication testShadow = Shadows.shadowOf(application);
-    testShadow.bind(roboShadow.getAppManifest(), shadowOf(RuntimeEnvironment.application.getAssets()).getResourceLoader());
-    testShadow.callAttachBaseContext(RuntimeEnvironment.application.getBaseContext());
-  }
-
-  @Override
   public ShadowApplicationAdapter getApplicationAdapter(final Activity component) {
-    final ShadowApplication shadow = Shadows.shadowOf(component.getApplication());
     return new ShadowApplicationAdapter() {
       public AndroidManifest getAppManifest() {
-        return shadow.getAppManifest();
+        return ShadowApplication.getInstance().getAppManifest();
       }
 
       public ResourceLoader getResourceLoader() {

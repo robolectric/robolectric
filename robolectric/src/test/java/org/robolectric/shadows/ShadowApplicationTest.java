@@ -61,8 +61,8 @@ public class ShadowApplicationTest {
 
   @Test
   public void shouldBeAContext() throws Exception {
-    assertThat(new Activity().getApplication()).isSameAs(RuntimeEnvironment.application);
-    assertThat(new Activity().getApplication().getApplicationContext()).isSameAs(RuntimeEnvironment.application);
+    assertThat(Robolectric.setupActivity(Activity.class).getApplication()).isSameAs(RuntimeEnvironment.application);
+    assertThat(Robolectric.setupActivity(Activity.class).getApplication().getApplicationContext()).isSameAs(RuntimeEnvironment.application);
   }
 
   @Test
