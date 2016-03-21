@@ -119,28 +119,6 @@ public class ActivityControllerTest {
   }
 
   @Test
-  public void withApplication_attachesTestApplicationToActivity() {
-    Application application = new Application();
-    MyActivity activity = controller.withApplication(application).create().get();
-    assertThat(activity.getApplication()).isEqualTo(application);
-  }
-
-  @Test
-  public void withApplication_setsBaseContext() {
-    Application application = new Application();
-    controller.withApplication(application).create().get();
-    assertThat(application.getBaseContext()).isNotNull();
-  }
-
-  @Test
-  public void withApplication_bindsResourcesAndAssets() {
-    Application application = new Application();
-    controller.withApplication(application).create().get();
-    assertThat(application.getBaseContext().getAssets()).isNotNull();
-    assertThat(application.getBaseContext().getResources()).isNotNull();
-  }
-
-  @Test
   public void visible_addsTheDecorViewToTheWindowManager() {
     controller.create().visible();
     assertEquals(controller.get().getWindow().getDecorView().getParent().getClass().getName(), "android.view.ViewRootImpl");

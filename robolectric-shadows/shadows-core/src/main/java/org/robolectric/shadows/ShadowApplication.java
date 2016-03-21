@@ -689,11 +689,6 @@ public class ShadowApplication extends ShadowContextWrapper {
     unbindableActions.add(action);
   }
 
-  @Deprecated
-  public void setSystemService(String key, Object service) {
-    ((ShadowContextImpl) shadowOf(realApplication.getBaseContext())).setSystemService(key, service);
-  }
-
   public PowerManager.WakeLock getLatestWakeLock() {
     return latestWakeLock;
   }

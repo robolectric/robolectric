@@ -261,9 +261,4 @@ public class ShadowContextTest {
     assertThat(typedArray.getString(0)).isEqualTo("^q");
     assertThat(typedArray.getInt(1, -1234)).isEqualTo(1 /* ungulate */);
   }
-
-  @Test
-  public void shouldGetResourceLoader() {
-    assertThat(shadowOf(context).getResourceLoader()).isEqualTo(shadowOf(context.getAssets()).getResourceLoader());
-  }
 }
