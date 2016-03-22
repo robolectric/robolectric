@@ -50,6 +50,14 @@ public class ShadowEnvironmentTest {
   }
 
   @Test
+  @Config(sdk = Build.VERSION_CODES.M)
+  public void isExternalStorageRemovable_primaryShouldReturnSavedValue() {
+    assertThat(Environment.isExternalStorageRemovable()).isFalse();
+    ShadowEnvironment.setExternalStorageRemovable(Environment.getExternalStorageDirectory(), true);
+    assertThat(Environment.isExternalStorageRemovable()).isTrue();
+  }
+
+  @Test
   @Config(sdk = {
       Build.VERSION_CODES.LOLLIPOP })
   public void isExternalStorageRemovable_shouldReturnSavedValue() {

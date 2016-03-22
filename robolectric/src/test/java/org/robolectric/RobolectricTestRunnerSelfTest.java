@@ -24,6 +24,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(RobolectricTestRunnerSelfTest.RunnerForTesting.class)
 public class RobolectricTestRunnerSelfTest {
@@ -34,7 +35,7 @@ public class RobolectricTestRunnerSelfTest {
       .isNotNull()
       .isInstanceOf(MyTestApplication.class);
     assertThat(((MyTestApplication) RuntimeEnvironment.application).onCreateWasCalled).as("onCreate called").isTrue();
-    assertThat(ShadowApplication.getInstance().getResourceLoader()).as("resource loader").isNotNull();
+    assertThat(shadowOf(RuntimeEnvironment.application.getAssets()).getResourceLoader()).as("resource loader").isNotNull();
   }
 
   @Test
@@ -63,18 +64,13 @@ public class RobolectricTestRunnerSelfTest {
   @Config(qualifiers = "fr")
   public void internalBeforeTest_testValuesResQualifiers() {
     String expectedQualifiers = "fr" + TestRunners.WithDefaults.SDK_TARGETED_BY_MANIFEST;
-    assertThat(Shadows.shadowOf(ShadowApplication.getInstance().getResources().getAssets()).getQualifiers()).isEqualTo(expectedQualifiers);
+    assertThat(shadowOf(RuntimeEnvironment.application.getAssets()).getQualifiers()).isEqualTo(expectedQualifiers);
   }
 
   @Test
   public void internalBeforeTest_resetsValuesResQualifiers() {
-    assertThat(Shadows.shadowOf(ShadowApplication.getInstance().getResources().getConfiguration()).getQualifiers())
+    assertThat(shadowOf(RuntimeEnvironment.application.getResources().getConfiguration()).getQualifiers())
       .isEqualTo("");
-  }
-
-  @Test
-  public void internalBeforeTest_doesNotSetI18nStrictModeFromSystemIfPropertyAbsent() {
-    assertThat(ShadowApplication.getInstance().isStrictI18n()).isFalse();
   }
 
   @Before

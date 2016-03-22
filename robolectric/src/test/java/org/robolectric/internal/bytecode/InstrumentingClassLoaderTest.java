@@ -2,11 +2,6 @@ package org.robolectric.internal.bytecode;
 
 import android.os.Build;
 
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
-import java.lang.invoke.SwitchPoint;
-import java.util.Arrays;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.robolectric.RobolectricTestRunner;
@@ -15,6 +10,7 @@ import org.robolectric.internal.ShadowConstants;
 import org.robolectric.internal.ShadowExtractor;
 import org.robolectric.internal.bytecode.testing.AChild;
 import org.robolectric.internal.bytecode.testing.AClassThatCallsAMethodReturningAForgettableClass;
+import org.robolectric.internal.bytecode.testing.AClassThatExtendsAClassWithFinalEqualsHashCode;
 import org.robolectric.internal.bytecode.testing.AClassThatRefersToAForgettableClass;
 import org.robolectric.internal.bytecode.testing.AClassThatRefersToAForgettableClassInItsConstructor;
 import org.robolectric.internal.bytecode.testing.AClassThatRefersToAForgettableClassInMethodCalls;
@@ -42,6 +38,10 @@ import org.robolectric.internal.bytecode.testing.AnUninstrumentedParent;
 import org.robolectric.util.Transcript;
 import org.robolectric.util.Util;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
+import java.lang.invoke.SwitchPoint;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -55,7 +55,6 @@ import static java.lang.invoke.MethodType.methodType;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
@@ -329,6 +328,11 @@ public class InstrumentingClassLoaderTest {
     Method directMethod = declaringClass.getDeclaredMethod(directMethodName, argClasses);
     directMethod.setAccessible(true);
     return directMethod;
+  }
+
+  @Test
+  public void shouldNotInstrumentFinalEqualsHashcode() throws ClassNotFoundException {
+    Class<?> theClass = loadClass(AClassThatExtendsAClassWithFinalEqualsHashCode.class);
   }
 
   @Test

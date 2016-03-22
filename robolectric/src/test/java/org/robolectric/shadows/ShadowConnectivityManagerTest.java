@@ -118,6 +118,29 @@ public class ShadowConnectivityManagerTest {
   }
 
   @Test
+  @Config(sdk = Build.VERSION_CODES.M)
+  public void getActiveNetwork_shouldInitializeItself() {
+    assertThat(connectivityManager.getActiveNetwork()).isNotNull();
+  }
+
+  @Test
+  @Config(sdk = Build.VERSION_CODES.M)
+  public void setActiveNetworkInfo_shouldSetActiveNetwork() throws Exception {
+    shadowConnectivityManager.setActiveNetworkInfo(null);
+    assertThat(connectivityManager.getActiveNetworkInfo()).isNull();
+    shadowConnectivityManager.setActiveNetworkInfo(ShadowNetworkInfo.newInstance(null,
+        ConnectivityManager.TYPE_MOBILE_HIPRI, TelephonyManager.NETWORK_TYPE_EDGE, true, false));
+
+    NetworkInfo info = connectivityManager.getActiveNetworkInfo();
+
+    assertThat(ConnectivityManager.TYPE_MOBILE_HIPRI).isEqualTo(info.getType());
+    assertThat(TelephonyManager.NETWORK_TYPE_EDGE).isEqualTo(info.getSubtype());
+    assertThat(info.isAvailable()).isTrue();
+    assertThat(info.isConnected()).isFalse();
+    assertThat(shadowOf(connectivityManager.getActiveNetwork()).getNetId()).isEqualTo(info.getType());
+  }
+
+  @Test
   public void getAllNetworkInfo_shouldReturnAllNetworkInterfaces() throws Exception {
     NetworkInfo[] infos = connectivityManager.getAllNetworkInfo();
     assertThat(infos).hasSize(2);

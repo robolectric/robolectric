@@ -67,8 +67,6 @@ public class DefaultTestLifecycle implements TestLifecycle {
       application = new Application();
     }
 
-    addManifestActivitiesToPackageManager(appManifest, application);
-
     return application;
   }
 
@@ -80,20 +78,6 @@ public class DefaultTestLifecycle implements TestLifecycle {
       throw new RuntimeException(e);
     }
     return application;
-  }
-
-  private void addManifestActivitiesToPackageManager(AndroidManifest appManifest, Application application) {
-    if (appManifest != null) {
-      Map<String,ActivityData> activityDatas = appManifest.getActivityDatas();
-
-      RobolectricPackageManager packageManager = (RobolectricPackageManager) application.getPackageManager();
-
-      for (ActivityData data : activityDatas.values()) {
-        String name = data.getName();
-        String activityName = name.startsWith(".") ? appManifest.getPackageName() + name : name;
-        packageManager.addResolveInfoForIntent(new Intent(activityName), new ResolveInfo());
-      }
-    }
   }
 
   /**

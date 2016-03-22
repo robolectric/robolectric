@@ -18,6 +18,7 @@ public class ShadowVideoView extends ShadowSurfaceView {
 
   private Uri uri;
   private String path;
+  private int duration = 0;
 
   public static final int STOP = 0;
   public static final int START = 1;
@@ -106,6 +107,11 @@ public class ShadowVideoView extends ShadowSurfaceView {
     return currentPosition;
   }
 
+  @Implementation
+  public int getDuration() {
+    return duration;
+  }
+
   /**
    * Non-Android accessor.
    *
@@ -167,6 +173,13 @@ public class ShadowVideoView extends ShadowSurfaceView {
    */
   public int getPrevVideoState() {
     return prevState;
+  }
+
+  /**
+   * Non-Android accessor.
+   */
+  public void setDuration(int duration) {
+    this.duration = duration;
   }
 
   /**

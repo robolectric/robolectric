@@ -1,17 +1,13 @@
 package org.robolectric.util;
 
-import android.content.res.Resources;
-import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.internal.dependency.MavenDependencyResolver;
 import org.robolectric.R;
 import org.robolectric.internal.SdkConfig;
+import org.robolectric.internal.dependency.MavenDependencyResolver;
+import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Attribute;
-import org.robolectric.res.EmptyResourceLoader;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
-import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.ResourcePath;
-import org.robolectric.shadows.ShadowResources;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -105,7 +101,7 @@ public abstract class TestUtil {
   public static ResourcePath systemResources() {
     if (SYSTEM_RESOURCE_PATH == null) {
       SdkConfig sdkConfig = new SdkConfig(SdkConfig.FALLBACK_SDK_VERSION);
-      Fs fs = Fs.fromJar(new MavenDependencyResolver().getLocalArtifactUrl(sdkConfig.getSystemResourceDependency()));
+      Fs fs = Fs.fromJar(new MavenDependencyResolver().getLocalArtifactUrl(sdkConfig.getAndroidSdkDependency()));
       SYSTEM_RESOURCE_PATH = new ResourcePath(android.R.class, "android", fs.join("res"), fs.join("assets"));
     }
     return SYSTEM_RESOURCE_PATH;
@@ -141,17 +137,5 @@ public abstract class TestUtil {
       file = new File(file, part);
     }
     return file.getPath();
-  }
-
-  public static String joinCanonicalPath(String... parts) throws IOException {
-    return new File(joinPath(parts)).getCanonicalPath();
-  }
-
-  public static Resources createResourcesFor(ResourceLoader resourceLoader) {
-    return ShadowResources.createFor(resourceLoader);
-  }
-
-  public static Resources emptyResources() {
-    return ShadowResources.createFor(new EmptyResourceLoader());
   }
 }

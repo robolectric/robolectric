@@ -7,6 +7,8 @@ import android.view.ContextMenu;
 import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
+
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.shadows.ShadowApplication;
 
 /**
@@ -97,7 +99,7 @@ public class RoboMenuItem implements MenuItem {
 
   @Override
   public MenuItem setIcon(int iconRes) {
-    this.icon = iconRes == 0 ? null : ShadowApplication.getInstance().getResources().getDrawable(iconRes);
+    this.icon = iconRes == 0 ? null : RuntimeEnvironment.application.getResources().getDrawable(iconRes);
     return this;
   }
 

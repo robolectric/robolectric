@@ -31,6 +31,30 @@ public class ShadowKeyguardManager {
     inRestrictedInputMode = restricted;
   }
 
+#if ($api >= 23)
+  private boolean isKeyguardSecure;
+
+  @Implementation
+  public boolean isKeyguardSecure() {
+    return isKeyguardSecure;
+  }
+
+  public void setIsKeyguardSecure(boolean secure) {
+    isKeyguardSecure = secure;
+  }
+
+  private boolean isDeviceSecure;
+
+  @Implementation
+  public boolean isDeviceSecure() {
+    return isDeviceSecure;
+  }
+
+  public void setIsDeviceSecure(boolean isDeviceSecure) {
+    this.isDeviceSecure = isDeviceSecure;
+  }
+#end
+
   @Implements(KeyguardManager.KeyguardLock.class)
   public static class ShadowKeyguardLock {
     private boolean keyguardEnabled = true;

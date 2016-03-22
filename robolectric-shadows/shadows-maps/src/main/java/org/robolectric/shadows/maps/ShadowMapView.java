@@ -7,25 +7,29 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ZoomButtonsController;
-import com.google.android.maps.*;
+
+import com.google.android.maps.GeoPoint;
+import com.google.android.maps.MapController;
+import com.google.android.maps.MapView;
+import com.google.android.maps.Overlay;
+import com.google.android.maps.Projection;
+
+import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.internal.ShadowExtractor;
-import org.robolectric.shadows.RoboAttributeSet;
-import org.robolectric.shadows.ShadowApplication;
+import org.robolectric.fakes.RoboAttributeSet;
+import org.robolectric.internal.Shadow;
 import org.robolectric.shadows.ShadowViewGroup;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.res.Attribute;
-import org.robolectric.internal.Shadow;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 import static org.robolectric.internal.Shadow.directlyOn;
 import static org.robolectric.internal.Shadow.invokeConstructor;
+import static org.robolectric.shadows.maps.Shadows.shadowOf;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /**
  * Shadow for {@link com.google.android.maps.MapView}.
@@ -53,7 +57,7 @@ public class ShadowMapView extends ShadowViewGroup {
   @HiddenApi
   public void __constructor__(Context context) {
     setContextOnRealView(context);
-    this.attributeSet = new RoboAttributeSet(new ArrayList<Attribute>(), ShadowApplication.getInstance().getResourceLoader());
+    this.attributeSet = RoboAttributeSet.create(context);
     zoomButtonsController = new ZoomButtonsController(realMapView);
     invokeConstructor(View.class, realView, ClassParameter.from(Context.class, context));
     invokeConstructor(ViewGroup.class, realView, ClassParameter.from(Context.class, context));
@@ -328,9 +332,5 @@ public class ShadowMapView extends ShadowViewGroup {
 
   private void setContextOnRealView(Context context) {
     ReflectionHelpers.setField(realView, "mContext", context);
-  }
-
-  private ShadowMapController shadowOf(MapController mapController) {
-    return (ShadowMapController) ShadowExtractor.extract(mapController);
   }
 }

@@ -7,32 +7,37 @@ import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
+import android.content.pm.PackageInstaller;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ProviderInfo;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.*;
+import org.robolectric.R;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowDrawable;
 import org.robolectric.test.TemporaryFolder;
+
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -41,14 +46,48 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.robolectric.Robolectric.setupActivity;
+import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@Config(manifest = Config.NONE, sdk = 23)
 public class DefaultRobolectricPackageManagerTest {
   private static final String TEST_PACKAGE_NAME = "com.some.other.package";
   private static final String TEST_PACKAGE_LABEL = "My Little App";
   private final RobolectricPackageManager rpm = RuntimeEnvironment.getRobolectricPackageManager();
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+  @Test
+  public void getPackageInstaller() {
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = TEST_PACKAGE_NAME;
+    packageInfo.applicationInfo = new ApplicationInfo();
+    packageInfo.applicationInfo.packageName = TEST_PACKAGE_NAME;
+    packageInfo.applicationInfo.name = TEST_PACKAGE_LABEL;
+    rpm.addPackage(packageInfo);
+
+    List<PackageInstaller.SessionInfo> allSessions = RuntimeEnvironment.getPackageManager().getPackageInstaller().getAllSessions();
+
+    List<String> allPackageNames = new LinkedList<>();
+    for (PackageInstaller.SessionInfo session : allSessions) {
+      allPackageNames.add(session.appPackageName);
+    }
+
+    assertThat(allPackageNames).contains(TEST_PACKAGE_NAME);
+  }
+
+  @Test
+  public void packageInstallerAndGetInstalledPackagesAreConsistent() {
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = TEST_PACKAGE_NAME;
+    packageInfo.applicationInfo = new ApplicationInfo();
+    packageInfo.applicationInfo.packageName = TEST_PACKAGE_NAME;
+    packageInfo.applicationInfo.name = TEST_PACKAGE_LABEL;
+    rpm.addPackage(packageInfo);
+
+    List<PackageInstaller.SessionInfo> allSessions = RuntimeEnvironment.getPackageManager().getPackageInstaller().getAllSessions();
+
+    assertThat(allSessions).hasSameSizeAs(rpm.getInstalledPackages(0));
+  }
 
   @Test
   public void getApplicationInfo_ThisApplication() throws Exception {
@@ -113,7 +152,7 @@ public class DefaultRobolectricPackageManagerTest {
   @Test
   @Config(manifest = "src/test/resources/TestAndroidManifestForActivitiesWithIntentFilterWithData.xml")
   public void queryIntentActivities_EmptyResultWithNoMatchingImplicitIntents() throws Exception {
-    rpm.addManifest(ShadowApplication.getInstance().getAppManifest(), ShadowApplication.getInstance().getResourceLoader());
+    rpm.addManifest(ShadowApplication.getInstance().getAppManifest(), shadowOf(RuntimeEnvironment.application.getAssets()).getResourceLoader());
     Intent i = new Intent(Intent.ACTION_MAIN, null);
     i.addCategory(Intent.CATEGORY_LAUNCHER);
 
@@ -125,7 +164,7 @@ public class DefaultRobolectricPackageManagerTest {
   @Test
   @Config(manifest = "src/test/resources/TestAndroidManifestForActivitiesWithIntentFilterWithData.xml")
   public void queryIntentActivities_MatchWithImplicitIntents() throws Exception {
-    rpm.addManifest(ShadowApplication.getInstance().getAppManifest(), ShadowApplication.getInstance().getResourceLoader());
+    rpm.addManifest(ShadowApplication.getInstance().getAppManifest(), shadowOf(RuntimeEnvironment.application.getAssets()).getResourceLoader());
     Uri uri = Uri.parse("content://testhost1.com:1/testPath/test.jpeg");
     Intent i = new Intent(Intent.ACTION_VIEW);
     i.addCategory(Intent.CATEGORY_DEFAULT);
@@ -142,7 +181,7 @@ public class DefaultRobolectricPackageManagerTest {
   @Test
   @Config(manifest = "src/test/resources/TestAndroidManifestForActivityAliases.xml")
   public void queryIntentActivities_MatchWithAliasIntents() throws Exception {
-    rpm.addManifest(ShadowApplication.getInstance().getAppManifest(), ShadowApplication.getInstance().getResourceLoader());
+    rpm.addManifest(ShadowApplication.getInstance().getAppManifest(), shadowOf(RuntimeEnvironment.application.getAssets()).getResourceLoader());
     Intent i = new Intent(Intent.ACTION_MAIN);
     i.addCategory(Intent.CATEGORY_LAUNCHER);
 
@@ -296,7 +335,7 @@ public class DefaultRobolectricPackageManagerTest {
   @Config(manifest = "src/test/resources/TestAndroidManifestWithReceivers.xml")
   public void testReceiverInfo() throws Exception {
     ShadowApplication app = ShadowApplication.getInstance();
-    rpm.addManifest(app.getAppManifest(), ShadowApplication.getInstance().getResourceLoader());
+    rpm.addManifest(app.getAppManifest(), shadowOf(RuntimeEnvironment.application.getAssets()).getResourceLoader());
     ActivityInfo info = rpm.getReceiverInfo(new ComponentName(app.getApplicationContext(), ".test.ConfigTestReceiver"), PackageManager.GET_META_DATA);
     Bundle meta = info.metaData;
     Object metaValue = meta.get("org.robolectric.metaName1");
@@ -329,23 +368,23 @@ public class DefaultRobolectricPackageManagerTest {
 
     metaValue = meta.get("org.robolectric.metaBooleanFromRes");
     assertTrue(Boolean.class.isInstance(metaValue));
-    assertEquals(app.getResources().getBoolean(R.bool.false_bool_value), metaValue);
+    assertEquals(RuntimeEnvironment.application.getResources().getBoolean(R.bool.false_bool_value), metaValue);
 
     metaValue = meta.get("org.robolectric.metaIntFromRes");
     assertTrue(Integer.class.isInstance(metaValue));
-    assertEquals(app.getResources().getInteger(R.integer.test_integer1), metaValue);
+    assertEquals(RuntimeEnvironment.application.getResources().getInteger(R.integer.test_integer1), metaValue);
 
     metaValue = meta.get("org.robolectric.metaColorFromRes");
     assertTrue(Integer.class.isInstance(metaValue));
-    assertEquals(app.getResources().getColor(R.color.clear), metaValue);
+    assertEquals(RuntimeEnvironment.application.getResources().getColor(R.color.clear), metaValue);
 
     metaValue = meta.get("org.robolectric.metaStringFromRes");
     assertTrue(String.class.isInstance(metaValue));
-    assertEquals(app.getString(R.string.app_name), metaValue);
+    assertEquals(RuntimeEnvironment.application.getString(R.string.app_name), metaValue);
 
     metaValue = meta.get("org.robolectric.metaStringOfIntFromRes");
     assertTrue(String.class.isInstance(metaValue));
-    assertEquals(app.getString(R.string.str_int), metaValue);
+    assertEquals(RuntimeEnvironment.application.getString(R.string.str_int), metaValue);
 
     metaValue = meta.get("org.robolectric.metaStringRes");
     assertTrue(Integer.class.isInstance(metaValue));
@@ -468,7 +507,7 @@ public class DefaultRobolectricPackageManagerTest {
   @Test
   public void shouldAssignTheApplicationNameFromTheManifest() throws Exception {
     AndroidManifest appManifest = newConfigWith("<application android:name=\"org.robolectric.TestApplication\"/>");
-    rpm.addManifest(appManifest, ShadowApplication.getInstance().getResourceLoader());
+    rpm.addManifest(appManifest, shadowOf(RuntimeEnvironment.application.getAssets()).getResourceLoader());
     ApplicationInfo applicationInfo = rpm.getApplicationInfo("org.robolectric", 0);
     assertThat(applicationInfo.name).isEqualTo("org.robolectric.TestApplication");
   }
@@ -495,9 +534,8 @@ public class DefaultRobolectricPackageManagerTest {
   @Config(manifest = "src/test/resources/TestAndroidManifestWithAppMetaData.xml")
   public void shouldAssignTheAppMetaDataFromTheManifest() throws Exception {
     ShadowApplication app = ShadowApplication.getInstance();
-    String appName = app.getString(R.string.app_name);
     String packageName = app.getAppManifest().getPackageName();
-    ApplicationInfo info = app.getPackageManager().getApplicationInfo(packageName, 0);
+    ApplicationInfo info = RuntimeEnvironment.application.getPackageManager().getApplicationInfo(packageName, 0);
     Bundle meta = info.metaData;
 
     Object metaValue = meta.get("org.robolectric.metaName1");
@@ -530,23 +568,23 @@ public class DefaultRobolectricPackageManagerTest {
 
     metaValue = meta.get("org.robolectric.metaBooleanFromRes");
     assertTrue(Boolean.class.isInstance(metaValue));
-    assertEquals(app.getResources().getBoolean(R.bool.false_bool_value), metaValue);
+    assertEquals(RuntimeEnvironment.application.getResources().getBoolean(R.bool.false_bool_value), metaValue);
 
     metaValue = meta.get("org.robolectric.metaIntFromRes");
     assertTrue(Integer.class.isInstance(metaValue));
-    assertEquals(app.getResources().getInteger(R.integer.test_integer1), metaValue);
+    assertEquals(RuntimeEnvironment.application.getResources().getInteger(R.integer.test_integer1), metaValue);
 
     metaValue = meta.get("org.robolectric.metaColorFromRes");
     assertTrue(Integer.class.isInstance(metaValue));
-    assertEquals(app.getResources().getColor(R.color.clear), metaValue);
+    assertEquals(RuntimeEnvironment.application.getResources().getColor(R.color.clear), metaValue);
 
     metaValue = meta.get("org.robolectric.metaStringFromRes");
     assertTrue(String.class.isInstance(metaValue));
-    assertEquals(app.getString(R.string.app_name), metaValue);
+    assertEquals(RuntimeEnvironment.application.getString(R.string.app_name), metaValue);
 
     metaValue = meta.get("org.robolectric.metaStringOfIntFromRes");
     assertTrue(String.class.isInstance(metaValue));
-    assertEquals(app.getString(R.string.str_int), metaValue);
+    assertEquals(RuntimeEnvironment.application.getString(R.string.str_int), metaValue);
 
     metaValue = meta.get("org.robolectric.metaStringRes");
     assertTrue(Integer.class.isInstance(metaValue));
@@ -641,7 +679,7 @@ public class DefaultRobolectricPackageManagerTest {
   @Test
   @Config(manifest = "src/test/resources/TestAndroidManifest.xml")
   public void shouldAssignLabelResFromTheManifest() throws Exception {
-    rpm.addManifest(ShadowApplication.getInstance().getAppManifest(), ShadowApplication.getInstance().getResourceLoader());
+    rpm.addManifest(ShadowApplication.getInstance().getAppManifest(), shadowOf(RuntimeEnvironment.application.getAssets()).getResourceLoader());
     ApplicationInfo applicationInfo = rpm.getApplicationInfo("org.robolectric", 0);
     String appName = ShadowApplication.getInstance().getApplicationContext().getString(applicationInfo.labelRes);
     assertThat(appName).isEqualTo("Testing App");

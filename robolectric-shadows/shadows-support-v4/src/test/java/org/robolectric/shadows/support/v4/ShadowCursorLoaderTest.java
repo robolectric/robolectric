@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.support.v4.content.CursorLoader;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.util.TestRunnerWithManifest;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -18,7 +19,7 @@ public class ShadowCursorLoaderTest {
     String selection = "_id = ?";
     String[] selectionArgs = new String[] { "5" };
     String sortOrder = "_id";
-    CursorLoader cursorLoader = new CursorLoader(new Activity(),
+    CursorLoader cursorLoader = new CursorLoader(RuntimeEnvironment.application,
         uri,
         projection,
         selection,
@@ -39,7 +40,7 @@ public class ShadowCursorLoaderTest {
     String selection = "_id = ?";
     String[] selectionArgs = new String[] { "5" };
     String sortOrder = "_id";
-    CursorLoader cursorLoader = new CursorLoader(new Activity());
+    CursorLoader cursorLoader = new CursorLoader(RuntimeEnvironment.application);
     cursorLoader.setUri(uri);
     cursorLoader.setProjection(projection);
     cursorLoader.setSelection(selection);

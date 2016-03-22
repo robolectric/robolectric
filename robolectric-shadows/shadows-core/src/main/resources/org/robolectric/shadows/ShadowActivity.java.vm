@@ -1,9 +1,5 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.internal.Shadow.directlyOn;
-import static org.robolectric.internal.Shadow.invokeConstructor;
-
 import android.R;
 import android.app.Activity;
 import android.app.Application;
@@ -23,6 +19,7 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
@@ -39,6 +36,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.internal.Shadow.directlyOn;
+import static org.robolectric.internal.Shadow.invokeConstructor;
 
 /**
  * Shadow for {@link android.app.Activity}.
@@ -68,7 +69,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   private int streamType = -1;
   private boolean mIsTaskRoot = true;
   private Menu optionsMenu;
-  private Application testApplication;
   private ComponentName callingActivity;
 
   public void __constructor__() {
@@ -88,32 +88,13 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
     if (themeRef != null) {
       ResName style = ResName.qualifyResName(themeRef.replace("@", ""), appManifest.getPackageName(), "style");
-      Integer themeRes = shadowApplication.getResourceLoader().getResourceIndex().getResourceId(style);
+      Integer themeRes = shadowOf(realActivity.getAssets()).getResourceLoader().getResourceIndex().getResourceId(style);
       if (themeRes == null)
         throw new Resources.NotFoundException("no such theme " + style.getFullyQualifiedName());
       realActivity.setTheme(themeRes);
       return true;
     }
     return false;
-  }
-
-  public void setTestApplication(Application testApplication) {
-    this.testApplication = testApplication;
-  }
-
-  public Application getTestApplication() {
-    return testApplication;
-  }
-
-  @Implementation
-  public final Application getApplication() {
-    return testApplication != null ? testApplication : RuntimeEnvironment.application;
-  }
-
-  @Override
-  @Implementation
-  public final Application getApplicationContext() {
-    return getApplication();
   }
 
   public void setCallingActivity(ComponentName activityName) {
@@ -214,7 +195,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   /**
-   * @return whether {@link #finish()} was called
+   * @return whether {@link finish()} was called
    */
   @Implementation
   public boolean isFinishing() {
@@ -275,18 +256,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     return 0;
   }
 
-  @Implementation
-  public SharedPreferences getPreferences(int mode) {
-    return ShadowPreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-  }
-
-  /**
-   * Checks the {@code ApplicationContext} to see if {@code BroadcastListener}s are still registered.
-   */
-  public void assertNoBroadcastListenersRegistered() {
-    shadowOf(getApplicationContext()).assertNoBroadcastListenersRegistered(realActivity, "Activity");
-  }
-
   /**
    * Non-Android accessor.
    *
@@ -308,7 +277,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   /**
    * Non-Android accessor.
    *
-   * @return the {@code Intent} set by {@link #setResult(int, android.content.Intent)}
+   * @return the {@code Intent} set by {@link setResult(int, android.content.Intent)}
    */
   public Intent getResultIntent() {
     return resultIntent;
@@ -331,7 +300,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
   /**
    * Non-Android accessor returns the most recent {@code Intent} started by
-   * {@link #startActivityForResult(android.content.Intent, int)} without
+   * {@link startActivityForResult(android.content.Intent, int)} without
    * consuming it.
    *
    * @return the most recently started {@code Intent}, wrapped in
@@ -410,7 +379,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
   /**
    * Container object to hold an Intent, together with the requestCode used
-   * in a call to {@code Activity#startActivityForResult(Intent, int)}
+   * in a call to {@code Activity.startActivityForResult(Intent, int)}
    */
   public class IntentForResult {
     public Intent intent;
@@ -431,27 +400,24 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   @Implementation
-  public void startActivities(Intent[] intents) {
-    super.startActivities(intents);
-  }
-
-  @Implementation
   public void startActivities(Intent[] intents, Bundle options) {
-    super.startActivities(intents, options);
+    for (int i = intents.length - 1; i >= 0; i--) {
+      ShadowApplication.getInstance().startActivity(intents[i], options);
+    }
   }
 
   @Implementation
   public void startActivityForResult(Intent intent, int requestCode) {
     intentRequestCodeMap.put(new Intent.FilterComparison(intent), requestCode);
     startedActivitiesForResults.add(new IntentForResult(intent, requestCode));
-    getApplicationContext().startActivity(intent);
+    ShadowApplication.getInstance().startActivity(intent);
   }
 
   @Implementation
   public void startActivityForResult(Intent intent, int requestCode, Bundle options) {
     intentRequestCodeMap.put(new Intent.FilterComparison(intent), requestCode);
     startedActivitiesForResults.add(new IntentForResult(intent, requestCode, options));
-    getApplicationContext().startActivity(intent);
+    ShadowApplication.getInstance().startActivity(intent);
   }
 
   public void receiveResult(Intent requestIntent, int resultCode, Intent resultIntent) {
@@ -522,7 +488,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
    * Non-Android accessor
    *
    * @return the dialog resource id passed into
-   *         {@code Activity#showDialog(int, Bundle)} or {@code Activity#showDialog(int)}
+   *         {@code Activity.showDialog(int, Bundle)} or {@code Activity.showDialog(int)}
    */
   public Integer getLastShownDialogId() {
     return lastShownDialogId;
@@ -561,16 +527,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     invoker.call("onResume").withNothing();
   }
 
-  public void pauseAndThenResume() {
-    final ActivityInvoker invoker = new ActivityInvoker();
-
-    invoker.call("onPause").withNothing();
-    invoker.call("onStop").withNothing();
-    invoker.call("onRestart").withNothing();
-    invoker.call("onStart").withNothing();
-    invoker.call("onResume").withNothing();
-  }
-
   @Implementation
   public void startManagingCursor(Cursor c) {
     managedCursors.add(c);
@@ -605,7 +561,14 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     startActivityForResult(intent, requestCode, options);
   }
 
-  private final class ActivityInvoker {
+#if ($api >= 23)
+  @Implementation
+  public final void requestPermissions(String[] permissions, int requestCode) {
+
+  }
+#end
+
+    private final class ActivityInvoker {
     private Method method;
 
     public ActivityInvoker call(final String methodName, final Class... argumentClasses) {

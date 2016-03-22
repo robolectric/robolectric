@@ -5,6 +5,7 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceScreen;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 import org.robolectric.res.PreferenceNode;
 import org.robolectric.res.ResName;
 import org.robolectric.shadows.util.PreferenceBuilder;
@@ -20,6 +21,9 @@ public class ShadowPreferenceActivity extends ShadowActivity {
   private PreferenceScreen preferenceScreen;
   private final PreferenceBuilder preferenceBuilder = new PreferenceBuilder();
 
+  @RealObject
+  private PreferenceActivity realOject;
+
   @Implementation
   public void addPreferencesFromResource(int preferencesResId) {
     this.preferencesResId = preferencesResId;
@@ -28,9 +32,9 @@ public class ShadowPreferenceActivity extends ShadowActivity {
   }
 
   private PreferenceScreen inflatePreferences(int preferencesResId) {
-    ResName resName = getResName(preferencesResId);
-    String qualifiers = shadowOf(getResources().getConfiguration()).getQualifiers();
-    PreferenceNode preferenceNode = getResourceLoader().getPreferenceNode(resName, qualifiers);
+    ResName resName = shadowOf(realOject.getAssets()).getResourceLoader().getResourceIndex().getResName(preferencesResId);
+    String qualifiers = shadowOf(realOject.getResources().getConfiguration()).getQualifiers();
+    PreferenceNode preferenceNode = shadowOf(realOject.getAssets()).getResourceLoader().getPreferenceNode(resName, qualifiers);
     try {
       return (PreferenceScreen) preferenceBuilder.inflate(preferenceNode, realActivity, null);
     } catch (Exception e) {

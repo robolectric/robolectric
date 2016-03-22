@@ -1,29 +1,24 @@
 package org.robolectric.shadows;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.widget.EditText;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
+import org.robolectric.fakes.RoboAttributeSet;
 import org.robolectric.res.Attribute;
 import org.robolectric.res.ResName;
-import org.robolectric.res.ResourceLoader;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Random;
 
-import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.RuntimeEnvironment.application;
-import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowEditTextTest {
@@ -31,9 +26,10 @@ public class ShadowEditTextTest {
 
   @Before
   public void setup() {
-    List<Attribute> attributes = new ArrayList<>();
-    attributes.add(new Attribute("android:attr/maxLength", "5", R.class.getPackage().getName()));
-    RoboAttributeSet attributeSet = new RoboAttributeSet(attributes, shadowOf(application.getResources()).getResourceLoader());
+    AttributeSet attributeSet = RoboAttributeSet.create(RuntimeEnvironment.application,
+        new Attribute("android:attr/maxLength", "5", R.class.getPackage().getName())
+    );
+
     editText = new EditText(application, attributeSet);
   }
 
@@ -119,17 +115,12 @@ public class ShadowEditTextTest {
   }
 
   private AttributeSet attributeSetWithMaxLength(int maxLength) {
-    Resources resources = RuntimeEnvironment.application.getResources();
-    ResourceLoader resourceLoader = shadowOf(resources).getResourceLoader();
-    return new RoboAttributeSet(
-        asList(new Attribute(new ResName("android", "attr", "maxLength"), maxLength + "", "android")),
-        resourceLoader);
+    return RoboAttributeSet.create(RuntimeEnvironment.application,
+        new Attribute(new ResName("android", "attr", "maxLength"), maxLength + "", "android")
+    );
   }
 
   private AttributeSet attributeSetWithoutMaxLength() {
-    Resources resources = RuntimeEnvironment.application.getResources();
-    ResourceLoader resourceLoader = shadowOf(resources).getResourceLoader();
-    return new RoboAttributeSet(Arrays.<Attribute>asList(),
-        resourceLoader);
+    return RoboAttributeSet.create(RuntimeEnvironment.application);
   }
 }

@@ -18,8 +18,8 @@ import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
-import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,6 +29,7 @@ import org.robolectric.R;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.internal.Shadow;
+import org.robolectric.util.ActivityController;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,15 +55,19 @@ public class ShadowTextViewTest {
   private static final String INITIAL_TEXT = "initial text";
   private static final String NEW_TEXT = "new text";
   private TextView textView;
+  private ActivityController<Activity> activityController;
 
   @Before
   public void setUp() throws Exception {
-    textView = new TextView(buildActivity(Activity.class).create().get());
+    activityController = buildActivity(Activity.class);
+    Activity activity = activityController.create().get();
+    textView = new TextView(activity);
+    activity.setContentView(textView);
+    activityController.start().resume().visible();
   }
 
   @Test
   public void shouldTriggerTheImeListener() {
-    TextView textView = new TextView(RuntimeEnvironment.application);
     TestOnEditorActionListener actionListener = new TestOnEditorActionListener();
     textView.setOnEditorActionListener(actionListener);
 
@@ -74,7 +79,6 @@ public class ShadowTextViewTest {
 
   @Test
   public void shouldCreateGetterForEditorActionListener() {
-    TextView textView = new TextView(RuntimeEnvironment.application);
     TestOnEditorActionListener actionListener = new TestOnEditorActionListener();
 
     textView.setOnEditorActionListener(actionListener);
@@ -88,8 +92,8 @@ public class ShadowTextViewTest {
     textView.setText("here's some text http://google.com/\nblah\thttp://another.com/123?456 blah");
 
     assertThat(urlStringsFrom(textView.getUrls())).isEqualTo(asList(
-        "http://google.com",
-        "http://another.com/123?456"
+            "http://google.com",
+            "http://another.com/123?456"
     ));
   }
 
@@ -122,7 +126,6 @@ public class ShadowTextViewTest {
 
   @Test
   public void testGetTextAppearanceId() throws Exception {
-    TextView textView = new TextView(RuntimeEnvironment.application);
     textView.setTextAppearance(RuntimeEnvironment.application, android.R.style.TextAppearance_Small);
 
     assertThat(shadowOf(textView).getTextAppearanceId()).isEqualTo(android.R.style.TextAppearance_Small);
@@ -130,7 +133,7 @@ public class ShadowTextViewTest {
 
   @Test
   public void shouldSetTextAndTextColorWhileInflatingXmlLayout() throws Exception {
-    Activity activity = buildActivity(Activity.class).create().get();
+    Activity activity = activityController.get();
     activity.setContentView(R.layout.text_views);
 
     TextView black = (TextView) activity.findViewById(R.id.black_text_view);
@@ -148,7 +151,7 @@ public class ShadowTextViewTest {
 
   @Test
   public void shouldSetHintAndHintColorWhileInflatingXmlLayout() throws Exception {
-    Activity activity = buildActivity(Activity.class).create().get();
+    Activity activity = activityController.get();
     activity.setContentView(R.layout.text_views_hints);
 
     TextView black = (TextView) activity.findViewById(R.id.black_text_view_hint);
@@ -166,15 +169,13 @@ public class ShadowTextViewTest {
 
   @Test
   public void shouldNotHaveTransformationMethodByDefault() {
-    TextView view = new TextView(RuntimeEnvironment.application);
-    assertThat(view.getTransformationMethod()).isNull();
+    assertThat(textView.getTransformationMethod()).isNull();
   }
 
   @Test
   public void shouldAllowSettingATransformationMethod() {
-    TextView view = new TextView(RuntimeEnvironment.application);
-    view.setTransformationMethod(PasswordTransformationMethod.getInstance());
-    assertThat(view.getTransformationMethod()).isInstanceOf(PasswordTransformationMethod.class);
+    textView.setTransformationMethod(PasswordTransformationMethod.getInstance());
+    assertThat(textView.getTransformationMethod()).isInstanceOf(PasswordTransformationMethod.class);
   }
 
   @Test
@@ -374,7 +375,7 @@ public class ShadowTextViewTest {
   public void onTouchEvent_shouldCallMovementMethodOnTouchEventWithSetMotionEvent() throws Exception {
     TestMovementMethod testMovementMethod = new TestMovementMethod();
     textView.setMovementMethod(testMovementMethod);
-    textView.setLayoutParams(new ViewGroup.LayoutParams(100, 100));
+    textView.setLayoutParams(new FrameLayout.LayoutParams(100, 100));
     textView.measure(100, 100);
 
     MotionEvent event = MotionEvent.obtain(0, 0, 0, 0, 0, 0);
@@ -586,7 +587,7 @@ public class ShadowTextViewTest {
 
     @Override
     public boolean onGenericMotionEvent(TextView widget, Spannable text,
-                      MotionEvent event) {
+                                        MotionEvent event) {
       return false;
     }
   }

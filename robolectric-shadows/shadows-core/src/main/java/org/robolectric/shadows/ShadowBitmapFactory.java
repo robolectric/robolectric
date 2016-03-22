@@ -72,7 +72,7 @@ public class ShadowBitmapFactory {
   }
 
   private static String getResourceName(int id) {
-    return Shadows.shadowOf(RuntimeEnvironment.application).getResourceLoader().getNameForId(id);
+    return Shadows.shadowOf(RuntimeEnvironment.application.getAssets()).getResourceLoader().getNameForId(id);
   }
 
   @Implementation
@@ -165,6 +165,7 @@ public class ShadowBitmapFactory {
 
     shadowBitmap.setWidth(p.x);
     shadowBitmap.setHeight(p.y);
+    shadowBitmap.setPixels(new int[p.x * p.y], 0, 0, 0, 0, p.x, p.y);
     if (options != null) {
       options.outWidth = p.x;
       options.outHeight = p.y;

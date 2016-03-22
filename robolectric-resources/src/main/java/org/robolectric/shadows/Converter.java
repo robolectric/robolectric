@@ -77,6 +77,8 @@ public class Converter<T> {
           return;
         } else if (resName.type.equals("menu")) {
           return;
+        } else if (resName.type.equals("raw")) {
+          return;
         } else if (DrawableResourceLoader.isStillHandledHere(resName)) {
           // wtf. color and drawable references reference are all kinds of stupid.
           DrawableNode drawableNode = resourceLoader.getDrawableNode(resName, qualifiers);

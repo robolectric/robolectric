@@ -11,7 +11,7 @@ import org.robolectric.internal.ShadowProvider;
 import java.util.ServiceLoader;
 
 public class Robolectric {
-  private static final ShadowsAdapter shadowsAdapter = instantiateShadowsAdapter();
+  private static ShadowsAdapter shadowsAdapter = null;
   private static Iterable<ShadowProvider> providers;
 
   public static void reset() {
@@ -27,23 +27,36 @@ public class Robolectric {
   }
 
   public static ShadowsAdapter getShadowsAdapter() {
+    synchronized(ShadowsAdapter.class) {
+      if(shadowsAdapter == null) {
+        try {
+          shadowsAdapter = instantiateShadowsAdapter();
+        } catch(Throwable t) {
+          Throwable cause = t;
+          while(cause.getCause() != null) {
+            cause = cause.getCause();
+          }
+          cause.printStackTrace();
+        }
+      }
+    }
     return shadowsAdapter;
   }
 
   public static <T extends Service> ServiceController<T> buildService(Class<T> serviceClass) {
-    return ServiceController.of(shadowsAdapter, serviceClass);
+    return ServiceController.of(getShadowsAdapter(), serviceClass);
   }
 
   public static <T extends Service> T setupService(Class<T> serviceClass) {
-    return ServiceController.of(shadowsAdapter, serviceClass).attach().create().get();
+    return ServiceController.of(getShadowsAdapter(), serviceClass).attach().create().get();
   }
 
   public static <T extends Activity> ActivityController<T> buildActivity(Class<T> activityClass) {
-    return ActivityController.of(shadowsAdapter, activityClass);
+    return ActivityController.of(getShadowsAdapter(), activityClass);
   }
 
   public static <T extends Activity> T setupActivity(Class<T> activityClass) {
-    return ActivityController.of(shadowsAdapter, activityClass).setup().get();
+    return ActivityController.of(getShadowsAdapter(), activityClass).setup().get();
   }
 
   /**

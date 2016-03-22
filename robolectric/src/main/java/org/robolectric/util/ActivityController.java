@@ -43,22 +43,16 @@ public class ActivityController<T extends Activity> extends ComponentController<
   }
 
   public ActivityController<T> attach() {
-    Application application = this.application == null ? RuntimeEnvironment.application : this.application;
-    if (this.application != null) {
-      shadowsAdapter.prepareShadowApplicationWithExistingApplication(this.application);
-      this.application.onCreate();
-      shadowReference.setTestApplication(this.application);
-    }
-    Context baseContext = this.baseContext == null ? application : this.baseContext;
+    Context baseContext = RuntimeEnvironment.application.getBaseContext();
 
     final String title = getActivityTitle();
     final ClassLoader cl = baseContext.getClassLoader();
-    final ActivityInfo info = getActivityInfo(application);
+    final ActivityInfo info = getActivityInfo(RuntimeEnvironment.application);
     final Class<?> threadClass = getActivityThreadClass(cl);
     final Class<?> nonConfigurationClass = getNonConfigurationClass(cl);
 
     final RuntimeAdapter runtimeAdapter = RuntimeAdapterFactory.getInstance();
-    runtimeAdapter.callActivityAttach(component, baseContext, threadClass, application, getIntent(), info, title, nonConfigurationClass);
+    runtimeAdapter.callActivityAttach(component, baseContext, threadClass, RuntimeEnvironment.application, getIntent(), info, title, nonConfigurationClass);
 
     shadowReference.setThemeFromManifest();
     attached = true;
@@ -110,7 +104,7 @@ public class ActivityController<T extends Activity> extends ComponentController<
         }
 
         /* Get the resource ID, use the activity to look up the actual string */
-        title = component.getString(labelRes);
+        title = RuntimeEnvironment.application.getString(labelRes);
       } else {
         title = labelRef; /* Label isn't an identifier, use it directly as the title */
       }

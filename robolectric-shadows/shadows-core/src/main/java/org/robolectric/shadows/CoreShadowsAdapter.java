@@ -27,9 +27,6 @@ public class CoreShadowsAdapter implements ShadowsAdapter {
   public ShadowActivityAdapter getShadowActivityAdapter(Activity component) {
     final ShadowActivity shadow = Shadows.shadowOf(component);
     return new ShadowActivityAdapter() {
-      public void setTestApplication(Application application) {
-        shadow.setTestApplication(application);
-      }
 
       public void setThemeFromManifest() {
         shadow.setThemeFromManifest();
@@ -53,23 +50,14 @@ public class CoreShadowsAdapter implements ShadowsAdapter {
   }
 
   @Override
-  public void prepareShadowApplicationWithExistingApplication(Application application) {
-    ShadowApplication roboShadow = Shadows.shadowOf(RuntimeEnvironment.application);
-    ShadowApplication testShadow = Shadows.shadowOf(application);
-    testShadow.bind(roboShadow.getAppManifest(), roboShadow.getResourceLoader());
-    testShadow.callAttachBaseContext(RuntimeEnvironment.application.getBaseContext());
-  }
-
-  @Override
-  public ShadowApplicationAdapter getApplicationAdapter(Activity component) {
-    final ShadowApplication shadow = Shadows.shadowOf(component.getApplication());
+  public ShadowApplicationAdapter getApplicationAdapter(final Activity component) {
     return new ShadowApplicationAdapter() {
       public AndroidManifest getAppManifest() {
-        return shadow.getAppManifest();
+        return ShadowApplication.getInstance().getAppManifest();
       }
 
       public ResourceLoader getResourceLoader() {
-        return shadow.getResourceLoader();
+        return shadowOf(RuntimeEnvironment.application.getAssets()).getResourceLoader();
       }
     };
   }
@@ -86,7 +74,7 @@ public class CoreShadowsAdapter implements ShadowsAdapter {
 
   @Override
   public void setSystemResources(ResourceLoader systemResourceLoader) {
-    ShadowResources.setSystemResources(systemResourceLoader);
+    ShadowAssetManager.setSystemResources(systemResourceLoader);
   }
 
   @Override
@@ -100,18 +88,13 @@ public class CoreShadowsAdapter implements ShadowsAdapter {
   }
 
   @Override
-  public void setPackageName(Application application, String packageName) {
-    shadowOf(application).setPackageName(packageName);
-  }
-
-  @Override
   public void setAssetsQualifiers(AssetManager assets, String qualifiers) {
     shadowOf(assets).setQualifiers(qualifiers);
   }
 
   @Override
   public ResourceLoader getResourceLoader() {
-    return ShadowApplication.getInstance().getResourceLoader();
+    return shadowOf(RuntimeEnvironment.application.getAssets()).getResourceLoader();
   }
 
 }
