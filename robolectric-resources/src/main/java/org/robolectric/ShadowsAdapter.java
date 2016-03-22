@@ -20,8 +20,6 @@ public interface ShadowsAdapter {
 
   String getShadowActivityThreadClassName();
 
-  void prepareShadowApplicationWithExistingApplication(Application application);
-
   ShadowApplicationAdapter getApplicationAdapter(Activity component);
 
   void setupLogging();
@@ -34,14 +32,11 @@ public interface ShadowsAdapter {
 
   void bind(Application application, AndroidManifest appManifest, ResourceLoader resourceLoader);
 
-  void setPackageName(Application application, String packageName);
-
   void setAssetsQualifiers(AssetManager assets, String qualifiers);
 
   ResourceLoader getResourceLoader();
 
   interface ShadowActivityAdapter {
-    void setTestApplication(Application application);
 
     void setThemeFromManifest();
   }

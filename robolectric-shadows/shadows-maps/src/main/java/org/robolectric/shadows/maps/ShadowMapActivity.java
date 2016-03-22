@@ -26,12 +26,12 @@ public class ShadowMapActivity extends ShadowActivity {
 
   @Implementation
   public void onResume() {
-    registerReceiver(connectivityBroadcastReceiver, new IntentFilter());
+    realActivity.registerReceiver(connectivityBroadcastReceiver, new IntentFilter());
   }
 
   @Implementation
   public void onPause() {
-    unregisterReceiver(connectivityBroadcastReceiver);
+    realActivity.unregisterReceiver(connectivityBroadcastReceiver);
   }
 
   @Implementation

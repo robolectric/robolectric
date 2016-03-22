@@ -9,13 +9,13 @@ import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceGroup;
 import android.util.AttributeSet;
+
+import org.robolectric.fakes.RoboAttributeSet;
 import org.robolectric.res.Attribute;
 import org.robolectric.res.PreferenceNode;
 import org.robolectric.res.ResName;
-import org.robolectric.shadows.RoboAttributeSet;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 
 import static org.robolectric.Shadows.shadowOf;
 
@@ -56,9 +56,7 @@ public class PreferenceBuilder {
 
   private Preference constructPreference(PreferenceNode preferenceNode, Context context) {
     Class<? extends Preference> clazz = pickViewClass(preferenceNode);
-
-    List<Attribute> attributes = preferenceNode.getAttributes();
-    RoboAttributeSet attributeSet = shadowOf(context).createAttributeSet(attributes, null);
+    AttributeSet attributeSet = RoboAttributeSet.create(context, preferenceNode.getAttributes());
 
     try {
       try {

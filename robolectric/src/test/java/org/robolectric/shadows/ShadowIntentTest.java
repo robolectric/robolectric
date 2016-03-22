@@ -240,7 +240,7 @@ public class ShadowIntentTest {
   public void testSetClass() throws Exception {
     Intent intent = new Intent();
     Class<? extends ShadowIntentTest> thisClass = getClass();
-    Intent output = intent.setClass(new Activity(), thisClass);
+    Intent output = intent.setClass(RuntimeEnvironment.application, thisClass);
 
     assertSame(output, intent);
     assertThat(intent.getComponent().getClassName()).isEqualTo(thisClass.getName());
@@ -258,7 +258,7 @@ public class ShadowIntentTest {
 
   @Test
   public void testSetClassThroughConstructor() throws Exception {
-    Intent intent = new Intent(new Activity(), getClass());
+    Intent intent = new Intent(RuntimeEnvironment.application, getClass());
     assertThat(intent.getComponent().getClassName()).isEqualTo(getClass().getName());
   }
 

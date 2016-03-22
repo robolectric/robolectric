@@ -1,14 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.content.pm.PackageManager.PERMISSION_DENIED;
-import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-import static junit.framework.Assert.assertEquals;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
-import static org.robolectric.Robolectric.buildActivity;
-import static org.robolectric.Shadows.shadowOf;
-
 import android.app.Activity;
 import android.app.Application;
 import android.appwidget.AppWidgetProvider;
@@ -25,7 +16,9 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
+
 import com.google.common.util.concurrent.SettableFuture;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,6 +31,15 @@ import org.robolectric.util.Transcript;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static android.content.pm.PackageManager.PERMISSION_DENIED;
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+import static junit.framework.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
+import static org.robolectric.Robolectric.buildActivity;
+import static org.robolectric.Shadows.shadowOf;
+
 @RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowContextWrapperTest {
   public Transcript transcript;
@@ -45,7 +47,7 @@ public class ShadowContextWrapperTest {
 
   @Before public void setUp() throws Exception {
     transcript = new Transcript();
-    contextWrapper = new ContextWrapper(new Activity());
+    contextWrapper = new ContextWrapper(RuntimeEnvironment.application);
   }
 
   @Test
@@ -328,10 +330,10 @@ public class ShadowContextWrapperTest {
 
   @Test
   public void shouldReturnSameApplicationContextEveryTime() throws Exception {
-    Activity activity = new Activity();
+    Activity activity = Robolectric.setupActivity(Activity.class);
     assertThat(activity.getApplicationContext()).isSameAs(activity.getApplicationContext());
 
-    assertThat(activity.getApplicationContext()).isSameAs(new Activity().getApplicationContext());
+    assertThat(activity.getApplicationContext()).isSameAs(Robolectric.setupActivity(Activity.class).getApplicationContext());
   }
 
   @Test
@@ -343,10 +345,10 @@ public class ShadowContextWrapperTest {
 
   @Test
   public void shouldReturnSameContentResolverEveryTime() throws Exception {
-    Activity activity = new Activity();
+    Activity activity = Robolectric.setupActivity(Activity.class);
     assertThat(activity.getContentResolver()).isSameAs(activity.getContentResolver());
 
-    assertThat(activity.getContentResolver()).isSameAs(new Activity().getContentResolver());
+    assertThat(activity.getContentResolver()).isSameAs(Robolectric.setupActivity(Activity.class).getContentResolver());
   }
 
   @Test
@@ -370,19 +372,6 @@ public class ShadowContextWrapperTest {
     assertThat(contextWrapper.checkPermission("foo", 0, 0)).isEqualTo(PERMISSION_GRANTED);
     assertThat(contextWrapper.checkPermission("bar", 0, 0)).isEqualTo(PERMISSION_GRANTED);
     assertThat(contextWrapper.checkPermission("baz", 0, 0)).isEqualTo(PERMISSION_DENIED);
-  }
-
-  @Test
-  public void shouldReturnAContext() {
-    assertThat(contextWrapper.getBaseContext()).isNotNull();
-
-    contextWrapper = new ContextWrapper(null);
-    shadowOf(contextWrapper).callAttachBaseContext(null);
-    assertThat(contextWrapper.getBaseContext()).isNull();
-
-    Activity baseContext = new Activity();
-    shadowOf(contextWrapper).callAttachBaseContext(baseContext);
-    assertThat(contextWrapper.getBaseContext()).isSameAs(baseContext);
   }
 
   private void assertSameInstanceEveryTime(String serviceName) {
@@ -436,7 +425,7 @@ public class ShadowContextWrapperTest {
 
   @Test
   public void packageManagerShouldNotBeNullWhenWrappingAnApplication() {
-    assertThat(new Application().getPackageManager()).isNotNull();
+    assertThat(RuntimeEnvironment.application.getPackageManager()).isNotNull();
   }
 
   @Test

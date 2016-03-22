@@ -34,8 +34,7 @@ public class ServiceController<T extends Service> extends ComponentController<Se
   }
 
   public ServiceController<T> attach() {
-    Application application = this.application == null ? RuntimeEnvironment.application : this.application;
-    Context baseContext = this.baseContext == null ? application : this.baseContext;
+    Context baseContext = RuntimeEnvironment.application.getBaseContext();
 
     ClassLoader cl = baseContext.getClassLoader();
     Class<?> activityThreadClass;
@@ -51,7 +50,7 @@ public class ServiceController<T extends Service> extends ComponentController<Se
         ClassParameter.from(activityThreadClass, null),
         ClassParameter.from(String.class, component.getClass().getSimpleName()),
         ClassParameter.from(IBinder.class, null),
-        ClassParameter.from(Application.class, application),
+        ClassParameter.from(Application.class, RuntimeEnvironment.application),
         ClassParameter.from(Object.class, null));
 
     attached = true;

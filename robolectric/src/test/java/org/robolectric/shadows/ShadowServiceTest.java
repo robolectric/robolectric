@@ -35,25 +35,10 @@ public class ShadowServiceTest {
   public void setup() {
     service = Robolectric.setupService(MyService.class);
     shadow = shadowOf(service);
-    notBuilder = new Notification.Builder(
-        service).setSmallIcon(1).setContentTitle("Test")
+    notBuilder = new Notification.Builder(service)
+        .setSmallIcon(1)
+        .setContentTitle("Test")
         .setContentText("Hi there");
-  }
-
-  @Test(expected = IllegalStateException.class)
-  public void shouldComplainIfServiceIsDestroyedWithRegisteredBroadcastReceivers() throws Exception {
-    service.registerReceiver(new AppWidgetProvider(), new IntentFilter());
-    service.onDestroy();
-  }
-
-  @Test
-  public void shouldNotComplainIfServiceIsDestroyedWhileAnotherServiceHasRegisteredBroadcastReceivers()
-    throws Exception {
-
-    MyService service1 = new MyService();
-    MyService service2 = new MyService();
-    service2.registerReceiver(new AppWidgetProvider(), new IntentFilter());
-    service1.onDestroy(); // should not throw exception
   }
 
   @Test
@@ -61,9 +46,9 @@ public class ShadowServiceTest {
     ShadowApplication shadowApplication = shadowOf(RuntimeEnvironment.application);
     ServiceConnection conn = Shadow.newInstanceOf(MediaScannerConnection.class);
     service.bindService(new Intent("dummy"), conn, 0);
-    assertThat(shadowApplication.getUnboundServiceConnections().size()).isEqualTo(0);
+    assertThat(shadowApplication.getUnboundServiceConnections()).isEmpty();
     service.unbindService(conn);
-    assertThat(shadowApplication.getUnboundServiceConnections().size()).isEqualTo(1);
+    assertThat(shadowApplication.getUnboundServiceConnections()).hasSize(1);
   }
 
   @Test
@@ -74,7 +59,7 @@ public class ShadowServiceTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void shouldUnbindServiceWithExceptionWhenRequested() {
-    shadow.setUnbindServiceShouldThrowIllegalArgument(true);
+    ShadowApplication.getInstance().setUnbindServiceShouldThrowIllegalArgument(true);
     ServiceConnection conn = Shadow.newInstanceOf(MediaScannerConnection.class);
     service.unbindService(conn);
   }

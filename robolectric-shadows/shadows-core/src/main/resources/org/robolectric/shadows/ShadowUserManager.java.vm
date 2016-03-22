@@ -1,9 +1,11 @@
 #if ($api >= 17)
 package org.robolectric.shadows;
 
+import android.os.Bundle;
 import android.os.UserHandle;
 import android.os.UserManager;
 
+import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 import java.util.Collections;
@@ -12,8 +14,16 @@ import java.util.List;
 @Implements(UserManager.class)
 public class ShadowUserManager {
 
+#if ($api >= 18)
+  @Implementation
+  public Bundle getApplicationRestrictions(String packageName) {
+    return null;
+  }
+#end
+
 #if ($api >= 21)
-  public List<UserHandle> getUserProfiles (){
+  @Implementation
+  public List<UserHandle> getUserProfiles(){
     return Collections.emptyList();
   }
 #end
