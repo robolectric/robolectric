@@ -43,22 +43,16 @@ public class ActivityController<T extends Activity> extends ComponentController<
   }
 
   public ActivityController<T> attach() {
-    Application application = this.application == null ? RuntimeEnvironment.application : this.application;
-    if (this.application != null) {
-      shadowsAdapter.prepareShadowApplicationWithExistingApplication(this.application);
-      this.application.onCreate();
-      shadowReference.setTestApplication(this.application);
-    }
-    Context baseContext = application.getBaseContext();
+    Context baseContext = RuntimeEnvironment.application.getBaseContext();
 
     final String title = getActivityTitle();
     final ClassLoader cl = baseContext.getClassLoader();
-    final ActivityInfo info = getActivityInfo(application);
+    final ActivityInfo info = getActivityInfo(RuntimeEnvironment.application);
     final Class<?> threadClass = getActivityThreadClass(cl);
     final Class<?> nonConfigurationClass = getNonConfigurationClass(cl);
 
     final RuntimeAdapter runtimeAdapter = RuntimeAdapterFactory.getInstance();
-    runtimeAdapter.callActivityAttach(component, baseContext, threadClass, application, getIntent(), info, title, nonConfigurationClass);
+    runtimeAdapter.callActivityAttach(component, baseContext, threadClass, RuntimeEnvironment.application, getIntent(), info, title, nonConfigurationClass);
 
     shadowReference.setThemeFromManifest();
     attached = true;

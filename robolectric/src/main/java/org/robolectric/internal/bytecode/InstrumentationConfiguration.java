@@ -165,17 +165,17 @@ public class InstrumentationConfiguration {
   private final Set<String> classesToNotInstrument;
   private final Map<String, String> classNameTranslations;
   private final Set<MethodRef> interceptedMethods;
-  private final Set<String> classesToNotAquire;
-  private final Set<String> packagesToNotAquire;
+  private final Set<String> classesToNotAcquire;
+  private final Set<String> packagesToNotAcquire;
   private int cachedHashCode;
 
-  private InstrumentationConfiguration(Map<String, String> classNameTranslations, Collection<MethodRef> interceptedMethods, Collection<String> instrumentedPackages, Collection<String> instrumentedClasses, Collection<String> classesToNotAquire, Collection<String> packagesToNotAquire, Collection<String> classesToNotInstrument) {
+  private InstrumentationConfiguration(Map<String, String> classNameTranslations, Collection<MethodRef> interceptedMethods, Collection<String> instrumentedPackages, Collection<String> instrumentedClasses, Collection<String> classesToNotAcquire, Collection<String> packagesToNotAquire, Collection<String> classesToNotInstrument) {
     this.classNameTranslations = ImmutableMap.copyOf(classNameTranslations);
     this.interceptedMethods = ImmutableSet.copyOf(interceptedMethods);
     this.instrumentedPackages = ImmutableList.copyOf(instrumentedPackages);
     this.instrumentedClasses = ImmutableSet.copyOf(instrumentedClasses);
-    this.classesToNotAquire = ImmutableSet.copyOf(classesToNotAquire);
-    this.packagesToNotAquire = ImmutableSet.copyOf(packagesToNotAquire);
+    this.classesToNotAcquire = ImmutableSet.copyOf(classesToNotAcquire);
+    this.packagesToNotAcquire = ImmutableSet.copyOf(packagesToNotAquire);
     this.classesToNotInstrument = ImmutableSet.copyOf(classesToNotInstrument);
     this.cachedHashCode = 0;
   }
@@ -224,11 +224,11 @@ public class InstrumentationConfiguration {
       return true;
     }
 
-    for (String packageName : packagesToNotAquire) {
+    for (String packageName : packagesToNotAcquire) {
       if (name.startsWith(packageName)) return false;
     }
 
-    return !(name.matches(".*\\.R(|\\$[a-z]+)$") || classesToNotAquire.contains(name));
+    return !(name.matches(".*\\.R(|\\$[a-z]+)$") || classesToNotAcquire.contains(name));
   }
 
   public Set<MethodRef> methodsToIntercept() {
@@ -274,7 +274,7 @@ public class InstrumentationConfiguration {
     InstrumentationConfiguration that = (InstrumentationConfiguration) o;
 
     if (!classNameTranslations.equals(that.classNameTranslations)) return false;
-    if (!classesToNotAquire.equals(that.classesToNotAquire)) return false;
+    if (!classesToNotAcquire.equals(that.classesToNotAcquire)) return false;
     if (!instrumentedPackages.equals(that.instrumentedPackages)) return false;
     if (!instrumentedClasses.equals(that.instrumentedClasses)) return false;
     if (!interceptedMethods.equals(that.interceptedMethods)) return false;
@@ -293,7 +293,7 @@ public class InstrumentationConfiguration {
     result = 31 * result + instrumentedClasses.hashCode();
     result = 31 * result + classNameTranslations.hashCode();
     result = 31 * result + interceptedMethods.hashCode();
-    result = 31 * result + classesToNotAquire.hashCode();
+    result = 31 * result + classesToNotAcquire.hashCode();
     cachedHashCode = result;
     return result;
   }
