@@ -17,6 +17,11 @@ public class ShadowWifiInfo {
   private String ssid = "<unknown ssid>"; // WifiSsid.NONE (@hide)
   private String bssid;
   private int rssi = -127; // WifiInfo.INVALID_RSSI (@hide)
+  private int linkSpeed = -1;
+#if ($api >= 21)
+  private int frequency = -1;
+#end
+  private int networkId = -1;
 
   @Implementation
   public String getMacAddress() {
@@ -38,6 +43,23 @@ public class ShadowWifiInfo {
     return rssi;
   }
 
+#if ($api >= 21)
+  @Implementation
+  public int getFrequency() {
+    return frequency;
+  }
+#end
+
+  @Implementation
+  public int getLinkSpeed() {
+    return linkSpeed;
+  }
+
+  @Implementation
+  public int getNetworkId() {
+    return networkId;
+  }
+
   @HiddenApi @Implementation
   public void setMacAddress(String newMacAddress) {
     macAddress = newMacAddress;
@@ -56,5 +78,22 @@ public class ShadowWifiInfo {
   @HiddenApi @Implementation
   public void setRssi(int rssi) {
     this.rssi = rssi;
+  }
+
+  @HiddenApi @Implementation
+  public void setLinkSpeed(int linkSpeed) {
+    this.linkSpeed = linkSpeed;
+  }
+
+#if ($api >= 21)
+  @HiddenApi @Implementation
+  public void setFrequency(int frequency) {
+    this.frequency = frequency;
+  }
+#end
+
+  @HiddenApi @Implementation
+  public void setNetworkId(int id) {
+    this.networkId = id;
   }
 }
