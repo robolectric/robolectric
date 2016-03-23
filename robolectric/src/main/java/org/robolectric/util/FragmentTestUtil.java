@@ -8,6 +8,10 @@ import android.app.FragmentManager;
 import android.os.Bundle;
 import android.widget.LinearLayout;
 
+/**
+ * @deprecated Please use {@link Robolectric#buildFragment(Class)} or {@link Robolectric#buildFragment(Class, Class)}
+ */
+@Deprecated
 public final class FragmentTestUtil {
   
   public static void startFragment(Fragment fragment) {

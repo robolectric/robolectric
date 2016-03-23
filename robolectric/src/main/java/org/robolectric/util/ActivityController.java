@@ -43,19 +43,22 @@ public class ActivityController<T extends Activity> extends ComponentController<
   }
 
   public ActivityController<T> attach() {
-    Context baseContext = RuntimeEnvironment.application.getBaseContext();
+    if (!attached) {
+      Context baseContext = RuntimeEnvironment.application.getBaseContext();
 
-    final String title = getActivityTitle();
-    final ClassLoader cl = baseContext.getClassLoader();
-    final ActivityInfo info = getActivityInfo(RuntimeEnvironment.application);
-    final Class<?> threadClass = getActivityThreadClass(cl);
-    final Class<?> nonConfigurationClass = getNonConfigurationClass(cl);
+      final String title = getActivityTitle();
+      final ClassLoader cl = baseContext.getClassLoader();
+      final ActivityInfo info = getActivityInfo(RuntimeEnvironment.application);
+      final Class<?> threadClass = getActivityThreadClass(cl);
+      final Class<?> nonConfigurationClass = getNonConfigurationClass(cl);
 
-    final RuntimeAdapter runtimeAdapter = RuntimeAdapterFactory.getInstance();
-    runtimeAdapter.callActivityAttach(component, baseContext, threadClass, RuntimeEnvironment.application, getIntent(), info, title, nonConfigurationClass);
+      final RuntimeAdapter runtimeAdapter = RuntimeAdapterFactory.getInstance();
+      runtimeAdapter.callActivityAttach(component, baseContext, threadClass, RuntimeEnvironment.application, getIntent(), info, title, nonConfigurationClass);
 
-    shadowReference.setThemeFromManifest();
-    attached = true;
+      shadowReference.setThemeFromManifest();
+      attached = true;
+    }
+
     return this;
   }
 
@@ -117,7 +120,7 @@ public class ActivityController<T extends Activity> extends ComponentController<
     shadowMainLooper.runPaused(new Runnable() {
       @Override
       public void run() {
-        if (!attached) attach();
+        attach();
         ReflectionHelpers.callInstanceMethod(Activity.class, component, "performCreate", ClassParameter.from(Bundle.class, bundle));
       }
     });
