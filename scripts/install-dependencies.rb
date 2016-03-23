@@ -120,13 +120,14 @@ PLAY_SERVICES_GROUP_ID = "com.google.android.gms"
 PLAY_SERVICES_VERSION_6_5_87 = "6.5.87"
 PLAY_SERVICES_LEGACY = "play-services"
 
-# Play Services Base and Basement modules, version 8.3.0
+# Play Services Base and Basement modules, version 8.4.0 (plus trailing version)
 # Current "play-services" artifact no longer references each sub-module directly. When you
 # Extract its AAR, it only contains a manifest and blank res folder.
 # 
 # As a result, we now have to install "play-services-base" and "play-services-basement"
 # separately and use those versions instead.
-PLAY_SERVICES_VERSION = "8.3.0"
+PLAY_SERVICES_TRAILING_VERSION = "8.3.0"
+PLAY_SERVICES_VERSION = "8.4.0"
 PLAY_SERVICES_BASE = "play-services-base"
 PLAY_SERVICES_BASEMENT = "play-services-basement"
 
@@ -150,7 +151,11 @@ install_aar(ANDROID_REPO, ANDROID_SUPPORT_GROUP_ID, APPCOMPAT_V7_ARTIFACT_ID, SU
 
 install_aar(GOOGLE_REPO, PLAY_SERVICES_GROUP_ID, PLAY_SERVICES_LEGACY, PLAY_SERVICES_VERSION_6_5_87)
 
+install_aar(GOOGLE_REPO, PLAY_SERVICES_GROUP_ID, PLAY_SERVICES_BASEMENT, PLAY_SERVICES_TRAILING_VERSION)
+
 install_aar(GOOGLE_REPO, PLAY_SERVICES_GROUP_ID, PLAY_SERVICES_BASEMENT, PLAY_SERVICES_VERSION)
+
+install_aar(GOOGLE_REPO, PLAY_SERVICES_GROUP_ID, PLAY_SERVICES_BASE, PLAY_SERVICES_TRAILING_VERSION)
 
 install_aar(GOOGLE_REPO, PLAY_SERVICES_GROUP_ID, PLAY_SERVICES_BASE, PLAY_SERVICES_VERSION)
 
