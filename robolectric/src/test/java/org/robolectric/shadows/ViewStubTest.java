@@ -11,6 +11,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
+import org.robolectric.fakes.RoboAttributeSet;
 import org.robolectric.res.Attribute;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -18,7 +19,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
-import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.TestUtil.TEST_PACKAGE;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
@@ -57,7 +57,7 @@ public class ViewStubTest {
   @Test
   public void shouldApplyAttributes() throws Exception {
     ViewStub viewStub = new ViewStub(ctxt,
-        ShadowApplication.getInstance().createAttributeSet(
+        RoboAttributeSet.create(RuntimeEnvironment.application,
             new Attribute("android:attr/inflatedId", "@+id/include_id", TEST_PACKAGE),
             new Attribute("android:attr/layout", "@layout/media", TEST_PACKAGE)
         )

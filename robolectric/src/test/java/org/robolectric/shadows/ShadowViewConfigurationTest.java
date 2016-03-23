@@ -17,8 +17,7 @@ public class ShadowViewConfigurationTest {
 
   @Test
   public void methodsShouldReturnAndroidConstants() {
-    Activity context = new Activity();
-    ViewConfiguration viewConfiguration = ViewConfiguration.get(context);
+    ViewConfiguration viewConfiguration = ViewConfiguration.get(RuntimeEnvironment.application);
 
     assertEquals(10, ViewConfiguration.getScrollBarSize());
     assertEquals(250, ViewConfiguration.getScrollBarFadeDuration());
@@ -39,7 +38,7 @@ public class ShadowViewConfigurationTest {
     assertEquals(500, ViewConfiguration.getGlobalActionKeyTimeout());
     assertEquals(0.015f, ViewConfiguration.getScrollFriction());
 
-    assertEquals(1f, context.getResources().getDisplayMetrics().density);
+    assertEquals(1f, RuntimeEnvironment.application.getResources().getDisplayMetrics().density);
 
     assertEquals(10, viewConfiguration.getScaledScrollBarSize());
     assertEquals(12, viewConfiguration.getScaledFadingEdgeLength());
@@ -54,9 +53,8 @@ public class ShadowViewConfigurationTest {
 
   @Test
   public void methodsShouldReturnScaledAndroidConstantsDependingOnPixelDensity() {
-    Activity context = new Activity();
-    shadowOf(context.getResources()).setDensity(1.5f);
-    ViewConfiguration viewConfiguration = ViewConfiguration.get(context);
+    shadowOf(RuntimeEnvironment.application.getResources()).setDensity(1.5f);
+    ViewConfiguration viewConfiguration = ViewConfiguration.get(RuntimeEnvironment.application);
 
     assertEquals(15, viewConfiguration.getScaledScrollBarSize());
     assertEquals(18, viewConfiguration.getScaledFadingEdgeLength());

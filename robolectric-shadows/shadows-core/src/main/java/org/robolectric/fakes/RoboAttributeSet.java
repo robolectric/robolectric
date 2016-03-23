@@ -1,7 +1,11 @@
-package org.robolectric.shadows;
+package org.robolectric.fakes;
 
+import android.content.Context;
 import android.util.AttributeSet;
 import android.util.TypedValue;
+
+import com.google.android.collect.Lists;
+
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.res.AttrData;
 import org.robolectric.res.Attribute;
@@ -10,8 +14,11 @@ import org.robolectric.res.ResType;
 import org.robolectric.res.ResourceIndex;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.TypedResource;
+import org.robolectric.shadows.Converter;
 
 import java.util.List;
+
+import static org.robolectric.Shadows.shadowOf;
 
 /**
  * Robolectric implementation of {@link android.util.AttributeSet}.
@@ -20,18 +27,22 @@ public class RoboAttributeSet implements AttributeSet {
   private final List<Attribute> attributes;
   private final ResourceLoader resourceLoader;
 
-  public RoboAttributeSet(List<Attribute> attributes, ResourceLoader resourceLoader) {
+  private RoboAttributeSet(List<Attribute> attributes, ResourceLoader resourceLoader) {
     this.attributes = attributes;
     this.resourceLoader = resourceLoader;
   }
 
-  public RoboAttributeSet put(String fullyQualifiedName, String value, String valuePackage) {
-    return put(new Attribute(fullyQualifiedName, value, valuePackage));
+  /**
+   * Creates a {@link RoboAttributeSet} as {@link AttributeSet} for the given
+   * {@link Context} and {@link Attribute}(s)
+   */
+  public static AttributeSet create(Context context, Attribute... attrs) {
+    List<Attribute> attributesList = Lists.newArrayList(attrs);
+    return create(context, attributesList);
   }
 
-  public RoboAttributeSet put(Attribute attribute) {
-    attributes.add(attribute);
-    return this;
+  public static AttributeSet create(Context context, List<Attribute> attributesList) {
+    return new RoboAttributeSet(attributesList, shadowOf(context.getAssets()).getResourceLoader());
   }
 
   @Override
@@ -192,7 +203,6 @@ public class RoboAttributeSet implements AttributeSet {
     Integer i = ResName.getResourceId(resourceLoader.getResourceIndex(), styleAttribute.value, styleAttribute.contextPackageName);
     return i != null ? i : 0;
   }
-
 
   private ResName getAttrResName(String namespace, String attrName) {
     String packageName = Attribute.extractPackageName(namespace);

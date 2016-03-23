@@ -18,9 +18,8 @@ import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.fakes.RoboAttributeSet;
 import org.robolectric.internal.Shadow;
-import org.robolectric.res.Attribute;
-import org.robolectric.shadows.RoboAttributeSet;
 import org.robolectric.shadows.ShadowViewGroup;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -30,7 +29,6 @@ import java.util.List;
 import static org.robolectric.internal.Shadow.directlyOn;
 import static org.robolectric.internal.Shadow.invokeConstructor;
 import static org.robolectric.shadows.maps.Shadows.shadowOf;
-import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /**
@@ -59,7 +57,7 @@ public class ShadowMapView extends ShadowViewGroup {
   @HiddenApi
   public void __constructor__(Context context) {
     setContextOnRealView(context);
-    this.attributeSet = new RoboAttributeSet(new ArrayList<Attribute>(), shadowOf(context.getAssets()).getResourceLoader());
+    this.attributeSet = RoboAttributeSet.create(context);
     zoomButtonsController = new ZoomButtonsController(realMapView);
     invokeConstructor(View.class, realView, ClassParameter.from(Context.class, context));
     invokeConstructor(ViewGroup.class, realView, ClassParameter.from(Context.class, context));

@@ -3,6 +3,8 @@ package org.robolectric;
 import android.app.Application;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,7 +23,7 @@ import static org.junit.Assert.assertTrue;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.TestUtil.newConfig;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(RobolectricTestRunner.class)
 public class DefaultTestLifecycleTest {
 
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -46,13 +48,11 @@ public class DefaultTestLifecycleTest {
         .isExactlyInstanceOf(TestApplication.class);
   }
 
-  @Test
-  public void shouldAssignThePackageNameFromTheManifest() throws Exception {
-    AndroidManifest appManifest = newConfigWith("com.wacka.wa", "");
-    Application application = defaultTestLifecycle.createApplication(null, appManifest, null);
-    shadowOf(application).bind(appManifest, null);
+  @Config(manifest = "src/test/resources/TestAndroidManifestWithReceiversCustomPackage.xml")
+  @Test public void shouldAssignThePackageNameFromTheManifest() throws Exception {
+    Application application = RuntimeEnvironment.application;
 
-    assertThat(application.getPackageName()).isEqualTo("com.wacka.wa");
+    assertThat(application.getPackageName()).isEqualTo("org.robolectric.mypackage");
     assertThat(application).isExactlyInstanceOf(Application.class);
   }
 
@@ -67,10 +67,10 @@ public class DefaultTestLifecycleTest {
     assertTrue(receivers.get(0).intentFilter.matchAction("org.robolectric.ACTION1"));
   }
 
-  @Test
-  public void shouldRegisterActivitiesFromManifestInPackageManager() throws Exception {
-    AndroidManifest appManifest = newConfig("TestAndroidManifestForActivities.xml");
-    Application application = defaultTestLifecycle.createApplication(null, appManifest, null);
+  @Ignore("https://github.com/robolectric/robolectric/issues/2376")
+  @Config(manifest = "src/test/resources/TestAndroidManifestForActivities.xml")
+  @Test public void shouldRegisterActivitiesFromManifestInPackageManager() throws Exception {
+    Application application = RuntimeEnvironment.application;
 
     PackageManager packageManager = application.getPackageManager();
     assertThat(packageManager.resolveActivity(new Intent("org.robolectric.shadows.TestActivity"), -1)).isNotNull();

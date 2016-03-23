@@ -6,8 +6,11 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
@@ -20,9 +23,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowAlarmManagerTest {
 
-  private final Activity activity = new Activity();
+  private Activity activity;
   private final AlarmManager alarmManager = (AlarmManager) RuntimeEnvironment.application.getSystemService(Context.ALARM_SERVICE);
   private final ShadowAlarmManager shadowAlarmManager = Shadows.shadowOf(alarmManager);
+
+  @Before
+  public void setUp() {
+    activity = Robolectric.setupActivity(Activity.class);
+  }
 
   @Test
   public void set_shouldRegisterAlarm() throws Exception {
