@@ -13,6 +13,7 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.FileUtils;
 import android.os.Handler;
 import android.view.Display;
@@ -38,7 +39,7 @@ import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
  * Shadow for {@code android.content.ContextImpl}.
  */
 @Implements(className = ShadowContextImpl.CLASS_NAME)
-public class ShadowContextImpl extends ShadowContext {
+public class ShadowContextImpl {
   public static final String CLASS_NAME = "android.app.ContextImpl";
   private static final Map<String, String> SYSTEM_SERVICE_MAP = new HashMap<>();
   private final Map<String, RoboSharedPreferences> roboSharedPreferencesMap = new HashMap<>();
@@ -362,14 +363,12 @@ public class ShadowContextImpl extends ShadowContext {
   }
 
   @Implementation
-  @Override
   public File getExternalCacheDir() {
-    return super.getExternalCacheDir();
+    return Environment.getExternalStorageDirectory();
   }
 
   @Implementation
-  @Override
   public File getExternalFilesDir(String type) {
-    return super.getExternalFilesDir(type);
+    return Environment.getExternalStoragePublicDirectory(type);
   }
 }

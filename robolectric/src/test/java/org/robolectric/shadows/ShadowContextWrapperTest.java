@@ -374,19 +374,6 @@ public class ShadowContextWrapperTest {
     assertThat(contextWrapper.checkPermission("baz", 0, 0)).isEqualTo(PERMISSION_DENIED);
   }
 
-  @Test
-  public void shouldReturnAContext() {
-    assertThat(contextWrapper.getBaseContext()).isNotNull();
-
-    contextWrapper = new ContextWrapper(null);
-    shadowOf(contextWrapper).callAttachBaseContext(null);
-    assertThat(contextWrapper.getBaseContext()).isNull();
-
-    Activity baseContext = new Activity();
-    shadowOf(contextWrapper).callAttachBaseContext(baseContext);
-    assertThat(contextWrapper.getBaseContext()).isSameAs(baseContext);
-  }
-
   private void assertSameInstanceEveryTime(String serviceName) {
     Activity activity1 = buildActivity(Activity.class).create().get();
     Activity activity2 = buildActivity(Activity.class).create().get();

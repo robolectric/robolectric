@@ -4,8 +4,8 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 import org.robolectric.TestRunners;
-
 import static android.content.Context.WIFI_SERVICE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.RuntimeEnvironment.application;
@@ -65,5 +65,44 @@ public class ShadowWifiInfoTest {
     wifiManager = (WifiManager) application.getSystemService(WIFI_SERVICE);
     wifiInfo = wifiManager.getConnectionInfo();
     assertThat(wifiInfo.getRssi()).isEqualTo(10);
+  }
+
+  @Test
+  public void shouldReturnLinkSpeed() {
+    WifiManager wifiManager = (WifiManager) application.getSystemService(WIFI_SERVICE);
+    WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+    assertThat(wifiInfo.getLinkSpeed()).isEqualTo(-1);
+
+    shadowOf(wifiInfo).setLinkSpeed(10);
+
+    wifiManager = (WifiManager) application.getSystemService(WIFI_SERVICE);
+    wifiInfo = wifiManager.getConnectionInfo();
+    assertThat(wifiInfo.getLinkSpeed()).isEqualTo(10);
+  }
+
+  @Test @Config(sdk = 21)
+  public void shouldReturnFrequency() {
+    WifiManager wifiManager = (WifiManager) application.getSystemService(WIFI_SERVICE);
+    WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+    assertThat(wifiInfo.getFrequency()).isEqualTo(-1);
+
+    shadowOf(wifiInfo).setFrequency(10);
+
+    wifiManager = (WifiManager) application.getSystemService(WIFI_SERVICE);
+    wifiInfo = wifiManager.getConnectionInfo();
+    assertThat(wifiInfo.getFrequency()).isEqualTo(10);
+  }
+
+  @Test
+  public void shouldReturnNetworkId() {
+    WifiManager wifiManager = (WifiManager) application.getSystemService(WIFI_SERVICE);
+    WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+    assertThat(wifiInfo.getNetworkId()).isEqualTo(-1);
+
+    shadowOf(wifiInfo).setNetworkId(10);
+
+    wifiManager = (WifiManager) application.getSystemService(WIFI_SERVICE);
+    wifiInfo = wifiManager.getConnectionInfo();
+    assertThat(wifiInfo.getNetworkId()).isEqualTo(10);
   }
 }

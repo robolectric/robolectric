@@ -549,22 +549,6 @@ public class ShadowActivityTest {
   }
 
   @Test
-  public void pauseAndThenResumeGoesThroughTheFullLifeCycle() throws Exception {
-    TestActivity activity = new TestActivity();
-
-    ShadowActivity shadow = shadowOf(activity);
-    shadow.pauseAndThenResume();
-
-    activity.transcript.assertEventsSoFar(
-        "onPause",
-        "onStop",
-        "onRestart",
-        "onStart",
-        "onResume"
-    );
-  }
-
-  @Test
   public void startAndStopManagingCursorTracksCursors() throws Exception {
     TestActivity activity = new TestActivity();
 

@@ -1,19 +1,20 @@
 package org.robolectric.shadows;
 
-import android.graphics.Picture;
 import android.view.ViewGroup.LayoutParams;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import java.util.HashMap;
-import java.util.Map;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
@@ -96,20 +97,6 @@ public class ShadowWebViewTest {
     assertThat(shadowWebView.getWebChromeClient()).isNull();
     webView.setWebChromeClient(webChromeClient);
     assertThat(shadowWebView.getWebChromeClient()).isSameAs(webChromeClient);
-  }
-
-  @Test
-  public void shouldRecordPictureListener() {
-    WebView.PictureListener pictureListener = new WebView.PictureListener() {
-      @Override
-      public void onNewPicture(WebView view, Picture picture) {
-        ;
-      }
-    };
-
-    assertThat(shadowWebView.getPictureListener()).isNull();
-    webView.setPictureListener(pictureListener);
-    assertThat(shadowWebView.getPictureListener()).isSameAs(pictureListener);
   }
 
   @Test
