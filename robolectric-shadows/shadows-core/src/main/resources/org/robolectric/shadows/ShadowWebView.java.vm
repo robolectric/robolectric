@@ -1,7 +1,11 @@
 package org.robolectric.shadows;
 
 import android.view.ViewGroup.LayoutParams;
-import android.webkit.*;
+import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -45,7 +49,6 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
   private int goBackInvocations = 0;
   private LoadData lastLoadData;
   private LoadDataWithBaseURL lastLoadDataWithBaseURL;
-  private WebView.PictureListener pictureListener;
 
   @HiddenApi @Implementation
   public void ensureProviderCreated() {
@@ -168,15 +171,6 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
 
   public WebViewClient getWebViewClient() {
     return webViewClient;
-  }
-
-  @Implementation
-  public void setPictureListener(WebView.PictureListener listener) {
-    pictureListener = listener;
-  }
-
-  public WebView.PictureListener getPictureListener() {
-    return pictureListener;
   }
 
   @Implementation

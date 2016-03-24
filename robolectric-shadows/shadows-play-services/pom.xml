@@ -24,6 +24,12 @@
       <scope>test</scope>
     </dependency>
 
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+
     <!-- Project Dependencies -->
     <dependency>
       <groupId>org.robolectric</groupId>
@@ -47,9 +53,22 @@
 
     <dependency>
       <groupId>com.google.android.gms</groupId>
-      <artifactId>play-services</artifactId>
-      <version>6.5.87</version>
+      <artifactId>play-services-base</artifactId>
+      <version>8.4.0</version>
       <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.android.gms</groupId>
+      <artifactId>play-services-basement</artifactId>
+      <version>8.4.0</version>
+      <scope>provided</scope>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
