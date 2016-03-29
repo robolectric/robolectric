@@ -32,6 +32,7 @@ import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.internal.ShadowExtractor;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.BroadcastReceiverData;
 import org.robolectric.res.ResourceLoader;
@@ -821,4 +822,15 @@ public class ShadowApplication extends ShadowContextWrapper {
     }
     return mainHandler;
   }
+
+  /**
+   * @deprecated Do not depend on this method to override services as it will be removed in a future update.
+   * The preferered method is use the shadow of the corresponding service.
+   */
+  @Deprecated
+  public void setSystemService(String key, Object service) {
+    ShadowContextImpl shadowContext = (ShadowContextImpl) ShadowExtractor.extract(realApplication.getBaseContext());
+    shadowContext.setSystemService(key, service);
+  }
+
 }
