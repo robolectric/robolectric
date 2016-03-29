@@ -12,8 +12,13 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.internal.DoNotInstrument;
 import org.robolectric.annotation.internal.Instrument;
-import org.robolectric.internal.*;
+import org.robolectric.internal.ParallelUniverseInterface;
+import org.robolectric.internal.SdkConfig;
+import org.robolectric.internal.SdkEnvironment;
+import org.robolectric.internal.ShadowProvider;
+import org.robolectric.internal.ShadowedObject;
 import org.robolectric.internal.dependency.DependencyJar;
+import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.internal.fakes.RoboCharsets;
 import org.robolectric.internal.fakes.RoboExtendedResponseCache;
 import org.robolectric.internal.fakes.RoboResponseSource;
@@ -24,7 +29,16 @@ import org.robolectric.res.builder.XmlBlock;
 import org.robolectric.util.TempDirectory;
 import org.robolectric.util.Transcript;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.ServiceLoader;
+import java.util.Set;
 
 /**
  * Configuration rules for {@link org.robolectric.internal.bytecode.InstrumentingClassLoader}.
@@ -123,6 +137,7 @@ public class InstrumentationConfiguration {
           DoNotInstrument.class,
           Config.class,
           Transcript.class,
+          DependencyResolver.class,
           DirectObjectMarker.class,
           DependencyJar.class,
           ParallelUniverseInterface.class,
@@ -141,7 +156,9 @@ public class InstrumentationConfiguration {
           "org.specs2",  // allows for android projects with mixed scala\java tests to be
           "scala.",      //  run with Maven Surefire (see the RoboSpecs project on github)
           "kotlin.",
-          "com.almworks.sqlite4java" // Fix #958: SQLite native library must be loaded once.
+          "com.almworks.sqlite4java", // Fix #958: SQLite native library must be loaded once.
+          "org.mockito",
+          "org.powermock"
       ));
       classNameTranslations.put("java.net.ExtendedResponseCache", RoboExtendedResponseCache.class.getName());
       classNameTranslations.put("java.net.ResponseSource", RoboResponseSource.class.getName());

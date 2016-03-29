@@ -151,7 +151,7 @@ public class SupportFragmentControllerTest {
     assertThat(fragment.isVisible()).isTrue();
   }
 
-  private static class LoginFragment extends Fragment {
+  public static class LoginFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
       return inflater.inflate(R.layout.fragment_contents, container, false);
