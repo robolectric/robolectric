@@ -4,33 +4,39 @@
 #
 set -e
 
+APIS=(16 17 18 19 20 21 22 23)
+PARALLEL_BUILD_CONFIG="0.5C"
+
 PROJECT=$(cd $(dirname "$0")/..; pwd)
 if [ -z ${INCLUDE_SOURCE+x} ]; then SOURCE_ARG=""; else SOURCE_ARG="source:jar"; fi
 if [ -z ${INCLUDE_JAVADOC+x} ]; then JAVADOC_ARG=""; else JAVADOC_ARG="javadoc:jar"; fi
 
-echo "Building Robolectric..."
-cd "$PROJECT"; mvn -T 1C -D skipTests clean $SOURCE_ARG $JAVADOC_ARG install
+build_robolectric() {
+  echo "Building Robolectric..."
+  cd "$PROJECT"
+  mvn -T ${PARALLEL_BUILD_CONFIG} -D skipTests clean ${SOURCE_ARG} ${JAVADOC_ARG} install
+}
 
-echo "Building shadows for API 16..."
-cd "$PROJECT"/robolectric-shadows/shadows-core; mvn -T 1C -P android-16 clean $SOURCE_ARG $JAVADOC_ARG install
+build_shadows() {
+  for api in "${APIS[@]}"
+  do
+     build_shadows_for_api ${api}
+  done
+}
 
-echo "Building shadows for API 17..."
-cd "$PROJECT"/robolectric-shadows/shadows-core; mvn -T 1C -P android-17 clean $SOURCE_ARG $JAVADOC_ARG install
+build_shadows_for_api() {
+  echo "Building shadows for API ${1}..."
+  cd "$PROJECT"/robolectric-shadows/shadows-core
+  mvn -T ${PARALLEL_BUILD_CONFIG} -P android-${1} clean ${SOURCE_ARG} ${JAVADOC_ARG} install
+}
 
-echo "Building shadows for API 18..."
-cd "$PROJECT"/robolectric-shadows/shadows-core; mvn -T 1C -P android-18 clean $SOURCE_ARG $JAVADOC_ARG install
+run_tests() {
+  echo "Running Tests..."
+  cd "$PROJECT"
+  mvn -T ${PARALLEL_BUILD_CONFIG} test
+}
 
-echo "Building shadows for API 19..."
-cd "$PROJECT"/robolectric-shadows/shadows-core; mvn -T 1C -P android-19 clean $SOURCE_ARG $JAVADOC_ARG install
-
-echo "Building shadows for API 21..."
-cd "$PROJECT"/robolectric-shadows/shadows-core; mvn -T 1C -P android-21 clean $SOURCE_ARG $JAVADOC_ARG install
-
-echo "Building shadows for API 22..."
-cd "$PROJECT"/robolectric-shadows/shadows-core; mvn -T 1C -P android-22 clean $SOURCE_ARG $JAVADOC_ARG install
-
-echo "Building shadows for API 23..."
-cd "$PROJECT"/robolectric-shadows/shadows-core; mvn -T 1C -P android-23 clean $SOURCE_ARG $JAVADOC_ARG install
-
-echo "Running Tests..."
-cd "$PROJECT"; mvn -T 1C test
+build_robolectric
+build_shadows
+run_tests
+echo "Installation successful!"
