@@ -31,6 +31,18 @@ public class FragmentController<F extends Fragment> extends ComponentController<
     return new FragmentController<>(Robolectric.getShadowsAdapter(), fragment, activityClass);
   }
 
+  public static <F extends Fragment> FragmentController<F> of(Class<F> fragmentClass) {
+    return new FragmentController<>(Robolectric.getShadowsAdapter(),
+        ReflectionHelpers.callConstructor(fragmentClass),
+        FragmentControllerActivity.class);
+  }
+
+  public static <F extends Fragment> FragmentController<F> of(Class<F> fragmentClass, Class<? extends Activity> activityClass) {
+    return new FragmentController<>(Robolectric.getShadowsAdapter(),
+        ReflectionHelpers.callConstructor(fragmentClass),
+        activityClass);
+  }
+
   @Override
   public FragmentController<F> attach() {
     activityController.attach();

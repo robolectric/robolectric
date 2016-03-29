@@ -45,7 +45,7 @@ end
 
 def install_jar(group_id, artifact_id, version, archive, &block)
   unless File.exists?(archive)
-    puts "#{group_id}:#{artifact_id} not found!"
+    puts "#{group_id}:#{artifact_id}:#{version} #{archive} not found!"
     puts "Make sure that the 'Android Support Repository' and 'Google Repository' is up to date in the SDK manager."
     exit 1
   end
@@ -78,7 +78,7 @@ def install_map(group_id, artifact_id, api, revision)
   path = "#{dir}/libs/maps.jar"
 
   unless File.exists?(path)
-    puts "#{group_id}:#{artifact_id} not found!"
+    puts "#{group_id}:#{artifact_id}:#{revision} #{path} not found!"
     puts "Make sure that 'Google APIs' is up to date in the SDK manager for API #{api}."
     exit 1
   end
