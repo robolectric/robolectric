@@ -29,6 +29,12 @@ if [ "${TRAVIS_PULL_REQUEST}" = "false" ] && [ "${TRAVIS_BRANCH}" = "master" ] &
     echo "Building shadows for API 21..."
     cd "$PROJECT"/robolectric-shadows/shadows-core; mvn ${ARGUMENTS} -P snapshot,android-21 clean package
 
+    echo "Building shadows for API 22..."
+    cd "$PROJECT"/robolectric-shadows/shadows-core; mvn ${ARGUMENTS} -P snapshot,android-22 clean package
+
+    echo "Building shadows for API 23..."
+    cd "$PROJECT"/robolectric-shadows/shadows-core; mvn ${ARGUMENTS} -P snapshot,android-23 clean package
+
     echo "Uploading SNAPSHOT..."
     cd "$PROJECT"; mvn ${ARGUMENTS} -P snapshot,android-latest,upload deploy
 fi
