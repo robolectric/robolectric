@@ -32,6 +32,8 @@ import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
 import org.robolectric.res.OverlayResourceLoader;
 import org.robolectric.res.PackageResourceLoader;
+import org.robolectric.res.ResourceExtractor;
+import org.robolectric.res.ResourceIndex;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.res.RoutingResourceLoader;
@@ -57,6 +59,9 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   private static final Map<Pair<AndroidManifest, SdkConfig>, ResourceLoader> resourceLoadersByManifestAndConfig = new HashMap<>();
   private static final Map<ManifestIdentifier, AndroidManifest> appManifestsByFile = new HashMap<>();
   private static ShadowMap mainShadowMap;
+
+  /** Caches process R classes to avoid building their expensive index repeatedly */
+  private final Map<Class<?>, ResourceIndex> rClassToIndex = new HashMap<>();
 
   private InstrumentingClassLoaderFactory instrumentingClassLoaderFactory;
   private TestLifecycle<Application> testLifecycle;
@@ -504,7 +509,13 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   protected ResourceLoader createAppResourceLoader(ResourceLoader systemResourceLoader, AndroidManifest appManifest) {
     List<PackageResourceLoader> appAndLibraryResourceLoaders = new ArrayList<>();
     for (ResourcePath resourcePath : appManifest.getIncludedResourcePaths()) {
-      appAndLibraryResourceLoaders.add(createResourceLoader(resourcePath));
+      Class<?> rClass = resourcePath.rClass;
+      if (!rClassToIndex.containsKey(rClass)) {
+        ResourceIndex resourceIndex = new ResourceExtractor(resourcePath);
+        rClassToIndex.put(rClass, resourceIndex);
+      }
+      ResourceIndex resourceIndex = rClassToIndex.get(rClass);
+      appAndLibraryResourceLoaders.add(createResourceLoader(resourcePath, resourceIndex));
     }
     OverlayResourceLoader overlayResourceLoader = new OverlayResourceLoader(appManifest.getPackageName(), appAndLibraryResourceLoaders);
 
@@ -514,8 +525,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     return new RoutingResourceLoader(resourceLoaders);
   }
 
-  public PackageResourceLoader createResourceLoader(ResourcePath resourcePath) {
-    return new PackageResourceLoader(resourcePath);
+  public PackageResourceLoader createResourceLoader(ResourcePath resourcePath, ResourceIndex resourceIndex) {
+    return new PackageResourceLoader(resourcePath, resourceIndex);
   }
 
   protected ShadowMap createShadowMap() {
