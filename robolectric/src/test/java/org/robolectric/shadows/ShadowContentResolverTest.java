@@ -13,27 +13,33 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.OperationApplicationException;
 import android.content.PeriodicSync;
+import android.content.res.AssetFileDescriptor;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.DefaultTestLifecycle;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.DefaultTestLifecycle;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
+import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.ContentProviderData;
 import org.robolectric.fakes.BaseCursor;
 import org.robolectric.util.ReflectionHelpers;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileDescriptor;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -706,6 +712,54 @@ public class ShadowContentResolverTest {
       this.selectionArgs = selectionArgs;
       this.sortOrder = sortOrder;
     }
+  }
+
+  @Test
+  public void openTypedAssetFileDescriptor_shouldOpenDescriptor() throws IOException, RemoteException {
+    final File file = new File(RuntimeEnvironment.application.getFilesDir(), "test_file");
+    file.createNewFile();
+
+    ShadowContentResolver.registerProvider(AUTHORITY, new ContentProvider() {
+      @Override
+      public boolean onCreate() {
+        return true;
+      }
+
+      @Override
+      public Cursor query(Uri uri, String[] strings, String s, String[] strings1, String s1) {
+        return null;
+      }
+
+      @Override
+      public String getType(Uri uri) {
+        return null;
+      }
+
+      @Override
+      public Uri insert(Uri uri, ContentValues contentValues) {
+        return null;
+      }
+
+      @Override
+      public int delete(Uri uri, String s, String[] strings) {
+        return 0;
+      }
+
+      @Override
+      public int update(Uri uri, ContentValues contentValues, String s, String[] strings) {
+        return 0;
+      }
+
+      @Override
+      public ParcelFileDescriptor openFile(Uri uri, String mode) throws FileNotFoundException {
+        return ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY);
+      }
+    });
+
+    AssetFileDescriptor afd = contentResolver.openTypedAssetFileDescriptor(Uri.parse("content://" + AUTHORITY + "/whatever"), "*/*", null);
+
+    FileDescriptor descriptor = afd.getFileDescriptor();
+    assertThat(descriptor).isNotNull();
   }
 
   private class TestContentObserver extends ContentObserver {

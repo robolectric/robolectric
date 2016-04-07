@@ -10,22 +10,23 @@ import android.content.ContentValues;
 import android.content.IContentProvider;
 import android.content.OperationApplicationException;
 import android.content.PeriodicSync;
+import android.content.res.AssetFileDescriptor;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.util.NamedStream;
-import org.robolectric.manifest.ContentProviderData;
 import org.robolectric.fakes.BaseCursor;
 import org.robolectric.internal.Shadow;
+import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.manifest.ContentProviderData;
+import org.robolectric.util.NamedStream;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -558,6 +559,15 @@ public class ShadowContentResolver {
   public Collection<ContentObserver> getContentObservers( Uri uri ) {
     CopyOnWriteArraySet<ContentObserver> observers = contentObservers.get(uri);
     return (observers == null) ? Collections.<ContentObserver>emptyList() : observers;
+  }
+
+  @Implementation
+  public final AssetFileDescriptor openTypedAssetFileDescriptor(Uri uri, String mimeType, Bundle opts) throws FileNotFoundException {
+    ContentProvider provider = getProvider(uri);
+    if (provider == null) {
+      return null;
+    }
+    return provider.openTypedAssetFile(uri, mimeType, opts);
   }
 
   private static ContentProvider createAndInitialize(ContentProviderData providerData) {
