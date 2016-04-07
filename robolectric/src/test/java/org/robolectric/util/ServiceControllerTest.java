@@ -54,7 +54,7 @@ public class ServiceControllerTest {
 
   @Test
   public void shouldSetIntentForGivenServiceInstance() throws Exception {
-    ServiceController<MyService> serviceController = ServiceController.of(new CoreShadowsAdapter(), new MyService()).bind();
+    ServiceController<MyService> serviceController = ServiceController.of(new CoreShadowsAdapter(), new MyService(), null).bind();
     assertThat(serviceController.get().boundIntent).isNotNull();
   }
 

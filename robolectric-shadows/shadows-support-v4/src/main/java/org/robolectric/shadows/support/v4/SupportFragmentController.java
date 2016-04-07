@@ -36,7 +36,6 @@ public class SupportFragmentController<F extends Fragment> extends ComponentCont
 
   @Override
   public SupportFragmentController<F> attach() {
-    activityController.attach();
     return this;
   }
 
@@ -47,7 +46,6 @@ public class SupportFragmentController<F extends Fragment> extends ComponentCont
     shadowMainLooper.runPaused(new Runnable() {
       @Override
       public void run() {
-        if (!attached) attach();
         activityController.create(bundle).get().getSupportFragmentManager().beginTransaction().add(contentViewId, fragment).commit();
       }
     });

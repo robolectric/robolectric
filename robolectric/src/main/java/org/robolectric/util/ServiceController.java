@@ -3,6 +3,7 @@ package org.robolectric.util;
 import android.app.Application;
 import android.app.Service;
 import android.content.Context;
+import android.content.Intent;
 import android.os.IBinder;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.ShadowsAdapter;
@@ -12,22 +13,22 @@ public class ServiceController<T extends Service> extends ComponentController<Se
 
   private String shadowActivityThreadClassName;
 
-  public static <T extends Service> ServiceController<T> of(ShadowsAdapter shadowsAdapter, Class<T> serviceClass) {
-    return of(shadowsAdapter, ReflectionHelpers.callConstructor(serviceClass));
-  }
-
-  public static <T extends Service> ServiceController<T> of(ShadowsAdapter shadowsAdapter, T service) {
-    ServiceController<T> controller = new ServiceController<>(shadowsAdapter, service);
-    controller.doAttach();
+  public static <T extends Service> ServiceController<T> of(ShadowsAdapter shadowsAdapter, T service, Intent intent) {
+    ServiceController<T> controller = new ServiceController<>(shadowsAdapter, service, intent);
+    controller.attach();
     return controller;
   }
 
-  private ServiceController(ShadowsAdapter shadowsAdapter, T service) {
-    super(shadowsAdapter, service);
+  private ServiceController(ShadowsAdapter shadowsAdapter, T service, Intent intent) {
+    super(shadowsAdapter, service, intent);
     shadowActivityThreadClassName = shadowsAdapter.getShadowActivityThreadClassName();
   }
 
-  private void doAttach() {
+  public ServiceController<T> attach() {
+    if (attached) {
+      return this;
+    }
+
     Context baseContext = RuntimeEnvironment.application.getBaseContext();
 
     ClassLoader cl = baseContext.getClassLoader();
@@ -46,13 +47,8 @@ public class ServiceController<T extends Service> extends ComponentController<Se
         ClassParameter.from(IBinder.class, null),
         ClassParameter.from(Application.class, RuntimeEnvironment.application),
         ClassParameter.from(Object.class, null));
-  }
 
-  /**
-   * @deprecated The service is automatically attached. There is no need to call this method.
-   */
-  @Deprecated
-  public ServiceController<T> attach() {
+    attached = true;
     return this;
   }
 
