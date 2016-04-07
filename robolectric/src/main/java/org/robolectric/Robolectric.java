@@ -48,7 +48,7 @@ public class Robolectric {
   }
 
   public static <T extends Service> T setupService(Class<T> serviceClass) {
-    return ServiceController.of(getShadowsAdapter(), serviceClass).attach().create().get();
+    return ServiceController.of(getShadowsAdapter(), serviceClass).create().get();
   }
 
   public static <T extends Activity> ActivityController<T> buildActivity(Class<T> activityClass) {

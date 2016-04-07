@@ -13,27 +13,21 @@ public class ServiceController<T extends Service> extends ComponentController<Se
   private String shadowActivityThreadClassName;
 
   public static <T extends Service> ServiceController<T> of(ShadowsAdapter shadowsAdapter, Class<T> serviceClass) {
-    try {
-      return new ServiceController<>(shadowsAdapter, serviceClass);
-    } catch (IllegalAccessException | InstantiationException e) {
-      throw new RuntimeException(e);
-    }
+    return of(shadowsAdapter, ReflectionHelpers.callConstructor(serviceClass));
   }
 
   public static <T extends Service> ServiceController<T> of(ShadowsAdapter shadowsAdapter, T service) {
-    return new ServiceController<>(shadowsAdapter, service);
+    ServiceController<T> controller = new ServiceController<>(shadowsAdapter, service);
+    controller.doAttach();
+    return controller;
   }
 
-  public ServiceController(ShadowsAdapter shadowsAdapter, Class<T> serviceClass) throws IllegalAccessException, InstantiationException {
-    this(shadowsAdapter, serviceClass.newInstance());
-  }
-
-  public ServiceController(ShadowsAdapter shadowsAdapter, T service) {
+  private ServiceController(ShadowsAdapter shadowsAdapter, T service) {
     super(shadowsAdapter, service);
     shadowActivityThreadClassName = shadowsAdapter.getShadowActivityThreadClassName();
   }
 
-  public ServiceController<T> attach() {
+  private void doAttach() {
     Context baseContext = RuntimeEnvironment.application.getBaseContext();
 
     ClassLoader cl = baseContext.getClassLoader();
@@ -52,8 +46,13 @@ public class ServiceController<T extends Service> extends ComponentController<Se
         ClassParameter.from(IBinder.class, null),
         ClassParameter.from(Application.class, RuntimeEnvironment.application),
         ClassParameter.from(Object.class, null));
+  }
 
-    attached = true;
+  /**
+   * @deprecated The service is automatically attached. There is no need to call this method.
+   */
+  @Deprecated
+  public ServiceController<T> attach() {
     return this;
   }
 
