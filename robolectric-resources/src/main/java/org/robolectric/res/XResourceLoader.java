@@ -24,7 +24,7 @@ abstract class XResourceLoader implements ResourceLoader {
 
   abstract void doInitialize();
 
-  void initialize() {
+  synchronized void initialize() {
     if (isInitialized) return;
     doInitialize();
     isInitialized = true;
