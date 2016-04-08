@@ -8,6 +8,7 @@ import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.PackageResourceLoader;
+import org.robolectric.res.ResourceIndex;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.shadows.ShadowView;
@@ -127,8 +128,8 @@ public class RobolectricTestRunnerTest {
         super(testClass);
       }
 
-      @Override public PackageResourceLoader createResourceLoader(ResourcePath resourcePath) {
-        return super.createResourceLoader(resourcePath);
+      @Override public PackageResourceLoader createResourceLoader(ResourcePath resourcePath, ResourceIndex resourceIndex) {
+        return super.createResourceLoader(resourcePath, resourceIndex);
       }
 
       @Override

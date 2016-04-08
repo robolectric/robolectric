@@ -1,0 +1,247 @@
+
+package org.robolectric.shadows;
+
+#if ($api >= 21)
+
+import android.content.ComponentName;
+import android.content.Context;
+import android.net.Uri;
+import android.os.Bundle;
+import android.os.RemoteException;
+import android.os.ServiceManager;
+import android.telecom.PhoneAccount;
+import android.telecom.PhoneAccountHandle;
+import android.telecom.TelecomManager;
+import android.text.TextUtils;
+import android.util.Log;
+import com.android.internal.telecom.ITelecomService;
+import com.android.internal.telecom.ITelecomService.Stub;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+
+/**
+ * Shadow for {@link android.telecom.TelecomManager}.
+ */
+@Implements(value = TelecomManager.class)
+public class ShadowTelecomManager {
+
+  private PhoneAccountHandle simCallManager;
+
+  @Implementation
+  public PhoneAccountHandle getDefaultOutgoingPhoneAccount(String uriScheme) {
+    return null;
+  }
+
+  @Implementation
+  public PhoneAccountHandle getUserSelectedOutgoingPhoneAccount() {
+    return null;
+  }
+
+  @Implementation
+  public void setUserSelectedOutgoingPhoneAccount(PhoneAccountHandle accountHandle) {
+  }
+
+  @Implementation
+  public PhoneAccountHandle getSimCallManager() {
+    return simCallManager;
+  }
+
+  @Implementation
+  public PhoneAccountHandle getSimCallManager(int userId) {
+    return null;
+  }
+
+  @Implementation
+  public PhoneAccountHandle getConnectionManager() {
+    return this.getSimCallManager();
+  }
+
+  @Implementation
+  public List<PhoneAccountHandle> getPhoneAccountsSupportingScheme(String uriScheme) {
+    return new ArrayList();
+  }
+
+  @Implementation
+  public List<PhoneAccountHandle> getCallCapablePhoneAccounts() {
+    return this.getCallCapablePhoneAccounts(false);
+  }
+
+  @Implementation
+  public List<PhoneAccountHandle> getCallCapablePhoneAccounts(boolean includeDisabledAccounts) {
+    return new ArrayList();
+  }
+
+  @Implementation
+  public List<PhoneAccountHandle> getPhoneAccountsForPackage() {
+    return null;
+  }
+
+  @Implementation
+  public PhoneAccount getPhoneAccount(PhoneAccountHandle account) {
+    return null;
+  }
+
+  @Implementation
+  public int getAllPhoneAccountsCount() {
+    return 0;
+  }
+
+
+  @Implementation
+  public List<PhoneAccount> getAllPhoneAccounts() {
+    return Collections.EMPTY_LIST;
+  }
+
+  @Implementation
+  public List<PhoneAccountHandle> getAllPhoneAccountHandles() {
+    return Collections.EMPTY_LIST;
+  }
+
+  @Implementation
+  public void registerPhoneAccount(PhoneAccount account) {
+  }
+
+  @Implementation
+  public void unregisterPhoneAccount(PhoneAccountHandle accountHandle) {
+  }
+
+  @Implementation
+  public void clearPhoneAccounts() {
+    this.clearAccounts();
+  }
+
+  /** @deprecated */
+  @Implementation
+  public void clearAccounts() {
+  }
+
+  @Implementation
+  public void clearAccountsForPackage(String packageName) {
+  }
+
+  /** @deprecated */
+  @Implementation
+  public ComponentName getDefaultPhoneApp() {
+    return null;
+  }
+
+  @Implementation
+  public String getDefaultDialerPackage() {
+    return null;
+  }
+
+  @Implementation
+  public boolean setDefaultDialer(String packageName) {
+    return false;
+  }
+
+  @Implementation
+  public String getSystemDialerPackage() {
+    return null;
+  }
+
+  @Implementation
+  public boolean isVoiceMailNumber(PhoneAccountHandle accountHandle, String number) {
+    return false;
+  }
+
+  @Implementation
+  public String getVoiceMailNumber(PhoneAccountHandle accountHandle) {
+    return null;
+  }
+
+  @Implementation
+  public String getLine1Number(PhoneAccountHandle accountHandle) {
+    return null;
+  }
+
+  @Implementation
+  public boolean isInCall() {
+    return false;
+  }
+
+  @Implementation
+  public int getCallState() {
+    return 0;
+  }
+
+  @Implementation
+  public boolean isRinging() {
+    return false;
+  }
+
+  @Implementation
+  public boolean endCall() {
+    return false;
+  }
+
+  @Implementation
+  public void acceptRingingCall() {
+  }
+
+  @Implementation
+  public void silenceRinger() {
+  }
+
+  @Implementation
+  public boolean isTtySupported() {
+    return false;
+  }
+
+  @Implementation
+  public int getCurrentTtyMode() {
+    return 0;
+  }
+
+  @Implementation
+  public void addNewIncomingCall(PhoneAccountHandle phoneAccount, Bundle extras) {
+  }
+
+  @Implementation
+  public void addNewUnknownCall(PhoneAccountHandle phoneAccount, Bundle extras) {
+  }
+
+  @Implementation
+  public boolean handleMmi(String dialString) {
+    return false;
+  }
+
+  @Implementation
+  public boolean handleMmi(String dialString, PhoneAccountHandle accountHandle) {
+    return false;
+  }
+
+  @Implementation
+  public Uri getAdnUriForPhoneAccount(PhoneAccountHandle accountHandle) {
+    return Uri.parse("content://icc/adn");
+  }
+
+  @Implementation
+  public void cancelMissedCallsNotification() {
+  }
+
+  @Implementation
+  public void showInCallScreen(boolean showDialpad) {
+  }
+
+  @Implementation
+  public void placeCall(Uri address, Bundle extras) {
+  }
+
+  @Implementation
+  public void enablePhoneAccount(PhoneAccountHandle handle, boolean isEnabled) {
+  }
+
+  public void setSimCallManager(PhoneAccountHandle simCallManager) {
+    this.simCallManager = simCallManager;
+  }
+}
+#else
+public class ShadowTelecomManager {
+  // Dummy class, this was added in API21
+}
+#end

@@ -92,6 +92,10 @@ public class ShadowContextImpl {
 #if ($api >= 19)
     SYSTEM_SERVICE_MAP.put(Context.PRINT_SERVICE, "android.print.PrintManager");
 #end
+#if ($api >= 21)
+    SYSTEM_SERVICE_MAP.put(Context.JOB_SCHEDULER_SERVICE, "android.app.JobSchedulerImpl");
+    SYSTEM_SERVICE_MAP.put(Context.TELECOM_SERVICE, "android.telecom.TelecomManager");
+#end
   }
 
   @Implementation

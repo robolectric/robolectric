@@ -24,3 +24,9 @@ cd "$PROJECT"/robolectric-shadows/shadows-core; mvn -P release,android-19 -D ski
 
 echo "Building shadows for API 21..."
 cd "$PROJECT"/robolectric-shadows/shadows-core; mvn -P release,android-21 -D skipTests clean deploy
+
+echo "Building shadows for API 22..."
+cd "$PROJECT"/robolectric-shadows/shadows-core; mvn -P release,android-22 -D skipTests clean deploy
+
+echo "Building shadows for API 23..."
+cd "$PROJECT"/robolectric-shadows/shadows-core; mvn -P release,android-23 -D skipTests clean deploy
