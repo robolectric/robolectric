@@ -345,7 +345,7 @@
         <dependency>
           <groupId>org.robolectric</groupId>
           <artifactId>android-all</artifactId>
-          <version>4.4_r1-robolectric-0</version>
+          <version>4.4_r1-robolectric-1</version>
         </dependency>
       </dependencies>
       <properties>
@@ -371,7 +371,7 @@
         <dependency>
           <groupId>org.robolectric</groupId>
           <artifactId>android-all</artifactId>
-          <version>5.0.0_r2-robolectric-0</version>
+          <version>5.0.0_r2-robolectric-1</version>
         </dependency>
       </dependencies>
       <properties>
@@ -397,7 +397,7 @@
         <dependency>
           <groupId>org.robolectric</groupId>
           <artifactId>android-all</artifactId>
-          <version>5.1.1_r9-robolectric-0</version>
+          <version>5.1.1_r9-robolectric-1</version>
         </dependency>
       </dependencies>
       <properties>
