@@ -25,6 +25,7 @@ import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.builder.DefaultPackageManager;
 import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.shadows.ShadowLooper;
+import org.robolectric.util.ApplicationTestUtil;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 
@@ -142,7 +143,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       try {
         Context contextImpl = systemContextImpl.createPackageContext(applicationInfo.packageName, Context.CONTEXT_INCLUDE_CODE);
         ReflectionHelpers.setField(activityThreadClass, activityThread, "mInitialApplication", application);
-        ReflectionHelpers.callInstanceMethod(Application.class, application, "attach", ClassParameter.from(Context.class, contextImpl));
+        ApplicationTestUtil.attach(application, contextImpl);
       } catch (PackageManager.NameNotFoundException e) {
         throw new RuntimeException(e);
       }
