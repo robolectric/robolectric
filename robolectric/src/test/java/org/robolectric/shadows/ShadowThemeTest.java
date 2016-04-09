@@ -34,7 +34,7 @@ public class ShadowThemeTest {
 
   @Test public void whenExplicitlySetOnActivity_beforeSetContentView_activityUsesNewTheme() throws Exception {
     ActivityController<TestActivityWithAnotherTheme> activityController = buildActivity(TestActivityWithAnotherTheme.class);
-    TestActivity activity = activityController.attach().get();
+    TestActivity activity = activityController.get();
     activity.setTheme(R.style.Theme_Robolectric);
     activityController.create();
     Button theButton = (Button) activity.findViewById(R.id.button);

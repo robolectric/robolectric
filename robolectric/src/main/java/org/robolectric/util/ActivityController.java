@@ -28,21 +28,34 @@ public class ActivityController<T extends Activity> extends ComponentController<
   private final ShadowsAdapter shadowsAdapter;
   private final ShadowActivityAdapter shadowReference;
 
-  public static <T extends Activity> ActivityController<T> of(ShadowsAdapter shadowsAdapter, Class<T> activityClass) {
-    return new ActivityController<>(shadowsAdapter, ReflectionHelpers.callConstructor(activityClass));
+  public static <T extends Activity> ActivityController<T> of(ShadowsAdapter shadowsAdapter, T activity, Intent intent) {
+    return new ActivityController<>(shadowsAdapter, activity, intent).attach();
   }
 
   public static <T extends Activity> ActivityController<T> of(ShadowsAdapter shadowsAdapter, T activity) {
-    return new ActivityController<>(shadowsAdapter, activity);
+    return new ActivityController<>(shadowsAdapter, activity, null).attach();
   }
 
-  public ActivityController(ShadowsAdapter shadowsAdapter, T activity) {
-    super(shadowsAdapter, activity);
+  private ActivityController(ShadowsAdapter shadowsAdapter, T activity, Intent intent) {
+    super(shadowsAdapter, activity, intent);
     this.shadowsAdapter = shadowsAdapter;
     shadowReference = shadowsAdapter.getShadowActivityAdapter(this.component);
   }
 
+  public ActivityController<T> withIntent(Intent intent) {
+    super.withIntent(intent);
+
+    // This is a hack to support existing usages where withIntent() is called after attach().
+    ReflectionHelpers.setField(component, "mIntent", getIntent());
+    ReflectionHelpers.setField(component, "mComponent", getIntent().getComponent());
+    return myself;
+  }
+
   public ActivityController<T> attach() {
+    if (attached) {
+      return this;
+    }
+
     Context baseContext = RuntimeEnvironment.application.getBaseContext();
 
     final String title = getActivityTitle();
@@ -117,7 +130,6 @@ public class ActivityController<T extends Activity> extends ComponentController<
     shadowMainLooper.runPaused(new Runnable() {
       @Override
       public void run() {
-        if (!attached) attach();
         ReflectionHelpers.callInstanceMethod(Activity.class, component, "performCreate", ClassParameter.from(Bundle.class, bundle));
       }
     });

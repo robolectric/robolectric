@@ -54,7 +54,7 @@ public class ServiceControllerTest {
 
   @Test
   public void shouldSetIntentForGivenServiceInstance() throws Exception {
-    ServiceController<MyService> serviceController = ServiceController.of(new CoreShadowsAdapter(), new MyService()).bind();
+    ServiceController<MyService> serviceController = ServiceController.of(new CoreShadowsAdapter(), new MyService(), null).bind();
     assertThat(serviceController.get().boundIntent).isNotNull();
   }
 
@@ -79,31 +79,31 @@ public class ServiceControllerTest {
 
   @Test
   public void unbind_callsUnbindWhilePaused() {
-    controller.attach().create().bind().unbind();
+    controller.create().bind().unbind();
     transcript.assertEventsInclude("finishedOnUnbind", "onUnbind");
   }
 
   @Test
   public void rebind_callsRebindWhilePaused() {
-    controller.attach().create().bind().unbind().bind().rebind();
+    controller.create().bind().unbind().bind().rebind();
     transcript.assertEventsInclude("finishedOnRebind", "onRebind");
   }
 
   @Test
   public void destroy_callsOnDestroyWhilePaused() {
-    controller.attach().create().destroy();
+    controller.create().destroy();
     transcript.assertEventsInclude("finishedOnDestroy", "onDestroy");
   }
 
   @Test
   public void bind_callsOnBindWhilePaused() {
-    controller.attach().create().bind();
+    controller.create().bind();
     transcript.assertEventsInclude("finishedOnBind", "onBind");
   }
 
   @Test
   public void startCommand_callsOnStartCommandWhilePaused() {
-    controller.attach().create().startCommand(1, 2);
+    controller.create().startCommand(1, 2);
     transcript.assertEventsInclude("finishedOnStartCommand", "onStartCommand");
   }
 

@@ -18,8 +18,10 @@ public abstract class ComponentController<C extends ComponentController<C, T>, T
 
   protected boolean attached;
 
-  public ComponentController(ShadowsAdapter shadowsAdapter, Class<T> componentClass) throws IllegalAccessException, InstantiationException {
-    this(shadowsAdapter, componentClass.newInstance());
+  @SuppressWarnings("unchecked")
+  public ComponentController(ShadowsAdapter shadowsAdapter, T component, Intent intent) {
+    this(shadowsAdapter, component);
+    this.intent = intent;
   }
 
   @SuppressWarnings("unchecked")
@@ -33,11 +35,24 @@ public abstract class ComponentController<C extends ComponentController<C, T>, T
     return component;
   }
 
+  /**
+   * @deprecated Prefer passing the Intent through the constructor instead, it is safer as this
+   * method is broken for ActivityController where it is called after attach(). This method will be
+   * removed in a forthcoming release.
+   */
+  @Deprecated
   public C withIntent(Intent intent) {
     this.intent = intent;
     return myself;
   }
 
+  /**
+   * @deprecated The component is automatically attached. There is no need to call this method.
+   *
+   * TODO(jongerrish): Make this method private so that it can only be called internally, should not
+   * be part of the API.
+   */
+  @Deprecated
   public abstract C attach();
 
   public abstract C create();

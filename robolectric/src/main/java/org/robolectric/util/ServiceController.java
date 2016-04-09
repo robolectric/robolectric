@@ -3,6 +3,7 @@ package org.robolectric.util;
 import android.app.Application;
 import android.app.Service;
 import android.content.Context;
+import android.content.Intent;
 import android.os.IBinder;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.ShadowsAdapter;
@@ -12,28 +13,22 @@ public class ServiceController<T extends Service> extends ComponentController<Se
 
   private String shadowActivityThreadClassName;
 
-  public static <T extends Service> ServiceController<T> of(ShadowsAdapter shadowsAdapter, Class<T> serviceClass) {
-    try {
-      return new ServiceController<>(shadowsAdapter, serviceClass);
-    } catch (IllegalAccessException | InstantiationException e) {
-      throw new RuntimeException(e);
-    }
+  public static <T extends Service> ServiceController<T> of(ShadowsAdapter shadowsAdapter, T service, Intent intent) {
+    ServiceController<T> controller = new ServiceController<>(shadowsAdapter, service, intent);
+    controller.attach();
+    return controller;
   }
 
-  public static <T extends Service> ServiceController<T> of(ShadowsAdapter shadowsAdapter, T service) {
-    return new ServiceController<>(shadowsAdapter, service);
-  }
-
-  public ServiceController(ShadowsAdapter shadowsAdapter, Class<T> serviceClass) throws IllegalAccessException, InstantiationException {
-    this(shadowsAdapter, serviceClass.newInstance());
-  }
-
-  public ServiceController(ShadowsAdapter shadowsAdapter, T service) {
-    super(shadowsAdapter, service);
+  private ServiceController(ShadowsAdapter shadowsAdapter, T service, Intent intent) {
+    super(shadowsAdapter, service, intent);
     shadowActivityThreadClassName = shadowsAdapter.getShadowActivityThreadClassName();
   }
 
   public ServiceController<T> attach() {
+    if (attached) {
+      return this;
+    }
+
     Context baseContext = RuntimeEnvironment.application.getBaseContext();
 
     ClassLoader cl = baseContext.getClassLoader();

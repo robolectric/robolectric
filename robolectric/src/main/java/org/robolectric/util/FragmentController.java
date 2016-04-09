@@ -17,23 +17,31 @@ public class FragmentController<F extends Fragment> extends ComponentController<
   private final F fragment;
   private final ActivityController<? extends Activity> activityController;
 
-  protected FragmentController(ShadowsAdapter shadowsAdapter, F fragment, Class<? extends Activity> activityClass) {
-    super(shadowsAdapter, fragment);
+  public static <F extends Fragment> FragmentController<F> of(F fragment) {
+    return of(fragment, FragmentControllerActivity.class, null);
+  }
+
+  public static <F extends Fragment> FragmentController<F> of(F fragment, Class<? extends Activity> activityClass) {
+    return of(fragment, activityClass, null);
+  }
+
+  public static <F extends Fragment> FragmentController<F> of(F fragment, Intent intent) {
+    return new FragmentController<>(Robolectric.getShadowsAdapter(), fragment, FragmentControllerActivity.class, intent);
+  }
+
+  public static <F extends Fragment> FragmentController<F> of(F fragment, Class<? extends Activity> activityClass, Intent intent) {
+    return new FragmentController<>(Robolectric.getShadowsAdapter(), fragment, activityClass, intent);
+  }
+
+  private FragmentController(ShadowsAdapter shadowsAdapter, F fragment, Class<? extends Activity> activityClass, Intent intent) {
+    super(shadowsAdapter, fragment, intent);
     this.fragment = fragment;
     this.activityController = Robolectric.buildActivity(activityClass);
   }
 
-  public static <F extends Fragment> FragmentController<F> of(F fragment) {
-    return new FragmentController<>(Robolectric.getShadowsAdapter(), fragment, FragmentControllerActivity.class);
-  }
-
-  public static <F extends Fragment> FragmentController<F> of(F fragment, Class<? extends Activity> activityClass) {
-    return new FragmentController<>(Robolectric.getShadowsAdapter(), fragment, activityClass);
-  }
 
   @Override
   public FragmentController<F> attach() {
-    activityController.attach();
     return this;
   }
 
@@ -44,7 +52,6 @@ public class FragmentController<F extends Fragment> extends ComponentController<
     shadowMainLooper.runPaused(new Runnable() {
       @Override
       public void run() {
-        if (!attached) attach();
         activityController.create(bundle).get().getFragmentManager().beginTransaction().add(contentViewId, fragment).commit();
       }
     });
