@@ -1,9 +1,14 @@
 package org.robolectric;
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.app.Service;
+import android.content.Intent;
+
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.util.ActivityController;
+import org.robolectric.util.FragmentController;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.ServiceController;
 import org.robolectric.internal.ShadowProvider;
@@ -44,20 +49,45 @@ public class Robolectric {
   }
 
   public static <T extends Service> ServiceController<T> buildService(Class<T> serviceClass) {
-    return ServiceController.of(getShadowsAdapter(), serviceClass);
+    return buildService(serviceClass, null);
+  }
+
+  public static <T extends Service> ServiceController<T> buildService(Class<T> serviceClass, Intent intent) {
+    return ServiceController.of(getShadowsAdapter(), ReflectionHelpers.callConstructor(serviceClass), intent);
   }
 
   public static <T extends Service> T setupService(Class<T> serviceClass) {
-    return ServiceController.of(getShadowsAdapter(), serviceClass).attach().create().get();
+    return buildService(serviceClass).create().get();
   }
 
   public static <T extends Activity> ActivityController<T> buildActivity(Class<T> activityClass) {
-    return ActivityController.of(getShadowsAdapter(), activityClass);
+    return buildActivity(activityClass, null);
+  }
+
+  public static <T extends Activity> ActivityController<T> buildActivity(Class<T> activityClass, Intent intent) {
+    return ActivityController.of(getShadowsAdapter(), ReflectionHelpers.callConstructor(activityClass), intent);
   }
 
   public static <T extends Activity> T setupActivity(Class<T> activityClass) {
-    return ActivityController.of(getShadowsAdapter(), activityClass).setup().get();
+    return buildActivity(activityClass).setup().get();
   }
+
+  public static <T extends Fragment> FragmentController<T> buildFragment(Class<T> fragmentClass) {
+    return FragmentController.of(ReflectionHelpers.callConstructor(fragmentClass));
+  }
+
+  public static <T extends Fragment> FragmentController<T> buildFragment(Class<T> fragmentClass, Class<? extends Activity> activityClass) {
+    return FragmentController.of(ReflectionHelpers.callConstructor(fragmentClass), activityClass);
+  }
+
+  public static <T extends Fragment> FragmentController<T> buildFragment(Class<T> fragmentClass, Intent intent) {
+    return FragmentController.of(ReflectionHelpers.callConstructor(fragmentClass), intent);
+  }
+
+  public static <T extends Fragment> FragmentController<T> buildFragment(Class<T> fragmentClass, Class<? extends Activity> activityClass, Intent intent) {
+    return FragmentController.of(ReflectionHelpers.callConstructor(fragmentClass), activityClass, intent);
+  }
+
 
   /**
    * Return the foreground scheduler (e.g. the UI thread scheduler).

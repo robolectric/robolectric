@@ -126,67 +126,67 @@ public class ActivityControllerTest {
 
   @Test
   public void start_callsPerformStartWhilePaused() {
-    controller.attach().create().start();
+    controller.create().start();
     transcript.assertEventsInclude("finishedOnStart", "onStart");
   }
 
   @Test
   public void stop_callsPerformStopWhilePaused() {
-    controller.attach().create().start().stop();
+    controller.create().start().stop();
     transcript.assertEventsInclude("finishedOnStop", "onStop");
   }
 
   @Test
   public void restart_callsPerformRestartWhilePaused() {
-    controller.attach().create().start().stop().restart();
+    controller.create().start().stop().restart();
     transcript.assertEventsInclude("finishedOnRestart", "onRestart");
   }
 
   @Test
   public void pause_callsPerformPauseWhilePaused() {
-    controller.attach().create().pause();
+    controller.create().pause();
     transcript.assertEventsInclude("finishedOnPause", "onPause");
   }
 
   @Test
   public void resume_callsPerformResumeWhilePaused() {
-    controller.attach().create().start().resume();
+    controller.create().start().resume();
     transcript.assertEventsInclude("finishedOnResume", "onResume");
   }
 
   @Test
   public void destroy_callsPerformDestroyWhilePaused() {
-    controller.attach().create().destroy();
+    controller.create().destroy();
     transcript.assertEventsInclude("finishedOnDestroy", "onDestroy");
   }
 
   @Test
   public void postCreate_callsOnPostCreateWhilePaused() {
-    controller.attach().create().postCreate(new Bundle());
+    controller.create().postCreate(new Bundle());
     transcript.assertEventsInclude("finishedOnPostCreate", "onPostCreate");
   }
 
   @Test
   public void postResume_callsOnPostResumeWhilePaused() {
-    controller.attach().create().postResume();
+    controller.create().postResume();
     transcript.assertEventsInclude("finishedOnPostResume", "onPostResume");
   }
 
   @Test
   public void restoreInstanceState_callsPerformRestoreInstanceStateWhilePaused() {
-    controller.attach().create().restoreInstanceState(new Bundle());
+    controller.create().restoreInstanceState(new Bundle());
     transcript.assertEventsInclude("finishedOnRestoreInstanceState", "onRestoreInstanceState");
   }
 
   @Test
   public void newIntent_callsOnNewIntentWhilePaused() {
-    controller.attach().create().newIntent(new Intent(Intent.ACTION_VIEW));
+    controller.create().newIntent(new Intent(Intent.ACTION_VIEW));
     transcript.assertEventsInclude("finishedOnNewIntent", "onNewIntent");
   }
 
   @Test
   public void userLeaving_callsPerformUserLeavingWhilePaused() {
-    controller.attach().create().userLeaving();
+    controller.create().userLeaving();
     transcript.assertEventsInclude("finishedOnUserLeaveHint", "onUserLeaveHint");
   }
 
