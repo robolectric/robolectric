@@ -61,7 +61,7 @@ To pull down the Android source tree to your working directory from the reposito
 $ repo sync -c -j100
 ```
 
-Beware this will take over an hour and will require 45+ Gigabytes of space.
+Beware this will take over an hour and will require 45+ Gigabytes of space. If you face download quota restrictions, try the [Using Authentication](https://source.android.com/source/downloading.html#using-authentication) section.
 
 ## 4. Grab dependencies
 On Ubuntu run
