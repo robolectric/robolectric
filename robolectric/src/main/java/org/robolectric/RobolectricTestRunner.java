@@ -306,43 +306,10 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       return null;
     }
 
-    String manifestProperty = System.getProperty("android.manifest");
-    String resourcesProperty = System.getProperty("android.resources");
-    String assetsProperty = System.getProperty("android.assets");
-    String packageName = System.getProperty("android.package");
-
-    FsFile baseDir;
-    FsFile manifestFile;
-    FsFile resDir;
-    FsFile assetDir;
-
-    boolean defaultManifest = config.manifest().equals(Config.DEFAULT);
-    if (defaultManifest && manifestProperty != null) {
-      manifestFile = Fs.fileFromPath(manifestProperty);
-      baseDir = manifestFile.getParent();
-    } else {
-      manifestFile = getBaseDir().join(defaultManifest ? AndroidManifest.DEFAULT_MANIFEST_NAME : config.manifest());
-      baseDir = manifestFile.getParent();
-    }
-
-    boolean defaultRes = Config.DEFAULT_RES_FOLDER.equals(config.resourceDir());
-    if (defaultRes && resourcesProperty != null) {
-      resDir = Fs.fileFromPath(resourcesProperty);
-    } else {
-      resDir = baseDir.join(config.resourceDir());
-    }
-
-    boolean defaultAssets = Config.DEFAULT_ASSET_FOLDER.equals(config.assetDir());
-    if (defaultAssets && assetsProperty != null) {
-      assetDir = Fs.fileFromPath(assetsProperty);
-    } else {
-      assetDir = baseDir.join(config.assetDir());
-    }
-
-    String configPackageName = config.packageName();
-    if (configPackageName != null && !configPackageName.isEmpty()) {
-      packageName = configPackageName;
-    }
+    FsFile manifestFile = getBaseDir().join(config.manifest().equals(Config.DEFAULT) ? AndroidManifest.DEFAULT_MANIFEST_NAME : config.manifest());
+    FsFile baseDir = manifestFile.getParent();
+    FsFile resDir = baseDir.join(config.resourceDir());
+    FsFile assetDir = baseDir.join(config.assetDir());
 
     List<FsFile> libraryDirs = null;
     if (config.libraries().length > 0) {
@@ -352,12 +319,12 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       }
     }
 
-    ManifestIdentifier identifier = new ManifestIdentifier(manifestFile, resDir, assetDir, packageName, libraryDirs);
+    ManifestIdentifier identifier = new ManifestIdentifier(manifestFile, resDir, assetDir, config.packageName(), libraryDirs);
     synchronized (appManifestsByFile) {
       AndroidManifest appManifest;
       appManifest = appManifestsByFile.get(identifier);
       if (appManifest == null) {
-        appManifest = createAppManifest(manifestFile, resDir, assetDir, packageName);
+        appManifest = createAppManifest(manifestFile, resDir, assetDir, config.packageName());
         if (libraryDirs != null) {
           appManifest.setLibraryDirectories(libraryDirs);
         }
