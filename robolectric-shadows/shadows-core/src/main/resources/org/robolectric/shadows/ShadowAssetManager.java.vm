@@ -805,6 +805,26 @@ public final class ShadowAssetManager {
     return resName;
   }
 
+  @Implementation
+  public String getResourceName(int resid) {
+    return getResName(resid).getFullyQualifiedName();
+  }
+
+  @Implementation
+  public String getResourcePackageName(int resid) {
+    return getResName(resid).packageName;
+  }
+
+  @Implementation
+  public String getResourceTypeName(int resid) {
+    return getResName(resid).type;
+  }
+
+  @Implementation
+  public String getResourceEntryName(int resid) {
+   return getResName(resid).name;
+  }
+
   @Resetter
   public static void reset() {
     systemResourceLoader = null;
