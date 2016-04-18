@@ -5,47 +5,10 @@
 # more information on building AOSP.
 #
 # Usage:
-#   build-android-artifacts.sh <android version> <robolectric version>
+#   build-android.sh <android version> <robolectric version>
 #
-# Signing Artifacts:
-# The end of the script will prompt you to sign the new artifacts.  You will
-# be prompted a total of 4 times (once for each artifact).  To make this
-# easier, run this command beforehand:
-#
-#   gpg-agent --daemon
-#
-# It will spit out a command that you can then run in your shell to remember
-# the password for the current session.
-#
-# Supported Versions:
-#   4.1.2_r1    - Jelly Bean
-#   4.2.2_r1.2  - Jelly Bean MR1
-#   4.3_r2      - Jelly Bean MR2
-#   4.4_r1      - Kit Kat
-#   5.0.0_r2    - Lollipop
-#   5.1.1_r9    - Lollipop MR1
-#   6.0.0_r1    - Marshmallow
-#
-# Environment Variables:
-#   BUILD_ROOT        - Path to AOSP source directory
-#   SIGNING_PASSWORD  - Passphrase for GPG signing key
-#
-# Assumptions:
-#   1. You've got the full AOSP checked out on a case-sensitive file system at /Volumes/android/android-build
-#   2. repo init -u https://android.googlesource.com/platform/manifest -b <android-version>
-#   3. repo sync
-#   4. source build/envsetup.sh
-#
-# For Lollipop and below:
-#   5. lunch aosp_x86-eng
-#   6. make -j8  # probably can just run 'make -j8 snod', but we haven't tested it http://elinux.org/Android_Build_System#Make_targets
-# For Marshmallow and above:
-#   5. tapas core-libart services services.accessibility telephony-common framework ext icu4j-icudata-jarjar
-#   6. ANDROID_COMPILE_WITH_JACK=false make -j8
-#
-#   7. run this script
-#   8. Profit!
-#
+# For a tutorial check scripts/README.md
+
 if [[ $# -eq 0 ]]; then
     echo "Usage: ${0} <android-version> <robolectric-sub-version>"
     exit 1
