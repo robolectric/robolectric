@@ -114,6 +114,26 @@ public class ResBundleTest {
         "port-notouch-12key"), "en-GB-port-hdpi-notouch-12key").getValue());
   }
 
+  @Test
+  public void shouldMatchQualifiersInSizeRange() throws Exception {
+    assertEquals("sw300dp-port", ResBundle.pick(asValues(
+        "",
+        "sw200dp",
+        "sw350dp-port",
+        "sw300dp-port",
+        "sw300dp"), "sw320dp-port").getValue());
+  }
+
+  @Test
+  public void shouldPreferWidthOverHeight() throws Exception {
+    assertEquals("sw300dp-sh200dp", ResBundle.pick(asValues(
+        "",
+        "sw200dp",
+        "sw200dp-sh300dp",
+        "sw300dp-sh200dp",
+        "sh300dp"), "sw320dp-sh320dp").getValue());
+  }
+
   private List<Value<String>> asValues(String... qualifierses) {
     List<Value<String>> values = new ArrayList<>();
     for (String qualifiers : qualifierses) {
