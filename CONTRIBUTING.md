@@ -18,7 +18,7 @@ Fork and clone the repo:
 
 Create a feature branch to make your changes:
 
-    git co -b my-feature-name
+    git checkout -b my-feature-name
 
 Mavenize all required dependencies:
 
@@ -36,7 +36,7 @@ To include the source jar in the build:
 
     export INCLUDE_SOURCE=1
 
-Similarlly with Javadocs:
+Similarly with Javadocs:
 
     export INCLUDE_JAVADOC=1
 
