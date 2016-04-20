@@ -162,7 +162,7 @@ public class ShadowContextImpl {
         } else if (serviceClassName.equals("android.os.storage.StorageManager")) {
           service = ReflectionHelpers.callConstructor(clazz);
 
-        } else if (serviceClassName.equals("android.nfc.NfcManager")) {
+        } else if (serviceClassName.equals("android.nfc.NfcManager") || serviceClassName.equals("android.telecom.TelecomManager")) {
           service = ReflectionHelpers.callConstructor(clazz,
               ClassParameter.from(Context.class, RuntimeEnvironment.application));
 
