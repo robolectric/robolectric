@@ -1,4 +1,3 @@
-
 package org.robolectric.shadows;
 
 #if ($api >= 21)
@@ -36,6 +35,9 @@ public class ShadowTelecomManager {
 
   private PhoneAccountHandle simCallManager;
   private LinkedHashMap<PhoneAccountHandle, PhoneAccount> accounts = new LinkedHashMap();
+  private List<CallRecord> incomingCalls = new LinkedList<>();
+  private List<CallRecord> unknownCalls = new LinkedList<>();
+  private String defaultDialerPackageName;
 
   @Implementation
   public PhoneAccountHandle getDefaultOutgoingPhoneAccount(String uriScheme) {
@@ -175,15 +177,18 @@ public class ShadowTelecomManager {
     return null;
   }
 
+#if ($api >= 23)
   @Implementation
   public String getDefaultDialerPackage() {
-    return null;
+    return defaultDialerPackageName;
   }
 
   @Implementation
   public boolean setDefaultDialer(String packageName) {
-    return false;
+    this.defaultDialerPackageName = packageName;
+    return true;
   }
+#end
 
   @Implementation
   public String getSystemDialerPackage() {
@@ -245,10 +250,20 @@ public class ShadowTelecomManager {
 
   @Implementation
   public void addNewIncomingCall(PhoneAccountHandle phoneAccount, Bundle extras) {
+    incomingCalls.add(new CallRecord(phoneAccount, extras));
+  }
+
+  public List<CallRecord> getAllIncomingCalls() {
+    return incomingCalls;
   }
 
   @Implementation
   public void addNewUnknownCall(PhoneAccountHandle phoneAccount, Bundle extras) {
+    unknownCalls.add(new CallRecord(phoneAccount, extras));
+  }
+
+  public List<CallRecord> getAllUnknownCalls() {
+    return unknownCalls;
   }
 
   @Implementation
@@ -285,6 +300,17 @@ public class ShadowTelecomManager {
   public void setSimCallManager(PhoneAccountHandle simCallManager) {
     this.simCallManager = simCallManager;
   }
+
+  public class CallRecord {
+    public final PhoneAccountHandle phoneAccount;
+    public final Bundle bundle;
+
+    public CallRecord(PhoneAccountHandle phoneAccount, Bundle extras) {
+      this.phoneAccount = phoneAccount;
+      this.bundle = extras;
+    }
+  }
+
 }
 #else
 public class ShadowTelecomManager {
