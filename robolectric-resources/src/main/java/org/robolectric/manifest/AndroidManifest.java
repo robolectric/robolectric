@@ -134,7 +134,7 @@ public class AndroidManifest {
       Document manifestDocument = db.parse(inputStream);
       inputStream.close();
 
-      if (packageName == null) {
+      if (packageName == null || packageName.isEmpty()) {
         packageName = getTagAttributeText(manifestDocument, "manifest", "package");
       }
       versionCode = getTagAttributeIntValue(manifestDocument, "manifest", "android:versionCode", 0);
@@ -651,7 +651,7 @@ public class AndroidManifest {
     if (assetsDirectory != null ? !assetsDirectory.equals(that.assetsDirectory) : that.assetsDirectory != null)
       return false;
     if (resDirectory != null ? !resDirectory.equals(that.resDirectory) : that.resDirectory != null) return false;
-
+    if (packageName != null ? !packageName.equals(that.packageName) : that.packageName != null) return false;
     return true;
   }
 
@@ -660,6 +660,7 @@ public class AndroidManifest {
     int result = androidManifestFile != null ? androidManifestFile.hashCode() : 0;
     result = 31 * result + (resDirectory != null ? resDirectory.hashCode() : 0);
     result = 31 * result + (assetsDirectory != null ? assetsDirectory.hashCode() : 0);
+    result = 31 * result + (packageName != null ? packageName.hashCode() : 0);
     return result;
   }
 

@@ -60,6 +60,12 @@ public class ShadowApplicationTest {
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Test
+  @Config(packageName = "override.package")
+  public void shouldOverridePackageWithConfig() {
+    assertEquals("override.package", RuntimeEnvironment.application.getPackageName());
+  }
+
+  @Test
   public void shouldBeAContext() throws Exception {
     assertThat(Robolectric.setupActivity(Activity.class).getApplication()).isSameAs(RuntimeEnvironment.application);
     assertThat(Robolectric.setupActivity(Activity.class).getApplication().getApplicationContext()).isSameAs(RuntimeEnvironment.application);
