@@ -3,6 +3,8 @@ package org.robolectric.shadows;
 import android.content.ComponentName;
 import android.content.Context;
 import android.os.Build;
+import android.os.Bundle;
+import android.telecom.PhoneAccount;
 import android.telecom.PhoneAccount;
 import android.telecom.PhoneAccountHandle;
 import android.telecom.TelecomManager;
@@ -35,7 +37,7 @@ public class ShadowTelecomManagerTest {
 
   @Test
   public void getSimCallManager() {
-    PhoneAccountHandle handle = createHandler("id");
+    PhoneAccountHandle handle = createHandle("id");
 
     shadowOf(telecomService).setSimCallManager(handle);
 
@@ -47,7 +49,7 @@ public class ShadowTelecomManagerTest {
     assertThat(shadowOf(telecomService).getAllPhoneAccountsCount()).isEqualTo(0);
     assertThat(shadowOf(telecomService).getAllPhoneAccounts()).hasSize(0);
 
-    PhoneAccountHandle handler = createHandler("id");
+    PhoneAccountHandle handler = createHandle("id");
     PhoneAccount phoneAccount = PhoneAccount.builder(handler, "main_account").build();
     telecomService.registerPhoneAccount(phoneAccount);
 
@@ -66,7 +68,7 @@ public class ShadowTelecomManagerTest {
 
   @Test
   public void clearAccounts() {
-    PhoneAccountHandle anotherPackageHandle = createHandler("some.other.package", "id");
+    PhoneAccountHandle anotherPackageHandle = createHandle("some.other.package", "id");
     telecomService.registerPhoneAccount(PhoneAccount.builder(anotherPackageHandle, "another_package")
         .build());
   }
@@ -76,11 +78,11 @@ public class ShadowTelecomManagerTest {
       Build.VERSION_CODES.LOLLIPOP_MR1,
       Build.VERSION_CODES.M})
   public void clearAccountsForPackage() {
-    PhoneAccountHandle accountHandle1 = createHandler("a.package", "id1");
+    PhoneAccountHandle accountHandle1 = createHandle("a.package", "id1");
     telecomService.registerPhoneAccount(PhoneAccount.builder(accountHandle1, "another_package")
         .build());
 
-    PhoneAccountHandle accountHandle2 = createHandler("some.other.package", "id2");
+    PhoneAccountHandle accountHandle2 = createHandle("some.other.package", "id2");
     telecomService.registerPhoneAccount(PhoneAccount.builder(accountHandle2, "another_package")
         .build());
 
@@ -92,11 +94,11 @@ public class ShadowTelecomManagerTest {
 
   @Test
   public void getPhoneAccountsSupportingScheme() {
-    PhoneAccountHandle handleMatchingScheme = createHandler("id1");
+    PhoneAccountHandle handleMatchingScheme = createHandle("id1");
     telecomService.registerPhoneAccount(PhoneAccount.builder(handleMatchingScheme, "some_scheme")
         .addSupportedUriScheme("some_scheme")
         .build());
-    PhoneAccountHandle handleNotMatchingScheme = createHandler("id2");
+    PhoneAccountHandle handleNotMatchingScheme = createHandle("id2");
     telecomService.registerPhoneAccount(PhoneAccount.builder(handleNotMatchingScheme, "another_scheme")
         .addSupportedUriScheme("another_scheme")
         .build());
@@ -111,11 +113,11 @@ public class ShadowTelecomManagerTest {
   @Config(sdk = {
       Build.VERSION_CODES.M})
   public void getCallCapablePhoneAccounts() {
-    PhoneAccountHandle callCapableHandle = createHandler("id1");
+    PhoneAccountHandle callCapableHandle = createHandle("id1");
     telecomService.registerPhoneAccount(PhoneAccount.builder(callCapableHandle, "enabled")
         .setIsEnabled(true)
         .build());
-    PhoneAccountHandle notCallCapableHandler = createHandler("id2");
+    PhoneAccountHandle notCallCapableHandler = createHandle("id2");
     telecomService.registerPhoneAccount(PhoneAccount.builder(notCallCapableHandler, "disabled")
         .setIsEnabled(false)
         .build());
@@ -130,11 +132,11 @@ public class ShadowTelecomManagerTest {
       Build.VERSION_CODES.LOLLIPOP_MR1,
       Build.VERSION_CODES.M})
   public void getPhoneAccountsForPackage() {
-    PhoneAccountHandle handleInThisApplicationsPackage = createHandler("id1");
+    PhoneAccountHandle handleInThisApplicationsPackage = createHandle("id1");
     telecomService.registerPhoneAccount(PhoneAccount.builder(handleInThisApplicationsPackage, "this_package")
         .build());
 
-    PhoneAccountHandle anotherPackageHandle = createHandler("some.other.package", "id2");
+    PhoneAccountHandle anotherPackageHandle = createHandle("some.other.package", "id2");
     telecomService.registerPhoneAccount(PhoneAccount.builder(anotherPackageHandle, "another_package")
         .build());
 
@@ -144,11 +146,33 @@ public class ShadowTelecomManagerTest {
     assertThat(phoneAccountsForPackage).doesNotContain(anotherPackageHandle);
   }
 
-  private static PhoneAccountHandle createHandler(String id) {
-    return createHandler(RuntimeEnvironment.application.getPackageName(), id);
+  @Test
+  public void testAddNewIncomingCall() {
+    telecomService.addNewIncomingCall(createHandle("id"), null);
+
+    assertThat(shadowOf(telecomService).getAllIncomingCalls()).hasSize(1);
   }
 
-  private static PhoneAccountHandle createHandler(String packageName, String id) {
+  @Test
+  public void testAddUnknownCall() {
+    telecomService.addNewUnknownCall(createHandle("id"), null);
+
+    assertThat(shadowOf(telecomService).getAllUnknownCalls()).hasSize(1);
+  }
+
+  @Test
+  @Config(sdk = {
+      Build.VERSION_CODES.M})
+  public void setDefaultDialerPackage() {
+    shadowOf(telecomService).setDefaultDialer("some.package");
+    assertThat(telecomService.getDefaultDialerPackage()).isEqualTo("some.package");
+  }
+
+  private static PhoneAccountHandle createHandle(String id) {
+    return createHandle(RuntimeEnvironment.application.getPackageName(), id);
+  }
+
+  private static PhoneAccountHandle createHandle(String packageName, String id) {
     return new PhoneAccountHandle(new ComponentName(packageName, "component_class_name"), id);
   }
 }
