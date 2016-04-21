@@ -160,6 +160,14 @@ public class ShadowTelecomManagerTest {
     assertThat(shadowOf(telecomService).getAllUnknownCalls()).hasSize(1);
   }
 
+  @Test
+  @Config(sdk = {
+      Build.VERSION_CODES.M})
+  public void setDefaultDialerPackage() {
+    shadowOf(telecomService).setDefaultDialer("some.package");
+    assertThat(telecomService.getDefaultDialerPackage()).isEqualTo("some.package");
+  }
+
   private static PhoneAccountHandle createHandle(String id) {
     return createHandle(RuntimeEnvironment.application.getPackageName(), id);
   }

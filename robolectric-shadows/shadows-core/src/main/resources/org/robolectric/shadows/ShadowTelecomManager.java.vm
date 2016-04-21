@@ -37,6 +37,7 @@ public class ShadowTelecomManager {
   private LinkedHashMap<PhoneAccountHandle, PhoneAccount> accounts = new LinkedHashMap();
   private List<CallRecord> incomingCalls = new LinkedList<>();
   private List<CallRecord> unknownCalls = new LinkedList<>();
+  private String defaultDialerPackageName;
 
   @Implementation
   public PhoneAccountHandle getDefaultOutgoingPhoneAccount(String uriScheme) {
@@ -176,15 +177,18 @@ public class ShadowTelecomManager {
     return null;
   }
 
+#if ($api >= 23)
   @Implementation
   public String getDefaultDialerPackage() {
-    return null;
+    return defaultDialerPackageName;
   }
 
   @Implementation
   public boolean setDefaultDialer(String packageName) {
-    return false;
+    this.defaultDialerPackageName = packageName;
+    return true;
   }
+#end
 
   @Implementation
   public String getSystemDialerPackage() {
