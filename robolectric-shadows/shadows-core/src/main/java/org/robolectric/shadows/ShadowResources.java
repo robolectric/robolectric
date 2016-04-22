@@ -156,32 +156,6 @@ public class ShadowResources {
   }
 
   @Implementation
-  public String getResourceName(int resId) throws Resources.NotFoundException {
-    return shadowOf(realResources.getAssets()).getResName(resId).getFullyQualifiedName();
-  }
-
-  @Implementation
-  public String getResourcePackageName(int resId) throws Resources.NotFoundException {
-    return shadowOf(realResources.getAssets()).getResName(resId).packageName;
-  }
-
-  @Implementation
-  public String getResourceTypeName(int resId) throws Resources.NotFoundException {
-    return shadowOf(realResources.getAssets()).getResName(resId).type;
-  }
-
-  @Implementation
-  public String getResourceEntryName(int resId) throws Resources.NotFoundException {
-    return shadowOf(realResources.getAssets()).getResName(resId).name;
-  }
-
-  @Implementation
-  public CharSequence getText(int id) throws Resources.NotFoundException {
-    CharSequence text = directlyOn(realResources, Resources.class).getText(id);
-    return text.toString();
-  }
-
-  @Implementation
   public String getQuantityString(int id, int quantity, Object... formatArgs) throws Resources.NotFoundException {
     String raw = getQuantityString(id, quantity);
     return String.format(Locale.ENGLISH, raw, formatArgs);
