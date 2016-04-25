@@ -17,6 +17,7 @@ import org.robolectric.util.ReflectionHelpers;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -39,12 +40,12 @@ public class ShadowPendingIntent {
 
   @Implementation
   public static PendingIntent getActivity(Context context, int requestCode, Intent intent, int flags) {
-    return create(context, new Intent[] {intent}, true, false, false, requestCode, flags);
+    return create(context, intent == null ? null : new Intent[] {intent}, true, false, false, requestCode, flags);
   }
 
   @Implementation
   public static PendingIntent getActivity(Context context, int requestCode, Intent intent, int flags, Bundle options) {
-    return create(context, new Intent[] {intent}, true, false, false, requestCode, flags);
+    return create(context, intent == null ? null : new Intent[] {intent}, true, false, false, requestCode, flags);
   }
 
   @Implementation
@@ -59,12 +60,24 @@ public class ShadowPendingIntent {
 
   @Implementation
   public static PendingIntent getBroadcast(Context context, int requestCode, Intent intent, int flags) {
-    return create(context, new Intent[] {intent}, false, true, false, requestCode, flags);
+    return create(context, intent == null ? null : new Intent[] {intent}, false, true, false, requestCode, flags);
   }
 
   @Implementation
   public static PendingIntent getService(Context context, int requestCode, Intent intent, int flags) {
-    return create(context, new Intent[] {intent}, false, false, true, requestCode, flags);
+    return create(context, intent == null ? null : new Intent[] {intent}, false, false, true, requestCode, flags);
+  }
+
+  @Implementation
+  public void cancel() {
+    Iterator<PendingIntent> iterator = createdIntents.iterator();
+    while (iterator.hasNext()) {
+      ShadowPendingIntent shadowPendingIntent = Shadows.shadowOf(iterator.next());
+      if (shadowPendingIntent == this) {
+        iterator.remove();
+        break;
+      }
+    }
   }
 
   @Implementation
@@ -165,8 +178,25 @@ public class ShadowPendingIntent {
   }
 
   private static PendingIntent create(Context context, Intent[] intents, boolean isActivity, boolean isBroadcast, boolean isService, int requestCode, int flags) {
+    if ((flags & PendingIntent.FLAG_UPDATE_CURRENT) != 0) {
+      PendingIntent createdIntent = getCreatedIntentFor(isActivity, isBroadcast, isService, requestCode);
+      if (createdIntent != null) {
+        ShadowPendingIntent shadowPendingIntent = Shadows.shadowOf(createdIntent);
+        shadowPendingIntent.savedIntents = intents;
+        return createdIntent;
+      }
+    }
+
+    PendingIntent createdIntent = getCreatedIntentFor(intents, isActivity, isBroadcast, isService, requestCode);
     if ((flags & PendingIntent.FLAG_NO_CREATE) != 0) {
-      return getCreatedIntentFor(intents);
+      return createdIntent;
+    }
+    if (createdIntent != null) {
+      if ((flags & PendingIntent.FLAG_CANCEL_CURRENT) != 0) {
+        createdIntent.cancel();
+      } else {
+        return createdIntent;
+      }
     }
 
     PendingIntent pendingIntent = ReflectionHelpers.callConstructor(PendingIntent.class);
@@ -183,24 +213,45 @@ public class ShadowPendingIntent {
     return pendingIntent;
   }
 
-  private static PendingIntent getCreatedIntentFor(Intent[] intents) {
+  private static PendingIntent getCreatedIntentFor(Intent[] intents, boolean isActivity, boolean isBroadcast, boolean isService, int requestCode) {
     for (PendingIntent createdIntent : createdIntents) {
       ShadowPendingIntent shadowPendingIntent = Shadows.shadowOf(createdIntent);
-      if (shadowPendingIntent.savedIntents.length != intents.length) {
+      boolean bothNull = (shadowPendingIntent.savedIntents == null) && (intents == null);
+      boolean sameLength = (shadowPendingIntent.savedIntents != null) && (intents != null) &&
+          (shadowPendingIntent.savedIntents.length == intents.length);
+      if (!bothNull && !sameLength) {
         continue;
       }
 
       // Order matters in the framework. If I call getActivities(Activity1, Activity2), that will
       // give me a different PendingIntent than if I call getActivities(Activity2, Activity1).
       boolean equalIntents = true;
-      for (int i = 0; i < intents.length; i++) {
-        if (!shadowPendingIntent.savedIntents[i].filterEquals(intents[i])) {
-          equalIntents = false;
-          break;
+      if (intents != null) {
+        for (int i = 0; i < intents.length; i++) {
+          if (!shadowPendingIntent.savedIntents[i].filterEquals(intents[i])) {
+            equalIntents = false;
+            break;
+          }
         }
       }
 
-      if (equalIntents) {
+      if (equalIntents && (shadowPendingIntent.getRequestCode() == requestCode) &&
+          ((isActivity && shadowPendingIntent.isActivityIntent()) ||
+            (isBroadcast && shadowPendingIntent.isBroadcastIntent()) ||
+            (isService && shadowPendingIntent.isServiceIntent()))) {
+        return createdIntent;
+      }
+    }
+    return null;
+  }
+
+  private static PendingIntent getCreatedIntentFor(boolean isActivity, boolean isBroadcast, boolean isService, int requestCode) {
+    for (PendingIntent createdIntent : createdIntents) {
+      ShadowPendingIntent shadowPendingIntent = Shadows.shadowOf(createdIntent);
+      if ((shadowPendingIntent.getRequestCode() == requestCode) &&
+          ((isActivity && shadowPendingIntent.isActivityIntent()) ||
+            (isBroadcast && shadowPendingIntent.isBroadcastIntent()) ||
+            (isService && shadowPendingIntent.isServiceIntent()))) {
         return createdIntent;
       }
     }
