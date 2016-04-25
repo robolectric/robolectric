@@ -5,7 +5,6 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
@@ -32,7 +31,7 @@ public class ShadowPendingIntentTest {
   }
 
   @Test
-  public void getActivity_shouldCreateIntentForBroadcast() throws Exception {
+  public void getActivity_shouldCreateIntentForActivity() throws Exception {
     Intent intent = new Intent();
     PendingIntent pendingIntent = PendingIntent.getActivity(RuntimeEnvironment.application, 99, intent, 100);
     ShadowPendingIntent shadow = shadowOf(pendingIntent);
@@ -46,7 +45,7 @@ public class ShadowPendingIntentTest {
   }
 
   @Test
-  public void getActivities_shouldCreateIntentForBroadcast() throws Exception {
+  public void getActivities_shouldCreateIntentForActivities() throws Exception {
     Intent[] intents = new Intent[] {new Intent(Intent.ACTION_VIEW), new Intent(Intent.ACTION_PICK)};
     PendingIntent pendingIntent = PendingIntent.getActivities(RuntimeEnvironment.application, 99, intents, 100);
 
@@ -60,7 +59,7 @@ public class ShadowPendingIntentTest {
   }
 
   @Test
-  public void getActivities_withBundle_shouldCreateIntentForBroadcast() throws Exception {
+  public void getActivities_withBundle_shouldCreateIntentForActivities() throws Exception {
     Intent[] intents = new Intent[] {new Intent(Intent.ACTION_VIEW), new Intent(Intent.ACTION_PICK)};
     PendingIntent pendingIntent = PendingIntent.getActivities(RuntimeEnvironment.application, 99, intents, 100, new Bundle());
 
@@ -74,7 +73,7 @@ public class ShadowPendingIntentTest {
   }
 
   @Test
-  public void getService_shouldCreateIntentForBroadcast() throws Exception {
+  public void getService_shouldCreateIntentForService() throws Exception {
     Intent intent = new Intent();
     PendingIntent pendingIntent = PendingIntent.getService(RuntimeEnvironment.application, 99, intent, 100);
     ShadowPendingIntent shadow = shadowOf(pendingIntent);
@@ -198,5 +197,71 @@ public class ShadowPendingIntentTest {
 
     assertThat(saved).isNotNull();
     assertThat(intent).isEqualTo(shadowOf(saved).getSavedIntent());
+  }
+
+  @Test
+  public void cancel_shouldCancelIntent() {
+    Intent intent = new Intent();
+    PendingIntent pendingIntent = PendingIntent.getService(RuntimeEnvironment.application, 99, intent, 0);
+
+    pendingIntent.cancel();
+
+    Intent identical = new Intent();
+    PendingIntent saved = PendingIntent.getBroadcast(RuntimeEnvironment.application, 99, identical,
+        PendingIntent.FLAG_NO_CREATE);
+
+    assertThat(saved).isNull();
+  }
+
+  @Test
+  public void getService_shouldReturnSameIntentAsGetService() {
+    Intent serviceIntent1 = new Intent("some.action");
+    PendingIntent servicePendingIntent1 = PendingIntent.getService(RuntimeEnvironment.application, 99,
+        serviceIntent1, 0);
+
+    Intent serviceIntent2 = new Intent("some.action");
+    PendingIntent servicePendingIntent2 = PendingIntent.getService(RuntimeEnvironment.application, 99,
+        serviceIntent2, 0);
+
+    assertThat(shadowOf(servicePendingIntent1)).isEqualTo(shadowOf(servicePendingIntent2));
+  }
+
+  @Test
+  public void getService_shouldReturnDifferentIntentThanGetBroadcast() {
+    Intent serviceIntent = new Intent("some.action");
+    PendingIntent servicePendingIntent = PendingIntent.getService(RuntimeEnvironment.application, 99,
+        serviceIntent, 0);
+
+    Intent broadcastIntent = new Intent("some.action");
+    PendingIntent broadcastPendingIntent = PendingIntent.getBroadcast(RuntimeEnvironment.application, 99,
+        broadcastIntent, 0);
+
+    assertThat(shadowOf(servicePendingIntent)).isNotEqualTo(shadowOf(broadcastPendingIntent));
+  }
+
+  @Test
+  public void getBroadcast_withFlagCancelCurrent_shouldReturnNewIntent() {
+    Intent broadcastIntent = new Intent("some.action");
+    PendingIntent pendingIntent = PendingIntent.getBroadcast(RuntimeEnvironment.application, 99, broadcastIntent, 0);
+
+    Intent updatedIntent = new Intent("another.action");
+    PendingIntent updatedPendingIntent = PendingIntent.getBroadcast(RuntimeEnvironment.application, 99, updatedIntent,
+        PendingIntent.FLAG_CANCEL_CURRENT);
+
+    assertThat(pendingIntent).isNotSameAs(updatedPendingIntent);
+    assertThat(shadowOf(updatedPendingIntent).getSavedIntent().getAction()).isEqualTo("another.action");
+  }
+
+  @Test
+  public void getBroadcast_withFlagUpdateCurrent_shouldUpdateExistingIntent() {
+    Intent broadcastIntent = new Intent("some.action");
+    PendingIntent pendingIntent = PendingIntent.getBroadcast(RuntimeEnvironment.application, 99, broadcastIntent, 0);
+
+    Intent updateIntent = new Intent("another.action");
+    PendingIntent updatedPendingIntent = PendingIntent.getBroadcast(RuntimeEnvironment.application, 99, updateIntent,
+        PendingIntent.FLAG_UPDATE_CURRENT);
+
+    assertThat(pendingIntent).isSameAs(updatedPendingIntent);
+    assertThat(shadowOf(updatedPendingIntent).getSavedIntent().getAction()).isEqualTo("another.action");
   }
 }
