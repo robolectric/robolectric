@@ -7,11 +7,29 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicInteger;
 #end
 
+import android.database.sqlite.SQLiteAbortException;
+import android.database.sqlite.SQLiteAccessPermException;
+import android.database.sqlite.SQLiteBindOrColumnIndexOutOfRangeException;
+import android.database.sqlite.SQLiteBlobTooBigException;
+import android.database.sqlite.SQLiteCantOpenDatabaseException;
+import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteCustomFunction;
+import android.database.sqlite.SQLiteDatabaseCorruptException;
+import android.database.sqlite.SQLiteDatabaseLockedException;
+import android.database.sqlite.SQLiteDatatypeMismatchException;
+import android.database.sqlite.SQLiteDiskIOException;
 import android.database.sqlite.SQLiteDoneException;
+import android.database.sqlite.SQLiteFullException;
+import android.database.sqlite.SQLiteMisuseException;
+import android.database.sqlite.SQLiteOutOfMemoryException;
+import android.database.sqlite.SQLiteReadOnlyDatabaseException;
+import android.database.sqlite.SQLiteTableLockedException;
+import android.os.OperationCanceledException;
 import com.almworks.sqlite4java.SQLiteConnection;
+import com.almworks.sqlite4java.SQLiteConstants;
 import com.almworks.sqlite4java.SQLiteException;
 import com.almworks.sqlite4java.SQLiteStatement;
+import com.google.common.util.concurrent.Uninterruptibles;
 
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -52,9 +70,6 @@ public class ShadowSQLiteConnection {
     return CONNECTIONS.getStatement(connectionPtr, pointer);
   }
 
-  private static void rethrow(final String message, final SQLiteException e) {
-    throw new android.database.sqlite.SQLiteException(message + ", base error code: " + e.getBaseErrorCode(), e);
-  }
 
   @Implementation
   public static $ptrClass nativeOpen(String path, int openFlags, String label, boolean enableTrace, boolean enableProfile) {
@@ -122,7 +137,7 @@ public class ShadowSQLiteConnection {
       public Long call() throws SQLiteException {
         SQLiteStatement stmt = stmt(connectionPtr, statementPtr);
         if (!stmt.step()) {
-          throw new SQLiteDoneException();
+          throw new SQLiteException(SQLiteConstants.SQLITE_DONE, "No rows returned from query");
         }
         return stmt.columnLong(0);
       }
@@ -149,7 +164,7 @@ public class ShadowSQLiteConnection {
       public String call() throws SQLiteException {
         SQLiteStatement stmt = stmt(connectionPtr, statementPtr);
         if (!stmt.step()) {
-          throw new SQLiteDoneException();
+          throw new SQLiteException(SQLiteConstants.SQLITE_DONE, "No rows returned from query");
         }
         return stmt.columnString(0);
       }
@@ -448,50 +463,45 @@ public class ShadowSQLiteConnection {
     }
 
     public <T> T execute(final String comment, final Callable<T> work) {
-      Future<DbOperationResult<T>> future = dbExecutor.submit(new Callable<DbOperationResult<T>>() {
-        @Override
-        public DbOperationResult<T> call() throws Exception {
-          T result = null;
-          Exception error = null;
-          try {
-            result = work.call();
-          } catch (Exception e) {
-            error = e;
-          }
-          return new DbOperationResult<T>(result, error);
-        }
-      });
-
-      DbOperationResult<T> execResult;
       try {
-        execResult = future.get();
-
-        if (execResult.error != null) {
-          if (execResult.error instanceof SQLiteException) {
-            rethrow("Cannot " + comment, (SQLiteException) execResult.error);
-          } else if (execResult.error instanceof android.database.sqlite.SQLiteException) {
-            throw (android.database.sqlite.SQLiteException) execResult.error;
-          } else {
-            throw new RuntimeException(execResult.error);
-          }
-        }
-
-        return execResult.value;
-
+        return Uninterruptibles.getUninterruptibly(dbExecutor.submit(work));
+      // No need to catch cancellationexception - we never cancel these futures
       } catch (ExecutionException e) {
-        throw new RuntimeException(e);
-      } catch (InterruptedException e) {
-        throw new RuntimeException(e);
+        Throwable t = e.getCause();
+        if (t instanceof SQLiteException) {
+          RuntimeException sqlException = getSqliteException("Cannot " + comment,
+               ((SQLiteException) t).getBaseErrorCode());
+          sqlException.initCause(e);
+          throw sqlException;
+        } else {
+          throw new RuntimeException(e);
+        }
       }
     }
 
-    private static class DbOperationResult<T> {
-      private final T value;
-      private final Exception error;
-
-      DbOperationResult(T value, Exception error) {
-        this.value = value;
-        this.error = error;
+    private RuntimeException getSqliteException(String message, int baseErrorCode) {
+      // Mapping is from throw_sqlite3_exception in android_database_SQLiteCommon.cpp
+      switch (baseErrorCode) {
+        case SQLiteConstants.SQLITE_ABORT: return new SQLiteAbortException(message);
+        case SQLiteConstants.SQLITE_PERM: return new SQLiteAccessPermException(message);
+        case SQLiteConstants.SQLITE_RANGE: return new SQLiteBindOrColumnIndexOutOfRangeException(message);
+        case SQLiteConstants.SQLITE_TOOBIG: return new SQLiteBlobTooBigException(message);
+        case SQLiteConstants.SQLITE_CANTOPEN: return new SQLiteCantOpenDatabaseException(message);
+        case SQLiteConstants.SQLITE_CONSTRAINT: return new SQLiteConstraintException(message);
+        case SQLiteConstants.SQLITE_NOTADB: // fall through
+        case SQLiteConstants.SQLITE_CORRUPT: return new SQLiteDatabaseCorruptException(message);
+        case SQLiteConstants.SQLITE_BUSY: return new SQLiteDatabaseLockedException(message);
+        case SQLiteConstants.SQLITE_MISMATCH: return new SQLiteDatatypeMismatchException(message);
+        case SQLiteConstants.SQLITE_IOERR: return new SQLiteDiskIOException(message);
+        case SQLiteConstants.SQLITE_DONE: return new SQLiteDoneException(message);
+        case SQLiteConstants.SQLITE_FULL: return new SQLiteFullException(message);
+        case SQLiteConstants.SQLITE_MISUSE: return new SQLiteMisuseException(message);
+        case SQLiteConstants.SQLITE_NOMEM: return new SQLiteOutOfMemoryException(message);
+        case SQLiteConstants.SQLITE_READONLY: return new SQLiteReadOnlyDatabaseException(message);
+        case SQLiteConstants.SQLITE_LOCKED: return new SQLiteTableLockedException(message);
+        case SQLiteConstants.SQLITE_INTERRUPT: return new OperationCanceledException(message);
+        default: return new android.database.sqlite.SQLiteException(message
+          + ", base error code: " + baseErrorCode);
       }
     }
   }
