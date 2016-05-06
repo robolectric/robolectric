@@ -10,6 +10,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
+import org.robolectric.internal.ShadowExtractor;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
@@ -198,5 +199,33 @@ public class ShadowPendingIntentTest {
 
     assertThat(saved).isNotNull();
     assertThat(intent).isEqualTo(shadowOf(saved).getSavedIntent());
+  }
+
+  @Test
+  public void equals_sameRealInstance_shouldReturnTrue() {
+    Intent intent = new Intent();
+
+    PendingIntent pendingIntent = PendingIntent.getBroadcast(RuntimeEnvironment.application, 0, intent, 0);
+
+    assertThat(pendingIntent).isEqualTo(pendingIntent);
+  }
+
+  @Test
+  public void equals_sameShadowInstance_shouldReturnTrue() {
+    Intent intent = new Intent();
+
+    PendingIntent pendingIntent = PendingIntent.getBroadcast(RuntimeEnvironment.application, 0, intent, 0);
+    ShadowPendingIntent shadowPendingIntent = (ShadowPendingIntent) ShadowExtractor.extract(pendingIntent);
+
+    assertThat(shadowPendingIntent).isEqualTo(shadowPendingIntent);
+  }
+
+  @Test
+  public void equals_differentClass_shouldReturnFalse() {
+    Intent intent = new Intent();
+
+    PendingIntent pendingIntent = PendingIntent.getBroadcast(RuntimeEnvironment.application, 0, intent, 0);
+
+    assertThat(pendingIntent).isNotEqualTo("A String");
   }
 }

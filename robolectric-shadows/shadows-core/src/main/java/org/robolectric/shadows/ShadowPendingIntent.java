@@ -13,6 +13,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.fakes.RoboIntentSender;
+import org.robolectric.internal.ShadowExtractor;
 import org.robolectric.util.ReflectionHelpers;
 
 import java.util.ArrayList;
@@ -131,9 +132,14 @@ public class ShadowPendingIntent {
   @Implementation
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (o == null || !(getClass() == o.getClass() || PendingIntent.class == o.getClass())) return false;
 
-    ShadowPendingIntent that = (ShadowPendingIntent) o;
+    ShadowPendingIntent that;
+    if (o instanceof PendingIntent) {
+      that = (ShadowPendingIntent) ShadowExtractor.extract(o);
+    } else {
+      that = (ShadowPendingIntent) o;
+    }
 
     if (savedContext != null) {
       String packageName = savedContext.getPackageName();
