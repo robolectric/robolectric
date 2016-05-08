@@ -2,6 +2,9 @@ package org.robolectric.shadows;
 
 import android.app.Notification;
 import android.app.PendingIntent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.Icon;
 import android.os.Build;
 import android.widget.ProgressBar;
 
@@ -201,5 +204,19 @@ public class ShadowNotificationBuilderTest {
     assertThat(shadowOf(notification).getBigText()).isEqualTo("BigText");
     assertThat(shadowOf(notification).getBigContentTitle()).isEqualTo("Title");
     assertThat(shadowOf(notification).getBigContentText()).isEqualTo("Summary");
+  }
+
+  @Test
+  @Config(sdk = {Build.VERSION_CODES.M})
+  public void withBigPictureStyle() {
+    Bitmap bigPicture = BitmapFactory.decodeResource(RuntimeEnvironment.application.getResources(), R.drawable.an_image);
+
+    Icon bigLargeIcon = Icon.createWithBitmap(bigPicture);
+    Notification notification = builder.setStyle(new Notification.BigPictureStyle(builder)
+        .bigPicture(bigPicture)
+        .bigLargeIcon(bigLargeIcon))
+        .build();
+
+    assertThat(shadowOf(notification).getBigPicture()).isEqualTo(bigPicture);
   }
 }

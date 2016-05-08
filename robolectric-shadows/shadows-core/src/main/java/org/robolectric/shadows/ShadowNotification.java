@@ -1,8 +1,11 @@
 package org.robolectric.shadows;
 
 import android.app.Notification;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -11,6 +14,8 @@ import com.android.internal.R;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+
+import static org.robolectric.Shadows.shadowOf;
 
 /**
  * Shadow for {@link android.app.Notification}.
@@ -47,6 +52,10 @@ public class ShadowNotification {
 
   public CharSequence getBigContentText() {
     return ((TextView) applyBigContentView().findViewById(R.id.text)).getText();
+  }
+
+  public Bitmap getBigPicture() {
+    return ((BitmapDrawable)((ImageView) applyBigContentView().findViewById(R.id.big_picture)).getDrawable()).getBitmap();
   }
 
   public boolean isWhenShown() {
