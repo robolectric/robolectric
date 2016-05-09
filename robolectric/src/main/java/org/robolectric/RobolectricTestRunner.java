@@ -58,12 +58,10 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   private static final Config DEFAULT_CONFIG = new Config.Implementation(defaultsFor(Config.class));
   private static final Map<Pair<AndroidManifest, SdkConfig>, ResourceLoader> resourceLoadersByManifestAndConfig = new HashMap<>();
   private static final Map<ManifestIdentifier, AndroidManifest> appManifestsByFile = new HashMap<>();
-  private static ShadowMap mainShadowMap;
 
   /** Caches process R classes to avoid building their expensive index repeatedly */
-  private final Map<Class<?>, ResourceIndex> rClassToIndex = new HashMap<>();
+  private final Map<String, ResourceIndex> rClassToIndex = new HashMap<>();
 
-  private InstrumentingClassLoaderFactory instrumentingClassLoaderFactory;
   private TestLifecycle<Application> testLifecycle;
   private DependencyResolver dependencyResolver;
 
@@ -476,13 +474,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   protected ResourceLoader createAppResourceLoader(ResourceLoader systemResourceLoader, AndroidManifest appManifest) {
     List<PackageResourceLoader> appAndLibraryResourceLoaders = new ArrayList<>();
     for (ResourcePath resourcePath : appManifest.getIncludedResourcePaths()) {
-      Class<?> rClass = resourcePath.rClass;
-      if (!rClassToIndex.containsKey(rClass)) {
-        ResourceIndex resourceIndex = new ResourceExtractor(resourcePath);
-        rClassToIndex.put(rClass, resourceIndex);
-      }
-      ResourceIndex resourceIndex = rClassToIndex.get(rClass);
-      appAndLibraryResourceLoaders.add(createResourceLoader(resourcePath, resourceIndex));
+      appAndLibraryResourceLoaders.add(createResourceLoader(resourcePath, new ResourceExtractor(resourcePath)));
     }
     OverlayResourceLoader overlayResourceLoader = new OverlayResourceLoader(appManifest.getPackageName(), appAndLibraryResourceLoaders);
 
