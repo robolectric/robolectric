@@ -14,6 +14,8 @@ import org.robolectric.util.ReflectionHelpers;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.Buffer;
+import java.nio.ByteBuffer;
 
 import static org.robolectric.Shadows.shadowOf;
 
@@ -23,6 +25,9 @@ import static org.robolectric.Shadows.shadowOf;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Bitmap.class)
 public class ShadowBitmap {
+  /** Number of bytes used internally to represent each pixel (in the {@link #colors} array) */
+  private static final int INTERNAL_BYTES_PER_PIXEL = 4;
+
   @RealObject
   private Bitmap realBitmap;
 
@@ -519,6 +524,52 @@ public class ShadowBitmap {
     p.readIntArray(parceledColors);
 
     return createBitmap(parceledColors, parceledWidth, parceledHeight, parceledConfig);
+  }
+
+  @Implementation
+  public void copyPixelsFromBuffer(Buffer dst) {
+    if (isRecycled()) {
+      throw new IllegalStateException("Can't call copyPixelsFromBuffer() on a recycled bitmap");
+    }
+
+    // See the related comment in #copyPixelsToBuffer(Buffer).
+    if (getBytesPerPixel(config) != INTERNAL_BYTES_PER_PIXEL) {
+      throw new RuntimeException("Not implemented: only Bitmaps with " + INTERNAL_BYTES_PER_PIXEL
+              + " bytes per pixel are supported");
+    }
+    if (!(dst instanceof ByteBuffer)) {
+      throw new RuntimeException("Not implemented: unsupported Buffer subclass");
+    }
+
+    ByteBuffer byteBuffer = (ByteBuffer) dst;
+    if (byteBuffer.remaining() < colors.length * INTERNAL_BYTES_PER_PIXEL) {
+      throw new RuntimeException("Buffer not large enough for pixels");
+    }
+
+    for (int i = 0; i < colors.length; i++) {
+      colors[i] = byteBuffer.getInt();
+    }
+  }
+
+  @Implementation
+  public void copyPixelsToBuffer(Buffer dst) {
+    // Ensure that the Bitmap uses 4 bytes per pixel, since we always use 4 bytes per pixels
+    // internally. Clients of this API probably expect that the buffer size must be >=
+    // getByteCount(), but if we don't enforce this restriction then for RGB_4444 and other
+    // configs that value would be smaller then the buffer size we actually need.
+    if (getBytesPerPixel(config) != INTERNAL_BYTES_PER_PIXEL) {
+      throw new RuntimeException("Not implemented: only Bitmaps with " + INTERNAL_BYTES_PER_PIXEL
+              + " bytes per pixel are supported");
+    }
+
+    if (!(dst instanceof ByteBuffer)) {
+      throw new RuntimeException("Not implemented: unsupported Buffer subclass");
+    }
+
+    ByteBuffer byteBuffer = (ByteBuffer) dst;
+    for (int color : colors) {
+      byteBuffer.putInt(color);
+    }
   }
 
   @Override
