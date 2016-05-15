@@ -27,6 +27,7 @@ public @interface Config {
   String DEFAULT = "--default";
   String DEFAULT_RES_FOLDER = "res";
   String DEFAULT_ASSET_FOLDER = "assets";
+  String DEFAULT_BUILD_FOLDER = "build";
 
   /**
    * The Android SDK level to emulate. If not specified, Robolectric defaults to API 16.
@@ -100,6 +101,15 @@ public @interface Config {
   String assetDir() default DEFAULT_ASSET_FOLDER;
 
   /**
+   * The directory where application files are created during the application build process.
+   *
+   * <p>If not specified, Robolectric defaults to {@code build}.</p>
+   *
+   * @return Android build directory.
+   */
+  String buildDir() default DEFAULT_BUILD_FOLDER;
+
+  /**
    * A list of shadow classes to enable, in addition to those that are already present.
    *
    * @return A list of additional shadow classes to enable.
@@ -126,6 +136,7 @@ public @interface Config {
     private final String qualifiers;
     private final String resourceDir;
     private final String assetDir;
+    private final String buildDir;
     private final String packageName;
     private final Class<?> constants;
     private final Class<?>[] shadows;
@@ -142,6 +153,7 @@ public @interface Config {
           properties.getProperty("packageName", ""),
           properties.getProperty("resourceDir", Config.DEFAULT_RES_FOLDER),
           properties.getProperty("assetDir", Config.DEFAULT_ASSET_FOLDER),
+          properties.getProperty("buildDir", Config.DEFAULT_BUILD_FOLDER),
           parseClasses(properties.getProperty("shadows", "")),
           parseStringArrayProperty(properties.getProperty("instrumentedPackages", "")),
           parseApplication(properties.getProperty("application", "android.app.Application")),
@@ -189,13 +201,14 @@ public @interface Config {
       return result;
     }
 
-    public Implementation(int[] sdk, String manifest, String qualifiers, String packageName, String resourceDir, String assetDir, Class<?>[] shadows, String[] instrumentedPackages, Class<? extends Application> application, String[] libraries, Class<?> constants) {
+    public Implementation(int[] sdk, String manifest, String qualifiers, String packageName, String resourceDir, String assetDir, String buildDir, Class<?>[] shadows, String[] instrumentedPackages, Class<? extends Application> application, String[] libraries, Class<?> constants) {
       this.sdk = sdk;
       this.manifest = manifest;
       this.qualifiers = qualifiers;
       this.packageName = packageName;
       this.resourceDir = resourceDir;
       this.assetDir = assetDir;
+      this.buildDir = buildDir;
       this.shadows = shadows;
       this.instrumentedPackages = instrumentedPackages;
       this.application = application;
@@ -210,6 +223,7 @@ public @interface Config {
       this.packageName = other.packageName();
       this.resourceDir = other.resourceDir();
       this.assetDir = other.assetDir();
+      this.buildDir = other.buildDir();
       this.constants = other.constants();
       this.shadows = other.shadows();
       this.instrumentedPackages = other.instrumentedPackages();
@@ -224,6 +238,7 @@ public @interface Config {
       this.packageName = pick(baseConfig.packageName(), overlayConfig.packageName(), "");
       this.resourceDir = pick(baseConfig.resourceDir(), overlayConfig.resourceDir(), Config.DEFAULT_RES_FOLDER);
       this.assetDir = pick(baseConfig.assetDir(), overlayConfig.assetDir(), Config.DEFAULT_ASSET_FOLDER);
+      this.buildDir = pick(baseConfig.buildDir(), overlayConfig.buildDir(), Config.DEFAULT_BUILD_FOLDER);
       this.constants = pick(baseConfig.constants(), overlayConfig.constants(), Void.class);
 
       Set<Class<?>> shadows = new HashSet<>();
@@ -290,6 +305,11 @@ public @interface Config {
     @Override
     public String assetDir() {
       return assetDir;
+    }
+
+    @Override
+    public String buildDir() {
+      return buildDir;
     }
 
     @Override
