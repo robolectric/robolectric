@@ -10,7 +10,7 @@ Here's an example of a simple test written using Robolectric:
 
 ```java
 @RunWith(RobolectricGradleTestRunner.class)
-@Config(constants = BuildConfig.class)
+@Config(constants = BuildConfig.class,sdk = 21)
 public class MyActivityTest {
 
   @Test
