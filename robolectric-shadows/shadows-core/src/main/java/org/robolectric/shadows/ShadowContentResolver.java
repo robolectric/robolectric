@@ -167,7 +167,7 @@ public class ShadowContentResolver {
     }
   }
 
-      @Implementation
+    @Implementation
     public Cursor query(Uri uri, String[] projection, String selection,
         String[] selectionArgs, String sortOrder, CancellationSignal cancellationSignal) {
       return query(uri, projection, selection, selectionArgs, sortOrder);
