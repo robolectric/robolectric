@@ -74,6 +74,11 @@ public class StubViewRoot implements ViewParent {
   }
 
   @Override
+  public boolean showContextMenuForChild(View originalView, float x, float y) {
+    return false;
+  }
+
+  @Override
   public void createContextMenu(ContextMenu menu) {
   }
 
