@@ -235,6 +235,16 @@ public class ShadowResources {
     }
   }
 
+  // todo: Android N has a ThemeImpl inside Theme
+//  @Implementation
+//  public final Resources.Theme newTheme() {
+//    Resources.Theme theme = directlyOn(realResources, Resources.class).newTheme();
+//    Object themeImpl = ReflectionHelpers.getField(theme, "mThemeImpl");
+//    int themeId = Integer.valueOf(ReflectionHelpers.getField(themeImpl, "mTheme").toString()); // TODO: in Lollipop, these can be longs, which will overflow int
+//    shadowOf(realResources.getAssets()).setTheme(themeId, theme);
+//    return theme;
+//  }
+
   @HiddenApi @Implementation
   public Drawable loadDrawable(TypedValue value, int id) {
     Drawable drawable = directlyOn(realResources, Resources.class, "loadDrawable",

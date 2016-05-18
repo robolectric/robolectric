@@ -122,6 +122,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
           ClassParameter.from(ApplicationInfo.class, applicationInfo),
           ClassParameter.from(compatibilityInfoClass, null),
           ClassParameter.from(int.class, Context.CONTEXT_INCLUDE_CODE));
+      ReflectionHelpers.setField(loadedApk, "mClassLoader", ClassLoader.getSystemClassLoader());
 
       try {
         Context contextImpl = systemContextImpl.createPackageContext(applicationInfo.packageName, Context.CONTEXT_INCLUDE_CODE);
