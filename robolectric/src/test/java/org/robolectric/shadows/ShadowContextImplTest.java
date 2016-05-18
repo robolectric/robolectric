@@ -90,5 +90,11 @@ public class ShadowContextImplTest {
     RemoteViews remoteViews = new RemoteViews(RuntimeEnvironment.application.getPackageName(), R.layout.remote_views);
     remoteViews.apply(RuntimeEnvironment.application, new FrameLayout(RuntimeEnvironment.application));
   }
+
+  @Test
+  public void validateInMemoryDatabasePath() {
+    assertThat(context.getDatabasePath(ShadowContextImpl.SQLITE_IN_MEMORY_PATH).getPath())
+        .isEqualTo(ShadowContextImpl.SQLITE_IN_MEMORY_PATH);
+  }
 }
 
