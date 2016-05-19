@@ -190,6 +190,11 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     finishWasCalled = true;
   }
 
+  @Implementation
+  public void finishAndRemoveTask() {
+    finishWasCalled = true;
+  }
+
   public void resetIsFinishing() {
     finishWasCalled = false;
   }
