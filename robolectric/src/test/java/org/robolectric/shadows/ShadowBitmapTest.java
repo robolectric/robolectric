@@ -17,6 +17,10 @@ import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.Shadow;
 
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
+import java.nio.LongBuffer;
+import java.nio.ShortBuffer;
 import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -356,6 +360,117 @@ public class ShadowBitmapTest {
         reconstructedWidth, reconstructedHeight);
 
     assertThat(Arrays.equals(pixelsOriginal, pixelsReconstructed)).isTrue();
+  }
+
+  @Test
+  public void shouldCopyPixelsToBufferAndReconstruct() {
+    int width = 10;
+    int height = 10;
+
+    Bitmap bitmapOriginal = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+    bitmapOriginal.setPixel(0, 0, 123);
+    bitmapOriginal.setPixel(1, 1, 456);
+    bitmapOriginal.setPixel(2, 2, 789);
+    int[] pixelsOriginal = new int[width * height];
+    bitmapOriginal.getPixels(pixelsOriginal, 0, width, 0, 0, width, height);
+
+    ByteBuffer buffer = ByteBuffer.allocate(bitmapOriginal.getByteCount());
+    bitmapOriginal.copyPixelsToBuffer(buffer);
+    assertThat(buffer.position()).isEqualTo(bitmapOriginal.getByteCount());
+
+    buffer.rewind();
+    Bitmap bitmapReconstructed = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+    // Set some random pixels to ensure that they're properly overwritten.
+    bitmapReconstructed.setPixel(1,1, 999);
+    bitmapReconstructed.setPixel(4,4, 999);
+    bitmapReconstructed.copyPixelsFromBuffer(buffer);
+    assertThat(buffer.position()).isEqualTo(bitmapOriginal.getByteCount());
+
+    assertThat(bitmapReconstructed.getPixel(0, 0)).isEqualTo(123);
+    assertThat(bitmapReconstructed.getPixel(1, 1)).isEqualTo(456);
+    assertThat(bitmapReconstructed.getPixel(2, 2)).isEqualTo(789);
+
+    int[] pixelsReconstructed = new int[width * height];
+    bitmapReconstructed.getPixels(pixelsReconstructed, 0, width, 0, 0, width, height);
+    assertThat(Arrays.equals(pixelsOriginal, pixelsReconstructed)).isTrue();
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void throwsExceptionCopyPixelsToShortBuffer() {
+    Bitmap bitmapOriginal = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888);
+    ShortBuffer buffer = ShortBuffer.allocate(bitmapOriginal.getByteCount());
+    bitmapOriginal.copyPixelsToBuffer(buffer);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void throwsExceptionCopyPixelsToIntBuffer() {
+    Bitmap bitmapOriginal = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888);
+    IntBuffer buffer = IntBuffer.allocate(bitmapOriginal.getByteCount());
+    bitmapOriginal.copyPixelsToBuffer(buffer);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void throwsExceptionCopyPixelsToLongBuffer() {
+    Bitmap bitmapOriginal = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888);
+    LongBuffer buffer = LongBuffer.allocate(bitmapOriginal.getByteCount());
+    bitmapOriginal.copyPixelsToBuffer(buffer);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void throwsExceptionCopyPixelsToBufferTooSmall() {
+    Bitmap bitmapOriginal = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888);
+    ByteBuffer buffer = ByteBuffer.allocate(bitmapOriginal.getByteCount() - 1);
+    bitmapOriginal.copyPixelsToBuffer(buffer);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void throwsExceptionCopyPixelsToBufferNonArgb8888() {
+    Bitmap bitmapOriginal = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_4444);
+    ByteBuffer buffer = ByteBuffer.allocate(bitmapOriginal.getByteCount());
+    bitmapOriginal.copyPixelsToBuffer(buffer);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void throwsExceptionCopyPixelsFromShortBuffer() {
+    Bitmap bitmapOriginal = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888);
+    ShortBuffer buffer = ShortBuffer.allocate(bitmapOriginal.getByteCount());
+    bitmapOriginal.copyPixelsFromBuffer(buffer);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void throwsExceptionCopyPixelsFromIntBuffer() {
+    Bitmap bitmapOriginal = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888);
+    IntBuffer buffer = IntBuffer.allocate(bitmapOriginal.getByteCount());
+    bitmapOriginal.copyPixelsFromBuffer(buffer);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void throwsExceptionCopyPixelsFromLongBuffer() {
+    Bitmap bitmapOriginal = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888);
+    LongBuffer buffer = LongBuffer.allocate(bitmapOriginal.getByteCount());
+    bitmapOriginal.copyPixelsFromBuffer(buffer);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void throwsExceptionCopyPixelsFromBufferTooSmall() {
+    Bitmap bitmapOriginal = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888);
+    ByteBuffer buffer = ByteBuffer.allocate(bitmapOriginal.getByteCount() - 1);
+    bitmapOriginal.copyPixelsFromBuffer(buffer);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void throwsExceptionCopyPixelsFromBufferNonArgb8888() {
+    Bitmap bitmapOriginal = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_4444);
+    ByteBuffer buffer = ByteBuffer.allocate(bitmapOriginal.getByteCount());
+    bitmapOriginal.copyPixelsFromBuffer(buffer);
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void throwsExceptionCopyPixelsFromBufferRecycled() {
+    Bitmap bitmapOriginal = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888);
+    ByteBuffer buffer = ByteBuffer.allocate(bitmapOriginal.getByteCount());
+    bitmapOriginal.recycle();
+    bitmapOriginal.copyPixelsFromBuffer(buffer);
   }
 
   private static Bitmap create(String name) {
