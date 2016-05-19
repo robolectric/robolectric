@@ -55,7 +55,8 @@ public class ShadowNotification {
   }
 
   public Bitmap getBigPicture() {
-    return ((BitmapDrawable)((ImageView) applyBigContentView().findViewById(R.id.big_picture)).getDrawable()).getBitmap();
+    ImageView imageView = (ImageView) applyBigContentView().findViewById(R.id.big_picture);
+    return imageView !=null && imageView.getDrawable() != null ? ((BitmapDrawable) imageView.getDrawable()).getBitmap() : null;
   }
 
   public boolean isWhenShown() {
