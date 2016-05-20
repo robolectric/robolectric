@@ -3,15 +3,18 @@ package org.robolectric;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.Service;
+import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 
+import org.robolectric.internal.ShadowProvider;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.util.ActivityController;
 import org.robolectric.util.FragmentController;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.ServiceController;
-import org.robolectric.internal.ShadowProvider;
 
 import java.util.ServiceLoader;
 
@@ -46,6 +49,17 @@ public class Robolectric {
       }
     }
     return shadowsAdapter;
+  }
+
+  /**
+   * Creates an instance of a {@link ContextWrapper} subclass and attaches it to the environments base context.
+   * @param contextWrapperClass ContextWrapper implementation class.
+   * @param constructorArgs constructor arguments.
+   */
+  public static <T extends ContextWrapper> T buildContextWrapper(Class<T> contextWrapperClass, ClassParameter<?>... constructorArgs) {
+    T instance = ReflectionHelpers.callConstructor(contextWrapperClass, constructorArgs);
+    ReflectionHelpers.callInstanceMethod(contextWrapperClass, instance, "attachBaseContext", ClassParameter.from(Context.class, RuntimeEnvironment.application.getBaseContext()));
+    return instance;
   }
 
   public static <T extends Service> ServiceController<T> buildService(Class<T> serviceClass) {
