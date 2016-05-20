@@ -58,7 +58,7 @@ public class Robolectric {
    */
   public static <T extends ContextWrapper> T buildContextWrapper(Class<T> contextWrapperClass, ClassParameter<?>... constructorArgs) {
     T instance = ReflectionHelpers.callConstructor(contextWrapperClass, constructorArgs);
-    ReflectionHelpers.callInstanceMethod(contextWrapperClass, instance, "attachBaseContext", ClassParameter.from(Context.class, RuntimeEnvironment.application.getBaseContext()));
+    ReflectionHelpers.callInstanceMethod(ContextWrapper.class, instance, "attachBaseContext", ClassParameter.from(Context.class, RuntimeEnvironment.application.getBaseContext()));
     return instance;
   }
 
