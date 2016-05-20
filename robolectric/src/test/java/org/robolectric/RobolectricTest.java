@@ -3,6 +3,7 @@ package org.robolectric;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -17,15 +18,16 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.internal.Shadow;
+import org.robolectric.internal.ShadowProvider;
 import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowDisplay;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowView;
 import org.robolectric.shadows.StubViewRoot;
-import org.robolectric.internal.Shadow;
-import org.robolectric.internal.ShadowProvider;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.TestOnClickListener;
 
 import java.io.ByteArrayOutputStream;
@@ -38,7 +40,8 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -237,5 +240,27 @@ public class RobolectricTest {
     public boolean isVisible() {
       return getWindow().getDecorView().getWindowToken() != null;
     }
+  }
+
+  @Test
+  public void testBuildContextWrapper() {
+    MyContextWrapper contextWrapper = Robolectric.buildContextWrapper(MyContextWrapper.class, ClassParameter.from(String.class, "A String"));
+    assertThat(contextWrapper.getBaseContext()).isNotNull();
+    assertThat(contextWrapper.someText).isEqualTo("A String");
+  }
+
+  private static class MyContextWrapper extends ContextWrapper {
+
+    String someText;
+
+    public MyContextWrapper() {
+      super(null);
+    }
+
+    public MyContextWrapper(String someText) {
+      this();
+      this.someText = someText;
+    }
+
   }
 }
