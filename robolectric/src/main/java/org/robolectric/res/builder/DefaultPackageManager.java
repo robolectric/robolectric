@@ -50,6 +50,8 @@ import java.util.TreeMap;
 
 public class DefaultPackageManager extends StubPackageManager implements RobolectricPackageManager {
 
+  private Map<Integer, String> namesForUid = new HashMap<>();
+
   public DefaultPackageManager(ShadowsAdapter shadowsAdapter) {
     this.shadowsAdapter = shadowsAdapter;
   }
@@ -706,6 +708,16 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
         TempDirectory.destroy(Paths.get(info.applicationInfo.dataDir));
       }
     }
+  }
+
+  @Override
+  public void setNameForUid(int uid, String name) {
+    namesForUid.put(uid, name);
+  }
+
+  @Override
+  public String getNameForUid(int uid) {
+    return namesForUid.get(uid);
   }
 
   /**
