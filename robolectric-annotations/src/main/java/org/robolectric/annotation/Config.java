@@ -76,6 +76,15 @@ public @interface Config {
   String packageName() default "";
 
   /**
+   * The ABI split to use when locating resources and AndroidManifest.xml
+   *
+   * <p>You do not typically have to set this, unless you are utilizing the ABI split feature</p>
+   *
+   * @return The ABI split to test with
+   */
+  String abiSplit() default "";
+
+  /**
    * Qualifiers for the resource resolution, such as "fr-normal-port-hdpi".
    *
    * @return Qualifiers used for resource resolution.
@@ -138,6 +147,7 @@ public @interface Config {
     private final String assetDir;
     private final String buildDir;
     private final String packageName;
+    private final String abiSplit;
     private final Class<?> constants;
     private final Class<?>[] shadows;
     private final String[] instrumentedPackages;
@@ -151,6 +161,7 @@ public @interface Config {
           properties.getProperty("manifest", DEFAULT),
           properties.getProperty("qualifiers", ""),
           properties.getProperty("packageName", ""),
+          properties.getProperty("abiSplit", ""),
           properties.getProperty("resourceDir", Config.DEFAULT_RES_FOLDER),
           properties.getProperty("assetDir", Config.DEFAULT_ASSET_FOLDER),
           properties.getProperty("buildDir", Config.DEFAULT_BUILD_FOLDER),
@@ -201,11 +212,12 @@ public @interface Config {
       return result;
     }
 
-    public Implementation(int[] sdk, String manifest, String qualifiers, String packageName, String resourceDir, String assetDir, String buildDir, Class<?>[] shadows, String[] instrumentedPackages, Class<? extends Application> application, String[] libraries, Class<?> constants) {
+    public Implementation(int[] sdk, String manifest, String qualifiers, String packageName, String abiSplit, String resourceDir, String assetDir, String buildDir, Class<?>[] shadows, String[] instrumentedPackages, Class<? extends Application> application, String[] libraries, Class<?> constants) {
       this.sdk = sdk;
       this.manifest = manifest;
       this.qualifiers = qualifiers;
       this.packageName = packageName;
+      this.abiSplit = abiSplit;
       this.resourceDir = resourceDir;
       this.assetDir = assetDir;
       this.buildDir = buildDir;
@@ -221,6 +233,7 @@ public @interface Config {
       this.manifest = other.manifest();
       this.qualifiers = other.qualifiers();
       this.packageName = other.packageName();
+      this.abiSplit = other.abiSplit();
       this.resourceDir = other.resourceDir();
       this.assetDir = other.assetDir();
       this.buildDir = other.buildDir();
@@ -236,6 +249,7 @@ public @interface Config {
       this.manifest = pick(baseConfig.manifest(), overlayConfig.manifest(), DEFAULT);
       this.qualifiers = pick(baseConfig.qualifiers(), overlayConfig.qualifiers(), "");
       this.packageName = pick(baseConfig.packageName(), overlayConfig.packageName(), "");
+      this.abiSplit = pick(baseConfig.abiSplit(), overlayConfig.abiSplit(), "");
       this.resourceDir = pick(baseConfig.resourceDir(), overlayConfig.resourceDir(), Config.DEFAULT_RES_FOLDER);
       this.assetDir = pick(baseConfig.assetDir(), overlayConfig.assetDir(), Config.DEFAULT_ASSET_FOLDER);
       this.buildDir = pick(baseConfig.buildDir(), overlayConfig.buildDir(), Config.DEFAULT_BUILD_FOLDER);
@@ -295,6 +309,11 @@ public @interface Config {
     @Override
     public String packageName() {
       return packageName;
+    }
+
+    @Override
+    public String abiSplit() {
+      return abiSplit;
     }
 
     @Override
