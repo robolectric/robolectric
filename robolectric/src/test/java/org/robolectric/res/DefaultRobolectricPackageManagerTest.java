@@ -721,6 +721,15 @@ public class DefaultRobolectricPackageManagerTest {
     fail("NameNotFoundException is expected.");
   }
 
+  @Test
+  public void getNameForUid() {
+    assertThat(RuntimeEnvironment.getPackageManager().getNameForUid(10)).isNull();
+
+    rpm.setNameForUid(10, "a_name");
+
+    assertThat(RuntimeEnvironment.getPackageManager().getNameForUid(10)).isEqualTo("a_name");
+  }
+
   /////////////////////////////
 
   public AndroidManifest newConfigWith(String contents) throws IOException {
