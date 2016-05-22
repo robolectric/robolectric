@@ -102,6 +102,17 @@ public class RobolectricGradleTestRunnerTest {
   }
 
   @Test
+  public void getAppManifest_withAbiSplitOverride_shouldCreateManifest() throws Exception {
+    final RobolectricGradleTestRunner runner = new RobolectricGradleTestRunner(AbiSplitTest.class);
+    final AndroidManifest manifest = runner.getAppManifest(runner.getConfig(AbiSplitTest.class.getMethod("withoutAnnotation")));
+
+    assertThat(manifest.getPackageName()).isEqualTo("org.sandwich.foo");
+    assertThat(manifest.getResDirectory().getPath()).isEqualTo(convertPath("build/intermediates/res/flavor1/type1"));
+    assertThat(manifest.getAssetsDirectory().getPath()).isEqualTo(convertPath("build/intermediates/assets/flavor1/type1"));
+    assertThat(manifest.getAndroidManifestFile().getPath()).isEqualTo(convertPath("build/intermediates/manifests/full/flavor1/armeabi/type1/AndroidManifest.xml"));
+  }
+
+  @Test
   public void getAppManifest_withMergedResources_shouldHaveMergedResPath() throws Exception {
     FileFsFile.from("build", "intermediates", "res", "merged").getFile().mkdirs();
 
@@ -173,6 +184,14 @@ public class RobolectricGradleTestRunnerTest {
   @Config(constants = BuildConfig.class, packageName = "fake.package.name")
   public static class PackageNameTest {
 
+    @Test
+    public void withoutAnnotation() throws Exception {
+    }
+  }
+
+  @Ignore
+  @Config(constants = BuildConfig.class, abiSplit = "armeabi")
+  public static class AbiSplitTest {
     @Test
     public void withoutAnnotation() throws Exception {
     }
