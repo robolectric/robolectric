@@ -204,6 +204,7 @@ public class ShadowNotificationBuilderTest {
     assertThat(shadowOf(notification).getBigText()).isEqualTo("BigText");
     assertThat(shadowOf(notification).getBigContentTitle()).isEqualTo("Title");
     assertThat(shadowOf(notification).getBigContentText()).isEqualTo("Summary");
+    assertThat(shadowOf(notification).getBigPicture()).isNull();
   }
 
   @Test

@@ -30,9 +30,9 @@ import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
+import org.robolectric.fakes.BaseCursor;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.ContentProviderData;
-import org.robolectric.fakes.BaseCursor;
 import org.robolectric.util.ReflectionHelpers;
 
 import java.io.ByteArrayInputStream;
@@ -47,7 +47,9 @@ import java.util.List;
 
 import static android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
@@ -695,6 +697,22 @@ public class ShadowContentResolverTest {
     Application application = new DefaultTestLifecycle().createApplication(null, null, null);
     ReflectionHelpers.callInstanceMethod(application, "attach", ReflectionHelpers.ClassParameter.from(Context.class, RuntimeEnvironment.application.getBaseContext()));
     assertThat(ShadowContentResolver.getProvider(Uri.parse("content://"))).isNull();
+  }
+
+  @Test
+  public void getProvider_shouldSetAuthority() throws RemoteException {
+    AndroidManifest manifest = ShadowApplication.getInstance().getAppManifest();
+    ContentProviderData testProviderData = new ContentProviderData("org.robolectric.shadows.ShadowContentResolverTest$TestContentProvider", AUTHORITY);
+    try {
+      manifest.getContentProviders().add(testProviderData);
+      Uri uri = Uri.parse("content://" + AUTHORITY + "/shadows");
+      ContentProvider provider = ShadowContentResolver.getProvider(uri);
+      // unfortunately, there is no direct way of testing if authority is set or not
+      // however, it's checked in ContentProvider.Transport method calls (validateIncomingUri), so it's the closest we can test against
+      provider.getIContentProvider().getType(uri); // should not throw
+    } finally {
+      manifest.getContentProviders().remove(testProviderData);
+    }
   }
 
   static class QueryParamTrackingCursor extends BaseCursor {

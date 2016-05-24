@@ -44,6 +44,11 @@ public class ShadowPendingIntent {
   }
 
   @Implementation
+  public static PendingIntent getActivity(Context context, int requestCode, Intent intent, int flags, Bundle options) {
+    return create(context, new Intent[] {intent}, true, false, false, requestCode, flags);
+  }
+
+  @Implementation
   public static PendingIntent getActivities(Context context, int requestCode, Intent[] intents, int flags) {
     return create(context, intents, true, false, false, requestCode, flags);
   }

@@ -20,6 +20,10 @@ public class RobolectricGradleTestRunnerTest {
     FileFsFile.from("build", "intermediates", "res").getFile().mkdirs();
     FileFsFile.from("build", "intermediates", "assets").getFile().mkdirs();
     FileFsFile.from("build", "intermediates", "manifests").getFile().mkdirs();
+
+    FileFsFile.from("custom_build", "intermediates", "res").getFile().mkdirs();
+    FileFsFile.from("custom_build", "intermediates", "assets").getFile().mkdirs();
+    FileFsFile.from("custom_build", "intermediates", "manifests").getFile().mkdirs();
   }
 
   @After
@@ -28,6 +32,10 @@ public class RobolectricGradleTestRunnerTest {
     delete(FileFsFile.from("build", "intermediates", "assets").getFile());
     delete(FileFsFile.from("build", "intermediates", "manifests").getFile());
     delete(FileFsFile.from("build", "intermediates", "res", "merged").getFile());
+
+    delete(FileFsFile.from("custom_build", "intermediates", "res").getFile());
+    delete(FileFsFile.from("custom_build", "intermediates", "assets").getFile());
+    delete(FileFsFile.from("custom_build", "intermediates", "manifests").getFile());
   }
 
   private static String convertPath(String path) {
@@ -72,6 +80,17 @@ public class RobolectricGradleTestRunnerTest {
   }
 
   @Test
+  public void getAppManifest_withBuildDirOverride_shouldCreateManifest() throws Exception {
+    final RobolectricGradleTestRunner runner = new RobolectricGradleTestRunner(BuildDirTest.class);
+    final AndroidManifest manifest = runner.getAppManifest(runner.getConfig(BuildDirTest.class.getMethod("withoutAnnotation")));
+
+    assertThat(manifest.getPackageName()).isEqualTo("org.sandwich.foo");
+    assertThat(manifest.getResDirectory().getPath()).isEqualTo(convertPath("custom_build/intermediates/res/flavor1/type1"));
+    assertThat(manifest.getAssetsDirectory().getPath()).isEqualTo(convertPath("custom_build/intermediates/assets/flavor1/type1"));
+    assertThat(manifest.getAndroidManifestFile().getPath()).isEqualTo(convertPath("custom_build/intermediates/manifests/full/flavor1/type1/AndroidManifest.xml"));
+  }
+
+  @Test
   public void getAppManifest_withPackageNameOverride_shouldCreateManifest() throws Exception {
     final RobolectricGradleTestRunner runner = new RobolectricGradleTestRunner(PackageNameTest.class);
     final AndroidManifest manifest = runner.getAppManifest(runner.getConfig(PackageNameTest.class.getMethod("withoutAnnotation")));
@@ -80,6 +99,17 @@ public class RobolectricGradleTestRunnerTest {
     assertThat(manifest.getResDirectory().getPath()).isEqualTo(convertPath("build/intermediates/res/flavor1/type1"));
     assertThat(manifest.getAssetsDirectory().getPath()).isEqualTo(convertPath("build/intermediates/assets/flavor1/type1"));
     assertThat(manifest.getAndroidManifestFile().getPath()).isEqualTo(convertPath("build/intermediates/manifests/full/flavor1/type1/AndroidManifest.xml"));
+  }
+
+  @Test
+  public void getAppManifest_withAbiSplitOverride_shouldCreateManifest() throws Exception {
+    final RobolectricGradleTestRunner runner = new RobolectricGradleTestRunner(AbiSplitTest.class);
+    final AndroidManifest manifest = runner.getAppManifest(runner.getConfig(AbiSplitTest.class.getMethod("withoutAnnotation")));
+
+    assertThat(manifest.getPackageName()).isEqualTo("org.sandwich.foo");
+    assertThat(manifest.getResDirectory().getPath()).isEqualTo(convertPath("build/intermediates/res/flavor1/type1"));
+    assertThat(manifest.getAssetsDirectory().getPath()).isEqualTo(convertPath("build/intermediates/assets/flavor1/type1"));
+    assertThat(manifest.getAndroidManifestFile().getPath()).isEqualTo(convertPath("build/intermediates/manifests/full/flavor1/armeabi/type1/AndroidManifest.xml"));
   }
 
   @Test
@@ -142,9 +172,26 @@ public class RobolectricGradleTestRunnerTest {
   }
 
   @Ignore
+  @Config(constants = BuildConfig.class, buildDir = "custom_build")
+  public static class BuildDirTest {
+
+    @Test
+    public void withoutAnnotation() throws Exception {
+    }
+  }
+
+  @Ignore
   @Config(constants = BuildConfig.class, packageName = "fake.package.name")
   public static class PackageNameTest {
 
+    @Test
+    public void withoutAnnotation() throws Exception {
+    }
+  }
+
+  @Ignore
+  @Config(constants = BuildConfig.class, abiSplit = "armeabi")
+  public static class AbiSplitTest {
     @Test
     public void withoutAnnotation() throws Exception {
     }
