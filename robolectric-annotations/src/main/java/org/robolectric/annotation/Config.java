@@ -1,6 +1,7 @@
 package org.robolectric.annotation;
 
 import android.app.Application;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.annotation.Annotation;
@@ -23,11 +24,20 @@ import java.util.Set;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
 public @interface Config {
-  String NONE = "--none";
-  String DEFAULT = "--default";
-  String DEFAULT_RES_FOLDER = "res";
-  String DEFAULT_ASSET_FOLDER = "assets";
-  String DEFAULT_BUILD_FOLDER = "build";
+  static final String NONE = "--none";
+  static final int[] DEFAULT_SDK = {};
+  static final String DEFAULT_MANIFEST = "--default";
+  static final Class<?> DEFAULT_CONSTANTS = Void.class;
+  static final Class<? extends Application> DEFAULT_APPLICATION = Application.class;
+  static final String DEFAULT_PACKAGE_NAME = "";
+  static final String DEFAULT_ABI_SPLIT = "";
+  static final String DEFAULT_QUALIFIERS = "";
+  static final String DEFAULT_RES_FOLDER = "res";
+  static final String DEFAULT_ASSET_FOLDER = "assets";
+  static final String DEFAULT_BUILD_FOLDER = "build";
+  static final Class<?>[] DEFAULT_SHADOWS = {};
+  static final String[] DEFAULT_INSTRUMENTED_PACKAGES = {};
+  static final String[] DEFAULT_LIBRARIES = {};
 
   /**
    * The Android SDK level to emulate. If not specified, Robolectric defaults to API 16.
@@ -35,7 +45,7 @@ public @interface Config {
    *
    * @return The Android SDK level to emulate.
    */
-  int[] sdk() default {};
+  int[] sdk() default {};  // DEFAULT_SDK
 
   /**
    * The Android manifest file to load; Robolectric will look relative to the current directory.
@@ -47,14 +57,14 @@ public @interface Config {
    *
    * @return The Android manifest file to load.
    */
-  String manifest() default DEFAULT;
+  String manifest() default DEFAULT_MANIFEST;
 
   /**
    * Reference to the BuildConfig class created by the Gradle build system.
    *
    * @return Reference to BuildConfig class.
    */
-  Class<?> constants() default Void.class;
+  Class<?> constants() default Void.class;  // DEFAULT_CONSTANTS
 
   /**
    * The {@link android.app.Application} class to use in the test, this takes precedence over any application
@@ -62,7 +72,7 @@ public @interface Config {
    *
    * @return The {@link android.app.Application} class to use in the test.
    */
-  Class<? extends Application> application() default Application.class;
+  Class<? extends Application> application() default Application.class;  // DEFAULT_APPLICATION
 
   /**
    * Java package name where the "R.class" file is located. This only needs to be specified if you define
@@ -73,7 +83,7 @@ public @interface Config {
    *
    * @return The java package name for R.class.
    */
-  String packageName() default "";
+  String packageName() default DEFAULT_PACKAGE_NAME;
 
   /**
    * The ABI split to use when locating resources and AndroidManifest.xml
@@ -82,14 +92,14 @@ public @interface Config {
    *
    * @return The ABI split to test with
    */
-  String abiSplit() default "";
+  String abiSplit() default DEFAULT_ABI_SPLIT;
 
   /**
    * Qualifiers for the resource resolution, such as "fr-normal-port-hdpi".
    *
    * @return Qualifiers used for resource resolution.
    */
-  String qualifiers() default "";
+  String qualifiers() default DEFAULT_QUALIFIERS;
 
   /**
    * The directory from which to load resources.  This should be relative to the directory containing AndroidManifest.xml.
@@ -123,21 +133,21 @@ public @interface Config {
    *
    * @return A list of additional shadow classes to enable.
    */
-  Class<?>[] shadows() default {};
-  
+  Class<?>[] shadows() default {};  // DEFAULT_SHADOWS
+
   /**
    * A list of instrumented packages, in addition to those that are already instrumented.
-   * 
+   *
    * @return A list of additional instrumented packages.
    */
-  String[] instrumentedPackages() default {};
+  String[] instrumentedPackages() default {};  // DEFAULT_INSTRUMENTED_PACKAGES
 
   /**
    * A list of folders containing Android Libraries on which this project depends.
    *
    * @return A list of Android Libraries.
    */
-  String[] libraries() default {};
+  String[] libraries() default {};  // DEFAULT_LIBRARIES;
 
   class Implementation implements Config {
     private final int[] sdk;
@@ -158,13 +168,13 @@ public @interface Config {
       if (properties == null || properties.size() == 0) return null;
       return new Implementation(
           parseIntArrayProperty(properties.getProperty("sdk", "")),
-          properties.getProperty("manifest", DEFAULT),
-          properties.getProperty("qualifiers", ""),
-          properties.getProperty("packageName", ""),
-          properties.getProperty("abiSplit", ""),
-          properties.getProperty("resourceDir", Config.DEFAULT_RES_FOLDER),
-          properties.getProperty("assetDir", Config.DEFAULT_ASSET_FOLDER),
-          properties.getProperty("buildDir", Config.DEFAULT_BUILD_FOLDER),
+          properties.getProperty("manifest", DEFAULT_MANIFEST),
+          properties.getProperty("qualifiers", DEFAULT_QUALIFIERS),
+          properties.getProperty("packageName", DEFAULT_PACKAGE_NAME),
+          properties.getProperty("abiSplit", DEFAULT_ABI_SPLIT),
+          properties.getProperty("resourceDir", DEFAULT_RES_FOLDER),
+          properties.getProperty("assetDir", DEFAULT_ASSET_FOLDER),
+          properties.getProperty("buildDir", DEFAULT_BUILD_FOLDER),
           parseClasses(properties.getProperty("shadows", "")),
           parseStringArrayProperty(properties.getProperty("instrumentedPackages", "")),
           parseApplication(properties.getProperty("application", "android.app.Application")),
@@ -228,6 +238,28 @@ public @interface Config {
       this.constants = constants;
     }
 
+    public Implementation(String manifest) {
+      this(
+          Config.DEFAULT_SDK,
+          manifest,
+          Config.DEFAULT_QUALIFIERS,
+          Config.DEFAULT_PACKAGE_NAME,
+          Config.DEFAULT_ABI_SPLIT,
+          Config.DEFAULT_RES_FOLDER,
+          Config.DEFAULT_ASSET_FOLDER,
+          Config.DEFAULT_BUILD_FOLDER,
+          Config.DEFAULT_SHADOWS,
+          Config.DEFAULT_INSTRUMENTED_PACKAGES,
+          Config.DEFAULT_APPLICATION,
+          Config.DEFAULT_LIBRARIES,
+          Config.DEFAULT_CONSTANTS);
+    }
+
+    // TODO(vnayar): Perhaps the various constructors should replaced with a builder?
+    public Implementation() {
+      this(DEFAULT_MANIFEST);
+    }
+
     public Implementation(Config other) {
       this.sdk = other.sdk();
       this.manifest = other.manifest();
@@ -246,7 +278,7 @@ public @interface Config {
 
     public Implementation(Config baseConfig, Config overlayConfig) {
       this.sdk = pickSdk(baseConfig.sdk(), overlayConfig.sdk(), new int[0]);
-      this.manifest = pick(baseConfig.manifest(), overlayConfig.manifest(), DEFAULT);
+      this.manifest = pick(baseConfig.manifest(), overlayConfig.manifest(), DEFAULT_MANIFEST);
       this.qualifiers = pick(baseConfig.qualifiers(), overlayConfig.qualifiers(), "");
       this.packageName = pick(baseConfig.packageName(), overlayConfig.packageName(), "");
       this.abiSplit = pick(baseConfig.abiSplit(), overlayConfig.abiSplit(), "");
@@ -264,7 +296,7 @@ public @interface Config {
       instrumentedPackages.addAll(Arrays.asList(baseConfig.instrumentedPackages()));
       instrumentedPackages.addAll(Arrays.asList(overlayConfig.instrumentedPackages()));
       this.instrumentedPackages = instrumentedPackages.toArray(new String[instrumentedPackages.size()]);
-      
+
       this.application = pick(baseConfig.application(), overlayConfig.application(), Application.class);
 
       Set<String> libraries = new HashSet<>();
@@ -340,7 +372,7 @@ public @interface Config {
     public String[] instrumentedPackages() {
       return instrumentedPackages;
     }
-    
+
     @Override
     public String[] libraries() {
       return libraries;

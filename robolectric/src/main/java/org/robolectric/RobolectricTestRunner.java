@@ -2,6 +2,7 @@ package org.robolectric;
 
 import android.app.Application;
 import android.os.Build;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.TestOnly;
 import org.junit.AfterClass;
@@ -18,17 +19,16 @@ import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
 import org.robolectric.annotation.*;
 import org.robolectric.internal.InstrumentingClassLoaderFactory;
+import org.robolectric.internal.ParallelUniverse;
+import org.robolectric.internal.ParallelUniverseInterface;
+import org.robolectric.internal.SdkConfig;
+import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.internal.bytecode.*;
 import org.robolectric.internal.dependency.CachedDependencyResolver;
 import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.internal.dependency.LocalDependencyResolver;
 import org.robolectric.internal.dependency.MavenDependencyResolver;
-import org.robolectric.internal.ParallelUniverse;
-import org.robolectric.internal.ParallelUniverseInterface;
-import org.robolectric.internal.SdkConfig;
-import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
 import org.robolectric.res.OverlayResourceLoader;
 import org.robolectric.res.PackageResourceLoader;
@@ -38,8 +38,8 @@ import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.res.RoutingResourceLoader;
 import org.robolectric.util.Logger;
-import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Pair;
+import org.robolectric.util.ReflectionHelpers;
 
 import java.io.File;
 import java.io.IOException;
@@ -57,7 +57,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   private static final String CONFIG_PROPERTIES = "robolectric.properties";
   private static final Config DEFAULT_CONFIG = new Config.Implementation(defaultsFor(Config.class));
   private static final Map<Pair<AndroidManifest, SdkConfig>, ResourceLoader> resourceLoadersByManifestAndConfig = new HashMap<>();
-  private static final Map<ManifestIdentifier, AndroidManifest> appManifestsByFile = new HashMap<>();
 
   /** Caches process R classes to avoid building their expensive index repeatedly */
   private final Map<String, ResourceIndex> rClassToIndex = new HashMap<>();
@@ -114,21 +113,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
   protected ClassHandler createClassHandler(ShadowMap shadowMap, SdkConfig sdkConfig) {
     return new ShadowWrangler(shadowMap);
-  }
-
-  protected AndroidManifest createAppManifest(FsFile manifestFile, FsFile resDir, FsFile assetDir, String packageName) {
-    if (!manifestFile.exists()) {
-      System.out.print("WARNING: No manifest file found at " + manifestFile.getPath() + ".");
-      System.out.println("Falling back to the Android OS resources only.");
-      System.out.println("To remove this warning, annotate your test class with @Config(manifest=Config.NONE).");
-      return null;
-    }
-
-    Logger.debug("Robolectric assets directory: " + assetDir.getPath());
-    Logger.debug("   Robolectric res directory: " + resDir.getPath());
-    Logger.debug("   Robolectric manifest path: " + manifestFile.getPath());
-    Logger.debug("    Robolectric package name: " + packageName);
-    return new AndroidManifest(manifestFile, resDir, assetDir, packageName);
   }
 
   public InstrumentationConfiguration createClassLoaderConfig(Config config) {
@@ -304,40 +288,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   }
 
   protected AndroidManifest getAppManifest(Config config) {
-    if (config.manifest().equals(Config.NONE)) {
-      return null;
-    }
-
-    FsFile manifestFile = getBaseDir().join(config.manifest().equals(Config.DEFAULT) ? AndroidManifest.DEFAULT_MANIFEST_NAME : config.manifest());
-    FsFile baseDir = manifestFile.getParent();
-    FsFile resDir = baseDir.join(config.resourceDir());
-    FsFile assetDir = baseDir.join(config.assetDir());
-
-    List<FsFile> libraryDirs = null;
-    if (config.libraries().length > 0) {
-      libraryDirs = new ArrayList<>();
-      for (String libraryDirName : config.libraries()) {
-        libraryDirs.add(baseDir.join(libraryDirName));
-      }
-    }
-
-    ManifestIdentifier identifier = new ManifestIdentifier(manifestFile, resDir, assetDir, config.packageName(), libraryDirs);
-    synchronized (appManifestsByFile) {
-      AndroidManifest appManifest;
-      appManifest = appManifestsByFile.get(identifier);
-      if (appManifest == null) {
-        appManifest = createAppManifest(manifestFile, resDir, assetDir, config.packageName());
-        if (libraryDirs != null) {
-          appManifest.setLibraryDirectories(libraryDirs);
-        }
-        appManifestsByFile.put(identifier, appManifest);
-      }
-      return appManifest;
-    }
-  }
-
-  protected FsFile getBaseDir() {
-    return Fs.currentDirectory();
+    return ManifestFactory.newManifestFactory(config).create();
   }
 
   public Config getConfig(Method method) {
@@ -574,6 +525,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     }
   }
 
+  // TODO: Instead of creating a dynamic proxy to set up a default return of the Config.class annotation,
+  //   instead create a default constructor for Config.Implementation() which returns the default values of its fields.
   private static <A extends Annotation> A defaultsFor(Class<A> annotation) {
     return annotation.cast(
         Proxy.newProxyInstance(annotation.getClassLoader(), new Class[] { annotation },
