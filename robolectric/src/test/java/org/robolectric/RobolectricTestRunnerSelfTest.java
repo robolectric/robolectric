@@ -3,6 +3,7 @@ package org.robolectric;
 import android.app.Application;
 import android.content.res.Resources;
 
+import android.os.Build;
 import org.assertj.core.api.Assertions;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -14,7 +15,6 @@ import org.mockito.stubbing.Answer;
 import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.builder.RobolectricPackageManager;
-import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.util.ReflectionHelpers;
 
 import java.lang.reflect.Method;
@@ -55,9 +55,9 @@ public class RobolectricTestRunnerSelfTest {
 
   @Test
   public void setStaticValue_shouldIgnoreFinalModifier() {
-    ReflectionHelpers.setStaticField(android.os.Build.class, "MODEL", "expected value");
+    ReflectionHelpers.setStaticField(Build.class, "MODEL", "expected value");
 
-    assertThat(android.os.Build.MODEL).isEqualTo("expected value");
+    assertThat(Build.MODEL).isEqualTo("expected value");
   }
 
   @Test
@@ -98,6 +98,14 @@ public class RobolectricTestRunnerSelfTest {
     assertThat(RuntimeEnvironment.isMainThread()).isTrue();
   }
 
+  @Test
+  @Config(sdk = Build.VERSION_CODES.KITKAT)
+  public void testVersionConfiguration() {
+    assertThat(Build.VERSION.SDK_INT)
+        .isEqualTo(Build.VERSION_CODES.KITKAT);
+    assertThat(Build.VERSION.RELEASE)
+        .isEqualTo("4.4_r1");
+  }
 
   @AfterClass
   public static void resetStaticState_shouldBeCalled_afterAppTearDown() {
