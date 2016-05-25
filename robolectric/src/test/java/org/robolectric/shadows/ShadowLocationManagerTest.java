@@ -172,12 +172,10 @@ public class ShadowLocationManagerTest {
   @Test
   public void shouldRemovePendingIntentsWhenRequestingLocationUpdatesUsingCriteria() throws Exception {
     Intent someIntent = new Intent("some_action");
-    PendingIntent someLocationListenerPendingIntent = PendingIntent.getBroadcast(ShadowApplication.getInstance().getApplicationContext(), 0, someIntent,
-        PendingIntent.FLAG_UPDATE_CURRENT);
+    PendingIntent someLocationListenerPendingIntent = PendingIntent.getBroadcast(ShadowApplication.getInstance().getApplicationContext(), 0, someIntent, 0);
     Intent someOtherIntent = new Intent("some_other_action");
     PendingIntent someOtherLocationListenerPendingIntent = PendingIntent.getBroadcast(
-        ShadowApplication.getInstance().getApplicationContext(), 0, someOtherIntent,
-        PendingIntent.FLAG_UPDATE_CURRENT);
+        ShadowApplication.getInstance().getApplicationContext(), 0, someOtherIntent, 0);
 
     shadowLocationManager.setProviderEnabled(GPS_PROVIDER, true);
     shadowLocationManager.setBestProvider(LocationManager.GPS_PROVIDER, true);
@@ -210,10 +208,10 @@ public class ShadowLocationManagerTest {
   public void shouldRemovePendingIntentsWhenRequestingLocationUpdatesUsingLocationListeners() throws Exception {
     Intent someIntent = new Intent("some_action");
     PendingIntent someLocationListenerPendingIntent = PendingIntent.getBroadcast(ShadowApplication.getInstance().getApplicationContext(), 0,
-        someIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        someIntent, 0);
     Intent someOtherIntent = new Intent("some_other_action");
     PendingIntent someOtherLocationListenerPendingIntent = PendingIntent.getBroadcast(ShadowApplication.getInstance().getApplicationContext(),
-        0, someOtherIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        0, someOtherIntent, 0);
 
     shadowLocationManager.setProviderEnabled(GPS_PROVIDER, true);
     shadowLocationManager.setBestProvider(LocationManager.GPS_PROVIDER, true);
