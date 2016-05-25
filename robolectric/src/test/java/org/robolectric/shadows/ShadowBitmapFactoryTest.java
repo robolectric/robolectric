@@ -10,12 +10,17 @@ import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
+import org.robolectric.shadows.util.DataSource;
 
+import java.io.File;
+import java.io.FileDescriptor;
+import java.io.FileInputStream;
 import java.io.InputStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadows.util.DataSource.toDataSource;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowBitmapFactoryTest {
@@ -141,6 +146,28 @@ public class ShadowBitmapFactoryTest {
     assertEquals("Bitmap for content:/path", shadowOf(bitmap).getDescription());
     assertEquals(123, bitmap.getWidth());
     assertEquals(456, bitmap.getHeight());
+  }
+
+  @Test
+  public void decodeFileDescriptor_shouldGetWidthAndHeightFromHints() throws Exception {
+    File tmpFile = File.createTempFile("BitmapFactoryTest", null);
+    try {
+      tmpFile.deleteOnExit();
+      FileInputStream is = new FileInputStream(tmpFile);
+      try {
+        FileDescriptor fd = is.getFD();
+        ShadowBitmapFactory.provideWidthAndHeightHints(fd, 123, 456);
+
+        Bitmap bitmap = BitmapFactory.decodeFileDescriptor(fd);
+        assertEquals("Bitmap for fd:" + fd, shadowOf(bitmap).getDescription());
+        assertEquals(123, bitmap.getWidth());
+        assertEquals(456, bitmap.getHeight());
+      } finally {
+        is.close();
+      }
+    } finally {
+      tmpFile.delete();
+    }
   }
 
   @Test
