@@ -11,6 +11,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.res.ResName;
 import org.robolectric.util.ReflectionHelpers;
 
+import java.io.FileDescriptor;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -34,6 +35,7 @@ public class ShadowBitmap {
   int createdFromResId = -1;
   String createdFromPath;
   InputStream createdFromStream;
+  FileDescriptor createdFromFileDescriptor;
   byte[] createdFromBytes;
   private Bitmap createdFromBitmap;
   private int createdFromX = -1;
