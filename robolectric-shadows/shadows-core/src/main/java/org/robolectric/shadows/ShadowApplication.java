@@ -36,6 +36,7 @@ import org.robolectric.internal.ShadowExtractor;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.BroadcastReceiverData;
 import org.robolectric.res.ResourceLoader;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 
 import java.util.ArrayList;
@@ -56,6 +57,7 @@ import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static com.google.common.util.concurrent.Futures.immediateFuture;
 import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.internal.Shadow.directlyOn;
 import static org.robolectric.internal.Shadow.newInstanceOf;
 
 /**
@@ -83,6 +85,7 @@ public class ShadowApplication extends ShadowContextWrapper {
   private ShadowPopupMenu latestPopupMenu;
   private Object bluetoothAdapter = newInstanceOf("android.bluetooth.BluetoothAdapter");
   private Set<String> grantedPermissions = new HashSet<>();
+  private List<Application.ActivityLifecycleCallbacks> activityLifecycleCallbacks = new ArrayList<>();
 
   private boolean unbindServiceShouldThrowIllegalArgument = false;
   private Map<Intent.FilterComparison, ServiceConnectionDataWrapper> serviceConnectionDataForIntent = new HashMap<>();
@@ -833,4 +836,21 @@ public class ShadowApplication extends ShadowContextWrapper {
     shadowContext.setSystemService(key, service);
   }
 
+  @Implementation
+  public void registerActivityLifecycleCallbacks(Application.ActivityLifecycleCallbacks callback) {
+    activityLifecycleCallbacks.add(callback);
+    directlyOn(realApplication, Application.class, "registerActivityLifecycleCallbacks",
+        ReflectionHelpers.ClassParameter.from(Application.ActivityLifecycleCallbacks.class, callback));
+  }
+
+  @Implementation
+  public void unregisterActivityLifecycleCallbacks(Application.ActivityLifecycleCallbacks callback) {
+    activityLifecycleCallbacks.remove(callback);
+    directlyOn(realApplication, Application.class, "unregisterActivityLifecycleCallbacks",
+        ReflectionHelpers.ClassParameter.from(Application.ActivityLifecycleCallbacks.class, callback));
+  }
+
+  public List<Application.ActivityLifecycleCallbacks> getActivityLifecycleCallbacks() {
+    return activityLifecycleCallbacks;
+  }
 }

@@ -37,6 +37,7 @@ import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceExtractor;
 import org.robolectric.test.TemporaryFolder;
 import org.robolectric.util.Scheduler;
+import org.robolectric.util.TestActivityLifecycleCallbacks;
 import org.robolectric.util.TestBroadcastReceiver;
 
 import java.io.File;
@@ -588,6 +589,28 @@ public class ShadowApplicationTest {
 
     PopupWindow latestPopupWindow = ShadowApplication.getInstance().getLatestPopupWindow();
     assertThat(latestPopupWindow).isSameAs(pw);
+  }
+
+  @Test
+  public void activityLifecycleCallbacks_shouldBeRegistered() {
+    TestActivityLifecycleCallbacks callbacks = new TestActivityLifecycleCallbacks();
+    RuntimeEnvironment.application.registerActivityLifecycleCallbacks(callbacks);
+
+    List<Application.ActivityLifecycleCallbacks> callbacksList =
+        shadowOf(RuntimeEnvironment.application).getActivityLifecycleCallbacks();
+    assertTrue(callbacksList.size() == 1);
+    assertEquals(callbacks, callbacksList.get(0));
+  }
+
+  @Test
+  public void activityLifecycleCallbacks_shouldBeUnregistered() {
+    TestActivityLifecycleCallbacks callbacks = new TestActivityLifecycleCallbacks();
+    RuntimeEnvironment.application.registerActivityLifecycleCallbacks(callbacks);
+    RuntimeEnvironment.application.unregisterActivityLifecycleCallbacks(callbacks);
+
+    List<Application.ActivityLifecycleCallbacks> callbacksList =
+        shadowOf(RuntimeEnvironment.application).getActivityLifecycleCallbacks();
+    assertTrue(callbacksList.size() == 0);
   }
 
   /////////////////////////////
