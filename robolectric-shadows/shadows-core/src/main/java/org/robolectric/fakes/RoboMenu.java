@@ -20,10 +20,6 @@ public class RoboMenu implements Menu {
   private List<MenuItem> menuItems = new ArrayList<>();
   private Context context;
 
-  public RoboMenu() {
-    this(null);
-  }
-
   public RoboMenu(Context context) {
     this.context = context;
   }
@@ -40,7 +36,7 @@ public class RoboMenu implements Menu {
 
   @Override
   public MenuItem add(int groupId, int itemId, int order, CharSequence title) {
-    RoboMenuItem menuItem = new RoboMenuItem();
+    RoboMenuItem menuItem = new RoboMenuItem(context);
     menuItem.setOrder(order);
     menuItems.add(menuItem);
     menuItem.setGroupId(groupId);
@@ -57,8 +53,8 @@ public class RoboMenu implements Menu {
 
   @Override
   public SubMenu addSubMenu(CharSequence title) {
-    RoboSubMenu tsm = new RoboSubMenu();
-    RoboMenuItem menuItem = new RoboMenuItem();
+    RoboSubMenu tsm = new RoboSubMenu(context);
+    RoboMenuItem menuItem = new RoboMenuItem(context);
     menuItems.add(menuItem);
     menuItem.setTitle(title);
     menuItem.setSubMenu(tsm);
@@ -67,8 +63,8 @@ public class RoboMenu implements Menu {
 
   @Override
   public SubMenu addSubMenu(int titleRes) {
-    RoboSubMenu tsm = new RoboSubMenu();
-    RoboMenuItem menuItem = new RoboMenuItem();
+    RoboSubMenu tsm = new RoboSubMenu(context);
+    RoboMenuItem menuItem = new RoboMenuItem(context);
     menuItems.add(menuItem);
     menuItem.setTitle(titleRes);
     menuItem.setSubMenu(tsm);
@@ -77,8 +73,8 @@ public class RoboMenu implements Menu {
 
   @Override
   public SubMenu addSubMenu(int groupId, int itemId, int order, CharSequence title) {
-    RoboSubMenu tsm = new RoboSubMenu();
-    RoboMenuItem menuItem = new RoboMenuItem();
+    RoboSubMenu tsm = new RoboSubMenu(context);
+    RoboMenuItem menuItem = new RoboMenuItem(context);
     menuItems.add(menuItem);
     menuItem.setGroupId(groupId);
     menuItem.setItemId(itemId);
@@ -89,8 +85,8 @@ public class RoboMenu implements Menu {
 
   @Override
   public SubMenu addSubMenu(int groupId, int itemId, int order, int titleRes) {
-    RoboSubMenu tsm = new RoboSubMenu();
-    RoboMenuItem menuItem = new RoboMenuItem();
+    RoboSubMenu tsm = new RoboSubMenu(context);
+    RoboMenuItem menuItem = new RoboMenuItem(context);
     menuItems.add(menuItem);
     menuItem.setGroupId(groupId);
     menuItem.setItemId(itemId);
@@ -214,3 +210,4 @@ public class RoboMenu implements Menu {
     }
   }
 }
+
