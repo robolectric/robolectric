@@ -40,6 +40,11 @@ import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
  */
 @Implements(className = ShadowContextImpl.CLASS_NAME)
 public class ShadowContextImpl {
+  /**
+   * Special path used by in-memory databases (from android.database.sqlite.SQLiteDatabaseConfiguration).
+   */
+  public static final String SQLITE_IN_MEMORY_PATH = ":memory:";
+
   public static final String CLASS_NAME = "android.app.ContextImpl";
   private static final Map<String, String> SYSTEM_SERVICE_MAP = new HashMap<>();
   private final Map<String, RoboSharedPreferences> roboSharedPreferencesMap = new HashMap<>();
@@ -103,7 +108,9 @@ public class ShadowContextImpl {
     File dir;
     File f = new File(name);
 
-    if (f.isAbsolute()) {
+    if (SQLITE_IN_MEMORY_PATH.equals(name)) {
+      return f;
+    } else if (f.isAbsolute()) {
       dir = f.getParentFile();
     } else {
       dir = directlyOn(realObject, "android.app.ContextImpl", "getDatabasesDir");

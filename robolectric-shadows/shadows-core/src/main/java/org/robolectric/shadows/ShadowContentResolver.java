@@ -10,6 +10,7 @@ import android.content.ContentValues;
 import android.content.IContentProvider;
 import android.content.OperationApplicationException;
 import android.content.PeriodicSync;
+import android.content.pm.ProviderInfo;
 import android.content.res.AssetFileDescriptor;
 import android.database.ContentObserver;
 import android.database.Cursor;
@@ -580,6 +581,9 @@ public class ShadowContentResolver {
   private static ContentProvider createAndInitialize(ContentProviderData providerData) {
     try {
       ContentProvider provider = (ContentProvider) Class.forName(providerData.getClassName()).newInstance();
+      ProviderInfo providerInfo = new ProviderInfo();
+      providerInfo.authority = providerData.getAuthority();
+      provider.attachInfo(RuntimeEnvironment.application, providerInfo);
       provider.onCreate();
       return provider;
     } catch (InstantiationException | ClassNotFoundException | IllegalAccessException e) {

@@ -33,6 +33,7 @@ public class RobolectricGradleTestRunner extends RobolectricTestRunner {
     final String buildOutputDir = getBuildOutputDir(config);
     final String type = getType(config);
     final String flavor = getFlavor(config);
+    final String abiSplit = getAbiSplit(config);
     final String packageName = getPackageName(config);
 
     final FileFsFile res;
@@ -59,9 +60,9 @@ public class RobolectricGradleTestRunner extends RobolectricTestRunner {
     }
 
     if (FileFsFile.from(buildOutputDir, "manifests").exists()) {
-      manifest = FileFsFile.from(buildOutputDir, "manifests", "full", flavor, type, "AndroidManifest.xml");
+      manifest = FileFsFile.from(buildOutputDir, "manifests", "full", flavor, abiSplit, type, "AndroidManifest.xml");
     } else {
-      manifest = FileFsFile.from(buildOutputDir, "bundles", flavor, type, "AndroidManifest.xml");
+      manifest = FileFsFile.from(buildOutputDir, "bundles", flavor, abiSplit, type, "AndroidManifest.xml");
     }
 
     Logger.debug("Robolectric assets directory: " + assets.getPath());
@@ -91,6 +92,14 @@ public class RobolectricGradleTestRunner extends RobolectricTestRunner {
   private static String getFlavor(Config config) {
     try {
       return ReflectionHelpers.getStaticField(config.constants(), "FLAVOR");
+    } catch (Throwable e) {
+      return null;
+    }
+  }
+
+  private static String getAbiSplit(Config config) {
+    try {
+      return config.abiSplit();
     } catch (Throwable e) {
       return null;
     }
