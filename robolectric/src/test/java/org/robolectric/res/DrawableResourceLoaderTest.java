@@ -82,13 +82,13 @@ public class DrawableResourceLoaderTest {
 
   @Test
   @Config(qualifiers = "xlarge")
-  public void testLayerDrawable() {
-    Resources resources = RuntimeEnvironment.application.getResources();
-    Drawable drawable = resources.getDrawable(R.drawable.rainbow);
-    assertThat(drawable).isInstanceOf(LayerDrawable.class);
-    assertEquals(8, ((LayerDrawable) drawable).getNumberOfLayers());
+  public void testLayerDrawable_xlarge() {
+    assertEquals(6, ((LayerDrawable) RuntimeEnvironment.application.getResources().getDrawable(R.drawable.rainbow)).getNumberOfLayers());
+  }
 
-    assertEquals(6, ((LayerDrawable) resources.getDrawable(R.drawable.rainbow)).getNumberOfLayers());
+  @Test
+  public void testLayerDrawable() {
+    assertEquals(8, ((LayerDrawable) RuntimeEnvironment.application.getResources().getDrawable(R.drawable.rainbow)).getNumberOfLayers());
   }
 
   @Test
