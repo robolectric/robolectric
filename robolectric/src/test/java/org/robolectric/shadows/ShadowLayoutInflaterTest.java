@@ -19,6 +19,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -71,15 +72,14 @@ public class ShadowLayoutInflaterTest {
 
   @Test @Config(qualifiers = "xlarge-land")
   public void testChoosesLayoutBasedOnSearchPath_choosesFirstFileFoundOnPath() throws Exception {
-//        resourceLoader.setLayoutQualifierSearchPath("xlarge", "land");
-    ViewGroup view = (ViewGroup) inflate("different_screen_sizes", "xlarge-land");
+    ViewGroup view = (ViewGroup) inflate("different_screen_sizes");
     TextView textView = (TextView) view.findViewById(android.R.id.text1);
     assertThat(textView.getText().toString()).isEqualTo("xlarge");
   }
 
   @Test @Config(qualifiers = "doesnotexist-land-xlarge")
   public void testChoosesLayoutBasedOnSearchPath_respectsOrderOfPath() throws Exception {
-    ViewGroup view = (ViewGroup) inflate("different_screen_sizes", "doesnotexist-land-xlarge");
+    ViewGroup view = (ViewGroup) inflate("different_screen_sizes");
     TextView textView = (TextView) view.findViewById(android.R.id.text1);
     assertThat(textView.getText().toString()).isEqualTo("land");
   }
@@ -116,7 +116,7 @@ public class ShadowLayoutInflaterTest {
     ViewGroup view = (ViewGroup) inflate("activity_list_item");
     assertInstanceOf(ImageView.class, view.findViewById(R.id.icon));
 
-    view = (ViewGroup) inflate("android", "activity_list_item", "");
+    view = (ViewGroup) inflate("android", "activity_list_item");
     assertInstanceOf(ImageView.class, view.findViewById(android.R.id.icon));
   }
 
@@ -176,7 +176,7 @@ public class ShadowLayoutInflaterTest {
   public void focusRequest_shouldNotExplodeOnViewRootImpl() throws Exception {
     LinearLayout parent = new LinearLayout(context);
     shadowOf(parent).setMyParent(new StubViewRoot());
-    inflate(context, TEST_PACKAGE, "request_focus", parent, "");
+    inflate(context, TEST_PACKAGE, "request_focus", parent);
   }
 
   @Test
@@ -286,7 +286,7 @@ public class ShadowLayoutInflaterTest {
   @Test
   public void shouldInflateMergeLayoutIntoParent() throws Exception {
     LinearLayout linearLayout = new LinearLayout(context);
-    View innerMerge = inflate(context, TEST_PACKAGE, "inner_merge", linearLayout, "");
+    View innerMerge = inflate(context, TEST_PACKAGE, "inner_merge", linearLayout);
     assertThat(linearLayout.getChildAt(0)).isInstanceOf(TextView.class);
   }
 
@@ -306,10 +306,16 @@ public class ShadowLayoutInflaterTest {
     TestUtil.assertInstanceOf(LinearLayout.class, view);
     assertEquals(view.getId(), R.id.portrait);
     assertSame(context, view.getContext());
+  }
+
+  @Test
+  @Config(qualifiers = "land")
+  public void testMultiOrientation_explicitLandscape() throws Exception {
+    context = buildActivity(Activity.class).create().start().resume().get();
 
     // Confirm explicit "orientation = landscape" works.
     context.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-    view = (ViewGroup) inflate("multi_orientation", "land");
+    ViewGroup view = (ViewGroup) inflate("multi_orientation");
     assertEquals(view.getId(), R.id.landscape);
     TestUtil.assertInstanceOf(LinearLayout.class, view);
   }
@@ -434,13 +440,12 @@ public class ShadowLayoutInflaterTest {
 
   /////////////////////////
 
-  private View inflate(String packageName, String layoutName, String qualifiers) {
-    return inflate(context, packageName, layoutName, null, qualifiers);
+  private View inflate(String packageName, String layoutName) {
+    return inflate(context, packageName, layoutName, null);
   }
 
-  public View inflate(Context context, String packageName, String key, ViewGroup parent, String qualifiers) {
+  private View inflate(Context context, String packageName, String key, ViewGroup parent) {
     ResName resName = new ResName(packageName + ":layout/" + key);
-    shadowOf(context.getAssets()).setQualifiers(qualifiers);
     ResourceLoader resourceLoader = shadowOf(context.getResources().getAssets()).getResourceLoader();
     Integer layoutResId = resourceLoader.getResourceIndex().getResourceId(resName);
     if (layoutResId == null) throw new AssertionError("no such resource " + resName);
@@ -448,11 +453,7 @@ public class ShadowLayoutInflaterTest {
   }
 
   private View inflate(String layoutName) {
-    return inflate(layoutName, "");
-  }
-
-  private View inflate(String layoutName, String qualifiers) {
-    return inflate(TEST_PACKAGE, layoutName, qualifiers);
+    return inflate(TEST_PACKAGE, layoutName);
   }
 
   private Drawable drawable(int id) {

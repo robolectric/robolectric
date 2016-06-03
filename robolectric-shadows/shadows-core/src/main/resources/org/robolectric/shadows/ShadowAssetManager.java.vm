@@ -94,7 +94,7 @@ public final class ShadowAssetManager {
 
   @HiddenApi @Implementation
   public CharSequence getResourceText(int ident) {
-    TypedResource value = getAndResolve(ident, getQualifiers(), true);
+    TypedResource value = getAndResolve(ident, RuntimeEnvironment.getQualifiers(), true);
     if (value == null) return null;
     return (CharSequence) value.getData();
   }
@@ -126,7 +126,7 @@ public final class ShadowAssetManager {
 
   @HiddenApi @Implementation
   public boolean getResourceValue(int ident, int density, TypedValue outValue, boolean resolveRefs) {
-    TypedResource value = getAndResolve(ident, getQualifiers(), resolveRefs);
+    TypedResource value = getAndResolve(ident, RuntimeEnvironment.getQualifiers(), resolveRefs);
     if (value == null) return false;
 
     getConverter(value).fillTypedValue(value.getData(), outValue);
@@ -141,12 +141,12 @@ public final class ShadowAssetManager {
   public CharSequence[] getResourceTextArray(final int id) {
     ResName resName = getResourceLoader().getResourceIndex().getResName(id);
     if (resName == null) throw new Resources.NotFoundException("unknown resource " + id);
-    TypedResource value = getAndResolve(resName, getQualifiers(), true);
+    TypedResource value = getAndResolve(resName, RuntimeEnvironment.getQualifiers(), true);
     if (value == null) return null;
     TypedResource[] items = getConverter(value).getItems(value);
     CharSequence[] charSequences = new CharSequence[items.length];
     for (int i = 0; i < items.length; i++) {
-      TypedResource typedResource = resolve(items[i], getQualifiers(), resName);
+      TypedResource typedResource = resolve(items[i], RuntimeEnvironment.getQualifiers(), resName);
       charSequences[i] = getConverter(typedResource).asCharSequence(typedResource);
     }
     return charSequences;
@@ -179,7 +179,7 @@ public final class ShadowAssetManager {
         attrValue = getOverlayedThemeValue(attrResName, themeStyle, overlayThemeStyles);
       }
       if (attrValue != null) {
-        Converter.convertAndFill(attrValue, outValue, resourceLoader, getQualifiers(), resolveRefs);
+        Converter.convertAndFill(attrValue, outValue, resourceLoader, RuntimeEnvironment.getQualifiers(), resolveRefs);
         return true;
       }
     }
@@ -219,7 +219,7 @@ public final class ShadowAssetManager {
   @HiddenApi @Implementation
   public final InputStream openNonAsset(int cookie, String fileName, int accessMode) throws IOException {
     final ResName resName = qualifyFromNonAssetFileName(fileName);
-    final DrawableNode drawableNode = getResourceLoader().getDrawableNode(resName, getQualifiers());
+    final DrawableNode drawableNode = getResourceLoader().getDrawableNode(resName, RuntimeEnvironment.getQualifiers());
 
     if (drawableNode == null) {
       throw new IOException("Unable to find resource for " + fileName);
@@ -282,12 +282,12 @@ public final class ShadowAssetManager {
   public int[] getArrayIntResource(int arrayRes) {
     ResName resName = getResourceLoader().getResourceIndex().getResName(arrayRes);
     if (resName == null) throw new Resources.NotFoundException("unknown resource " + arrayRes);
-    TypedResource value = getAndResolve(resName, getQualifiers(), true);
+    TypedResource value = getAndResolve(resName, RuntimeEnvironment.getQualifiers(), true);
     if (value == null) return null;
     TypedResource[] items = getConverter(value).getItems(value);
     int[] ints = new int[items.length];
     for (int i = 0; i < items.length; i++) {
-      TypedResource typedResource = resolve(items[i], getQualifiers(), resName);
+      TypedResource typedResource = resolve(items[i], RuntimeEnvironment.getQualifiers(), resName);
       ints[i] = getConverter(typedResource).asInt(typedResource);
     }
     return ints;
@@ -373,10 +373,10 @@ public final class ShadowAssetManager {
   }
 
   Style resolveStyle(Style appTheme, @NotNull ResName themeStyleName) {
-    TypedResource themeStyleResource = resourceLoader.getValue(themeStyleName, getQualifiers());
+    TypedResource themeStyleResource = resourceLoader.getValue(themeStyleName, RuntimeEnvironment.getQualifiers());
     if (themeStyleResource == null) return null;
     StyleData themeStyleData = (StyleData) themeStyleResource.getData();
-    return new StyleResolver(resourceLoader, themeStyleData, appTheme, themeStyleName, getQualifiers());
+    return new StyleResolver(resourceLoader, themeStyleData, appTheme, themeStyleName, RuntimeEnvironment.getQualifiers());
   }
 
   TypedResource getAndResolve(int resId, String qualifiers, boolean resolveRefs) {
@@ -444,14 +444,6 @@ public final class ShadowAssetManager {
 
   public FsFile getAssetsDirectory() {
     return ShadowApplication.getInstance().getAppManifest().getAssetsDirectory();
-  }
-
-  public String getQualifiers() {
-    return RuntimeEnvironment.getQualifiers();
-  }
-
-  public void setQualifiers(String qualifiers) {
-    RuntimeEnvironment.setQualifiers(qualifiers);
   }
 
   private static class Resource {
@@ -794,7 +786,7 @@ public final class ShadowAssetManager {
   }
 
   @NotNull ResName resolveResName(int id) {
-    ResName resName = resolveResName(id, getQualifiers());
+    ResName resName = resolveResName(id, RuntimeEnvironment.getQualifiers());
     return checkResName(id, resName);
   }
 

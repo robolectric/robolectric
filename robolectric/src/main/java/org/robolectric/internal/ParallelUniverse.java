@@ -159,7 +159,6 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       ReflectionHelpers.setField(loadedApk, "mApplication", application);
 
       appResources.updateConfiguration(configuration, appResources.getDisplayMetrics());
-      shadowsAdapter.setAssetsQualifiers(appResources.getAssets(), qualifiers);
 
       application.onCreate();
     }

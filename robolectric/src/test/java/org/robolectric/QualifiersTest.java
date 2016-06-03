@@ -5,7 +5,6 @@ import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.Shadows.shadowOf;
 
 @Config(qualifiers = "en")
 @RunWith(TestRunners.WithDefaults.class)
@@ -14,13 +13,13 @@ public class QualifiersTest {
   @Test
   public void shouldGetFromClass() throws Exception {
     String expectedQualifiers = "en" + TestRunners.WithDefaults.SDK_TARGETED_BY_MANIFEST;
-    assertThat(shadowOf(RuntimeEnvironment.application.getAssets()).getQualifiers()).isEqualTo(expectedQualifiers);
+    assertThat(RuntimeEnvironment.getQualifiers()).isEqualTo(expectedQualifiers);
   }
 
   @Test @Config(qualifiers = "fr")
   public void shouldGetFromMethod() throws Exception {
     String expectedQualifiers = "fr" + TestRunners.WithDefaults.SDK_TARGETED_BY_MANIFEST;
-    assertThat(shadowOf(RuntimeEnvironment.application.getAssets()).getQualifiers()).isEqualTo(expectedQualifiers);
+    assertThat(RuntimeEnvironment.getQualifiers()).isEqualTo(expectedQualifiers);
   }
 
   @Test @Config(qualifiers = "de")
