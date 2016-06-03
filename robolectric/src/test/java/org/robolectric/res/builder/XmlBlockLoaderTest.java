@@ -1,14 +1,14 @@
 package org.robolectric.res.builder;
 
 import android.content.res.XmlResourceParser;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.robolectric.R;
-import org.robolectric.TestRunners;
 import org.robolectric.res.DocumentLoader;
-import org.robolectric.res.MergedResourceIndex;
 import org.robolectric.res.ResBundle;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceExtractor;
@@ -20,14 +20,18 @@ import org.w3c.dom.Document;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -48,25 +52,22 @@ import static org.robolectric.util.TestUtil.testResources;
  *
  * @author msama (michele@swiftkey.net)
  */
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(JUnit4.class)
 public class XmlBlockLoaderTest {
 
   public static final String XMLNS_NS = "http://www.w3.org/2000/xmlns/";
-  private XmlBlockLoader xmlBlockLoader;
-  private XmlBlock xmlBlock;
   private XmlResourceParserImpl parser;
-  private ResBundle<XmlBlock> resBundle;
   private ResourceIndex resourceIndex;
 
   @Before
   public void setUp() throws Exception {
-    resBundle = new ResBundle<>();
-    xmlBlockLoader = new XmlBlockLoader(resBundle, "xml");
+    ResBundle<XmlBlock> resBundle = new ResBundle<>();
+    XmlBlockLoader xmlBlockLoader = new XmlBlockLoader(resBundle, "xml");
     new DocumentLoader(testResources()).load("xml", xmlBlockLoader);
 
     ResName resName = new ResName(TEST_PACKAGE, "xml", "preferences");
-    xmlBlock = resBundle.get(resName, "");
-    resourceIndex = new MergedResourceIndex(new ResourceExtractor(testResources()), new ResourceExtractor());
+    XmlBlock xmlBlock = resBundle.get(resName, "");
+    resourceIndex = new ResourceExtractor(testResources());
     parser = (XmlResourceParserImpl) ResourceParser.from(xmlBlock, TEST_PACKAGE, resourceIndex);
   }
 

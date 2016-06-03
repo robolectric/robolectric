@@ -27,21 +27,20 @@ public class SdkEnvironment {
     shadowInvalidator = new ShadowInvalidator();
   }
 
-  public PackageResourceLoader createSystemResourceLoader(DependencyResolver dependencyResolver) {
-    Fs systemResFs = Fs.fromJar(dependencyResolver.getLocalArtifactUrl(sdkConfig.getAndroidSdkDependency()));
-    ResourceExtractor resourceExtractor;
-    try {
-      resourceExtractor = new ResourceExtractor(getRobolectricClassLoader().loadClass("com.android.internal.R"), getRobolectricClassLoader().loadClass("android.R"));
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e);
-    }
-    ResourcePath resourcePath = new ResourcePath(resourceExtractor.getProcessedRFile(), resourceExtractor.getPackageName(), systemResFs.join("res"), systemResFs.join("assets"));
-    return new PackageResourceLoader(resourcePath, resourceExtractor);
-  }
-
   public synchronized ResourceLoader getSystemResourceLoader(DependencyResolver dependencyResolver) {
     if (systemResourceLoader == null) {
-      systemResourceLoader = createSystemResourceLoader(dependencyResolver);
+      ResourcePath resourcePath;
+      try {
+        Class<?> androidInternalRClass = getRobolectricClassLoader().loadClass("com.android.internal.R");
+        Class<?> androidRClass = getRobolectricClassLoader().loadClass("android.R");
+        Fs systemResFs = Fs.fromJar(dependencyResolver.getLocalArtifactUrl(sdkConfig.getAndroidSdkDependency()));
+        resourcePath = new ResourcePath(androidRClass.getPackage().getName(), systemResFs.join("res"), systemResFs.join("assets"), androidRClass, androidInternalRClass);
+      } catch (ClassNotFoundException e) {
+        throw new RuntimeException(e);
+      }
+
+      ResourceExtractor resourceExtractor = new ResourceExtractor(resourcePath);
+      systemResourceLoader = new PackageResourceLoader(resourcePath, resourceExtractor);
     }
     return systemResourceLoader;
   }
