@@ -1,16 +1,14 @@
 package org.robolectric;
 
 import android.app.Application;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.junit.Test;
 import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.model.InitializationError;
-
-import android.content.res.Resources;
-import android.content.res.Configuration;
-
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.ParallelUniverse;
 import org.robolectric.internal.SdkConfig;
@@ -23,7 +21,9 @@ import java.security.cert.CertificateFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ParallelUniverseTest {
@@ -117,8 +117,7 @@ public class ParallelUniverseTest {
     Config c = new Config.Implementation(new int[0], Config.DEFAULT, givenQualifiers, "org.robolectric", "", "res", "assets", "build", new Class[0], new String[0], Application.class, new String[0], null);
     pu.setUpApplicationState(null, new DefaultTestLifecycle(), null, null, c);
     assertThat(getQualifiersfromSystemResources()).isEqualTo("v18");
-    assertThat(getQualifiersFromAppAssetManager()).isEqualTo("v18");
-    assertThat(getQualifiersFromSystemAssetManager()).isEqualTo("v18");
+    assertThat(RuntimeEnvironment.getQualifiers()).isEqualTo("v18");
   }
   
   @Test
@@ -127,8 +126,7 @@ public class ParallelUniverseTest {
     Config c = new Config.Implementation(new int[0], Config.DEFAULT, givenQualifiers, "org.robolectric", "", "res", "assets", "build", new Class[0], new String[0], Application.class, new String[0], null);
     pu.setUpApplicationState(null, new DefaultTestLifecycle(), null, null, c);
     assertThat(getQualifiersfromSystemResources()).isEqualTo("land-v17");
-    assertThat(getQualifiersFromAppAssetManager()).isEqualTo("land-v17");
-    assertThat(getQualifiersFromSystemAssetManager()).isEqualTo("land-v17");
+    assertThat(RuntimeEnvironment.getQualifiers()).isEqualTo("land-v17");
   }
   
   @Test
@@ -137,8 +135,7 @@ public class ParallelUniverseTest {
     Config c = new Config.Implementation(new int[0], Config.DEFAULT, givenQualifiers, "", "res", "assets", "", "build", new Class[0], new String[0], Application.class, new String[0], null);
     pu.setUpApplicationState(null, new DefaultTestLifecycle(), null, null, c);
     assertThat(getQualifiersfromSystemResources()).isEqualTo("large-land-v18");
-    assertThat(getQualifiersFromAppAssetManager()).isEqualTo("large-land-v18");
-    assertThat(getQualifiersFromSystemAssetManager()).isEqualTo("large-land-v18");
+    assertThat(RuntimeEnvironment.getQualifiers()).isEqualTo("large-land-v18");
   }
   
   @Test
@@ -160,13 +157,5 @@ public class ParallelUniverseTest {
     Resources systemResources = Resources.getSystem();
     Configuration configuration = systemResources.getConfiguration();
     return Shadows.shadowOf(configuration).getQualifiers();
-  }
-
-  private String getQualifiersFromAppAssetManager() {
-    return Shadows.shadowOf(RuntimeEnvironment.application.getResources().getAssets()).getQualifiers();
-  }
-
-  private String getQualifiersFromSystemAssetManager() {
-    return Shadows.shadowOf(Resources.getSystem().getAssets()).getQualifiers();
   }
 }

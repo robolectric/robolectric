@@ -2,8 +2,8 @@ package org.robolectric;
 
 import android.app.Activity;
 import android.app.Application;
-import android.content.res.AssetManager;
 import android.content.res.Configuration;
+
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.util.Scheduler;
@@ -31,8 +31,6 @@ public interface ShadowsAdapter {
   void overrideQualifiers(Configuration configuration, String qualifiers);
 
   void bind(Application application, AndroidManifest appManifest, ResourceLoader resourceLoader);
-
-  void setAssetsQualifiers(AssetManager assets, String qualifiers);
 
   ResourceLoader getResourceLoader();
 

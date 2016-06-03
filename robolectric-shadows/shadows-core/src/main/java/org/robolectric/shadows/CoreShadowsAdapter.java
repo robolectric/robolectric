@@ -2,9 +2,9 @@ package org.robolectric.shadows;
 
 import android.app.Activity;
 import android.app.Application;
-import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.os.Looper;
+
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.ShadowsAdapter;
@@ -85,11 +85,6 @@ public class CoreShadowsAdapter implements ShadowsAdapter {
   @Override
   public void bind(Application application, AndroidManifest appManifest, ResourceLoader resourceLoader) {
     shadowOf(application).bind(appManifest, resourceLoader);
-  }
-
-  @Override
-  public void setAssetsQualifiers(AssetManager assets, String qualifiers) {
-    shadowOf(assets).setQualifiers(qualifiers);
   }
 
   @Override

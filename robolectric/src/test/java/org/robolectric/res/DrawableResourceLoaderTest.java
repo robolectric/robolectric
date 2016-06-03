@@ -9,21 +9,18 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.NinePatchDrawable;
 
-import com.google.android.apps.common.testing.accessibility.framework.proto.FrameworkProtos;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
-import org.robolectric.shadows.ShadowApplication;
+import org.robolectric.annotation.Config;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.robolectric.RuntimeEnvironment.application;
-import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.TestUtil.TEST_PACKAGE;
 import static org.robolectric.util.TestUtil.assertInstanceOf;
 import static org.robolectric.util.TestUtil.systemResources;
@@ -84,13 +81,12 @@ public class DrawableResourceLoaderTest {
   }
 
   @Test
+  @Config(qualifiers = "xlarge")
   public void testLayerDrawable() {
     Resources resources = RuntimeEnvironment.application.getResources();
     Drawable drawable = resources.getDrawable(R.drawable.rainbow);
     assertThat(drawable).isInstanceOf(LayerDrawable.class);
     assertEquals(8, ((LayerDrawable) drawable).getNumberOfLayers());
-
-    shadowOf(resources.getAssets()).setQualifiers("xlarge");
 
     assertEquals(6, ((LayerDrawable) resources.getDrawable(R.drawable.rainbow)).getNumberOfLayers());
   }
