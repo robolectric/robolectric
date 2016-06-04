@@ -606,13 +606,6 @@ public class ShadowApplicationTest {
     return new AndroidManifest(Fs.newFile(f), null, null);
   }
 
-  private static class ImperviousResourceExtractor extends ResourceExtractor {
-    @Override
-    public ResName getResName(int resourceId) {
-      return new ResName("", "", "");
-    }
-  }
-
   private static class EmptyServiceConnection implements ServiceConnection {
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {}
