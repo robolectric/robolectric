@@ -35,7 +35,6 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.internal.ShadowExtractor;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.BroadcastReceiverData;
-import org.robolectric.res.ResourceLoader;
 import org.robolectric.util.Scheduler;
 
 import java.util.ArrayList;
@@ -121,14 +120,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     shadowOf(RuntimeEnvironment.application.getResources()).setDisplay(display);
   }
 
-  /**
-   * Associates a {@code ResourceLoader} with an {@code Application} instance.
-   *
-   * @param appManifest Android manifest.
-   * @param resourceLoader Resource loader.
-   */
-  public void bind(AndroidManifest appManifest, ResourceLoader resourceLoader) {
-    ShadowAssetManager.setAppResourceLoader(resourceLoader);
+  public void bind(AndroidManifest appManifest) {
     this.appManifest = appManifest;
 
     if (appManifest != null) {

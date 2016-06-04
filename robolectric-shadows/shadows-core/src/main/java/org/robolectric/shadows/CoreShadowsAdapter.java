@@ -5,11 +5,9 @@ import android.app.Application;
 import android.content.res.Configuration;
 import android.os.Looper;
 
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.ShadowsAdapter;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.ResourceLoader;
 import org.robolectric.util.Scheduler;
 
 import static org.robolectric.Shadows.shadowOf;
@@ -55,10 +53,6 @@ public class CoreShadowsAdapter implements ShadowsAdapter {
       public AndroidManifest getAppManifest() {
         return ShadowApplication.getInstance().getAppManifest();
       }
-
-      public ResourceLoader getResourceLoader() {
-        return shadowOf(RuntimeEnvironment.application.getAssets()).getResourceLoader();
-      }
     };
   }
 
@@ -73,23 +67,12 @@ public class CoreShadowsAdapter implements ShadowsAdapter {
   }
 
   @Override
-  public void setSystemResources(ResourceLoader systemResourceLoader) {
-    ShadowAssetManager.setSystemResources(systemResourceLoader);
-  }
-
-  @Override
   public void overrideQualifiers(Configuration configuration, String qualifiers) {
     shadowOf(configuration).overrideQualifiers(qualifiers);
   }
 
   @Override
-  public void bind(Application application, AndroidManifest appManifest, ResourceLoader resourceLoader) {
-    shadowOf(application).bind(appManifest, resourceLoader);
+  public void bind(Application application, AndroidManifest appManifest) {
+    shadowOf(application).bind(appManifest);
   }
-
-  @Override
-  public ResourceLoader getResourceLoader() {
-    return shadowOf(RuntimeEnvironment.application.getAssets()).getResourceLoader();
-  }
-
 }
