@@ -57,9 +57,6 @@ public final class ShadowAssetManager {
   public static final int STYLE_CHANGING_CONFIGURATIONS = 4;
   public static final int STYLE_DENSITY = 5;
 
-  private static ResourceLoader systemResourceLoader;
-  private static ResourceLoader appResourceLoader;
-
   private Map<$ptrClassBoxed, Resources.Theme> themesById = new LinkedHashMap<>();
   private Map<$ptrClassBoxed, List<OverlayedStyle>> appliedStyles = new HashMap<>();
   private int nextInternalThemeId = 1000;
@@ -68,28 +65,16 @@ public final class ShadowAssetManager {
   @RealObject
   AssetManager realObject;
 
-  public static void setSystemResources(ResourceLoader systemResources) {
-    systemResourceLoader = systemResources;
-  }
-
-  public static void setAppResourceLoader(ResourceLoader resourceLoader) {
-    appResourceLoader = resourceLoader;
-  }
-
   public ResourceLoader getResourceLoader() {
-    if (resourceLoader == null) {
-      resourceLoader = appResourceLoader;
-    }
-
     return resourceLoader;
   }
 
-  @Implementation
-  public static AssetManager getSystem() {
-    AssetManager assetManager = new AssetManager();
-    ShadowAssetManager shadowAssetManager = shadowOf(assetManager);
-    shadowAssetManager.resourceLoader = systemResourceLoader;
-    return assetManager;
+  public void __constructor__() {
+    resourceLoader = RuntimeEnvironment.getAppResourceLoader();
+  }
+
+  public void __constructor__(boolean isSystem) {
+    resourceLoader = isSystem ? RuntimeEnvironment.getSystemResourceLoader() : RuntimeEnvironment.getAppResourceLoader();
   }
 
   @HiddenApi @Implementation
@@ -442,10 +427,6 @@ public final class ShadowAssetManager {
     return false;
   }
 
-  public FsFile getAssetsDirectory() {
-    return ShadowApplication.getInstance().getAppManifest().getAssetsDirectory();
-  }
-
   private static class Resource {
     public final ResName resName;
     public final TypedResource<?> value;
@@ -632,8 +613,6 @@ public final class ShadowAssetManager {
      * 3. The default style specified by defStyleAttr and defStyleRes
      * 4. The base values in this theme.
      */
-    ResourceLoader resourceLoader = getResourceLoader();
-
     Style defStyleFromAttr = null;
     Style defStyleFromRes = null;
     Style styleAttrStyle = null;
@@ -815,11 +794,5 @@ public final class ShadowAssetManager {
   @Implementation
   public String getResourceEntryName(int resid) {
    return getResName(resid).name;
-  }
-
-  @Resetter
-  public static void reset() {
-    systemResourceLoader = null;
-    appResourceLoader = null;
   }
 }

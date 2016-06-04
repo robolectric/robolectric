@@ -61,15 +61,11 @@ import static org.robolectric.Shadows.shadowOf;
 public class ShadowViewTest {
   private View view;
   private Transcript transcript;
-  private Resources resources;
-  private ResourceLoader resourceLoader;
 
   @Before
   public void setUp() throws Exception {
     transcript = new Transcript();
     view = new View(RuntimeEnvironment.application);
-    resources = RuntimeEnvironment.application.getResources();
-    resourceLoader = shadowOf(resources.getAssets()).getResourceLoader();
   }
 
   @Test

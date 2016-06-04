@@ -95,11 +95,13 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       resourceLoader = systemResourceLoader;
     }
 
+    RuntimeEnvironment.setSystemResourceLoader(systemResourceLoader);
+    RuntimeEnvironment.setAppResourceLoader(resourceLoader);
+
     if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
       Security.insertProviderAt(new BouncyCastleProvider(), 1);
     }
 
-    shadowsAdapter.setSystemResources(systemResourceLoader);
     String qualifiers = addVersionQualifierToQualifiers(config.qualifiers());
     Resources systemResources = Resources.getSystem();
     Configuration configuration = systemResources.getConfiguration();
@@ -128,7 +130,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     RuntimeEnvironment.application = application;
 
     if (application != null) {
-      shadowsAdapter.bind(application, appManifest, resourceLoader);
+      shadowsAdapter.bind(application, appManifest);
 
       ApplicationInfo applicationInfo;
       try {

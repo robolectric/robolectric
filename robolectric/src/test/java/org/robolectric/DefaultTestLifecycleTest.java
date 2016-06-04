@@ -60,7 +60,7 @@ public class DefaultTestLifecycleTest {
   public void shouldRegisterReceiversFromTheManifest() throws Exception {
     AndroidManifest appManifest = newConfig("TestAndroidManifestWithReceivers.xml");
     Application application = defaultTestLifecycle.createApplication(null, appManifest, null);
-    shadowOf(application).bind(appManifest, null);
+    shadowOf(application).bind(appManifest);
 
     List<ShadowApplication.Wrapper> receivers = shadowOf(application).getRegisteredReceivers();
     assertThat(receivers.size()).isEqualTo(5);
