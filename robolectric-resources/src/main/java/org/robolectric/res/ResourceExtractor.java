@@ -2,52 +2,30 @@ package org.robolectric.res;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.logging.Logger;
 
 public class ResourceExtractor extends ResourceIndex {
-  private static final ResourceRemapper RESOURCE_REMAPPER = new ResourceRemapper();
-  private static final boolean REMAP_RESOURCES = false;
   private static final Logger LOGGER = Logger.getLogger(ResourceExtractor.class.getName());
 
-  private final Class<?> processedRFile;
   private final String packageName;
-  private final List<String> packageNames;
   private Integer maxUsedInt = null;
-
-  public ResourceExtractor() {
-    processedRFile = null;
-    packageName = "";
-    packageNames = Arrays.asList();
-  }
-
-  /**
-   * Constructs a ResourceExtractor for the Android system resources.
-   */
-  public ResourceExtractor(Class<?> androidInternalRClass, Class<?> androidRClass) {
-    gatherResourceIdsAndNames(androidRClass, "android", true);
-    gatherResourceIdsAndNames(androidInternalRClass, "android", false);
-    processedRFile = androidRClass;
-    packageName = processedRFile.getPackage().getName();
-    packageNames = Arrays.asList(packageName);
-  }
 
   public ResourceExtractor(ResourcePath resourcePath) {
     packageName = resourcePath.getPackageName();
-    packageNames = Arrays.asList(packageName);
-    if (resourcePath.rClass == null) {
-      processedRFile = null;
+    if (resourcePath.rClasses == null) {
       return;
     }
-    if (REMAP_RESOURCES) RESOURCE_REMAPPER.remapRClass(resourcePath.rClass);
-    processedRFile = resourcePath.rClass;
-    gatherResourceIdsAndNames(resourcePath.rClass, packageName, true);
+    for (int i = 0; i < resourcePath.rClasses.length; i++) {
+      Class<?> rClass = resourcePath.rClasses[i];
+      if (rClass != null) {
+        gatherResourceIdsAndNames(rClass, packageName);
+      }
+    }
   }
 
-  private void gatherResourceIdsAndNames(Class<?> rClass, String packageName, boolean checkForCollisions) {
+  private void gatherResourceIdsAndNames(Class<?> rClass, String packageName) {
     for (Class innerClass : rClass.getClasses()) {
       for (Field field : innerClass.getDeclaredFields()) {
         if (field.getType().equals(Integer.TYPE) && Modifier.isStatic(field.getModifiers())) {
@@ -64,18 +42,6 @@ public class ResourceExtractor extends ResourceIndex {
             ResName resName = new ResName(packageName, section, fieldName);
 
             resourceNameToId.put(resName, id);
-
-            if (checkForCollisions && resourceIdToResName.containsKey(id)) {
-              String message =
-                  id + " is already defined with name: " + resourceIdToResName.get(id)
-                      + " can't also call it: " + resName;
-              if (REMAP_RESOURCES) {
-                throw new RuntimeException(message);
-              } else {
-                LOGGER.severe(message);
-              }
-            }
-
             resourceIdToResName.put(id, resName);
           }
         }
@@ -104,20 +70,12 @@ public class ResourceExtractor extends ResourceIndex {
   }
 
   @Override public Collection<String> getPackages() {
-    return packageNames;
-  }
-
-  public Class<?> getProcessedRFile() {
-    return processedRFile;
+    return Collections.singletonList(packageName);
   }
 
   @Override public String toString() {
     return "ResourceExtractor{" +
-        "package=" + processedRFile +
+        "package=" + packageName +
         '}';
-  }
-
-  public String getPackageName() {
-      return packageName;
   }
 }
