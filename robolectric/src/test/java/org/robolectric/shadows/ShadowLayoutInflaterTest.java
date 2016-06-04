@@ -24,6 +24,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 import org.robolectric.res.ResName;
@@ -446,7 +447,7 @@ public class ShadowLayoutInflaterTest {
 
   private View inflate(Context context, String packageName, String key, ViewGroup parent) {
     ResName resName = new ResName(packageName + ":layout/" + key);
-    ResourceLoader resourceLoader = shadowOf(context.getResources().getAssets()).getResourceLoader();
+    ResourceLoader resourceLoader = RuntimeEnvironment.getAppResourceLoader();
     Integer layoutResId = resourceLoader.getResourceIndex().getResourceId(resName);
     if (layoutResId == null) throw new AssertionError("no such resource " + resName);
     return LayoutInflater.from(context).inflate(layoutResId, parent);

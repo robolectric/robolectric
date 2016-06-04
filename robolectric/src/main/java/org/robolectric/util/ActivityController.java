@@ -109,7 +109,7 @@ public class ActivityController<T extends Activity> extends ComponentController<
       if (labelRef.startsWith("@")) {
         /* Label refers to a string value, get the resource identifier */
         ResName style = ResName.qualifyResName(labelRef.replace("@", ""), appManifest.getPackageName(), "string");
-        Integer labelRes = shadowApplicationAdapter.getResourceLoader().getResourceIndex().getResourceId(style);
+        Integer labelRes = RuntimeEnvironment.getAppResourceLoader().getResourceIndex().getResourceId(style);
 
         /* If we couldn't determine the resource ID, throw it up */
         if (labelRes == null) {

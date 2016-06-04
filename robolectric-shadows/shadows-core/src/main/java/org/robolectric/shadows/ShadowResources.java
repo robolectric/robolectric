@@ -233,14 +233,6 @@ public class ShadowResources {
     return loadXmlResourceParser(id, type);
   }
 
-  /**
-   * Deprecated. Instead call through {@link ShadowAssetManager#getResourceLoader()};
-   */
-  @Deprecated
-  public ResourceLoader getResourceLoader() {
-    return shadowOf(RuntimeEnvironment.application.getAssets()).getResourceLoader();
-  }
-
   @Implements(Resources.Theme.class)
   public static class ShadowTheme {
     @RealObject Resources.Theme realTheme;

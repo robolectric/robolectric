@@ -3,6 +3,7 @@ package org.robolectric;
 import android.app.Application;
 import android.content.pm.PackageManager;
 
+import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.util.Scheduler;
 
@@ -15,6 +16,8 @@ public class RuntimeEnvironment {
   private static RobolectricPackageManager packageManager;
   private static int apiLevel;
   private static Scheduler masterScheduler;
+  private static ResourceLoader systemResourceLoader;
+  private static ResourceLoader appResourceLoader;
 
   /**
    * Tests if the given thread is currently set as the main thread.
@@ -123,5 +126,21 @@ public class RuntimeEnvironment {
    */
   public static void setMasterScheduler(Scheduler masterScheduler) {
     RuntimeEnvironment.masterScheduler = masterScheduler;
+  }
+
+  public static void setSystemResourceLoader(ResourceLoader systemResourceLoader) {
+    RuntimeEnvironment.systemResourceLoader = systemResourceLoader;
+  }
+
+  public static void setAppResourceLoader(ResourceLoader appResourceLoader) {
+    RuntimeEnvironment.appResourceLoader = appResourceLoader;
+  }
+
+  public static ResourceLoader getSystemResourceLoader() {
+    return systemResourceLoader;
+  }
+
+  public static ResourceLoader getAppResourceLoader() {
+    return appResourceLoader;
   }
 }

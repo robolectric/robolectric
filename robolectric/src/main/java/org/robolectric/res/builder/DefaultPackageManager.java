@@ -174,7 +174,6 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
     if (activityData != null) {
       activityInfo.parentActivityName = activityData.getParentActivityName();
       activityInfo.metaData = metaDataToBundle(activityData.getMetaData().getValueMap());
-      ResourceIndex resourceIndex = shadowsAdapter.getResourceLoader().getResourceIndex();
       String themeRef;
 
       // Based on ShadowActivity
@@ -185,7 +184,7 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
       }
       if (themeRef != null) {
         ResName style = ResName.qualifyResName(themeRef.replace("@", ""), packageName, "style");
-        activityInfo.theme = resourceIndex.getResourceId(style);
+        activityInfo.theme = RuntimeEnvironment.getAppResourceLoader().getResourceIndex().getResourceId(style);
       }
     }
     activityInfo.applicationInfo = getApplicationInfo(packageName, flags);

@@ -395,12 +395,6 @@ public class ShadowResourcesTest {
   }
 
   @Test
-  public void shouldGetResourceLoader() {
-    assertThat(shadowOf(resources).getResourceLoader()).isEqualTo(
-        shadowOf(RuntimeEnvironment.application.getAssets()).getResourceLoader());
-  }
-
-  @Test
   public void shouldLoadRawResources() throws Exception {
     InputStream resourceStream = resources.openRawResource(R.raw.raw_resource);
     assertThat(resourceStream).isNotNull();
