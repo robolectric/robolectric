@@ -7,7 +7,7 @@
   <parent>
     <groupId>org.robolectric</groupId>
     <artifactId>robolectric-shadows</artifactId>
-    <version>3.1</version>
+    <version>3.2-SNAPSHOT</version>
   </parent>
 
   <artifactId>shadows-core</artifactId>
