@@ -105,12 +105,6 @@ public class ShadowResources {
     }
 
     List<Attribute> attributes = shadowOf(realResources.getAssets()).buildAttributes(set, attrs, defStyleAttr, themeResourceId, defStyleRes);
-    TypedArray typedArray = createTypedArray(attributes, attrs);
-    shadowOf(typedArray).positionDescription = set.getPositionDescription();
-    return typedArray;
-  }
-
-  public TypedArray createTypedArray(List<Attribute> set, int[] attrs) {
     ShadowAssetManager shadowAssetManager = shadowOf(realResources.getAssets());
     ResourceLoader resourceLoader = shadowAssetManager.getResourceLoader();
 
@@ -125,7 +119,7 @@ public class ShadowResources {
       int attr = attrs[i];
       ResName attrName = resourceLoader.getResourceIndex().getResName(attr);
       if (attrName != null) {
-        Attribute attribute = Attribute.find(set, attrName);
+        Attribute attribute = Attribute.find(attributes, attrName);
         TypedValue typedValue = new TypedValue();
         Converter.convertAndFill(attribute, typedValue, resourceLoader, RuntimeEnvironment.getQualifiers(), true);
 
@@ -147,7 +141,9 @@ public class ShadowResources {
 
     indices[0] = nextIndex;
 
-    return ShadowTypedArray.create(realResources, attrs, data, indices, nextIndex, stringData);
+    TypedArray typedArray = ShadowTypedArray.create(realResources, attrs, data, indices, nextIndex, stringData);
+    shadowOf(typedArray).positionDescription = set.getPositionDescription();
+    return typedArray;
   }
 
   @Implementation
