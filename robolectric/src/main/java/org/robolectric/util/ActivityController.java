@@ -108,14 +108,7 @@ public class ActivityController<T extends Activity> extends ComponentController<
     if (labelRef != null) {
       if (labelRef.startsWith("@")) {
         /* Label refers to a string value, get the resource identifier */
-        ResName style = ResName.qualifyResName(labelRef.replace("@", ""), appManifest.getPackageName(), "string");
-        Integer labelRes = RuntimeEnvironment.getAppResourceLoader().getResourceIndex().getResourceId(style);
-
-        /* If we couldn't determine the resource ID, throw it up */
-        if (labelRes == null) {
-          throw new Resources.NotFoundException("no such label " + style.getFullyQualifiedName());
-        }
-
+        int labelRes = RuntimeEnvironment.application.getResources().getIdentifier(labelRef.replace("@", ""), "string", appManifest.getPackageName());
         /* Get the resource ID, use the activity to look up the actual string */
         title = RuntimeEnvironment.application.getString(labelRes);
       } else {
