@@ -647,9 +647,8 @@ public final class ShadowAssetManager {
       }
     }
 
-    int styleAttrResId = set.getStyleAttribute();
-    if (styleAttrResId != 0) {
-      ResName styleAttributeResName = getResName(styleAttrResId);
+    if (set != null && set.getStyleAttribute() != 0) {
+      ResName styleAttributeResName = getResName(set.getStyleAttribute());
       while (styleAttributeResName.type.equals("attr")) {
         Attribute attrValue = getOverlayedThemeValue(styleAttributeResName, theme, overlayedStyles);
         if (attrValue.isResourceReference()) {
@@ -677,7 +676,6 @@ public final class ShadowAssetManager {
     }
 
     List<Attribute> attributes = new ArrayList<>();
-    if (attrs == null) attrs = new int[0];
     for (int attr : attrs) {
       ResName attrName = tryResName(attr); // todo probably getResName instead here?
       if (attrName == null) continue;
@@ -705,9 +703,11 @@ public final class ShadowAssetManager {
   }
 
   private Attribute findAttributeValue(ResName attrName, AttributeSet attributeSet, Style styleAttrStyle, Style defStyleFromAttr, Style defStyleFromRes, Style theme, List<ShadowAssetManager.OverlayedStyle> overlayedStyles) {
-    String attrValue = attributeSet.getAttributeValue(attrName.getNamespaceUri(), attrName.name);
-    if (attrValue != null) {
-      return new Attribute(attrName, attrValue, "fixme!!!");
+    if (attributeSet != null) {
+      String attrValue = attributeSet.getAttributeValue(attrName.getNamespaceUri(), attrName.name);
+      if (attrValue != null) {
+        return new Attribute(attrName, attrValue, "fixme!!!");
+      }
     }
 
     if (styleAttrStyle != null) {
