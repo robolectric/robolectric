@@ -100,10 +100,6 @@ public class ShadowResources {
   }
 
   private TypedArray attrsToTypedArray(AttributeSet set, int[] attrs, int defStyleAttr, int themeResourceId, int defStyleRes) {
-    if (set == null) {
-      set = RoboAttributeSet.create(RuntimeEnvironment.application);
-    }
-
     List<Attribute> attributes = shadowOf(realResources.getAssets()).buildAttributes(set, attrs, defStyleAttr, themeResourceId, defStyleRes);
     ShadowAssetManager shadowAssetManager = shadowOf(realResources.getAssets());
     ResourceLoader resourceLoader = shadowAssetManager.getResourceLoader();
@@ -142,7 +138,9 @@ public class ShadowResources {
     indices[0] = nextIndex;
 
     TypedArray typedArray = ShadowTypedArray.create(realResources, attrs, data, indices, nextIndex, stringData);
-    shadowOf(typedArray).positionDescription = set.getPositionDescription();
+    if (set != null) {
+      shadowOf(typedArray).positionDescription = set.getPositionDescription();
+    }
     return typedArray;
   }
 
