@@ -37,7 +37,7 @@ If you'd like to start a new project with Robolectric you can use deckard (for e
 ### Gradle
 
 ```groovy
-testCompile "org.robolectric:robolectric:3.0"
+testCompile "org.robolectric:robolectric:3.1"
 ```
 
 ### Maven
@@ -46,7 +46,7 @@ testCompile "org.robolectric:robolectric:3.0"
 <dependency>
    <groupId>org.robolectric</groupId>
    <artifactId>robolectric</artifactId>
-   <version>3.0</version>
+   <version>3.1</version>
    <scope>test</scope>
 </dependency>
 ```
@@ -79,7 +79,7 @@ repositories {
 }
 
 dependencies {
-    testCompile "org.robolectric:robolectric:3.1-SNAPSHOT"
+    testCompile "org.robolectric:robolectric:3.2-SNAPSHOT"
 }
 ```
 
@@ -94,7 +94,7 @@ dependencies {
 <dependency>
    <groupId>org.robolectric</groupId>
    <artifactId>robolectric</artifactId>
-   <version>3.1-SNAPSHOT</version>
+   <version>3.2-SNAPSHOT</version>
    <scope>test</scope>
 </dependency>
 ```
