@@ -18,8 +18,6 @@ public interface ResourceLoader {
 
   InputStream getRawValue(ResName resName);
 
-  PreferenceNode getPreferenceNode(ResName resName, String qualifiers);
-
   ResourceIndex getResourceIndex();
 
   boolean providesFor(String namespace);

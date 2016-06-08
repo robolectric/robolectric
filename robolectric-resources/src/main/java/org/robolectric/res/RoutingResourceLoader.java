@@ -47,11 +47,6 @@ public class RoutingResourceLoader implements ResourceLoader {
   }
 
   @Override
-  public PreferenceNode getPreferenceNode(ResName resName, String qualifiers) {
-    return pickFor(resName).getPreferenceNode(resName, qualifiers);
-  }
-
-  @Override
   public ResourceIndex getResourceIndex() {
     return resourceIndex;
   }

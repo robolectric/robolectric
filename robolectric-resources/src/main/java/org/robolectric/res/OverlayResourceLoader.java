@@ -154,10 +154,6 @@ public class OverlayResourceLoader extends XResourceLoader {
     return super.getPlural(resName.withPackageName(packageName), quantity, qualifiers);
   }
 
-  @Override public PreferenceNode getPreferenceNode(ResName resName, String qualifiers) {
-    return super.getPreferenceNode(resName.withPackageName(packageName), qualifiers);
-  }
-
   @Override public InputStream getRawValue(ResName resName) {
     return super.getRawValue(resName.withPackageName(packageName));
   }

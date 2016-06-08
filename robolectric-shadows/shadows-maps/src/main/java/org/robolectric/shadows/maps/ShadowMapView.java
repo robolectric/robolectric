@@ -14,11 +14,9 @@ import com.google.android.maps.MapView;
 import com.google.android.maps.Overlay;
 import com.google.android.maps.Projection;
 
-import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.fakes.RoboAttributeSet;
 import org.robolectric.internal.Shadow;
 import org.robolectric.shadows.ShadowViewGroup;
 import org.robolectric.util.ReflectionHelpers;
@@ -53,15 +51,6 @@ public class ShadowMapView extends ShadowViewGroup {
   private GeoPoint mouseDownCenter;
   private boolean preLoadWasCalled;
   private boolean canCoverCenter = true;
-
-  @HiddenApi
-  public void __constructor__(Context context) {
-    setContextOnRealView(context);
-    this.attributeSet = RoboAttributeSet.create(context);
-    zoomButtonsController = new ZoomButtonsController(realMapView);
-    invokeConstructor(View.class, realView, ClassParameter.from(Context.class, context));
-    invokeConstructor(ViewGroup.class, realView, ClassParameter.from(Context.class, context));
-  }
 
   public void __constructor__(Context context, AttributeSet attributeSet) {
     setContextOnRealView(context);
