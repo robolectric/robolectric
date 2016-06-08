@@ -87,13 +87,6 @@ abstract class XResourceLoader implements ResourceLoader {
   }
 
   @Override
-  public PreferenceNode getPreferenceNode(ResName resName, String qualifiers) {
-    initialize();
-
-    return preferenceData.get(resName, qualifiers);
-  }
-
-  @Override
   public ResourceIndex getResourceIndex() {
     return resourceIndex;
   }
