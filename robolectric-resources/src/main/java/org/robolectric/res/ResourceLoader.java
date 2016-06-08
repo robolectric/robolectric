@@ -8,8 +8,6 @@ import java.io.InputStream;
 public interface ResourceLoader {
   String ANDROID_NS = Attribute.ANDROID_RES_NS_PREFIX + "android";
 
-  String getNameForId(int id);
-
   TypedResource getValue(@NotNull ResName resName, String qualifiers);
 
   Plural getPlural(ResName resName, int quantity, String qualifiers);
