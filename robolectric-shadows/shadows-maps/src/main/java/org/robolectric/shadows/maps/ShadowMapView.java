@@ -54,15 +54,6 @@ public class ShadowMapView extends ShadowViewGroup {
   private boolean preLoadWasCalled;
   private boolean canCoverCenter = true;
 
-  @HiddenApi
-  public void __constructor__(Context context) {
-    setContextOnRealView(context);
-    this.attributeSet = RoboAttributeSet.create(context);
-    zoomButtonsController = new ZoomButtonsController(realMapView);
-    invokeConstructor(View.class, realView, ClassParameter.from(Context.class, context));
-    invokeConstructor(ViewGroup.class, realView, ClassParameter.from(Context.class, context));
-  }
-
   public void __constructor__(Context context, AttributeSet attributeSet) {
     setContextOnRealView(context);
     this.attributeSet = attributeSet;
