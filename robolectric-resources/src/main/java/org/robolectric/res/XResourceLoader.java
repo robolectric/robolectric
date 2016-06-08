@@ -43,11 +43,6 @@ abstract class XResourceLoader implements ResourceLoader {
     rawResources.makeImmutable();
   }
 
-  @Override
-  public String getNameForId(int id) {
-    return resourceIndex.getResourceName(id);
-  }
-
   public TypedResource getValue(@NotNull ResName resName, String qualifiers) {
     initialize();
     ResBundle.Value<TypedResource> value = data.getValue(resName, qualifiers);

@@ -2,14 +2,11 @@ package org.robolectric.res;
 
 import org.jetbrains.annotations.NotNull;
 import org.robolectric.res.builder.XmlBlock;
-import org.w3c.dom.Document;
 
 import java.io.InputStream;
 
 public interface ResourceLoader {
   String ANDROID_NS = Attribute.ANDROID_RES_NS_PREFIX + "android";
-
-  String getNameForId(int id);
 
   TypedResource getValue(@NotNull ResName resName, String qualifiers);
 
