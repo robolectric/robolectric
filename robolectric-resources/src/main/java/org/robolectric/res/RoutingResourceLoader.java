@@ -22,11 +22,6 @@ public class RoutingResourceLoader implements ResourceLoader {
     resourceIndex = new MergedResourceIndex(resourceIndexes.toArray(new ResourceIndex[resourceIndexes.size()]));
   }
 
-  @Override
-  public String getNameForId(int id) {
-    return pickFor(id).getNameForId(id);
-  }
-
   @Override public TypedResource getValue(@NotNull ResName resName, String qualifiers) {
     return pickFor(resName).getValue(resName, qualifiers);
   }
@@ -103,11 +98,6 @@ public class RoutingResourceLoader implements ResourceLoader {
     }
 
     @Override void doInitialize() {
-    }
-
-    @Override
-    public String getNameForId(int id) {
-      return null;
     }
 
     @Override public boolean providesFor(String namespace) {
