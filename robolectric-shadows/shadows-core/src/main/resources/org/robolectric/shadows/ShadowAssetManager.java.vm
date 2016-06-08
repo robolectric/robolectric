@@ -131,7 +131,7 @@ public final class ShadowAssetManager {
     TypedResource[] items = getConverter(value).getItems(value);
     CharSequence[] charSequences = new CharSequence[items.length];
     for (int i = 0; i < items.length; i++) {
-      TypedResource typedResource = resolve(items[i], RuntimeEnvironment.getQualifiers(), resName);
+      TypedResource typedResource = resourceLoader.resolve(items[i], RuntimeEnvironment.getQualifiers(), resName);
       charSequences[i] = getConverter(typedResource).asCharSequence(typedResource);
     }
     return charSequences;
@@ -272,7 +272,7 @@ public final class ShadowAssetManager {
     TypedResource[] items = getConverter(value).getItems(value);
     int[] ints = new int[items.length];
     for (int i = 0; i < items.length; i++) {
-      TypedResource typedResource = resolve(items[i], RuntimeEnvironment.getQualifiers(), resName);
+      TypedResource typedResource = resourceLoader.resolve(items[i], RuntimeEnvironment.getQualifiers(), resName);
       ints[i] = getConverter(typedResource).asInt(typedResource);
     }
     return ints;
@@ -373,7 +373,7 @@ public final class ShadowAssetManager {
   TypedResource getAndResolve(@NotNull ResName resName, String qualifiers, boolean resolveRefs) {
     TypedResource value = resourceLoader.getValue(resName, qualifiers);
     if (resolveRefs) {
-      value = resolve(value, qualifiers, resName);
+      value = resourceLoader.resolve(value, qualifiers, resName);
     }
 
     // todo: make the drawable loader put stuff into the normal spot...
@@ -388,53 +388,6 @@ public final class ShadowAssetManager {
     }
 
     return value;
-  }
-
-  TypedResource resolve(TypedResource value, String qualifiers, ResName contextResName) {
-    return resolveResource(value, qualifiers, contextResName).value;
-  }
-
-  ResName resolveResName(int resId, String qualifiers) {
-    ResName resName = resourceLoader.getResourceIndex().getResName(resId);
-    if (resName == null) return null;
-    TypedResource value = resourceLoader.getValue(resName, qualifiers);
-    return resolveResource(value, qualifiers, resName).resName;
-  }
-
-  private Resource resolveResource(TypedResource value, String qualifiers, ResName resName) {
-    while (isReference(value)) {
-      String s = value.asString();
-      if (s.equals("@null") || s.equals("@empty")) {
-        value = null;
-      } else {
-        String refStr = s.substring(1).replace("+", "");
-        resName = ResName.qualifyResName(refStr, resName);
-        value = resourceLoader.getValue(resName, qualifiers);
-      }
-    }
-
-    return new Resource(value, resName);
-  }
-
-  private boolean isReference(TypedResource value) {
-    if (value != null) {
-      Object data = value.getData();
-      if (data instanceof String) {
-        String s = (String) data;
-        return !s.isEmpty() && s.charAt(0) == '@';
-      }
-    }
-    return false;
-  }
-
-  private static class Resource {
-    public final ResName resName;
-    public final TypedResource<?> value;
-
-    public Resource(TypedResource<?> value, ResName resName) {
-      this.value = value;
-      this.resName = resName;
-    }
   }
 
   static class StyleResolver implements Style {
@@ -761,11 +714,6 @@ public final class ShadowAssetManager {
 
   @NotNull ResName getResName(int id) {
     ResName resName = resourceLoader.getResourceIndex().getResName(id);
-    return checkResName(id, resName);
-  }
-
-  @NotNull ResName resolveResName(int id) {
-    ResName resName = resolveResName(id, RuntimeEnvironment.getQualifiers());
     return checkResName(id, resName);
   }
 

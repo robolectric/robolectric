@@ -160,7 +160,7 @@ public class ShadowResources {
     ResName resName = shadowAssetManager.getResName(id);
     Plural plural = shadowAssetManager.getResourceLoader().getPlural(resName, quantity, RuntimeEnvironment.getQualifiers());
     String string = plural.getString();
-    TypedResource<?> typedResource = shadowAssetManager.resolve(
+    TypedResource<?> typedResource = shadowAssetManager.getResourceLoader().resolve(
         new TypedResource<>(string, ResType.CHAR_SEQUENCE), RuntimeEnvironment.getQualifiers(),
         new ResName(resName.packageName, "string", resName.name));
     return typedResource == null ? null : typedResource.asString();
@@ -217,7 +217,7 @@ public class ShadowResources {
   @HiddenApi @Implementation
   public XmlResourceParser loadXmlResourceParser(int id, String type) throws Resources.NotFoundException {
     ShadowAssetManager shadowAssetManager = shadowOf(realResources.getAssets());
-    ResName resName = shadowAssetManager.resolveResName(id);
+    ResName resName = shadowAssetManager.getResourceLoader().resolveResName(id, RuntimeEnvironment.getQualifiers());
     XmlBlock block = shadowAssetManager.getResourceLoader().getXml(resName, RuntimeEnvironment.getQualifiers());
     if (block == null) {
       throw new Resources.NotFoundException();
