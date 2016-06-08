@@ -16,11 +16,19 @@ public abstract class ResourceLoader {
 
   public abstract Plural getPlural(ResName resName, int quantity, String qualifiers);
 
+  public Plural getPlural(int resId, int quantity, String qualifiers) {
+    return getPlural(getResourceIndex().getResName(resId), quantity, qualifiers);
+  }
+
   public abstract XmlBlock getXml(ResName resName, String qualifiers);
 
   public abstract DrawableNode getDrawableNode(ResName resName, String qualifiers);
 
-  ResourceIndex getResourceIndex();
+  public abstract InputStream getRawValue(ResName resName);
+
+  public InputStream getRawValue(int resId) {
+    return getRawValue(getResourceIndex().getResName(resId));
+  }
 
   public abstract ResourceIndex getResourceIndex();
 
