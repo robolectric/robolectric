@@ -24,7 +24,7 @@ public class ManifestFactoryTest {
     Properties properties = new Properties();
     properties.setProperty("libraries", "lib1");
     Config config = new Config.Implementation(
-        new Config.Implementation("src/test/resources/TestAndroidManifest.xml"),
+        new Config.Implementation(resourceFile("TestAndroidManifest.xml").toString()),
         Config.Implementation.fromProperties(properties));
     ManifestFactory.MavenManifestFactory mavenManifestFactory =
         new ManifestFactory.MavenManifestFactory(config);
@@ -41,13 +41,11 @@ public class ManifestFactoryTest {
     properties.setProperty("resourceDir", "res");
     properties.setProperty("assetDir", "assets");
     Config config = new Config.Implementation(
-        new Config.Implementation("src/test/resources/TestAndroidManifest.xml"),
+        new Config.Implementation(resourceFile("TestAndroidManifest.xml").toString()),
         Config.Implementation.fromProperties(properties));
     ManifestFactory.MavenManifestFactory mavenManifestFactory =
         new ManifestFactory.MavenManifestFactory(config);
     AndroidManifest appManifest = mavenManifestFactory.create();
-
-    //AndroidManifest appManifest = new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"), resourceFile("assets"));
 
     // This intentionally loads from the non standard resources/project.properties
     List<String> resourcePaths = stringify(appManifest.getIncludedResourcePaths());
