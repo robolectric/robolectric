@@ -87,10 +87,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     String themeRef = appManifest.getThemeRef(realActivity.getClass());
 
     if (themeRef != null) {
-      ResName style = ResName.qualifyResName(themeRef.replace("@", ""), appManifest.getPackageName(), "style");
-      Integer themeRes = shadowOf(realActivity.getAssets()).getResourceLoader().getResourceIndex().getResourceId(style);
-      if (themeRes == null)
-        throw new Resources.NotFoundException("no such theme " + style.getFullyQualifiedName());
+      int themeRes = realActivity.getResources().getIdentifier(themeRef.replace("@", ""), "style", appManifest.getPackageName());
       realActivity.setTheme(themeRes);
       return true;
     }
