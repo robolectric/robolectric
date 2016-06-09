@@ -7,265 +7,266 @@ package org.robolectric;
 
 public final class R {
   public static final class id {
-    public static final int time = 0x10000;
-    public static final int title = 0x10001;
-    public static final int subtitle = 0x10002;
-    public static final int snippet_text = 0x10003;
-    public static final int include_id = 0x10004;
-    public static final int inner_text = 0x10005;
-    public static final int map_view = 0x10006;
-    public static final int true_checkbox = 0x10007;
-    public static final int false_checkbox = 0x10008;
-    public static final int default_checkbox = 0x10009;
-    public static final int image = 0x1000a;
-    public static final int mipmapImage = 0x1000b;
-    public static final int icon = 0x1000c;
-    public static final int text1 = 0x1000d;
-    public static final int button = 0x1000e;
-    public static final int invalid_onclick_button = 0x1000f;
-    public static final int edit_text = 0x10010;
-    public static final int edit_text2 = 0x10011;
-    public static final int outer_merge = 0x10012;
-    public static final int web_view = 0x10013;
+    public static final int time = 0x7f000100;
+    public static final int title = 0x7f000101;
+    public static final int subtitle = 0x7f000102;
+    public static final int snippet_text = 0x7f000103;
+    public static final int include_id = 0x7f000104;
+    public static final int inner_text = 0x7f000105;
+    public static final int map_view = 0x7f000106;
+    public static final int true_checkbox = 0x7f000107;
+    public static final int false_checkbox = 0x7f000108;
+    public static final int default_checkbox = 0x7f000109;
+    public static final int image = 0x7f00010a;
+    public static final int mipmapImage = 0x7f00010b;
+    public static final int icon = 0x7f00010c;
+    public static final int text1 = 0x7f00010d;
+    public static final int button = 0x7f00010e;
+    public static final int invalid_onclick_button = 0x7f00010f;
+    public static final int edit_text = 0x7f000110;
+    public static final int edit_text2 = 0x7f000111;
+    public static final int outer_merge = 0x7f000112;
+    public static final int web_view = 0x7f000113;
 
-    public static final int black_text_view = 0x10014;
-    public static final int white_text_view = 0x10015;
-    public static final int grey_text_view = 0x10016;
+    public static final int black_text_view = 0x7f000114;
+    public static final int white_text_view = 0x7f000115;
+    public static final int grey_text_view = 0x7f000116;
 
-    public static final int black_text_view_hint = 0x10017;
-    public static final int white_text_view_hint = 0x10018;
-    public static final int grey_text_view_hint = 0x10019;
+    public static final int black_text_view_hint = 0x7f000117;
+    public static final int white_text_view_hint = 0x7f000118;
+    public static final int grey_text_view_hint = 0x7f000119;
 
-    public static final int textStyle = 0x1001a;
-    public static final int textStyle2 = 0x1001b;
-    public static final int textStyle3 = 0x1001c;
+    public static final int textStyle = 0x7f00011a;
+    public static final int textStyle2 = 0x7f00011b;
+    public static final int textStyle3 = 0x7f00011c;
 
-    public static final int test_menu_1 = 0x1001d;
-    public static final int test_menu_2 = 0x1001e;
-    public static final int test_menu_3 = 0x1001f;
+    public static final int test_menu_1 = 0x7f00011d;
+    public static final int test_menu_2 = 0x7f00011e;
+    public static final int test_menu_3 = 0x7f00011f;
 
-    public static final int group_id_1 = 0x10020;
+    public static final int group_id_1 = 0x7f000120;
 
-    public static final int test_submenu_1 = 0x10021;
+    public static final int test_submenu_1 = 0x7f000121;
 
-    public static final int fragment = 0x10022;
-    public static final int dynamic_fragment_container = 0x10023;
-    public static final int content_view = 0x10024;
+    public static final int fragment = 0x7f000122;
+    public static final int dynamic_fragment_container = 0x7f000123;
+    public static final int content_view = 0x7f000124;
 
-    public static final int portrait = 0x10025;
-    public static final int landscape = 0x10026;
-    public static final int tacos = 0x10027;
-    public static final int burritos = 0x10028;
-    public static final int lam_container = 0x10029;
-    public static final int lam_inner_contents = 0x1002a;
-    public static final int my_fragment = 0x1002b;
-    public static final int my_landscape_text = 0x1002c;
+    public static final int portrait = 0x7f000125;
+    public static final int landscape = 0x7f000126;
+    public static final int tacos = 0x7f000127;
+    public static final int burritos = 0x7f000128;
+    public static final int lam_container = 0x7f000129;
+    public static final int lam_inner_contents = 0x7f00012a;
+    public static final int my_fragment = 0x7f00012b;
+    public static final int my_landscape_text = 0x7f00012c;
 
-    public static final int itemType = 0x1002d;
-    public static final int scrollBars = 0x1002e;
-    public static final int keycode = 0x1002f;
-    public static final int aspectRatio = 0x10030;
-    public static final int aspectRatioEnabled = 0x10031;
+    public static final int itemType = 0x7f00012d;
+    public static final int scrollBars = 0x7f00012e;
+    public static final int keycode = 0x7f00012f;
+    public static final int aspectRatio = 0x7f000130;
+    public static final int aspectRatioEnabled = 0x7f000131;
 
-    public static final int marsupial = 0x10032;
-    public static final int ungulate = 0x10033;
+    public static final int marsupial = 0x7f000132;
+    public static final int ungulate = 0x7f000133;
 
-    public static final int custom_view = 0x10034;
+    public static final int custom_view = 0x7f000134;
 
-    public static final int custom_title_text = 0x10035;
+    public static final int custom_title_text = 0x7f000135;
 
-    public static final int remote_view_1 = 0x10036;
-    public static final int remote_view_2 = 0x10037;
-    public static final int remote_view_3 = 0x10038;
+    public static final int remote_view_1 = 0x7f000136;
+    public static final int remote_view_2 = 0x7f000137;
+    public static final int remote_view_3 = 0x7f000138;
 
-    public static final int hello = 0x10039;
-    public static final int world = 0x1003a;
+    public static final int hello = 0x7f000139;
+    public static final int world = 0x7f00013a;
 
-    public static final int list_view_with_enum_scrollbar = 0x1003b;
-    public static final int action_search = 0x1003c;
+    public static final int list_view_with_enum_scrollbar = 0x7f00013b;
+    public static final int action_search = 0x7f00013c;
   }
 
   public static final class string {
-    public static final int howdy = 0x10100;
-    public static final int hello = 0x10101;
-    public static final int some_html = 0x10102;
-    public static final int greeting = 0x10103;
-    public static final int copy = 0x10104;
-    public static final int ok = 0x10105;
-    public static final int ok2 = 0x10106;
-    public static final int only_in_main = 0x10107;
-    public static final int only_in_lib1 = 0x10108;
-    public static final int only_in_lib2 = 0x10109;
-    public static final int only_in_lib3 = 0x1010a;
-    public static final int in_all_libs = 0x1010b;
-    public static final int in_lib2_and_lib3 = 0x1010c;
-    public static final int in_lib1_and_lib3 = 0x1010d;
-    public static final int in_main_and_lib1 = 0x1010e;
-    public static final int interpolate = 0x1010f;
-    public static final int app_name = 0x10110;
-    public static final int activity_name = 0x10111;
-    public static final int minute_singular = 0x10112;
-    public static final int minute_plural = 0x10113;
-    public static final int str_int = 0x10114;
-    public static final int preference_resource_key = 0x10115;
-    public static final int preference_resource_title = 0x10116;
-    public static final int preference_resource_summary = 0x10117;
-    public static final int preference_resource_default_value = 0x10118;
-    public static final int surrounding_quotes = 0x10119;
-    public static final int escaped_apostrophe = 0x1011a;
-    public static final int escaped_quotes = 0x1011b;
-    public static final int leading_and_trailing_new_lines = 0x1011c;
-    public static final int non_breaking_space = 0x1011d;
-    public static final int new_lines_and_tabs = 0x1011e;
-    public static final int space = 0x1011f;
-    public static final int say_it_with_item = 0x10120;
-    public static final int test_menu_2 = 0x10121;
+    public static final int howdy = 0x7f000200;
+    public static final int hello = 0x7f000201;
+    public static final int some_html = 0x7f000202;
+    public static final int greeting = 0x7f000203;
+    public static final int copy = 0x7f000204;
+    public static final int ok = 0x7f000205;
+    public static final int ok2 = 0x7f000206;
+    public static final int only_in_main = 0x7f000207;
+    public static final int only_in_lib1 = 0x7f000208;
+    public static final int only_in_lib2 = 0x7f000209;
+    public static final int only_in_lib3 = 0x7f00020a;
+    public static final int in_all_libs = 0x7f00020b;
+    public static final int in_lib2_and_lib3 = 0x7f00020c;
+    public static final int in_lib1_and_lib3 = 0x7f00020d;
+    public static final int in_main_and_lib1 = 0x7f00020e;
+    public static final int interpolate = 0x7f00020f;
+    public static final int app_name = 0x7f000210;
+    public static final int activity_name = 0x7f000211;
+    public static final int minute_singular = 0x7f000212;
+    public static final int minute_plural = 0x7f000213;
+    public static final int str_int = 0x7f000214;
+    public static final int preference_resource_key = 0x7f000215;
+    public static final int preference_resource_title = 0x7f000216;
+    public static final int preference_resource_summary = 0x7f000217;
+    public static final int preference_resource_default_value = 0x7f000218;
+    public static final int surrounding_quotes = 0x7f000219;
+    public static final int escaped_apostrophe = 0x7f00021a;
+    public static final int escaped_quotes = 0x7f00021b;
+    public static final int leading_and_trailing_new_lines = 0x7f00021c;
+    public static final int non_breaking_space = 0x7f00021d;
+    public static final int new_lines_and_tabs = 0x7f00021e;
+    public static final int space = 0x7f00021f;
+    public static final int say_it_with_item = 0x7f000220;
+    public static final int test_menu_2 = 0x7f000221;
   }
 
   public static final class plurals {
-    public static final int beer = 0x10200;
-    public static final int minute = 0x10201;
+    public static final int beer = 0x7f000300;
+    public static final int minute = 0x7f000301;
   }
 
   public static final class array {
-    public static final int items = 0x10300;
-    public static final int greetings = 0x10301;
-    public static final int alertDialogTestItems = 0x10302;
-    public static final int emailAddressTypes = 0x10303;
-    public static final int zero_to_four_int_array = 0x10304;
-    public static final int empty_int_array = 0x10305;
-    public static final int with_references_int_array = 0x10306;
-    public static final int referenced_colors_int_array = 0x10307;
+    public static final int items = 0x7f000400;
+    public static final int greetings = 0x7f000401;
+    public static final int alertDialogTestItems = 0x7f000402;
+    public static final int emailAddressTypes = 0x7f000403;
+    public static final int zero_to_four_int_array = 0x7f000404;
+    public static final int empty_int_array = 0x7f000405;
+    public static final int with_references_int_array = 0x7f000406;
+    public static final int referenced_colors_int_array = 0x7f000407;
   }
 
   public static final class color {
-    public static final int background = 0x10400;
-    public static final int foreground = 0x10401;
-    public static final int grey42 = 0x10402;
-    public static final int black = 0x10403;
-    public static final int blue = 0x10404;
-    public static final int white = 0x10405;
-    public static final int clear = 0x10406;
-    public static final int color_with_alpha = 0x10407;
-    public static final int android_namespaced_black = 0x10408;
-    public static final int android_namespaced_transparent = 0x10409;
-    public static final int android_red = 0x1040a;
-    public static final int test_color_1 = 0x1040b;
-    public static final int color_state_list = 0x1040c;
-    public static final int list_separator = 0x1040d;
-    public static final int custom_state_view_text_color = 0x1040e;
+    public static final int background = 0x7f000500;
+    public static final int foreground = 0x7f000501;
+    public static final int grey42 = 0x7f000502;
+    public static final int black = 0x7f000503;
+    public static final int blue = 0x7f000504;
+    public static final int white = 0x7f000505;
+    public static final int clear = 0x7f000506;
+    public static final int color_with_alpha = 0x7f000507;
+    public static final int android_namespaced_black = 0x7f000508;
+    public static final int android_namespaced_transparent = 0x7f000509;
+    public static final int android_red = 0x7f00050a;
+    public static final int test_color_1 = 0x7f00050b;
+    public static final int color_state_list = 0x7f00050c;
+    public static final int list_separator = 0x7f00050d;
+    public static final int custom_state_view_text_color = 0x7f00050e;
   }
 
   public static final class drawable {
-    public static final int an_image = 0x10500;
-    public static final int an_other_image = 0x10501;
-    public static final int third_image = 0x10502;
-    public static final int fourth_image = 0x10503;
-    public static final int image_background = 0x10504;
-    public static final int l0_red = 0x10505;
-    public static final int l1_orange = 0x10506;
-    public static final int l2_yellow = 0x10507;
-    public static final int l3_green = 0x10508;
-    public static final int l4_blue = 0x10509;
-    public static final int l5_indigo = 0x1050a;
-    public static final int l6_violet = 0x1050b;
-    public static final int l7_white = 0x1050c;
-    public static final int rainbow = 0x1050d;
-    public static final int state_drawable = 0x1050e;
-    public static final int nine_patch_drawable = 0x1050f;
-    public static final int drawable_with_nine_patch = 0x10510;
-    public static final int robolectric = 0x10511;
+    public static final int an_image = 0x7f000600;
+    public static final int an_other_image = 0x7f000601;
+    public static final int third_image = 0x7f000602;
+    public static final int fourth_image = 0x7f000603;
+    public static final int image_background = 0x7f000604;
+    public static final int l0_red = 0x7f000605;
+    public static final int l1_orange = 0x7f000606;
+    public static final int l2_yellow = 0x7f000607;
+    public static final int l3_green = 0x7f000608;
+    public static final int l4_blue = 0x7f000609;
+    public static final int l5_indigo = 0x7f00060a;
+    public static final int l6_violet = 0x7f00060b;
+    public static final int l7_white = 0x7f00060c;
+    public static final int rainbow = 0x7f00060d;
+    public static final int state_drawable = 0x7f00060e;
+    public static final int nine_patch_drawable = 0x7f00060f;
+    public static final int drawable_with_nine_patch = 0x7f000610;
+    public static final int robolectric = 0x7f000611;
+    public static final int vector = 0x7f000612;
   }
 
   public static final class layout {
-    public static final int activity_list_item = 0x10600;
-    public static final int custom_layout = 0x10601;
-    public static final int custom_layout2 = 0x10602;
-    public static final int custom_layout3 = 0x10603;
-    public static final int custom_layout4 = 0x10604;
-    public static final int different_screen_sizes = 0x10605;
-    public static final int edit_text = 0x10606;
-    public static final int fragment = 0x10607;
-    public static final int fragment_activity = 0x10608;
-    public static final int fragment_contents = 0x10609;
-    public static final int included_layout_parent = 0x1060a;
-    public static final int included_linear_layout = 0x1060b;
-    public static final int inner_merge = 0x1060c;
-    public static final int lam_inner = 0x1060d;
-    public static final int lam_outer = 0x1060e;
-    public static final int main = 0x1060f;
-    public static final int mapview = 0x10610;
-    public static final int media = 0x10611;
-    public static final int multi_orientation = 0x10612;
-    public static final int outer = 0x10613;
-    public static final int override_include = 0x10614;
-    public static final int request_focus = 0x10615;
-    public static final int request_focus_with_two_edit_texts = 0x10616;
-    public static final int snippet = 0x10617;
-    public static final int styles_button_layout = 0x10618;
-    public static final int tab_activity = 0x10619;
-    public static final int text_views = 0x1061a;
-    public static final int text_views_hints = 0x1061b;
-    public static final int toplevel_merge = 0x1061c;
-    public static final int webview_holder = 0x1061d;
-    public static final int with_invalid_onclick = 0x1061e;
-    public static final int styles_button_with_style_layout = 0x1061f;
-    public static final int custom_title = 0x10620;
-    public static final int remote_views = 0x10621;
-    public static final int main_layout = 0x10622;
-    public static final int activity_main = 0x10623;
-    public static final int activity_main_1 = 0x10624;
-    public static final int ordinal_scrollbar = 0x10625;
-    public static final int custom_layout5 = 0x10626;
-    public static final int custom_layout6 = 0x10627;
+    public static final int activity_list_item = 0x7f000700;
+    public static final int custom_layout = 0x7f000701;
+    public static final int custom_layout2 = 0x7f000702;
+    public static final int custom_layout3 = 0x7f000703;
+    public static final int custom_layout4 = 0x7f000704;
+    public static final int different_screen_sizes = 0x7f000705;
+    public static final int edit_text = 0x7f000706;
+    public static final int fragment = 0x7f000707;
+    public static final int fragment_activity = 0x7f000708;
+    public static final int fragment_contents = 0x7f000709;
+    public static final int included_layout_parent = 0x7f00070a;
+    public static final int included_linear_layout = 0x7f00070b;
+    public static final int inner_merge = 0x7f00070c;
+    public static final int lam_inner = 0x7f00070d;
+    public static final int lam_outer = 0x7f00070e;
+    public static final int main = 0x7f00070f;
+    public static final int mapview = 0x7f000710;
+    public static final int media = 0x7f000711;
+    public static final int multi_orientation = 0x7f000712;
+    public static final int outer = 0x7f000713;
+    public static final int override_include = 0x7f000714;
+    public static final int request_focus = 0x7f000715;
+    public static final int request_focus_with_two_edit_texts = 0x7f000716;
+    public static final int snippet = 0x7f000717;
+    public static final int styles_button_layout = 0x7f000718;
+    public static final int tab_activity = 0x7f000719;
+    public static final int text_views = 0x7f00071a;
+    public static final int text_views_hints = 0x7f00071b;
+    public static final int toplevel_merge = 0x7f00071c;
+    public static final int webview_holder = 0x7f00071d;
+    public static final int with_invalid_onclick = 0x7f00071e;
+    public static final int styles_button_with_style_layout = 0x7f00071f;
+    public static final int custom_title = 0x7f000720;
+    public static final int remote_views = 0x7f000721;
+    public static final int main_layout = 0x7f000722;
+    public static final int activity_main = 0x7f000723;
+    public static final int activity_main_1 = 0x7f000724;
+    public static final int ordinal_scrollbar = 0x7f000725;
+    public static final int custom_layout5 = 0x7f000726;
+    public static final int custom_layout6 = 0x7f000727;
   }
 
   public static final class anim {
-    public static final int test_anim_1 = 0x10700;
-    public static final int animation_list = 0x10701;
+    public static final int test_anim_1 = 0x7f000800;
+    public static final int animation_list = 0x7f000801;
   }
 
   public static final class animator {
-    public static final int spinning = 0x10800;
-    public static final int fade = 0x10801;
+    public static final int spinning = 0x7f000900;
+    public static final int fade = 0x7f000901;
   }
 
   public static final class raw {
-    public static final int raw_resource = 0x10900;
-    public static final int raw_no_ext = 0x10901;
-    public static final int lib_raw_resource = 0x10902;
-    public static final int lib_raw_resource_from_2 = 0x10903;
-    public static final int lib_raw_resource_from_3 = 0x10904;
+    public static final int raw_resource = 0x7f000a00;
+    public static final int raw_no_ext = 0x7f000a01;
+    public static final int lib_raw_resource = 0x7f000a02;
+    public static final int lib_raw_resource_from_2 = 0x7f000a03;
+    public static final int lib_raw_resource_from_3 = 0x7f000a04;
   }
 
   public static final class attr {
-    public static final int isSugary = 0x10a00;
-    public static final int itemType = 0x10a01;
-    public static final int scrollBars = 0x10a02;
-    public static final int gravity = 0x10a03;
-    public static final int keycode = 0x10a04;
-    public static final int aspectRatio = 0x10a05;
-    public static final int aspectRatioEnabled = 0x10a06;
-    public static final int items = 0x10a07;
-    public static final int logoHeight = 0x10a08;
-    public static final int quitKeyCombo = 0x10a09;
-    public static final int responses = 0x10a0a;
-    public static final int animalStyle = 0x10a0b;
-    public static final int stateFoo = 0x10a0c;
-    public static final int someLayoutOne = 0x10a0d;
-    public static final int someLayoutTwo = 0x10a0e;
+    public static final int isSugary = 0x7f000b00;
+    public static final int itemType = 0x7f000b01;
+    public static final int scrollBars = 0x7f000b02;
+    public static final int gravity = 0x7f000b03;
+    public static final int keycode = 0x7f000b04;
+    public static final int aspectRatio = 0x7f000b05;
+    public static final int aspectRatioEnabled = 0x7f000b06;
+    public static final int items = 0x7f000b07;
+    public static final int logoHeight = 0x7f000b08;
+    public static final int quitKeyCombo = 0x7f000b09;
+    public static final int responses = 0x7f000b0a;
+    public static final int animalStyle = 0x7f000b0b;
+    public static final int stateFoo = 0x7f000b0c;
+    public static final int someLayoutOne = 0x7f000b0d;
+    public static final int someLayoutTwo = 0x7f000b0e;
   }
 
   public static final class menu {
-    public static final int test = 0x10b00;
-    public static final int test_withchilds = 0x10b01;
-    public static final int action_menu = 0x10b02;
-    public static final int test_withorder = 0x10b03;
+    public static final int test = 0x7f000c00;
+    public static final int test_withchilds = 0x7f000c01;
+    public static final int action_menu = 0x7f000c02;
+    public static final int test_withorder = 0x7f000c03;
   }
 
   public static final class xml {
-    public static final int preferences = 0x10c00;
-    public static final int dialog_preferences = 0x10c01;
+    public static final int preferences = 0x7f000d00;
+    public static final int dialog_preferences = 0x7f000d01;
   }
 
   public static final class styleable {
@@ -293,67 +294,67 @@ public final class R {
   }
 
   public static final class dimen {
-    public static final int test_dp_dimen = 0x10d00;
-    public static final int test_dip_dimen = 0x10d01;
-    public static final int test_pt_dimen = 0x10d02;
-    public static final int test_px_dimen = 0x10d03;
-    public static final int test_sp_dimen = 0x10d04;
-    public static final int test_in_dimen = 0x10d05;
-    public static final int test_mm_dimen = 0x10d06;
+    public static final int test_dp_dimen = 0x7f000e00;
+    public static final int test_dip_dimen = 0x7f000e01;
+    public static final int test_pt_dimen = 0x7f000e02;
+    public static final int test_px_dimen = 0x7f000e03;
+    public static final int test_sp_dimen = 0x7f000e04;
+    public static final int test_in_dimen = 0x7f000e05;
+    public static final int test_mm_dimen = 0x7f000e06;
   }
 
   public static final class integer {
-    public static final int test_non_integer = 0x10e00;
-    public static final int test_integer1 = 0x10e01;
-    public static final int test_integer2 = 0x10e02;
-    public static final int test_large_hex = 0x10e03;
-    public static final int meaning_of_life = 0x10e04;
-    public static final int loneliest_number = 0x10e05;
-    public static final int there_can_be_only = 0x10e06;
-    public static final int hex_int = 0x10e07;
-    public static final int test_value_with_zero = 0x10e08;
-    public static final int reference_to_meaning_of_life = 0x10e09;
-    public static final int meaning_of_life_as_item = 0x10e0a;
-    public static final int scrollbar_style_ordinal_outside_overlay = 0x10e0b;
+    public static final int test_non_integer = 0x7f000f00;
+    public static final int test_integer1 = 0x7f000f01;
+    public static final int test_integer2 = 0x7f000f02;
+    public static final int test_large_hex = 0x7f000f03;
+    public static final int meaning_of_life = 0x7f000f04;
+    public static final int loneliest_number = 0x7f000f05;
+    public static final int there_can_be_only = 0x7f000f06;
+    public static final int hex_int = 0x7f000f07;
+    public static final int test_value_with_zero = 0x7f000f08;
+    public static final int reference_to_meaning_of_life = 0x7f000f09;
+    public static final int meaning_of_life_as_item = 0x7f000f0a;
+    public static final int scrollbar_style_ordinal_outside_overlay = 0x7f000f0b;
   }
 
   public static final class bool {
-    public static final int false_bool_value = 0x10f00;
-    public static final int true_bool_value = 0x10f01;
-    public static final int zero_is_false = 0x10f02;
-    public static final int integers_are_true = 0x10f03;
-    public static final int reference_to_true = 0x10f04;
-    public static final int true_as_item = 0x10f05;
-    public static final int different_resource_boolean=0x10f06;
+    public static final int false_bool_value = 0x7f001000;
+    public static final int true_bool_value = 0x7f001001;
+    public static final int zero_is_false = 0x7f001002;
+    public static final int integers_are_true = 0x7f001003;
+    public static final int reference_to_true = 0x7f001004;
+    public static final int true_as_item = 0x7f001005;
+    public static final int different_resource_boolean=0x7f001006;
   }
 
   public static final class style {
-    public static final int FancyStyle = 0x11000;
-    public static final int Theme_Robolectric = 0x11001;
-    public static final int Theme_AnotherTheme = 0x11002;
-    public static final int MyCustomView = 0x11003;
-    public static final int Widget_Robolectric_Button = 0x11004;
-    public static final int Widget_AnotherTheme_Button = 0x11005;
-    public static final int Sized = 0x11006;
-    public static final int Gastropod = 0x11007;
-    public static final int Theme_ThirdTheme = 0x11008;
-    public static final int MyBlackTheme = 0x11009;
-    public static final int MyBlueTheme = 0x1100a;
-    public static final int IndirectButtonStyle = 0x1100b;
+    public static final int FancyStyle = 0x7f001100;
+    public static final int Theme_Robolectric = 0x7f001101;
+    public static final int Theme_AnotherTheme = 0x7f001102;
+    public static final int MyCustomView = 0x7f001103;
+    public static final int Widget_Robolectric_Button = 0x7f001104;
+    public static final int Widget_AnotherTheme_Button = 0x7f001105;
+    public static final int Sized = 0x7f001106;
+    public static final int Gastropod = 0x7f001107;
+    public static final int Theme_ThirdTheme = 0x7f001108;
+    public static final int MyBlackTheme = 0x7f001109;
+    public static final int MyBlueTheme = 0x7f00110a;
+    public static final int IndirectButtonStyle = 0x7f00110b;
   }
 
   public static final class fraction {
-    public static final int half = 0x11100;
-    public static final int half_of_parent = 0x11101;
-    public static final int quarter_as_item = 0x11102;
-    public static final int quarter_of_parent_as_item = 0x11103;
-    public static final int fifth = 0x11104;
-    public static final int fifth_as_reference = 0x11105;
-    public static final int fifth_of_parent = 0x11106;
-    public static final int fifth_of_parent_as_reference = 0x11107;
+    public static final int half = 0x7f001200;
+    public static final int half_of_parent = 0x7f001201;
+    public static final int quarter_as_item = 0x7f001202;
+    public static final int quarter_of_parent_as_item = 0x7f001203;
+    public static final int fifth = 0x7f001204;
+    public static final int fifth_as_reference = 0x7f001205;
+    public static final int fifth_of_parent = 0x7f001206;
+    public static final int fifth_of_parent_as_reference = 0x7f001207;
   }
 
   public static final class mipmap {
-    public static final int robolectric = 0x11200;
+    public static final int robolectric = 0x7f001300;
   }
 }

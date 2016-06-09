@@ -9,7 +9,7 @@ if path_to_r =~ /^\/path\/to/
   raise "please change the path to this file!"
 else
   original_contents = File.read(path_to_r)
-  x = 0xffff
+  x = 0x7f000000
   new_contents = original_contents.gsub(/class|0x[0-9a-fA-F]+;/) do |match|
     if match == "class"
       x += 0x100

@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 // TODO: Give me a better name
-abstract class XResourceLoader implements ResourceLoader {
+abstract class XResourceLoader extends ResourceLoader {
   final ResBunch data = new ResBunch();
   final ResBundle<PluralResourceLoader.PluralRules> pluralsData = new ResBundle<>();
   final ResBundle<String> stringData = new ResBundle<>();
