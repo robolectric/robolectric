@@ -26,6 +26,7 @@ import org.robolectric.res.Style;
 import org.robolectric.res.StyleData;
 import org.robolectric.res.TypedResource;
 import org.robolectric.res.builder.ResourceParser;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Strings;
 
 import java.io.ByteArrayInputStream;
@@ -42,7 +43,6 @@ import java.util.Map;
 import org.robolectric.annotation.Resetter;
 
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.shadows.ShadowApplication.getInstance;
 
 /**
  * Shadow for {@link android.content.res.AssetManager}.
@@ -794,5 +794,10 @@ public final class ShadowAssetManager {
   @Implementation
   public String getResourceEntryName(int resid) {
    return getResName(resid).name;
+  }
+
+  @Resetter
+  public static void reset() {
+    ReflectionHelpers.setStaticField(AssetManager.class, "sSystem", null);
   }
 }
