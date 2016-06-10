@@ -254,11 +254,11 @@ public @interface Config {
           Config.DEFAULT_RES_FOLDER,
           Config.DEFAULT_ASSET_FOLDER,
           Config.DEFAULT_BUILD_FOLDER,
-          Config.DEFAULT_SHADOWS,
-          Config.DEFAULT_INSTRUMENTED_PACKAGES,
-          Config.DEFAULT_APPLICATION,
-          Config.DEFAULT_LIBRARIES,
-          Config.DEFAULT_CONSTANTS);
+          new Class<?>[]{},  // Config.DEFAULT_SHADOWS
+          new String[]{},  // Config.DEFAULT_INSTRUMENTED_PACKAGES
+          Application.class,  // Config.DEFAULT_APPLICATION
+          new String[]{},  // Config.DEFAULT_LIBRARIES
+          Void.class);  // Config.DEFAULT_CONSTANTS
     }
 
     // TODO(vnayar): Perhaps the various constructors should replaced with a builder?
