@@ -24,20 +24,20 @@ import java.util.Set;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
 public @interface Config {
-  static final String NONE = "--none";
-  static final int[] DEFAULT_SDK = {};
-  static final String DEFAULT_MANIFEST = "--default";
-  static final Class<?> DEFAULT_CONSTANTS = Void.class;
-  static final Class<? extends Application> DEFAULT_APPLICATION = Application.class;
-  static final String DEFAULT_PACKAGE_NAME = "";
-  static final String DEFAULT_ABI_SPLIT = "";
-  static final String DEFAULT_QUALIFIERS = "";
-  static final String DEFAULT_RES_FOLDER = "res";
-  static final String DEFAULT_ASSET_FOLDER = "assets";
-  static final String DEFAULT_BUILD_FOLDER = "build";
-  static final Class<?>[] DEFAULT_SHADOWS = {};
-  static final String[] DEFAULT_INSTRUMENTED_PACKAGES = {};
-  static final String[] DEFAULT_LIBRARIES = {};
+  String NONE = "--none";
+  int[] DEFAULT_SDK = {};
+  String DEFAULT_MANIFEST = "--default";
+  Class<?> DEFAULT_CONSTANTS = Void.class;
+  Class<? extends Application> DEFAULT_APPLICATION = Application.class;
+  String DEFAULT_PACKAGE_NAME = "";
+  String DEFAULT_ABI_SPLIT = "";
+  String DEFAULT_QUALIFIERS = "";
+  String DEFAULT_RES_FOLDER = "res";
+  String DEFAULT_ASSET_FOLDER = "assets";
+  String DEFAULT_BUILD_FOLDER = "build";
+  Class<?>[] DEFAULT_SHADOWS = {};
+  String[] DEFAULT_INSTRUMENTED_PACKAGES = {};
+  String[] DEFAULT_LIBRARIES = {};
 
   /**
    * The Android SDK level to emulate. If not specified, Robolectric defaults to API 16.
