@@ -168,7 +168,7 @@ public abstract class ManifestFactory {
         return null;
       }
 
-
+      FsFile manifestFile = getBaseDir().join(config.manifest().equals(Config.DEFAULT_MANIFEST)
           ? DEFAULT_MANIFEST_NAME : config.manifest().replaceAll("^(\\./)+", ""));
       FsFile baseDir = manifestFile.getParent();
       FsFile resDir = baseDir.join(config.resourceDir());
