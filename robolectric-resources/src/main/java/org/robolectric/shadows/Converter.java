@@ -14,9 +14,6 @@ import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.TypedResource;
 import org.robolectric.util.Util;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 public class Converter<T> {
   private static int nextStringCookie = 0xbaaa5;
 
@@ -41,10 +38,6 @@ public class Converter<T> {
     }
 
     AttrData attrData = (AttrData) attrTypeData.getData();
-    convertAndFill(attribute, outValue, resourceLoader, qualifiers, attrData, resolveRefs);
-  }
-
-  public static void convertAndFill(Attribute attribute, TypedValue outValue, ResourceLoader resourceLoader, String qualifiers, AttrData attrData, boolean resolveRefs) {
     // short-circuit Android caching of loaded resources cuz our string positions don't remain stable...
     outValue.assetCookie = getNextStringCookie();
 
