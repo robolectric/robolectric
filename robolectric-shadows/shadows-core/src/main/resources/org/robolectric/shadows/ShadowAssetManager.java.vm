@@ -677,7 +677,7 @@ public final class ShadowAssetManager {
 
     List<Attribute> attributes = new ArrayList<>();
     for (int attr : attrs) {
-      ResName attrName = tryResName(attr); // todo probably getResName instead here?
+      ResName attrName = resourceLoader.getResourceIndex().getResName(attr);
       if (attrName == null) continue;
 
       Attribute attribute = findAttributeValue(attrName, set, styleAttrStyle, defStyleFromAttr, defStyleFromRes, theme, overlayedStyles);
@@ -753,10 +753,6 @@ public final class ShadowAssetManager {
     }
 
     return attribute;
-  }
-
-  ResName tryResName(int id) {
-    return resourceLoader.getResourceIndex().getResName(id);
   }
 
   @NotNull ResName getResName(int id) {
