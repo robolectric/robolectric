@@ -542,7 +542,7 @@ public class SQLiteDatabaseTest {
         assertThat(firstCursor.moveToNext()).isTrue();
         long secondId = database.replaceOrThrow("table_name", null, valuesB);
         Cursor secondCursor = executeQuery(query + secondId);
-        assertThat(secondCursor.moveToNext());
+        assertThat(secondCursor.moveToNext()).isTrue();
 
         assertThat(firstId).isEqualTo(id);
         assertThat(secondId).isEqualTo(id);

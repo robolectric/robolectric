@@ -25,11 +25,13 @@ import static org.robolectric.Shadows.shadowOf;
  */
 public class RoboAttributeSet implements AttributeSet {
   private final List<Attribute> attributes;
-  private final ResourceLoader resourceLoader;
+  private Context context;
+  private ResourceLoader resourceLoader;
 
-  private RoboAttributeSet(List<Attribute> attributes, ResourceLoader resourceLoader) {
+  private RoboAttributeSet(List<Attribute> attributes, Context context) {
     this.attributes = attributes;
-    this.resourceLoader = resourceLoader;
+    this.context = context;
+    resourceLoader = shadowOf(context.getAssets()).getResourceLoader();
   }
 
   /**
@@ -42,7 +44,7 @@ public class RoboAttributeSet implements AttributeSet {
   }
 
   public static AttributeSet create(Context context, List<Attribute> attributesList) {
-    return new RoboAttributeSet(attributesList, shadowOf(context.getAssets()).getResourceLoader());
+    return new RoboAttributeSet(attributesList, context);
   }
 
   @Override
@@ -156,7 +158,7 @@ public class RoboAttributeSet implements AttributeSet {
 
   @Override
   public int getAttributeResourceValue(int resourceId, int defaultValue) {
-    String attrName = resourceLoader.getResourceIndex().getResourceName(resourceId);
+    String attrName = context.getResources().getResourceName(resourceId);
     ResName resName = getAttrResName(null, attrName);
     Attribute attr = findByName(resName);
     if (attr == null) return defaultValue;

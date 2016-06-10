@@ -15,7 +15,7 @@ public class ShadowIntentFilterTest {
     String action = "test";
     IntentFilter intentFilter = new IntentFilter(action);
     IntentFilter copy = new IntentFilter(intentFilter);
-    assertThat(copy.hasAction("test"));
+    assertThat(copy.hasAction("test")).isTrue();
   }
 
   @Test

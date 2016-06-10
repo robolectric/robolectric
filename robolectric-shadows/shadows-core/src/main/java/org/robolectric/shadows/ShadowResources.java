@@ -22,7 +22,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.fakes.RoboAttributeSet;
 import org.robolectric.res.Attribute;
 import org.robolectric.res.Plural;
 import org.robolectric.res.ResName;
@@ -100,17 +99,7 @@ public class ShadowResources {
   }
 
   private TypedArray attrsToTypedArray(AttributeSet set, int[] attrs, int defStyleAttr, int themeResourceId, int defStyleRes) {
-    if (set == null) {
-      set = RoboAttributeSet.create(RuntimeEnvironment.application);
-    }
-
     List<Attribute> attributes = shadowOf(realResources.getAssets()).buildAttributes(set, attrs, defStyleAttr, themeResourceId, defStyleRes);
-    TypedArray typedArray = createTypedArray(attributes, attrs);
-    shadowOf(typedArray).positionDescription = set.getPositionDescription();
-    return typedArray;
-  }
-
-  public TypedArray createTypedArray(List<Attribute> set, int[] attrs) {
     ShadowAssetManager shadowAssetManager = shadowOf(realResources.getAssets());
     ResourceLoader resourceLoader = shadowAssetManager.getResourceLoader();
 
@@ -125,7 +114,7 @@ public class ShadowResources {
       int attr = attrs[i];
       ResName attrName = resourceLoader.getResourceIndex().getResName(attr);
       if (attrName != null) {
-        Attribute attribute = Attribute.find(set, attrName);
+        Attribute attribute = Attribute.find(attributes, attrName);
         TypedValue typedValue = new TypedValue();
         Converter.convertAndFill(attribute, typedValue, resourceLoader, RuntimeEnvironment.getQualifiers(), true);
 
@@ -147,7 +136,11 @@ public class ShadowResources {
 
     indices[0] = nextIndex;
 
-    return ShadowTypedArray.create(realResources, attrs, data, indices, nextIndex, stringData);
+    TypedArray typedArray = ShadowTypedArray.create(realResources, attrs, data, indices, nextIndex, stringData);
+    if (set != null) {
+      shadowOf(typedArray).positionDescription = set.getPositionDescription();
+    }
+    return typedArray;
   }
 
   @Implementation

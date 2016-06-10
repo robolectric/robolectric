@@ -102,7 +102,7 @@ public final class ShadowAssetManager {
 
   @HiddenApi @Implementation
   public int getResourceIdentifier(String name, String defType, String defPackage) {
-    ResourceIndex resourceIndex = getResourceLoader().getResourceIndex();
+    ResourceIndex resourceIndex = resourceLoader.getResourceIndex();
     ResName resName = ResName.qualifyResName(name, defPackage, defType);
     Integer resourceId = resourceIndex.getResourceId(resName);
     if (resourceId == null) return 0;
@@ -124,7 +124,7 @@ public final class ShadowAssetManager {
 
   @HiddenApi @Implementation
   public CharSequence[] getResourceTextArray(final int id) {
-    ResName resName = getResourceLoader().getResourceIndex().getResName(id);
+    ResName resName = resourceLoader.getResourceIndex().getResName(id);
     if (resName == null) throw new Resources.NotFoundException("unknown resource " + id);
     TypedResource value = getAndResolve(resName, RuntimeEnvironment.getQualifiers(), true);
     if (value == null) return null;
@@ -139,7 +139,7 @@ public final class ShadowAssetManager {
 
   @HiddenApi @Implementation
   public boolean getThemeValue($ptrClass theme, int ident, TypedValue outValue, boolean resolveRefs) {
-    ResourceIndex resourceIndex = getResourceLoader().getResourceIndex();
+    ResourceIndex resourceIndex = resourceLoader.getResourceIndex();
     ResName resName = resourceIndex.getResName(ident);
     Resources.Theme theTheme = getThemeByInternalId(theme);
     // Load the style for the theme we represent. E.g. "@style/Theme.Robolectric"
@@ -150,7 +150,7 @@ public final class ShadowAssetManager {
     Style themeStyle = resolveStyle(null, themeStyleName);
 
     //// Load the theme attribute for the default style attributes. E.g., attr/buttonStyle
-    //ResName defStyleName = getResourceLoader().getResourceIndex().getResName(ident);
+    //ResName defStyleName = resourceLoader.getResourceIndex().getResName(ident);
     //
     //// Load the style for the default style attribute. E.g. "@style/Widget.Robolectric.Button";
     //String defStyleNameValue = themeStyle.getAttrValue(defStyleName);
@@ -204,7 +204,7 @@ public final class ShadowAssetManager {
   @HiddenApi @Implementation
   public final InputStream openNonAsset(int cookie, String fileName, int accessMode) throws IOException {
     final ResName resName = qualifyFromNonAssetFileName(fileName);
-    final DrawableNode drawableNode = getResourceLoader().getDrawableNode(resName, RuntimeEnvironment.getQualifiers());
+    final DrawableNode drawableNode = resourceLoader.getDrawableNode(resName, RuntimeEnvironment.getQualifiers());
 
     if (drawableNode == null) {
       throw new IOException("Unable to find resource for " + fileName);
@@ -265,7 +265,7 @@ public final class ShadowAssetManager {
 
   @HiddenApi @Implementation
   public int[] getArrayIntResource(int arrayRes) {
-    ResName resName = getResourceLoader().getResourceIndex().getResName(arrayRes);
+    ResName resName = resourceLoader.getResourceIndex().getResName(arrayRes);
     if (resName == null) throw new Resources.NotFoundException("unknown resource " + arrayRes);
     TypedResource value = getAndResolve(resName, RuntimeEnvironment.getQualifiers(), true);
     if (value == null) return null;
@@ -298,7 +298,7 @@ public final class ShadowAssetManager {
       appliedStyles.put(theme, new LinkedList<OverlayedStyle>());
     }
 
-    ResourceIndex resourceIndex = assetManager.getResourceLoader().getResourceIndex();
+    ResourceIndex resourceIndex = assetManager.resourceLoader.getResourceIndex();
     ResName resName = resourceIndex.getResName(styleRes);
 
     Style style = assetManager.resolveStyle(null, resName);
@@ -365,20 +365,20 @@ public final class ShadowAssetManager {
   }
 
   TypedResource getAndResolve(int resId, String qualifiers, boolean resolveRefs) {
-    ResName resName = getResourceLoader().getResourceIndex().getResName(resId);
+    ResName resName = resourceLoader.getResourceIndex().getResName(resId);
     if (resName == null) throw new Resources.NotFoundException("unknown resource " + resId);
     return getAndResolve(resName, qualifiers, resolveRefs);
   }
 
   TypedResource getAndResolve(@NotNull ResName resName, String qualifiers, boolean resolveRefs) {
-    TypedResource value = getResourceLoader().getValue(resName, qualifiers);
+    TypedResource value = resourceLoader.getValue(resName, qualifiers);
     if (resolveRefs) {
       value = resolve(value, qualifiers, resName);
     }
 
     // todo: make the drawable loader put stuff into the normal spot...
     if (value == null && DrawableResourceLoader.isStillHandledHere(resName)) {
-      DrawableNode drawableNode = getResourceLoader().getDrawableNode(resName, qualifiers);
+      DrawableNode drawableNode = resourceLoader.getDrawableNode(resName, qualifiers);
       return new TypedResource<FsFile>(drawableNode.getFsFile(), ResType.FILE);
     }
 
@@ -395,9 +395,9 @@ public final class ShadowAssetManager {
   }
 
   ResName resolveResName(int resId, String qualifiers) {
-    ResName resName = getResourceLoader().getResourceIndex().getResName(resId);
+    ResName resName = resourceLoader.getResourceIndex().getResName(resId);
     if (resName == null) return null;
-    TypedResource value = getResourceLoader().getValue(resName, qualifiers);
+    TypedResource value = resourceLoader.getValue(resName, qualifiers);
     return resolveResource(value, qualifiers, resName).resName;
   }
 
@@ -409,7 +409,7 @@ public final class ShadowAssetManager {
       } else {
         String refStr = s.substring(1).replace("+", "");
         resName = ResName.qualifyResName(refStr, resName);
-        value = getResourceLoader().getValue(resName, qualifiers);
+        value = resourceLoader.getValue(resName, qualifiers);
       }
     }
 
@@ -647,9 +647,8 @@ public final class ShadowAssetManager {
       }
     }
 
-    int styleAttrResId = set.getStyleAttribute();
-    if (styleAttrResId != 0) {
-      ResName styleAttributeResName = getResName(styleAttrResId);
+    if (set != null && set.getStyleAttribute() != 0) {
+      ResName styleAttributeResName = getResName(set.getStyleAttribute());
       while (styleAttributeResName.type.equals("attr")) {
         Attribute attrValue = getOverlayedThemeValue(styleAttributeResName, theme, overlayedStyles);
         if (attrValue.isResourceReference()) {
@@ -677,7 +676,6 @@ public final class ShadowAssetManager {
     }
 
     List<Attribute> attributes = new ArrayList<>();
-    if (attrs == null) attrs = new int[0];
     for (int attr : attrs) {
       ResName attrName = tryResName(attr); // todo probably getResName instead here?
       if (attrName == null) continue;
@@ -705,9 +703,11 @@ public final class ShadowAssetManager {
   }
 
   private Attribute findAttributeValue(ResName attrName, AttributeSet attributeSet, Style styleAttrStyle, Style defStyleFromAttr, Style defStyleFromRes, Style theme, List<ShadowAssetManager.OverlayedStyle> overlayedStyles) {
-    String attrValue = attributeSet.getAttributeValue(attrName.getNamespaceUri(), attrName.name);
-    if (attrValue != null) {
-      return new Attribute(attrName, attrValue, "fixme!!!");
+    if (attributeSet != null) {
+      String attrValue = attributeSet.getAttributeValue(attrName.getNamespaceUri(), attrName.name);
+      if (attrValue != null) {
+        return new Attribute(attrName, attrValue, "fixme!!!");
+      }
     }
 
     if (styleAttrStyle != null) {
@@ -756,11 +756,11 @@ public final class ShadowAssetManager {
   }
 
   ResName tryResName(int id) {
-    return getResourceLoader().getResourceIndex().getResName(id);
+    return resourceLoader.getResourceIndex().getResName(id);
   }
 
   @NotNull ResName getResName(int id) {
-    ResName resName = getResourceLoader().getResourceIndex().getResName(id);
+    ResName resName = resourceLoader.getResourceIndex().getResName(id);
     return checkResName(id, resName);
   }
 

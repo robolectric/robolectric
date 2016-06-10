@@ -183,8 +183,7 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
         themeRef = androidManifest.getThemeRef();
       }
       if (themeRef != null) {
-        ResName style = ResName.qualifyResName(themeRef.replace("@", ""), packageName, "style");
-        activityInfo.theme = RuntimeEnvironment.getAppResourceLoader().getResourceIndex().getResourceId(style);
+        activityInfo.theme = RuntimeEnvironment.application.getResources().getIdentifier(themeRef.replace("@", ""), "style", packageName);
       }
     }
     activityInfo.applicationInfo = getApplicationInfo(packageName, flags);
