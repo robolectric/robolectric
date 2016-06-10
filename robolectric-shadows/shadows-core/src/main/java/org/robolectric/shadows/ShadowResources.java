@@ -280,7 +280,6 @@ public class ShadowResources {
 
   @HiddenApi @Implementation
   public Drawable loadDrawable(TypedValue value, int id) {
-    ResName resName = shadowOf(realResources.getAssets()).tryResName(id);
     Drawable drawable = directlyOn(realResources, Resources.class, "loadDrawable",
         ClassParameter.from(TypedValue.class, value), ClassParameter.from(int.class, id));
 
@@ -292,7 +291,7 @@ public class ShadowResources {
         if (bitmap != null) {
           ShadowBitmap shadowBitmap = shadowOf(bitmap);
           if (shadowBitmap.createdFromResId == -1) {
-            shadowBitmap.setCreatedFromResId(id, resName);
+            shadowBitmap.setCreatedFromResId(id, shadowOf(realResources.getAssets()).getResourceName(id));
           }
         }
       }
@@ -302,7 +301,6 @@ public class ShadowResources {
 
   @Implementation
   public Drawable loadDrawable(TypedValue value, int id, Resources.Theme theme) throws Resources.NotFoundException {
-    ResName resName = shadowOf(realResources.getAssets()).tryResName(id);
     Drawable drawable = directlyOn(realResources, Resources.class, "loadDrawable",
         ClassParameter.from(TypedValue.class, value), ClassParameter.from(int.class, id), ClassParameter.from(Resources.Theme.class, theme));
 
@@ -314,7 +312,7 @@ public class ShadowResources {
         if (bitmap != null) {
           ShadowBitmap shadowBitmap = shadowOf(bitmap);
           if (shadowBitmap.createdFromResId == -1) {
-            shadowBitmap.setCreatedFromResId(id, resName);
+            shadowBitmap.setCreatedFromResId(id, shadowOf(realResources.getAssets()).getResourceName(id));
           }
         }
       }
