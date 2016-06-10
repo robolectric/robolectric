@@ -24,20 +24,26 @@ import java.util.Set;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
 public @interface Config {
+  /**
+   * TODO(vnayar): Create named constants for default values instead of magic numbers.
+   * Complex named contants must be avoided in order to dodge a JDK 1.7 bug.
+   *   error: annotation Config is missing value for the attribute <clinit>
+   * {@link https://bugs.openjdk.java.net/browse/JDK-8013485}
+   */
   String NONE = "--none";
   int[] DEFAULT_SDK = {};
   String DEFAULT_MANIFEST = "--default";
-  Class<?> DEFAULT_CONSTANTS = Void.class;
-  Class<? extends Application> DEFAULT_APPLICATION = Application.class;
+  //Class<?> DEFAULT_CONSTANTS = Void.class;
+  //Class<? extends Application> DEFAULT_APPLICATION = Application.class;
   String DEFAULT_PACKAGE_NAME = "";
   String DEFAULT_ABI_SPLIT = "";
   String DEFAULT_QUALIFIERS = "";
   String DEFAULT_RES_FOLDER = "res";
   String DEFAULT_ASSET_FOLDER = "assets";
   String DEFAULT_BUILD_FOLDER = "build";
-  Class<?>[] DEFAULT_SHADOWS = {};
-  String[] DEFAULT_INSTRUMENTED_PACKAGES = {};
-  String[] DEFAULT_LIBRARIES = {};
+  //Class<?>[] DEFAULT_SHADOWS = {};
+  //String[] DEFAULT_INSTRUMENTED_PACKAGES = {};
+  //String[] DEFAULT_LIBRARIES = {};
 
   /**
    * The Android SDK level to emulate. If not specified, Robolectric defaults to API 16.
