@@ -111,26 +111,21 @@ public class ShadowResources {
     for (int i = 0; i < attrs.length; i++) {
       int offset = i * ShadowAssetManager.STYLE_NUM_ENTRIES;
 
-      int attr = attrs[i];
-      ResName attrName = resourceLoader.getResourceIndex().getResName(attr);
-      if (attrName != null) {
-        Attribute attribute = Attribute.find(attributes, attrName);
+      Attribute attribute = Attribute.find(attributes, attrs[i], resourceLoader.getResourceIndex());
+      if (attribute != null && !attribute.isNull()) {
         TypedValue typedValue = new TypedValue();
         Converter.convertAndFill(attribute, typedValue, resourceLoader, RuntimeEnvironment.getQualifiers(), true);
+        //noinspection PointlessArithmeticExpression
+        data[offset + ShadowAssetManager.STYLE_TYPE] = typedValue.type;
+        data[offset + ShadowAssetManager.STYLE_DATA] = typedValue.type == TypedValue.TYPE_STRING ? i : typedValue.data;
+        data[offset + ShadowAssetManager.STYLE_ASSET_COOKIE] = typedValue.assetCookie;
+        data[offset + ShadowAssetManager.STYLE_RESOURCE_ID] = typedValue.resourceId;
+        data[offset + ShadowAssetManager.STYLE_CHANGING_CONFIGURATIONS] = typedValue.changingConfigurations;
+        data[offset + ShadowAssetManager.STYLE_DENSITY] = typedValue.density;
+        stringData[i] = typedValue.string;
 
-        if (attribute != null && !attribute.isNull()) {
-          //noinspection PointlessArithmeticExpression
-          data[offset + ShadowAssetManager.STYLE_TYPE] = typedValue.type;
-          data[offset + ShadowAssetManager.STYLE_DATA] = typedValue.type == TypedValue.TYPE_STRING ? i : typedValue.data;
-          data[offset + ShadowAssetManager.STYLE_ASSET_COOKIE] = typedValue.assetCookie;
-          data[offset + ShadowAssetManager.STYLE_RESOURCE_ID] = typedValue.resourceId;
-          data[offset + ShadowAssetManager.STYLE_CHANGING_CONFIGURATIONS] = typedValue.changingConfigurations;
-          data[offset + ShadowAssetManager.STYLE_DENSITY] = typedValue.density;
-          stringData[i] = typedValue.string;
-
-          indices[nextIndex + 1] = i;
-          nextIndex++;
-        }
+        indices[nextIndex + 1] = i;
+        nextIndex++;
       }
     }
 
