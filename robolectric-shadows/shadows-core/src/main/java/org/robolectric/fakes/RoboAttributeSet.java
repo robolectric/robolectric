@@ -3,17 +3,12 @@ package org.robolectric.fakes;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.util.TypedValue;
-
 import com.google.android.collect.Lists;
-
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.res.AttrData;
 import org.robolectric.res.Attribute;
 import org.robolectric.res.ResName;
-import org.robolectric.res.ResType;
 import org.robolectric.res.ResourceIndex;
 import org.robolectric.res.ResourceLoader;
-import org.robolectric.res.TypedResource;
 import org.robolectric.shadows.Converter;
 
 import java.util.List;
@@ -60,18 +55,12 @@ public class RoboAttributeSet implements AttributeSet {
     Attribute attr = findByName(resName);
     if (attr == null) return defaultValue;
 
-    String qualifiers = RuntimeEnvironment.getQualifiers();
-    TypedResource<AttrData> typedResource = resourceLoader.getValue(resName, qualifiers);
-    if (typedResource == null) {
-      typedResource = new TypedResource<>(new AttrData(attribute, "integer", null), ResType.INTEGER);
-    }
-
     TypedValue outValue = new TypedValue();
-    Converter.convertAndFill(attr, outValue, resourceLoader, qualifiers, typedResource.getData(), false);
+    Converter.convertAndFill(attr, outValue, resourceLoader, RuntimeEnvironment.getQualifiers(), false);
     if (outValue.type == TypedValue.TYPE_NULL) {
       return defaultValue;
-    }
 
+  }
     return outValue.data;
   }
 
