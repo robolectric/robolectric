@@ -1,25 +1,35 @@
 package org.robolectric.internal.bytecode;
 
-import android.content.Context;
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
-import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
-import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.Function;
-import org.robolectric.internal.ShadowConstants;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
-
-import java.lang.reflect.*;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-
 import static java.lang.invoke.MethodHandles.constant;
 import static java.lang.invoke.MethodHandles.dropArguments;
 import static java.lang.invoke.MethodHandles.foldArguments;
 import static java.lang.invoke.MethodHandles.identity;
 import static java.lang.invoke.MethodType.methodType;
+
+import android.content.Context;
+
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.internal.ShadowConstants;
+import org.robolectric.util.Function;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
+
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
+import java.lang.reflect.Array;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ShadowWrangler implements ClassHandler {
   public static final Function<Object, Object> DO_NOTHING_HANDLER = new Function<Object, Object>() {
@@ -127,11 +137,10 @@ public class ShadowWrangler implements ClassHandler {
 
   @Override
   public Plan methodInvoked(String signature, boolean isStatic, Class<?> theClass) {
-    Plan plan = planCache.get(signature);
-    if (plan != null) {
-      return plan;
+    if (planCache.containsKey(signature)) {
+      return planCache.get(signature);
     }
-    plan = calculatePlan(signature, isStatic, theClass);
+    Plan plan = calculatePlan(signature, isStatic, theClass);
     planCache.put(signature, plan);
     return plan;
   }
