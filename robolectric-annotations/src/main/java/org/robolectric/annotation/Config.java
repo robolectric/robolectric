@@ -26,24 +26,18 @@ import java.util.Set;
 public @interface Config {
   /**
    * TODO(vnayar): Create named constants for default values instead of magic numbers.
-   * Complex named contants must be avoided in order to dodge a JDK 1.7 bug.
+   * Array named contants must be avoided in order to dodge a JDK 1.7 bug.
    *   error: annotation Config is missing value for the attribute <clinit>
    * {@link https://bugs.openjdk.java.net/browse/JDK-8013485}
    */
   String NONE = "--none";
-  //int[] DEFAULT_SDK = {};
   String DEFAULT_MANIFEST = "--default";
-  //Class<?> DEFAULT_CONSTANTS = Void.class;
-  //Class<? extends Application> DEFAULT_APPLICATION = Application.class;
   String DEFAULT_PACKAGE_NAME = "";
   String DEFAULT_ABI_SPLIT = "";
   String DEFAULT_QUALIFIERS = "";
   String DEFAULT_RES_FOLDER = "res";
   String DEFAULT_ASSET_FOLDER = "assets";
   String DEFAULT_BUILD_FOLDER = "build";
-  //Class<?>[] DEFAULT_SHADOWS = {};
-  //String[] DEFAULT_INSTRUMENTED_PACKAGES = {};
-  //String[] DEFAULT_LIBRARIES = {};
 
   /**
    * The Android SDK level to emulate. If not specified, Robolectric defaults to API 16.
@@ -243,28 +237,6 @@ public @interface Config {
       this.libraries = libraries;
       this.constants = constants;
     }
-
-    // public Implementation(String manifest) {
-    //   this(
-    //       Config.DEFAULT_SDK,
-    //       manifest,
-    //       Config.DEFAULT_QUALIFIERS,
-    //       Config.DEFAULT_PACKAGE_NAME,
-    //       Config.DEFAULT_ABI_SPLIT,
-    //       Config.DEFAULT_RES_FOLDER,
-    //       Config.DEFAULT_ASSET_FOLDER,
-    //       Config.DEFAULT_BUILD_FOLDER,
-    //       new Class<?>[]{},  // Config.DEFAULT_SHADOWS
-    //       new String[]{},  // Config.DEFAULT_INSTRUMENTED_PACKAGES
-    //       Application.class,  // Config.DEFAULT_APPLICATION
-    //       new String[]{},  // Config.DEFAULT_LIBRARIES
-    //       Void.class);  // Config.DEFAULT_CONSTANTS
-    // }
-
-    // TODO(vnayar): Perhaps the various constructors should replaced with a builder?
-    // public Implementation() {
-    //   this(DEFAULT_MANIFEST);
-    // }
 
     public Implementation(Config other) {
       this.sdk = other.sdk();
