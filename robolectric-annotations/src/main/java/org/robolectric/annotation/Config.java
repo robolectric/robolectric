@@ -244,27 +244,27 @@ public @interface Config {
       this.constants = constants;
     }
 
-    public Implementation(String manifest) {
-      this(
-          Config.DEFAULT_SDK,
-          manifest,
-          Config.DEFAULT_QUALIFIERS,
-          Config.DEFAULT_PACKAGE_NAME,
-          Config.DEFAULT_ABI_SPLIT,
-          Config.DEFAULT_RES_FOLDER,
-          Config.DEFAULT_ASSET_FOLDER,
-          Config.DEFAULT_BUILD_FOLDER,
-          new Class<?>[]{},  // Config.DEFAULT_SHADOWS
-          new String[]{},  // Config.DEFAULT_INSTRUMENTED_PACKAGES
-          Application.class,  // Config.DEFAULT_APPLICATION
-          new String[]{},  // Config.DEFAULT_LIBRARIES
-          Void.class);  // Config.DEFAULT_CONSTANTS
-    }
+    // public Implementation(String manifest) {
+    //   this(
+    //       Config.DEFAULT_SDK,
+    //       manifest,
+    //       Config.DEFAULT_QUALIFIERS,
+    //       Config.DEFAULT_PACKAGE_NAME,
+    //       Config.DEFAULT_ABI_SPLIT,
+    //       Config.DEFAULT_RES_FOLDER,
+    //       Config.DEFAULT_ASSET_FOLDER,
+    //       Config.DEFAULT_BUILD_FOLDER,
+    //       new Class<?>[]{},  // Config.DEFAULT_SHADOWS
+    //       new String[]{},  // Config.DEFAULT_INSTRUMENTED_PACKAGES
+    //       Application.class,  // Config.DEFAULT_APPLICATION
+    //       new String[]{},  // Config.DEFAULT_LIBRARIES
+    //       Void.class);  // Config.DEFAULT_CONSTANTS
+    // }
 
     // TODO(vnayar): Perhaps the various constructors should replaced with a builder?
-    public Implementation() {
-      this(DEFAULT_MANIFEST);
-    }
+    // public Implementation() {
+    //   this(DEFAULT_MANIFEST);
+    // }
 
     public Implementation(Config other) {
       this.sdk = other.sdk();
