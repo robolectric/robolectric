@@ -31,7 +31,7 @@ public @interface Config {
    * {@link https://bugs.openjdk.java.net/browse/JDK-8013485}
    */
   String NONE = "--none";
-  int[] DEFAULT_SDK = {};
+  //int[] DEFAULT_SDK = {};
   String DEFAULT_MANIFEST = "--default";
   //Class<?> DEFAULT_CONSTANTS = Void.class;
   //Class<? extends Application> DEFAULT_APPLICATION = Application.class;
