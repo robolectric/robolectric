@@ -111,26 +111,21 @@ public class ShadowResources {
     for (int i = 0; i < attrs.length; i++) {
       int offset = i * ShadowAssetManager.STYLE_NUM_ENTRIES;
 
-      int attr = attrs[i];
-      ResName attrName = resourceLoader.getResourceIndex().getResName(attr);
-      if (attrName != null) {
-        Attribute attribute = Attribute.find(attributes, attrName);
+      Attribute attribute = Attribute.find(attributes, attrs[i], resourceLoader.getResourceIndex());
+      if (attribute != null && !attribute.isNull()) {
         TypedValue typedValue = new TypedValue();
         Converter.convertAndFill(attribute, typedValue, resourceLoader, RuntimeEnvironment.getQualifiers(), true);
+        //noinspection PointlessArithmeticExpression
+        data[offset + ShadowAssetManager.STYLE_TYPE] = typedValue.type;
+        data[offset + ShadowAssetManager.STYLE_DATA] = typedValue.type == TypedValue.TYPE_STRING ? i : typedValue.data;
+        data[offset + ShadowAssetManager.STYLE_ASSET_COOKIE] = typedValue.assetCookie;
+        data[offset + ShadowAssetManager.STYLE_RESOURCE_ID] = typedValue.resourceId;
+        data[offset + ShadowAssetManager.STYLE_CHANGING_CONFIGURATIONS] = typedValue.changingConfigurations;
+        data[offset + ShadowAssetManager.STYLE_DENSITY] = typedValue.density;
+        stringData[i] = typedValue.string;
 
-        if (attribute != null && !attribute.isNull()) {
-          //noinspection PointlessArithmeticExpression
-          data[offset + ShadowAssetManager.STYLE_TYPE] = typedValue.type;
-          data[offset + ShadowAssetManager.STYLE_DATA] = typedValue.type == TypedValue.TYPE_STRING ? i : typedValue.data;
-          data[offset + ShadowAssetManager.STYLE_ASSET_COOKIE] = typedValue.assetCookie;
-          data[offset + ShadowAssetManager.STYLE_RESOURCE_ID] = typedValue.resourceId;
-          data[offset + ShadowAssetManager.STYLE_CHANGING_CONFIGURATIONS] = typedValue.changingConfigurations;
-          data[offset + ShadowAssetManager.STYLE_DENSITY] = typedValue.density;
-          stringData[i] = typedValue.string;
-
-          indices[nextIndex + 1] = i;
-          nextIndex++;
-        }
+        indices[nextIndex + 1] = i;
+        nextIndex++;
       }
     }
 
@@ -285,7 +280,6 @@ public class ShadowResources {
 
   @HiddenApi @Implementation
   public Drawable loadDrawable(TypedValue value, int id) {
-    ResName resName = shadowOf(realResources.getAssets()).tryResName(id);
     Drawable drawable = directlyOn(realResources, Resources.class, "loadDrawable",
         ClassParameter.from(TypedValue.class, value), ClassParameter.from(int.class, id));
 
@@ -297,7 +291,7 @@ public class ShadowResources {
         if (bitmap != null) {
           ShadowBitmap shadowBitmap = shadowOf(bitmap);
           if (shadowBitmap.createdFromResId == -1) {
-            shadowBitmap.setCreatedFromResId(id, resName);
+            shadowBitmap.setCreatedFromResId(id, shadowOf(realResources.getAssets()).getResourceName(id));
           }
         }
       }
@@ -307,7 +301,6 @@ public class ShadowResources {
 
   @Implementation
   public Drawable loadDrawable(TypedValue value, int id, Resources.Theme theme) throws Resources.NotFoundException {
-    ResName resName = shadowOf(realResources.getAssets()).tryResName(id);
     Drawable drawable = directlyOn(realResources, Resources.class, "loadDrawable",
         ClassParameter.from(TypedValue.class, value), ClassParameter.from(int.class, id), ClassParameter.from(Resources.Theme.class, theme));
 
@@ -319,7 +312,7 @@ public class ShadowResources {
         if (bitmap != null) {
           ShadowBitmap shadowBitmap = shadowOf(bitmap);
           if (shadowBitmap.createdFromResId == -1) {
-            shadowBitmap.setCreatedFromResId(id, resName);
+            shadowBitmap.setCreatedFromResId(id, shadowOf(realResources.getAssets()).getResourceName(id));
           }
         }
       }
