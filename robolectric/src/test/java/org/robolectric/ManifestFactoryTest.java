@@ -22,10 +22,9 @@ public class ManifestFactoryTest {
   @Test
   public void shouldLoadLibraryManifests() throws Exception {
     Properties properties = new Properties();
+    properties.setProperty("manifest", resourceFile("TestAndroidManifest.xml").toString());
     properties.setProperty("libraries", "lib1");
-    Config config = new Config.Implementation(
-        new Config.Implementation(resourceFile("TestAndroidManifest.xml").toString()),
-        Config.Implementation.fromProperties(properties));
+    Config config = Config.Implementation.fromProperties(properties);
     ManifestFactory.MavenManifestFactory mavenManifestFactory =
         new ManifestFactory.MavenManifestFactory(config);
     AndroidManifest manifest = mavenManifestFactory.create();
@@ -38,11 +37,10 @@ public class ManifestFactoryTest {
   @Test
   public void shouldLoadAllResourcesForExistingLibraries() {
     Properties properties = new Properties();
+    properties.setProperty("manifest", resourceFile("TestAndroidManifest.xml").toString());
     properties.setProperty("resourceDir", "res");
     properties.setProperty("assetDir", "assets");
-    Config config = new Config.Implementation(
-        new Config.Implementation(resourceFile("TestAndroidManifest.xml").toString()),
-        Config.Implementation.fromProperties(properties));
+    Config config = Config.Implementation.fromProperties(properties);
     ManifestFactory.MavenManifestFactory mavenManifestFactory =
         new ManifestFactory.MavenManifestFactory(config);
     AndroidManifest appManifest = mavenManifestFactory.create();
