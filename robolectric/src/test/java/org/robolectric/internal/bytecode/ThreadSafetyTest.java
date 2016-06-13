@@ -14,7 +14,7 @@ import java.lang.reflect.Field;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(TestRunners.WithoutDefaults.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class ThreadSafetyTest {
   @Test
   @Config(shadows = {InstrumentedThreadShadow.class})

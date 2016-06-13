@@ -10,7 +10,7 @@ import org.robolectric.annotation.internal.Instrument;
 
 import static org.junit.Assert.assertEquals;
 
-@RunWith(TestRunners.RealApisWithoutDefaults.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class RealApisTest {
   @Test
   @Config(shadows = {ShimmeryShadowPony.class})
