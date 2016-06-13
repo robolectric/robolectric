@@ -84,6 +84,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     String packageName;
     if (appManifest != null) {
       appResourceLoader = robolectricTestRunner.getAppResourceLoader(sdkConfig, systemResourceLoader, appManifest);
+      RuntimeEnvironment.setAppResourceLoader(appResourceLoader);
       RuntimeEnvironment.getRobolectricPackageManager().addManifest(appManifest);
       packageName = appManifest.getPackageName();
     } else {
@@ -92,11 +93,10 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       // name was specified without a manifest,
       packageName = config.packageName() != null && !config.packageName().isEmpty() ? config.packageName() : DEFAULT_PACKAGE_NAME;
       RuntimeEnvironment.getRobolectricPackageManager().addPackage(packageName);
-      appResourceLoader = systemResourceLoader;
+      RuntimeEnvironment.setAppResourceLoader(systemResourceLoader);
     }
 
     RuntimeEnvironment.setSystemResourceLoader(systemResourceLoader);
-    RuntimeEnvironment.setAppResourceLoader(appResourceLoader);
 
     if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
       Security.insertProviderAt(new BouncyCastleProvider(), 1);
