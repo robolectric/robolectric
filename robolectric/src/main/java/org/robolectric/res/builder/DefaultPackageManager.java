@@ -22,7 +22,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.ShadowsAdapter;
 import org.robolectric.manifest.ActivityData;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.BroadcastReceiverData;
@@ -31,7 +30,6 @@ import org.robolectric.manifest.IntentFilterData;
 import org.robolectric.manifest.ServiceData;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceIndex;
-import org.robolectric.res.ResourceLoader;
 import org.robolectric.util.TempDirectory;
 
 import java.io.File;
@@ -51,10 +49,6 @@ import java.util.TreeMap;
 public class DefaultPackageManager extends StubPackageManager implements RobolectricPackageManager {
 
   private Map<Integer, String> namesForUid = new HashMap<>();
-
-  public DefaultPackageManager(ShadowsAdapter shadowsAdapter) {
-    this.shadowsAdapter = shadowsAdapter;
-  }
 
   static class IntentComparator implements Comparator<Intent> {
 
@@ -118,7 +112,6 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
     }
   }
 
-  private final ShadowsAdapter shadowsAdapter;
   private final Map<String, AndroidManifest> androidManifests = new LinkedHashMap<>();
   private final Map<String, PackageInfo> packageInfos = new LinkedHashMap<>();
   private Map<Intent, List<ResolveInfo>> resolveInfoForIntent = new TreeMap<>(new IntentComparator());
@@ -443,12 +436,11 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
   }
 
   @Override
-  public void addManifest(AndroidManifest androidManifest, ResourceLoader loader) {
+  public void addManifest(AndroidManifest androidManifest) {
     androidManifests.put(androidManifest.getPackageName(), androidManifest);
-    ResourceIndex resourceIndex = loader.getResourceIndex();
 
     // first opportunity to access a resource index for this manifest, use it to init the references
-    androidManifest.initMetaData(loader);
+    androidManifest.initMetaData(RuntimeEnvironment.getAppResourceLoader());
 
     PackageInfo packageInfo = new PackageInfo();
     packageInfo.packageName = androidManifest.getPackageName();
@@ -514,6 +506,7 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
     applicationInfo.sourceDir = new File(".").getAbsolutePath();
     applicationInfo.dataDir = TempDirectory.create().toAbsolutePath().toString();
 
+    ResourceIndex resourceIndex = RuntimeEnvironment.getAppResourceLoader().getResourceIndex();
     if (androidManifest.getLabelRef() != null && resourceIndex != null) {
       Integer id = ResName.getResourceId(resourceIndex, androidManifest.getLabelRef(), androidManifest.getPackageName());
       applicationInfo.labelRes = id != null ? id : 0;

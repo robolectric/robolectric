@@ -409,27 +409,19 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     Pair<AndroidManifest, SdkConfig> androidManifestSdkConfigPair = new Pair<>(appManifest, sdkConfig);
     ResourceLoader resourceLoader = resourceLoadersByManifestAndConfig.get(androidManifestSdkConfigPair);
     if (resourceLoader == null) {
-      resourceLoader = createAppResourceLoader(systemResourceLoader, appManifest);
+      List<PackageResourceLoader> appAndLibraryResourceLoaders = new ArrayList<>();
+      for (ResourcePath resourcePath : appManifest.getIncludedResourcePaths()) {
+        appAndLibraryResourceLoaders.add(new PackageResourceLoader(resourcePath, new ResourceExtractor(resourcePath)));
+      }
+      OverlayResourceLoader overlayResourceLoader = new OverlayResourceLoader(appManifest.getPackageName(), appAndLibraryResourceLoaders);
+
+      Map<String, ResourceLoader> resourceLoaders = new HashMap<>();
+      resourceLoaders.put("android", systemResourceLoader);
+      resourceLoaders.put(appManifest.getPackageName(), overlayResourceLoader);
+      resourceLoader = new RoutingResourceLoader(resourceLoaders);
       resourceLoadersByManifestAndConfig.put(androidManifestSdkConfigPair, resourceLoader);
     }
     return resourceLoader;
-  }
-
-  protected ResourceLoader createAppResourceLoader(ResourceLoader systemResourceLoader, AndroidManifest appManifest) {
-    List<PackageResourceLoader> appAndLibraryResourceLoaders = new ArrayList<>();
-    for (ResourcePath resourcePath : appManifest.getIncludedResourcePaths()) {
-      appAndLibraryResourceLoaders.add(createResourceLoader(resourcePath, new ResourceExtractor(resourcePath)));
-    }
-    OverlayResourceLoader overlayResourceLoader = new OverlayResourceLoader(appManifest.getPackageName(), appAndLibraryResourceLoaders);
-
-    Map<String, ResourceLoader> resourceLoaders = new HashMap<>();
-    resourceLoaders.put("android", systemResourceLoader);
-    resourceLoaders.put(appManifest.getPackageName(), overlayResourceLoader);
-    return new RoutingResourceLoader(resourceLoaders);
-  }
-
-  public PackageResourceLoader createResourceLoader(ResourcePath resourcePath, ResourceIndex resourceIndex) {
-    return new PackageResourceLoader(resourcePath, resourceIndex);
   }
 
   protected ShadowMap createShadowMap() {

@@ -78,13 +78,14 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     RuntimeEnvironment.application = null;
     RuntimeEnvironment.setMasterScheduler(new Scheduler());
     RuntimeEnvironment.setMainThread(Thread.currentThread());
-    RuntimeEnvironment.setRobolectricPackageManager(new DefaultPackageManager(shadowsAdapter));
+    RuntimeEnvironment.setRobolectricPackageManager(new DefaultPackageManager());
     RuntimeEnvironment.getRobolectricPackageManager().addPackage(DEFAULT_PACKAGE_NAME);
-    ResourceLoader resourceLoader;
+    ResourceLoader appResourceLoader;
     String packageName;
     if (appManifest != null) {
-      resourceLoader = robolectricTestRunner.getAppResourceLoader(sdkConfig, systemResourceLoader, appManifest);
-      RuntimeEnvironment.getRobolectricPackageManager().addManifest(appManifest, resourceLoader);
+      appResourceLoader = robolectricTestRunner.getAppResourceLoader(sdkConfig, systemResourceLoader, appManifest);
+      RuntimeEnvironment.setAppResourceLoader(appResourceLoader);
+      RuntimeEnvironment.getRobolectricPackageManager().addManifest(appManifest);
       packageName = appManifest.getPackageName();
     } else {
       // Fallback if there is no manifest specified. If a manifest was specified it will already
@@ -92,11 +93,10 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       // name was specified without a manifest,
       packageName = config.packageName() != null && !config.packageName().isEmpty() ? config.packageName() : DEFAULT_PACKAGE_NAME;
       RuntimeEnvironment.getRobolectricPackageManager().addPackage(packageName);
-      resourceLoader = systemResourceLoader;
+      RuntimeEnvironment.setAppResourceLoader(systemResourceLoader);
     }
 
     RuntimeEnvironment.setSystemResourceLoader(systemResourceLoader);
-    RuntimeEnvironment.setAppResourceLoader(resourceLoader);
 
     if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
       Security.insertProviderAt(new BouncyCastleProvider(), 1);
