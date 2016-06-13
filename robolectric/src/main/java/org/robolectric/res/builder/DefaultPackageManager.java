@@ -52,10 +52,6 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
 
   private Map<Integer, String> namesForUid = new HashMap<>();
 
-  public DefaultPackageManager(ShadowsAdapter shadowsAdapter) {
-    this.shadowsAdapter = shadowsAdapter;
-  }
-
   static class IntentComparator implements Comparator<Intent> {
 
     @Override
@@ -118,7 +114,6 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
     }
   }
 
-  private final ShadowsAdapter shadowsAdapter;
   private final Map<String, AndroidManifest> androidManifests = new LinkedHashMap<>();
   private final Map<String, PackageInfo> packageInfos = new LinkedHashMap<>();
   private Map<Intent, List<ResolveInfo>> resolveInfoForIntent = new TreeMap<>(new IntentComparator());
