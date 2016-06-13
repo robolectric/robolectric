@@ -84,7 +84,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     String packageName;
     if (appManifest != null) {
       appResourceLoader = robolectricTestRunner.getAppResourceLoader(sdkConfig, systemResourceLoader, appManifest);
-      RuntimeEnvironment.getRobolectricPackageManager().addManifest(appManifest, appResourceLoader);
+      RuntimeEnvironment.getRobolectricPackageManager().addManifest(appManifest);
       packageName = appManifest.getPackageName();
     } else {
       // Fallback if there is no manifest specified. If a manifest was specified it will already

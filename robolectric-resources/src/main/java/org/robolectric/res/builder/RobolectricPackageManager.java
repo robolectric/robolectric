@@ -6,7 +6,6 @@ import android.content.IntentFilter;
 import android.content.pm.*;
 import android.graphics.drawable.Drawable;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.ResourceLoader;
 
 import java.util.List;
 
@@ -67,7 +66,7 @@ public interface RobolectricPackageManager {
 
   void addPackage(String packageName);
 
-  void addManifest(AndroidManifest androidManifest, ResourceLoader loader);
+  void addManifest(AndroidManifest androidManifest);
 
   void removePackage(String packageName);
 
