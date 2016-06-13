@@ -127,11 +127,10 @@ public class ShadowWrangler implements ClassHandler {
 
   @Override
   public Plan methodInvoked(String signature, boolean isStatic, Class<?> theClass) {
-    Plan plan = planCache.get(signature);
-    if (plan != null) {
-      return plan;
+    if (planCache.containsKey(signature)) {
+      return planCache.get(signature);
     }
-    plan = calculatePlan(signature, isStatic, theClass);
+    Plan plan = calculatePlan(signature, isStatic, theClass);
     planCache.put(signature, plan);
     return plan;
   }
