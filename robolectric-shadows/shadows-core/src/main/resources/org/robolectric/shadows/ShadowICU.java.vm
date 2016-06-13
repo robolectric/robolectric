@@ -16,15 +16,9 @@ public class ShadowICU {
     return "en-US";
   }
 
-#if ($api >= 21)
   @Implementation
-  public static String getBestDateTimePattern(String skeleton, Locale locale) {
+  public static String getBestDateTimePattern(Locale locale, String skeleton) {
     return skeleton;
   }
-#else
-  @Implementation
-  public static String getBestDateTimePattern(String skeleton, String locale) {
-    return skeleton;
-  }
-#end
+
 }
