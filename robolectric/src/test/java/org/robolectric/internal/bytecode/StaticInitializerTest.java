@@ -9,7 +9,7 @@ import org.robolectric.annotation.internal.Instrument;
 
 import static org.junit.Assert.*;
 
-@RunWith(TestRunners.WithoutDefaults.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class StaticInitializerTest {
   @Test
   public void whenClassIsUnshadowed_shouldPerformStaticInitialization() throws Exception {

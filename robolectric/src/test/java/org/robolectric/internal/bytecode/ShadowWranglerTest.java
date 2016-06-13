@@ -18,7 +18,7 @@ import java.io.IOException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 
-@RunWith(TestRunners.WithoutDefaults.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class ShadowWranglerTest {
   private String name;
 
