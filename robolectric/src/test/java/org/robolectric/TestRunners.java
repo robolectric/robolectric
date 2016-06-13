@@ -1,18 +1,18 @@
 package org.robolectric;
 
+import static org.robolectric.util.TestUtil.resourceFile;
+
 import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.internal.ParallelUniverseInterface;
+import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.FsFile;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.shadows.ShadowSystemProperties;
 
 import java.lang.reflect.Method;
 import java.util.Locale;
-
-import static org.robolectric.util.TestUtil.resourceFile;
+import java.util.Properties;
 
 public class TestRunners {
 
@@ -28,7 +28,8 @@ public class TestRunners {
           .build();
     }
 
-    @Override protected AndroidManifest createAppManifest(FsFile manifestFile, FsFile resDir, FsFile assetDir, String packageName) {
+    @Override
+    protected AndroidManifest getAppManifest(Config config) {
       return null;
     }
 
@@ -40,15 +41,18 @@ public class TestRunners {
 
   public static class WithDefaults extends RobolectricTestRunner {
     public static final String SDK_TARGETED_BY_MANIFEST = "-v23";
-    
+
     public WithDefaults(Class<?> testClass) throws InitializationError {
       super(testClass);
       Locale.setDefault(Locale.ENGLISH);
     }
 
     @Override
-    protected AndroidManifest createAppManifest(FsFile manifestFile, FsFile resDir, FsFile assetDir, String packageName) {
-      return new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"), resourceFile("assets"), packageName);
+    protected AndroidManifest getAppManifest(Config config) {
+      Properties properties = new Properties();
+      properties.put("manifest", resourceFile("TestAndroidManifest.xml").toString());
+      return super.getAppManifest(
+          new Config.Implementation(config, Config.Implementation.fromProperties(properties)));
     }
   }
 
@@ -70,8 +74,11 @@ public class TestRunners {
       }
 
       @Override
-      protected AndroidManifest createAppManifest(FsFile manifestFile, FsFile resDir, FsFile assetDir, String packageName) {
-        return new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"), resourceFile("assets"), packageName);
+      protected AndroidManifest getAppManifest(Config config) {
+        Properties properties = new Properties();
+        properties.put("manifest", "src/test/resources/TestAndroidManifest.xml");
+        return super.getAppManifest(
+            new Config.Implementation(config, Config.Implementation.fromProperties(properties)));
       }
     }
   }

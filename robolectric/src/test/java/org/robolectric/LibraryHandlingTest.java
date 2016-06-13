@@ -1,14 +1,15 @@
 package org.robolectric;
 
+import static org.junit.Assert.assertEquals;
+
 import android.content.res.Resources;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
 
 import java.util.List;
-
-import static org.junit.Assert.assertEquals;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class LibraryHandlingTest {
