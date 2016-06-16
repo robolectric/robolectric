@@ -1,5 +1,40 @@
 package org.robolectric.shadows;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.robolectric.Robolectric.buildActivity;
+import static org.robolectric.Robolectric.setupActivity;
+import static org.robolectric.RuntimeEnvironment.application;
+import static org.robolectric.Shadows.shadowOf;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.R;
+import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.Shadows;
+import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
+import org.robolectric.internal.Shadow;
+import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.res.Fs;
+import org.robolectric.test.TemporaryFolder;
+import org.robolectric.util.ActivityController;
+import org.robolectric.util.TestRunnable;
+import org.robolectric.util.Transcript;
+
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.ActivityOptions;
@@ -31,41 +66,6 @@ import android.view.Window;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.SearchView;
-
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.R;
-import org.robolectric.Robolectric;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.Shadows;
-import org.robolectric.TestRunners;
-import org.robolectric.annotation.Config;
-import org.robolectric.internal.Shadow;
-import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.Fs;
-import org.robolectric.test.TemporaryFolder;
-import org.robolectric.util.ActivityController;
-import org.robolectric.util.TestRunnable;
-import org.robolectric.util.Transcript;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.robolectric.Robolectric.buildActivity;
-import static org.robolectric.Robolectric.setupActivity;
-import static org.robolectric.RuntimeEnvironment.application;
-import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ShadowActivityTest {
@@ -865,6 +865,28 @@ public class ShadowActivityTest {
 
     assertEquals(componentName, activity.getCallingActivity());
   }
+  
+  @Test
+  public void recreateWithConfigChangesGoesThroughFullLifeCycle() throws Exception {
+	ConfigChangingActivity activity = buildActivity(ConfigChangingActivity.class).get();
+    shadowOf(activity).recreateWithConfigChanges(ActivityInfo.CONFIG_LOCALE);
+
+    activity.transcript.assertEventsSoFar(
+        "onSaveInstanceState",
+        "onPause",
+        "onStop",
+        "onRetainNonConfigurationInstance",
+        "onDestroy",
+        "onCreate",
+        "onStart",
+        "onRestoreInstanceState",
+        "onResume"
+    );
+
+    Integer storedValue = (Integer) activity.getLastNonConfigurationInstance();
+    assertEquals(5, storedValue.intValue());
+    assertEquals(ActivityInfo.CONFIG_LOCALE, activity.changingConfigurations);
+  }
 
   /////////////////////////////
 
@@ -1035,6 +1057,46 @@ public class ShadowActivityTest {
     @Override
     public void onActivityDestroyed(Activity activity) {
       transcript.add("onActivityDestroyed");
+    }
+  }
+  
+  private static class ConfigChangingActivity extends TestActivity {
+    public int changingConfigurations;
+  
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+      assertTrue(isChangingConfigurations());
+      assertTrue(getChangingConfigurations() != 0);
+      changingConfigurations = getChangingConfigurations();
+      super.onSaveInstanceState(outState);
+    }
+  
+    @Override
+    public void onPause() {
+      assertTrue(isChangingConfigurations());
+      assertTrue(getChangingConfigurations() != 0);
+      super.onPause();
+    }
+    
+    @Override
+    public void onStop() {
+      assertTrue(isChangingConfigurations());
+      assertTrue(getChangingConfigurations() != 0);
+      super.onStop();
+    }
+    
+    @Override
+    public void onDestroy() {
+      assertTrue(isChangingConfigurations());
+      assertTrue(getChangingConfigurations() != 0);
+      super.onDestroy();
+    }
+    
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+    	assertFalse(isChangingConfigurations());
+    	assertEquals(0, getChangingConfigurations());
+    	super.onCreate(savedInstanceState);
     }
   }
 }

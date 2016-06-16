@@ -1,5 +1,16 @@
 package org.robolectric.util;
 
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.Shadows;
+import org.robolectric.ShadowsAdapter;
+import org.robolectric.ShadowsAdapter.ShadowActivityAdapter;
+import org.robolectric.ShadowsAdapter.ShadowApplicationAdapter;
+import org.robolectric.internal.Shadow;
+import org.robolectric.internal.runtime.RuntimeAdapter;
+import org.robolectric.internal.runtime.RuntimeAdapterFactory;
+import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
+
 import android.app.Activity;
 import android.app.Application;
 import android.content.ComponentName;
@@ -7,22 +18,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
+import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.view.Display;
 import android.view.ViewRootImpl;
-
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.ShadowsAdapter;
-import org.robolectric.internal.Shadow;
-import org.robolectric.internal.runtime.RuntimeAdapter;
-import org.robolectric.internal.runtime.RuntimeAdapterFactory;
-import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.ResName;
-import org.robolectric.ShadowsAdapter.ShadowActivityAdapter;
-import org.robolectric.ShadowsAdapter.ShadowApplicationAdapter;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 public class ActivityController<T extends Activity> extends ComponentController<ActivityController<T>, T> {
   private final ShadowsAdapter shadowsAdapter;
@@ -240,5 +240,27 @@ public class ActivityController<T extends Activity> extends ComponentController<
         .postCreate(savedInstanceState)
         .resume()
         .visible();
+  }
+  
+  public ActivityController<T> configurationChange(final Application application, final Configuration newConfiguration) {
+    final T activity = get();
+    final Configuration currentConfig = activity.getResources().getConfiguration();
+    final int changedBits = currentConfig.diff(newConfiguration);
+    currentConfig.setTo(newConfiguration);
+    
+    // Can the activity handle itself ALL configuration changes?
+    if ((getActivityInfo(application).configChanges & changedBits) == changedBits) {
+      shadowMainLooper.runPaused(new Runnable() {
+        @Override
+        public void run() {
+          ReflectionHelpers.callInstanceMethod(Activity.class, component, "onConfigurationChanged",
+            ClassParameter.from(Configuration.class, newConfiguration));
+        }
+      });
+    } else {
+      Shadows.shadowOf(activity).recreateWithConfigChanges(changedBits);
+    }
+    
+    return this;
   }
 }
