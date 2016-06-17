@@ -1,0 +1,25 @@
+apply plugin: "java"
+
+sourceCompatibility = JavaVersion.VERSION_1_7
+targetCompatibility = JavaVersion.VERSION_1_7
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    // Project dependencies
+    compile project(":robolectric-utils")
+    compile project(":robolectric-annotations")
+
+    // Compile dependencies
+    compile "com.ximpleware:vtd-xml:2.11"
+    compile "com.google.guava:guava:17.0"
+    compile "org.robolectric:android-all:5.0.0_r2-robolectric-0"
+
+    // Testing dependencies
+    testCompile "junit:junit-dep:4.8.2"
+    testCompile "org.assertj:assertj-core:1.7.0"
+    testCompile "com.google.testing.compile:compile-testing:0.6"
+}

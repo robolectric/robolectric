@@ -1,0 +1,55 @@
+apply plugin: "java"
+
+sourceCompatibility = JavaVersion.VERSION_1_7
+targetCompatibility = JavaVersion.VERSION_1_7
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+configurations {
+    shadows
+}
+
+task generateShadows(type: JavaCompile, description: "Generate shadow classes") {
+    source = sourceSets.main.java
+    classpath = configurations.compile + configurations.shadows
+    options.compilerArgs = [
+            "-proc:only",
+            "-processor", "org.robolectric.annotation.processing.RoboProcessor",
+            "-Aorg.robolectric.annotation.processing.shadowPackage=org.robolectric"
+    ]
+    destinationDir = file("$buildDir/generated-shadows")
+}
+
+compileJava {
+    dependsOn generateShadows
+    source file("$buildDir/generated-shadows")
+}
+
+dependencies {
+    // Project dependencies
+    compile project(":robolectric")
+    compile project(":robolectric-utils")
+    compile project(":robolectric-resources")
+    compile project(":robolectric-annotations")
+
+    // Run the annotation processor
+    shadows project(":robolectric-processor")
+
+    // Compile dependencies
+    compile "com.intellij:annotations:12.0"
+    compile "com.almworks.sqlite4java:sqlite4java:0.282"
+    compile "org.robolectric:android-all:5.0.0_r2-robolectric-0"
+
+    runtime "com.github.axet.litedb:libsqlite:0.282-3:natives-mac-x86_64"
+    runtime "com.github.axet.litedb:libsqlite:0.282-3:natives-linux-x86"
+    runtime "com.github.axet.litedb:libsqlite:0.282-3:natives-linux-x86_64"
+    runtime "com.github.axet.litedb:libsqlite:0.282-3:natives-windows-x86"
+    runtime "com.github.axet.litedb:libsqlite:0.282-3:natives-windows-x86_64"
+
+    // Testing dependencies
+    testCompile "junit:junit-dep:4.8.2"
+    testCompile "org.assertj:assertj-core:1.7.0"
+}

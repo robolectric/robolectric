@@ -1,0 +1,47 @@
+apply plugin: "java"
+
+sourceCompatibility = JavaVersion.VERSION_1_7
+targetCompatibility = JavaVersion.VERSION_1_7
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+configurations {
+    shadows
+}
+
+task generateShadows(type: JavaCompile, description: "Generate shadow classes") {
+    source = sourceSets.main.java
+    classpath = configurations.compile + configurations.shadows
+    options.compilerArgs = [
+            "-proc:only",
+            "-processor", "org.robolectric.annotation.processing.RoboProcessor",
+            "-Aorg.robolectric.annotation.processing.shadowPackage=org.robolectric.httpclient"
+    ]
+    destinationDir = file("$buildDir/generated-shadows")
+}
+
+compileJava {
+    dependsOn generateShadows
+    source file("$buildDir/generated-shadows")
+}
+
+dependencies {
+    // Project dependencies
+    compile project(":robolectric")
+    compile project(":robolectric-shadows/shadows-core")
+
+    // Run the annotation processor
+    shadows project(":robolectric-processor")
+
+    // Compile dependencies
+    compile "org.apache.httpcomponents:httpclient:4.0.3"
+    compile "org.robolectric:android-all:5.0.0_r2-robolectric-0"
+
+    // Testing dependencies
+    testCompile "junit:junit-dep:4.8.2"
+    testCompile "org.assertj:assertj-core:1.7.0"
+    testCompile "org.mockito:mockito-core:1.8.0"
+}

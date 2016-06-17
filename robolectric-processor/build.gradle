@@ -1,0 +1,23 @@
+apply plugin: "java"
+
+sourceCompatibility = JavaVersion.VERSION_1_7
+targetCompatibility = JavaVersion.VERSION_1_7
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    // Project dependencies
+    compile project(":robolectric-annotations")
+
+    // Compile dependencies
+    compile "com.google.guava:guava:17.0"
+    compile "com.intellij:annotations:12.0"
+    compile files("${System.properties['java.home']}/../lib/tools.jar")
+
+    // Testing dependencies
+    testCompile "junit:junit-dep:4.8.2"
+    testCompile "com.google.testing.compile:compile-testing:0.6"
+}

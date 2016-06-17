@@ -1,0 +1,15 @@
+apply plugin: "java"
+
+sourceCompatibility = JavaVersion.VERSION_1_7
+targetCompatibility = JavaVersion.VERSION_1_7
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    // Compile dependencies
+    compile "com.intellij:annotations:12.0"
+    compile "org.robolectric:android-all:5.0.0_r2-robolectric-0"
+}

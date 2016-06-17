@@ -1,0 +1,36 @@
+apply plugin: "java"
+
+sourceCompatibility = JavaVersion.VERSION_1_7
+targetCompatibility = JavaVersion.VERSION_1_7
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    // Project dependencies
+    compile project(":robolectric-utils")
+    compile project(":robolectric-resources")
+    compile project(":robolectric-annotations")
+
+    // Compile dependencies
+    compile "org.ow2.asm:asm:5.0.1"
+    compile "org.ow2.asm:asm-util:5.0.1"
+    compile "org.ow2.asm:asm-commons:5.0.1"
+    compile "org.ow2.asm:asm-analysis:5.0.1"
+
+    compile "com.ximpleware:vtd-xml:2.11"
+    compile "com.intellij:annotations:12.0"
+    compile "commons-codec:commons-codec:1.3"
+    compile "commons-logging:commons-logging:1.1.1"
+
+    compile "org.apache.ant:ant:1.8.0"
+    compile "org.apache.maven:maven-ant-tasks:2.1.3"
+    compile "org.robolectric:android-all:5.0.0_r2-robolectric-0"
+
+    // Testing dependencies
+    testCompile "junit:junit-dep:4.8.2"
+    testCompile "org.assertj:assertj-core:1.7.0"
+    testCompile "org.mockito:mockito-core:1.8.0"
+}

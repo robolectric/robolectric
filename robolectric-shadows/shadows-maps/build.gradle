@@ -1,0 +1,23 @@
+apply plugin: "java"
+apply from: "../../provided.gradle"
+
+sourceCompatibility = JavaVersion.VERSION_1_7
+targetCompatibility = JavaVersion.VERSION_1_7
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    compile project(":robolectric")
+    compile project(":robolectric-shadows/shadows-core")
+
+    compile "org.robolectric:android-all:5.0.0_r2-robolectric-0"
+
+    provided "com.google.android.maps:maps:18_r3"
+
+    testCompile "junit:junit-dep:4.8.2"
+    testCompile "org.assertj:assertj-core:1.7.0"
+    testCompile "org.mockito:mockito-core:1.8.0"
+}

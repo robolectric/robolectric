@@ -1,0 +1,18 @@
+apply plugin: "java"
+
+sourceCompatibility = JavaVersion.VERSION_1_7
+targetCompatibility = JavaVersion.VERSION_1_7
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    // Compile dependencies
+    compile "junit:junit-dep:4.8.2"
+    compile "org.robolectric:android-all:5.0.0_r2-robolectric-0"
+
+    // Testing dependencies
+    testCompile "org.assertj:assertj-core:1.7.0"
+}

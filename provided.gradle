@@ -1,0 +1,12 @@
+configurations {
+    provided
+}
+
+sourceSets {
+    main.compileClasspath += configurations.provided
+    test.compileClasspath += configurations.provided
+    test.runtimeClasspath += configurations.provided
+}
+
+// TODO: maybe it needs to be added for idea also...
+// (like here, where they add it for Eclipse http://stackoverflow.com/a/20841280)
