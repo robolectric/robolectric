@@ -1,9 +1,6 @@
 package org.robolectric;
 
-import org.junit.Ignore;
-import org.robolectric.annotation.*;
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.bytecode.*;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
@@ -11,17 +8,19 @@ import org.robolectric.util.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.*;
-import java.util.*;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 /* package */ class MavenManifestFactory extends ManifestFactory {
   private static final Map<ManifestIdentifier, AndroidManifest> appManifestsByFile = new HashMap<>();
 
   private final Config config;
 
-  protected MavenManifestFactory(Config config) {
+  MavenManifestFactory(Config config) {
     this.config = config;
   }
 
@@ -55,8 +54,7 @@ import java.util.List;
       }
       // The AppManifest may STILL be null if no file was found.
       if (appManifest != null) {
-        appManifest.setLibraryManifests(
-            MavenManifestFactory.createLibraryManifests(appManifest, libraryDirs));
+        appManifest.setLibraryManifests(createLibraryManifests(appManifest, libraryDirs));
       }
       return appManifest;
     }
@@ -88,7 +86,7 @@ import java.util.List;
    * @param libraryDirectories If not null, override the libraries in androidManifest.
    * @return A list of AndroidManifest objects, one for each library found.
    */
-  public static List<AndroidManifest> createLibraryManifests(
+  private static List<AndroidManifest> createLibraryManifests(
       AndroidManifest androidManifest,
       List<FsFile> libraryDirectories) {
     List<AndroidManifest> libraryManifests = new ArrayList<>();
@@ -146,7 +144,7 @@ import java.util.List;
    * "project.properties" file.
    * @param androidManifest
    */
-  protected static List<FsFile> findLibraries(AndroidManifest androidManifest) {
+  private static List<FsFile> findLibraries(AndroidManifest androidManifest) {
     FsFile baseDir = getAndroidManifestBaseDir(androidManifest);
     List<FsFile> libraryBaseDirs = new ArrayList<>();
 
@@ -178,8 +176,8 @@ import java.util.List;
     private final String packageName;
     private final List<FsFile> libraryDirs;
 
-    public ManifestIdentifier(FsFile manifestFile, FsFile resDir, FsFile assetDir, String packageName,
-        List<FsFile> libraryDirs) {
+    ManifestIdentifier(FsFile manifestFile, FsFile resDir, FsFile assetDir, String packageName,
+                       List<FsFile> libraryDirs) {
       this.manifestFile = manifestFile;
       this.resDir = resDir;
       this.assetDir = assetDir;
