@@ -62,7 +62,6 @@ import java.util.Set;
  */
 public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   private static final String CONFIG_PROPERTIES = "robolectric.properties";
-  private static final Config DEFAULT_CONFIG = new Config.Implementation(defaultsFor(Config.class));
   private static final Map<Pair<AndroidManifest, SdkConfig>, ResourceLoader> resourceLoadersByManifestAndConfig = new HashMap<>();
 
   private TestLifecycle<Application> testLifecycle;
@@ -292,7 +291,9 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   }
 
   public Config getConfig(Method method) {
-    Config config = DEFAULT_CONFIG;
+    Config config = new Config.Implementation(new int[0], Config.DEFAULT_MANIFEST, Config.DEFAULT_QUALIFIERS, Config.DEFAULT_PACKAGE_NAME,
+            Config.DEFAULT_ABI_SPLIT, Config.DEFAULT_RES_FOLDER, Config.DEFAULT_ASSET_FOLDER, Config.DEFAULT_BUILD_FOLDER, new Class[0],
+            new String[0], Application.class, new String[0], Void.class);
 
     Config globalConfig = Config.Implementation.fromProperties(getConfigProperties());
     if (globalConfig != null) {
@@ -470,18 +471,5 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
         }
       };
     }
-  }
-
-  // TODO: Instead of creating a dynamic proxy to set up a default return of the Config.class annotation,
-  //   instead create a default constructor for Config.Implementation() which returns the default values of its fields.
-  private static <A extends Annotation> A defaultsFor(Class<A> annotation) {
-    return annotation.cast(
-            Proxy.newProxyInstance(annotation.getClassLoader(), new Class[] { annotation },
-                    new InvocationHandler() {
-                      public Object invoke(Object proxy, @NotNull Method method, Object[] args)
-                              throws Throwable {
-                        return method.getDefaultValue();
-                      }
-                    }));
   }
 }
