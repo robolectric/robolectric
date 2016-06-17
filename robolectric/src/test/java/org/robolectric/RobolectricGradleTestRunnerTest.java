@@ -126,13 +126,6 @@ public class RobolectricGradleTestRunnerTest {
   }
 
   @Test
-  public void getAppManifest_shouldThrowException_whenConstantsNotSpecified() throws Exception {
-    final RobolectricGradleTestRunner runner = new RobolectricGradleTestRunner(NoConstantsTest.class);
-    exception.expect(RuntimeException.class);
-    runner.getAppManifest(runner.getConfig(NoConstantsTest.class.getMethod("withoutAnnotation")));
-  }
-
-  @Test
   public void rClassShouldBeInTheSamePackageAsBuildConfig() throws Exception {
     RobolectricGradleTestRunner runner = new RobolectricGradleTestRunner(RFileTest.class);
     AndroidManifest manifest = runner.getAppManifest(runner.getConfig(RFileTest.class.getMethod("withoutAnnotation")));
