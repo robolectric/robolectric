@@ -4,8 +4,6 @@ import static org.robolectric.util.TestUtil.resourceFile;
 
 import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.ParallelUniverseInterface;
-import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.manifest.AndroidManifest;
 
 import java.util.Locale;
