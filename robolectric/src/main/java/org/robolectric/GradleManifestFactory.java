@@ -1,21 +1,17 @@
 package org.robolectric;
 
-import org.robolectric.annotation.*;
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.bytecode.*;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.FileFsFile;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
 
 import java.io.File;
-import java.lang.reflect.*;
-import java.util.*;
 
 /* package */ class GradleManifestFactory extends ManifestFactory {
   private final Config config;
 
-  protected GradleManifestFactory(Config config) {
+  GradleManifestFactory(Config config) {
     this.config = config;
   }
 
@@ -30,6 +26,7 @@ import java.util.*;
     final String buildOutputDir = getBuildOutputDir(config);
     final String type = getType(config);
     final String flavor = getFlavor(config);
+    final String abiSplit = getAbiSplit(config);
     final String packageName = getPackageName(config);
 
     final FileFsFile res;
@@ -56,9 +53,9 @@ import java.util.*;
     }
 
     if (FileFsFile.from(buildOutputDir, "manifests").exists()) {
-      manifest = FileFsFile.from(buildOutputDir, "manifests", "full", flavor, type, DEFAULT_MANIFEST_NAME);
+      manifest = FileFsFile.from(buildOutputDir, "manifests", "full", flavor, abiSplit, type, DEFAULT_MANIFEST_NAME);
     } else {
-      manifest = FileFsFile.from(buildOutputDir, "bundles", flavor, type, DEFAULT_MANIFEST_NAME);
+      manifest = FileFsFile.from(buildOutputDir, "bundles", flavor, abiSplit, type, DEFAULT_MANIFEST_NAME);
     }
 
     Logger.debug("Robolectric assets directory: " + assets.getPath());
@@ -88,6 +85,14 @@ import java.util.*;
   private static String getFlavor(Config config) {
     try {
       return ReflectionHelpers.getStaticField(config.constants(), "FLAVOR");
+    } catch (Throwable e) {
+      return null;
+    }
+  }
+
+  private static String getAbiSplit(Config config) {
+    try {
+      return config.abiSplit();
     } catch (Throwable e) {
       return null;
     }
