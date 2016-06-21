@@ -98,49 +98,9 @@ public class ShadowResources {
     return system;
   }
 
-  private TypedArray attrsToTypedArray(AttributeSet set, int[] attrs, int defStyleAttr, int themeResourceId, int defStyleRes) {
-    List<Attribute> attributes = shadowOf(realResources.getAssets()).buildAttributes(set, attrs, defStyleAttr, themeResourceId, defStyleRes);
-    ShadowAssetManager shadowAssetManager = shadowOf(realResources.getAssets());
-    ResourceLoader resourceLoader = shadowAssetManager.getResourceLoader();
-
-    CharSequence[] stringData = new CharSequence[attrs.length];
-    int[] data = new int[attrs.length * ShadowAssetManager.STYLE_NUM_ENTRIES];
-    int[] indices = new int[attrs.length + 1];
-    int nextIndex = 0;
-
-    for (int i = 0; i < attrs.length; i++) {
-      int offset = i * ShadowAssetManager.STYLE_NUM_ENTRIES;
-
-      Attribute attribute = Attribute.find(attributes, attrs[i], resourceLoader.getResourceIndex());
-      if (attribute != null && !attribute.isNull()) {
-        TypedValue typedValue = new TypedValue();
-        Converter.convertAndFill(attribute, typedValue, resourceLoader, RuntimeEnvironment.getQualifiers(), true);
-        //noinspection PointlessArithmeticExpression
-        data[offset + ShadowAssetManager.STYLE_TYPE] = typedValue.type;
-        data[offset + ShadowAssetManager.STYLE_DATA] = typedValue.type == TypedValue.TYPE_STRING ? i : typedValue.data;
-        data[offset + ShadowAssetManager.STYLE_ASSET_COOKIE] = typedValue.assetCookie;
-        data[offset + ShadowAssetManager.STYLE_RESOURCE_ID] = typedValue.resourceId;
-        data[offset + ShadowAssetManager.STYLE_CHANGING_CONFIGURATIONS] = typedValue.changingConfigurations;
-        data[offset + ShadowAssetManager.STYLE_DENSITY] = typedValue.density;
-        stringData[i] = typedValue.string;
-
-        indices[nextIndex + 1] = i;
-        nextIndex++;
-      }
-    }
-
-    indices[0] = nextIndex;
-
-    TypedArray typedArray = ShadowTypedArray.create(realResources, attrs, data, indices, nextIndex, stringData);
-    if (set != null) {
-      shadowOf(typedArray).positionDescription = set.getPositionDescription();
-    }
-    return typedArray;
-  }
-
   @Implementation
   public TypedArray obtainAttributes(AttributeSet set, int[] attrs) {
-    return attrsToTypedArray(set, attrs, 0, 0, 0);
+    return shadowOf(realResources.getAssets()).attrsToTypedArray(realResources, set, attrs, 0, 0, 0);
   }
 
   @Implementation
@@ -261,7 +221,7 @@ public class ShadowResources {
 
     @Implementation
     public TypedArray obtainStyledAttributes(AttributeSet set, int[] attrs, int defStyleAttr, int defStyleRes) {
-      return shadowOf(getResources()).attrsToTypedArray(set, attrs, defStyleAttr, styleResourceId, defStyleRes);
+      return shadowOf(getResources().getAssets()).attrsToTypedArray(getResources(), set, attrs, defStyleAttr, styleResourceId, defStyleRes);
     }
 
     @Implementation

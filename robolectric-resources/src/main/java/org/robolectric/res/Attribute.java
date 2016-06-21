@@ -4,7 +4,6 @@ import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Node;
 
 import java.net.URLEncoder;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -18,64 +17,11 @@ public class Attribute {
   public final @NotNull String value;
   public final @NotNull String contextPackageName;
 
-
-  public static Attribute find(List<Attribute> attributes, String fullyQualifiedName) {
-    return find(attributes, new ResName(fullyQualifiedName));
-  }
-
-  public static Attribute find(List<Attribute> attributes, ResName resName) {
-    for (Attribute attribute : attributes) {
-      if (resName.equals(attribute.resName)) {
-        return attribute;
-      }
-    }
-    return null;
-  }
-
-  public static Attribute find(List<Attribute> attributes, int attrId, ResourceIndex resourceIndex) {
-    for (Attribute attribute : attributes) {
-      Integer resourceId = resourceIndex.getResourceId(attribute.resName);
-      if (resourceId != null && resourceId == attrId) {
-        return attribute;
-      }
-    }
-    return null;
-  }
-
-  public static String findValue(List<Attribute> attributes, String fullyQualifiedName) {
-    return findValue(attributes, fullyQualifiedName, null);
-  }
-
-  public static String findValue(List<Attribute> attributes, String fullyQualifiedName, String defaultValue) {
-    Attribute attribute = find(attributes, fullyQualifiedName);
-    return (attribute != null) ? attribute.value : defaultValue;
-  }
-
-  public static void put(List<Attribute> attributes, Attribute attribute) {
-    remove(attributes, attribute.resName);
-    attributes.add(attribute);
-  }
-
-  public static Attribute remove(List<Attribute> attributes, String fullyQualifiedName) {
-    return remove(attributes, new ResName(fullyQualifiedName));
-  }
-
-  public static Attribute remove(List<Attribute> attributes, ResName resName) {
-    for (int i = 0; i < attributes.size(); i++) {
-      Attribute attribute = attributes.get(i);
-      if (resName.equals(attribute.resName)) {
-        attributes.remove(i);
-        return attribute;
-      }
-    }
-    return null;
-  }
-
-  public static String addType(String possiblyPartiallyQualifiedAttrName, String typeName) {
+  static String addType(String possiblyPartiallyQualifiedAttrName, String typeName) {
     return possiblyPartiallyQualifiedAttrName.contains(":") ? possiblyPartiallyQualifiedAttrName.replaceFirst(":", ":" + typeName + "/") : ":" + typeName + "/" + possiblyPartiallyQualifiedAttrName;
   }
 
-  public static String qualifyName(String possiblyQualifiedAttrName, String defaultPackage) {
+  static String qualifyName(String possiblyQualifiedAttrName, String defaultPackage) {
     if (possiblyQualifiedAttrName.indexOf(':') == -1) {
       return defaultPackage + ":" + possiblyQualifiedAttrName;
     }
