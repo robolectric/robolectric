@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
+import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
 import android.os.ParcelFileDescriptor;
 import android.util.AttributeSet;
@@ -604,7 +605,7 @@ public final class ShadowAssetManager {
 
   }
 
-  List<Attribute> buildAttributes(AttributeSet set, int[] attrs, int defStyleAttr, int themeResourceId, int defStyleRes) {
+  private Attribute buildAttribute(AttributeSet set, int resId, int defStyleAttr, int themeResourceId, int defStyleRes) {
     /*
      * When determining the final value of a particular attribute, there are four inputs that come into play:
      *
@@ -663,7 +664,7 @@ public final class ShadowAssetManager {
     if (defStyleRes != 0) {
       ResName resName = getResName(defStyleRes);
       if (resName.type.equals("attr")) {
-        Attribute attributeValue = findAttributeValue(getResName(defStyleRes), set, styleAttrStyle, defStyleFromAttr, defStyleFromAttr, theme, overlayedStyles);
+        Attribute attributeValue = findAttributeValue(defStyleRes, set, styleAttrStyle, defStyleFromAttr, defStyleFromAttr, theme, overlayedStyles);
         if (attributeValue != null) {
           if (attributeValue.isStyleReference()) {
             resName = getOverlayedThemeValue(attributeValue.getStyleReference(), theme, overlayedStyles).getResourceReference();
@@ -675,34 +676,63 @@ public final class ShadowAssetManager {
       defStyleFromRes = resolveStyle(theme, resName);
     }
 
-    List<Attribute> attributes = new ArrayList<>();
-    for (int attr : attrs) {
-      ResName attrName = resourceLoader.getResourceIndex().getResName(attr);
-      if (attrName == null) continue;
+    Attribute attribute = findAttributeValue(resId, set, styleAttrStyle, defStyleFromAttr, defStyleFromRes, theme, overlayedStyles);
+    while (attribute != null && attribute.isStyleReference()) {
+      ResName otherAttrName = attribute.getStyleReference();
 
-      Attribute attribute = findAttributeValue(attrName, set, styleAttrStyle, defStyleFromAttr, defStyleFromRes, theme, overlayedStyles);
-      while (attribute != null && attribute.isStyleReference()) {
-        ResName otherAttrName = attribute.getStyleReference();
+      // TODO: this is just a debugging hack to avoid the problem of Resources.loadDrawableForCookie not working.
+      // TODO: We need to address the real problem instead, but are putting it off for a day or two -AV, ED 2014-12-03
+      if (theme == null) break;
 
-        // TODO: this is just a debugging hack to avoid the problem of Resources.loadDrawableForCookie not working.
-        // TODO: We need to address the real problem instead, but are putting it off for a day or two -AV, ED 2014-12-03
-        if (theme == null) break;
-
-        attribute = getOverlayedThemeValue(otherAttrName, theme, overlayedStyles);
-        if (attribute != null) {
-          attribute = new Attribute(attrName, attribute.value, attribute.contextPackageName);
-        }
-      }
-
+      attribute = getOverlayedThemeValue(otherAttrName, theme, overlayedStyles);
       if (attribute != null) {
-        Attribute.put(attributes, attribute);
+        attribute = new Attribute(resourceLoader.getResourceIndex().getResName(resId), attribute.value, attribute.contextPackageName);
       }
     }
 
-    return attributes;
+    return attribute;
   }
 
-  private Attribute findAttributeValue(ResName attrName, AttributeSet attributeSet, Style styleAttrStyle, Style defStyleFromAttr, Style defStyleFromRes, Style theme, List<ShadowAssetManager.OverlayedStyle> overlayedStyles) {
+  TypedArray attrsToTypedArray(Resources resources, AttributeSet set, int[] attrs, int defStyleAttr, int themeResourceId, int defStyleRes) {
+      CharSequence[] stringData = new CharSequence[attrs.length];
+      int[] data = new int[attrs.length * ShadowAssetManager.STYLE_NUM_ENTRIES];
+      int[] indices = new int[attrs.length + 1];
+      int nextIndex = 0;
+
+      for (int i = 0; i < attrs.length; i++) {
+        int offset = i * ShadowAssetManager.STYLE_NUM_ENTRIES;
+
+        Attribute attribute = buildAttribute(set, attrs[i], defStyleAttr, themeResourceId, defStyleRes);
+        if (attribute != null && !attribute.isNull()) {
+          TypedValue typedValue = new TypedValue();
+          Converter.convertAndFill(attribute, typedValue, resourceLoader, RuntimeEnvironment.getQualifiers(), true);
+          //noinspection PointlessArithmeticExpression
+          data[offset + ShadowAssetManager.STYLE_TYPE] = typedValue.type;
+          data[offset + ShadowAssetManager.STYLE_DATA] = typedValue.type == TypedValue.TYPE_STRING ? i : typedValue.data;
+          data[offset + ShadowAssetManager.STYLE_ASSET_COOKIE] = typedValue.assetCookie;
+          data[offset + ShadowAssetManager.STYLE_RESOURCE_ID] = typedValue.resourceId;
+          data[offset + ShadowAssetManager.STYLE_CHANGING_CONFIGURATIONS] = typedValue.changingConfigurations;
+          data[offset + ShadowAssetManager.STYLE_DENSITY] = typedValue.density;
+          stringData[i] = typedValue.string;
+
+          indices[nextIndex + 1] = i;
+          nextIndex++;
+        }
+      }
+
+          indices[0] = nextIndex;
+
+      TypedArray typedArray = ShadowTypedArray.create(resources, attrs, data, indices, nextIndex, stringData);
+      if (set != null) {
+        shadowOf(typedArray).positionDescription = set.getPositionDescription();
+      }
+      return typedArray;
+    }
+
+  private Attribute findAttributeValue(int resId, AttributeSet attributeSet, Style styleAttrStyle, Style defStyleFromAttr, Style defStyleFromRes, Style theme, List<ShadowAssetManager.OverlayedStyle> overlayedStyles) {
+    ResName attrName = resourceLoader.getResourceIndex().getResName(resId);
+    if (attrName == null) return null;
+
     if (attributeSet != null) {
       String attrValue = attributeSet.getAttributeValue(attrName.getNamespaceUri(), attrName.name);
       if (attrValue != null) {

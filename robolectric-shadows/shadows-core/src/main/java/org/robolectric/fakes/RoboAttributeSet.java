@@ -186,7 +186,7 @@ public class RoboAttributeSet implements AttributeSet {
   }
 
   @Override public int getStyleAttribute() {
-    Attribute styleAttribute = Attribute.find(attributes, new ResName("", "attr", "style"));
+    Attribute styleAttribute = find(attributes, new ResName("", "attr", "style"));
     if (styleAttribute == null) {
       // Per Android specifications, return 0 if there is no style.
       return 0;
@@ -206,9 +206,28 @@ public class RoboAttributeSet implements AttributeSet {
     // canonicalize the attr name if we can, otherwise don't...
     // todo: this is awful; fix it.
     if (resourceId == null) {
-      return Attribute.find(attributes, resName);
+      return find(attributes, resName);
     } else {
-      return Attribute.find(attributes, resourceId, resourceIndex);
+      return find(attributes, resourceId, resourceIndex);
     }
+  }
+
+  private static Attribute find(List<Attribute> attributes, ResName resName) {
+    for (Attribute attribute : attributes) {
+      if (resName.equals(attribute.resName)) {
+        return attribute;
+      }
+    }
+    return null;
+  }
+
+  private static Attribute find(List<Attribute> attributes, int attrId, ResourceIndex resourceIndex) {
+    for (Attribute attribute : attributes) {
+      Integer resourceId = resourceIndex.getResourceId(attribute.resName);
+      if (resourceId != null && resourceId == attrId) {
+        return attribute;
+      }
+    }
+    return null;
   }
 }
