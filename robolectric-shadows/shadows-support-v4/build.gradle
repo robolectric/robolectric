@@ -1,27 +1,23 @@
-apply plugin: "java"
-apply from: "../../provided.gradle"
+apply plugin: ProvidedPlugin
+apply plugin: ShadowsPlugin
 
-sourceCompatibility = JavaVersion.VERSION_1_7
-targetCompatibility = JavaVersion.VERSION_1_7
-
-repositories {
-    mavenLocal()
-    mavenCentral()
+shadows {
+    packageName "org.robolectric.shadows.support.v4"
 }
 
 dependencies {
     // Project dependencies
     compile project(":robolectric")
-    compile project(":robolectric-shadows/shadows-core")
+    compile project(":robolectric-shadows/shadows-core/v23")
 
     // Compile dependencies
-    compile "org.robolectric:android-all:5.0.0_r2-robolectric-0"
-
-    // Runtime dependencies
-    provided "com.android.support:support-v4:19.0.1"
+    provided "org.robolectric:android-all:6.0.0_r1-robolectric-0"
+    compile "com.android.support:support-v4:23.2.0"
+    compile "com.android.support:internal_impl:23.2.0"
 
     // Testing dependencies
-    testCompile "junit:junit-dep:4.8.2"
-    testCompile "org.assertj:assertj-core:1.7.0"
+    testCompile "junit:junit:4.8.2"
+    testCompile "org.hamcrest:hamcrest-core:1.3"
+    testCompile "org.assertj:assertj-core:2.0.0"
     testCompile "org.mockito:mockito-core:1.8.0"
 }

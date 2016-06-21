@@ -28,12 +28,12 @@ public class RobolectricProcessorTest {
   }
 	
   @Test
-  public void roboProcessor_supportsPackageOption() {
+  public void robolectricProcessor_supportsPackageOption() {
     ASSERT.that(new RobolectricProcessor().getSupportedOptions()).contains(PACKAGE_OPT);
   }
   
   @Test
-  public void roboProcessor_supportsShouldInstrumentPackageOption() {
+  public void robolectricProcessor_supportsShouldInstrumentPackageOption() {
     ASSERT.that(
         new RobolectricProcessor().getSupportedOptions()).contains(SHOULD_INSTRUMENT_PKG_OPT);
   }

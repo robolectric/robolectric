@@ -1,0 +1,120 @@
+allprojects {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
+
+    apply plugin: "java"
+    sourceCompatibility = JavaVersion.VERSION_1_7
+    targetCompatibility = JavaVersion.VERSION_1_7
+
+    apply plugin: "maven-publish"
+
+    publishing {
+        publications {
+            maven(MavenPublication) {
+                // robolectric-shadows/shadows-core/v16 -> shadows-core-v16
+                def projNameParts = artifactId.split(/\//) as List
+                if (projNameParts[0] == "robolectric-shadows") {
+                    projNameParts = projNameParts.drop(1)
+                    artifactId = projNameParts.join("-")
+                }
+
+                from components.java
+            }
+        }
+    }
+}
+
+def subshadowRE = /robolectric-shadows\/shadows-core\/v(.*)$/
+configure(subprojects.findAll { project -> project.name =~ subshadowRE }) {
+    apply plugin: ShadowsPlugin
+    apply plugin: ProvidedPlugin
+
+    def match = project.name =~ subshadowRE
+    def androidApi = Integer.parseInt(match[0][1])
+
+    def robolectricVersion = AndroidSdk.versions[androidApi]
+    logger.info "[${project.name}] Android API is $androidApi — $robolectricVersion"
+
+    shadows {
+        packageName "org.robolectric"
+    }
+
+    task velocity(type: VelocityTask) {
+        def shadowsCoreProject = project.findProject(":robolectric-shadows/shadows-core")
+        source = shadowsCoreProject.files("src/main/resources").asFileTree.matching { include "/**/*.vm" }
+
+        doFirst {
+            contextValues = [api: androidApi]
+            if (androidApi >= 21) {
+                contextValues.putAll(ptrClass: "long", ptrClassBoxed: "Long")
+            } else {
+                contextValues.putAll(ptrClass: "int", ptrClassBoxed: "Integer")
+            }
+        }
+
+        outputDir = project.file("${project.buildDir}/generated-shadows")
+
+        doLast {
+            def shadowsCoreProj = project.findProject(":robolectric-shadows/shadows-core")
+            project.copy {
+                from shadowsCoreProj.files("src/main/java")
+                into outputDir
+            }
+
+            project.copy {
+                from shadowsCoreProj.fileTree("src/main/resources").include("META-INF/**")
+                into project.file("${project.buildDir}/resources/main")
+            }
+        }
+    }
+
+    generateShadowProvider {
+        dependsOn velocity
+    }
+
+    dependencies {
+        // Project dependencies
+        compile project(":robolectric-annotations")
+        compile project(":robolectric-resources")
+        compile project(":robolectric-utils")
+
+        // Compile dependencies
+        compile "com.intellij:annotations:12.0"
+        compile "com.almworks.sqlite4java:sqlite4java:0.282"
+        provided("org.robolectric:android-all:$robolectricVersion") { force = true }
+        compile "com.ibm.icu:icu4j:53.1"
+
+        runtime "com.github.axet.litedb:libsqlite:0.282-3:natives-mac-x86_64"
+        runtime "com.github.axet.litedb:libsqlite:0.282-3:natives-linux-x86"
+        runtime "com.github.axet.litedb:libsqlite:0.282-3:natives-linux-x86_64"
+        runtime "com.github.axet.litedb:libsqlite:0.282-3:natives-windows-x86"
+        runtime "com.github.axet.litedb:libsqlite:0.282-3:natives-windows-x86_64"
+
+        // Testing dependencies
+        testCompile "junit:junit:4.8.2"
+        testCompile "org.hamcrest:hamcrest-core:1.3"
+        testCompile "org.assertj:assertj-core:2.0.0"
+    }
+
+    task copyNatives(type: Copy) {
+        outputs.dir file("${project.buildDir}/resources/main")
+
+        project.configurations.runtime.forEach { File file ->
+            def nativeJarMatch = file.name =~ /lib.*-natives-(.*)\.jar/
+            if (nativeJarMatch) {
+                inputs.file file
+
+                def platformName = match[0][1]
+                from(zipTree(file)) { rename { f -> "$platformName/$f" } }
+            }
+
+            into project.file("${project.buildDir}/resources/main")
+        }
+    }
+
+    assemble {
+        dependsOn copyNatives
+    }
+}
