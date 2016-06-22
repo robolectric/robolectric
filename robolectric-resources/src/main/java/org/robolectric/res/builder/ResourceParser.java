@@ -7,12 +7,8 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.util.Arrays;
 import java.util.List;
-import org.robolectric.res.Attribute;
-import org.robolectric.res.Fs;
-import org.robolectric.res.FsFile;
-import org.robolectric.res.ResName;
-import org.robolectric.res.ResourceIndex;
-import org.robolectric.res.XmlBlockLoader;
+
+import org.robolectric.res.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -23,31 +19,31 @@ public class ResourceParser {
   /**
    * All the parser features currently supported by Android.
    */
-  public static final String[] AVAILABLE_FEATURES = {
+  static final String[] AVAILABLE_FEATURES = {
       XmlResourceParser.FEATURE_PROCESS_NAMESPACES,
       XmlResourceParser.FEATURE_REPORT_NAMESPACE_ATTRIBUTES
   };
   /**
    * All the parser features currently NOT supported by Android.
    */
-  public static final String[] UNAVAILABLE_FEATURES = {
+  static final String[] UNAVAILABLE_FEATURES = {
       XmlResourceParser.FEATURE_PROCESS_DOCDECL,
       XmlResourceParser.FEATURE_VALIDATION
   };
 
-  public static XmlResourceParser from(XmlBlock block, String applicationPackageName, ResourceIndex resourceIndex) {
+  public static XmlResourceParser from(XmlBlock block, String applicationPackageName, ResourceLoader resourceLoader) {
     return new XmlResourceParserImpl(block.getDocument(), block.getFilename(), block.getPackageName(),
-        applicationPackageName, resourceIndex);
+        applicationPackageName, resourceLoader);
   }
 
-  public static XmlResourceParser create(String file, String packageName, String applicationPackageName, ResourceIndex resourceIndex) {
+  public static XmlResourceParser create(String file, String packageName, String applicationPackageName, ResourceLoader resourceLoader) {
     FsFile fsFile = Fs.fileFromPath(file);
     Document document = new XmlBlockLoader(null, "xml").parse(fsFile);
     if (document == null) {
       throw new Resources.NotFoundException("couldn't find resource " + fsFile.getPath());
     }
     XmlBlock block = XmlBlock.create(document, file, packageName);
-    return from(block, applicationPackageName, resourceIndex);
+    return from(block, applicationPackageName, resourceLoader);
   }
 
   /**
@@ -56,7 +52,7 @@ public class ResourceParser {
    * @param name Feature name.
    * @return True if the feature is supported.
    */
-  public static boolean isAndroidSupportedFeature(String name) {
+  private static boolean isAndroidSupportedFeature(String name) {
     if (name == null) {
       return false;
     }
@@ -80,16 +76,14 @@ public class ResourceParser {
    * a set of native methods calls. Here those methods are
    * re-implemented in java when possible.
    */
-  public static class XmlResourceParserImpl
-      implements XmlResourceParser {
+  static class XmlResourceParserImpl implements XmlResourceParser {
 
     private static final ResName FAKE_RES_NAME = new ResName("_robolectric_", "attr", "_fake_");
 
     private final Document document;
     private final String fileName;
     private final String packageName;
-    private final String applicationPackageName;
-    private final ResourceIndex resourceIndex;
+    private final ResourceLoader resourceLoader;
     private final String applicationNamespace;
 
     private Node currentNode;
@@ -99,14 +93,13 @@ public class ResourceParser {
     private int mDepth = 0;
     private int mEventType = START_DOCUMENT;
 
-    public XmlResourceParserImpl(Document document, String fileName, String packageName,
-        String applicationPackageName, ResourceIndex resourceIndex) {
+    XmlResourceParserImpl(Document document, String fileName, String packageName,
+                          String applicationPackageName, ResourceLoader resourceLoader) {
       this.document = document;
       this.fileName = fileName;
       this.packageName = packageName;
-      this.applicationPackageName = applicationPackageName;
-      this.resourceIndex = resourceIndex;
-      applicationNamespace = Attribute.ANDROID_RES_NS_PREFIX + applicationPackageName;
+      this.resourceLoader = resourceLoader;
+      this.applicationNamespace = Attribute.ANDROID_RES_NS_PREFIX + applicationPackageName;
     }
 
     @Override
@@ -822,17 +815,17 @@ public class ResourceParser {
       if (attribute.isNull()) return 0;
 
       if (attribute.isStyleReference()) {
-        Integer resourceId = resourceIndex.getResourceId(attribute.getStyleReference());
+        Integer resourceId = resourceLoader.getResourceIndex().getResourceId(attribute.getStyleReference());
         return resourceId == null ? 0 : resourceId;
       }
 
       if (attribute.isResourceReference()) {
-        Integer resourceId = resourceIndex.getResourceId(attribute.getResourceReference());
+        Integer resourceId = resourceLoader.getResourceIndex().getResourceId(attribute.getResourceReference());
         return resourceId == null ? 0 : resourceId;
       }
       possiblyQualifiedResourceName = removeLeadingSpecialCharsIfAny(possiblyQualifiedResourceName);
       ResName resName = ResName.qualifyResName(possiblyQualifiedResourceName, defaultPackageName, defaultType);
-      Integer resourceId = resourceIndex.getResourceId(resName);
+      Integer resourceId = resourceLoader.getResourceIndex().getResourceId(resName);
       return resourceId == null ? 0 : resourceId;
     }
 

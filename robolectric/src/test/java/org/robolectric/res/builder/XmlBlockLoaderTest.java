@@ -8,12 +8,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.robolectric.R;
-import org.robolectric.res.DocumentLoader;
-import org.robolectric.res.ResBundle;
-import org.robolectric.res.ResName;
-import org.robolectric.res.ResourceExtractor;
-import org.robolectric.res.ResourceIndex;
-import org.robolectric.res.XmlBlockLoader;
+import org.robolectric.res.*;
 import org.robolectric.res.builder.ResourceParser.XmlResourceParserImpl;
 import org.robolectric.util.TestUtil;
 import org.w3c.dom.Document;
@@ -37,6 +32,8 @@ import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.robolectric.util.TestUtil.TEST_PACKAGE;
 import static org.robolectric.util.TestUtil.testResources;
 
@@ -55,9 +52,10 @@ import static org.robolectric.util.TestUtil.testResources;
 @RunWith(JUnit4.class)
 public class XmlBlockLoaderTest {
 
-  public static final String XMLNS_NS = "http://www.w3.org/2000/xmlns/";
+  private static final String XMLNS_NS = "http://www.w3.org/2000/xmlns/";
   private XmlResourceParserImpl parser;
   private ResourceIndex resourceIndex;
+  private ResourceLoader resourceLoader;
 
   @Before
   public void setUp() throws Exception {
@@ -68,7 +66,9 @@ public class XmlBlockLoaderTest {
     ResName resName = new ResName(TEST_PACKAGE, "xml", "preferences");
     XmlBlock xmlBlock = resBundle.get(resName, "");
     resourceIndex = new ResourceExtractor(testResources());
-    parser = (XmlResourceParserImpl) ResourceParser.from(xmlBlock, TEST_PACKAGE, resourceIndex);
+    resourceLoader = mock(ResourceLoader.class);
+    when(resourceLoader.getResourceIndex()).thenReturn(resourceIndex);
+    parser = (XmlResourceParserImpl) ResourceParser.from(xmlBlock, TEST_PACKAGE, resourceLoader);
   }
 
   @After
@@ -105,7 +105,7 @@ public class XmlBlockLoaderTest {
           new ByteArrayInputStream(xmlValue.getBytes()));
 
       parser = new XmlResourceParserImpl(document, "file", TestUtil.testResources().getPackageName(),
-          TEST_PACKAGE, resourceIndex);
+          TEST_PACKAGE, resourceLoader);
       // Navigate to the root element
       parseUntilNext(XmlResourceParser.START_TAG);
     } catch (Exception parsingException) {
