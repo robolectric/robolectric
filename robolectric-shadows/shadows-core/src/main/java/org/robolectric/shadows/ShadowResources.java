@@ -177,7 +177,7 @@ public class ShadowResources {
     if (block == null) {
       throw new Resources.NotFoundException();
     }
-    return ResourceParser.from(block, resName.packageName, shadowAssetManager.getResourceLoader().getResourceIndex());
+    return ResourceParser.from(block, resName.packageName, shadowAssetManager.getResourceLoader());
   }
 
   @HiddenApi @Implementation
