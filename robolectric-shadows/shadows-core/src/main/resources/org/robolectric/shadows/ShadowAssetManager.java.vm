@@ -735,7 +735,7 @@ public final class ShadowAssetManager {
   private Attribute findAttributeValue(int resId, AttributeSet attributeSet, Style styleAttrStyle, Style defStyleFromAttr, Style defStyleFromRes, Style theme, List<ShadowAssetManager.OverlayedStyle> overlayedStyles) {
     if (attributeSet != null) {
       for (int i = 0; i < attributeSet.getAttributeCount(); i++) {
-        if (attributeSet.getAttributeNameResource(i) == resId) {
+        if (attributeSet.getAttributeNameResource(i) == resId && attributeSet.getAttributeValue(i) != null) {
           return new Attribute(ResName.qualifyResName(attributeSet.getAttributeName(i), "android", "attr"), attributeSet.getAttributeValue(i), "fixme!!!");
         }
       }
