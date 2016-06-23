@@ -733,15 +733,16 @@ public final class ShadowAssetManager {
   }
 
   private Attribute findAttributeValue(int resId, AttributeSet attributeSet, Style styleAttrStyle, Style defStyleFromAttr, Style defStyleFromRes, Style theme, List<ShadowAssetManager.OverlayedStyle> overlayedStyles) {
-    ResName attrName = resourceLoader.getResourceIndex().getResName(resId);
-    if (attrName == null) return null;
-
     if (attributeSet != null) {
-      String attrValue = attributeSet.getAttributeValue(attrName.getNamespaceUri(), attrName.name);
-      if (attrValue != null) {
-        return new Attribute(attrName, attrValue, "fixme!!!");
+      for (int i = 0; i < attributeSet.getAttributeCount(); i++) {
+        if (attributeSet.getAttributeNameResource(i) == resId) {
+          return new Attribute(attributeSet.getAttributeName(i), attributeSet.getAttributeValue(i), "fixme!!!");
+        }
       }
     }
+
+    ResName attrName = resourceLoader.getResourceIndex().getResName(resId);
+    if (attrName == null) return null;
 
     if (styleAttrStyle != null) {
       Attribute attribute = styleAttrStyle.getAttrValue(attrName);

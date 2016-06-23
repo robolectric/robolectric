@@ -24,10 +24,10 @@ public class RoboAttributeSet implements ResourceLoaderProvider, AttributeSet {
   private Context context;
   private ResourceLoader resourceLoader;
 
-  private RoboAttributeSet(List<Attribute> attributes, Context context) {
+  private RoboAttributeSet(List<Attribute> attributes, Context context, ResourceLoader resourceLoader) {
     this.attributes = attributes;
     this.context = context;
-    resourceLoader = shadowOf(context.getAssets()).getResourceLoader();
+    this.resourceLoader = resourceLoader;
   }
 
   /**
@@ -40,7 +40,11 @@ public class RoboAttributeSet implements ResourceLoaderProvider, AttributeSet {
   }
 
   public static AttributeSet create(Context context, List<Attribute> attributesList) {
-    return new RoboAttributeSet(attributesList, context);
+    return new RoboAttributeSet(attributesList, context, shadowOf(context.getAssets()).getResourceLoader());
+  }
+
+  public static AttributeSet create(Context context, List<Attribute> attributesList, ResourceLoader resourceLoader) {
+    return new RoboAttributeSet(attributesList, context, resourceLoader);
   }
 
   @Override
