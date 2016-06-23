@@ -9,6 +9,7 @@ import org.robolectric.res.Attribute;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceIndex;
 import org.robolectric.res.ResourceLoader;
+import org.robolectric.res.builder.ResourceLoaderProvider;
 import org.robolectric.shadows.Converter;
 
 import java.util.List;
@@ -18,7 +19,7 @@ import static org.robolectric.Shadows.shadowOf;
 /**
  * Robolectric implementation of {@link android.util.AttributeSet}.
  */
-public class RoboAttributeSet implements AttributeSet {
+public class RoboAttributeSet implements ResourceLoaderProvider, AttributeSet {
   private final List<Attribute> attributes;
   private Context context;
   private ResourceLoader resourceLoader;
@@ -229,5 +230,10 @@ public class RoboAttributeSet implements AttributeSet {
       }
     }
     return null;
+  }
+
+  @Override
+  public ResourceLoader getResourceLoader() {
+    return resourceLoader;
   }
 }

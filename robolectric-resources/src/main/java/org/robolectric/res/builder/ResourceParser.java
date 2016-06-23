@@ -76,7 +76,7 @@ public class ResourceParser {
    * a set of native methods calls. Here those methods are
    * re-implemented in java when possible.
    */
-  static class XmlResourceParserImpl implements XmlResourceParser {
+  static class XmlResourceParserImpl implements ResourceLoaderProvider, XmlResourceParser {
 
     private static final ResName FAKE_RES_NAME = new ResName("_robolectric_", "attr", "_fake_");
 
@@ -837,6 +837,11 @@ public class ResourceParser {
         return name.substring(1);
       }
       return name;
+    }
+
+    @Override
+    public ResourceLoader getResourceLoader() {
+      return resourceLoader;
     }
   }
 }
