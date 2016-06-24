@@ -376,10 +376,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       throw new IllegalArgumentException("RobolectricTestRunner does not support multiple values for @Config.sdk");
     } else if (config != null && config.sdk().length == 1) {
       return config.sdk()[0];
-    } else if (manifest != null) {
-      return manifest.getTargetSdkVersion();
     } else {
-      return SdkConfig.FALLBACK_SDK_VERSION;
+      return manifest.getTargetSdkVersion();
     }
   }
 
@@ -420,13 +418,11 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       Map<String, ResourceLoader> resourceLoaders = new HashMap<>();
       resourceLoaders.put("android", systemResourceLoader);
 
-      if (appManifest != null) {
-        List<PackageResourceLoader> appAndLibraryResourceLoaders = new ArrayList<>();
-        for (ResourcePath resourcePath : appManifest.getIncludedResourcePaths()) {
-          appAndLibraryResourceLoaders.add(new PackageResourceLoader(resourcePath, new ResourceExtractor(resourcePath)));
-        }
-        resourceLoaders.put(appManifest.getPackageName(), new OverlayResourceLoader(appManifest.getPackageName(), appAndLibraryResourceLoaders));
+      List<PackageResourceLoader> appAndLibraryResourceLoaders = new ArrayList<>();
+      for (ResourcePath resourcePath : appManifest.getIncludedResourcePaths()) {
+        appAndLibraryResourceLoaders.add(new PackageResourceLoader(resourcePath, new ResourceExtractor(resourcePath)));
       }
+      resourceLoaders.put(appManifest.getPackageName(), new OverlayResourceLoader(appManifest.getPackageName(), appAndLibraryResourceLoaders));
 
       resourceLoader = new RoutingResourceLoader(resourceLoaders);
       resourceLoadersByManifestAndConfig.put(androidManifestSdkConfigPair, resourceLoader);

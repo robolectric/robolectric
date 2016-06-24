@@ -120,14 +120,8 @@ public class AndroidManifest {
     }
   }
 
-  public void validate() {
-    if (!androidManifestFile.exists() || !androidManifestFile.isFile()) {
-      throw new RuntimeException(androidManifestFile + " not found or not a file; it should point to your project's AndroidManifest.xml");
-    }
-  }
-
   void parseAndroidManifest() {
-    if (manifestIsParsed) {
+    if (androidManifestFile == null || manifestIsParsed) {
       return;
     }
     DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -506,7 +500,6 @@ public class AndroidManifest {
   }
 
   public ResourcePath getResourcePath() {
-    validate();
     return new ResourcePath(getPackageName(), resDirectory, assetsDirectory, getRClass());
   }
 

@@ -36,7 +36,6 @@ import java.util.Map;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 public class ParallelUniverse implements ParallelUniverseInterface {
-  private static final String DEFAULT_PACKAGE_NAME = "org.robolectric.default";
   private final RobolectricTestRunner robolectricTestRunner;
   private final ShadowsAdapter shadowsAdapter = Robolectric.getShadowsAdapter();
 
@@ -79,20 +78,11 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     RuntimeEnvironment.setMasterScheduler(new Scheduler());
     RuntimeEnvironment.setMainThread(Thread.currentThread());
     ResourceLoader appResourceLoader = robolectricTestRunner.getAppResourceLoader(sdkConfig, systemResourceLoader, appManifest);
-    RuntimeEnvironment.setRobolectricPackageManager(new DefaultPackageManager(appResourceLoader));
-    RuntimeEnvironment.setAppResourceLoader(appResourceLoader);
-    String packageName;
-    if (appManifest != null) {
-      RuntimeEnvironment.getRobolectricPackageManager().addManifest(appManifest);
-      packageName = appManifest.getPackageName();
-    } else {
-      // Fallback if there is no manifest specified. If a manifest was specified it will already
-      // have had Config.packageName() override applied. This case is just for when a package
-      // name was specified without a manifest,
-      packageName = config.packageName() != null && !config.packageName().isEmpty() ? config.packageName() : DEFAULT_PACKAGE_NAME;
-      RuntimeEnvironment.getRobolectricPackageManager().addPackage(packageName);
-    }
+    DefaultPackageManager packageManager = new DefaultPackageManager(appResourceLoader);
+    packageManager.addManifest(appManifest);
+    RuntimeEnvironment.setRobolectricPackageManager(packageManager);
 
+    RuntimeEnvironment.setAppResourceLoader(appResourceLoader);
     RuntimeEnvironment.setSystemResourceLoader(systemResourceLoader);
 
     if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
@@ -131,7 +121,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
       ApplicationInfo applicationInfo;
       try {
-        applicationInfo = RuntimeEnvironment.getPackageManager().getApplicationInfo(packageName, 0);
+        applicationInfo = RuntimeEnvironment.getPackageManager().getApplicationInfo(appManifest.getPackageName(), 0);
       } catch (PackageManager.NameNotFoundException e) {
         throw new RuntimeException(e);
       }
