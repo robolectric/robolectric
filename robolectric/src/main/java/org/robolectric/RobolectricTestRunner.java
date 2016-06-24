@@ -417,15 +417,17 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     Pair<AndroidManifest, SdkConfig> androidManifestSdkConfigPair = new Pair<>(appManifest, sdkConfig);
     ResourceLoader resourceLoader = resourceLoadersByManifestAndConfig.get(androidManifestSdkConfigPair);
     if (resourceLoader == null) {
-      List<PackageResourceLoader> appAndLibraryResourceLoaders = new ArrayList<>();
-      for (ResourcePath resourcePath : appManifest.getIncludedResourcePaths()) {
-        appAndLibraryResourceLoaders.add(new PackageResourceLoader(resourcePath, new ResourceExtractor(resourcePath)));
-      }
-      OverlayResourceLoader overlayResourceLoader = new OverlayResourceLoader(appManifest.getPackageName(), appAndLibraryResourceLoaders);
-
       Map<String, ResourceLoader> resourceLoaders = new HashMap<>();
       resourceLoaders.put("android", systemResourceLoader);
-      resourceLoaders.put(appManifest.getPackageName(), overlayResourceLoader);
+
+      if (appManifest != null) {
+        List<PackageResourceLoader> appAndLibraryResourceLoaders = new ArrayList<>();
+        for (ResourcePath resourcePath : appManifest.getIncludedResourcePaths()) {
+          appAndLibraryResourceLoaders.add(new PackageResourceLoader(resourcePath, new ResourceExtractor(resourcePath)));
+        }
+        resourceLoaders.put(appManifest.getPackageName(), new OverlayResourceLoader(appManifest.getPackageName(), appAndLibraryResourceLoaders));
+      }
+
       resourceLoader = new RoutingResourceLoader(resourceLoaders);
       resourceLoadersByManifestAndConfig.put(androidManifestSdkConfigPair, resourceLoader);
     }

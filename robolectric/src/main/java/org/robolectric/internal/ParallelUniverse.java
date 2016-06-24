@@ -80,11 +80,10 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     RuntimeEnvironment.setMainThread(Thread.currentThread());
     RuntimeEnvironment.setRobolectricPackageManager(new DefaultPackageManager());
     RuntimeEnvironment.getRobolectricPackageManager().addPackage(DEFAULT_PACKAGE_NAME);
-    ResourceLoader appResourceLoader;
+    ResourceLoader appResourceLoader = robolectricTestRunner.getAppResourceLoader(sdkConfig, systemResourceLoader, appManifest);
+    RuntimeEnvironment.setAppResourceLoader(appResourceLoader);
     String packageName;
     if (appManifest != null) {
-      appResourceLoader = robolectricTestRunner.getAppResourceLoader(sdkConfig, systemResourceLoader, appManifest);
-      RuntimeEnvironment.setAppResourceLoader(appResourceLoader);
       RuntimeEnvironment.getRobolectricPackageManager().addManifest(appManifest);
       packageName = appManifest.getPackageName();
     } else {
@@ -93,7 +92,6 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       // name was specified without a manifest,
       packageName = config.packageName() != null && !config.packageName().isEmpty() ? config.packageName() : DEFAULT_PACKAGE_NAME;
       RuntimeEnvironment.getRobolectricPackageManager().addPackage(packageName);
-      RuntimeEnvironment.setAppResourceLoader(systemResourceLoader);
     }
 
     RuntimeEnvironment.setSystemResourceLoader(systemResourceLoader);
