@@ -8,6 +8,7 @@ import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
+import org.robolectric.internal.SdkConfig;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.manifest.AndroidManifest;
@@ -49,7 +50,12 @@ public class TestRunnerSequenceTest {
     StateHolder.transcript = new Transcript();
     assertNoFailures(run(new Runner(SimpleTest.class) {
       @Override protected AndroidManifest getAppManifest(Config config) {
-        return null;
+        return new AndroidManifest(null, null, null, "package") {
+          @Override
+          public int getTargetSdkVersion() {
+            return SdkConfig.FALLBACK_SDK_VERSION;
+          }
+        };
       }
     }));
     StateHolder.transcript.assertEventsSoFar(

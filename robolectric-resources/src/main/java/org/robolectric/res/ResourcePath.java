@@ -27,23 +27,23 @@ public class ResourcePath {
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (!(o instanceof ResourcePath)) return false;
+    if (o == null || getClass() != o.getClass()) return false;
 
     ResourcePath that = (ResourcePath) o;
 
-    if (!assetsDir.equals(that.assetsDir)) return false;
-    if (!packageName.equals(that.packageName)) return false;
-    if (!resourceBase.equals(that.resourceBase)) return false;
-
+    if (packageName != null ? !packageName.equals(that.packageName) : that.packageName != null) return false;
+    if (resourceBase != null ? !resourceBase.equals(that.resourceBase) : that.resourceBase != null) return false;
+    if (assetsDir != null ? !assetsDir.equals(that.assetsDir) : that.assetsDir != null) return false;
+    // Probably incorrect - comparing Object[] arrays with Arrays.equals
     return Arrays.equals(rClasses, that.rClasses);
+
   }
 
   @Override
   public int hashCode() {
-    int result = 31 * packageName.hashCode();
-    result = 31 * result + resourceBase.hashCode();
-    result = 31 * result + assetsDir.hashCode();
-
+    int result = packageName != null ? packageName.hashCode() : 0;
+    result = 31 * result + (resourceBase != null ? resourceBase.hashCode() : 0);
+    result = 31 * result + (assetsDir != null ? assetsDir.hashCode() : 0);
     result = 31 * result + Arrays.hashCode(rClasses);
     return result;
   }

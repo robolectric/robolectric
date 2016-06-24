@@ -5,6 +5,7 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -12,10 +13,14 @@ import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.ParallelUniverse;
 import org.robolectric.internal.SdkConfig;
+import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.res.*;
 import org.robolectric.res.builder.RobolectricPackageManager;
+import org.robolectric.res.builder.XmlBlock;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowLooper;
 
+import java.io.InputStream;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -41,7 +46,7 @@ public class ParallelUniverseTest {
   }
 
   private void setUpApplicationStateDefaults() {
-    pu.setUpApplicationState(null, new DefaultTestLifecycle(), null, null, getDefaultConfig());
+    pu.setUpApplicationState(null, new DefaultTestLifecycle(), RuntimeEnvironment.getSystemResourceLoader(), new AndroidManifest(null, null, null, "package"), getDefaultConfig());
   }
 
   @Test
@@ -115,7 +120,7 @@ public class ParallelUniverseTest {
   public void setUpApplicationState_setsVersionQualifierFromSdkConfig() {
     String givenQualifiers = "";
     Config c = new Config.Implementation(new int[0], Config.DEFAULT_MANIFEST, givenQualifiers, "org.robolectric", "", "res", "assets", "build", new Class[0], new String[0], Application.class, new String[0], null);
-    pu.setUpApplicationState(null, new DefaultTestLifecycle(), null, null, c);
+    pu.setUpApplicationState(null, new DefaultTestLifecycle(), RuntimeEnvironment.getSystemResourceLoader(), new AndroidManifest(null, null, null, "packagename"), c);
     assertThat(getQualifiersfromSystemResources()).isEqualTo("v18");
     assertThat(RuntimeEnvironment.getQualifiers()).isEqualTo("v18");
   }
@@ -124,7 +129,7 @@ public class ParallelUniverseTest {
   public void setUpApplicationState_setsVersionQualifierFromConfigQualifiers() {
     String givenQualifiers = "land-v17";
     Config c = new Config.Implementation(new int[0], Config.DEFAULT_MANIFEST, givenQualifiers, "org.robolectric", "", "res", "assets", "build", new Class[0], new String[0], Application.class, new String[0], null);
-    pu.setUpApplicationState(null, new DefaultTestLifecycle(), null, null, c);
+    pu.setUpApplicationState(null, new DefaultTestLifecycle(), RuntimeEnvironment.getSystemResourceLoader(), new AndroidManifest(null, null, null, "packagename"), c);
     assertThat(getQualifiersfromSystemResources()).isEqualTo("land-v17");
     assertThat(RuntimeEnvironment.getQualifiers()).isEqualTo("land-v17");
   }
@@ -133,7 +138,7 @@ public class ParallelUniverseTest {
   public void setUpApplicationState_setsVersionQualifierFromSdkConfigWithOtherQualifiers() {
     String givenQualifiers = "large-land";
     Config c = new Config.Implementation(new int[0], Config.DEFAULT_MANIFEST, givenQualifiers, "", "res", "assets", "", "build", new Class[0], new String[0], Application.class, new String[0], null);
-    pu.setUpApplicationState(null, new DefaultTestLifecycle(), null, null, c);
+    pu.setUpApplicationState(null, new DefaultTestLifecycle(), RuntimeEnvironment.getSystemResourceLoader(), new AndroidManifest(null, null, null, "packagename"), c);
     assertThat(getQualifiersfromSystemResources()).isEqualTo("large-land-v18");
     assertThat(RuntimeEnvironment.getQualifiers()).isEqualTo("large-land-v18");
   }

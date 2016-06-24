@@ -1,6 +1,7 @@
 package org.robolectric;
 
 import org.robolectric.annotation.Config;
+import org.robolectric.internal.SdkConfig;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
@@ -27,7 +28,7 @@ import java.util.Properties;
   @Override
   public AndroidManifest create() {
     if (config.manifest().equals(Config.NONE)) {
-      return null;
+      return createDummyManifest();
     }
 
     FsFile manifestFile = getBaseDir().join(config.manifest().equals(Config.DEFAULT_MANIFEST)
@@ -60,16 +61,25 @@ import java.util.Properties;
     }
   }
 
+  private AndroidManifest createDummyManifest() {
+    return new AndroidManifest(null, null, null, !config.packageName().isEmpty() ? config.packageName() : "org.robolectric.default") {
+      @Override
+      public int getTargetSdkVersion() {
+        return SdkConfig.FALLBACK_SDK_VERSION;
+      }
+    };
+  }
+
   private static FsFile getBaseDir() {
     return Fs.currentDirectory();
   }
 
-  private static AndroidManifest createAppManifest(FsFile manifestFile, FsFile resDir, FsFile assetDir, String packageName) {
+  private AndroidManifest createAppManifest(FsFile manifestFile, FsFile resDir, FsFile assetDir, String packageName) {
     if (!manifestFile.exists()) {
       System.out.print("WARNING: No manifest file found at " + manifestFile.getPath() + ".");
       System.out.println("Falling back to the Android OS resources only.");
       System.out.println("To remove this warning, annotate your test class with @Config(manifest=Config.NONE).");
-      return null;
+      return createDummyManifest();
     }
 
     Logger.debug("Robolectric assets directory: " + assetDir.getPath());
@@ -135,36 +145,34 @@ import java.util.Properties;
     return properties;
   }
 
-  private static FsFile getAndroidManifestBaseDir(AndroidManifest androidManifest) {
-    return androidManifest.getResDirectory().getParent();
-  }
-
   /**
    * Find valid library AndroidManifest files referenced from an already loaded AndroidManifest's
    * "project.properties" file.
    * @param androidManifest
    */
   private static List<FsFile> findLibraries(AndroidManifest androidManifest) {
-    FsFile baseDir = getAndroidManifestBaseDir(androidManifest);
     List<FsFile> libraryBaseDirs = new ArrayList<>();
 
-    final Properties properties = getProperties(baseDir.join("project.properties"));
-    Properties overrideProperties = getProperties(baseDir.join("test-project.properties"));
-    properties.putAll(overrideProperties);
+    if (androidManifest.getResDirectory() != null) {
+      FsFile baseDir = androidManifest.getResDirectory().getParent();
+      final Properties properties = getProperties(baseDir.join("project.properties"));
+      Properties overrideProperties = getProperties(baseDir.join("test-project.properties"));
+      properties.putAll(overrideProperties);
 
-    int libRef = 1;
-    String lib;
-    while ((lib = properties.getProperty("android.library.reference." + libRef)) != null) {
-      FsFile libraryBaseDir = baseDir.join(lib);
-      if (libraryBaseDir.isDirectory()) {
-        // Ignore directories without any files
-        FsFile[] libraryBaseDirFiles = libraryBaseDir.listFiles();
-        if (libraryBaseDirFiles != null && libraryBaseDirFiles.length > 0) {
-          libraryBaseDirs.add(libraryBaseDir);
+      int libRef = 1;
+      String lib;
+      while ((lib = properties.getProperty("android.library.reference." + libRef)) != null) {
+        FsFile libraryBaseDir = baseDir.join(lib);
+        if (libraryBaseDir.isDirectory()) {
+          // Ignore directories without any files
+          FsFile[] libraryBaseDirFiles = libraryBaseDir.listFiles();
+          if (libraryBaseDirFiles != null && libraryBaseDirFiles.length > 0) {
+            libraryBaseDirs.add(libraryBaseDir);
+          }
         }
-      }
 
-      libRef++;
+        libRef++;
+      }
     }
     return libraryBaseDirs;
   }
