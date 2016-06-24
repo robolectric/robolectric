@@ -78,9 +78,8 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     RuntimeEnvironment.application = null;
     RuntimeEnvironment.setMasterScheduler(new Scheduler());
     RuntimeEnvironment.setMainThread(Thread.currentThread());
-    RuntimeEnvironment.setRobolectricPackageManager(new DefaultPackageManager());
-    RuntimeEnvironment.getRobolectricPackageManager().addPackage(DEFAULT_PACKAGE_NAME);
     ResourceLoader appResourceLoader = robolectricTestRunner.getAppResourceLoader(sdkConfig, systemResourceLoader, appManifest);
+    RuntimeEnvironment.setRobolectricPackageManager(new DefaultPackageManager(appResourceLoader));
     RuntimeEnvironment.setAppResourceLoader(appResourceLoader);
     String packageName;
     if (appManifest != null) {
