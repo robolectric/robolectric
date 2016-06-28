@@ -17,10 +17,11 @@ before_install:
     - ./scripts/install-dependencies.rb
 
 script:
-    - ./scripts/install-robolectric.sh
+    - ./gradlew clean assemble publishToMavenLocal compileTest --info --stacktrace
+    - ./gradlew --continue test --info --stacktrace
 
 after_success:
-    - ./scripts/deploy-snapshot.sh
+#    - ./scripts/deploy-snapshot.sh
 
 env:
     global:
