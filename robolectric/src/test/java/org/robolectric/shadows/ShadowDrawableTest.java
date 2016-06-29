@@ -4,7 +4,10 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
 import android.graphics.Rect;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.VectorDrawable;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
@@ -147,6 +150,22 @@ public class ShadowDrawableTest {
 
     assertThat(anImage.getIntrinsicHeight()).isEqualTo(251);
     assertThat(anImage.getIntrinsicWidth()).isEqualTo(297);
+  }
+
+  @Test
+  @Config(sdk = 21)
+  public void testGetBitmapOrVectorDrawableAt21() {
+    final Drawable aDrawable = RuntimeEnvironment.application.getResources()
+        .getDrawable(R.drawable.an_image_or_vector);
+    assertThat(aDrawable).isInstanceOf(VectorDrawable.class);
+  }
+
+  @Test
+  @Config(sdk = 19)
+  public void testGetBitmapOrVectorDrawableAt19() {
+    final Drawable aDrawable = RuntimeEnvironment.application.getResources()
+        .getDrawable(R.drawable.an_image_or_vector);
+    assertThat(aDrawable).isInstanceOf(BitmapDrawable.class);
   }
 
   private static class TestDrawable extends Drawable {
