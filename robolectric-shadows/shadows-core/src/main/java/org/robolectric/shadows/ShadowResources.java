@@ -26,6 +26,7 @@ import org.robolectric.res.Attribute;
 import org.robolectric.res.Plural;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResType;
+import org.robolectric.res.ResourceIds;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.TypedResource;
 import org.robolectric.res.builder.ResourceParser;
@@ -171,7 +172,7 @@ public class ShadowResources {
 
   @HiddenApi @Implementation
   public XmlResourceParser loadXmlResourceParser(int id, String type) throws Resources.NotFoundException {
-    ShadowAssetManager shadowAssetManager = shadowOf(realResources.getAssets());
+    ShadowAssetManager shadowAssetManager = ResourceIds.isFrameworkResource(id) ? shadowOf(AssetManager.getSystem()) : shadowOf(realResources.getAssets());
     ResName resName = shadowAssetManager.resolveResName(id);
     XmlBlock block = shadowAssetManager.getResourceLoader().getXml(resName, RuntimeEnvironment.getQualifiers());
     if (block == null) {
