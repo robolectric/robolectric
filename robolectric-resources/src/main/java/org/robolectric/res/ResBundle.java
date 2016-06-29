@@ -49,13 +49,32 @@ public class ResBundle<T> {
     final int count = values.size();
     if (count == 0) return null;
 
+    // This should really follow the android algorithm specified at:
+    // http://developer.android.com/guide/topics/resources/providing-resources.html#BestMatch
+    //
+    // 1: eliminate resources that contradict the qualifiersStr
+    // 2: pick the (next) highest-precedence qualifier type in "table 2" of the reference above
+    // 3: check if any resource values use this qualifier, if no, back to 2, else move on to 4.
+    // 4: eliminate resources values that don't use this qualifier.
+    // 5: if more than one resource is left, go back to 2.
+    //
+    // However, we currently only model the smallest/available width/height and version qualifiers
+    // rather than all of the possibly qualifier classes in table 2.
+
     Qualifiers toMatch = Qualifiers.parse(qualifiersStr);
 
     Qualifiers bestMatchQualifiers = null;
     Value<T> bestMatch = null;
 
-    for (int i = 0; i < count; i++) {
-      Value<T> value = values.get(i);
+    List<Value<T>> passesRequirements = new ArrayList<>();
+    for (Value<T> value : values) {
+      Qualifiers qualifiers = Qualifiers.parse(value.qualifiers);
+      if (qualifiers.passesRequirements(toMatch)) {
+        passesRequirements.add(value);
+      }
+    }
+
+    for (Value<T> value : passesRequirements) {
       Qualifiers qualifiers = Qualifiers.parse(value.qualifiers);
       if (qualifiers.matches(toMatch)) {
         if (bestMatchQualifiers == null || qualifiers.isBetterThan(bestMatchQualifiers, toMatch)) {
@@ -66,9 +85,11 @@ public class ResBundle<T> {
     }
     if (bestMatch != null) {
       return bestMatch;
-    } else {
-      return values.get(0);
     }
+    if (!passesRequirements.isEmpty()) {
+      return passesRequirements.get(0);
+    }
+    return null;
   }
 
   public int size() {
@@ -176,12 +197,19 @@ public class ResBundle<T> {
     private final List<String> mDefaults = new ArrayList<>();
 
     public boolean matches(Qualifiers other) {
+      if (!passesRequirements(other)) {
+        return false;
+      }
+      return other.mDefaults.containsAll(mDefaults);
+    }
+
+    public boolean passesRequirements(Qualifiers other) {
       for (int i = 0; i < TOTAL_ORDER_COUNT; i++) {
         if (other.mWeights[i] != -1 && mWeights[i] != -1 && other.mWeights[i] < mWeights[i]) {
           return false;
         }
       }
-      return other.mDefaults.containsAll(mDefaults);
+      return true;
     }
 
     public boolean isBetterThan(Qualifiers other, Qualifiers context) {
