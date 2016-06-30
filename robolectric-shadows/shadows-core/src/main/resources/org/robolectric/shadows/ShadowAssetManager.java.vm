@@ -125,15 +125,13 @@ public final class ShadowAssetManager {
   }
 
   @HiddenApi @Implementation
-  public CharSequence[] getResourceTextArray(final int id) {
-    ResName resName = resourceLoader.getResourceIndex().getResName(id);
-    if (resName == null) throw new Resources.NotFoundException("unknown resource " + id);
-    TypedResource value = getAndResolve(resName, RuntimeEnvironment.getQualifiers(), true);
+  public CharSequence[] getResourceTextArray(int resId) {
+    TypedResource value = getAndResolve(resId, RuntimeEnvironment.getQualifiers(), true);
     if (value == null) return null;
     TypedResource[] items = getConverter(value).getItems(value);
     CharSequence[] charSequences = new CharSequence[items.length];
     for (int i = 0; i < items.length; i++) {
-      TypedResource typedResource = resolve(items[i], RuntimeEnvironment.getQualifiers(), resName);
+      TypedResource typedResource = resolve(items[i], RuntimeEnvironment.getQualifiers(), resId);
       charSequences[i] = getConverter(typedResource).asCharSequence(typedResource);
     }
     return charSequences;
@@ -266,15 +264,13 @@ public final class ShadowAssetManager {
   }
 
   @HiddenApi @Implementation
-  public int[] getArrayIntResource(int arrayRes) {
-    ResName resName = resourceLoader.getResourceIndex().getResName(arrayRes);
-    if (resName == null) throw new Resources.NotFoundException("unknown resource " + arrayRes);
-    TypedResource value = getAndResolve(resName, RuntimeEnvironment.getQualifiers(), true);
+  public int[] getArrayIntResource(int resId) {
+    TypedResource value = getAndResolve(resId, RuntimeEnvironment.getQualifiers(), true);
     if (value == null) return null;
     TypedResource[] items = getConverter(value).getItems(value);
     int[] ints = new int[items.length];
     for (int i = 0; i < items.length; i++) {
-      TypedResource typedResource = resolve(items[i], RuntimeEnvironment.getQualifiers(), resName);
+      TypedResource typedResource = resolve(items[i], RuntimeEnvironment.getQualifiers(), resId);
       ints[i] = getConverter(typedResource).asInt(typedResource);
     }
     return ints;
@@ -369,13 +365,9 @@ public final class ShadowAssetManager {
   TypedResource getAndResolve(int resId, String qualifiers, boolean resolveRefs) {
     ResName resName = resourceLoader.getResourceIndex().getResName(resId);
     if (resName == null) throw new Resources.NotFoundException("unknown resource " + resId);
-    return getAndResolve(resName, qualifiers, resolveRefs);
-  }
-
-  TypedResource getAndResolve(@NotNull ResName resName, String qualifiers, boolean resolveRefs) {
     TypedResource value = resourceLoader.getValue(resName, qualifiers);
     if (resolveRefs) {
-      value = resolve(value, qualifiers, resName);
+      value = resolve(value, qualifiers, resId);
     }
 
     // todo: make the drawable loader put stuff into the normal spot...
@@ -392,18 +384,19 @@ public final class ShadowAssetManager {
     return value;
   }
 
-  TypedResource resolve(TypedResource value, String qualifiers, ResName contextResName) {
-    return resolveResource(value, qualifiers, contextResName).value;
+  TypedResource resolve(TypedResource value, String qualifiers, int resId) {
+    return resolveResource(value, qualifiers, resId).value;
   }
 
   ResName resolveResName(int resId, String qualifiers) {
     ResName resName = resourceLoader.getResourceIndex().getResName(resId);
     if (resName == null) return null;
     TypedResource value = resourceLoader.getValue(resName, qualifiers);
-    return resolveResource(value, qualifiers, resName).resName;
+    return resolveResource(value, qualifiers, resId).resName;
   }
 
-  private Resource resolveResource(TypedResource value, String qualifiers, ResName resName) {
+  private Resource resolveResource(TypedResource value, String qualifiers, int resId) {
+    ResName resName = resourceLoader.getResourceIndex().getResName(resId);
     while (isReference(value)) {
       String s = value.asString();
       if (s.equals("@null") || s.equals("@empty")) {

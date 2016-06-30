@@ -116,8 +116,7 @@ public class ShadowResources {
     Plural plural = shadowAssetManager.getResourceLoader().getPlural(resName, quantity, RuntimeEnvironment.getQualifiers());
     String string = plural.getString();
     TypedResource<?> typedResource = shadowAssetManager.resolve(
-        new TypedResource<>(string, ResType.CHAR_SEQUENCE), RuntimeEnvironment.getQualifiers(),
-        new ResName(resName.packageName, "string", resName.name));
+        new TypedResource<>(string, ResType.CHAR_SEQUENCE), RuntimeEnvironment.getQualifiers(), id);
     return typedResource == null ? null : typedResource.asString();
   }
 
