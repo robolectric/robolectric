@@ -4,14 +4,19 @@ shadows {
     packageName "org.robolectric.shadows.httpclient"
 }
 
+configurations {
+    earlyRuntime
+}
+
 dependencies {
     // Project dependencies
     compile project(":robolectric")
     compile project(":robolectric-shadows/shadows-core/v23")
 
     // Compile dependencies
+    earlyRuntime "org.apache.httpcomponents:httpcore:4.0.1"
     compile "org.apache.httpcomponents:httpclient:4.0.3"
-    compile("org.robolectric:android-all:5.1.1_r9-robolectric-0") { force = true }
+    provided("org.robolectric:android-all:${AndroidSdk.versions[22]}") { force = true }
 
     // Testing dependencies
     testCompile "junit:junit:4.8.2"
@@ -19,3 +24,11 @@ dependencies {
     testCompile "org.assertj:assertj-core:2.0.0"
     testCompile "org.mockito:mockito-core:1.8.0"
 }
+
+// httpcore needs to come before android-all on runtime classpath; the gradle IntelliJ plugin
+//   needs the compileClasspath order patched too (bug?)
+sourceSets.main.compileClasspath = configurations.earlyRuntime + sourceSets.main.compileClasspath
+sourceSets.main.runtimeClasspath = configurations.earlyRuntime + sourceSets.main.runtimeClasspath
+
+sourceSets.test.compileClasspath = configurations.earlyRuntime + sourceSets.test.compileClasspath
+sourceSets.test.runtimeClasspath = configurations.earlyRuntime + sourceSets.test.runtimeClasspath
