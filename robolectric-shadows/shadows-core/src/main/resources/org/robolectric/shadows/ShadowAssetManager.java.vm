@@ -144,10 +144,8 @@ public final class ShadowAssetManager {
     Resources.Theme theTheme = getThemeByInternalId(theme);
     // Load the style for the theme we represent. E.g. "@style/Theme.Robolectric"
     int styleResourceId = shadowOf(theTheme).getStyleResourceId();
-    ResName themeStyleName = resourceIndex.getResName(styleResourceId);
-    if (themeStyleName == null) return false; // is this right?
 
-    Style themeStyle = resolveStyle(null, themeStyleName);
+    Style themeStyle = resolveStyle(null, styleResourceId);
 
     //// Load the theme attribute for the default style attributes. E.g., attr/buttonStyle
     //ResName defStyleName = resourceLoader.getResourceIndex().getResName(ident);
