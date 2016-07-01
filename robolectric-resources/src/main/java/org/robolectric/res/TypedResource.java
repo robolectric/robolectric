@@ -25,6 +25,15 @@ public class TypedResource<T> {
     return false;
   }
 
+  public boolean isReference() {
+    Object data = getData();
+    if (data instanceof String) {
+      String s = (String) data;
+      return !s.isEmpty() && s.charAt(0) == '@';
+    }
+    return false;
+  }
+
   @Override public String toString() {
     return getClass().getSimpleName() + "{" +
         "data=" + data +

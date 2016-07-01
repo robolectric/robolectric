@@ -384,49 +384,7 @@ public final class ShadowAssetManager {
   }
 
   TypedResource resolve(TypedResource value, String qualifiers, int resId) {
-    return resolveResource(value, qualifiers, resId).value;
-  }
-
-  private ResName resolveResName(int resId, String qualifiers) {
-    TypedResource value = resourceLoader.getValue(resId, qualifiers);
-    return resolveResource(value, qualifiers, resId).resName;
-  }
-
-  private Resource resolveResource(TypedResource value, String qualifiers, int resId) {
-    ResName resName = resourceLoader.getResourceIndex().getResName(resId);
-    while (isReference(value)) {
-      String s = value.asString();
-      if (s.equals("@null") || s.equals("@empty")) {
-        value = null;
-      } else {
-        String refStr = s.substring(1).replace("+", "");
-        resName = ResName.qualifyResName(refStr, resName);
-        value = resourceLoader.getValue(resName, qualifiers);
-      }
-    }
-
-    return new Resource(value, resName);
-  }
-
-  private boolean isReference(TypedResource value) {
-    if (value != null) {
-      Object data = value.getData();
-      if (data instanceof String) {
-        String s = (String) data;
-        return !s.isEmpty() && s.charAt(0) == '@';
-      }
-    }
-    return false;
-  }
-
-  private static class Resource {
-    public final ResName resName;
-    public final TypedResource<?> value;
-
-    public Resource(TypedResource<?> value, ResName resName) {
-      this.value = value;
-      this.resName = resName;
-    }
+    return resourceLoader.resolveResourceValue(value, qualifiers, resId);
   }
 
   static class StyleResolver implements Style {
@@ -781,11 +739,6 @@ public final class ShadowAssetManager {
 
   @NotNull private ResName getResName(int id) {
     ResName resName = resourceLoader.getResourceIndex().getResName(id);
-    return checkResName(id, resName);
-  }
-
-  @NotNull ResName resolveResName(int id) {
-    ResName resName = resolveResName(id, RuntimeEnvironment.getQualifiers());
     return checkResName(id, resName);
   }
 

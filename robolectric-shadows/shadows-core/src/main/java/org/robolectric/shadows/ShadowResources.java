@@ -166,14 +166,13 @@ public class ShadowResources {
   }
 
   @HiddenApi @Implementation
-  public XmlResourceParser loadXmlResourceParser(int id, String type) throws Resources.NotFoundException {
+  public XmlResourceParser loadXmlResourceParser(int resId, String type) throws Resources.NotFoundException {
     ShadowAssetManager shadowAssetManager = shadowOf(realResources.getAssets());
-    ResName resName = shadowAssetManager.resolveResName(id);
-    XmlBlock block = shadowAssetManager.getResourceLoader().getXml(resName, RuntimeEnvironment.getQualifiers());
+    XmlBlock block = shadowAssetManager.getResourceLoader().getXml(resId, RuntimeEnvironment.getQualifiers());
     if (block == null) {
       throw new Resources.NotFoundException();
     }
-    return ResourceParser.from(block, resName.packageName, shadowAssetManager.getResourceLoader());
+    return ResourceParser.from(block, shadowAssetManager.getResourcePackageName(resId), shadowAssetManager.getResourceLoader());
   }
 
   @HiddenApi @Implementation
