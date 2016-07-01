@@ -296,10 +296,7 @@ public final class ShadowAssetManager {
       appliedStyles.put(theme, new LinkedList<OverlayedStyle>());
     }
 
-    ResourceIndex resourceIndex = assetManager.resourceLoader.getResourceIndex();
-    ResName resName = resourceIndex.getResName(styleRes);
-
-    Style style = assetManager.resolveStyle(null, resName);
+    Style style = assetManager.resolveStyle(null, styleRes);
 
     List<OverlayedStyle> overlayedStyleList = appliedStyles.get(theme);
     OverlayedStyle styleToAdd = new OverlayedStyle(style, force);
@@ -355,7 +352,11 @@ public final class ShadowAssetManager {
     return themesById.get(internalThemeId);
   }
 
-  Style resolveStyle(Style appTheme, @NotNull ResName themeStyleName) {
+  Style resolveStyle(Style appTheme, int resId) {
+    return resolveStyle(appTheme, getResName(resId));
+  }
+
+  private Style resolveStyle(Style appTheme, @NotNull ResName themeStyleName) {
     TypedResource themeStyleResource = resourceLoader.getValue(themeStyleName, RuntimeEnvironment.getQualifiers());
     if (themeStyleResource == null) return null;
     StyleData themeStyleData = (StyleData) themeStyleResource.getData();
@@ -571,8 +572,7 @@ public final class ShadowAssetManager {
     List<ShadowAssetManager.OverlayedStyle> overlayedStyles = getOverlayThemeStyles(themeResourceId);
     if (themeResourceId != 0) {
       // Load the style for the theme we represent. E.g. "@style/Theme.Robolectric"
-      ResName themeStyleName = getResName(themeResourceId);
-      theme = resolveStyle(null, themeStyleName);
+      theme = resolveStyle(null, themeResourceId);
 
       if (defStyleAttr != 0) {
         // Load the theme attribute for the default style attributes. E.g., attr/buttonStyle

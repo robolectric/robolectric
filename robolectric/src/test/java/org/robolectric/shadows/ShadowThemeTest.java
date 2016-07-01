@@ -105,7 +105,7 @@ public class ShadowThemeTest {
     TestActivity activity = Robolectric.setupActivity(TestActivityWithAnotherTheme.class);
     Style style = shadowOf(activity.getAssets()).resolveStyle(
         null,
-        new ResName(TestUtil.TEST_PACKAGE, "style", "Widget.AnotherTheme.Button.Blarf"));
+        R.style.Widget_AnotherTheme_Button);
     assertThat(style.getAttrValue(new ResName("android", "attr", "background")).value)
         .isEqualTo("#ffff0000");
   }
@@ -114,7 +114,7 @@ public class ShadowThemeTest {
     TestActivity activity = Robolectric.setupActivity(TestActivityWithAnotherTheme.class);
     Style style = shadowOf(activity.getAssets()).resolveStyle(
         null,
-        new ResName(TestUtil.TEST_PACKAGE, "style", "Theme.MyTheme"));
+        R.style.Theme_MyTheme);
     assertThat(style.getAttrValue(new ResName("android", "attr", "background"))).isNull();
   }
 
@@ -123,9 +123,9 @@ public class ShadowThemeTest {
     TestActivity activity = Robolectric.setupActivity(TestActivityWithAnotherTheme.class);
     ShadowAssetManager shadowAssetManager = shadowOf(activity.getAssets());
     Style theme = shadowAssetManager.resolveStyle(null,
-        new ResName(TestUtil.TEST_PACKAGE, "style", "Theme.AnotherTheme"));
+        R.style.Theme_AnotherTheme);
     Style style = shadowAssetManager.resolveStyle(theme,
-        new ResName(TestUtil.TEST_PACKAGE, "style", "IndirectButtonStyle"));
+        R.style.IndirectButtonStyle);
     assertThat(style.getAttrValue(new ResName("android", "attr", "background")).value)
         .isEqualTo("#ffff0000");
   }
