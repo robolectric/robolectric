@@ -31,16 +31,7 @@ public class StyleData implements Style {
   }
 
   @Override public Attribute getAttrValue(ResName resName) {
-    Attribute attribute = items.get(resName);
-
-    // yuck. hack to work around library package remapping
-    if (attribute == null && !"android".equals(resName.packageName)) {
-      attribute = items.get(resName.withPackageName(packageName));
-      if (attribute != null && (!"android".equals(attribute.contextPackageName))) {
-        attribute = new Attribute(resName, attribute.value, resName.packageName);
-      }
-    }
-    return attribute;
+    return items.get(resName);
   }
 
   @Override
