@@ -137,7 +137,7 @@ configure(subprojects.findAll { project -> project.name =~ subshadowRE }) {
         }
     }
 
-    assemble {
+    jar {
         dependsOn copyNatives
     }
 }
