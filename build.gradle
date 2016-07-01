@@ -18,7 +18,7 @@ allprojects {
 
     publishing {
         publications {
-            maven(MavenPublication) {
+            mavenJava(MavenPublication) {
                 // robolectric-shadows/shadows-core/v16 -> shadows-core-v16
                 def projNameParts = artifactId.split(/\//) as List
                 if (projNameParts[0] == "robolectric-shadows") {
@@ -28,6 +28,21 @@ allprojects {
 
                 from components.java
                 artifact sourcesJar
+            }
+        }
+
+        repositories {
+            maven {
+                if (project.version.endsWith('-SNAPSHOT')) {
+                    url "https://oss.sonatype.org/content/repositories/snapshots"
+                } else {
+                    url "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+                }
+
+                credentials {
+                    username System.env['CI_DEPLOY_USERNAME']
+                    password System.env['CI_DEPLOY_PASSWORD']
+                }
             }
         }
     }

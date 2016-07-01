@@ -3,7 +3,7 @@ language: android
 
 jdk:
     - oraclejdk7
-    - oraclejdk8
+#    - oraclejdk8 # todo: fixme
 
 cache:
     directories:
@@ -21,7 +21,7 @@ script:
     - ./gradlew --continue test --info --stacktrace
 
 after_success:
-#    - ./scripts/deploy-snapshot.sh
+    - ./scripts/deploy-snapshot.sh
 
 env:
     global:
