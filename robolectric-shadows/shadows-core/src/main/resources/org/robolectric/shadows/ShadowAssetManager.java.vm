@@ -362,22 +362,21 @@ public final class ShadowAssetManager {
     return new StyleResolver(resourceLoader, themeStyleData, appTheme, themeStyleName, RuntimeEnvironment.getQualifiers());
   }
 
-  TypedResource getAndResolve(int resId, String qualifiers, boolean resolveRefs) {
-    ResName resName = resourceLoader.getResourceIndex().getResName(resId);
-    if (resName == null) throw new Resources.NotFoundException("unknown resource " + resId);
-    TypedResource value = resourceLoader.getValue(resName, qualifiers);
+  private TypedResource getAndResolve(int resId, String qualifiers, boolean resolveRefs) {
+    TypedResource value = resourceLoader.getValue(resId, qualifiers);
     if (resolveRefs) {
       value = resolve(value, qualifiers, resId);
     }
 
     // todo: make the drawable loader put stuff into the normal spot...
-    if (value == null && DrawableResourceLoader.isStillHandledHere(resName)) {
-      DrawableNode drawableNode = resourceLoader.getDrawableNode(resName, qualifiers);
-      return new TypedResource<FsFile>(drawableNode.getFsFile(), ResType.FILE);
+    String resourceTypeName = getResourceTypeName(resId);
+    if (value == null && DrawableResourceLoader.isStillHandledHere(resourceTypeName)) {
+      DrawableNode drawableNode = resourceLoader.getDrawableNode(resId, qualifiers);
+      return new TypedResource<>(drawableNode.getFsFile(), ResType.FILE);
     }
 
     // todo: gross. this is so resources.getString(R.layout.foo) works for ABS.
-    if (value == null && "layout".equals(resName.type)) {
+    if (value == null && "layout".equals(resourceTypeName)) {
       throw new UnsupportedOperationException("ugh, this doesn't work still?");
     }
 
@@ -388,10 +387,8 @@ public final class ShadowAssetManager {
     return resolveResource(value, qualifiers, resId).value;
   }
 
-  ResName resolveResName(int resId, String qualifiers) {
-    ResName resName = resourceLoader.getResourceIndex().getResName(resId);
-    if (resName == null) return null;
-    TypedResource value = resourceLoader.getValue(resName, qualifiers);
+  private ResName resolveResName(int resId, String qualifiers) {
+    TypedResource value = resourceLoader.getValue(resId, qualifiers);
     return resolveResource(value, qualifiers, resId).resName;
   }
 

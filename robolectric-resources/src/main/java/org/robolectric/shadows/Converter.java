@@ -72,7 +72,7 @@ public class Converter<T> {
           return;
         } else if (resName.type.equals("raw")) {
           return;
-        } else if (DrawableResourceLoader.isStillHandledHere(resName)) {
+        } else if (DrawableResourceLoader.isStillHandledHere(resName.type)) {
           // wtf. color and drawable references reference are all kinds of stupid.
           DrawableNode drawableNode = resourceLoader.getDrawableNode(resName, qualifiers);
           if (drawableNode == null) {
