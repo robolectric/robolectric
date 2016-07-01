@@ -2,7 +2,6 @@ package org.robolectric.fakes;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.res.Attribute.ANDROID_RES_NS_PREFIX;
-import static org.robolectric.res.ResourceLoader.ANDROID_NS;
 import static org.robolectric.util.TestUtil.SYSTEM_PACKAGE;
 import static org.robolectric.util.TestUtil.TEST_PACKAGE;
 import static org.robolectric.util.TestUtil.TEST_PACKAGE_NS;
@@ -24,6 +23,9 @@ import java.util.ArrayList;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class RoboAttributeSetTest {
+
+  public static final String ANDROID_NS = "http://schemas.android.com/apk/res/android";
+
   private AttributeSet roboAttributeSet;
   private Context context;
 

@@ -622,7 +622,7 @@ public class ShadowResourcesTest {
     }
   }
 
-  private static class FakeResourceLoader implements ResourceLoader {
+  private static class FakeResourceLoader extends ResourceLoader {
     private final Map<String, AttrData> attributesTypes;
     private final ResourceIndex resourceIndex;
 

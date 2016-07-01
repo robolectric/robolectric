@@ -782,7 +782,7 @@ public final class ShadowAssetManager {
     return attribute;
   }
 
-  @NotNull ResName getResName(int id) {
+  @NotNull private ResName getResName(int id) {
     ResName resName = resourceLoader.getResourceIndex().getResName(id);
     return checkResName(id, resName);
   }
