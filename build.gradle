@@ -97,6 +97,10 @@ configure(subprojects.findAll { project -> project.name =~ subshadowRE }) {
         dependsOn velocity
     }
 
+    configurations {
+        jni
+    }
+
     dependencies {
         // Project dependencies
         compile project(":robolectric-annotations")
@@ -109,11 +113,11 @@ configure(subprojects.findAll { project -> project.name =~ subshadowRE }) {
         provided("org.robolectric:android-all:$robolectricVersion") { force = true }
         compile "com.ibm.icu:icu4j:53.1"
 
-        runtime "com.github.axet.litedb:libsqlite:0.282-3:natives-mac-x86_64"
-        runtime "com.github.axet.litedb:libsqlite:0.282-3:natives-linux-x86"
-        runtime "com.github.axet.litedb:libsqlite:0.282-3:natives-linux-x86_64"
-        runtime "com.github.axet.litedb:libsqlite:0.282-3:natives-windows-x86"
-        runtime "com.github.axet.litedb:libsqlite:0.282-3:natives-windows-x86_64"
+        jni "com.github.axet.litedb:libsqlite:0.282-3:natives-mac-x86_64"
+        jni "com.github.axet.litedb:libsqlite:0.282-3:natives-linux-x86"
+        jni "com.github.axet.litedb:libsqlite:0.282-3:natives-linux-x86_64"
+        jni "com.github.axet.litedb:libsqlite:0.282-3:natives-windows-x86"
+        jni "com.github.axet.litedb:libsqlite:0.282-3:natives-windows-x86_64"
 
         // Testing dependencies
         testCompile "junit:junit:4.8.2"
@@ -124,7 +128,7 @@ configure(subprojects.findAll { project -> project.name =~ subshadowRE }) {
     task copyNatives(type: Copy) {
         outputs.dir file("${buildDir}/resources/main")
 
-        configurations.runtime.files.each { File file ->
+        configurations.jni.files.each { File file ->
             def nativeJarMatch = file.name =~ /lib.*-natives-(.*)\.jar/
             if (nativeJarMatch) {
                 inputs.file file
