@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import com.google.android.collect.Lists;
+import org.jetbrains.annotations.NotNull;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.res.Attribute;
 import org.robolectric.res.ResName;
@@ -12,7 +13,10 @@ import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.builder.ResourceLoaderProvider;
 import org.robolectric.shadows.Converter;
 
+import java.net.URLEncoder;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static org.robolectric.Shadows.shadowOf;
 
@@ -20,6 +24,9 @@ import static org.robolectric.Shadows.shadowOf;
  * Robolectric implementation of {@link android.util.AttributeSet}.
  */
 public class RoboAttributeSet implements ResourceLoaderProvider, AttributeSet {
+
+  private static final Logger LOGGER = Logger.getLogger(Attribute.class.getName());
+
   private final List<Attribute> attributes;
   private Context context;
   private ResourceLoader resourceLoader;
@@ -201,7 +208,7 @@ public class RoboAttributeSet implements ResourceLoaderProvider, AttributeSet {
   }
 
   private ResName getAttrResName(String namespace, String attrName) {
-    String packageName = Attribute.extractPackageName(namespace);
+    String packageName = extractPackageName(namespace);
     return new ResName(packageName, "attr", attrName);
   }
 
@@ -239,5 +246,16 @@ public class RoboAttributeSet implements ResourceLoaderProvider, AttributeSet {
   @Override
   public ResourceLoader getResourceLoader() {
     return resourceLoader;
+  }
+
+  private static String extractPackageName(@NotNull String namespaceUri) {
+    if (namespaceUri.startsWith(Attribute.ANDROID_RES_NS_PREFIX)) {
+      return namespaceUri.substring(Attribute.ANDROID_RES_NS_PREFIX.length());
+    } else {
+      if (!namespaceUri.equals("http://schemas.android.com/apk/prv/res/android")) {
+        LOGGER.log(Level.WARNING, "unexpected ns uri \"" + namespaceUri + "\"");
+      }
+      return URLEncoder.encode(namespaceUri);
+    }
   }
 }

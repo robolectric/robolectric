@@ -37,11 +37,11 @@ public class PreferenceLoader extends XmlLoader {
       int length = attributes.getLength();
       for (int i = 0; i < length; i++) {
         Node attr = attributes.item(i);
-        String attrName = Attribute.qualifyName(attr.getNodeName(), xmlContext.packageName);
+        String attrName = qualifyName(attr.getNodeName(), xmlContext.packageName);
         if (attrName.startsWith("xmlns:")) {
           // ignore
         } else {
-          attrList.add(new Attribute(Attribute.addType(attrName, "attr"), attr.getNodeValue(), xmlContext.packageName));
+          attrList.add(new Attribute(addType(attrName, "attr"), attr.getNodeValue(), xmlContext.packageName));
         }
       }
     }
@@ -52,5 +52,16 @@ public class PreferenceLoader extends XmlLoader {
 
       processChildren(node.getChildNodes(), prefNode, xmlContext);
     }
+  }
+
+  static String qualifyName(String possiblyQualifiedAttrName, String defaultPackage) {
+    if (possiblyQualifiedAttrName.indexOf(':') == -1) {
+      return defaultPackage + ":" + possiblyQualifiedAttrName;
+    }
+    return possiblyQualifiedAttrName;
+  }
+
+  static String addType(String possiblyPartiallyQualifiedAttrName, String typeName) {
+    return possiblyPartiallyQualifiedAttrName.contains(":") ? possiblyPartiallyQualifiedAttrName.replaceFirst(":", ":" + typeName + "/") : ":" + typeName + "/" + possiblyPartiallyQualifiedAttrName;
   }
 }
