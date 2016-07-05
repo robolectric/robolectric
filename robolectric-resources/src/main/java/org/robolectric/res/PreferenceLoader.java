@@ -7,10 +7,10 @@ import org.w3c.dom.NodeList;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PreferenceLoader extends XmlLoader {
+class PreferenceLoader extends XmlLoader {
   private final ResBundle<PreferenceNode> resBundle;
 
-  public PreferenceLoader(ResBundle<PreferenceNode> resBundle) {
+  PreferenceLoader(ResBundle<PreferenceNode> resBundle) {
     this.resBundle = resBundle;
   }
 
@@ -38,10 +38,8 @@ public class PreferenceLoader extends XmlLoader {
       for (int i = 0; i < length; i++) {
         Node attr = attributes.item(i);
         String attrName = qualifyName(attr.getNodeName(), xmlContext.packageName);
-        if (attrName.startsWith("xmlns:")) {
-          // ignore
-        } else {
-          attrList.add(new Attribute(addType(attrName, "attr"), attr.getNodeValue(), xmlContext.packageName));
+        if (!attrName.startsWith("xmlns:")) {
+          attrList.add(new Attribute(new ResName(ResName.qualifyResourceName(attrName, null, "attr")), attr.getNodeValue(), xmlContext.packageName));
         }
       }
     }
@@ -59,9 +57,5 @@ public class PreferenceLoader extends XmlLoader {
       return defaultPackage + ":" + possiblyQualifiedAttrName;
     }
     return possiblyQualifiedAttrName;
-  }
-
-  static String addType(String possiblyPartiallyQualifiedAttrName, String typeName) {
-    return possiblyPartiallyQualifiedAttrName.contains(":") ? possiblyPartiallyQualifiedAttrName.replaceFirst(":", ":" + typeName + "/") : ":" + typeName + "/" + possiblyPartiallyQualifiedAttrName;
   }
 }

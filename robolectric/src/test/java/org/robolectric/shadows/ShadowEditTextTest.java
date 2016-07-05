@@ -27,7 +27,7 @@ public class ShadowEditTextTest {
   @Before
   public void setup() {
     AttributeSet attributeSet = RoboAttributeSet.create(RuntimeEnvironment.application,
-        new Attribute("android:attr/maxLength", "5", R.class.getPackage().getName())
+        new Attribute(new ResName("android:attr/maxLength"), "5", R.class.getPackage().getName())
     );
 
     editText = new EditText(application, attributeSet);

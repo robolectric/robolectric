@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
@@ -37,7 +36,7 @@ import org.robolectric.annotation.AccessibilityChecks;
 import org.robolectric.annotation.Config;
 import org.robolectric.fakes.RoboAttributeSet;
 import org.robolectric.res.Attribute;
-import org.robolectric.res.ResourceLoader;
+import org.robolectric.res.ResName;
 import org.robolectric.util.TestOnClickListener;
 import org.robolectric.util.TestOnLongClickListener;
 import org.robolectric.util.TestRunnable;
@@ -339,7 +338,7 @@ public class ShadowViewTest {
   @Test
   public void shouldAddOnClickListenerFromAttribute() throws Exception {
     AttributeSet attrs = RoboAttributeSet.create(RuntimeEnvironment.application,
-        new Attribute("android:attr/onClick", "clickMe", R.class.getPackage().getName())
+        new Attribute(new ResName("android:attr/onClick"), "clickMe", R.class.getPackage().getName())
     );
 
     view = new View(RuntimeEnvironment.application, attrs);
@@ -351,7 +350,7 @@ public class ShadowViewTest {
     MyActivity myActivity = buildActivity(MyActivity.class).create().get();
 
     AttributeSet attrs = RoboAttributeSet.create(RuntimeEnvironment.application,
-        new Attribute("android:attr/onClick", "clickMe", R.class.getPackage().getName())
+        new Attribute(new ResName("android:attr/onClick"), "clickMe", R.class.getPackage().getName())
     );
 
     view = new View(myActivity, attrs);
@@ -364,7 +363,7 @@ public class ShadowViewTest {
     MyActivity myActivity = buildActivity(MyActivity.class).create().get();
 
     AttributeSet attrs = RoboAttributeSet.create(RuntimeEnvironment.application,
-        new Attribute("android:onClick", "clickYou", R.class.getPackage().getName())
+        new Attribute(new ResName("android:onClick"), "clickYou", R.class.getPackage().getName())
     );
 
     view = new View(myActivity, attrs);

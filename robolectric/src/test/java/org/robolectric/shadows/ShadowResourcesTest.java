@@ -518,8 +518,8 @@ public class ShadowResourcesTest {
 
     AttributeSet attributes = RoboAttributeSet.create(RuntimeEnvironment.application,
         ImmutableList.of(
-                new Attribute("android:attr/viewportWidth", "12.0", RuntimeEnvironment.application.getPackageName()),
-                new Attribute("android:attr/viewportHeight", "24.0", RuntimeEnvironment.application.getPackageName())),
+                new Attribute(new ResName("android:attr/viewportWidth"), "12.0", RuntimeEnvironment.application.getPackageName()),
+                new Attribute(new ResName("android:attr/viewportHeight"), "24.0", RuntimeEnvironment.application.getPackageName())),
             fakeResourceLoader);
 
     TypedArray typedArray = RuntimeEnvironment.application.getTheme().obtainStyledAttributes(attributes, new int[] {

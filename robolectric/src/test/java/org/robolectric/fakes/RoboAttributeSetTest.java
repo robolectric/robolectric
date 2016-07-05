@@ -37,7 +37,7 @@ public class RoboAttributeSetTest {
   @Test
   public void getSystemAttributeResourceValue_shouldReturnTheResourceValue() throws Exception {
     roboAttributeSet = RoboAttributeSet.create(context,
-        new Attribute("android:attr/text", "@android:string/ok", TEST_PACKAGE)
+        new Attribute(new ResName("android:attr/text"), "@android:string/ok", TEST_PACKAGE)
     );
     assertThat(roboAttributeSet.getAttributeResourceValue(ANDROID_NS, "text", 0)).isEqualTo(android.R.string.ok);
   }
@@ -45,7 +45,7 @@ public class RoboAttributeSetTest {
   @Test
   public void getAttributeResourceValue_shouldReturnTheResourceValue() throws Exception {
     roboAttributeSet = RoboAttributeSet.create(context,
-        new Attribute("android:attr/text", "@string/ok", TEST_PACKAGE)
+        new Attribute(new ResName("android:attr/text"), "@string/ok", TEST_PACKAGE)
     );
     assertThat(roboAttributeSet.getAttributeResourceValue(ANDROID_NS, "text", 0)).isEqualTo(R.string.ok);
   }
@@ -53,7 +53,7 @@ public class RoboAttributeSetTest {
   @Test
   public void getSystemAttributeResourceValueWithLeadingWhitespace_shouldReturnTheResourceValue() throws Exception {
     roboAttributeSet = RoboAttributeSet.create(context,
-        new Attribute("android:attr/text", " @android:string/ok", TEST_PACKAGE)
+        new Attribute(new ResName("android:attr/text"), " @android:string/ok", TEST_PACKAGE)
     );
     assertThat(roboAttributeSet.getAttributeResourceValue(ANDROID_NS, "text", 0)).isEqualTo(android.R.string.ok);
   }
@@ -61,7 +61,7 @@ public class RoboAttributeSetTest {
   @Test
   public void getAttributeResourceValueWithLeadingWhitespace_shouldReturnTheResourceValue() throws Exception {
     roboAttributeSet = RoboAttributeSet.create(context,
-        new Attribute("android:attr/text", " @string/ok", TEST_PACKAGE)
+        new Attribute(new ResName("android:attr/text"), " @string/ok", TEST_PACKAGE)
     );
     assertThat(roboAttributeSet.getAttributeResourceValue(ANDROID_NS, "text", 0)).isEqualTo(R.string.ok);
   }
@@ -69,7 +69,7 @@ public class RoboAttributeSetTest {
   @Test
   public void getSystemAttributeResourceValue_shouldNotReturnTheResourceValueIfNameSpaceDoesNotMatch() throws Exception {
     roboAttributeSet = RoboAttributeSet.create(context,
-        new Attribute("com.another.domain:attr/text", "@android:string/ok", TEST_PACKAGE)
+        new Attribute(new ResName("com.another.domain:attr/text"), "@android:string/ok", TEST_PACKAGE)
     );
     assertThat(roboAttributeSet.getAttributeResourceValue(ANDROID_NS, "text", 0)).isEqualTo(0);
   }
@@ -77,7 +77,7 @@ public class RoboAttributeSetTest {
   @Test
   public void getAttributeResourceValue_shouldReturnTheResourceValueFromSystemNamespace() throws Exception {
     roboAttributeSet = RoboAttributeSet.create(context,
-        new Attribute("com.another.domain:attr/text", "@android:string/ok", TEST_PACKAGE)
+        new Attribute(new ResName("com.another.domain:attr/text"), "@android:string/ok", TEST_PACKAGE)
     );
     assertThat(roboAttributeSet.getAttributeResourceValue(ANDROID_RES_NS_PREFIX + "com.another.domain", "text", 0)).isEqualTo(android.R.string.ok);
   }
@@ -85,7 +85,7 @@ public class RoboAttributeSetTest {
   @Test
   public void getSystemAttributeResourceValue_shouldReturnDefaultValueForNullResourceId() throws Exception {
     roboAttributeSet = RoboAttributeSet.create(context,
-        new Attribute("android:attr/text", "@null", TEST_PACKAGE)
+        new Attribute(new ResName("android:attr/text"), "@null", TEST_PACKAGE)
     );
     assertThat(roboAttributeSet.getAttributeResourceValue(ANDROID_RES_NS_PREFIX + "com.some.namespace", "text", 0)).isEqualTo(0);
   }
@@ -93,7 +93,7 @@ public class RoboAttributeSetTest {
   @Test
   public void getSystemAttributeResourceValue_shouldReturnValueForMatchingNamespace() throws Exception {
     roboAttributeSet = RoboAttributeSet.create(context,
-        new Attribute("com.some.namespace:attr/id", "@id/burritos", TEST_PACKAGE)
+        new Attribute(new ResName("com.some.namespace:attr/id"), "@id/burritos", TEST_PACKAGE)
     );
     assertThat(roboAttributeSet.getAttributeResourceValue(ANDROID_RES_NS_PREFIX + "com.some.namespace", "id", 0)).isEqualTo(R.id.burritos);
   }
@@ -101,7 +101,7 @@ public class RoboAttributeSetTest {
   @Test
   public void getSystemAttributeResourceValue_shouldReturnDefaultValueForNonMatchingNamespaceId() throws Exception {
     roboAttributeSet = RoboAttributeSet.create(context,
-        new Attribute("com.some.namespace:attr/id", "@id/burritos", TEST_PACKAGE)
+        new Attribute(new ResName("com.some.namespace:attr/id"), "@id/burritos", TEST_PACKAGE)
     );
     assertThat(roboAttributeSet.getAttributeResourceValue(ANDROID_RES_NS_PREFIX + "com.some.other.namespace", "id", 0)).isEqualTo(0);
   }
@@ -109,7 +109,7 @@ public class RoboAttributeSetTest {
   @Test
   public void shouldCopeWithDefiningSystemIds() throws Exception {
     roboAttributeSet = RoboAttributeSet.create(context,
-        new Attribute("android:attr/id", "@+id/text1", SYSTEM_PACKAGE)
+        new Attribute(new ResName("android:attr/id"), "@+id/text1", SYSTEM_PACKAGE)
     );
     assertThat(roboAttributeSet.getAttributeResourceValue(ANDROID_NS, "id", 0)).isEqualTo(android.R.id.text1);
   }
@@ -117,7 +117,7 @@ public class RoboAttributeSetTest {
   @Test
   public void shouldCopeWithDefiningLocalIds() throws Exception {
     roboAttributeSet = RoboAttributeSet.create(context,
-        new Attribute("android:attr/id", "@+id/text1", TEST_PACKAGE)
+        new Attribute(new ResName("android:attr/id"), "@+id/text1", TEST_PACKAGE)
     );
     assertThat(roboAttributeSet.getAttributeResourceValue(ANDROID_NS, "id", 0)).isEqualTo(R.id.text1);
   }
@@ -125,7 +125,7 @@ public class RoboAttributeSetTest {
   @Test
   public void getAttributeResourceValue_withNamespace_shouldReturnTheResourceValue() throws Exception {
     roboAttributeSet = RoboAttributeSet.create(context,
-        new Attribute(TEST_PACKAGE + ":attr/message", "@string/howdy", TEST_PACKAGE)
+        new Attribute(new ResName(TEST_PACKAGE + ":attr/message"), "@string/howdy", TEST_PACKAGE)
     );
     assertThat(roboAttributeSet.getAttributeResourceValue(TEST_PACKAGE_NS, "message", 0)).isEqualTo(R.string.howdy);
   }
@@ -133,7 +133,7 @@ public class RoboAttributeSetTest {
   @Test
   public void getAttributeResourceValue_shouldReturnDefaultValueWhenAttributeIsNull() throws Exception {
     roboAttributeSet = RoboAttributeSet.create(context,
-        new Attribute(TEST_PACKAGE + ":attr/message", "@null", TEST_PACKAGE)
+        new Attribute(new ResName(TEST_PACKAGE + ":attr/message"), "@null", TEST_PACKAGE)
     );
     assertThat(roboAttributeSet.getAttributeResourceValue(TEST_PACKAGE_NS, "message", -1)).isEqualTo(-1);
   }
@@ -147,7 +147,7 @@ public class RoboAttributeSetTest {
   @Test
   public void getAttributeBooleanValue_shouldGetBooleanValuesFromAttributes() throws Exception {
     roboAttributeSet = RoboAttributeSet.create(context,
-        new Attribute(TEST_PACKAGE + ":attr/isSugary", "true", TEST_PACKAGE)
+        new Attribute(new ResName(TEST_PACKAGE + ":attr/isSugary"), "true", TEST_PACKAGE)
     );
     assertThat(roboAttributeSet.getAttributeBooleanValue(TEST_PACKAGE_NS, "isSugary", false)).isTrue();
   }
@@ -155,7 +155,7 @@ public class RoboAttributeSetTest {
   @Test
   public void getAttributeBooleanValue_withNamespace_shouldGetBooleanValuesFromAttributes() throws Exception {
     roboAttributeSet = RoboAttributeSet.create(context,
-        new Attribute("xxx:attr/isSugary", "true", TEST_PACKAGE)
+        new Attribute(new ResName("xxx:attr/isSugary"), "true", TEST_PACKAGE)
     );
     assertThat(roboAttributeSet.getAttributeBooleanValue(ANDROID_RES_NS_PREFIX + "xxx", "isSugary", false)).isTrue();
   }
@@ -169,7 +169,7 @@ public class RoboAttributeSetTest {
   @Test
   public void getAttributeValue_byName_shouldReturnValueFromAttribute() throws Exception {
     roboAttributeSet = RoboAttributeSet.create(context,
-        new Attribute(TEST_PACKAGE + ":attr/isSugary", "oh heck yeah", TEST_PACKAGE)
+        new Attribute(new ResName(TEST_PACKAGE + ":attr/isSugary"), "oh heck yeah", TEST_PACKAGE)
     );
     assertThat(roboAttributeSet.getAttributeValue(TEST_PACKAGE_NS, "isSugary")).isEqualTo("oh heck yeah");
   }
@@ -177,7 +177,7 @@ public class RoboAttributeSetTest {
   @Test
   public void getAttributeValue_byNameWithReference_shouldReturnFullyQualifiedValueFromAttribute() throws Exception {
     roboAttributeSet = RoboAttributeSet.create(context,
-        new Attribute(TEST_PACKAGE + ":attr/isSugary", "@string/ok", TEST_PACKAGE)
+        new Attribute(new ResName(TEST_PACKAGE + ":attr/isSugary"), "@string/ok", TEST_PACKAGE)
     );
     assertThat(roboAttributeSet.getAttributeValue(TEST_PACKAGE_NS, "isSugary")).isEqualTo("@org.robolectric:string/ok");
   }
@@ -185,7 +185,7 @@ public class RoboAttributeSetTest {
   @Test
   public void getAttributeValue_byId_shouldReturnValueFromAttribute() throws Exception {
     roboAttributeSet = RoboAttributeSet.create(context,
-        new Attribute(TEST_PACKAGE + ":attr/isSugary", "oh heck yeah", TEST_PACKAGE)
+        new Attribute(new ResName(TEST_PACKAGE + ":attr/isSugary"), "oh heck yeah", TEST_PACKAGE)
     );
     assertThat(roboAttributeSet.getAttributeValue(0)).isEqualTo("oh heck yeah");
   }
@@ -193,7 +193,7 @@ public class RoboAttributeSetTest {
   @Test
   public void getAttributeValue_byIdWithReference_shouldReturnValueFromAttribute() throws Exception {
     roboAttributeSet = RoboAttributeSet.create(context,
-        new Attribute(TEST_PACKAGE + ":attr/isSugary", "@string/ok", TEST_PACKAGE)
+        new Attribute(new ResName(TEST_PACKAGE + ":attr/isSugary"), "@string/ok", TEST_PACKAGE)
     );
     assertThat(roboAttributeSet.getAttributeValue(0)).isEqualTo("@org.robolectric:string/ok");
   }
@@ -201,7 +201,7 @@ public class RoboAttributeSetTest {
   @Test
   public void getAttributeIntValue_shouldReturnValueFromAttribute() throws Exception {
     roboAttributeSet = RoboAttributeSet.create(context,
-        new Attribute(TEST_PACKAGE + ":attr/sugarinessPercent", "100", TEST_PACKAGE)
+        new Attribute(new ResName(TEST_PACKAGE + ":attr/sugarinessPercent"), "100", TEST_PACKAGE)
     );
     assertThat(roboAttributeSet.getAttributeIntValue(TEST_PACKAGE_NS, "sugarinessPercent", 0)).isEqualTo(100);
   }
@@ -209,7 +209,7 @@ public class RoboAttributeSetTest {
   @Test
   public void getAttributeIntValue_shouldReturnHexValueFromAttribute() throws Exception {
     roboAttributeSet = RoboAttributeSet.create(context,
-        new Attribute(TEST_PACKAGE + ":attr/sugarinessPercent", "0x10", TEST_PACKAGE)
+        new Attribute(new ResName(TEST_PACKAGE + ":attr/sugarinessPercent"), "0x10", TEST_PACKAGE)
     );
     assertThat(roboAttributeSet.getAttributeIntValue(TEST_PACKAGE_NS, "sugarinessPercent", 0)).isEqualTo(16);
   }
@@ -217,8 +217,8 @@ public class RoboAttributeSetTest {
   @Test
   public void getAttributeIntValue_shouldReturnStyledValueFromAttribute() throws Exception {
     roboAttributeSet = RoboAttributeSet.create(context,
-        new Attribute(TEST_PACKAGE + ":attr/gravity", "center|fill_vertical", TEST_PACKAGE),
-        new Attribute("android:attr/orientation", "vertical", TEST_PACKAGE)
+        new Attribute(new ResName(TEST_PACKAGE + ":attr/gravity"), "center|fill_vertical", TEST_PACKAGE),
+        new Attribute(new ResName("android:attr/orientation"), "vertical", TEST_PACKAGE)
     );
     assertThat(roboAttributeSet.getAttributeIntValue(TEST_PACKAGE_NS, "gravity", 0)).isEqualTo(0x11 | 0x70);
     assertThat(roboAttributeSet.getAttributeIntValue(ANDROID_NS, "orientation", -1)).isEqualTo(1); // style from LinearLayout
@@ -227,7 +227,7 @@ public class RoboAttributeSetTest {
   @Test
   public void getAttributeIntValue_shouldNotReturnStyledValueFromAttributeForSuperclass() throws Exception {
     roboAttributeSet = RoboAttributeSet.create(context,
-        new Attribute(TEST_PACKAGE + ":attr/gravity", "center|fill_vertical", TEST_PACKAGE)
+        new Attribute(new ResName(TEST_PACKAGE + ":attr/gravity"), "center|fill_vertical", TEST_PACKAGE)
     );
     assertThat(roboAttributeSet.getAttributeIntValue(TEST_PACKAGE_NS, "gravity", 0)).isEqualTo(Gravity.CENTER | Gravity.FILL_VERTICAL);
   }
@@ -235,7 +235,7 @@ public class RoboAttributeSetTest {
   @Test
   public void getAttributeIntValue_shouldReturnEnumValuesForEnumAttributes() throws Exception {
     roboAttributeSet = RoboAttributeSet.create(context,
-        new Attribute(TEST_PACKAGE + ":attr/itemType", "ungulate", TEST_PACKAGE)
+        new Attribute(new ResName(TEST_PACKAGE + ":attr/itemType"), "ungulate", TEST_PACKAGE)
     );
     assertThat(roboAttributeSet.getAttributeIntValue(TEST_PACKAGE_NS, "itemType", 0)).isEqualTo(1);
   }
@@ -243,7 +243,7 @@ public class RoboAttributeSetTest {
   @Test
   public void getAttributeIntValue_whenTypeAllowsIntOrEnum_withInt_shouldReturnInt() throws Exception {
     roboAttributeSet = RoboAttributeSet.create(context,
-        new Attribute(TEST_PACKAGE + ":attr/numColumns", "3", TEST_PACKAGE)
+        new Attribute(new ResName(TEST_PACKAGE + ":attr/numColumns"), "3", TEST_PACKAGE)
     );
     assertThat(roboAttributeSet.getAttributeIntValue(TEST_PACKAGE_NS, "numColumns", 0)).isEqualTo(3);
   }
@@ -251,7 +251,7 @@ public class RoboAttributeSetTest {
   @Test
   public void getAttributeIntValue_whenTypeAllowsIntOrEnum_withEnum_shouldReturnInt() throws Exception {
     roboAttributeSet = RoboAttributeSet.create(context,
-        new Attribute(TEST_PACKAGE + ":attr/numColumns", "auto_fit", TEST_PACKAGE)
+        new Attribute(new ResName(TEST_PACKAGE + ":attr/numColumns"), "auto_fit", TEST_PACKAGE)
     );
     assertThat(roboAttributeSet.getAttributeIntValue(TEST_PACKAGE_NS, "numColumns", 0)).isEqualTo(-1);
   }
@@ -259,7 +259,7 @@ public class RoboAttributeSetTest {
   @Test
   public void getAttributeValue_shouldReturnAttributeAssociatedWithResourceId() throws Exception {
     roboAttributeSet = RoboAttributeSet.create(context,
-        new Attribute("ns:attr/textStyle2", "expected value", TEST_PACKAGE)
+        new Attribute(new ResName("ns:attr/textStyle2"), "expected value", TEST_PACKAGE)
     );
     assertThat(roboAttributeSet.getAttributeValue(0)).isEqualTo("expected value");
   }
@@ -286,7 +286,7 @@ public class RoboAttributeSetTest {
   @Test
   public void getAttributeFloatValue_shouldGetFloatValuesFromAttributes() throws Exception {
     roboAttributeSet = RoboAttributeSet.create(context,
-        new Attribute(TEST_PACKAGE + ":attr/sugaryScale", "1234.456", TEST_PACKAGE)
+        new Attribute(new ResName(TEST_PACKAGE + ":attr/sugaryScale"), "1234.456", TEST_PACKAGE)
     );
     assertThat(roboAttributeSet.getAttributeFloatValue(TEST_PACKAGE_NS, "sugaryScale", 78.9f)).isEqualTo(1234.456f);
   }
@@ -294,7 +294,7 @@ public class RoboAttributeSetTest {
   @Test
   public void getAttributeFloatValue_withNamespace_shouldGetFloatValuesFromAttributes() throws Exception {
     roboAttributeSet = RoboAttributeSet.create(context,
-        new Attribute("xxx:attr/sugaryScale", "1234.456", TEST_PACKAGE)
+        new Attribute(new ResName("xxx:attr/sugaryScale"), "1234.456", TEST_PACKAGE)
     );
     assertThat(roboAttributeSet.getAttributeFloatValue(ANDROID_RES_NS_PREFIX + "xxx", "sugaryScale", 78.9f)).isEqualTo(1234.456f);
   }
@@ -320,7 +320,7 @@ public class RoboAttributeSetTest {
   @Test
   public void getStyleAttribute_returnsCorrectValue() throws Exception {
     roboAttributeSet = RoboAttributeSet.create(context,
-        new Attribute(":attr/style", "@style/FancyStyle", TEST_PACKAGE)
+        new Attribute(new ResName(":attr/style"), "@style/FancyStyle", TEST_PACKAGE)
     );
     assertThat(roboAttributeSet.getStyleAttribute()).isEqualTo(R.style.FancyStyle);
   }
@@ -328,14 +328,14 @@ public class RoboAttributeSetTest {
   @Test
   public void getStyleAttribute_doesNotThrowException_whenStyleIsBogus() throws Exception {
     roboAttributeSet = RoboAttributeSet.create(context,
-        new Attribute(":attr/style", "@style/bogus_style", TEST_PACKAGE)
+        new Attribute(new ResName(":attr/style"), "@style/bogus_style", TEST_PACKAGE)
     );
     assertThat(roboAttributeSet.getStyleAttribute()).isEqualTo(0);
   }
 
   @Test public void shouldConsiderSameNamedAttrsFromLibrariesEquivalent() throws Exception {
     roboAttributeSet = RoboAttributeSet.create(context,
-        new Attribute("org.robolectric.lib1:attr/offsetX", "1", TEST_PACKAGE)
+        new Attribute(new ResName("org.robolectric.lib1:attr/offsetX"), "1", TEST_PACKAGE)
     );
     assertThat(roboAttributeSet.getAttributeValue(ANDROID_RES_NS_PREFIX + "org.robolectric.lib1", "offsetX")).isEqualTo("1");
     assertThat(roboAttributeSet.getAttributeValue(ANDROID_RES_NS_PREFIX + "org.robolectric.lib2", "offsetX")).isEqualTo("1");
@@ -343,8 +343,8 @@ public class RoboAttributeSetTest {
 
   @Test public void getAttributeNameResource() throws Exception {
     roboAttributeSet = RoboAttributeSet.create(context,
-        new Attribute("org.robolectric.lib1:attr/message", "1", TEST_PACKAGE),
-        new Attribute("org.robolectric.lib1:attr/keycode", "1", TEST_PACKAGE)
+        new Attribute(new ResName("org.robolectric.lib1:attr/message"), "1", TEST_PACKAGE),
+        new Attribute(new ResName("org.robolectric.lib1:attr/keycode"), "1", TEST_PACKAGE)
         );
     assertThat(roboAttributeSet.getAttributeNameResource(0)).isEqualTo(0); // no id for attr.message for some reason...
     assertThat(roboAttributeSet.getAttributeNameResource(1)).isEqualTo(R.attr.keycode);

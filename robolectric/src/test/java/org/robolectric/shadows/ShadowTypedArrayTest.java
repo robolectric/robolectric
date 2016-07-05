@@ -12,6 +12,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.fakes.RoboAttributeSet;
 import org.robolectric.res.Attribute;
+import org.robolectric.res.ResName;
 import org.robolectric.util.TestUtil;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -45,7 +46,7 @@ public class ShadowTypedArrayTest {
   @Test
   public void getInt_withFlags_shouldReturnValue() throws Exception {
     TypedArray typedArray = context.obtainStyledAttributes(
-        RoboAttributeSet.create(context, new Attribute("android:attr/gravity", "top|left", TestUtil.TEST_PACKAGE)),
+        RoboAttributeSet.create(context, new Attribute(new ResName("android:attr/gravity"), "top|left", TestUtil.TEST_PACKAGE)),
         new int[]{android.R.attr.gravity});
     assertThat(typedArray.getInt(0, -1)).isEqualTo(0x33);
   }
@@ -58,7 +59,7 @@ public class ShadowTypedArrayTest {
   @Test
   public void getResourceId_shouldReturnActualValue() throws Exception {
     TypedArray typedArray = context.obtainStyledAttributes(
-        RoboAttributeSet.create(context, new Attribute("android:attr/id", "@+id/snippet_text", TestUtil.TEST_PACKAGE)),
+        RoboAttributeSet.create(context, new Attribute(new ResName("android:attr/id"), "@+id/snippet_text", TestUtil.TEST_PACKAGE)),
         new int[]{android.R.attr.id});
     assertThat(typedArray.getResourceId(0, -1)).isEqualTo(R.id.snippet_text);
   }
@@ -71,7 +72,7 @@ public class ShadowTypedArrayTest {
   @Test
   public void getFraction_shouldReturnGivenValue() throws Exception {
     TypedArray typedArray = context.obtainStyledAttributes(
-        RoboAttributeSet.create(context, new Attribute(TestUtil.SYSTEM_PACKAGE + ":attr/width", "50%", TestUtil.SYSTEM_PACKAGE)),
+        RoboAttributeSet.create(context, new Attribute(new ResName(TestUtil.SYSTEM_PACKAGE + ":attr/width"), "50%", TestUtil.SYSTEM_PACKAGE)),
         new int[]{android.R.attr.width});
     assertThat(typedArray.getFraction(0, 100, 1, -1)).isEqualTo(50f);
   }
@@ -84,7 +85,7 @@ public class ShadowTypedArrayTest {
   @Test
   public void getDimension_shouldReturnGivenValue() throws Exception {
     TypedArray typedArray = context.obtainStyledAttributes(
-        RoboAttributeSet.create(context, new Attribute(TestUtil.SYSTEM_PACKAGE + ":attr/width", "50dp", TestUtil.SYSTEM_PACKAGE)),
+        RoboAttributeSet.create(context, new Attribute(new ResName(TestUtil.SYSTEM_PACKAGE + ":attr/width"), "50dp", TestUtil.SYSTEM_PACKAGE)),
         new int[]{android.R.attr.width});
     assertThat(typedArray.getDimension(0, -1)).isEqualTo(50f);
   }
@@ -92,7 +93,7 @@ public class ShadowTypedArrayTest {
   @Test
   public void getDrawable_withExplicitColorValue_shouldReturnColorDrawable() throws Exception {
     TypedArray typedArray = context.obtainStyledAttributes(
-        RoboAttributeSet.create(context, new Attribute("android:attr/background", "#ff777777", TestUtil.TEST_PACKAGE)),
+        RoboAttributeSet.create(context, new Attribute(new ResName("android:attr/background"), "#ff777777", TestUtil.TEST_PACKAGE)),
         new int[]{android.R.attr.background});
     assertThat(typedArray.getDrawable(0)).isEqualTo(new ColorDrawable(0xff777777));
   }
@@ -100,7 +101,7 @@ public class ShadowTypedArrayTest {
   @Test
   public void getTextArray_whenNoSuchAttribute_shouldReturnNull() throws Exception {
     TypedArray typedArray = context.obtainStyledAttributes(
-        RoboAttributeSet.create(context, new Attribute(TestUtil.TEST_PACKAGE + ":attr/keycode", "@array/greetings", TestUtil.TEST_PACKAGE)),
+        RoboAttributeSet.create(context, new Attribute(new ResName(TestUtil.TEST_PACKAGE + ":attr/keycode"), "@array/greetings", TestUtil.TEST_PACKAGE)),
         new int[]{R.attr.items});
     assertNull(typedArray.getTextArray(0));
   }
@@ -108,14 +109,14 @@ public class ShadowTypedArrayTest {
   @Test
   public void getTextArray_shouldReturnValues() throws Exception {
     TypedArray typedArray = context.obtainStyledAttributes(
-        RoboAttributeSet.create(context, new Attribute(TestUtil.TEST_PACKAGE + ":attr/responses", "@array/greetings", TestUtil.TEST_PACKAGE)),
+        RoboAttributeSet.create(context, new Attribute(new ResName(TestUtil.TEST_PACKAGE + ":attr/responses"), "@array/greetings", TestUtil.TEST_PACKAGE)),
         new int[]{R.attr.responses});
     assertThat(typedArray.getTextArray(0)).containsExactly("hola", "Hello");
   }
 
   @Test public void hasValue_withValue() throws Exception {
     TypedArray typedArray = context.obtainStyledAttributes(
-        RoboAttributeSet.create(context, new Attribute(TestUtil.TEST_PACKAGE + ":attr/responses", "@array/greetings", TestUtil.TEST_PACKAGE)),
+        RoboAttributeSet.create(context, new Attribute(new ResName(TestUtil.TEST_PACKAGE + ":attr/responses"), "@array/greetings", TestUtil.TEST_PACKAGE)),
         new int[]{R.attr.responses});
     assertThat(typedArray.hasValue(0)).isTrue();
   }
@@ -129,7 +130,7 @@ public class ShadowTypedArrayTest {
 
   @Test public void hasValue_withNullValue() throws Exception {
     TypedArray typedArray = context.obtainStyledAttributes(
-        RoboAttributeSet.create(context, new Attribute(TestUtil.TEST_PACKAGE + ":attr/items", "@null", TestUtil.TEST_PACKAGE)),
+        RoboAttributeSet.create(context, new Attribute(new ResName(TestUtil.TEST_PACKAGE + ":attr/items"), "@null", TestUtil.TEST_PACKAGE)),
         new int[]{R.attr.items});
     assertThat(typedArray.hasValue(0)).isFalse();
   }
@@ -137,8 +138,8 @@ public class ShadowTypedArrayTest {
   @Test public void shouldEnumeratePresentValues() throws Exception {
     TypedArray typedArray = context.obtainStyledAttributes(
         RoboAttributeSet.create(context, 
-            new Attribute(TestUtil.TEST_PACKAGE + ":attr/responses", "@array/greetings", TestUtil.TEST_PACKAGE),
-            new Attribute(TestUtil.TEST_PACKAGE + ":attr/aspectRatio", "1", TestUtil.TEST_PACKAGE)
+            new Attribute(new ResName(TestUtil.TEST_PACKAGE + ":attr/responses"), "@array/greetings", TestUtil.TEST_PACKAGE),
+            new Attribute(new ResName(TestUtil.TEST_PACKAGE + ":attr/aspectRatio"), "1", TestUtil.TEST_PACKAGE)
         ),
         new int[]{R.attr.scrollBars, R.attr.responses, R.attr.isSugary});
     assertThat(typedArray.getIndexCount()).isEqualTo(1);

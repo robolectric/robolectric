@@ -2,10 +2,6 @@ package org.robolectric.res;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.net.URLEncoder;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 public class Attribute {
   public static final String ANDROID_RES_NS_PREFIX = "http://schemas.android.com/apk/res/";
   public static final String RES_AUTO_NS_URI = "http://schemas.android.com/apk/res-auto";
@@ -13,10 +9,6 @@ public class Attribute {
   public final @NotNull ResName resName;
   public final @NotNull String value;
   public final @NotNull String contextPackageName;
-
-  public Attribute(@NotNull String fullyQualifiedName, @NotNull String value, @NotNull String contextPackageName) {
-    this(new ResName(fullyQualifiedName), value, contextPackageName);
-  }
 
   public Attribute(@NotNull ResName resName, @NotNull String value, @NotNull String contextPackageName) {
     if (!resName.type.equals("attr")) throw new IllegalStateException("\"" + resName.getFullyQualifiedName() + "\" unexpected");

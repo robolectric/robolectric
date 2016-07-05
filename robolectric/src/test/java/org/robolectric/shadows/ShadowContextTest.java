@@ -12,6 +12,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.fakes.RoboAttributeSet;
 import org.robolectric.res.Attribute;
+import org.robolectric.res.ResName;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -242,11 +243,11 @@ public class ShadowContextTest {
   public void obtainStyledAttributes_shouldExtractAttributesFromAttributeSet() throws Exception {
 
     AttributeSet roboAttributeSet = RoboAttributeSet.create(context,
-        new Attribute(TEST_PACKAGE + ":attr/itemType", "ungulate", TEST_PACKAGE),
-        new Attribute(TEST_PACKAGE + ":attr/scrollBars", "horizontal|vertical", TEST_PACKAGE),
-        new Attribute(TEST_PACKAGE + ":attr/quitKeyCombo", "^q", TEST_PACKAGE),
-        new Attribute(TEST_PACKAGE + ":attr/aspectRatio", "1.5", TEST_PACKAGE),
-        new Attribute(TEST_PACKAGE + ":attr/aspectRatioEnabled", "true", TEST_PACKAGE)
+        new Attribute(new ResName(TEST_PACKAGE + ":attr/itemType"), "ungulate", TEST_PACKAGE),
+        new Attribute(new ResName(TEST_PACKAGE + ":attr/scrollBars"), "horizontal|vertical", TEST_PACKAGE),
+        new Attribute(new ResName(TEST_PACKAGE + ":attr/quitKeyCombo"), "^q", TEST_PACKAGE),
+        new Attribute(new ResName(TEST_PACKAGE + ":attr/aspectRatio"), "1.5", TEST_PACKAGE),
+        new Attribute(new ResName(TEST_PACKAGE + ":attr/aspectRatioEnabled"), "true", TEST_PACKAGE)
     );
 
     TypedArray a = context.obtainStyledAttributes(roboAttributeSet, R.styleable.CustomView);
