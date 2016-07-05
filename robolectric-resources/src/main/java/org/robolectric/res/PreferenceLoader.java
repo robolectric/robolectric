@@ -1,11 +1,7 @@
 package org.robolectric.res;
 
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
-import java.util.ArrayList;
-import java.util.List;
 
 class PreferenceLoader extends XmlLoader {
   private final ResBundle<PreferenceNode> resBundle;
@@ -16,46 +12,23 @@ class PreferenceLoader extends XmlLoader {
 
   @Override
   protected void processResourceXml(FsFile xmlFile, XpathResourceXmlLoader.XmlNode xmlNode, XmlContext xmlContext) throws Exception {
-    PreferenceNode topLevelNode = new PreferenceNode("top-level", new ArrayList<Attribute>());
-    processChildren(parse(xmlFile).getChildNodes(), topLevelNode, xmlContext);
+    PreferenceNode topLevelNode = new PreferenceNode();
+    processChildren(parse(xmlFile).getChildNodes(), topLevelNode);
     resBundle.put("xml", xmlFile.getName().replace(".xml", ""), topLevelNode.getChildren().get(0), xmlContext);
   }
 
-  private void processChildren(NodeList childNodes, PreferenceNode parent, XmlContext xmlContext) {
+  private void processChildren(NodeList childNodes, PreferenceNode parent) {
     for (int i = 0; i < childNodes.getLength(); i++) {
       Node node = childNodes.item(i);
-      processNode(node, parent, xmlContext);
-    }
-  }
+      String name = node.getNodeName();
 
-  private void processNode(Node node, PreferenceNode parent, XmlContext xmlContext) {
-    String name = node.getNodeName();
-    NamedNodeMap attributes = node.getAttributes();
-    List<Attribute> attrList = new ArrayList<>();
+      if (!name.startsWith("#")) {
+        PreferenceNode prefNode = new PreferenceNode();
+        if (parent != null) parent.addChild(prefNode);
 
-    if (attributes != null) {
-      int length = attributes.getLength();
-      for (int i = 0; i < length; i++) {
-        Node attr = attributes.item(i);
-        String attrName = qualifyName(attr.getNodeName(), xmlContext.packageName);
-        if (!attrName.startsWith("xmlns:")) {
-          attrList.add(new Attribute(new ResName(ResName.qualifyResourceName(attrName, null, "attr")), attr.getNodeValue(), xmlContext.packageName));
-        }
+        processChildren(node.getChildNodes(), prefNode);
       }
     }
-
-    if (!name.startsWith("#")) {
-      PreferenceNode prefNode = new PreferenceNode(name, attrList);
-      if (parent != null) parent.addChild(prefNode);
-
-      processChildren(node.getChildNodes(), prefNode, xmlContext);
-    }
   }
 
-  static String qualifyName(String possiblyQualifiedAttrName, String defaultPackage) {
-    if (possiblyQualifiedAttrName.indexOf(':') == -1) {
-      return defaultPackage + ":" + possiblyQualifiedAttrName;
-    }
-    return possiblyQualifiedAttrName;
-  }
 }
