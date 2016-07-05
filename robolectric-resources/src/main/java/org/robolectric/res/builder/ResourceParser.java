@@ -78,8 +78,6 @@ public class ResourceParser {
    */
   static class XmlResourceParserImpl implements ResourceLoaderProvider, XmlResourceParser {
 
-    private static final ResName FAKE_RES_NAME = new ResName("_robolectric_", "attr", "_fake_");
-
     private final Document document;
     private final String fileName;
     private final String packageName;
@@ -353,14 +351,14 @@ public class ResourceParser {
     }
 
     private String qualify(String value) {
-      Attribute attribute = asAttribute(value);
-      if (attribute == null) return null;
-      return attribute.qualifiedValue();
-    }
-
-    private Attribute asAttribute(String value) {
       if (value == null) return null;
-      return new Attribute(FAKE_RES_NAME, value, packageName);
+      if (Attribute.isResourceReference(value)) {
+        return "@" + ResName.qualifyResourceName(value.substring(1).replace("+", ""), packageName, "attr");
+      } else if (Attribute.isStyleReference(value)) {
+        return "?" + ResName.qualifyResourceName(value.substring(1), packageName, "attr");
+      } else {
+        return value;
+      }
     }
 
     @Override
@@ -810,17 +808,16 @@ public class ResourceParser {
     }
 
     private int getResourceId(String possiblyQualifiedResourceName, String defaultPackageName, String defaultType) {
-      Attribute attribute = asAttribute(possiblyQualifiedResourceName);
 
-      if (attribute.isNull()) return 0;
+      if (Attribute.isNull(possiblyQualifiedResourceName)) return 0;
 
-      if (attribute.isStyleReference()) {
-        Integer resourceId = resourceLoader.getResourceIndex().getResourceId(attribute.getStyleReference());
+      if (Attribute.isStyleReference(possiblyQualifiedResourceName)) {
+        Integer resourceId = resourceLoader.getResourceIndex().getResourceId(Attribute.getStyleReference(possiblyQualifiedResourceName, defaultPackageName, defaultType));
         return resourceId == null ? 0 : resourceId;
       }
 
-      if (attribute.isResourceReference()) {
-        Integer resourceId = resourceLoader.getResourceIndex().getResourceId(attribute.getResourceReference());
+      if (Attribute.isResourceReference(possiblyQualifiedResourceName)) {
+        Integer resourceId = resourceLoader.getResourceIndex().getResourceId(Attribute.getResourceReference(possiblyQualifiedResourceName, defaultPackageName, defaultType));
         return resourceId == null ? 0 : resourceId;
       }
       possiblyQualifiedResourceName = removeLeadingSpecialCharsIfAny(possiblyQualifiedResourceName);

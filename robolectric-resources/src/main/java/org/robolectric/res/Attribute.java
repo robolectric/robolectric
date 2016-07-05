@@ -25,7 +25,7 @@ public class Attribute {
   }
 
   public boolean isResourceReference() {
-    return value.startsWith("@") && !isNull();
+    return isResourceReference(value);
   }
 
   public @NotNull ResName getResourceReference() {
@@ -34,7 +34,7 @@ public class Attribute {
   }
 
   public boolean isStyleReference() {
-    return value.startsWith("?");
+    return isStyleReference(value);
   }
 
   public ResName getStyleReference() {
@@ -57,5 +57,27 @@ public class Attribute {
         ", value='" + value + '\'' +
         ", contextPackageName='" + contextPackageName + '\'' +
         '}';
+  }
+
+  public static boolean isResourceReference(String value) {
+    return value.startsWith("@") && !isNull(value);
+  }
+
+  public static @NotNull ResName getResourceReference(String value, String defPackage, String defType) {
+    if (!isResourceReference(value)) throw new IllegalArgumentException("not a resource reference: " + value);
+    return ResName.qualifyResName(value.substring(1).replace("+", ""), defPackage, defType);
+  }
+
+  public static boolean isStyleReference(String value) {
+    return value.startsWith("?");
+  }
+
+  public static ResName getStyleReference(String value, String defPackage, String defType) {
+    if (!isStyleReference(value)) throw new IllegalArgumentException("not a style reference: " + value);
+    return ResName.qualifyResName(value.substring(1), defPackage, defType);
+  }
+
+  public static boolean isNull(String value) {
+    return "@null".equals(value);
   }
 }
