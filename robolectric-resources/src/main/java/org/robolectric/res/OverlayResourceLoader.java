@@ -90,16 +90,6 @@ public class OverlayResourceLoader extends XResourceLoader {
       @Override
       public Void call() {
         for (PackageResourceLoader subResourceLoader : subResourceLoaders) {
-          preferenceData.mergeLibraryStyle(subResourceLoader.preferenceData, packageName);
-        }
-        return null;
-      }
-    });
-
-    mergeTasks.add(new Callable<Void>() {
-      @Override
-      public Void call() {
-        for (PackageResourceLoader subResourceLoader : subResourceLoaders) {
           xmlDocuments.mergeLibraryStyle(subResourceLoader.xmlDocuments, packageName);
         }
         return null;

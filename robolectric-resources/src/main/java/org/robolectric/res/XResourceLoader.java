@@ -12,13 +12,12 @@ abstract class XResourceLoader extends ResourceLoader {
   final ResBundle<PluralResourceLoader.PluralRules> pluralsData = new ResBundle<>();
   final ResBundle<String> stringData = new ResBundle<>();
   final ResBundle<DrawableNode> drawableData = new ResBundle<>();
-  final ResBundle<PreferenceNode> preferenceData = new ResBundle<>();
   final ResBundle<XmlBlock> xmlDocuments = new ResBundle<>();
   final ResBundle<FsFile> rawResources = new ResBundle<>();
   private final ResourceIndex resourceIndex;
   private boolean isInitialized = false;
 
-  protected XResourceLoader(ResourceIndex resourceIndex) {
+  XResourceLoader(ResourceIndex resourceIndex) {
     this.resourceIndex = resourceIndex;
   }
 
@@ -32,13 +31,12 @@ abstract class XResourceLoader extends ResourceLoader {
     makeImmutable();
   }
 
-  protected void makeImmutable() {
+  private void makeImmutable() {
     data.makeImmutable();
 
     pluralsData.makeImmutable();
     stringData.makeImmutable();
     drawableData.makeImmutable();
-    preferenceData.makeImmutable();
     xmlDocuments.makeImmutable();
     rawResources.makeImmutable();
   }
