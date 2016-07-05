@@ -63,11 +63,6 @@ public class PackageResourceLoader extends XResourceLoader {
 
     new DrawableResourceLoader(drawableData).findDrawableResources(resourcePath);
     new RawResourceLoader(resourcePath).loadTo(rawResources);
-
-    loadOtherResources(resourcePath);
-  }
-
-  protected void loadOtherResources(ResourcePath resourcePath) {
   }
 
   @Override
