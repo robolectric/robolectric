@@ -337,9 +337,10 @@ public class ShadowViewTest {
 
   @Test
   public void shouldAddOnClickListenerFromAttribute() throws Exception {
-    AttributeSet attrs = RoboAttributeSet.create(RuntimeEnvironment.application,
-        new Attribute(new ResName("android:attr/onClick"), "clickMe", R.class.getPackage().getName())
-    );
+    AttributeSet attrs = Robolectric.buildAttributeSet()
+        .addAttribute(android.R.attr.onClick, "clickMe")
+        .build()
+        ;
 
     view = new View(RuntimeEnvironment.application, attrs);
     assertNotNull(shadowOf(view).getOnClickListener());
@@ -349,9 +350,9 @@ public class ShadowViewTest {
   public void shouldCallOnClickWithAttribute() throws Exception {
     MyActivity myActivity = buildActivity(MyActivity.class).create().get();
 
-    AttributeSet attrs = RoboAttributeSet.create(RuntimeEnvironment.application,
-        new Attribute(new ResName("android:attr/onClick"), "clickMe", R.class.getPackage().getName())
-    );
+    AttributeSet attrs = Robolectric.buildAttributeSet()
+        .addAttribute(android.R.attr.onClick, "clickMe")
+        .build();
 
     view = new View(myActivity, attrs);
     view.performClick();
@@ -362,9 +363,9 @@ public class ShadowViewTest {
   public void shouldThrowExceptionWithBadMethodName() throws Exception {
     MyActivity myActivity = buildActivity(MyActivity.class).create().get();
 
-    AttributeSet attrs = RoboAttributeSet.create(RuntimeEnvironment.application,
-        new Attribute(new ResName("android:onClick"), "clickYou", R.class.getPackage().getName())
-    );
+    AttributeSet attrs = Robolectric.buildAttributeSet()
+        .addAttribute(android.R.attr.onClick, "clickYou")
+        .build();
 
     view = new View(myActivity, attrs);
     view.performClick();

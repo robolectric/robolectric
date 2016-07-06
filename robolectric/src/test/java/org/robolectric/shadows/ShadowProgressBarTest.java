@@ -6,6 +6,8 @@ import android.widget.ProgressBar;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.R;
+import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.fakes.RoboAttributeSet;
@@ -27,11 +29,11 @@ public class ShadowProgressBarTest {
 
   @Before
   public void setUp() {
-    AttributeSet attrs = RoboAttributeSet.create(RuntimeEnvironment.application,
-        new Attribute(new ResName(TestUtil.SYSTEM_PACKAGE, "attr", "max"), "100", TestUtil.TEST_PACKAGE),
-        new Attribute(new ResName(TestUtil.SYSTEM_PACKAGE, "attr", "indeterminate"), "false", TestUtil.TEST_PACKAGE),
-        new Attribute(new ResName(TestUtil.SYSTEM_PACKAGE, "attr", "indeterminateOnly"), "false", TestUtil.TEST_PACKAGE)
-    );
+    AttributeSet attrs = Robolectric.buildAttributeSet()
+        .addAttribute(android.R.attr.max, "100")
+        .addAttribute(android.R.attr.indeterminate, "false")
+        .addAttribute(android.R.attr.indeterminateOnly, "false")
+        .build();
 
     progressBar = new ProgressBar(application, attrs);
   }

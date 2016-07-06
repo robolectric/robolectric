@@ -2,11 +2,8 @@ package org.robolectric.fakes;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.R;
-import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.res.Attribute;
@@ -15,9 +12,6 @@ import org.robolectric.res.ResName;
 import java.util.ArrayList;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.res.Attribute.ANDROID_RES_NS_PREFIX;
-import static org.robolectric.util.TestUtil.TEST_PACKAGE;
-import static org.robolectric.util.TestUtil.TEST_PACKAGE_NS;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class RoboAttributeSetTest {

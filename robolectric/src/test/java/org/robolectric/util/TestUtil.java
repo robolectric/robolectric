@@ -24,9 +24,7 @@ import static org.junit.Assert.assertTrue;
 public abstract class TestUtil {
   private static ResourcePath SYSTEM_RESOURCE_PATH;
   public static final ResourcePath TEST_RESOURCE_PATH = new ResourcePath(R.class.getPackage().getName(), resourceFile("res"), resourceFile("assets"), R.class);
-  public static final String SYSTEM_PACKAGE = android.R.class.getPackage().getName();
   public static final String TEST_PACKAGE = R.class.getPackage().getName();
-  public static final String TEST_PACKAGE_NS = Attribute.ANDROID_RES_NS_PREFIX + R.class.getPackage().getName();
   public static File testDirLocation;
 
   public static void assertEquals(Collection<?> expected, Collection<?> actual) {

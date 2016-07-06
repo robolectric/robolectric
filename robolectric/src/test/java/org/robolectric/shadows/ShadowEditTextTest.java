@@ -9,6 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
+import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.fakes.RoboAttributeSet;
@@ -26,9 +27,9 @@ public class ShadowEditTextTest {
 
   @Before
   public void setup() {
-    AttributeSet attributeSet = RoboAttributeSet.create(RuntimeEnvironment.application,
-        new Attribute(new ResName("android:attr/maxLength"), "5", R.class.getPackage().getName())
-    );
+    AttributeSet attributeSet = Robolectric.buildAttributeSet()
+        .addAttribute(android.R.attr.maxLength, "5")
+        .build();
 
     editText = new EditText(application, attributeSet);
   }
@@ -48,7 +49,10 @@ public class ShadowEditTextTest {
   @Test
   public void givenInitializingWithAttributeSet_whenMaxLengthDefined_thenRestrictTextLengthToMaxLength() {
     int maxLength = anyInteger();
-    AttributeSet attrs = attributeSetWithMaxLength(maxLength);
+    AttributeSet attrs = Robolectric.buildAttributeSet()
+        .addAttribute(android.R.attr.maxLength, maxLength + "")
+        .build();
+
     EditText editText = new EditText(RuntimeEnvironment.application, attrs);
     String excessiveInput = stringOfLength(maxLength * 2);
 
@@ -59,7 +63,7 @@ public class ShadowEditTextTest {
 
   @Test
   public void givenInitializingWithAttributeSet_whenMaxLengthNotDefined_thenTextLengthShouldHaveNoRestrictions() {
-    AttributeSet attrs = attributeSetWithoutMaxLength();
+    AttributeSet attrs = Robolectric.buildAttributeSet().build();
     EditText editText = new EditText(RuntimeEnvironment.application, attrs);
     String input = anyString();
 
@@ -114,13 +118,4 @@ public class ShadowEditTextTest {
     return new Random().nextInt(1000) + 1;
   }
 
-  private AttributeSet attributeSetWithMaxLength(int maxLength) {
-    return RoboAttributeSet.create(RuntimeEnvironment.application,
-        new Attribute(new ResName("android", "attr", "maxLength"), maxLength + "", "android")
-    );
-  }
-
-  private AttributeSet attributeSetWithoutMaxLength() {
-    return RoboAttributeSet.create(RuntimeEnvironment.application);
-  }
 }

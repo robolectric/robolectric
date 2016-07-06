@@ -9,6 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
+import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.fakes.RoboAttributeSet;
@@ -58,11 +59,10 @@ public class ViewStubTest {
   @Test
   public void shouldApplyAttributes() throws Exception {
     ViewStub viewStub = new ViewStub(ctxt,
-        RoboAttributeSet.create(RuntimeEnvironment.application,
-            new Attribute(new ResName("android:attr/inflatedId"), "@+id/include_id", TEST_PACKAGE),
-            new Attribute(new ResName("android:attr/layout"), "@layout/media", TEST_PACKAGE)
-        )
-    );
+        Robolectric.buildAttributeSet()
+            .addAttribute(android.R.attr.inflatedId, "@+id/include_id")
+            .addAttribute(android.R.attr.layout, "@layout/media")
+            .build());
 
     assertThat(viewStub.getInflatedId()).isEqualTo(R.id.include_id);
     assertThat(viewStub.getLayoutResource()).isEqualTo(R.layout.media);

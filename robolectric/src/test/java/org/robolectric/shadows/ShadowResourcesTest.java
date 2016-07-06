@@ -516,11 +516,13 @@ public class ShadowResourcesTest {
     ResourceLoader fakeResourceLoader = new FakeResourceLoader(attributesTypes,
             new ResourceExtractor(new ResourcePath("android", null, null, Lollipop_R_snippet.class)));
 
-    AttributeSet attributes = RoboAttributeSet.create(RuntimeEnvironment.application,
-        ImmutableList.of(
-                new Attribute(new ResName("android:attr/viewportWidth"), "12.0", RuntimeEnvironment.application.getPackageName()),
-                new Attribute(new ResName("android:attr/viewportHeight"), "24.0", RuntimeEnvironment.application.getPackageName())),
-            fakeResourceLoader);
+
+    RuntimeEnvironment.setAppResourceLoader(fakeResourceLoader);
+
+    AttributeSet attributes = Robolectric.buildAttributeSet()
+        .addAttribute(android.R.attr.viewportWidth, "12.0")
+        .addAttribute(android.R.attr.viewportHeight, "24.0")
+        .build();
 
     TypedArray typedArray = RuntimeEnvironment.application.getTheme().obtainStyledAttributes(attributes, new int[] {
             Lollipop_R_snippet.attr.viewportWidth,
