@@ -8,6 +8,7 @@ import java.io.Reader;
 import java.util.Arrays;
 import java.util.List;
 
+import com.android.internal.util.XmlUtils;
 import org.robolectric.res.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -76,7 +77,7 @@ public class ResourceParser {
    * a set of native methods calls. Here those methods are
    * re-implemented in java when possible.
    */
-  static class XmlResourceParserImpl implements ResourceLoaderProvider, XmlResourceParser {
+  public static class XmlResourceParserImpl implements ResourceLoaderProvider, XmlResourceParser {
 
     private final Document document;
     private final String fileName;
@@ -91,8 +92,8 @@ public class ResourceParser {
     private int mDepth = 0;
     private int mEventType = START_DOCUMENT;
 
-    XmlResourceParserImpl(Document document, String fileName, String packageName,
-                          String applicationPackageName, ResourceLoader resourceLoader) {
+    public XmlResourceParserImpl(Document document, String fileName, String packageName,
+                                 String applicationPackageName, ResourceLoader resourceLoader) {
       this.document = document;
       this.fileName = fileName;
       this.packageName = packageName;
@@ -286,10 +287,10 @@ public class ResourceParser {
 
       Element element = (Element) currentNode;
       if (element.hasAttributeNS(namespace, name)) {
-        return element.getAttributeNS(namespace, name);
+        return element.getAttributeNS(namespace, name).trim();
       } else if (applicationNamespace.equals(namespace)
           && element.hasAttributeNS(Attribute.RES_AUTO_NS_URI, name)) {
-        return element.getAttributeNS(Attribute.RES_AUTO_NS_URI, name);
+        return element.getAttributeNS(Attribute.RES_AUTO_NS_URI, name).trim();
       }
 
       return null;
@@ -654,23 +655,15 @@ public class ResourceParser {
     @Override
     public int getAttributeResourceValue(String namespace, String attribute, int defaultValue) {
       String attr = getAttribute(namespace, attribute);
-      if (attr != null && attr.startsWith("@")) {
-        return getResourceId(attr.substring(1), packageName, null);
+      if (attr != null && attr.startsWith("@") && !Attribute.isNull(attr)) {
+        return getResourceId(attr, packageName, null);
       }
       return defaultValue;
     }
 
     @Override
     public int getAttributeIntValue(String namespace, String attribute, int defaultValue) {
-      String attr = getAttribute(namespace, attribute);
-      if (attr == null) {
-        return defaultValue;
-      }
-      try {
-        return Integer.parseInt(attr);
-      } catch (NumberFormatException ex) {
-        return defaultValue;
-      }
+      return XmlUtils.convertValueToInt(this.getAttributeValue(namespace, attribute), defaultValue);
     }
 
     @Override

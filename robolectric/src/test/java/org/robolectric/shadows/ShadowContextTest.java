@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,7 +20,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.TestUtil.TEST_PACKAGE;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)

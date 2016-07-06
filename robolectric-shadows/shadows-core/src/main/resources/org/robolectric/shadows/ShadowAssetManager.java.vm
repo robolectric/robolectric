@@ -682,7 +682,7 @@ public final class ShadowAssetManager {
     if (attributeSet != null) {
       for (int i = 0; i < attributeSet.getAttributeCount(); i++) {
         if (attributeSet.getAttributeNameResource(i) == resId && attributeSet.getAttributeValue(i) != null) {
-          return new Attribute(ResName.qualifyResName(attributeSet.getAttributeName(i), "android", "attr"), attributeSet.getAttributeValue(i), "fixme!!!");
+          return new Attribute(resourceLoader.getResourceIndex().getResName(resId), attributeSet.getAttributeValue(i), "fixme!!!");
         }
       }
     }

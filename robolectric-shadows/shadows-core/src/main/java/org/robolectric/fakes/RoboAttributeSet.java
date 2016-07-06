@@ -2,40 +2,24 @@ package org.robolectric.fakes;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.util.TypedValue;
 import com.google.android.collect.Lists;
-import org.jetbrains.annotations.NotNull;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.res.Attribute;
-import org.robolectric.res.ResName;
-import org.robolectric.res.ResourceIndex;
 import org.robolectric.res.ResourceLoader;
-import org.robolectric.res.builder.ResourceLoaderProvider;
-import org.robolectric.shadows.Converter;
+import org.robolectric.res.builder.ResourceParser;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
-import java.net.URLEncoder;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static org.robolectric.Shadows.shadowOf;
 
 /**
  * Robolectric implementation of {@link android.util.AttributeSet}.
  */
-public class RoboAttributeSet implements ResourceLoaderProvider, AttributeSet {
-
-  private static final Logger LOGGER = Logger.getLogger(Attribute.class.getName());
-
-  private final List<Attribute> attributes;
-  private Context context;
-  private ResourceLoader resourceLoader;
-
-  private RoboAttributeSet(List<Attribute> attributes, Context context, ResourceLoader resourceLoader) {
-    this.attributes = attributes;
-    this.context = context;
-    this.resourceLoader = resourceLoader;
-  }
+public class RoboAttributeSet {
 
   /**
    * Creates a {@link RoboAttributeSet} as {@link AttributeSet} for the given
@@ -47,215 +31,34 @@ public class RoboAttributeSet implements ResourceLoaderProvider, AttributeSet {
   }
 
   public static AttributeSet create(Context context, List<Attribute> attributesList) {
-    return new RoboAttributeSet(attributesList, context, shadowOf(context.getAssets()).getResourceLoader());
+    return create(context, attributesList, shadowOf(context.getAssets()).getResourceLoader());
   }
 
   public static AttributeSet create(Context context, List<Attribute> attributesList, ResourceLoader resourceLoader) {
-    return new RoboAttributeSet(attributesList, context, resourceLoader);
-  }
-
-  @Override
-  public boolean getAttributeBooleanValue(String namespace, String attribute, boolean defaultValue) {
-    ResName resName = getAttrResName(namespace, attribute);
-    Attribute attr = findByName(resName);
-    return (attr != null) ? Boolean.valueOf(attr.value) : defaultValue;
-  }
-
-  @Override
-  public int getAttributeIntValue(String namespace, String attribute, int defaultValue) {
-    ResName resName = getAttrResName(namespace, attribute);
-    Attribute attr = findByName(resName);
-    if (attr == null) return defaultValue;
-
-    TypedValue outValue = new TypedValue();
-    Converter.convertAndFill(attr, outValue, resourceLoader, RuntimeEnvironment.getQualifiers(), false);
-    if (outValue.type == TypedValue.TYPE_NULL) {
-      return defaultValue;
-
-  }
-    return outValue.data;
-  }
-
-  @Override
-  public int getAttributeCount() {
-    return attributes.size();
-  }
-
-  @Override
-  public String getAttributeName(int index) {
-    return attributes.get(index).resName.getFullyQualifiedName();
-  }
-
-  @Override
-  public String getAttributeValue(String namespace, String attribute) {
-    ResName resName = getAttrResName(namespace, attribute);
-    Attribute attr = findByName(resName);
-    if (attr != null && !attr.isNull()) {
-      return attr.qualifiedValue();
-    }
-
-    return null;
-  }
-
-  @Override
-  public String getAttributeValue(int index) {
-    if (index > attributes.size()) return null;
-
-    Attribute attr = attributes.get(index);
-    if (attr != null && !attr.isNull()) {
-      return attr.qualifiedValue();
-    }
-
-    return null;
-  }
-
-  @Override
-  public String getPositionDescription() {
-    return "position description from RoboAttributeSet -- implement me!";
-  }
-
-  @Override
-  public int getAttributeNameResource(int index) {
-    ResName resName = attributes.get(index).resName;
-    Integer resourceId = resourceLoader.getResourceIndex().getResourceId(resName);
-    return resourceId == null ? 0 : resourceId;
-  }
-
-  @Override
-  public int getAttributeListValue(String namespace, String attribute, String[] options, int defaultValue) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public int getAttributeUnsignedIntValue(String namespace, String attribute, int defaultValue) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public float getAttributeFloatValue(String namespace, String attribute, float defaultValue) {
-    ResName resName = getAttrResName(namespace, attribute);
-    Attribute attr = findByName(resName);
-    return (attr != null) ? Float.valueOf(attr.value) : defaultValue;
-  }
-
-  @Override
-  public int getAttributeListValue(int index, String[] options, int defaultValue) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public boolean getAttributeBooleanValue(int resourceId, boolean defaultValue) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override public int getAttributeResourceValue(String namespace, String attribute, int defaultValue) {
-    ResName resName = getAttrResName(namespace, attribute);
-    Attribute attr = findByName(resName);
-    if (attr == null) return defaultValue;
-
-    Integer resourceId = ResName.getResourceId(resourceLoader.getResourceIndex(), attr.value, attr.contextPackageName);
-    return resourceId == null ? defaultValue : resourceId;
-  }
-
-  @Override
-  public int getAttributeResourceValue(int resourceId, int defaultValue) {
-    String attrName = context.getResources().getResourceName(resourceId);
-    ResName resName = getAttrResName(null, attrName);
-    Attribute attr = findByName(resName);
-    if (attr == null) return defaultValue;
-    Integer extracted = ResName.getResourceId(resourceLoader.getResourceIndex(), attr.value, attr.contextPackageName);
-    return (extracted == null) ? defaultValue : extracted;
-  }
-
-  @Override
-  public int getAttributeIntValue(int index, int defaultValue) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public int getAttributeUnsignedIntValue(int index, int defaultValue) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public float getAttributeFloatValue(int index, float defaultValue) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public String getIdAttribute() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public String getClassAttribute() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public int getIdAttributeResourceValue(int defaultValue) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override public int getStyleAttribute() {
-    Attribute styleAttribute = find(attributes, new ResName("", "attr", "style"));
-    if (styleAttribute == null) {
-      // Per Android specifications, return 0 if there is no style.
-      return 0;
-    }
-    Integer i = ResName.getResourceId(resourceLoader.getResourceIndex(), styleAttribute.value, styleAttribute.contextPackageName);
-    return i != null ? i : 0;
-  }
-
-  private ResName getAttrResName(String namespace, String attrName) {
-    String packageName = extractPackageName(namespace);
-    return new ResName(packageName, "attr", attrName);
-  }
-
-  private Attribute findByName(ResName resName) {
-    ResourceIndex resourceIndex = resourceLoader.getResourceIndex();
-    Integer resourceId = resourceIndex.getResourceId(resName);
-    // canonicalize the attr name if we can, otherwise don't...
-    // todo: this is awful; fix it.
-    if (resourceId == null) {
-      return find(attributes, resName);
-    } else {
-      return find(attributes, resourceId, resourceIndex);
-    }
-  }
-
-  private static Attribute find(List<Attribute> attributes, ResName resName) {
-    for (Attribute attribute : attributes) {
-      if (resName.equals(attribute.resName)) {
-        return attribute;
+    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    factory.setNamespaceAware(true);
+    factory.setIgnoringComments(true);
+    factory.setIgnoringElementContentWhitespace(true);
+    Document document;
+    try {
+      DocumentBuilder documentBuilder = factory.newDocumentBuilder();
+      document = documentBuilder.newDocument();
+      Element dummy = document.createElementNS("http://schemas.android.com/apk/res/" + RuntimeEnvironment.application.getPackageName(), "dummy");
+      for (Attribute attribute : attributesList) {
+        if ("style".equals(attribute.resName.name)) {
+          dummy.setAttribute(attribute.resName.name, attribute.value);
+        } else {
+          dummy.setAttributeNS(attribute.resName.getNamespaceUri(), attribute.resName.packageName + ":" + attribute.resName.name, attribute.value);
+        }
       }
-    }
-    return null;
-  }
+      document.appendChild(dummy);
 
-  private static Attribute find(List<Attribute> attributes, int attrId, ResourceIndex resourceIndex) {
-    for (Attribute attribute : attributes) {
-      Integer resourceId = resourceIndex.getResourceId(attribute.resName);
-      if (resourceId != null && resourceId == attrId) {
-        return attribute;
-      }
-    }
-    return null;
-  }
-
-  @Override
-  public ResourceLoader getResourceLoader() {
-    return resourceLoader;
-  }
-
-  private static String extractPackageName(@NotNull String namespaceUri) {
-    if (namespaceUri.startsWith(Attribute.ANDROID_RES_NS_PREFIX)) {
-      return namespaceUri.substring(Attribute.ANDROID_RES_NS_PREFIX.length());
-    } else {
-      if (!namespaceUri.equals("http://schemas.android.com/apk/prv/res/android")) {
-        LOGGER.log(Level.WARNING, "unexpected ns uri \"" + namespaceUri + "\"");
-      }
-      return URLEncoder.encode(namespaceUri);
+      ResourceParser.XmlResourceParserImpl parser = new ResourceParser.XmlResourceParserImpl(document, null, context.getPackageName(), context.getPackageName(), resourceLoader);
+      parser.next(); // Root document element
+      parser.next(); // "dummy" element
+      return parser;
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     }
   }
 }
