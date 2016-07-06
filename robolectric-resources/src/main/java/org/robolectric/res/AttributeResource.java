@@ -6,6 +6,9 @@ public class AttributeResource {
   public static final String ANDROID_RES_NS_PREFIX = "http://schemas.android.com/apk/res/";
   public static final String RES_AUTO_NS_URI = "http://schemas.android.com/apk/res-auto";
 
+  public static final String NULL_VALUE = "@null";
+  public static final String EMPTY_VALUE = "@empty";
+
   public final @NotNull ResName resName;
   public final @NotNull String value;
   public final @NotNull String contextPackageName;
@@ -43,11 +46,11 @@ public class AttributeResource {
   }
 
   public boolean isNull() {
-    return "@null".equals(value);
+    return NULL_VALUE.equals(value);
   }
 
   public boolean isEmpty() {
-    return "@empty".equals(value);
+    return EMPTY_VALUE.equals(value);
   }
 
   @Override
@@ -78,6 +81,10 @@ public class AttributeResource {
   }
 
   public static boolean isNull(String value) {
-    return "@null".equals(value);
+    return NULL_VALUE.equals(value);
+  }
+
+  public static boolean isEmpty(String value) {
+    return EMPTY_VALUE.equals(value);
   }
 }

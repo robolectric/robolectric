@@ -53,7 +53,7 @@ public abstract class ResourceLoader {
     ResName resName = getResourceIndex().getResName(resId);
     while (value != null && value.isReference()) {
       String s = value.asString();
-      if (s.equals("@null") || s.equals("@empty")) {
+      if (AttributeResource.isNull(s) || AttributeResource.isEmpty(s)) {
         value = null;
       } else {
         String refStr = s.substring(1).replace("+", "");
@@ -69,7 +69,7 @@ public abstract class ResourceLoader {
     ResName resName = getResourceIndex().getResName(resId);
     while (value != null && value.isReference()) {
       String s = value.asString();
-      if (s.equals("@null") || s.equals("@empty")) {
+      if (AttributeResource.isNull(s) || AttributeResource.isEmpty(s)) {
         value = null;
       } else {
         String refStr = s.substring(1).replace("+", "");

@@ -11,6 +11,7 @@ import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
+import org.robolectric.res.AttributeResource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
@@ -144,7 +145,7 @@ public class ShadowTypedArrayTest {
   @Test public void hasValue_withNullValue() throws Exception {
     TypedArray typedArray = context.obtainStyledAttributes(
         Robolectric.buildAttributeSet()
-            .addAttribute(R.attr.items, "@null")
+            .addAttribute(R.attr.items, AttributeResource.NULL_VALUE)
             .build(),
         new int[]{R.attr.items});
     assertThat(typedArray.hasValue(0)).isFalse();
