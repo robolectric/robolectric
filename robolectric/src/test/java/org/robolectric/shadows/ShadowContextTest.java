@@ -10,9 +10,6 @@ import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
-import org.robolectric.fakes.RoboAttributeSet;
-import org.robolectric.res.Attribute;
-import org.robolectric.res.ResName;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -21,7 +18,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.util.TestUtil.TEST_PACKAGE;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowContextTest {

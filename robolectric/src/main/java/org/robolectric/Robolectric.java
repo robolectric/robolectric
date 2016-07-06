@@ -8,8 +8,8 @@ import android.content.ContextWrapper;
 import android.content.Intent;
 
 import android.util.AttributeSet;
+import android.view.View;
 import org.robolectric.internal.ShadowProvider;
-import org.robolectric.res.Attribute;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.builder.XmlResourceParserImpl;
@@ -26,7 +26,6 @@ import org.w3c.dom.Element;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.util.List;
 import java.util.ServiceLoader;
 
 public class Robolectric {
@@ -113,6 +112,10 @@ public class Robolectric {
     return FragmentController.of(ReflectionHelpers.callConstructor(fragmentClass), activityClass, intent);
   }
 
+  /**
+   * Allows for the programatic creation of an {@link AttributeSet} useful for testing {@link View} classes without
+   * the need for creating XML snippets.
+   */
   public static AttributeSetBuilder buildAttributeSet() {
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     factory.setNamespaceAware(true);
@@ -128,34 +131,6 @@ public class Robolectric {
       throw new RuntimeException(e);
     }
     return new AttributeSetBuilder(document, RuntimeEnvironment.getAppResourceLoader());
-  }
-
-  public static AttributeSet create(Context context, List<Attribute> attributesList, ResourceLoader resourceLoader) {
-    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-    factory.setNamespaceAware(true);
-    factory.setIgnoringComments(true);
-    factory.setIgnoringElementContentWhitespace(true);
-    Document document;
-    try {
-      DocumentBuilder documentBuilder = factory.newDocumentBuilder();
-      document = documentBuilder.newDocument();
-      Element dummy = document.createElementNS("http://schemas.android.com/apk/res/" + RuntimeEnvironment.application.getPackageName(), "dummy");
-      for (Attribute attribute : attributesList) {
-        if ("style".equals(attribute.resName.name)) {
-          dummy.setAttribute(attribute.resName.name, attribute.value);
-        } else {
-          dummy.setAttributeNS(attribute.resName.getNamespaceUri(), attribute.resName.packageName + ":" + attribute.resName.name, attribute.value);
-        }
-      }
-      document.appendChild(dummy);
-
-      XmlResourceParserImpl parser = new XmlResourceParserImpl(document, null, context.getPackageName(), context.getPackageName(), resourceLoader);
-      parser.next(); // Root document element
-      parser.next(); // "dummy" element
-      return parser;
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
   }
 
   public static class AttributeSetBuilder {

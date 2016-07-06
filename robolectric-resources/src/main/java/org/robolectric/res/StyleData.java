@@ -9,7 +9,7 @@ public class StyleData implements Style {
   private final String packageName;
   private final String name;
   private final String parent;
-  private final Map<ResName, Attribute> items = new LinkedHashMap<>();
+  private final Map<ResName, AttributeResource> items = new LinkedHashMap<>();
 
   public StyleData(String packageName, String name, String parent) {
     this.packageName = packageName;
@@ -25,12 +25,12 @@ public class StyleData implements Style {
     return parent;
   }
 
-  public void add(ResName attrName, Attribute attribute) {
+  public void add(ResName attrName, AttributeResource attribute) {
     attrName.mustBe("attr");
     items.put(attrName, attribute);
   }
 
-  @Override public Attribute getAttrValue(ResName resName) {
+  @Override public AttributeResource getAttrValue(ResName resName) {
     return items.get(resName);
   }
 

@@ -5,7 +5,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.res.Attribute.ANDROID_RES_NS_PREFIX;
+import static org.robolectric.res.AttributeResource.ANDROID_RES_NS_PREFIX;
 
 /**
  * Tests for {@link Robolectric#buildAttributeSet()}

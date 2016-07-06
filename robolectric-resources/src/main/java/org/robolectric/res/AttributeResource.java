@@ -2,12 +2,7 @@ package org.robolectric.res;
 
 import org.jetbrains.annotations.NotNull;
 
-/**
- * @deprecated Rather than use {@link RoboAttributeSet} and {@link Attribute} please use {@link Robolectric#buildAttributeSet} instead.
- * This class will be removed in the next version of Robolectric.
- */
-@Deprecated
-public class Attribute {
+public class AttributeResource {
   public static final String ANDROID_RES_NS_PREFIX = "http://schemas.android.com/apk/res/";
   public static final String RES_AUTO_NS_URI = "http://schemas.android.com/apk/res-auto";
 
@@ -15,7 +10,7 @@ public class Attribute {
   public final @NotNull String value;
   public final @NotNull String contextPackageName;
 
-  public Attribute(@NotNull ResName resName, @NotNull String value, @NotNull String contextPackageName) {
+  public AttributeResource(@NotNull ResName resName, @NotNull String value, @NotNull String contextPackageName) {
     if (!resName.type.equals("attr")) throw new IllegalStateException("\"" + resName.getFullyQualifiedName() + "\" unexpected");
 
     this.resName = resName;
