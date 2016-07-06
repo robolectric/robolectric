@@ -29,10 +29,10 @@ public class DefaultPackageManagerIntentComparatorTest {
     final DefaultPackageManager.IntentComparator intentComparator = new DefaultPackageManager.IntentComparator();
 
     Intent mockedIntent1 = mock(Intent.class);
-    when(mockedIntent1.getAction()).thenReturn("actionstring0", null);
+    when(mockedIntent1.getAction()).thenReturn("actionstring0", (String) null);
 
     Intent mockedIntent2 = mock(Intent.class);
-    when(mockedIntent2.getAction()).thenReturn("actionstring1", null);
+    when(mockedIntent2.getAction()).thenReturn("actionstring1", (String) null);
 
     Assertions.assertThat(intentComparator.compare(mockedIntent1, mockedIntent2)).isEqualTo(-1);
   }
