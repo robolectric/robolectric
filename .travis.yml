@@ -17,8 +17,7 @@ before_install:
     - ./scripts/install-dependencies.rb
 
 script:
-    - ./gradlew clean assemble publishToMavenLocal compileTest --info --stacktrace
-    - ./gradlew --continue test --info --stacktrace
+    - ./scripts/install-robolectric.sh
 
 after_success:
     - ./scripts/deploy-snapshot.sh
