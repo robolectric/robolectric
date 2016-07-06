@@ -30,7 +30,7 @@ public class ShadowDateUtilsTest {
     assertThat(actual).isEqualTo("1/1");
   }
 
-  @Ignore("for a moment")
+  @Test
   @Config(sdk = {Build.VERSION_CODES.M})
   public void formatDateTime_withCurrentYear_worksSinceM() {
     Calendar calendar = Calendar.getInstance();

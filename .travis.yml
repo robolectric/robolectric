@@ -3,7 +3,7 @@ language: android
 
 jdk:
     - oraclejdk7
-#    - oraclejdk8 # todo: fixme
+    - oraclejdk8
 
 cache:
     directories:
