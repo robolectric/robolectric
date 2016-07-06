@@ -6,7 +6,7 @@ import com.google.android.collect.Lists;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.res.Attribute;
 import org.robolectric.res.ResourceLoader;
-import org.robolectric.res.builder.ResourceParser;
+import org.robolectric.res.builder.XmlResourceParserImpl;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -17,23 +17,34 @@ import java.util.List;
 import static org.robolectric.Shadows.shadowOf;
 
 /**
- * Robolectric implementation of {@link android.util.AttributeSet}.
+ * @deprecated Use {@link Robolectric#buildAttributeSet()}
  */
+@Deprecated
 public class RoboAttributeSet {
 
   /**
-   * Creates a {@link RoboAttributeSet} as {@link AttributeSet} for the given
-   * {@link Context} and {@link Attribute}(s)
+   * Robolectric implementation of {@link android.util.AttributeSet}.
+   * @deprecated Use {@link Robolectric#buildAttributeSet()}
    */
-  public static AttributeSet create(Context context, Attribute... attrs) {
+  @Deprecated  public static AttributeSet create(Context context, Attribute... attrs) {
     List<Attribute> attributesList = Lists.newArrayList(attrs);
     return create(context, attributesList);
   }
 
+  /**
+   * Robolectric implementation of {@link android.util.AttributeSet}.
+   * @deprecated Use {@link Robolectric#buildAttributeSet()}
+   */
+  @Deprecated
   public static AttributeSet create(Context context, List<Attribute> attributesList) {
     return create(context, attributesList, shadowOf(context.getAssets()).getResourceLoader());
   }
 
+  /**
+   * Robolectric implementation of {@link android.util.AttributeSet}.
+   * @deprecated Use {@link Robolectric#buildAttributeSet()}
+   */
+  @Deprecated
   public static AttributeSet create(Context context, List<Attribute> attributesList, ResourceLoader resourceLoader) {
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     factory.setNamespaceAware(true);
@@ -53,7 +64,7 @@ public class RoboAttributeSet {
       }
       document.appendChild(dummy);
 
-      ResourceParser.XmlResourceParserImpl parser = new ResourceParser.XmlResourceParserImpl(document, null, context.getPackageName(), context.getPackageName(), resourceLoader);
+      XmlResourceParserImpl parser = new XmlResourceParserImpl(document, null, context.getPackageName(), context.getPackageName(), resourceLoader);
       parser.next(); // Root document element
       parser.next(); // "dummy" element
       return parser;

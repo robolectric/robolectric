@@ -7,7 +7,12 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 
+import android.util.AttributeSet;
 import org.robolectric.internal.ShadowProvider;
+import org.robolectric.res.Attribute;
+import org.robolectric.res.ResName;
+import org.robolectric.res.ResourceLoader;
+import org.robolectric.res.builder.XmlResourceParserImpl;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.util.ActivityController;
 import org.robolectric.util.FragmentController;
@@ -15,7 +20,13 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.ServiceController;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.util.List;
 import java.util.ServiceLoader;
 
 public class Robolectric {
@@ -100,6 +111,89 @@ public class Robolectric {
 
   public static <T extends Fragment> FragmentController<T> buildFragment(Class<T> fragmentClass, Class<? extends Activity> activityClass, Intent intent) {
     return FragmentController.of(ReflectionHelpers.callConstructor(fragmentClass), activityClass, intent);
+  }
+
+  public static AttributeSetBuilder buildAttributeSet() {
+    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    factory.setNamespaceAware(true);
+    factory.setIgnoringComments(true);
+    factory.setIgnoringElementContentWhitespace(true);
+    Document document;
+    try {
+      DocumentBuilder documentBuilder = factory.newDocumentBuilder();
+      document = documentBuilder.newDocument();
+      Element dummy = document.createElementNS("http://schemas.android.com/apk/res/" + RuntimeEnvironment.application.getPackageName(), "dummy");
+      document.appendChild(dummy);
+    } catch (ParserConfigurationException e) {
+      throw new RuntimeException(e);
+    }
+    return new AttributeSetBuilder(document, RuntimeEnvironment.getAppResourceLoader());
+  }
+
+  public static AttributeSet create(Context context, List<Attribute> attributesList, ResourceLoader resourceLoader) {
+    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    factory.setNamespaceAware(true);
+    factory.setIgnoringComments(true);
+    factory.setIgnoringElementContentWhitespace(true);
+    Document document;
+    try {
+      DocumentBuilder documentBuilder = factory.newDocumentBuilder();
+      document = documentBuilder.newDocument();
+      Element dummy = document.createElementNS("http://schemas.android.com/apk/res/" + RuntimeEnvironment.application.getPackageName(), "dummy");
+      for (Attribute attribute : attributesList) {
+        if ("style".equals(attribute.resName.name)) {
+          dummy.setAttribute(attribute.resName.name, attribute.value);
+        } else {
+          dummy.setAttributeNS(attribute.resName.getNamespaceUri(), attribute.resName.packageName + ":" + attribute.resName.name, attribute.value);
+        }
+      }
+      document.appendChild(dummy);
+
+      XmlResourceParserImpl parser = new XmlResourceParserImpl(document, null, context.getPackageName(), context.getPackageName(), resourceLoader);
+      parser.next(); // Root document element
+      parser.next(); // "dummy" element
+      return parser;
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static class AttributeSetBuilder {
+
+    private Document doc;
+    private ResourceLoader appResourceLoader;
+
+    AttributeSetBuilder(Document doc, ResourceLoader resourceLoader) {
+      this.doc = doc;
+      this.appResourceLoader = resourceLoader;
+    }
+
+    public AttributeSetBuilder addAttribute(int resId, String value) {
+      ResName resName = appResourceLoader.getResourceIndex().getResName(resId);
+      if ("style".equals(resName.name)) {
+        ((Element)doc.getFirstChild()).setAttribute(resName.name, value);
+      } else {
+        ((Element)doc.getFirstChild()).setAttributeNS(resName.getNamespaceUri(), resName.packageName + ":" + resName.name, value);
+      }
+      return this;
+    }
+
+    public AttributeSetBuilder setStyleAttribute(String value) {
+      ((Element)doc.getFirstChild()).setAttribute("style", value);
+      return this;
+    }
+
+    public AttributeSet build() {
+      XmlResourceParserImpl parser = new XmlResourceParserImpl(doc, null, RuntimeEnvironment.application.getPackageName(), RuntimeEnvironment.application.getPackageName(), appResourceLoader);
+      try {
+        parser.next(); // Root document element
+        parser.next(); // "dummy" element
+      } catch (Exception e) {
+        throw new IllegalStateException("Expected single dummy element in the document to contain the attributes.", e);
+      }
+
+      return parser;
+    }
   }
 
 

@@ -255,6 +255,10 @@ public final class R {
     public static final int stateFoo = 0x10a0c;
     public static final int someLayoutOne = 0x10a0d;
     public static final int someLayoutTwo = 0x10a0e;
+    public static final int message = 0x10a0f;
+    public static final int sugarinessPercent = 0x10a10;
+    public static final int numColumns = 0x10a11;
+    public static final int sugaryScale = 0x10a12;
   }
 
   public static final class menu {

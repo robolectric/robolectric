@@ -9,7 +9,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.robolectric.R;
 import org.robolectric.res.*;
-import org.robolectric.res.builder.ResourceParser.XmlResourceParserImpl;
 import org.robolectric.util.TestUtil;
 import org.w3c.dom.Document;
 import org.xmlpull.v1.XmlPullParser;
@@ -50,11 +49,10 @@ import static org.robolectric.util.TestUtil.testResources;
  * @author msama (michele@swiftkey.net)
  */
 @RunWith(JUnit4.class)
-public class XmlBlockLoaderTest {
+public class XmlResourceParserImplTest {
 
   private static final String XMLNS_NS = "http://www.w3.org/2000/xmlns/";
   private XmlResourceParserImpl parser;
-  private ResourceIndex resourceIndex;
   private ResourceLoader resourceLoader;
 
   @Before
@@ -65,7 +63,7 @@ public class XmlBlockLoaderTest {
 
     ResName resName = new ResName(TEST_PACKAGE, "xml", "preferences");
     XmlBlock xmlBlock = resBundle.get(resName, "");
-    resourceIndex = new ResourceExtractor(testResources());
+    ResourceIndex resourceIndex = new ResourceExtractor(testResources());
     resourceLoader = mock(ResourceLoader.class);
     when(resourceLoader.getResourceIndex()).thenReturn(resourceIndex);
     parser = (XmlResourceParserImpl) ResourceParser.from(xmlBlock, TEST_PACKAGE, resourceLoader);
@@ -135,7 +133,7 @@ public class XmlBlockLoaderTest {
 
   @Test
   public void testSetFeature() throws XmlPullParserException {
-    for (String feature : ResourceParser.AVAILABLE_FEATURES) {
+    for (String feature : XmlResourceParserImpl.AVAILABLE_FEATURES) {
       parser.setFeature(feature, true);
       try {
         parser.setFeature(feature, false);
@@ -145,7 +143,7 @@ public class XmlBlockLoaderTest {
       }
     }
 
-    for (String feature : ResourceParser.UNAVAILABLE_FEATURES) {
+    for (String feature : XmlResourceParserImpl.UNAVAILABLE_FEATURES) {
       try {
         parser.setFeature(feature, false);
         fail(feature + " should not be true.");
@@ -163,11 +161,11 @@ public class XmlBlockLoaderTest {
 
   @Test
   public void testGetFeature() {
-    for (String feature : ResourceParser.AVAILABLE_FEATURES) {
+    for (String feature : XmlResourceParserImpl.AVAILABLE_FEATURES) {
       assertThat(parser.getFeature(feature)).isTrue();
     }
 
-    for (String feature : ResourceParser.UNAVAILABLE_FEATURES) {
+    for (String feature : XmlResourceParserImpl.UNAVAILABLE_FEATURES) {
       assertThat(parser.getFeature(feature)).isFalse();
     }
 
