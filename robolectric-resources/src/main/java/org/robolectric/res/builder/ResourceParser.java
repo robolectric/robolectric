@@ -77,7 +77,7 @@ public class ResourceParser {
    * a set of native methods calls. Here those methods are
    * re-implemented in java when possible.
    */
-  public static class XmlResourceParserImpl implements ResourceLoaderProvider, XmlResourceParser {
+  public static class XmlResourceParserImpl implements XmlResourceParser {
 
     private final Document document;
     private final String fileName;
@@ -829,7 +829,6 @@ public class ResourceParser {
       return name;
     }
 
-    @Override
     public ResourceLoader getResourceLoader() {
       return resourceLoader;
     }
