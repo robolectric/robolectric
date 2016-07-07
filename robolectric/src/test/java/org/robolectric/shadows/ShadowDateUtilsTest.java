@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.os.Build;
 import android.text.format.DateUtils;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
