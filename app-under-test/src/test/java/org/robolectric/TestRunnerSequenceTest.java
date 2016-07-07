@@ -114,7 +114,7 @@ public class TestRunnerSequenceTest {
 
     @Override
     protected AndroidManifest getAppManifest(Config config) {
-      return new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"), resourceFile("assets"));
+      return new AndroidManifest(resourceFile("AndroidManifest.xml"), resourceFile("res"), resourceFile("assets"));
     }
 
     @Override protected Class<? extends TestLifecycle> getTestLifecycleClass() {

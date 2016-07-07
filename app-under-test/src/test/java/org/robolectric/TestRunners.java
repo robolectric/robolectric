@@ -22,7 +22,7 @@ public class TestRunners {
     @Override
     protected AndroidManifest getAppManifest(Config config) {
       Properties properties = new Properties();
-      properties.put("manifest", resourceFile("TestAndroidManifest.xml").toString());
+      properties.put("manifest", resourceFile("AndroidManifest.xml").toString());
       return super.getAppManifest(
           new Config.Implementation(config, Config.Implementation.fromProperties(properties)));
     }
@@ -48,7 +48,7 @@ public class TestRunners {
       @Override
       protected AndroidManifest getAppManifest(Config config) {
         Properties properties = new Properties();
-        properties.put("manifest", "src/test/resources/TestAndroidManifest.xml");
+        properties.put("manifest", "src/test/resources/AndroidManifest.xml");
         return super.getAppManifest(
             new Config.Implementation(config, Config.Implementation.fromProperties(properties)));
       }

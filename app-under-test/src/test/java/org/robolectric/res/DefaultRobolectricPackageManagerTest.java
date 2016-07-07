@@ -500,7 +500,7 @@ public class DefaultRobolectricPackageManagerTest {
   }
 
   @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifest.xml")
+  @Config(manifest = "src/test/resources/AndroidManifest.xml")
   public void shouldAssignTheApplicationNameFromTheManifest() throws Exception {
     ApplicationInfo applicationInfo = rpm.getApplicationInfo("org.robolectric", 0);
     assertThat(applicationInfo.name).isEqualTo("org.robolectric.TestApplication");
@@ -648,7 +648,7 @@ public class DefaultRobolectricPackageManagerTest {
   }
 
   @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifest.xml")
+  @Config(manifest = "src/test/resources/AndroidManifest.xml")
   public void testSetApplicationEnabledSetting() {
     PackageManager packageManager = RuntimeEnvironment.getPackageManager();
 
@@ -662,7 +662,7 @@ public class DefaultRobolectricPackageManagerTest {
   public static class ActivityWithMetadata extends Activity { }
 
   @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifest.xml")
+  @Config(manifest = "src/test/resources/AndroidManifest.xml")
   public void getActivityMetaData() throws Exception {
     Activity activity = setupActivity(ActivityWithMetadata.class);
 
@@ -671,7 +671,7 @@ public class DefaultRobolectricPackageManagerTest {
   }
 
   @Test
-  @Config(manifest = "src/test/resources/TestAndroidManifest.xml")
+  @Config(manifest = "src/test/resources/AndroidManifest.xml")
   public void shouldAssignLabelResFromTheManifest() throws Exception {
     ApplicationInfo applicationInfo = rpm.getApplicationInfo("org.robolectric", 0);
     String appName = ShadowApplication.getInstance().getApplicationContext().getString(applicationInfo.labelRes);

@@ -54,28 +54,31 @@ public abstract class TestUtil {
 
   private static File resourcesBaseDirFile() {
     if (testDirLocation == null) {
+      File testAppDir = Util.file("..", "app-under-test", "src", "main");
+      if (hasManifest(testAppDir)) return testDirLocation = testAppDir;
+
       File testDir = Util.file("src", "test", "resources");
-      if (hasTestManifest(testDir)) return testDirLocation = testDir;
+      if (hasManifest(testDir)) return testDirLocation = testDir;
 
       File roboTestDir = Util.file("robolectric", "src", "test", "resources");
-      if (hasTestManifest(roboTestDir)) return testDirLocation = roboTestDir;
+      if (hasManifest(roboTestDir)) return testDirLocation = roboTestDir;
 
       File submoduleDir = Util.file("submodules", "robolectric", "src", "test", "resources");
-      if (hasTestManifest(submoduleDir)) return testDirLocation = submoduleDir;
+      if (hasManifest(submoduleDir)) return testDirLocation = submoduleDir;
 
       //required for robolectric-sqlite to find resources to test against
       File roboSiblingTestDir = Util.file(new File(new File(".").getAbsolutePath()).getParentFile().getParentFile(), "robolectric", "src", "test", "resources");
-      if (hasTestManifest(roboSiblingTestDir)) return testDirLocation = roboSiblingTestDir;
+      if (hasManifest(roboSiblingTestDir)) return testDirLocation = roboSiblingTestDir;
 
-      throw new RuntimeException("can't find your TestAndroidManifest.xml in "
-          + testDir.getAbsolutePath() + " or " + roboTestDir.getAbsolutePath() + "\n or " + roboSiblingTestDir.getAbsolutePath());
+      throw new RuntimeException("can't find your AndroidManifest.xml in "
+              + testAppDir.getAbsolutePath() + " or " + testDir.getAbsolutePath() + " or " + roboTestDir.getAbsolutePath() + "\n or " + roboSiblingTestDir.getAbsolutePath());
     } else {
       return testDirLocation;
     }
   }
 
-  private static boolean hasTestManifest(File testDir) {
-    return new File(testDir, "TestAndroidManifest.xml").isFile();
+  private static boolean hasManifest(File testDir) {
+    return new File(testDir, "AndroidManifest.xml").isFile();
   }
 
   public static FsFile resourceFile(String... pathParts) {
