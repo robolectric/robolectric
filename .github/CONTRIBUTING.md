@@ -4,8 +4,7 @@
 
 Dependencies:
 
-1. Maven 3
-2. Android SDK with Tools, Extras, and 'Google APIs' for APIs 22 and 23 installed
+1. Android SDK with Tools, Extras, and 'Google APIs' for APIs 22 and 23 installed
 
 Set Android enviroment variables:
 
@@ -20,7 +19,7 @@ Create a feature branch to make your changes:
 
     git checkout -b my-feature-name
 
-Mavenize all required dependencies:
+Copy all required Android dependencies into your local Maven repository:
 
     ./scripts/install-dependencies.rb
 
