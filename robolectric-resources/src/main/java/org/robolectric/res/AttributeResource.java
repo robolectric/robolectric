@@ -9,14 +9,12 @@ public class AttributeResource {
   public static final String NULL_VALUE = "@null";
   public static final String EMPTY_VALUE = "@empty";
 
-  public final @NotNull ResName resName;
+  public final int resId;
   public final @NotNull String value;
   public final @NotNull String contextPackageName;
 
-  public AttributeResource(@NotNull ResName resName, @NotNull String value, @NotNull String contextPackageName) {
-    if (!resName.type.equals("attr")) throw new IllegalStateException("\"" + resName.getFullyQualifiedName() + "\" unexpected");
-
-    this.resName = resName;
+  public AttributeResource(int resId, @NotNull String value, @NotNull String contextPackageName) {
+    this.resId = resId;
     this.value = value;
     this.contextPackageName = contextPackageName;
   }
@@ -56,7 +54,7 @@ public class AttributeResource {
   @Override
   public String toString() {
     return "Attribute{" +
-        "name='" + resName + '\'' +
+        "name='" + Integer.toHexString(resId) + '\'' +
         ", value='" + value + '\'' +
         ", contextPackageName='" + contextPackageName + '\'' +
         '}';

@@ -48,7 +48,7 @@ public class PackageResourceLoader extends XResourceLoader {
         new ValueResourceLoader(data, "/resources/item[@type='string']", "string", ResType.CHAR_SEQUENCE),
         new ValueResourceLoader(data, "/resources/string-array", "array", ResType.CHAR_SEQUENCE_ARRAY),
         new AttrResourceLoader(data),
-        new StyleResourceLoader(data)
+        new StyleResourceLoader(getResourceIndex(), data)
     );
 
     documentLoader.load("layout", new OpaqueFileLoader(data, "layout"), new XmlBlockLoader(xmlDocuments, "layout"));
