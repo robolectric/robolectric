@@ -13,6 +13,10 @@
     </attr>
 
     <attr name="quitKeyCombo" format="string"/>
+    <attr name="averageSheepWidth" format="dimension"/>
+    <attr name="snail" format="dimension"/>
+    <attr name="logoWidth" format="dimension"/>
+    <attr name="logoHeight" format="dimension"/>
 
     <attr name="numColumns" format="integer" min="0">
       <!-- Display as many columns as possible to fill the available space. -->

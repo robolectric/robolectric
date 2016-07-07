@@ -1,4 +1,5 @@
-allprojects {
+configure(subprojects.findAll { project -> project.name =~ /^robolectric/ }) {
+    println("Configure ${project.name} as java...")
     repositories {
         mavenLocal()
         mavenCentral()
