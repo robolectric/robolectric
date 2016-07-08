@@ -5,7 +5,7 @@ dependencies {
 
     // Compile dependencies
     compile "com.ximpleware:vtd-xml:2.11"
-    compile "com.google.guava:guava:19.0-rc2"
+    compile "com.google.guava:guava:19.0"
     provided "org.robolectric:android-all:6.0.0_r1-robolectric-0"
     provided "com.intellij:annotations:12.0"
 
