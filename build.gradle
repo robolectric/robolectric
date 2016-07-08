@@ -1,0 +1,155 @@
+allprojects {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
+
+    apply plugin: "java"
+    sourceCompatibility = JavaVersion.VERSION_1_7
+    targetCompatibility = JavaVersion.VERSION_1_7
+
+    apply plugin: ProvidedPlugin
+    apply plugin: "maven-publish"
+
+    task sourcesJar(type: Jar, dependsOn: classes) {
+        classifier 'sources'
+        from sourceSets.main.allJava
+    }
+
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                // robolectric-shadows/shadows-core/v16 -> shadows-core-v16
+                def projNameParts = artifactId.split(/\//) as List
+                if (projNameParts[0] == "robolectric-shadows") {
+                    projNameParts = projNameParts.drop(1)
+                    artifactId = projNameParts.join("-")
+                }
+
+                from components.java
+                artifact sourcesJar
+            }
+        }
+
+        repositories {
+            maven {
+                if (project.version.endsWith('-SNAPSHOT')) {
+                    url "https://oss.sonatype.org/content/repositories/snapshots"
+                } else {
+                    url "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+                }
+
+                credentials {
+                    username System.env['CI_DEPLOY_USERNAME']
+                    password System.env['CI_DEPLOY_PASSWORD']
+                }
+            }
+        }
+    }
+
+    test {
+        exclude "**/*\$*" // otherwise gradle runs static inner classes like TestRunnerSequenceTest$SimpleTest
+        testLogging {
+            events "failed"
+            exceptionFormat "short"
+
+            info {
+                events "skipped", "failed"
+                exceptionFormat "full"
+            }
+        }
+
+        minHeapSize = "1024m"
+        maxHeapSize = "2048m"
+        jvmArgs '-XX:MaxPermSize=1024m'
+    }
+}
+
+def subshadowRE = /robolectric-shadows\/shadows-core\/v(.*)$/
+configure(subprojects.findAll { project -> project.name =~ subshadowRE }) {
+    apply plugin: ShadowsPlugin
+
+    def match = project.name =~ subshadowRE
+    def androidApi = Integer.parseInt(match[0][1])
+
+    def robolectricVersion = AndroidSdk.versions[androidApi]
+    logger.info "[${project.name}] Android API is $androidApi — $robolectricVersion"
+
+    task velocity(type: VelocityTask) {
+        def shadowsCoreProject = project.findProject(":robolectric-shadows/shadows-core")
+        source = shadowsCoreProject.files("src/main/resources").asFileTree.matching { include "/**/*.vm" }
+
+        contextValues = [api: androidApi]
+        if (androidApi >= 21) {
+            contextValues.putAll(ptrClass: "long", ptrClassBoxed: "Long")
+        } else {
+            contextValues.putAll(ptrClass: "int", ptrClassBoxed: "Integer")
+        }
+
+        outputDir = project.file("${project.buildDir}/generated-shadows")
+
+        doLast {
+            def shadowsCoreProj = project.findProject(":robolectric-shadows/shadows-core")
+            project.copy {
+                from shadowsCoreProj.files("src/main/java")
+                into outputDir
+            }
+
+            project.copy {
+                from shadowsCoreProj.fileTree("src/main/resources").include("META-INF/**")
+                into project.file("${project.buildDir}/resources/main")
+            }
+        }
+    }
+
+    shadows {
+        packageName "org.robolectric"
+    }
+
+    generateShadowProvider {
+        dependsOn velocity
+    }
+
+    configurations {
+        jni
+    }
+
+    dependencies {
+        // Project dependencies
+        compile project(":robolectric-annotations")
+        compile project(":robolectric-resources")
+        compile project(":robolectric-utils")
+
+        // Compile dependencies
+        provided "com.intellij:annotations:12.0"
+        compile "com.almworks.sqlite4java:sqlite4java:0.282"
+        provided("org.robolectric:android-all:$robolectricVersion") { force = true }
+        compile "com.ibm.icu:icu4j:53.1"
+
+        jni "com.github.axet.litedb:libsqlite:0.282-3:natives-mac-x86_64"
+        jni "com.github.axet.litedb:libsqlite:0.282-3:natives-linux-x86"
+        jni "com.github.axet.litedb:libsqlite:0.282-3:natives-linux-x86_64"
+        jni "com.github.axet.litedb:libsqlite:0.282-3:natives-windows-x86"
+        jni "com.github.axet.litedb:libsqlite:0.282-3:natives-windows-x86_64"
+    }
+
+    task copyNatives(type: Copy) {
+        outputs.dir file("${buildDir}/resources/main")
+
+        configurations.jni.files.each { File file ->
+            def nativeJarMatch = file.name =~ /lib.*-natives-(.*)\.jar/
+            if (nativeJarMatch) {
+                inputs.file file
+
+                def platformName = nativeJarMatch[0][1]
+                from(zipTree(file)) { rename { f -> "$platformName/$f" } }
+            }
+
+            into project.file("$buildDir/resources/main")
+        }
+    }
+
+    jar {
+        dependsOn copyNatives
+    }
+}

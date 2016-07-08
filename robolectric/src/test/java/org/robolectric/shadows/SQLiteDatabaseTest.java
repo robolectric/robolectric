@@ -57,6 +57,11 @@ public class SQLiteDatabaseTest {
                 "  big_int INTEGER\n" +
                 ");");
 
+        database.execSQL("CREATE TABLE blob_table (\n" +
+                "  id INTEGER PRIMARY KEY,\n" +
+                "  blob_col BLOB\n" +
+                ");");
+
         String stringColumnValue = "column_value";
         byte[] byteColumnValue = new byte[]{1, 2, 3};
 
@@ -220,6 +225,39 @@ public class SQLiteDatabaseTest {
         long key = database.insertWithOnConflict("table_name", null, values, SQLiteDatabase.CONFLICT_IGNORE);
 
         assertThat(key).isNotEqualTo(0L);
+    }
+
+    @Test
+    public void testInsertEmptyBlobArgument() throws Exception {
+        ContentValues emptyBlobValues = new ContentValues();
+        emptyBlobValues.put("id", 1);
+        emptyBlobValues.put("blob_col", new byte[]{});
+
+        ContentValues nullBlobValues = new ContentValues();
+        nullBlobValues.put("id", 2);
+        nullBlobValues.put("blob_col", (byte[])null);
+
+        long key = database.insertWithOnConflict("blob_table", null, emptyBlobValues, SQLiteDatabase.CONFLICT_FAIL);
+        assertThat(key).isNotEqualTo(0L);
+        key = database.insertWithOnConflict("blob_table", null, nullBlobValues, SQLiteDatabase.CONFLICT_FAIL);
+        assertThat(key).isNotEqualTo(0L);
+
+        Cursor cursor = database.query("blob_table", new String[]{"blob_col"}, "id=1", null, null, null, null);
+        try {
+          assertThat(cursor.moveToFirst()).isTrue();
+          assertThat(cursor.getBlob(cursor.getColumnIndexOrThrow("blob_col"))).isNotNull();
+        } finally {
+          cursor.close();
+        }
+
+        cursor = database.query("blob_table", new String[]{"blob_col"}, "id=2", null, null, null, null);
+        try {
+          assertThat(cursor.moveToFirst()).isTrue();
+          assertThat(cursor.getBlob(cursor.getColumnIndexOrThrow("blob_col"))).isNull();
+        } finally {
+          cursor.close();
+        }
+
     }
 
     @Test
