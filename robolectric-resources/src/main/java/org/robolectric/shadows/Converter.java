@@ -23,7 +23,7 @@ public class Converter<T> {
       return;
     }
 
-    TypedResource attrTypeData = resourceLoader.getValue(attribute.resId, qualifiers);
+    TypedResource attrTypeData = resourceLoader.getValue(attribute.resName, qualifiers);
     if (attrTypeData == null) {
       return;
     }
@@ -86,7 +86,7 @@ public class Converter<T> {
           outValue.string = dereferencedRef.asString();
           return;
         } else if (dereferencedRef.getData() instanceof String) {
-          attribute = new AttributeResource(attribute.resId, dereferencedRef.asString(), resName.packageName);
+          attribute = new AttributeResource(attribute.resName, dereferencedRef.asString(), resName.packageName);
           if (attribute.isResourceReference()) {
             continue;
           }

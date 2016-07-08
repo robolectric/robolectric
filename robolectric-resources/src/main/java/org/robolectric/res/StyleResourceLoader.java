@@ -2,13 +2,11 @@ package org.robolectric.res;
 
 import javax.xml.xpath.XPathExpressionException;
 
-class StyleResourceLoader extends XpathResourceXmlLoader {
-  private ResourceIndex resourceIndex;
+public class StyleResourceLoader extends XpathResourceXmlLoader {
   private final ResBunch data;
 
-  public StyleResourceLoader(ResourceIndex resourceIndex, ResBunch data) {
+  public StyleResourceLoader(ResBunch data) {
     super("/resources/style");
-    this.resourceIndex = resourceIndex;
     this.data = data;
   }
 
@@ -31,7 +29,7 @@ class StyleResourceLoader extends XpathResourceXmlLoader {
       String value = item.getTextContent();
 
       ResName attrResName = ResName.qualifyResName(attrName, xmlContext.packageName, "attr");
-      styleData.add(attrResName, new AttributeResource(resourceIndex.getResourceId(attrResName), value, xmlContext.packageName));
+      styleData.add(attrResName, new AttributeResource(attrResName, value, xmlContext.packageName));
     }
 
     data.put("style", styleNameWithUnderscores, new TypedResource<>(styleData, ResType.STYLE), xmlContext);
