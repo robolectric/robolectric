@@ -100,10 +100,10 @@ public class AttributeSetBuilderTest {
   public void getAttributeBooleanValue_withNamespace_shouldGetBooleanValuesFromAttributes() throws Exception {
     // org.robolectric.lib1.R values should be reconciled to match org.robolectric.R values.
     AttributeSet roboAttributeSet = Robolectric.buildAttributeSet()
-        .addAttribute(org.robolectric.lib1.R.attr.offsetX, "true")
+        .addAttribute(R.attr.isSugary, "true")
         .build();
 
-    assertThat(roboAttributeSet.getAttributeBooleanValue(ANDROID_RES_NS_PREFIX + R.class.getPackage().getName(), "offsetX", false)).isTrue();
+    assertThat(roboAttributeSet.getAttributeBooleanValue(ANDROID_RES_NS_PREFIX + R.class.getPackage().getName(), "isSugary", false)).isTrue();
   }
 
   @Test
@@ -247,11 +247,9 @@ public class AttributeSetBuilderTest {
   @Test
   public void getAttributeNameResource() throws Exception {
     AttributeSet roboAttributeSet = Robolectric.buildAttributeSet()
-        .addAttribute(org.robolectric.lib1.R.attr.offsetX, "1")
-        .addAttribute(org.robolectric.lib1.R.attr.offsetY, "1")
+        .addAttribute(R.attr.sugaryScale, "1")
         .build();
 
-    assertThat(roboAttributeSet.getAttributeNameResource(0)).isEqualTo(org.robolectric.lib1.R.attr.offsetX); // no id for attr.message for some reason...
-    assertThat(roboAttributeSet.getAttributeNameResource(1)).isEqualTo(org.robolectric.lib1.R.attr.offsetY);
+    assertThat(roboAttributeSet.getAttributeNameResource(0)).isEqualTo(R.attr.sugaryScale);
   }
 }
