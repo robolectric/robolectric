@@ -9,42 +9,12 @@ allprojects {
     targetCompatibility = JavaVersion.VERSION_1_7
 
     apply plugin: ProvidedPlugin
-    apply plugin: "maven-publish"
+    apply plugin: "signing"
+    apply plugin: "maven"
 
     task sourcesJar(type: Jar, dependsOn: classes) {
         classifier 'sources'
         from sourceSets.main.allJava
-    }
-
-    publishing {
-        publications {
-            mavenJava(MavenPublication) {
-                // robolectric-shadows/shadows-core/v16 -> shadows-core-v16
-                def projNameParts = artifactId.split(/\//) as List
-                if (projNameParts[0] == "robolectric-shadows") {
-                    projNameParts = projNameParts.drop(1)
-                    artifactId = projNameParts.join("-")
-                }
-
-                from components.java
-                artifact sourcesJar
-            }
-        }
-
-        repositories {
-            maven {
-                if (project.version.endsWith('-SNAPSHOT')) {
-                    url "https://oss.sonatype.org/content/repositories/snapshots"
-                } else {
-                    url "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-                }
-
-                credentials {
-                    username System.env['CI_DEPLOY_USERNAME']
-                    password System.env['CI_DEPLOY_PASSWORD']
-                }
-            }
-        }
     }
 
     test {
@@ -62,6 +32,38 @@ allprojects {
         minHeapSize = "1024m"
         maxHeapSize = "2048m"
         jvmArgs '-XX:MaxPermSize=1024m'
+    }
+
+    signing {
+        required { !version.endsWith("SNAPSHOT") && gradle.taskGraph.hasTask("uploadArchives") }
+        sign configurations.archives
+    }
+
+    ext.mavenArtifactName = {
+        def projNameParts = project.name.split(/\//) as List
+        if (projNameParts[0] == "robolectric-shadows") {
+            projNameParts = projNameParts.drop(1)
+            return projNameParts.join("-")
+        } else {
+            return project.name
+        }
+    }
+
+    uploadArchives {
+        repositories {
+            mavenDeployer {
+                pom.artifactId = mavenArtifactName()
+
+                def url = project.version.endsWith('-SNAPSHOT') ?
+                        "https://oss.sonatype.org/content/repositories/snapshots" :
+                        "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+                repository(url: url) {
+                    authentication(userName: "pivotal", password: "<password>")
+                }
+
+                beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+            }
+        }
     }
 }
 
