@@ -36,9 +36,9 @@ public class ResourceExtractorTest {
 
   @Test
   public void shouldHandleNull() throws Exception {
-    assertThat(ResName.getResourceId(resourceIndex, "@null", "")).isEqualTo(null);
-    assertThat(ResName.getResourceId(resourceIndex, "@null", "android")).isEqualTo(null);
-    assertThat(ResName.getResourceId(resourceIndex, "@null", "anything")).isEqualTo(null);
+    assertThat(ResName.getResourceId(resourceIndex, AttributeResource.NULL_VALUE, "")).isEqualTo(null);
+    assertThat(ResName.getResourceId(resourceIndex, AttributeResource.NULL_VALUE, "android")).isEqualTo(null);
+    assertThat(ResName.getResourceId(resourceIndex, AttributeResource.NULL_VALUE, "anything")).isEqualTo(null);
   }
 
   @Test

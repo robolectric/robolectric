@@ -57,17 +57,12 @@ public class PackageResourceLoader extends XResourceLoader {
     documentLoader.load("anim", new OpaqueFileLoader(data, "anim"), new XmlBlockLoader(xmlDocuments, "anim"));
     documentLoader.load("animator", new OpaqueFileLoader(data, "animator"), new XmlBlockLoader(xmlDocuments, "animator"));
     documentLoader.load("color", new ColorResourceLoader(data), new XmlBlockLoader(xmlDocuments, "color"));
-    documentLoader.load("xml", new PreferenceLoader(preferenceData), new XmlBlockLoader(xmlDocuments, "xml"));
+    documentLoader.load("xml", new OpaqueFileLoader(data, "xml"), new XmlBlockLoader(xmlDocuments, "xml"));
     documentLoader.load("transition", new OpaqueFileLoader(data, "transition"), new XmlBlockLoader(xmlDocuments, "transition"));
     documentLoader.load("interpolator", new OpaqueFileLoader(data, "interpolator"), new XmlBlockLoader(xmlDocuments, "interpolator"));
 
     new DrawableResourceLoader(drawableData).findDrawableResources(resourcePath);
     new RawResourceLoader(resourcePath).loadTo(rawResources);
-
-    loadOtherResources(resourcePath);
-  }
-
-  protected void loadOtherResources(ResourcePath resourcePath) {
   }
 
   @Override

@@ -4,19 +4,11 @@ import org.robolectric.R;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.internal.dependency.MavenDependencyResolver;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.Attribute;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
 import org.robolectric.res.ResourcePath;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringWriter;
-import java.io.Writer;
+import java.io.*;
 import java.util.Collection;
 
 import static org.junit.Assert.assertTrue;
@@ -24,9 +16,7 @@ import static org.junit.Assert.assertTrue;
 public abstract class TestUtil {
   private static ResourcePath SYSTEM_RESOURCE_PATH;
   public static final ResourcePath TEST_RESOURCE_PATH = new ResourcePath(R.class.getPackage().getName(), resourceFile("res"), resourceFile("assets"), R.class);
-  public static final String SYSTEM_PACKAGE = android.R.class.getPackage().getName();
   public static final String TEST_PACKAGE = R.class.getPackage().getName();
-  public static final String TEST_PACKAGE_NS = Attribute.ANDROID_RES_NS_PREFIX + R.class.getPackage().getName();
   public static File testDirLocation;
 
   public static void assertEquals(Collection<?> expected, Collection<?> actual) {

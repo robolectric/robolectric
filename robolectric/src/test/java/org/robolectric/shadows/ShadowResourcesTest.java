@@ -16,7 +16,6 @@ import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.assertj.core.data.Offset;
 import org.jetbrains.annotations.NotNull;
@@ -29,9 +28,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
-import org.robolectric.fakes.RoboAttributeSet;
 import org.robolectric.res.AttrData;
-import org.robolectric.res.Attribute;
 import org.robolectric.res.DrawableNode;
 import org.robolectric.res.Plural;
 import org.robolectric.res.ResName;
@@ -516,11 +513,13 @@ public class ShadowResourcesTest {
     ResourceLoader fakeResourceLoader = new FakeResourceLoader(attributesTypes,
             new ResourceExtractor(new ResourcePath("android", null, null, Lollipop_R_snippet.class)));
 
-    AttributeSet attributes = RoboAttributeSet.create(RuntimeEnvironment.application,
-        ImmutableList.of(
-                new Attribute("android:attr/viewportWidth", "12.0", RuntimeEnvironment.application.getPackageName()),
-                new Attribute("android:attr/viewportHeight", "24.0", RuntimeEnvironment.application.getPackageName())),
-            fakeResourceLoader);
+
+    RuntimeEnvironment.setAppResourceLoader(fakeResourceLoader);
+
+    AttributeSet attributes = Robolectric.buildAttributeSet()
+        .addAttribute(android.R.attr.viewportWidth, "12.0")
+        .addAttribute(android.R.attr.viewportHeight, "24.0")
+        .build();
 
     TypedArray typedArray = RuntimeEnvironment.application.getTheme().obtainStyledAttributes(attributes, new int[] {
             Lollipop_R_snippet.attr.viewportWidth,
@@ -622,7 +621,7 @@ public class ShadowResourcesTest {
     }
   }
 
-  private static class FakeResourceLoader implements ResourceLoader {
+  private static class FakeResourceLoader extends ResourceLoader {
     private final Map<String, AttrData> attributesTypes;
     private final ResourceIndex resourceIndex;
 

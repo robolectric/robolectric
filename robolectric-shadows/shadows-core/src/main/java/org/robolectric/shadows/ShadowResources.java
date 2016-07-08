@@ -1,11 +1,6 @@
 package org.robolectric.shadows;
 
-import android.content.res.AssetFileDescriptor;
-import android.content.res.AssetManager;
-import android.content.res.Configuration;
-import android.content.res.Resources;
-import android.content.res.TypedArray;
-import android.content.res.XmlResourceParser;
+import android.content.res.*;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -15,18 +10,10 @@ import android.util.DisplayMetrics;
 import android.util.LongSparseArray;
 import android.util.TypedValue;
 import android.view.Display;
-
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.HiddenApi;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
-import org.robolectric.annotation.Resetter;
-import org.robolectric.res.Attribute;
+import org.robolectric.annotation.*;
 import org.robolectric.res.Plural;
-import org.robolectric.res.ResName;
 import org.robolectric.res.ResType;
-import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.TypedResource;
 import org.robolectric.res.builder.ResourceParser;
 import org.robolectric.res.builder.XmlBlock;
@@ -110,21 +97,17 @@ public class ShadowResources {
   }
 
   @Implementation
-  public String getQuantityString(int id, int quantity) throws Resources.NotFoundException {
+  public String getQuantityString(int resId, int quantity) throws Resources.NotFoundException {
     ShadowAssetManager shadowAssetManager = shadowOf(realResources.getAssets());
-    ResName resName = shadowAssetManager.getResName(id);
-    Plural plural = shadowAssetManager.getResourceLoader().getPlural(resName, quantity, RuntimeEnvironment.getQualifiers());
-    String string = plural.getString();
+    Plural plural = shadowAssetManager.getResourceLoader().getPlural(resId, quantity, RuntimeEnvironment.getQualifiers());
     TypedResource<?> typedResource = shadowAssetManager.resolve(
-        new TypedResource<>(string, ResType.CHAR_SEQUENCE), RuntimeEnvironment.getQualifiers(),
-        new ResName(resName.packageName, "string", resName.name));
+        new TypedResource<>(plural.getString(), ResType.CHAR_SEQUENCE), RuntimeEnvironment.getQualifiers(), resId);
     return typedResource == null ? null : typedResource.asString();
   }
 
   @Implementation
   public InputStream openRawResource(int id) throws Resources.NotFoundException {
-    ShadowAssetManager shadowAssetManager = shadowOf(realResources.getAssets());
-    return shadowAssetManager.getResourceLoader().getRawValue(shadowAssetManager.getResName(id));
+    return shadowOf(realResources.getAssets()).getResourceLoader().getRawValue(id);
   }
 
   @Implementation
@@ -170,14 +153,13 @@ public class ShadowResources {
   }
 
   @HiddenApi @Implementation
-  public XmlResourceParser loadXmlResourceParser(int id, String type) throws Resources.NotFoundException {
+  public XmlResourceParser loadXmlResourceParser(int resId, String type) throws Resources.NotFoundException {
     ShadowAssetManager shadowAssetManager = shadowOf(realResources.getAssets());
-    ResName resName = shadowAssetManager.resolveResName(id);
-    XmlBlock block = shadowAssetManager.getResourceLoader().getXml(resName, RuntimeEnvironment.getQualifiers());
+    XmlBlock block = shadowAssetManager.getResourceLoader().getXml(resId, RuntimeEnvironment.getQualifiers());
     if (block == null) {
       throw new Resources.NotFoundException();
     }
-    return ResourceParser.from(block, resName.packageName, shadowAssetManager.getResourceLoader());
+    return ResourceParser.from(block, shadowAssetManager.getResourcePackageName(resId), shadowAssetManager.getResourceLoader());
   }
 
   @HiddenApi @Implementation
