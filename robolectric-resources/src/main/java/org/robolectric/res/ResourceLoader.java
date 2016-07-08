@@ -18,7 +18,8 @@ public abstract class ResourceLoader {
   protected abstract Plural getPlural(ResName resName, int quantity, String qualifiers);
 
   public Plural getPlural(int resId, int quantity, String qualifiers) {
-    return getPlural(getResourceIndex().getResName(resId), quantity, qualifiers);
+    ResName resName = getResourceIndex().getResName(resId);
+    return resName != null ? getPlural(resName, quantity, qualifiers) : null;
   }
 
   public abstract XmlBlock getXml(ResName resName, String qualifiers);
