@@ -1,7 +1,7 @@
 package org.robolectric;
 
 import android.app.Application;
-
+import android.os.Build;
 import org.junit.Test;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
@@ -9,17 +9,15 @@ import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.SdkConfig;
-import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.SdkEnvironment;
+import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.FsFile;
 import org.robolectric.util.Transcript;
 
 import java.lang.reflect.Method;
 
 import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assert.assertTrue;
-import static org.robolectric.util.TestUtil.resourceFile;
 
 public class TestRunnerSequenceTest {
   public static class StateHolder {
@@ -114,7 +112,12 @@ public class TestRunnerSequenceTest {
 
     @Override
     protected AndroidManifest getAppManifest(Config config) {
-      return new AndroidManifest(resourceFile("AndroidManifest.xml"), resourceFile("res"), resourceFile("assets"));
+      return new AndroidManifest(null, null, null) {
+        @Override
+        public int getTargetSdkVersion() {
+          return Build.VERSION_CODES.M;
+        }
+      };
     }
 
     @Override protected Class<? extends TestLifecycle> getTestLifecycleClass() {

@@ -12,21 +12,41 @@ repositories {
     jcenter()
 }
 
-apply plugin: 'com.android.application'
+apply plugin: 'java'
 
-android {
-    compileSdkVersion 23
-    buildToolsVersion '23.0.2'
+apply plugin: ProvidedPlugin
 
-    defaultConfig {
-        minSdkVersion 18
-        targetSdkVersion 23
-        versionCode 2
-        versionName "1.0.0-SNAPSHOT"
-        applicationId "org.robolectric"
-    }
+sourceSets.main.resources.srcDirs += "src/main/res"
 
-    packagingOptions {
-        exclude 'LICENSE.txt'
-    }
+dependencies {
+    // Project dependencies
+    provided "org.robolectric:android-all:6.0.0_r1-robolectric-0"
+    provided "com.intellij:annotations:12.0"
+
+    // Testing dependencies
+    testCompile project(":robolectric")
+    testCompile "junit:junit:4.8.2"
+//    testCompile "org.hamcrest:hamcrest-core:1.3"
+    testCompile "org.assertj:assertj-core:2.0.0"
+    testCompile "org.mockito:mockito-core:1.8.0"
+//    testCompile project(":robolectric-shadows/shadows-core/v23")
 }
+
+//apply plugin: 'com.android.application'
+//
+//android {
+//    compileSdkVersion 23
+//    buildToolsVersion '23.0.2'
+//
+//    defaultConfig {
+//        minSdkVersion 18
+//        targetSdkVersion 23
+//        versionCode 2
+//        versionName "1.0.0-SNAPSHOT"
+//        applicationId "org.robolectric"
+//    }
+//
+//    packagingOptions {
+//        exclude 'LICENSE.txt'
+//    }
+//}

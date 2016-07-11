@@ -6,6 +6,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.internal.Instrument;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.PackageResourceLoader;
 import org.robolectric.res.ResourceIndex;
@@ -273,5 +274,15 @@ public class RobolectricTestRunnerTest {
     Properties properties = new Properties();
     properties.load(reader);
     return properties;
+  }
+
+  public static class TestApplication extends Application {
+  }
+
+  @Instrument
+  public static class FakeApp extends Application {
+  }
+
+  public static class TestFakeApp extends FakeApp {
   }
 }
