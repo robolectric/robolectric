@@ -27,8 +27,8 @@ public @interface Config {
   /**
    * TODO(vnayar): Create named constants for default values instead of magic numbers.
    * Array named contants must be avoided in order to dodge a JDK 1.7 bug.
-   *   error: annotation Config is missing value for the attribute <clinit>
-   * {@link https://bugs.openjdk.java.net/browse/JDK-8013485}
+   *   error: annotation Config is missing value for the attribute &lt;clinit&gt;
+   * See <a href="https://bugs.openjdk.java.net/browse/JDK-8013485">JDK-8013485</a>.
    */
   String NONE = "--none";
   String DEFAULT_MANIFEST = "--default";

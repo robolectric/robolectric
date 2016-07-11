@@ -3,7 +3,7 @@ package org.robolectric.res;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * @deprecated Rather than use {@link RoboAttributeSet} and {@link Attribute} please use {@link Robolectric#buildAttributeSet} instead.
+ * @deprecated Rather than use {@link org.robolectric.fakes.RoboAttributeSet} and {@link Attribute} please use {@link Robolectric#buildAttributeSet} instead.
  * This class will be removed in the next version of Robolectric.
  */
 @Deprecated

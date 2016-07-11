@@ -17,6 +17,16 @@ allprojects {
         from sourceSets.main.allJava
     }
 
+    javadoc {
+        classpath += configurations.provided
+        failOnError = false
+    }
+
+    task javadocJar(type: Jar, dependsOn: javadoc) {
+        classifier 'javadoc'
+        from javadoc.destinationDir
+    }
+
     test {
         exclude "**/*\$*" // otherwise gradle runs static inner classes like TestRunnerSequenceTest$SimpleTest
         testLogging {
@@ -49,16 +59,63 @@ allprojects {
         }
     }
 
+    artifacts {
+        archives jar
+        archives sourcesJar
+        archives javadocJar
+    }
+
     uploadArchives {
         repositories {
             mavenDeployer {
                 pom.artifactId = mavenArtifactName()
+                pom.project {
+                    name project.name
+                    description = 'An alternative Android testing framework.'
+                    url = 'http://robolectric.org'
+
+                    licenses {
+                        license {
+                            name 'The MIT License'
+                            url 'https://opensource.org/licenses/MIT'
+                        }
+                    }
+
+                    scm {
+                        url 'git@github.com:robolectric/robolectric.git'
+                        connection 'scm:git:git://github.com/robolectric/robolectric.git'
+                        developerConnection 'scm:git:https://github.com/robolectric/robolectric.git'
+                    }
+
+                    developers {
+                        developer {
+                            name 'Christian Williams'
+                            email 'christianw@google.com'
+                            organization {
+                                name 'Google Inc.'
+                            }
+                            organizationUrl 'http://google.com'
+                        }
+
+                        developer {
+                            name 'Jonathan Gerrish'
+                            email 'jongerrish@google.com'
+                            organization {
+                                name 'Google Inc.'
+                            }
+                            organizationUrl 'http://google.com'
+                        }
+                    }
+                }
 
                 def url = project.version.endsWith('-SNAPSHOT') ?
                         "https://oss.sonatype.org/content/repositories/snapshots" :
                         "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
                 repository(url: url) {
-                    authentication(userName: "pivotal", password: "<password>")
+                    authentication(
+                            userName: System.properties['sonatype-login'],
+                            password: System.properties['sonatype-password']
+                    )
                 }
 
                 beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
