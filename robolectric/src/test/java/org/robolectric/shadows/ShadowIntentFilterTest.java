@@ -90,10 +90,8 @@ public class ShadowIntentFilterTest {
 
     Uri uriTest1 = Uri.parse("http://testHost1:1");
     Uri uriTest2 = Uri.parse("http://testHost2:2");
-    assertThat(intentFilter.matchDataAuthority(uriTest1)).isEqualTo(
-        IntentFilter.MATCH_CATEGORY_HOST + IntentFilter.MATCH_CATEGORY_PORT + IntentFilter.MATCH_ADJUSTMENT_NORMAL);
-    assertThat(intentFilter.matchDataAuthority(uriTest1)).isEqualTo(
-        IntentFilter.MATCH_CATEGORY_HOST + IntentFilter.MATCH_CATEGORY_PORT + IntentFilter.MATCH_ADJUSTMENT_NORMAL);
+    assertThat(intentFilter.matchDataAuthority(uriTest1)).isEqualTo(IntentFilter.MATCH_CATEGORY_PORT);
+    assertThat(intentFilter.matchDataAuthority(uriTest2)).isEqualTo(IntentFilter.MATCH_CATEGORY_PORT);
   }
 
   @Test
@@ -104,10 +102,8 @@ public class ShadowIntentFilterTest {
 
     Uri uriTest1 = Uri.parse("http://testHost1:100");
     Uri uriTest2 = Uri.parse("http://testHost2:200");
-    assertThat(intentFilter.matchDataAuthority(uriTest1)).isEqualTo(
-        IntentFilter.MATCH_CATEGORY_HOST + IntentFilter.MATCH_ADJUSTMENT_NORMAL);
-    assertThat(intentFilter.matchDataAuthority(uriTest2)).isEqualTo(
-        IntentFilter.MATCH_CATEGORY_HOST + IntentFilter.MATCH_ADJUSTMENT_NORMAL);
+    assertThat(intentFilter.matchDataAuthority(uriTest1)).isEqualTo(IntentFilter.MATCH_CATEGORY_HOST);
+    assertThat(intentFilter.matchDataAuthority(uriTest2)).isEqualTo(IntentFilter.MATCH_CATEGORY_HOST);
   }
 
   @Test
@@ -142,6 +138,7 @@ public class ShadowIntentFilterTest {
   public void matchData_MatchType() throws IntentFilter.MalformedMimeTypeException {
     IntentFilter intentFilter = new IntentFilter();
     intentFilter.addDataType("image/test");
+    intentFilter.addDataScheme("http");
 
     Uri uriTest1 = Uri.parse("http://testHost1:1");
     assertThat(intentFilter.matchData("image/test", "http", uriTest1))
@@ -232,5 +229,13 @@ public class ShadowIntentFilterTest {
     assertThat(intentFilter.matchData("image/*", "content", uri)).isGreaterThanOrEqualTo(0);
     assertThat(intentFilter.matchData("video/test", "content", uri)).isGreaterThanOrEqualTo(0);
     assertThat(intentFilter.matchData("video/*", "content", uri)).isGreaterThanOrEqualTo(0);
+  }
+
+  @Test
+  public void testCountDataTypes() throws Exception {
+    IntentFilter intentFilter = new IntentFilter();
+    intentFilter.addDataType("image/*");
+    intentFilter.addDataType("audio/*");
+    assertThat(intentFilter.countDataTypes()).isEqualTo(2);
   }
 }
