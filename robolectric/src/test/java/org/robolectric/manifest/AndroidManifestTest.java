@@ -381,14 +381,6 @@ public class AndroidManifestTest {
     return new AndroidManifest(Fs.newFile(f), null, null);
   }
 
-  private List<String> stringify(Collection<ResourcePath> resourcePaths) {
-    List<String> resourcePathBases = new ArrayList<>();
-    for (ResourcePath resourcePath : resourcePaths) {
-      resourcePathBases.add(resourcePath.resourceBase.toString());
-    }
-    return resourcePathBases;
-  }
-
   @Test
   public void shouldReadFlagsFromAndroidManifest() throws Exception {
     AndroidManifest config = newConfig("TestAndroidManifestWithFlags.xml");
