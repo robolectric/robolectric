@@ -11,7 +11,7 @@ dependencies {
     provided "org.robolectric:android-all:6.0.0_r1-robolectric-0"
     compile "com.ibm.icu:icu4j:53.1"
 
-    compile "com.google.android.maps:maps:23_r1"
+    provided "com.google.android.maps:maps:23_r1"
 
     testCompile "junit:junit:4.8.2"
     testCompile "org.hamcrest:hamcrest-core:1.3"
