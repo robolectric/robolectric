@@ -8,9 +8,9 @@ dependencies {
     compile project(":robolectric")
     compile project(":robolectric-shadows/shadows-core/v23")
 
-    compile "com.android.support:support-v4:23.2.0"
-    compile "com.google.android.gms:play-services-base:8.4.0"
-    compile "com.google.android.gms:play-services-basement:8.4.0"
+    provided "com.android.support:support-v4:23.2.0"
+    provided "com.google.android.gms:play-services-base:8.4.0"
+    provided "com.google.android.gms:play-services-basement:8.4.0"
 
     provided "org.robolectric:android-all:6.0.0_r1-robolectric-0"
 
