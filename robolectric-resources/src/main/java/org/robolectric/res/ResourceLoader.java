@@ -1,6 +1,5 @@
 package org.robolectric.res;
 
-import android.content.res.Resources;
 import org.jetbrains.annotations.NotNull;
 import org.robolectric.res.builder.XmlBlock;
 
