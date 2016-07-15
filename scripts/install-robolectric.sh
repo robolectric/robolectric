@@ -9,7 +9,7 @@ PROJECT=$(cd $(dirname "$0")/..; pwd)
 build_robolectric() {
   echo "Building Robolectric..."
   cd "$PROJECT"
-  ./gradlew clean assemble publishToMavenLocal compileTest --info --stacktrace
+  ./gradlew clean assemble install compileTest --info --stacktrace
 }
 
 run_tests() {

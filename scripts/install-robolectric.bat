@@ -7,7 +7,7 @@ del "%TMPPATH%"
 rem Build everything
 echo Installing base installation (skipping tests)...
 cd "%PROJECT%"
-call gradlew clean assemble publishToMavenLocal compileTest --info --stacktrace
+call gradlew clean assemble install compileTest --info --stacktrace
 
 rem Build everything with tests (tests require the shadows)
 echo Installing base installation (with tests)...
