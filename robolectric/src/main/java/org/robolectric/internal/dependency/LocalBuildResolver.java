@@ -29,7 +29,7 @@ public class LocalBuildResolver implements DependencyResolver {
   public URL getLocalArtifactUrl(DependencyJar dependency) {
     List<URL> urls = getUrlsForDependency(dependency);
     if (urls.size() != 1) {
-      throw new RuntimeException("not sure what to do for dependency");
+      throw new RuntimeException("should be exactly one URL for " + dependency + " but got " + urls);
     } else {
       return urls.get(0);
     }

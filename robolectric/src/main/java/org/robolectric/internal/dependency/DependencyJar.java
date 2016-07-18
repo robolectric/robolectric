@@ -37,4 +37,9 @@ public class DependencyJar {
     return getGroupId() + ":" + getArtifactId() + ":" + getVersion()
         + ((getClassifier() == null) ? "" : ":" + getClassifier());
   }
+
+  @Override
+  public String toString() {
+    return "DependencyJar{" + getShortName() + '}';
+  }
 }
