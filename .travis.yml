@@ -1,17 +1,22 @@
+sudo: false
+
 language: android
 
 jdk:
   - oraclejdk7
   - oraclejdk8
 
+android:
+  components:
+    - tools
+    - platform-tools
+    - build-tools-20.0.0
+    - android-23
+    - extra-google-m2repository
+    - extra-android-m2repository
+    - addon-google_apis-google-23
+
 before_install:
-  - echo y | android update sdk -u -a -t tools
-  - echo y | android update sdk -u -a -t platform-tools
-  - echo y | android update sdk -u -a -t build-tools-20.0.0
-  - echo y | android update sdk -u -a -t android-23
-  - echo y | android update sdk -u -a -t extra-google-m2repository
-  - echo y | android update sdk -u -a -t extra-android-m2repository
-  - echo y | android update sdk -u -a -t addon-google_apis-google-23
   - ./scripts/install-dependencies.rb
 
 script:
@@ -19,8 +24,6 @@ script:
 
 after_success:
   - ./scripts/deploy-snapshot.sh
-
-sudo: false
 
 before_cache:
   - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
