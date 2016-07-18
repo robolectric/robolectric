@@ -32,4 +32,9 @@ public class DependencyJar {
   public String getClassifier() {
     return classifier;
   }
+
+  public String getShortName() {
+    return getGroupId() + ":" + getArtifactId() + ":" + getVersion()
+        + ((getClassifier() == null) ? "" : ":" + getClassifier());
+  }
 }
