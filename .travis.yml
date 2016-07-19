@@ -36,5 +36,6 @@ cache:
 
 env:
   global:
+    - MALLOC_ARENA_MAX=2 # reduce memory usage, maybe avoid some exit 137's?
     - secure: "AnsdYjHIvtLXrDMJmlf5FJhXJOW+aLSvsyXcGFLKse6EcwTSw8XnE4bGv2eSi2YWIwoHHCStIQbI0J02rkmUu9Z5oChxhOyGtCd8U4l1XciH2U7vJOJ/i9Auw5WgLM6x8HxgH6myhNrA9xrB4fcH+8WsDMf+qLqgvJQQjqQZQGM="
     - secure: "tKWNiNnT+WPmHNY1MtXTgwId9peXtsKQ5owdOfZqmEQYTSHVdya5Bt3CiK8U829Pa1ZBuF+9mnGufTbw0WfQM5TKlClDn4ciEJzz6ChS2cqO+6trsWy335nppU7pQsDE44Irju+E7Jh4kIjfnB2pWRhI2YAoAUhNyz39PawXsz8="
