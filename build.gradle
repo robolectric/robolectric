@@ -27,7 +27,11 @@ allprojects {
         from javadoc.destinationDir
     }
 
+    task provideBuildClasspath(type: ProvideBuildClasspathTask)
+
     test {
+        dependsOn provideBuildClasspath
+
         exclude "**/*\$*" // otherwise gradle runs static inner classes like TestRunnerSequenceTest$SimpleTest
         testLogging {
             events "failed"
