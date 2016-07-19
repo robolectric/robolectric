@@ -18,7 +18,8 @@ before_install:
   - ./scripts/install-dependencies.rb
 
 script:
-  - ./scripts/install-robolectric.sh
+    - ./gradlew clean assemble install compileTest --info --stacktrace
+    - ./gradlew --continue test --info --stacktrace
 
 after_success:
   - ./scripts/deploy-snapshot.sh
