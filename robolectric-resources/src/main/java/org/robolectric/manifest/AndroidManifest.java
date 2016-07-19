@@ -43,7 +43,7 @@ import static android.content.pm.ApplicationInfo.FLAG_VM_SAFE_MODE;
 
 /**
  * A wrapper for an Android App Manifest, which represents information about one's App to an Android system.
- * @see {@link https://developer.android.com/guide/topics/manifest/manifest-intro.html}
+ * @see <a href="https://developer.android.com/guide/topics/manifest/manifest-intro.html">Android App Manifest</a>
  */
 public class AndroidManifest {
   private final FsFile androidManifestFile;

@@ -41,7 +41,7 @@ public class ResName {
   }
 
   /**
-   * Returns null if the resource could not be qualified.
+   * @return null if the resource could not be qualified.
    */
   public static String qualifyResourceName(@NotNull String possiblyQualifiedResourceName, String defaultPackageName, String defaultType) {
     ResName resName = qualifyResName(possiblyQualifiedResourceName, defaultPackageName, defaultType);
