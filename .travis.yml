@@ -1,9 +1,5 @@
 language: android
 
-env:
-  global:
-    - MALLOC_ARENA_MAX=2
-
 jdk:
   - oraclejdk7
   - oraclejdk8
