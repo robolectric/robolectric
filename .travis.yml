@@ -1,5 +1,3 @@
-sudo: false
-
 language: android
 
 jdk:
@@ -24,6 +22,8 @@ script:
 
 after_success:
   - ./scripts/deploy-snapshot.sh
+
+sudo: required
 
 before_cache:
   - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
