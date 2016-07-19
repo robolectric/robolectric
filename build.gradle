@@ -8,6 +8,18 @@ allprojects {
     sourceCompatibility = JavaVersion.VERSION_1_7
     targetCompatibility = JavaVersion.VERSION_1_7
 
+    tasks.withType(JavaCompile) {
+        sourceCompatibility = JavaVersion.VERSION_1_7
+        targetCompatibility = JavaVersion.VERSION_1_7
+
+        // Show all warnings except boot classpath
+        configure(options) {
+            compilerArgs << "-Xlint:-options"       // Turn off "missing" bootclasspath warning
+            encoding = "utf-8"                      // Make sure source encoding is UTF-8
+            incremental = true
+        }
+    }
+
     apply plugin: ProvidedPlugin
     apply plugin: "signing"
     apply plugin: "maven"
@@ -27,7 +39,11 @@ allprojects {
         from javadoc.destinationDir
     }
 
+    task provideBuildClasspath(type: ProvideBuildClasspathTask)
+
     test {
+        dependsOn provideBuildClasspath
+
         exclude "**/*\$*" // otherwise gradle runs static inner classes like TestRunnerSequenceTest$SimpleTest
         testLogging {
             events "failed"
