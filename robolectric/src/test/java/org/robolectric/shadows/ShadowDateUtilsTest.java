@@ -37,7 +37,7 @@ public class ShadowDateUtilsTest {
     final int currentYear = calendar.get(Calendar.YEAR);
     final long millisAtStartOfYear = getMillisAtStartOfYear();
 
-    String actual = DateUtils.formatDateTime(RuntimeEnvironment.application, millisAtStartOfYear, DateUtils.FORMAT_NUMERIC_DATE);
+    String actual = DateUtils.formatDateTime(RuntimeEnvironment.application, millisAtStartOfYear, DateUtils.FORMAT_SHOW_YEAR | DateUtils.FORMAT_NUMERIC_DATE);
     assertThat(actual).isEqualTo("1/1/" + currentYear);
   }
 
