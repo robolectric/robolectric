@@ -96,7 +96,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
         }
       }
 
-      URL buildPathPropertiesUrl = getClass().getClassLoader().getResource("robolectric-build-paths.properties");
+      URL buildPathPropertiesUrl = getClass().getClassLoader().getResource("robolectric-deps.properties");
       if (buildPathPropertiesUrl != null) {
         try {
           Logger.info("Using Robolectric classes from %s", buildPathPropertiesUrl.getPath());
@@ -106,7 +106,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
           properties.load(stream);
           stream.close();
 
-          dependencyResolver = new LocalBuildResolver(properties, dependencyResolver);
+          dependencyResolver = new PropertiesDependencyResolver(properties, dependencyResolver);
         } catch (IOException e) {
           throw new RuntimeException("couldn't read " + buildPathPropertiesUrl, e);
         }

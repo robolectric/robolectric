@@ -199,7 +199,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   /**
-   * @return whether {@link finish()} was called
+   * @return whether {@link #[[#]]#finish()} was called
    */
   @Implementation
   public boolean isFinishing() {
@@ -281,7 +281,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   /**
    * Non-Android accessor.
    *
-   * @return the {@code Intent} set by {@link setResult(int, android.content.Intent)}
+   * @return the {@code Intent} set by {@link #[[#]]#setResult(int, android.content.Intent)}
    */
   public Intent getResultIntent() {
     return resultIntent;
@@ -304,7 +304,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
   /**
    * Non-Android accessor returns the most recent {@code Intent} started by
-   * {@link startActivityForResult(android.content.Intent, int)} without
+   * {@link #[[#]]#startActivityForResult(android.content.Intent, int)} without
    * consuming it.
    *
    * @return the most recently started {@code Intent}, wrapped in

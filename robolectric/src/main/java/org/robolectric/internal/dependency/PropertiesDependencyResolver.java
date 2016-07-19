@@ -7,11 +7,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-public class LocalBuildResolver implements DependencyResolver {
+public class PropertiesDependencyResolver implements DependencyResolver {
   private final Properties properties;
   private DependencyResolver delegate;
 
-  public LocalBuildResolver(Properties properties, DependencyResolver dependencyResolver) {
+  public PropertiesDependencyResolver(Properties properties, DependencyResolver dependencyResolver) {
     this.properties = properties;
     delegate = dependencyResolver;
   }

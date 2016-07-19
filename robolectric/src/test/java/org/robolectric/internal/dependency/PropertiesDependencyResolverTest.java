@@ -10,9 +10,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class LocalBuildResolverTest {
+public class PropertiesDependencyResolverTest {
 
-  private LocalBuildResolver resolver;
+  private PropertiesDependencyResolver resolver;
   private Properties properties;
   private DependencyResolver mock;
 
@@ -20,7 +20,7 @@ public class LocalBuildResolverTest {
   public void setUp() throws Exception {
     properties = new Properties();
     mock = mock(DependencyResolver.class);
-    resolver = new LocalBuildResolver(properties, mock);
+    resolver = new PropertiesDependencyResolver(properties, mock);
   }
 
   @Test

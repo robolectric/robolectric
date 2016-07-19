@@ -9,10 +9,6 @@ public class Pony {
   public Pony() {
   }
 
-  public Pony(String abc) {
-    System.out.println("abc = " + abc);
-  }
-
   public String ride(String where) {
     return "Whinny! You're on my " + where + "!";
   }
