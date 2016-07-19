@@ -1,6 +1,8 @@
-sudo: false
-
 language: android
+
+env:
+  global:
+    - MALLOC_ARENA_MAX=2
 
 jdk:
   - oraclejdk7
@@ -24,6 +26,8 @@ script:
 
 after_success:
   - ./scripts/deploy-snapshot.sh
+
+sudo: required
 
 before_cache:
   - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
