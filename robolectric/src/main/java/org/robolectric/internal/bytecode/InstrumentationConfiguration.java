@@ -21,6 +21,7 @@ import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.res.builder.XmlBlock;
+import org.robolectric.internal.nativelibs.SQLiteLibraryLoader;
 import org.robolectric.util.TempDirectory;
 import org.robolectric.util.Transcript;
 
@@ -127,7 +128,8 @@ public class InstrumentationConfiguration {
           DependencyJar.class,
           ParallelUniverseInterface.class,
           ShadowedObject.class,
-          TempDirectory.class
+          TempDirectory.class,
+          SQLiteLibraryLoader.class // Fix #958: SQLite native library must be loaded once.
       ));
       packagesToNotAcquire.addAll(Arrays.asList(
           "java.",

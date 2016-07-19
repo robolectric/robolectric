@@ -1,8 +1,7 @@
-package org.robolectric.shadows.util;
+package org.robolectric.internal.nativelibs;
 
 import com.almworks.sqlite4java.SQLite;
 import com.almworks.sqlite4java.SQLiteException;
-import org.robolectric.res.Fs;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
@@ -74,7 +73,7 @@ public class SQLiteLibraryLoader {
     if (tempPath == null) {
       throw new IllegalStateException("Java temporary directory is not defined (java.io.tmpdir)");
     }
-    return new File(Fs.fileFromPath(tempPath).join("robolectric-libs", getLibName()).getPath());
+    return new File(new File(tempPath, "robolectric-libs"), getLibName());
   }
 
   public void mustReload() {

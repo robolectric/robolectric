@@ -34,7 +34,7 @@ import com.google.common.util.concurrent.Uninterruptibles;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.shadows.util.SQLiteLibraryLoader;
+import org.robolectric.internal.nativelibs.SQLiteLibraryLoader;
 
 import java.io.File;
 import java.util.Map;
