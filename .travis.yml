@@ -8,7 +8,7 @@ android:
   components:
     - tools
     - platform-tools
-    - build-tools-20.0.0
+    - build-tools-23.0.3
     - android-23
     - extra-google-m2repository
     - extra-android-m2repository
@@ -19,7 +19,7 @@ before_install:
 
 script:
     - ./gradlew clean assemble install compileTest --info --stacktrace
-    - ./gradlew --continue test --info --stacktrace
+    - ./gradlew test --continue --info --stacktrace
 
 after_success:
   - ./scripts/deploy-snapshot.sh
