@@ -553,7 +553,7 @@ public class AndroidManifest {
 
   public List<ServiceData> getServices() {
     parseAndroidManifest();
-    return new ArrayList<ServiceData>(serviceDatas.values());
+    return new ArrayList<>(serviceDatas.values());
   }
 
   public ServiceData getServiceData(String serviceClassName) {
