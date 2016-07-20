@@ -9,7 +9,7 @@ Robolectric is a testing framework that de-fangs the Android SDK so you can test
 Here's an example of a simple test written using Robolectric:
 
 ```java
-@RunWith(RobolectricGradleTestRunner.class)
+@RunWith(RobolectricTestRunner.class)
 @Config(constants = BuildConfig.class)
 public class MyActivityTest {
 
@@ -37,7 +37,7 @@ If you'd like to start a new project with Robolectric tests you can refer to `de
 ### Gradle
 
 ```groovy
-testCompile "org.robolectric:robolectric:3.1"
+testCompile "org.robolectric:robolectric:3.1.1"
 ```
 
 ### Maven
@@ -46,7 +46,7 @@ testCompile "org.robolectric:robolectric:3.1"
 <dependency>
    <groupId>org.robolectric</groupId>
    <artifactId>robolectric</artifactId>
-   <version>3.1</version>
+   <version>3.1.1</version>
    <scope>test</scope>
 </dependency>
 ```
