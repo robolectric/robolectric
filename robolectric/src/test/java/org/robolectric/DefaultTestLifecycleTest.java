@@ -3,8 +3,6 @@ package org.robolectric;
 import android.app.Application;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -67,7 +65,6 @@ public class DefaultTestLifecycleTest {
     assertTrue(receivers.get(0).intentFilter.matchAction("org.robolectric.ACTION1"));
   }
 
-  @Ignore("https://github.com/robolectric/robolectric/issues/2376")
   @Config(manifest = "src/test/resources/TestAndroidManifestForActivities.xml")
   @Test public void shouldRegisterActivitiesFromManifestInPackageManager() throws Exception {
     Application application = RuntimeEnvironment.application;
