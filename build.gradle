@@ -17,6 +17,7 @@ allprojects {
 
         // Show all warnings except boot classpath
         configure(options) {
+            compilerArgs << "-Xlint:all"            // Turn on all warnings
             compilerArgs << "-Xlint:-options"       // Turn off "missing" bootclasspath warning
             encoding = "utf-8"                      // Make sure source encoding is UTF-8
             incremental = true
@@ -28,7 +29,7 @@ allprojects {
     apply plugin: "maven"
 
     task sourcesJar(type: Jar, dependsOn: classes) {
-        classifier 'sources'
+        classifier "sources"
         from sourceSets.main.allJava
     }
 
@@ -38,7 +39,7 @@ allprojects {
     }
 
     task javadocJar(type: Jar, dependsOn: javadoc) {
-        classifier 'javadoc'
+        classifier "javadoc"
         from javadoc.destinationDir
     }
 
@@ -49,18 +50,17 @@ allprojects {
 
         exclude "**/*\$*" // otherwise gradle runs static inner classes like TestRunnerSequenceTest$SimpleTest
         testLogging {
-            events "failed"
-            exceptionFormat "short"
-
-            info {
-                events "skipped", "failed"
-                exceptionFormat "full"
-            }
+            exceptionFormat "full"
+            showCauses true
+            showExceptions true
+            showStackTraces true
+            showStandardStreams true
+            events = ["failed", "skipped"]
         }
 
         minHeapSize = "1024m"
         maxHeapSize = "2048m"
-        jvmArgs '-XX:MaxPermSize=1024m'
+        jvmArgs "-XX:MaxPermSize=1024m"
     }
 
     signing {
@@ -90,50 +90,50 @@ allprojects {
                 pom.artifactId = mavenArtifactName()
                 pom.project {
                     name project.name
-                    description = 'An alternative Android testing framework.'
-                    url = 'http://robolectric.org'
+                    description = "An alternative Android testing framework."
+                    url = "http://robolectric.org"
 
                     licenses {
                         license {
-                            name 'The MIT License'
-                            url 'https://opensource.org/licenses/MIT'
+                            name "The MIT License"
+                            url "https://opensource.org/licenses/MIT"
                         }
                     }
 
                     scm {
-                        url 'git@github.com:robolectric/robolectric.git'
-                        connection 'scm:git:git://github.com/robolectric/robolectric.git'
-                        developerConnection 'scm:git:https://github.com/robolectric/robolectric.git'
+                        url "git@github.com:robolectric/robolectric.git"
+                        connection "scm:git:git://github.com/robolectric/robolectric.git"
+                        developerConnection "scm:git:https://github.com/robolectric/robolectric.git"
                     }
 
                     developers {
                         developer {
-                            name 'Christian Williams'
-                            email 'christianw@google.com'
+                            name "Christian Williams"
+                            email "christianw@google.com"
                             organization {
-                                name 'Google Inc.'
+                                name "Google Inc."
                             }
-                            organizationUrl 'http://google.com'
+                            organizationUrl "http://google.com"
                         }
 
                         developer {
-                            name 'Jonathan Gerrish'
-                            email 'jongerrish@google.com'
+                            name "Jonathan Gerrish"
+                            email "jongerrish@google.com"
                             organization {
-                                name 'Google Inc.'
+                                name "Google Inc."
                             }
-                            organizationUrl 'http://google.com'
+                            organizationUrl "http://google.com"
                         }
                     }
                 }
 
-                def url = project.version.endsWith('-SNAPSHOT') ?
+                def url = project.version.endsWith("-SNAPSHOT") ?
                         "https://oss.sonatype.org/content/repositories/snapshots" :
                         "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
                 repository(url: url) {
                     authentication(
-                            userName: System.properties['sonatype-login'],
-                            password: System.properties['sonatype-password']
+                            userName: System.properties["sonatype-login"],
+                            password: System.properties["sonatype-password"]
                     )
                 }
 
