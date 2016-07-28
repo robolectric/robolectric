@@ -37,7 +37,7 @@ If you'd like to start a new project with Robolectric tests you can refer to `de
 ### Gradle
 
 ```groovy
-testCompile "org.robolectric:robolectric:3.1.1"
+testCompile "org.robolectric:robolectric:3.1.2"
 ```
 
 ### Maven
@@ -46,7 +46,7 @@ testCompile "org.robolectric:robolectric:3.1.1"
 <dependency>
    <groupId>org.robolectric</groupId>
    <artifactId>robolectric</artifactId>
-   <version>3.1.1</version>
+   <version>3.1.2</version>
    <scope>test</scope>
 </dependency>
 ```
