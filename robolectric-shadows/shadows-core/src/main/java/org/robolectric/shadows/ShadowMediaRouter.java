@@ -15,4 +15,8 @@ public class ShadowMediaRouter {
   public int getRouteCount() {
     return 0;
   }
+
+  @Implementation
+  public void addCallback(int types, MediaRouter.Callback cb, int flags) {
+  }
 }
