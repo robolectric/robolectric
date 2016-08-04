@@ -5,14 +5,15 @@ import android.os.Looper;
 import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.TimeUnit;
 
 import org.robolectric.RoboSettings;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.annotation.HiddenApi;
 import org.robolectric.util.Scheduler;
 
 import static org.robolectric.RuntimeEnvironment.isMainThread;
@@ -147,19 +148,25 @@ public class ShadowLooper {
   }
 
   public static void pauseMainLooper() {
-    pauseLooper(Looper.getMainLooper());
+    getShadowMainLooper().pause();
   }
 
   public static void unPauseMainLooper() {
-    unPauseLooper(Looper.getMainLooper());
+    getShadowMainLooper().unPause();
   }
 
   public static void idleMainLooper() {
-    shadowOf(Looper.getMainLooper()).idle();
+    getShadowMainLooper().idle();
   }
 
+  /** @deprecated Use {@link #idleMainLooper(long, TimeUnit)}. */
+  @Deprecated
   public static void idleMainLooper(long interval) {
-    getShadowMainLooper().idle(interval);
+    idleMainLooper(interval, TimeUnit.MILLISECONDS);
+  }
+
+  public static void idleMainLooper(long amount, TimeUnit unit) {
+    getShadowMainLooper().idle(amount, unit);
   }
 
   public static void idleMainLooperConstantly(boolean shouldIdleConstantly) {
@@ -204,17 +211,26 @@ public class ShadowLooper {
    * scheduler's clock;
    */
   public void idle() {
-    getScheduler().advanceBy(0);
+    idle(0, TimeUnit.MILLISECONDS);
   }
 
   /**
    * Causes {@link Runnable}s that have been scheduled to run within the next {@code intervalMillis} milliseconds to
    * run while advancing the scheduler's clock.
    *
-   * @param intervalMillis milliseconds to advance
+   * @deprecated Use {@link #idle(long, TimeUnit)}.
    */
+  @Deprecated
   public void idle(long intervalMillis) {
-    getScheduler().advanceBy(intervalMillis);
+    idle(intervalMillis, TimeUnit.MILLISECONDS);
+  }
+
+  /**
+   * Causes {@link Runnable}s that have been scheduled to run within the next specified amount of time to run while
+   * advancing the scheduler's clock.
+   */
+  public void idle(long amount, TimeUnit unit) {
+    getScheduler().advanceBy(amount, unit);
   }
 
   public void idleConstantly(boolean shouldIdleConstantly) {
@@ -258,7 +274,7 @@ public class ShadowLooper {
   @Deprecated
   public boolean post(Runnable runnable, long delayMillis) {
     if (!quit) {
-      getScheduler().postDelayed(runnable, delayMillis);
+      getScheduler().postDelayed(runnable, delayMillis, TimeUnit.MILLISECONDS);
       return true;
     } else {
       return false;
