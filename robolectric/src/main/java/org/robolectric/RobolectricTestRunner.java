@@ -297,7 +297,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
             Config.DEFAULT_ABI_SPLIT, Config.DEFAULT_RES_FOLDER, Config.DEFAULT_ASSET_FOLDER, Config.DEFAULT_BUILD_FOLDER, new Class[0],
             new String[0], Application.class, new String[0], Void.class);
 
-    Config globalConfig = Config.Implementation.fromProperties(getConfigProperties());
+    Config globalConfig = buildGlobalConfig();
     if (globalConfig != null) {
       config = new Config.Implementation(config, globalConfig);
     }
@@ -328,6 +328,20 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     }
 
     return config;
+  }
+
+  /**
+   * Generate the global {@link Config}. More specific test class and test method configurations
+   * will override values provided here.
+   *
+   * The default implementation uses properties provided by {@link #getConfigProperties()}.
+   *
+   * The returned object is likely to be reused for many tests.
+   *
+   * @return global {@link Config} object
+   */
+  protected Config buildGlobalConfig() {
+    return Config.Implementation.fromProperties(getConfigProperties());
   }
 
   protected Properties getConfigProperties() {
