@@ -1,6 +1,11 @@
 package org.robolectric.internal.dependency;
 
+import org.robolectric.res.FileFsFile;
+import org.robolectric.res.FsFile;
+
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -9,11 +14,21 @@ import java.util.Properties;
 
 public class PropertiesDependencyResolver implements DependencyResolver {
   private final Properties properties;
+  private final FsFile baseDir;
   private DependencyResolver delegate;
 
-  public PropertiesDependencyResolver(Properties properties, DependencyResolver dependencyResolver) {
-    this.properties = properties;
-    delegate = dependencyResolver;
+  public PropertiesDependencyResolver(FsFile propertiesFile, DependencyResolver delegate) throws IOException {
+    this.properties = loadProperties(propertiesFile);
+    this.baseDir = propertiesFile.getParent();
+    this.delegate = delegate;
+  }
+
+  private Properties loadProperties(FsFile propertiesFile) throws IOException {
+    final Properties properties = new Properties();
+    InputStream stream = propertiesFile.getInputStream();
+    properties.load(stream);
+    stream.close();
+    return properties;
   }
 
   @Override
@@ -41,8 +56,12 @@ public class PropertiesDependencyResolver implements DependencyResolver {
     String path = properties.getProperty(depShortName);
     if (path != null) {
       for (String pathPart : path.split(":")) {
+        File pathFile = new File(pathPart);
+        if (!pathFile.isAbsolute()) {
+          pathFile = new File(baseDir.getPath(), pathPart);
+        }
         try {
-          URL url = new File(pathPart).toURI().toURL();
+          URL url = pathFile.toURI().toURL();
           urls.add(url);
         } catch (MalformedURLException e) {
           throw new RuntimeException(e);

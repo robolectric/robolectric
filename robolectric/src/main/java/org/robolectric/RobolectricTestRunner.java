@@ -24,6 +24,8 @@ import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.internal.bytecode.*;
 import org.robolectric.internal.dependency.*;
 import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.res.Fs;
+import org.robolectric.res.FsFile;
 import org.robolectric.res.OverlayResourceLoader;
 import org.robolectric.res.PackageResourceLoader;
 import org.robolectric.res.ResourceExtractor;
@@ -98,15 +100,11 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
       URL buildPathPropertiesUrl = getClass().getClassLoader().getResource("robolectric-deps.properties");
       if (buildPathPropertiesUrl != null) {
+        Logger.info("Using Robolectric classes from %s", buildPathPropertiesUrl.getPath());
+
+        FsFile propertiesFile = Fs.fileFromPath(buildPathPropertiesUrl.getFile());
         try {
-          Logger.info("Using Robolectric classes from %s", buildPathPropertiesUrl.getPath());
-
-          final Properties properties = new Properties();
-          InputStream stream = buildPathPropertiesUrl.openStream();
-          properties.load(stream);
-          stream.close();
-
-          dependencyResolver = new PropertiesDependencyResolver(properties, dependencyResolver);
+          dependencyResolver = new PropertiesDependencyResolver(propertiesFile, dependencyResolver);
         } catch (IOException e) {
           throw new RuntimeException("couldn't read " + buildPathPropertiesUrl, e);
         }
