@@ -8,7 +8,7 @@ public class RawResourceLoader {
   }
 
   public void loadTo(ResBundle<FsFile> rawResourceFiles) {
-    FsFile rawDir = resourcePath.resourceBase.join("raw");
+    FsFile rawDir = resourcePath.getResourceBase().join("raw");
 
     if (rawDir != null) {
       FsFile[] files = rawDir.listFiles();

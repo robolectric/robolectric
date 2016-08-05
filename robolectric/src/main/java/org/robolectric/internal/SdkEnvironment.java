@@ -34,7 +34,7 @@ public class SdkEnvironment {
         Class<?> androidInternalRClass = getRobolectricClassLoader().loadClass("com.android.internal.R");
         Class<?> androidRClass = getRobolectricClassLoader().loadClass("android.R");
         Fs systemResFs = Fs.fromJar(dependencyResolver.getLocalArtifactUrl(sdkConfig.getAndroidSdkDependency()));
-        resourcePath = new ResourcePath(androidRClass.getPackage().getName(), systemResFs.join("res"), systemResFs.join("assets"), androidRClass, androidInternalRClass);
+        resourcePath = new ResourcePath(androidRClass, androidRClass.getPackage().getName(), systemResFs.join("res"), systemResFs.join("assets"), androidInternalRClass);
       } catch (ClassNotFoundException e) {
         throw new RuntimeException(e);
       }

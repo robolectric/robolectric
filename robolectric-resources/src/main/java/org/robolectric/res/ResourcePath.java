@@ -1,22 +1,42 @@
 package org.robolectric.res;
 
-import java.util.Arrays;
-
 public class ResourcePath {
-  public final String packageName;
-  public final FsFile resourceBase;
-  public final FsFile assetsDir;
-  public Class<?>[] rClasses;
+  private final Class<?> rClass;
+  private final String packageName;
+  private final FsFile resourceBase;
+  private final FsFile assetsDir;
+  private final Class<?> internalRClass;
 
-  public ResourcePath(String packageName, FsFile resourceBase, FsFile assetsDir, Class<?>... rClasses) {
+  public ResourcePath(Class<?> rClass, String packageName, FsFile resourceBase, FsFile assetsDir) {
+    this(rClass, packageName, resourceBase, assetsDir, null);
+  }
+
+  public ResourcePath(Class<?> rClass, String packageName, FsFile resourceBase, FsFile assetsDir, Class<?> internalRClass) {
+    this.rClass = rClass;
     this.packageName = packageName;
     this.resourceBase = resourceBase;
     this.assetsDir = assetsDir;
-    this.rClasses = rClasses;
+    this.internalRClass = internalRClass;
+  }
+
+  public Class<?> getRClass() {
+    return rClass;
   }
 
   public String getPackageName() {
     return packageName;
+  }
+
+  public FsFile getResourceBase() {
+    return resourceBase;
+  }
+
+  public FsFile getAssetsDir() {
+    return assetsDir;
+  }
+
+  public Class<?> getInternalRClass() {
+    return internalRClass;
   }
 
   @Override
@@ -31,20 +51,21 @@ public class ResourcePath {
 
     ResourcePath that = (ResourcePath) o;
 
+    if (rClass != null ? !rClass.equals(that.rClass) : that.rClass != null) return false;
     if (packageName != null ? !packageName.equals(that.packageName) : that.packageName != null) return false;
     if (resourceBase != null ? !resourceBase.equals(that.resourceBase) : that.resourceBase != null) return false;
     if (assetsDir != null ? !assetsDir.equals(that.assetsDir) : that.assetsDir != null) return false;
-    // Probably incorrect - comparing Object[] arrays with Arrays.equals
-    return Arrays.equals(rClasses, that.rClasses);
+    return internalRClass != null ? internalRClass.equals(that.internalRClass) : that.internalRClass == null;
 
   }
 
   @Override
   public int hashCode() {
-    int result = packageName != null ? packageName.hashCode() : 0;
+    int result = rClass != null ? rClass.hashCode() : 0;
+    result = 31 * result + (packageName != null ? packageName.hashCode() : 0);
     result = 31 * result + (resourceBase != null ? resourceBase.hashCode() : 0);
     result = 31 * result + (assetsDir != null ? assetsDir.hashCode() : 0);
-    result = 31 * result + Arrays.hashCode(rClasses);
+    result = 31 * result + (internalRClass != null ? internalRClass.hashCode() : 0);
     return result;
   }
 }
