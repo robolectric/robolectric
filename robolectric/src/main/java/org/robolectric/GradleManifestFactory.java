@@ -22,15 +22,15 @@ import org.robolectric.util.ReflectionHelpers;
       throw new RuntimeException("No 'constants' field in @Config annotation!");
     }
 
-    final String type = getType(config);
-    final String flavor = getFlavor(config);
-    final String abiSplit = getAbiSplit(config);
-    final String packageName = getPackageName(config);
-
     FileLocator fileLocator = new GradleFileLocator(config);
-    final FsFile manifest = fileLocator.locateManifest(type, flavor, abiSplit);
-    final FsFile res = fileLocator.locateResDir(type, flavor);
-    final FsFile assets = fileLocator.locateAssetsDir(type, flavor);
+    String buildType = config.buildType();
+    String flavor = config.flavor();
+    String abiSplit = config.abiSplit();
+    String packageName = config.packageName();
+
+    final FsFile manifest = fileLocator.locateManifest(buildType, flavor, abiSplit);
+    final FsFile res = fileLocator.locateResDir(buildType, flavor);
+    final FsFile assets = fileLocator.locateAssetsDir(buildType, flavor);
 
     Logger.debug("Robolectric assets directory: " + assets.getPath());
     Logger.debug("   Robolectric res directory: " + res.getPath());
@@ -44,40 +44,4 @@ import org.robolectric.util.ReflectionHelpers;
     };
   }
 
-  private static String getType(Config config) {
-    try {
-      return ReflectionHelpers.getStaticField(config.constants(), "BUILD_TYPE");
-    } catch (Throwable e) {
-      return null;
-    }
-  }
-
-  private static String getFlavor(Config config) {
-    try {
-      return ReflectionHelpers.getStaticField(config.constants(), "FLAVOR");
-    } catch (Throwable e) {
-      return null;
-    }
-  }
-
-  private static String getAbiSplit(Config config) {
-    try {
-      return config.abiSplit();
-    } catch (Throwable e) {
-      return null;
-    }
-  }
-
-  private static String getPackageName(Config config) {
-    try {
-      final String packageName = config.packageName();
-      if (packageName != null && !packageName.isEmpty()) {
-        return packageName;
-      } else {
-        return ReflectionHelpers.getStaticField(config.constants(), "APPLICATION_ID");
-      }
-    } catch (Throwable e) {
-      return null;
-    }
-  }
 }

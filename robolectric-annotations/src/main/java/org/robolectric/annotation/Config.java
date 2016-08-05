@@ -32,9 +32,12 @@ public @interface Config {
    */
   String NONE = "--none";
   String DEFAULT_MANIFEST = "--default";
+  Class DEFAULT_CONSTANTS = Void.class;
   String DEFAULT_PACKAGE_NAME = "";
   String DEFAULT_ABI_SPLIT = "";
   String DEFAULT_QUALIFIERS = "";
+  String DEFAULT_BUILD_TYPE = "";
+  String DEFAULT_FLAVOR = "";
   String DEFAULT_RES_FOLDER = "res";
   String DEFAULT_ASSET_FOLDER = "assets";
   String DEFAULT_BUILD_FOLDER = "build";
@@ -64,7 +67,7 @@ public @interface Config {
    *
    * @return Reference to BuildConfig class.
    */
-  Class<?> constants() default Void.class;  // DEFAULT_CONSTANTS
+  Class<?> constants() default DEFAULT_CONSTANTS;
 
   /**
    * The {@link android.app.Application} class to use in the test, this takes precedence over any application
@@ -100,6 +103,20 @@ public @interface Config {
    * @return Qualifiers used for resource resolution.
    */
   String qualifiers() default DEFAULT_QUALIFIERS;
+
+  /**
+   * Android build type to use for resource resolution, such as "debug".
+   *
+   * @return Build type used for resource resolution.
+   */
+  String buildType() default DEFAULT_BUILD_TYPE;
+
+  /**
+   * Android product flavor to use for the resource resolution, such as "demo".
+   *
+   * @return Flavor used for resource resolution.
+   */
+  String flavor() default DEFAULT_FLAVOR;
 
   /**
    * The directory from which to load resources.  This should be relative to the directory containing AndroidManifest.xml.
@@ -153,6 +170,8 @@ public @interface Config {
     private final int[] sdk;
     private final String manifest;
     private final String qualifiers;
+    private final String buildType;
+    private final String flavor;
     private final String resourceDir;
     private final String assetDir;
     private final String buildDir;
@@ -164,12 +183,21 @@ public @interface Config {
     private final Class<? extends Application> application;
     private final String[] libraries;
 
+    public static Config getDefaults() {
+      return new Config.Implementation(new int[0], Config.DEFAULT_MANIFEST, Config.DEFAULT_QUALIFIERS,
+          Config.DEFAULT_BUILD_TYPE, Config.DEFAULT_FLAVOR, Config.DEFAULT_PACKAGE_NAME, Config.DEFAULT_ABI_SPLIT,
+          Config.DEFAULT_RES_FOLDER, Config.DEFAULT_ASSET_FOLDER, Config.DEFAULT_BUILD_FOLDER, new Class[0],
+          new String[0], Application.class, new String[0], Config.DEFAULT_CONSTANTS);
+    }
+
     public static Config fromProperties(Properties properties) {
       if (properties == null || properties.size() == 0) return null;
       return new Implementation(
           parseIntArrayProperty(properties.getProperty("sdk", "")),
           properties.getProperty("manifest", DEFAULT_MANIFEST),
           properties.getProperty("qualifiers", DEFAULT_QUALIFIERS),
+          properties.getProperty("buildType", DEFAULT_BUILD_TYPE),
+          properties.getProperty("flavor", DEFAULT_FLAVOR),
           properties.getProperty("packageName", DEFAULT_PACKAGE_NAME),
           properties.getProperty("abiSplit", DEFAULT_ABI_SPLIT),
           properties.getProperty("resourceDir", DEFAULT_RES_FOLDER),
@@ -222,10 +250,12 @@ public @interface Config {
       return result;
     }
 
-    public Implementation(int[] sdk, String manifest, String qualifiers, String packageName, String abiSplit, String resourceDir, String assetDir, String buildDir, Class<?>[] shadows, String[] instrumentedPackages, Class<? extends Application> application, String[] libraries, Class<?> constants) {
+    public Implementation(int[] sdk, String manifest, String qualifiers, String buildType, String flavor, String packageName, String abiSplit, String resourceDir, String assetDir, String buildDir, Class<?>[] shadows, String[] instrumentedPackages, Class<? extends Application> application, String[] libraries, Class<?> constants) {
       this.sdk = sdk;
       this.manifest = manifest;
       this.qualifiers = qualifiers;
+      this.buildType = buildType;
+      this.flavor = flavor;
       this.packageName = packageName;
       this.abiSplit = abiSplit;
       this.resourceDir = resourceDir;
@@ -242,6 +272,8 @@ public @interface Config {
       this.sdk = other.sdk();
       this.manifest = other.manifest();
       this.qualifiers = other.qualifiers();
+      this.buildType = other.buildType();
+      this.flavor = other.flavor();
       this.packageName = other.packageName();
       this.abiSplit = other.abiSplit();
       this.resourceDir = other.resourceDir();
@@ -258,6 +290,8 @@ public @interface Config {
       this.sdk = pickSdk(baseConfig.sdk(), overlayConfig.sdk(), new int[0]);
       this.manifest = pick(baseConfig.manifest(), overlayConfig.manifest(), DEFAULT_MANIFEST);
       this.qualifiers = pick(baseConfig.qualifiers(), overlayConfig.qualifiers(), "");
+      this.buildType = pick(baseConfig.buildType(), overlayConfig.buildType(), "");
+      this.flavor = pick(baseConfig.flavor(), overlayConfig.flavor(), "");
       this.packageName = pick(baseConfig.packageName(), overlayConfig.packageName(), "");
       this.abiSplit = pick(baseConfig.abiSplit(), overlayConfig.abiSplit(), "");
       this.resourceDir = pick(baseConfig.resourceDir(), overlayConfig.resourceDir(), Config.DEFAULT_RES_FOLDER);
@@ -314,6 +348,16 @@ public @interface Config {
     @Override
     public String qualifiers() {
       return qualifiers;
+    }
+
+    @Override
+    public String buildType() {
+      return buildType;
+    }
+
+    @Override
+    public String flavor() {
+      return flavor;
     }
 
     @Override

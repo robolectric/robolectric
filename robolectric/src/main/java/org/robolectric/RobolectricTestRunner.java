@@ -293,19 +293,13 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   }
 
   public Config getConfig(Method method) {
-    Config config = new Config.Implementation(new int[0], Config.DEFAULT_MANIFEST, Config.DEFAULT_QUALIFIERS, Config.DEFAULT_PACKAGE_NAME,
-            Config.DEFAULT_ABI_SPLIT, Config.DEFAULT_RES_FOLDER, Config.DEFAULT_ASSET_FOLDER, Config.DEFAULT_BUILD_FOLDER, new Class[0],
-            new String[0], Application.class, new String[0], Void.class);
+    Config config = Config.Implementation.getDefaults();
 
     Config globalConfig = buildGlobalConfig();
-    if (globalConfig != null) {
-      config = new Config.Implementation(config, globalConfig);
-    }
+    config = applyOverrides(config, globalConfig);
 
     Config methodClassConfig = method.getDeclaringClass().getAnnotation(Config.class);
-    if (methodClassConfig != null) {
-      config = new Config.Implementation(config, methodClassConfig);
-    }
+    config = applyOverrides(config, methodClassConfig);
 
     ArrayList<Class> testClassHierarchy = new ArrayList<>();
     Class testClass = getTestClass().getJavaClass();
@@ -317,16 +311,27 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
     for (Class clazz : testClassHierarchy) {
       Config classConfig = (Config) clazz.getAnnotation(Config.class);
-      if (classConfig != null) {
-        config = new Config.Implementation(config, classConfig);
-      }
+      config = applyOverrides(config, classConfig);
     }
 
     Config methodConfig = method.getAnnotation(Config.class);
-    if (methodConfig != null) {
-      config = new Config.Implementation(config, methodConfig);
+    config = applyOverrides(config, methodConfig);
+
+    if (config.constants() != Config.DEFAULT_CONSTANTS) {
+      Config buildSystemConfig = applyOverrides(
+          Config.Implementation.getDefaults(),
+          new GradleConfigFactory(config).buildConfig()
+      );
+      config = applyOverrides(buildSystemConfig, config);
     }
 
+    return config;
+  }
+
+  private Config applyOverrides(Config config, Config overlayConfig) {
+    if (overlayConfig != null) {
+      config = new Config.Implementation(config, overlayConfig);
+    }
     return config;
   }
 
