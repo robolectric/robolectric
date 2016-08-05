@@ -67,7 +67,7 @@ public @interface Config {
    *
    * @return Reference to BuildConfig class.
    */
-  Class<?> constants() default DEFAULT_CONSTANTS;
+  Class<?> constants() default Void.class; // DEFAULT_CONSTANTS
 
   /**
    * The {@link android.app.Application} class to use in the test, this takes precedence over any application
