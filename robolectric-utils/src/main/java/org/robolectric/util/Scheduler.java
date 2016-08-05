@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.concurrent.TimeUnit;
 
 import static org.robolectric.util.Scheduler.IdleState.*;
 
@@ -29,7 +30,7 @@ public class Scheduler {
   /**
    * Describes the current state of a {@link Scheduler}.
    */
-  public static enum IdleState {
+  public enum IdleState {
     /**
      * The <tt>Scheduler</tt> will not automatically advance the clock nor execute any runnables.
      */
@@ -127,7 +128,7 @@ public class Scheduler {
    * @param runnable    Runnable to add.
    */
   public synchronized void post(Runnable runnable) {
-    postDelayed(runnable, 0);
+    postDelayed(runnable, 0, TimeUnit.MILLISECONDS);
   }
 
   /**
@@ -137,6 +138,14 @@ public class Scheduler {
    * @param delayMillis Delay in millis.
    */
   public synchronized void postDelayed(Runnable runnable, long delayMillis) {
+    postDelayed(runnable, delayMillis, TimeUnit.MILLISECONDS);
+  }
+
+  /**
+   * Add a runnable to the queue to be run after a delay.
+   */
+  public synchronized void postDelayed(Runnable runnable, long delay, TimeUnit unit) {
+    long delayMillis = unit.toMillis(delay);
     if ((idleState != CONSTANT_IDLE && (isPaused() || delayMillis > 0)) || Thread.currentThread() != associatedThread) {
       queueRunnableAndSort(runnable, currentTime + delayMillis);
     } else {
@@ -195,9 +204,19 @@ public class Scheduler {
    *
    * @param   interval  Time interval (in millis).
    * @return  True if a runnable was executed.
+   * @deprecated Use {@link #advanceBy(long, TimeUnit)}.
    */
   public synchronized boolean advanceBy(long interval) {
-    long endingTime = currentTime + interval;
+    return advanceBy(interval, TimeUnit.MILLISECONDS);
+  }
+
+  /**
+   * Run all runnables that are scheduled to run in the next time interval.
+   *
+   * @return  True if a runnable was executed.
+   */
+  public synchronized boolean advanceBy(long amount, TimeUnit unit) {
+    long endingTime = currentTime + unit.toMillis(amount);
     return advanceTo(endingTime);
   }
 
