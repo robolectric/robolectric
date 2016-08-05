@@ -17,7 +17,9 @@ allprojects {
 
         // Show all warnings except boot classpath
         configure(options) {
-            compilerArgs << "-Xlint:all"            // Turn on all warnings
+            if (System.properties["lint"] != null && System.properties["lint"] != "false") {
+                compilerArgs << "-Xlint:all"        // Turn on all warnings
+            }
             compilerArgs << "-Xlint:-options"       // Turn off "missing" bootclasspath warning
             encoding = "utf-8"                      // Make sure source encoding is UTF-8
             incremental = true
