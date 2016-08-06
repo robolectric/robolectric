@@ -511,7 +511,7 @@ public class ShadowResourcesTest {
             .put("viewportHeight", new AttrData("viewportHeight", "float", null))
             .build();
     ResourceLoader fakeResourceLoader = new FakeResourceLoader(attributesTypes,
-            new ResourceExtractor(new ResourcePath("android", null, null, Lollipop_R_snippet.class)));
+            new ResourceExtractor(new ResourcePath(Lollipop_R_snippet.class, "android", null, null)));
 
 
     RuntimeEnvironment.setAppResourceLoader(fakeResourceLoader);

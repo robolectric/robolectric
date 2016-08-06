@@ -56,7 +56,7 @@ public class ManifestFactoryTest {
   private List<String> stringify(Collection<ResourcePath> resourcePaths) {
     List<String> resourcePathBases = new ArrayList<>();
     for (ResourcePath resourcePath : resourcePaths) {
-      resourcePathBases.add(resourcePath.resourceBase.toString());
+      resourcePathBases.add(resourcePath.getResourceBase().toString());
     }
     return resourcePathBases;
   }

@@ -36,7 +36,7 @@ public class DrawableResourceLoader extends XmlLoader {
    * @param resourcePath Resource path.
    */
   public void findDrawableResources(ResourcePath resourcePath) {
-    FsFile[] files = resourcePath.resourceBase.listFiles();
+    FsFile[] files = resourcePath.getResourceBase().listFiles();
     if (files != null) {
       for (FsFile f : files) {
         if (f.isDirectory() && f.getName().startsWith("drawable")) {

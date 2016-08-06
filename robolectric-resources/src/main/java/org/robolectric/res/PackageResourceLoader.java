@@ -25,7 +25,7 @@ public class PackageResourceLoader extends XResourceLoader {
   }
 
   private void loadEverything() throws Exception {
-    Logger.debug("Loading resources for %s from %s...", resourcePath.getPackageName(), resourcePath.resourceBase);
+    Logger.debug("Loading resources for %s from %s...", resourcePath.getPackageName(), resourcePath.getResourceBase());
 
     DocumentLoader documentLoader = new DocumentLoader(resourcePath);
 

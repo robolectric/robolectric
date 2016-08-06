@@ -14,14 +14,13 @@ public class ResourceExtractor extends ResourceIndex {
 
   public ResourceExtractor(ResourcePath resourcePath) {
     packageName = resourcePath.getPackageName();
-    if (resourcePath.rClasses == null) {
-      return;
+
+    if (resourcePath.getRClass() != null) {
+      gatherResourceIdsAndNames(resourcePath.getRClass(), packageName);
     }
-    for (int i = 0; i < resourcePath.rClasses.length; i++) {
-      Class<?> rClass = resourcePath.rClasses[i];
-      if (rClass != null) {
-        gatherResourceIdsAndNames(rClass, packageName);
-      }
+
+    if (resourcePath.getInternalRClass() != null) {
+      gatherResourceIdsAndNames(resourcePath.getInternalRClass(), packageName);
     }
   }
 
