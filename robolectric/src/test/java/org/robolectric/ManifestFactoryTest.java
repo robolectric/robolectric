@@ -25,8 +25,8 @@ public class ManifestFactoryTest {
     properties.setProperty("manifest", resourceFile("TestAndroidManifest.xml").toString());
     properties.setProperty("libraries", "lib1");
     Config config = Config.Implementation.fromProperties(properties);
-    ManifestFactory manifestFactory = ManifestFactory.newManifestFactory(config);
-    AndroidManifest manifest = manifestFactory.create();
+    ManifestFactory manifestFactory = new RobolectricTestRunner(ManifestFactoryTest.class).getManifestFactory(config);
+    AndroidManifest manifest = manifestFactory.create(manifestFactory.identify(config));
 
     List<AndroidManifest> libraryManifests = manifest.getLibraryManifests();
     assertEquals(1, libraryManifests.size());
@@ -34,14 +34,14 @@ public class ManifestFactoryTest {
   }
 
   @Test
-  public void shouldLoadAllResourcesForExistingLibraries() {
+  public void shouldLoadAllResourcesForExistingLibraries() throws Exception {
     Properties properties = new Properties();
     properties.setProperty("manifest", resourceFile("TestAndroidManifest.xml").toString());
     properties.setProperty("resourceDir", "res");
     properties.setProperty("assetDir", "assets");
     Config config = Config.Implementation.fromProperties(properties);
-    ManifestFactory manifestFactory = ManifestFactory.newManifestFactory(config);
-    AndroidManifest appManifest = manifestFactory.create();
+    ManifestFactory manifestFactory = new RobolectricTestRunner(ManifestFactoryTest.class).getManifestFactory(config);
+    AndroidManifest appManifest = manifestFactory.create(manifestFactory.identify(config));
 
     // This intentionally loads from the non standard resources/project.properties
     List<String> resourcePaths = stringify(appManifest.getIncludedResourcePaths());

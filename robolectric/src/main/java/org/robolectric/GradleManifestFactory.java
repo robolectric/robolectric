@@ -1,22 +1,20 @@
 package org.robolectric;
 
 import org.robolectric.annotation.Config;
+import org.robolectric.internal.ManifestIdentifier;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.FileFsFile;
+import org.robolectric.res.FsFile;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
 
-/* package */ class GradleManifestFactory extends ManifestFactory {
-  private final Config config;
-
-  GradleManifestFactory(Config config) {
-    this.config = config;
-  }
-
+public class GradleManifestFactory extends ManifestFactory {
   @Override
-  public AndroidManifest create() {
+  public ManifestIdentifier identify(Config config) {
     if (config.constants() == Void.class) {
       Logger.error("Field 'constants' not specified in @Config annotation");
       Logger.error("This is required when using RobolectricGradleTestRunner!");
@@ -58,14 +56,24 @@ import java.io.File;
       manifest = FileFsFile.from(buildOutputDir, "bundles", flavor, abiSplit, type, DEFAULT_MANIFEST_NAME);
     }
 
-    Logger.debug("Robolectric assets directory: " + assets.getPath());
-    Logger.debug("   Robolectric res directory: " + res.getPath());
-    Logger.debug("   Robolectric manifest path: " + manifest.getPath());
+    return new ManifestIdentifier(manifest, res, assets, packageName, null);
+  }
+
+  @Override
+  public AndroidManifest create(ManifestIdentifier manifestIdentifier) {
+    FsFile manifestFile = manifestIdentifier.getManifestFile();
+    FsFile resDir = manifestIdentifier.getResDir();
+    FsFile assetDir = manifestIdentifier.getAssetDir();
+    final String packageName = manifestIdentifier.getPackageName();
+
+    Logger.debug("Robolectric assets directory: " + assetDir.getPath());
+    Logger.debug("   Robolectric res directory: " + resDir.getPath());
+    Logger.debug("   Robolectric manifest path: " + manifestFile.getPath());
     Logger.debug("    Robolectric package name: " + packageName);
-    return new AndroidManifest(manifest, res, assets, packageName) {
+    return new AndroidManifest(manifestFile, resDir, assetDir, packageName) {
       @Override
       public String getRClassName() throws Exception {
-        return config.constants().getPackage().getName().concat(".R");
+        return packageName.concat(".R");
       }
     };
   }
