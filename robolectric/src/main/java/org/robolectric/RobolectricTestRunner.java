@@ -2,7 +2,6 @@ package org.robolectric;
 
 import android.app.Application;
 import android.os.Build;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.TestOnly;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -23,11 +22,10 @@ import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.internal.bytecode.*;
-import org.robolectric.internal.dependency.CachedDependencyResolver;
-import org.robolectric.internal.dependency.DependencyResolver;
-import org.robolectric.internal.dependency.LocalDependencyResolver;
-import org.robolectric.internal.dependency.MavenDependencyResolver;
+import org.robolectric.internal.dependency.*;
 import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.res.Fs;
+import org.robolectric.res.FsFile;
 import org.robolectric.res.OverlayResourceLoader;
 import org.robolectric.res.PackageResourceLoader;
 import org.robolectric.res.ResourceExtractor;
@@ -38,23 +36,13 @@ import org.robolectric.util.Logger;
 import org.robolectric.util.Pair;
 import org.robolectric.util.ReflectionHelpers;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.annotation.Annotation;
+import java.io.*;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
+import java.net.URL;
 import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Installs a {@link org.robolectric.internal.bytecode.InstrumentingClassLoader} and
@@ -107,6 +95,18 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
           dependencyResolver = new CachedDependencyResolver(new MavenDependencyResolver(), cacheDir, 60 * 60 * 24 * 1000);
         } else {
           dependencyResolver = new MavenDependencyResolver();
+        }
+      }
+
+      URL buildPathPropertiesUrl = getClass().getClassLoader().getResource("robolectric-deps.properties");
+      if (buildPathPropertiesUrl != null) {
+        Logger.info("Using Robolectric classes from %s", buildPathPropertiesUrl.getPath());
+
+        FsFile propertiesFile = Fs.fileFromPath(buildPathPropertiesUrl.getFile());
+        try {
+          dependencyResolver = new PropertiesDependencyResolver(propertiesFile, dependencyResolver);
+        } catch (IOException e) {
+          throw new RuntimeException("couldn't read " + buildPathPropertiesUrl, e);
         }
       }
     }
@@ -295,7 +295,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
             Config.DEFAULT_ABI_SPLIT, Config.DEFAULT_RES_FOLDER, Config.DEFAULT_ASSET_FOLDER, Config.DEFAULT_BUILD_FOLDER, new Class[0],
             new String[0], Application.class, new String[0], Void.class);
 
-    Config globalConfig = Config.Implementation.fromProperties(getConfigProperties());
+    Config globalConfig = buildGlobalConfig();
     if (globalConfig != null) {
       config = new Config.Implementation(config, globalConfig);
     }
@@ -326,6 +326,20 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     }
 
     return config;
+  }
+
+  /**
+   * Generate the global {@link Config}. More specific test class and test method configurations
+   * will override values provided here.
+   *
+   * The default implementation uses properties provided by {@link #getConfigProperties()}.
+   *
+   * The returned object is likely to be reused for many tests.
+   *
+   * @return global {@link Config} object
+   */
+  protected Config buildGlobalConfig() {
+    return Config.Implementation.fromProperties(getConfigProperties());
   }
 
   protected Properties getConfigProperties() {

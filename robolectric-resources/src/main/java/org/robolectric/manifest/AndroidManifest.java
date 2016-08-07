@@ -1,7 +1,7 @@
 package org.robolectric.manifest;
 
 import android.app.Activity;
-import java.io.IOException;
+
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -11,12 +11,10 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import com.google.common.base.Preconditions;
-import org.robolectric.annotation.Config;
 import org.robolectric.res.FsFile;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.ResourcePath;
@@ -43,7 +41,7 @@ import static android.content.pm.ApplicationInfo.FLAG_VM_SAFE_MODE;
 
 /**
  * A wrapper for an Android App Manifest, which represents information about one's App to an Android system.
- * @see {@link https://developer.android.com/guide/topics/manifest/manifest-intro.html}
+ * @see <a href="https://developer.android.com/guide/topics/manifest/manifest-intro.html">Android App Manifest</a>
  */
 public class AndroidManifest {
   private final FsFile androidManifestFile;
@@ -124,41 +122,48 @@ public class AndroidManifest {
     if (androidManifestFile == null || manifestIsParsed) {
       return;
     }
-    DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-    try {
-      DocumentBuilder db = dbf.newDocumentBuilder();
-      InputStream inputStream = androidManifestFile.getInputStream();
-      Document manifestDocument = db.parse(inputStream);
-      inputStream.close();
 
-      if (packageName == null || packageName.isEmpty()) {
-        packageName = getTagAttributeText(manifestDocument, "manifest", "package");
+    if (androidManifestFile.exists()) {
+      try {
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+
+        DocumentBuilder db = dbf.newDocumentBuilder();
+        InputStream inputStream = androidManifestFile.getInputStream();
+        Document manifestDocument = db.parse(inputStream);
+        inputStream.close();
+
+        if (packageName == null || packageName.isEmpty()) {
+          packageName = getTagAttributeText(manifestDocument, "manifest", "package");
+        }
+        versionCode = getTagAttributeIntValue(manifestDocument, "manifest", "android:versionCode", 0);
+        versionName = getTagAttributeText(manifestDocument, "manifest", "android:versionName");
+        rClassName = packageName + ".R";
+        applicationName = getTagAttributeText(manifestDocument, "application", "android:name");
+        applicationLabel = getTagAttributeText(manifestDocument, "application", "android:label");
+        minSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:minSdkVersion");
+        targetSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:targetSdkVersion");
+        processName = getTagAttributeText(manifestDocument, "application", "android:process");
+        if (processName == null) {
+          processName = packageName;
+        }
+
+        themeRef = getTagAttributeText(manifestDocument, "application", "android:theme");
+        labelRef = getTagAttributeText(manifestDocument, "application", "android:label");
+
+        parseApplicationFlags(manifestDocument);
+        parseReceivers(manifestDocument);
+        parseServices(manifestDocument);
+        parseActivities(manifestDocument);
+        parseApplicationMetaData(manifestDocument);
+        parseContentProviders(manifestDocument);
+        parseUsedPermissions(manifestDocument);
+      } catch (Exception ignored) {
+        ignored.printStackTrace();
       }
-      versionCode = getTagAttributeIntValue(manifestDocument, "manifest", "android:versionCode", 0);
-      versionName = getTagAttributeText(manifestDocument, "manifest", "android:versionName");
-      rClassName = packageName + ".R";
-      applicationName = getTagAttributeText(manifestDocument, "application", "android:name");
-      applicationLabel = getTagAttributeText(manifestDocument, "application", "android:label");
-      minSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:minSdkVersion");
-      targetSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:targetSdkVersion");
-      processName = getTagAttributeText(manifestDocument, "application", "android:process");
-      if (processName == null) {
-        processName = packageName;
-      }
-
-      themeRef = getTagAttributeText(manifestDocument, "application", "android:theme");
-      labelRef = getTagAttributeText(manifestDocument, "application", "android:label");
-
-      parseApplicationFlags(manifestDocument);
-      parseReceivers(manifestDocument);
-      parseServices(manifestDocument);
-      parseActivities(manifestDocument);
-      parseApplicationMetaData(manifestDocument);
-      parseContentProviders(manifestDocument);
-      parseUsedPermissions(manifestDocument);
-    } catch (Exception ignored) {
-      ignored.printStackTrace();
+    } else {
+      System.err.println("No such manifest file: " + androidManifestFile);
     }
+
     manifestIsParsed = true;
   }
 
@@ -500,7 +505,7 @@ public class AndroidManifest {
   }
 
   public ResourcePath getResourcePath() {
-    return new ResourcePath(getPackageName(), resDirectory, assetsDirectory, getRClass());
+    return new ResourcePath(getRClass(), getPackageName(), resDirectory, assetsDirectory);
   }
 
   public List<ResourcePath> getIncludedResourcePaths() {
@@ -546,7 +551,7 @@ public class AndroidManifest {
 
   public List<ServiceData> getServices() {
     parseAndroidManifest();
-    return new ArrayList<ServiceData>(serviceDatas.values());
+    return new ArrayList<>(serviceDatas.values());
   }
 
   public ServiceData getServiceData(String serviceClassName) {

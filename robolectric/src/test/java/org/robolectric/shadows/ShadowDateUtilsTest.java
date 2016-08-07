@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.os.Build;
 import android.text.format.DateUtils;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
@@ -36,7 +37,7 @@ public class ShadowDateUtilsTest {
     final int currentYear = calendar.get(Calendar.YEAR);
     final long millisAtStartOfYear = getMillisAtStartOfYear();
 
-    String actual = DateUtils.formatDateTime(RuntimeEnvironment.application, millisAtStartOfYear, DateUtils.FORMAT_NUMERIC_DATE);
+    String actual = DateUtils.formatDateTime(RuntimeEnvironment.application, millisAtStartOfYear, DateUtils.FORMAT_SHOW_YEAR | DateUtils.FORMAT_NUMERIC_DATE);
     assertThat(actual).isEqualTo("1/1/" + currentYear);
   }
 

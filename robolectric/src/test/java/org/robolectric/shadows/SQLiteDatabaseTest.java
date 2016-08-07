@@ -15,6 +15,8 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import static android.database.sqlite.SQLiteDatabase.OPEN_READWRITE;
@@ -25,6 +27,7 @@ import static org.junit.Assert.fail;
 @RunWith(TestRunners.MultiApiWithDefaults.class)
 public class SQLiteDatabaseTest {
     private SQLiteDatabase database;
+    private List<SQLiteDatabase> openDatabases = new ArrayList<>();
     private static final String ANY_VALID_SQL = "SELECT 1";
 
     @Before
@@ -32,7 +35,7 @@ public class SQLiteDatabaseTest {
         final File databasePath = RuntimeEnvironment.application.getDatabasePath("database.db");
         databasePath.getParentFile().mkdirs();
 
-        database = SQLiteDatabase.openOrCreateDatabase(databasePath.getPath(), null);
+        database = openOrCreateDatabase(databasePath);
         database.execSQL("CREATE TABLE table_name (\n" +
                 "  id INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
                 "  first_column VARCHAR(255),\n" +
@@ -84,7 +87,9 @@ public class SQLiteDatabaseTest {
 
     @After
     public void tearDown() throws Exception {
-        database.close();
+        for (SQLiteDatabase openDatabase : openDatabases) {
+            openDatabase.close();
+        }
     }
 
     @Test
@@ -638,8 +643,8 @@ public class SQLiteDatabaseTest {
 
     @Test
     public void testTwoConcurrentDbConnections() throws Exception {
-        SQLiteDatabase db1 = SQLiteDatabase.openOrCreateDatabase(RuntimeEnvironment.application.getDatabasePath("db1").getPath(), null);
-        SQLiteDatabase db2 = SQLiteDatabase.openOrCreateDatabase(RuntimeEnvironment.application.getDatabasePath("db2").getPath(), null);
+        SQLiteDatabase db1 = openOrCreateDatabase("db1");
+        SQLiteDatabase db2 = openOrCreateDatabase("db2");
 
         db1.execSQL("CREATE TABLE foo(id INTEGER PRIMARY KEY AUTOINCREMENT, data TEXT);");
         db2.execSQL("CREATE TABLE bar(id INTEGER PRIMARY KEY AUTOINCREMENT, data TEXT);");
@@ -668,7 +673,7 @@ public class SQLiteDatabaseTest {
 
     @Test(expected = SQLiteException.class)
     public void testQueryThrowsSQLiteException() throws Exception {
-        SQLiteDatabase db1 = SQLiteDatabase.openOrCreateDatabase(RuntimeEnvironment.application.getDatabasePath("db1").getPath(), null);
+        SQLiteDatabase db1 = openOrCreateDatabase("db1");
         db1.query("FOO", null, null, null, null, null, null);
     }
 
@@ -679,13 +684,13 @@ public class SQLiteDatabaseTest {
 
     @Test
     public void testCreateAndDropTable() throws Exception {
-        SQLiteDatabase db = SQLiteDatabase.openOrCreateDatabase(RuntimeEnvironment.application.getDatabasePath("db1").getPath(), null);
+        SQLiteDatabase db = openOrCreateDatabase("db1");
         db.execSQL("CREATE TABLE foo(id INTEGER PRIMARY KEY AUTOINCREMENT, data TEXT);");
         Cursor c = db.query("FOO", null, null, null, null, null, null);
         assertThat(c).isNotNull();
         c.close();
         db.close();
-        db = SQLiteDatabase.openOrCreateDatabase(RuntimeEnvironment.application.getDatabasePath("db1").getPath(), null);
+        db = openOrCreateDatabase("db1");
         db.execSQL("DROP TABLE IF EXISTS foo;");
         try {
             c = db.query("FOO", null, null, null, null, null, null);
@@ -698,13 +703,13 @@ public class SQLiteDatabaseTest {
 
     @Test
     public void testCreateAndAlterTable() throws Exception {
-        SQLiteDatabase db = SQLiteDatabase.openOrCreateDatabase(RuntimeEnvironment.application.getDatabasePath("db1").getPath(), null);
+        SQLiteDatabase db = openOrCreateDatabase("db1");
         db.execSQL("CREATE TABLE foo(id INTEGER PRIMARY KEY AUTOINCREMENT, data TEXT);");
         Cursor c = db.query("FOO", null, null, null, null, null, null);
         assertThat(c).isNotNull();
         c.close();
         db.close();
-        db = SQLiteDatabase.openOrCreateDatabase(RuntimeEnvironment.application.getDatabasePath("db1").getPath(), null);
+        db = openOrCreateDatabase("db1");
         db.execSQL("ALTER TABLE foo ADD COLUMN more TEXT NULL;");
         c = db.query("FOO", null, null, null, null, null, null);
         assertThat(c).isNotNull();
@@ -715,14 +720,14 @@ public class SQLiteDatabaseTest {
 
     @Test
     public void testDataInMemoryDatabaseIsPersistentAfterClose() throws Exception {
-        SQLiteDatabase db1 = SQLiteDatabase.openOrCreateDatabase(RuntimeEnvironment.application.getDatabasePath("db1").getPath(), null);
+        SQLiteDatabase db1 = openOrCreateDatabase("db1");
         db1.execSQL("CREATE TABLE foo(id INTEGER PRIMARY KEY AUTOINCREMENT, data TEXT);");
         ContentValues d1 = new ContentValues();
         d1.put("data", "d1");
         db1.insert("foo", null, d1);
         db1.close();
 
-        SQLiteDatabase db2 = SQLiteDatabase.openOrCreateDatabase(RuntimeEnvironment.application.getDatabasePath("db1").getPath(), null);
+        SQLiteDatabase db2 = openOrCreateDatabase("db1");
         Cursor c = db2.rawQuery("select * from foo", null);
         assertThat(c).isNotNull();
         assertThat(c.getCount()).isEqualTo(1);
@@ -909,5 +914,17 @@ public class SQLiteDatabaseTest {
         assertThat(data.getCount()).isEqualTo(1);
         data.moveToFirst();
         assertThat(data.getBlob(0)).isEqualTo(values.getAsString("first_column").getBytes());
+    }
+
+    /////////////////////
+
+    private SQLiteDatabase openOrCreateDatabase(String name) {
+        return openOrCreateDatabase(RuntimeEnvironment.application.getDatabasePath(name));
+    }
+
+    private SQLiteDatabase openOrCreateDatabase(File databasePath) {
+        SQLiteDatabase database = SQLiteDatabase.openOrCreateDatabase(databasePath, null);
+        openDatabases.add(database);
+        return database;
     }
 }

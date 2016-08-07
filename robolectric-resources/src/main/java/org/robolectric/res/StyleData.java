@@ -9,7 +9,7 @@ public class StyleData implements Style {
   private final String packageName;
   private final String name;
   private final String parent;
-  private final Map<ResName, Attribute> items = new LinkedHashMap<>();
+  private final Map<ResName, AttributeResource> items = new LinkedHashMap<>();
 
   public StyleData(String packageName, String name, String parent) {
     this.packageName = packageName;
@@ -25,22 +25,13 @@ public class StyleData implements Style {
     return parent;
   }
 
-  public void add(ResName attrName, Attribute attribute) {
+  public void add(ResName attrName, AttributeResource attribute) {
     attrName.mustBe("attr");
     items.put(attrName, attribute);
   }
 
-  @Override public Attribute getAttrValue(ResName resName) {
-    Attribute attribute = items.get(resName);
-
-    // yuck. hack to work around library package remapping
-    if (attribute == null && !"android".equals(resName.packageName)) {
-      attribute = items.get(resName.withPackageName(packageName));
-      if (attribute != null && (!"android".equals(attribute.contextPackageName))) {
-        attribute = new Attribute(resName, attribute.value, resName.packageName);
-      }
-    }
-    return attribute;
+  @Override public AttributeResource getAttrValue(ResName resName) {
+    return items.get(resName);
   }
 
   @Override

@@ -40,7 +40,6 @@ import static org.robolectric.internal.Shadow.invokeConstructor;
  */
 @Implements(View.class)
 public class ShadowView {
-  public static final String ANDROID_NS = "http://schemas.android.com/apk/res/android";
 
   @RealObject
   protected View realView;

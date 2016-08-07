@@ -255,6 +255,10 @@ public final class R {
     public static final int stateFoo = 0x10a0c;
     public static final int someLayoutOne = 0x10a0d;
     public static final int someLayoutTwo = 0x10a0e;
+    public static final int message = 0x10a0f;
+    public static final int sugarinessPercent = 0x10a10;
+    public static final int numColumns = 0x10a11;
+    public static final int sugaryScale = 0x10a12;
   }
 
   public static final class menu {
@@ -335,12 +339,15 @@ public final class R {
     public static final int MyCustomView = 0x11003;
     public static final int Widget_Robolectric_Button = 0x11004;
     public static final int Widget_AnotherTheme_Button = 0x11005;
-    public static final int Sized = 0x11006;
-    public static final int Gastropod = 0x11007;
-    public static final int Theme_ThirdTheme = 0x11008;
-    public static final int MyBlackTheme = 0x11009;
-    public static final int MyBlueTheme = 0x1100a;
-    public static final int IndirectButtonStyle = 0x1100b;
+    public static final int Widget_AnotherTheme_Button_Blarf = 0x11006;
+    public static final int Sized = 0x11007;
+    public static final int Gastropod = 0x11008;
+    public static final int Theme_ThirdTheme = 0x11009;
+    public static final int Theme_MyTheme = 0x1100a;
+    public static final int MyBlackTheme = 0x1100b;
+    public static final int MyBlueTheme = 0x1100c;
+
+    public static final int IndirectButtonStyle = 0x1100d;
   }
 
   public static final class fraction {

@@ -27,12 +27,12 @@ public class RawResourceLoaderTest {
   @Test
   public void shouldReturnRawResourcesWithExtensions() throws Exception {
     FsFile f = rawResourceFiles.get(resourceIndex.getResName(R.raw.raw_resource), "");
-    assertThat(f).isEqualTo(TEST_RESOURCE_PATH.resourceBase.join("raw").join("raw_resource.txt"));
+    assertThat(f).isEqualTo(TEST_RESOURCE_PATH.getResourceBase().join("raw").join("raw_resource.txt"));
   }
 
   @Test
   public void shouldReturnRawResourcesWithoutExtensions() throws Exception {
     FsFile f = rawResourceFiles.get(resourceIndex.getResName(R.raw.raw_no_ext), "");
-    assertThat(f).isEqualTo(TEST_RESOURCE_PATH.resourceBase.join("raw").join("raw_no_ext"));
+    assertThat(f).isEqualTo(TEST_RESOURCE_PATH.getResourceBase().join("raw").join("raw_no_ext"));
   }
 }

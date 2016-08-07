@@ -1,0 +1,18 @@
+def androidApi = hasProperty("androidApi") ? ext.androidApi.toInteger() : AndroidSdk.latestVersion
+def robolectricVersion = AndroidSdk.versions[androidApi]
+logger.info "Android API: $androidApi — $robolectricVersion"
+
+compileJava.onlyIf { false }
+
+dependencies {
+    // Project dependencies
+    compile project(":robolectric-annotations")
+    compile project(":robolectric-resources")
+    compile project(":robolectric-utils")
+
+    // Compile dependencies
+    provided "com.intellij:annotations:12.0"
+    compile "com.almworks.sqlite4java:sqlite4java:0.282"
+    provided("org.robolectric:android-all:$robolectricVersion") { force = true }
+    compile "com.ibm.icu:icu4j:53.1"
+}
