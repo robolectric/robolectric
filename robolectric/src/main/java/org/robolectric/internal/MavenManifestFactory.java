@@ -1,7 +1,6 @@
-package org.robolectric;
+package org.robolectric.internal;
 
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.SdkConfig;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
@@ -9,26 +8,14 @@ import org.robolectric.util.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
-/* package */ class MavenManifestFactory extends ManifestFactory {
-  private static final Map<ManifestIdentifier, AndroidManifest> appManifestsByFile = new HashMap<>();
-
-  private final Config config;
-
-  MavenManifestFactory(Config config) {
-    this.config = config;
-  }
+public class MavenManifestFactory implements ManifestFactory {
 
   @Override
-  public AndroidManifest create() {
+  public ManifestIdentifier identify(Config config) {
     if (config.manifest().equals(Config.NONE)) {
-      return createDummyManifest();
+      return new ManifestIdentifier(null, null, null, null, null);
     }
 
     FsFile manifestFile = getBaseDir().join(config.manifest().equals(Config.DEFAULT_MANIFEST)
@@ -45,24 +32,44 @@ import java.util.Properties;
       }
     }
 
-    ManifestIdentifier identifier = new ManifestIdentifier(manifestFile, resDir, assetDir, config.packageName(), libraryDirs);
-    synchronized (appManifestsByFile) {
-      AndroidManifest appManifest;
-      appManifest = appManifestsByFile.get(identifier);
-      if (appManifest == null) {
-        appManifest = createAppManifest(manifestFile, resDir, assetDir, config.packageName());
-        appManifestsByFile.put(identifier, appManifest);
-      }
-      // The AppManifest may STILL be null if no file was found.
-      if (appManifest != null) {
-        appManifest.setLibraryManifests(createLibraryManifests(appManifest, libraryDirs));
-      }
-      return appManifest;
-    }
+    return new ManifestIdentifier(manifestFile, resDir, assetDir, config.packageName(), libraryDirs);
   }
 
-  private AndroidManifest createDummyManifest() {
-    return new AndroidManifest(null, null, null, !config.packageName().isEmpty() ? config.packageName() : "org.robolectric.default") {
+  @Override
+  public AndroidManifest create(ManifestIdentifier manifestIdentifier) {
+    AndroidManifest appManifest;
+    FsFile manifestFile = manifestIdentifier.getManifestFile();
+    if (manifestFile == null) {
+      appManifest = createDummyManifest(manifestIdentifier.getPackageName());
+    } else if (!manifestFile.exists()) {
+      System.out.println("WARNING: No manifest file found at " + manifestFile.getPath() + ".");
+      System.out.println("Falling back to the Android OS resources only.");
+      System.out.println("To remove this warning, annotate your test class with @Config(manifest=Config.NONE).");
+      appManifest = createDummyManifest(manifestIdentifier.getPackageName());
+    } else {
+      FsFile resDir = manifestIdentifier.getResDir();
+      FsFile assetDir = manifestIdentifier.getAssetDir();
+      String packageName = manifestIdentifier.getPackageName();
+
+      Logger.debug("Robolectric assets directory: " + assetDir.getPath());
+      Logger.debug("   Robolectric res directory: " + resDir.getPath());
+      Logger.debug("   Robolectric manifest path: " + manifestFile.getPath());
+      Logger.debug("    Robolectric package name: " + packageName);
+
+      appManifest = new AndroidManifest(manifestFile, resDir, assetDir, packageName);
+    }
+
+    List<FsFile> libraryDirs = manifestIdentifier.getLibraryDirs();
+    appManifest.setLibraryManifests(createLibraryManifests(appManifest, libraryDirs));
+    return appManifest;
+  }
+
+  private AndroidManifest createDummyManifest(String packageName) {
+    if (packageName == null || packageName.equals("")) {
+      packageName = "org.robolectric.default";
+    }
+
+    return new AndroidManifest(null, null, null, packageName) {
       @Override
       public int getTargetSdkVersion() {
         return SdkConfig.FALLBACK_SDK_VERSION;
@@ -72,21 +79,6 @@ import java.util.Properties;
 
   private static FsFile getBaseDir() {
     return Fs.currentDirectory();
-  }
-
-  private AndroidManifest createAppManifest(FsFile manifestFile, FsFile resDir, FsFile assetDir, String packageName) {
-    if (!manifestFile.exists()) {
-      System.out.print("WARNING: No manifest file found at " + manifestFile.getPath() + ".");
-      System.out.println("Falling back to the Android OS resources only.");
-      System.out.println("To remove this warning, annotate your test class with @Config(manifest=Config.NONE).");
-      return createDummyManifest();
-    }
-
-    Logger.debug("Robolectric assets directory: " + assetDir.getPath());
-    Logger.debug("   Robolectric res directory: " + resDir.getPath());
-    Logger.debug("   Robolectric manifest path: " + manifestFile.getPath());
-    Logger.debug("    Robolectric package name: " + packageName);
-    return new AndroidManifest(manifestFile, resDir, assetDir, packageName);
   }
 
   /**
@@ -175,46 +167,5 @@ import java.util.Properties;
       }
     }
     return libraryBaseDirs;
-  }
-
-  private static class ManifestIdentifier {
-    private final FsFile manifestFile;
-    private final FsFile resDir;
-    private final FsFile assetDir;
-    private final String packageName;
-    private final List<FsFile> libraryDirs;
-
-    ManifestIdentifier(FsFile manifestFile, FsFile resDir, FsFile assetDir, String packageName,
-                       List<FsFile> libraryDirs) {
-      this.manifestFile = manifestFile;
-      this.resDir = resDir;
-      this.assetDir = assetDir;
-      this.packageName = packageName;
-      this.libraryDirs = libraryDirs != null ? libraryDirs : Collections.<FsFile>emptyList();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
-
-      ManifestIdentifier that = (ManifestIdentifier) o;
-
-      return assetDir.equals(that.assetDir)
-          && libraryDirs.equals(that.libraryDirs)
-          && manifestFile.equals(that.manifestFile)
-          && resDir.equals(that.resDir)
-          && ((packageName == null && that.packageName == null) || (packageName != null && packageName.equals(that.packageName)));
-    }
-
-    @Override
-    public int hashCode() {
-      int result = manifestFile.hashCode();
-      result = 31 * result + resDir.hashCode();
-      result = 31 * result + assetDir.hashCode();
-      result = 31 * result + (packageName == null ? 0 : packageName.hashCode());
-      result = 31 * result + libraryDirs.hashCode();
-      return result;
-    }
   }
 }

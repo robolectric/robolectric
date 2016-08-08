@@ -1,25 +1,20 @@
-package org.robolectric;
+package org.robolectric.internal;
 
 import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.FileFsFile;
+import org.robolectric.res.FsFile;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
 
 import java.io.File;
 
-/* package */ class GradleManifestFactory extends ManifestFactory {
-  private final Config config;
-
-  GradleManifestFactory(Config config) {
-    this.config = config;
-  }
-
+public class GradleManifestFactory implements ManifestFactory {
   @Override
-  public AndroidManifest create() {
+  public ManifestIdentifier identify(Config config) {
     if (config.constants() == Void.class) {
       Logger.error("Field 'constants' not specified in @Config annotation");
-      Logger.error("This is required when using RobolectricGradleTestRunner!");
+      Logger.error("This is required when using Robolectric with Gradle!");
       throw new RuntimeException("No 'constants' field in @Config annotation!");
     }
 
@@ -27,7 +22,9 @@ import java.io.File;
     final String type = getType(config);
     final String flavor = getFlavor(config);
     final String abiSplit = getAbiSplit(config);
-    final String packageName = getPackageName(config);
+    final String packageName = config.packageName().isEmpty()
+        ? config.constants().getPackage().getName()
+        : config.packageName();
 
     final FileFsFile res;
     final FileFsFile assets;
@@ -58,16 +55,21 @@ import java.io.File;
       manifest = FileFsFile.from(buildOutputDir, "bundles", flavor, abiSplit, type, DEFAULT_MANIFEST_NAME);
     }
 
-    Logger.debug("Robolectric assets directory: " + assets.getPath());
-    Logger.debug("   Robolectric res directory: " + res.getPath());
-    Logger.debug("   Robolectric manifest path: " + manifest.getPath());
+    return new ManifestIdentifier(manifest, res, assets, packageName, null);
+  }
+
+  @Override
+  public AndroidManifest create(ManifestIdentifier manifestIdentifier) {
+    FsFile manifestFile = manifestIdentifier.getManifestFile();
+    FsFile resDir = manifestIdentifier.getResDir();
+    FsFile assetDir = manifestIdentifier.getAssetDir();
+    final String packageName = manifestIdentifier.getPackageName();
+
+    Logger.debug("Robolectric assets directory: " + assetDir.getPath());
+    Logger.debug("   Robolectric res directory: " + resDir.getPath());
+    Logger.debug("   Robolectric manifest path: " + manifestFile.getPath());
     Logger.debug("    Robolectric package name: " + packageName);
-    return new AndroidManifest(manifest, res, assets, packageName) {
-      @Override
-      public String getRClassName() throws Exception {
-        return config.constants().getPackage().getName().concat(".R");
-      }
-    };
+    return new AndroidManifest(manifestFile, resDir, assetDir, packageName);
   }
 
   private static String getBuildOutputDir(Config config) {
@@ -93,19 +95,6 @@ import java.io.File;
   private static String getAbiSplit(Config config) {
     try {
       return config.abiSplit();
-    } catch (Throwable e) {
-      return null;
-    }
-  }
-
-  private static String getPackageName(Config config) {
-    try {
-      final String packageName = config.packageName();
-      if (packageName != null && !packageName.isEmpty()) {
-        return packageName;
-      } else {
-        return ReflectionHelpers.getStaticField(config.constants(), "APPLICATION_ID");
-      }
     } catch (Throwable e) {
       return null;
     }
