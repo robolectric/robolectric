@@ -1,7 +1,7 @@
 package org.robolectric.manifest;
 
 import android.app.Activity;
-import java.io.IOException;
+
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -11,12 +11,10 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import com.google.common.base.Preconditions;
-import org.robolectric.annotation.Config;
 import org.robolectric.res.FsFile;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.ResourcePath;
@@ -507,7 +505,7 @@ public class AndroidManifest {
   }
 
   public ResourcePath getResourcePath() {
-    return new ResourcePath(getPackageName(), resDirectory, assetsDirectory, getRClass());
+    return new ResourcePath(getRClass(), getPackageName(), resDirectory, assetsDirectory);
   }
 
   public List<ResourcePath> getIncludedResourcePaths() {
