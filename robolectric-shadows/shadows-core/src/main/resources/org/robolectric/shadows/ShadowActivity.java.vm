@@ -70,7 +70,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   private boolean mIsTaskRoot = true;
   private Menu optionsMenu;
   private ComponentName callingActivity;
-  private int changingConfiguration;
 
   public void __constructor__() {
     invokeConstructor(Activity.class, realActivity);
@@ -526,37 +525,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     setLastNonConfigurationInstance(nonConfigInstance);
 
     invoker.call("onDestroy").withNothing();
-    invoker.call("onCreate", Bundle.class).with(outState);
-    invoker.call("onStart").withNothing();
-    invoker.call("onRestoreInstanceState", Bundle.class).with(outState);
-    invoker.call("onResume").withNothing();
-  }
-  
-  @Implementation
-  public int getChangingConfigurations() {
-    return changingConfiguration;
-  }
-  
-  @Implementation
-  public boolean isChangingConfigurations() {
-    return changingConfiguration != 0;
-  }
-  
-  public void recreateWithConfigChanges(int changedConfigBits) {
-    Bundle outState = new Bundle();
-    final ActivityInvoker invoker = new ActivityInvoker();
-
-    changingConfiguration = changedConfigBits;
-    invoker.call("onSaveInstanceState", Bundle.class).with(outState);
-    invoker.call("onPause").withNothing();
-    invoker.call("onStop").withNothing();
-
-    Object nonConfigInstance = invoker.call("onRetainNonConfigurationInstance").withNothing();
-    setLastNonConfigurationInstance(nonConfigInstance);
-
-    invoker.call("onDestroy").withNothing();
-    changingConfiguration = 0;
-    
     invoker.call("onCreate", Bundle.class).with(outState);
     invoker.call("onStart").withNothing();
     invoker.call("onRestoreInstanceState", Bundle.class).with(outState);

@@ -1,5 +1,6 @@
 package org.robolectric.util;
 
+import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.ShadowsAdapter;
@@ -242,14 +243,20 @@ public class ActivityController<T extends Activity> extends ComponentController<
         .visible();
   }
   
-  public ActivityController<T> configurationChange(final Application application, final Configuration newConfiguration) {
-    final T activity = get();
-    final Configuration currentConfig = activity.getResources().getConfiguration();
+  /**
+   * Performs a configuration change on the Activity.
+   *  
+   * @param newConfiguration The new configuration to be set.
+   * @return May return a new ActivityController for a new Activity instance if the configuration change
+   * 		is not handled by the activity itself, otherwise, itself.
+   */
+  public ActivityController<T> configurationChange(final Configuration newConfiguration) {
+    final Configuration currentConfig = component.getResources().getConfiguration();
     final int changedBits = currentConfig.diff(newConfiguration);
     currentConfig.setTo(newConfiguration);
     
     // Can the activity handle itself ALL configuration changes?
-    if ((getActivityInfo(application).configChanges & changedBits) == changedBits) {
+    if ((getActivityInfo(component.getApplication()).configChanges & changedBits) == changedBits) {
       shadowMainLooper.runPaused(new Runnable() {
         @Override
         public void run() {
@@ -257,10 +264,49 @@ public class ActivityController<T extends Activity> extends ComponentController<
             ClassParameter.from(Configuration.class, newConfiguration));
         }
       });
+
+      return this;
     } else {
-      Shadows.shadowOf(activity).recreateWithConfigChanges(changedBits);
+    	@SuppressWarnings("unchecked")
+		final ActivityController<T> recreatedActivityController = Robolectric.buildActivity(
+				(Class<T>) component.getClass(), component.getIntent());
+    	
+    	shadowMainLooper.runPaused(new Runnable() {
+            @Override
+            public void run() {
+            	// Set flags
+		    	ReflectionHelpers.setField(Activity.class, component, "mChangingConfigurations", true);
+		    	ReflectionHelpers.setField(Activity.class, component, "mConfigChangeFlags", changedBits);
+		    	
+		    	// Perform activity destruction
+		    	final Bundle outState = new Bundle();
+		
+		    	ReflectionHelpers.callInstanceMethod(Activity.class, component, "onSaveInstanceState",
+		    			ClassParameter.from(Bundle.class, outState));
+		    	ReflectionHelpers.callInstanceMethod(Activity.class, component, "onPause");
+		    	ReflectionHelpers.callInstanceMethod(Activity.class, component, "onStop");
+		
+		    	final Object nonConfigInstance = ReflectionHelpers.callInstanceMethod(
+		    			Activity.class, component, "onRetainNonConfigurationInstance");
+		
+		    	ReflectionHelpers.callInstanceMethod(Activity.class, component, "onDestroy");
+
+		    	// Set saved non config instance
+		    	Shadows.shadowOf(recreatedActivityController.component).setLastNonConfigurationInstance(nonConfigInstance);
+		    	
+		        // Create lifecycle
+		    	ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivityController.component,
+		    			"onCreate", ClassParameter.from(Bundle.class, outState));
+		    	ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivityController.component,
+		    			"onStart");
+		    	ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivityController.component,
+		    			"onRestoreInstanceState", ClassParameter.from(Bundle.class, outState));
+		    	ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivityController.component,
+		    			"onResume");
+            }
+    	});
+    	
+    	return recreatedActivityController;
     }
-    
-    return this;
   }
 }

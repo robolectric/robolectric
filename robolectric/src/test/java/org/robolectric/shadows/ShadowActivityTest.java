@@ -865,28 +865,6 @@ public class ShadowActivityTest {
 
     assertEquals(componentName, activity.getCallingActivity());
   }
-  
-  @Test
-  public void recreateWithConfigChangesGoesThroughFullLifeCycle() throws Exception {
-	ConfigChangingActivity activity = buildActivity(ConfigChangingActivity.class).get();
-    shadowOf(activity).recreateWithConfigChanges(ActivityInfo.CONFIG_LOCALE);
-
-    activity.transcript.assertEventsSoFar(
-        "onSaveInstanceState",
-        "onPause",
-        "onStop",
-        "onRetainNonConfigurationInstance",
-        "onDestroy",
-        "onCreate",
-        "onStart",
-        "onRestoreInstanceState",
-        "onResume"
-    );
-
-    Integer storedValue = (Integer) activity.getLastNonConfigurationInstance();
-    assertEquals(5, storedValue.intValue());
-    assertEquals(ActivityInfo.CONFIG_LOCALE, activity.changingConfigurations);
-  }
 
   /////////////////////////////
 
@@ -1057,46 +1035,6 @@ public class ShadowActivityTest {
     @Override
     public void onActivityDestroyed(Activity activity) {
       transcript.add("onActivityDestroyed");
-    }
-  }
-  
-  private static class ConfigChangingActivity extends TestActivity {
-    public int changingConfigurations;
-  
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-      assertTrue(isChangingConfigurations());
-      assertTrue(getChangingConfigurations() != 0);
-      changingConfigurations = getChangingConfigurations();
-      super.onSaveInstanceState(outState);
-    }
-  
-    @Override
-    public void onPause() {
-      assertTrue(isChangingConfigurations());
-      assertTrue(getChangingConfigurations() != 0);
-      super.onPause();
-    }
-    
-    @Override
-    public void onStop() {
-      assertTrue(isChangingConfigurations());
-      assertTrue(getChangingConfigurations() != 0);
-      super.onStop();
-    }
-    
-    @Override
-    public void onDestroy() {
-      assertTrue(isChangingConfigurations());
-      assertTrue(getChangingConfigurations() != 0);
-      super.onDestroy();
-    }
-    
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-    	assertFalse(isChangingConfigurations());
-    	assertEquals(0, getChangingConfigurations());
-    	super.onCreate(savedInstanceState);
     }
   }
 }

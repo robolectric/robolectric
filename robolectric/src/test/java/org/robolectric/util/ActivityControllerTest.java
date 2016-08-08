@@ -2,6 +2,7 @@ package org.robolectric.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
 import static org.robolectric.Shadows.shadowOf;
 
 import org.junit.Before;
@@ -226,10 +227,11 @@ public class ActivityControllerTest {
   public void configurationChange_callsLifecycleMethodsAndAppliesConfig() {
     Configuration config = new Configuration(RuntimeEnvironment.application.getResources().getConfiguration());
     final float newFontScale = config.fontScale *= 2;
-    controller.configurationChange(RuntimeEnvironment.application, config);
+    
+    ActivityController<MyActivity> returnedController = controller.configurationChange(config);
     transcript.assertEventsInclude("onPause", "onStop", "onDestroy", "onCreate", "onStart", "onResume");
     assertEquals("New fontScale is not set on the activity's configuration",
-      newFontScale, controller.get().getResources().getConfiguration().fontScale, 0.001);
+      newFontScale, returnedController.get().getResources().getConfiguration().fontScale, 0.001);
   }
   
   @Test
@@ -237,11 +239,12 @@ public class ActivityControllerTest {
     Configuration config = new Configuration(RuntimeEnvironment.application.getResources().getConfiguration());
     final float newFontScale = config.fontScale *= 2;
     
-    ActivityController<ConfigAwareActivity> configCntroller = Robolectric.buildActivity(ConfigAwareActivity.class);
-    configCntroller.configurationChange(RuntimeEnvironment.application, config);
+    ActivityController<ConfigAwareActivity> configController = Robolectric.buildActivity(ConfigAwareActivity.class);
+    ActivityController<ConfigAwareActivity> returnedController = configController.configurationChange(config);
     transcript.assertEventsInclude("onConfigurationChanged");
+    assertSame(configController, returnedController);
     assertEquals("New fontScale is not set on the activity's configuration",
-      newFontScale, configCntroller.get().getResources().getConfiguration().fontScale, 0.001);
+      newFontScale, configController.get().getResources().getConfiguration().fontScale, 0.001);
   }
   
   @Test
@@ -251,12 +254,12 @@ public class ActivityControllerTest {
     final int newOrientation = config.orientation = (config.orientation + 1) % 3;
     
     ActivityController<ConfigAwareActivity> configCntroller = Robolectric.buildActivity(ConfigAwareActivity.class);
-    configCntroller.configurationChange(RuntimeEnvironment.application, config);
+    ActivityController<ConfigAwareActivity> returnedController = configCntroller.configurationChange(config);
     transcript.assertEventsInclude("onPause", "onStop", "onDestroy", "onCreate", "onStart", "onResume");
     assertEquals("New fontScale is not set on the activity's configuration",
-      newFontScale, configCntroller.get().getResources().getConfiguration().fontScale, 0.001);
+      newFontScale, returnedController.get().getResources().getConfiguration().fontScale, 0.001);
     assertEquals("New orientation is not set on the activity's configuration",
-    		newOrientation, configCntroller.get().getResources().getConfiguration().orientation);
+    		newOrientation, returnedController.get().getResources().getConfiguration().orientation);
   }
 
   public static class MyActivity extends Activity {
