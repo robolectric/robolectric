@@ -2,7 +2,6 @@ package org.robolectric.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
 import static org.robolectric.Shadows.shadowOf;
 
 import org.junit.Before;
@@ -230,8 +229,7 @@ public class ActivityControllerTest {
     
     ActivityController<MyActivity> returnedController = controller.configurationChange(config);
     transcript.assertEventsInclude("onPause", "onStop", "onDestroy", "onCreate", "onStart", "onResume");
-    assertEquals("New fontScale is not set on the activity's configuration",
-      newFontScale, returnedController.get().getResources().getConfiguration().fontScale, 0.001);
+    assertThat(returnedController.get().getResources().getConfiguration().fontScale).isEqualTo(newFontScale);
   }
   
   @Test
@@ -242,9 +240,8 @@ public class ActivityControllerTest {
     ActivityController<ConfigAwareActivity> configController = Robolectric.buildActivity(ConfigAwareActivity.class);
     ActivityController<ConfigAwareActivity> returnedController = configController.configurationChange(config);
     transcript.assertEventsInclude("onConfigurationChanged");
-    assertSame(configController, returnedController);
-    assertEquals("New fontScale is not set on the activity's configuration",
-      newFontScale, configController.get().getResources().getConfiguration().fontScale, 0.001);
+    assertThat(returnedController).isSameAs(configController);
+    assertThat(returnedController.get().getResources().getConfiguration().fontScale).isEqualTo(newFontScale);
   }
   
   @Test
@@ -256,10 +253,8 @@ public class ActivityControllerTest {
     ActivityController<ConfigAwareActivity> configCntroller = Robolectric.buildActivity(ConfigAwareActivity.class);
     ActivityController<ConfigAwareActivity> returnedController = configCntroller.configurationChange(config);
     transcript.assertEventsInclude("onPause", "onStop", "onDestroy", "onCreate", "onStart", "onResume");
-    assertEquals("New fontScale is not set on the activity's configuration",
-      newFontScale, returnedController.get().getResources().getConfiguration().fontScale, 0.001);
-    assertEquals("New orientation is not set on the activity's configuration",
-    		newOrientation, returnedController.get().getResources().getConfiguration().orientation);
+    assertThat(returnedController.get().getResources().getConfiguration().fontScale).isEqualTo(newFontScale);
+    assertThat(returnedController.get().getResources().getConfiguration().orientation).isEqualTo(newOrientation);
   }
 
   public static class MyActivity extends Activity {
@@ -351,9 +346,9 @@ public class ActivityControllerTest {
     
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
-    	super.onConfigurationChanged(newConfig);
-    	transcribeWhilePaused("onConfigurationChanged");
-        transcript.add("finishedOnConfigurationChanged");
+      super.onConfigurationChanged(newConfig);
+      transcribeWhilePaused("onConfigurationChanged");
+      transcript.add("finishedOnConfigurationChanged");
     }
 
     private void transcribeWhilePaused(final String event) {
