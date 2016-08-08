@@ -50,7 +50,7 @@ import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE, sdk = 23)
-public class DefaultRobolectricPackageManagerTest {
+public class DefaultPackageManagerTest {
   private static final String TEST_PACKAGE_NAME = "com.some.other.package";
   private static final String TEST_PACKAGE_LABEL = "My Little App";
   private final RobolectricPackageManager rpm = RuntimeEnvironment.getRobolectricPackageManager();
@@ -721,6 +721,15 @@ public class DefaultRobolectricPackageManagerTest {
     rpm.setNameForUid(10, "a_name");
 
     assertThat(RuntimeEnvironment.getPackageManager().getNameForUid(10)).isEqualTo("a_name");
+  }
+
+  @Test
+  public void getPackagesForUid() {
+    assertThat(RuntimeEnvironment.getPackageManager().getPackagesForUid(10)).isNull();
+
+    rpm.setPackagesForUid(10, new String[] {"a_name"});
+
+    assertThat(RuntimeEnvironment.getPackageManager().getPackagesForUid(10)).containsExactly("a_name");
   }
 
   /////////////////////////////

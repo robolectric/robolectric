@@ -13,6 +13,7 @@ import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Binder;
 import android.os.Bundle;
 import android.os.PatternMatcher;
 import android.util.Pair;
@@ -50,6 +51,7 @@ import java.util.TreeMap;
 public class DefaultPackageManager extends StubPackageManager implements RobolectricPackageManager {
 
   private Map<Integer, String> namesForUid = new HashMap<>();
+  private Map<Integer, String[]> packagesForUid = new HashMap<>();
   private ResourceLoader appResourceLoader;
 
   public DefaultPackageManager(ResourceLoader appResourceLoader) {
@@ -715,6 +717,19 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
   @Override
   public String getNameForUid(int uid) {
     return namesForUid.get(uid);
+  }
+
+  public void setPackagesForCallingUid(String[] packagesForCallingUid) {
+    setPackagesForUid(Binder.getCallingUid(), packagesForCallingUid);
+  }
+
+  public void setPackagesForUid(int uid, String[] packagesForCallingUid) {
+    this.packagesForUid.put(uid, packagesForCallingUid);
+  }
+
+  @Override
+  public String[] getPackagesForUid(int uid) {
+    return packagesForUid.get(uid);
   }
 
   /**
