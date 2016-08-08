@@ -1,8 +1,6 @@
-package org.robolectric;
+package org.robolectric.internal;
 
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.ManifestIdentifier;
-import org.robolectric.internal.SdkConfig;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
@@ -12,7 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 
-public class MavenManifestFactory extends ManifestFactory {
+public class MavenManifestFactory implements ManifestFactory {
 
   @Override
   public ManifestIdentifier identify(Config config) {

@@ -2,7 +2,6 @@ package org.robolectric.internal;
 
 import org.robolectric.res.FsFile;
 
-import java.util.Collections;
 import java.util.List;
 
 public class ManifestIdentifier {

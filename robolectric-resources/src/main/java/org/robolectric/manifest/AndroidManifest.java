@@ -77,9 +77,7 @@ public class AndroidManifest {
    * @param assetsDirectory     Location of the assets directory.
    */
   public AndroidManifest(FsFile androidManifestFile, FsFile resDirectory, FsFile assetsDirectory) {
-    this.androidManifestFile = androidManifestFile;
-    this.resDirectory = resDirectory;
-    this.assetsDirectory = assetsDirectory;
+    this(androidManifestFile, resDirectory, assetsDirectory, null);
   }
 
   /**
@@ -91,7 +89,9 @@ public class AndroidManifest {
    * @param packageName         Application package name.
    */
   public AndroidManifest(FsFile androidManifestFile, FsFile resDirectory, FsFile assetsDirectory, String packageName) {
-    this(androidManifestFile, resDirectory, assetsDirectory);
+    this.androidManifestFile = androidManifestFile;
+    this.resDirectory = resDirectory;
+    this.assetsDirectory = assetsDirectory;
     this.packageName = packageName;
   }
 

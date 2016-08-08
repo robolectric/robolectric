@@ -9,6 +9,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.robolectric.annotation.Config;
+import org.robolectric.internal.ManifestFactory;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResourcePath;
 

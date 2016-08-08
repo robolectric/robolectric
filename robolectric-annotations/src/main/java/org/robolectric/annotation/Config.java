@@ -361,4 +361,89 @@ public @interface Config {
       return Config.class;
     }
   }
+
+  class Builder {
+    private int[] sdk = new int[0];
+    private String manifest = Config.DEFAULT_MANIFEST;
+    private String qualifiers = Config.DEFAULT_QUALIFIERS;
+    private String packageName = Config.DEFAULT_PACKAGE_NAME;
+    private String abiSplit = Config.DEFAULT_ABI_SPLIT;
+    private String resourceDir = Config.DEFAULT_RES_FOLDER;
+    private String assetDir = Config.DEFAULT_ASSET_FOLDER;
+    private String buildDir = Config.DEFAULT_BUILD_FOLDER;
+    private Class<?>[] shadows = new Class[0];
+    private String[] instrumentedPackages = new String[0];
+    private Class<? extends Application> application = Application.class; // todo: make a private default dummy
+    private String[] libraries = new String[0];
+    private Class<?> constants = Void.class;
+
+    public Builder setSdk(int[] sdk) {
+      this.sdk = sdk;
+      return this;
+    }
+
+    public Builder setManifest(String manifest) {
+      this.manifest = manifest;
+      return this;
+    }
+
+    public Builder setQualifiers(String qualifiers) {
+      this.qualifiers = qualifiers;
+      return this;
+    }
+
+    public Builder setPackageName(String packageName) {
+      this.packageName = packageName;
+      return this;
+    }
+
+    public Builder setAbiSplit(String abiSplit) {
+      this.abiSplit = abiSplit;
+      return this;
+    }
+
+    public Builder setResourceDir(String resourceDir) {
+      this.resourceDir = resourceDir;
+      return this;
+    }
+
+    public Builder setAssetDir(String assetDir) {
+      this.assetDir = assetDir;
+      return this;
+    }
+
+    public Builder setBuildDir(String buildDir) {
+      this.buildDir = buildDir;
+      return this;
+    }
+
+    public Builder setShadows(Class<?>[] shadows) {
+      this.shadows = shadows;
+      return this;
+    }
+
+    public Builder setInstrumentedPackages(String[] instrumentedPackages) {
+      this.instrumentedPackages = instrumentedPackages;
+      return this;
+    }
+
+    public Builder setApplication(Class<? extends Application> application) {
+      this.application = application;
+      return this;
+    }
+
+    public Builder setLibraries(String[] libraries) {
+      this.libraries = libraries;
+      return this;
+    }
+
+    public Builder setConstants(Class<?> constants) {
+      this.constants = constants;
+      return this;
+    }
+
+    public Implementation build() {
+      return new Implementation(sdk, manifest, qualifiers, packageName, abiSplit, resourceDir, assetDir, buildDir, shadows, instrumentedPackages, application, libraries, constants);
+    }
+  }
 }

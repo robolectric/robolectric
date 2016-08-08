@@ -1,4 +1,4 @@
-package org.robolectric;
+package org.robolectric.internal;
 
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.ManifestIdentifier;
@@ -14,10 +14,10 @@ import org.robolectric.manifest.AndroidManifest;
  *   <li>Gradle</li>
  * </ul>
  */
-public abstract class ManifestFactory {
-  protected static final String DEFAULT_MANIFEST_NAME = "AndroidManifest.xml";
+public interface ManifestFactory {
+  String DEFAULT_MANIFEST_NAME = "AndroidManifest.xml";
 
-  public abstract ManifestIdentifier identify(Config config);
+  ManifestIdentifier identify(Config config);
 
-  public abstract AndroidManifest create(ManifestIdentifier manifestIdentifier);
+  AndroidManifest create(ManifestIdentifier manifestIdentifier);
 }

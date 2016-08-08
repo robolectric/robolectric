@@ -1,7 +1,6 @@
-package org.robolectric;
+package org.robolectric.internal;
 
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.ManifestIdentifier;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.FileFsFile;
 import org.robolectric.res.FsFile;
@@ -9,15 +8,13 @@ import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
 
-public class GradleManifestFactory extends ManifestFactory {
+public class GradleManifestFactory implements ManifestFactory {
   @Override
   public ManifestIdentifier identify(Config config) {
     if (config.constants() == Void.class) {
       Logger.error("Field 'constants' not specified in @Config annotation");
-      Logger.error("This is required when using RobolectricGradleTestRunner!");
+      Logger.error("This is required when using Robolectric with Gradle!");
       throw new RuntimeException("No 'constants' field in @Config annotation!");
     }
 
@@ -25,7 +22,9 @@ public class GradleManifestFactory extends ManifestFactory {
     final String type = getType(config);
     final String flavor = getFlavor(config);
     final String abiSplit = getAbiSplit(config);
-    final String packageName = getPackageName(config);
+    final String packageName = config.packageName().isEmpty()
+        ? config.constants().getPackage().getName()
+        : config.packageName();
 
     final FileFsFile res;
     final FileFsFile assets;
@@ -70,12 +69,7 @@ public class GradleManifestFactory extends ManifestFactory {
     Logger.debug("   Robolectric res directory: " + resDir.getPath());
     Logger.debug("   Robolectric manifest path: " + manifestFile.getPath());
     Logger.debug("    Robolectric package name: " + packageName);
-    return new AndroidManifest(manifestFile, resDir, assetDir, packageName) {
-      @Override
-      public String getRClassName() throws Exception {
-        return packageName.concat(".R");
-      }
-    };
+    return new AndroidManifest(manifestFile, resDir, assetDir, packageName);
   }
 
   private static String getBuildOutputDir(Config config) {
@@ -101,19 +95,6 @@ public class GradleManifestFactory extends ManifestFactory {
   private static String getAbiSplit(Config config) {
     try {
       return config.abiSplit();
-    } catch (Throwable e) {
-      return null;
-    }
-  }
-
-  private static String getPackageName(Config config) {
-    try {
-      final String packageName = config.packageName();
-      if (packageName != null && !packageName.isEmpty()) {
-        return packageName;
-      } else {
-        return ReflectionHelpers.getStaticField(config.constants(), "APPLICATION_ID");
-      }
     } catch (Throwable e) {
       return null;
     }
