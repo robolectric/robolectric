@@ -749,11 +749,11 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
     return namesForUid.get(uid);
   }
 
-  public void setPackagesForCallingUid(String[] packagesForCallingUid) {
+  public void setPackagesForCallingUid(String... packagesForCallingUid) {
     setPackagesForUid(Binder.getCallingUid(), packagesForCallingUid);
   }
 
-  public void setPackagesForUid(int uid, String[] packagesForCallingUid) {
+  public void setPackagesForUid(int uid, String... packagesForCallingUid) {
     this.packagesForUid.put(uid, packagesForCallingUid);
   }
 
