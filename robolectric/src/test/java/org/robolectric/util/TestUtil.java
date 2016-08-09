@@ -128,4 +128,14 @@ public abstract class TestUtil {
     }
     return file.getPath();
   }
+
+  public static File newFile(File file, String contents) throws IOException {
+    FileWriter fileWriter = new FileWriter(file);
+    try {
+      fileWriter.write(contents);
+    } finally {
+      fileWriter.close();
+    }
+    return file;
+  }
 }

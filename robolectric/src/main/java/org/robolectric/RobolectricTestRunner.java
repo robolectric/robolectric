@@ -16,11 +16,7 @@ import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.InstrumentingClassLoaderFactory;
-import org.robolectric.internal.ParallelUniverse;
-import org.robolectric.internal.ParallelUniverseInterface;
-import org.robolectric.internal.SdkConfig;
-import org.robolectric.internal.SdkEnvironment;
+import org.robolectric.internal.*;
 import org.robolectric.internal.bytecode.*;
 import org.robolectric.internal.dependency.*;
 import org.robolectric.manifest.AndroidManifest;
@@ -51,6 +47,7 @@ import java.util.*;
 public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   private static final String CONFIG_PROPERTIES = "robolectric.properties";
   private static final Map<Pair<AndroidManifest, SdkConfig>, ResourceLoader> resourceLoadersByManifestAndConfig = new HashMap<>();
+  private static final Map<ManifestIdentifier, AndroidManifest> appManifestsByFile = new HashMap<>();
 
   private TestLifecycle<Application> testLifecycle;
   private DependencyResolver dependencyResolver;
@@ -286,14 +283,36 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     }
   }
 
+  /**
+   * Detects what build system is in use and returns the appropriate ManifestFactory implementation.
+   * @param config Specification of the SDK version, manifest file, package name, etc.
+   */
+  protected ManifestFactory getManifestFactory(Config config) {
+    if (config.constants() != null && config.constants() != Void.class) {
+      return new GradleManifestFactory();
+    } else {
+      return new MavenManifestFactory();
+    }
+  }
+
   protected AndroidManifest getAppManifest(Config config) {
-    return ManifestFactory.newManifestFactory(config).create();
+    ManifestFactory manifestFactory = getManifestFactory(config);
+    ManifestIdentifier identifier = manifestFactory.identify(config);
+
+    synchronized (appManifestsByFile) {
+      AndroidManifest appManifest;
+      appManifest = appManifestsByFile.get(identifier);
+      if (appManifest == null) {
+        appManifest = manifestFactory.create(identifier);
+        appManifestsByFile.put(identifier, appManifest);
+      }
+
+      return appManifest;
+    }
   }
 
   public Config getConfig(Method method) {
-    Config config = new Config.Implementation(new int[0], Config.DEFAULT_MANIFEST, Config.DEFAULT_QUALIFIERS, Config.DEFAULT_PACKAGE_NAME,
-            Config.DEFAULT_ABI_SPLIT, Config.DEFAULT_RES_FOLDER, Config.DEFAULT_ASSET_FOLDER, Config.DEFAULT_BUILD_FOLDER, new Class[0],
-            new String[0], Application.class, new String[0], Void.class);
+    Config config = new Config.Builder().build();
 
     Config globalConfig = buildGlobalConfig();
     if (globalConfig != null) {
