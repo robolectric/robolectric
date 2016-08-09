@@ -66,7 +66,7 @@ public interface RobolectricPackageManager {
 
   void addPackage(String packageName);
 
-  void addManifest(AndroidManifest androidManifest);
+  void addManifest(AndroidManifest androidManifest, int labelRes);
 
   void removePackage(String packageName);
 
