@@ -27,8 +27,6 @@ import org.robolectric.manifest.ContentProviderData;
 import org.robolectric.manifest.IntentFilterData;
 import org.robolectric.manifest.PackageItemData;
 import org.robolectric.manifest.ServiceData;
-import org.robolectric.res.ResName;
-import org.robolectric.res.ResourceIndex;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.util.TempDirectory;
 
@@ -50,11 +48,6 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
 
   private Map<Integer, String> namesForUid = new HashMap<>();
   private Map<Integer, String[]> packagesForUid = new HashMap<>();
-  private ResourceLoader appResourceLoader;
-
-  public DefaultPackageManager(ResourceLoader appResourceLoader) {
-    this.appResourceLoader = appResourceLoader;
-  }
 
   static class IntentComparator implements Comparator<Intent> {
 
@@ -474,11 +467,8 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
   }
 
   @Override
-  public void addManifest(AndroidManifest androidManifest) {
+  public void addManifest(AndroidManifest androidManifest, int labelRes) {
     androidManifests.put(androidManifest.getPackageName(), androidManifest);
-
-    // first opportunity to access a resource index for this manifest, use it to init the references
-    androidManifest.initMetaData(appResourceLoader);
 
     PackageInfo packageInfo = new PackageInfo();
     packageInfo.packageName = androidManifest.getPackageName();
@@ -543,12 +533,7 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
     applicationInfo.metaData = metaDataToBundle(androidManifest.getApplicationMetaData());
     applicationInfo.sourceDir = new File(".").getAbsolutePath();
     applicationInfo.dataDir = TempDirectory.create().toAbsolutePath().toString();
-
-    ResourceIndex resourceIndex = appResourceLoader.getResourceIndex();
-    if (androidManifest.getLabelRef() != null && resourceIndex != null) {
-      Integer id = ResName.getResourceId(resourceIndex, androidManifest.getLabelRef(), androidManifest.getPackageName());
-      applicationInfo.labelRes = id != null ? id : 0;
-    }
+    applicationInfo.labelRes = labelRes;
 
     packageInfo.applicationInfo = applicationInfo;
     addPackage(packageInfo);
