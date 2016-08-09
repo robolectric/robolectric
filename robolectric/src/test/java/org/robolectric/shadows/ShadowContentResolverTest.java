@@ -683,7 +683,7 @@ public class ShadowContentResolverTest {
   @Test
   public void getProvider_shouldCreateProviderFromManifest() {
     AndroidManifest manifest = ShadowApplication.getInstance().getAppManifest();
-    ContentProviderData testProviderData = new ContentProviderData("org.robolectric.shadows.ShadowContentResolverTest$TestContentProvider", AUTHORITY);
+    ContentProviderData testProviderData = new ContentProviderData("org.robolectric.shadows.ShadowContentResolverTest$TestContentProvider", null, AUTHORITY);
     try {
       manifest.getContentProviders().add(testProviderData);
       assertThat(ShadowContentResolver.getProvider(Uri.parse("content://" + AUTHORITY + "/shadows"))).isNotNull();
@@ -702,7 +702,7 @@ public class ShadowContentResolverTest {
   @Test
   public void getProvider_shouldSetAuthority() throws RemoteException {
     AndroidManifest manifest = ShadowApplication.getInstance().getAppManifest();
-    ContentProviderData testProviderData = new ContentProviderData("org.robolectric.shadows.ShadowContentResolverTest$TestContentProvider", AUTHORITY);
+    ContentProviderData testProviderData = new ContentProviderData("org.robolectric.shadows.ShadowContentResolverTest$TestContentProvider", null, AUTHORITY);
     try {
       manifest.getContentProviders().add(testProviderData);
       Uri uri = Uri.parse("content://" + AUTHORITY + "/shadows");

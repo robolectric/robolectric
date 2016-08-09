@@ -4,10 +4,10 @@
   <application>
     <provider
       android:name="org.robolectric.tester.FullyQualifiedClassName"
-      android:authorities="org.robolectric"/>
+      android:authorities="org.robolectric.authority1"/>
 
     <provider
       android:name=".tester.PartiallyQualifiedClassName"
-      android:authorities="org.robolectric"/>
+      android:authorities="org.robolectric.authority2"/>
   </application>
 </manifest>

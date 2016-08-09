@@ -321,6 +321,18 @@ public class DefaultPackageManagerTest {
   }
 
   @Test
+  @Config(manifest = "src/test/resources/TestAndroidManifestWithContentProviders.xml")
+  public void getProviderInfo_shouldReturnProviderInfos() throws Exception {
+    ProviderInfo packageInfo1 = RuntimeEnvironment.getPackageManager().getProviderInfo(new ComponentName(RuntimeEnvironment.application, ".tester.FullyQualifiedClassName"), 0);
+    assertThat(packageInfo1.packageName).isEqualTo("org.robolectric");
+    assertThat(packageInfo1.authority).isEqualTo("org.robolectric.authority1");
+
+    ProviderInfo packageInfo2 = RuntimeEnvironment.getPackageManager().getProviderInfo(new ComponentName(RuntimeEnvironment.application, "org.robolectric.tester.PartiallyQualifiedClassName"), 0);
+    assertThat(packageInfo2.packageName).isEqualTo("org.robolectric");
+    assertThat(packageInfo2.authority).isEqualTo("org.robolectric.authority2");
+  }
+
+  @Test
   @Config(manifest = "src/test/resources/TestAndroidManifestWithNoContentProviders.xml")
   public void getPackageInfo_getProvidersShouldReturnNullOnNoProviders() throws Exception {
     PackageInfo packageInfo = rpm.getPackageInfo(RuntimeEnvironment.application.getPackageName(), PackageManager.GET_PROVIDERS);
@@ -657,6 +669,19 @@ public class DefaultPackageManagerTest {
     packageManager.setApplicationEnabledSetting("org.robolectric", PackageManager.COMPONENT_ENABLED_STATE_DISABLED, 0);
 
     assertThat(packageManager.getApplicationEnabledSetting("org.robolectric")).isEqualTo(PackageManager.COMPONENT_ENABLED_STATE_DISABLED);
+  }
+
+  @Test
+  @Config(manifest = "src/test/resources/TestAndroidManifest.xml")
+  public void testSetComponentEnabledSetting() {
+    PackageManager packageManager = RuntimeEnvironment.getPackageManager();
+
+    ComponentName componentName = new ComponentName(RuntimeEnvironment.application, "org.robolectric.component");
+    assertThat(packageManager.getComponentEnabledSetting(componentName)).isEqualTo(PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
+
+    packageManager.setComponentEnabledSetting(componentName, PackageManager.COMPONENT_ENABLED_STATE_DISABLED, 0);
+
+    assertThat(packageManager.getComponentEnabledSetting(componentName)).isEqualTo(PackageManager.COMPONENT_ENABLED_STATE_DISABLED);
   }
 
   public static class ActivityWithMetadata extends Activity { }

@@ -1,16 +1,11 @@
 package org.robolectric.manifest;
 
-public class ContentProviderData {
-  private final String className;
+public class ContentProviderData extends PackageItemData {
   private final String authority;
 
-  public ContentProviderData(String className, String authority) {
-    this.className = className;
+  public ContentProviderData(String className, MetaData metaData, String authority) {
+    super(className, metaData);
     this.authority = authority;
-  }
-
-  public String getClassName() {
-    return className;
   }
 
   public String getAuthority() {
