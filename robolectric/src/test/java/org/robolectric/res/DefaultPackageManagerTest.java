@@ -50,7 +50,7 @@ import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE, sdk = 23)
-public class DefaultRobolectricPackageManagerTest {
+public class DefaultPackageManagerTest {
   private static final String TEST_PACKAGE_NAME = "com.some.other.package";
   private static final String TEST_PACKAGE_LABEL = "My Little App";
   private final RobolectricPackageManager rpm = RuntimeEnvironment.getRobolectricPackageManager();
@@ -318,6 +318,18 @@ public class DefaultRobolectricPackageManagerTest {
     assertThat(providers.length).isEqualTo(2);
     assertThat(providers[0].packageName).isEqualTo("org.robolectric");
     assertThat(providers[1].packageName).isEqualTo("org.robolectric");
+  }
+
+  @Test
+  @Config(manifest = "src/test/resources/TestAndroidManifestWithContentProviders.xml")
+  public void getProviderInfo_shouldReturnProviderInfos() throws Exception {
+    ProviderInfo packageInfo1 = RuntimeEnvironment.getPackageManager().getProviderInfo(new ComponentName(RuntimeEnvironment.application, ".tester.FullyQualifiedClassName"), 0);
+    assertThat(packageInfo1.packageName).isEqualTo("org.robolectric");
+    assertThat(packageInfo1.authority).isEqualTo("org.robolectric.authority1");
+
+    ProviderInfo packageInfo2 = RuntimeEnvironment.getPackageManager().getProviderInfo(new ComponentName(RuntimeEnvironment.application, "org.robolectric.tester.PartiallyQualifiedClassName"), 0);
+    assertThat(packageInfo2.packageName).isEqualTo("org.robolectric");
+    assertThat(packageInfo2.authority).isEqualTo("org.robolectric.authority2");
   }
 
   @Test
@@ -659,6 +671,19 @@ public class DefaultRobolectricPackageManagerTest {
     assertThat(packageManager.getApplicationEnabledSetting("org.robolectric")).isEqualTo(PackageManager.COMPONENT_ENABLED_STATE_DISABLED);
   }
 
+  @Test
+  @Config(manifest = "src/test/resources/TestAndroidManifest.xml")
+  public void testSetComponentEnabledSetting() {
+    PackageManager packageManager = RuntimeEnvironment.getPackageManager();
+
+    ComponentName componentName = new ComponentName(RuntimeEnvironment.application, "org.robolectric.component");
+    assertThat(packageManager.getComponentEnabledSetting(componentName)).isEqualTo(PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
+
+    packageManager.setComponentEnabledSetting(componentName, PackageManager.COMPONENT_ENABLED_STATE_DISABLED, 0);
+
+    assertThat(packageManager.getComponentEnabledSetting(componentName)).isEqualTo(PackageManager.COMPONENT_ENABLED_STATE_DISABLED);
+  }
+
   public static class ActivityWithMetadata extends Activity { }
 
   @Test
@@ -721,6 +746,15 @@ public class DefaultRobolectricPackageManagerTest {
     rpm.setNameForUid(10, "a_name");
 
     assertThat(RuntimeEnvironment.getPackageManager().getNameForUid(10)).isEqualTo("a_name");
+  }
+
+  @Test
+  public void getPackagesForUid() {
+    assertThat(RuntimeEnvironment.getPackageManager().getPackagesForUid(10)).isNull();
+
+    rpm.setPackagesForUid(10, new String[] {"a_name"});
+
+    assertThat(RuntimeEnvironment.getPackageManager().getPackagesForUid(10)).containsExactly("a_name");
   }
 
   /////////////////////////////
