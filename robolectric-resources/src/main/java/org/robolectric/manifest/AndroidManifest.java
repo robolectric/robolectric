@@ -184,7 +184,10 @@ public class AndroidManifest {
       Node nameItem = contentProviderNode.getAttributes().getNamedItem("android:name");
       Node authorityItem = contentProviderNode.getAttributes().getNamedItem("android:authorities");
       if (nameItem != null && authorityItem != null) {
-        providers.add(new ContentProviderData(resolveClassRef(nameItem.getTextContent()), authorityItem.getTextContent()));
+        MetaData metaData = new MetaData(getChildrenTags(contentProviderNode, "meta-data"));
+
+        providers.add(new ContentProviderData(resolveClassRef(nameItem.getTextContent()), metaData,
+            authorityItem.getTextContent()));
       }
     }
   }
@@ -378,7 +381,7 @@ public class AndroidManifest {
     if (applicationMetaData != null) {
       applicationMetaData.init(resLoader, packageName);
     }
-    for (BroadcastReceiverData receiver : receivers) {
+    for (PackageItemData receiver : receivers) {
       receiver.getMetaData().init(resLoader, packageName);
     }
     for (ServiceData service : serviceDatas.values()) {

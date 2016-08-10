@@ -1,5 +1,16 @@
 package org.robolectric.util;
 
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.Shadows;
+import org.robolectric.ShadowsAdapter;
+import org.robolectric.ShadowsAdapter.ShadowActivityAdapter;
+import org.robolectric.ShadowsAdapter.ShadowApplicationAdapter;
+import org.robolectric.internal.Shadow;
+import org.robolectric.internal.runtime.RuntimeAdapter;
+import org.robolectric.internal.runtime.RuntimeAdapterFactory;
+import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
+
 import android.app.Activity;
 import android.app.Application;
 import android.content.ComponentName;
@@ -7,26 +18,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
+import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.view.Display;
 import android.view.ViewRootImpl;
 
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.ShadowsAdapter;
-import org.robolectric.internal.Shadow;
-import org.robolectric.internal.runtime.RuntimeAdapter;
-import org.robolectric.internal.runtime.RuntimeAdapterFactory;
-import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.ResName;
-import org.robolectric.ShadowsAdapter.ShadowActivityAdapter;
-import org.robolectric.ShadowsAdapter.ShadowApplicationAdapter;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
-
 public class ActivityController<T extends Activity> extends ComponentController<ActivityController<T>, T> {
   private final ShadowsAdapter shadowsAdapter;
-  private final ShadowActivityAdapter shadowReference;
+  private ShadowActivityAdapter shadowReference;
 
   public static <T extends Activity> ActivityController<T> of(ShadowsAdapter shadowsAdapter, T activity, Intent intent) {
     return new ActivityController<>(shadowsAdapter, activity, intent).attach();
@@ -240,5 +240,74 @@ public class ActivityController<T extends Activity> extends ComponentController<
         .postCreate(savedInstanceState)
         .resume()
         .visible();
+  }
+  
+  /**
+   * Performs a configuration change on the Activity.
+   *  
+   * @param newConfiguration The new configuration to be set.
+   * @return Activity controller instance.
+   */
+  public ActivityController<T> configurationChange(final Configuration newConfiguration) {
+    final Configuration currentConfig = component.getResources().getConfiguration();
+    final int changedBits = currentConfig.diff(newConfiguration);
+    currentConfig.setTo(newConfiguration);
+    
+    // Can the activity handle itself ALL configuration changes?
+    if ((getActivityInfo(component.getApplication()).configChanges & changedBits) == changedBits) {
+      shadowMainLooper.runPaused(new Runnable() {
+        @Override
+        public void run() {
+          ReflectionHelpers.callInstanceMethod(Activity.class, component, "onConfigurationChanged",
+            ClassParameter.from(Configuration.class, newConfiguration));
+        }
+      });
+
+      return this;
+    } else {
+      @SuppressWarnings("unchecked")
+      final T recreatedActivity = (T) ReflectionHelpers.callConstructor(component.getClass());
+      
+      shadowMainLooper.runPaused(new Runnable() {
+        @Override
+        public void run() {
+          // Set flags
+          ReflectionHelpers.setField(Activity.class, component, "mChangingConfigurations", true);
+          ReflectionHelpers.setField(Activity.class, component, "mConfigChangeFlags", changedBits);
+          
+          // Perform activity destruction
+          final Bundle outState = new Bundle();
+    
+          ReflectionHelpers.callInstanceMethod(Activity.class, component, "onSaveInstanceState",
+              ClassParameter.from(Bundle.class, outState));
+          ReflectionHelpers.callInstanceMethod(Activity.class, component, "onPause");
+          ReflectionHelpers.callInstanceMethod(Activity.class, component, "onStop");
+    
+          final Object nonConfigInstance = ReflectionHelpers.callInstanceMethod(
+              Activity.class, component, "onRetainNonConfigurationInstance");
+    
+          ReflectionHelpers.callInstanceMethod(Activity.class, component, "onDestroy");
+
+          // Setup controller for the new activity
+          attached = false;
+          component = recreatedActivity;
+          shadowReference = shadowsAdapter.getShadowActivityAdapter(component);
+          attach();
+          
+          // Set saved non config instance
+          Shadows.shadowOf(recreatedActivity).setLastNonConfigurationInstance(nonConfigInstance);
+          
+            // Create lifecycle
+          ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity,
+              "onCreate", ClassParameter.from(Bundle.class, outState));
+          ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity, "onStart");
+          ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity,
+              "onRestoreInstanceState", ClassParameter.from(Bundle.class, outState));
+          ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity, "onResume");
+        }
+      });
+    }
+    
+    return this;
   }
 }
