@@ -227,9 +227,9 @@ public class ActivityControllerTest {
     Configuration config = new Configuration(RuntimeEnvironment.application.getResources().getConfiguration());
     final float newFontScale = config.fontScale *= 2;
     
-    ActivityController<MyActivity> returnedController = controller.configurationChange(config);
+    controller.configurationChange(config);
     transcript.assertEventsInclude("onPause", "onStop", "onDestroy", "onCreate", "onStart", "onResume");
-    assertThat(returnedController.get().getResources().getConfiguration().fontScale).isEqualTo(newFontScale);
+    assertThat(controller.get().getResources().getConfiguration().fontScale).isEqualTo(newFontScale);
   }
   
   @Test
@@ -238,10 +238,9 @@ public class ActivityControllerTest {
     final float newFontScale = config.fontScale *= 2;
     
     ActivityController<ConfigAwareActivity> configController = Robolectric.buildActivity(ConfigAwareActivity.class);
-    ActivityController<ConfigAwareActivity> returnedController = configController.configurationChange(config);
+    configController.configurationChange(config);
     transcript.assertEventsInclude("onConfigurationChanged");
-    assertThat(returnedController).isSameAs(configController);
-    assertThat(returnedController.get().getResources().getConfiguration().fontScale).isEqualTo(newFontScale);
+    assertThat(configController.get().getResources().getConfiguration().fontScale).isEqualTo(newFontScale);
   }
   
   @Test
@@ -250,11 +249,11 @@ public class ActivityControllerTest {
     final float newFontScale = config.fontScale *= 2;
     final int newOrientation = config.orientation = (config.orientation + 1) % 3;
     
-    ActivityController<ConfigAwareActivity> configCntroller = Robolectric.buildActivity(ConfigAwareActivity.class);
-    ActivityController<ConfigAwareActivity> returnedController = configCntroller.configurationChange(config);
+    ActivityController<ConfigAwareActivity> configController = Robolectric.buildActivity(ConfigAwareActivity.class);
+    configController.configurationChange(config);
     transcript.assertEventsInclude("onPause", "onStop", "onDestroy", "onCreate", "onStart", "onResume");
-    assertThat(returnedController.get().getResources().getConfiguration().fontScale).isEqualTo(newFontScale);
-    assertThat(returnedController.get().getResources().getConfiguration().orientation).isEqualTo(newOrientation);
+    assertThat(configController.get().getResources().getConfiguration().fontScale).isEqualTo(newFontScale);
+    assertThat(configController.get().getResources().getConfiguration().orientation).isEqualTo(newOrientation);
   }
 
   public static class MyActivity extends Activity {
