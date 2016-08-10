@@ -164,6 +164,7 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
 
     ActivityData activityData = androidManifest.getActivityData(activityName);
     if (activityData != null) {
+      activityInfo.configChanges = activityData.getConfigChanges();
       activityInfo.parentActivityName = activityData.getParentActivityName();
       activityInfo.metaData = metaDataToBundle(activityData.getMetaData().getValueMap());
       String themeRef;
