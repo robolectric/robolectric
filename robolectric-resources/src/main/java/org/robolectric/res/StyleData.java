@@ -31,7 +31,20 @@ public class StyleData implements Style {
   }
 
   @Override public AttributeResource getAttrValue(ResName resName) {
-    return items.get(resName);
+    AttributeResource attributeResource = items.get(resName);
+
+    // This hack allows us to look up attributes from downstream dependencies, see comment in
+    // org.robolectric.shadows.ShadowThemeTest.obtainTypedArrayFromDependencyLibrary()
+    // for an explanation. TODO(jongerrish): Make Robolectric use a more realistic resource merging
+    // scheme.
+    if (attributeResource == null && !"android".equals(resName.packageName)) {
+      attributeResource = items.get(resName.withPackageName(packageName));
+      if (attributeResource != null && (!"android".equals(attributeResource.contextPackageName))) {
+        attributeResource = new AttributeResource(resName, attributeResource.value, resName.packageName);
+      }
+    }
+
+    return attributeResource;
   }
 
   @Override
