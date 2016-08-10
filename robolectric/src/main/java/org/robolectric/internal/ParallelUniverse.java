@@ -21,6 +21,8 @@ import org.robolectric.internal.fakes.RoboInstrumentation;
 import org.robolectric.manifest.ActivityData;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResBundle;
+import org.robolectric.res.ResName;
+import org.robolectric.res.ResourceIndex;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.builder.DefaultPackageManager;
 import org.robolectric.res.builder.RobolectricPackageManager;
@@ -78,8 +80,9 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     RuntimeEnvironment.setMasterScheduler(new Scheduler());
     RuntimeEnvironment.setMainThread(Thread.currentThread());
     ResourceLoader appResourceLoader = robolectricTestRunner.getAppResourceLoader(sdkConfig, systemResourceLoader, appManifest);
-    DefaultPackageManager packageManager = new DefaultPackageManager(appResourceLoader);
-    packageManager.addManifest(appManifest);
+
+    DefaultPackageManager packageManager = new DefaultPackageManager();
+    initializeAppManifest(appManifest, appResourceLoader, packageManager);
     RuntimeEnvironment.setRobolectricPackageManager(packageManager);
 
     RuntimeEnvironment.setAppResourceLoader(appResourceLoader);
@@ -151,6 +154,18 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
       application.onCreate();
     }
+  }
+
+  private void initializeAppManifest(AndroidManifest appManifest, ResourceLoader appResourceLoader, DefaultPackageManager packageManager) {
+    appManifest.initMetaData(appResourceLoader);
+    ResourceIndex resourceIndex = appResourceLoader.getResourceIndex();
+
+    int labelRes = 0;
+    if (appManifest.getLabelRef() != null && resourceIndex != null) {
+      Integer id = ResName.getResourceId(resourceIndex, appManifest.getLabelRef(), appManifest.getPackageName());
+      labelRes = id != null ? id : 0;
+    }
+    packageManager.addManifest(appManifest, labelRes);
   }
 
   private void addManifestActivitiesToPackageManager(AndroidManifest appManifest, Application application) {
