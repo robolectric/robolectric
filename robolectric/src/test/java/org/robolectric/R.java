@@ -259,6 +259,7 @@ public final class R {
     public static final int sugarinessPercent = 0x10a10;
     public static final int numColumns = 0x10a11;
     public static final int sugaryScale = 0x10a12;
+    public static final int selectableItemBackground = 0x10a13;
   }
 
   public static final class menu {
