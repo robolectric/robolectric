@@ -1,5 +1,6 @@
 package org.robolectric;
 
+import android.app.Activity;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
@@ -25,5 +26,10 @@ public class QualifiersTest {
   @Test @Config(qualifiers = "de")
   public void getQuantityString() throws Exception {
     assertThat(RuntimeEnvironment.application.getResources().getQuantityString(R.plurals.minute, 2)).isEqualTo(RuntimeEnvironment.application.getResources().getString(R.string.minute_plural));
+  }
+
+  @Test
+  public void getLayout() throws Exception {
+    Robolectric.setupActivity(Activity.class).getLayoutInflater().inflate(R.layout.layout_320_smallest_width, null);
   }
 }
