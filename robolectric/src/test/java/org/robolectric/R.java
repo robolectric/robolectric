@@ -219,6 +219,7 @@ public final class R {
     public static final int ordinal_scrollbar = 0x10625;
     public static final int custom_layout5 = 0x10626;
     public static final int custom_layout6 = 0x10627;
+    public static final int layout_320_smallest_width = 0x10628;
   }
 
   public static final class anim {
