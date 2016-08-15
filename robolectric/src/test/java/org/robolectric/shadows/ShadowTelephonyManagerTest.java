@@ -108,6 +108,14 @@ public class ShadowTelephonyManagerTest {
     assertEquals("123-244-2222", telephonyManager.getLine1Number());
   }
 
+  @Test
+  public void shouldGiveGroupIdLevel1() {
+    TelephonyManager telephonyManager = (TelephonyManager) application.getSystemService(TELEPHONY_SERVICE);
+    ShadowTelephonyManager shadowTelephonyManager = shadowOf(telephonyManager);
+    shadowTelephonyManager.setGroupIdLevel1("SomeGroupId");
+    assertEquals("SomeGroupId", telephonyManager.getGroupIdLevel1());
+  }
+
   @Test(expected = SecurityException.class)
   public void getDeviceId_shouldThrowSecurityExceptionWhenReadPhoneStatePermissionNotGranted() throws Exception {
     shadowManager.setReadPhoneStatePermission(false);
