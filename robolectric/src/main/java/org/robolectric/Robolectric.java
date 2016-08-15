@@ -61,17 +61,6 @@ public class Robolectric {
     return shadowsAdapter;
   }
 
-  /**
-   * Creates an instance of a {@link ContextWrapper} subclass and attaches it to the environments base context.
-   * @param contextWrapperClass ContextWrapper implementation class.
-   * @param constructorArgs constructor arguments.
-   */
-  public static <T extends ContextWrapper> T buildContextWrapper(Class<T> contextWrapperClass, ClassParameter<?>... constructorArgs) {
-    T instance = ReflectionHelpers.callConstructor(contextWrapperClass, constructorArgs);
-    ReflectionHelpers.callInstanceMethod(ContextWrapper.class, instance, "attachBaseContext", ClassParameter.from(Context.class, RuntimeEnvironment.application.getBaseContext()));
-    return instance;
-  }
-
   public static <T extends Service> ServiceController<T> buildService(Class<T> serviceClass) {
     return buildService(serviceClass, null);
   }
