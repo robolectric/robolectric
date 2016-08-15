@@ -7,6 +7,7 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SubMenu;
+import org.robolectric.RuntimeEnvironment;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,6 +20,10 @@ import java.util.List;
 public class RoboMenu implements Menu {
   private List<MenuItem> menuItems = new ArrayList<>();
   private Context context;
+
+  public RoboMenu() {
+    this(RuntimeEnvironment.application);
+  }
 
   public RoboMenu(Context context) {
     this.context = context;

@@ -8,6 +8,7 @@ import android.view.ContextMenu;
 import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
+import org.robolectric.RuntimeEnvironment;
 
 /**
  * Robolectric implementation of {@link android.view.MenuItem}.
@@ -29,6 +30,10 @@ public class RoboMenuItem implements MenuItem {
   private OnActionExpandListener actionExpandListener;
   private int order;
   private Context context;
+
+  public RoboMenuItem() {
+    this(RuntimeEnvironment.application);
+  }
 
   public RoboMenuItem(Context context) {
     this.context = context;
