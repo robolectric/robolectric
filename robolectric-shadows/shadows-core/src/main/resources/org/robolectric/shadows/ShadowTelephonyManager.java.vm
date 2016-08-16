@@ -188,6 +188,7 @@ public class ShadowTelephonyManager {
     this.cellLocation = cellLocation;
   }
 
+#if ($api >= 18)
   @Implementation
   public String getGroupIdLevel1() {
     return this.groupIdLevel1;
@@ -196,4 +197,5 @@ public class ShadowTelephonyManager {
   public void setGroupIdLevel1(String groupIdLevel1) {
     this.groupIdLevel1 = groupIdLevel1;
   }
+#end
 }
