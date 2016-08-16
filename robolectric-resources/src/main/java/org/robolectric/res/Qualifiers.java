@@ -11,7 +11,7 @@ public class Qualifiers {
   // Matches a version qualifier like "v14". Parentheses capture the numeric
   // part for easy retrieval with Matcher.group(2).
   private static final Pattern VERSION_QUALIFIER_PATTERN = Pattern.compile("(v)([0-9]+)$");
-  private static final Pattern SIZE_QUALIFIER_PATTERN = Pattern.compile("(s?[wh])([0-9]+)dp$");
+  private static final Pattern SIZE_QUALIFIER_PATTERN = Pattern.compile("(s?[wh])([0-9]+)dp");
 
   // Version are matched in the end, and hence have least order
   private static final int ORDER_VERSION = 0;
@@ -19,7 +19,7 @@ public class Qualifiers {
   private static final List<String> INT_QUALIFIERS = Arrays.asList("v", "h", "w", "sh", "sw");
   private static final int TOTAL_ORDER_COUNT = INT_QUALIFIERS.size();
 
-  private static Map<String, Qualifiers> sQualifiersCache = new HashMap<>();
+  private static final Map<String, Qualifiers> sQualifiersCache = new HashMap<>();
 
   private final int[] mWeights = new int[TOTAL_ORDER_COUNT];
   // Set of all the qualifiers which need exact matching.
@@ -65,14 +65,6 @@ public class Qualifiers {
     return false;
   }
 
-  public static int getVersionQualifierApiLevel(String qualifiers) {
-    Matcher m = VERSION_QUALIFIER_PATTERN.matcher(qualifiers);
-    if (m.find()) {
-      return Integer.parseInt(m.group(2));
-    }
-    return -1;
-  }
-
   public static Qualifiers parse(String qualifiersStr) {
     synchronized (sQualifiersCache) {
       Qualifiers result = sQualifiersCache.get(qualifiersStr);
@@ -113,5 +105,51 @@ public class Qualifiers {
       sQualifiersCache.put(qualifiersStr, result);
       return result;
     }
+  }
+
+  public static int getPlatformVersion(String qualifiers) {
+    Matcher m = VERSION_QUALIFIER_PATTERN.matcher(qualifiers);
+    if (m.find()) {
+      return Integer.parseInt(m.group(2));
+    }
+    return -1;
+  }
+
+  public static int getSmallestScreenWidth(String qualifiers) {
+    Matcher m = SIZE_QUALIFIER_PATTERN.matcher(qualifiers);
+    if (m.find() && "sw".equals(m.group(1))) {
+      return Integer.parseInt(m.group(2));
+    }
+    return -1;
+  }
+
+  /*
+   * If the Config already has a version qualifier, do nothing. Otherwise, add a version
+   * qualifier for the target api level (which comes from the manifest or Config.sdk()).
+   */
+  public static String addPlatformVersion(String qualifiers, int apiLevel) {
+    int versionQualifierApiLevel = Qualifiers.getPlatformVersion(qualifiers);
+    if (versionQualifierApiLevel == -1) {
+      if (qualifiers.length() > 0) {
+        qualifiers += "-";
+      }
+      qualifiers += "v" + apiLevel;
+    }
+    return qualifiers;
+  }
+
+  /*
+   * If the Config already has a version qualifier, do nothing. Otherwise, add a version
+   * qualifier for the target api level (which comes from the manifest or Config.sdk()).
+   */
+  public static String addSmallestScreenWidth(String qualifiers, int smallestScreenWidth) {
+    int qualifiersSmallestScreenWidth = Qualifiers.getSmallestScreenWidth(qualifiers);
+    if (qualifiersSmallestScreenWidth == -1) {
+      if (qualifiers.length() > 0) {
+        qualifiers += "-";
+      }
+      qualifiers += "sw" + smallestScreenWidth + "dp";
+    }
+    return qualifiers;
   }
 }
