@@ -78,6 +78,7 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     qualifiers = Qualifiers.addSmallestScreenWidth(qualifiers, 320);
     Resources systemResources = Resources.getSystem();
     Configuration configuration = systemResources.getConfiguration();
+    configuration.smallestScreenWidthDp = Qualifiers.getSmallestScreenWidth(qualifiers);
     shadowsAdapter.overrideQualifiers(configuration, qualifiers);
     systemResources.updateConfiguration(configuration, systemResources.getDisplayMetrics());
     RuntimeEnvironment.setQualifiers(qualifiers);

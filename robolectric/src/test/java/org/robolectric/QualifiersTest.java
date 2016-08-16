@@ -33,6 +33,8 @@ public class QualifiersTest {
     View view = Robolectric.setupActivity(Activity.class).getLayoutInflater().inflate(R.layout.layout_smallest_width, null);
     TextView textView = (TextView) view.findViewById(R.id.text1);
     assertThat(textView.getText()).isEqualTo("320");
+
+    assertThat(RuntimeEnvironment.application.getResources().getConfiguration().smallestScreenWidthDp).isEqualTo(320);
   }
 
   @Test @Config(qualifiers = "sw720dp")
@@ -40,5 +42,7 @@ public class QualifiersTest {
     View view = Robolectric.setupActivity(Activity.class).getLayoutInflater().inflate(R.layout.layout_smallest_width, null);
     TextView textView = (TextView) view.findViewById(R.id.text1);
     assertThat(textView.getText()).isEqualTo("720");
+
+    assertThat(RuntimeEnvironment.application.getResources().getConfiguration().smallestScreenWidthDp).isEqualTo(720);
   }
 }
