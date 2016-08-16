@@ -20,10 +20,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.internal.fakes.RoboInstrumentation;
 import org.robolectric.manifest.ActivityData;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.ResBundle;
-import org.robolectric.res.ResName;
-import org.robolectric.res.ResourceIndex;
-import org.robolectric.res.ResourceLoader;
+import org.robolectric.res.*;
 import org.robolectric.res.builder.DefaultPackageManager;
 import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.shadows.ShadowLooper;
@@ -61,10 +58,10 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
   /*
    * If the Config already has a version qualifier, do nothing. Otherwise, add a version
-   * qualifier for the target api level (which comes from the manifest or Config.emulateSdk()).
+   * qualifier for the target api level (which comes from the manifest or Config.sdk()).
    */
   private String addVersionQualifierToQualifiers(String qualifiers) {
-    int versionQualifierApiLevel = ResBundle.getVersionQualifierApiLevel(qualifiers);
+    int versionQualifierApiLevel = Qualifiers.getVersionQualifierApiLevel(qualifiers);
     if (versionQualifierApiLevel == -1) {
       if (qualifiers.length() > 0) {
         qualifiers += "-";
