@@ -108,7 +108,7 @@ public class ShadowTelephonyManagerTest {
     assertEquals("123-244-2222", telephonyManager.getLine1Number());
   }
 
-  @Test
+  @Test @Config(sdk = 18)
   public void shouldGiveGroupIdLevel1() {
     TelephonyManager telephonyManager = (TelephonyManager) application.getSystemService(TELEPHONY_SERVICE);
     ShadowTelephonyManager shadowTelephonyManager = shadowOf(telephonyManager);
