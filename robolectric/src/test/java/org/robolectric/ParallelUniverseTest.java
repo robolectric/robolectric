@@ -117,8 +117,8 @@ public class ParallelUniverseTest {
     String givenQualifiers = "";
     Config c = new Config.Builder().setQualifiers(givenQualifiers).build();
     pu.setUpApplicationState(null, new DefaultTestLifecycle(), RuntimeEnvironment.getSystemResourceLoader(), new AndroidManifest(null, null, null, "packagename"), c);
-    assertThat(getQualifiersfromSystemResources()).isEqualTo("v18");
-    assertThat(RuntimeEnvironment.getQualifiers()).isEqualTo("v18");
+    assertThat(getQualifiersfromSystemResources()).contains("v18");
+    assertThat(RuntimeEnvironment.getQualifiers()).contains("v18");
   }
   
   @Test
@@ -126,8 +126,8 @@ public class ParallelUniverseTest {
     String givenQualifiers = "land-v17";
     Config c = new Config.Builder().setQualifiers(givenQualifiers).build();
     pu.setUpApplicationState(null, new DefaultTestLifecycle(), RuntimeEnvironment.getSystemResourceLoader(), new AndroidManifest(null, null, null, "packagename"), c);
-    assertThat(getQualifiersfromSystemResources()).isEqualTo("land-v17");
-    assertThat(RuntimeEnvironment.getQualifiers()).isEqualTo("land-v17");
+    assertThat(getQualifiersfromSystemResources()).contains("land-v17");
+    assertThat(RuntimeEnvironment.getQualifiers()).contains("land-v17");
   }
   
   @Test
@@ -135,8 +135,8 @@ public class ParallelUniverseTest {
     String givenQualifiers = "large-land";
     Config c = new Config.Builder().setQualifiers(givenQualifiers).build();
     pu.setUpApplicationState(null, new DefaultTestLifecycle(), RuntimeEnvironment.getSystemResourceLoader(), new AndroidManifest(null, null, null, "packagename"), c);
-    assertThat(getQualifiersfromSystemResources()).isEqualTo("large-land-v18");
-    assertThat(RuntimeEnvironment.getQualifiers()).isEqualTo("large-land-v18");
+    assertThat(getQualifiersfromSystemResources()).contains("large-land-v18");
+    assertThat(RuntimeEnvironment.getQualifiers()).contains("large-land-v18");
   }
   
   @Test
