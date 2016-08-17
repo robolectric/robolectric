@@ -63,8 +63,7 @@ public class RobolectricTestRunnerSelfTest {
   @Test
   @Config(qualifiers = "fr")
   public void internalBeforeTest_testValuesResQualifiers() {
-    String expectedQualifiers = "fr" + TestRunners.WithDefaults.SDK_TARGETED_BY_MANIFEST;
-    assertThat(RuntimeEnvironment.getQualifiers()).isEqualTo(expectedQualifiers);
+    assertThat(RuntimeEnvironment.getQualifiers()).contains("fr");
   }
 
   @Test
