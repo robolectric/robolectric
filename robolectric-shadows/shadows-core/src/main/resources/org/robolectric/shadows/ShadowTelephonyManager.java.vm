@@ -17,6 +17,7 @@ public class ShadowTelephonyManager {
   private PhoneStateListener listener;
   private int eventFlags;
   private String deviceId;
+  private String groupIdLevel1;
   private String networkOperatorName;
   private String networkCountryIso;
   private String networkOperator;
@@ -186,4 +187,15 @@ public class ShadowTelephonyManager {
   public void setCellLocation(CellLocation cellLocation) {
     this.cellLocation = cellLocation;
   }
+
+#if ($api >= 18)
+  @Implementation
+  public String getGroupIdLevel1() {
+    return this.groupIdLevel1;
+  }
+
+  public void setGroupIdLevel1(String groupIdLevel1) {
+    this.groupIdLevel1 = groupIdLevel1;
+  }
+#end
 }
