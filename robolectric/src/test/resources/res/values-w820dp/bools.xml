@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <bool name="different_resource_boolean">true</bool>
+  <bool name="value_only_present_in_w820dp">true</bool>
 </resources>

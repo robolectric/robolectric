@@ -10,6 +10,8 @@ import java.util.regex.Pattern;
 public class Qualifiers {
   // Matches a version qualifier like "v14". Parentheses capture the numeric
   // part for easy retrieval with Matcher.group(2).
+  private static final Pattern SCREEN_WIDTH_PATTERN = Pattern.compile("^w([0-9]+)dp");
+  private static final Pattern SMALLEST_SCREEN_WIDTH_PATTERN = Pattern.compile("^sw([0-9]+)dp");
   private static final Pattern VERSION_QUALIFIER_PATTERN = Pattern.compile("(v)([0-9]+)$");
   private static final Pattern SIZE_QUALIFIER_PATTERN = Pattern.compile("(s?[wh])([0-9]+)dp");
 
@@ -116,10 +118,13 @@ public class Qualifiers {
   }
 
   public static int getSmallestScreenWidth(String qualifiers) {
-    Matcher m = SIZE_QUALIFIER_PATTERN.matcher(qualifiers);
-    if (m.find() && "sw".equals(m.group(1))) {
-      return Integer.parseInt(m.group(2));
+    for (String qualifier : qualifiers.split("-")) {
+      Matcher matcher = SMALLEST_SCREEN_WIDTH_PATTERN.matcher(qualifier);
+      if (matcher.find()) {
+        return Integer.parseInt(matcher.group(1));
+      }
     }
+
     return -1;
   }
 
@@ -149,6 +154,28 @@ public class Qualifiers {
         qualifiers += "-";
       }
       qualifiers += "sw" + smallestScreenWidth + "dp";
+    }
+    return qualifiers;
+  }
+
+  public static int getScreenWidth(String qualifiers) {
+    for (String qualifier : qualifiers.split("-")) {
+      Matcher matcher = SCREEN_WIDTH_PATTERN.matcher(qualifier);
+      if (matcher.find()) {
+        return Integer.parseInt(matcher.group(1));
+      }
+    }
+
+    return -1;
+  }
+
+  public static String addScreenWidth(String qualifiers, int screenWidth) {
+    int qualifiersScreenWidth = Qualifiers.getScreenWidth(qualifiers);
+    if (qualifiersScreenWidth == -1) {
+      if (qualifiers.length() > 0) {
+        qualifiers += "-";
+      }
+      qualifiers += "w" + screenWidth + "dp";
     }
     return qualifiers;
   }

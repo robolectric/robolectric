@@ -332,6 +332,7 @@ public final class R {
     public static final int reference_to_true = 0x10f04;
     public static final int true_as_item = 0x10f05;
     public static final int different_resource_boolean=0x10f06;
+    public static final int value_only_present_in_w820dp=0x10f07;
   }
 
   public static final class style {
