@@ -28,7 +28,8 @@ public class ResourceLoaderTest {
     assertThat(textView.getText().toString()).isEqualTo("land");
   }
 
-  @Test 
+  @Test
+  @Config(qualifiers="w0dp")
   public void checkDefaultBooleanValue() throws Exception {
 	  assertThat(RuntimeEnvironment.application.getResources().getBoolean(R.bool.different_resource_boolean)).isEqualTo(false);
   }

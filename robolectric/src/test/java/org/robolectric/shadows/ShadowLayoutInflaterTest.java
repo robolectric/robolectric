@@ -357,6 +357,7 @@ public class ShadowLayoutInflaterTest {
   }
 
   @Test
+  @Config(qualifiers = "w0dp")
   public void testSetContentViewByItemResource() throws Exception {
     Activity activity = buildActivity(Activity.class).create().get();
     activity.setContentView(R.layout.main_layout);

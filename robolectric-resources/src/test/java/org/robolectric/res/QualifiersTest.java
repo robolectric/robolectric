@@ -22,4 +22,19 @@ public class QualifiersTest {
     assertThat(Qualifiers.addSmallestScreenWidth("v7", 320)).isEqualTo("v7-sw320dp");
     assertThat(Qualifiers.addSmallestScreenWidth("sw320dp-v7", 480)).isEqualTo("sw320dp-v7");
   }
+
+  @Test public void getScreenWidth() {
+    assertThat(Qualifiers.getScreenWidth("w320dp")).isEqualTo(320);
+    assertThat(Qualifiers.getScreenWidth("w320dp-v7")).isEqualTo(320);
+    assertThat(Qualifiers.getScreenWidth("en-rUS-w320dp")).isEqualTo(320);
+    assertThat(Qualifiers.getScreenWidth("en-rUS-w320dp-v7")).isEqualTo(320);
+    assertThat(Qualifiers.getScreenWidth("en-rUS-v7")).isEqualTo(-1);
+    assertThat(Qualifiers.getScreenWidth("de-v23-sw320dp-w1024dp")).isEqualTo(1024);
+    assertThat(Qualifiers.getScreenWidth("en-rUS-sw320dp-v7")).isEqualTo(-1);
+  }
+
+  @Test public void getAddScreenWidth() {
+    assertThat(Qualifiers.addScreenWidth("v7", 320)).isEqualTo("v7-w320dp");
+    assertThat(Qualifiers.addScreenWidth("w320dp-v7", 480)).isEqualTo("w320dp-v7");
+  }
 }
