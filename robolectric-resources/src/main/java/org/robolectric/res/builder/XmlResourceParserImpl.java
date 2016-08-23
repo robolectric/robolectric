@@ -285,7 +285,7 @@ public class XmlResourceParserImpl implements XmlResourceParser {
     try {
       Node attr = getAttributeAt(index);
       String namespace = maybeReplaceNamespace(attr.getNamespaceURI());
-      return (AttributeResource.ANDROID_RES_NS_PREFIX + packageName).equals(namespace) ?
+      return applicationNamespace.equals(namespace) ?
         attr.getLocalName() :
         attr.getNodeName();
     } catch (IndexOutOfBoundsException ex) {
