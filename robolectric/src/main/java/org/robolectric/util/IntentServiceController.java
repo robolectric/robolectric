@@ -1,6 +1,7 @@
 package org.robolectric.util;
 
 import android.app.Application;
+import android.app.Service;
 import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
