@@ -3,6 +3,7 @@ package org.robolectric;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.Service;
+import android.app.IntentService;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
