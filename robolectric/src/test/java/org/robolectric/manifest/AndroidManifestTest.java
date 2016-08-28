@@ -408,4 +408,13 @@ public class AndroidManifestTest {
     public void onReceive(Context context, Intent intent) {
     }
   }
+
+  @Test
+  public void shouldHaveStableHashCode() throws Exception {
+    AndroidManifest config = newConfig("TestAndroidManifestWithContentProviders.xml");
+    int hashCode1 = config.hashCode();
+    config.getServices();
+    int hashCode2 = config.hashCode();
+    assertEquals(hashCode1, hashCode2);
+  }
 }
