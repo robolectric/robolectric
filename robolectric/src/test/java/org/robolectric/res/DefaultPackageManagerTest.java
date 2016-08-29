@@ -46,13 +46,13 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.robolectric.Robolectric.setupActivity;
-import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE, sdk = 23)
 public class DefaultPackageManagerTest {
   private static final String TEST_PACKAGE_NAME = "com.some.other.package";
   private static final String TEST_PACKAGE_LABEL = "My Little App";
+  private static final String TEST_APP_PATH = "/data/app/application.apk";
   private final RobolectricPackageManager rpm = RuntimeEnvironment.getRobolectricPackageManager();
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
@@ -87,6 +87,28 @@ public class DefaultPackageManagerTest {
     List<PackageInstaller.SessionInfo> allSessions = RuntimeEnvironment.getPackageManager().getPackageInstaller().getAllSessions();
 
     assertThat(allSessions).hasSameSizeAs(rpm.getInstalledPackages(0));
+  }
+
+  @Test
+  public void packageInstallerAndGetPackageArchiveInfo() {
+    ApplicationInfo appInfo = new ApplicationInfo();
+    appInfo.flags = 0;
+    appInfo.packageName = TEST_PACKAGE_NAME;
+    appInfo.sourceDir = TEST_APP_PATH;
+    appInfo.name = TEST_PACKAGE_LABEL;
+
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = TEST_PACKAGE_NAME;
+    packageInfo.applicationInfo = appInfo;
+    rpm.addPackage(packageInfo);
+
+    PackageInfo packageInfoResult = rpm.getPackageArchiveInfo(TEST_APP_PATH, 0);
+    assertThat(packageInfoResult).isNotNull();
+    ApplicationInfo applicationInfo = packageInfoResult.applicationInfo;
+    assertThat(applicationInfo).isInstanceOf(ApplicationInfo.class);
+    assertThat(applicationInfo.packageName).isEqualTo(TEST_PACKAGE_NAME);
+    assertThat(applicationInfo.sourceDir).isEqualTo(TEST_APP_PATH);
+
   }
 
   @Test

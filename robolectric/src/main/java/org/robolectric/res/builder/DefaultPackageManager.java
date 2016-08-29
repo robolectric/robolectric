@@ -430,6 +430,18 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
     return 0;
   }
 
+  @Override
+  public PackageInfo getPackageArchiveInfo(String archiveFilePath, int flags) {
+    List<PackageInfo> packages = getInstalledPackages(flags);
+    for (PackageInfo aPackage : packages) {
+      ApplicationInfo appInfo = aPackage.applicationInfo;
+      if (archiveFilePath.equals(appInfo.sourceDir)) {
+        return aPackage;
+      }
+    }
+    return null;
+  }
+
   /**
    * Non-Android accessor.  Use to make assertions on values passed to setComponentEnabledSetting.
    *

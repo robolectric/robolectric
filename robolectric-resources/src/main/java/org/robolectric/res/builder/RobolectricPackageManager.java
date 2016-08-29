@@ -92,6 +92,8 @@ public interface RobolectricPackageManager {
 
   void setPackagesForUid(int uid, String... packagesForCallingUid);
 
+  PackageInfo getPackageArchiveInfo(String archiveFilePath, int flags);
+
   class ComponentState {
     public int newState;
     public int flags;
