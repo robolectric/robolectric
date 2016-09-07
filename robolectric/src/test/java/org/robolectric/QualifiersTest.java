@@ -48,7 +48,7 @@ public class QualifiersTest {
 
   @Test
   public void defaultScreenWidth() {
-    assertThat(RuntimeEnvironment.application.getResources().getBoolean(R.bool.value_only_present_in_w820dp)).isTrue();
-    assertThat(RuntimeEnvironment.application.getResources().getConfiguration().screenWidthDp).isEqualTo(1024);
+    assertThat(RuntimeEnvironment.application.getResources().getBoolean(R.bool.value_only_present_in_w320dp)).isTrue();
+    assertThat(RuntimeEnvironment.application.getResources().getConfiguration().screenWidthDp).isEqualTo(320);
   }
 }
