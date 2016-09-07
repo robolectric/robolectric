@@ -3,6 +3,7 @@ package org.robolectric;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.Service;
+import android.app.IntentService;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
@@ -16,6 +17,7 @@ import org.robolectric.res.builder.XmlResourceParserImpl;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.util.ActivityController;
 import org.robolectric.util.FragmentController;
+import org.robolectric.util.IntentServiceController;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.Scheduler;
@@ -71,6 +73,18 @@ public class Robolectric {
 
   public static <T extends Service> T setupService(Class<T> serviceClass) {
     return buildService(serviceClass).create().get();
+  }
+
+  public static <T extends IntentService> IntentServiceController<T> buildIntentService(Class<T> serviceClass) {
+    return buildIntentService(serviceClass, null);
+  }
+
+  public static <T extends IntentService> IntentServiceController<T> buildIntentService(Class<T> serviceClass, Intent intent) {
+    return IntentServiceController.of(getShadowsAdapter(), ReflectionHelpers.callConstructor(serviceClass, new ReflectionHelpers.ClassParameter<String>(String.class, "IntentService")), intent);
+  }
+
+  public static <T extends IntentService> T setupIntentService(Class<T> serviceClass) {
+    return buildIntentService(serviceClass).create().get();
   }
 
   public static <T extends Activity> ActivityController<T> buildActivity(Class<T> activityClass) {
