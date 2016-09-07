@@ -458,6 +458,7 @@ public class AndroidManifest {
     return (data != null && data.getLabel() != null) ? data.getLabel() : applicationLabel;
   }
 
+  @Deprecated
   public void setPackageName(String packageName) {
     this.packageName = packageName;
   }
