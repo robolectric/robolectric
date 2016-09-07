@@ -759,4 +759,9 @@ public class StubPackageManager extends PackageManager {
   public List<ResolveInfo> queryIntentContentProviders(Intent intent, int flags) {
     return null;
   }
+
+  @Override
+  public PackageInfo getPackageArchiveInfo(String archiveFilePath, int flags) {
+    return null;
+  }
 }
