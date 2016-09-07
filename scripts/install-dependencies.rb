@@ -83,14 +83,19 @@ def install_map(group_id, artifact_id, api, revision)
     exit 1
   end
 
-  version = `grep --color=never ^revision= "#{dir}/manifest.ini" | cut -d= -f2`
-  if version.strip != revision
+  revision_match = File.read("#{dir}/manifest.ini").match(/^revision=(\d+)$/)
+  if revision_match.nil?
+    puts "Manifest file missing revision number."
+    puts "Make sure that 'Google APIs' is up to date in the SDK manager for API #{api}."
+  end
+  manifest_revision = revision_match[1].strip
+  if manifest_revision != revision
     puts "#{group_id}:#{artifact_id} is an incompatible revision!"
-    puts "Make sure that 'Google APIs' is up to date in the SDK manager for API #{api}. Expected revision #{revision} but was #{version}."
+    puts "Make sure that 'Google APIs' is up to date in the SDK manager for API #{api}. Expected revision #{revision} but was #{manifest_revision}."
     exit 1
   end
 
-  puts "Installing Maps API #{group_id}:#{artifact_id}, API #{api}, version #{version}, revision #{revision}."
+  puts "Installing Maps API #{group_id}:#{artifact_id}, API #{api}, revision #{revision}."
   install(group_id, artifact_id, "#{api}_r#{revision}", path)
 end
 
