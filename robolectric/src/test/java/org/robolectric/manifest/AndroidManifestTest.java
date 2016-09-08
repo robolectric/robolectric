@@ -47,7 +47,6 @@ public class AndroidManifestTest {
   @Test
   public void parseManifest_shouldReadContentProviders() throws Exception {
     AndroidManifest config = newConfig("TestAndroidManifestWithContentProviders.xml");
-    assertThat(config.getContentProviders()).hasSize(2);
 
     assertThat(config.getContentProviders().get(0).getClassName()).isEqualTo("org.robolectric.tester.FullyQualifiedClassName");
     assertThat(config.getContentProviders().get(0).getAuthority()).isEqualTo("org.robolectric.authority1");

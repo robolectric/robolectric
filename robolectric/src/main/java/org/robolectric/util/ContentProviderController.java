@@ -5,7 +5,6 @@ import android.content.ContentProvider;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.pm.ProviderInfo;
-import android.text.TextUtils;
 import org.robolectric.RuntimeEnvironment;
 
 public class ContentProviderController<T extends ContentProvider> {
