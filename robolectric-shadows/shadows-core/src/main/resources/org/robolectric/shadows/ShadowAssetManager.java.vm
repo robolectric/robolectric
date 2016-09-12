@@ -487,7 +487,9 @@ public final class ShadowAssetManager {
       if (attribute != null && !attribute.isNull()) {
         TypedValue typedValue = new TypedValue();
         // If there is an AttributeSet then use the resource loader that the attribute set was created with.
-        ResourceLoader resourceLoader = set != null ? ((XmlResourceParserImpl) set).getResourceLoader() : this.resourceLoader;
+        ResourceLoader resourceLoader = set != null && set instanceof XmlResourceParserImpl
+            ? ((XmlResourceParserImpl) set).getResourceLoader()
+            : this.resourceLoader;
         Converter.convertAndFill(attribute, typedValue, resourceLoader, RuntimeEnvironment.getQualifiers(), true);
         //noinspection PointlessArithmeticExpression
         data[offset + ShadowAssetManager.STYLE_TYPE] = typedValue.type;

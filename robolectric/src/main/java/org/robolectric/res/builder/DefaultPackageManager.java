@@ -121,7 +121,7 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
       return packageInfos.get(packageName);
     }
 
-    throw new NameNotFoundException();
+    throw new NameNotFoundException(packageName);
   }
 
   @Override
@@ -130,7 +130,7 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
     if (info != null) {
       return info.applicationInfo;
     } else {
-      throw new NameNotFoundException();
+      throw new NameNotFoundException(packageName);
     }
   }
 
@@ -256,7 +256,7 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
     String serviceName = className.getClassName();
     ServiceData serviceData = androidManifest.getServiceData(serviceName);
     if (serviceData == null) {
-      throw new NameNotFoundException();
+      throw new NameNotFoundException(serviceName);
     }
     
     ServiceInfo serviceInfo = new ServiceInfo();

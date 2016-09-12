@@ -111,6 +111,17 @@ public class DefaultPackageManagerTest {
     assertThat(info.packageName).isEqualTo(RuntimeEnvironment.application.getPackageName());
   }
 
+  @Test(expected = NameNotFoundException.class)
+  public void getApplicationInfo_whenUnknown_shouldThrowNameNotFoundException() throws Exception {
+    try {
+      rpm.getApplicationInfo("unknown_package", 0);
+      fail("should have thrown NameNotFoundException");
+    } catch (NameNotFoundException e) {
+      assertThat(e.getMessage()).contains("unknown_package");
+      throw e;
+    }
+  }
+
   @Test
   public void getApplicationInfo_OtherApplication() throws Exception {
     PackageInfo packageInfo = new PackageInfo();
@@ -484,7 +495,13 @@ public class DefaultPackageManagerTest {
   @Test(expected = PackageManager.NameNotFoundException.class)
   @Config(manifest = "src/test/resources/TestAndroidManifestWithReceiversCustomPackage.xml")
   public void testGetPackageInfo_ForReceiversIncorrectPackage() throws Exception {
-    PackageInfo receiverInfos = rpm.getPackageInfo("unknown_package", PackageManager.GET_RECEIVERS);
+    try {
+      rpm.getPackageInfo("unknown_package", PackageManager.GET_RECEIVERS);
+      fail("should have thrown NameNotFoundException");
+    } catch (NameNotFoundException e) {
+      assertThat(e.getMessage()).contains("unknown_package");
+      throw e;
+    }
   }
 
   @Test
@@ -759,16 +776,17 @@ public class DefaultPackageManagerTest {
     assertNull(serviceInfo.metaData);
   }
   
-  @Test
+  @Test(expected = NameNotFoundException.class)
   @Config(manifest = "src/test/resources/TestPackageManagerGetServiceInfo.xml")
   public void getServiceInfo_shouldThrowNameNotFoundExceptionIfNotExist() throws Exception {
     ComponentName nonExistComponent = new ComponentName("org.robolectric", "com.foo.NonExistService");
     try {
       rpm.getServiceInfo(nonExistComponent, PackageManager.GET_SERVICES);
+      fail("should have thrown NameNotFoundException");
     } catch (NameNotFoundException e) {
-      return;
+      assertThat(e.getMessage()).contains("com.foo.NonExistService");
+      throw e;
     }
-    fail("NameNotFoundException is expected.");
   }
 
   @Test
