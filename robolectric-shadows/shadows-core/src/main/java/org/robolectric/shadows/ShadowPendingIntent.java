@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.robolectric.Shadows.shadowOf;
+
 /**
  * Shadow for {@code android.app.PendingIntent}.
  */
@@ -136,10 +138,8 @@ public class ShadowPendingIntent {
   @Implementation
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-
-    ShadowPendingIntent that = (ShadowPendingIntent) o;
-
+    if (o == null || realPendingIntent.getClass() != o.getClass()) return false;
+    ShadowPendingIntent that = shadowOf((PendingIntent) o);
     if (savedContext != null) {
       String packageName = savedContext.getPackageName();
       String thatPackageName = that.savedContext.getPackageName();
@@ -147,8 +147,19 @@ public class ShadowPendingIntent {
     } else {
       if (that.savedContext != null) return false;
     }
-    if (savedIntents != null) {
-      if (!Arrays.equals(this.savedIntents, that.savedIntents)) return false;
+    if (this.savedIntents == null) {
+      return that.savedIntents == null;
+    }
+    if (that.savedIntents == null) {
+      return false;
+    }
+    if (this.savedIntents.length != that.savedIntents.length) {
+      return false;
+    }
+    for (int i = 0; i < this.savedIntents.length; i++) {
+      if (!this.savedIntents[i].filterEquals(that.savedIntents[i])) {
+        return false;
+      }
     }
     return true;
   }
