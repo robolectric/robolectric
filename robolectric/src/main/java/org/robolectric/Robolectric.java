@@ -4,10 +4,10 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.app.Service;
 import android.app.IntentService;
-import android.content.Context;
-import android.content.ContextWrapper;
+import android.content.ContentProvider;
 import android.content.Intent;
 
+import android.content.pm.PackageManager;
 import android.util.AttributeSet;
 import android.view.View;
 import org.robolectric.internal.ShadowProvider;
@@ -15,13 +15,7 @@ import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.builder.XmlResourceParserImpl;
 import org.robolectric.shadows.ShadowApplication;
-import org.robolectric.util.ActivityController;
-import org.robolectric.util.FragmentController;
-import org.robolectric.util.IntentServiceController;
-import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
-import org.robolectric.util.Scheduler;
-import org.robolectric.util.ServiceController;
+import org.robolectric.util.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -85,6 +79,14 @@ public class Robolectric {
 
   public static <T extends IntentService> T setupIntentService(Class<T> serviceClass) {
     return buildIntentService(serviceClass).create().get();
+  }
+
+  public static <T extends ContentProvider> ContentProviderController<T> buildContentProvider(Class<T> contentProviderClass) {
+    return ContentProviderController.of(ReflectionHelpers.callConstructor(contentProviderClass));
+  }
+
+  public static <T extends ContentProvider> T setupContentProvider(Class<T> contentProviderClass) {
+    return buildContentProvider(contentProviderClass).create().get();
   }
 
   public static <T extends Activity> ActivityController<T> buildActivity(Class<T> activityClass) {

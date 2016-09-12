@@ -15,6 +15,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import com.google.common.base.Preconditions;
+import org.jetbrains.annotations.Nullable;
 import org.robolectric.res.FsFile;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.ResourcePath;
@@ -93,6 +94,7 @@ public class AndroidManifest {
     this.resDirectory = resDirectory;
     this.assetsDirectory = assetsDirectory;
     this.packageName = packageName;
+    parseAndroidManifest();
   }
 
   public String getThemeRef(Class<? extends Activity> activityClass) {
@@ -105,7 +107,6 @@ public class AndroidManifest {
   }
 
   public String getRClassName() throws Exception {
-    parseAndroidManifest();
     return rClassName;
   }
 
@@ -181,15 +182,33 @@ public class AndroidManifest {
     if (application == null) return;
 
     for (Node contentProviderNode : getChildrenTags(application, "provider")) {
-      Node nameItem = contentProviderNode.getAttributes().getNamedItem("android:name");
-      Node authorityItem = contentProviderNode.getAttributes().getNamedItem("android:authorities");
-      if (nameItem != null && authorityItem != null) {
-        MetaData metaData = new MetaData(getChildrenTags(contentProviderNode, "meta-data"));
+      String name = getAttributeValue(contentProviderNode, "android:name");
+      String authority = getAttributeValue(contentProviderNode, "android:authorities");
+      MetaData metaData = new MetaData(getChildrenTags(contentProviderNode, "meta-data"));
 
-        providers.add(new ContentProviderData(resolveClassRef(nameItem.getTextContent()), metaData,
-            authorityItem.getTextContent()));
+      List<PathPermissionData> pathPermissionDatas = new ArrayList<>();
+      for (Node node : getChildrenTags(contentProviderNode, "path-permission")) {
+        pathPermissionDatas.add(new PathPermissionData(
+                getAttributeValue(node, "android:path"),
+                getAttributeValue(node, "android:pathPrefix"),
+                getAttributeValue(node, "android:pathPattern"),
+                getAttributeValue(node, "android:readPermission"),
+                getAttributeValue(node, "android:writePermission")
+        ));
       }
+
+      providers.add(new ContentProviderData(resolveClassRef(name),
+              metaData,
+              authority,
+              getAttributeValue(contentProviderNode, "android:readPermission"),
+              getAttributeValue(contentProviderNode, "android:writePermission"),
+              pathPermissionDatas));
     }
+  }
+
+  private @Nullable String getAttributeValue(Node parentNode, String attributeName) {
+    Node attributeNode = parentNode.getAttributes().getNamedItem(attributeName);
+    return attributeNode == null ? null : attributeNode.getTextContent();
   }
 
   private void parseReceivers(final Document manifestDocument) {
@@ -448,12 +467,10 @@ public class AndroidManifest {
   }
 
   public String getApplicationName() {
-    parseAndroidManifest();
     return applicationName;
   }
 
   public String getActivityLabel(Class<? extends Activity> activity) {
-    parseAndroidManifest();
     ActivityData data = getActivityData(activity.getName());
     return (data != null && data.getLabel() != null) ? data.getLabel() : applicationLabel;
   }
@@ -464,7 +481,6 @@ public class AndroidManifest {
   }
 
   public String getPackageName() {
-    parseAndroidManifest();
     return packageName;
   }
 
@@ -481,27 +497,22 @@ public class AndroidManifest {
   }
 
   public int getMinSdkVersion() {
-    parseAndroidManifest();
     return minSdkVersion == null ? 1 : minSdkVersion;
   }
 
   public int getTargetSdkVersion() {
-    parseAndroidManifest();
     return targetSdkVersion == null ? getMinSdkVersion() : targetSdkVersion;
   }
 
   public int getApplicationFlags() {
-    parseAndroidManifest();
     return applicationFlags;
   }
 
   public String getProcessName() {
-    parseAndroidManifest();
     return processName;
   }
 
   public Map<String, Object> getApplicationMetaData() {
-    parseAndroidManifest();
     if (applicationMetaData == null) {
       applicationMetaData = new MetaData(Collections.<Node>emptyList());
     }
@@ -522,7 +533,6 @@ public class AndroidManifest {
   }
 
   public List<ContentProviderData> getContentProviders() {
-    parseAndroidManifest();
     return providers;
   }
 
@@ -549,12 +559,10 @@ public class AndroidManifest {
   }
 
   public List<BroadcastReceiverData> getBroadcastReceivers() {
-    parseAndroidManifest();
     return receivers;
   }
 
   public List<ServiceData> getServices() {
-    parseAndroidManifest();
     return new ArrayList<>(serviceDatas.values());
   }
 
@@ -608,12 +616,10 @@ public class AndroidManifest {
   }
 
   public Map<String, ActivityData> getActivityDatas() {
-    parseAndroidManifest();
     return activityDatas;
   }
 
   public List<String> getUsedPermissions() {
-    parseAndroidManifest();
     return usedPermissions;
   }
 }

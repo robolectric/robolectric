@@ -47,7 +47,6 @@ public class AndroidManifestTest {
   @Test
   public void parseManifest_shouldReadContentProviders() throws Exception {
     AndroidManifest config = newConfig("TestAndroidManifestWithContentProviders.xml");
-    assertThat(config.getContentProviders()).hasSize(2);
 
     assertThat(config.getContentProviders().get(0).getClassName()).isEqualTo("org.robolectric.tester.FullyQualifiedClassName");
     assertThat(config.getContentProviders().get(0).getAuthority()).isEqualTo("org.robolectric.authority1");
@@ -407,5 +406,14 @@ public class AndroidManifestTest {
     @Override
     public void onReceive(Context context, Intent intent) {
     }
+  }
+
+  @Test
+  public void shouldHaveStableHashCode() throws Exception {
+    AndroidManifest config = newConfig("TestAndroidManifestWithContentProviders.xml");
+    int hashCode1 = config.hashCode();
+    config.getServices();
+    int hashCode2 = config.hashCode();
+    assertEquals(hashCode1, hashCode2);
   }
 }

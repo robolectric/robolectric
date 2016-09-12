@@ -9,5 +9,19 @@
     <provider
       android:name=".tester.PartiallyQualifiedClassName"
       android:authorities="org.robolectric.authority2"/>
+
+    <provider
+      android:name="org.robolectric.util.ContentProviderControllerTest$MyContentProvider"
+      android:authorities="org.robolectric.authority2"
+      android:permission="PERMISSION"
+      android:readPermission="READ_PERMISSION"
+      android:writePermission="WRITE_PERMISSION"
+    >
+      <path-permission
+              android:pathPattern="/path/*"
+              android:readPermission="PATH_READ_PERMISSION"
+              android:writePermission="PATH_WRITE_PERMISSION"
+      />
+    </provider>
   </application>
 </manifest>
