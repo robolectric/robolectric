@@ -3,14 +3,7 @@ package org.robolectric.res.builder;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.ActivityInfo;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageInstaller;
-import android.content.pm.PackageManager;
-import android.content.pm.ProviderInfo;
-import android.content.pm.ResolveInfo;
-import android.content.pm.ServiceInfo;
+import android.content.pm.*;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Binder;
@@ -21,13 +14,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.manifest.ActivityData;
-import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.manifest.ContentProviderData;
-import org.robolectric.manifest.IntentFilterData;
-import org.robolectric.manifest.PackageItemData;
-import org.robolectric.manifest.ServiceData;
-import org.robolectric.res.ResourceLoader;
+import org.robolectric.manifest.*;
 import org.robolectric.util.TempDirectory;
 
 import java.io.File;
@@ -195,6 +182,9 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
         providerInfo.packageName = packageName;
         providerInfo.name = contentProviderData.getClassName();
         providerInfo.authority = contentProviderData.getAuthority();
+        providerInfo.readPermission = contentProviderData.getReadPermission();
+        providerInfo.writePermission = contentProviderData.getWritePermission();
+        providerInfo.pathPermissions = createPathPermissions(contentProviderData.getPathPermissionDatas());
         if ((flags & GET_META_DATA) != 0) {
           providerInfo.metaData = metaDataToBundle(contentProviderData.getMetaData().getValueMap());
         }
@@ -202,6 +192,30 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
       }
     }
     return null;
+  }
+
+  private PathPermission[] createPathPermissions(List<PathPermissionData> pathPermissionDatas) {
+    PathPermission[] pathPermissions = new PathPermission[pathPermissionDatas.size()];
+    for (int i = 0; i < pathPermissions.length; i++) {
+      PathPermissionData data = pathPermissionDatas.get(i);
+
+      final String path;
+      final int type;
+      if (data.pathPrefix != null) {
+        path = data.pathPrefix;
+        type = PathPermission.PATTERN_PREFIX;
+      } else if (data.pathPattern != null) {
+        path = data.pathPattern;
+        type = PathPermission.PATTERN_SIMPLE_GLOB;
+      } else {
+        path = data.path;
+        type = PathPermission.PATTERN_LITERAL;
+      }
+
+      pathPermissions[i] = new PathPermission(path, type, data.readPermission, data.writePermission);
+    }
+
+    return pathPermissions;
   }
 
   @Override
