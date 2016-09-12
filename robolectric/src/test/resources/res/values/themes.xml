@@ -20,7 +20,8 @@
     <item name="someLayoutTwo">?someLayoutOne</item>
   </style>
 
-  <style name="Theme.MyTheme" parent=""/>
+  <style name="Theme.MyThemeWithEmptyParent" parent=""/>
+  <style name="Theme.MyThemeWithNullStringParent" parent="Null"/>
 
   <style name="Widget.Robolectric.Button" parent="@android:style/Widget.Button">
     <item name="android:background">#ff00ff00</item>

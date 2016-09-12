@@ -4,7 +4,7 @@
 # add/change/remove resources in the src/test/resources/res folder.
 # 
 
-path_to_r = "../robolectric/src/test/java/org/robolectric/R.java"
+path_to_r = File.expand_path("../../robolectric/src/test/java/org/robolectric/R.java", __FILE__)
 if path_to_r =~ /^\/path\/to/
   raise "please change the path to this file!"
 else
