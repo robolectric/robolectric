@@ -365,16 +365,13 @@ public class AndroidManifestTest {
     assertThat(intentFilterData.getAuthorities().get(2).getPort()).isEqualTo("3");
   }
 
-  /////////////////////////////
-
-  public AndroidManifest newConfigWith(String usesSdkAttrs) throws IOException {
-    File f = temporaryFolder.newFile("whatever.xml",
-        "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
-            "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
-            "          package=\"org.robolectric\">\n" +
-            "    <uses-sdk " + usesSdkAttrs + "/>\n" +
-            "</manifest>\n");
-    return new AndroidManifest(Fs.newFile(f), null, null);
+  @Test
+  public void shouldHaveStableHashCode() throws Exception {
+    AndroidManifest manifest = newConfig("TestAndroidManifestWithContentProviders.xml");
+    int hashCode1 = manifest.hashCode();
+    manifest.getServices();
+    int hashCode2 = manifest.hashCode();
+    assertEquals(hashCode1, hashCode2);
   }
 
   @Test
@@ -397,6 +394,18 @@ public class AndroidManifestTest {
     assertTrue(hasFlag(config.getApplicationFlags(), FLAG_VM_SAFE_MODE));
   }
 
+  /////////////////////////////
+
+  public AndroidManifest newConfigWith(String usesSdkAttrs) throws IOException {
+    File f = temporaryFolder.newFile("whatever.xml",
+        "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+            "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
+            "          package=\"org.robolectric\">\n" +
+            "    <uses-sdk " + usesSdkAttrs + "/>\n" +
+            "</manifest>\n");
+    return new AndroidManifest(Fs.newFile(f), null, null);
+  }
+
   private boolean hasFlag(final int flags, final int flag) {
     return (flags & flag) != 0;
   }
@@ -406,14 +415,5 @@ public class AndroidManifestTest {
     @Override
     public void onReceive(Context context, Intent intent) {
     }
-  }
-
-  @Test
-  public void shouldHaveStableHashCode() throws Exception {
-    AndroidManifest config = newConfig("TestAndroidManifestWithContentProviders.xml");
-    int hashCode1 = config.hashCode();
-    config.getServices();
-    int hashCode2 = config.hashCode();
-    assertEquals(hashCode1, hashCode2);
   }
 }
