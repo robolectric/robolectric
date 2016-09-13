@@ -132,10 +132,17 @@ public class ShadowThemeTest {
     TestActivity activity = Robolectric.setupActivity(TestActivityWithAnotherTheme.class);
     Style style = shadowOf(activity.getAssets()).resolveStyle(
         null,
-        R.style.Theme_MyTheme);
+        R.style.Theme_MyThemeWithEmptyParent);
     assertThat(style.getAttrValue(new ResName("android", "attr", "background"))).isNull();
   }
 
+  @Test public void whenAThemeHasNullStringParentAttr_shouldHaveNoParent() throws Exception {
+    TestActivity activity = Robolectric.setupActivity(TestActivityWithAnotherTheme.class);
+    Style style = shadowOf(activity.getAssets()).resolveStyle(
+        null,
+        R.style.Theme_MyThemeWithNullStringParent);
+    assertThat(style.getAttrValue(new ResName("android", "attr", "background"))).isNull();
+  }
 
   @Test public void shouldApplyParentStylesFromAttrs() throws Exception {
     TestActivity activity = Robolectric.setupActivity(TestActivityWithAnotherTheme.class);

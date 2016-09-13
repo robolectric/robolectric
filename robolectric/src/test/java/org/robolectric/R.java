@@ -346,11 +346,12 @@ public final class R {
     public static final int Sized = 0x11007;
     public static final int Gastropod = 0x11008;
     public static final int Theme_ThirdTheme = 0x11009;
-    public static final int Theme_MyTheme = 0x1100a;
-    public static final int MyBlackTheme = 0x1100b;
-    public static final int MyBlueTheme = 0x1100c;
+    public static final int Theme_MyThemeWithEmptyParent = 0x1100a;
+    public static final int Theme_MyThemeWithNullStringParent = 0x1100b;
+    public static final int MyBlackTheme = 0x1100c;
+    public static final int MyBlueTheme = 0x1100d;
 
-    public static final int IndirectButtonStyle = 0x1100d;
+    public static final int IndirectButtonStyle = 0x1100e;
   }
 
   public static final class fraction {
