@@ -155,6 +155,9 @@ configure(subprojects.findAll { project -> project.name =~ subshadowRE }) {
     def robolectricVersion = AndroidSdk.versions[androidApi]
     logger.info "[${project.name}] Android API is $androidApi — $robolectricVersion"
 
+    def generatedShadowsDir = project.file("${project.buildDir}/generated-shadows")
+    def shadowsCoreProj = project.findProject(":robolectric-shadows/shadows-core")
+
     task velocity(type: VelocityTask) {
         def shadowsCoreProject = project.findProject(":robolectric-shadows/shadows-core")
         source = shadowsCoreProject.files("src/main/resources").asFileTree.matching { include "/**/*.vm" }
@@ -166,28 +169,30 @@ configure(subprojects.findAll { project -> project.name =~ subshadowRE }) {
             contextValues.putAll(ptrClass: "int", ptrClassBoxed: "Integer")
         }
 
-        outputDir = project.file("${project.buildDir}/generated-shadows")
+        outputDir = generatedShadowsDir
+    }
 
-        doLast {
-            def shadowsCoreProj = project.findProject(":robolectric-shadows/shadows-core")
-            project.copy {
-                from shadowsCoreProj.files("src/main/java")
-                into outputDir
-            }
+    task copyNonTemplatedShadows(type: Copy) {
+        mustRunAfter velocity
 
-            project.copy {
-                from shadowsCoreProj.fileTree("src/main/resources").include("META-INF/**")
-                into project.file("${project.buildDir}/resources/main")
-            }
-        }
+        from shadowsCoreProj.files("src/main/java")
+        into generatedShadowsDir
+    }
+
+    task copyShadowProviderServiceFiles(type: Copy) {
+        from shadowsCoreProj.fileTree("src/main/resources").include("META-INF/**")
+        into project.file("${project.buildDir}/resources/main")
     }
 
     shadows {
         packageName "org.robolectric"
     }
 
+    compileJava.dependsOn("copyNonTemplatedShadows")
+    compileJava.dependsOn("copyShadowProviderServiceFiles")
+
     generateShadowProvider {
-        dependsOn velocity
+        dependsOn velocity, copyNonTemplatedShadows
     }
 
     configurations {
