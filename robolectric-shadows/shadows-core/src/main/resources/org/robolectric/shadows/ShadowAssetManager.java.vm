@@ -337,7 +337,7 @@ public final class ShadowAssetManager {
   }
 
   @HiddenApi @Implementation
-  public static void copyTheme($ptrClass dest, long source) {
+  public static void copyTheme($ptrClass dest, $ptrClass source) {
     throw new UnsupportedOperationException();
   }
 
@@ -518,7 +518,14 @@ public final class ShadowAssetManager {
     if (attributeSet != null) {
       for (int i = 0; i < attributeSet.getAttributeCount(); i++) {
         if (attributeSet.getAttributeNameResource(i) == resId && attributeSet.getAttributeValue(i) != null) {
-          return new AttributeResource(resourceLoader.getResourceIndex().getResName(resId), attributeSet.getAttributeValue(i), "fixme!!!");
+          ResName resName = resourceLoader.getResourceIndex().getResName(resId);
+
+          if (resName == null) {
+            // We're looking for an attribute that doesn't yet exist at this SDK level just pass it back blindly and
+            // assume the user knows what they're doing with it.
+            resName = ResName.qualifyResName(attributeSet.getAttributeName(i), null, "attr");
+          }
+          return new AttributeResource(resName, attributeSet.getAttributeValue(i), "fixme!!!");
         }
       }
     }
