@@ -2,8 +2,10 @@ package org.robolectric.internal;
 
 import android.app.Application;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Looper;
@@ -16,21 +18,23 @@ import org.robolectric.ShadowsAdapter;
 import org.robolectric.TestLifecycle;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.fakes.RoboInstrumentation;
+import org.robolectric.manifest.ActivityData;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.ResBundle;
-import org.robolectric.res.ResourceLoader;
+import org.robolectric.res.*;
 import org.robolectric.res.builder.DefaultPackageManager;
+import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.shadows.ShadowLooper;
+import org.robolectric.util.ApplicationTestUtil;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 
 import java.lang.reflect.Method;
 import java.security.Security;
+import java.util.Map;
 
 import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 public class ParallelUniverse implements ParallelUniverseInterface {
-  private static final String DEFAULT_PACKAGE_NAME = "org.robolectric.default";
   private final RobolectricTestRunner robolectricTestRunner;
   private final ShadowsAdapter shadowsAdapter = Robolectric.getShadowsAdapter();
 
@@ -52,44 +56,31 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     }
   }
 
-  /*
-   * If the Config already has a version qualifier, do nothing. Otherwise, add a version
-   * qualifier for the target api level (which comes from the manifest or Config.emulateSdk()).
-   */
-  private String addVersionQualifierToQualifiers(String qualifiers) {
-    int versionQualifierApiLevel = ResBundle.getVersionQualifierApiLevel(qualifiers);
-    if (versionQualifierApiLevel == -1) {
-      if (qualifiers.length() > 0) {
-        qualifiers += "-";
-      }
-      qualifiers += "v" + sdkConfig.getApiLevel();
-    }
-    return qualifiers;
-  }
-
   @Override
   public void setUpApplicationState(Method method, TestLifecycle testLifecycle, ResourceLoader systemResourceLoader, AndroidManifest appManifest, Config config) {
     RuntimeEnvironment.application = null;
     RuntimeEnvironment.setMasterScheduler(new Scheduler());
     RuntimeEnvironment.setMainThread(Thread.currentThread());
-    RuntimeEnvironment.setRobolectricPackageManager(new DefaultPackageManager(shadowsAdapter));
-    RuntimeEnvironment.getRobolectricPackageManager().addPackage(DEFAULT_PACKAGE_NAME);
-    ResourceLoader resourceLoader;
-    if (appManifest != null) {
-      resourceLoader = robolectricTestRunner.getAppResourceLoader(sdkConfig, systemResourceLoader, appManifest);
-      RuntimeEnvironment.getRobolectricPackageManager().addManifest(appManifest, resourceLoader);
-    } else {
-      resourceLoader = systemResourceLoader;
-    }
+    ResourceLoader appResourceLoader = robolectricTestRunner.getAppResourceLoader(sdkConfig, systemResourceLoader, appManifest);
+
+    DefaultPackageManager packageManager = new DefaultPackageManager();
+    initializeAppManifest(appManifest, appResourceLoader, packageManager);
+    RuntimeEnvironment.setRobolectricPackageManager(packageManager);
+
+    RuntimeEnvironment.setAppResourceLoader(appResourceLoader);
+    RuntimeEnvironment.setSystemResourceLoader(systemResourceLoader);
 
     if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
       Security.insertProviderAt(new BouncyCastleProvider(), 1);
     }
 
-    shadowsAdapter.setSystemResources(systemResourceLoader);
-    String qualifiers = addVersionQualifierToQualifiers(config.qualifiers());
+    String qualifiers = Qualifiers.addPlatformVersion(config.qualifiers(), sdkConfig.getApiLevel());
+    qualifiers = Qualifiers.addSmallestScreenWidth(qualifiers, 320);
+    qualifiers = Qualifiers.addScreenWidth(qualifiers, 320);
     Resources systemResources = Resources.getSystem();
     Configuration configuration = systemResources.getConfiguration();
+    configuration.smallestScreenWidthDp = Qualifiers.getSmallestScreenWidth(qualifiers);
+    configuration.screenWidthDp = Qualifiers.getScreenWidth(qualifiers);
     shadowsAdapter.overrideQualifiers(configuration, qualifiers);
     systemResources.updateConfiguration(configuration, systemResources.getDisplayMetrics());
     RuntimeEnvironment.setQualifiers(qualifiers);
@@ -99,7 +90,6 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
     Class<?> activityThreadClass = ReflectionHelpers.loadClass(getClass().getClassLoader(), shadowsAdapter.getShadowActivityThreadClassName());
     // Looper needs to be prepared before the activity thread is created
-//    if (Looper.getMainLooper() == null) {
     if (Looper.myLooper() == null) {
       Looper.prepareMainLooper();
     }
@@ -113,13 +103,14 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     Context systemContextImpl = ReflectionHelpers.callStaticMethod(contextImplClass, "createSystemContext", ClassParameter.from(activityThreadClass, activityThread));
 
     final Application application = (Application) testLifecycle.createApplication(method, appManifest, config);
+    RuntimeEnvironment.application = application;
+
     if (application != null) {
-      String packageName = appManifest != null ? appManifest.getPackageName() : null;
-      if (packageName == null) packageName = DEFAULT_PACKAGE_NAME;
+      shadowsAdapter.bind(application, appManifest);
 
       ApplicationInfo applicationInfo;
       try {
-        applicationInfo = RuntimeEnvironment.getPackageManager().getApplicationInfo(packageName, 0);
+        applicationInfo = RuntimeEnvironment.getPackageManager().getApplicationInfo(appManifest.getPackageName(), 0);
       } catch (PackageManager.NameNotFoundException e) {
         throw new RuntimeException(e);
       }
@@ -131,26 +122,49 @@ public class ParallelUniverse implements ParallelUniverseInterface {
           ClassParameter.from(compatibilityInfoClass, null),
           ClassParameter.from(int.class, Context.CONTEXT_INCLUDE_CODE));
 
-      shadowsAdapter.bind(application, appManifest, resourceLoader);
-      if (appManifest == null) {
-        // todo: make this cleaner...
-        shadowsAdapter.setPackageName(application, applicationInfo.packageName);
-      }
-      Resources appResources = application.getResources();
-      ReflectionHelpers.setField(loadedApk, "mResources", appResources);
       try {
         Context contextImpl = systemContextImpl.createPackageContext(applicationInfo.packageName, Context.CONTEXT_INCLUDE_CODE);
         ReflectionHelpers.setField(activityThreadClass, activityThread, "mInitialApplication", application);
-        ReflectionHelpers.callInstanceMethod(Application.class, application, "attach", ClassParameter.from(Context.class, contextImpl));
+        ApplicationTestUtil.attach(application, contextImpl);
       } catch (PackageManager.NameNotFoundException e) {
         throw new RuntimeException(e);
       }
 
-      appResources.updateConfiguration(configuration, appResources.getDisplayMetrics());
-      shadowsAdapter.setAssetsQualifiers(appResources.getAssets(), qualifiers);
+      addManifestActivitiesToPackageManager(appManifest, application);
 
-      RuntimeEnvironment.application = application;
+      Resources appResources = application.getResources();
+      ReflectionHelpers.setField(loadedApk, "mResources", appResources);
+      ReflectionHelpers.setField(loadedApk, "mApplication", application);
+
+      appResources.updateConfiguration(configuration, appResources.getDisplayMetrics());
+
       application.onCreate();
+    }
+  }
+
+  private void initializeAppManifest(AndroidManifest appManifest, ResourceLoader appResourceLoader, DefaultPackageManager packageManager) {
+    appManifest.initMetaData(appResourceLoader);
+    ResourceIndex resourceIndex = appResourceLoader.getResourceIndex();
+
+    int labelRes = 0;
+    if (appManifest.getLabelRef() != null && resourceIndex != null) {
+      Integer id = ResName.getResourceId(resourceIndex, appManifest.getLabelRef(), appManifest.getPackageName());
+      labelRes = id != null ? id : 0;
+    }
+    packageManager.addManifest(appManifest, labelRes);
+  }
+
+  private void addManifestActivitiesToPackageManager(AndroidManifest appManifest, Application application) {
+    if (appManifest != null) {
+      Map<String,ActivityData> activityDatas = appManifest.getActivityDatas();
+
+      RobolectricPackageManager packageManager = (RobolectricPackageManager) application.getPackageManager();
+
+      for (ActivityData data : activityDatas.values()) {
+        String name = data.getName();
+        String activityName = name.startsWith(".") ? appManifest.getPackageName() + name : name;
+        packageManager.addResolveInfoForIntent(new Intent(activityName), new ResolveInfo());
+      }
     }
   }
 

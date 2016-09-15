@@ -10,16 +10,15 @@ import android.widget.Button;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.Shadows;
+import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.res.ResName;
-import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.Style;
 import org.robolectric.util.ActivityController;
-import org.robolectric.util.TestUtil;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Robolectric.buildActivity;
+import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowThemeTest {
@@ -33,7 +32,7 @@ public class ShadowThemeTest {
 
   @Test public void whenExplicitlySetOnActivity_beforeSetContentView_activityUsesNewTheme() throws Exception {
     ActivityController<TestActivityWithAnotherTheme> activityController = buildActivity(TestActivityWithAnotherTheme.class);
-    TestActivity activity = activityController.attach().get();
+    TestActivity activity = activityController.get();
     activity.setTheme(R.style.Theme_Robolectric);
     activityController.create();
     Button theButton = (Button) activity.findViewById(R.id.button);
@@ -85,6 +84,26 @@ public class ShadowThemeTest {
     assertThat(a.getFloat(R.styleable.CustomView_aspectRatio, 0.2f)).isEqualTo(1.69f);
   }
 
+  @Test public void obtainTypedArrayFromDependencyLibrary() throws Exception {
+    TestActivity activity = buildActivity(TestActivityWithAThirdTheme.class).create().get();
+
+    // This is an Android framework attribute, see:
+    // https://developer.android.com/reference/android/R.attr.html#selectableItemBackground
+    // so can be accessed as android.R.attr.selectableItemBackground but it will also be merged by AAPT so
+    // that it can be accessed as org.robolectric.R.attr.selectableItemBackground and will have the same ID
+    // value. The application ResourceLoader contains a list of sub-package ResourceLoaders and this ID will
+    // have a match in the android namespace as well as any libraries that have a dependency on android (i.e:
+    // all of them) and Robolectric will find the first match which returns a ResName with a
+    // package == org.robolectric - this will fail when looking up in the theme as the attribute is in the
+    // android namespace.
+    TypedArray a  = activity.getTheme().obtainStyledAttributes(new int[]{R.attr.selectableItemBackground});
+
+    int resourceId = a.getResourceId(0, 0);
+
+    // We should find the value as defined by the framework
+    assertThat(resourceId).isNotEqualTo(0);
+  }
+
   @Test public void shouldGetValuesFromAttributeReference() throws Exception {
     TestActivity activity = buildActivity(TestActivityWithAThirdTheme.class).create().get();
 
@@ -101,32 +120,37 @@ public class ShadowThemeTest {
   }
 
   @Test public void shouldInheritThemeValuesFromImplicitParents() throws Exception {
-    TestActivity activity = buildActivity(TestActivityWithAnotherTheme.class).create().get();
-    ResourceLoader resourceLoader = Shadows.shadowOf(activity.getResources()).getResourceLoader();
-    Style style = ShadowAssetManager.resolveStyle(resourceLoader,
+    TestActivity activity = Robolectric.setupActivity(TestActivityWithAnotherTheme.class);
+    Style style = shadowOf(activity.getAssets()).resolveStyle(
         null,
-        new ResName(TestUtil.TEST_PACKAGE, "style", "Widget.AnotherTheme.Button.Blarf"), "");
+        R.style.Widget_AnotherTheme_Button);
     assertThat(style.getAttrValue(new ResName("android", "attr", "background")).value)
         .isEqualTo("#ffff0000");
   }
 
   @Test public void whenAThemeHasExplicitlyEmptyParentAttr_shouldHaveNoParent() throws Exception {
-    TestActivity activity = buildActivity(TestActivityWithAnotherTheme.class).create().get();
-    ResourceLoader resourceLoader = Shadows.shadowOf(activity.getResources()).getResourceLoader();
-    Style style = ShadowAssetManager.resolveStyle(resourceLoader,
+    TestActivity activity = Robolectric.setupActivity(TestActivityWithAnotherTheme.class);
+    Style style = shadowOf(activity.getAssets()).resolveStyle(
         null,
-        new ResName(TestUtil.TEST_PACKAGE, "style", "Theme.MyTheme"), "");
+        R.style.Theme_MyThemeWithEmptyParent);
     assertThat(style.getAttrValue(new ResName("android", "attr", "background"))).isNull();
   }
 
+  @Test public void whenAThemeHasNullStringParentAttr_shouldHaveNoParent() throws Exception {
+    TestActivity activity = Robolectric.setupActivity(TestActivityWithAnotherTheme.class);
+    Style style = shadowOf(activity.getAssets()).resolveStyle(
+        null,
+        R.style.Theme_MyThemeWithNullStringParent);
+    assertThat(style.getAttrValue(new ResName("android", "attr", "background"))).isNull();
+  }
 
   @Test public void shouldApplyParentStylesFromAttrs() throws Exception {
-    TestActivity activity = buildActivity(TestActivityWithAnotherTheme.class).create().get();
-    ResourceLoader resourceLoader = Shadows.shadowOf(activity.getResources()).getResourceLoader();
-    Style theme = ShadowAssetManager.resolveStyle(resourceLoader, null,
-        new ResName(TestUtil.TEST_PACKAGE, "style", "Theme.AnotherTheme"), "");
-    Style style = ShadowAssetManager.resolveStyle(resourceLoader, theme,
-        new ResName(TestUtil.TEST_PACKAGE, "style", "IndirectButtonStyle"), "");
+    TestActivity activity = Robolectric.setupActivity(TestActivityWithAnotherTheme.class);
+    ShadowAssetManager shadowAssetManager = shadowOf(activity.getAssets());
+    Style theme = shadowAssetManager.resolveStyle(null,
+        R.style.Theme_AnotherTheme);
+    Style style = shadowAssetManager.resolveStyle(theme,
+        R.style.IndirectButtonStyle);
     assertThat(style.getAttrValue(new ResName("android", "attr", "background")).value)
         .isEqualTo("#ffff0000");
   }
@@ -139,17 +163,9 @@ public class ShadowThemeTest {
   }
 
   public static class TestActivityWithAnotherTheme extends TestActivity {
-    @Override protected void onCreate(Bundle savedInstanceState) {
-      super.onCreate(savedInstanceState);
-      setContentView(R.layout.styles_button_layout);
-    }
   }
 
   public static class TestActivityWithAThirdTheme extends TestActivity {
-    @Override protected void onCreate(Bundle savedInstanceState) {
-      super.onCreate(savedInstanceState);
-      setContentView(R.layout.styles_button_layout);
-    }
   }
 
   @Test public void shouldApplyFromStyleAttribute() throws Exception {

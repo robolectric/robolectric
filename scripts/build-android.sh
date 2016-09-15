@@ -5,40 +5,10 @@
 # more information on building AOSP.
 #
 # Usage:
-#   build-android-artifacts.sh <android version> <robolectric version>
+#   build-android.sh <android version> <robolectric version>
 #
-# Signing Artifacts:
-# The end of the script will prompt you to sign the new artifacts.  You will
-# be prompted a total of 4 times (once for each artifact).  To make this
-# easier, run this command beforehand:
-#
-#   gpg-agent --daemon
-#
-# It will spit out a command that you can then run in your shell to remember
-# the password for the current session.
-#
-# Supported Versions:
-#   4.1.2_r1    - Jelly Bean
-#   4.2.2_r1.2  - Jelly Bean MR1
-#   4.3_r2      - Jelly Bean MR2
-#   4.4_r1      - Kit Kat
-#   5.0.0_r2    - Lollipop
-#   5.1.1_r9    - Lollipop MR1
-#
-# Environment Variables:
-#   BUILD_ROOT        - Path to AOSP source directory
-#   SIGNING_PASSWORD  - Passphrase for GPG signing key
-#
-# Assumptions:
-#   1. You've got the full AOSP checked out on a case-sensitive file system at /Volumes/android/android-build
-#   2. repo init -u https://android.googlesource.com/platform/manifest -b <android-version>
-#   3. repo sync
-#   4. source build/envsetup.sh
-#   5. lunch aosp_x86-eng (or something like android_x86-eng)
-#   6. make -j8  # probably can just run 'make -j8 snod', but we haven't tested it http://elinux.org/Android_Build_System#Make_targets
-#   7. run this script
-#   8. Profit!
-#
+# For a tutorial check scripts/README.md
+
 if [[ $# -eq 0 ]]; then
     echo "Usage: ${0} <android-version> <robolectric-sub-version>"
     exit 1
@@ -72,6 +42,13 @@ ANDROID_RES=android-res-${ANDROID_VERSION}.jar
 ANDROID_EXT=android-ext-${ANDROID_VERSION}.jar
 ANDROID_CLASSES=android-classes-${ANDROID_VERSION}.jar
 
+# API specific paths
+LIB_PHONE_NUMBERS_PKG="com/android/i18n/phonenumbers"
+LIB_PHONE_NUMBERS_PATH="external/libphonenumber/java/src"
+
+# Architecture for tzdata
+TZDATA_ARCH="generic_x86"
+
 # Final artifact names
 ANDROID_ALL=android-all-${ROBOLECTRIC_VERSION}.jar
 ANDROID_ALL_POM=android-all-${ROBOLECTRIC_VERSION}.pom
@@ -92,6 +69,11 @@ build_platform() {
         ARTIFACTS=("core-libart" "services" "telephony-common" "framework" "android.policy" "ext")
     elif [[ "${ANDROID_VERSION}" == "5.1.1_r9" ]]; then
         ARTIFACTS=("core-libart" "services" "telephony-common" "framework" "android.policy" "ext")
+    elif [[ "${ANDROID_VERSION}" == "6.0.0_r1" ]]; then
+        ARTIFACTS=("core-libart" "services" "services.accessibility" "telephony-common" "framework" "ext" "icu4j-icudata-jarjar")
+        LIB_PHONE_NUMBERS_PKG="com/google/i18n/phonenumbers"
+        LIB_PHONE_NUMBERS_PATH="external/libphonenumber/libphonenumber/src"
+        TZDATA_ARCH="generic"
     else
         echo "Robolectric: No match for version: ${ANDROID_VERSION}"
         exit 1
@@ -111,10 +93,9 @@ build_android_res() {
 
 build_android_ext() {
     echo "Robolectric: Building android-ext..."
-    local PHONE_NUMBERS_DIR=com/android/i18n/phonenumbers
-    mkdir -p ${OUT}/ext-classes-modified/${PHONE_NUMBERS_DIR}
+    mkdir -p ${OUT}/ext-classes-modified/${LIB_PHONE_NUMBERS_PKG}
     cd ${OUT}/ext-classes-modified; jar xf ${ANDROID_SOURCES_BASE}/out/target/common/obj/JAVA_LIBRARIES/ext_intermediates/classes.jar
-    cp -R ${ANDROID_SOURCES_BASE}/external/libphonenumber/java/src/${PHONE_NUMBERS_DIR}/data ${OUT}/ext-classes-modified/${PHONE_NUMBERS_DIR}
+    cp -R ${ANDROID_SOURCES_BASE}/${LIB_PHONE_NUMBERS_PATH}/${LIB_PHONE_NUMBERS_PKG}/data ${OUT}/ext-classes-modified/${LIB_PHONE_NUMBERS_PKG}
     cd ${OUT}/ext-classes-modified; jar cf ${OUT}/${ANDROID_EXT} .
     rm -rf ${OUT}/ext-classes-modified
 }
@@ -135,7 +116,7 @@ build_android_classes() {
 build_tzdata() {
     echo "Robolectric: Building tzdata..."
     mkdir -p ${OUT}/android-all-classes/usr/share/zoneinfo
-    cp ${ANDROID_SOURCES_BASE}/out/target/product/generic_x86_64/system/usr/share/zoneinfo/tzdata ${OUT}/android-all-classes/usr/share/zoneinfo
+    cp ${ANDROID_SOURCES_BASE}/out/target/product/${TZDATA_ARCH}/system/usr/share/zoneinfo/tzdata ${OUT}/android-all-classes/usr/share/zoneinfo
 }
 
 build_jarjared_classes() {
@@ -258,4 +239,3 @@ mavenize
 
 echo "DONE!!"
 echo "Your artifacts are located here: ${OUT}"
-

@@ -1,8 +1,9 @@
 package org.robolectric.res;
 
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -77,7 +78,31 @@ public class ResBundleTest {
     Value v = ResBundle.pick(vals, "v18");
     assertThat(v).isEqualTo(val1);
   }
-  
+
+  @Test
+  public void greaterVersionsAreNotPickedReordered() {
+    Value<TypedResource<String>> val1 = new Value<>("v19", createStringTypedResource());
+    vals.add(val1);
+    Value<TypedResource<String>> val2 = new Value<>("v11", createStringTypedResource());
+    vals.add(val2);
+
+    Value v = ResBundle.pick(vals, "v18");
+    assertThat(v).isEqualTo(val2);
+  }
+
+  @Test
+  public void greaterVersionsAreNotPickedMoreQualifiers() {
+    // List the contradicting qualifier first, in case the algorithm has a tendency
+    // to pick the first qualifier when none of the qualifiers are a "perfect" match.
+    Value<TypedResource<String>> val1 = new Value<>("anydpi-v21", createStringTypedResource());
+    vals.add(val1);
+    Value<TypedResource<String>> val2 = new Value<>("xhdpi-v9", createStringTypedResource());
+    vals.add(val2);
+
+    Value v = ResBundle.pick(vals, "v18");
+    assertThat(v).isEqualTo(val2);
+  }
+
   @Test
   public void onlyMatchingVersionsQualifiersWillBePicked() {
     Value<TypedResource<String>> val1 = new Value<>("v16", createStringTypedResource());
@@ -112,6 +137,26 @@ public class ResBundleTest {
         "en-notouch-12key",
         "port-ldpi",
         "port-notouch-12key"), "en-GB-port-hdpi-notouch-12key").getValue());
+  }
+
+  @Test
+  public void shouldMatchQualifiersInSizeRange() throws Exception {
+    assertEquals("sw300dp-port", ResBundle.pick(asValues(
+        "",
+        "sw200dp",
+        "sw350dp-port",
+        "sw300dp-port",
+        "sw300dp"), "sw320dp-port").getValue());
+  }
+
+  @Test
+  public void shouldPreferWidthOverHeight() throws Exception {
+    assertEquals("sw300dp-sh200dp", ResBundle.pick(asValues(
+        "",
+        "sw200dp",
+        "sw200dp-sh300dp",
+        "sw300dp-sh200dp",
+        "sh300dp"), "sw320dp-sh320dp").getValue());
   }
 
   private List<Value<String>> asValues(String... qualifierses) {

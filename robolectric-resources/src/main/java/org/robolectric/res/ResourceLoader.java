@@ -2,28 +2,82 @@ package org.robolectric.res;
 
 import org.jetbrains.annotations.NotNull;
 import org.robolectric.res.builder.XmlBlock;
-import org.w3c.dom.Document;
 
 import java.io.InputStream;
 
-public interface ResourceLoader {
-  String ANDROID_NS = Attribute.ANDROID_RES_NS_PREFIX + "android";
+public abstract class ResourceLoader {
 
-  String getNameForId(int id);
+  public abstract TypedResource getValue(@NotNull ResName resName, String qualifiers);
 
-  TypedResource getValue(@NotNull ResName resName, String qualifiers);
+  public TypedResource getValue(int resId, String qualifiers) {
+    ResName resName = getResourceIndex().getResName(resId);
+    return resName != null ? getValue(resName, qualifiers) : null;
+  }
 
-  Plural getPlural(ResName resName, int quantity, String qualifiers);
+  protected abstract Plural getPlural(ResName resName, int quantity, String qualifiers);
 
-  XmlBlock getXml(ResName resName, String qualifiers);
+  public Plural getPlural(int resId, int quantity, String qualifiers) {
+    ResName resName = getResourceIndex().getResName(resId);
+    return resName != null ? getPlural(resName, quantity, qualifiers) : null;
+  }
 
-  DrawableNode getDrawableNode(ResName resName, String qualifiers);
+  public abstract XmlBlock getXml(ResName resName, String qualifiers);
 
-  InputStream getRawValue(ResName resName);
+  public XmlBlock getXml(int resId, String qualifiers) {
+    ResName resName = resolveResName(resId, qualifiers);
+    return resName != null ? getXml(resName, qualifiers) : null;
+  }
 
-  PreferenceNode getPreferenceNode(ResName resName, String qualifiers);
+  public abstract DrawableNode getDrawableNode(ResName resName, String qualifiers);
 
-  ResourceIndex getResourceIndex();
+  public DrawableNode getDrawableNode(int resId, String qualifiers) {
+    return getDrawableNode(getResourceIndex().getResName(resId), qualifiers);
+  }
 
-  boolean providesFor(String namespace);
+  public abstract InputStream getRawValue(ResName resName);
+
+  public InputStream getRawValue(int resId) {
+    return getRawValue(getResourceIndex().getResName(resId));
+  }
+
+  public abstract ResourceIndex getResourceIndex();
+
+  public abstract boolean providesFor(String namespace);
+
+  private ResName resolveResName(int resId, String qualifiers) {
+    TypedResource value = getValue(resId, qualifiers);
+    return resolveResource(value, qualifiers, resId);
+  }
+
+  private ResName resolveResource(TypedResource value, String qualifiers, int resId) {
+    ResName resName = getResourceIndex().getResName(resId);
+    while (value != null && value.isReference()) {
+      String s = value.asString();
+      if (AttributeResource.isNull(s) || AttributeResource.isEmpty(s)) {
+        value = null;
+      } else {
+        String refStr = s.substring(1).replace("+", "");
+        resName = ResName.qualifyResName(refStr, resName);
+        value = getValue(resName, qualifiers);
+      }
+    }
+
+    return resName;
+  }
+
+  public TypedResource resolveResourceValue(TypedResource value, String qualifiers, int resId) {
+    ResName resName = getResourceIndex().getResName(resId);
+    while (value != null && value.isReference()) {
+      String s = value.asString();
+      if (AttributeResource.isNull(s) || AttributeResource.isEmpty(s)) {
+        value = null;
+      } else {
+        String refStr = s.substring(1).replace("+", "");
+        resName = ResName.qualifyResName(refStr, resName);
+        value = getValue(resName, qualifiers);
+      }
+    }
+
+    return value;
+  }
 }

@@ -2,23 +2,23 @@ package org.robolectric.shadows;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
-import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
+import android.util.AttributeSet;
 import android.view.ContextMenu;
 import android.view.HapticFeedbackConstants;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.View.MeasureSpec;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
-import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
@@ -32,14 +32,12 @@ import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.AccessibilityChecks;
-import org.robolectric.res.Attribute;
-import org.robolectric.res.ResourceLoader;
+import org.robolectric.annotation.Config;
 import org.robolectric.util.TestOnClickListener;
 import org.robolectric.util.TestOnLongClickListener;
 import org.robolectric.util.TestRunnable;
 import org.robolectric.util.Transcript;
 
-import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static junit.framework.Assert.assertEquals;
@@ -58,15 +56,11 @@ import static org.robolectric.Shadows.shadowOf;
 public class ShadowViewTest {
   private View view;
   private Transcript transcript;
-  private Resources resources;
-  private ResourceLoader resourceLoader;
 
   @Before
   public void setUp() throws Exception {
     transcript = new Transcript();
     view = new View(RuntimeEnvironment.application);
-    resources = RuntimeEnvironment.application.getResources();
-    resourceLoader = shadowOf(resources).getResourceLoader();
   }
 
   @Test
@@ -339,8 +333,10 @@ public class ShadowViewTest {
 
   @Test
   public void shouldAddOnClickListenerFromAttribute() throws Exception {
-    RoboAttributeSet attrs = new RoboAttributeSet(new ArrayList<Attribute>(), resourceLoader);
-    attrs.put("android:attr/onClick", "clickMe", R.class.getPackage().getName());
+    AttributeSet attrs = Robolectric.buildAttributeSet()
+        .addAttribute(android.R.attr.onClick, "clickMe")
+        .build()
+        ;
 
     view = new View(RuntimeEnvironment.application, attrs);
     assertNotNull(shadowOf(view).getOnClickListener());
@@ -349,8 +345,10 @@ public class ShadowViewTest {
   @Test
   public void shouldCallOnClickWithAttribute() throws Exception {
     MyActivity myActivity = buildActivity(MyActivity.class).create().get();
-    RoboAttributeSet attrs = new RoboAttributeSet(new ArrayList<Attribute>(), resourceLoader);
-    attrs.put("android:attr/onClick", "clickMe", R.class.getPackage().getName());
+
+    AttributeSet attrs = Robolectric.buildAttributeSet()
+        .addAttribute(android.R.attr.onClick, "clickMe")
+        .build();
 
     view = new View(myActivity, attrs);
     view.performClick();
@@ -360,8 +358,10 @@ public class ShadowViewTest {
   @Test(expected = RuntimeException.class)
   public void shouldThrowExceptionWithBadMethodName() throws Exception {
     MyActivity myActivity = buildActivity(MyActivity.class).create().get();
-    RoboAttributeSet attrs = new RoboAttributeSet(new ArrayList<Attribute>(), resourceLoader);
-    attrs.put("android:onClick", "clickYou", R.class.getPackage().getName());
+
+    AttributeSet attrs = Robolectric.buildAttributeSet()
+        .addAttribute(android.R.attr.onClick, "clickYou")
+        .build();
 
     view = new View(myActivity, attrs);
     view.performClick();
@@ -591,21 +591,87 @@ public class ShadowViewTest {
   }
 
   @Test
-  public void setScaleX_shouldSetScaleX() throws Exception {
-    assertThat(shadowOf(view).getScaleX()).isEqualTo(1f);
-    shadowOf(view).setScaleX(2.5f);
-    assertThat(shadowOf(view).getScaleX()).isEqualTo(2.5f);
-    shadowOf(view).setScaleX(0.5f);
-    assertThat(shadowOf(view).getScaleX()).isEqualTo(0.5f);
+  public void rotationX() {
+    view.setRotationX(10f);
+    assertThat(view.getRotationX()).isEqualTo(10f);
   }
 
   @Test
-  public void setScaleY_shouldSetScaleY() throws Exception {
-    assertThat(shadowOf(view).getScaleX()).isEqualTo(1f);
-    shadowOf(view).setScaleY(2.5f);
-    assertThat(shadowOf(view).getScaleY()).isEqualTo(2.5f);
-    shadowOf(view).setScaleY(0.5f);
-    assertThat(shadowOf(view).getScaleY()).isEqualTo(0.5f);
+  public void rotationY() {
+    view.setRotationY(20f);
+    assertThat(view.getRotationY()).isEqualTo(20f);
+  }
+
+  @Test
+  public void rotation() {
+    view.setRotation(30f);
+    assertThat(view.getRotation()).isEqualTo(30f);
+  }
+
+  @Test
+  @Config(sdk = { Build.VERSION_CODES.LOLLIPOP })
+  public void cameraDistance() {
+    view.setCameraDistance(100f);
+    assertThat(view.getCameraDistance()).isEqualTo(100f);
+  }
+
+  @Test
+  public void scaleX() {
+    assertThat(view.getScaleX()).isEqualTo(1f);
+    view.setScaleX(0.5f);
+    assertThat(view.getScaleX()).isEqualTo(0.5f);
+  }
+
+  @Test
+  public void scaleY() {
+    assertThat(view.getScaleY()).isEqualTo(1f);
+    view.setScaleY(0.5f);
+    assertThat(view.getScaleY()).isEqualTo(0.5f);
+  }
+
+  @Test
+  public void pivotX() {
+    view.setPivotX(10f);
+    assertThat(view.getPivotX()).isEqualTo(10f);
+  }
+
+  @Test
+  public void pivotY() {
+    view.setPivotY(10f);
+    assertThat(view.getPivotY()).isEqualTo(10f);
+  }
+
+  @Test
+  @Config(sdk = { Build.VERSION_CODES.LOLLIPOP })
+  public void elevation() {
+    view.setElevation(10f);
+    assertThat(view.getElevation()).isEqualTo(10f);
+  }
+
+  @Test
+  public void translationX() {
+    view.setTranslationX(10f);
+    assertThat(view.getTranslationX()).isEqualTo(10f);
+  }
+
+  @Test
+  public void translationY() {
+    view.setTranslationY(10f);
+    assertThat(view.getTranslationY()).isEqualTo(10f);
+  }
+
+  @Test
+  @Config(sdk = { Build.VERSION_CODES.LOLLIPOP })
+  public void translationZ() {
+    view.setTranslationZ(10f);
+    assertThat(view.getTranslationZ()).isEqualTo(10f);
+  }
+
+  @Test
+  @Config(sdk = { Build.VERSION_CODES.LOLLIPOP })
+  public void clipToOutline() {
+    view.setClipToOutline(true);
+    assertThat(view.getClipToOutline()).isTrue();
   }
 
   @Test

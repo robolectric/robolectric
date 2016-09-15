@@ -7,24 +7,23 @@ import java.io.IOException;
 import java.io.InputStream;
 
 // TODO: Give me a better name
-abstract class XResourceLoader implements ResourceLoader {
+abstract class XResourceLoader extends ResourceLoader {
   final ResBunch data = new ResBunch();
   final ResBundle<PluralResourceLoader.PluralRules> pluralsData = new ResBundle<>();
   final ResBundle<String> stringData = new ResBundle<>();
   final ResBundle<DrawableNode> drawableData = new ResBundle<>();
-  final ResBundle<PreferenceNode> preferenceData = new ResBundle<>();
   final ResBundle<XmlBlock> xmlDocuments = new ResBundle<>();
   final ResBundle<FsFile> rawResources = new ResBundle<>();
   private final ResourceIndex resourceIndex;
-  boolean isInitialized = false;
+  private boolean isInitialized = false;
 
-  protected XResourceLoader(ResourceIndex resourceIndex) {
+  XResourceLoader(ResourceIndex resourceIndex) {
     this.resourceIndex = resourceIndex;
   }
 
   abstract void doInitialize();
 
-  void initialize() {
+  synchronized void initialize() {
     if (isInitialized) return;
     doInitialize();
     isInitialized = true;
@@ -32,20 +31,14 @@ abstract class XResourceLoader implements ResourceLoader {
     makeImmutable();
   }
 
-  protected void makeImmutable() {
+  private void makeImmutable() {
     data.makeImmutable();
 
     pluralsData.makeImmutable();
     stringData.makeImmutable();
     drawableData.makeImmutable();
-    preferenceData.makeImmutable();
     xmlDocuments.makeImmutable();
     rawResources.makeImmutable();
-  }
-
-  @Override
-  public String getNameForId(int id) {
-    return resourceIndex.getResourceName(id);
   }
 
   public TypedResource getValue(@NotNull ResName resName, String qualifiers) {
@@ -84,13 +77,6 @@ abstract class XResourceLoader implements ResourceLoader {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  @Override
-  public PreferenceNode getPreferenceNode(ResName resName, String qualifiers) {
-    initialize();
-
-    return preferenceData.get(resName, qualifiers);
   }
 
   @Override

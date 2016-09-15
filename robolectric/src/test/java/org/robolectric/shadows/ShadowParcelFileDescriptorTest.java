@@ -55,6 +55,26 @@ public class ShadowParcelFileDescriptorTest {
   }
 
   @Test
+  public void testStatSize_emptyFile() throws Exception {
+    ParcelFileDescriptor pfd = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_WRITE);
+    assertThat(pfd).isNotNull();
+    assertThat(pfd.getFileDescriptor().valid()).isTrue();
+    assertThat(pfd.getStatSize()).isEqualTo(0);
+    pfd.close();
+  }
+
+  @Test
+  public void testStatSize_writtenFile() throws Exception {
+    ParcelFileDescriptor pfd = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_WRITE);
+    assertThat(pfd).isNotNull();
+    assertThat(pfd.getFileDescriptor().valid()).isTrue();
+    FileOutputStream os = new FileOutputStream(pfd.getFileDescriptor());
+    os.write(5);
+    assertThat(pfd.getStatSize()).isEqualTo(1);  // One byte.
+    os.close();
+  }
+
+  @Test
   public void testCloses() throws Exception {
     ParcelFileDescriptor pfd = ParcelFileDescriptor.open(file, -1);
     pfd.close();

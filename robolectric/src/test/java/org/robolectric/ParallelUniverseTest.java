@@ -1,19 +1,18 @@
 package org.robolectric;
 
 import android.app.Application;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.junit.Test;
 import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.model.InitializationError;
-
-import android.content.res.Resources;
-import android.content.res.Configuration;
-
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.ParallelUniverse;
 import org.robolectric.internal.SdkConfig;
+import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowLooper;
@@ -23,15 +22,17 @@ import java.security.cert.CertificateFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ParallelUniverseTest {
-  
+
   private ParallelUniverse pu;
 
   private static Config getDefaultConfig() {
-    return new Config.Implementation(new int[0], Config.DEFAULT, "", "org.robolectric", "res", "assets", new Class[0], new String[0], Application.class, new String[0], null);
+    return new Config.Builder().build();
   }
 
   @Before
@@ -41,7 +42,7 @@ public class ParallelUniverseTest {
   }
 
   private void setUpApplicationStateDefaults() {
-    pu.setUpApplicationState(null, new DefaultTestLifecycle(), null, null, getDefaultConfig());
+    pu.setUpApplicationState(null, new DefaultTestLifecycle(), RuntimeEnvironment.getSystemResourceLoader(), new AndroidManifest(null, null, null, "package"), getDefaultConfig());
   }
 
   @Test
@@ -114,31 +115,28 @@ public class ParallelUniverseTest {
   @Test
   public void setUpApplicationState_setsVersionQualifierFromSdkConfig() {
     String givenQualifiers = "";
-    Config c = new Config.Implementation(new int[0], Config.DEFAULT, givenQualifiers, "org.robolectric", "res", "assets", new Class[0], new String[0], Application.class, new String[0], null);
-    pu.setUpApplicationState(null, new DefaultTestLifecycle(), null, null, c);
-    assertThat(getQualifiersfromSystemResources()).isEqualTo("v18");
-    assertThat(getQualifiersFromAppAssetManager()).isEqualTo("v18");
-    assertThat(getQualifiersFromSystemAssetManager()).isEqualTo("v18");
+    Config c = new Config.Builder().setQualifiers(givenQualifiers).build();
+    pu.setUpApplicationState(null, new DefaultTestLifecycle(), RuntimeEnvironment.getSystemResourceLoader(), new AndroidManifest(null, null, null, "packagename"), c);
+    assertThat(getQualifiersfromSystemResources()).contains("v18");
+    assertThat(RuntimeEnvironment.getQualifiers()).contains("v18");
   }
   
   @Test
   public void setUpApplicationState_setsVersionQualifierFromConfigQualifiers() {
     String givenQualifiers = "land-v17";
-    Config c = new Config.Implementation(new int[0], Config.DEFAULT, givenQualifiers, "org.robolectric", "res", "assets", new Class[0], new String[0], Application.class, new String[0], null);
-    pu.setUpApplicationState(null, new DefaultTestLifecycle(), null, null, c);
-    assertThat(getQualifiersfromSystemResources()).isEqualTo("land-v17");
-    assertThat(getQualifiersFromAppAssetManager()).isEqualTo("land-v17");
-    assertThat(getQualifiersFromSystemAssetManager()).isEqualTo("land-v17");
+    Config c = new Config.Builder().setQualifiers(givenQualifiers).build();
+    pu.setUpApplicationState(null, new DefaultTestLifecycle(), RuntimeEnvironment.getSystemResourceLoader(), new AndroidManifest(null, null, null, "packagename"), c);
+    assertThat(getQualifiersfromSystemResources()).contains("land-v17");
+    assertThat(RuntimeEnvironment.getQualifiers()).contains("land-v17");
   }
   
   @Test
   public void setUpApplicationState_setsVersionQualifierFromSdkConfigWithOtherQualifiers() {
     String givenQualifiers = "large-land";
-    Config c = new Config.Implementation(new int[0], Config.DEFAULT, givenQualifiers, "res", "assets", "", new Class[0], new String[0], Application.class, new String[0], null);
-    pu.setUpApplicationState(null, new DefaultTestLifecycle(), null, null, c);
-    assertThat(getQualifiersfromSystemResources()).isEqualTo("large-land-v18");
-    assertThat(getQualifiersFromAppAssetManager()).isEqualTo("large-land-v18");
-    assertThat(getQualifiersFromSystemAssetManager()).isEqualTo("large-land-v18");
+    Config c = new Config.Builder().setQualifiers(givenQualifiers).build();
+    pu.setUpApplicationState(null, new DefaultTestLifecycle(), RuntimeEnvironment.getSystemResourceLoader(), new AndroidManifest(null, null, null, "packagename"), c);
+    assertThat(getQualifiersfromSystemResources()).contains("large-land-v18");
+    assertThat(RuntimeEnvironment.getQualifiers()).contains("large-land-v18");
   }
   
   @Test
@@ -160,13 +158,5 @@ public class ParallelUniverseTest {
     Resources systemResources = Resources.getSystem();
     Configuration configuration = systemResources.getConfiguration();
     return Shadows.shadowOf(configuration).getQualifiers();
-  }
-
-  private String getQualifiersFromAppAssetManager() {
-    return Shadows.shadowOf(RuntimeEnvironment.application.getResources().getAssets()).getQualifiers();
-  }
-
-  private String getQualifiersFromSystemAssetManager() {
-    return Shadows.shadowOf(Resources.getSystem().getAssets()).getQualifiers();
   }
 }

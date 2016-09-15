@@ -7,26 +7,27 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.util.TypedValue;
-import java.util.Iterator;
-import javax.imageio.ImageReader;
-import javax.imageio.stream.ImageInputStream;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.internal.Shadow;
+import org.robolectric.util.Join;
 import org.robolectric.util.NamedStream;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.Join;
-import org.robolectric.internal.Shadow;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
+import java.io.FileDescriptor;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.CRC32;
@@ -61,7 +62,7 @@ public class ShadowBitmapFactory {
 
   @Implementation
   public static Bitmap decodeResource(Resources res, int id, BitmapFactory.Options options) {
-    Bitmap bitmap = create("resource:" + getResourceName(id), options);
+    Bitmap bitmap = create("resource:" + RuntimeEnvironment.application.getResources().getResourceName(id), options);
     Shadows.shadowOf(bitmap).createdFromResId = id;
     return bitmap;
   }
@@ -69,10 +70,6 @@ public class ShadowBitmapFactory {
   @Implementation
   public static Bitmap decodeResource(Resources res, int id) {
     return decodeResource(res, id, null);
-  }
-
-  private static String getResourceName(int id) {
-    return Shadows.shadowOf(RuntimeEnvironment.application).getResourceLoader().getNameForId(id);
   }
 
   @Implementation
@@ -85,6 +82,14 @@ public class ShadowBitmapFactory {
     Bitmap bitmap = create("file:" + pathName, options);
     ShadowBitmap shadowBitmap = Shadows.shadowOf(bitmap);
     shadowBitmap.createdFromPath = pathName;
+    return bitmap;
+  }
+
+  @Implementation
+  public static Bitmap decodeFileDescriptor(FileDescriptor fd, Rect outPadding, BitmapFactory.Options opts) {
+    Bitmap bitmap = create("fd:" + fd, opts);
+    ShadowBitmap shadowBitmap = Shadows.shadowOf(bitmap);
+    shadowBitmap.createdFromFileDescriptor = fd;
     return bitmap;
   }
 
@@ -165,6 +170,7 @@ public class ShadowBitmapFactory {
 
     shadowBitmap.setWidth(p.x);
     shadowBitmap.setHeight(p.y);
+    shadowBitmap.setPixels(new int[p.x * p.y], 0, 0, 0, 0, p.x, p.y);
     if (options != null) {
       options.outWidth = p.x;
       options.outHeight = p.y;
@@ -177,11 +183,15 @@ public class ShadowBitmapFactory {
   }
 
   public static void provideWidthAndHeightHints(int resourceId, int width, int height) {
-    widthAndHeightMap.put("resource:" + getResourceName(resourceId), new Point(width, height));
+    widthAndHeightMap.put("resource:" + RuntimeEnvironment.application.getResources().getResourceName(resourceId), new Point(width, height));
   }
 
   public static void provideWidthAndHeightHints(String file, int width, int height) {
     widthAndHeightMap.put("file:" + file, new Point(width, height));
+  }
+
+  public static void provideWidthAndHeightHints(FileDescriptor fd, int width, int height) {
+    widthAndHeightMap.put("fd:" + fd, new Point(width, height));
   }
 
   private static String stringify(BitmapFactory.Options options) {

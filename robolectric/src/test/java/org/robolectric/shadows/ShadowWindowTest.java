@@ -19,7 +19,8 @@ import org.robolectric.util.ActivityController;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.MultiApiWithDefaults.class)
+@RunWith(TestRunners.WithDefaults.class)
+@Config(sdk = Build.VERSION_CODES.M)
 public class ShadowWindowTest {
   @Test
   public void getFlag_shouldReturnWindowFlags() throws Exception {
@@ -65,7 +66,6 @@ public class ShadowWindowTest {
   }
 
   @Test
-  @Config(sdk = Build.VERSION_CODES.KITKAT)
   public void getProgressBar_returnsTheProgressBar() {
     Activity activity = Robolectric.buildActivity(TestActivity.class).create().get();
 
@@ -79,7 +79,6 @@ public class ShadowWindowTest {
   }
 
   @Test
-  @Config(sdk = Build.VERSION_CODES.KITKAT)
   public void getIndeterminateProgressBar_returnsTheIndeterminateProgressBar() {
     ActivityController<TestActivity> testActivityActivityController = Robolectric.buildActivity(TestActivity.class);
     TestActivity activity = testActivityActivityController.get();

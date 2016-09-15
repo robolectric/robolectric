@@ -7,15 +7,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
 public class SdkConfig {
-  private final int apiLevel;
-  private final String artifactVersionString;
   private static final String ROBOLECTRIC_VERSION;
   private static final Map<Integer, SdkVersion> SUPPORTED_APIS;
   public static final int FALLBACK_SDK_VERSION = Build.VERSION_CODES.JELLY_BEAN;
+
+  private final int apiLevel;
+  private final SdkVersion sdkVersion;
 
   static {
     SUPPORTED_APIS = new HashMap<>();
@@ -25,6 +27,7 @@ public class SdkConfig {
     addSdk(Build.VERSION_CODES.KITKAT, "4.4_r1", "1");
     addSdk(Build.VERSION_CODES.LOLLIPOP, "5.0.0_r2", "1");
     addSdk(Build.VERSION_CODES.LOLLIPOP_MR1, "5.1.1_r9", "1");
+    addSdk(Build.VERSION_CODES.M, "6.0.0_r1", "0");
     ROBOLECTRIC_VERSION = getRobolectricVersion();
   }
 
@@ -38,36 +41,31 @@ public class SdkConfig {
 
   public SdkConfig(int apiLevel) {
     this.apiLevel = apiLevel;
-    SdkVersion version = SUPPORTED_APIS.get(apiLevel);
-    if (version == null) {
+    sdkVersion = SUPPORTED_APIS.get(apiLevel);
+    if (sdkVersion == null) {
       throw new UnsupportedOperationException("Robolectric does not support API level " + apiLevel + ".");
     }
-    this.artifactVersionString = version.toString();
   }
 
   public int getApiLevel() {
     return apiLevel;
   }
 
-  public DependencyJar getSystemResourceDependency() {
-    return createDependency("org.robolectric", "android-all", artifactVersionString, null);
+  public String getAndroidVersion() {
+    return sdkVersion.androidVersion;
   }
 
-  public DependencyJar[] getSdkClasspathDependencies() {
-    return new DependencyJar[] {
-        createDependency("org.robolectric", "android-all", artifactVersionString, null),
-        createDependency("org.robolectric", "shadows-core", ROBOLECTRIC_VERSION, Integer.toString(apiLevel)),
-        createDependency("org.json", "json", "20080701", null),
-        createDependency("org.ccil.cowan.tagsoup", "tagsoup", "1.2", null)
-    };
+  public DependencyJar getAndroidSdkDependency() {
+    return createDependency("org.robolectric", "android-all", sdkVersion.toString(), null);
+  }
+
+  public DependencyJar getCoreShadowsDependency() {
+    return createDependency("org.robolectric", "shadows-core-v" + apiLevel, ROBOLECTRIC_VERSION, null);
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    SdkConfig sdkConfig = (SdkConfig) o;
-    return artifactVersionString.equals(sdkConfig.artifactVersionString);
+  public boolean equals(Object that) {
+    return that == this || that instanceof SdkConfig && ((SdkConfig) that).sdkVersion.equals(sdkVersion);
   }
 
   @Override
@@ -77,7 +75,7 @@ public class SdkConfig {
 
   @Override
   public int hashCode() {
-    return artifactVersionString.hashCode();
+    return sdkVersion.hashCode();
   }
 
   private DependencyJar createDependency(String groupId, String artifactId, String version, String classifier) {
@@ -95,13 +93,29 @@ public class SdkConfig {
     }
   }
 
-  private static class SdkVersion {
+  private static final class SdkVersion {
     private final String androidVersion;
     private final String robolectricVersion;
 
-    public SdkVersion(String androidVersion, String robolectricVersion) {
+    SdkVersion(String androidVersion, String robolectricVersion) {
       this.androidVersion = androidVersion;
       this.robolectricVersion = robolectricVersion;
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      return that == this || that instanceof SdkVersion && equals((SdkVersion) that);
+    }
+
+    public boolean equals(SdkVersion that) {
+      return that == this ||
+          Objects.equals(that.androidVersion, androidVersion) &&
+              Objects.equals(that.robolectricVersion, robolectricVersion);
+    }
+
+    @Override
+    public int hashCode() {
+      return androidVersion.hashCode() * 31 + robolectricVersion.hashCode();
     }
 
     @Override

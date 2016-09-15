@@ -188,4 +188,30 @@ public class ShadowCookieManagerTest {
     cookieManager.removeSessionCookie();
     assertThat(cookieManager.getCookie(url)).isEqualTo("name=value");
   }
+
+  @Test
+  public void shouldIgnoreCookiesSetInThePast() {
+    cookieManager.setCookie(url, "name=value; Expires=Wed, 09-Jun-2000 10:18:14 GMT");
+
+    String url2 = "http://android.com";
+    cookieManager.setCookie(url2, "name2=value2; Expires=Wed, 09 Jun 2000 10:18:14 GMT");
+
+    assertThat(cookieManager.getCookie(url)).isNull();
+    assertThat(cookieManager.getCookie(url2)).isNull();
+  }
+
+  @Test
+  public void shouldRespectSecureCookies() {
+    cookieManager.setCookie(httpsUrl, "name1=value1;secure");
+    cookieManager.setCookie(httpUrl, "name2=value2;");
+
+    String cookie = cookieManager.getCookie(httpUrl);
+    assertThat(cookie.contains("name2=value2")).isTrue();
+    assertThat(cookie.contains("name1=value1")).isFalse();
+  }
+
+  @Test
+  public void shouldIgnoreEmptyURLs() {
+    assertThat(cookieManager.getCookie("")).isNull();
+  }
 }

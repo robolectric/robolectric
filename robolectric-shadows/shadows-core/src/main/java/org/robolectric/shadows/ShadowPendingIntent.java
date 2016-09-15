@@ -5,18 +5,21 @@ import android.app.PendingIntent.CanceledException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
-import org.robolectric.fakes.RoboIntentSender;
 import android.os.Bundle;
 
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.fakes.RoboIntentSender;
 import org.robolectric.util.ReflectionHelpers;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import static org.robolectric.Shadows.shadowOf;
 
 /**
  * Shadow for {@code android.app.PendingIntent}.
@@ -24,6 +27,9 @@ import java.util.List;
 @Implements(PendingIntent.class)
 public class ShadowPendingIntent {
   private static final List<PendingIntent> createdIntents = new ArrayList<>();
+
+  @RealObject
+  PendingIntent realPendingIntent;
 
   private Intent[] savedIntents;
   private Context savedContext;
@@ -35,6 +41,11 @@ public class ShadowPendingIntent {
 
   @Implementation
   public static PendingIntent getActivity(Context context, int requestCode, Intent intent, int flags) {
+    return create(context, new Intent[] {intent}, true, false, false, requestCode, flags);
+  }
+
+  @Implementation
+  public static PendingIntent getActivity(Context context, int requestCode, Intent intent, int flags, Bundle options) {
     return create(context, new Intent[] {intent}, true, false, false, requestCode, flags);
   }
 
@@ -88,9 +99,7 @@ public class ShadowPendingIntent {
 
   @Implementation
   public IntentSender getIntentSender() {
-    RoboIntentSender testIntentSender = new RoboIntentSender();
-    testIntentSender.intent = savedIntents[0];
-    return testIntentSender;
+    return new RoboIntentSender(realPendingIntent);
   }
 
   public boolean isActivityIntent() {
@@ -129,10 +138,8 @@ public class ShadowPendingIntent {
   @Implementation
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-
-    ShadowPendingIntent that = (ShadowPendingIntent) o;
-
+    if (o == null || realPendingIntent.getClass() != o.getClass()) return false;
+    ShadowPendingIntent that = shadowOf((PendingIntent) o);
     if (savedContext != null) {
       String packageName = savedContext.getPackageName();
       String thatPackageName = that.savedContext.getPackageName();
@@ -140,8 +147,19 @@ public class ShadowPendingIntent {
     } else {
       if (that.savedContext != null) return false;
     }
-    if (savedIntents != null) {
-      if (!Arrays.equals(this.savedIntents, that.savedIntents)) return false;
+    if (this.savedIntents == null) {
+      return that.savedIntents == null;
+    }
+    if (that.savedIntents == null) {
+      return false;
+    }
+    if (this.savedIntents.length != that.savedIntents.length) {
+      return false;
+    }
+    for (int i = 0; i < this.savedIntents.length; i++) {
+      if (!this.savedIntents[i].filterEquals(that.savedIntents[i])) {
+        return false;
+      }
     }
     return true;
   }

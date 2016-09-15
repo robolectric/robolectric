@@ -5,6 +5,7 @@ import static com.google.testing.compile.JavaFileObjects.*;
 import static com.google.testing.compile.JavaSourceSubjectFactory.javaSource;
 import static com.google.testing.compile.JavaSourcesSubjectFactory.javaSources;
 import static org.robolectric.annotation.processing.RobolectricProcessor.PACKAGE_OPT;
+import static org.robolectric.annotation.processing.RobolectricProcessor.SHOULD_INSTRUMENT_PKG_OPT;
 import static org.robolectric.annotation.processing.validator.Utils.ROBO_SOURCE;
 import static org.robolectric.annotation.processing.validator.Utils.SHADOW_PROVIDER_SOURCE;
 import static org.robolectric.annotation.processing.validator.Utils.SHADOW_EXTRACTOR_SOURCE;
@@ -27,8 +28,14 @@ public class RobolectricProcessorTest {
   }
 	
   @Test
-  public void roboProcessor_supportsPackageOption() {
+  public void robolectricProcessor_supportsPackageOption() {
     ASSERT.that(new RobolectricProcessor().getSupportedOptions()).contains(PACKAGE_OPT);
+  }
+  
+  @Test
+  public void robolectricProcessor_supportsShouldInstrumentPackageOption() {
+    ASSERT.that(
+        new RobolectricProcessor().getSupportedOptions()).contains(SHOULD_INSTRUMENT_PKG_OPT);
   }
   
   @Test
@@ -206,5 +213,24 @@ public class RobolectricProcessorTest {
       .compilesWithoutError()
       .and()
       .generatesSources(forResource("org/robolectric/Robolectric_Parameterized.java"));
+  }
+  
+  @Test
+  public void generatedShadowProvider_canConfigureInstrumentingPackages() {
+    Map<String, String> options = new HashMap<>();
+    options.put(PACKAGE_OPT, "org.robolectric");
+    options.put(SHOULD_INSTRUMENT_PKG_OPT, "false");
+    
+    ASSERT.about(javaSources())
+    .that(ImmutableList.of(
+        ROBO_SOURCE,
+        SHADOW_PROVIDER_SOURCE,
+        SHADOW_EXTRACTOR_SOURCE,
+        forResource("org/robolectric/annotation/processing/shadows/ShadowAnything.java"),
+        forResource("org/robolectric/annotation/processing/shadows/ShadowDummy.java")))
+    .processedWith(new RobolectricProcessor(options))
+    .compilesWithoutError()
+    .and()
+    .generatesSources(forResource("org/robolectric/Robolectric_EmptyProvidedPackageNames.java"));   
   }
 }

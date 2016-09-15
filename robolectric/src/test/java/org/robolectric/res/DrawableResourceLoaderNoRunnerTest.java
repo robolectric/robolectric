@@ -54,12 +54,11 @@ public class DrawableResourceLoaderNoRunnerTest {
     when(mockTestDir.isDirectory()).thenReturn(true);
     FsFile mockTestBaseDir = mock(FsFile.class);
     when(mockTestBaseDir.listFiles()).thenReturn(new FsFile[]{mockTestDir});
-    ResourcePath mockResourcePath = mock(ResourcePath.class);
-    setResourceBase(mockTestBaseDir, mockResourcePath);
+    ResourcePath resourcePath = new ResourcePath(null, null, mockTestBaseDir, null);
 
     ResBundle<DrawableNode> bundle = mock(ResBundle.class);
     DrawableResourceLoader testLoader = new DrawableResourceLoader(bundle);
-    testLoader.findDrawableResources(mockResourcePath);
+    testLoader.findDrawableResources(resourcePath);
 
     verify(bundle).put(eq("drawable"), eq("bar.png"), (DrawableNode) any(), (XmlLoader.XmlContext) any());
   }
@@ -79,12 +78,11 @@ public class DrawableResourceLoaderNoRunnerTest {
     when(mockTestDir.isDirectory()).thenReturn(true);
     FsFile mockTestBaseDir = mock(FsFile.class);
     when(mockTestBaseDir.listFiles()).thenReturn(new FsFile[]{mockTestDir});
-    ResourcePath mockResourcePath = mock(ResourcePath.class);
-    setResourceBase(mockTestBaseDir, mockResourcePath);
+    ResourcePath resourcePath = new ResourcePath(null, null, mockTestBaseDir, null);
 
     ResBundle<DrawableNode> bundle = mock(ResBundle.class);
     DrawableResourceLoader testLoader = new DrawableResourceLoader(bundle);
-    testLoader.findDrawableResources(mockResourcePath);
+    testLoader.findDrawableResources(resourcePath);
 
     verify(bundle).put(eq("drawable"), eq("bar.png"), (DrawableNode) any(), (XmlLoader.XmlContext) any());
   }
@@ -104,12 +102,11 @@ public class DrawableResourceLoaderNoRunnerTest {
     when(mockTestDir.isDirectory()).thenReturn(true);
     FsFile mockTestBaseDir = mock(FsFile.class);
     when(mockTestBaseDir.listFiles()).thenReturn(new FsFile[]{mockTestDir});
-    ResourcePath mockResourcePath = mock(ResourcePath.class);
-    setResourceBase(mockTestBaseDir, mockResourcePath);
+    ResourcePath resourcePath = new ResourcePath(null, null, mockTestBaseDir, null);
 
     ResBundle<DrawableNode> bundle = mock(ResBundle.class);
     DrawableResourceLoader testLoader = new DrawableResourceLoader(bundle);
-    testLoader.findDrawableResources(mockResourcePath);
+    testLoader.findDrawableResources(resourcePath);
 
     verify(bundle).put(eq("drawable"), eq("bar.png"), (DrawableNode) any(), (XmlLoader.XmlContext) any());
   }
@@ -129,12 +126,11 @@ public class DrawableResourceLoaderNoRunnerTest {
     when(mockTestDir.isDirectory()).thenReturn(true);
     FsFile mockTestBaseDir = mock(FsFile.class);
     when(mockTestBaseDir.listFiles()).thenReturn(new FsFile[]{mockTestDir});
-    ResourcePath mockResourcePath = mock(ResourcePath.class);
-    setResourceBase(mockTestBaseDir, mockResourcePath);
+    ResourcePath resourcePath = new ResourcePath(null, null, mockTestBaseDir, null);
 
     ResBundle<DrawableNode> bundle = mock(ResBundle.class);
     DrawableResourceLoader testLoader = new DrawableResourceLoader(bundle);
-    testLoader.findDrawableResources(mockResourcePath);
+    testLoader.findDrawableResources(resourcePath);
 
     verify(bundle).put(eq("drawable"), eq("bar.png"), (DrawableNode) any(), (XmlLoader.XmlContext) any());
   }
@@ -143,11 +139,5 @@ public class DrawableResourceLoaderNoRunnerTest {
     Field field = File.class.getDeclaredField("separator");
     originalSeparator = ReflectionHelpers.getStaticField(field);
     ReflectionHelpers.setStaticField(field, separator);
-  }
-
-  private void setResourceBase(FsFile mockTestBaseDir, ResourcePath mockResourcePath) throws NoSuchFieldException, IllegalAccessException {
-    Field resourceBase = ResourcePath.class.getDeclaredField("resourceBase");
-    resourceBase.setAccessible(true);
-    resourceBase.set(mockResourcePath, mockTestBaseDir);
   }
 }

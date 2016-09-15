@@ -2,19 +2,18 @@ package org.robolectric.shadows;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.res.Resources;
 import android.preference.Preference;
 import android.preference.PreferenceGroup;
 import android.preference.PreferenceManager;
 import android.util.AttributeSet;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
-import org.robolectric.res.Attribute;
-import org.robolectric.util.TestUtil;
-
-import java.util.ArrayList;
+import org.robolectric.fakes.RoboAttributeSet;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Robolectric.buildActivity;
@@ -26,14 +25,13 @@ public class ShadowPreferenceGroupTest {
   private TestPreferenceGroup group;
   private ShadowPreference shadow;
   private Activity activity;
-  private RoboAttributeSet attrs;
+  private AttributeSet attrs;
   private Preference pref1, pref2;
 
   @Before
   public void setUp() throws Exception {
     activity = buildActivity(Activity.class).create().get();
-    Resources resources = TestUtil.emptyResources();
-    attrs = new RoboAttributeSet(new ArrayList<Attribute>(), shadowOf(resources).getResourceLoader());
+    attrs =  Robolectric.buildAttributeSet().build();
 
     group = new TestPreferenceGroup(activity, attrs);
     shadow = shadowOf(group);

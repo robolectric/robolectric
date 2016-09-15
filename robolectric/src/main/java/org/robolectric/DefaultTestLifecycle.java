@@ -1,16 +1,13 @@
 package org.robolectric;
 
 import android.app.Application;
-import android.content.Intent;
-import android.content.pm.ResolveInfo;
+
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.ClassNameResolver;
-import org.robolectric.manifest.ActivityData;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.builder.RobolectricPackageManager;
+import org.robolectric.util.ApplicationTestUtil;
 
 import java.lang.reflect.Method;
-import java.util.Map;
 
 public class DefaultTestLifecycle implements TestLifecycle {
 
@@ -44,7 +41,7 @@ public class DefaultTestLifecycle implements TestLifecycle {
         } catch (ClassNotFoundException e) {
           throw new RuntimeException(e);
         }
-        application = newInstance(applicationClass);
+        application = ApplicationTestUtil.newApplication(applicationClass);
       }
     } else if (appManifest != null && appManifest.getApplicationName() != null) {
       Class<? extends Application> applicationClass = null;
@@ -62,38 +59,12 @@ public class DefaultTestLifecycle implements TestLifecycle {
         }
       }
 
-      application = newInstance(applicationClass);
+      application = ApplicationTestUtil.newApplication(applicationClass);
     } else {
       application = new Application();
     }
 
-    addManifestActivitiesToPackageManager(appManifest, application);
-
     return application;
-  }
-
-  private static Application newInstance(Class<? extends Application> applicationClass) {
-    Application application;
-    try {
-      application = applicationClass.newInstance();
-    } catch (InstantiationException | IllegalAccessException e) {
-      throw new RuntimeException(e);
-    }
-    return application;
-  }
-
-  private void addManifestActivitiesToPackageManager(AndroidManifest appManifest, Application application) {
-    if (appManifest != null) {
-      Map<String,ActivityData> activityDatas = appManifest.getActivityDatas();
-
-      RobolectricPackageManager packageManager = (RobolectricPackageManager) application.getPackageManager();
-
-      for (ActivityData data : activityDatas.values()) {
-        String name = data.getName();
-        String activityName = name.startsWith(".") ? appManifest.getPackageName() + name : name;
-        packageManager.addResolveInfoForIntent(new Intent(activityName), new ResolveInfo());
-      }
-    }
   }
 
   /**

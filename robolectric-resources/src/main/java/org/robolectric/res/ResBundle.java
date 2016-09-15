@@ -1,25 +1,15 @@
 package org.robolectric.res;
 
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ResBundle<T> {
-  // Matches a version qualifier like "v14". Parentheses capture the numeric
-  // part for easy retrieval with Matcher.group(1).
-  private static final String VERSION_QUALIFIER_REGEX = "v([0-9]+)";
-  private static final String PADDED_VERSION_QUALIFIER_REGEX
-      = "-" + VERSION_QUALIFIER_REGEX + "-";
-  private static final Pattern VERSION_QUALIFIER_PATTERN_WITH_LINE_END
-      = Pattern.compile(VERSION_QUALIFIER_REGEX + "$");
-  private static final Pattern VERSION_QUALIFIER_PATTERN_WITH_DASHES
-      = Pattern.compile(PADDED_VERSION_QUALIFIER_REGEX);
+
 
   private final ResMap<T> valuesMap = new ResMap<>();
   private final ResMap<List<T>> valuesArrayMap = new ResMap<>();
@@ -42,98 +32,51 @@ public class ResBundle<T> {
     return values != null ? pick(values, qualifiers) : null;
   }
 
-  public static int getVersionQualifierApiLevel(String qualifiers) {
-    Matcher m = VERSION_QUALIFIER_PATTERN_WITH_LINE_END.matcher(qualifiers);
-    if (m.find()) {
-      return Integer.parseInt(m.group(1));
-    }
-    return -1;
-  }
-
-  public static <T> Value<T> pick(List<Value<T>> values, String qualifiers) {
+  public static <T> Value<T> pick(List<Value<T>> values, String qualifiersStr) {
     final int count = values.size();
     if (count == 0) return null;
 
-    BitSet possibles = new BitSet(count);
-    possibles.set(0, count);
+    // This should really follow the android algorithm specified at:
+    // http://developer.android.com/guide/topics/resources/providing-resources.html#BestMatch
+    //
+    // 1: eliminate resources that contradict the qualifiersStr
+    // 2: pick the (next) highest-precedence qualifier type in "table 2" of the reference above
+    // 3: check if any resource values use this qualifier, if no, back to 2, else move on to 4.
+    // 4: eliminate resources values that don't use this qualifier.
+    // 5: if more than one resource is left, go back to 2.
+    //
+    // However, we currently only model the smallest/available width/height and version qualifiers
+    // rather than all of the possibly qualifier classes in table 2.
 
-    StringTokenizer st = new StringTokenizer(qualifiers, "-");
-    while (st.hasMoreTokens()) {
-      String qualifier = st.nextToken();
-      String paddedQualifier = "-" + qualifier + "-";
-      BitSet matches = new BitSet(count);
+    Qualifiers toMatch = Qualifiers.parse(qualifiersStr);
 
-      for (int i = possibles.nextSetBit(0); i != -1; i = possibles.nextSetBit(i + 1)) {
-        if (values.get(i).qualifiers.contains(paddedQualifier)) {
-          matches.set(i);
+    Qualifiers bestMatchQualifiers = null;
+    Value<T> bestMatch = null;
+
+    List<Value<T>> passesRequirements = new ArrayList<>();
+    for (Value<T> value : values) {
+      Qualifiers qualifiers = Qualifiers.parse(value.qualifiers);
+      if (qualifiers.passesRequirements(toMatch)) {
+        passesRequirements.add(value);
+      }
+    }
+
+    for (Value<T> value : passesRequirements) {
+      Qualifiers qualifiers = Qualifiers.parse(value.qualifiers);
+      if (qualifiers.matches(toMatch)) {
+        if (bestMatchQualifiers == null || qualifiers.isBetterThan(bestMatchQualifiers, toMatch)) {
+          bestMatchQualifiers = qualifiers;
+          bestMatch =  value;
         }
       }
-
-      if (!matches.isEmpty()) {
-        possibles.and(matches); // eliminate any that didn't match this qualifier
-      }
-
-      if (matches.cardinality() == 1) break;
     }
-
-    /*
-     * If any resources out of the possibles have version qualifiers, return the
-     * closest match that doesn't go over. This is the last step because it's lowest
-     * in the precedence table at:
-     * https://developer.android.com/guide/topics/resources/providing-resources.html#table2
-     */
-    int targetApiLevel = getVersionQualifierApiLevel(qualifiers);
-    if (qualifiers.length() > 0 && targetApiLevel != -1) {
-      Value<T> bestMatch = null;
-      int bestMatchDistance = Integer.MAX_VALUE;
-      for (int i = possibles.nextSetBit(0); i != -1; i = possibles.nextSetBit(i + 1)) {
-        Value<T> value = values.get(i);
-        int distance = getDistance(value, targetApiLevel);
-        // Remove the version part and see if they still match
-        String paddedQualifier = "-" + qualifiers + "-";
-        String valueWithoutVersion = VERSION_QUALIFIER_PATTERN_WITH_DASHES.matcher(value.qualifiers).replaceAll("--");
-        String qualifierWithoutVersion = VERSION_QUALIFIER_PATTERN_WITH_DASHES.matcher(paddedQualifier).replaceAll("--");
-        if (qualifierWithoutVersion.contains(valueWithoutVersion) && distance >= 0 && distance < bestMatchDistance) {
-          bestMatch = value;
-          bestMatchDistance = distance;
-        }
-      }
-      if (bestMatch != null) {
-        return bestMatch;
-      }
+    if (bestMatch != null) {
+      return bestMatch;
     }
-
-    int i = possibles.nextSetBit(0);
-    if (i != -1) return values.get(i);
-
-    throw new IllegalStateException("couldn't handle qualifiers \"" + qualifiers + "\"");
-  }
-
-  /*
-   * Gets the difference between the version qualifier of val and targetApiLevel.
-   *
-   * Return value:
-   * - Lower number is a better match (0 is a perfect match)
-   * - Less than zero: val's version qualifier is greater than targetApiLevel,
-   *   or val has no version qualifier
-   */
-  private static int getDistance(Value val, int targetApiLevel) {
-    int distance = -1;
-    Matcher m = VERSION_QUALIFIER_PATTERN_WITH_DASHES.matcher(val.qualifiers);
-    if (m.find()) {
-      String match = m.group(1);
-      int resApiLevel = Integer.parseInt(match);
-      distance = targetApiLevel - resApiLevel;
-
-      if (m.find()) {
-        throw new IllegalStateException("A resource file was found that had two API level qualifiers: " + val);
-      }
-    } else {
-      if (val.qualifiers.equals("--")) {
-        distance = targetApiLevel;
-      }
+    if (!passesRequirements.isEmpty()) {
+      return passesRequirements.get(0);
     }
-    return distance;
+    return null;
   }
 
   public int size() {
@@ -226,4 +169,5 @@ public class ResBundle<T> {
       immutable = true;
     }
   }
+
 }

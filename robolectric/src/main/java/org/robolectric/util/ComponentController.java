@@ -1,9 +1,9 @@
 package org.robolectric.util;
 
 import android.app.Application;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.ShadowsAdapter;
 import org.robolectric.ShadowsAdapter.ShadowLooperAdapter;
@@ -11,17 +11,17 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 public abstract class ComponentController<C extends ComponentController<C, T>, T> {
   protected final C myself;
-  protected final T component;
+  protected T component;
   protected final ShadowLooperAdapter shadowMainLooper;
 
-  protected Application application;
-  protected Context baseContext;
   protected Intent intent;
 
   protected boolean attached;
 
-  public ComponentController(ShadowsAdapter shadowsAdapter, Class<T> componentClass) throws IllegalAccessException, InstantiationException {
-    this(shadowsAdapter, componentClass.newInstance());
+  @SuppressWarnings("unchecked")
+  public ComponentController(ShadowsAdapter shadowsAdapter, T component, Intent intent) {
+    this(shadowsAdapter, component);
+    this.intent = intent;
   }
 
   @SuppressWarnings("unchecked")
@@ -35,21 +35,24 @@ public abstract class ComponentController<C extends ComponentController<C, T>, T
     return component;
   }
 
-  public C withApplication(Application application) {
-    this.application = application;
-    return myself;
-  }
-
-  public C withBaseContext(Context baseContext) {
-    this.baseContext = baseContext;
-    return myself;
-  }
-
+  /**
+   * @deprecated Prefer passing the Intent through the constructor instead, it is safer as this
+   * method is broken for ActivityController where it is called after attach(). This method will be
+   * removed in a forthcoming release.
+   */
+  @Deprecated
   public C withIntent(Intent intent) {
     this.intent = intent;
     return myself;
   }
 
+  /**
+   * @deprecated The component is automatically attached. There is no need to call this method.
+   *
+   * TODO(jongerrish): Make this method private so that it can only be called internally, should not
+   * be part of the API.
+   */
+  @Deprecated
   public abstract C attach();
 
   public abstract C create();
@@ -57,10 +60,9 @@ public abstract class ComponentController<C extends ComponentController<C, T>, T
   public abstract C destroy();
 
   public Intent getIntent() {
-    Application application = this.application == null ? RuntimeEnvironment.application : this.application;
-    Intent intent = this.intent == null ? new Intent(application, component.getClass()) : this.intent;
+    Intent intent = this.intent == null ? new Intent(RuntimeEnvironment.application, component.getClass()) : this.intent;
     if (intent.getComponent() == null) {
-      intent.setClass(application, component.getClass());
+      intent.setClass(RuntimeEnvironment.application, component.getClass());
     }
     return intent;
   }

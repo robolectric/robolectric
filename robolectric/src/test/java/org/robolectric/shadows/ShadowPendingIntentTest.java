@@ -4,9 +4,8 @@ import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentSender;
-import org.robolectric.fakes.RoboIntentSender;
 import android.os.Bundle;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
@@ -17,15 +16,6 @@ import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowPendingIntentTest {
-
-  @Test
-  public void shouldGetIntentSender() {
-    Intent expectedIntent = new Intent();
-    PendingIntent service = PendingIntent.getService(null, 0, expectedIntent, 0);
-
-    IntentSender intentSender = service.getIntentSender();
-    assertThat(expectedIntent).isEqualTo(((RoboIntentSender) intentSender).intent);
-  }
 
   @Test
   public void getBroadcast_shouldCreateIntentForBroadcast() throws Exception {
@@ -208,5 +198,23 @@ public class ShadowPendingIntentTest {
 
     assertThat(saved).isNotNull();
     assertThat(intent).isEqualTo(shadowOf(saved).getSavedIntent());
+  }
+
+  @Test
+  public void testEquals() {
+    Intent intent1 = new Intent("activity");
+    Intent intent2 = new Intent("activity");
+    PendingIntent pendingIntent1 = PendingIntent.getActivity(RuntimeEnvironment.application, 99, intent1, 100);
+    PendingIntent pendingIntent2 = PendingIntent.getActivity(RuntimeEnvironment.application, 99, intent2, 100);
+    assertThat(pendingIntent1).isEqualTo(pendingIntent2);
+  }
+
+  @Test
+  public void testNotEquals() {
+    Intent intent1 = new Intent("activity1");
+    Intent intent2 = new Intent("activity2");
+    PendingIntent pendingIntent1 = PendingIntent.getActivity(RuntimeEnvironment.application, 99, intent1, 100);
+    PendingIntent pendingIntent2 = PendingIntent.getActivity(RuntimeEnvironment.application, 99, intent2, 100);
+    assertThat(pendingIntent1).isNotEqualTo(pendingIntent2);
   }
 }

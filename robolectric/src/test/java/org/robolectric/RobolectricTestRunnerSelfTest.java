@@ -2,6 +2,7 @@ package org.robolectric;
 
 import android.app.Application;
 import android.content.res.Resources;
+import android.os.Build;
 
 import org.assertj.core.api.Assertions;
 import org.junit.AfterClass;
@@ -14,7 +15,6 @@ import org.mockito.stubbing.Answer;
 import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.builder.RobolectricPackageManager;
-import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.util.ReflectionHelpers;
 
 import java.lang.reflect.Method;
@@ -24,6 +24,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(RobolectricTestRunnerSelfTest.RunnerForTesting.class)
 public class RobolectricTestRunnerSelfTest {
@@ -34,7 +35,7 @@ public class RobolectricTestRunnerSelfTest {
       .isNotNull()
       .isInstanceOf(MyTestApplication.class);
     assertThat(((MyTestApplication) RuntimeEnvironment.application).onCreateWasCalled).as("onCreate called").isTrue();
-    assertThat(ShadowApplication.getInstance().getResourceLoader()).as("resource loader").isNotNull();
+    assertThat(RuntimeEnvironment.getAppResourceLoader()).as("Application resource loader").isNotNull();
   }
 
   @Test
@@ -54,27 +55,21 @@ public class RobolectricTestRunnerSelfTest {
 
   @Test
   public void setStaticValue_shouldIgnoreFinalModifier() {
-    ReflectionHelpers.setStaticField(android.os.Build.class, "MODEL", "expected value");
+    ReflectionHelpers.setStaticField(Build.class, "MODEL", "expected value");
 
-    assertThat(android.os.Build.MODEL).isEqualTo("expected value");
+    assertThat(Build.MODEL).isEqualTo("expected value");
   }
 
   @Test
   @Config(qualifiers = "fr")
   public void internalBeforeTest_testValuesResQualifiers() {
-    String expectedQualifiers = "fr" + TestRunners.WithDefaults.SDK_TARGETED_BY_MANIFEST;
-    assertThat(Shadows.shadowOf(ShadowApplication.getInstance().getResources().getAssets()).getQualifiers()).isEqualTo(expectedQualifiers);
+    assertThat(RuntimeEnvironment.getQualifiers()).contains("fr");
   }
 
   @Test
   public void internalBeforeTest_resetsValuesResQualifiers() {
-    assertThat(Shadows.shadowOf(ShadowApplication.getInstance().getResources().getConfiguration()).getQualifiers())
+    assertThat(shadowOf(RuntimeEnvironment.application.getResources().getConfiguration()).getQualifiers())
       .isEqualTo("");
-  }
-
-  @Test
-  public void internalBeforeTest_doesNotSetI18nStrictModeFromSystemIfPropertyAbsent() {
-    assertThat(ShadowApplication.getInstance().isStrictI18n()).isFalse();
   }
 
   @Before
@@ -102,6 +97,14 @@ public class RobolectricTestRunnerSelfTest {
     assertThat(RuntimeEnvironment.isMainThread()).isTrue();
   }
 
+  @Test
+  @Config(sdk = Build.VERSION_CODES.KITKAT)
+  public void testVersionConfiguration() {
+    assertThat(Build.VERSION.SDK_INT)
+        .isEqualTo(Build.VERSION_CODES.KITKAT);
+    assertThat(Build.VERSION.RELEASE)
+        .isEqualTo("4.4_r1");
+  }
 
   @AfterClass
   public static void resetStaticState_shouldBeCalled_afterAppTearDown() {

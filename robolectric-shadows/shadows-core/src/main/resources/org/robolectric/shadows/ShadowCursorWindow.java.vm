@@ -28,7 +28,7 @@ public class ShadowCursorWindow {
   private static final WindowData WINDOW_DATA = new WindowData();
 
   @Implementation
-  public static long nativeCreate(String name, int cursorWindowSize) {
+  public static $ptrClass nativeCreate(String name, int cursorWindowSize) {
     return WINDOW_DATA.create(name, cursorWindowSize);
   }
 
@@ -45,7 +45,9 @@ public class ShadowCursorWindow {
       case Cursor.FIELD_TYPE_NULL:
         return null;
       case Cursor.FIELD_TYPE_BLOB:
-        return (byte[])value.value;
+        // This matches Android's behavior, which does not match the SQLite spec
+        byte[] blob = (byte[])value.value;
+        return blob == null ? new byte[]{} : blob;
       case Cursor.FIELD_TYPE_STRING:
         return ((String)value.value).getBytes();
       default:

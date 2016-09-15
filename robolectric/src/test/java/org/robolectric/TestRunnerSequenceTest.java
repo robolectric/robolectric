@@ -1,12 +1,14 @@
 package org.robolectric;
 
 import android.app.Application;
+
 import org.junit.Test;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
+import org.robolectric.internal.SdkConfig;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.manifest.AndroidManifest;
@@ -47,8 +49,13 @@ public class TestRunnerSequenceTest {
   @Test public void whenNoAppManifest_shouldRunThingsInTheRightOrder() throws Exception {
     StateHolder.transcript = new Transcript();
     assertNoFailures(run(new Runner(SimpleTest.class) {
-      @Override protected AndroidManifest createAppManifest(FsFile manifestFile, FsFile resDir, FsFile assetDir, String packageName) {
-        return null;
+      @Override protected AndroidManifest getAppManifest(Config config) {
+        return new AndroidManifest(null, null, null, "package") {
+          @Override
+          public int getTargetSdkVersion() {
+            return SdkConfig.FALLBACK_SDK_VERSION;
+          }
+        };
       }
     }));
     StateHolder.transcript.assertEventsSoFar(
@@ -101,12 +108,12 @@ public class TestRunnerSequenceTest {
 
     @Override public InstrumentationConfiguration createClassLoaderConfig(Config config) {
       return InstrumentationConfiguration.newBuilder()
-          .doNotAquireClass(StateHolder.class.getName())
+          .doNotAcquireClass(StateHolder.class.getName())
           .build();
     }
 
     @Override
-    protected AndroidManifest createAppManifest(FsFile manifestFile, FsFile resDir, FsFile assetDir, String packageName) {
+    protected AndroidManifest getAppManifest(Config config) {
       return new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"), resourceFile("assets"));
     }
 

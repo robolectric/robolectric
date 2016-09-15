@@ -18,6 +18,8 @@ public class ShadowSystemProperties {
   private static final Set<String> alreadyWarned = new HashSet<>();
 
   static {
+    VALUES.put("ro.build.version.release", "2.2");
+    VALUES.put("ro.build.version.incremental", "0");
     VALUES.put("ro.build.version.sdk", 8);
     VALUES.put("ro.build.date.utc", 1277708400000L);  // Jun 28, 2010
     VALUES.put("ro.debuggable", 0);

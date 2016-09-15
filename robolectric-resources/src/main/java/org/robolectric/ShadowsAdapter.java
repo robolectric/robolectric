@@ -2,10 +2,9 @@ package org.robolectric;
 
 import android.app.Activity;
 import android.app.Application;
-import android.content.res.AssetManager;
 import android.content.res.Configuration;
+
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.ResourceLoader;
 import org.robolectric.util.Scheduler;
 
 /**
@@ -20,28 +19,17 @@ public interface ShadowsAdapter {
 
   String getShadowActivityThreadClassName();
 
-  void prepareShadowApplicationWithExistingApplication(Application application);
-
   ShadowApplicationAdapter getApplicationAdapter(Activity component);
 
   void setupLogging();
 
   String getShadowContextImplClassName();
 
-  void setSystemResources(ResourceLoader systemResourceLoader);
-
   void overrideQualifiers(Configuration configuration, String qualifiers);
 
-  void bind(Application application, AndroidManifest appManifest, ResourceLoader resourceLoader);
-
-  void setPackageName(Application application, String packageName);
-
-  void setAssetsQualifiers(AssetManager assets, String qualifiers);
-
-  ResourceLoader getResourceLoader();
+  void bind(Application application, AndroidManifest appManifest);
 
   interface ShadowActivityAdapter {
-    void setTestApplication(Application application);
 
     void setThemeFromManifest();
   }
@@ -52,7 +40,5 @@ public interface ShadowsAdapter {
 
   interface ShadowApplicationAdapter {
     AndroidManifest getAppManifest();
-
-    ResourceLoader getResourceLoader();
   }
 }

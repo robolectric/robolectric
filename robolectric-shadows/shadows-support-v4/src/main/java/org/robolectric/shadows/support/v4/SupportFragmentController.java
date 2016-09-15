@@ -20,7 +20,7 @@ public class SupportFragmentController<F extends Fragment> extends ComponentCont
   private final F fragment;
   private final ActivityController<? extends FragmentActivity> activityController;
 
-  private SupportFragmentController(ShadowsAdapter shadowsAdapter, F fragment, Class<? extends FragmentActivity> activityClass) {
+  protected SupportFragmentController(ShadowsAdapter shadowsAdapter, F fragment, Class<? extends FragmentActivity> activityClass) {
     super(shadowsAdapter, fragment);
     this.fragment = fragment;
     this.activityController = Robolectric.buildActivity(activityClass);
@@ -36,19 +36,27 @@ public class SupportFragmentController<F extends Fragment> extends ComponentCont
 
   @Override
   public SupportFragmentController<F> attach() {
-    activityController.attach();
     return this;
   }
 
-  public SupportFragmentController<F> create(final Bundle bundle) {
+  /**
+   * Creates the activity with {@link Bundle} and adds the fragment to the view with ID {@code contentViewId}.
+   */
+  public SupportFragmentController<F> create(final int contentViewId, final Bundle bundle) {
     shadowMainLooper.runPaused(new Runnable() {
       @Override
       public void run() {
-        if (!attached) attach();
-        activityController.create(bundle).get().getSupportFragmentManager().beginTransaction().add(1, fragment).commit();
+        activityController.create(bundle).get().getSupportFragmentManager().beginTransaction().add(contentViewId, fragment).commit();
       }
     });
     return this;
+  }
+
+  /**
+   * Creates the activity with {@link Bundle} and adds the fragment to it. Note that the fragment will be added to the view with ID 1.
+   */
+  public SupportFragmentController<F> create(final Bundle bundle) {
+    return create(1, bundle);
   }
 
   @Override

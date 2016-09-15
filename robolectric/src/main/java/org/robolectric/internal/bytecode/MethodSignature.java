@@ -33,7 +33,7 @@ public class MethodSignature {
 
   @Override
   public String toString() {
-    return className + "." + methodName + "(" + Join.join(", ", paramTypes) + ")";
+    return className + "." + methodName + "(" + Join.join(", ", (Object[]) paramTypes) + ")";
   }
 
   boolean matches(String className, String methodName) {

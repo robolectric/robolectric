@@ -51,7 +51,7 @@ public class ShadowToast {
 
   @Implementation
   public void setText(int resId) {
-    this.text = shadowOf(RuntimeEnvironment.application).getString(resId);
+    this.text = RuntimeEnvironment.application.getString(resId);
   }
 
   @Implementation

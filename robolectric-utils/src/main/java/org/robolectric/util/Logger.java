@@ -10,6 +10,13 @@ package org.robolectric.util;
 public class Logger {
   private static final String LOGGING_ENABLED = "robolectric.logging.enabled";
 
+  public static void strict(String message, Throwable e) {
+    debug(message);
+    if (Boolean.getBoolean(LOGGING_ENABLED)) {
+      e.printStackTrace();
+    }
+  }
+
   /**
    * Log an info message.
    *

@@ -1,5 +1,6 @@
 package org.robolectric.manifest;
 
+import android.content.res.Resources;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceIndex;
 import org.robolectric.res.ResourceLoader;
@@ -52,6 +53,9 @@ public final class MetaData {
               // Was provided by value attribute, need to parse it
               TypedResource<?> typedRes = resLoader.getValue(resName, "");
               // The typed resource's data is always a String, so need to parse the value.
+              if (typedRes == null) {
+                throw new Resources.NotFoundException(resName.getFullyQualifiedName());
+              }
               switch (typedRes.getResType()) {
                 case BOOLEAN: case COLOR: case INTEGER: case FLOAT:
                   valueMap.put(entry.getKey(), parseValue(typedRes.getData().toString()));

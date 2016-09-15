@@ -134,6 +134,10 @@ public class ShadowMessageQueue {
     return retval;
   }
 
+  @HiddenApi @Implementation
+  public void removeSyncBarrier(int token) {
+  }
+
   private static void dispatchMessage(Message msg) {
     final Handler target = msg.getTarget();
     

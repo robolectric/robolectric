@@ -1,15 +1,9 @@
 package org.robolectric.util;
 
-import android.app.Activity;
-import android.app.Application;
-import android.content.ComponentName;
-import android.content.Intent;
-import android.os.Build;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.view.Window;
-import android.widget.LinearLayout;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.robolectric.Shadows.shadowOf;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,9 +17,16 @@ import org.robolectric.internal.runtime.RuntimeAdapterFactory;
 import org.robolectric.shadows.CoreShadowsAdapter;
 import org.robolectric.shadows.ShadowLooper;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.robolectric.Shadows.shadowOf;
+import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Intent;
+import android.content.res.Configuration;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.view.Window;
+import android.widget.LinearLayout;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ActivityControllerTest {
@@ -119,28 +120,6 @@ public class ActivityControllerTest {
   }
 
   @Test
-  public void withApplication_attachesTestApplicationToActivity() {
-    Application application = new Application();
-    MyActivity activity = controller.withApplication(application).create().get();
-    assertThat(activity.getApplication()).isEqualTo(application);
-  }
-
-  @Test
-  public void withApplication_setsBaseContext() {
-    Application application = new Application();
-    controller.withApplication(application).create().get();
-    assertThat(application.getBaseContext()).isNotNull();
-  }
-
-  @Test
-  public void withApplication_bindsResourcesAndAssets() {
-    Application application = new Application();
-    controller.withApplication(application).create().get();
-    assertThat(application.getBaseContext().getAssets()).isNotNull();
-    assertThat(application.getBaseContext().getResources()).isNotNull();
-  }
-
-  @Test
   public void visible_addsTheDecorViewToTheWindowManager() {
     controller.create().visible();
     assertEquals(controller.get().getWindow().getDecorView().getParent().getClass().getName(), "android.view.ViewRootImpl");
@@ -148,67 +127,67 @@ public class ActivityControllerTest {
 
   @Test
   public void start_callsPerformStartWhilePaused() {
-    controller.attach().create().start();
+    controller.create().start();
     transcript.assertEventsInclude("finishedOnStart", "onStart");
   }
 
   @Test
   public void stop_callsPerformStopWhilePaused() {
-    controller.attach().create().start().stop();
+    controller.create().start().stop();
     transcript.assertEventsInclude("finishedOnStop", "onStop");
   }
 
   @Test
   public void restart_callsPerformRestartWhilePaused() {
-    controller.attach().create().start().stop().restart();
+    controller.create().start().stop().restart();
     transcript.assertEventsInclude("finishedOnRestart", "onRestart");
   }
 
   @Test
   public void pause_callsPerformPauseWhilePaused() {
-    controller.attach().create().pause();
+    controller.create().pause();
     transcript.assertEventsInclude("finishedOnPause", "onPause");
   }
 
   @Test
   public void resume_callsPerformResumeWhilePaused() {
-    controller.attach().create().start().resume();
+    controller.create().start().resume();
     transcript.assertEventsInclude("finishedOnResume", "onResume");
   }
 
   @Test
   public void destroy_callsPerformDestroyWhilePaused() {
-    controller.attach().create().destroy();
+    controller.create().destroy();
     transcript.assertEventsInclude("finishedOnDestroy", "onDestroy");
   }
 
   @Test
   public void postCreate_callsOnPostCreateWhilePaused() {
-    controller.attach().create().postCreate(new Bundle());
+    controller.create().postCreate(new Bundle());
     transcript.assertEventsInclude("finishedOnPostCreate", "onPostCreate");
   }
 
   @Test
   public void postResume_callsOnPostResumeWhilePaused() {
-    controller.attach().create().postResume();
+    controller.create().postResume();
     transcript.assertEventsInclude("finishedOnPostResume", "onPostResume");
   }
 
   @Test
   public void restoreInstanceState_callsPerformRestoreInstanceStateWhilePaused() {
-    controller.attach().create().restoreInstanceState(new Bundle());
+    controller.create().restoreInstanceState(new Bundle());
     transcript.assertEventsInclude("finishedOnRestoreInstanceState", "onRestoreInstanceState");
   }
 
   @Test
   public void newIntent_callsOnNewIntentWhilePaused() {
-    controller.attach().create().newIntent(new Intent(Intent.ACTION_VIEW));
+    controller.create().newIntent(new Intent(Intent.ACTION_VIEW));
     transcript.assertEventsInclude("finishedOnNewIntent", "onNewIntent");
   }
 
   @Test
   public void userLeaving_callsPerformUserLeavingWhilePaused() {
-    controller.attach().create().userLeaving();
+    controller.create().userLeaving();
     transcript.assertEventsInclude("finishedOnUserLeaveHint", "onUserLeaveHint");
   }
 
@@ -241,6 +220,40 @@ public class ActivityControllerTest {
     assertThat(activity).isNotNull();
     RuntimeAdapter adapter = RuntimeAdapterFactory.getInstance();
     assertThat(adapter.getClass().getName()).isEqualTo(Api19RuntimeAdapter.class.getName());
+  }
+  
+  @Test
+  public void configurationChange_callsLifecycleMethodsAndAppliesConfig() {
+    Configuration config = new Configuration(RuntimeEnvironment.application.getResources().getConfiguration());
+    final float newFontScale = config.fontScale *= 2;
+    
+    controller.configurationChange(config);
+    transcript.assertEventsInclude("onPause", "onStop", "onDestroy", "onCreate", "onStart", "onResume");
+    assertThat(controller.get().getResources().getConfiguration().fontScale).isEqualTo(newFontScale);
+  }
+  
+  @Test
+  public void configurationChange_callsOnConfigurationChangedAndAppliesConfigWhenAllManaged() {
+    Configuration config = new Configuration(RuntimeEnvironment.application.getResources().getConfiguration());
+    final float newFontScale = config.fontScale *= 2;
+    
+    ActivityController<ConfigAwareActivity> configController = Robolectric.buildActivity(ConfigAwareActivity.class);
+    configController.configurationChange(config);
+    transcript.assertEventsInclude("onConfigurationChanged");
+    assertThat(configController.get().getResources().getConfiguration().fontScale).isEqualTo(newFontScale);
+  }
+  
+  @Test
+  public void configurationChange_callsLifecycleMethodsAndAppliesConfigWhenAnyNonManaged() {
+    Configuration config = new Configuration(RuntimeEnvironment.application.getResources().getConfiguration());
+    final float newFontScale = config.fontScale *= 2;
+    final int newOrientation = config.orientation = (config.orientation + 1) % 3;
+    
+    ActivityController<ConfigAwareActivity> configController = Robolectric.buildActivity(ConfigAwareActivity.class);
+    configController.configurationChange(config);
+    transcript.assertEventsInclude("onPause", "onStop", "onDestroy", "onCreate", "onStart", "onResume");
+    assertThat(configController.get().getResources().getConfiguration().fontScale).isEqualTo(newFontScale);
+    assertThat(configController.get().getResources().getConfiguration().orientation).isEqualTo(newOrientation);
   }
 
   public static class MyActivity extends Activity {
@@ -329,6 +342,13 @@ public class ActivityControllerTest {
       transcribeWhilePaused("onUserLeaveHint");
       transcript.add("finishedOnUserLeaveHint");
     }
+    
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+      super.onConfigurationChanged(newConfig);
+      transcribeWhilePaused("onConfigurationChanged");
+      transcript.add("finishedOnConfigurationChanged");
+    }
 
     private void transcribeWhilePaused(final String event) {
       runOnUiThread(new Runnable() {
@@ -337,5 +357,9 @@ public class ActivityControllerTest {
         }
       });
     }
+  }
+  
+  public static class ConfigAwareActivity extends MyActivity {
+	  
   }
 }

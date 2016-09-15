@@ -1,11 +1,16 @@
 package org.robolectric.shadows;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
+import static org.robolectric.shadows.ShadowSQLiteConnection.convertSQLWithLocalizedUnicodeCollator;
+
+import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteDatatypeMismatchException;
 import android.database.sqlite.SQLiteStatement;
 import android.os.Build;
-
-import org.assertj.core.api.Assertions;
+import com.almworks.sqlite4java.SQLiteConnection;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,16 +20,11 @@ import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
 
-import com.almworks.sqlite4java.SQLiteConnection;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.robolectric.shadows.ShadowSQLiteConnection.convertSQLWithLocalizedUnicodeCollator;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
 @Config(sdk = {
@@ -134,5 +134,29 @@ public class ShadowSQLiteConnectionTest {
     ShadowSQLiteConnection.reset();
 
     assertThat(statementsMap).as("statements after").isEmpty();
+  }
+
+  @Test
+  public void error_resultsInSpecificExceptionWithCause() {
+    try {
+      database.execSQL("insert into routine(name) values ('Hand press 1')");
+      ContentValues values = new ContentValues(1);
+      values.put("rowid", "foo");
+      database.update("routine", values, "name='Hand press 1'", null);
+      fail();
+    } catch (SQLiteDatatypeMismatchException expected) {
+      assertThat(expected).hasRootCauseInstanceOf(com.almworks.sqlite4java.SQLiteException.class);
+    }
+  }
+
+  @Test
+  public void interruption_doesNotConcurrentlyModifyDatabase() throws Exception {
+    Thread.currentThread().interrupt();
+    try {
+      database.execSQL("insert into routine(name) values ('الصحافة اليدوية')");
+    } finally {
+      Thread.interrupted();
+    }
+    ShadowSQLiteConnection.reset();
   }
 }

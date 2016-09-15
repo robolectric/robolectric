@@ -26,6 +26,6 @@ public class ShadowLayoutParamsTest {
     assertThat(layoutParams1.height).isEqualTo(456);
     assertThat(layoutParams1.width).isEqualTo(123);
     assertThat(layoutParams2.height).isEqualTo(456);
-    assertThat(layoutParams1.width).isEqualTo(123);
+    assertThat(layoutParams2.width).isEqualTo(123);
   }
 }

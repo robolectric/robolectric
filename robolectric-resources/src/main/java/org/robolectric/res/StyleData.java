@@ -9,7 +9,7 @@ public class StyleData implements Style {
   private final String packageName;
   private final String name;
   private final String parent;
-  private final Map<ResName, Attribute> items = new LinkedHashMap<>();
+  private final Map<ResName, AttributeResource> items = new LinkedHashMap<>();
 
   public StyleData(String packageName, String name, String parent) {
     this.packageName = packageName;
@@ -25,23 +25,26 @@ public class StyleData implements Style {
     return parent;
   }
 
-  public void add(ResName attrName, Attribute attribute) {
+  public void add(ResName attrName, AttributeResource attribute) {
     attrName.mustBe("attr");
     items.put(attrName, attribute);
   }
 
-  @Override public Attribute getAttrValue(ResName resName) {
-    resName.mustBe("attr");
-    Attribute attribute = items.get(resName);
+  @Override public AttributeResource getAttrValue(ResName resName) {
+    AttributeResource attributeResource = items.get(resName);
 
-    // yuck. hack to work around library package remapping
-    if (attribute == null && !"android".equals(resName.packageName)) {
-      attribute = items.get(resName.withPackageName(packageName));
-      if (attribute != null && (!"android".equals(attribute.contextPackageName))) {
-        attribute = new Attribute(resName, attribute.value, resName.packageName);
+    // This hack allows us to look up attributes from downstream dependencies, see comment in
+    // org.robolectric.shadows.ShadowThemeTest.obtainTypedArrayFromDependencyLibrary()
+    // for an explanation. TODO(jongerrish): Make Robolectric use a more realistic resource merging
+    // scheme.
+    if (attributeResource == null && !"android".equals(resName.packageName)) {
+      attributeResource = items.get(resName.withPackageName(packageName));
+      if (attributeResource != null && (!"android".equals(attributeResource.contextPackageName))) {
+        attributeResource = new AttributeResource(resName, attributeResource.value, resName.packageName);
       }
     }
-    return attribute;
+
+    return attributeResource;
   }
 
   @Override

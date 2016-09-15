@@ -1,45 +1,30 @@
 package org.robolectric.internal.bytecode;
 
 import android.R;
-import org.robolectric.internal.ShadowedObject;
-import org.robolectric.internal.ShadowProvider;
-import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.internal.dependency.DependencyJar;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.internal.SdkConfig;
-import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.TestLifecycle;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.internal.fakes.RoboExtendedResponseCache;
-import org.robolectric.internal.fakes.RoboCharsets;
-import org.robolectric.internal.fakes.RoboResponseSource;
 import org.robolectric.annotation.internal.DoNotInstrument;
 import org.robolectric.annotation.internal.Instrument;
-import org.robolectric.internal.ParallelUniverseInterface;
+import org.robolectric.internal.*;
+import org.robolectric.internal.dependency.DependencyJar;
+import org.robolectric.internal.fakes.RoboCharsets;
+import org.robolectric.internal.fakes.RoboExtendedResponseCache;
+import org.robolectric.internal.fakes.RoboResponseSource;
+import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.res.builder.XmlBlock;
 import org.robolectric.util.TempDirectory;
 import org.robolectric.util.Transcript;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.ServiceLoader;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Configuration rules for {@link org.robolectric.internal.bytecode.InstrumentingClassLoader}.
@@ -51,18 +36,18 @@ public class InstrumentationConfiguration {
     private final Collection<String> instrumentedPackages = new HashSet<>();
     private final Collection<MethodRef> interceptedMethods = new HashSet<>();
     private final Map<String, String> classNameTranslations = new HashMap<>();
-    private final Collection<String> classesToNotAquire = new HashSet<>();
-    private final Collection<String> packagesToNotAquire = new HashSet<>();
+    private final Collection<String> classesToNotAcquire = new HashSet<>();
+    private final Collection<String> packagesToNotAcquire = new HashSet<>();
     private final Collection<String> instrumentedClasses = new HashSet<>();
     private final Collection<String> classesToNotInstrument = new HashSet<>();
 
-    public Builder doNotAquireClass(String className) {
-      this.classesToNotAquire.add(className);
+    public Builder doNotAcquireClass(String className) {
+      this.classesToNotAcquire.add(className);
       return this;
     }
 
-    public Builder doNotAquirePackage(String packageName) {
-      this.packagesToNotAquire.add(packageName);
+    public Builder doNotAcquirePackage(String packageName) {
+      this.packagesToNotAcquire.add(packageName);
       return this;
     }
 
@@ -114,23 +99,8 @@ public class InstrumentationConfiguration {
     }
 
     public InstrumentationConfiguration build() {
-      interceptedMethods.addAll(Arrays.asList(
-          new MethodRef(LinkedHashMap.class, "eldest"),
-          new MethodRef(System.class, "loadLibrary"),
-          new MethodRef("android.os.StrictMode", "trackActivity"),
-          new MethodRef("android.os.StrictMode", "incrementExpectedActivityCount"),
-          new MethodRef("java.lang.AutoCloseable", "*"),
-          new MethodRef("android.util.LocaleUtil", "getLayoutDirectionFromLocale"),
-          new MethodRef("com.android.internal.policy.PolicyManager", "*"),
-          new MethodRef("android.view.FallbackEventHandler", "*"),
-          new MethodRef("android.view.IWindowSession", "*"),
-          new MethodRef("java.lang.System", "nanoTime"),
-          new MethodRef("java.lang.System", "currentTimeMillis"),
-          new MethodRef("java.lang.System", "arraycopy"),
-          new MethodRef("java.lang.System", "logE"),
-          new MethodRef("java.util.Locale", "adjustLanguageCode")
-      ));
-      classesToNotAquire.addAll(stringify(
+      interceptedMethods.addAll(Intrinsics.allRefs());
+      classesToNotAcquire.addAll(stringify(
           TestLifecycle.class,
           ShadowWrangler.class,
           AndroidManifest.class,
@@ -145,6 +115,7 @@ public class InstrumentationConfiguration {
           XmlBlock.class,
           ClassHandler.class,
           ClassHandler.Plan.class,
+          ShadowInvalidator.class,
           RealObject.class,
           Implements.class,
           Implementation.class,
@@ -158,7 +129,7 @@ public class InstrumentationConfiguration {
           ShadowedObject.class,
           TempDirectory.class
       ));
-      packagesToNotAquire.addAll(Arrays.asList(
+      packagesToNotAcquire.addAll(Arrays.asList(
           "java.",
           "javax.",
           "sun.",
@@ -181,7 +152,7 @@ public class InstrumentationConfiguration {
         instrumentedPackages.addAll(Arrays.asList(provider.getProvidedPackageNames()));
       }
 
-      return new InstrumentationConfiguration(classNameTranslations, interceptedMethods, instrumentedPackages, instrumentedClasses, classesToNotAquire, packagesToNotAquire, classesToNotInstrument);
+      return new InstrumentationConfiguration(classNameTranslations, interceptedMethods, instrumentedPackages, instrumentedClasses, classesToNotAcquire, packagesToNotAcquire, classesToNotInstrument);
     }
   }
 
@@ -194,17 +165,17 @@ public class InstrumentationConfiguration {
   private final Set<String> classesToNotInstrument;
   private final Map<String, String> classNameTranslations;
   private final Set<MethodRef> interceptedMethods;
-  private final Set<String> classesToNotAquire;
-  private final Set<String> packagesToNotAquire;
+  private final Set<String> classesToNotAcquire;
+  private final Set<String> packagesToNotAcquire;
   private int cachedHashCode;
 
-  private InstrumentationConfiguration(Map<String, String> classNameTranslations, Collection<MethodRef> interceptedMethods, Collection<String> instrumentedPackages, Collection<String> instrumentedClasses, Collection<String> classesToNotAquire, Collection<String> packagesToNotAquire, Collection<String> classesToNotInstrument) {
+  private InstrumentationConfiguration(Map<String, String> classNameTranslations, Collection<MethodRef> interceptedMethods, Collection<String> instrumentedPackages, Collection<String> instrumentedClasses, Collection<String> classesToNotAcquire, Collection<String> packagesToNotAquire, Collection<String> classesToNotInstrument) {
     this.classNameTranslations = ImmutableMap.copyOf(classNameTranslations);
     this.interceptedMethods = ImmutableSet.copyOf(interceptedMethods);
     this.instrumentedPackages = ImmutableList.copyOf(instrumentedPackages);
     this.instrumentedClasses = ImmutableSet.copyOf(instrumentedClasses);
-    this.classesToNotAquire = ImmutableSet.copyOf(classesToNotAquire);
-    this.packagesToNotAquire = ImmutableSet.copyOf(packagesToNotAquire);
+    this.classesToNotAcquire = ImmutableSet.copyOf(classesToNotAcquire);
+    this.packagesToNotAcquire = ImmutableSet.copyOf(packagesToNotAquire);
     this.classesToNotInstrument = ImmutableSet.copyOf(classesToNotInstrument);
     this.cachedHashCode = 0;
   }
@@ -239,18 +210,30 @@ public class InstrumentationConfiguration {
       return name.contains("Test");
     }
 
-    if (name.matches("com\\.android\\.internal\\.R(\\$.*)?")) return true;
+    // Both internal and public R class must be loaded from the same classloader since they only
+    // have stable ID's within a given API version.
+    if (name.matches("com\\.android\\.internal\\.R(\\$.*)?") ||
+        name.matches("android\\.R(\\$.*)?")) {
+      return true;
+    }
 
     // Android SDK code almost universally refers to com.android.internal.R, except
     // when refering to android.R.stylable, as in HorizontalScrollView. arghgh.
     // See https://github.com/robolectric/robolectric/issues/521
-    if (name.equals("android.R$styleable")) return true;
+    if (name.equals("android.R$styleable")) {
+      return true;
+    }
 
-    for (String packageName : packagesToNotAquire) {
+    // Hack. Fixes https://github.com/robolectric/robolectric/issues/1864
+    if (name.equals("javax.net.ssl.DistinguishedNameParser")) {
+      return true;
+    }
+
+    for (String packageName : packagesToNotAcquire) {
       if (name.startsWith(packageName)) return false;
     }
 
-    return !(name.matches(".*\\.R(|\\$[a-z]+)$") || classesToNotAquire.contains(name));
+    return !(name.matches(".*\\.R(|\\$[a-z]+)$") || classesToNotAcquire.contains(name));
   }
 
   public Set<MethodRef> methodsToIntercept() {
@@ -296,7 +279,7 @@ public class InstrumentationConfiguration {
     InstrumentationConfiguration that = (InstrumentationConfiguration) o;
 
     if (!classNameTranslations.equals(that.classNameTranslations)) return false;
-    if (!classesToNotAquire.equals(that.classesToNotAquire)) return false;
+    if (!classesToNotAcquire.equals(that.classesToNotAcquire)) return false;
     if (!instrumentedPackages.equals(that.instrumentedPackages)) return false;
     if (!instrumentedClasses.equals(that.instrumentedClasses)) return false;
     if (!interceptedMethods.equals(that.interceptedMethods)) return false;
@@ -315,53 +298,8 @@ public class InstrumentationConfiguration {
     result = 31 * result + instrumentedClasses.hashCode();
     result = 31 * result + classNameTranslations.hashCode();
     result = 31 * result + interceptedMethods.hashCode();
-    result = 31 * result + classesToNotAquire.hashCode();
+    result = 31 * result + classesToNotAcquire.hashCode();
     cachedHashCode = result;
     return result;
-  }
-
-  /**
-   * Reference to a specific method on a class.
-   */
-  public static class MethodRef {
-    public final String className;
-    public final String methodName;
-
-    public MethodRef(Class<?> clazz, String methodName) {
-      this(clazz.getName(), methodName);
-    }
-
-    public MethodRef(String className, String methodName) {
-      this.className = className;
-      this.methodName = methodName;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
-
-      MethodRef methodRef = (MethodRef) o;
-
-      if (!className.equals(methodRef.className)) return false;
-      if (!methodName.equals(methodRef.methodName)) return false;
-
-      return true;
-    }
-
-    @Override
-    public int hashCode() {
-      int result = className.hashCode();
-      result = 31 * result + methodName.hashCode();
-      return result;
-    }
-
-    @Override
-    public String toString() {
-      return "MethodRef{" +
-          "className='" + className + '\'' +
-          ", methodName='" + methodName + '\'' +
-          '}';
-    }
   }
 }
