@@ -261,6 +261,7 @@ public final class R {
     public static final int numColumns = 0x10a11;
     public static final int sugaryScale = 0x10a12;
     public static final int selectableItemBackground = 0x10a13;
+    public static final int attrFromLib1 = 0x10a14;
   }
 
   public static final class menu {

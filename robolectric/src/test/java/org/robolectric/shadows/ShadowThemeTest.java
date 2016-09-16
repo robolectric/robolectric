@@ -84,24 +84,11 @@ public class ShadowThemeTest {
     assertThat(a.getFloat(R.styleable.CustomView_aspectRatio, 0.2f)).isEqualTo(1.69f);
   }
 
-  @Test public void obtainTypedArrayFromDependencyLibrary() throws Exception {
+  @Test public void obtainStyledAttributes_findsAttributeValueDefinedInDependencyLibrary() throws Exception {
     TestActivity activity = buildActivity(TestActivityWithAThirdTheme.class).create().get();
 
-    // This is an Android framework attribute, see:
-    // https://developer.android.com/reference/android/R.attr.html#selectableItemBackground
-    // so can be accessed as android.R.attr.selectableItemBackground but it will also be merged by AAPT so
-    // that it can be accessed as org.robolectric.R.attr.selectableItemBackground and will have the same ID
-    // value. The application ResourceLoader contains a list of sub-package ResourceLoaders and this ID will
-    // have a match in the android namespace as well as any libraries that have a dependency on android (i.e:
-    // all of them) and Robolectric will find the first match which returns a ResName with a
-    // package == org.robolectric - this will fail when looking up in the theme as the attribute is in the
-    // android namespace.
-    TypedArray a  = activity.getTheme().obtainStyledAttributes(new int[]{R.attr.selectableItemBackground});
-
-    int resourceId = a.getResourceId(0, 0);
-
-    // We should find the value as defined by the framework
-    assertThat(resourceId).isNotEqualTo(0);
+    TypedArray a  = activity.getTheme().obtainStyledAttributes(new int[]{org.robolectric.R.attr.attrFromLib1});
+    assertThat(a.getString(0)).isEqualTo("value from theme");
   }
 
   @Test public void shouldGetValuesFromAttributeReference() throws Exception {

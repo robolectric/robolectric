@@ -2,6 +2,7 @@
 <resources>
   <style name="Theme.Robolectric" parent="@android:style/Theme">
     <item name="android:buttonStyle">@style/Widget.Robolectric.Button</item>
+    <item name="attrFromLib1">value from theme</item>
   </style>
 
   <style name="Theme.AnotherTheme" parent="@style/Theme.Robolectric">
