@@ -37,7 +37,7 @@ public class StyleData implements Style {
     // org.robolectric.shadows.ShadowThemeTest.obtainTypedArrayFromDependencyLibrary()
     // for an explanation. TODO(jongerrish): Make Robolectric use a more realistic resource merging
     // scheme.
-    if (attributeResource == null && !"android".equals(resName.packageName)) {
+    if (attributeResource == null && !"android".equals(resName.packageName) && !"android".equals(packageName)) {
       attributeResource = items.get(resName.withPackageName(packageName));
       if (attributeResource != null && (!"android".equals(attributeResource.contextPackageName))) {
         attributeResource = new AttributeResource(resName, attributeResource.value, resName.packageName);
