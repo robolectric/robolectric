@@ -526,6 +526,22 @@ public class ShadowResourcesTest {
   }
 
   @Test
+  @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
+  public void whenAttrIsDefinedInRuntimeSdk_getResourceName_findsResource() {
+    assertThat(RuntimeEnvironment.application.getResources().getResourceName(android.R.attr.viewportHeight))
+        .isEqualTo("android:attr/viewportHeight");
+  }
+
+  @Test
+  @Config(sdk = Build.VERSION_CODES.KITKAT)
+  public void whenAttrIsNotDefinedInRuntimeSdk_getResourceName_doesntFindRequestedResourceButInsteadFindsInternalResourceWithSameId() {
+    // asking for an attr defined after the current SDK doesn't have a defined result; in this case it returns
+    //   numberPickerStyle from com.internal.android.R
+    assertThat(RuntimeEnvironment.application.getResources().getResourceName(android.R.attr.viewportHeight))
+        .isEqualTo("android:attr/numberPickerStyle");
+  }
+
+  @Test
   public void subClassInitializedOK() {
     SubClassResources subClassResources = new SubClassResources(RuntimeEnvironment.application.getResources());
     assertThat(subClassResources.openRawResource(R.raw.raw_resource)).isNotNull();
