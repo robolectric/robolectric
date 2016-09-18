@@ -1,11 +1,6 @@
 package org.robolectric.shadows;
 
-import android.content.res.AssetFileDescriptor;
-import android.content.res.AssetManager;
-import android.content.res.Configuration;
-import android.content.res.Resources;
-import android.content.res.TypedArray;
-import android.content.res.XmlResourceParser;
+import android.content.res.*;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -15,23 +10,14 @@ import android.util.DisplayMetrics;
 import android.util.LongSparseArray;
 import android.util.TypedValue;
 import android.view.Display;
-
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
-import org.robolectric.annotation.Resetter;
-import org.robolectric.annotation.HiddenApi;
-import org.robolectric.fakes.RoboAttributeSet;
-import org.robolectric.res.Attribute;
+import org.robolectric.annotation.*;
 import org.robolectric.res.Plural;
-import org.robolectric.res.ResName;
 import org.robolectric.res.ResType;
-import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.TypedResource;
 import org.robolectric.res.builder.ResourceParser;
-import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.res.builder.XmlBlock;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import java.io.FileInputStream;
@@ -42,8 +28,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import static org.robolectric.internal.Shadow.directlyOn;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.internal.Shadow.directlyOn;
 
 /**
  * Shadow for {@link android.content.res.Resources}.
@@ -99,60 +85,9 @@ public class ShadowResources {
     return system;
   }
 
-  private TypedArray attrsToTypedArray(AttributeSet set, int[] attrs, int defStyleAttr, int themeResourceId, int defStyleRes) {
-    if (set == null) {
-      set = RoboAttributeSet.create(RuntimeEnvironment.application);
-    }
-
-    List<Attribute> attributes = shadowOf(realResources.getAssets()).buildAttributes(set, attrs, defStyleAttr, themeResourceId, defStyleRes);
-    TypedArray typedArray = createTypedArray(attributes, attrs);
-    shadowOf(typedArray).positionDescription = set.getPositionDescription();
-    return typedArray;
-  }
-
-  public TypedArray createTypedArray(List<Attribute> set, int[] attrs) {
-    ShadowAssetManager shadowAssetManager = shadowOf(realResources.getAssets());
-    ResourceLoader resourceLoader = shadowAssetManager.getResourceLoader();
-
-    CharSequence[] stringData = new CharSequence[attrs.length];
-    int[] data = new int[attrs.length * ShadowAssetManager.STYLE_NUM_ENTRIES];
-    int[] indices = new int[attrs.length + 1];
-    int nextIndex = 0;
-
-    for (int i = 0; i < attrs.length; i++) {
-      int offset = i * ShadowAssetManager.STYLE_NUM_ENTRIES;
-
-      int attr = attrs[i];
-      ResName attrName = resourceLoader.getResourceIndex().getResName(attr);
-      if (attrName != null) {
-        Attribute attribute = Attribute.find(set, attrName);
-        TypedValue typedValue = new TypedValue();
-        Converter.convertAndFill(attribute, typedValue, resourceLoader, shadowAssetManager.getQualifiers(), true);
-
-        if (attribute != null && !attribute.isNull()) {
-          //noinspection PointlessArithmeticExpression
-          data[offset + ShadowAssetManager.STYLE_TYPE] = typedValue.type;
-          data[offset + ShadowAssetManager.STYLE_DATA] = typedValue.type == TypedValue.TYPE_STRING ? i : typedValue.data;
-          data[offset + ShadowAssetManager.STYLE_ASSET_COOKIE] = typedValue.assetCookie;
-          data[offset + ShadowAssetManager.STYLE_RESOURCE_ID] = typedValue.resourceId;
-          data[offset + ShadowAssetManager.STYLE_CHANGING_CONFIGURATIONS] = typedValue.changingConfigurations;
-          data[offset + ShadowAssetManager.STYLE_DENSITY] = typedValue.density;
-          stringData[i] = typedValue.string;
-
-          indices[nextIndex + 1] = i;
-          nextIndex++;
-        }
-      }
-    }
-
-    indices[0] = nextIndex;
-
-    return ShadowTypedArray.create(realResources, attrs, data, indices, nextIndex, stringData);
-  }
-
   @Implementation
   public TypedArray obtainAttributes(AttributeSet set, int[] attrs) {
-    return attrsToTypedArray(set, attrs, 0, 0, 0);
+    return shadowOf(realResources.getAssets()).attrsToTypedArray(realResources, set, attrs, 0, 0, 0);
   }
 
   @Implementation
@@ -162,21 +97,17 @@ public class ShadowResources {
   }
 
   @Implementation
-  public String getQuantityString(int id, int quantity) throws Resources.NotFoundException {
+  public String getQuantityString(int resId, int quantity) throws Resources.NotFoundException {
     ShadowAssetManager shadowAssetManager = shadowOf(realResources.getAssets());
-    ResName resName = shadowAssetManager.getResName(id);
-    Plural plural = shadowAssetManager.getResourceLoader().getPlural(resName, quantity, shadowAssetManager.getQualifiers());
-    String string = plural.getString();
+    Plural plural = shadowAssetManager.getResourceLoader().getPlural(resId, quantity, RuntimeEnvironment.getQualifiers());
     TypedResource<?> typedResource = shadowAssetManager.resolve(
-        new TypedResource<>(string, ResType.CHAR_SEQUENCE), shadowAssetManager.getQualifiers(),
-        new ResName(resName.packageName, "string", resName.name));
+        new TypedResource<>(plural.getString(), ResType.CHAR_SEQUENCE), RuntimeEnvironment.getQualifiers(), resId);
     return typedResource == null ? null : typedResource.asString();
   }
 
   @Implementation
   public InputStream openRawResource(int id) throws Resources.NotFoundException {
-    ShadowAssetManager shadowAssetManager = shadowOf(realResources.getAssets());
-    return shadowAssetManager.getResourceLoader().getRawValue(shadowAssetManager.getResName(id));
+    return shadowOf(realResources.getAssets()).getResourceLoader().getRawValue(id);
   }
 
   @Implementation
@@ -222,27 +153,18 @@ public class ShadowResources {
   }
 
   @HiddenApi @Implementation
-  public XmlResourceParser loadXmlResourceParser(int id, String type) throws Resources.NotFoundException {
+  public XmlResourceParser loadXmlResourceParser(int resId, String type) throws Resources.NotFoundException {
     ShadowAssetManager shadowAssetManager = shadowOf(realResources.getAssets());
-    ResName resName = shadowAssetManager.resolveResName(id);
-    XmlBlock block = shadowAssetManager.getResourceLoader().getXml(resName, shadowAssetManager.getQualifiers());
+    XmlBlock block = shadowAssetManager.getResourceLoader().getXml(resId, RuntimeEnvironment.getQualifiers());
     if (block == null) {
       throw new Resources.NotFoundException();
     }
-    return ResourceParser.from(block, resName.packageName, shadowAssetManager.getResourceLoader().getResourceIndex());
+    return ResourceParser.from(block, shadowAssetManager.getResourcePackageName(resId), shadowAssetManager.getResourceLoader());
   }
 
   @HiddenApi @Implementation
   public XmlResourceParser loadXmlResourceParser(String file, int id, int assetCookie, String type) throws Resources.NotFoundException {
     return loadXmlResourceParser(id, type);
-  }
-
-  /**
-   * Deprecated. Instead call through {@link ShadowAssetManager#getResourceLoader()};
-   */
-  @Deprecated
-  public ResourceLoader getResourceLoader() {
-    return shadowOf(RuntimeEnvironment.application.getAssets()).getResourceLoader();
   }
 
   @Implements(Resources.Theme.class)
@@ -281,7 +203,7 @@ public class ShadowResources {
 
     @Implementation
     public TypedArray obtainStyledAttributes(AttributeSet set, int[] attrs, int defStyleAttr, int defStyleRes) {
-      return shadowOf(getResources()).attrsToTypedArray(set, attrs, defStyleAttr, styleResourceId, defStyleRes);
+      return shadowOf(getResources().getAssets()).attrsToTypedArray(getResources(), set, attrs, defStyleAttr, styleResourceId, defStyleRes);
     }
 
     @Implementation
@@ -300,7 +222,6 @@ public class ShadowResources {
 
   @HiddenApi @Implementation
   public Drawable loadDrawable(TypedValue value, int id) {
-    ResName resName = shadowOf(realResources.getAssets()).tryResName(id);
     Drawable drawable = directlyOn(realResources, Resources.class, "loadDrawable",
         ClassParameter.from(TypedValue.class, value), ClassParameter.from(int.class, id));
 
@@ -312,7 +233,7 @@ public class ShadowResources {
         if (bitmap != null) {
           ShadowBitmap shadowBitmap = shadowOf(bitmap);
           if (shadowBitmap.createdFromResId == -1) {
-            shadowBitmap.setCreatedFromResId(id, resName);
+            shadowBitmap.setCreatedFromResId(id, shadowOf(realResources.getAssets()).getResourceName(id));
           }
         }
       }
@@ -322,7 +243,6 @@ public class ShadowResources {
 
   @Implementation
   public Drawable loadDrawable(TypedValue value, int id, Resources.Theme theme) throws Resources.NotFoundException {
-    ResName resName = shadowOf(realResources.getAssets()).tryResName(id);
     Drawable drawable = directlyOn(realResources, Resources.class, "loadDrawable",
         ClassParameter.from(TypedValue.class, value), ClassParameter.from(int.class, id), ClassParameter.from(Resources.Theme.class, theme));
 
@@ -334,7 +254,7 @@ public class ShadowResources {
         if (bitmap != null) {
           ShadowBitmap shadowBitmap = shadowOf(bitmap);
           if (shadowBitmap.createdFromResId == -1) {
-            shadowBitmap.setCreatedFromResId(id, resName);
+            shadowBitmap.setCreatedFromResId(id, shadowOf(realResources.getAssets()).getResourceName(id));
           }
         }
       }

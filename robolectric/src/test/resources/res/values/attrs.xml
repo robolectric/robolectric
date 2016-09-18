@@ -19,6 +19,8 @@
       <enum name="auto_fit" value="-1" />
     </attr>
 
+    <attr name="sugarinessPercent" format="integer" min="0"/>
+
     <attr name="gravity"/>
 
     <attr name="keycode"/>

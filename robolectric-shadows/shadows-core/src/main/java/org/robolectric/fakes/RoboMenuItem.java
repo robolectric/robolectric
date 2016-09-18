@@ -1,5 +1,6 @@
 package org.robolectric.fakes;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.view.ActionProvider;
@@ -7,9 +8,7 @@ import android.view.ContextMenu;
 import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
-
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.shadows.ShadowApplication;
 
 /**
  * Robolectric implementation of {@link android.view.MenuItem}.
@@ -30,8 +29,14 @@ public class RoboMenuItem implements MenuItem {
   private View actionView;
   private OnActionExpandListener actionExpandListener;
   private int order;
+  private Context context;
 
   public RoboMenuItem() {
+    this(RuntimeEnvironment.application);
+  }
+
+  public RoboMenuItem(Context context) {
+    this.context = context;
   }
 
   public RoboMenuItem(int itemId) {
@@ -99,7 +104,7 @@ public class RoboMenuItem implements MenuItem {
 
   @Override
   public MenuItem setIcon(int iconRes) {
-    this.icon = iconRes == 0 ? null : RuntimeEnvironment.application.getResources().getDrawable(iconRes);
+    this.icon = iconRes == 0 ? null : context.getResources().getDrawable(iconRes);
     return this;
   }
 
@@ -217,7 +222,7 @@ public class RoboMenuItem implements MenuItem {
     if (enabled && menuItemClickListener != null) {
       menuItemClickListener.onMenuItemClick(this);
     } else if (enabled && intent != null) {
-      ShadowApplication.getInstance().startActivity(intent);
+      context.startActivity(intent);
     }
   }
 
@@ -295,3 +300,4 @@ public class RoboMenuItem implements MenuItem {
     return this;
   }
 }
+

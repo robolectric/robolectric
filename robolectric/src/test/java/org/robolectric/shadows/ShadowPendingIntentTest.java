@@ -199,4 +199,22 @@ public class ShadowPendingIntentTest {
     assertThat(saved).isNotNull();
     assertThat(intent).isEqualTo(shadowOf(saved).getSavedIntent());
   }
+
+  @Test
+  public void testEquals() {
+    Intent intent1 = new Intent("activity");
+    Intent intent2 = new Intent("activity");
+    PendingIntent pendingIntent1 = PendingIntent.getActivity(RuntimeEnvironment.application, 99, intent1, 100);
+    PendingIntent pendingIntent2 = PendingIntent.getActivity(RuntimeEnvironment.application, 99, intent2, 100);
+    assertThat(pendingIntent1).isEqualTo(pendingIntent2);
+  }
+
+  @Test
+  public void testNotEquals() {
+    Intent intent1 = new Intent("activity1");
+    Intent intent2 = new Intent("activity2");
+    PendingIntent pendingIntent1 = PendingIntent.getActivity(RuntimeEnvironment.application, 99, intent1, 100);
+    PendingIntent pendingIntent2 = PendingIntent.getActivity(RuntimeEnvironment.application, 99, intent2, 100);
+    assertThat(pendingIntent1).isNotEqualTo(pendingIntent2);
+  }
 }

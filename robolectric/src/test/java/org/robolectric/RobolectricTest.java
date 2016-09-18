@@ -242,13 +242,6 @@ public class RobolectricTest {
     }
   }
 
-  @Test
-  public void testBuildContextWrapper() {
-    MyContextWrapper contextWrapper = Robolectric.buildContextWrapper(MyContextWrapper.class, ClassParameter.from(String.class, "A String"));
-    assertThat(contextWrapper.getBaseContext()).isNotNull();
-    assertThat(contextWrapper.someText).isEqualTo("A String");
-  }
-
   private static class MyContextWrapper extends ContextWrapper {
 
     String someText;

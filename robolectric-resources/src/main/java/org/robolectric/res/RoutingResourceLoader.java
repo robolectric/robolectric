@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import org.robolectric.res.builder.XmlBlock;
 
-public class RoutingResourceLoader implements ResourceLoader {
+public class RoutingResourceLoader extends ResourceLoader {
   private final Map<String, ResourceLoader> resourceLoaders;
   private final ResourceIndex resourceIndex;
 
@@ -20,11 +20,6 @@ public class RoutingResourceLoader implements ResourceLoader {
       resourceIndexes.add(resourceLoader.getResourceIndex());
     }
     resourceIndex = new MergedResourceIndex(resourceIndexes.toArray(new ResourceIndex[resourceIndexes.size()]));
-  }
-
-  @Override
-  public String getNameForId(int id) {
-    return pickFor(id).getNameForId(id);
   }
 
   @Override public TypedResource getValue(@NotNull ResName resName, String qualifiers) {
@@ -49,11 +44,6 @@ public class RoutingResourceLoader implements ResourceLoader {
   @Override
   public InputStream getRawValue(ResName resName) {
     return pickFor(resName).getRawValue(resName);
-  }
-
-  @Override
-  public PreferenceNode getPreferenceNode(ResName resName, String qualifiers) {
-    return pickFor(resName).getPreferenceNode(resName, qualifiers);
   }
 
   @Override
@@ -103,11 +93,6 @@ public class RoutingResourceLoader implements ResourceLoader {
     }
 
     @Override void doInitialize() {
-    }
-
-    @Override
-    public String getNameForId(int id) {
-      return null;
     }
 
     @Override public boolean providesFor(String namespace) {

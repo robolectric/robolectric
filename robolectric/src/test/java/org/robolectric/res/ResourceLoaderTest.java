@@ -28,7 +28,8 @@ public class ResourceLoaderTest {
     assertThat(textView.getText().toString()).isEqualTo("land");
   }
 
-  @Test 
+  @Test
+  @Config(qualifiers="w0dp")
   public void checkDefaultBooleanValue() throws Exception {
 	  assertThat(RuntimeEnvironment.application.getResources().getBoolean(R.bool.different_resource_boolean)).isEqualTo(false);
   }
@@ -58,7 +59,7 @@ public class ResourceLoaderTest {
 
   @Test
   public void shouldMakeInternalResourcesAvailable() throws Exception {
-    ResourceLoader resourceLoader = shadowOf(RuntimeEnvironment.application.getAssets()).getResourceLoader();
+    ResourceLoader resourceLoader = RuntimeEnvironment.getAppResourceLoader();
     ResName internalResource = new ResName("android", "string", "badPin");
     Integer resId = resourceLoader.getResourceIndex().getResourceId(internalResource);
     assertThat(resId).isNotNull();
@@ -71,6 +72,4 @@ public class ResourceLoaderTest {
 
     assertThat(RuntimeEnvironment.application.getResources().getString(resId)).isEqualTo("The old PIN you typed isn't correct.");
   }
-
-  private static class TestPreferenceActivity extends PreferenceActivity { }
 }

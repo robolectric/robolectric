@@ -10,7 +10,7 @@ import org.robolectric.annotation.RealObject;
 
 import static org.junit.Assert.assertEquals;
 
-@RunWith(TestRunners.WithoutDefaults.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class ClassicSuperHandlingTest {
   @Test
   @Config(shadows = {ChildShadow.class, ParentShadow.class, GrandparentShadow.class})

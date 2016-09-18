@@ -3,19 +3,25 @@ package org.robolectric;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.Service;
-import android.content.Context;
-import android.content.ContextWrapper;
+import android.app.IntentService;
+import android.content.ContentProvider;
 import android.content.Intent;
 
+import android.content.pm.PackageManager;
+import android.util.AttributeSet;
+import android.view.View;
 import org.robolectric.internal.ShadowProvider;
+import org.robolectric.res.ResName;
+import org.robolectric.res.ResourceLoader;
+import org.robolectric.res.builder.XmlResourceParserImpl;
 import org.robolectric.shadows.ShadowApplication;
-import org.robolectric.util.ActivityController;
-import org.robolectric.util.FragmentController;
-import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
-import org.robolectric.util.Scheduler;
-import org.robolectric.util.ServiceController;
+import org.robolectric.util.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.util.ServiceLoader;
 
 public class Robolectric {
@@ -51,17 +57,6 @@ public class Robolectric {
     return shadowsAdapter;
   }
 
-  /**
-   * Creates an instance of a {@link ContextWrapper} subclass and attaches it to the environments base context.
-   * @param contextWrapperClass ContextWrapper implementation class.
-   * @param constructorArgs constructor arguments.
-   */
-  public static <T extends ContextWrapper> T buildContextWrapper(Class<T> contextWrapperClass, ClassParameter<?>... constructorArgs) {
-    T instance = ReflectionHelpers.callConstructor(contextWrapperClass, constructorArgs);
-    ReflectionHelpers.callInstanceMethod(ContextWrapper.class, instance, "attachBaseContext", ClassParameter.from(Context.class, RuntimeEnvironment.application.getBaseContext()));
-    return instance;
-  }
-
   public static <T extends Service> ServiceController<T> buildService(Class<T> serviceClass) {
     return buildService(serviceClass, null);
   }
@@ -72,6 +67,26 @@ public class Robolectric {
 
   public static <T extends Service> T setupService(Class<T> serviceClass) {
     return buildService(serviceClass).create().get();
+  }
+
+  public static <T extends IntentService> IntentServiceController<T> buildIntentService(Class<T> serviceClass) {
+    return buildIntentService(serviceClass, null);
+  }
+
+  public static <T extends IntentService> IntentServiceController<T> buildIntentService(Class<T> serviceClass, Intent intent) {
+    return IntentServiceController.of(getShadowsAdapter(), ReflectionHelpers.callConstructor(serviceClass, new ReflectionHelpers.ClassParameter<String>(String.class, "IntentService")), intent);
+  }
+
+  public static <T extends IntentService> T setupIntentService(Class<T> serviceClass) {
+    return buildIntentService(serviceClass).create().get();
+  }
+
+  public static <T extends ContentProvider> ContentProviderController<T> buildContentProvider(Class<T> contentProviderClass) {
+    return ContentProviderController.of(ReflectionHelpers.callConstructor(contentProviderClass));
+  }
+
+  public static <T extends ContentProvider> T setupContentProvider(Class<T> contentProviderClass) {
+    return buildContentProvider(contentProviderClass).create().get();
   }
 
   public static <T extends Activity> ActivityController<T> buildActivity(Class<T> activityClass) {
@@ -100,6 +115,65 @@ public class Robolectric {
 
   public static <T extends Fragment> FragmentController<T> buildFragment(Class<T> fragmentClass, Class<? extends Activity> activityClass, Intent intent) {
     return FragmentController.of(ReflectionHelpers.callConstructor(fragmentClass), activityClass, intent);
+  }
+
+  /**
+   * Allows for the programatic creation of an {@link AttributeSet} useful for testing {@link View} classes without
+   * the need for creating XML snippets.
+   */
+  public static AttributeSetBuilder buildAttributeSet() {
+    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    factory.setNamespaceAware(true);
+    factory.setIgnoringComments(true);
+    factory.setIgnoringElementContentWhitespace(true);
+    Document document;
+    try {
+      DocumentBuilder documentBuilder = factory.newDocumentBuilder();
+      document = documentBuilder.newDocument();
+      Element dummy = document.createElementNS("http://schemas.android.com/apk/res/" + RuntimeEnvironment.application.getPackageName(), "dummy");
+      document.appendChild(dummy);
+    } catch (ParserConfigurationException e) {
+      throw new RuntimeException(e);
+    }
+    return new AttributeSetBuilder(document, RuntimeEnvironment.getAppResourceLoader());
+  }
+
+  public static class AttributeSetBuilder {
+
+    private Document doc;
+    private ResourceLoader appResourceLoader;
+
+    AttributeSetBuilder(Document doc, ResourceLoader resourceLoader) {
+      this.doc = doc;
+      this.appResourceLoader = resourceLoader;
+    }
+
+    public AttributeSetBuilder addAttribute(int resId, String value) {
+      ResName resName = appResourceLoader.getResourceIndex().getResName(resId);
+      if ("style".equals(resName.name)) {
+        ((Element)doc.getFirstChild()).setAttribute(resName.name, value);
+      } else {
+        ((Element)doc.getFirstChild()).setAttributeNS(resName.getNamespaceUri(), resName.packageName + ":" + resName.name, value);
+      }
+      return this;
+    }
+
+    public AttributeSetBuilder setStyleAttribute(String value) {
+      ((Element)doc.getFirstChild()).setAttribute("style", value);
+      return this;
+    }
+
+    public AttributeSet build() {
+      XmlResourceParserImpl parser = new XmlResourceParserImpl(doc, null, RuntimeEnvironment.application.getPackageName(), RuntimeEnvironment.application.getPackageName(), appResourceLoader);
+      try {
+        parser.next(); // Root document element
+        parser.next(); // "dummy" element
+      } catch (Exception e) {
+        throw new IllegalStateException("Expected single dummy element in the document to contain the attributes.", e);
+      }
+
+      return parser;
+    }
   }
 
 

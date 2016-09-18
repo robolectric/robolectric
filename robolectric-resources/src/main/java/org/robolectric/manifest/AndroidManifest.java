@@ -1,7 +1,7 @@
 package org.robolectric.manifest;
 
 import android.app.Activity;
-import java.io.IOException;
+
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -11,10 +11,11 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import org.robolectric.annotation.Config;
+
+import com.google.common.base.Preconditions;
+import org.jetbrains.annotations.Nullable;
 import org.robolectric.res.FsFile;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.ResourcePath;
@@ -39,12 +40,16 @@ import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_SMALL_SCREENS;
 import static android.content.pm.ApplicationInfo.FLAG_TEST_ONLY;
 import static android.content.pm.ApplicationInfo.FLAG_VM_SAFE_MODE;
 
+/**
+ * A wrapper for an Android App Manifest, which represents information about one's App to an Android system.
+ * @see <a href="https://developer.android.com/guide/topics/manifest/manifest-intro.html">Android App Manifest</a>
+ */
 public class AndroidManifest {
-  public static final String DEFAULT_MANIFEST_NAME = "AndroidManifest.xml";
-
   private final FsFile androidManifestFile;
   private final FsFile resDirectory;
   private final FsFile assetsDirectory;
+  private final String overridePackageName;
+
   private boolean manifestIsParsed;
 
   private String applicationName;
@@ -65,8 +70,7 @@ public class AndroidManifest {
   private final Map<String, ActivityData> activityDatas = new LinkedHashMap<>();
   private final List<String> usedPermissions = new ArrayList<>();
   private MetaData applicationMetaData;
-  private List<FsFile> libraryDirectories;
-  private List<AndroidManifest> libraryManifests;
+  private List<AndroidManifest> libraryManifests = new ArrayList<>();
 
   /**
    * Creates a Robolectric configuration using specified locations.
@@ -76,9 +80,7 @@ public class AndroidManifest {
    * @param assetsDirectory     Location of the assets directory.
    */
   public AndroidManifest(FsFile androidManifestFile, FsFile resDirectory, FsFile assetsDirectory) {
-    this.androidManifestFile = androidManifestFile;
-    this.resDirectory = resDirectory;
-    this.assetsDirectory = assetsDirectory;
+    this(androidManifestFile, resDirectory, assetsDirectory, null);
   }
 
   /**
@@ -87,11 +89,15 @@ public class AndroidManifest {
    * @param androidManifestFile Location of the AndroidManifest.xml file.
    * @param resDirectory        Location of the res directory.
    * @param assetsDirectory     Location of the assets directory.
-   * @param packageName         Application package name.
+   * @param overridePackageName Application package name.
    */
-  public AndroidManifest(FsFile androidManifestFile, FsFile resDirectory, FsFile assetsDirectory, String packageName) {
-    this(androidManifestFile, resDirectory, assetsDirectory);
-    this.packageName = packageName;
+  public AndroidManifest(FsFile androidManifestFile, FsFile resDirectory, FsFile assetsDirectory, String overridePackageName) {
+    this.androidManifestFile = androidManifestFile;
+    this.resDirectory = resDirectory;
+    this.assetsDirectory = assetsDirectory;
+    this.overridePackageName = overridePackageName;
+
+    this.packageName = overridePackageName;
   }
 
   public String getThemeRef(Class<? extends Activity> activityClass) {
@@ -117,52 +123,58 @@ public class AndroidManifest {
     }
   }
 
-  public void validate() {
-    if (!androidManifestFile.exists() || !androidManifestFile.isFile()) {
-      throw new RuntimeException(androidManifestFile + " not found or not a file; it should point to your project's AndroidManifest.xml");
-    }
-  }
-
   void parseAndroidManifest() {
-    if (manifestIsParsed) {
+    if (androidManifestFile == null || manifestIsParsed) {
       return;
     }
-    DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-    try {
-      DocumentBuilder db = dbf.newDocumentBuilder();
-      InputStream inputStream = androidManifestFile.getInputStream();
-      Document manifestDocument = db.parse(inputStream);
-      inputStream.close();
 
-      if (packageName == null || packageName.isEmpty()) {
-        packageName = getTagAttributeText(manifestDocument, "manifest", "package");
+    if (androidManifestFile.exists()) {
+      try {
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+
+        DocumentBuilder db = dbf.newDocumentBuilder();
+        InputStream inputStream = androidManifestFile.getInputStream();
+        Document manifestDocument = db.parse(inputStream);
+        inputStream.close();
+
+        if (!packageNameIsOverridden()) {
+          packageName = getTagAttributeText(manifestDocument, "manifest", "package");
+        }
+
+        versionCode = getTagAttributeIntValue(manifestDocument, "manifest", "android:versionCode", 0);
+        versionName = getTagAttributeText(manifestDocument, "manifest", "android:versionName");
+        rClassName = packageName + ".R";
+        applicationName = getTagAttributeText(manifestDocument, "application", "android:name");
+        applicationLabel = getTagAttributeText(manifestDocument, "application", "android:label");
+        minSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:minSdkVersion");
+        targetSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:targetSdkVersion");
+        processName = getTagAttributeText(manifestDocument, "application", "android:process");
+        if (processName == null) {
+          processName = packageName;
+        }
+
+        themeRef = getTagAttributeText(manifestDocument, "application", "android:theme");
+        labelRef = getTagAttributeText(manifestDocument, "application", "android:label");
+
+        parseApplicationFlags(manifestDocument);
+        parseReceivers(manifestDocument);
+        parseServices(manifestDocument);
+        parseActivities(manifestDocument);
+        parseApplicationMetaData(manifestDocument);
+        parseContentProviders(manifestDocument);
+        parseUsedPermissions(manifestDocument);
+      } catch (Exception ignored) {
+        ignored.printStackTrace();
       }
-      versionCode = getTagAttributeIntValue(manifestDocument, "manifest", "android:versionCode", 0);
-      versionName = getTagAttributeText(manifestDocument, "manifest", "android:versionName");
-      rClassName = packageName + ".R";
-      applicationName = getTagAttributeText(manifestDocument, "application", "android:name");
-      applicationLabel = getTagAttributeText(manifestDocument, "application", "android:label");
-      minSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:minSdkVersion");
-      targetSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:targetSdkVersion");
-      processName = getTagAttributeText(manifestDocument, "application", "android:process");
-      if (processName == null) {
-        processName = packageName;
-      }
-
-      themeRef = getTagAttributeText(manifestDocument, "application", "android:theme");
-      labelRef = getTagAttributeText(manifestDocument, "application", "android:label");
-
-      parseApplicationFlags(manifestDocument);
-      parseReceivers(manifestDocument);
-      parseServices(manifestDocument);
-      parseActivities(manifestDocument);
-      parseApplicationMetaData(manifestDocument);
-      parseContentProviders(manifestDocument);
-      parseUsedPermissions(manifestDocument);
-    } catch (Exception ignored) {
-      ignored.printStackTrace();
+    } else {
+      System.err.println("No such manifest file: " + androidManifestFile);
     }
+
     manifestIsParsed = true;
+  }
+
+  private boolean packageNameIsOverridden() {
+    return overridePackageName != null && !overridePackageName.isEmpty();
   }
 
   private void parseUsedPermissions(Document manifestDocument) {
@@ -179,12 +191,33 @@ public class AndroidManifest {
     if (application == null) return;
 
     for (Node contentProviderNode : getChildrenTags(application, "provider")) {
-      Node nameItem = contentProviderNode.getAttributes().getNamedItem("android:name");
-      Node authorityItem = contentProviderNode.getAttributes().getNamedItem("android:authorities");
-      if (nameItem != null && authorityItem != null) {
-        providers.add(new ContentProviderData(resolveClassRef(nameItem.getTextContent()), authorityItem.getTextContent()));
+      String name = getAttributeValue(contentProviderNode, "android:name");
+      String authority = getAttributeValue(contentProviderNode, "android:authorities");
+      MetaData metaData = new MetaData(getChildrenTags(contentProviderNode, "meta-data"));
+
+      List<PathPermissionData> pathPermissionDatas = new ArrayList<>();
+      for (Node node : getChildrenTags(contentProviderNode, "path-permission")) {
+        pathPermissionDatas.add(new PathPermissionData(
+                getAttributeValue(node, "android:path"),
+                getAttributeValue(node, "android:pathPrefix"),
+                getAttributeValue(node, "android:pathPattern"),
+                getAttributeValue(node, "android:readPermission"),
+                getAttributeValue(node, "android:writePermission")
+        ));
       }
+
+      providers.add(new ContentProviderData(resolveClassRef(name),
+              metaData,
+              authority,
+              getAttributeValue(contentProviderNode, "android:readPermission"),
+              getAttributeValue(contentProviderNode, "android:writePermission"),
+              pathPermissionDatas));
     }
+  }
+
+  private @Nullable String getAttributeValue(Node parentNode, String attributeName) {
+    Node attributeNode = parentNode.getAttributes().getNamedItem(attributeName);
+    return attributeNode == null ? null : attributeNode.getTextContent();
   }
 
   private void parseReceivers(final Document manifestDocument) {
@@ -373,10 +406,15 @@ public class AndroidManifest {
    * @param resLoader used for getting resource IDs from string identifiers
    */
   public void initMetaData(ResourceLoader resLoader) {
+    if (!packageNameIsOverridden()) {
+      // packageName needs to be resolved
+      parseAndroidManifest();
+    }
+
     if (applicationMetaData != null) {
       applicationMetaData.init(resLoader, packageName);
     }
-    for (BroadcastReceiverData receiver : receivers) {
+    for (PackageItemData receiver : receivers) {
       receiver.getMetaData().init(resLoader, packageName);
     }
     for (ServiceData service : serviceDatas.values()) {
@@ -453,6 +491,7 @@ public class AndroidManifest {
     return (data != null && data.getLabel() != null) ? data.getLabel() : applicationLabel;
   }
 
+  @Deprecated
   public void setPackageName(String packageName) {
     this.packageName = packageName;
   }
@@ -503,7 +542,6 @@ public class AndroidManifest {
   }
 
   public ResourcePath getResourcePath() {
-    validate();
     return new ResourcePath(getRClass(), getPackageName(), resDirectory, assetsDirectory);
   }
 
@@ -521,84 +559,14 @@ public class AndroidManifest {
     return providers;
   }
 
-  public void setLibraryDirectories(List<FsFile> libraryDirectories) {
-    this.libraryDirectories = libraryDirectories;
-  }
-
-  protected void createLibraryManifests() {
-    libraryManifests = new ArrayList<>();
-    if (libraryDirectories == null) {
-      libraryDirectories = findLibraries();
-    }
-
-    for (FsFile libraryBaseDir : libraryDirectories) {
-      AndroidManifest libraryManifest = createLibraryAndroidManifest(libraryBaseDir);
-      libraryManifest.createLibraryManifests();
-      libraryManifests.add(libraryManifest);
-    }
-  }
-
-  protected List<FsFile> findLibraries() {
-    FsFile baseDir = getBaseDir();
-    List<FsFile> libraryBaseDirs = new ArrayList<>();
-
-    final Properties properties = getProperties(baseDir.join("project.properties"));
-    Properties overrideProperties = getProperties(baseDir.join("test-project.properties"));
-    properties.putAll(overrideProperties);
-
-    int libRef = 1;
-    String lib;
-    while ((lib = properties.getProperty("android.library.reference." + libRef)) != null) {
-      FsFile libraryBaseDir = baseDir.join(lib);
-      if (libraryBaseDir.isDirectory()) {
-        // Ignore directories without any files
-        FsFile[] libraryBaseDirFiles = libraryBaseDir.listFiles();
-        if (libraryBaseDirFiles != null && libraryBaseDirFiles.length > 0) {
-          libraryBaseDirs.add(libraryBaseDir);
-        }
-      }
-
-      libRef++;
-    }
-    return libraryBaseDirs;
-  }
-
-  protected FsFile getBaseDir() {
-    return getResDirectory().getParent();
-  }
-
-  protected AndroidManifest createLibraryAndroidManifest(FsFile libraryBaseDir) {
-    return new AndroidManifest(libraryBaseDir.join(DEFAULT_MANIFEST_NAME), libraryBaseDir.join(Config.DEFAULT_RES_FOLDER), libraryBaseDir.join(Config.DEFAULT_ASSET_FOLDER));
+  public void setLibraryManifests(List<AndroidManifest> libraryManifests) {
+    Preconditions.checkNotNull(libraryManifests);
+    this.libraryManifests = libraryManifests;
   }
 
   public List<AndroidManifest> getLibraryManifests() {
-    if (libraryManifests == null) createLibraryManifests();
+    assert(libraryManifests != null);
     return Collections.unmodifiableList(libraryManifests);
-  }
-
-  private static Properties getProperties(FsFile propertiesFile) {
-    Properties properties = new Properties();
-
-    // return an empty Properties object if the propertiesFile does not exist
-    if (!propertiesFile.exists()) return properties;
-
-    InputStream stream;
-    try {
-      stream = propertiesFile.getInputStream();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-
-    try {
-      try {
-        properties.load(stream);
-      } finally {
-        stream.close();
-      }
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-    return properties;
   }
 
   public FsFile getResDirectory() {
@@ -620,9 +588,9 @@ public class AndroidManifest {
 
   public List<ServiceData> getServices() {
     parseAndroidManifest();
-    return new ArrayList<ServiceData>(serviceDatas.values());
+    return new ArrayList<>(serviceDatas.values());
   }
-  
+
   public ServiceData getServiceData(String serviceClassName) {
     return serviceDatas.get(serviceClassName);
   }
@@ -651,7 +619,7 @@ public class AndroidManifest {
     if (assetsDirectory != null ? !assetsDirectory.equals(that.assetsDirectory) : that.assetsDirectory != null)
       return false;
     if (resDirectory != null ? !resDirectory.equals(that.resDirectory) : that.resDirectory != null) return false;
-    if (packageName != null ? !packageName.equals(that.packageName) : that.packageName != null) return false;
+    if (overridePackageName != null ? !overridePackageName.equals(that.overridePackageName) : that.overridePackageName != null) return false;
     return true;
   }
 
@@ -660,7 +628,7 @@ public class AndroidManifest {
     int result = androidManifestFile != null ? androidManifestFile.hashCode() : 0;
     result = 31 * result + (resDirectory != null ? resDirectory.hashCode() : 0);
     result = 31 * result + (assetsDirectory != null ? assetsDirectory.hashCode() : 0);
-    result = 31 * result + (packageName != null ? packageName.hashCode() : 0);
+    result = 31 * result + (overridePackageName != null ? overridePackageName.hashCode() : 0);
     return result;
   }
 

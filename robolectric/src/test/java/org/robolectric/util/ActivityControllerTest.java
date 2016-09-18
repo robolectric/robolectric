@@ -1,15 +1,9 @@
 package org.robolectric.util;
 
-import android.app.Activity;
-import android.app.Application;
-import android.content.ComponentName;
-import android.content.Intent;
-import android.os.Build;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.view.Window;
-import android.widget.LinearLayout;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.robolectric.Shadows.shadowOf;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,9 +17,16 @@ import org.robolectric.internal.runtime.RuntimeAdapterFactory;
 import org.robolectric.shadows.CoreShadowsAdapter;
 import org.robolectric.shadows.ShadowLooper;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.robolectric.Shadows.shadowOf;
+import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Intent;
+import android.content.res.Configuration;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.view.Window;
+import android.widget.LinearLayout;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ActivityControllerTest {
@@ -220,6 +221,40 @@ public class ActivityControllerTest {
     RuntimeAdapter adapter = RuntimeAdapterFactory.getInstance();
     assertThat(adapter.getClass().getName()).isEqualTo(Api19RuntimeAdapter.class.getName());
   }
+  
+  @Test
+  public void configurationChange_callsLifecycleMethodsAndAppliesConfig() {
+    Configuration config = new Configuration(RuntimeEnvironment.application.getResources().getConfiguration());
+    final float newFontScale = config.fontScale *= 2;
+    
+    controller.configurationChange(config);
+    transcript.assertEventsInclude("onPause", "onStop", "onDestroy", "onCreate", "onStart", "onResume");
+    assertThat(controller.get().getResources().getConfiguration().fontScale).isEqualTo(newFontScale);
+  }
+  
+  @Test
+  public void configurationChange_callsOnConfigurationChangedAndAppliesConfigWhenAllManaged() {
+    Configuration config = new Configuration(RuntimeEnvironment.application.getResources().getConfiguration());
+    final float newFontScale = config.fontScale *= 2;
+    
+    ActivityController<ConfigAwareActivity> configController = Robolectric.buildActivity(ConfigAwareActivity.class);
+    configController.configurationChange(config);
+    transcript.assertEventsInclude("onConfigurationChanged");
+    assertThat(configController.get().getResources().getConfiguration().fontScale).isEqualTo(newFontScale);
+  }
+  
+  @Test
+  public void configurationChange_callsLifecycleMethodsAndAppliesConfigWhenAnyNonManaged() {
+    Configuration config = new Configuration(RuntimeEnvironment.application.getResources().getConfiguration());
+    final float newFontScale = config.fontScale *= 2;
+    final int newOrientation = config.orientation = (config.orientation + 1) % 3;
+    
+    ActivityController<ConfigAwareActivity> configController = Robolectric.buildActivity(ConfigAwareActivity.class);
+    configController.configurationChange(config);
+    transcript.assertEventsInclude("onPause", "onStop", "onDestroy", "onCreate", "onStart", "onResume");
+    assertThat(configController.get().getResources().getConfiguration().fontScale).isEqualTo(newFontScale);
+    assertThat(configController.get().getResources().getConfiguration().orientation).isEqualTo(newOrientation);
+  }
 
   public static class MyActivity extends Activity {
     @Override
@@ -307,6 +342,13 @@ public class ActivityControllerTest {
       transcribeWhilePaused("onUserLeaveHint");
       transcript.add("finishedOnUserLeaveHint");
     }
+    
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+      super.onConfigurationChanged(newConfig);
+      transcribeWhilePaused("onConfigurationChanged");
+      transcript.add("finishedOnConfigurationChanged");
+    }
 
     private void transcribeWhilePaused(final String event) {
       runOnUiThread(new Runnable() {
@@ -315,5 +357,9 @@ public class ActivityControllerTest {
         }
       });
     }
+  }
+  
+  public static class ConfigAwareActivity extends MyActivity {
+	  
   }
 }

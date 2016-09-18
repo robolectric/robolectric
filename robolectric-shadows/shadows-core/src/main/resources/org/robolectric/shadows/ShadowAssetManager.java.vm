@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
+import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
 import android.os.ParcelFileDescriptor;
 import android.util.AttributeSet;
@@ -14,7 +15,7 @@ import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.res.Attribute;
+import org.robolectric.res.AttributeResource;
 import org.robolectric.res.DrawableNode;
 import org.robolectric.res.DrawableResourceLoader;
 import org.robolectric.res.FsFile;
@@ -24,8 +25,10 @@ import org.robolectric.res.ResourceIndex;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.Style;
 import org.robolectric.res.StyleData;
+import org.robolectric.res.StyleResolver;
 import org.robolectric.res.TypedResource;
 import org.robolectric.res.builder.ResourceParser;
+import org.robolectric.res.builder.XmlResourceParserImpl;
 import org.robolectric.util.Strings;
 
 import java.io.ByteArrayInputStream;
@@ -57,9 +60,6 @@ public final class ShadowAssetManager {
   public static final int STYLE_CHANGING_CONFIGURATIONS = 4;
   public static final int STYLE_DENSITY = 5;
 
-  private static ResourceLoader systemResourceLoader;
-  private static ResourceLoader appResourceLoader;
-
   private Map<$ptrClassBoxed, Resources.Theme> themesById = new LinkedHashMap<>();
   private Map<$ptrClassBoxed, List<OverlayedStyle>> appliedStyles = new HashMap<>();
   private int nextInternalThemeId = 1000;
@@ -68,33 +68,21 @@ public final class ShadowAssetManager {
   @RealObject
   AssetManager realObject;
 
-  public static void setSystemResources(ResourceLoader systemResources) {
-    systemResourceLoader = systemResources;
-  }
-
-  public static void setAppResourceLoader(ResourceLoader resourceLoader) {
-    appResourceLoader = resourceLoader;
-  }
-
   public ResourceLoader getResourceLoader() {
-    if (resourceLoader == null) {
-      resourceLoader = appResourceLoader;
-    }
-
     return resourceLoader;
   }
 
-  @Implementation
-  public static AssetManager getSystem() {
-    AssetManager assetManager = new AssetManager();
-    ShadowAssetManager shadowAssetManager = shadowOf(assetManager);
-    shadowAssetManager.resourceLoader = systemResourceLoader;
-    return assetManager;
+  public void __constructor__() {
+    resourceLoader = RuntimeEnvironment.getAppResourceLoader();
+  }
+
+  public void __constructor__(boolean isSystem) {
+    resourceLoader = isSystem ? RuntimeEnvironment.getSystemResourceLoader() : RuntimeEnvironment.getAppResourceLoader();
   }
 
   @HiddenApi @Implementation
   public CharSequence getResourceText(int ident) {
-    TypedResource value = getAndResolve(ident, getQualifiers(), true);
+    TypedResource value = getAndResolve(ident, RuntimeEnvironment.getQualifiers(), true);
     if (value == null) return null;
     return (CharSequence) value.getData();
   }
@@ -117,7 +105,7 @@ public final class ShadowAssetManager {
 
   @HiddenApi @Implementation
   public int getResourceIdentifier(String name, String defType, String defPackage) {
-    ResourceIndex resourceIndex = getResourceLoader().getResourceIndex();
+    ResourceIndex resourceIndex = resourceLoader.getResourceIndex();
     ResName resName = ResName.qualifyResName(name, defPackage, defType);
     Integer resourceId = resourceIndex.getResourceId(resName);
     if (resourceId == null) return 0;
@@ -126,7 +114,7 @@ public final class ShadowAssetManager {
 
   @HiddenApi @Implementation
   public boolean getResourceValue(int ident, int density, TypedValue outValue, boolean resolveRefs) {
-    TypedResource value = getAndResolve(ident, getQualifiers(), resolveRefs);
+    TypedResource value = getAndResolve(ident, RuntimeEnvironment.getQualifiers(), resolveRefs);
     if (value == null) return false;
 
     getConverter(value).fillTypedValue(value.getData(), outValue);
@@ -138,15 +126,13 @@ public final class ShadowAssetManager {
   }
 
   @HiddenApi @Implementation
-  public CharSequence[] getResourceTextArray(final int id) {
-    ResName resName = getResourceLoader().getResourceIndex().getResName(id);
-    if (resName == null) throw new Resources.NotFoundException("unknown resource " + id);
-    TypedResource value = getAndResolve(resName, getQualifiers(), true);
+  public CharSequence[] getResourceTextArray(int resId) {
+    TypedResource value = getAndResolve(resId, RuntimeEnvironment.getQualifiers(), true);
     if (value == null) return null;
     TypedResource[] items = getConverter(value).getItems(value);
     CharSequence[] charSequences = new CharSequence[items.length];
     for (int i = 0; i < items.length; i++) {
-      TypedResource typedResource = resolve(items[i], getQualifiers(), resName);
+      TypedResource typedResource = resolve(items[i], RuntimeEnvironment.getQualifiers(), resId);
       charSequences[i] = getConverter(typedResource).asCharSequence(typedResource);
     }
     return charSequences;
@@ -154,18 +140,16 @@ public final class ShadowAssetManager {
 
   @HiddenApi @Implementation
   public boolean getThemeValue($ptrClass theme, int ident, TypedValue outValue, boolean resolveRefs) {
-    ResourceIndex resourceIndex = getResourceLoader().getResourceIndex();
+    ResourceIndex resourceIndex = resourceLoader.getResourceIndex();
     ResName resName = resourceIndex.getResName(ident);
     Resources.Theme theTheme = getThemeByInternalId(theme);
     // Load the style for the theme we represent. E.g. "@style/Theme.Robolectric"
     int styleResourceId = shadowOf(theTheme).getStyleResourceId();
-    ResName themeStyleName = resourceIndex.getResName(styleResourceId);
-    if (themeStyleName == null) return false; // is this right?
 
-    Style themeStyle = resolveStyle(null, themeStyleName);
+    Style themeStyle = resolveStyle(null, styleResourceId);
 
     //// Load the theme attribute for the default style attributes. E.g., attr/buttonStyle
-    //ResName defStyleName = getResourceLoader().getResourceIndex().getResName(ident);
+    //ResName defStyleName = resourceLoader.getResourceIndex().getResName(ident);
     //
     //// Load the style for the default style attribute. E.g. "@style/Widget.Robolectric.Button";
     //String defStyleNameValue = themeStyle.getAttrValue(defStyleName);
@@ -173,13 +157,13 @@ public final class ShadowAssetManager {
     //Style style = resolveStyle(resourceLoader, defStyleResName);
     if (themeStyle != null) {
       List<OverlayedStyle> overlayThemeStyles = getOverlayThemeStyles(styleResourceId);
-      Attribute attrValue = getOverlayedThemeValue(resName, themeStyle, overlayThemeStyles);
+      AttributeResource attrValue = getOverlayedThemeValue(resName, themeStyle, overlayThemeStyles);
       while(resolveRefs && attrValue != null && attrValue.isStyleReference()) {
         ResName attrResName = new ResName(attrValue.contextPackageName, "attr", attrValue.value.substring(1));
         attrValue = getOverlayedThemeValue(attrResName, themeStyle, overlayThemeStyles);
       }
       if (attrValue != null) {
-        Converter.convertAndFill(attrValue, outValue, resourceLoader, getQualifiers(), resolveRefs);
+        Converter.convertAndFill(attrValue, outValue, resourceLoader, RuntimeEnvironment.getQualifiers(), resolveRefs);
         return true;
       }
     }
@@ -219,7 +203,7 @@ public final class ShadowAssetManager {
   @HiddenApi @Implementation
   public final InputStream openNonAsset(int cookie, String fileName, int accessMode) throws IOException {
     final ResName resName = qualifyFromNonAssetFileName(fileName);
-    final DrawableNode drawableNode = getResourceLoader().getDrawableNode(resName, getQualifiers());
+    final DrawableNode drawableNode = resourceLoader.getDrawableNode(resName, RuntimeEnvironment.getQualifiers());
 
     if (drawableNode == null) {
       throw new IOException("Unable to find resource for " + fileName);
@@ -279,15 +263,13 @@ public final class ShadowAssetManager {
   }
 
   @HiddenApi @Implementation
-  public int[] getArrayIntResource(int arrayRes) {
-    ResName resName = getResourceLoader().getResourceIndex().getResName(arrayRes);
-    if (resName == null) throw new Resources.NotFoundException("unknown resource " + arrayRes);
-    TypedResource value = getAndResolve(resName, getQualifiers(), true);
+  public int[] getArrayIntResource(int resId) {
+    TypedResource value = getAndResolve(resId, RuntimeEnvironment.getQualifiers(), true);
     if (value == null) return null;
     TypedResource[] items = getConverter(value).getItems(value);
     int[] ints = new int[items.length];
     for (int i = 0; i < items.length; i++) {
-      TypedResource typedResource = resolve(items[i], getQualifiers(), resName);
+      TypedResource typedResource = resolve(items[i], RuntimeEnvironment.getQualifiers(), resId);
       ints[i] = getConverter(typedResource).asInt(typedResource);
     }
     return ints;
@@ -313,10 +295,7 @@ public final class ShadowAssetManager {
       appliedStyles.put(theme, new LinkedList<OverlayedStyle>());
     }
 
-    ResourceIndex resourceIndex = assetManager.getResourceLoader().getResourceIndex();
-    ResName resName = resourceIndex.getResName(styleRes);
-
-    Style style = assetManager.resolveStyle(null, resName);
+    Style style = assetManager.resolveStyle(null, styleRes);
 
     List<OverlayedStyle> overlayedStyleList = appliedStyles.get(theme);
     OverlayedStyle styleToAdd = new OverlayedStyle(style, force);
@@ -358,7 +337,7 @@ public final class ShadowAssetManager {
   }
 
   @HiddenApi @Implementation
-  public static void copyTheme($ptrClass dest, long source) {
+  public static void copyTheme($ptrClass dest, $ptrClass source) {
     throw new UnsupportedOperationException();
   }
 
@@ -372,266 +351,43 @@ public final class ShadowAssetManager {
     return themesById.get(internalThemeId);
   }
 
-  Style resolveStyle(Style appTheme, @NotNull ResName themeStyleName) {
-    TypedResource themeStyleResource = resourceLoader.getValue(themeStyleName, getQualifiers());
+  Style resolveStyle(Style appTheme, int resId) {
+    return resolveStyle(appTheme, getResName(resId));
+  }
+
+  private Style resolveStyle(Style appTheme, @NotNull ResName themeStyleName) {
+    TypedResource themeStyleResource = resourceLoader.getValue(themeStyleName, RuntimeEnvironment.getQualifiers());
     if (themeStyleResource == null) return null;
     StyleData themeStyleData = (StyleData) themeStyleResource.getData();
-    return new StyleResolver(resourceLoader, themeStyleData, appTheme, themeStyleName, getQualifiers());
+    return new StyleResolver(resourceLoader, themeStyleData, appTheme, themeStyleName, RuntimeEnvironment.getQualifiers());
   }
 
-  TypedResource getAndResolve(int resId, String qualifiers, boolean resolveRefs) {
-    ResName resName = getResourceLoader().getResourceIndex().getResName(resId);
-    if (resName == null) throw new Resources.NotFoundException("unknown resource " + resId);
-    return getAndResolve(resName, qualifiers, resolveRefs);
-  }
-
-  TypedResource getAndResolve(@NotNull ResName resName, String qualifiers, boolean resolveRefs) {
-    TypedResource value = getResourceLoader().getValue(resName, qualifiers);
+  private TypedResource getAndResolve(int resId, String qualifiers, boolean resolveRefs) {
+    TypedResource value = resourceLoader.getValue(resId, qualifiers);
     if (resolveRefs) {
-      value = resolve(value, qualifiers, resName);
+      value = resolve(value, qualifiers, resId);
     }
 
     // todo: make the drawable loader put stuff into the normal spot...
-    if (value == null && DrawableResourceLoader.isStillHandledHere(resName)) {
-      DrawableNode drawableNode = getResourceLoader().getDrawableNode(resName, qualifiers);
-      return new TypedResource<FsFile>(drawableNode.getFsFile(), ResType.FILE);
+    String resourceTypeName = getResourceTypeName(resId);
+    if (value == null && DrawableResourceLoader.isStillHandledHere(resourceTypeName)) {
+      DrawableNode drawableNode = resourceLoader.getDrawableNode(resId, qualifiers);
+      return new TypedResource<>(drawableNode.getFsFile(), ResType.FILE);
     }
 
     // todo: gross. this is so resources.getString(R.layout.foo) works for ABS.
-    if (value == null && "layout".equals(resName.type)) {
+    if (value == null && "layout".equals(resourceTypeName)) {
       throw new UnsupportedOperationException("ugh, this doesn't work still?");
     }
 
     return value;
   }
 
-  TypedResource resolve(TypedResource value, String qualifiers, ResName contextResName) {
-    return resolveResource(value, qualifiers, contextResName).value;
+  TypedResource resolve(TypedResource value, String qualifiers, int resId) {
+    return resourceLoader.resolveResourceValue(value, qualifiers, resId);
   }
 
-  ResName resolveResName(int resId, String qualifiers) {
-    ResName resName = getResourceLoader().getResourceIndex().getResName(resId);
-    if (resName == null) return null;
-    TypedResource value = getResourceLoader().getValue(resName, qualifiers);
-    return resolveResource(value, qualifiers, resName).resName;
-  }
-
-  private Resource resolveResource(TypedResource value, String qualifiers, ResName resName) {
-    while (isReference(value)) {
-      String s = value.asString();
-      if (s.equals("@null") || s.equals("@empty")) {
-        value = null;
-      } else {
-        String refStr = s.substring(1).replace("+", "");
-        resName = ResName.qualifyResName(refStr, resName);
-        value = getResourceLoader().getValue(resName, qualifiers);
-      }
-    }
-
-    return new Resource(value, resName);
-  }
-
-  private boolean isReference(TypedResource value) {
-    if (value != null) {
-      Object data = value.getData();
-      if (data instanceof String) {
-        String s = (String) data;
-        return !s.isEmpty() && s.charAt(0) == '@';
-      }
-    }
-    return false;
-  }
-
-  public FsFile getAssetsDirectory() {
-    return ShadowApplication.getInstance().getAppManifest().getAssetsDirectory();
-  }
-
-  public String getQualifiers() {
-    return RuntimeEnvironment.getQualifiers();
-  }
-
-  public void setQualifiers(String qualifiers) {
-    RuntimeEnvironment.setQualifiers(qualifiers);
-  }
-
-  private static class Resource {
-    public final ResName resName;
-    public final TypedResource<?> value;
-
-    public Resource(TypedResource<?> value, ResName resName) {
-      this.value = value;
-      this.resName = resName;
-    }
-  }
-
-  static class StyleResolver implements Style {
-    private final ResourceLoader resourceLoader;
-    private final List<StyleData> styles = new ArrayList<>();
-    private final Style theme;
-    private final ResName myResName;
-    private final String qualifiers;
-
-    public StyleResolver(ResourceLoader resourceLoader, StyleData styleData,
-        Style theme, ResName myResName, String qualifiers) {
-      this.resourceLoader = resourceLoader;
-      this.theme = theme;
-      this.myResName = myResName;
-      this.qualifiers = qualifiers;
-      styles.add(styleData);
-    }
-
-    @Override public Attribute getAttrValue(ResName resName) {
-      for (StyleData style : styles) {
-        Attribute value = style.getAttrValue(resName);
-        if (value != null) return value;
-      }
-      int initialSize = styles.size();
-      while (hasParent(styles.get(styles.size() - 1))) {
-        StyleData parent = getParent(styles.get(styles.size() - 1));
-        if (parent != null) {
-          styles.add(parent);
-        } else {
-          break;
-        }
-      }
-      for (int i = initialSize; i < styles.size(); i++) {
-        StyleData style = styles.get(i);
-        Attribute value = style.getAttrValue(resName);
-        if (value != null) return value;
-      }
-      if (theme != null) {
-        Attribute value = theme.getAttrValue(resName);
-        if (value != null) return value;
-      }
-
-      return null;
-    }
-
-    private static String getParentStyleName(StyleData style) {
-      if (style == null) {
-        return null;
-      }
-      String parent = style.getParent();
-      if (parent == null || parent.isEmpty()) {
-        parent = null;
-        String name = style.getName();
-        if (name.contains(".")) {
-          parent = name.substring(0, name.lastIndexOf('.'));
-          if (parent.isEmpty()) {
-            return null;
-          }
-        }
-      }
-      return parent;
-    }
-
-    private static boolean hasParent(StyleData style) {
-      if (style == null) return false;
-      String parent = style.getParent();
-      return parent != null && !parent.isEmpty();
-    }
-
-    private StyleData getParent(StyleData style) {
-      String parent = getParentStyleName(style);
-
-      if (parent == null) return null;
-
-      if (parent.startsWith("@")) parent = parent.substring(1);
-
-      ResName styleRef = ResName.qualifyResName(parent, style.getPackageName(), "style");
-
-      styleRef = dereferenceResName(styleRef);
-
-      TypedResource typedResource = resourceLoader.getValue(styleRef, qualifiers);
-
-      if (typedResource == null) {
-        StringBuilder builder = new StringBuilder("Could not find any resource ")
-            .append(" from reference ").append(styleRef)
-            .append(" from style ").append(style)
-            .append(" with theme ").append(theme);
-        throw new RuntimeException(builder.toString());
-      }
-
-      Object data = typedResource.getData();
-      if (data instanceof StyleData) {
-        return (StyleData) data;
-      } else {
-        StringBuilder builder = new StringBuilder(styleRef.toString())
-            .append(" does not resolve to a Style.")
-            .append(" got ").append(data).append(" instead. ")
-            .append(" from style ").append(style)
-            .append(" with theme ").append(theme);
-        throw new RuntimeException(builder.toString());
-      }
-    }
-
-    private ResName dereferenceResName(ResName res) {
-      ResName styleRef = res;
-      boolean dereferencing = true;
-      while ("attr".equals(styleRef.type) && dereferencing) {
-        dereferencing = false;
-        for (StyleData parentStyle : styles) {
-          Attribute value = parentStyle.getAttrValue(styleRef);
-          if (value != null) {
-            styleRef = dereferenceAttr(value);
-            dereferencing = true;
-            break;
-          }
-        }
-        if (!dereferencing && theme != null) {
-          Attribute value = theme.getAttrValue(styleRef);
-          if (value != null) {
-            styleRef = dereferenceAttr(value);
-            dereferencing = true;
-          }
-        }
-      }
-
-      return styleRef;
-    }
-
-    private ResName dereferenceAttr(Attribute attr) {
-      if (attr.isResourceReference()) {
-        return attr.getResourceReference();
-      } else if (attr.isStyleReference()) {
-        return attr.getStyleReference();
-      }
-      throw new RuntimeException("Found a " + attr + " but can't cast it :(");
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      if (!(obj instanceof StyleResolver)) {
-        return false;
-      }
-      StyleResolver other = (StyleResolver) obj;
-
-      return ((theme == null && other.theme == null) || (theme != null && theme.equals(other.theme)))
-          && ((myResName == null && other.myResName == null)
-            || (myResName != null && myResName.equals(other.myResName)))
-          && Strings.equals(qualifiers, other.qualifiers);
-    }
-
-    @Override
-    public int hashCode() {
-      int hashCode = 0;
-      hashCode = 31 * hashCode + (theme != null ? theme.hashCode() : 0);
-      hashCode = 31 * hashCode + (myResName != null ? myResName.hashCode() : 0);
-      hashCode = 31 * hashCode + Strings.nullToEmpty(qualifiers).hashCode();
-      return hashCode;
-    }
-
-    @Override
-    public String toString() {
-      return "StyleResolver{"
-          + "name=" + myResName
-          + ", of=" + styles.get(0)
-          + "}";
-    }
-
-  }
-
-  List<Attribute> buildAttributes(AttributeSet set, int[] attrs, int defStyleAttr, int themeResourceId, int defStyleRes) {
+  private AttributeResource buildAttribute(AttributeSet set, int resId, int defStyleAttr, int themeResourceId, int defStyleRes) {
     /*
      * When determining the final value of a particular attribute, there are four inputs that come into play:
      *
@@ -640,8 +396,6 @@ public final class ShadowAssetManager {
      * 3. The default style specified by defStyleAttr and defStyleRes
      * 4. The base values in this theme.
      */
-    ResourceLoader resourceLoader = getResourceLoader();
-
     Style defStyleFromAttr = null;
     Style defStyleFromRes = null;
     Style styleAttrStyle = null;
@@ -650,18 +404,17 @@ public final class ShadowAssetManager {
     List<ShadowAssetManager.OverlayedStyle> overlayedStyles = getOverlayThemeStyles(themeResourceId);
     if (themeResourceId != 0) {
       // Load the style for the theme we represent. E.g. "@style/Theme.Robolectric"
-      ResName themeStyleName = getResName(themeResourceId);
-      theme = resolveStyle(null, themeStyleName);
+      theme = resolveStyle(null, themeResourceId);
 
       if (defStyleAttr != 0) {
         // Load the theme attribute for the default style attributes. E.g., attr/buttonStyle
         ResName defStyleName = getResName(defStyleAttr);
 
         // Load the style for the default style attribute. E.g. "@style/Widget.Robolectric.Button";
-        Attribute defStyleAttribute = getOverlayedThemeValue(defStyleName, theme, overlayedStyles);
+        AttributeResource defStyleAttribute = getOverlayedThemeValue(defStyleName, theme, overlayedStyles);
         if (defStyleAttribute != null) {
           while (defStyleAttribute.isStyleReference()) {
-            Attribute other = getOverlayedThemeValue(defStyleAttribute.getStyleReference(), theme, overlayedStyles);
+            AttributeResource other = getOverlayedThemeValue(defStyleAttribute.getStyleReference(), theme, overlayedStyles);
             if (other == null) {
               throw new RuntimeException("couldn't dereference " + defStyleAttribute);
             }
@@ -676,11 +429,10 @@ public final class ShadowAssetManager {
       }
     }
 
-    int styleAttrResId = set.getStyleAttribute();
-    if (styleAttrResId != 0) {
-      ResName styleAttributeResName = getResName(styleAttrResId);
+    if (set != null && set.getStyleAttribute() != 0) {
+      ResName styleAttributeResName = getResName(set.getStyleAttribute());
       while (styleAttributeResName.type.equals("attr")) {
-        Attribute attrValue = getOverlayedThemeValue(styleAttributeResName, theme, overlayedStyles);
+        AttributeResource attrValue = getOverlayedThemeValue(styleAttributeResName, theme, overlayedStyles);
         if (attrValue.isResourceReference()) {
           styleAttributeResName = attrValue.getResourceReference();
         } else if (attrValue.isStyleReference()) {
@@ -693,7 +445,7 @@ public final class ShadowAssetManager {
     if (defStyleRes != 0) {
       ResName resName = getResName(defStyleRes);
       if (resName.type.equals("attr")) {
-        Attribute attributeValue = findAttributeValue(getResName(defStyleRes), set, styleAttrStyle, defStyleFromAttr, defStyleFromAttr, theme, overlayedStyles);
+        AttributeResource attributeValue = findAttributeValue(defStyleRes, set, styleAttrStyle, defStyleFromAttr, defStyleFromAttr, theme, overlayedStyles);
         if (attributeValue != null) {
           if (attributeValue.isStyleReference()) {
             resName = getOverlayedThemeValue(attributeValue.getStyleReference(), theme, overlayedStyles).getResourceReference();
@@ -705,42 +457,84 @@ public final class ShadowAssetManager {
       defStyleFromRes = resolveStyle(theme, resName);
     }
 
-    List<Attribute> attributes = new ArrayList<>();
-    if (attrs == null) attrs = new int[0];
-    for (int attr : attrs) {
-      ResName attrName = tryResName(attr); // todo probably getResName instead here?
-      if (attrName == null) continue;
+    AttributeResource attribute = findAttributeValue(resId, set, styleAttrStyle, defStyleFromAttr, defStyleFromRes, theme, overlayedStyles);
+    while (attribute != null && attribute.isStyleReference()) {
+      ResName otherAttrName = attribute.getStyleReference();
 
-      Attribute attribute = findAttributeValue(attrName, set, styleAttrStyle, defStyleFromAttr, defStyleFromRes, theme, overlayedStyles);
-      while (attribute != null && attribute.isStyleReference()) {
-        ResName otherAttrName = attribute.getStyleReference();
+      // TODO: this is just a debugging hack to avoid the problem of Resources.loadDrawableForCookie not working.
+      // TODO: We need to address the real problem instead, but are putting it off for a day or two -AV, ED 2014-12-03
+      if (theme == null) break;
 
-        // TODO: this is just a debugging hack to avoid the problem of Resources.loadDrawableForCookie not working.
-        // TODO: We need to address the real problem instead, but are putting it off for a day or two -AV, ED 2014-12-03
-        if (theme == null) break;
-
-        attribute = getOverlayedThemeValue(otherAttrName, theme, overlayedStyles);
-        if (attribute != null) {
-          attribute = new Attribute(attrName, attribute.value, attribute.contextPackageName);
-        }
-      }
-
+      attribute = getOverlayedThemeValue(otherAttrName, theme, overlayedStyles);
       if (attribute != null) {
-        Attribute.put(attributes, attribute);
+        attribute = new AttributeResource(resourceLoader.getResourceIndex().getResName(resId), attribute.value, attribute.contextPackageName);
       }
     }
 
-    return attributes;
+    return attribute;
   }
 
-  private Attribute findAttributeValue(ResName attrName, AttributeSet attributeSet, Style styleAttrStyle, Style defStyleFromAttr, Style defStyleFromRes, Style theme, List<ShadowAssetManager.OverlayedStyle> overlayedStyles) {
-    String attrValue = attributeSet.getAttributeValue(attrName.getNamespaceUri(), attrName.name);
-    if (attrValue != null) {
-      return new Attribute(attrName, attrValue, "fixme!!!");
+  TypedArray attrsToTypedArray(Resources resources, AttributeSet set, int[] attrs, int defStyleAttr, int themeResourceId, int defStyleRes) {
+    CharSequence[] stringData = new CharSequence[attrs.length];
+    int[] data = new int[attrs.length * ShadowAssetManager.STYLE_NUM_ENTRIES];
+    int[] indices = new int[attrs.length + 1];
+    int nextIndex = 0;
+
+    for (int i = 0; i < attrs.length; i++) {
+      int offset = i * ShadowAssetManager.STYLE_NUM_ENTRIES;
+
+      AttributeResource attribute = buildAttribute(set, attrs[i], defStyleAttr, themeResourceId, defStyleRes);
+      if (attribute != null && !attribute.isNull()) {
+        TypedValue typedValue = new TypedValue();
+        // If there is an AttributeSet then use the resource loader that the attribute set was created with.
+        ResourceLoader resourceLoader = set != null && set instanceof XmlResourceParserImpl
+            ? ((XmlResourceParserImpl) set).getResourceLoader()
+            : this.resourceLoader;
+        Converter.convertAndFill(attribute, typedValue, resourceLoader, RuntimeEnvironment.getQualifiers(), true);
+        //noinspection PointlessArithmeticExpression
+        data[offset + ShadowAssetManager.STYLE_TYPE] = typedValue.type;
+        data[offset + ShadowAssetManager.STYLE_DATA] = typedValue.type == TypedValue.TYPE_STRING ? i : typedValue.data;
+        data[offset + ShadowAssetManager.STYLE_ASSET_COOKIE] = typedValue.assetCookie;
+        data[offset + ShadowAssetManager.STYLE_RESOURCE_ID] = typedValue.resourceId;
+        data[offset + ShadowAssetManager.STYLE_CHANGING_CONFIGURATIONS] = typedValue.changingConfigurations;
+        data[offset + ShadowAssetManager.STYLE_DENSITY] = typedValue.density;
+        stringData[i] = typedValue.string;
+
+        indices[nextIndex + 1] = i;
+        nextIndex++;
+      }
     }
 
+    indices[0] = nextIndex;
+
+    TypedArray typedArray = ShadowTypedArray.create(resources, attrs, data, indices, nextIndex, stringData);
+    if (set != null) {
+      shadowOf(typedArray).positionDescription = set.getPositionDescription();
+    }
+    return typedArray;
+  }
+
+  private AttributeResource findAttributeValue(int resId, AttributeSet attributeSet, Style styleAttrStyle, Style defStyleFromAttr, Style defStyleFromRes, Style theme, List<ShadowAssetManager.OverlayedStyle> overlayedStyles) {
+    if (attributeSet != null) {
+      for (int i = 0; i < attributeSet.getAttributeCount(); i++) {
+        if (attributeSet.getAttributeNameResource(i) == resId && attributeSet.getAttributeValue(i) != null) {
+          ResName resName = resourceLoader.getResourceIndex().getResName(resId);
+
+          if (resName == null) {
+            // We're looking for an attribute that doesn't yet exist at this SDK level just pass it back blindly and
+            // assume the user knows what they're doing with it.
+            resName = ResName.qualifyResName(attributeSet.getAttributeName(i), null, "attr");
+          }
+          return new AttributeResource(resName, attributeSet.getAttributeValue(i), "fixme!!!");
+        }
+      }
+    }
+
+    ResName attrName = resourceLoader.getResourceIndex().getResName(resId);
+    if (attrName == null) return null;
+
     if (styleAttrStyle != null) {
-      Attribute attribute = styleAttrStyle.getAttrValue(attrName);
+      AttributeResource attribute = styleAttrStyle.getAttrValue(attrName);
       if (attribute != null) {
         return attribute;
       }
@@ -748,14 +542,14 @@ public final class ShadowAssetManager {
 
     // else if attr in defStyleFromAttr, use its value
     if (defStyleFromAttr != null) {
-      Attribute attribute = defStyleFromAttr.getAttrValue(attrName);
+      AttributeResource attribute = defStyleFromAttr.getAttrValue(attrName);
       if (attribute != null) {
         return attribute;
       }
     }
 
     if (defStyleFromRes != null) {
-      Attribute attribute = defStyleFromRes.getAttrValue(attrName);
+      AttributeResource attribute = defStyleFromRes.getAttrValue(attrName);
       if (attribute != null) {
         return attribute;
       }
@@ -769,12 +563,12 @@ public final class ShadowAssetManager {
     return null;
   }
 
-  private static Attribute getOverlayedThemeValue(ResName attrName, Style theme, List<ShadowAssetManager.OverlayedStyle> overlayedStyles) {
-    Attribute attribute = theme.getAttrValue(attrName);
+  private static AttributeResource getOverlayedThemeValue(ResName attrName, Style theme, List<ShadowAssetManager.OverlayedStyle> overlayedStyles) {
+    AttributeResource attribute = theme.getAttrValue(attrName);
 
     if (overlayedStyles != null) {
       for (ShadowAssetManager.OverlayedStyle overlayedStyle : overlayedStyles) {
-        Attribute overlayedAttribute = overlayedStyle.style.getAttrValue(attrName);
+        AttributeResource overlayedAttribute = overlayedStyle.style.getAttrValue(attrName);
         if (overlayedAttribute != null && (attribute == null || overlayedStyle.force)) {
           attribute = overlayedAttribute;
         }
@@ -784,17 +578,8 @@ public final class ShadowAssetManager {
     return attribute;
   }
 
-  ResName tryResName(int id) {
-    return getResourceLoader().getResourceIndex().getResName(id);
-  }
-
-  @NotNull ResName getResName(int id) {
-    ResName resName = getResourceLoader().getResourceIndex().getResName(id);
-    return checkResName(id, resName);
-  }
-
-  @NotNull ResName resolveResName(int id) {
-    ResName resName = resolveResName(id, getQualifiers());
+  @NotNull private ResName getResName(int id) {
+    ResName resName = resourceLoader.getResourceIndex().getResName(id);
     return checkResName(id, resName);
   }
 
@@ -823,11 +608,5 @@ public final class ShadowAssetManager {
   @Implementation
   public String getResourceEntryName(int resid) {
    return getResName(resid).name;
-  }
-
-  @Resetter
-  public static void reset() {
-    systemResourceLoader = null;
-    appResourceLoader = null;
   }
 }

@@ -1,6 +1,6 @@
 <a name="README">[<img src="https://rawgithub.com/robolectric/robolectric/master/images/robolectric-horizontal.png"/>](http://robolectric.org)</a>
 
-[![Build Status](https://secure.travis-ci.org/robolectric/robolectric.png?branch=master)](http://travis-ci.org/robolectric/robolectric)
+[![Build Status](https://travis-ci.org/robolectric/robolectric.svg?branch=master)](https://travis-ci.org/robolectric/robolectric)
 
 Robolectric is a testing framework that de-fangs the Android SDK so you can test-drive the development of your Android app.
 
@@ -9,7 +9,7 @@ Robolectric is a testing framework that de-fangs the Android SDK so you can test
 Here's an example of a simple test written using Robolectric:
 
 ```java
-@RunWith(RobolectricGradleTestRunner.class)
+@RunWith(RobolectricTestRunner.class)
 @Config(constants = BuildConfig.class)
 public class MyActivityTest {
 
@@ -32,12 +32,12 @@ For more information about how to install and use Robolectric on your project, e
 
 ### Starting a New Project
 
-If you'd like to start a new project with Robolectric you can use deckard (for either [maven](http://github.com/robolectric/deckard-maven) or [gradle](http://github.com/robolectric/deckard-gradle)). These project will guide you through setting up both Android and Robolectric on your machine.
+If you'd like to start a new project with Robolectric tests you can refer to `deckard` (for either [maven](http://github.com/robolectric/deckard-maven) or [gradle](http://github.com/robolectric/deckard-gradle)) as a guide to setting up both Android and Robolectric on your machine.
 
 ### Gradle
 
 ```groovy
-testCompile "org.robolectric:robolectric:3.0"
+testCompile "org.robolectric:robolectric:3.1.1"
 ```
 
 ### Maven
@@ -46,26 +46,22 @@ testCompile "org.robolectric:robolectric:3.0"
 <dependency>
    <groupId>org.robolectric</groupId>
    <artifactId>robolectric</artifactId>
-   <version>3.0</version>
+   <version>3.1.1</version>
    <scope>test</scope>
 </dependency>
 ```
 
 ## Building And Contributing
 
-Robolectric is built using Maven. Both Eclipse (with the M2Eclipse plug-in) and IntelliJ can import the `pom.xml` file and will automatically generate their project files from it. You will need to have portions of the Android SDK available in your local Maven repo in order to build Robolectric.
+Robolectric is built using Gradle. Both IntelliJ and Android Studio can import the top-level `build.gradle` file and will automatically generate their project files from it.
 
-Mavenize all required dependencies by running:
+You will need to have portions of the Android SDK available in your local Maven artifact repository in order to build Robolectric. Copy all required Android dependencies to your local Maven repo by running:
 
     ./scripts/install-dependencies.rb
 
-Because Robolectric's shadows are compiled against the Android APIs that they target, you must build the shadows for all API levels before being able to run any of the tests. You can build all of Robolectric by running:
+Robolectric supports running tests against multiple Android API levels. The work it must do to support each API level is slightly different, so its shadows are built separately for each. To build shadows for every API version, run:
 
     ./scripts/install-robolectric.sh
-    
-After doing this once, you can build and test against the specific API level you care about:
-
-    mvn install -P android-18 (for example)
 
 ### Using Snapshots
 
@@ -79,7 +75,7 @@ repositories {
 }
 
 dependencies {
-    testCompile "org.robolectric:robolectric:3.1-SNAPSHOT"
+    testCompile "org.robolectric:robolectric:3.2-SNAPSHOT"
 }
 ```
 
@@ -94,7 +90,7 @@ dependencies {
 <dependency>
    <groupId>org.robolectric</groupId>
    <artifactId>robolectric</artifactId>
-   <version>3.1-SNAPSHOT</version>
+   <version>3.2-SNAPSHOT</version>
    <scope>test</scope>
 </dependency>
 ```

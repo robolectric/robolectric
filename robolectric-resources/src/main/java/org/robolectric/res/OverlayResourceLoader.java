@@ -90,16 +90,6 @@ public class OverlayResourceLoader extends XResourceLoader {
       @Override
       public Void call() {
         for (PackageResourceLoader subResourceLoader : subResourceLoaders) {
-          preferenceData.mergeLibraryStyle(subResourceLoader.preferenceData, packageName);
-        }
-        return null;
-      }
-    });
-
-    mergeTasks.add(new Callable<Void>() {
-      @Override
-      public Void call() {
-        for (PackageResourceLoader subResourceLoader : subResourceLoaders) {
           xmlDocuments.mergeLibraryStyle(subResourceLoader.xmlDocuments, packageName);
         }
         return null;
@@ -152,10 +142,6 @@ public class OverlayResourceLoader extends XResourceLoader {
 
   @Override public Plural getPlural(ResName resName, int quantity, String qualifiers) {
     return super.getPlural(resName.withPackageName(packageName), quantity, qualifiers);
-  }
-
-  @Override public PreferenceNode getPreferenceNode(ResName resName, String qualifiers) {
-    return super.getPreferenceNode(resName.withPackageName(packageName), qualifiers);
   }
 
   @Override public InputStream getRawValue(ResName resName) {

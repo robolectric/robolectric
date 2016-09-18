@@ -212,8 +212,7 @@ public class InstrumentationConfiguration {
 
     // Both internal and public R class must be loaded from the same classloader since they only
     // have stable ID's within a given API version.
-    if (name.matches("com\\.android\\.internal\\.R(\\$.*)?") ||
-        name.matches("android\\.R(\\$.*)?")) {
+    if (name.matches("com\\.android\\.internal\\.R(\\$.*)?")) {
       return true;
     }
 

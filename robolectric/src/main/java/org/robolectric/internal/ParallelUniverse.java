@@ -20,8 +20,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.internal.fakes.RoboInstrumentation;
 import org.robolectric.manifest.ActivityData;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.ResBundle;
-import org.robolectric.res.ResourceLoader;
+import org.robolectric.res.*;
 import org.robolectric.res.builder.DefaultPackageManager;
 import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.shadows.ShadowLooper;
@@ -36,7 +35,6 @@ import java.util.Map;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 public class ParallelUniverse implements ParallelUniverseInterface {
-  private static final String DEFAULT_PACKAGE_NAME = "org.robolectric.default";
   private final RobolectricTestRunner robolectricTestRunner;
   private final ShadowsAdapter shadowsAdapter = Robolectric.getShadowsAdapter();
 
@@ -58,51 +56,31 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     }
   }
 
-  /*
-   * If the Config already has a version qualifier, do nothing. Otherwise, add a version
-   * qualifier for the target api level (which comes from the manifest or Config.emulateSdk()).
-   */
-  private String addVersionQualifierToQualifiers(String qualifiers) {
-    int versionQualifierApiLevel = ResBundle.getVersionQualifierApiLevel(qualifiers);
-    if (versionQualifierApiLevel == -1) {
-      if (qualifiers.length() > 0) {
-        qualifiers += "-";
-      }
-      qualifiers += "v" + sdkConfig.getApiLevel();
-    }
-    return qualifiers;
-  }
-
   @Override
   public void setUpApplicationState(Method method, TestLifecycle testLifecycle, ResourceLoader systemResourceLoader, AndroidManifest appManifest, Config config) {
     RuntimeEnvironment.application = null;
     RuntimeEnvironment.setMasterScheduler(new Scheduler());
     RuntimeEnvironment.setMainThread(Thread.currentThread());
-    RuntimeEnvironment.setRobolectricPackageManager(new DefaultPackageManager(shadowsAdapter));
-    RuntimeEnvironment.getRobolectricPackageManager().addPackage(DEFAULT_PACKAGE_NAME);
-    ResourceLoader resourceLoader;
-    String packageName;
-    if (appManifest != null) {
-      resourceLoader = robolectricTestRunner.getAppResourceLoader(sdkConfig, systemResourceLoader, appManifest);
-      RuntimeEnvironment.getRobolectricPackageManager().addManifest(appManifest, resourceLoader);
-      packageName = appManifest.getPackageName();
-    } else {
-      // Fallback if there is no manifest specified. If a manifest was specified it will already
-      // have had Config.packageName() override applied. This case is just for when a package
-      // name was specified without a manifest,
-      packageName = config.packageName() != null && !config.packageName().isEmpty() ? config.packageName() : DEFAULT_PACKAGE_NAME;
-      RuntimeEnvironment.getRobolectricPackageManager().addPackage(packageName);
-      resourceLoader = systemResourceLoader;
-    }
+    ResourceLoader appResourceLoader = robolectricTestRunner.getAppResourceLoader(sdkConfig, systemResourceLoader, appManifest);
+
+    DefaultPackageManager packageManager = new DefaultPackageManager();
+    initializeAppManifest(appManifest, appResourceLoader, packageManager);
+    RuntimeEnvironment.setRobolectricPackageManager(packageManager);
+
+    RuntimeEnvironment.setAppResourceLoader(appResourceLoader);
+    RuntimeEnvironment.setSystemResourceLoader(systemResourceLoader);
 
     if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
       Security.insertProviderAt(new BouncyCastleProvider(), 1);
     }
 
-    shadowsAdapter.setSystemResources(systemResourceLoader);
-    String qualifiers = addVersionQualifierToQualifiers(config.qualifiers());
+    String qualifiers = Qualifiers.addPlatformVersion(config.qualifiers(), sdkConfig.getApiLevel());
+    qualifiers = Qualifiers.addSmallestScreenWidth(qualifiers, 320);
+    qualifiers = Qualifiers.addScreenWidth(qualifiers, 320);
     Resources systemResources = Resources.getSystem();
     Configuration configuration = systemResources.getConfiguration();
+    configuration.smallestScreenWidthDp = Qualifiers.getSmallestScreenWidth(qualifiers);
+    configuration.screenWidthDp = Qualifiers.getScreenWidth(qualifiers);
     shadowsAdapter.overrideQualifiers(configuration, qualifiers);
     systemResources.updateConfiguration(configuration, systemResources.getDisplayMetrics());
     RuntimeEnvironment.setQualifiers(qualifiers);
@@ -128,11 +106,11 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     RuntimeEnvironment.application = application;
 
     if (application != null) {
-      shadowsAdapter.bind(application, appManifest, resourceLoader);
+      shadowsAdapter.bind(application, appManifest);
 
       ApplicationInfo applicationInfo;
       try {
-        applicationInfo = RuntimeEnvironment.getPackageManager().getApplicationInfo(packageName, 0);
+        applicationInfo = RuntimeEnvironment.getPackageManager().getApplicationInfo(appManifest.getPackageName(), 0);
       } catch (PackageManager.NameNotFoundException e) {
         throw new RuntimeException(e);
       }
@@ -159,10 +137,21 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       ReflectionHelpers.setField(loadedApk, "mApplication", application);
 
       appResources.updateConfiguration(configuration, appResources.getDisplayMetrics());
-      shadowsAdapter.setAssetsQualifiers(appResources.getAssets(), qualifiers);
 
       application.onCreate();
     }
+  }
+
+  private void initializeAppManifest(AndroidManifest appManifest, ResourceLoader appResourceLoader, DefaultPackageManager packageManager) {
+    appManifest.initMetaData(appResourceLoader);
+    ResourceIndex resourceIndex = appResourceLoader.getResourceIndex();
+
+    int labelRes = 0;
+    if (appManifest.getLabelRef() != null && resourceIndex != null) {
+      Integer id = ResName.getResourceId(resourceIndex, appManifest.getLabelRef(), appManifest.getPackageName());
+      labelRes = id != null ? id : 0;
+    }
+    packageManager.addManifest(appManifest, labelRes);
   }
 
   private void addManifestActivitiesToPackageManager(AndroidManifest appManifest, Application application) {

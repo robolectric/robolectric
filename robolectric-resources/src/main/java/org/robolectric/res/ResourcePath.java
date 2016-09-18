@@ -1,23 +1,42 @@
 package org.robolectric.res;
 
 public class ResourcePath {
-  public final Class<?> rClass;
-  public final String packageName;
-  public final FsFile resourceBase;
-  public final FsFile assetsDir;
-  public final FsFile rawDir;
+  private final Class<?> rClass;
+  private final String packageName;
+  private final FsFile resourceBase;
+  private final FsFile assetsDir;
+  private final Class<?> internalRClass;
 
   public ResourcePath(Class<?> rClass, String packageName, FsFile resourceBase, FsFile assetsDir) {
+    this(rClass, packageName, resourceBase, assetsDir, null);
+  }
+
+  public ResourcePath(Class<?> rClass, String packageName, FsFile resourceBase, FsFile assetsDir, Class<?> internalRClass) {
     this.rClass = rClass;
     this.packageName = packageName;
     this.resourceBase = resourceBase;
     this.assetsDir = assetsDir;
-    FsFile rawDir = resourceBase.join("raw");
-    this.rawDir = rawDir.exists() ? rawDir : null;
+    this.internalRClass = internalRClass;
+  }
+
+  public Class<?> getRClass() {
+    return rClass;
   }
 
   public String getPackageName() {
     return packageName;
+  }
+
+  public FsFile getResourceBase() {
+    return resourceBase;
+  }
+
+  public FsFile getAssetsDir() {
+    return assetsDir;
+  }
+
+  public Class<?> getInternalRClass() {
+    return internalRClass;
   }
 
   @Override
@@ -28,28 +47,25 @@ public class ResourcePath {
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (!(o instanceof ResourcePath)) return false;
+    if (o == null || getClass() != o.getClass()) return false;
 
     ResourcePath that = (ResourcePath) o;
 
-    if (!assetsDir.equals(that.assetsDir)) return false;
-    if (!packageName.equals(that.packageName)) return false;
-    if (!(rClass == null ? that.rClass == null : rClass.equals(that.rClass))) return false;
-    if (!(rawDir == null ? that.rawDir == null : rawDir.equals(that.rawDir))) return false;
-    if (!resourceBase.equals(that.resourceBase)) return false;
+    if (rClass != null ? !rClass.equals(that.rClass) : that.rClass != null) return false;
+    if (packageName != null ? !packageName.equals(that.packageName) : that.packageName != null) return false;
+    if (resourceBase != null ? !resourceBase.equals(that.resourceBase) : that.resourceBase != null) return false;
+    if (assetsDir != null ? !assetsDir.equals(that.assetsDir) : that.assetsDir != null) return false;
+    return internalRClass != null ? internalRClass.equals(that.internalRClass) : that.internalRClass == null;
 
-    return true;
   }
 
   @Override
   public int hashCode() {
     int result = rClass != null ? rClass.hashCode() : 0;
-    result = 31 * result + packageName.hashCode();
-    result = 31 * result + resourceBase.hashCode();
-    result = 31 * result + assetsDir.hashCode();
-    if (rawDir != null) {
-      result = 31 * result + rawDir.hashCode();
-    }
+    result = 31 * result + (packageName != null ? packageName.hashCode() : 0);
+    result = 31 * result + (resourceBase != null ? resourceBase.hashCode() : 0);
+    result = 31 * result + (assetsDir != null ? assetsDir.hashCode() : 0);
+    result = 31 * result + (internalRClass != null ? internalRClass.hashCode() : 0);
     return result;
   }
 }

@@ -28,13 +28,9 @@ public class DefaultPackageManagerIntentComparatorTest {
   public void canSustainConcurrentModification() {
     final DefaultPackageManager.IntentComparator intentComparator = new DefaultPackageManager.IntentComparator();
 
-    Intent mockedIntent1 = mock(Intent.class);
-    when(mockedIntent1.getAction()).thenReturn("actionstring0", null);
-
-    Intent mockedIntent2 = mock(Intent.class);
-    when(mockedIntent2.getAction()).thenReturn("actionstring1", null);
-
-    Assertions.assertThat(intentComparator.compare(mockedIntent1, mockedIntent2)).isEqualTo(-1);
+    Intent intent1 = new Intent("actionstring0");
+    Intent intent2 = new Intent("actionstring1");
+    Assertions.assertThat(intentComparator.compare(intent1, intent2)).isEqualTo(-1);
   }
 
 }

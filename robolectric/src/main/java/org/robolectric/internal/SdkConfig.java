@@ -60,7 +60,7 @@ public class SdkConfig {
   }
 
   public DependencyJar getCoreShadowsDependency() {
-    return createDependency("org.robolectric", "shadows-core", ROBOLECTRIC_VERSION, Integer.toString(apiLevel));
+    return createDependency("org.robolectric", "shadows-core-v" + apiLevel, ROBOLECTRIC_VERSION, null);
   }
 
   @Override

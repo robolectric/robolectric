@@ -1,0 +1,240 @@
+allprojects {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
+
+    group = "org.robolectric"
+    version = "3.2-SNAPSHOT"
+
+    apply plugin: "java"
+    sourceCompatibility = JavaVersion.VERSION_1_7
+    targetCompatibility = JavaVersion.VERSION_1_7
+
+    tasks.withType(JavaCompile) {
+        sourceCompatibility = JavaVersion.VERSION_1_7
+        targetCompatibility = JavaVersion.VERSION_1_7
+
+        // Show all warnings except boot classpath
+        configure(options) {
+            if (System.properties["lint"] != null && System.properties["lint"] != "false") {
+                compilerArgs << "-Xlint:all"        // Turn on all warnings
+            }
+            compilerArgs << "-Xlint:-options"       // Turn off "missing" bootclasspath warning
+            encoding = "utf-8"                      // Make sure source encoding is UTF-8
+            incremental = true
+        }
+    }
+
+    apply plugin: ProvidedPlugin
+    apply plugin: "signing"
+    apply plugin: "maven"
+
+    task sourcesJar(type: Jar, dependsOn: classes) {
+        classifier "sources"
+        from sourceSets.main.allJava
+    }
+
+    javadoc {
+        classpath += configurations.provided
+        failOnError = false
+    }
+
+    task javadocJar(type: Jar, dependsOn: javadoc) {
+        classifier "javadoc"
+        from javadoc.destinationDir
+    }
+
+    task provideBuildClasspath(type: ProvideBuildClasspathTask)
+
+    test {
+        dependsOn provideBuildClasspath
+
+        exclude "**/*\$*" // otherwise gradle runs static inner classes like TestRunnerSequenceTest$SimpleTest
+        testLogging {
+            exceptionFormat "full"
+            showCauses true
+            showExceptions true
+            showStackTraces true
+            showStandardStreams true
+            events = ["failed", "skipped"]
+        }
+
+        minHeapSize = "1024m"
+        maxHeapSize = "2048m"
+        jvmArgs "-XX:MaxPermSize=1024m"
+    }
+
+    signing {
+        required { !version.endsWith("SNAPSHOT") && gradle.taskGraph.hasTask("uploadArchives") }
+        sign configurations.archives
+    }
+
+    ext.mavenArtifactName = {
+        def projNameParts = project.name.split(/\//) as List
+        if (projNameParts[0] == "robolectric-shadows") {
+            projNameParts = projNameParts.drop(1)
+            return projNameParts.join("-")
+        } else {
+            return project.name
+        }
+    }
+
+    artifacts {
+        archives jar
+        archives sourcesJar
+        archives javadocJar
+    }
+
+    uploadArchives {
+        repositories {
+            mavenDeployer {
+                pom.artifactId = mavenArtifactName()
+                pom.project {
+                    name project.name
+                    description = "An alternative Android testing framework."
+                    url = "http://robolectric.org"
+
+                    licenses {
+                        license {
+                            name "The MIT License"
+                            url "https://opensource.org/licenses/MIT"
+                        }
+                    }
+
+                    scm {
+                        url "git@github.com:robolectric/robolectric.git"
+                        connection "scm:git:git://github.com/robolectric/robolectric.git"
+                        developerConnection "scm:git:https://github.com/robolectric/robolectric.git"
+                    }
+
+                    developers {
+                        developer {
+                            name "Christian Williams"
+                            email "christianw@google.com"
+                            organization {
+                                name "Google Inc."
+                            }
+                            organizationUrl "http://google.com"
+                        }
+
+                        developer {
+                            name "Jonathan Gerrish"
+                            email "jongerrish@google.com"
+                            organization {
+                                name "Google Inc."
+                            }
+                            organizationUrl "http://google.com"
+                        }
+                    }
+                }
+
+                def url = project.version.endsWith("-SNAPSHOT") ?
+                        "https://oss.sonatype.org/content/repositories/snapshots" :
+                        "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+                repository(url: url) {
+                    authentication(
+                            userName: System.properties["sonatype-login"],
+                            password: System.properties["sonatype-password"]
+                    )
+                }
+
+                beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+            }
+        }
+    }
+}
+
+def subshadowRE = /robolectric-shadows\/shadows-core\/v(.*)$/
+configure(subprojects.findAll { project -> project.name =~ subshadowRE }) {
+    apply plugin: ShadowsPlugin
+
+    def match = project.name =~ subshadowRE
+    def androidApi = Integer.parseInt(match[0][1])
+
+    def robolectricVersion = AndroidSdk.versions[androidApi]
+    logger.info "[${project.name}] Android API is $androidApi — $robolectricVersion"
+
+    def generatedShadowsDir = project.file("${project.buildDir}/generated-shadows")
+    def shadowsCoreProj = project.findProject(":robolectric-shadows/shadows-core")
+
+    task velocity(type: VelocityTask) {
+        def shadowsCoreProject = project.findProject(":robolectric-shadows/shadows-core")
+        source = shadowsCoreProject.files("src/main/resources").asFileTree.matching { include "/**/*.vm" }
+
+        contextValues = [api: androidApi]
+        if (androidApi >= 21) {
+            contextValues.putAll(ptrClass: "long", ptrClassBoxed: "Long")
+        } else {
+            contextValues.putAll(ptrClass: "int", ptrClassBoxed: "Integer")
+        }
+
+        outputDir = generatedShadowsDir
+    }
+
+    task copyNonTemplatedShadows(type: Copy) {
+        mustRunAfter velocity
+
+        from shadowsCoreProj.files("src/main/java")
+        into generatedShadowsDir
+    }
+
+    task copyShadowProviderServiceFiles(type: Copy) {
+        from shadowsCoreProj.fileTree("src/main/resources").include("META-INF/**")
+        into project.file("${project.buildDir}/resources/main")
+    }
+
+    shadows {
+        packageName "org.robolectric"
+    }
+
+    compileJava.dependsOn("copyNonTemplatedShadows")
+    compileJava.dependsOn("copyShadowProviderServiceFiles")
+
+    generateShadowProvider {
+        dependsOn velocity, copyNonTemplatedShadows
+    }
+
+    configurations {
+        jni
+    }
+
+    dependencies {
+        // Project dependencies
+        compile project(":robolectric-annotations")
+        compile project(":robolectric-resources")
+        compile project(":robolectric-utils")
+
+        // Compile dependencies
+        provided "com.intellij:annotations:12.0"
+        compile "com.almworks.sqlite4java:sqlite4java:0.282"
+        provided("org.robolectric:android-all:$robolectricVersion") { force = true }
+        compile "com.ibm.icu:icu4j:53.1"
+
+        jni "com.github.axet.litedb:libsqlite:0.282-3:natives-mac-x86_64"
+        jni "com.github.axet.litedb:libsqlite:0.282-3:natives-linux-x86"
+        jni "com.github.axet.litedb:libsqlite:0.282-3:natives-linux-x86_64"
+        jni "com.github.axet.litedb:libsqlite:0.282-3:natives-windows-x86"
+        jni "com.github.axet.litedb:libsqlite:0.282-3:natives-windows-x86_64"
+    }
+
+    task copyNatives(type: Copy) {
+        outputs.dir file("${buildDir}/resources/main")
+
+        configurations.jni.files.each { File file ->
+            def nativeJarMatch = file.name =~ /lib.*-natives-(.*)\.jar/
+            if (nativeJarMatch) {
+                inputs.file file
+
+                def platformName = nativeJarMatch[0][1]
+                from(zipTree(file)) { rename { f -> "$platformName/$f" } }
+            }
+
+            into project.file("$buildDir/resources/main")
+        }
+    }
+
+    jar {
+        dependsOn copyNatives
+    }
+}

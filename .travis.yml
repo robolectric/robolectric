@@ -1,29 +1,42 @@
-sudo: false
 language: android
 
 jdk:
-    - oraclejdk7
-    - oraclejdk8
+  - oraclejdk7
+  - oraclejdk8
 
-cache:
-    directories:
-        - $HOME/.m2
+android:
+  components:
+    - tools
+    - platform-tools
+    - build-tools-23.0.3
+    - android-23
+    - extra-google-m2repository
+    - extra-android-m2repository
+    - addon-google_apis-google-23
 
 before_install:
-    - echo "y" | android update sdk --no-ui --filter platform-tools,tools
-    - echo "y" | android update sdk --no-ui --filter build-tools-20.0.0
-    - echo "y" | android update sdk --no-ui --filter android-23
-    - echo "y" | android update sdk --no-ui --filter addon-google_apis-google-23,extra-android-m2repository,extra-google-m2repository
-    - ./scripts/install-dependencies.rb
+  - ./scripts/install-dependencies.rb
 
 script:
-    - ./scripts/install-robolectric.sh
+    - ./gradlew clean assemble install compileTest --info --stacktrace
+    - ./gradlew test --continue --info --stacktrace
 
 after_success:
-    - ./scripts/deploy-snapshot.sh
+  - ./scripts/deploy-snapshot.sh
+
+sudo: required
+
+before_cache:
+  - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+
+cache:
+  directories:
+    - $HOME/.m2
+    - $HOME/.gradle
 
 env:
-    global:
-        - secure: "AnsdYjHIvtLXrDMJmlf5FJhXJOW+aLSvsyXcGFLKse6EcwTSw8XnE4bGv2eSi2YWIwoHHCStIQbI0J02rkmUu9Z5oChxhOyGtCd8U4l1XciH2U7vJOJ/i9Auw5WgLM6x8HxgH6myhNrA9xrB4fcH+8WsDMf+qLqgvJQQjqQZQGM="
-        - secure: "tKWNiNnT+WPmHNY1MtXTgwId9peXtsKQ5owdOfZqmEQYTSHVdya5Bt3CiK8U829Pa1ZBuF+9mnGufTbw0WfQM5TKlClDn4ciEJzz6ChS2cqO+6trsWy335nppU7pQsDE44Irju+E7Jh4kIjfnB2pWRhI2YAoAUhNyz39PawXsz8="
-
+  global:
+    - MALLOC_ARENA_MAX=2 # reduce memory usage, maybe avoid some exit 137's?
+    - secure: "AnsdYjHIvtLXrDMJmlf5FJhXJOW+aLSvsyXcGFLKse6EcwTSw8XnE4bGv2eSi2YWIwoHHCStIQbI0J02rkmUu9Z5oChxhOyGtCd8U4l1XciH2U7vJOJ/i9Auw5WgLM6x8HxgH6myhNrA9xrB4fcH+8WsDMf+qLqgvJQQjqQZQGM="
+    - secure: "tKWNiNnT+WPmHNY1MtXTgwId9peXtsKQ5owdOfZqmEQYTSHVdya5Bt3CiK8U829Pa1ZBuF+9mnGufTbw0WfQM5TKlClDn4ciEJzz6ChS2cqO+6trsWy335nppU7pQsDE44Irju+E7Jh4kIjfnB2pWRhI2YAoAUhNyz39PawXsz8="
