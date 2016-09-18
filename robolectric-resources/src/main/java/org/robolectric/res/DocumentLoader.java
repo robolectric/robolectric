@@ -16,7 +16,7 @@ public class DocumentLoader {
   private final VTDGen vtdGen;
 
   public DocumentLoader(ResourcePath resourcePath) {
-    this.resourceBase = resourcePath.resourceBase;
+    this.resourceBase = resourcePath.getResourceBase();
     this.packageName = resourcePath.getPackageName();
     vtdGen = new VTDGen();
   }

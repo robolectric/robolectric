@@ -2,20 +2,8 @@ package org.robolectric.shadows;
 
 import android.content.res.Resources;
 import android.util.TypedValue;
-import org.robolectric.res.AttrData;
-import org.robolectric.res.Attribute;
-import org.robolectric.res.DrawableNode;
-import org.robolectric.res.DrawableResourceLoader;
-import org.robolectric.res.FsFile;
-import org.robolectric.res.ResName;
-import org.robolectric.res.ResType;
-import org.robolectric.res.ResourceIndex;
-import org.robolectric.res.ResourceLoader;
-import org.robolectric.res.TypedResource;
+import org.robolectric.res.*;
 import org.robolectric.util.Util;
-
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 public class Converter<T> {
   private static int nextStringCookie = 0xbaaa5;
@@ -24,7 +12,7 @@ public class Converter<T> {
     return nextStringCookie++;
   }
 
-  public static void convertAndFill(Attribute attribute, TypedValue outValue, ResourceLoader resourceLoader, String qualifiers, boolean resolveRefs) {
+  public static void convertAndFill(AttributeResource attribute, TypedValue outValue, ResourceLoader resourceLoader, String qualifiers, boolean resolveRefs) {
     if (attribute == null || attribute.isNull() || attribute.isEmpty()) {
       outValue.type = TypedValue.TYPE_NULL;
       if (attribute != null && attribute.isEmpty()) {
@@ -41,10 +29,6 @@ public class Converter<T> {
     }
 
     AttrData attrData = (AttrData) attrTypeData.getData();
-    convertAndFill(attribute, outValue, resourceLoader, qualifiers, attrData, resolveRefs);
-  }
-
-  public static void convertAndFill(Attribute attribute, TypedValue outValue, ResourceLoader resourceLoader, String qualifiers, AttrData attrData, boolean resolveRefs) {
     // short-circuit Android caching of loaded resources cuz our string positions don't remain stable...
     outValue.assetCookie = getNextStringCookie();
 
@@ -79,7 +63,7 @@ public class Converter<T> {
           return;
         } else if (resName.type.equals("raw")) {
           return;
-        } else if (DrawableResourceLoader.isStillHandledHere(resName)) {
+        } else if (DrawableResourceLoader.isStillHandledHere(resName.type)) {
           // wtf. color and drawable references reference are all kinds of stupid.
           DrawableNode drawableNode = resourceLoader.getDrawableNode(resName, qualifiers);
           if (drawableNode == null) {
@@ -102,7 +86,7 @@ public class Converter<T> {
           outValue.string = dereferencedRef.asString();
           return;
         } else if (dereferencedRef.getData() instanceof String) {
-          attribute = new Attribute(attribute.resName, dereferencedRef.asString(), resName.packageName);
+          attribute = new AttributeResource(attribute.resName, dereferencedRef.asString(), resName.packageName);
           if (attribute.isResourceReference()) {
             continue;
           }

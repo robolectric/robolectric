@@ -600,9 +600,9 @@ public class ShadowBitmap {
     }
   }
 
-  public void setCreatedFromResId(int resId, ResName resName) {
+  public void setCreatedFromResId(int resId, String description) {
     this.createdFromResId = resId;
-    appendDescription(" for resource:" + resName.getFullyQualifiedName());
+    appendDescription(" for resource:" + description);
   }
 
   private void internalCheckPixelAccess(int x, int y) {

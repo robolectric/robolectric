@@ -62,7 +62,7 @@ public class ShadowBitmapFactory {
 
   @Implementation
   public static Bitmap decodeResource(Resources res, int id, BitmapFactory.Options options) {
-    Bitmap bitmap = create("resource:" + getResourceName(id), options);
+    Bitmap bitmap = create("resource:" + RuntimeEnvironment.application.getResources().getResourceName(id), options);
     Shadows.shadowOf(bitmap).createdFromResId = id;
     return bitmap;
   }
@@ -70,10 +70,6 @@ public class ShadowBitmapFactory {
   @Implementation
   public static Bitmap decodeResource(Resources res, int id) {
     return decodeResource(res, id, null);
-  }
-
-  private static String getResourceName(int id) {
-    return Shadows.shadowOf(RuntimeEnvironment.application.getAssets()).getResourceLoader().getNameForId(id);
   }
 
   @Implementation
@@ -187,7 +183,7 @@ public class ShadowBitmapFactory {
   }
 
   public static void provideWidthAndHeightHints(int resourceId, int width, int height) {
-    widthAndHeightMap.put("resource:" + getResourceName(resourceId), new Point(width, height));
+    widthAndHeightMap.put("resource:" + RuntimeEnvironment.application.getResources().getResourceName(resourceId), new Point(width, height));
   }
 
   public static void provideWidthAndHeightHints(String file, int width, int height) {

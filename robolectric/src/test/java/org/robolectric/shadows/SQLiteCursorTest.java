@@ -152,7 +152,7 @@ public class SQLiteCursorTest {
     assertThat(cursor.moveToNext()).isTrue();
     assertThat(cursor.getPosition()).isEqualTo(2);
 
-    assertThat(cursor.moveToPosition(1));
+    assertThat(cursor.moveToPosition(1)).isTrue();
     assertThat(cursor.getPosition()).isEqualTo(1);
   }
 

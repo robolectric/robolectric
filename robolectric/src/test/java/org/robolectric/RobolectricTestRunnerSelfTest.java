@@ -2,8 +2,8 @@ package org.robolectric;
 
 import android.app.Application;
 import android.content.res.Resources;
-
 import android.os.Build;
+
 import org.assertj.core.api.Assertions;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -35,7 +35,7 @@ public class RobolectricTestRunnerSelfTest {
       .isNotNull()
       .isInstanceOf(MyTestApplication.class);
     assertThat(((MyTestApplication) RuntimeEnvironment.application).onCreateWasCalled).as("onCreate called").isTrue();
-    assertThat(shadowOf(RuntimeEnvironment.application.getAssets()).getResourceLoader()).as("resource loader").isNotNull();
+    assertThat(RuntimeEnvironment.getAppResourceLoader()).as("Application resource loader").isNotNull();
   }
 
   @Test
@@ -63,8 +63,7 @@ public class RobolectricTestRunnerSelfTest {
   @Test
   @Config(qualifiers = "fr")
   public void internalBeforeTest_testValuesResQualifiers() {
-    String expectedQualifiers = "fr" + TestRunners.WithDefaults.SDK_TARGETED_BY_MANIFEST;
-    assertThat(shadowOf(RuntimeEnvironment.application.getAssets()).getQualifiers()).isEqualTo(expectedQualifiers);
+    assertThat(RuntimeEnvironment.getQualifiers()).contains("fr");
   }
 
   @Test

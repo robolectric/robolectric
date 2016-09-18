@@ -120,26 +120,6 @@ public class RobolectricTestRunnerTest {
     assertConfig(configFor(Test2.class, "withoutAnnotation", properties), new int[0],  "--default", Application.class, "", "", "res", "assets", new Class[] {}, new String[]{}, new String[]{}, null);
   }
 
-  @Test
-  public void rememberThatSomeTestRunnerMethodsShouldBeOverridable() throws Exception {
-    @SuppressWarnings("unused")
-    class CustomTestRunner extends RobolectricTestRunner {
-      public CustomTestRunner(Class<?> testClass) throws InitializationError {
-        super(testClass);
-      }
-
-      @Override public PackageResourceLoader createResourceLoader(ResourcePath resourcePath, ResourceIndex resourceIndex) {
-        return super.createResourceLoader(resourcePath, resourceIndex);
-      }
-
-      @Override
-      protected ResourceLoader createAppResourceLoader(ResourceLoader systemResourceLoader,
-          AndroidManifest appManifest) {
-        return super.createAppResourceLoader(systemResourceLoader, appManifest);
-      }
-    }
-  }
-
   private Config configFor(Class<?> testClass, String methodName, final Properties configProperties) throws InitializationError {
     Method info;
     try {

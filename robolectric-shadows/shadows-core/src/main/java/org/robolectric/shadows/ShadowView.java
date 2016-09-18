@@ -40,7 +40,6 @@ import static org.robolectric.internal.Shadow.invokeConstructor;
  */
 @Implements(View.class)
 public class ShadowView {
-  public static final String ANDROID_NS = "http://schemas.android.com/apk/res/android";
 
   @RealObject
   protected View realView;
@@ -292,7 +291,7 @@ public class ShadowView {
 
   protected void dumpAttributes(PrintStream out) {
     if (realView.getId() > 0) {
-      dumpAttribute(out, "id", shadowOf(realView.getContext().getAssets()).getResourceLoader().getNameForId(realView.getId()));
+      dumpAttribute(out, "id", realView.getContext().getResources().getResourceName(realView.getId()));
     }
 
     switch (realView.getVisibility()) {

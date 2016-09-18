@@ -6,7 +6,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
-import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -16,12 +15,10 @@ import static org.junit.Assert.assertNotNull;
 public class ShadowPreferenceActivityTest {
 
   private TestPreferenceActivity activity;
-  private ShadowPreferenceActivity shadow;
 
   @Before
   public void setUp() throws Exception {
     activity = Robolectric.buildActivity(TestPreferenceActivity.class).create().get();
-    shadow = Shadows.shadowOf(activity);
   }
 
   @Test
@@ -33,13 +30,6 @@ public class ShadowPreferenceActivityTest {
   public void shouldNotInitializePreferenceScreen() {
     TestPreferenceActivity activity = Robolectric.buildActivity(TestPreferenceActivity.class).get();
     assertThat(activity.getPreferenceScreen()).isNull();
-  }
-
-  @Test
-  public void shouldRecordPreferencesResourceId() {
-    assertThat(shadow.getPreferencesResId()).isEqualTo(-1);
-    activity.addPreferencesFromResource(R.xml.preferences);
-    assertThat(shadow.getPreferencesResId()).isEqualTo(R.xml.preferences);
   }
 
   @Test

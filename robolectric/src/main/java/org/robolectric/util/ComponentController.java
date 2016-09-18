@@ -11,7 +11,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 public abstract class ComponentController<C extends ComponentController<C, T>, T> {
   protected final C myself;
-  protected final T component;
+  protected T component;
   protected final ShadowLooperAdapter shadowMainLooper;
 
   protected Intent intent;

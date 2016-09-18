@@ -1503,10 +1503,10 @@ public class ShadowMediaPlayer {
    * 
    * @param what
    *          parameter to pass in to <code>what</code> in
-   *          {@link MediaPlayer.OnInfoListener#onInfo onInfo()}.
+   *          {@link MediaPlayer.OnInfoListener#onInfo(MediaPlayer, int, int)}.
    * @param extra
    *          parameter to pass in to <code>extra</code> in
-   *          {@link MediaPlayer.OnInfoListener#onInfo onInfo()}.
+   *          {@link MediaPlayer.OnInfoListener#onInfo(MediaPlayer, int, int)}.
    */
   public void invokeInfoListener(int what, int extra) {
     if (infoListener != null) {
@@ -1519,10 +1519,10 @@ public class ShadowMediaPlayer {
    * 
    * @param what
    *          parameter to pass in to <code>what</code> in
-   *          {@link MediaPlayer.OnErrorListener#onError onError()}.
+   *          {@link MediaPlayer.OnErrorListener#onError(MediaPlayer, int, int)}.
    * @param extra
    *          parameter to pass in to <code>extra</code> in
-   *          {@link MediaPlayer.OnErrorListener#onError onError()}.
+   *          {@link MediaPlayer.OnErrorListener#onError(MediaPlayer, int, int)}.
    */
   public void invokeErrorListener(int what, int extra) {
     // Calling doStop() un-schedules the next event and

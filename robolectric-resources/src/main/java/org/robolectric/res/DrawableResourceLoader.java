@@ -6,8 +6,8 @@ package org.robolectric.res;
 public class DrawableResourceLoader extends XmlLoader {
   private final ResBundle<DrawableNode> drawableNodes;
 
-  public static boolean isStillHandledHere(ResName resName) {
-    return "drawable".equals(resName.type) || "anim".equals(resName.type) || "mipmap".equals(resName.type);
+  public static boolean isStillHandledHere(String type) {
+    return "drawable".equals(type) || "anim".equals(type) || "mipmap".equals(type);
   }
 
   public DrawableResourceLoader(ResBundle<DrawableNode> drawableNodes) {
@@ -36,7 +36,7 @@ public class DrawableResourceLoader extends XmlLoader {
    * @param resourcePath Resource path.
    */
   public void findDrawableResources(ResourcePath resourcePath) {
-    FsFile[] files = resourcePath.resourceBase.listFiles();
+    FsFile[] files = resourcePath.getResourceBase().listFiles();
     if (files != null) {
       for (FsFile f : files) {
         if (f.isDirectory() && f.getName().startsWith("drawable")) {

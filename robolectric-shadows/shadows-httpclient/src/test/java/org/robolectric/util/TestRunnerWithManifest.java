@@ -2,6 +2,7 @@ package org.robolectric.util;
 
 import org.junit.runners.model.InitializationError;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
@@ -27,7 +28,7 @@ public class TestRunnerWithManifest extends RobolectricTestRunner {
   }
 
   @Override
-  protected AndroidManifest createAppManifest(FsFile manifestFile, FsFile resDir, FsFile assetsDir, String packageName) {
+  protected AndroidManifest getAppManifest(Config config) {
     return new AndroidManifest(resourceFile("AndroidManifest.xml"), resourceFile("res"), resourceFile("assets"));
   }
 }

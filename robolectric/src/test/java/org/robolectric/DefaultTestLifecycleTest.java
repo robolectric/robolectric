@@ -3,8 +3,6 @@ package org.robolectric;
 import android.app.Application;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -60,14 +58,13 @@ public class DefaultTestLifecycleTest {
   public void shouldRegisterReceiversFromTheManifest() throws Exception {
     AndroidManifest appManifest = newConfig("TestAndroidManifestWithReceivers.xml");
     Application application = defaultTestLifecycle.createApplication(null, appManifest, null);
-    shadowOf(application).bind(appManifest, null);
+    shadowOf(application).bind(appManifest);
 
     List<ShadowApplication.Wrapper> receivers = shadowOf(application).getRegisteredReceivers();
     assertThat(receivers.size()).isEqualTo(5);
     assertTrue(receivers.get(0).intentFilter.matchAction("org.robolectric.ACTION1"));
   }
 
-  @Ignore("https://github.com/robolectric/robolectric/issues/2376")
   @Config(manifest = "src/test/resources/TestAndroidManifestForActivities.xml")
   @Test public void shouldRegisterActivitiesFromManifestInPackageManager() throws Exception {
     Application application = RuntimeEnvironment.application;
@@ -85,13 +82,13 @@ public class DefaultTestLifecycleTest {
 
   @Test public void shouldLoadConfigApplicationIfSpecified() throws Exception {
     Application application = defaultTestLifecycle.createApplication(null,
-        newConfigWith("<application android:name=\"" + "ClassNameToIgnore" + "\"/>"), new Config.Implementation(new int[0], "", "", "", "", "", "", "", new Class[0], new String[0], TestFakeApp.class, new String[0], null));
+        newConfigWith("<application android:name=\"" + "ClassNameToIgnore" + "\"/>"), new Config.Builder().setApplication(TestFakeApp.class).build());
     assertThat(application).isExactlyInstanceOf(TestFakeApp.class);
   }
 
   @Test public void shouldLoadConfigInnerClassApplication() throws Exception {
     Application application = defaultTestLifecycle.createApplication(null,
-        newConfigWith("<application android:name=\"" + "ClassNameToIgnore" + "\"/>"), new Config.Implementation(new int[0], "", "", "", "", "", "", "", new Class[0], new String[0], TestFakeAppInner.class, new String[0], null));
+        newConfigWith("<application android:name=\"" + "ClassNameToIgnore" + "\"/>"), new Config.Builder().setApplication(TestFakeAppInner.class).build());
     assertThat(application).isExactlyInstanceOf(TestFakeAppInner.class);
   }
 

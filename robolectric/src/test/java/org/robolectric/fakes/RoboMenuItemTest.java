@@ -20,7 +20,7 @@ public class RoboMenuItemTest {
 
   @Before
   public void setUp() throws Exception {
-    item = new RoboMenuItem();
+    item = new RoboMenuItem(RuntimeEnvironment.application);
     listener =  new TestOnActionExpandListener();
     item.setOnActionExpandListener(listener);
   }
