@@ -32,13 +32,10 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.res.Fs;
-import org.robolectric.res.ResourcePath;
 import org.robolectric.test.TemporaryFolder;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -50,13 +47,12 @@ public class AndroidManifestTest {
   @Test
   public void parseManifest_shouldReadContentProviders() throws Exception {
     AndroidManifest config = newConfig("TestAndroidManifestWithContentProviders.xml");
-    assertThat(config.getContentProviders()).hasSize(2);
 
     assertThat(config.getContentProviders().get(0).getClassName()).isEqualTo("org.robolectric.tester.FullyQualifiedClassName");
-    assertThat(config.getContentProviders().get(0).getAuthority()).isEqualTo("org.robolectric");
+    assertThat(config.getContentProviders().get(0).getAuthority()).isEqualTo("org.robolectric.authority1");
 
     assertThat(config.getContentProviders().get(1).getClassName()).isEqualTo("org.robolectric.tester.PartiallyQualifiedClassName");
-    assertThat(config.getContentProviders().get(1).getAuthority()).isEqualTo("org.robolectric");
+    assertThat(config.getContentProviders().get(1).getAuthority()).isEqualTo("org.robolectric.authority2");
   }
 
   @Test
@@ -369,16 +365,13 @@ public class AndroidManifestTest {
     assertThat(intentFilterData.getAuthorities().get(2).getPort()).isEqualTo("3");
   }
 
-  /////////////////////////////
-
-  public AndroidManifest newConfigWith(String usesSdkAttrs) throws IOException {
-    File f = temporaryFolder.newFile("whatever.xml",
-        "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
-            "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
-            "          package=\"org.robolectric\">\n" +
-            "    <uses-sdk " + usesSdkAttrs + "/>\n" +
-            "</manifest>\n");
-    return new AndroidManifest(Fs.newFile(f), null, null);
+  @Test
+  public void shouldHaveStableHashCode() throws Exception {
+    AndroidManifest manifest = newConfig("TestAndroidManifestWithContentProviders.xml");
+    int hashCode1 = manifest.hashCode();
+    manifest.getServices();
+    int hashCode2 = manifest.hashCode();
+    assertEquals(hashCode1, hashCode2);
   }
 
   @Test
@@ -399,6 +392,18 @@ public class AndroidManifestTest {
     assertTrue(hasFlag(config.getApplicationFlags(), FLAG_SUPPORTS_SMALL_SCREENS));
     assertTrue(hasFlag(config.getApplicationFlags(), FLAG_TEST_ONLY));
     assertTrue(hasFlag(config.getApplicationFlags(), FLAG_VM_SAFE_MODE));
+  }
+
+  /////////////////////////////
+
+  public AndroidManifest newConfigWith(String usesSdkAttrs) throws IOException {
+    File f = temporaryFolder.newFile("whatever.xml",
+        "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+            "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
+            "          package=\"org.robolectric\">\n" +
+            "    <uses-sdk " + usesSdkAttrs + "/>\n" +
+            "</manifest>\n");
+    return new AndroidManifest(Fs.newFile(f), null, null);
   }
 
   private boolean hasFlag(final int flags, final int flag) {

@@ -39,7 +39,6 @@ import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.res.TypedResource;
 import org.robolectric.res.builder.XmlBlock;
-import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.TestUtil;
 import org.xmlpull.v1.XmlPullParser;
 
@@ -51,8 +50,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
-@Config(sdk = {
-    Build.VERSION_CODES.LOLLIPOP })
 public class ShadowResourcesTest {
   private Resources resources;
 
@@ -447,35 +444,31 @@ public class ShadowResourcesTest {
   }
 
   @Test
-  public void getThemeValueShouldSupportDereferenceResource() {
+  public void themeResolveAttribute_shouldSupportDereferenceResource() {
     TypedValue out = new TypedValue();
 
     Resources.Theme theme = resources.newTheme();
     theme.applyStyle(R.style.MyBlackTheme, false);
-    long internalId = getInternalId(theme);
 
-    ShadowAssetManager shadow = Shadows.shadowOf(resources.getAssets());
-    shadow.getThemeValue(internalId, android.R.attr.windowBackground, out, true);
+    theme.resolveAttribute(android.R.attr.windowBackground, out, true);
     assertThat(out.type).isNotEqualTo(TypedValue.TYPE_REFERENCE);
-    assertThat(out.type).isGreaterThanOrEqualTo(TypedValue.TYPE_FIRST_COLOR_INT);
-    assertThat(out.type).isLessThanOrEqualTo(TypedValue.TYPE_LAST_COLOR_INT);
+    assertThat(out.type).isBetween(TypedValue.TYPE_FIRST_COLOR_INT, TypedValue.TYPE_LAST_COLOR_INT);
 
     TypedValue expected = new TypedValue();
+    ShadowAssetManager shadow = Shadows.shadowOf(resources.getAssets());
     shadow.getResourceValue(android.R.color.black, TypedValue.DENSITY_DEFAULT, expected, false);
     assertThat(out.type).isEqualTo(expected.type);
     assertThat(out.data).isEqualTo(expected.data);
   }
 
   @Test
-  public void getThemeValueShouldSupportNotDereferencingResource() {
+  public void themeResolveAttribute_shouldSupportNotDereferencingResource() {
     TypedValue out = new TypedValue();
 
     Resources.Theme theme = resources.newTheme();
     theme.applyStyle(R.style.MyBlackTheme, false);
-    long internalId = getInternalId(theme);
 
-    ShadowAssetManager shadow = Shadows.shadowOf(resources.getAssets());
-    shadow.getThemeValue(internalId, android.R.attr.windowBackground, out, false);
+    theme.resolveAttribute(android.R.attr.windowBackground, out, false);
     assertThat(out.type).isEqualTo(TypedValue.TYPE_REFERENCE);
     assertThat(out.resourceId).isEqualTo(android.R.color.black);
   }
@@ -500,6 +493,8 @@ public class ShadowResourcesTest {
   }
 
   @Test
+  @Config(sdk = {Build.VERSION_CODES.JELLY_BEAN, Build.VERSION_CODES.LOLLIPOP, Build.VERSION_CODES.LOLLIPOP_MR1})
+  // todo: get this working on KITKAT
   public void obtainStyledAttributesShouldCheckXmlFirst() throws Exception {
 
     // This simulates a ResourceLoader built from a 21+ SDK as viewportHeight / viewportWidth were introduced in API 21
@@ -511,7 +506,7 @@ public class ShadowResourcesTest {
             .put("viewportHeight", new AttrData("viewportHeight", "float", null))
             .build();
     ResourceLoader fakeResourceLoader = new FakeResourceLoader(attributesTypes,
-            new ResourceExtractor(new ResourcePath("android", null, null, Lollipop_R_snippet.class)));
+            new ResourceExtractor(new ResourcePath(Lollipop_R_snippet.class, "android", null, null)));
 
 
     RuntimeEnvironment.setAppResourceLoader(fakeResourceLoader);
@@ -528,6 +523,22 @@ public class ShadowResourcesTest {
     assertThat(typedArray.getFloat(0, 0)).isEqualTo(12.0f);
     assertThat(typedArray.getFloat(1, 0)).isEqualTo(24.0f);
     typedArray.recycle();
+  }
+
+  @Test
+  @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
+  public void whenAttrIsDefinedInRuntimeSdk_getResourceName_findsResource() {
+    assertThat(RuntimeEnvironment.application.getResources().getResourceName(android.R.attr.viewportHeight))
+        .isEqualTo("android:attr/viewportHeight");
+  }
+
+  @Test
+  @Config(sdk = Build.VERSION_CODES.KITKAT)
+  public void whenAttrIsNotDefinedInRuntimeSdk_getResourceName_doesntFindRequestedResourceButInsteadFindsInternalResourceWithSameId() {
+    // asking for an attr defined after the current SDK doesn't have a defined result; in this case it returns
+    //   numberPickerStyle from com.internal.android.R
+    assertThat(RuntimeEnvironment.application.getResources().getResourceName(android.R.attr.viewportHeight))
+        .isEqualTo("android:attr/numberPickerStyle");
   }
 
   @Test
@@ -601,10 +612,6 @@ public class ShadowResourcesTest {
     assertThat(blueTextColorHint.resourceId).isEqualTo(android.R.color.darker_gray);
 
     arr.recycle();
-  }
-
-  private long getInternalId(Resources.Theme theme) {
-    return ReflectionHelpers.getField(theme, "mTheme");
   }
 
   private static String findRootTag(XmlResourceParser parser) throws Exception {

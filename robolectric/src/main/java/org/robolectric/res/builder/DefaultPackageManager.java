@@ -3,34 +3,18 @@ package org.robolectric.res.builder;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.ActivityInfo;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageInstaller;
-import android.content.pm.PackageManager;
-import android.content.pm.ProviderInfo;
-import android.content.pm.ResolveInfo;
-import android.content.pm.ServiceInfo;
+import android.content.pm.*;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Binder;
 import android.os.Bundle;
 import android.os.PatternMatcher;
 import android.util.Pair;
-
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.manifest.ActivityData;
-import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.manifest.BroadcastReceiverData;
-import org.robolectric.manifest.ContentProviderData;
-import org.robolectric.manifest.IntentFilterData;
-import org.robolectric.manifest.ServiceData;
-import org.robolectric.res.ResName;
-import org.robolectric.res.ResourceIndex;
-import org.robolectric.res.ResourceLoader;
+import org.robolectric.manifest.*;
 import org.robolectric.util.TempDirectory;
 
 import java.io.File;
@@ -50,11 +34,7 @@ import java.util.TreeMap;
 public class DefaultPackageManager extends StubPackageManager implements RobolectricPackageManager {
 
   private Map<Integer, String> namesForUid = new HashMap<>();
-  private ResourceLoader appResourceLoader;
-
-  public DefaultPackageManager(ResourceLoader appResourceLoader) {
-    this.appResourceLoader = appResourceLoader;
-  }
+  private Map<Integer, String[]> packagesForUid = new HashMap<>();
 
   static class IntentComparator implements Comparator<Intent> {
 
@@ -141,7 +121,7 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
       return packageInfos.get(packageName);
     }
 
-    throw new NameNotFoundException();
+    throw new NameNotFoundException(packageName);
   }
 
   @Override
@@ -150,7 +130,7 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
     if (info != null) {
       return info.applicationInfo;
     } else {
-      throw new NameNotFoundException();
+      throw new NameNotFoundException(packageName);
     }
   }
 
@@ -171,6 +151,7 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
 
     ActivityData activityData = androidManifest.getActivityData(activityName);
     if (activityData != null) {
+      activityInfo.configChanges = activityData.getConfigChanges();
       activityInfo.parentActivityName = activityData.getParentActivityName();
       activityInfo.metaData = metaDataToBundle(activityData.getMetaData().getValueMap());
       String themeRef;
@@ -190,31 +171,84 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
   }
 
   @Override
+  public ProviderInfo getProviderInfo(ComponentName className, int flags) throws NameNotFoundException {
+    String packageName = className.getPackageName();
+    AndroidManifest androidManifest = androidManifests.get(packageName);
+    String classString = resolvePackageName(packageName, className);
+
+    for (ContentProviderData contentProviderData : androidManifest.getContentProviders()) {
+      if (contentProviderData.getClassName().equals(classString)) {
+        ProviderInfo providerInfo = new ProviderInfo();
+        providerInfo.packageName = packageName;
+        providerInfo.name = contentProviderData.getClassName();
+        providerInfo.authority = contentProviderData.getAuthority();
+        providerInfo.readPermission = contentProviderData.getReadPermission();
+        providerInfo.writePermission = contentProviderData.getWritePermission();
+        providerInfo.pathPermissions = createPathPermissions(contentProviderData.getPathPermissionDatas());
+        if ((flags & GET_META_DATA) != 0) {
+          providerInfo.metaData = metaDataToBundle(contentProviderData.getMetaData().getValueMap());
+        }
+        return providerInfo;
+      }
+    }
+    return null;
+  }
+
+  private PathPermission[] createPathPermissions(List<PathPermissionData> pathPermissionDatas) {
+    PathPermission[] pathPermissions = new PathPermission[pathPermissionDatas.size()];
+    for (int i = 0; i < pathPermissions.length; i++) {
+      PathPermissionData data = pathPermissionDatas.get(i);
+
+      final String path;
+      final int type;
+      if (data.pathPrefix != null) {
+        path = data.pathPrefix;
+        type = PathPermission.PATTERN_PREFIX;
+      } else if (data.pathPattern != null) {
+        path = data.pathPattern;
+        type = PathPermission.PATTERN_SIMPLE_GLOB;
+      } else {
+        path = data.path;
+        type = PathPermission.PATTERN_LITERAL;
+      }
+
+      pathPermissions[i] = new PathPermission(path, type, data.readPermission, data.writePermission);
+    }
+
+    return pathPermissions;
+  }
+
+  @Override
   public ActivityInfo getReceiverInfo(ComponentName className, int flags) throws NameNotFoundException {
     String packageName = className.getPackageName();
     AndroidManifest androidManifest = androidManifests.get(packageName);
-    String classString = className.getClassName();
+    String classString = resolvePackageName(packageName, className);
+
+    for (PackageItemData receiver : androidManifest.getBroadcastReceivers()) {
+      if (receiver.getClassName().equals(classString)) {
+        ActivityInfo activityInfo = new ActivityInfo();
+        activityInfo.packageName = packageName;
+        activityInfo.name = classString;
+        if ((flags & GET_META_DATA) != 0) {
+          activityInfo.metaData = metaDataToBundle(receiver.getMetaData().getValueMap());
+        }
+        return activityInfo;
+      }
+    }
+    return null;
+  }
+
+  private String resolvePackageName(String packageName, ComponentName componentName) {
+    String classString = componentName.getClassName();
     int index = classString.indexOf('.');
     if (index == -1) {
       classString = packageName + "." + classString;
     } else if (index == 0) {
       classString = packageName + classString;
     }
-
-    ActivityInfo activityInfo = new ActivityInfo();
-    activityInfo.packageName = packageName;
-    activityInfo.name = classString;
-    if ((flags & GET_META_DATA) != 0) {
-      for (BroadcastReceiverData receiver : androidManifest.getBroadcastReceivers()) {
-        if (receiver.getClassName().equals(classString)) {
-          activityInfo.metaData = metaDataToBundle(receiver.getMetaData().getValueMap());
-          break;
-        }
-      }
-    }
-    return activityInfo;
+    return classString;
   }
-  
+
   @Override
   public ServiceInfo getServiceInfo(ComponentName className, int flags) throws NameNotFoundException {
     String packageName = className.getPackageName();
@@ -222,7 +256,7 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
     String serviceName = className.getClassName();
     ServiceData serviceData = androidManifest.getServiceData(serviceName);
     if (serviceData == null) {
-      throw new NameNotFoundException();
+      throw new NameNotFoundException(serviceName);
     }
     
     ServiceInfo serviceInfo = new ServiceInfo();
@@ -358,6 +392,12 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
   }
 
   @Override
+  public int getComponentEnabledSetting(ComponentName componentName) {
+    ComponentState state = componentList.get(componentName);
+    return state != null ? state.newState : PackageManager.COMPONENT_ENABLED_STATE_DEFAULT;
+  }
+
+  @Override
   public void addPreferredActivity(IntentFilter filter, int match, ComponentName[] set, ComponentName activity) {
     preferredActivities.put(filter, activity);
   }
@@ -404,6 +444,18 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
     return 0;
   }
 
+  @Override
+  public PackageInfo getPackageArchiveInfo(String archiveFilePath, int flags) {
+    List<PackageInfo> packages = getInstalledPackages(flags);
+    for (PackageInfo aPackage : packages) {
+      ApplicationInfo appInfo = aPackage.applicationInfo;
+      if (archiveFilePath.equals(appInfo.sourceDir)) {
+        return aPackage;
+      }
+    }
+    return null;
+  }
+
   /**
    * Non-Android accessor.  Use to make assertions on values passed to setComponentEnabledSetting.
    *
@@ -442,11 +494,8 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
   }
 
   @Override
-  public void addManifest(AndroidManifest androidManifest) {
+  public void addManifest(AndroidManifest androidManifest, int labelRes) {
     androidManifests.put(androidManifest.getPackageName(), androidManifest);
-
-    // first opportunity to access a resource index for this manifest, use it to init the references
-    androidManifest.initMetaData(appResourceLoader);
 
     PackageInfo packageInfo = new PackageInfo();
     packageInfo.packageName = androidManifest.getPackageName();
@@ -511,12 +560,7 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
     applicationInfo.metaData = metaDataToBundle(androidManifest.getApplicationMetaData());
     applicationInfo.sourceDir = new File(".").getAbsolutePath();
     applicationInfo.dataDir = TempDirectory.create().toAbsolutePath().toString();
-
-    ResourceIndex resourceIndex = appResourceLoader.getResourceIndex();
-    if (androidManifest.getLabelRef() != null && resourceIndex != null) {
-      Integer id = ResName.getResourceId(resourceIndex, androidManifest.getLabelRef(), androidManifest.getPackageName());
-      applicationInfo.labelRes = id != null ? id : 0;
-    }
+    applicationInfo.labelRes = labelRes;
 
     packageInfo.applicationInfo = applicationInfo;
     addPackage(packageInfo);
@@ -715,6 +759,19 @@ public class DefaultPackageManager extends StubPackageManager implements Robolec
   @Override
   public String getNameForUid(int uid) {
     return namesForUid.get(uid);
+  }
+
+  public void setPackagesForCallingUid(String... packagesForCallingUid) {
+    setPackagesForUid(Binder.getCallingUid(), packagesForCallingUid);
+  }
+
+  public void setPackagesForUid(int uid, String... packagesForCallingUid) {
+    this.packagesForUid.put(uid, packagesForCallingUid);
+  }
+
+  @Override
+  public String[] getPackagesForUid(int uid) {
+    return packagesForUid.get(uid);
   }
 
   /**

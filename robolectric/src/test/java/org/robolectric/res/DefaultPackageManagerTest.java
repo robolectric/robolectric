@@ -4,15 +4,8 @@ import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.ActivityInfo;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageInstaller;
-import android.content.pm.PackageManager;
+import android.content.pm.*;
 import android.content.pm.PackageManager.NameNotFoundException;
-import android.content.pm.ProviderInfo;
-import android.content.pm.ResolveInfo;
-import android.content.pm.ServiceInfo;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -46,13 +39,13 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.robolectric.Robolectric.setupActivity;
-import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE, sdk = 23)
-public class DefaultRobolectricPackageManagerTest {
+public class DefaultPackageManagerTest {
   private static final String TEST_PACKAGE_NAME = "com.some.other.package";
   private static final String TEST_PACKAGE_LABEL = "My Little App";
+  private static final String TEST_APP_PATH = "/data/app/application.apk";
   private final RobolectricPackageManager rpm = RuntimeEnvironment.getRobolectricPackageManager();
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
@@ -90,10 +83,43 @@ public class DefaultRobolectricPackageManagerTest {
   }
 
   @Test
+  public void packageInstallerAndGetPackageArchiveInfo() {
+    ApplicationInfo appInfo = new ApplicationInfo();
+    appInfo.flags = 0;
+    appInfo.packageName = TEST_PACKAGE_NAME;
+    appInfo.sourceDir = TEST_APP_PATH;
+    appInfo.name = TEST_PACKAGE_LABEL;
+
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = TEST_PACKAGE_NAME;
+    packageInfo.applicationInfo = appInfo;
+    rpm.addPackage(packageInfo);
+
+    PackageInfo packageInfoResult = rpm.getPackageArchiveInfo(TEST_APP_PATH, 0);
+    assertThat(packageInfoResult).isNotNull();
+    ApplicationInfo applicationInfo = packageInfoResult.applicationInfo;
+    assertThat(applicationInfo).isInstanceOf(ApplicationInfo.class);
+    assertThat(applicationInfo.packageName).isEqualTo(TEST_PACKAGE_NAME);
+    assertThat(applicationInfo.sourceDir).isEqualTo(TEST_APP_PATH);
+
+  }
+
+  @Test
   public void getApplicationInfo_ThisApplication() throws Exception {
     ApplicationInfo info = rpm.getApplicationInfo(RuntimeEnvironment.application.getPackageName(), 0);
     assertThat(info).isNotNull();
     assertThat(info.packageName).isEqualTo(RuntimeEnvironment.application.getPackageName());
+  }
+
+  @Test(expected = NameNotFoundException.class)
+  public void getApplicationInfo_whenUnknown_shouldThrowNameNotFoundException() throws Exception {
+    try {
+      rpm.getApplicationInfo("unknown_package", 0);
+      fail("should have thrown NameNotFoundException");
+    } catch (NameNotFoundException e) {
+      assertThat(e.getMessage()).contains("unknown_package");
+      throw e;
+    }
   }
 
   @Test
@@ -315,9 +341,38 @@ public class DefaultRobolectricPackageManagerTest {
     PackageInfo packageInfo = rpm.getPackageInfo(RuntimeEnvironment.application.getPackageName(), PackageManager.GET_PROVIDERS);
     ProviderInfo[] providers = packageInfo.providers;
     assertThat(providers).isNotEmpty();
-    assertThat(providers.length).isEqualTo(2);
+    assertThat(providers.length).isEqualTo(3);
     assertThat(providers[0].packageName).isEqualTo("org.robolectric");
     assertThat(providers[1].packageName).isEqualTo("org.robolectric");
+    assertThat(providers[2].packageName).isEqualTo("org.robolectric");
+  }
+
+  @Test
+  @Config(manifest = "src/test/resources/TestAndroidManifestWithContentProviders.xml")
+  public void getProviderInfo_shouldReturnProviderInfos() throws Exception {
+    ProviderInfo packageInfo1 = RuntimeEnvironment.getPackageManager().getProviderInfo(new ComponentName(RuntimeEnvironment.application, ".tester.FullyQualifiedClassName"), 0);
+    assertThat(packageInfo1.packageName).isEqualTo("org.robolectric");
+    assertThat(packageInfo1.authority).isEqualTo("org.robolectric.authority1");
+
+    ProviderInfo packageInfo2 = RuntimeEnvironment.getPackageManager().getProviderInfo(new ComponentName(RuntimeEnvironment.application, "org.robolectric.tester.PartiallyQualifiedClassName"), 0);
+    assertThat(packageInfo2.packageName).isEqualTo("org.robolectric");
+    assertThat(packageInfo2.authority).isEqualTo("org.robolectric.authority2");
+  }
+
+  @Test
+  @Config(manifest = "src/test/resources/TestAndroidManifestWithContentProviders.xml")
+  public void getProviderInfo_shouldPopulatePermissionsInProviderInfos() throws Exception {
+    ProviderInfo providerInfo = RuntimeEnvironment.getPackageManager().getProviderInfo(new ComponentName(RuntimeEnvironment.application, "org.robolectric.util.ContentProviderControllerTest$MyContentProvider"), 0);
+    assertThat(providerInfo.authority).isEqualTo("org.robolectric.authority2");
+
+    assertThat(providerInfo.readPermission).isEqualTo("READ_PERMISSION");
+    assertThat(providerInfo.writePermission).isEqualTo("WRITE_PERMISSION");
+
+    assertThat(providerInfo.pathPermissions).hasSize(1);
+    assertThat(providerInfo.pathPermissions[0].getPath()).isEqualTo("/path/*");
+    assertThat(providerInfo.pathPermissions[0].getType()).isEqualTo(PathPermission.PATTERN_SIMPLE_GLOB);
+    assertThat(providerInfo.pathPermissions[0].getReadPermission()).isEqualTo("PATH_READ_PERMISSION");
+    assertThat(providerInfo.pathPermissions[0].getWritePermission()).isEqualTo("PATH_WRITE_PERMISSION");
   }
 
   @Test
@@ -440,7 +495,13 @@ public class DefaultRobolectricPackageManagerTest {
   @Test(expected = PackageManager.NameNotFoundException.class)
   @Config(manifest = "src/test/resources/TestAndroidManifestWithReceiversCustomPackage.xml")
   public void testGetPackageInfo_ForReceiversIncorrectPackage() throws Exception {
-    PackageInfo receiverInfos = rpm.getPackageInfo("unknown_package", PackageManager.GET_RECEIVERS);
+    try {
+      rpm.getPackageInfo("unknown_package", PackageManager.GET_RECEIVERS);
+      fail("should have thrown NameNotFoundException");
+    } catch (NameNotFoundException e) {
+      assertThat(e.getMessage()).contains("unknown_package");
+      throw e;
+    }
   }
 
   @Test
@@ -659,6 +720,19 @@ public class DefaultRobolectricPackageManagerTest {
     assertThat(packageManager.getApplicationEnabledSetting("org.robolectric")).isEqualTo(PackageManager.COMPONENT_ENABLED_STATE_DISABLED);
   }
 
+  @Test
+  @Config(manifest = "src/test/resources/TestAndroidManifest.xml")
+  public void testSetComponentEnabledSetting() {
+    PackageManager packageManager = RuntimeEnvironment.getPackageManager();
+
+    ComponentName componentName = new ComponentName(RuntimeEnvironment.application, "org.robolectric.component");
+    assertThat(packageManager.getComponentEnabledSetting(componentName)).isEqualTo(PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
+
+    packageManager.setComponentEnabledSetting(componentName, PackageManager.COMPONENT_ENABLED_STATE_DISABLED, 0);
+
+    assertThat(packageManager.getComponentEnabledSetting(componentName)).isEqualTo(PackageManager.COMPONENT_ENABLED_STATE_DISABLED);
+  }
+
   public static class ActivityWithMetadata extends Activity { }
 
   @Test
@@ -702,16 +776,17 @@ public class DefaultRobolectricPackageManagerTest {
     assertNull(serviceInfo.metaData);
   }
   
-  @Test
+  @Test(expected = NameNotFoundException.class)
   @Config(manifest = "src/test/resources/TestPackageManagerGetServiceInfo.xml")
   public void getServiceInfo_shouldThrowNameNotFoundExceptionIfNotExist() throws Exception {
     ComponentName nonExistComponent = new ComponentName("org.robolectric", "com.foo.NonExistService");
     try {
       rpm.getServiceInfo(nonExistComponent, PackageManager.GET_SERVICES);
+      fail("should have thrown NameNotFoundException");
     } catch (NameNotFoundException e) {
-      return;
+      assertThat(e.getMessage()).contains("com.foo.NonExistService");
+      throw e;
     }
-    fail("NameNotFoundException is expected.");
   }
 
   @Test
@@ -721,6 +796,15 @@ public class DefaultRobolectricPackageManagerTest {
     rpm.setNameForUid(10, "a_name");
 
     assertThat(RuntimeEnvironment.getPackageManager().getNameForUid(10)).isEqualTo("a_name");
+  }
+
+  @Test
+  public void getPackagesForUid() {
+    assertThat(RuntimeEnvironment.getPackageManager().getPackagesForUid(10)).isNull();
+
+    rpm.setPackagesForUid(10, new String[] {"a_name"});
+
+    assertThat(RuntimeEnvironment.getPackageManager().getPackagesForUid(10)).containsExactly("a_name");
   }
 
   /////////////////////////////

@@ -66,7 +66,7 @@ public interface RobolectricPackageManager {
 
   void addPackage(String packageName);
 
-  void addManifest(AndroidManifest androidManifest);
+  void addManifest(AndroidManifest androidManifest, int labelRes);
 
   void removePackage(String packageName);
 
@@ -87,6 +87,12 @@ public interface RobolectricPackageManager {
   void reset();
 
   void setNameForUid(int uid, String name);
+
+  void setPackagesForCallingUid(String... packagesForCallingUid);
+
+  void setPackagesForUid(int uid, String... packagesForCallingUid);
+
+  PackageInfo getPackageArchiveInfo(String archiveFilePath, int flags);
 
   class ComponentState {
     public int newState;

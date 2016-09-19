@@ -432,6 +432,7 @@ public class ShadowContentResolver {
   }
 
   public static void registerProvider(String authority, ContentProvider provider) {
+    initialize(provider, authority);
     providers.put(authority, provider);
   }
 
@@ -574,14 +575,18 @@ public class ShadowContentResolver {
   private static ContentProvider createAndInitialize(ContentProviderData providerData) {
     try {
       ContentProvider provider = (ContentProvider) Class.forName(providerData.getClassName()).newInstance();
-      ProviderInfo providerInfo = new ProviderInfo();
-      providerInfo.authority = providerData.getAuthority();
-      provider.attachInfo(RuntimeEnvironment.application, providerInfo);
-      provider.onCreate();
+      initialize(provider, providerData.getAuthority());
       return provider;
     } catch (InstantiationException | ClassNotFoundException | IllegalAccessException e) {
       throw new RuntimeException("Error instantiating class " + providerData.getClassName());
     }
+  }
+
+  private static void initialize(ContentProvider provider, String authority) {
+    ProviderInfo providerInfo = new ProviderInfo();
+    providerInfo.authority = authority;
+    provider.attachInfo(RuntimeEnvironment.application, providerInfo);
+    provider.onCreate();
   }
 
   private BaseCursor getCursor(Uri uri) {

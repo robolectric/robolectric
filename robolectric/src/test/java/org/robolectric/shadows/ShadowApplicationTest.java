@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.media.session.MediaSessionManager;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.IInterface;
@@ -111,6 +112,15 @@ public class ShadowApplicationTest {
       Build.VERSION_CODES.LOLLIPOP })
   public void shouldProvideServicesIntroducedInKitKat() throws Exception {
     checkSystemService(Context.PRINT_SERVICE, PrintManager.class);
+  }
+
+  @Test
+  @Config(sdk = {
+          Build.VERSION_CODES.LOLLIPOP,
+          Build.VERSION_CODES.LOLLIPOP_MR1,
+          Build.VERSION_CODES.M})
+  public void shouldProvideMediaSessionService() throws Exception {
+    checkSystemService(Context.MEDIA_SESSION_SERVICE, MediaSessionManager.class);
   }
 
   @Test public void shouldProvideLayoutInflater() throws Exception {

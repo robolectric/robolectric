@@ -20,8 +20,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.internal.fakes.RoboInstrumentation;
 import org.robolectric.manifest.ActivityData;
 import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.ResBundle;
-import org.robolectric.res.ResourceLoader;
+import org.robolectric.res.*;
 import org.robolectric.res.builder.DefaultPackageManager;
 import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.shadows.ShadowLooper;
@@ -57,29 +56,15 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     }
   }
 
-  /*
-   * If the Config already has a version qualifier, do nothing. Otherwise, add a version
-   * qualifier for the target api level (which comes from the manifest or Config.emulateSdk()).
-   */
-  private String addVersionQualifierToQualifiers(String qualifiers) {
-    int versionQualifierApiLevel = ResBundle.getVersionQualifierApiLevel(qualifiers);
-    if (versionQualifierApiLevel == -1) {
-      if (qualifiers.length() > 0) {
-        qualifiers += "-";
-      }
-      qualifiers += "v" + sdkConfig.getApiLevel();
-    }
-    return qualifiers;
-  }
-
   @Override
   public void setUpApplicationState(Method method, TestLifecycle testLifecycle, ResourceLoader systemResourceLoader, AndroidManifest appManifest, Config config) {
     RuntimeEnvironment.application = null;
     RuntimeEnvironment.setMasterScheduler(new Scheduler());
     RuntimeEnvironment.setMainThread(Thread.currentThread());
     ResourceLoader appResourceLoader = robolectricTestRunner.getAppResourceLoader(sdkConfig, systemResourceLoader, appManifest);
-    DefaultPackageManager packageManager = new DefaultPackageManager(appResourceLoader);
-    packageManager.addManifest(appManifest);
+
+    DefaultPackageManager packageManager = new DefaultPackageManager();
+    initializeAppManifest(appManifest, appResourceLoader, packageManager);
     RuntimeEnvironment.setRobolectricPackageManager(packageManager);
 
     RuntimeEnvironment.setAppResourceLoader(appResourceLoader);
@@ -89,9 +74,13 @@ public class ParallelUniverse implements ParallelUniverseInterface {
       Security.insertProviderAt(new BouncyCastleProvider(), 1);
     }
 
-    String qualifiers = addVersionQualifierToQualifiers(config.qualifiers());
+    String qualifiers = Qualifiers.addPlatformVersion(config.qualifiers(), sdkConfig.getApiLevel());
+    qualifiers = Qualifiers.addSmallestScreenWidth(qualifiers, 320);
+    qualifiers = Qualifiers.addScreenWidth(qualifiers, 320);
     Resources systemResources = Resources.getSystem();
     Configuration configuration = systemResources.getConfiguration();
+    configuration.smallestScreenWidthDp = Qualifiers.getSmallestScreenWidth(qualifiers);
+    configuration.screenWidthDp = Qualifiers.getScreenWidth(qualifiers);
     shadowsAdapter.overrideQualifiers(configuration, qualifiers);
     systemResources.updateConfiguration(configuration, systemResources.getDisplayMetrics());
     RuntimeEnvironment.setQualifiers(qualifiers);
@@ -151,6 +140,18 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
       application.onCreate();
     }
+  }
+
+  private void initializeAppManifest(AndroidManifest appManifest, ResourceLoader appResourceLoader, DefaultPackageManager packageManager) {
+    appManifest.initMetaData(appResourceLoader);
+    ResourceIndex resourceIndex = appResourceLoader.getResourceIndex();
+
+    int labelRes = 0;
+    if (appManifest.getLabelRef() != null && resourceIndex != null) {
+      Integer id = ResName.getResourceId(resourceIndex, appManifest.getLabelRef(), appManifest.getPackageName());
+      labelRes = id != null ? id : 0;
+    }
+    packageManager.addManifest(appManifest, labelRes);
   }
 
   private void addManifestActivitiesToPackageManager(AndroidManifest appManifest, Application application) {

@@ -219,6 +219,7 @@ public final class R {
     public static final int ordinal_scrollbar = 0x10625;
     public static final int custom_layout5 = 0x10626;
     public static final int custom_layout6 = 0x10627;
+    public static final int layout_smallest_width = 0x10628;
   }
 
   public static final class anim {
@@ -259,6 +260,8 @@ public final class R {
     public static final int sugarinessPercent = 0x10a10;
     public static final int numColumns = 0x10a11;
     public static final int sugaryScale = 0x10a12;
+    public static final int selectableItemBackground = 0x10a13;
+    public static final int attrFromLib1 = 0x10a14;
   }
 
   public static final class menu {
@@ -330,6 +333,7 @@ public final class R {
     public static final int reference_to_true = 0x10f04;
     public static final int true_as_item = 0x10f05;
     public static final int different_resource_boolean=0x10f06;
+    public static final int value_only_present_in_w320dp=0x10f07;
   }
 
   public static final class style {
@@ -343,11 +347,12 @@ public final class R {
     public static final int Sized = 0x11007;
     public static final int Gastropod = 0x11008;
     public static final int Theme_ThirdTheme = 0x11009;
-    public static final int Theme_MyTheme = 0x1100a;
-    public static final int MyBlackTheme = 0x1100b;
-    public static final int MyBlueTheme = 0x1100c;
+    public static final int Theme_MyThemeWithEmptyParent = 0x1100a;
+    public static final int Theme_MyThemeWithNullStringParent = 0x1100b;
+    public static final int MyBlackTheme = 0x1100c;
+    public static final int MyBlueTheme = 0x1100d;
 
-    public static final int IndirectButtonStyle = 0x1100d;
+    public static final int IndirectButtonStyle = 0x1100e;
   }
 
   public static final class fraction {

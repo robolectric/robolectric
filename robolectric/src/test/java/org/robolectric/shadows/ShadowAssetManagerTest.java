@@ -3,7 +3,8 @@ package org.robolectric.shadows;
 import android.app.Activity;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
-
+import android.content.res.Resources;
+import android.util.AttributeSet;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -26,6 +27,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.robolectric.util.TestUtil.joinPath;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
@@ -145,4 +148,14 @@ public class ShadowAssetManagerTest {
     assertThat(byteArrayInputStream.available()).isEqualTo(23447);
   }
 
+  @Test
+  public void attrsToTypedArray_shouldAllowMockedAttributeSets() throws Exception {
+    AttributeSet mockAttributeSet = mock(AttributeSet.class);
+    when(mockAttributeSet.getAttributeCount()).thenReturn(1);
+    when(mockAttributeSet.getAttributeNameResource(0)).thenReturn(android.R.attr.windowBackground);
+    when(mockAttributeSet.getAttributeValue(0)).thenReturn("value");
+
+    Resources resources = RuntimeEnvironment.application.getResources();
+    resources.obtainAttributes(mockAttributeSet, new int[]{android.R.attr.windowBackground});
+  }
 }

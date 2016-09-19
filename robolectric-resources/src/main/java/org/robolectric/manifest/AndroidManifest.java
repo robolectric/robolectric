@@ -1,7 +1,7 @@
 package org.robolectric.manifest;
 
 import android.app.Activity;
-import java.io.IOException;
+
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -11,12 +11,11 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import com.google.common.base.Preconditions;
-import org.robolectric.annotation.Config;
+import org.jetbrains.annotations.Nullable;
 import org.robolectric.res.FsFile;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.ResourcePath;
@@ -49,6 +48,8 @@ public class AndroidManifest {
   private final FsFile androidManifestFile;
   private final FsFile resDirectory;
   private final FsFile assetsDirectory;
+  private final String overridePackageName;
+
   private boolean manifestIsParsed;
 
   private String applicationName;
@@ -79,9 +80,7 @@ public class AndroidManifest {
    * @param assetsDirectory     Location of the assets directory.
    */
   public AndroidManifest(FsFile androidManifestFile, FsFile resDirectory, FsFile assetsDirectory) {
-    this.androidManifestFile = androidManifestFile;
-    this.resDirectory = resDirectory;
-    this.assetsDirectory = assetsDirectory;
+    this(androidManifestFile, resDirectory, assetsDirectory, null);
   }
 
   /**
@@ -90,11 +89,15 @@ public class AndroidManifest {
    * @param androidManifestFile Location of the AndroidManifest.xml file.
    * @param resDirectory        Location of the res directory.
    * @param assetsDirectory     Location of the assets directory.
-   * @param packageName         Application package name.
+   * @param overridePackageName Application package name.
    */
-  public AndroidManifest(FsFile androidManifestFile, FsFile resDirectory, FsFile assetsDirectory, String packageName) {
-    this(androidManifestFile, resDirectory, assetsDirectory);
-    this.packageName = packageName;
+  public AndroidManifest(FsFile androidManifestFile, FsFile resDirectory, FsFile assetsDirectory, String overridePackageName) {
+    this.androidManifestFile = androidManifestFile;
+    this.resDirectory = resDirectory;
+    this.assetsDirectory = assetsDirectory;
+    this.overridePackageName = overridePackageName;
+
+    this.packageName = overridePackageName;
   }
 
   public String getThemeRef(Class<? extends Activity> activityClass) {
@@ -134,9 +137,10 @@ public class AndroidManifest {
         Document manifestDocument = db.parse(inputStream);
         inputStream.close();
 
-        if (packageName == null || packageName.isEmpty()) {
+        if (!packageNameIsOverridden()) {
           packageName = getTagAttributeText(manifestDocument, "manifest", "package");
         }
+
         versionCode = getTagAttributeIntValue(manifestDocument, "manifest", "android:versionCode", 0);
         versionName = getTagAttributeText(manifestDocument, "manifest", "android:versionName");
         rClassName = packageName + ".R";
@@ -169,6 +173,10 @@ public class AndroidManifest {
     manifestIsParsed = true;
   }
 
+  private boolean packageNameIsOverridden() {
+    return overridePackageName != null && !overridePackageName.isEmpty();
+  }
+
   private void parseUsedPermissions(Document manifestDocument) {
     NodeList elementsByTagName = manifestDocument.getElementsByTagName("uses-permission");
     int length = elementsByTagName.getLength();
@@ -183,12 +191,33 @@ public class AndroidManifest {
     if (application == null) return;
 
     for (Node contentProviderNode : getChildrenTags(application, "provider")) {
-      Node nameItem = contentProviderNode.getAttributes().getNamedItem("android:name");
-      Node authorityItem = contentProviderNode.getAttributes().getNamedItem("android:authorities");
-      if (nameItem != null && authorityItem != null) {
-        providers.add(new ContentProviderData(resolveClassRef(nameItem.getTextContent()), authorityItem.getTextContent()));
+      String name = getAttributeValue(contentProviderNode, "android:name");
+      String authority = getAttributeValue(contentProviderNode, "android:authorities");
+      MetaData metaData = new MetaData(getChildrenTags(contentProviderNode, "meta-data"));
+
+      List<PathPermissionData> pathPermissionDatas = new ArrayList<>();
+      for (Node node : getChildrenTags(contentProviderNode, "path-permission")) {
+        pathPermissionDatas.add(new PathPermissionData(
+                getAttributeValue(node, "android:path"),
+                getAttributeValue(node, "android:pathPrefix"),
+                getAttributeValue(node, "android:pathPattern"),
+                getAttributeValue(node, "android:readPermission"),
+                getAttributeValue(node, "android:writePermission")
+        ));
       }
+
+      providers.add(new ContentProviderData(resolveClassRef(name),
+              metaData,
+              authority,
+              getAttributeValue(contentProviderNode, "android:readPermission"),
+              getAttributeValue(contentProviderNode, "android:writePermission"),
+              pathPermissionDatas));
     }
+  }
+
+  private @Nullable String getAttributeValue(Node parentNode, String attributeName) {
+    Node attributeNode = parentNode.getAttributes().getNamedItem(attributeName);
+    return attributeNode == null ? null : attributeNode.getTextContent();
   }
 
   private void parseReceivers(final Document manifestDocument) {
@@ -377,10 +406,15 @@ public class AndroidManifest {
    * @param resLoader used for getting resource IDs from string identifiers
    */
   public void initMetaData(ResourceLoader resLoader) {
+    if (!packageNameIsOverridden()) {
+      // packageName needs to be resolved
+      parseAndroidManifest();
+    }
+
     if (applicationMetaData != null) {
       applicationMetaData.init(resLoader, packageName);
     }
-    for (BroadcastReceiverData receiver : receivers) {
+    for (PackageItemData receiver : receivers) {
       receiver.getMetaData().init(resLoader, packageName);
     }
     for (ServiceData service : serviceDatas.values()) {
@@ -457,6 +491,7 @@ public class AndroidManifest {
     return (data != null && data.getLabel() != null) ? data.getLabel() : applicationLabel;
   }
 
+  @Deprecated
   public void setPackageName(String packageName) {
     this.packageName = packageName;
   }
@@ -507,7 +542,7 @@ public class AndroidManifest {
   }
 
   public ResourcePath getResourcePath() {
-    return new ResourcePath(getPackageName(), resDirectory, assetsDirectory, getRClass());
+    return new ResourcePath(getRClass(), getPackageName(), resDirectory, assetsDirectory);
   }
 
   public List<ResourcePath> getIncludedResourcePaths() {
@@ -584,7 +619,7 @@ public class AndroidManifest {
     if (assetsDirectory != null ? !assetsDirectory.equals(that.assetsDirectory) : that.assetsDirectory != null)
       return false;
     if (resDirectory != null ? !resDirectory.equals(that.resDirectory) : that.resDirectory != null) return false;
-    if (packageName != null ? !packageName.equals(that.packageName) : that.packageName != null) return false;
+    if (overridePackageName != null ? !overridePackageName.equals(that.overridePackageName) : that.overridePackageName != null) return false;
     return true;
   }
 
@@ -593,7 +628,7 @@ public class AndroidManifest {
     int result = androidManifestFile != null ? androidManifestFile.hashCode() : 0;
     result = 31 * result + (resDirectory != null ? resDirectory.hashCode() : 0);
     result = 31 * result + (assetsDirectory != null ? assetsDirectory.hashCode() : 0);
-    result = 31 * result + (packageName != null ? packageName.hashCode() : 0);
+    result = 31 * result + (overridePackageName != null ? overridePackageName.hashCode() : 0);
     return result;
   }
 
