@@ -9,6 +9,7 @@
     <item>bar</item>
   </string-array>
   <string name="copy">Local Copy</string>
+  <string name="not_in_the_r_file">Proguarded Out Probably</string>
   <string name="only_in_main">from main</string>
   <string name="in_all_libs">from main</string>
   <string name="in_main_and_lib1">from main</string>
