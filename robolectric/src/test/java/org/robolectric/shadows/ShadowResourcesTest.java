@@ -323,7 +323,12 @@ public class ShadowResourcesTest {
     final String fqn = packageName + ":" + typedResourceName;
     final int resId3 = resources.getIdentifier(fqn, resourceType, packageName);
     assertThat(resId3).isEqualTo(R.string.hello);
+  }
 
+  @Test
+  public void testGetIdentifier_missingFromRFile() throws Exception {
+    int identifier_missing_from_r_file = resources.getIdentifier("not_in_the_r_file", "string", RuntimeEnvironment.application.getPackageName());
+    assertThat(resources.getString(identifier_missing_from_r_file)).isEqualTo("Proguarded Out Probably");
   }
 
   @Test
