@@ -1,7 +1,10 @@
 package org.robolectric;
 
+import android.content.res.Resources;
 import android.util.AttributeSet;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.robolectric.res.AttributeResource;
 
@@ -15,6 +18,9 @@ import static org.robolectric.res.AttributeResource.ANDROID_RES_NS_PREFIX;
 public class AttributeSetBuilderTest {
 
   private static final String ANDROID_NS = "http://schemas.android.com/apk/res/android";
+
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
 
   @Test
   public void getAttributeResourceValue_shouldReturnTheResourceValue() throws Exception {
@@ -229,14 +235,15 @@ public class AttributeSetBuilderTest {
   @Test
   public void getStyleAttribute_returnsCorrectValue() throws Exception {
     AttributeSet roboAttributeSet = Robolectric.buildAttributeSet()
-        .setStyleAttribute("@style/FancyStyle")
+        .setStyleAttribute("@style/Gastropod")
         .build();
 
-    assertThat(roboAttributeSet.getStyleAttribute()).isEqualTo(R.style.FancyStyle);
+    assertThat(roboAttributeSet.getStyleAttribute()).isEqualTo(R.style.Gastropod);
   }
 
   @Test
-  public void getStyleAttribute_doesNotThrowException_whenStyleIsBogus() throws Exception {
+  public void getStyleAttribute_throwException_whenStyleIsBogus() throws Exception {
+    thrown.expect(Resources.NotFoundException.class);
     AttributeSet roboAttributeSet = Robolectric.buildAttributeSet()
         .setStyleAttribute("@style/bogus_style")
         .build();

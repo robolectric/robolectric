@@ -7,10 +7,11 @@ import android.app.IntentService;
 import android.content.ContentProvider;
 import android.content.Intent;
 
-import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.util.AttributeSet;
 import android.view.View;
 import org.robolectric.internal.ShadowProvider;
+import org.robolectric.res.AttributeResource;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.builder.XmlResourceParserImpl;
@@ -159,6 +160,10 @@ public class Robolectric {
     }
 
     public AttributeSetBuilder setStyleAttribute(String value) {
+      if (appResourceLoader.getValue(AttributeResource.getResourceReference(value, RuntimeEnvironment.application.getPackageName(), "style"),
+          RuntimeEnvironment.getQualifiers()) == null) {
+        throw new Resources.NotFoundException("Invalid style attribute: " + value);
+      }
       ((Element)doc.getFirstChild()).setAttribute("style", value);
       return this;
     }
