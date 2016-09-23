@@ -425,29 +425,6 @@ public class ShadowActivityTest {
   }
 
   @Test
-  public void retrieveIdOfResource() {
-    Activity activity = Robolectric.setupActivity(Activity.class);
-
-    int id1 = R.string.hello;
-    String string = activity.getString(id1);
-    assertEquals("Hello", string);
-
-    int id = activity.getResources().getIdentifier("hello", "string", "org.robolectric");
-    assertThat(id).isEqualTo(R.string.hello);
-
-    String hello = activity.getResources().getString(id);
-    assertEquals("Hello", hello);
-  }
-
-  @Test
-  public void retrieveIdOfNonExistingResource() {
-    Activity activity = Robolectric.setupActivity(Activity.class);
-
-    int id = activity.getResources().getIdentifier("just_alot_of_crap", "string", "org.robolectric");
-    assertThat(id).isEqualTo(0);
-  }
-
-  @Test
   public void setDefaultKeyMode_shouldSetKeyMode() {
     int[] modes = {
         Activity.DEFAULT_KEYS_DISABLE,

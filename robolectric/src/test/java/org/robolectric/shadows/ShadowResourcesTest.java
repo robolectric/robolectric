@@ -323,7 +323,30 @@ public class ShadowResourcesTest {
     final String fqn = packageName + ":" + typedResourceName;
     final int resId3 = resources.getIdentifier(fqn, resourceType, packageName);
     assertThat(resId3).isEqualTo(R.string.hello);
+  }
 
+  @Test
+  public void getIdentifier() {
+    String string = resources.getString(R.string.hello);
+    assertThat(string).isEqualTo("Hello");
+
+    int id = resources.getIdentifier("hello", "string", "org.robolectric");
+    assertThat(id).isEqualTo(R.string.hello);
+
+    String hello = resources.getString(id);
+    assertThat(hello).isEqualTo("Hello");
+  }
+
+  @Test
+  public void getIdentifier_nonExistantResource() {
+    int id = resources.getIdentifier("just_alot_of_crap", "string", "org.robolectric");
+    assertThat(id).isEqualTo(0);
+  }
+
+  @Test
+  public void getIdentifier_missingFromRFile() throws Exception {
+    int identifier_missing_from_r_file = resources.getIdentifier("not_in_the_r_file", "string", RuntimeEnvironment.application.getPackageName());
+    assertThat(resources.getString(identifier_missing_from_r_file)).isEqualTo("Proguarded Out Probably");
   }
 
   @Test
