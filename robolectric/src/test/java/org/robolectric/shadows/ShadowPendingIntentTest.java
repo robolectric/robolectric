@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.app.Activity;
+import android.app.Application;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -202,19 +203,16 @@ public class ShadowPendingIntentTest {
 
   @Test
   public void testEquals() {
-    Intent intent1 = new Intent("activity");
-    Intent intent2 = new Intent("activity");
-    PendingIntent pendingIntent1 = PendingIntent.getActivity(RuntimeEnvironment.application, 99, intent1, 100);
-    PendingIntent pendingIntent2 = PendingIntent.getActivity(RuntimeEnvironment.application, 99, intent2, 100);
-    assertThat(pendingIntent1).isEqualTo(pendingIntent2);
-  }
+    Context ctx = RuntimeEnvironment.application;
+    PendingIntent pendingIntent1 = PendingIntent.getActivity(ctx, 99, new Intent("activity"), 100);
 
-  @Test
-  public void testNotEquals() {
-    Intent intent1 = new Intent("activity1");
-    Intent intent2 = new Intent("activity2");
-    PendingIntent pendingIntent1 = PendingIntent.getActivity(RuntimeEnvironment.application, 99, intent1, 100);
-    PendingIntent pendingIntent2 = PendingIntent.getActivity(RuntimeEnvironment.application, 99, intent2, 100);
-    assertThat(pendingIntent1).isNotEqualTo(pendingIntent2);
+    assertThat(pendingIntent1)
+        .isEqualTo(PendingIntent.getActivity(ctx, 99, new Intent("activity"), 100));
+
+    assertThat(pendingIntent1)
+        .isNotEqualTo(PendingIntent.getActivity(ctx, 99, new Intent("activity2"), 100));
+
+    assertThat(pendingIntent1)
+        .isNotEqualTo(PendingIntent.getActivity(ctx, 999, new Intent("activity"), 100));
   }
 }

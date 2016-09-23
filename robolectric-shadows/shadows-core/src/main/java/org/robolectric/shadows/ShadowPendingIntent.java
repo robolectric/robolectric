@@ -161,6 +161,9 @@ public class ShadowPendingIntent {
         return false;
       }
     }
+    if (this.requestCode != that.requestCode) {
+      return false;
+    }
     return true;
   }
 
@@ -172,6 +175,7 @@ public class ShadowPendingIntent {
       String packageName = savedContext.getPackageName();
       result = 31 * result + (packageName != null ? packageName.hashCode() : 0);
     }
+    result = 31 * result + requestCode;
     return result;
   }
 
