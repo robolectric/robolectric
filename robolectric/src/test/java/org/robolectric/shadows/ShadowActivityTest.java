@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.content.res.TypedArray;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteCursor;
 import android.media.AudioManager;
@@ -713,6 +714,13 @@ public class ShadowActivityTest {
     Activity activity = Robolectric.setupActivity(Activity.class);
     activity.overridePendingTransition(15, 2);
     assertThat(shadowOf(activity).getPendingTransitionExitAnimationResourceId()).isEqualTo(2);
+  }
+
+  @Test public void shouldGetAttributeFromThemeSetOnActivity() throws Exception {
+    ShadowThemeTest.TestActivity activity = setupActivity(ShadowThemeTest.TestActivityWithAnotherTheme.class);
+    TypedArray a = activity.obtainStyledAttributes(R.styleable.AnotherTheme);
+
+    assertThat(a.hasValue(R.styleable.AnotherTheme_animalStyle)).isTrue();
   }
 
   @Test
