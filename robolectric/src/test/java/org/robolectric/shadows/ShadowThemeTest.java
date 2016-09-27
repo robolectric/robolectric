@@ -222,6 +222,11 @@ public class ShadowThemeTest {
     theme.applyStyle(R.style.Theme_AnotherTheme, true);
     assertThat(theme.obtainStyledAttributes(new int[]{R.attr.string1}).getString(0))
         .isEqualTo("string 1 from Theme.AnotherTheme");
+
+    // force apply the original theme; values should be overwritten
+    theme.applyStyle(R.style.Theme_Robolectric, true);
+    assertThat(theme.obtainStyledAttributes(new int[]{R.attr.string1}).getString(0))
+        .isEqualTo("string 1 from Theme.Robolectric");
   }
 
   @Test
