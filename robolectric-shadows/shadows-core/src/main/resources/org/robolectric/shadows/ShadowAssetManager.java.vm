@@ -61,9 +61,8 @@ public final class ShadowAssetManager {
   public static final int STYLE_CHANGING_CONFIGURATIONS = 4;
   public static final int STYLE_DENSITY = 5;
 
-  private Map<$ptrClassBoxed, Resources.Theme> themesById = new LinkedHashMap<>();
   private Map<$ptrClassBoxed, List<OverlayedStyle>> appliedStyles = new HashMap<>();
-  private int nextInternalThemeId = 1000;
+  private $ptrClass nextInternalThemeId = 1000;
   private ResourceLoader resourceLoader;
 
   @RealObject
@@ -145,13 +144,12 @@ public final class ShadowAssetManager {
   public boolean getThemeValue($ptrClass themePtr, int ident, TypedValue outValue, boolean resolveRefs) {
     ResourceIndex resourceIndex = resourceLoader.getResourceIndex();
     ResName resName = resourceIndex.getResName(ident);
-    Resources.Theme theTheme = getThemeByInternalId(themePtr);
 
     List<OverlayedStyle> overlayThemeStyles = getOverlayThemeStyles(themePtr);
-    AttributeResource attrValue = getOverlayedThemeValue(resName, null, overlayThemeStyles);
+    AttributeResource attrValue = getOverlayedThemeValue(resName, overlayThemeStyles);
     while(resolveRefs && attrValue != null && attrValue.isStyleReference()) {
       ResName attrResName = new ResName(attrValue.contextPackageName, "attr", attrValue.value.substring(1));
-      attrValue = getOverlayedThemeValue(attrResName, null, overlayThemeStyles);
+      attrValue = getOverlayedThemeValue(attrResName, overlayThemeStyles);
     }
     if (attrValue != null) {
       Converter.convertAndFill(attrValue, outValue, resourceLoader, RuntimeEnvironment.getQualifiers(), resolveRefs);
@@ -266,13 +264,13 @@ public final class ShadowAssetManager {
   }
 
   @HiddenApi @Implementation
-  synchronized public int createTheme() {
+  synchronized public $ptrClass createTheme() {
     return nextInternalThemeId++;
   }
 
   @HiddenApi @Implementation
   synchronized public void releaseTheme($ptrClass themePtr) {
-    themesById.remove(themePtr);
+    appliedStyles.remove(themePtr);
   }
 
   @HiddenApi @Implementation
@@ -285,7 +283,7 @@ public final class ShadowAssetManager {
       appliedStyles.put(themePtr, new LinkedList<OverlayedStyle>());
     }
 
-    Style style = assetManager.resolveStyle(null, styleRes);
+    Style style = assetManager.resolveStyle(styleRes);
 
     List<OverlayedStyle> overlayedStyleList = appliedStyles.get(themePtr);
     OverlayedStyle styleToAdd = new OverlayedStyle(style, force);
@@ -340,23 +338,15 @@ public final class ShadowAssetManager {
 
   /////////////////////////
 
-  synchronized public void setTheme($ptrClass internalThemeId, Resources.Theme theme) {
-    themesById.put(internalThemeId, theme);
+  private Style resolveStyle(int resId) {
+    return resolveStyle(getResName(resId));
   }
 
-  synchronized private Resources.Theme getThemeByInternalId($ptrClass internalThemeId) {
-    return themesById.get(internalThemeId);
-  }
-
-  Style resolveStyle(Style appTheme, int resId) {
-    return resolveStyle(appTheme, getResName(resId));
-  }
-
-  private Style resolveStyle(Style appTheme, @NotNull ResName themeStyleName) {
+  private Style resolveStyle(@NotNull ResName themeStyleName) {
     TypedResource themeStyleResource = resourceLoader.getValue(themeStyleName, RuntimeEnvironment.getQualifiers());
     if (themeStyleResource == null) return null;
     StyleData themeStyleData = (StyleData) themeStyleResource.getData();
-    return new StyleResolver(resourceLoader, themeStyleData, appTheme, themeStyleName, RuntimeEnvironment.getQualifiers());
+    return new StyleResolver(resourceLoader, themeStyleData, themeStyleName, RuntimeEnvironment.getQualifiers());
   }
 
   private TypedResource getAndResolve(int resId, String qualifiers, boolean resolveRefs) {
@@ -396,32 +386,26 @@ public final class ShadowAssetManager {
     Style defStyleFromAttr = null;
     Style defStyleFromRes = null;
     Style styleAttrStyle = null;
-    Style theme = null;
 
     List<ShadowAssetManager.OverlayedStyle> overlayedStyles = getOverlayThemeStyles(themePtr);
-    if (themePtr != 0) {
-      // Load the style for the theme we represent. E.g. "@style/Theme.Robolectric"
-//      theme = resolveStyle(null, themePtr);
+    if (defStyleAttr != 0) {
+      // Load the theme attribute for the default style attributes. E.g., attr/buttonStyle
+      ResName defStyleName = getResName(defStyleAttr);
 
-      if (defStyleAttr != 0) {
-        // Load the theme attribute for the default style attributes. E.g., attr/buttonStyle
-        ResName defStyleName = getResName(defStyleAttr);
-
-        // Load the style for the default style attribute. E.g. "@style/Widget.Robolectric.Button";
-        AttributeResource defStyleAttribute = getOverlayedThemeValue(defStyleName, theme, overlayedStyles);
-        if (defStyleAttribute != null) {
-          while (defStyleAttribute.isStyleReference()) {
-            AttributeResource other = getOverlayedThemeValue(defStyleAttribute.getStyleReference(), theme, overlayedStyles);
-            if (other == null) {
-              throw new RuntimeException("couldn't dereference " + defStyleAttribute);
-            }
-            defStyleAttribute = other;
+      // Load the style for the default style attribute. E.g. "@style/Widget.Robolectric.Button";
+      AttributeResource defStyleAttribute = getOverlayedThemeValue(defStyleName, overlayedStyles);
+      if (defStyleAttribute != null) {
+        while (defStyleAttribute.isStyleReference()) {
+          AttributeResource other = getOverlayedThemeValue(defStyleAttribute.getStyleReference(), overlayedStyles);
+          if (other == null) {
+            throw new RuntimeException("couldn't dereference " + defStyleAttribute);
           }
+          defStyleAttribute = other;
+        }
 
-          if (defStyleAttribute.isResourceReference()) {
-            ResName defStyleResName = defStyleAttribute.getResourceReference();
-            defStyleFromAttr = resolveStyle(theme, defStyleResName);
-          }
+        if (defStyleAttribute.isResourceReference()) {
+          ResName defStyleResName = defStyleAttribute.getResourceReference();
+          defStyleFromAttr = resolveStyle(defStyleResName);
         }
       }
     }
@@ -429,9 +413,9 @@ public final class ShadowAssetManager {
     if (set != null && set.getStyleAttribute() != 0) {
       ResName styleAttributeResName = getResName(set.getStyleAttribute());
       while (styleAttributeResName.type.equals("attr")) {
-        AttributeResource attrValue = getOverlayedThemeValue(styleAttributeResName, theme, overlayedStyles);
+        AttributeResource attrValue = getOverlayedThemeValue(styleAttributeResName, overlayedStyles);
         if (attrValue == null) {
-          throw new NullPointerException("no value for " + styleAttributeResName.getFullyQualifiedName() + " in " + theme);
+          throw new NullPointerException("no value for " + styleAttributeResName.getFullyQualifiedName() + " in theme");
         }
         if (attrValue.isResourceReference()) {
           styleAttributeResName = attrValue.getResourceReference();
@@ -439,29 +423,29 @@ public final class ShadowAssetManager {
           styleAttributeResName = attrValue.getStyleReference();
         }
       }
-      styleAttrStyle = resolveStyle(theme, styleAttributeResName);
+      styleAttrStyle = resolveStyle(styleAttributeResName);
     }
 
     if (defStyleRes != 0) {
       ResName resName = getResName(defStyleRes);
       if (resName.type.equals("attr")) {
-        AttributeResource attributeValue = findAttributeValue(defStyleRes, set, styleAttrStyle, defStyleFromAttr, defStyleFromAttr, theme, overlayedStyles);
+        AttributeResource attributeValue = findAttributeValue(defStyleRes, set, styleAttrStyle, defStyleFromAttr, defStyleFromAttr, overlayedStyles);
         if (attributeValue != null) {
           if (attributeValue.isStyleReference()) {
-            resName = getOverlayedThemeValue(attributeValue.getStyleReference(), theme, overlayedStyles).getResourceReference();
+            resName = getOverlayedThemeValue(attributeValue.getStyleReference(), overlayedStyles).getResourceReference();
           } else if (attributeValue.isResourceReference()) {
             resName = attributeValue.getResourceReference();
           }
         }
       }
-      defStyleFromRes = resolveStyle(theme, resName);
+      defStyleFromRes = resolveStyle(resName);
     }
 
-    AttributeResource attribute = findAttributeValue(resId, set, styleAttrStyle, defStyleFromAttr, defStyleFromRes, theme, overlayedStyles);
+    AttributeResource attribute = findAttributeValue(resId, set, styleAttrStyle, defStyleFromAttr, defStyleFromRes, overlayedStyles);
     while (attribute != null && attribute.isStyleReference()) {
       ResName otherAttrName = attribute.getStyleReference();
 
-      attribute = getOverlayedThemeValue(otherAttrName, theme, overlayedStyles);
+      attribute = getOverlayedThemeValue(otherAttrName, overlayedStyles);
       if (attribute != null) {
         attribute = new AttributeResource(resourceLoader.getResourceIndex().getResName(resId), attribute.value, attribute.contextPackageName);
       }
@@ -515,7 +499,7 @@ public final class ShadowAssetManager {
     return typedArray;
   }
 
-  private AttributeResource findAttributeValue(int resId, AttributeSet attributeSet, Style styleAttrStyle, Style defStyleFromAttr, Style defStyleFromRes, Style theme, List<ShadowAssetManager.OverlayedStyle> overlayedStyles) {
+  private AttributeResource findAttributeValue(int resId, AttributeSet attributeSet, Style styleAttrStyle, Style defStyleFromAttr, Style defStyleFromRes, List<ShadowAssetManager.OverlayedStyle> overlayedStyles) {
     if (attributeSet != null) {
       for (int i = 0; i < attributeSet.getAttributeCount(); i++) {
         if (attributeSet.getAttributeNameResource(i) == resId && attributeSet.getAttributeValue(i) != null) {
@@ -557,15 +541,11 @@ public final class ShadowAssetManager {
     }
 
     // else if attr in theme, use its value
-//    if (theme != null) {
-      return getOverlayedThemeValue(attrName, theme, overlayedStyles);
-//    }
-
-//    return null;
+    return getOverlayedThemeValue(attrName, overlayedStyles);
   }
 
-  private static AttributeResource getOverlayedThemeValue(ResName attrName, Style theme, List<ShadowAssetManager.OverlayedStyle> overlayedStyles) {
-    AttributeResource attribute = theme == null ? null : theme.getAttrValue(attrName);
+  private static AttributeResource getOverlayedThemeValue(ResName attrName, List<ShadowAssetManager.OverlayedStyle> overlayedStyles) {
+    AttributeResource attribute = null;
 
     if (overlayedStyles != null) {
       for (ShadowAssetManager.OverlayedStyle overlayedStyle : overlayedStyles) {

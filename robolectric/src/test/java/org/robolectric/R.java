@@ -269,6 +269,7 @@ public final class R {
     public static final int typeface = 0x10a19;
     public static final int string1 = 0x10a1a;
     public static final int string2 = 0x10a1b;
+    public static final int string3 = 0x10a1c;
   }
 
   public static final class menu {
@@ -362,20 +363,21 @@ public final class R {
   public static final class style {
     public static final int FancyStyle = 0x11000;
     public static final int Theme_Robolectric = 0x11001;
-    public static final int Theme_AnotherTheme = 0x11002;
-    public static final int MyCustomView = 0x11003;
-    public static final int Widget_Robolectric_Button = 0x11004;
-    public static final int Widget_AnotherTheme_Button = 0x11005;
-    public static final int Widget_AnotherTheme_Button_Blarf = 0x11006;
-    public static final int Sized = 0x11007;
-    public static final int Gastropod = 0x11008;
-    public static final int Theme_ThirdTheme = 0x11009;
-    public static final int Theme_MyThemeWithEmptyParent = 0x1100a;
-    public static final int Theme_MyThemeWithNullStringParent = 0x1100b;
-    public static final int MyBlackTheme = 0x1100c;
-    public static final int MyBlueTheme = 0x1100d;
+    public static final int Theme_Robolectric_ImplicitChild = 0x11002;
+    public static final int Theme_Robolectric_EmptyParent = 0x11003;
+    public static final int Theme_Robolectric_NullStringParent = 0x11004;
+    public static final int Theme_AnotherTheme = 0x11005;
+    public static final int MyCustomView = 0x11006;
+    public static final int Widget_Robolectric_Button = 0x11007;
+    public static final int Widget_AnotherTheme_Button = 0x11008;
+    public static final int Widget_AnotherTheme_Button_Blarf = 0x11009;
+    public static final int Sized = 0x1100a;
+    public static final int Gastropod = 0x1100b;
+    public static final int Theme_ThirdTheme = 0x1100c;
+    public static final int MyBlackTheme = 0x1100d;
+    public static final int MyBlueTheme = 0x1100e;
 
-    public static final int IndirectButtonStyle = 0x1100e;
+    public static final int IndirectButtonStyle = 0x1100f;
   }
 
   public static final class fraction {
