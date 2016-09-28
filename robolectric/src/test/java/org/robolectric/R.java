@@ -262,6 +262,14 @@ public final class R {
     public static final int sugaryScale = 0x10a12;
     public static final int selectableItemBackground = 0x10a13;
     public static final int attrFromLib1 = 0x10a14;
+    public static final int buttonStyle = 0x10a15;
+    public static final int logoWidth = 0x10a16;
+    public static final int logoHeigh = 0x10a17;
+    public static final int averageSheepWidth = 0x10a18;
+    public static final int typeface = 0x10a19;
+    public static final int string1 = 0x10a1a;
+    public static final int string2 = 0x10a1b;
+    public static final int string3 = 0x10a1c;
   }
 
   public static final class menu {
@@ -294,6 +302,22 @@ public final class R {
     public static final int CustomView_aspectRatioEnabled = 4;
     public static final int CustomView_quitKeyCombo = 5;
     public static final int CustomView_animalStyle = 6;
+
+    public static final int[] AnotherTheme = {
+        attr.buttonStyle,
+        attr.logoWidth,
+        attr.logoHeigh,
+        attr.averageSheepWidth,
+        attr.animalStyle,
+        attr.typeface,
+    };
+    
+    public static final int AnotherTheme_buttonStyle = 0;
+    public static final int AnotherTheme_logoWidth = 1;
+    public static final int AnotherTheme_logoHeight = 2;
+    public static final int AnotherTheme_averageSheepWidth = 3;
+    public static final int AnotherTheme_animalStyle = 4;
+    public static final int AnotherTheme_typeface = 5;
 
     public static final int[] HeaderBar = {id.textStyle2, id.textStyle3};
     public static final int HeaderBar_textStyle2 = 0;
@@ -339,20 +363,21 @@ public final class R {
   public static final class style {
     public static final int FancyStyle = 0x11000;
     public static final int Theme_Robolectric = 0x11001;
-    public static final int Theme_AnotherTheme = 0x11002;
-    public static final int MyCustomView = 0x11003;
-    public static final int Widget_Robolectric_Button = 0x11004;
-    public static final int Widget_AnotherTheme_Button = 0x11005;
-    public static final int Widget_AnotherTheme_Button_Blarf = 0x11006;
-    public static final int Sized = 0x11007;
-    public static final int Gastropod = 0x11008;
-    public static final int Theme_ThirdTheme = 0x11009;
-    public static final int Theme_MyThemeWithEmptyParent = 0x1100a;
-    public static final int Theme_MyThemeWithNullStringParent = 0x1100b;
-    public static final int MyBlackTheme = 0x1100c;
-    public static final int MyBlueTheme = 0x1100d;
+    public static final int Theme_Robolectric_ImplicitChild = 0x11002;
+    public static final int Theme_Robolectric_EmptyParent = 0x11003;
+    public static final int Theme_Robolectric_NullStringParent = 0x11004;
+    public static final int Theme_AnotherTheme = 0x11005;
+    public static final int MyCustomView = 0x11006;
+    public static final int Widget_Robolectric_Button = 0x11007;
+    public static final int Widget_AnotherTheme_Button = 0x11008;
+    public static final int Widget_AnotherTheme_Button_Blarf = 0x11009;
+    public static final int Sized = 0x1100a;
+    public static final int Gastropod = 0x1100b;
+    public static final int Theme_ThirdTheme = 0x1100c;
+    public static final int MyBlackTheme = 0x1100d;
+    public static final int MyBlueTheme = 0x1100e;
 
-    public static final int IndirectButtonStyle = 0x1100e;
+    public static final int IndirectButtonStyle = 0x1100f;
   }
 
   public static final class fraction {

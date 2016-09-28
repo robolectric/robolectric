@@ -1,27 +1,38 @@
 package org.robolectric.shadows;
 
 import android.app.Activity;
+import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.Button;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
-import org.robolectric.res.ResName;
-import org.robolectric.res.Style;
 import org.robolectric.util.ActivityController;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Robolectric.buildActivity;
-import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowThemeTest {
+
+  private Resources resources;
+
+  @Before
+  public void setUp() throws Exception {
+    resources = RuntimeEnvironment.application.getResources();
+  }
+
+  @Test public void withEmptyTheme_returnsEmptyAttributes() throws Exception {
+    assertThat(resources.newTheme().obtainStyledAttributes(new int[] {R.attr.string1}).hasValue(0)).isFalse();
+  }
+
   @Test public void whenExplicitlySetOnActivity_afterSetContentView_activityGetsThemeFromActivityInManifest() throws Exception {
     TestActivity activity = buildActivity(TestActivityWithAnotherTheme.class).create().get();
     activity.setTheme(R.style.Theme_Robolectric);
@@ -106,40 +117,124 @@ public class ShadowThemeTest {
     assertThat(value1.coerceToString()).isEqualTo(value2.coerceToString());
   }
 
-  @Test public void shouldInheritThemeValuesFromImplicitParents() throws Exception {
-    TestActivity activity = Robolectric.setupActivity(TestActivityWithAnotherTheme.class);
-    Style style = shadowOf(activity.getAssets()).resolveStyle(
-        null,
-        R.style.Widget_AnotherTheme_Button);
-    assertThat(style.getAttrValue(new ResName("android", "attr", "background")).value)
-        .isEqualTo("#ffff0000");
+  @Test public void forStylesWithImplicitParents_shouldInheritValuesNotDefinedInChild() throws Exception {
+    Resources.Theme theme = resources.newTheme();
+    theme.applyStyle(R.style.Theme_Robolectric_ImplicitChild, true);
+    assertThat(theme.obtainStyledAttributes(new int[] {R.attr.string1}).getString(0))
+        .isEqualTo("string 1 from Theme.Robolectric");
+    assertThat(theme.obtainStyledAttributes(new int[] {R.attr.string3}).getString(0))
+        .isEqualTo("string 3 from Theme.Robolectric.ImplicitChild");
   }
 
   @Test public void whenAThemeHasExplicitlyEmptyParentAttr_shouldHaveNoParent() throws Exception {
-    TestActivity activity = Robolectric.setupActivity(TestActivityWithAnotherTheme.class);
-    Style style = shadowOf(activity.getAssets()).resolveStyle(
-        null,
-        R.style.Theme_MyThemeWithEmptyParent);
-    assertThat(style.getAttrValue(new ResName("android", "attr", "background"))).isNull();
+    Resources.Theme theme = resources.newTheme();
+    theme.applyStyle(R.style.Theme_Robolectric_EmptyParent, true);
+    assertThat(theme.obtainStyledAttributes(new int[] {R.attr.string1}).hasValue(0)).isFalse();
   }
 
   @Test public void whenAThemeHasNullStringParentAttr_shouldHaveNoParent() throws Exception {
-    TestActivity activity = Robolectric.setupActivity(TestActivityWithAnotherTheme.class);
-    Style style = shadowOf(activity.getAssets()).resolveStyle(
-        null,
-        R.style.Theme_MyThemeWithNullStringParent);
-    assertThat(style.getAttrValue(new ResName("android", "attr", "background"))).isNull();
+    Resources.Theme theme = resources.newTheme();
+    theme.applyStyle(R.style.Theme_Robolectric_NullStringParent, true);
+    assertThat(theme.obtainStyledAttributes(new int[] {R.attr.string1}).hasValue(0)).isFalse();
   }
 
   @Test public void shouldApplyParentStylesFromAttrs() throws Exception {
-    TestActivity activity = Robolectric.setupActivity(TestActivityWithAnotherTheme.class);
-    ShadowAssetManager shadowAssetManager = shadowOf(activity.getAssets());
-    Style theme = shadowAssetManager.resolveStyle(null,
-        R.style.Theme_AnotherTheme);
-    Style style = shadowAssetManager.resolveStyle(theme,
-        R.style.IndirectButtonStyle);
-    assertThat(style.getAttrValue(new ResName("android", "attr", "background")).value)
-        .isEqualTo("#ffff0000");
+    Resources.Theme theme = resources.newTheme();
+    theme.applyStyle(R.style.Theme_AnotherTheme, true);
+    assertThat(theme.obtainStyledAttributes(new int[] {R.attr.string1}).getString(0))
+        .isEqualTo("string 1 from Theme.AnotherTheme");
+    assertThat(theme.obtainStyledAttributes(new int[] {R.attr.string3}).getString(0))
+        .isEqualTo("string 3 from Theme.Robolectric");
+  }
+
+  @Test
+  public void setTo_shouldCopyAllAttributesToEmptyTheme() throws Exception {
+    Resources.Theme theme1 = resources.newTheme();
+    theme1.applyStyle(R.style.Theme_Robolectric, false);
+    assertThat(theme1.obtainStyledAttributes(new int[]{R.attr.string1}).getString(0))
+        .isEqualTo("string 1 from Theme.Robolectric");
+
+    Resources.Theme theme2 = resources.newTheme();
+    theme2.setTo(theme1);
+
+    assertThat(theme2.obtainStyledAttributes(new int[]{R.attr.string1}).getString(0))
+        .isEqualTo("string 1 from Theme.Robolectric");
+  }
+
+  @Test
+  public void setTo_whenDestThemeIsModified_sourceThemeShouldNotMutate() throws Exception {
+    Resources.Theme sourceTheme = resources.newTheme();
+    sourceTheme.applyStyle(R.style.Theme_Robolectric, false);
+    assertThat(sourceTheme.obtainStyledAttributes(new int[]{R.attr.string1}).getString(0))
+        .isEqualTo("string 1 from Theme.Robolectric");
+
+    Resources.Theme destTheme = resources.newTheme();
+    destTheme.setTo(sourceTheme);
+    destTheme.applyStyle(R.style.Theme_AnotherTheme, true);
+
+    assertThat(sourceTheme.obtainStyledAttributes(new int[]{R.attr.string1}).getString(0))
+        .isEqualTo("string 1 from Theme.Robolectric");
+  }
+
+  @Test
+  public void setTo_whenSourceThemeIsModified_destThemeShouldNotMutate() throws Exception {
+    Resources.Theme sourceTheme = resources.newTheme();
+    sourceTheme.applyStyle(R.style.Theme_Robolectric, false);
+    assertThat(sourceTheme.obtainStyledAttributes(new int[]{R.attr.string1}).getString(0))
+        .isEqualTo("string 1 from Theme.Robolectric");
+
+    Resources.Theme destTheme = resources.newTheme();
+    destTheme.setTo(sourceTheme);
+    sourceTheme.applyStyle(R.style.Theme_AnotherTheme, true);
+
+    assertThat(destTheme.obtainStyledAttributes(new int[]{R.attr.string1}).getString(0))
+        .isEqualTo("string 1 from Theme.Robolectric");
+  }
+
+  @Test
+  public void applyStyle_withForceFalse_shouldApplyButNotOverwriteExistingAttributeValues() throws Exception {
+    Resources.Theme theme = resources.newTheme();
+    theme.applyStyle(R.style.Theme_Robolectric, false);
+    assertThat(theme.obtainStyledAttributes(new int[]{R.attr.string1}).getString(0))
+        .isEqualTo("string 1 from Theme.Robolectric");
+
+    theme.applyStyle(R.style.Theme_AnotherTheme, false);
+    assertThat(theme.obtainStyledAttributes(new int[]{R.attr.string1}).getString(0))
+        .isEqualTo("string 1 from Theme.Robolectric");
+    assertThat(theme.obtainStyledAttributes(new int[]{R.attr.string2}).getString(0))
+        .isEqualTo("string 2 from Theme.AnotherTheme");
+  }
+
+  @Test
+  public void applyStyle_withForceTrue_shouldApplyAndOverwriteExistingAttributeValues() throws Exception {
+    Resources.Theme theme = resources.newTheme();
+    theme.applyStyle(R.style.Theme_Robolectric, false);
+    assertThat(theme.obtainStyledAttributes(new int[]{R.attr.string1}).getString(0))
+        .isEqualTo("string 1 from Theme.Robolectric");
+
+    theme.applyStyle(R.style.Theme_AnotherTheme, true);
+    assertThat(theme.obtainStyledAttributes(new int[]{R.attr.string1}).getString(0))
+        .isEqualTo("string 1 from Theme.AnotherTheme");
+
+    // force apply the original theme; values should be overwritten
+    theme.applyStyle(R.style.Theme_Robolectric, true);
+    assertThat(theme.obtainStyledAttributes(new int[]{R.attr.string1}).getString(0))
+        .isEqualTo("string 1 from Theme.Robolectric");
+  }
+
+  @Test
+  public void shouldFindInherritedAndroidAttributeInTheme() throws Exception {
+    RuntimeEnvironment.application.setTheme(R.style.Theme_AnotherTheme);
+    Resources.Theme theme1 = RuntimeEnvironment.application.getTheme();
+
+//    Resources.Theme theme1 = resources.newTheme();
+//    theme1.setTo(RuntimeEnvironment.application.getTheme());
+//    theme1.applyStyle(R.style.Theme_AnotherTheme, false);
+
+    TypedArray typedArray = theme1.obtainStyledAttributes(
+        new int[]{R.attr.typeface, android.R.attr.buttonStyle});
+    assertThat(typedArray.hasValue(0)).isTrue(); // animalStyle
+    assertThat(typedArray.hasValue(1)).isTrue(); // layout_height
   }
 
   public static class TestActivity extends Activity {

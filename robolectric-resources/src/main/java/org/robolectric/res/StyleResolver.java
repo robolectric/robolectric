@@ -8,14 +8,12 @@ import java.util.List;
 public class StyleResolver implements Style {
   private final ResourceLoader resourceLoader;
   private final List<StyleData> styles = new ArrayList<>();
-  private final Style theme;
   private final ResName myResName;
   private final String qualifiers;
 
   public StyleResolver(ResourceLoader resourceLoader, StyleData styleData,
-                       Style theme, ResName myResName, String qualifiers) {
+                       ResName myResName, String qualifiers) {
     this.resourceLoader = resourceLoader;
-    this.theme = theme;
     this.myResName = myResName;
     this.qualifiers = qualifiers;
     styles.add(styleData);
@@ -38,10 +36,6 @@ public class StyleResolver implements Style {
     for (int i = initialSize; i < styles.size(); i++) {
       StyleData style = styles.get(i);
       AttributeResource value = style.getAttrValue(resName);
-      if (value != null) return value;
-    }
-    if (theme != null) {
-      AttributeResource value = theme.getAttrValue(resName);
       if (value != null) return value;
     }
 
@@ -88,8 +82,7 @@ public class StyleResolver implements Style {
     if (typedResource == null) {
       StringBuilder builder = new StringBuilder("Could not find any resource ")
           .append(" from reference ").append(styleRef)
-          .append(" from style ").append(style)
-          .append(" with theme ").append(theme);
+          .append(" from style ").append(style);
       throw new RuntimeException(builder.toString());
     }
 
@@ -100,8 +93,7 @@ public class StyleResolver implements Style {
       StringBuilder builder = new StringBuilder(styleRef.toString())
           .append(" does not resolve to a Style.")
           .append(" got ").append(data).append(" instead. ")
-          .append(" from style ").append(style)
-          .append(" with theme ").append(theme);
+          .append(" from style ").append(style);
       throw new RuntimeException(builder.toString());
     }
   }
@@ -117,13 +109,6 @@ public class StyleResolver implements Style {
           styleRef = dereferenceAttr(value);
           dereferencing = true;
           break;
-        }
-      }
-      if (!dereferencing && theme != null) {
-        AttributeResource value = theme.getAttrValue(styleRef);
-        if (value != null) {
-          styleRef = dereferenceAttr(value);
-          dereferencing = true;
         }
       }
     }
@@ -147,16 +132,13 @@ public class StyleResolver implements Style {
     }
     StyleResolver other = (StyleResolver) obj;
 
-    return ((theme == null && other.theme == null) || (theme != null && theme.equals(other.theme)))
-        && ((myResName == null && other.myResName == null)
-        || (myResName != null && myResName.equals(other.myResName)))
+    return (myResName == null && other.myResName == null || myResName != null && myResName.equals(other.myResName))
         && Strings.equals(qualifiers, other.qualifiers);
   }
 
   @Override
   public int hashCode() {
     int hashCode = 0;
-    hashCode = 31 * hashCode + (theme != null ? theme.hashCode() : 0);
     hashCode = 31 * hashCode + (myResName != null ? myResName.hashCode() : 0);
     hashCode = 31 * hashCode + Strings.nullToEmpty(qualifiers).hashCode();
     return hashCode;

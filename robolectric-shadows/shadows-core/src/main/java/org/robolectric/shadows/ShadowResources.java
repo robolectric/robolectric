@@ -170,27 +170,6 @@ public class ShadowResources {
   @Implements(Resources.Theme.class)
   public static class ShadowTheme {
     @RealObject Resources.Theme realTheme;
-    protected Resources resources;
-    private int styleResourceId;
-
-    @Implementation
-    public void applyStyle(int resid, boolean force) {
-      if (styleResourceId == 0) {
-        this.styleResourceId = resid;
-      }
-
-      ShadowAssetManager.applyThemeStyle(styleResourceId, resid, force);
-    }
-
-    @Implementation
-    public void setTo(Resources.Theme other) {
-      this.styleResourceId = shadowOf(other).styleResourceId;
-    }
-
-    public int getStyleResourceId() {
-      return styleResourceId;
-    }
-
     @Implementation
     public TypedArray obtainStyledAttributes(int[] attrs) {
       return obtainStyledAttributes(0, attrs);
@@ -203,21 +182,12 @@ public class ShadowResources {
 
     @Implementation
     public TypedArray obtainStyledAttributes(AttributeSet set, int[] attrs, int defStyleAttr, int defStyleRes) {
-      return shadowOf(getResources().getAssets()).attrsToTypedArray(getResources(), set, attrs, defStyleAttr, styleResourceId, defStyleRes);
+      return shadowOf(getResources().getAssets()).attrsToTypedArray(getResources(), set, attrs, defStyleAttr, realTheme, defStyleRes);
     }
 
-    @Implementation
-    public Resources getResources() {
+    private Resources getResources() {
       return ReflectionHelpers.getField(realTheme, "this$0");
     }
-  }
-
-  @Implementation
-  public final Resources.Theme newTheme() {
-    Resources.Theme theme = directlyOn(realResources, Resources.class).newTheme();
-    int themeId = Integer.valueOf(ReflectionHelpers.getField(theme, "mTheme").toString()); // TODO: in Lollipop, these can be longs, which will overflow int
-    shadowOf(realResources.getAssets()).setTheme(themeId, theme);
-    return theme;
   }
 
   @HiddenApi @Implementation
