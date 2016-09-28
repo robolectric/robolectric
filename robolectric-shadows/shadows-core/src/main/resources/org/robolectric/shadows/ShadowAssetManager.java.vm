@@ -141,7 +141,6 @@ public final class ShadowAssetManager {
     ResName resName = resourceIndex.getResName(ident);
 
     ThemeStyleSet themeStyleSet = getThemeStyleSet(themePtr);
-    System.out.println("get theme " + themePtr + " -> " + themeStyleSet);
     AttributeResource attrValue = themeStyleSet.getAttrValue(resName);
     while(resolveRefs && attrValue != null && attrValue.isStyleReference()) {
       ResName attrResName = new ResName(attrValue.contextPackageName, "attr", attrValue.value.substring(1));
