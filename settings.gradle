@@ -1,3 +1,5 @@
+rootProject.name = 'parent'
+
 include ":robolectric"
 include ":robolectric-utils"
 include ":robolectric-processor"
