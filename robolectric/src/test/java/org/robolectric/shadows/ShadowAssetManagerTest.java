@@ -158,4 +158,11 @@ public class ShadowAssetManagerTest {
     Resources resources = RuntimeEnvironment.application.getResources();
     resources.obtainAttributes(mockAttributeSet, new int[]{android.R.attr.windowBackground});
   }
+
+  @Test
+  public void forUntouchedThemes_copyTheme_shouldCopyNothing() throws Exception {
+    Resources.Theme theme1 = RuntimeEnvironment.application.getResources().newTheme();
+    Resources.Theme theme2 = RuntimeEnvironment.application.getResources().newTheme();
+    theme2.setTo(theme1);
+  }
 }

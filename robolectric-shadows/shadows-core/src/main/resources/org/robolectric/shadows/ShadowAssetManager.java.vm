@@ -36,6 +36,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -54,7 +55,8 @@ public final class ShadowAssetManager {
   public static final int STYLE_CHANGING_CONFIGURATIONS = 4;
   public static final int STYLE_DENSITY = 5;
 
-  private Map<$ptrClassBoxed, ThemeStyleSet> themes = new HashMap<>();
+  private Map<Number, ThemeStyleSet> themes =
+      Collections.synchronizedMap(new HashMap<Number, ThemeStyleSet>());
   private $ptrClass nextInternalThemeId = 1000;
   private ResourceLoader resourceLoader;
 
@@ -138,7 +140,8 @@ public final class ShadowAssetManager {
     ResourceIndex resourceIndex = resourceLoader.getResourceIndex();
     ResName resName = resourceIndex.getResName(ident);
 
-    ThemeStyleSet themeStyleSet = themes.get(themePtr);
+    ThemeStyleSet themeStyleSet = getThemeStyleSet(themePtr);
+    System.out.println("get theme " + themePtr + " -> " + themeStyleSet);
     AttributeResource attrValue = themeStyleSet.getAttrValue(resName);
     while(resolveRefs && attrValue != null && attrValue.isStyleReference()) {
       ResName attrResName = new ResName(attrValue.contextPackageName, "attr", attrValue.value.substring(1));
@@ -262,7 +265,7 @@ public final class ShadowAssetManager {
   }
 
   @HiddenApi @Implementation
-  synchronized public void releaseTheme($ptrClass themePtr) {
+  public void releaseTheme($ptrClass themePtr) {
     themes.remove(themePtr);
   }
 
@@ -270,24 +273,23 @@ public final class ShadowAssetManager {
   public static void applyThemeStyle($ptrClass themePtr, int styleRes, boolean force) {
     ShadowAssetManager assetManager = shadowOf(RuntimeEnvironment.application.getAssets());
 
-    final Map<$ptrClassBoxed, ThemeStyleSet> themes = assetManager.themes;
+    final Map<Number, ThemeStyleSet> themes = assetManager.themes;
 
-    if (!themes.containsKey(themePtr)) {
-      themes.put(themePtr, new ThemeStyleSet());
+    ThemeStyleSet themeStyleSet = themes.get(themePtr);
+    if (themeStyleSet == null) {
+      themeStyleSet = new ThemeStyleSet();
+      themes.put(themePtr, themeStyleSet);
     }
 
     Style style = assetManager.resolveStyle(styleRes, null);
-
-    ThemeStyleSet themeStyleSet = themes.get(themePtr);
 
     themeStyleSet.apply(style, force);
   }
 
   @HiddenApi @Implementation
-  public static void copyTheme($ptrClass dest, $ptrClass source) {
+  public static void copyTheme($ptrClass destPtr, $ptrClass sourcePtr) {
     ShadowAssetManager assetManager = shadowOf(RuntimeEnvironment.application.getAssets());
-    final Map<$ptrClassBoxed, ThemeStyleSet> themes = assetManager.themes;
-    themes.put(dest, themes.get(source).copy());
+    assetManager.themes.put(destPtr, assetManager.getThemeStyleSet(sourcePtr).copy());
   }
 
   /////////////////////////
@@ -344,7 +346,7 @@ public final class ShadowAssetManager {
     Style defStyleFromRes = null;
     Style styleAttrStyle = null;
 
-    ThemeStyleSet themeStyleSet = themes.get(themePtr);
+    ThemeStyleSet themeStyleSet = getThemeStyleSet(themePtr);
     if (themeStyleSet == null) {
       themeStyleSet = new ThemeStyleSet();
     }
@@ -412,6 +414,11 @@ public final class ShadowAssetManager {
     }
 
     return attribute;
+  }
+
+  private ThemeStyleSet getThemeStyleSet($ptrClass themePtr) {
+    ThemeStyleSet themeStyleSet = themes.get(themePtr);
+    return themeStyleSet == null ? new ThemeStyleSet() : themeStyleSet;
   }
 
   TypedArray attrsToTypedArray(Resources resources, AttributeSet set, int[] attrs, int defStyleAttr, Resources.Theme theme, int defStyleRes) {
