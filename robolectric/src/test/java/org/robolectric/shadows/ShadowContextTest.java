@@ -256,4 +256,17 @@ public class ShadowContextTest {
     assertThat(typedArray.getString(0)).isEqualTo("^q");
     assertThat(typedArray.getInt(1, -1234)).isEqualTo(1 /* ungulate */);
   }
+
+  @Test
+  public void whenStyleParentIsReference_obtainStyledAttributes_shouldResolveParent() throws Exception {
+    RuntimeEnvironment.application.setTheme(R.style.Theme_ThemeReferredToByParentAttrReference);
+
+    AttributeSet roboAttributeSet = Robolectric.buildAttributeSet()
+        .setStyleAttribute("@style/Theme.ThemeWithAttrReferenceAsParent")
+        .build();
+
+    TypedArray a = context.obtainStyledAttributes(roboAttributeSet, new int[] { R.attr.string1, R.attr.string2 });
+    assertThat(a.getString(0)).isEqualTo("string 1 from Theme.ThemeWithAttrReferenceAsParent");
+    assertThat(a.getString(1)).isEqualTo("string 2 from StyleReferredToByParentAttrReference");
+  }
 }

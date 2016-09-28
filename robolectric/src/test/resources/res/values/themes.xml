@@ -33,6 +33,18 @@
     <item name="someLayoutTwo">?someLayoutOne</item>
   </style>
 
+  <style name="Theme.ThemeReferredToByParentAttrReference">
+    <item name="parentStyleReference">@style/StyleReferredToByParentAttrReference</item>
+  </style>
+
+  <style name="StyleReferredToByParentAttrReference">
+    <item name="string2">string 2 from StyleReferredToByParentAttrReference</item>
+  </style>
+
+  <style name="Theme.ThemeWithAttrReferenceAsParent" parent="@attr/parentStyleReference">
+    <item name="string1">string 1 from Theme.ThemeWithAttrReferenceAsParent</item>
+  </style>
+
   <style name="Widget.Robolectric.Button" parent="@android:style/Widget.Button">
     <item name="android:background">#ff00ff00</item>
   </style>

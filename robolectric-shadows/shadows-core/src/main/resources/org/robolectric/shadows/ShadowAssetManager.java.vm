@@ -276,7 +276,7 @@ public final class ShadowAssetManager {
       themes.put(themePtr, new ThemeStyleSet());
     }
 
-    Style style = assetManager.resolveStyle(styleRes);
+    Style style = assetManager.resolveStyle(styleRes, null);
 
     ThemeStyleSet themeStyleSet = themes.get(themePtr);
 
@@ -292,15 +292,18 @@ public final class ShadowAssetManager {
 
   /////////////////////////
 
-  private Style resolveStyle(int resId) {
-    return resolveStyle(getResName(resId));
+  private Style resolveStyle(int resId, Style themeStyleSet) {
+    return resolveStyle(getResName(resId), themeStyleSet);
   }
 
-  private Style resolveStyle(@NotNull ResName themeStyleName) {
+  private Style resolveStyle(@NotNull ResName themeStyleName, Style themeStyleSet) {
     TypedResource themeStyleResource = resourceLoader.getValue(themeStyleName, RuntimeEnvironment.getQualifiers());
     if (themeStyleResource == null) return null;
     StyleData themeStyleData = (StyleData) themeStyleResource.getData();
-    return new StyleResolver(resourceLoader, themeStyleData, themeStyleName, RuntimeEnvironment.getQualifiers());
+    if (themeStyleSet == null) {
+      themeStyleSet = new ThemeStyleSet();
+    }
+    return new StyleResolver(resourceLoader, themeStyleData, themeStyleSet, themeStyleName, RuntimeEnvironment.getQualifiers());
   }
 
   private TypedResource getAndResolve(int resId, String qualifiers, boolean resolveRefs) {
@@ -362,7 +365,7 @@ public final class ShadowAssetManager {
 
         if (defStyleAttribute.isResourceReference()) {
           ResName defStyleResName = defStyleAttribute.getResourceReference();
-          defStyleFromAttr = resolveStyle(defStyleResName);
+          defStyleFromAttr = resolveStyle(defStyleResName, themeStyleSet);
         }
       }
     }
@@ -380,7 +383,7 @@ public final class ShadowAssetManager {
           styleAttributeResName = attrValue.getStyleReference();
         }
       }
-      styleAttrStyle = resolveStyle(styleAttributeResName);
+      styleAttrStyle = resolveStyle(styleAttributeResName, themeStyleSet);
     }
 
     if (defStyleRes != 0) {
@@ -395,7 +398,7 @@ public final class ShadowAssetManager {
           }
         }
       }
-      defStyleFromRes = resolveStyle(resName);
+      defStyleFromRes = resolveStyle(resName, themeStyleSet);
     }
 
     AttributeResource attribute = findAttributeValue(resId, set, styleAttrStyle, defStyleFromAttr, defStyleFromRes, themeStyleSet);

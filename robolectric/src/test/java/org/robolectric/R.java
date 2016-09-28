@@ -270,6 +270,7 @@ public final class R {
     public static final int string1 = 0x10a1a;
     public static final int string2 = 0x10a1b;
     public static final int string3 = 0x10a1c;
+    public static final int parentStyleReference = 0x10a1d;
   }
 
   public static final class menu {
@@ -374,10 +375,13 @@ public final class R {
     public static final int Sized = 0x1100a;
     public static final int Gastropod = 0x1100b;
     public static final int Theme_ThirdTheme = 0x1100c;
-    public static final int MyBlackTheme = 0x1100d;
-    public static final int MyBlueTheme = 0x1100e;
+    public static final int Theme_ThemeReferredToByParentAttrReference = 0x1100d;
+    public static final int StyleReferredToByParentAttrReference = 0x1100e;
+    public static final int Theme_ThemeWithAttrReferenceAsParent = 0x1100f;
+    public static final int MyBlackTheme = 0x11010;
+    public static final int MyBlueTheme = 0x11011;
 
-    public static final int IndirectButtonStyle = 0x1100f;
+    public static final int IndirectButtonStyle = 0x11012;
   }
 
   public static final class fraction {
