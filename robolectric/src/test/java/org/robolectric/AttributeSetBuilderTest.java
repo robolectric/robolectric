@@ -242,13 +242,21 @@ public class AttributeSetBuilderTest {
   }
 
   @Test
-  public void getStyleAttribute_throwException_whenStyleIsBogus() throws Exception {
-    thrown.expect(Resources.NotFoundException.class);
+  public void getStyleAttribute_whenStyleIsBogus() throws Exception {
     AttributeSet roboAttributeSet = Robolectric.buildAttributeSet()
-        .setStyleAttribute("@style/bogus_style")
+        .setStyleAttribute("@style/non_existent_style")
         .build();
 
-    assertThat(roboAttributeSet.getStyleAttribute()).isEqualTo(0);
+    assertThat(roboAttributeSet.getStyleAttribute()).isNotEqualTo(0);
+  }
+
+  @Test
+  public void getStyleAttribute_allowStyleAttrReference() throws Exception {
+    AttributeSet roboAttributeSet = Robolectric.buildAttributeSet()
+        .setStyleAttribute("?attr/parentStyleReference")
+        .build();
+
+    assertThat(roboAttributeSet.getStyleAttribute()).isEqualTo(R.attr.parentStyleReference);
   }
 
   @Test

@@ -10,6 +10,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
@@ -29,6 +30,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.TestUtil.joinPath;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
@@ -37,11 +39,13 @@ public class ShadowAssetManagerTest {
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
 
-  AssetManager assetManager;
+  private AssetManager assetManager;
+  private Resources resources;
 
   @Before
   public void setUp() throws Exception {
     assetManager = Robolectric.buildActivity(Activity.class).create().get().getAssets();
+    resources = RuntimeEnvironment.application.getResources();
   }
 
   @Test
@@ -51,7 +55,7 @@ public class ShadowAssetManagerTest {
     assetManager = RuntimeEnvironment.application.getAssets();
     assertNotNull(assetManager);
 
-    assetManager = RuntimeEnvironment.application.getResources().getAssets();
+    assetManager = resources.getAssets();
     assertNotNull(assetManager);
   }
 
@@ -155,14 +159,28 @@ public class ShadowAssetManagerTest {
     when(mockAttributeSet.getAttributeNameResource(0)).thenReturn(android.R.attr.windowBackground);
     when(mockAttributeSet.getAttributeValue(0)).thenReturn("value");
 
-    Resources resources = RuntimeEnvironment.application.getResources();
     resources.obtainAttributes(mockAttributeSet, new int[]{android.R.attr.windowBackground});
   }
 
   @Test
   public void forUntouchedThemes_copyTheme_shouldCopyNothing() throws Exception {
-    Resources.Theme theme1 = RuntimeEnvironment.application.getResources().newTheme();
-    Resources.Theme theme2 = RuntimeEnvironment.application.getResources().newTheme();
+    Resources.Theme theme1 = resources.newTheme();
+    Resources.Theme theme2 = resources.newTheme();
     theme2.setTo(theme1);
+  }
+
+  @Test
+  public void whenStyleAttrResolutionFails_attrsToTypedArray_returnsNiceErrorMessage() throws Exception {
+    expectedException.expect(RuntimeException.class);
+    expectedException.expectMessage(
+        "no value for org.robolectric:attr/styleNotSpecifiedInAnyTheme " +
+            "in theme with applied styles: [Style org.robolectric:Theme_Robolectric (and parents)]");
+
+    Resources.Theme theme = resources.newTheme();
+    theme.applyStyle(R.style.Theme_Robolectric, false);
+
+    shadowOf(assetManager).attrsToTypedArray(resources,
+        Robolectric.buildAttributeSet().setStyleAttribute("?attr/styleNotSpecifiedInAnyTheme").build(),
+        new int[]{R.attr.string1}, 0, theme, 0);
   }
 }

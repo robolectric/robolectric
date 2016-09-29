@@ -376,7 +376,9 @@ public final class ShadowAssetManager {
       while (styleAttributeResName.type.equals("attr")) {
         AttributeResource attrValue = themeStyleSet.getAttrValue(styleAttributeResName);
         if (attrValue == null) {
-          throw new NullPointerException("no value for " + styleAttributeResName.getFullyQualifiedName() + " in theme");
+          throw new RuntimeException(
+                  "no value for " + styleAttributeResName.getFullyQualifiedName()
+                      + " in " + themeStyleSet);
         }
         if (attrValue.isResourceReference()) {
           styleAttributeResName = attrValue.getResourceReference();

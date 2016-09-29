@@ -51,6 +51,7 @@
   <attr name="string2" format="string"/>
   <attr name="string3" format="string"/>
   <attr name="parentStyleReference" format="reference"/>
+  <attr name="styleNotSpecifiedInAnyTheme" format="reference"/>
 
   <declare-styleable name="CustomStateView">
     <attr name="stateFoo" format="boolean" />

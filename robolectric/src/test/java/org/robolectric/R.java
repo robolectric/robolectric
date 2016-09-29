@@ -271,6 +271,7 @@ public final class R {
     public static final int string2 = 0x10a1b;
     public static final int string3 = 0x10a1c;
     public static final int parentStyleReference = 0x10a1d;
+    public static final int styleNotSpecifiedInAnyTheme = 0x10a1e;
   }
 
   public static final class menu {

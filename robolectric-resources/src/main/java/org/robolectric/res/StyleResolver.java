@@ -90,8 +90,8 @@ public class StyleResolver implements Style {
     if (typedResource == null) {
       StringBuilder builder = new StringBuilder("Could not find any resource ")
           .append(" from reference ").append(styleRef)
-          .append(" from style ").append(style)
-          .append(" with theme ").append(theme);
+          .append(" from ").append(style)
+          .append(" with ").append(theme);
       throw new RuntimeException(builder.toString());
     }
 
@@ -102,8 +102,8 @@ public class StyleResolver implements Style {
       StringBuilder builder = new StringBuilder(styleRef.toString())
           .append(" does not resolve to a Style.")
           .append(" got ").append(data).append(" instead. ")
-          .append(" from style ").append(style)
-          .append(" with theme ").append(theme);
+          .append(" from ").append(style)
+          .append(" with ").append(theme);
       throw new RuntimeException(builder.toString());
     }
   }
@@ -166,10 +166,7 @@ public class StyleResolver implements Style {
 
   @Override
   public String toString() {
-    return "StyleResolver{"
-        + "name=" + myResName
-        + ", of=" + styles.get(0)
-        + "}";
+    return styles.get(0) + " (and parents)";
   }
 
 }
