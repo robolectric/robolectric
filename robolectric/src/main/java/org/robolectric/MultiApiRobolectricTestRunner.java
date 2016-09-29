@@ -38,7 +38,9 @@ public class MultiApiRobolectricTestRunner extends Suite {
 
     @Override
     protected String testName(final FrameworkMethod method) {
-      return method.getName() + getName();
+      // IDE focused test runs rely on preservation of the test name; we'll use the
+      //   latest supported SDK for focused test runs
+      return method.getName() + (apiVersion == SdkConfig.MAX_SDK_VERSION ? "" : getName());
     }
 
     @Override
