@@ -398,7 +398,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     synchronized (sdkEnvironment) {
       classHandler = sdkEnvironment.classHandlersByShadowMap.get(shadowMap);
       if (classHandler == null) {
-        classHandler = new ShadowWrangler(shadowMap);
+        classHandler = new ShadowWrangler(shadowMap, sdkEnvironment.getSdkConfig().getApiLevel());
       }
     }
     return classHandler;

@@ -4,6 +4,8 @@ import android.content.Context;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
+
+import android.os.Build;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
@@ -39,10 +41,11 @@ public class ShadowWrangler implements ClassHandler {
   public static final MethodHandle DO_NOTHING = constant(Void.class, null).asType(methodType(void.class));
   private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
   private static final boolean STRIP_SHADOW_STACK_TRACES = true;
-  private static final ShadowConfig NO_SHADOW_CONFIG = new ShadowConfig(Object.class.getName(), true, false, false);
+  private static final ShadowConfig NO_SHADOW_CONFIG = new ShadowConfig(Object.class.getName(), true, false, false, -1, -1);
   private static final Object NO_SHADOW = new Object();
   private static final MethodHandle NO_SHADOW_HANDLE = constant(Object.class, NO_SHADOW);
   private final ShadowMap shadowMap;
+  private int apiLevel;
   private final Map<Class, MetaShadow> metaShadowMap = new HashMap<>();
   private final Map<String, Plan> planCache =
       Collections.synchronizedMap(new LinkedHashMap<String, Plan>() {
@@ -69,8 +72,9 @@ public class ShadowWrangler implements ClassHandler {
     PRIMITIVE_RETURN_VALUES.put("byte", (byte) 0);
   }
 
-  public ShadowWrangler(ShadowMap shadowMap) {
+  public ShadowWrangler(ShadowMap shadowMap, int apiLevel) {
     this.shadowMap = shadowMap;
+    this.apiLevel = apiLevel;
   }
 
   public static Class<?> loadClass(String paramType, ClassLoader classLoader) {
@@ -173,7 +177,7 @@ public class ShadowWrangler implements ClassHandler {
     final InvocationProfile invocationProfile = new InvocationProfile(signature, isStatic, theClass.getClassLoader());
     ShadowConfig shadowConfig = getShadowConfig(theClass);
 
-    if (shadowConfig == null) {
+    if (shadowConfig == null || !shadowConfig.supportsSdk(apiLevel)) {
       return CALL_REAL_CODE_PLAN;
     } else {
       try {
@@ -207,6 +211,14 @@ public class ShadowWrangler implements ClassHandler {
     try {
       Class<?> shadowClass = Class.forName(config.shadowClassName, false, classLoader);
       Method method = getMethod(shadowClass, name, types);
+      if (method == null) {
+        String methodPrefix = name + "$$";
+        for (Method candidateMethod : shadowClass.getMethods()) {
+          if (candidateMethod.getName().startsWith(methodPrefix)) {
+
+          }
+        }
+      }
       if (method == null && config.looseSignatures) {
         Class<?>[] genericTypes = MethodType.genericMethodType(types.length).parameterArray();
         method = getMethod(shadowClass, name, genericTypes);
@@ -468,7 +480,7 @@ public class ShadowWrangler implements ClassHandler {
       shadowConfig = getShadowConfig(clazz);
       clazz = clazz.getSuperclass();
     }
-    return shadowConfig == null ? null : shadowConfig.shadowClassName;
+    return shadowConfig == null || !shadowConfig.supportsSdk(apiLevel) ? null : shadowConfig.shadowClassName;
   }
 
   private void injectRealObjectOn(Object shadow, Class<?> shadowClass, Object instance) {
@@ -491,7 +503,7 @@ public class ShadowWrangler implements ClassHandler {
 
   private Class<?> findDirectShadowClass(Class<?> originalClass) {
     ShadowConfig shadowConfig = getShadowConfig(originalClass);
-    if (shadowConfig == null) {
+    if (shadowConfig == null || !shadowConfig.supportsSdk(apiLevel)) {
       return null;
     }
     return loadClass(shadowConfig.shadowClassName, originalClass.getClassLoader());

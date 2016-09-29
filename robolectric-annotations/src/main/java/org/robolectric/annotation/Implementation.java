@@ -14,4 +14,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD})
 public @interface Implementation {
+  int minSdk() default -1;
+
+  int maxSdk() default -1;
 }

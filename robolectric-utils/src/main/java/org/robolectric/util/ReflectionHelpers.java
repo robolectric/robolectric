@@ -2,14 +2,25 @@ package org.robolectric.util;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Proxy;
 
 /**
  * Collection of helper methods for calling methods and accessing fields reflectively.
  */
 public class ReflectionHelpers {
+  public static <T> T createNullProxy(Class<T> clazz) {
+    return (T) Proxy.newProxyInstance(clazz.getClassLoader(),
+        new Class[]{clazz}, new InvocationHandler() {
+          @Override
+          public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            return null;
+          }
+        });
+  }
 
   /**
    * Reflectively get the value of a field.

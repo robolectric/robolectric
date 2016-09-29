@@ -60,4 +60,8 @@ public @interface Implements {
    * @return True to disable strict signature matching.
    */
   boolean looseSignatures() default false;
+
+  int minSdk() default -1;
+
+  int maxSdk() default -1;
 }

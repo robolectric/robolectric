@@ -29,7 +29,8 @@ public class ImplementsValidator extends Validator {
     TypeElement type = elements.getTypeElement(className.replace('$', '.'));
     
     if (type == null) {
-      error("@Implements: could not resolve class <" + className + '>', cv);
+      message(Kind.WARNING, "@Implements: could not resolve class <" + className + '>', cv);
+//      error("@Implements: could not resolve class <" + className + '>', cv);
       return null;
     }
     return type;

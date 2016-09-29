@@ -8,14 +8,11 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-
-import com.android.internal.R;
-
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
-import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadows.ResourceHelper.getInternalResourceId;
 
 /**
  * Shadow for {@link android.app.Notification}.
@@ -27,15 +24,15 @@ public class ShadowNotification {
   Notification realNotification;
 
   public CharSequence getContentTitle() {
-    return ((TextView) applyContentView().findViewById(R.id.title)).getText();
+    return ((TextView) applyContentView().findViewById(getInternalResourceId("title"))).getText();
   }
 
   public CharSequence getContentText() {
-    return ((TextView) applyContentView().findViewById(R.id.text)).getText();
+    return ((TextView) applyContentView().findViewById(getInternalResourceId("text"))).getText();
   }
 
   public CharSequence getContentInfo() {
-   return ((TextView) applyContentView().findViewById(R.id.info)).getText();
+   return ((TextView) applyContentView().findViewById(getInternalResourceId("info"))).getText();
   }
 
   public boolean isOngoing() {
@@ -43,33 +40,33 @@ public class ShadowNotification {
   }
 
   public CharSequence getBigText() {
-    return ((TextView) applyBigContentView().findViewById(R.id.big_text)).getText();
+    return ((TextView) applyBigContentView().findViewById(getInternalResourceId("big_text"))).getText();
   }
 
   public CharSequence getBigContentTitle() {
-    return ((TextView) applyBigContentView().findViewById(R.id.title)).getText();
+    return ((TextView) applyBigContentView().findViewById(getInternalResourceId("title"))).getText();
   }
 
   public CharSequence getBigContentText() {
-    return ((TextView) applyBigContentView().findViewById(R.id.text)).getText();
+    return ((TextView) applyBigContentView().findViewById(getInternalResourceId("text"))).getText();
   }
 
   public Bitmap getBigPicture() {
-    ImageView imageView = (ImageView) applyBigContentView().findViewById(R.id.big_picture);
+    ImageView imageView = (ImageView) applyBigContentView().findViewById(getInternalResourceId("big_picture"));
     return imageView !=null && imageView.getDrawable() != null ? ((BitmapDrawable) imageView.getDrawable()).getBitmap() : null;
   }
 
   public boolean isWhenShown() {
-    return applyContentView().findViewById(R.id.chronometer).getVisibility() == View.VISIBLE
-        || applyContentView().findViewById(R.id.time).getVisibility() == View.VISIBLE;
+    return applyContentView().findViewById(getInternalResourceId("chronometer")).getVisibility() == View.VISIBLE
+        || applyContentView().findViewById(getInternalResourceId("time")).getVisibility() == View.VISIBLE;
   }
 
   public ProgressBar getProgressBar() {
-    return ((ProgressBar) applyContentView().findViewById(R.id.progress));
+    return ((ProgressBar) applyContentView().findViewById(getInternalResourceId("progress")));
   }
 
   public boolean usesChronometer() {
-    return applyContentView().findViewById(R.id.chronometer).getVisibility() == View.VISIBLE;
+    return applyContentView().findViewById(getInternalResourceId("chronometer")).getVisibility() == View.VISIBLE;
   }
 
   private View applyContentView() {
