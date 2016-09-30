@@ -28,12 +28,6 @@ public abstract class ResourceLoader {
     return resName != null ? getXml(resName, qualifiers) : null;
   }
 
-  public abstract DrawableNode getDrawableNode(ResName resName, String qualifiers);
-
-  public DrawableNode getDrawableNode(int resId, String qualifiers) {
-    return getDrawableNode(getResourceIndex().getResName(resId), qualifiers);
-  }
-
   public abstract InputStream getRawValue(ResName resName);
 
   public InputStream getRawValue(int resId) {

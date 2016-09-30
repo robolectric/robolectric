@@ -37,11 +37,6 @@ public class RoutingResourceLoader extends ResourceLoader {
   }
 
   @Override
-  public DrawableNode getDrawableNode(ResName resName, String qualifiers) {
-    return pickFor(resName).getDrawableNode(resName, qualifiers);
-  }
-
-  @Override
   public InputStream getRawValue(ResName resName) {
     return pickFor(resName).getRawValue(resName);
   }

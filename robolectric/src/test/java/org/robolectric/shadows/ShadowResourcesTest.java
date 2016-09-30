@@ -29,7 +29,6 @@ import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 import org.robolectric.res.AttrData;
-import org.robolectric.res.DrawableNode;
 import org.robolectric.res.Plural;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResType;
@@ -672,11 +671,6 @@ public class ShadowResourcesTest {
 
     @Override
     public XmlBlock getXml(ResName resName, String qualifiers) {
-      return null;
-    }
-
-    @Override
-    public DrawableNode getDrawableNode(ResName resName, String qualifiers) {
       return null;
     }
 

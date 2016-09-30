@@ -9,6 +9,7 @@ import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.NinePatchDrawable;
 
 import android.graphics.drawable.VectorDrawable;
+import android.util.TypedValue;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,33 +29,11 @@ import static org.robolectric.util.TestUtil.testResources;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class DrawableResourceLoaderTest {
-  protected DrawableResourceLoader drawableResourceLoader;
-  private ResBundle<DrawableNode> drawableNodes;
   private Resources resources;
 
   @Before
   public void setup() throws Exception {
-    drawableNodes = new ResBundle<>();
-    drawableResourceLoader = new DrawableResourceLoader(drawableNodes);
-    new DocumentLoader(testResources()).load("drawable", drawableResourceLoader);
-    new DocumentLoader(testResources()).load("anim", drawableResourceLoader);
-    new DocumentLoader(systemResources()).load("drawable", drawableResourceLoader);
-
-    drawableResourceLoader.findDrawableResources(testResources());
-    drawableResourceLoader.findDrawableResources(systemResources());
     resources = RuntimeEnvironment.application.getResources();
-  }
-
-  @Test
-  public void testProcessResourceXml() throws Exception {
-    drawableNodes = new ResBundle<>();
-    drawableResourceLoader = new DrawableResourceLoader(drawableNodes);
-
-    new DocumentLoader(testResources()).load("drawable", drawableResourceLoader);
-    drawableResourceLoader.findDrawableResources(testResources());
-
-    assertNotNull(drawableNodes.get(new ResName(TEST_PACKAGE, "drawable", "rainbow"), ""));
-    assertEquals(20, drawableNodes.size());
   }
 
   @Test
@@ -72,7 +51,7 @@ public class DrawableResourceLoaderTest {
     assertNotNull(Resources.getSystem().getDrawable(android.R.drawable.ic_menu_help));
   }
 
-  @Test
+  @Test @Config(qualifiers = "anydpi")
   public void testDrawableTypes() {
     assertThat(resources.getDrawable(R.drawable.l7_white)).isInstanceOf(BitmapDrawable.class);
     assertThat(resources.getDrawable(R.drawable.l0_red)).isInstanceOf(BitmapDrawable.class);

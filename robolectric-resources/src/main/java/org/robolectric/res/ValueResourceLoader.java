@@ -2,7 +2,7 @@ package org.robolectric.res;
 
 import javax.xml.xpath.XPathExpressionException;
 
-class ValueResourceLoader extends XpathResourceXmlLoader {
+public class ValueResourceLoader extends XpathResourceXmlLoader {
   private final ResBunch resBunch;
   private final String attrType;
   private final ResType resType;
