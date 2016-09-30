@@ -14,11 +14,11 @@ public abstract class ResourceLoader {
     return resName != null ? getValue(resName, qualifiers) : null;
   }
 
-  protected abstract Plural getPlural(ResName resName, int quantity, String qualifiers);
-
   public Plural getPlural(int resId, int quantity, String qualifiers) {
-    ResName resName = getResourceIndex().getResName(resId);
-    return resName != null ? getPlural(resName, quantity, qualifiers) : null;
+    PluralResourceLoader.PluralRules pluralRules = (PluralResourceLoader.PluralRules) getValue(resId, qualifiers);
+    if (pluralRules == null) return null;
+
+    return pluralRules.find(quantity);
   }
 
   public abstract XmlBlock getXml(ResName resName, String qualifiers);

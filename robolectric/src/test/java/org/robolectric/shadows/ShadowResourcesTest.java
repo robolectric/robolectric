@@ -665,11 +665,6 @@ public class ShadowResourcesTest {
     }
 
     @Override
-    public Plural getPlural(ResName resName, int quantity, String qualifiers) {
-      return null;
-    }
-
-    @Override
     public XmlBlock getXml(ResName resName, String qualifiers) {
       return null;
     }

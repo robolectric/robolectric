@@ -43,7 +43,7 @@ public class PackageResourceLoader extends XResourceLoader {
         new ValueResourceLoader(data, "/resources/fraction", "fraction", ResType.FRACTION),
         new ValueResourceLoader(data, "/resources/item[@type='fraction']", "fraction", ResType.FRACTION),
         new ValueResourceLoader(data, "/resources/item", "layout", ResType.LAYOUT),
-        new PluralResourceLoader(pluralsData),
+        new PluralResourceLoader(data),
         new ValueResourceLoader(data, "/resources/string", "string", ResType.CHAR_SEQUENCE),
         new ValueResourceLoader(data, "/resources/item[@type='string']", "string", ResType.CHAR_SEQUENCE),
         new ValueResourceLoader(data, "/resources/string-array", "array", ResType.CHAR_SEQUENCE_ARRAY),

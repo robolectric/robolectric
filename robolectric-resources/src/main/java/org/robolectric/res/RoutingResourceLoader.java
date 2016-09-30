@@ -27,11 +27,6 @@ public class RoutingResourceLoader extends ResourceLoader {
   }
 
   @Override
-  public Plural getPlural(ResName resName, int quantity, String qualifiers) {
-    return pickFor(resName).getPlural(resName, quantity, qualifiers);
-  }
-
-  @Override
   public XmlBlock getXml(ResName resName, String qualifiers) {
     return pickFor(resName).getXml(resName, qualifiers);
   }
