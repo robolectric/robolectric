@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
+import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.util.ActivityController;
@@ -223,7 +224,37 @@ public class ShadowThemeTest {
   }
 
   @Test
-  public void shouldFindInherritedAndroidAttributeInTheme() throws Exception {
+  public void whenStyleSpecifiesAttr_obtainStyledAttribute_findsCorrectValue() throws Exception {
+    Resources.Theme theme = resources.newTheme();
+    theme.applyStyle(R.style.Theme_Robolectric, false);
+    theme.applyStyle(R.style.Theme_ThemeContainingStyleReferences, true);
+
+    assertThat(theme.obtainStyledAttributes(
+        Robolectric.buildAttributeSet().setStyleAttribute("?attr/styleReference").build(), new int[]{R.attr.string2}, 0, 0).getString(0))
+        .isEqualTo("string 2 from StyleReferredToByParentAttrReference");
+
+    assertThat(theme.obtainStyledAttributes(
+        Robolectric.buildAttributeSet().setStyleAttribute("?styleReference").build(), new int[]{R.attr.string2}, 0, 0).getString(0))
+        .isEqualTo("string 2 from StyleReferredToByParentAttrReference");
+  }
+
+  @Test
+  public void whenStyleSpecifiesAttrWithoutExplicitType_obtainStyledAttribute_findsCorrectValue() throws Exception {
+    Resources.Theme theme = resources.newTheme();
+    theme.applyStyle(R.style.Theme_Robolectric, false);
+    theme.applyStyle(R.style.Theme_ThemeContainingStyleReferences, true);
+
+    assertThat(theme.obtainStyledAttributes(
+        Robolectric.buildAttributeSet().setStyleAttribute("?attr/styleReferenceWithoutExplicitType").build(), new int[]{R.attr.string2}, 0, 0).getString(0))
+        .isEqualTo("string 2 from StyleReferredToByParentAttrReference");
+
+    assertThat(theme.obtainStyledAttributes(
+        Robolectric.buildAttributeSet().setStyleAttribute("?styleReferenceWithoutExplicitType").build(), new int[]{R.attr.string2}, 0, 0).getString(0))
+        .isEqualTo("string 2 from StyleReferredToByParentAttrReference");
+  }
+
+  @Test
+  public void shouldFindInheritedAndroidAttributeInTheme() throws Exception {
     RuntimeEnvironment.application.setTheme(R.style.Theme_AnotherTheme);
     Resources.Theme theme1 = RuntimeEnvironment.application.getTheme();
 

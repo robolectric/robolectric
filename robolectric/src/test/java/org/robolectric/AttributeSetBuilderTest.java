@@ -251,15 +251,6 @@ public class AttributeSetBuilderTest {
   }
 
   @Test
-  public void getStyleAttribute_allowStyleAttrReference() throws Exception {
-    AttributeSet roboAttributeSet = Robolectric.buildAttributeSet()
-        .setStyleAttribute("?attr/parentStyleReference")
-        .build();
-
-    assertThat(roboAttributeSet.getStyleAttribute()).isEqualTo(R.attr.parentStyleReference);
-  }
-
-  @Test
   public void getAttributeNameResource() throws Exception {
     AttributeSet roboAttributeSet = Robolectric.buildAttributeSet()
         .addAttribute(R.attr.sugaryScale, "1")

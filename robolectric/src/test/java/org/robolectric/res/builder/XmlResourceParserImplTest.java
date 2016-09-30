@@ -727,4 +727,15 @@ public class XmlResourceParserImplTest {
     assertThat(parser.getStyleAttribute()).isEqualTo(0);
   }
 
+  @Test
+  public void getStyleAttribute_allowStyleAttrReference() throws Exception {
+    forgeAndOpenDocument("<foo style=\"?attr/parentStyleReference\"/>");
+    assertThat(parser.getStyleAttribute()).isEqualTo(R.attr.parentStyleReference);
+  }
+
+  @Test
+  public void getStyleAttribute_allowStyleAttrReferenceLackingExplicitAttrType() throws Exception {
+    forgeAndOpenDocument("<foo style=\"?parentStyleReference\"/>");
+    assertThat(parser.getStyleAttribute()).isEqualTo(R.attr.parentStyleReference);
+  }
 }

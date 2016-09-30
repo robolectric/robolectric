@@ -773,7 +773,7 @@ public class XmlResourceParserImpl implements XmlResourceParser {
     if (AttributeResource.isNull(possiblyQualifiedResourceName)) return 0;
 
     if (AttributeResource.isStyleReference(possiblyQualifiedResourceName)) {
-      ResName styleReference = AttributeResource.getStyleReference(possiblyQualifiedResourceName, defaultPackageName, defaultType);
+      ResName styleReference = AttributeResource.getStyleReference(possiblyQualifiedResourceName, defaultPackageName, "attr");
       Integer resourceId = resourceLoader.getResourceIndex().getResourceId(styleReference);
       if (resourceId == null) {
         throw new Resources.NotFoundException(styleReference.getFullyQualifiedName());
