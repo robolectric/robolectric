@@ -15,6 +15,7 @@ public class SdkConfig {
   private static final String ROBOLECTRIC_VERSION;
   private static final Map<Integer, SdkVersion> SUPPORTED_APIS;
   public static final int FALLBACK_SDK_VERSION = Build.VERSION_CODES.JELLY_BEAN;
+  public static final int MAX_SDK_VERSION = Build.VERSION_CODES.M;
 
   private final int apiLevel;
   private final SdkVersion sdkVersion;
