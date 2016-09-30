@@ -160,10 +160,6 @@ public class Robolectric {
     }
 
     public AttributeSetBuilder setStyleAttribute(String value) {
-      if (appResourceLoader.getValue(AttributeResource.getResourceReference(value, RuntimeEnvironment.application.getPackageName(), "style"),
-          RuntimeEnvironment.getQualifiers()) == null) {
-        throw new Resources.NotFoundException("Invalid style attribute: " + value);
-      }
       ((Element)doc.getFirstChild()).setAttribute("style", value);
       return this;
     }

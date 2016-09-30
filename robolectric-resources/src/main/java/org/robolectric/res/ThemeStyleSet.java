@@ -40,6 +40,15 @@ public class ThemeStyleSet implements Style {
     return themeStyleSet;
   }
 
+  @Override
+  public String toString() {
+    if (styles.isEmpty()) {
+      return "theme with no applied styles";
+    } else {
+      return "theme with applied styles: " + styles + "";
+    }
+  }
+
   private static class OverlayedStyle {
     Style style;
     boolean force;

@@ -71,10 +71,7 @@ public class StyleData implements Style {
   }
 
   @Override public String toString() {
-    return "StyleData{" +
-        "name='" + name + '\'' +
-        ", parent='" + parent + '\'' +
-        '}';
+    return "Style " + packageName + ":" + name;
   }
 
   public String getPackageName() {

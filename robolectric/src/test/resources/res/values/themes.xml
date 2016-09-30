@@ -37,6 +37,11 @@
     <item name="parentStyleReference">@style/StyleReferredToByParentAttrReference</item>
   </style>
 
+  <style name="Theme.ThemeContainingStyleReferences" parent="">
+    <item name="styleReference">@style/StyleReferredToByParentAttrReference</item>
+    <item name="styleReferenceWithoutExplicitType">@StyleReferredToByParentAttrReference</item>
+  </style>
+
   <style name="StyleReferredToByParentAttrReference">
     <item name="string2">string 2 from StyleReferredToByParentAttrReference</item>
   </style>
