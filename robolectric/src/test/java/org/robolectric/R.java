@@ -83,6 +83,9 @@ public final class R {
 
     public static final int list_view_with_enum_scrollbar = 0x1003b;
     public static final int action_search = 0x1003c;
+
+    public static final int idNotInXml = 0x1003d;
+    public static final int idInRClassAndXml = 0x1003e;
   }
 
   public static final class string {

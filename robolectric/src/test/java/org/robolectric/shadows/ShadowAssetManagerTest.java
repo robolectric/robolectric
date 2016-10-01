@@ -183,4 +183,34 @@ public class ShadowAssetManagerTest {
         Robolectric.buildAttributeSet().setStyleAttribute("?attr/styleNotSpecifiedInAnyTheme").build(),
         new int[]{R.attr.string1}, 0, theme, 0);
   }
+
+  @Test
+  public void getResourceIdentifier_shouldReturnValueFromRClass() throws Exception {
+    assertThat(shadowOf(assetManager).getResourceIdentifier("idInRClassAndXml", "id", "org.robolectric"))
+        .isEqualTo(R.id.idInRClassAndXml);
+  }
+
+  @Test
+  public void whenIdIsAbsentInRClassButPresentInXml_getResourceIdentifier_shouldReturnGeneratedId() throws Exception {
+    assertThat(shadowOf(assetManager).getResourceIdentifier("idNotInRClass", "id", "org.robolectric"))
+        .isGreaterThan(0);
+  }
+
+  @Test
+  public void whenIdIsAbsentInXmlButPresentInRClass_getResourceIdentifier_shouldReturnIdFromRClass_probablyBecauseItWasDeclaredInALayout() throws Exception {
+    assertThat(shadowOf(assetManager).getResourceIdentifier("idNotInXml", "id", "org.robolectric"))
+        .isEqualTo(R.id.idNotInXml);
+  }
+
+  @Test
+  public void whenResourceIsAbsentInXml_getResourceIdentifier_shouldReturn0() throws Exception {
+    assertThat(shadowOf(assetManager).getResourceIdentifier("fictitiousDrawable", "drawable", "org.robolectric"))
+        .isEqualTo(0);
+  }
+
+  @Test
+  public void whenResourceIsAbsentInXml_getResourceIdentifier_shouldReturnId() throws Exception {
+    assertThat(shadowOf(assetManager).getResourceIdentifier("an_image", "drawable", "org.robolectric"))
+        .isEqualTo(R.drawable.an_image);
+  }
 }

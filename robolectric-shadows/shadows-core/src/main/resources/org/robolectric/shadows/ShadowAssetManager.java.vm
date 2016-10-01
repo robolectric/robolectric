@@ -99,12 +99,17 @@ public final class ShadowAssetManager {
 
   @HiddenApi @Implementation
   public int getResourceIdentifier(String name, String defType, String defPackage) {
-    TypedResource value = resourceLoader.getValue(ResName.qualifyResName(name, defPackage, defType), RuntimeEnvironment.getQualifiers());
-    if (value == null) {
-      return 0;
-    }
-    ResourceIndex resourceIndex = resourceLoader.getResourceIndex();
     ResName resName = ResName.qualifyResName(name, defPackage, defType);
+
+    // ids are often declared from within layouts, so a special case since we don't collect those:
+    if (!"id".equals(defType)) {
+      TypedResource value = resourceLoader.getValue(resName, RuntimeEnvironment.getQualifiers());
+      if (value == null) {
+        return 0;
+      }
+    }
+
+    ResourceIndex resourceIndex = resourceLoader.getResourceIndex();
     return resourceIndex.getResourceId(resName);
   }
 
