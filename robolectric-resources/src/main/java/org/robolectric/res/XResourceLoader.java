@@ -9,11 +9,9 @@ import java.io.InputStream;
 // TODO: Give me a better name
 abstract class XResourceLoader extends ResourceLoader {
   final ResBunch data = new ResBunch();
-  final ResBundle<PluralResourceLoader.PluralRules> pluralsData = new ResBundle<>();
-  final ResBundle<String> stringData = new ResBundle<>();
-  final ResBundle<DrawableNode> drawableData = new ResBundle<>();
   final ResBundle<XmlBlock> xmlDocuments = new ResBundle<>();
   final ResBundle<FsFile> rawResources = new ResBundle<>();
+  
   private final ResourceIndex resourceIndex;
   private boolean isInitialized = false;
 
@@ -34,9 +32,6 @@ abstract class XResourceLoader extends ResourceLoader {
   private void makeImmutable() {
     data.makeImmutable();
 
-    pluralsData.makeImmutable();
-    stringData.makeImmutable();
-    drawableData.makeImmutable();
     xmlDocuments.makeImmutable();
     rawResources.makeImmutable();
   }
@@ -48,23 +43,9 @@ abstract class XResourceLoader extends ResourceLoader {
   }
 
   @Override
-  public Plural getPlural(ResName resName, int quantity, String qualifiers) {
-    initialize();
-    PluralResourceLoader.PluralRules pluralRules = pluralsData.get(resName, qualifiers);
-    if (pluralRules == null) return null;
-
-    return pluralRules.find(quantity);
-  }
-
-  @Override
   public XmlBlock getXml(ResName resName, String qualifiers) {
     initialize();
     return xmlDocuments.get(resName, qualifiers);
-  }
-
-  @Override
-  public DrawableNode getDrawableNode(ResName resName, String qualifiers) {
-    return drawableData.get(resName, qualifiers);
   }
 
   @Override

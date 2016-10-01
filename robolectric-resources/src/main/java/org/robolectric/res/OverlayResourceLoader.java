@@ -60,36 +60,6 @@ public class OverlayResourceLoader extends XResourceLoader {
       @Override
       public Void call() {
         for (PackageResourceLoader subResourceLoader : subResourceLoaders) {
-          pluralsData.mergeLibraryStyle(subResourceLoader.pluralsData, packageName);
-        }
-        return null;
-      }
-    });
-
-    mergeTasks.add(new Callable<Void>() {
-      @Override
-      public Void call() {
-        for (PackageResourceLoader subResourceLoader : subResourceLoaders) {
-          stringData.mergeLibraryStyle(subResourceLoader.stringData, packageName);
-        }
-        return null;
-      }
-    });
-
-    mergeTasks.add(new Callable<Void>() {
-      @Override
-      public Void call() {
-        for (PackageResourceLoader subResourceLoader : subResourceLoaders) {
-          drawableData.mergeLibraryStyle(subResourceLoader.drawableData, packageName);
-        }
-        return null;
-      }
-    });
-
-    mergeTasks.add(new Callable<Void>() {
-      @Override
-      public Void call() {
-        for (PackageResourceLoader subResourceLoader : subResourceLoaders) {
           xmlDocuments.mergeLibraryStyle(subResourceLoader.xmlDocuments, packageName);
         }
         return null;
@@ -134,14 +104,6 @@ public class OverlayResourceLoader extends XResourceLoader {
         throw new RuntimeException(e);
       }
     }
-  }
-
-  @Override public DrawableNode getDrawableNode(ResName resName, String qualifiers) {
-    return super.getDrawableNode(resName.withPackageName(packageName), qualifiers);
-  }
-
-  @Override public Plural getPlural(ResName resName, int quantity, String qualifiers) {
-    return super.getPlural(resName.withPackageName(packageName), quantity, qualifiers);
   }
 
   @Override public InputStream getRawValue(ResName resName) {

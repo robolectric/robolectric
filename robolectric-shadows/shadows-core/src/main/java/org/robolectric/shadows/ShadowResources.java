@@ -13,6 +13,7 @@ import android.view.Display;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.*;
 import org.robolectric.res.Plural;
+import org.robolectric.res.PluralResourceLoader;
 import org.robolectric.res.ResType;
 import org.robolectric.res.TypedResource;
 import org.robolectric.res.builder.ResourceParser;
@@ -99,10 +100,22 @@ public class ShadowResources {
   @Implementation
   public String getQuantityString(int resId, int quantity) throws Resources.NotFoundException {
     ShadowAssetManager shadowAssetManager = shadowOf(realResources.getAssets());
-    Plural plural = shadowAssetManager.getResourceLoader().getPlural(resId, quantity, RuntimeEnvironment.getQualifiers());
-    TypedResource<?> typedResource = shadowAssetManager.resolve(
-        new TypedResource<>(plural.getString(), ResType.CHAR_SEQUENCE), RuntimeEnvironment.getQualifiers(), resId);
-    return typedResource == null ? null : typedResource.asString();
+
+    TypedResource typedResource = shadowAssetManager.getResourceLoader().getValue(resId, RuntimeEnvironment.getQualifiers());
+    if (typedResource != null && typedResource instanceof PluralResourceLoader.PluralRules) {
+      PluralResourceLoader.PluralRules pluralRules = (PluralResourceLoader.PluralRules) typedResource;
+      Plural plural = pluralRules.find(quantity);
+
+      if (plural == null) {
+        return null;
+      }
+
+      TypedResource<?> resolvedTypedResource = shadowAssetManager.resolve(
+          new TypedResource<>(plural.getString(), ResType.CHAR_SEQUENCE), RuntimeEnvironment.getQualifiers(), resId);
+      return resolvedTypedResource == null ? null : resolvedTypedResource.asString();
+    } else {
+      return null;
+    }
   }
 
   @Implementation

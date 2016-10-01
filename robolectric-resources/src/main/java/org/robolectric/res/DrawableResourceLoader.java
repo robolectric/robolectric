@@ -3,21 +3,15 @@ package org.robolectric.res;
 /**
  * DrawableResourceLoader
  */
-public class DrawableResourceLoader extends XmlLoader {
-  private final ResBundle<DrawableNode> drawableNodes;
+public class DrawableResourceLoader {
+  private final ResBunch resBunch;
 
   public static boolean isStillHandledHere(String type) {
     return "drawable".equals(type) || "anim".equals(type) || "mipmap".equals(type);
   }
 
-  public DrawableResourceLoader(ResBundle<DrawableNode> drawableNodes) {
-    this.drawableNodes = drawableNodes;
-  }
-
-  @Override
-  protected void processResourceXml(FsFile xmlFile, XpathResourceXmlLoader.XmlNode xmlNode, XmlContext xmlContext) throws Exception {
-    String name = toResourceName(xmlFile);
-    drawableNodes.put(xmlContext.getDirPrefix(), name, new DrawableNode.Xml(parse(xmlFile), xmlContext), xmlContext);
+  public DrawableResourceLoader(ResBunch resBunch) {
+    this.resBunch = resBunch;
   }
 
   /**
@@ -56,17 +50,21 @@ public class DrawableResourceLoader extends XmlLoader {
         if (name.startsWith(".")) continue;
 
         String shortName;
+        boolean isNinePatch;
         if (name.endsWith(".xml")) {
           // already handled, do nothing...
           continue;
         } else if (name.endsWith(".9.png")) {
           String[] tokens = name.split("\\.9\\.png$");
           shortName = tokens[0];
+          isNinePatch = true;
         } else {
           shortName = f.getBaseName();
+          isNinePatch = false;
         }
-        XmlContext fakeXmlContext = new XmlContext(resourcePath.getPackageName(), f);
-        drawableNodes.put(type, shortName, new DrawableNode.ImageFile(f, true), fakeXmlContext);
+
+        XmlLoader.XmlContext fakeXmlContext = new XmlLoader.XmlContext(resourcePath.getPackageName(), f);
+        resBunch.put(type, shortName, new FileTypedResource.Image(f, isNinePatch), fakeXmlContext);
       }
     }
   }

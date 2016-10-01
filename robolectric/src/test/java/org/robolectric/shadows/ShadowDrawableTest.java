@@ -153,7 +153,7 @@ public class ShadowDrawableTest {
   }
 
   @Test
-  @Config(sdk = 21)
+  @Config(sdk = 21, qualifiers = "anydpi")
   public void testGetBitmapOrVectorDrawableAt21() {
     final Drawable aDrawable = RuntimeEnvironment.application.getResources()
         .getDrawable(R.drawable.an_image_or_vector);
