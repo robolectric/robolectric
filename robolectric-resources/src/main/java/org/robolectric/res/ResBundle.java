@@ -1,12 +1,11 @@
 package org.robolectric.res;
 
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class ResBundle<T> {
 
@@ -104,6 +103,26 @@ public class ResBundle<T> {
   public void mergeLibraryStyle(ResBundle<T> fromResBundle, String packageName) {
     valuesMap.merge(packageName, fromResBundle.valuesMap);
     valuesArrayMap.merge(packageName, fromResBundle.valuesArrayMap);
+  }
+
+  public void receive(ResourceLoader.Visitor visitor) {
+    for (final Map.Entry<ResName, List<Value<T>>> entry : valuesMap.map.entrySet()) {
+      visitor.visit(entry.getKey(), new AbstractList<T>() {
+        List<Value<T>> value;
+
+        @Override
+        public T get(int index) {
+          if (value == null) value = entry.getValue();
+          return value.get(index).getValue();
+        }
+
+        @Override
+        public int size() {
+          if (value == null) value = entry.getValue();
+          return value.size();
+        }
+      });
+    }
   }
 
   public static class Value<T> implements Comparable<Value<T>> {

@@ -683,5 +683,9 @@ public class ShadowResourcesTest {
     public boolean providesFor(String namespace) {
       return false;
     }
+
+    @Override
+    public void receive(Visitor visitor) {
+    }
   }
 }

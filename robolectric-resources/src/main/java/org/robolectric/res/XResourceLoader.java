@@ -64,4 +64,10 @@ abstract class XResourceLoader extends ResourceLoader {
   public ResourceIndex getResourceIndex() {
     return resourceIndex;
   }
+
+  @Override
+  public void receive(Visitor visitor) {
+    initialize();
+    data.receive(visitor);
+  }
 }
