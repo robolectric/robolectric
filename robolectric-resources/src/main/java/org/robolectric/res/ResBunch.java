@@ -50,4 +50,10 @@ public class ResBunch {
       getBundle(entry.getKey()).mergeLibraryStyle(entry.getValue(), packageName);
     }
   }
+
+  public void receive(ResourceLoader.Visitor visitor) {
+    for (ResBundle<TypedResource> resBundle : types.values()) {
+      resBundle.receive(visitor);
+    }
+  }
 }

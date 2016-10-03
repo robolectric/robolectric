@@ -126,4 +126,14 @@ public class OverlayResourceLoader extends XResourceLoader {
     }
     return false;
   }
+
+  @Override
+  public void receive(Visitor visitor) {
+    initialize();
+    for (ResourceLoader resourceLoader : subResourceLoaders) {
+      resourceLoader.receive(visitor);
+    }
+
+    super.receive(visitor);
+  }
 }

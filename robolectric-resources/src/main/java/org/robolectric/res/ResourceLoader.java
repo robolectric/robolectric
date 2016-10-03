@@ -4,6 +4,9 @@ import org.jetbrains.annotations.NotNull;
 import org.robolectric.res.builder.XmlBlock;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Pattern;
 
 public abstract class ResourceLoader {
 
@@ -73,5 +76,43 @@ public abstract class ResourceLoader {
     }
 
     return value;
+  }
+
+  @NotNull
+  public List<TypedResource> grep(String regex) {
+      return grep(Pattern.compile(regex));
+  }
+
+  @NotNull
+  public List<TypedResource> grep(final Pattern pattern) {
+    final ArrayList<TypedResource> matches = new ArrayList<>();
+    receive(new Visitor<TypedResource>() {
+      @Override
+      public void visit(ResName resName, List<TypedResource> typedResources) {
+        boolean match = pattern.matcher(resName.getFullyQualifiedName()).find();
+        if (!match && resName.type.equals("style")) {
+          for (TypedResource typedResource : typedResources) {
+            TypedResource<StyleData> style = (TypedResource<StyleData>) typedResource;
+            if (style.getData().grep(pattern)) {
+              match = true;
+              break;
+            }
+          }
+        }
+
+        if (match) {
+          for (TypedResource typedResource : typedResources) {
+            matches.add(typedResource);
+          }
+        }
+      }
+    });
+    return matches;
+  }
+
+  public abstract void receive(Visitor visitor);
+
+  public interface Visitor <T> {
+    void visit(ResName key, List<T> value);
   }
 }

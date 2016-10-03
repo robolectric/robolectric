@@ -4,6 +4,7 @@ import org.robolectric.util.Strings;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 public class StyleData implements Style {
   private final String packageName;
@@ -45,6 +46,15 @@ public class StyleData implements Style {
     }
 
     return attributeResource;
+  }
+
+  public boolean grep(Pattern pattern) {
+    for (ResName resName : items.keySet()) {
+      if (pattern.matcher(resName.getFullyQualifiedName()).find()) {
+        return true;
+      }
+    }
+    return false;
   }
 
   @Override

@@ -45,6 +45,13 @@ public class RoutingResourceLoader extends ResourceLoader {
     return whichProvidesFor(namespace) != null;
   }
 
+  @Override
+  public void receive(Visitor visitor) {
+    for (ResourceLoader resourceLoader : resourceLoaders.values()) {
+      resourceLoader.receive(visitor);
+    }
+  }
+
   private ResourceLoader pickFor(int id) {
     ResName resName = resourceIndex.getResName(id);
     return pickFor(resName);
