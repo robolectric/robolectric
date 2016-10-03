@@ -18,7 +18,9 @@ import org.robolectric.TestRunners;
 import org.robolectric.util.ActivityController;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
 import static org.robolectric.Robolectric.buildActivity;
+import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowThemeTest {
@@ -251,6 +253,52 @@ public class ShadowThemeTest {
     assertThat(theme.obtainStyledAttributes(
         Robolectric.buildAttributeSet().setStyleAttribute("?styleReferenceWithoutExplicitType").build(), new int[]{R.attr.string2}, 0, 0).getString(0))
         .isEqualTo("string 2 from StyleReferredToByParentAttrReference");
+  }
+
+  @Test
+  public void whenAttrSetAttrSpecifiesAttr_obtainStyledAttribute_returnsItsValue() throws Exception {
+    Resources.Theme theme = resources.newTheme();
+    theme.applyStyle(R.style.Theme_Robolectric, false);
+    theme.applyStyle(R.style.Theme_ThemeContainingStyleReferences, true);
+
+    assertThat(theme.obtainStyledAttributes(
+        Robolectric.buildAttributeSet().addAttribute(R.attr.string2, "?attr/string1").build(), new int[]{R.attr.string2}, 0, 0).getString(0))
+        .isEqualTo("string 1 from Theme.Robolectric");
+  }
+
+  @Test
+  public void whenAttrSetAttrSpecifiesUnknownAttr_obtainStyledAttribute_usesNull() throws Exception {
+    Resources.Theme theme = resources.newTheme();
+    theme.applyStyle(R.style.Theme_Robolectric, false);
+    theme.applyStyle(R.style.Theme_ThemeContainingStyleReferences, true);
+
+    assertThat(theme.obtainStyledAttributes(
+        Robolectric.buildAttributeSet().addAttribute(R.attr.string2, "?attr/noSuchAttr").build(),
+        new int[]{R.attr.string2}, 0, 0).getString(0))
+        .isNull();
+
+    // todo: assert that a strict warning was displayed
+  }
+
+  @Test
+  public void forStrict_whenAttrSetAttrSpecifiesUnknownAttr_obtainStyledAttribute_throwsException() throws Exception {
+    shadowOf(resources.getAssets()).strictErrors = true;
+
+    Resources.Theme theme = resources.newTheme();
+    theme.applyStyle(R.style.Theme_Robolectric, false);
+    theme.applyStyle(R.style.Theme_ThemeContainingStyleReferences, true);
+
+    try {
+      theme.obtainStyledAttributes(
+          Robolectric.buildAttributeSet().addAttribute(R.attr.string2, "?attr/noSuchAttr").build(),
+          new int[]{R.attr.string2}, 0, 0);
+      fail();
+    } catch (Exception e) {
+      assertThat(e.getMessage()).contains("no such attr ?org.robolectric:attr/noSuchAttr");
+      assertThat(e.getMessage()).contains("Theme_ThemeContainingStyleReferences");
+      assertThat(e.getMessage()).contains("Theme_Robolectric");
+      assertThat(e.getMessage()).contains("while resolving value for org.robolectric:attr/string2");
+    }
   }
 
   @Test

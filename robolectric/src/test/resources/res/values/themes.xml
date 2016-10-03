@@ -18,7 +18,7 @@
   <style name="Theme.AnotherTheme" parent="@style/Theme.Robolectric">
     <item name="android:buttonStyle">@style/Widget.AnotherTheme.Button</item>
     <item name="logoWidth">?attr/averageSheepWidth</item>
-    <item name="logoHeight">?android:attr/listItemPreferredHeight</item>
+    <item name="logoHeight">42dp</item>
     <item name="averageSheepWidth">42px</item>
     <item name="animalStyle">@style/Gastropod</item>
     <item name="typeface">custom_font</item>
