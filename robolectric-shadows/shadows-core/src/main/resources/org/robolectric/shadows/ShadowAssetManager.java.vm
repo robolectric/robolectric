@@ -29,6 +29,7 @@ import org.robolectric.res.ThemeStyleSet;
 import org.robolectric.res.TypedResource;
 import org.robolectric.res.builder.ResourceParser;
 import org.robolectric.res.builder.XmlResourceParserImpl;
+import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
 
 import java.io.ByteArrayInputStream;
@@ -53,6 +54,8 @@ public final class ShadowAssetManager {
   public static final int STYLE_RESOURCE_ID = 3;
   public static final int STYLE_CHANGING_CONFIGURATIONS = 4;
   public static final int STYLE_DENSITY = 5;
+
+  boolean strictErrors = false;
 
   private Map<Number, ThemeStyleSet> themes =
       Collections.synchronizedMap(new HashMap<Number, ThemeStyleSet>());
@@ -417,14 +420,26 @@ public final class ShadowAssetManager {
     AttributeResource attribute = findAttributeValue(resId, set, styleAttrStyle, defStyleFromAttr, defStyleFromRes, themeStyleSet);
     while (attribute != null && attribute.isStyleReference()) {
       ResName otherAttrName = attribute.getStyleReference();
+      ResName resName = resourceLoader.getResourceIndex().getResName(resId);
 
-      attribute = themeStyleSet.getAttrValue(otherAttrName);
-      if (attribute != null) {
-        attribute = new AttributeResource(resourceLoader.getResourceIndex().getResName(resId), attribute.value, attribute.contextPackageName);
+      AttributeResource otherAttr = themeStyleSet.getAttrValue(otherAttrName);
+      if (otherAttr == null) {
+        strictError("no such attr %s in %s while resolving value for %s", attribute.value, themeStyleSet, resName.getFullyQualifiedName());
+        attribute = null;
+      } else {
+        attribute = new AttributeResource(resName, otherAttr.value, otherAttr.contextPackageName);
       }
     }
 
     return attribute;
+  }
+
+  private void strictError(String message, Object... args) {
+    if (strictErrors) {
+      throw new RuntimeException(String.format(message, args));
+    } else {
+      Logger.strict(message, args);
+    }
   }
 
   private ThemeStyleSet getThemeStyleSet($ptrClass themePtr) {
