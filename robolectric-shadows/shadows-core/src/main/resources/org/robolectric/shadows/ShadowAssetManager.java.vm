@@ -28,6 +28,7 @@ import org.robolectric.res.StyleResolver;
 import org.robolectric.res.ThemeStyleSet;
 import org.robolectric.res.TypedResource;
 import org.robolectric.res.builder.ResourceParser;
+import org.robolectric.res.builder.XmlBlock;
 import org.robolectric.res.builder.XmlResourceParserImpl;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
@@ -229,6 +230,15 @@ public final class ShadowAssetManager {
   @Implementation
   public final XmlResourceParser openXmlResourceParser(int cookie, String fileName) throws IOException {
     return ResourceParser.create(fileName, "fixme", "fixme", null);
+  }
+
+  public XmlResourceParser loadXmlResourceParser(int resId, String type) throws Resources.NotFoundException {
+    ResName resName = getResName(resId);
+    XmlBlock block = getResourceLoader().getXml(resName, RuntimeEnvironment.getQualifiers());
+    if (block == null) {
+      throw new Resources.NotFoundException(resName.getFullyQualifiedName());
+    }
+    return ResourceParser.from(block, resName.packageName, getResourceLoader());
   }
 
   @HiddenApi @Implementation

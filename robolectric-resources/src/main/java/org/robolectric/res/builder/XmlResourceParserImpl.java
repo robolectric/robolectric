@@ -319,7 +319,8 @@ public class XmlResourceParserImpl implements XmlResourceParser {
     return qualify(getAttributeAt(index).getNodeValue());
   }
 
-  private String qualify(String value) {
+  // for testing only...
+  public String qualify(String value) {
     if (value == null) return null;
     if (AttributeResource.isResourceReference(value)) {
       return "@" + ResName.qualifyResourceName(value.substring(1).replace("+", ""), packageName, "attr");
