@@ -242,6 +242,20 @@ public class AndroidManifestTest {
   }
 
   @Test
+  public void whenNullManifestFile_getRClass_shouldComeFromPackageName() throws Exception {
+    AndroidManifest appManifest = new AndroidManifest(null, resourceFile("res"), resourceFile("assets"), "org.robolectric.lib1");
+    assertThat(appManifest.getRClass()).isEqualTo(org.robolectric.lib1.R.class);
+    assertThat(appManifest.getPackageName()).isEqualTo("org.robolectric.lib1");
+  }
+
+  @Test
+  public void whenMissingManifestFile_getRClass_shouldComeFromPackageName() throws Exception {
+    AndroidManifest appManifest = new AndroidManifest(resourceFile("none.xml"), resourceFile("res"), resourceFile("assets"), "org.robolectric.lib1");
+    assertThat(appManifest.getRClass()).isEqualTo(org.robolectric.lib1.R.class);
+    assertThat(appManifest.getPackageName()).isEqualTo("org.robolectric.lib1");
+  }
+
+  @Test
   public void shouldRead1IntentFilter() {
     AndroidManifest appManifest = newConfig("TestAndroidManifestForActivitiesWithIntentFilter.xml");
     appManifest.getMinSdkVersion(); // Force parsing

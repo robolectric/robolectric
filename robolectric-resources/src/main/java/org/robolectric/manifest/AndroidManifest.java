@@ -124,11 +124,11 @@ public class AndroidManifest {
   }
 
   void parseAndroidManifest() {
-    if (androidManifestFile == null || manifestIsParsed) {
+    if (manifestIsParsed) {
       return;
     }
 
-    if (androidManifestFile.exists()) {
+    if (androidManifestFile != null && androidManifestFile.exists()) {
       try {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 
@@ -167,7 +167,11 @@ public class AndroidManifest {
         ignored.printStackTrace();
       }
     } else {
-      System.err.println("No such manifest file: " + androidManifestFile);
+      rClassName = (packageName != null && !packageName.equals("")) ? packageName + ".R" : null;
+
+      if (androidManifestFile != null) {
+        System.err.println("No such manifest file: " + androidManifestFile);
+      }
     }
 
     manifestIsParsed = true;
