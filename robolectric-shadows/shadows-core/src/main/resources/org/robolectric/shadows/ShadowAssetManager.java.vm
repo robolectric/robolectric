@@ -28,6 +28,7 @@ import org.robolectric.res.StyleResolver;
 import org.robolectric.res.ThemeStyleSet;
 import org.robolectric.res.TypedResource;
 import org.robolectric.res.builder.ResourceParser;
+import org.robolectric.res.builder.XmlBlock;
 import org.robolectric.res.builder.XmlResourceParserImpl;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
@@ -231,6 +232,21 @@ public final class ShadowAssetManager {
     return ResourceParser.create(fileName, "fixme", "fixme", null);
   }
 
+  public XmlResourceParser loadXmlResourceParser(int resId, String type) throws Resources.NotFoundException {
+    ResName resName = getResName(resId);
+    ResName resolvedResName = resolveResName(resName, RuntimeEnvironment.getQualifiers());
+    if (resolvedResName == null) {
+      throw new RuntimeException("couldn't resolve " + resName.getFullyQualifiedName());
+    }
+    resName = resolvedResName;
+
+    XmlBlock block = getResourceLoader().getXml(resName, RuntimeEnvironment.getQualifiers());
+    if (block == null) {
+      throw new Resources.NotFoundException(resName.getFullyQualifiedName());
+    }
+    return ResourceParser.from(block, resName.packageName, getResourceLoader());
+  }
+
   @HiddenApi @Implementation
   public int addAssetPath(String path) {
     return 1;
@@ -342,7 +358,48 @@ public final class ShadowAssetManager {
   }
 
   TypedResource resolve(TypedResource value, String qualifiers, int resId) {
-    return resourceLoader.resolveResourceValue(value, qualifiers, resId);
+    return resolveResourceValue(value, qualifiers, resId);
+  }
+
+  public ResName resolveResName(ResName resName, String qualifiers) {
+    TypedResource value = getResourceLoader().getValue(resName, qualifiers);
+    return resolveResource(value, qualifiers, resName);
+  }
+
+  // todo: DRY up #resolveResource vs #resolveResourceValue
+  private ResName resolveResource(TypedResource value, String qualifiers, ResName resName) {
+    while (value != null && value.isReference()) {
+      String s = value.asString();
+      if (AttributeResource.isNull(s) || AttributeResource.isEmpty(s)) {
+        value = null;
+      } else {
+        String refStr = s.substring(1).replace("+", "");
+        resName = ResName.qualifyResName(refStr, resName);
+        value = getResourceLoader().getValue(resName, qualifiers);
+      }
+    }
+
+    return resName;
+  }
+
+  private TypedResource resolveResourceValue(TypedResource value, String qualifiers, ResName resName) {
+    while (value != null && value.isReference()) {
+      String s = value.asString();
+      if (AttributeResource.isNull(s) || AttributeResource.isEmpty(s)) {
+        value = null;
+      } else {
+        String refStr = s.substring(1).replace("+", "");
+        resName = ResName.qualifyResName(refStr, resName);
+        value = getResourceLoader().getValue(resName, qualifiers);
+      }
+    }
+
+    return value;
+  }
+
+  public TypedResource resolveResourceValue(TypedResource value, String qualifiers, int resId) {
+    ResName resName = getResName(resId);
+    return resolveResourceValue(value, qualifiers, resName);
   }
 
   private AttributeResource buildAttribute(AttributeSet set, int resId, int defStyleAttr, $ptrClass themePtr, int defStyleRes) {

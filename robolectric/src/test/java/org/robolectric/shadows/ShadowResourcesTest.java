@@ -15,7 +15,6 @@ import android.os.Build;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
-
 import com.google.common.collect.ImmutableMap;
 import org.assertj.core.data.Offset;
 import org.jetbrains.annotations.NotNull;
@@ -29,7 +28,6 @@ import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 import org.robolectric.res.AttrData;
-import org.robolectric.res.Plural;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResType;
 import org.robolectric.res.ResourceExtractor;
@@ -38,6 +36,7 @@ import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.res.TypedResource;
 import org.robolectric.res.builder.XmlBlock;
+import org.robolectric.res.builder.XmlResourceParserImpl;
 import org.robolectric.util.TestUtil;
 import org.xmlpull.v1.XmlPullParser;
 
@@ -46,6 +45,7 @@ import java.io.InputStream;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
@@ -634,6 +634,36 @@ public class ShadowResourcesTest {
     assertThat(blueTextColorHint.resourceId).isEqualTo(android.R.color.darker_gray);
 
     arr.recycle();
+  }
+
+  @Test
+  public void getXml() throws Exception {
+    XmlResourceParser xmlResourceParser = resources.getXml(R.xml.preferences);
+    assertThat(xmlResourceParser).isNotNull();
+    assertThat(xmlResourceParser.next()).isEqualTo(XmlResourceParser.START_DOCUMENT);
+    assertThat(xmlResourceParser.next()).isEqualTo(XmlResourceParser.START_TAG);
+    assertThat(xmlResourceParser.getName()).isEqualTo("PreferenceScreen");
+  }
+
+  @Test
+  public void getXml_shouldHavePackageContextForReferenceResolution() throws Exception {
+    XmlResourceParserImpl xmlResourceParser =
+        (XmlResourceParserImpl) resources.getXml(R.xml.preferences);
+    assertThat(xmlResourceParser.qualify("?ref")).isEqualTo("?org.robolectric:attr/ref");
+
+    xmlResourceParser =
+        (XmlResourceParserImpl) resources.getXml(android.R.layout.list_content);
+    assertThat(xmlResourceParser.qualify("?ref")).isEqualTo("?android:attr/ref");
+  }
+
+  @Test
+  public void whenMissingXml_loadXmlResourceParser() throws Exception {
+    try {
+      resources.getXml(R.id.ungulate);
+      fail();
+    } catch (Resources.NotFoundException e) {
+      assertThat(e.getMessage()).contains("org.robolectric:id/ungulate");
+    }
   }
 
   private static String findRootTag(XmlResourceParser parser) throws Exception {
