@@ -96,4 +96,9 @@ public class RoutingResourceLoader extends ResourceLoader {
       return true;
     }
   }
+
+  @Override
+  public String toString() {
+    return "RoutingResourceLoader{" + resourceLoaders + "}";
+  }
 }

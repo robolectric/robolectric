@@ -24,6 +24,8 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.res.Plural;
 import org.robolectric.res.PluralResourceLoader;
 import org.robolectric.res.ResType;
+import org.robolectric.res.Style;
+import org.robolectric.res.ThemeStyleSet;
 import org.robolectric.res.TypedResource;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
@@ -38,6 +40,7 @@ import java.util.Locale;
 
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.internal.Shadow.directlyOn;
+import static org.robolectric.internal.Shadow.invokeConstructor;
 
 /**
  * Shadow for {@link android.content.res.Resources}.
@@ -95,7 +98,8 @@ public class ShadowResources {
 
   @Implementation
   public TypedArray obtainAttributes(AttributeSet set, int[] attrs) {
-    return shadowOf(realResources.getAssets()).attrsToTypedArray(realResources, set, attrs, 0, 0, 0);
+    return shadowOf(realResources.getAssets())
+        .attrsToTypedArray(realResources, set, attrs, 0, null, 0);
   }
 
   @Implementation
@@ -186,6 +190,14 @@ public class ShadowResources {
   @Implements(Resources.Theme.class)
   public static class ShadowTheme {
     @RealObject Resources.Theme realTheme;
+    private ThemeStyleSet themeStyleSet = new ThemeStyleSet();
+
+    public void __constructor__(Resources this$0) {
+      invokeConstructor(Resources.Theme.class, realTheme, ClassParameter.from(Resources.class, this$0));
+      Number themePtr = ReflectionHelpers.getField(realTheme, "mTheme");
+      ShadowAssetManager.saveTheme(themePtr, realTheme);
+    }
+
     @Implementation
     public TypedArray obtainStyledAttributes(int[] attrs) {
       return obtainStyledAttributes(0, attrs);
@@ -198,7 +210,24 @@ public class ShadowResources {
 
     @Implementation
     public TypedArray obtainStyledAttributes(AttributeSet set, int[] attrs, int defStyleAttr, int defStyleRes) {
-      return shadowOf(getResources().getAssets()).attrsToTypedArray(getResources(), set, attrs, defStyleAttr, realTheme, defStyleRes);
+      return getShadowAssetManager().attrsToTypedArray(getResources(), set, attrs, defStyleAttr, realTheme, defStyleRes);
+    }
+
+    public ThemeStyleSet getThemeStyleSet() {
+      return themeStyleSet;
+    }
+
+    public void setThemeStyleSet(ThemeStyleSet themeStyleSet) {
+      this.themeStyleSet = themeStyleSet;
+    }
+
+    public void applyStyle(int styleRes, boolean force) {
+      Style style = getShadowAssetManager().resolveStyle(styleRes, null);
+      themeStyleSet.apply(style, force);
+    }
+
+    private ShadowAssetManager getShadowAssetManager() {
+      return shadowOf(getResources().getAssets());
     }
 
     private Resources getResources() {
