@@ -26,11 +26,6 @@ public abstract class ResourceLoader {
 
   public abstract XmlBlock getXml(ResName resName, String qualifiers);
 
-  public XmlBlock getXml(int resId, String qualifiers) {
-    ResName resName = resolveResName(resId, qualifiers);
-    return resName != null ? getXml(resName, qualifiers) : null;
-  }
-
   public abstract InputStream getRawValue(ResName resName);
 
   public InputStream getRawValue(int resId) {
@@ -40,43 +35,6 @@ public abstract class ResourceLoader {
   public abstract ResourceIndex getResourceIndex();
 
   public abstract boolean providesFor(String namespace);
-
-  private ResName resolveResName(int resId, String qualifiers) {
-    TypedResource value = getValue(resId, qualifiers);
-    return resolveResource(value, qualifiers, resId);
-  }
-
-  private ResName resolveResource(TypedResource value, String qualifiers, int resId) {
-    ResName resName = getResourceIndex().getResName(resId);
-    while (value != null && value.isReference()) {
-      String s = value.asString();
-      if (AttributeResource.isNull(s) || AttributeResource.isEmpty(s)) {
-        value = null;
-      } else {
-        String refStr = s.substring(1).replace("+", "");
-        resName = ResName.qualifyResName(refStr, resName);
-        value = getValue(resName, qualifiers);
-      }
-    }
-
-    return resName;
-  }
-
-  public TypedResource resolveResourceValue(TypedResource value, String qualifiers, int resId) {
-    ResName resName = getResourceIndex().getResName(resId);
-    while (value != null && value.isReference()) {
-      String s = value.asString();
-      if (AttributeResource.isNull(s) || AttributeResource.isEmpty(s)) {
-        value = null;
-      } else {
-        String refStr = s.substring(1).replace("+", "");
-        resName = ResName.qualifyResName(refStr, resName);
-        value = getValue(resName, qualifiers);
-      }
-    }
-
-    return value;
-  }
 
   @NotNull
   public List<TypedResource> grep(String regex) {
