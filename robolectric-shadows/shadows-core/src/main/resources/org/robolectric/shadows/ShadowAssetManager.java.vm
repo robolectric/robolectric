@@ -105,7 +105,7 @@ public final class ShadowAssetManager {
     ResName resName = ResName.qualifyResName(name, defPackage, defType);
 
     // ids are often declared from within layouts, so a special case since we don't collect those:
-    if (!"id".equals(defType)) {
+    if (!ResName.ID_TYPE.equals(resName.type)) {
       TypedResource value = resourceLoader.getValue(resName, RuntimeEnvironment.getQualifiers());
       if (value == null) {
         return 0;

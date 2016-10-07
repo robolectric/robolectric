@@ -6,6 +6,7 @@ import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.util.AttributeSet;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -188,12 +189,27 @@ public class ShadowAssetManagerTest {
   public void getResourceIdentifier_shouldReturnValueFromRClass() throws Exception {
     assertThat(shadowOf(assetManager).getResourceIdentifier("idInRClassAndXml", "id", "org.robolectric"))
         .isEqualTo(R.id.idInRClassAndXml);
+    assertThat(shadowOf(assetManager).getResourceIdentifier("id/idInRClassAndXml", null, "org.robolectric"))
+        .isEqualTo(R.id.idInRClassAndXml);
+    assertThat(shadowOf(assetManager).getResourceIdentifier("org.robolectric:idInRClassAndXml", "id", null))
+        .isEqualTo(R.id.idInRClassAndXml);
+    assertThat(shadowOf(assetManager).getResourceIdentifier("org.robolectric:id/idInRClassAndXml", "other", "other"))
+        .isEqualTo(R.id.idInRClassAndXml);
+  }
+
+  @Test @Ignore("currently ids are always automatically assigned a value; to fix this we'd need to check layouts for +@id/___, which is expensive")
+  public void whenCalledForIdWithNameNotInRClassOrXml_getResourceIdentifier_shouldReturnZero() throws Exception {
+    assertThat(shadowOf(assetManager).getResourceIdentifier("org.robolectric:id/idThatDoesntExistAnywhere", "other", "other"))
+        .isEqualTo(0);
   }
 
   @Test
   public void whenIdIsAbsentInRClassButPresentInXml_getResourceIdentifier_shouldReturnGeneratedId() throws Exception {
-    assertThat(shadowOf(assetManager).getResourceIdentifier("idNotInRClass", "id", "org.robolectric"))
-        .isGreaterThan(0);
+    int id = shadowOf(assetManager).getResourceIdentifier("idNotInRClass", "id", "org.robolectric");
+    assertThat(id).isGreaterThan(0);
+    assertThat(shadowOf(assetManager).getResourceIdentifier("id/idNotInRClass", null, "org.robolectric")).isEqualTo(id);
+    assertThat(shadowOf(assetManager).getResourceIdentifier("org.robolectric:idNotInRClass", "id", null)).isEqualTo(id);
+    assertThat(shadowOf(assetManager).getResourceIdentifier("org.robolectric:id/idNotInRClass", "other", "other")).isEqualTo(id);
   }
 
   @Test
