@@ -16,6 +16,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.res.AttributeResource;
 import org.robolectric.res.DrawableResourceLoader;
+import org.robolectric.res.EmptyStyle;
 import org.robolectric.res.FileTypedResource;
 import org.robolectric.res.FsFile;
 import org.robolectric.res.ResName;
@@ -37,6 +38,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -58,17 +60,14 @@ public final class ShadowAssetManager {
 
   boolean strictErrors = false;
 
-  private Map<Number, ThemeStyleSet> themes =
-      Collections.synchronizedMap(new HashMap<Number, ThemeStyleSet>());
-  private $ptrClass nextInternalThemeId = 1000;
+  private static $ptrClass nextInternalThemeId = 1000;
+  private static Map<Number, WeakReference<Resources.Theme>> themes
+      = new HashMap<Number, WeakReference<Resources.Theme>>();
+
   private ResourceLoader resourceLoader;
 
   @RealObject
   AssetManager realObject;
-
-  public ResourceLoader getResourceLoader() {
-    return resourceLoader;
-  }
 
   public void __constructor__() {
     resourceLoader = RuntimeEnvironment.getAppResourceLoader();
@@ -76,6 +75,10 @@ public final class ShadowAssetManager {
 
   public void __constructor__(boolean isSystem) {
     resourceLoader = isSystem ? RuntimeEnvironment.getSystemResourceLoader() : RuntimeEnvironment.getAppResourceLoader();
+  }
+
+  public ResourceLoader getResourceLoader() {
+    return resourceLoader;
   }
 
   @HiddenApi @Implementation
@@ -153,7 +156,7 @@ public final class ShadowAssetManager {
     ResourceIndex resourceIndex = resourceLoader.getResourceIndex();
     ResName resName = resourceIndex.getResName(ident);
 
-    ThemeStyleSet themeStyleSet = getThemeStyleSet(themePtr);
+    ThemeStyleSet themeStyleSet = shadowOf(getTheme(themePtr)).getThemeStyleSet();
     AttributeResource attrValue = themeStyleSet.getAttrValue(resName);
     while(resolveRefs && attrValue != null && attrValue.isStyleReference()) {
       ResName attrResName = new ResName(attrValue.contextPackageName, "attr", attrValue.value.substring(1));
@@ -288,45 +291,57 @@ public final class ShadowAssetManager {
   }
 
   @HiddenApi @Implementation
-  synchronized public $ptrClass createTheme() {
-    return nextInternalThemeId++;
+  public $ptrClass createTheme() {
+    synchronized (themes) {
+      $ptrClass themePtr = nextInternalThemeId++;
+      return themePtr;
+    }
+  }
+
+  public static void saveTheme(Number themePtr, Resources.Theme theme) {
+    synchronized (themes) {
+      themes.put(themePtr, new WeakReference<>(theme));
+    }
+  }
+
+  private static Resources.Theme getTheme($ptrClass themePtr) {
+    WeakReference<Resources.Theme> themeRef;
+    synchronized (themes) {
+      themeRef = themes.get(themePtr);
+    }
+    if (themeRef == null) {
+      throw new RuntimeException("no theme " + themePtr + " found in AssetManager");
+    }
+    return themeRef.get();
   }
 
   @HiddenApi @Implementation
   public void releaseTheme($ptrClass themePtr) {
-    themes.remove(themePtr);
+    synchronized (themes) {
+      themes.remove(themePtr);
+    }
   }
 
   @HiddenApi @Implementation
   public static void applyThemeStyle($ptrClass themePtr, int styleRes, boolean force) {
-    ShadowAssetManager assetManager = shadowOf(RuntimeEnvironment.application.getAssets());
-
-    final Map<Number, ThemeStyleSet> themes = assetManager.themes;
-
-    ThemeStyleSet themeStyleSet = themes.get(themePtr);
-    if (themeStyleSet == null) {
-      themeStyleSet = new ThemeStyleSet();
-      themes.put(themePtr, themeStyleSet);
-    }
-
-    Style style = assetManager.resolveStyle(styleRes, null);
-
-    themeStyleSet.apply(style, force);
+    Resources.Theme theme = getTheme(themePtr);
+    ShadowResources.ShadowTheme shadowTheme = shadowOf(theme);
   }
 
   @HiddenApi @Implementation
   public static void copyTheme($ptrClass destPtr, $ptrClass sourcePtr) {
-    ShadowAssetManager assetManager = shadowOf(RuntimeEnvironment.application.getAssets());
-    assetManager.themes.put(destPtr, assetManager.getThemeStyleSet(sourcePtr).copy());
+    Resources.Theme destTheme = getTheme(destPtr);
+    Resources.Theme sourceTheme = getTheme(sourcePtr);
+    shadowOf(destTheme).setThemeStyleSet(shadowOf(sourceTheme).getThemeStyleSet().copy());
   }
 
   /////////////////////////
 
-  private Style resolveStyle(int resId, Style themeStyleSet) {
+  Style resolveStyle(int resId, Style themeStyleSet) {
     return resolveStyle(getResName(resId), themeStyleSet);
   }
 
-  private Style resolveStyle(@NotNull ResName themeStyleName, Style themeStyleSet) {
+  Style resolveStyle(@NotNull ResName themeStyleName, Style themeStyleSet) {
     TypedResource themeStyleResource = resourceLoader.getValue(themeStyleName, RuntimeEnvironment.getQualifiers());
     if (themeStyleResource == null) return null;
     StyleData themeStyleData = (StyleData) themeStyleResource.getData();
@@ -402,7 +417,7 @@ public final class ShadowAssetManager {
     return resolveResourceValue(value, qualifiers, resName);
   }
 
-  private AttributeResource buildAttribute(AttributeSet set, int resId, int defStyleAttr, $ptrClass themePtr, int defStyleRes) {
+  private AttributeResource buildAttribute(AttributeSet set, int resId, int defStyleAttr, Style themeStyleSet, int defStyleRes) {
     /*
      * When determining the final value of a particular attribute, there are four inputs that come into play:
      *
@@ -415,10 +430,6 @@ public final class ShadowAssetManager {
     Style defStyleFromRes = null;
     Style styleAttrStyle = null;
 
-    ThemeStyleSet themeStyleSet = getThemeStyleSet(themePtr);
-    if (themeStyleSet == null) {
-      themeStyleSet = new ThemeStyleSet();
-    }
     if (defStyleAttr != 0) {
       // Load the theme attribute for the default style attributes. E.g., attr/buttonStyle
       ResName defStyleName = getResName(defStyleAttr);
@@ -499,26 +510,20 @@ public final class ShadowAssetManager {
     }
   }
 
-  private ThemeStyleSet getThemeStyleSet($ptrClass themePtr) {
-    ThemeStyleSet themeStyleSet = themes.get(themePtr);
-    return themeStyleSet == null ? new ThemeStyleSet() : themeStyleSet;
-  }
-
   TypedArray attrsToTypedArray(Resources resources, AttributeSet set, int[] attrs, int defStyleAttr, Resources.Theme theme, int defStyleRes) {
-      $ptrClass themePtr = ReflectionHelpers.getField(theme, "mTheme");
-      return attrsToTypedArray(resources, set, attrs, defStyleAttr, themePtr, defStyleRes);
-  }
-
-  TypedArray attrsToTypedArray(Resources resources, AttributeSet set, int[] attrs, int defStyleAttr, $ptrClass themePtr, int defStyleRes) {
     CharSequence[] stringData = new CharSequence[attrs.length];
     int[] data = new int[attrs.length * ShadowAssetManager.STYLE_NUM_ENTRIES];
     int[] indices = new int[attrs.length + 1];
     int nextIndex = 0;
 
+    Style themeStyleSet = theme == null
+        ? new EmptyStyle()
+        : shadowOf(theme).getThemeStyleSet();
+
     for (int i = 0; i < attrs.length; i++) {
       int offset = i * ShadowAssetManager.STYLE_NUM_ENTRIES;
 
-      AttributeResource attribute = buildAttribute(set, attrs[i], defStyleAttr, themePtr, defStyleRes);
+      AttributeResource attribute = buildAttribute(set, attrs[i], defStyleAttr, themeStyleSet, defStyleRes);
       if (attribute != null && !attribute.isNull()) {
         TypedValue typedValue = new TypedValue();
         // If there is an AttributeSet then use the resource loader that the attribute set was created with.
@@ -549,7 +554,7 @@ public final class ShadowAssetManager {
     return typedArray;
   }
 
-  private AttributeResource findAttributeValue(int resId, AttributeSet attributeSet, Style styleAttrStyle, Style defStyleFromAttr, Style defStyleFromRes, @NotNull ThemeStyleSet themeStyleSet) {
+  private AttributeResource findAttributeValue(int resId, AttributeSet attributeSet, Style styleAttrStyle, Style defStyleFromAttr, Style defStyleFromRes, @NotNull Style themeStyleSet) {
     if (attributeSet != null) {
       for (int i = 0; i < attributeSet.getAttributeCount(); i++) {
         if (attributeSet.getAttributeNameResource(i) == resId && attributeSet.getAttributeValue(i) != null) {

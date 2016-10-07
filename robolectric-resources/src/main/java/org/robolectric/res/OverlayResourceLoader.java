@@ -136,4 +136,9 @@ public class OverlayResourceLoader extends XResourceLoader {
 
     super.receive(visitor);
   }
+
+  @Override
+  public String toString() {
+    return "OverlayResourceLoader for " + packageName + " with " + subResourceLoaders.size() + " sub loaders";
+  }
 }
