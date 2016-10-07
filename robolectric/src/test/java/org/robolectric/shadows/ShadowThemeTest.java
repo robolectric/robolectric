@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.app.Activity;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
+import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.util.TypedValue;
@@ -321,6 +322,29 @@ public class ShadowThemeTest {
       super.onCreate(savedInstanceState);
       setContentView(R.layout.styles_button_layout);
     }
+  }
+
+  @Test
+  public void themesShouldBeApplyableAcrossResources() throws Exception {
+    Resources.Theme themeFromSystem = Resources.getSystem().newTheme();
+    themeFromSystem.applyStyle(android.R.style.Theme_Light, true);
+
+    Resources.Theme themeFromApp = RuntimeEnvironment.application.getResources().newTheme();
+    themeFromApp.applyStyle(android.R.style.Theme, true);
+
+    // themeFromSystem is Theme_Light, which has a white background...
+    assertThat(shadowOf(themeFromSystem).obtainStyledAttributes(new int[]{android.R.attr.colorBackground}).getColor(0, 123))
+        .isEqualTo(Color.WHITE);
+
+    // themeFromApp is Theme, which has a black background...
+    assertThat(shadowOf(themeFromApp).obtainStyledAttributes(new int[]{android.R.attr.colorBackground}).getColor(0, 123))
+        .isEqualTo(Color.BLACK);
+
+    themeFromApp.setTo(themeFromSystem);
+
+    // themeFromApp now has style values from themeFromSystem, so now it has a black background...
+    assertThat(shadowOf(themeFromApp).obtainStyledAttributes(new int[]{android.R.attr.colorBackground}).getColor(0, 123))
+        .isEqualTo(Color.WHITE);
   }
 
   public static class TestActivityWithAnotherTheme extends TestActivity {

@@ -67,9 +67,7 @@ public class PackageResourceLoader extends XResourceLoader {
 
   @Override
   public String toString() {
-    return "PackageResourceLoader{" +
-        "resourcePath=" + resourcePath +
-        '}';
+    return "PackageResourceLoader{" + resourcePath.getPackageName() + '}';
   }
 
   @Override public boolean providesFor(String namespace) {
