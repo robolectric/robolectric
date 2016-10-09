@@ -49,8 +49,11 @@ public class GradleManifestFactory implements ManifestFactory {
       assets = FileFsFile.from(buildOutputDir, "bundles", flavor, type, "assets");
     }
 
-    if (FileFsFile.from(buildOutputDir, "manifests").exists()) {
+    if (FileFsFile.from(buildOutputDir, "manifests", "full").exists()) {
       manifest = FileFsFile.from(buildOutputDir, "manifests", "full", flavor, abiSplit, type, DEFAULT_MANIFEST_NAME);
+    } else if (FileFsFile.from(buildOutputDir, "manifests", "aapt").exists()) {
+      // Android gradle plugin 2.2.0+ can put library manifest files inside of "aapt" instead of "full"
+      manifest = FileFsFile.from(buildOutputDir, "manifests", "aapt", flavor, abiSplit, type, DEFAULT_MANIFEST_NAME);
     } else {
       manifest = FileFsFile.from(buildOutputDir, "bundles", flavor, abiSplit, type, DEFAULT_MANIFEST_NAME);
     }

@@ -26,7 +26,7 @@ public class GradleManifestFactoryTest {
   public void setup() {
     FileFsFile.from("build", "intermediates", "res").getFile().mkdirs();
     FileFsFile.from("build", "intermediates", "assets").getFile().mkdirs();
-    FileFsFile.from("build", "intermediates", "manifests").getFile().mkdirs();
+    FileFsFile.from("build", "intermediates", "manifests", "full").getFile().mkdirs();
 
     FileFsFile.from("custom_build", "intermediates", "res").getFile().mkdirs();
     FileFsFile.from("custom_build", "intermediates", "assets").getFile().mkdirs();
@@ -38,14 +38,15 @@ public class GradleManifestFactoryTest {
   public void teardown() throws IOException {
     delete(FileFsFile.from("build", "intermediates", "res").getFile());
     delete(FileFsFile.from("build", "intermediates", "assets").getFile());
-    delete(FileFsFile.from("build", "intermediates", "manifests").getFile());
+    delete(FileFsFile.from("build", "intermediates", "manifests", "full").getFile());
+    delete(FileFsFile.from("build", "intermediates", "manifests", "aapt").getFile());
     delete(FileFsFile.from("build", "intermediates", "res", "merged").getFile());
 
     delete(FileFsFile.from("custom_build", "intermediates", "res").getFile());
     delete(FileFsFile.from("custom_build", "intermediates", "assets").getFile());
     delete(FileFsFile.from("custom_build", "intermediates", "manifests").getFile());
   }
-  
+
   @Test
   public void getAppManifest_forApplications_shouldCreateManifest() throws Exception {
     final AndroidManifest manifest = createManifest(
@@ -61,7 +62,7 @@ public class GradleManifestFactoryTest {
   public void getAppManifest_forLibraries_shouldCreateManifest() throws Exception {
     delete(FileFsFile.from("build", "intermediates", "res").getFile());
     delete(FileFsFile.from("build", "intermediates", "assets").getFile());
-    delete(FileFsFile.from("build", "intermediates", "manifests").getFile());
+    delete(FileFsFile.from("build", "intermediates", "manifests", "full").getFile());
 
     final AndroidManifest manifest = createManifest(
         new Config.Builder().setConstants(BuildConfig.class).build());
@@ -70,6 +71,22 @@ public class GradleManifestFactoryTest {
     assertThat(manifest.getResDirectory().getPath()).isEqualTo(convertPath("build/intermediates/bundles/flavor1/type1/res"));
     assertThat(manifest.getAssetsDirectory().getPath()).isEqualTo(convertPath("build/intermediates/bundles/flavor1/type1/assets"));
     assertThat(manifest.getAndroidManifestFile().getPath()).isEqualTo(convertPath("build/intermediates/bundles/flavor1/type1/AndroidManifest.xml"));
+  }
+
+  @Test
+  public void getAppManifest_forAaptLibraries_shouldCreateManifest() throws Exception {
+    delete(FileFsFile.from("build", "intermediates", "res").getFile());
+    delete(FileFsFile.from("build", "intermediates", "assets").getFile());
+    delete(FileFsFile.from("build", "intermediates", "manifests", "full").getFile());
+    FileFsFile.from("build", "intermediates", "manifests", "aapt").getFile().mkdirs();
+
+    final AndroidManifest manifest = createManifest(
+            new Config.Builder().setConstants(BuildConfig.class).build());
+
+    assertThat(manifest.getPackageName()).isEqualTo("org.robolectric.gradleapp");
+    assertThat(manifest.getResDirectory().getPath()).isEqualTo(convertPath("build/intermediates/bundles/flavor1/type1/res"));
+    assertThat(manifest.getAssetsDirectory().getPath()).isEqualTo(convertPath("build/intermediates/bundles/flavor1/type1/assets"));
+    assertThat(manifest.getAndroidManifestFile().getPath()).isEqualTo(convertPath("build/intermediates/manifests/aapt/flavor1/type1/AndroidManifest.xml"));
   }
 
   @Test
@@ -90,7 +107,7 @@ public class GradleManifestFactoryTest {
     assertThat(manifest.getPackageName()).isEqualTo("org.robolectric.gradleapp");
     assertThat(manifest.getResDirectory().getPath()).isEqualTo(convertPath("custom_build/intermediates/res/flavor1/type1"));
     assertThat(manifest.getAssetsDirectory().getPath()).isEqualTo(convertPath("custom_build/intermediates/assets/flavor1/type1"));
-    assertThat(manifest.getAndroidManifestFile().getPath()).isEqualTo(convertPath("custom_build/intermediates/manifests/full/flavor1/type1/AndroidManifest.xml"));
+    assertThat(manifest.getAndroidManifestFile().getPath()).isEqualTo(convertPath("custom_build/intermediates/bundles/flavor1/type1/AndroidManifest.xml"));
   }
 
   @Test
