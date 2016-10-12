@@ -13,6 +13,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.OperationApplicationException;
 import android.content.PeriodicSync;
+import android.content.pm.ProviderInfo;
 import android.content.res.AssetFileDescriptor;
 import android.database.ContentObserver;
 import android.database.Cursor;
@@ -25,6 +26,7 @@ import android.os.RemoteException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.robolectric.DefaultTestLifecycle;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
@@ -47,6 +49,7 @@ import java.util.List;
 
 import static android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -253,6 +256,18 @@ public class ShadowContentResolverTest {
 
     contentResolver.call(uri, METHOD, ARG, EXTRAS);
     verify(provider).call(METHOD, ARG, EXTRAS);
+  }
+
+  @Test
+  public void registerProvider_shouldAttachProviderInfo() throws Exception {
+    ContentProvider mock = mock(ContentProvider.class);
+    ShadowContentResolver.registerProvider("the-authority", mock);
+    ArgumentCaptor<ProviderInfo> captor = ArgumentCaptor.forClass(ProviderInfo.class);
+    verify(mock).attachInfo(same(RuntimeEnvironment.application), captor.capture());
+    ProviderInfo providerInfo = captor.getValue();
+
+    assertThat(providerInfo.authority).isEqualTo("the-authority");
+    assertThat(providerInfo.grantUriPermissions).isEqualTo(true);
   }
 
   @Test(expected = UnsupportedOperationException.class)

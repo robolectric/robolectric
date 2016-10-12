@@ -585,6 +585,7 @@ public class ShadowContentResolver {
   private static void initialize(ContentProvider provider, String authority) {
     ProviderInfo providerInfo = new ProviderInfo();
     providerInfo.authority = authority;
+    providerInfo.grantUriPermissions = true;
     provider.attachInfo(RuntimeEnvironment.application, providerInfo);
     provider.onCreate();
   }
