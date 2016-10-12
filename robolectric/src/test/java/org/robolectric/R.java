@@ -337,8 +337,9 @@ public final class R {
     public static final int test_pt_dimen = 0x10d02;
     public static final int test_px_dimen = 0x10d03;
     public static final int test_sp_dimen = 0x10d04;
-    public static final int test_in_dimen = 0x10d05;
-    public static final int test_mm_dimen = 0x10d06;
+    public static final int test_mm_dimen = 0x10d05;
+    public static final int test_in_dimen = 0x10d06;
+    public static final int ref_to_px_dimen = 0x10d07;
   }
 
   public static final class integer {

@@ -6,6 +6,7 @@ import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.Button;
@@ -354,6 +355,26 @@ public class ShadowThemeTest {
     themeFromSystem.applyStyle(R.style.ThemeWithSelfReferencingTextAttr, true);
     assertThat(themeFromSystem.obtainStyledAttributes(new int[]{android.R.attr.textAppearance})
         .getResourceId(0, 0)).isEqualTo(0);
+  }
+
+  @Test
+  public void dimenRef() throws Exception {
+    AttributeSet attributeSet = Robolectric.buildAttributeSet()
+        .addAttribute(android.R.attr.layout_height, "@dimen/test_px_dimen")
+        .build();
+    TypedArray typedArray = resources.newTheme().obtainStyledAttributes(
+        attributeSet, new int[]{android.R.attr.layout_height}, 0, 0);
+    assertThat(typedArray.getDimensionPixelSize(0, -1)).isEqualTo(15);
+  }
+
+  @Test
+  public void dimenRefRef() throws Exception {
+    AttributeSet attributeSet = Robolectric.buildAttributeSet()
+        .addAttribute(android.R.attr.layout_height, "@dimen/ref_to_px_dimen")
+        .build();
+    TypedArray typedArray = resources.newTheme().obtainStyledAttributes(
+        attributeSet, new int[]{android.R.attr.layout_height}, 0, 0);
+    assertThat(typedArray.getDimensionPixelSize(0, -1)).isEqualTo(15);
   }
 
   public static class TestActivityWithAnotherTheme extends TestActivity {

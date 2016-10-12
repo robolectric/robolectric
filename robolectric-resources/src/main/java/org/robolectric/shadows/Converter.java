@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.content.res.Resources;
 import android.util.TypedValue;
 import org.robolectric.res.*;
+import org.robolectric.util.Logger;
 import org.robolectric.util.Util;
 
 public class Converter<T> {
@@ -49,6 +50,8 @@ public class Converter<T> {
       TypedResource dereferencedRef = resourceLoader.getValue(resName, qualifiers);
 
       if (dereferencedRef == null) {
+        Logger.strict("couldn't resolve %s from %s", resName.getFullyQualifiedName(), attribute);
+
         if (resName.type.equals("id")) {
           return;
         } else if (resName.type.equals("layout")) {

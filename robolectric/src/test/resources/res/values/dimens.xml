@@ -7,4 +7,6 @@
   <dimen name="test_sp_dimen">5sp</dimen>
   <dimen name="test_mm_dimen">42mm</dimen>
   <dimen name="test_in_dimen">99in</dimen>
+
+  <dimen name="ref_to_px_dimen">@dimen/test_px_dimen</dimen>
 </resources>
