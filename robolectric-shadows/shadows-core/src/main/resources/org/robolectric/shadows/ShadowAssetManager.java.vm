@@ -328,7 +328,8 @@ public final class ShadowAssetManager {
   public static void applyThemeStyle($ptrClass themePtr, int styleRes, boolean force) {
     Resources.Theme theme = getTheme(themePtr);
     ShadowResources.ShadowTheme shadowTheme = shadowOf(theme);
-  }
+    shadowTheme.doApplyStyle(styleRes, force);
+}
 
   @HiddenApi @Implementation
   public static void copyTheme($ptrClass destPtr, $ptrClass sourcePtr) {
@@ -490,6 +491,10 @@ public final class ShadowAssetManager {
     AttributeResource attribute = findAttributeValue(resId, set, styleAttrStyle, defStyleFromAttr, defStyleFromRes, themeStyleSet);
     while (attribute != null && attribute.isStyleReference()) {
       ResName otherAttrName = attribute.getStyleReference();
+      if (attribute.resName.equals(otherAttrName)) {
+        Logger.info("huh... circular reference for %s?", attribute.resName.getFullyQualifiedName());
+        return null;
+      }
       ResName resName = resourceLoader.getResourceIndex().getResName(resId);
 
       AttributeResource otherAttr = themeStyleSet.getAttrValue(otherAttrName);

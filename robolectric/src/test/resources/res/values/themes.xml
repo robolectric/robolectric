@@ -85,6 +85,11 @@
     <item name="android:textColor">@color/white</item>
   </style>
 
+  <style name="ThemeWithSelfReferencingTextAttr">
+    <!-- android's Widget style (among others) does this, wtf? -->
+    <item name="android:textAppearance">?android:attr/textAppearance</item>
+  </style>
+
   <style name="IndirectButtonStyle" parent="@android:attr/buttonStyle">
     <item name="android:minHeight">12dp</item>
   </style>

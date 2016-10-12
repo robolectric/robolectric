@@ -138,7 +138,7 @@ public class ShadowAssetManagerTest {
   @Test
   public void unknownResourceIdsShouldReportPackagesSearched() throws IOException {
     expectedException.expect(Resources.NotFoundException.class);
-    expectedException.expectMessage("Unable to find resource ID #0xffffffff in packages [android, org.robolectric, org.robolectric.lib3, org.robolectric.lib1, org.robolectric.lib2]");
+    expectedException.expectMessage("Unable to find resource ID #0xffffffff in packages [android, org.robolectric, org.robolectric.lib1, org.robolectric.lib2, org.robolectric.lib3]");
 
     resources.newTheme().applyStyle(-1, false);
     assetManager.openNonAsset(0, "./res/drawable/does_not_exist.png", 0);

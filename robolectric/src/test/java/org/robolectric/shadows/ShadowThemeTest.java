@@ -347,6 +347,15 @@ public class ShadowThemeTest {
         .isEqualTo(Color.WHITE);
   }
 
+  @Test
+  public void styleResolutionShouldIgnoreThemes() throws Exception {
+    Resources.Theme themeFromSystem = resources.newTheme();
+    themeFromSystem.applyStyle(android.R.style.Theme_DeviceDefault, true);
+    themeFromSystem.applyStyle(R.style.ThemeWithSelfReferencingTextAttr, true);
+    assertThat(themeFromSystem.obtainStyledAttributes(new int[]{android.R.attr.textAppearance})
+        .getResourceId(0, 0)).isEqualTo(0);
+  }
+
   public static class TestActivityWithAnotherTheme extends TestActivity {
   }
 

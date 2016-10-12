@@ -221,7 +221,7 @@ public class ShadowResources {
       this.themeStyleSet = themeStyleSet;
     }
 
-    public void applyStyle(int styleRes, boolean force) {
+    void doApplyStyle(int styleRes, boolean force) {
       Style style = getShadowAssetManager().resolveStyle(styleRes, null);
       themeStyleSet.apply(style, force);
     }
