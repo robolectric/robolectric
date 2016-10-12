@@ -136,6 +136,24 @@ public class ShadowAssetManagerTest {
   }
 
   @Test
+  public void unknownResourceIdsShouldReportPackagesSearched() throws IOException {
+    expectedException.expect(Resources.NotFoundException.class);
+    expectedException.expectMessage("Unable to find resource ID #0xffffffff in packages [android, org.robolectric, org.robolectric.lib1, org.robolectric.lib2, org.robolectric.lib3]");
+
+    resources.newTheme().applyStyle(-1, false);
+    assetManager.openNonAsset(0, "./res/drawable/does_not_exist.png", 0);
+  }
+
+  @Test
+  public void forSystemResources_unknownResourceIdsShouldReportPackagesSearched() throws IOException {
+    expectedException.expect(Resources.NotFoundException.class);
+    expectedException.expectMessage("Unable to find resource ID #0xffffffff in packages [android]");
+
+    Resources.getSystem().newTheme().applyStyle(-1, false);
+    assetManager.openNonAsset(0, "./res/drawable/does_not_exist.png", 0);
+  }
+
+  @Test
   @Config(qualifiers = "mdpi")
   public void openNonAssetShouldOpenCorrectAssetBasedOnQualifierMdpi() throws IOException {
     InputStream inputStream = assetManager.openNonAsset(0, "./res/drawable/robolectric.png", 0);

@@ -387,8 +387,9 @@ public final class R {
     public static final int Theme_ThemeWithAttrReferenceAsParent = 0x11010;
     public static final int MyBlackTheme = 0x11011;
     public static final int MyBlueTheme = 0x11012;
+    public static final int ThemeWithSelfReferencingTextAttr = 0x11013;
 
-    public static final int IndirectButtonStyle = 0x11013;
+    public static final int IndirectButtonStyle = 0x11014;
   }
 
   public static final class fraction {
