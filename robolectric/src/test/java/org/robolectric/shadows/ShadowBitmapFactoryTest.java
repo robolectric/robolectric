@@ -42,6 +42,11 @@ public class ShadowBitmapFactoryTest {
   }
 
   @Test
+  public void withResId0_decodeResource_shouldReturnNull() throws Exception {
+    assertThat(BitmapFactory.decodeResource(RuntimeEnvironment.application.getResources(), 0)).isNull();
+  }
+
+  @Test
   public void decodeResource_shouldPassABitmapConfig() throws Exception {
     BitmapFactory.Options options = new BitmapFactory.Options();
     options.inPreferredConfig = Bitmap.Config.ALPHA_8;
