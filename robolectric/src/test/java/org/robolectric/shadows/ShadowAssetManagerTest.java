@@ -215,6 +215,27 @@ public class ShadowAssetManagerTest {
         .isEqualTo(R.id.idInRClassAndXml);
   }
 
+  @Test
+  public void whenPackageIsUnknown_getResourceIdentifier_shouldReturnZero() throws Exception {
+    assertThat(shadowOf(assetManager).getResourceIdentifier("whatever", "id", "some.unknown.package"))
+        .isEqualTo(0);
+    assertThat(shadowOf(assetManager).getResourceIdentifier("id/whatever", null, "some.unknown.package"))
+        .isEqualTo(0);
+    assertThat(shadowOf(assetManager).getResourceIdentifier("some.unknown.package:whatever", "id", null))
+        .isEqualTo(0);
+    assertThat(shadowOf(assetManager).getResourceIdentifier("some.unknown.package:id/whatever", "other", "other"))
+        .isEqualTo(0);
+
+    assertThat(shadowOf(assetManager).getResourceIdentifier("whatever", "drawable", "some.unknown.package"))
+        .isEqualTo(0);
+    assertThat(shadowOf(assetManager).getResourceIdentifier("drawable/whatever", null, "some.unknown.package"))
+        .isEqualTo(0);
+    assertThat(shadowOf(assetManager).getResourceIdentifier("some.unknown.package:whatever", "drawable", null))
+        .isEqualTo(0);
+    assertThat(shadowOf(assetManager).getResourceIdentifier("some.unknown.package:id/whatever", "other", "other"))
+        .isEqualTo(0);
+  }
+
   @Test @Ignore("currently ids are always automatically assigned a value; to fix this we'd need to check layouts for +@id/___, which is expensive")
   public void whenCalledForIdWithNameNotInRClassOrXml_getResourceIdentifier_shouldReturnZero() throws Exception {
     assertThat(shadowOf(assetManager).getResourceIdentifier("org.robolectric:id/idThatDoesntExistAnywhere", "other", "other"))
