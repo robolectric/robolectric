@@ -2,6 +2,9 @@ package org.robolectric.res;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -34,8 +37,10 @@ public class OverlayResourceIndexTest {
     assertThat(overlayResourceIndex.getResName(456)).isNull();
   }
 
-  private static class DummyResourceIndex extends ResourceIndex {
+  private static class DummyResourceIndex implements ResourceIndex {
     private final String packageName;
+    private final Map<ResName, Integer> resourceNameToId = new HashMap<>();
+    private final Map<Integer, ResName> resourceIdToResName = new HashMap<>();
 
     private DummyResourceIndex(String packageName, ResName resName, Integer value) {
       this.packageName = packageName;
@@ -52,6 +57,16 @@ public class OverlayResourceIndexTest {
 
     @Override public Collection<String> getPackages() {
       return Arrays.asList(packageName);
+    }
+
+    @Override
+    public Map<ResName, Integer> getAllIdsByResName() {
+      return resourceNameToId;
+    }
+
+    @Override
+    public Map<Integer, ResName> getAllResNamesById() {
+      return resourceIdToResName;
     }
   }
 }

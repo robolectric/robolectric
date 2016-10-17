@@ -1,20 +1,23 @@
 package org.robolectric.res;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class MergedResourceIndex extends ResourceIndex {
+public class MergedResourceIndex implements ResourceIndex {
   private final ResourceIndex[] subIndexes;
   private final Set<String> actualPackageNames = new HashSet<>();
+  private final Map<ResName, Integer> resourceNameToId = new HashMap<>();
+  private final Map<Integer, ResName> resourceIdToResName = new HashMap<>();
 
   public MergedResourceIndex(ResourceIndex... subIndexes) {
     this.subIndexes = subIndexes;
     for (ResourceIndex subIndex : subIndexes) {
       actualPackageNames.addAll(subIndex.getPackages());
-      merge(resourceNameToId, subIndex.resourceNameToId, "resourceNameToId");
-      merge(resourceIdToResName, subIndex.resourceIdToResName, "resourceIdToResName");
+      merge(resourceNameToId, subIndex.getAllIdsByResName(), "resourceNameToId");
+      merge(resourceIdToResName, subIndex.getAllResNamesById(), "resourceIdToResName");
     }
   }
 
@@ -54,5 +57,15 @@ public class MergedResourceIndex extends ResourceIndex {
 
   @Override public Collection<String> getPackages() {
     return actualPackageNames;
+  }
+
+  @Override
+  public Map<ResName, Integer> getAllIdsByResName() {
+    return resourceNameToId;
+  }
+
+  @Override
+  public Map<Integer, ResName> getAllResNamesById() {
+    return resourceIdToResName;
   }
 }

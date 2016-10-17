@@ -2,18 +2,21 @@ package org.robolectric.res;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
-class OverlayResourceIndex extends ResourceIndex {
+class OverlayResourceIndex implements ResourceIndex {
 
   private static final Logger LOGGER = Logger.getLogger(OverlayResourceIndex.class.getName());
 
   private final String packageName;
   private final Set<String> actualPackageNames = new HashSet<>();
+  private final Map<ResName, Integer> resourceNameToId = new HashMap<>();
+  private final Map<Integer, ResName> resourceIdToResName = new HashMap<>();
   private Integer maxUsedInt = null;
 
   public OverlayResourceIndex(String packageName, List<PackageResourceLoader> subResourceLoaders) {
@@ -35,7 +38,7 @@ class OverlayResourceIndex extends ResourceIndex {
     for (ResourceIndex subResourceIndex : subResourceIndexes) {
       actualPackageNames.addAll(subResourceIndex.getPackages());
 
-      for (Map.Entry<ResName, Integer> entry : subResourceIndex.resourceNameToId.entrySet()) {
+      for (Map.Entry<ResName, Integer> entry : subResourceIndex.getAllIdsByResName().entrySet()) {
         ResName resName = entry.getKey();
         int value = entry.getValue();
         ResName localResName = resName.withPackageName(packageName);
@@ -79,5 +82,15 @@ class OverlayResourceIndex extends ResourceIndex {
     return "OverlayResourceIndex{" +
         "package='" + packageName + '\'' +
         '}';
+  }
+
+  @Override
+  public Map<ResName, Integer> getAllIdsByResName() {
+    return resourceNameToId;
+  }
+
+  @Override
+  public Map<Integer, ResName> getAllResNamesById() {
+    return resourceIdToResName;
   }
 }

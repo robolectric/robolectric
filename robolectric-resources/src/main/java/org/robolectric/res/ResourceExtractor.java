@@ -4,12 +4,16 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
-public class ResourceExtractor extends ResourceIndex {
+public class ResourceExtractor implements ResourceIndex {
   private static final Logger LOGGER = Logger.getLogger(ResourceExtractor.class.getName());
 
   private final String packageName;
+  private final Map<ResName, Integer> resourceNameToId = new HashMap<>();
+  private final Map<Integer, ResName> resourceIdToResName = new HashMap<>();
   private Integer maxUsedInt = null;
 
   public ResourceExtractor(ResourcePath resourcePath) {
@@ -76,5 +80,15 @@ public class ResourceExtractor extends ResourceIndex {
     return "ResourceExtractor{" +
         "package=" + packageName +
         '}';
+  }
+
+  @Override
+  public Map<ResName, Integer> getAllIdsByResName() {
+    return resourceNameToId;
+  }
+
+  @Override
+  public Map<Integer, ResName> getAllResNamesById() {
+    return resourceIdToResName;
   }
 }

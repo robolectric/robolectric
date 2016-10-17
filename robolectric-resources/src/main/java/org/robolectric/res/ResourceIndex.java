@@ -1,16 +1,16 @@
 package org.robolectric.res;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 
-public abstract class ResourceIndex {
-  protected final Map<ResName, Integer> resourceNameToId = new HashMap<>();
-  protected final Map<Integer, ResName> resourceIdToResName = new HashMap<>();
+public interface ResourceIndex {
+  Integer getResourceId(ResName resName);
 
-  public abstract Integer getResourceId(ResName resName);
+  ResName getResName(int resourceId);
 
-  public abstract ResName getResName(int resourceId);
+  Collection<String> getPackages();
 
-  public abstract Collection<String> getPackages();
+  Map<ResName, Integer> getAllIdsByResName();
+
+  Map<Integer, ResName> getAllResNamesById();
 }
