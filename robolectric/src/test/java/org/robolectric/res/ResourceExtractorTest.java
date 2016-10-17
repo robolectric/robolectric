@@ -19,26 +19,26 @@ public class ResourceExtractorTest {
 
   @Test
   public void shouldHandleStyleable() throws Exception {
-    assertThat(ResName.getResourceId(resourceIndex, "id/textStyle", R.class.getPackage().getName())).isEqualTo(R.id.textStyle);
-    assertThat(ResName.getResourceId(resourceIndex, "styleable/TitleBar_textStyle", R.class.getPackage().getName())).isNull();
+    assertThat(getResourceId("id/textStyle", R.class.getPackage().getName())).isEqualTo(R.id.textStyle);
+    assertThat(getResourceId("styleable/TitleBar_textStyle", R.class.getPackage().getName())).isNull();
   }
 
   @Test
   public void shouldPrefixResourcesWithPackageContext() throws Exception {
-    assertThat(ResName.getResourceId(resourceIndex, "id/text1", "android")).isEqualTo(android.R.id.text1);
-    assertThat(ResName.getResourceId(resourceIndex, "id/text1", R.class.getPackage().getName())).isEqualTo(R.id.text1);
+    assertThat(getResourceId("id/text1", "android")).isEqualTo(android.R.id.text1);
+    assertThat(getResourceId("id/text1", R.class.getPackage().getName())).isEqualTo(R.id.text1);
   }
 
   @Test
   public void shouldPrefixAllSystemResourcesWithAndroid() throws Exception {
-    assertThat(ResName.getResourceId(resourceIndex, "android:id/text1", "android")).isEqualTo(android.R.id.text1);
+    assertThat(getResourceId("android:id/text1", "android")).isEqualTo(android.R.id.text1);
   }
 
   @Test
   public void shouldHandleNull() throws Exception {
-    assertThat(ResName.getResourceId(resourceIndex, AttributeResource.NULL_VALUE, "")).isEqualTo(null);
-    assertThat(ResName.getResourceId(resourceIndex, AttributeResource.NULL_VALUE, "android")).isEqualTo(null);
-    assertThat(ResName.getResourceId(resourceIndex, AttributeResource.NULL_VALUE, "anything")).isEqualTo(null);
+    assertThat(getResourceId(AttributeResource.NULL_VALUE, "")).isEqualTo(null);
+    assertThat(getResourceId(AttributeResource.NULL_VALUE, "android")).isEqualTo(null);
+    assertThat(getResourceId(AttributeResource.NULL_VALUE, "anything")).isEqualTo(null);
   }
 
   @Test
@@ -61,5 +61,13 @@ public class ResourceExtractorTest {
     assertThat(resourceIndex.getResourceId(new ResName("org.robolectric.lib1", "string", "in_all_libs"))).isEqualTo(R.string.in_all_libs);
     assertThat(resourceIndex.getResourceId(new ResName("org.robolectric.lib2", "string", "in_all_libs"))).isEqualTo(R.string.in_all_libs);
     assertThat(resourceIndex.getResourceId(new ResName("org.robolectric.lib3", "string", "in_all_libs"))).isEqualTo(R.string.in_all_libs);
+  }
+
+  //////////////////////
+
+  public Integer getResourceId(String possiblyQualifiedResourceName, String contextPackageName) {
+    ResName resName = ResName.qualifyPossiblyNullResName(possiblyQualifiedResourceName, contextPackageName);
+    if (resName == null) return null;
+    return resourceIndex.getResourceId(resName);
   }
 }

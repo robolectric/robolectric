@@ -5,6 +5,7 @@ import org.robolectric.res.builder.XmlBlock;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -13,7 +14,7 @@ public abstract class ResourceLoader {
   public abstract TypedResource getValue(@NotNull ResName resName, String qualifiers);
 
   public TypedResource getValue(int resId, String qualifiers) {
-    ResName resName = getResourceIndex().getResName(resId);
+    ResName resName = getResName(resId);
     return resName != null ? getValue(resName, qualifiers) : null;
   }
 
@@ -29,10 +30,17 @@ public abstract class ResourceLoader {
   public abstract InputStream getRawValue(ResName resName);
 
   public InputStream getRawValue(int resId) {
-    return getRawValue(getResourceIndex().getResName(resId));
+    return getRawValue(getResName(resId));
   }
 
+  @Deprecated
   public abstract ResourceIndex getResourceIndex();
+
+  public abstract int getResourceId(ResName resName);
+
+  public abstract ResName getResName(int resourceId);
+
+  public abstract Collection<String> getPackages();
 
   public abstract boolean providesFor(String namespace);
 

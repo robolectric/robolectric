@@ -150,7 +150,7 @@ public class Robolectric {
     }
 
     public AttributeSetBuilder addAttribute(int resId, String value) {
-      ResName resName = appResourceLoader.getResourceIndex().getResName(resId);
+      ResName resName = appResourceLoader.getResName(resId);
       if ("style".equals(resName.name)) {
         ((Element)doc.getFirstChild()).setAttribute(resName.name, value);
       } else {

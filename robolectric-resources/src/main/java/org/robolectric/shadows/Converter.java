@@ -38,11 +38,10 @@ public class Converter<T> {
       return;
     }
 
-    ResourceIndex resourceIndex = resourceLoader.getResourceIndex();
     while (attribute.isResourceReference()) {
       ResName resName = attribute.getResourceReference();
-      Integer resourceId = resourceIndex.getResourceId(resName);
-      if (resourceId == null) {
+      int resourceId = resourceLoader.getResourceId(resName);
+      if (resourceId == 0) {
         throw new Resources.NotFoundException("unknown resource " + resName);
       }
       outValue.type = TypedValue.TYPE_REFERENCE;

@@ -36,8 +36,6 @@ public final class MetaData {
   }
 
   public void init(ResourceLoader resLoader, String packageName) {
-    ResourceIndex resIndex = resLoader.getResourceIndex();
-
     if (!initialised) {
       for (Map.Entry<String,VALUE_TYPE> entry : typeMap.entrySet()) {
         String value = valueMap.get(entry.getKey()).toString();
@@ -47,7 +45,7 @@ public final class MetaData {
           switch (entry.getValue()) {
             case RESOURCE:
               // Was provided by resource attribute, store resource ID
-              valueMap.put(entry.getKey(), resIndex.getResourceId(resName));
+              valueMap.put(entry.getKey(), resLoader.getResourceId(resName));
               break;
             case VALUE:
               // Was provided by value attribute, need to parse it

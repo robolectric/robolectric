@@ -35,7 +35,6 @@ public class MetaDataTest {
 
   @Test(expected = Resources.NotFoundException.class)
   public void testNonExistantResource_throwsResourceNotFoundException() {
-    when(resourceLoader.getResourceIndex()).thenReturn(resourceIndex);
     Element metaDataElement = createMetaDataNode("aName", "@xml/non_existant_resource");
 
     MetaData metaData = new MetaData(ImmutableList.<Node>of(metaDataElement));

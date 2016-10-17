@@ -63,9 +63,7 @@ public class XmlResourceParserImplTest {
 
     ResName resName = new ResName(TEST_PACKAGE, "xml", "preferences");
     XmlBlock xmlBlock = resBundle.get(resName, "");
-    ResourceIndex resourceIndex = new ResourceExtractor(testResources());
-    resourceLoader = mock(ResourceLoader.class);
-    when(resourceLoader.getResourceIndex()).thenReturn(resourceIndex);
+    resourceLoader = new PackageResourceLoader(testResources());
     parser = (XmlResourceParserImpl) ResourceParser.from(xmlBlock, TEST_PACKAGE, resourceLoader);
   }
 

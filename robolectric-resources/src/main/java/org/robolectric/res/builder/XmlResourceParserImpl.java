@@ -775,8 +775,8 @@ public class XmlResourceParserImpl implements XmlResourceParser {
 
     if (AttributeResource.isStyleReference(possiblyQualifiedResourceName)) {
       ResName styleReference = AttributeResource.getStyleReference(possiblyQualifiedResourceName, defaultPackageName, "attr");
-      Integer resourceId = resourceLoader.getResourceIndex().getResourceId(styleReference);
-      if (resourceId == null) {
+      int resourceId = resourceLoader.getResourceId(styleReference);
+      if (resourceId == 0) {
         throw new Resources.NotFoundException(styleReference.getFullyQualifiedName());
       }
       return resourceId;
@@ -784,16 +784,15 @@ public class XmlResourceParserImpl implements XmlResourceParser {
 
     if (AttributeResource.isResourceReference(possiblyQualifiedResourceName)) {
       ResName resourceReference = AttributeResource.getResourceReference(possiblyQualifiedResourceName, defaultPackageName, defaultType);
-      Integer resourceId = resourceLoader.getResourceIndex().getResourceId(resourceReference);
-      if (resourceId == null) {
+      int resourceId = resourceLoader.getResourceId(resourceReference);
+      if (resourceId == 0) {
         throw new Resources.NotFoundException(resourceReference.getFullyQualifiedName());
       }
       return resourceId;
     }
     possiblyQualifiedResourceName = removeLeadingSpecialCharsIfAny(possiblyQualifiedResourceName);
     ResName resName = ResName.qualifyResName(possiblyQualifiedResourceName, defaultPackageName, defaultType);
-    Integer resourceId = resourceLoader.getResourceIndex().getResourceId(resName);
-    return resourceId == null ? 0 : resourceId;
+    return resourceLoader.getResourceId(resName);
   }
 
   private static String removeLeadingSpecialCharsIfAny(String name){

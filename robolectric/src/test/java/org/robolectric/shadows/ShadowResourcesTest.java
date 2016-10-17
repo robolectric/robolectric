@@ -42,6 +42,7 @@ import org.xmlpull.v1.XmlPullParser;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -707,6 +708,22 @@ public class ShadowResourcesTest {
     @Override
     public ResourceIndex getResourceIndex() {
       return resourceIndex;
+    }
+
+    @Override
+    public int getResourceId(ResName resName) {
+      Integer resourceId = resourceIndex.getResourceId(resName);
+      return resourceId == null ? 0 : resourceId;
+    }
+
+    @Override
+    public ResName getResName(int resourceId) {
+      return resourceIndex.getResName(resourceId);
+    }
+
+    @Override
+    public Collection<String> getPackages() {
+      return resourceIndex.getPackages();
     }
 
     @Override

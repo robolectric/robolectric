@@ -118,8 +118,7 @@ public final class ShadowAssetManager {
       }
     }
 
-    ResourceIndex resourceIndex = resourceLoader.getResourceIndex();
-    return resourceIndex.getResourceId(resName);
+    return resourceLoader.getResourceId(resName);
   }
 
   @HiddenApi @Implementation
@@ -155,8 +154,7 @@ public final class ShadowAssetManager {
 
   @HiddenApi @Implementation
   public boolean getThemeValue($ptrClass themePtr, int ident, TypedValue outValue, boolean resolveRefs) {
-    ResourceIndex resourceIndex = resourceLoader.getResourceIndex();
-    ResName resName = resourceIndex.getResName(ident);
+    ResName resName = resourceLoader.getResName(ident);
 
     ThemeStyleSet themeStyleSet = shadowOf(getTheme(themePtr)).getThemeStyleSet();
     AttributeResource attrValue = themeStyleSet.getAttrValue(resName);
@@ -495,7 +493,7 @@ public final class ShadowAssetManager {
         Logger.info("huh... circular reference for %s?", attribute.resName.getFullyQualifiedName());
         return null;
       }
-      ResName resName = resourceLoader.getResourceIndex().getResName(resId);
+      ResName resName = resourceLoader.getResName(resId);
 
       AttributeResource otherAttr = themeStyleSet.getAttrValue(otherAttrName);
       if (otherAttr == null) {
@@ -565,7 +563,7 @@ public final class ShadowAssetManager {
     if (attributeSet != null) {
       for (int i = 0; i < attributeSet.getAttributeCount(); i++) {
         if (attributeSet.getAttributeNameResource(i) == resId && attributeSet.getAttributeValue(i) != null) {
-          ResName resName = resourceLoader.getResourceIndex().getResName(resId);
+          ResName resName = resourceLoader.getResName(resId);
 
           if (resName == null) {
             // We're looking for an attribute that doesn't yet exist at this SDK level just pass it back blindly and
@@ -577,7 +575,7 @@ public final class ShadowAssetManager {
       }
     }
 
-    ResName attrName = resourceLoader.getResourceIndex().getResName(resId);
+    ResName attrName = resourceLoader.getResName(resId);
     if (attrName == null) return null;
 
     if (styleAttrStyle != null) {
@@ -607,9 +605,9 @@ public final class ShadowAssetManager {
   }
 
   @NotNull private ResName getResName(int id) {
-    ResName resName = resourceLoader.getResourceIndex().getResName(id);
+    ResName resName = resourceLoader.getResName(id);
     if (resName == null) {
-      List<String> packages = new ArrayList<>(resourceLoader.getResourceIndex().getPackages());
+      List<String> packages = new ArrayList<>(resourceLoader.getPackages());
       Collections.sort(packages);
       throw new Resources.NotFoundException("Unable to find resource ID #0x" + Integer.toHexString(id)
           + " in packages " + packages);

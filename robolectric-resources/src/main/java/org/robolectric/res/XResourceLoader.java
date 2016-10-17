@@ -5,6 +5,7 @@ import org.robolectric.res.builder.XmlBlock;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
 
 // TODO: Give me a better name
 abstract class XResourceLoader extends ResourceLoader {
@@ -63,6 +64,22 @@ abstract class XResourceLoader extends ResourceLoader {
   @Override
   public ResourceIndex getResourceIndex() {
     return resourceIndex;
+  }
+
+  @Override
+  public int getResourceId(ResName resName) {
+    Integer resourceId = resourceIndex.getResourceId(resName);
+    return resourceId == null ? 0 : resourceId;
+  }
+
+  @Override
+  public ResName getResName(int resourceId) {
+    return resourceIndex.getResName(resourceId);
+  }
+
+  @Override
+  public Collection<String> getPackages() {
+    return resourceIndex.getPackages();
   }
 
   @Override

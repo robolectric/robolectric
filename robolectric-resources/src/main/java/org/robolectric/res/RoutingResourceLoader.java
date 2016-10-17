@@ -3,6 +3,7 @@ package org.robolectric.res;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -39,6 +40,22 @@ public class RoutingResourceLoader extends ResourceLoader {
   @Override
   public ResourceIndex getResourceIndex() {
     return resourceIndex;
+  }
+
+  @Override
+  public int getResourceId(ResName resName) {
+    Integer resourceId = resourceIndex.getResourceId(resName);
+    return resourceId == null ? 0 : resourceId;
+  }
+
+  @Override
+  public ResName getResName(int resourceId) {
+    return resourceIndex.getResName(resourceId);
+  }
+
+  @Override
+  public Collection<String> getPackages() {
+    return resourceIndex.getPackages();
   }
 
   @Override public boolean providesFor(String namespace) {
