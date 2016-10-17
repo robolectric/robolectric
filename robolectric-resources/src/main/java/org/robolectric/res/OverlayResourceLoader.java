@@ -5,7 +5,10 @@ import org.robolectric.res.builder.XmlBlock;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.*;
 
 public class OverlayResourceLoader extends XResourceLoader {
@@ -25,6 +28,23 @@ public class OverlayResourceLoader extends XResourceLoader {
   void doInitialize() {
     initialiseResourceLoaders();
     mergeResources();
+
+    final Set<ResName> proguardedResNames = new HashSet<>();
+    receive(new Visitor() {
+      @Override
+      public void visit(ResName key, List value) {
+        if (OverlayResourceLoader.super.getResourceId(key) == 0) {
+          proguardedResNames.add(key);
+        }
+      }
+    });
+    System.out.println("proguardedResNames = " + proguardedResNames);
+  }
+
+  @Override
+  public int getResourceId(ResName resName) {
+    initialize();
+    return super.getResourceId(resName);
   }
 
   /**

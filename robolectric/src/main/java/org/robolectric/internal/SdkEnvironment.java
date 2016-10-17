@@ -39,8 +39,7 @@ public class SdkEnvironment {
         throw new RuntimeException(e);
       }
 
-      ResourceExtractor resourceExtractor = new ResourceExtractor(resourcePath);
-      systemResourceLoader = new PackageResourceLoader(resourcePath, resourceExtractor);
+      systemResourceLoader = new PackageResourceLoader(resourcePath);
     }
     return systemResourceLoader;
   }

@@ -215,6 +215,18 @@ public class ShadowAssetManagerTest {
         .isEqualTo(R.id.idInRClassAndXml);
   }
 
+  @Test
+  public void whenUnknownPackageWithTypeId_getResourceIdentifier_shouldReturnZero() throws Exception {
+    assertThat(shadowOf(assetManager).getResourceIdentifier("idInRClassAndXml", "id", "some.other.package"))
+        .isEqualTo(0);
+  }
+
+  @Test
+  public void whenUnknownPackage_getResourceIdentifier_shouldReturnZero() throws Exception {
+    assertThat(shadowOf(assetManager).getResourceIdentifier("whatever", "raw", "some.other.package"))
+        .isEqualTo(0);
+  }
+
   @Test @Ignore("currently ids are always automatically assigned a value; to fix this we'd need to check layouts for +@id/___, which is expensive")
   public void whenCalledForIdWithNameNotInRClassOrXml_getResourceIdentifier_shouldReturnZero() throws Exception {
     assertThat(shadowOf(assetManager).getResourceIdentifier("org.robolectric:id/idThatDoesntExistAnywhere", "other", "other"))

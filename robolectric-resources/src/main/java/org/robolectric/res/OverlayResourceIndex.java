@@ -1,7 +1,6 @@
 package org.robolectric.res;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -17,7 +16,6 @@ class OverlayResourceIndex implements ResourceIndex {
   private final Set<String> actualPackageNames = new HashSet<>();
   private final Map<ResName, Integer> resourceNameToId = new HashMap<>();
   private final Map<Integer, ResName> resourceIdToResName = new HashMap<>();
-  private Integer maxUsedInt = null;
 
   public OverlayResourceIndex(String packageName, List<PackageResourceLoader> subResourceLoaders) {
     this(packageName, map(subResourceLoaders));
@@ -55,17 +53,7 @@ class OverlayResourceIndex implements ResourceIndex {
     if (!actualPackageNames.contains(resName.packageName)) {
       return null;
     }
-    Integer id = resourceNameToId.get(resName.withPackageName(packageName));
-    if (id == null) {
-      if (maxUsedInt == null) {
-        maxUsedInt = resourceIdToResName.isEmpty() ? 0 : Collections.max(resourceIdToResName.keySet());
-      }
-      id = ++maxUsedInt;
-      resourceNameToId.put(resName, id);
-      resourceIdToResName.put(id, resName);
-      LOGGER.fine("no id mapping found for " + resName.getFullyQualifiedName() + "; assigning ID #0x" + Integer.toHexString(id));
-    }
-    return id;
+    return resourceNameToId.get(resName.withPackageName(packageName));
   }
 
   @Override

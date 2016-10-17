@@ -453,7 +453,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
       List<PackageResourceLoader> appAndLibraryResourceLoaders = new ArrayList<>();
       for (ResourcePath resourcePath : appManifest.getIncludedResourcePaths()) {
-        appAndLibraryResourceLoaders.add(new PackageResourceLoader(resourcePath, new ResourceExtractor(resourcePath)));
+        appAndLibraryResourceLoaders.add(new PackageResourceLoader(resourcePath));
       }
       resourceLoaders.put(appManifest.getPackageName(), new OverlayResourceLoader(appManifest.getPackageName(), appAndLibraryResourceLoaders));
 

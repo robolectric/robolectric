@@ -5,7 +5,9 @@ import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 public class ResourceExtractor implements ResourceIndex {
@@ -90,5 +92,11 @@ public class ResourceExtractor implements ResourceIndex {
   @Override
   public Map<Integer, ResName> getAllResNamesById() {
     return resourceIdToResName;
+  }
+
+  public void addProguardedIds(Set<ResName> resNames) {
+    HashSet<ResName> proguardedNames = new HashSet<>(resNames);
+    proguardedNames.removeAll(resourceNameToId.keySet());
+    System.out.println("proguardedNames = " + proguardedNames);
   }
 }

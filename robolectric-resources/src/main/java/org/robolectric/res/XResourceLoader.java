@@ -86,5 +86,7 @@ abstract class XResourceLoader extends ResourceLoader {
   public void receive(Visitor visitor) {
     initialize();
     data.receive(visitor);
+    xmlDocuments.receive(visitor);
+    rawResources.receive(visitor);
   }
 }
