@@ -17,19 +17,18 @@ public abstract class ResourceLoader {
     return resName != null ? getValue(resName, qualifiers) : null;
   }
 
-  public Plural getPlural(int resId, int quantity, String qualifiers) {
-    PluralResourceLoader.PluralRules pluralRules = (PluralResourceLoader.PluralRules) getValue(resId, qualifiers);
-    if (pluralRules == null) return null;
-
-    return pluralRules.find(quantity);
-  }
-
   public abstract XmlBlock getXml(ResName resName, String qualifiers);
 
   public abstract InputStream getRawValue(ResName resName);
 
   public InputStream getRawValue(int resId) {
     return getRawValue(getResourceIndex().getResName(resId));
+  }
+
+  public boolean hasValue(ResName resName, String qualifiers) {
+    return getValue(resName, qualifiers) != null
+        || getXml(resName, qualifiers) != null
+        || getRawValue(resName) != null;
   }
 
   public abstract ResourceIndex getResourceIndex();

@@ -247,4 +247,16 @@ public class ShadowAssetManagerTest {
     assertThat(shadowOf(assetManager).getResourceIdentifier("an_image", "drawable", "org.robolectric"))
         .isEqualTo(R.drawable.an_image);
   }
+
+  @Test
+  public void whenResourceIsXml_getResourceIdentifier_shouldReturnId() throws Exception {
+    assertThat(shadowOf(assetManager).getResourceIdentifier("preferences", "xml", "org.robolectric"))
+        .isEqualTo(R.xml.preferences);
+  }
+
+  @Test
+  public void whenResourceIsRaw_getResourceIdentifier_shouldReturnId() throws Exception {
+    assertThat(shadowOf(assetManager).getResourceIdentifier("raw_resource", "raw", "org.robolectric"))
+        .isEqualTo(R.raw.raw_resource);
+  }
 }
