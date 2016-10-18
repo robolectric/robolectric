@@ -117,7 +117,8 @@ public final class ShadowAssetManager {
     }
 
     ResourceIndex resourceIndex = resourceLoader.getResourceIndex();
-    return resourceIndex.getResourceId(resName);
+    Integer resourceId = resourceIndex.getResourceId(resName);
+    return resourceId == null ? 0 : resourceId;
   }
 
   @HiddenApi @Implementation

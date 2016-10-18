@@ -69,8 +69,7 @@ public class RoutingResourceLoader extends ResourceLoader {
     ResourceLoader resourceLoader = resourceLoaders.get(namespace);
     if (resourceLoader == null) {
       resourceLoader = whichProvidesFor(namespace);
-      if (resourceLoader != null) return resourceLoader;
-      throw new RuntimeException("no ResourceLoader found for " + namespace);
+      return (resourceLoader != null) ? resourceLoader : new NullResourceLoader();
     }
     return resourceLoader;
   }
