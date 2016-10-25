@@ -1,8 +1,11 @@
 package org.robolectric.util;
 
 import android.content.ContentProvider;
+import android.content.ContentProviderClient;
+import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.pm.PathPermission;
+import android.content.pm.ProviderInfo;
 import android.database.Cursor;
 import android.net.Uri;
 import org.junit.Test;
@@ -41,6 +44,17 @@ public class ContentProviderControllerTest {
   }
 
   @Test
+  @Config(manifest = "src/test/resources/TestAndroidManifestWithContentProviders.xml")
+  public void shouldRegisterWithContentResolver() throws Exception {
+    controller.create().get();
+
+    ContentResolver contentResolver = RuntimeEnvironment.application.getContentResolver();
+    ContentProviderClient client = contentResolver.acquireContentProviderClient("org.robolectric.authority2");
+    client.query(Uri.parse("something"), new String[]{"title"}, "*", new String[]{}, "created");
+    assertThat(controller.get().transcript.getEvents()).containsExactly("onCreate", "query for something");
+  }
+
+  @Test
   public void whenNoProviderManifestEntryFound_shouldStillInitialize() throws Exception {
     MyContentProvider myContentProvider = controller.create().get();
     assertThat(myContentProvider.getReadPermission()).isNull();
@@ -60,6 +74,18 @@ public class ContentProviderControllerTest {
     myContentProvider.transcript.assertEventsSoFar("shutdown");
   }
 
+  @Test
+  public void withoutManifest_shouldRegisterWithContentResolver() throws Exception {
+    ProviderInfo providerInfo = new ProviderInfo();
+    providerInfo.authority = "some-authority";
+    controller.create(providerInfo);
+
+    ContentResolver contentResolver = RuntimeEnvironment.application.getContentResolver();
+    ContentProviderClient client = contentResolver.acquireContentProviderClient(providerInfo.authority);
+    client.query(Uri.parse("something"), new String[]{"title"}, "*", new String[]{}, "created");
+    assertThat(controller.get().transcript.getEvents()).containsExactly("onCreate", "query for something");
+  }
+
   public static class MyContentProvider extends ContentProvider {
     private final Transcript transcript = new Transcript();
 
@@ -77,6 +103,7 @@ public class ContentProviderControllerTest {
 
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+      transcript.add("query for " + uri);
       return null;
     }
 

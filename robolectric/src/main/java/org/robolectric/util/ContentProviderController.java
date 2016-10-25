@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.pm.ProviderInfo;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.shadows.ShadowContentResolver;
 
 public class ContentProviderController<T extends ContentProvider> {
   private T contentProvider;
@@ -18,18 +19,32 @@ public class ContentProviderController<T extends ContentProvider> {
     return new ContentProviderController<>(contentProvider);
   }
 
+  /**
+   * Create and register {@link ContentProvider} using {@link ProviderInfo} found from manifest.
+   */
   public ContentProviderController<T> create() {
     Context baseContext = RuntimeEnvironment.application.getBaseContext();
+
     ComponentName componentName = createRelative(baseContext.getPackageName(), contentProvider.getClass().getName());
 
-    ProviderInfo providerInfo;
+    ProviderInfo providerInfo = null;
     try {
       providerInfo = RuntimeEnvironment.getPackageManager().getProviderInfo(componentName, 0);
     } catch (PackageManager.NameNotFoundException e) {
       Logger.strict("Unable to find provider info for " + componentName, e);
-      providerInfo = null;
-
     }
+
+    return create(providerInfo);
+  }
+
+  /**
+   * Create and register {@link ContentProvider} using the given {@link ProviderInfo}.
+   */
+  public ContentProviderController<T> create(ProviderInfo providerInfo) {
+    if (providerInfo != null) {
+      ShadowContentResolver.registerProviderInternal(providerInfo.authority, contentProvider);
+    }
+    Context baseContext = RuntimeEnvironment.application.getBaseContext();
     contentProvider.attachInfo(baseContext, providerInfo);
 
     return this;
