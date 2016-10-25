@@ -431,8 +431,15 @@ public class ShadowContentResolver {
     return providers.get(authority);
   }
 
+  /**
+   * @deprecated Use {@link org.robolectric.Robolectric#buildContentProvider(Class)} instead.
+   */
   public static void registerProvider(String authority, ContentProvider provider) {
     initialize(provider, authority);
+    providers.put(authority, provider);
+  }
+
+  public static void registerProviderInternal(String authority, ContentProvider provider) {
     providers.put(authority, provider);
   }
 
