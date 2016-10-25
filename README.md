@@ -75,7 +75,7 @@ repositories {
 }
 
 dependencies {
-    testCompile "org.robolectric:robolectric:3.1.3"
+    testCompile "org.robolectric:robolectric:3.2-SNAPSHOT"
 }
 ```
 
@@ -90,7 +90,7 @@ dependencies {
 <dependency>
    <groupId>org.robolectric</groupId>
    <artifactId>robolectric</artifactId>
-   <version>3.1.3</version>
+   <version>3.2-SNAPSHOT</version>
    <scope>test</scope>
 </dependency>
 ```
