@@ -149,6 +149,13 @@ public class RobolectricModel {
     }
   };
   
+  public static AnnotationValueVisitor<Integer, Void> intVisitor = new SimpleAnnotationValueVisitor6<Integer, Void>() {
+    @Override
+    public Integer visitInt(int i, Void aVoid) {
+      return i;
+    }
+  };
+
   public AnnotationMirror getImplementsMirror(Element elem) {
     return getAnnotationMirror(elem, IMPLEMENTS);
   }

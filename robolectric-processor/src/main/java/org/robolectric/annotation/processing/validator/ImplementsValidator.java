@@ -19,7 +19,8 @@ import javax.tools.Diagnostic.Kind;
 public class ImplementsValidator extends Validator {
 
   public static final String IMPLEMENTS_CLASS = "org.robolectric.annotation.Implements";
-  
+  public static final int MAX_SUPPORTED_ANDROID_SDK = 23;
+
   public ImplementsValidator(RobolectricModel model, ProcessingEnvironment env) {
     super(model, env, IMPLEMENTS_CLASS);
   }
@@ -29,8 +30,7 @@ public class ImplementsValidator extends Validator {
     TypeElement type = elements.getTypeElement(className.replace('$', '.'));
     
     if (type == null) {
-      message(Kind.WARNING, "@Implements: could not resolve class <" + className + '>', cv);
-//      error("@Implements: could not resolve class <" + className + '>', cv);
+      error("@Implements: could not resolve class <" + className + '>', cv);
       return null;
     }
     return type;
@@ -42,6 +42,13 @@ public class ImplementsValidator extends Validator {
     AnnotationMirror am = getCurrentAnnotation();
     AnnotationValue av = RobolectricModel.getAnnotationValue(am, "value");
     AnnotationValue cv = RobolectricModel.getAnnotationValue(am, "className");
+    AnnotationValue maxSdk = RobolectricModel.getAnnotationValue(am, "maxSdk");
+
+    // This shadow doesn't apply to the current SDK. todo: check each SDK.
+    if (maxSdk != null && RobolectricModel.intVisitor.visit(maxSdk) < MAX_SUPPORTED_ANDROID_SDK) {
+      return null;
+    }
+
     TypeElement type = null;
     if (av == null) {
       if (cv == null) {
