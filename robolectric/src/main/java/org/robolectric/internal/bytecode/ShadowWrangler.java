@@ -6,6 +6,7 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 
 import android.os.Build;
+import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
@@ -34,6 +35,11 @@ public class ShadowWrangler implements ClassHandler {
     @Override
     public Object run(Object instance, Object roboData, Object[] params) throws Exception {
       return null;
+    }
+
+    @Override
+    public String describe() {
+      return "do nothing";
     }
   };
   public static final Plan CALL_REAL_CODE_PLAN = null;
@@ -174,7 +180,9 @@ public class ShadowWrangler implements ClassHandler {
         Class<?>[] types = invocationProfile.getParamClasses(classLoader);
         Method shadowMethod = findShadowMethod(classLoader, shadowConfig, invocationProfile.methodName, types);
         if (shadowMethod == null) {
-          return shadowConfig.callThroughByDefault ? CALL_REAL_CODE_PLAN : strict(invocationProfile) ? CALL_REAL_CODE_PLAN : DO_NOTHING_PLAN;
+          return shadowConfig.callThroughByDefault
+              ? CALL_REAL_CODE_PLAN
+              : strict(invocationProfile) ? CALL_REAL_CODE_PLAN : DO_NOTHING_PLAN;
         }
 
         final Class<?> declaredShadowedClass = getShadowedClass(shadowMethod);
@@ -199,18 +207,10 @@ public class ShadowWrangler implements ClassHandler {
   private Method findShadowMethod(ClassLoader classLoader, ShadowConfig config, String name, Class<?>[] types) {
     try {
       Class<?> shadowClass = Class.forName(config.shadowClassName, false, classLoader);
-      Method method = getMethod(shadowClass, name, types);
-      if (method == null) {
-        String methodPrefix = name + "$$";
-        for (Method candidateMethod : shadowClass.getMethods()) {
-          if (candidateMethod.getName().startsWith(methodPrefix)) {
-
-          }
-        }
-      }
+      Method method = findShadowMethodInternal(shadowClass, name, types);
       if (method == null && config.looseSignatures) {
         Class<?>[] genericTypes = MethodType.genericMethodType(types.length).parameterArray();
-        method = getMethod(shadowClass, name, genericTypes);
+        method = findShadowMethodInternal(shadowClass, name, genericTypes);
       }
 
       return method;
@@ -238,12 +238,29 @@ public class ShadowWrangler implements ClassHandler {
     return isAndroidSupport(invocationProfile) || invocationProfile.isDeclaredOnObject();
   }
 
-  private Method getMethod(Class<?> shadowClass, String methodName, Class<?>[] paramClasses) throws ClassNotFoundException {
+  private Method findShadowMethodInternal(Class<?> shadowClass, String methodName, Class<?>[] paramClasses) throws ClassNotFoundException {
     try {
-      return shadowClass.getMethod(methodName, paramClasses);
+      Method method = shadowClass.getMethod(methodName, paramClasses);
+      Implementation implementation = getImplementationAnnotation(method);
+      return matchesSdk(implementation) ? method : null;
+
+      // todo: allow per-version overloading
+//      if (method == null) {
+//        String methodPrefix = name + "$$";
+//        for (Method candidateMethod : shadowClass.getMethods()) {
+//          if (candidateMethod.getName().startsWith(methodPrefix)) {
+//
+//          }
+//        }
+//      }
+
     } catch (NoSuchMethodException e) {
       return null;
     }
+  }
+
+  private boolean matchesSdk(Implementation implementation) {
+    return implementation.minSdk() <= apiLevel && (implementation.maxSdk() == -1 || implementation.maxSdk() >= apiLevel);
   }
 
   private Class<?> getShadowedClass(Method shadowMethod) {
@@ -266,6 +283,16 @@ public class ShadowWrangler implements ClassHandler {
         throw new RuntimeException(e);
       }
     }
+  }
+
+  private Implementation getImplementationAnnotation(Method method) {
+    if (method == null) {
+      return null;
+    }
+    Implementation implementation = method.getAnnotation(Implementation.class);
+    return implementation == null
+        ? ReflectionHelpers.defaultsFor(Implementation.class)
+        : implementation;
   }
 
   @Override
@@ -525,6 +552,11 @@ public class ShadowWrangler implements ClassHandler {
       } catch (InvocationTargetException e) {
         throw e.getCause();
       }
+    }
+
+    @Override
+    public String describe() {
+      return shadowMethod.toString();
     }
   }
 

@@ -648,6 +648,11 @@ public class InstrumentingClassLoaderTest {
             throw new RuntimeException(throwable);
           }
         }
+
+        @Override
+        public String describe() {
+          return invocationProfile.methodName;
+        }
       };
     }
 

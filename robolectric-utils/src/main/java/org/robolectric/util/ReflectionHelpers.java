@@ -1,5 +1,6 @@
 package org.robolectric.util;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
@@ -34,6 +35,16 @@ public class ReflectionHelpers {
             return PRIMITIVE_RETURN_VALUES.get(method.getReturnType().getName());
           }
         });
+  }
+
+  public static <A extends Annotation> A defaultsFor(Class<A> annotation) {
+    return annotation.cast(
+        Proxy.newProxyInstance(annotation.getClassLoader(), new Class[] { annotation },
+            new InvocationHandler() {
+              public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                return method.getDefaultValue();
+              }
+            }));
   }
 
   /**
