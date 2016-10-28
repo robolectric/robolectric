@@ -60,17 +60,6 @@ public class ShadowWrangler implements ClassHandler {
       return shadowMap.get(type);
     }
   };
-  public static final HashMap<String, Object> PRIMITIVE_RETURN_VALUES = new HashMap<>();
-
-  static {
-    PRIMITIVE_RETURN_VALUES.put("boolean", Boolean.FALSE);
-    PRIMITIVE_RETURN_VALUES.put("int", 0);
-    PRIMITIVE_RETURN_VALUES.put("long", (long) 0);
-    PRIMITIVE_RETURN_VALUES.put("float", (float) 0);
-    PRIMITIVE_RETURN_VALUES.put("double", (double) 0);
-    PRIMITIVE_RETURN_VALUES.put("short", (short) 0);
-    PRIMITIVE_RETURN_VALUES.put("byte", (byte) 0);
-  }
 
   public ShadowWrangler(ShadowMap shadowMap, int apiLevel) {
     this.shadowMap = shadowMap;
@@ -369,7 +358,7 @@ public class ShadowWrangler implements ClassHandler {
     return new Function<Object, Object>() {
       @Override
       public Object call(Class<?> theClass, Object value, Object[] params) {
-        return PRIMITIVE_RETURN_VALUES.get(methodSignature.returnType);
+        return ReflectionHelpers.PRIMITIVE_RETURN_VALUES.get(methodSignature.returnType);
       }
     };
   }
