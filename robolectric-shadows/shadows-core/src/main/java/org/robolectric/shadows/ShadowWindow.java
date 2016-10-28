@@ -5,7 +5,6 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.view.Window;
 import android.widget.ProgressBar;
-import com.android.internal.policy.PhoneWindow;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -26,13 +25,12 @@ public class ShadowWindow {
   private int softInputMode;
 
   public static Window create(Context context) throws Exception {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-      return new PhoneWindow(context);
-    } else {
-      Class<? extends Window> phoneWindowClass =
-          (Class<? extends Window>) Window.class.getClassLoader().loadClass("com.android.internal.policy.impl.PhoneWindow");
-      return ReflectionHelpers.callConstructor(phoneWindowClass, ClassParameter.from(Context.class, context));
-    }
+    String className = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+        ? "com.android.internal.policy.PhoneWindow"
+        : "com.android.internal.policy.impl.PhoneWindow";
+    Class<? extends Window> phoneWindowClass =
+        (Class<? extends Window>) Window.class.getClassLoader().loadClass(className);
+    return ReflectionHelpers.callConstructor(phoneWindowClass, ClassParameter.from(Context.class, context));
   }
 
   @Implementation

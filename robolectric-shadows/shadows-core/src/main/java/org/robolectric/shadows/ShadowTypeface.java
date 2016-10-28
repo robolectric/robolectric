@@ -29,7 +29,7 @@ import static org.robolectric.Shadows.shadowOf;
 /**
  * Shadow for {@link android.graphics.Typeface}.
  */
-@Implements(Typeface.class)
+@Implements(value = Typeface.class, looseSignatures = true)
 public class ShadowTypeface {
   private static Map<Long, FontDesc> FONTS = new HashMap<>();
   private static long nextFontId = 1;
@@ -98,13 +98,13 @@ public class ShadowTypeface {
 
   @HiddenApi
   @Implementation(minSdk = LOLLIPOP)
-  public static Typeface createFromFamilies(FontFamily[] families) {
+  public static Typeface createFromFamilies(Object /*FontFamily[]*/ families) {
     return null;
   }
 
   @HiddenApi
   @Implementation(minSdk = LOLLIPOP)
-  public static Typeface createFromFamiliesWithDefault(FontFamily[] families) {
+  public static Typeface createFromFamiliesWithDefault(Object /*FontFamily[]*/ families) {
     return null;
   }
 

@@ -103,11 +103,25 @@ public class ShadowWranglerUnitTest {
     assertThat(new ShadowWrangler(shadowMap, 21).methodInvoked(methodName, false, DummyClass.class)).isNull();
   }
 
+  @Test
+  public void shadowConstructor() throws Throwable {
+    ShadowMap shadowMap = new ShadowMap.Builder().addShadowClasses(ShadowDummyClass.class).build();
+    String methodName = internalName(DummyClass.class) + "/__constructor__()V";
+    assertThat(new ShadowWrangler(shadowMap, 19).methodInvoked(methodName, false, DummyClass.class)).isNull();
+    assertThat(new ShadowWrangler(shadowMap, 20).methodInvoked(methodName, false, DummyClass.class).describe())
+        .contains("ShadowDummyClass.__constructor__()");
+    assertThat(new ShadowWrangler(shadowMap, 21).methodInvoked(methodName, false, DummyClass.class)).isNull();
+  }
+
   public static class DummyClass {
   }
 
   @Implements(value = DummyClass.class, minSdk = 19, maxSdk = 21)
   public static class ShadowDummyClass {
+    @Implementation(minSdk = 20, maxSdk = 20)
+    public void __constructor__() {
+    }
+    
     @Implementation
     public void methodWithoutRange() {
     }

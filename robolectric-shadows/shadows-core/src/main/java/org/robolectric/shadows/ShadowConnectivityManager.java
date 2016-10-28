@@ -51,10 +51,12 @@ public class ShadowConnectivityManager {
 
     this.activeNetworkInfo = mobile;
 
-    netIdToNetwork.put(NET_ID_WIFI, ShadowNetwork.newInstance(NET_ID_WIFI));
-    netIdToNetwork.put(NET_ID_MOBILE, ShadowNetwork.newInstance(NET_ID_MOBILE));
-    netIdToNetworkInfo.put(NET_ID_WIFI, wifi);
-    netIdToNetworkInfo.put(NET_ID_MOBILE, mobile);
+    if (Build.VERSION.SDK_INT >= LOLLIPOP) {
+      netIdToNetwork.put(NET_ID_WIFI, ShadowNetwork.newInstance(NET_ID_WIFI));
+      netIdToNetwork.put(NET_ID_MOBILE, ShadowNetwork.newInstance(NET_ID_MOBILE));
+      netIdToNetworkInfo.put(NET_ID_WIFI, wifi);
+      netIdToNetworkInfo.put(NET_ID_MOBILE, mobile);
+    }
   }
 
   public Set<ConnectivityManager.NetworkCallback> getNetworkCallbacks() {
@@ -147,7 +149,7 @@ public class ShadowConnectivityManager {
   }
 
   public void setActiveNetworkInfo(NetworkInfo info) {
-    if (Build.VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP) {
+    if (Build.VERSION.SDK_INT >= LOLLIPOP) {
       activeNetworkInfo = info;
       if (info != null) {
         networkTypeToNetworkInfo.put(info.getType(), info);

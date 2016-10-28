@@ -35,7 +35,7 @@ public class ShadowAccessibilityManager {
   private boolean touchExplorationEnabled;
 
   @HiddenApi
-  @Implementation(minSdk = KITKAT)
+  @Implementation
   public static AccessibilityManager getInstance(Context context) throws Exception {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
       AccessibilityManager accessibilityManager = Shadow.newInstance(AccessibilityManager.class, new Class[]{Context.class, IAccessibilityManager.class, int.class}, new Object[]{context, new AccessibilityManagerService(context), 0});

@@ -7,11 +7,10 @@ import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.DisplayAdjustments;
 import android.view.Surface;
-import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 
-import static android.os.Build.VERSION_CODES;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 

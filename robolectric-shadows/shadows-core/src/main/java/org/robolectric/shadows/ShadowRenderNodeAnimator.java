@@ -10,8 +10,6 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 
-import static android.os.Build.VERSION_CODES;
-import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static org.robolectric.internal.Shadow.directlyOn;
@@ -50,7 +48,7 @@ public class ShadowRenderNodeAnimator {
     }
   }
 
-  @Implementation(maxSdk = KITKAT_WATCH)
+  @Implementation
   public void doStart() {
     directlyOn(realObject, RenderNodeAnimator.class, "doStart");
     if (Build.VERSION.SDK_INT <= LOLLIPOP) {
@@ -58,7 +56,7 @@ public class ShadowRenderNodeAnimator {
     }
   }
 
-  @Implementation(maxSdk = LOLLIPOP)
+  @Implementation
   public void cancel() {
     directlyOn(realObject, RenderNodeAnimator.class).cancel();
 

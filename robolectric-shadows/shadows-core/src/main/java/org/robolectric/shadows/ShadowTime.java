@@ -6,8 +6,8 @@ import android.util.TimeFormatException;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.util.Strftime;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.Strftime;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -17,30 +17,32 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 /**
  * Shadow for {@link android.text.format.Time}.
  */
-@Implements(value = Time.class, maxSdk = KITKAT_WATCH) // todo: setToNow should be omnipresent though
+@Implements(value = Time.class)
 public class ShadowTime {
   @RealObject
   private Time time;
 
-  @Implementation
+  @Implementation(maxSdk = KITKAT_WATCH)
   public void setToNow() {
     time.set(ShadowSystemClock.currentTimeMillis());
   }
 
-//#if ($api < 21)
   private static final long SECOND_IN_MILLIS = 1000;
   private static final long MINUTE_IN_MILLIS = SECOND_IN_MILLIS * 60;
   private static final long HOUR_IN_MILLIS = MINUTE_IN_MILLIS * 60;
   private static final long DAY_IN_MILLIS = HOUR_IN_MILLIS * 24;
 
+  @Implementation(maxSdk = KITKAT_WATCH)
   public void __constructor__() {
     __constructor__(getCurrentTimezone());
   }
 
+  @Implementation(maxSdk = KITKAT_WATCH)
   public void __constructor__(String timezone) {
     if (timezone == null) {
       throw new NullPointerException("timezone is null!");
@@ -51,11 +53,12 @@ public class ShadowTime {
     time.isDst = -1;
   }
 
+  @Implementation(maxSdk = KITKAT_WATCH)
   public void __constructor__(Time other) {
     set(other);
   }
 
-  @Implementation
+  @Implementation(maxSdk = KITKAT_WATCH)
   public void set(Time other) {
     time.timezone = other.timezone;
     time.second = other.second;
@@ -70,20 +73,20 @@ public class ShadowTime {
     time.gmtoff = other.gmtoff;
   }
 
-  @Implementation
+  @Implementation(maxSdk = KITKAT_WATCH)
   public static boolean isEpoch(Time time) {
     long millis = time.toMillis(true);
     return getJulianDay(millis, 0) == Time.EPOCH_JULIAN_DAY;
   }
 
-  @Implementation
+  @Implementation(maxSdk = KITKAT_WATCH)
   public static int getJulianDay(long millis, long gmtoff) {
     long offsetMillis = gmtoff * 1000;
     long julianDay = (millis + offsetMillis) / DAY_IN_MILLIS;
     return (int) julianDay + Time.EPOCH_JULIAN_DAY;
   }
 
-  @Implementation
+  @Implementation(maxSdk = KITKAT_WATCH)
   public long setJulianDay(int julianDay) {
     // Don't bother with the GMT offset since we don't know the correct
     // value for the given Julian day.  Just get close and then adjust
@@ -106,7 +109,7 @@ public class ShadowTime {
     return millis;
   }
 
-  @Implementation
+  @Implementation(maxSdk = KITKAT_WATCH)
   public void set(long millis) {
     Calendar c = getCalendar();
     c.setTimeInMillis(millis);
@@ -120,13 +123,13 @@ public class ShadowTime {
         );
   }
 
-  @Implementation
+  @Implementation(maxSdk = KITKAT_WATCH)
   public long toMillis(boolean ignoreDst) {
     Calendar c = getCalendar();
     return c.getTimeInMillis();
   }
 
-  @Implementation
+  @Implementation(maxSdk = KITKAT_WATCH)
   public void set(int second, int minute, int hour, int monthDay, int month, int year) {
     time.second = second;
     time.minute = minute;
@@ -140,12 +143,12 @@ public class ShadowTime {
     time.gmtoff = 0;
   }
 
-  @Implementation
+  @Implementation(maxSdk = KITKAT_WATCH)
   public void set(int monthDay, int month, int year) {
     set(0, 0, 0, monthDay, month, year);
   }
 
-  @Implementation
+  @Implementation(maxSdk = KITKAT_WATCH)
   public void clear(String timezone) {
     if (timezone == null) {
       throw new NullPointerException("timezone is null!");
@@ -164,12 +167,12 @@ public class ShadowTime {
     time.isDst = -1;
   }
 
-  @Implementation
+  @Implementation(maxSdk = KITKAT_WATCH)
   public static String getCurrentTimezone() {
     return TimeZone.getDefault().getID();
   }
 
-  @Implementation
+  @Implementation(maxSdk = KITKAT_WATCH)
   public void switchTimezone(String timezone) {
     long date = toMillis(true);
     long gmtoff = TimeZone.getTimeZone(timezone).getOffset(date);
@@ -178,7 +181,7 @@ public class ShadowTime {
     time.gmtoff = (gmtoff / 1000);
   }
 
-  @Implementation
+  @Implementation(maxSdk = KITKAT_WATCH)
   public static int compare(Time a, Time b) {
     long ams = a.toMillis(false);
     long bms = b.toMillis(false);
@@ -191,17 +194,17 @@ public class ShadowTime {
     }
   }
 
-  @Implementation
+  @Implementation(maxSdk = KITKAT_WATCH)
   public boolean before(Time other) {
     return Time.compare(time, other) < 0;
   }
 
-  @Implementation
+  @Implementation(maxSdk = KITKAT_WATCH)
   public boolean after(Time other) {
     return Time.compare(time, other) > 0;
   }
 
-  @Implementation
+  @Implementation(maxSdk = KITKAT_WATCH)
   public boolean parse(String timeString) {
     TimeZone tz;
     if (timeString.endsWith("Z")) {
@@ -227,7 +230,7 @@ public class ShadowTime {
     return "UTC".equals(tz.getID());
   }
 
-  @Implementation
+  @Implementation(maxSdk = KITKAT_WATCH)
   public String format2445() {
     String value = format("%Y%m%dT%H%M%S");
     if ( "UTC".equals(time.timezone)){
@@ -236,7 +239,7 @@ public class ShadowTime {
     return value;
   }
 
-  @Implementation
+  @Implementation(maxSdk = KITKAT_WATCH)
   public String format3339(boolean allDay) {
     if (allDay) {
       return format("%Y-%m-%d");
@@ -252,7 +255,7 @@ public class ShadowTime {
     }
   }
 
-  @Implementation
+  @Implementation(maxSdk = KITKAT_WATCH)
   public boolean parse3339(String rfc3339String) {
     SimpleDateFormat formatter =  new SimpleDateFormat();
     // Special case Date without time first
@@ -310,17 +313,10 @@ public class ShadowTime {
   }
 
   private void throwTimeFormatException(String optionalMessage) {
-    throw ReflectionHelpers.<TimeFormatException>callConstructor(TimeFormatException.class, ReflectionHelpers.ClassParameter.from(String.class, optionalMessage == null ? "fail" : optionalMessage));
+    throw ReflectionHelpers.callConstructor(TimeFormatException.class, from(String.class, optionalMessage == null ? "fail" : optionalMessage));
   }
 
-//  @Implementation
-//  public String format(String format) {
-//    Strftime strftime = new Strftime(format, Locale.getDefault());
-//    strftime.setTimeZone(TimeZone.getTimeZone(time.timezone));
-//    return strftime.format(new Date(toMillis(false)));
-//  }
-
-  @Implementation
+  @Implementation(maxSdk = KITKAT_WATCH)
   public String format(String format) {
     return Strftime.format(format, new Date(toMillis(false)), Locale.getDefault(), TimeZone.getTimeZone(time.timezone));
   }
