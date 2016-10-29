@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import android.os.Build;
 import android.view.Choreographer;
 import android.view.Choreographer.FrameCallback;
 import android.view.RenderNodeAnimator;
@@ -12,6 +11,7 @@ import org.robolectric.util.ReflectionHelpers;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.internal.Shadow.directlyOn;
 
 /**
@@ -51,7 +51,7 @@ public class ShadowRenderNodeAnimator {
   @Implementation
   public void doStart() {
     directlyOn(realObject, RenderNodeAnimator.class, "doStart");
-    if (Build.VERSION.SDK_INT <= LOLLIPOP) {
+    if (getApiLevel() <= LOLLIPOP) {
       schedule();
     }
   }
@@ -60,7 +60,7 @@ public class ShadowRenderNodeAnimator {
   public void cancel() {
     directlyOn(realObject, RenderNodeAnimator.class).cancel();
 
-    if (Build.VERSION.SDK_INT <= LOLLIPOP) {
+    if (getApiLevel() <= LOLLIPOP) {
       int state = ReflectionHelpers.getField(realObject, "mState");
       if (state != STATE_FINISHED) {
         // In 21, RenderNodeAnimator only calls nEnd, it doesn't call the Java end method. Thus, it

@@ -42,9 +42,9 @@ public class ShadowProviderGeneratorTest {
 
     generator.generate("the.package", new PrintWriter(writer));
 
-    assertThat(writer.toString()).contains("if (android.os.Build.VERSION.SDK_INT >= 19 && android.os.Build.VERSION.SDK_INT <= 20) ShadowThing.reset19To20();");
-    assertThat(writer.toString()).contains("if (android.os.Build.VERSION.SDK_INT >= 21) ShadowThing.resetMin21();");
-    assertThat(writer.toString()).contains("if (android.os.Build.VERSION.SDK_INT <= 18) ShadowThing.resetMax18();");
+    assertThat(writer.toString()).contains("if (org.robolectric.RuntimeEnvironment.getApiLevel() >= 19 && org.robolectric.RuntimeEnvironment.getApiLevel() <= 20) ShadowThing.reset19To20();");
+    assertThat(writer.toString()).contains("if (org.robolectric.RuntimeEnvironment.getApiLevel() >= 21) ShadowThing.resetMin21();");
+    assertThat(writer.toString()).contains("if (org.robolectric.RuntimeEnvironment.getApiLevel() <= 18) ShadowThing.resetMax18();");
   }
 
   private TypeElement type(String shadowClassName, int minSdk, int maxSdk) {

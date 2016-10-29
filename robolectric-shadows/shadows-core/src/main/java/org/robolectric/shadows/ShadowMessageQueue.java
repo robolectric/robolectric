@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.os.MessageQueue;
@@ -11,9 +10,9 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.Scheduler;
 
-import static android.os.Build.VERSION_CODES;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.internal.Shadow.*;
 import static org.robolectric.util.ReflectionHelpers.*;
@@ -165,7 +164,7 @@ public class ShadowMessageQueue {
       callInstanceMethod(msg, "markInUse");
       target.dispatchMessage(msg);
 
-      if (Build.VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP) {
+      if (getApiLevel() >= LOLLIPOP) {
         callInstanceMethod(msg, "recycleUnchecked");
       } else {
         callInstanceMethod(msg, "recycle");

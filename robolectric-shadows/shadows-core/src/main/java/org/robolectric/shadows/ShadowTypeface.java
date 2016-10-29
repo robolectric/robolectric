@@ -4,7 +4,6 @@ import android.graphics.FontFamily;
 
 import android.content.res.AssetManager;
 import android.graphics.Typeface;
-import android.os.Build;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.HiddenApi;
@@ -22,8 +21,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static android.os.Build.VERSION_CODES;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.Shadows.shadowOf;
 
 /**
@@ -116,7 +115,7 @@ public class ShadowTypeface {
   private static Typeface createUnderlyingTypeface(String familyName, int style) {
     long thisFontId = nextFontId++;
     FONTS.put(thisFontId, new FontDesc(familyName, style));
-    if (Build.VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP) {
+    if (getApiLevel() >= LOLLIPOP) {
       return ReflectionHelpers.callConstructor(Typeface.class, ClassParameter.from(long.class, thisFontId));
     } else {
       return ReflectionHelpers.callConstructor(Typeface.class, ClassParameter.from(int.class, (int) thisFontId));

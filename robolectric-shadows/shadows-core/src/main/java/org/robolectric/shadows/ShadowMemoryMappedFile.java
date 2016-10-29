@@ -1,19 +1,20 @@
 package org.robolectric.shadows;
 
-import android.os.Build;
 import libcore.io.BufferIterator;
 import android.system.ErrnoException;
 import libcore.io.MemoryMappedFile;
 import libcore.io.Streams;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
 import org.robolectric.internal.ShadowExtractor;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
 
 /**
  * Shadow for {@link libcore.io.MemoryMappedFile}.
@@ -52,7 +53,7 @@ public class ShadowMemoryMappedFile {
     }
 
     private static Class exceptionClass() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        if (getApiLevel() >= LOLLIPOP) {
             return ErrnoException.class;
         } else {
             try {

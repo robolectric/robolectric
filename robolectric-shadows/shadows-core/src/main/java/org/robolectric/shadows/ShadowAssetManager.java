@@ -5,7 +5,6 @@ import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
-import android.os.Build;
 import android.os.ParcelFileDescriptor;
 import android.util.AttributeSet;
 import android.util.TypedValue;
@@ -46,6 +45,7 @@ import java.util.Map;
 import java.util.List;
 
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.Shadows.shadowOf;
 
 /**
@@ -301,7 +301,7 @@ public final class ShadowAssetManager {
   public Number createTheme() {
     synchronized (themes) {
       long themePtr = nextInternalThemeId++;
-      return Build.VERSION.SDK_INT >= LOLLIPOP
+      return getApiLevel() >= LOLLIPOP
           ? new Long(themePtr)
           : new Integer((int) themePtr);
     }

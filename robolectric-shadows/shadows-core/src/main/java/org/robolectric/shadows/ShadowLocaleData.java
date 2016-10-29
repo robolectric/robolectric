@@ -2,12 +2,18 @@ package org.robolectric.shadows;
 
 import java.util.Locale;
 
-import android.os.Build;
 import libcore.icu.LocaleData;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.internal.Shadow;
 import org.robolectric.util.ReflectionHelpers;
+
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
+import static android.os.Build.VERSION_CODES.M;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
 
 /**
  * Shadow for {@link libcore.icu.LocaleData}.
@@ -38,7 +44,7 @@ public class ShadowLocaleData {
     localeData.longMonthNames = new String[]{"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
     localeData.shortMonthNames = new String[]{"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+    if (getApiLevel() >= JELLY_BEAN_MR1) {
       localeData.tinyMonthNames = new String[]{"J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"};
       localeData.tinyStandAloneMonthNames = localeData.tinyMonthNames;
       localeData.tinyWeekdayNames = new String[]{"", "S", "M", "T", "W", "T", "F", "S"};
@@ -63,10 +69,10 @@ public class ShadowLocaleData {
     localeData.mediumTimeFormat = "h:mm:ss a";
     localeData.shortTimeFormat = "h:mm a";
 
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+    if (getApiLevel() >= M) {
       localeData.timeFormat_hm = "h:mm a";
       localeData.timeFormat_Hm = "HH:mm";
-    } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+    } else if (getApiLevel() >= JELLY_BEAN_MR2) {
       ReflectionHelpers.setField(localeData, "timeFormat12", "h:mm a");
       ReflectionHelpers.setField(localeData, "timeFormat24", "HH:mm");
     }
@@ -81,7 +87,7 @@ public class ShadowLocaleData {
     localeData.groupingSeparator = ',';
     localeData.patternSeparator = ';';
 
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+    if (getApiLevel() >= LOLLIPOP_MR1) {
       // Lollipop MR1 uses a String
       localeData.percent = "%";
     } else {
@@ -92,7 +98,7 @@ public class ShadowLocaleData {
     localeData.perMill = 0x2030;
     localeData.monetarySeparator = '.';
 
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+    if (getApiLevel() >= LOLLIPOP) {
       // Lollipop uses a String
       localeData.minusSign = "-";
     } else {

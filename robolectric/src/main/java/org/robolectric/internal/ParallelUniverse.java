@@ -58,6 +58,8 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
   @Override
   public void setUpApplicationState(Method method, TestLifecycle testLifecycle, ResourceLoader systemResourceLoader, AndroidManifest appManifest, Config config) {
+    ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", sdkConfig.getApiLevel());
+
     RuntimeEnvironment.application = null;
     RuntimeEnvironment.setMasterScheduler(new Scheduler());
     RuntimeEnvironment.setMainThread(Thread.currentThread());
@@ -84,7 +86,6 @@ public class ParallelUniverse implements ParallelUniverseInterface {
     shadowsAdapter.overrideQualifiers(configuration, qualifiers);
     systemResources.updateConfiguration(configuration, systemResources.getDisplayMetrics());
     RuntimeEnvironment.setQualifiers(qualifiers);
-    RuntimeEnvironment.setApiLevel(sdkConfig.getApiLevel());
 
     Class<?> contextImplClass = ReflectionHelpers.loadClass(getClass().getClassLoader(), shadowsAdapter.getShadowContextImplClassName());
 

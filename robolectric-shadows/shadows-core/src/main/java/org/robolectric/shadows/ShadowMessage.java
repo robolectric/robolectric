@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import android.os.Build;
-import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import android.os.Message;
 
@@ -12,6 +10,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 
 import static android.os.Build.VERSION_CODES.*;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.internal.Shadow.*;
 import static org.robolectric.util.ReflectionHelpers.*;
@@ -45,7 +44,7 @@ public class ShadowMessage {
    * on the real object.
    */
   public void recycleUnchecked() {
-    if (Build.VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP) {
+    if (getApiLevel() >= LOLLIPOP) {
       unschedule();
       directlyOn(realMessage, Message.class, "recycleUnchecked");
     } else {

@@ -139,12 +139,12 @@ public class ShadowProviderGenerator extends Generator {
       int maxSdk = annotation.maxSdk();
       String ifClause;
       if (minSdk != -1 && maxSdk != -1) {
-        ifClause = "if (android.os.Build.VERSION.SDK_INT >= " + minSdk +
-            " && android.os.Build.VERSION.SDK_INT <= " + maxSdk + ") ";
+        ifClause = "if (org.robolectric.RuntimeEnvironment.getApiLevel() >= " + minSdk +
+            " && org.robolectric.RuntimeEnvironment.getApiLevel() <= " + maxSdk + ") ";
       } else if (maxSdk != -1) {
-        ifClause = "if (android.os.Build.VERSION.SDK_INT <= " + maxSdk + ") ";
+        ifClause = "if (org.robolectric.RuntimeEnvironment.getApiLevel() <= " + maxSdk + ") ";
       } else if (minSdk != -1) {
-        ifClause = "if (android.os.Build.VERSION.SDK_INT >= " + minSdk + ") ";
+        ifClause = "if (org.robolectric.RuntimeEnvironment.getApiLevel() >= " + minSdk + ") ";
       } else {
         ifClause = "";
       }

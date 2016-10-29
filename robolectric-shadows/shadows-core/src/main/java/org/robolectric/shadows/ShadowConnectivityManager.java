@@ -6,7 +6,6 @@ import android.net.NetworkInfo;
 import android.net.NetworkRequest;
 import android.net.Network;
 
-import android.os.Build;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -17,9 +16,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static android.os.Build.VERSION_CODES;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
 
 /**
  * Shadow for {@link android.net.ConnectivityManager}.
@@ -51,7 +50,7 @@ public class ShadowConnectivityManager {
 
     this.activeNetworkInfo = mobile;
 
-    if (Build.VERSION.SDK_INT >= LOLLIPOP) {
+    if (getApiLevel() >= LOLLIPOP) {
       netIdToNetwork.put(NET_ID_WIFI, ShadowNetwork.newInstance(NET_ID_WIFI));
       netIdToNetwork.put(NET_ID_MOBILE, ShadowNetwork.newInstance(NET_ID_MOBILE));
       netIdToNetworkInfo.put(NET_ID_WIFI, wifi);
@@ -149,7 +148,7 @@ public class ShadowConnectivityManager {
   }
 
   public void setActiveNetworkInfo(NetworkInfo info) {
-    if (Build.VERSION.SDK_INT >= LOLLIPOP) {
+    if (getApiLevel() >= LOLLIPOP) {
       activeNetworkInfo = info;
       if (info != null) {
         networkTypeToNetworkInfo.put(info.getType(), info);

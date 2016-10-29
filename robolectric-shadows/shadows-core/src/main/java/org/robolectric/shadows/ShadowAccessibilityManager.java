@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.content.Context;
 import android.content.pm.ServiceInfo;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -21,6 +20,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import java.util.List;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
 
 /**
  * Shadow for {@link android.view.accessibility.AccessibilityManager}.
@@ -37,7 +37,7 @@ public class ShadowAccessibilityManager {
   @HiddenApi
   @Implementation
   public static AccessibilityManager getInstance(Context context) throws Exception {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+    if (getApiLevel() >= KITKAT) {
       AccessibilityManager accessibilityManager = Shadow.newInstance(AccessibilityManager.class, new Class[]{Context.class, IAccessibilityManager.class, int.class}, new Object[]{context, new AccessibilityManagerService(context), 0});
       ReflectionHelpers.setField(accessibilityManager, "mHandler", new MyHandler(context.getMainLooper(), accessibilityManager));
       return accessibilityManager;

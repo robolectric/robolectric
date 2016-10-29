@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import android.graphics.Rect;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -36,6 +35,7 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.Shadows.shadowOf;
 /**
  * Shadow of {@link android.view.accessibility.AccessibilityNodeInfo} that allows a test to set
@@ -284,7 +284,7 @@ public class ShadowAccessibilityNodeInfo {
     if (labeledBy != null) {
       labeledBy.recycle();
     }
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+    if (getApiLevel() >= LOLLIPOP_MR1) {
       if (traversalAfter != null) {
         traversalAfter.recycle();
       }
@@ -818,7 +818,7 @@ public class ShadowAccessibilityNodeInfo {
 
   @Implementation
   public void addAction(int action) {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+    if (getApiLevel() >= LOLLIPOP) {
       if ((action & getActionTypeMaskFromFramework()) != 0) {
         throw new IllegalArgumentException("Action is not a combination of the standard " +
             "actions: " + action);
@@ -871,7 +871,7 @@ public class ShadowAccessibilityNodeInfo {
    */
   @Implementation
   public int getActions() {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+    if (getApiLevel() >= LOLLIPOP) {
       int returnValue = 0;
       if (actionsArray == null) {
         return returnValue;
@@ -985,7 +985,7 @@ public class ShadowAccessibilityNodeInfo {
     }
     areEqual &= (propertyFlags == otherShadow.propertyFlags);
 
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+    if (getApiLevel() >= LOLLIPOP) {
       boolean actionsArrayEquality = false;
       if (actionsArray == null && otherShadow.actionsArray == null) {
         actionsArrayEquality = true;
@@ -1038,10 +1038,10 @@ public class ShadowAccessibilityNodeInfo {
     if (!TextUtils.isEmpty(packageName)) {
       areEqual &= (packageName.toString().equals(otherShadow.packageName.toString()));
     }
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+    if (getApiLevel() >= JELLY_BEAN_MR2) {
       areEqual &= TextUtils.equals(viewIdResourceName, otherShadow.viewIdResourceName);
     }
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+    if (getApiLevel() >= KITKAT) {
       if (collectionInfo == null) {
         areEqual &= (otherShadow.collectionInfo == null);
       } else {
@@ -1060,11 +1060,11 @@ public class ShadowAccessibilityNodeInfo {
         areEqual &= (rangeInfo.equals(otherShadow.rangeInfo));
       }
     }
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+    if (getApiLevel() >= LOLLIPOP) {
       areEqual &= (maxTextLength == otherShadow.maxTextLength);
       areEqual &= TextUtils.equals(error, otherShadow.error);
     }
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+    if (getApiLevel() >= LOLLIPOP_MR1) {
       if (traversalAfter == null) {
         areEqual &= (otherShadow.traversalAfter == null);
       } else {
@@ -1169,7 +1169,7 @@ public class ShadowAccessibilityNodeInfo {
     newShadow.textSelectionStart = textSelectionStart;
     newShadow.textSelectionEnd = textSelectionEnd;
     newShadow.actionListener = actionListener;
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+    if (getApiLevel() >= LOLLIPOP) {
       if (actionsArray != null) {
         newShadow.actionsArray = new ArrayList<>();
         newShadow.actionsArray.addAll(actionsArray);
@@ -1190,21 +1190,21 @@ public class ShadowAccessibilityNodeInfo {
     newShadow.refreshReturnValue = refreshReturnValue;
     newShadow.movementGranularities = movementGranularities;
     newShadow.packageName = packageName;
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+    if (getApiLevel() >= JELLY_BEAN_MR2) {
       newShadow.viewIdResourceName = viewIdResourceName;
     }
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+    if (getApiLevel() >= KITKAT) {
       newShadow.collectionInfo = collectionInfo;
       newShadow.collectionItemInfo = collectionItemInfo;
       newShadow.inputType = inputType;
       newShadow.liveRegion = liveRegion;
       newShadow.rangeInfo = rangeInfo;
     }
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+    if (getApiLevel() >= LOLLIPOP) {
       newShadow.maxTextLength = maxTextLength;
       newShadow.error = error;
     }
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+    if (getApiLevel() >= LOLLIPOP_MR1) {
       newShadow.traversalAfter = (traversalAfter == null) ? null : obtain(traversalAfter);
       newShadow.traversalBefore = (traversalBefore == null) ? null : obtain(traversalBefore);
     }

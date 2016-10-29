@@ -94,10 +94,6 @@ public class RuntimeEnvironment {
     qualifiers = newQualifiers;
   }
 
-  public static void setApiLevel(int level) {
-    apiLevel = level;
-  }
-
   public static int getApiLevel() {
     return apiLevel;
   }

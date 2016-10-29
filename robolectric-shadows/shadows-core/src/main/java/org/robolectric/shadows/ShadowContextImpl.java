@@ -12,7 +12,6 @@ import android.content.IntentSender;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.FileUtils;
@@ -31,7 +30,12 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.internal.Shadow.directlyOn;
 import static org.robolectric.internal.Shadow.newInstanceOf;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
@@ -88,17 +92,17 @@ public class ShadowContextImpl {
     SYSTEM_SERVICE_MAP.put(Context.ACCOUNT_SERVICE, "android.accounts.AccountManager");
     SYSTEM_SERVICE_MAP.put(Context.NFC_SERVICE, "android.nfc.NfcManager");
     SYSTEM_SERVICE_MAP.put(Context.WALLPAPER_SERVICE, "android.app.WallpaperManager");
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+    if (getApiLevel() >= JELLY_BEAN_MR1) {
       SYSTEM_SERVICE_MAP.put(Context.DISPLAY_SERVICE, "android.hardware.display.DisplayManager");
       SYSTEM_SERVICE_MAP.put(Context.USER_SERVICE, "android.os.UserManager");
     }
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+    if (getApiLevel() >= JELLY_BEAN_MR2) {
       SYSTEM_SERVICE_MAP.put(Context.BLUETOOTH_SERVICE, "android.bluetooth.BluetoothManager");
     }
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+    if (getApiLevel() >= KITKAT) {
       SYSTEM_SERVICE_MAP.put(Context.PRINT_SERVICE, "android.print.PrintManager");
     }
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+    if (getApiLevel() >= LOLLIPOP) {
       SYSTEM_SERVICE_MAP.put(Context.JOB_SCHEDULER_SERVICE, "android.app.JobSchedulerImpl");
       SYSTEM_SERVICE_MAP.put(Context.TELECOM_SERVICE, "android.telecom.TelecomManager");
       SYSTEM_SERVICE_MAP.put(Context.MEDIA_SESSION_SERVICE, "android.media.session.MediaSessionManager");
@@ -176,12 +180,12 @@ public class ShadowContextImpl {
           service = ReflectionHelpers.callConstructor(clazz, ClassParameter.from(Context.class, RuntimeEnvironment.application));
         } else if (serviceClassName.equals("android.view.accessibility.AccessibilityManager")) {
           service = AccessibilityManager.getInstance(realObject);
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && serviceClassName.equals("android.view.WindowManagerImpl")) {
+        } else if (getApiLevel() >= JELLY_BEAN_MR1 && serviceClassName.equals("android.view.WindowManagerImpl")) {
           Display display = newInstanceOf(Display.class);
           service = ReflectionHelpers.callConstructor(Class.forName("android.view.WindowManagerImpl"), ClassParameter.from(Display.class, display));
         } else if (serviceClassName.equals("android.accounts.AccountManager")) {
           service = AccountManager.get(null);
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && serviceClassName.equals("android.print.PrintManager")) {
+        } else if (getApiLevel() >= KITKAT && serviceClassName.equals("android.print.PrintManager")) {
           service = ReflectionHelpers.callConstructor(Class.forName("android.print.PrintManager"),
             ClassParameter.from(Context.class, RuntimeEnvironment.application),
             ClassParameter.from(android.print.IPrintManager.class, null),

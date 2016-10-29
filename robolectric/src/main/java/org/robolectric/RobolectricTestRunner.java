@@ -224,11 +224,10 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
             parallelUniverseInterface.setSdkConfig(sdkEnvironment.getSdkConfig());
 
             int sdkVersion = pickSdkVersion(config, appManifest);
-            ReflectionHelpers.setStaticField(sdkEnvironment.bootstrappedClass(Build.VERSION.class),
-                "SDK_INT", sdkVersion);
+            Class<?> androidBuildVersionClass = sdkEnvironment.bootstrappedClass(Build.VERSION.class);
+            ReflectionHelpers.setStaticField(androidBuildVersionClass, "SDK_INT", sdkVersion);
             SdkConfig sdkConfig = new SdkConfig(sdkVersion);
-            ReflectionHelpers.setStaticField(sdkEnvironment.bootstrappedClass(Build.VERSION.class),
-                "RELEASE", sdkConfig.getAndroidVersion());
+            ReflectionHelpers.setStaticField(androidBuildVersionClass, "RELEASE", sdkConfig.getAndroidVersion());
 
             ResourceLoader systemResourceLoader = sdkEnvironment.getSystemResourceLoader(getJarResolver());
             parallelUniverseInterface.setUpApplicationState(bootstrappedMethod, testLifecycle, systemResourceLoader, appManifest, config);
