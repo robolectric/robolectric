@@ -210,7 +210,7 @@ public class ShadowDisplay {
   }
 
   @Implementation(minSdk = KITKAT)
-  public DisplayAdjustments getDisplayAdjustments() {
+  public Object getDisplayAdjustments() {
     return new DisplayAdjustments();
   }
 }
