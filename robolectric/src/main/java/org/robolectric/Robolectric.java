@@ -42,17 +42,9 @@ public class Robolectric {
   }
 
   public static ShadowsAdapter getShadowsAdapter() {
-    synchronized(ShadowsAdapter.class) {
-      if(shadowsAdapter == null) {
-        try {
-          shadowsAdapter = instantiateShadowsAdapter();
-        } catch(Throwable t) {
-          Throwable cause = t;
-          while(cause.getCause() != null) {
-            cause = cause.getCause();
-          }
-          cause.printStackTrace();
-        }
+    synchronized (ShadowsAdapter.class) {
+      if (shadowsAdapter == null) {
+        shadowsAdapter = instantiateShadowsAdapter();
       }
     }
     return shadowsAdapter;
