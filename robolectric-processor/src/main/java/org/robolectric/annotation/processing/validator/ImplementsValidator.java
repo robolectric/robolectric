@@ -46,6 +46,15 @@ public class ImplementsValidator extends Validator {
 
     // This shadow doesn't apply to the current SDK. todo: check each SDK.
     if (maxSdk != null && RobolectricModel.intVisitor.visit(maxSdk) < MAX_SUPPORTED_ANDROID_SDK) {
+      String sdkClassName;
+      if (av == null) {
+        sdkClassName = RobolectricModel.classNameVisitor.visit(cv).replace('$', '.');
+      } else {
+        sdkClassName = av.toString();
+      }
+
+      // there's no such type at the current SDK level, so just use strings...
+      model.addExtraShadow(sdkClassName, elem.getQualifiedName().toString());
       return null;
     }
 

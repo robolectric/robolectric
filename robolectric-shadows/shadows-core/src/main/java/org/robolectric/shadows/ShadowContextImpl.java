@@ -134,16 +134,6 @@ public class ShadowContextImpl {
 
   private Map<String, Object> systemServices = new HashMap<String, Object>();
 
-  @Implements(className = ShadowServiceFetcher.CLASS_NAME, looseSignatures = true, maxSdk = LOLLIPOP_MR1)
-  public static class ShadowServiceFetcher {
-    public static final String CLASS_NAME = "android.app.ContextImpl$ServiceFetcher";
-
-    @Implementation
-    public Object createService(Object ctx) {
-      return null;
-    }
-  }
-
   @Implementation
   public Object getSystemService(String name) {
     if (name.equals(Context.LAYOUT_INFLATER_SERVICE)) {

@@ -22,6 +22,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementVisitor;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
@@ -72,6 +73,7 @@ public class RobolectricModel {
   private HashMultimap<String,TypeElement> typeMap = HashMultimap.create();
   private HashMap<TypeElement,TypeElement> importMap = newHashMap();
   private TreeMap<TypeElement,TypeElement> shadowTypes = newTreeMap(fqComparator);
+  private TreeMap<String, String> extraShadowTypes = newTreeMap();
   private TreeSet<String> imports = newTreeSet();
   private TreeMap<TypeElement,ExecutableElement> resetterMap = newTreeMap(comparator);
 
@@ -290,6 +292,10 @@ public class RobolectricModel {
     shadowTypes.put(elem, type);
   }
 
+  public void addExtraShadow(String sdkClassName, String shadowClassName) {
+    extraShadowTypes.put(shadowClassName, sdkClassName);
+  }
+
   public void addResetter(TypeElement parent, ExecutableElement elem) {
     resetterMap.put(parent, elem);
   }
@@ -304,6 +310,10 @@ public class RobolectricModel {
 
   public Map<TypeElement, TypeElement> getAllShadowTypes() {
     return shadowTypes;
+  }
+
+  public Map<String, String> getExtraShadowTypes() {
+    return extraShadowTypes;
   }
 
   public Map<TypeElement, TypeElement> getResetterShadowTypes() {

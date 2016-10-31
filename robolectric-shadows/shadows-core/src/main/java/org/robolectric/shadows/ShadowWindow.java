@@ -22,6 +22,8 @@ import static org.robolectric.internal.Shadow.directlyOn;
 public class ShadowWindow {
   private @RealObject Window realWindow;
 
+  protected CharSequence title = "";
+  protected Drawable backgroundDrawable;
   private int flags;
   private int softInputMode;
 
@@ -51,22 +53,22 @@ public class ShadowWindow {
   }
 
   public CharSequence getTitle() {
-    return "";
-  }
-
-  public Drawable getBackgroundDrawable() {
-    return null;
+    return title;
   }
 
   public int getSoftInputMode() {
     return softInputMode;
   }
 
+  public Drawable getBackgroundDrawable() {
+    return backgroundDrawable;
+  }
+
   public ProgressBar getProgressBar() {
-    return null;
+    return (ProgressBar) directlyOn(realWindow, realWindow.getClass().getName(), "getHorizontalProgressBar", ClassParameter.from(boolean.class, false));
   }
 
   public ProgressBar getIndeterminateProgressBar() {
-    return null;
+    return (ProgressBar) directlyOn(realWindow, realWindow.getClass().getName(), "getCircularProgressBar", ClassParameter.from(boolean.class, false));
   }
 }

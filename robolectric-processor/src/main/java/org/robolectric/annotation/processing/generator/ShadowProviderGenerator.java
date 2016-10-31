@@ -88,6 +88,13 @@ public class ShadowProviderGenerator extends Generator {
       final String actual = entry.getValue().getQualifiedName().toString();
       writer.println("    SHADOW_MAP.put(\"" + actual + "\", \"" + shadow + "\");");
     }
+
+    for (Map.Entry<String, String> entry : model.getExtraShadowTypes().entrySet()) {
+      final String shadow = entry.getKey();
+      final String actual = entry.getValue();
+      writer.println("    SHADOW_MAP.put(\"" + actual + "\", \"" + shadow + "\");");
+    }
+
     writer.println("  }");
     writer.println();
 
