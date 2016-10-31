@@ -45,7 +45,10 @@ allprojects {
         from javadoc.destinationDir
     }
 
-    task provideBuildClasspath(type: ProvideBuildClasspathTask)
+    task provideBuildClasspath(type: ProvideBuildClasspathTask) {
+        File outDir = project.sourceSets['test'].output.resourcesDir
+        outFile = new File(outDir, 'robolectric-deps.properties')
+    }
 
     test {
         dependsOn provideBuildClasspath
