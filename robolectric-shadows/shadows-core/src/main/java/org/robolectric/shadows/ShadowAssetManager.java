@@ -45,6 +45,7 @@ import java.util.Map;
 import java.util.List;
 
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -60,8 +61,6 @@ public final class ShadowAssetManager {
   public static final int STYLE_RESOURCE_ID = 3;
   public static final int STYLE_CHANGING_CONFIGURATIONS = 4;
   public static final int STYLE_DENSITY = 5;
-
-  public static final int LOLLIPOP = 21;
 
   boolean strictErrors = false;
 

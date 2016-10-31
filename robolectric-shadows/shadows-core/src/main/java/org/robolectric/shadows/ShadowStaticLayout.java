@@ -7,6 +7,7 @@ import org.robolectric.annotation.Implements;
 
 import static android.os.Build.VERSION_CODES;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 
 /**
@@ -15,7 +16,7 @@ import static android.os.Build.VERSION_CODES.M;
 @Implements(value = StaticLayout.class, looseSignatures = true)
 public class ShadowStaticLayout {
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = LOLLIPOP_MR1)
   @HiddenApi
   public static int[] nLineBreakOpportunities(String locale, char[] text, int length, int[] recycle) {
     return new int[] {-1};

@@ -3,7 +3,6 @@ package org.robolectric.fakes;
 import android.os.Vibrator;
 
 import android.media.AudioAttributes;
-import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.internal.DoNotInstrument;
 
 /**

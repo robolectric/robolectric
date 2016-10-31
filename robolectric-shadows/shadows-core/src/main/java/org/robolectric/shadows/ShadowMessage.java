@@ -35,14 +35,14 @@ public class ShadowMessage {
 	}
   }
 
-  @Implementation
-  @HiddenApi
   /**
    * Hook to unscheduled the callback when the message is recycled.
    * Invokes {@link #unschedule()} and then calls through to the
    * package private method {@link Message}<code>.recycleUnchecked()
    * on the real object.
    */
+  @Implementation
+  @HiddenApi
   public void recycleUnchecked() {
     if (getApiLevel() >= LOLLIPOP) {
       unschedule();

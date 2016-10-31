@@ -116,12 +116,10 @@ public class ShadowAccessibilityNodeInfo {
 
   // In API prior to 21, actions are stored in a flag, after 21 they are stored in array of
   // AccessibilityAction so custom actions can be supported.
-//#if ($api >= 21)
   private ArrayList<AccessibilityAction> actionsArray;
-//#else
   private int actionsMask;
-//#end
   // Storage of flags
+
   private int propertyFlags;
 
   private AccessibilityNodeInfo parent;

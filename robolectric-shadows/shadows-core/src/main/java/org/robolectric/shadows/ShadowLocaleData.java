@@ -104,7 +104,6 @@ public class ShadowLocaleData {
     } else {
       // Upto KitKat was a char
       ReflectionHelpers.setField(localeData, "minusSign", '-');
-//      localeData.minusSign = '-';
     }
 
     localeData.exponentSeparator = "E";

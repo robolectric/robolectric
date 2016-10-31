@@ -3,8 +3,7 @@ package org.robolectric.internal.bytecode;
 import org.robolectric.util.JavaVersion;
 
 public class InvokeDynamic {
-//  public static final boolean ENABLED = useInvokeDynamic();
-  public static final boolean ENABLED = false;
+  public static final boolean ENABLED = useInvokeDynamic();
 
   private static final String ENABLE_INVOKEDYNAMIC = "robolectric.invokedynamic.enable";
   // We currently crash on versions earlier than 8u40 because of a bug in the C2 compiler.

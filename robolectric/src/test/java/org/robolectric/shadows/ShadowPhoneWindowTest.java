@@ -7,7 +7,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.MultiApiRobolectricTestRunner;
-import org.robolectric.R;
 import org.robolectric.Robolectric;
 
 import static org.assertj.core.api.Assertions.assertThat;
