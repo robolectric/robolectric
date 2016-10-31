@@ -7,6 +7,12 @@ allprojects {
     group = "org.robolectric"
     version = "3.2-SNAPSHOT"
 
+    if (project.name == "integration-tests") {
+        println("Bailing for ${project.name}")
+        return
+    }
+
+    println "Applying java to ${project.name}"
     apply plugin: "java"
     sourceCompatibility = JavaVersion.VERSION_1_7
     targetCompatibility = JavaVersion.VERSION_1_7
