@@ -300,9 +300,13 @@ public final class ShadowAssetManager {
   public Number createTheme() {
     synchronized (themes) {
       long themePtr = nextInternalThemeId++;
-      return getApiLevel() >= LOLLIPOP
-          ? new Long(themePtr)
-          : new Integer((int) themePtr);
+
+      // Weird, using a ternary here doesn't work, there's some auto promotion of boxed types happening.
+      if (getApiLevel() >= LOLLIPOP) {
+        return themePtr;
+      } else {
+        return (int) themePtr;
+      }
     }
   }
 
