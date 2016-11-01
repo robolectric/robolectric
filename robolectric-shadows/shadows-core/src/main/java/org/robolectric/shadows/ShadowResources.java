@@ -1,11 +1,6 @@
 package org.robolectric.shadows;
 
-import android.content.res.AssetFileDescriptor;
-import android.content.res.AssetManager;
-import android.content.res.Configuration;
-import android.content.res.Resources;
-import android.content.res.TypedArray;
-import android.content.res.XmlResourceParser;
+import android.content.res.*;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -38,6 +33,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.internal.Shadow.directlyOn;
 import static org.robolectric.internal.Shadow.invokeConstructor;
@@ -187,14 +184,20 @@ public class ShadowResources {
     return loadXmlResourceParser(id, type);
   }
 
-  @Implements(Resources.Theme.class)
+  @Implements(value = Resources.Theme.class, maxSdk = M)
   public static class ShadowTheme {
     @RealObject Resources.Theme realTheme;
     private ThemeStyleSet themeStyleSet = new ThemeStyleSet();
 
     public void __constructor__(Resources this$0) {
       invokeConstructor(Resources.Theme.class, realTheme, ClassParameter.from(Resources.class, this$0));
-      Number themePtr = ReflectionHelpers.getField(realTheme, "mTheme");
+      Number themePtr;
+      if (RuntimeEnvironment.getApiLevel() >= N) {
+        ResourcesImpl.ThemeImpl themeImpl = ReflectionHelpers.getField(realTheme, "mThemeImpl");
+        themePtr = ReflectionHelpers.getField(themeImpl, "mTheme");
+      } else {
+        themePtr = ReflectionHelpers.getField(realTheme, "mTheme");
+      }
       ShadowAssetManager.saveTheme(themePtr, realTheme);
     }
 
@@ -219,11 +222,6 @@ public class ShadowResources {
 
     public void setThemeStyleSet(ThemeStyleSet themeStyleSet) {
       this.themeStyleSet = themeStyleSet;
-    }
-
-    void doApplyStyle(int styleRes, boolean force) {
-      Style style = getShadowAssetManager().resolveStyle(styleRes, null);
-      themeStyleSet.apply(style, force);
     }
 
     private ShadowAssetManager getShadowAssetManager() {
