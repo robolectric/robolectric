@@ -19,6 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import static android.os.Build.VERSION_CODES;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static org.robolectric.RuntimeEnvironment.castNativePtr;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 
 /**
@@ -30,14 +31,7 @@ public class ShadowCursorWindow {
 
   @Implementation
   public static Number nativeCreate(String name, int cursorWindowSize) {
-    long ptr = WINDOW_DATA.create(name, cursorWindowSize);
-
-    // Weird, using a ternary here doesn't work, there's some auto promotion of boxed types happening.
-    if (getApiLevel() >= LOLLIPOP) {
-      return ptr;
-    } else {
-      return (int) ptr;
-    }
+    return castNativePtr(WINDOW_DATA.create(name, cursorWindowSize));
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)

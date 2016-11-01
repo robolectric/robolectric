@@ -45,6 +45,8 @@ import java.util.regex.Pattern;
 import static android.os.Build.VERSION_CODES;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static org.robolectric.RuntimeEnvironment.castNativePtr;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
 
 /**
  * Shadow for {@link android.database.sqlite.SQLiteConnection}.
@@ -72,7 +74,7 @@ public class ShadowSQLiteConnection {
   @Implementation
   public static Number nativeOpen(String path, int openFlags, String label, boolean enableTrace, boolean enableProfile) {
     SQLiteLibraryLoader.load();
-    return CONNECTIONS.open(path);
+    return castNativePtr(CONNECTIONS.open(path));
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)

@@ -46,6 +46,7 @@ import java.util.List;
 
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static org.robolectric.RuntimeEnvironment.castNativePtr;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -299,14 +300,7 @@ public final class ShadowAssetManager {
   @HiddenApi @Implementation
   public Number createTheme() {
     synchronized (themes) {
-      long themePtr = nextInternalThemeId++;
-
-      // Weird, using a ternary here doesn't work, there's some auto promotion of boxed types happening.
-      if (getApiLevel() >= LOLLIPOP) {
-        return themePtr;
-      } else {
-        return (int) themePtr;
-      }
+      return castNativePtr(nextInternalThemeId++);
     }
   }
 

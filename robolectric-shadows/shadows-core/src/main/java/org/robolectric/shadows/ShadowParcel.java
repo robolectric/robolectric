@@ -22,6 +22,7 @@ import java.util.Map;
 import static android.os.Build.VERSION_CODES;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static org.robolectric.RuntimeEnvironment.castNativePtr;
 
 /**
  * Shadow for {@link android.os.Parcel}.
@@ -253,13 +254,14 @@ public class ShadowParcel {
 
   @Implementation @HiddenApi
   public static Number nativeCreate() {
+    // todo: yikes, perf:
     // Pick a native ptr that hasn't been used.
     long/*ptr*/ nativePtrUsed = 0;
     while (NATIVE_PTR_TO_PARCEL.containsKey(nativePtrUsed)) {
       nativePtrUsed++;
     }
     NATIVE_PTR_TO_PARCEL.put(nativePtrUsed, new ByteBuffer());
-    return nativePtrUsed;
+    return castNativePtr(nativePtrUsed);
   }
 
   @HiddenApi
