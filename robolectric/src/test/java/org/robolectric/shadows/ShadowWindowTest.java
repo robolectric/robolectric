@@ -9,9 +9,11 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import com.android.internal.policy.PolicyManager;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ActivityController;
@@ -92,6 +94,28 @@ public class ShadowWindowTest {
     assertThat(indeterminate.getVisibility()).isEqualTo(View.VISIBLE);
     activity.setProgressBarIndeterminateVisibility(false);
     assertThat(indeterminate.getVisibility()).isEqualTo(View.GONE);
+  }
+
+  @Test @Config(sdk = Build.VERSION_CODES.LOLLIPOP_MR1)
+  public void forPreM_create_shouldCreateImplPhoneWindow() throws Exception {
+    assertThat(ShadowWindow.create(RuntimeEnvironment.application).getClass().getName())
+        .isEqualTo("com.android.internal.policy.impl.PhoneWindow");
+  }
+
+  @Test @Config(sdk = Build.VERSION_CODES.M)
+  public void forM_create_shouldCreatePhoneWindow() throws Exception {
+    assertThat(ShadowWindow.create(RuntimeEnvironment.application).getClass().getName())
+        .isEqualTo("com.android.internal.policy.PhoneWindow");
+  }
+
+  @Test @Config(sdk = Build.VERSION_CODES.M)
+  public void makeNewWindowSucks() throws Exception {
+    PolicyManager.makeNewWindow(RuntimeEnvironment.application);
+  }
+
+  @Test @Config(sdk = Build.VERSION_CODES.LOLLIPOP_MR1)
+  public void withLollipop_makeNewWindowSucks() throws Exception {
+    PolicyManager.makeNewWindow(RuntimeEnvironment.application);
   }
 
   public static class TestActivity extends Activity {

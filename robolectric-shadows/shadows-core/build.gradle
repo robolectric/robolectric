@@ -2,7 +2,38 @@ def androidApi = hasProperty("androidApi") ? ext.androidApi.toInteger() : Androi
 def robolectricVersion = AndroidSdk.versions[androidApi]
 logger.info "Android API: $androidApi — $robolectricVersion"
 
-compileJava.onlyIf { false }
+apply plugin: ShadowsPlugin
+
+shadows {
+    packageName "org.robolectric"
+}
+
+configurations {
+    jni
+}
+
+task copyNatives(type: Copy) {
+    outputs.dir file("${buildDir}/resources/main")
+
+    project.afterEvaluate {
+        configurations.jni.files.each { File file ->
+            def nativeJarMatch = file.name =~ /lib.*-natives-(.*)\.jar/
+            if (nativeJarMatch) {
+                inputs.file file
+
+                def platformName = nativeJarMatch[0][1]
+                from(zipTree(file)) { rename { f -> "$platformName/$f" } }
+            }
+
+        }
+    }
+
+    into project.file("$buildDir/resources/main")
+}
+
+jar {
+    dependsOn copyNatives
+}
 
 dependencies {
     // Project dependencies
@@ -13,6 +44,12 @@ dependencies {
     // Compile dependencies
     provided "com.intellij:annotations:12.0"
     compile "com.almworks.sqlite4java:sqlite4java:0.282"
-    provided("org.robolectric:android-all:$robolectricVersion") { force = true }
+    provided("org.robolectric:android-all:${AndroidSdk.versions[AndroidSdk.latestVersion]}") { force = true }
     compile "com.ibm.icu:icu4j:53.1"
+
+    jni "com.github.axet.litedb:libsqlite:0.282-3:natives-mac-x86_64"
+    jni "com.github.axet.litedb:libsqlite:0.282-3:natives-linux-x86"
+    jni "com.github.axet.litedb:libsqlite:0.282-3:natives-linux-x86_64"
+    jni "com.github.axet.litedb:libsqlite:0.282-3:natives-windows-x86"
+    jni "com.github.axet.litedb:libsqlite:0.282-3:natives-windows-x86_64"
 }

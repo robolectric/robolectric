@@ -36,7 +36,6 @@ import javax.lang.model.util.SimpleTypeVisitor6;
 import javax.lang.model.util.Types;
 
 import com.google.common.base.Equivalence;
-import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
 import com.google.common.collect.HashMultimap;
@@ -74,6 +73,7 @@ public class RobolectricModel {
   private HashMultimap<String,TypeElement> typeMap = HashMultimap.create();
   private HashMap<TypeElement,TypeElement> importMap = newHashMap();
   private TreeMap<TypeElement,TypeElement> shadowTypes = newTreeMap(fqComparator);
+  private TreeMap<String, String> extraShadowTypes = newTreeMap();
   private TreeSet<String> imports = newTreeSet();
   private TreeMap<TypeElement,ExecutableElement> resetterMap = newTreeMap(comparator);
 
@@ -149,6 +149,13 @@ public class RobolectricModel {
     }
   };
   
+  public static AnnotationValueVisitor<Integer, Void> intVisitor = new SimpleAnnotationValueVisitor6<Integer, Void>() {
+    @Override
+    public Integer visitInt(int i, Void aVoid) {
+      return i;
+    }
+  };
+
   public AnnotationMirror getImplementsMirror(Element elem) {
     return getAnnotationMirror(elem, IMPLEMENTS);
   }
@@ -285,12 +292,16 @@ public class RobolectricModel {
     shadowTypes.put(elem, type);
   }
 
+  public void addExtraShadow(String sdkClassName, String shadowClassName) {
+    extraShadowTypes.put(shadowClassName, sdkClassName);
+  }
+
   public void addResetter(TypeElement parent, ExecutableElement elem) {
     resetterMap.put(parent, elem);
   }
 
-  public Set<Entry<TypeElement, ExecutableElement>> getResetters() {
-    return resetterMap.entrySet();
+  public Map<TypeElement, ExecutableElement> getResetters() {
+    return resetterMap;
   }
 
   public Set<String> getImports() {
@@ -299,6 +310,10 @@ public class RobolectricModel {
 
   public Map<TypeElement, TypeElement> getAllShadowTypes() {
     return shadowTypes;
+  }
+
+  public Map<String, String> getExtraShadowTypes() {
+    return extraShadowTypes;
   }
 
   public Map<TypeElement, TypeElement> getResetterShadowTypes() {
