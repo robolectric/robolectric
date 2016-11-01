@@ -18,6 +18,8 @@ import org.robolectric.annotation.Config;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static junit.framework.Assert.assertFalse;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
@@ -153,7 +155,7 @@ public class ShadowDrawableTest {
   }
 
   @Test
-  @Config(sdk = 21, qualifiers = "anydpi")
+  @Config(minSdk = LOLLIPOP, qualifiers = "anydpi")
   public void testGetBitmapOrVectorDrawableAt21() {
     final Drawable aDrawable = RuntimeEnvironment.application.getResources()
         .getDrawable(R.drawable.an_image_or_vector);
@@ -161,7 +163,7 @@ public class ShadowDrawableTest {
   }
 
   @Test
-  @Config(sdk = 19)
+  @Config(minSdk = KITKAT)
   public void testGetBitmapOrVectorDrawableAt19() {
     final Drawable aDrawable = RuntimeEnvironment.application.getResources()
         .getDrawable(R.drawable.an_image_or_vector);

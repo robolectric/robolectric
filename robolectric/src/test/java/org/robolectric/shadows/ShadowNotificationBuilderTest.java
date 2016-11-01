@@ -15,6 +15,9 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.M;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -40,28 +43,16 @@ public class ShadowNotificationBuilderTest {
     assertThat(shadowOf(notification).isOngoing()).isTrue();
   }
 
-  @Config(sdk = {
-      Build.VERSION_CODES.JELLY_BEAN_MR1,
-      Build.VERSION_CODES.JELLY_BEAN_MR2,
-      Build.VERSION_CODES.KITKAT,
-      Build.VERSION_CODES.LOLLIPOP,
-      Build.VERSION_CODES.LOLLIPOP_MR1,
-      Build.VERSION_CODES.M})
   @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
   public void build_whenShowWhenNotSet_setsShowWhenOnNotificationToTrue() {
     Notification notification = builder.setWhen(100).setShowWhen(true).build();
 
     assertThat(shadowOf(notification).isWhenShown()).isTrue();
   }
 
-  @Config(sdk = {
-      Build.VERSION_CODES.JELLY_BEAN_MR1,
-      Build.VERSION_CODES.JELLY_BEAN_MR2,
-      Build.VERSION_CODES.KITKAT,
-      Build.VERSION_CODES.LOLLIPOP,
-      Build.VERSION_CODES.LOLLIPOP_MR1,
-      Build.VERSION_CODES.M})
   @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
   public void build_setShowWhenOnNotification() {
     Notification notification = builder.setShowWhen(false).build();
 
@@ -89,8 +80,8 @@ public class ShadowNotificationBuilderTest {
     assertThat(shadowOf(notification).getContentInfo().toString()).isEqualTo("11");
   }
 
-  @Config(sdk = Build.VERSION_CODES.M)
   @Test
+  @Config(minSdk = M)
   public void build_setsIconOnNotification() throws Exception {
     Notification notification = builder.setSmallIcon(R.drawable.an_image).build();
 
@@ -123,28 +114,16 @@ public class ShadowNotificationBuilderTest {
     assertThat(progressBar.isIndeterminate()).isFalse();
   }
 
-  @Config(sdk = {
-      Build.VERSION_CODES.JELLY_BEAN_MR1,
-      Build.VERSION_CODES.JELLY_BEAN_MR2,
-      Build.VERSION_CODES.KITKAT,
-      Build.VERSION_CODES.LOLLIPOP,
-      Build.VERSION_CODES.LOLLIPOP_MR1,
-      Build.VERSION_CODES.M})
   @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
   public void build_setsUsesChronometerOnNotification_true() throws Exception {
     Notification notification = builder.setUsesChronometer(true).setWhen(10).setShowWhen(true).build();
 
     assertThat(shadowOf(notification).usesChronometer()).isTrue();
   }
 
-  @Config(sdk = {
-      Build.VERSION_CODES.JELLY_BEAN_MR1,
-      Build.VERSION_CODES.JELLY_BEAN_MR2,
-      Build.VERSION_CODES.KITKAT,
-      Build.VERSION_CODES.LOLLIPOP,
-      Build.VERSION_CODES.LOLLIPOP_MR1,
-      Build.VERSION_CODES.M})
   @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
   public void build_setsUsesChronometerOnNotification_false() throws Exception {
     Notification notification = builder.setUsesChronometer(false).setWhen(10).setShowWhen(true).build();
 
@@ -180,12 +159,7 @@ public class ShadowNotificationBuilderTest {
   }
 
   @Test
-  @Config(sdk = {
-      Build.VERSION_CODES.JELLY_BEAN_MR2,
-      Build.VERSION_CODES.KITKAT,
-      Build.VERSION_CODES.LOLLIPOP,
-      Build.VERSION_CODES.LOLLIPOP_MR1,
-      Build.VERSION_CODES.M})
+  @Config(minSdk = JELLY_BEAN_MR2)
   public void build_addsActionToNotification() throws Exception {
     PendingIntent action = PendingIntent.getBroadcast(RuntimeEnvironment.application, 0, null, 0);
     Notification notification = builder.addAction(0, "Action", action).build();
@@ -208,7 +182,7 @@ public class ShadowNotificationBuilderTest {
   }
 
   @Test
-  @Config(sdk = {Build.VERSION_CODES.M})
+  @Config(minSdk = M)
   public void withBigPictureStyle() {
     Bitmap bigPicture = BitmapFactory.decodeResource(RuntimeEnvironment.application.getResources(), R.drawable.an_image);
 

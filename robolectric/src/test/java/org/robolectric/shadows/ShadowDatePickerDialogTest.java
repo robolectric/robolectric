@@ -12,16 +12,11 @@ import org.robolectric.annotation.Config;
 import java.lang.Override;
 import java.util.Locale;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
-@Config(sdk = {
-    Build.VERSION_CODES.JELLY_BEAN,
-    Build.VERSION_CODES.JELLY_BEAN_MR1,
-    Build.VERSION_CODES.JELLY_BEAN_MR2,
-    // Build.VERSION_CODES.KITKAT, - Does not pass on Kit Kat
-    Build.VERSION_CODES.LOLLIPOP })
 public class ShadowDatePickerDialogTest {
 
   @Test

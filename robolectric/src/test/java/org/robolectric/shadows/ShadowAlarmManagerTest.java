@@ -18,6 +18,8 @@ import org.robolectric.annotation.Config;
 
 import java.util.Date;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.M;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
@@ -40,7 +42,7 @@ public class ShadowAlarmManagerTest {
   }
 
   @Test
-  @Config(sdk = Build.VERSION_CODES.M)
+  @Config(minSdk = M)
   public void setAndAllowWhileIdle_shouldRegisterAlarm() throws Exception {
     assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNull();
     alarmManager.setAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME, 0, PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
@@ -48,7 +50,7 @@ public class ShadowAlarmManagerTest {
   }
 
   @Test
-  @Config(sdk = Build.VERSION_CODES.KITKAT)
+  @Config(minSdk = KITKAT)
   public void setExact_shouldRegisterAlarm_forApi19() throws Exception {
     assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNull();
     alarmManager.setExact(AlarmManager.ELAPSED_REALTIME, 0, PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));

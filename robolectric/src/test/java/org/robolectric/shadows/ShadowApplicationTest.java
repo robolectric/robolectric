@@ -47,6 +47,9 @@ import java.util.List;
 
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assert.assertEquals;
@@ -98,27 +101,20 @@ public class ShadowApplicationTest {
   }
 
   @Test
-  @Config(sdk = {
-      Build.VERSION_CODES.KITKAT,
-      Build.VERSION_CODES.LOLLIPOP })
+  @Config(minSdk = JELLY_BEAN_MR1)
   public void shouldProvideServicesIntroducedInJellyBeanMr1() throws Exception {
     checkSystemService(Context.DISPLAY_SERVICE, android.hardware.display.DisplayManager.class);
     checkSystemService(Context.USER_SERVICE, UserManager.class);
   }
 
   @Test
-  @Config(sdk = {
-      Build.VERSION_CODES.KITKAT,
-      Build.VERSION_CODES.LOLLIPOP })
+  @Config(minSdk = KITKAT)
   public void shouldProvideServicesIntroducedInKitKat() throws Exception {
     checkSystemService(Context.PRINT_SERVICE, PrintManager.class);
   }
 
   @Test
-  @Config(sdk = {
-          Build.VERSION_CODES.LOLLIPOP,
-          Build.VERSION_CODES.LOLLIPOP_MR1,
-          Build.VERSION_CODES.M})
+  @Config(minSdk = LOLLIPOP)
   public void shouldProvideMediaSessionService() throws Exception {
     checkSystemService(Context.MEDIA_SESSION_SERVICE, MediaSessionManager.class);
   }
@@ -129,9 +125,7 @@ public class ShadowApplicationTest {
   }
 
   @Test
-  @Config(sdk = {
-      Build.VERSION_CODES.KITKAT,
-      Build.VERSION_CODES.LOLLIPOP })
+  @Config(minSdk = KITKAT)
   public void shouldCorrectlyInstantiatedAccessibilityService() throws Exception {
     AccessibilityManager accessibilityManager = (AccessibilityManager) RuntimeEnvironment.application.getSystemService(Context.ACCESSIBILITY_SERVICE);
 

@@ -25,6 +25,7 @@ import org.robolectric.annotation.Config;
 
 import java.io.IOException;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertFalse;
@@ -529,8 +530,7 @@ public class ShadowAccountManagerTest {
   }
 
   @Test
-  @Config(sdk = {
-      Build.VERSION_CODES.LOLLIPOP })
+  @Config(minSdk = LOLLIPOP)
   public void addPreviousAccount() {
     Account account = new Account("name_a", "type_a");
     shadowOf(am).setPreviousAccountName(account, "old_name");

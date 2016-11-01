@@ -177,8 +177,8 @@ public @interface Config {
       if (properties == null || properties.size() == 0) return null;
       return new Implementation(
           parseIntArrayProperty(properties.getProperty("sdk", "")),
-          Integer.parseInt(properties.getProperty("minSdk"), -1),
-          Integer.parseInt(properties.getProperty("maxSdk"), -1),
+          Integer.parseInt(properties.getProperty("minSdk", "-1")),
+          Integer.parseInt(properties.getProperty("maxSdk", "-1")),
           properties.getProperty("manifest", DEFAULT_MANIFEST),
           properties.getProperty("qualifiers", DEFAULT_QUALIFIERS),
           properties.getProperty("packageName", DEFAULT_PACKAGE_NAME),
