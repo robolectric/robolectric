@@ -17,6 +17,8 @@
 package org.robolectric.shadows;
 
 import android.util.TypedValue;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.res.ResName;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -81,6 +83,11 @@ public final class ResourceHelper {
     }
 
     throw new NumberFormatException();
+  }
+
+  public static int getInternalResourceId(String idName) {
+    return RuntimeEnvironment.getAppResourceLoader().getResourceIndex()
+        .getResourceId(new ResName("android", "id", idName));
   }
 
 //  public static ColorStateList getColorStateList(ResourceValue resValue, BridgeContext context) {

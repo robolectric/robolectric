@@ -2,7 +2,8 @@ package org.robolectric.internal.bytecode;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.robolectric.internal.SdkConfig;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 import org.robolectric.util.Function;
 
 import java.util.LinkedHashMap;
@@ -16,7 +17,7 @@ public class ShadowWranglerUnitTest {
 
   @Before
   public void setup() throws Exception {
-    shadowWrangler = new ShadowWrangler(ShadowMap.EMPTY);
+    shadowWrangler = new ShadowWrangler(ShadowMap.EMPTY, 23);
   }
 
   @Test
@@ -58,5 +59,100 @@ public class ShadowWranglerUnitTest {
         shadowWrangler.intercept("java/util/LinkedHashMap/eldest()Ljava/lang/Object;", map, null, getClass());
 
     assertThat(result).isNull();
+  }
+
+  @Test
+  public void shadowClassWithSdkRange() throws Throwable {
+    ShadowMap shadowMap = new ShadowMap.Builder().addShadowClasses(ShadowDummyClass.class).build();
+    String methodName = internalName(DummyClass.class) + "/methodWithoutRange()V";
+    assertThat(new ShadowWrangler(shadowMap, 18).methodInvoked(methodName, false, DummyClass.class)).isNull();
+    assertThat(new ShadowWrangler(shadowMap, 19).methodInvoked(methodName, false, DummyClass.class).describe())
+        .contains("ShadowDummyClass.methodWithoutRange()");
+    assertThat(new ShadowWrangler(shadowMap, 23).methodInvoked(methodName, false, DummyClass.class)).isNull();
+  }
+
+  @Test
+  public void shadowMethodWithSdkRange() throws Throwable {
+    ShadowMap shadowMap = new ShadowMap.Builder().addShadowClasses(ShadowDummyClass.class).build();
+    String methodName = internalName(DummyClass.class) + "/methodFor20()V";
+    assertThat(new ShadowWrangler(shadowMap, 19).methodInvoked(methodName, false, DummyClass.class)).isNull();
+    assertThat(new ShadowWrangler(shadowMap, 20).methodInvoked(methodName, false, DummyClass.class).describe())
+        .contains("ShadowDummyClass.methodFor20()");
+    assertThat(new ShadowWrangler(shadowMap, 21).methodInvoked(methodName, false, DummyClass.class)).isNull();
+  }
+
+  @Test
+  public void shadowMethodWithMinSdk() throws Throwable {
+    ShadowMap shadowMap = new ShadowMap.Builder().addShadowClasses(ShadowDummyClass.class).build();
+    String methodName = internalName(DummyClass.class) + "/methodMin20()V";
+    assertThat(new ShadowWrangler(shadowMap, 19).methodInvoked(methodName, false, DummyClass.class)).isNull();
+    assertThat(new ShadowWrangler(shadowMap, 20).methodInvoked(methodName, false, DummyClass.class).describe())
+        .contains("ShadowDummyClass.methodMin20()");
+    assertThat(new ShadowWrangler(shadowMap, 21).methodInvoked(methodName, false, DummyClass.class).describe())
+        .contains("ShadowDummyClass.methodMin20()");
+  }
+
+  @Test
+  public void shadowMethodWithMaxSdk() throws Throwable {
+    ShadowMap shadowMap = new ShadowMap.Builder().addShadowClasses(ShadowDummyClass.class).build();
+    String methodName = internalName(DummyClass.class) + "/methodMax20()V";
+    assertThat(new ShadowWrangler(shadowMap, 19).methodInvoked(methodName, false, DummyClass.class).describe())
+        .contains("ShadowDummyClass.methodMax20()");
+    assertThat(new ShadowWrangler(shadowMap, 20).methodInvoked(methodName, false, DummyClass.class).describe())
+        .contains("ShadowDummyClass.methodMax20()");
+    assertThat(new ShadowWrangler(shadowMap, 21).methodInvoked(methodName, false, DummyClass.class)).isNull();
+  }
+
+  @Test
+  public void shadowConstructor() throws Throwable {
+    ShadowMap shadowMap = new ShadowMap.Builder().addShadowClasses(ShadowDummyClass.class).build();
+    String methodName = internalName(DummyClass.class) + "/__constructor__()V";
+    assertThat(new ShadowWrangler(shadowMap, 19).methodInvoked(methodName, false, DummyClass.class)).isNull();
+    assertThat(new ShadowWrangler(shadowMap, 20).methodInvoked(methodName, false, DummyClass.class).describe())
+        .contains("ShadowDummyClass.__constructor__()");
+    assertThat(new ShadowWrangler(shadowMap, 21).methodInvoked(methodName, false, DummyClass.class)).isNull();
+  }
+
+  public static class DummyClass {
+  }
+
+  @Implements(value = DummyClass.class, minSdk = 19, maxSdk = 21)
+  public static class ShadowDummyClass {
+    @Implementation(minSdk = 20, maxSdk = 20)
+    public void __constructor__() {
+    }
+    
+    @Implementation
+    public void methodWithoutRange() {
+    }
+
+    @Implementation(minSdk = 20, maxSdk = 20)
+    public void methodFor20() {
+    }
+
+    @Implementation(minSdk = 20)
+    public void methodMin20() {
+    }
+
+    @Implementation(maxSdk = 20)
+    public void methodMax20() {
+    }
+  }
+
+  ///////////////////////
+
+  private class WranglerBuilder extends ShadowMap.Builder {
+    ShadowWrangler wranglerFor(int apiLevel) {
+      return new ShadowWrangler(build(), apiLevel);
+    }
+
+    @Override
+    public WranglerBuilder addShadowClasses(Class<?>... shadowClasses) {
+      return (WranglerBuilder) super.addShadowClasses(shadowClasses);
+    }
+  }
+
+  private String internalName(Class clazz) {
+    return clazz.getName().replaceAll("\\.", "/");
   }
 }

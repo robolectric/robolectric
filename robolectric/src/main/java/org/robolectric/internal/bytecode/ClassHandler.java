@@ -22,5 +22,7 @@ public interface ClassHandler {
 
   public interface Plan {
     Object run(Object instance, Object roboData, Object[] params) throws Throwable;
+
+    String describe();
   }
 }

@@ -20,15 +20,7 @@ dependencies {
 
     // We need to have shadows-core.jar on the runtime system classpath so ServiceLoader
     //   can find its META-INF/services/org.robolectric.shadows.ShadowAdapter.
-    compile project(":robolectric-shadows/shadows-core/v23")
-
-    shadow project(":robolectric-shadows/shadows-core/v16")
-    shadow project(":robolectric-shadows/shadows-core/v17")
-    shadow project(":robolectric-shadows/shadows-core/v18")
-    shadow project(":robolectric-shadows/shadows-core/v19")
-    shadow project(":robolectric-shadows/shadows-core/v21")
-    shadow project(":robolectric-shadows/shadows-core/v22")
-    shadow project(":robolectric-shadows/shadows-core/v23")
+    compile project(":robolectric-shadows/shadows-core")
 
     // Compile dependencies
     compile "org.ow2.asm:asm:5.0.1"
