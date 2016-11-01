@@ -7,6 +7,7 @@ import android.content.ClipboardManager.OnPrimaryClipChangedListener;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.util.ReflectionHelpers;
 
 import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -34,7 +35,7 @@ public class ShadowClipboardManager {
       }
     } else if (getApiLevel() >= JELLY_BEAN_MR2) {
       if (clip != null) {
-        clip.prepareToLeaveProcess();
+        ReflectionHelpers.callInstanceMethod(ClipData.class, clip, "prepareToLeaveProcess");
       }
     }
 
