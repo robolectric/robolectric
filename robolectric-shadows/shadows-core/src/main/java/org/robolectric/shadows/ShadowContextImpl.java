@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.accounts.AccountManager;
+import android.app.admin.IDevicePolicyManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentResolver;
@@ -146,9 +147,20 @@ public class ShadowContextImpl {
 
       try {
         Class<?> clazz = Class.forName(serviceClassName);
-        if (serviceClassName.equals("android.app.SearchManager")
+
+        if (serviceClassName.equals("android.app.admin.DevicePolicyManager")) {
+          if (getApiLevel() >= N) {
+            service = ReflectionHelpers.callConstructor(clazz,
+                ClassParameter.from(Context.class, RuntimeEnvironment.application),
+                ClassParameter.from(Handler.class, null));
+          } else {
+            service = ReflectionHelpers.callConstructor(clazz,
+                ClassParameter.from(Context.class, RuntimeEnvironment.application),
+                ClassParameter.from(IDevicePolicyManager.class, null),
+                ClassParameter.from(boolean.class, false));
+          }
+        } else if (serviceClassName.equals("android.app.SearchManager")
             || serviceClassName.equals("android.app.ActivityManager")
-            || serviceClassName.equals("android.app.admin.DevicePolicyManager")
             || serviceClassName.equals("android.app.WallpaperManager")) {
 
           service = ReflectionHelpers.callConstructor(clazz,
