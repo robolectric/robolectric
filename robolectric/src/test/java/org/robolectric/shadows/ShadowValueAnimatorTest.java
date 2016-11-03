@@ -25,7 +25,7 @@ public class ShadowValueAnimatorTest {
 
     ShadowChoreographer.setFrameInterval(100 * TimeUtils.NANOS_PER_MS);
 
-    
+
     final ValueAnimator animator = ValueAnimator.ofInt(0, 10);
     animator.setDuration(1000);
     animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
@@ -49,26 +49,17 @@ public class ShadowValueAnimatorTest {
   }
 
   @Test
-// It would be nice if timeout worked properly; however internally JUnit sets
-// up a separate thread when timeout is used, which violates some assumptions
-// that the rest of Robolectric makes about the test thread being invariant.
-//  @Test(timeout = 1000)
   public void test_WhenInfiniteAnimationIsPlayed_AnimationIsOnlyPlayedOnce() throws InterruptedException {
     ShadowChoreographer.setFrameInterval(100 * TimeUtils.NANOS_PER_MS);
     final ValueAnimator animator = ValueAnimator.ofInt(0, 10);
     animator.setDuration(200);
     animator.setRepeatCount(ValueAnimator.INFINITE);
 
+    Robolectric.getForegroundThreadScheduler().pause();
     animator.start();
+    assertThat(animator.isRunning()).isTrue();
 
-    Thread flush = new Thread("test_WhenInfiniteAnimationIsPlayed_AnimationIsOnlyPlayedOnce") {
-      @Override
-      public void run() {
-        Robolectric.flushForegroundThreadScheduler();
-      }
-    };
-    flush.start();
-    flush.join(1000);
+    Robolectric.flushForegroundThreadScheduler();
     assertThat(animator.isRunning()).isFalse();
   }
 }
