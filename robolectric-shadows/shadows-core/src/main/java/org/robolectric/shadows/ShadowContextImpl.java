@@ -125,12 +125,12 @@ public class ShadowContextImpl {
           if (getApiLevel() >= N) {
             service = ReflectionHelpers.callConstructor(clazz,
                 ClassParameter.from(Context.class, RuntimeEnvironment.application),
-                ClassParameter.from(Handler.class, null));
+                ClassParameter.from(IDevicePolicyManager.class, null),
+                ClassParameter.from(boolean.class, false));
           } else {
             service = ReflectionHelpers.callConstructor(clazz,
                 ClassParameter.from(Context.class, RuntimeEnvironment.application),
-                ClassParameter.from(IDevicePolicyManager.class, null),
-                ClassParameter.from(boolean.class, false));
+                ClassParameter.from(Handler.class, null));
           }
         } else if (serviceClassName.equals("android.app.SearchManager")
             || serviceClassName.equals("android.app.ActivityManager")
