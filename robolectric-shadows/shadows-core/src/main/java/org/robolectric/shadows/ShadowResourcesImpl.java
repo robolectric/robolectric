@@ -1,8 +1,6 @@
 package org.robolectric.shadows;
 
 import android.content.res.*;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.ParcelFileDescriptor;
 import android.util.AttributeSet;
@@ -11,17 +9,12 @@ import android.util.LongSparseArray;
 import android.util.TypedValue;
 import android.view.Display;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.HiddenApi;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
-import org.robolectric.annotation.Resetter;
+import org.robolectric.annotation.*;
 import org.robolectric.res.Plural;
 import org.robolectric.res.PluralResourceLoader;
 import org.robolectric.res.ResType;
 import org.robolectric.res.TypedResource;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -31,23 +24,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.internal.Shadow.directlyOn;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
-/**
- * Shadow for {@link android.content.res.Resources}.
- */
-@Implements(Resources.class)
-public class ShadowResources {
+@Implements(value = ResourcesImpl.class)
+public class ShadowResourcesImpl {
   private static Resources system = null;
   private static List<LongSparseArray<?>> resettableArrays;
 
   private float density = 1.0f;
   private DisplayMetrics displayMetrics;
   private Display display;
-  @RealObject Resources realResources;
+  @RealObject
+  ResourcesImpl realResourcesImpl;
 
   @Resetter
   public static void reset() {
@@ -89,12 +80,12 @@ public class ShadowResources {
     }
     return system;
   }
-
-  @Implementation
-  public TypedArray obtainAttributes(AttributeSet set, int[] attrs) {
-    return shadowOf(realResources.getAssets())
-        .attrsToTypedArray(realResources, set, attrs, 0, 0, 0);
-  }
+//
+//  @Implementation
+//  public TypedArray obtainAttributes(AttributeSet set, int[] attrs) {
+//    return shadowOf(realResourcesImpl.getAssets())
+//        .attrsToTypedArray(realResourcesImpl, set, attrs, 0, null, 0);
+//  }
 
   @Implementation
   public String getQuantityString(int id, int quantity, Object... formatArgs) throws Resources.NotFoundException {
@@ -104,7 +95,7 @@ public class ShadowResources {
 
   @Implementation
   public String getQuantityString(int resId, int quantity) throws Resources.NotFoundException {
-    ShadowAssetManager shadowAssetManager = shadowOf(realResources.getAssets());
+    ShadowAssetManager shadowAssetManager = shadowOf(realResourcesImpl.getAssets());
 
     TypedResource typedResource = shadowAssetManager.getResourceLoader().getValue(resId, RuntimeEnvironment.getQualifiers());
     if (typedResource != null && typedResource instanceof PluralResourceLoader.PluralRules) {
@@ -125,7 +116,7 @@ public class ShadowResources {
 
   @Implementation
   public InputStream openRawResource(int id) throws Resources.NotFoundException {
-    return shadowOf(realResources.getAssets()).getResourceLoader().getRawValue(id);
+    return shadowOf(realResourcesImpl.getAssets()).getResourceLoader().getRawValue(id);
   }
 
   @Implementation
@@ -170,9 +161,10 @@ public class ShadowResources {
     return displayMetrics;
   }
 
-  @HiddenApi @Implementation
+  @HiddenApi
+  @Implementation
   public XmlResourceParser loadXmlResourceParser(int resId, String type) throws Resources.NotFoundException {
-    ShadowAssetManager shadowAssetManager = shadowOf(realResources.getAssets());
+    ShadowAssetManager shadowAssetManager = shadowOf(realResourcesImpl.getAssets());
     return shadowAssetManager.loadXmlResourceParser(resId, type);
   }
 
@@ -181,91 +173,32 @@ public class ShadowResources {
     return loadXmlResourceParser(id, type);
   }
 
-  @Implements(value = Resources.Theme.class)
-  public static class ShadowTheme {
-    @RealObject Resources.Theme realTheme;
+  @Implements(value = ResourcesImpl.ThemeImpl.class, minSdk = N)
+  public static class ShadowThemeImpl {
+    @RealObject ResourcesImpl.ThemeImpl realThemeImpl;
 
-    long getNativePtr() {
-      if (RuntimeEnvironment.getApiLevel() >= N) {
-        ResourcesImpl.ThemeImpl themeImpl = ReflectionHelpers.getField(realTheme, "mThemeImpl");
-        return shadowOf(themeImpl).getNativePtr();
-      } else {
-        return ((Number) ReflectionHelpers.getField(realTheme, "mTheme")).longValue();
-      }
+    @Implementation
+    public TypedArray obtainStyledAttributes(Resources.Theme wrapper, AttributeSet set, int[] attrs, int defStyleAttr, int defStyleRes) {
+      Resources resources = wrapper.getResources();
+      return shadowOf(resources.getAssets()).attrsToTypedArray(resources, set, attrs, defStyleAttr, getNativePtr(), defStyleRes);
     }
 
-    @Implementation(maxSdk = M)
-    public TypedArray obtainStyledAttributes(int[] attrs) {
-      return obtainStyledAttributes(0, attrs);
+    public long getNativePtr() {
+      return ReflectionHelpers.getField(realThemeImpl, "mTheme");
     }
-
-    @Implementation(maxSdk = M)
-    public TypedArray obtainStyledAttributes(int resid, int[] attrs) throws android.content.res.Resources.NotFoundException {
-      return obtainStyledAttributes(null, attrs, 0, resid);
-    }
-
-    @Implementation(maxSdk = M)
-    public TypedArray obtainStyledAttributes(AttributeSet set, int[] attrs, int defStyleAttr, int defStyleRes) {
-      return getShadowAssetManager().attrsToTypedArray(getResources(), set, attrs, defStyleAttr, getNativePtr(), defStyleRes);
-    }
-
-    private ShadowAssetManager getShadowAssetManager() {
-      return shadowOf(getResources().getAssets());
-    }
-
-    private Resources getResources() {
-      return ReflectionHelpers.getField(realTheme, "this$0");
-    }
-  }
-
-  @HiddenApi @Implementation
-  public Drawable loadDrawable(TypedValue value, int id) {
-    Drawable drawable = directlyOn(realResources, Resources.class, "loadDrawable",
-        ClassParameter.from(TypedValue.class, value), ClassParameter.from(int.class, id));
-    setCreatedFromResId(realResources, id, drawable);
-    return drawable;
   }
 
   @Implementation
-  public Drawable loadDrawable(TypedValue value, int id, Resources.Theme theme) throws Resources.NotFoundException {
-    Drawable drawable = directlyOn(realResources, Resources.class, "loadDrawable",
-        ClassParameter.from(TypedValue.class, value), ClassParameter.from(int.class, id), ClassParameter.from(Resources.Theme.class, theme));
-    setCreatedFromResId(realResources, id, drawable);
+  public Drawable loadDrawable(Resources wrapper, TypedValue value, int id, Resources.Theme theme, boolean useCache) throws Resources.NotFoundException {
+    Drawable drawable = directlyOn(realResourcesImpl, ResourcesImpl.class, "loadDrawable",
+        from(Resources.class, wrapper),
+        from(TypedValue.class, value),
+        from(int.class, id),
+        from(Resources.Theme.class, theme),
+        from(boolean.class, useCache)
+    );
+
+    ShadowResources.setCreatedFromResId(wrapper, id, drawable);
     return drawable;
-  }
-
-  static void setCreatedFromResId(Resources resources, int id, Drawable drawable) {
-    // todo: this kinda sucks, find some better way...
-    if (drawable != null) {
-      shadowOf(drawable).createdFromResId = id;
-      if (drawable instanceof BitmapDrawable) {
-        Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
-        if (bitmap != null) {
-          ShadowBitmap shadowBitmap = shadowOf(bitmap);
-          if (shadowBitmap.createdFromResId == -1) {
-            shadowBitmap.setCreatedFromResId(id, shadowOf(resources.getAssets()).getResourceName(id));
-          }
-        }
-      }
-    }
-  }
-
-  @Implements(Resources.NotFoundException.class)
-  public static class ShadowNotFoundException {
-    @RealObject Resources.NotFoundException realObject;
-
-    private String message;
-
-    public void __constructor__() {
-    }
-
-    public void __constructor__(String name) {
-      this.message = name;
-    }
-
-    @Implementation
-    public String toString() {
-      return realObject.getClass().getName() + ": " + message;
-    }
   }
 }
