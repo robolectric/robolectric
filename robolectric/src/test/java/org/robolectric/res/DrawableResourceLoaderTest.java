@@ -9,7 +9,6 @@ import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.NinePatchDrawable;
 
 import android.graphics.drawable.VectorDrawable;
-import android.util.TypedValue;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,10 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.robolectric.RuntimeEnvironment.application;
-import static org.robolectric.util.TestUtil.TEST_PACKAGE;
 import static org.robolectric.util.TestUtil.assertInstanceOf;
-import static org.robolectric.util.TestUtil.systemResources;
-import static org.robolectric.util.TestUtil.testResources;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class DrawableResourceLoaderTest {

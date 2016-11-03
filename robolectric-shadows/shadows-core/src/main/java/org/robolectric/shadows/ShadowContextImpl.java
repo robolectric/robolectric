@@ -30,11 +30,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
-import static android.os.Build.VERSION_CODES.KITKAT;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
+import static android.os.Build.VERSION_CODES.*;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.internal.Shadow.directlyOn;
 import static org.robolectric.internal.Shadow.newInstanceOf;
@@ -171,8 +167,15 @@ public class ShadowContextImpl {
         } else if (serviceClassName.equals("android.view.accessibility.AccessibilityManager")) {
           service = AccessibilityManager.getInstance(realObject);
         } else if (getApiLevel() >= JELLY_BEAN_MR1 && serviceClassName.equals("android.view.WindowManagerImpl")) {
-          Display display = newInstanceOf(Display.class);
-          service = ReflectionHelpers.callConstructor(Class.forName("android.view.WindowManagerImpl"), ClassParameter.from(Display.class, display));
+          Class<?> windowMgrImplClass = Class.forName("android.view.WindowManagerImpl");
+          if (getApiLevel() >= N) {
+            service = ReflectionHelpers.callConstructor(windowMgrImplClass,
+                ClassParameter.from(Context.class, realObject));
+          } else {
+            Display display = newInstanceOf(Display.class);
+            service = ReflectionHelpers.callConstructor(windowMgrImplClass,
+                ClassParameter.from(Display.class, display));
+          }
         } else if (serviceClassName.equals("android.accounts.AccountManager")) {
           service = AccountManager.get(null);
         } else if (getApiLevel() >= KITKAT && serviceClassName.equals("android.print.PrintManager")) {
