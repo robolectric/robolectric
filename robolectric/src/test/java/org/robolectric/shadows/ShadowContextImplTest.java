@@ -72,7 +72,6 @@ public class ShadowContextImplTest {
   }
 
   @Test
-  @Config(sdk = M)
   public void createPackageContext() throws Exception {
     Context packageContext = context.createPackageContext(RuntimeEnvironment.application.getPackageName(), 0);
 
