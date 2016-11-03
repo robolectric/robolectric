@@ -42,10 +42,6 @@ import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
  */
 @Implements(className = ShadowContextImpl.CLASS_NAME)
 public class ShadowContextImpl {
-  /**
-   * Special path used by in-memory databases (from android.database.sqlite.SQLiteDatabaseConfiguration).
-   */
-  public static final String SQLITE_IN_MEMORY_PATH = ":memory:";
 
   public static final String CLASS_NAME = "android.app.ContextImpl";
   private static final Map<String, String> SYSTEM_SERVICE_MAP = new HashMap<>();
@@ -104,29 +100,6 @@ public class ShadowContextImpl {
       SYSTEM_SERVICE_MAP.put(Context.TELECOM_SERVICE, "android.telecom.TelecomManager");
       SYSTEM_SERVICE_MAP.put(Context.MEDIA_SESSION_SERVICE, "android.media.session.MediaSessionManager");
     }
-  }
-
-  @Implementation
-  public File validateFilePath(String name, boolean createDirectory) {
-    File dir;
-    File f = new File(name);
-
-    if (SQLITE_IN_MEMORY_PATH.equals(name)) {
-      return f;
-    } else if (f.isAbsolute()) {
-      dir = f.getParentFile();
-    } else {
-      dir = directlyOn(realObject, "android.app.ContextImpl", "getDatabasesDir");
-      f = directlyOn(realObject, "android.app.ContextImpl", "makeFilename", from(File.class, dir), from(String.class, name));
-    }
-
-    if (createDirectory && !dir.isDirectory() && dir.mkdir()) {
-      FileUtils.setPermissions(dir.getPath(),
-          FileUtils.S_IRWXU|FileUtils.S_IRWXG|FileUtils.S_IXOTH,
-          -1, -1);
-    }
-
-    return f;
   }
 
   private Map<String, Object> systemServices = new HashMap<String, Object>();
