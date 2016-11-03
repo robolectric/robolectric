@@ -49,7 +49,8 @@ public class ShadowVirtualRefBasePtr {
     }
 
     synchronized public boolean decr() {
-      return refCount-- == 0;
+      refCount--;
+      return refCount == 0;
     }
   }
 }
