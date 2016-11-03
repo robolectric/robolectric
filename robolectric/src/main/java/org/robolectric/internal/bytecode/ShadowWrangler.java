@@ -130,7 +130,7 @@ public class ShadowWrangler implements ClassHandler {
       return planCache.get(signature);
     }
     Plan plan = calculatePlan(signature, isStatic, theClass);
-    planCache.put(signature, plan);
+      planCache.put(signature, plan);
     return plan;
   }
 

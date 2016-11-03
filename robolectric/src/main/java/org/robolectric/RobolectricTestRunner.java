@@ -220,8 +220,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
             }
             assureTestLifecycle(sdkEnvironment);
 
-            parallelUniverseInterface.resetStaticState(config);
             parallelUniverseInterface.setSdkConfig(sdkEnvironment.getSdkConfig());
+            parallelUniverseInterface.resetStaticState(config);
 
             int sdkVersion = pickSdkVersion(config, appManifest);
             Class<?> androidBuildVersionClass = sdkEnvironment.bootstrappedClass(Build.VERSION.class);

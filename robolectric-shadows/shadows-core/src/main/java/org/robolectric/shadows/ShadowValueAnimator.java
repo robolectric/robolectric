@@ -1,13 +1,16 @@
 package org.robolectric.shadows;
 
+import android.animation.AnimationHandler;
 import android.animation.ValueAnimator;
 
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 
+import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.internal.Shadow.directlyOn;
 
 /**
@@ -23,7 +26,6 @@ public class ShadowValueAnimator {
 
   @Resetter
   public static void reset() {
-    // ValueAnimator.clearAllAnimations();
     /* ValueAnimator.sAnimationHandler is a static thread local that otherwise would survive between
      * tests. The AnimationHandler.mAnimationScheduled is set to true when the scheduleAnimation() is
      * called and the reset to false when run() is called by the Choreographer. If an animation is
@@ -32,8 +34,16 @@ public class ShadowValueAnimator {
      * cause the AnimationHandler not to post a callback. We reset the thread local here so a new
      * one will be created for each test with a fresh state.
      */
-    // ReflectionHelpers.setStaticField(AnimationHandler.class, "sAnimationHandler", new ThreadLocal<>());
-    // TODO(natalieharris): AnimationHandler class is not available for the earlier API's so this fix only works with the latest
+    if (RuntimeEnvironment.getApiLevel() >= N) {
+      ThreadLocal<AnimationHandler> animatorHandlerTL =
+          ReflectionHelpers.getStaticField(AnimationHandler.class, "sAnimatorHandler");
+      animatorHandlerTL.remove();
+    } else {
+      ReflectionHelpers.callStaticMethod(ValueAnimator.class, "clearAllAnimations");
+      ThreadLocal<AnimationHandler> animatorHandlerTL =
+          ReflectionHelpers.getStaticField(ValueAnimator.class, "sAnimationHandler");
+      animatorHandlerTL.remove();
+    }
   }
 
   @Implementation

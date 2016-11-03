@@ -59,8 +59,6 @@ public class ParallelUniverse implements ParallelUniverseInterface {
 
   @Override
   public void setUpApplicationState(Method method, TestLifecycle testLifecycle, ResourceLoader systemResourceLoader, AndroidManifest appManifest, Config config) {
-    ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", sdkConfig.getApiLevel());
-
     RuntimeEnvironment.application = null;
     RuntimeEnvironment.setMasterScheduler(new Scheduler());
     RuntimeEnvironment.setMainThread(Thread.currentThread());
@@ -195,5 +193,6 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   @Override
   public void setSdkConfig(SdkConfig sdkConfig) {
     this.sdkConfig = sdkConfig;
+    ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", sdkConfig.getApiLevel());
   }
 }
