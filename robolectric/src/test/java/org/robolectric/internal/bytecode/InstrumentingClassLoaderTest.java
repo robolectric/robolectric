@@ -713,6 +713,11 @@ public class InstrumentingClassLoaderTest {
     public <T extends Throwable> T stripStackTrace(T throwable) {
       return throwable;
     }
+
+    @Override
+    public void methodReturned() {
+
+    }
   }
 
   private void setClassLoader(ClassLoader classLoader) {

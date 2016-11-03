@@ -28,6 +28,10 @@ public class RobolectricInternals {
     return classHandler.methodInvoked(signature, isStatic, theClass);
   }
 
+  public static void methodReturned() {
+    classHandler.methodReturned();
+  }
+
   public static MethodHandle getShadowCreator(Class<?> caller) {
     return classHandler.getShadowCreator(caller);
   }

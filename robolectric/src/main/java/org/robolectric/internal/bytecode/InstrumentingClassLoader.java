@@ -63,6 +63,7 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
 
   private static final Method INITIALIZING_METHOD = new Method("initializing", "(Ljava/lang/Object;)Ljava/lang/Object;");
   private static final Method METHOD_INVOKED_METHOD = new Method("methodInvoked", "(Ljava/lang/String;ZLjava/lang/Class;)L" + PLAN_TYPE.getInternalName() + ";");
+  private static final Method METHOD_RETURNED_METHOD = new Method("methodReturned", "()V");
   private static final Method PLAN_RUN_METHOD = new Method("run", OBJECT_TYPE, new Type[]{OBJECT_TYPE, OBJECT_TYPE, Type.getType(Object[].class)});
   private static final Method HANDLE_EXCEPTION_METHOD = new Method("cleanStackTrace", THROWABLE_TYPE, new Type[]{THROWABLE_TYPE});
   private static final String DIRECT_OBJECT_MARKER_TYPE_DESC = Type.getObjectType(DirectObjectMarker.class.getName().replace('.', '/')).getDescriptor();
@@ -1004,11 +1005,16 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
           break;
       }
       tryCatchForHandler.end();
+      generator.invokeStatic(ROBOLECTRIC_INTERNALS_TYPE, METHOD_RETURNED_METHOD);
+
       generator.goTo(doReturn);
 
       // catch(Throwable)
       tryCatchForHandler.handler();
       generator.storeLocal(exceptionLocalVar);
+
+      generator.invokeStatic(ROBOLECTRIC_INTERNALS_TYPE, METHOD_RETURNED_METHOD);
+
       generator.loadLocal(exceptionLocalVar);
       generator.invokeStatic(ROBOLECTRIC_INTERNALS_TYPE, HANDLE_EXCEPTION_METHOD);
       generator.throwException();
@@ -1019,11 +1025,15 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
         TryCatch tryCatchForDirect = generator.tryStart(THROWABLE_TYPE);
         generator.invokeMethod(classType.getInternalName(), originalMethod.name, originalMethod.desc);
         tryCatchForDirect.end();
+        generator.invokeStatic(ROBOLECTRIC_INTERNALS_TYPE, METHOD_RETURNED_METHOD);
         generator.returnValue();
 
         // catch(Throwable)
         tryCatchForDirect.handler();
         generator.storeLocal(exceptionLocalVar);
+
+        generator.invokeStatic(ROBOLECTRIC_INTERNALS_TYPE, METHOD_RETURNED_METHOD);
+
         generator.loadLocal(exceptionLocalVar);
         generator.invokeStatic(ROBOLECTRIC_INTERNALS_TYPE, HANDLE_EXCEPTION_METHOD);
         generator.throwException();

@@ -67,6 +67,8 @@ public class ShadowWrangler implements ClassHandler {
     }
   };
 
+  private static int nestLevel;
+
   public ShadowWrangler(ShadowMap shadowMap, int apiLevel) {
     this.shadowMap = shadowMap;
     this.apiLevel = apiLevel;
@@ -126,12 +128,26 @@ public class ShadowWrangler implements ClassHandler {
 
   @Override
   public Plan methodInvoked(String signature, boolean isStatic, Class<?> theClass) {
+    nestLevel++;
+
+    Plan plan;
     if (planCache.containsKey(signature)) {
-      return planCache.get(signature);
+      plan = planCache.get(signature);
+    } else {
+      plan = calculatePlan(signature, isStatic, theClass);
+      planCache.put(signature, plan);
     }
-    Plan plan = calculatePlan(signature, isStatic, theClass);
-    planCache.put(signature, plan);
+
+    StringBuilder buf = new StringBuilder();
+    for (int i = 0; i < nestLevel; i++) buf.append("  ");
+
+    System.out.println(buf.toString() + (plan == null ? "* call through for " + signature : plan.describe()));
     return plan;
+  }
+
+  @Override
+  public void methodReturned() {
+    nestLevel--;
   }
 
   @Override public MethodHandle findShadowMethod(Class<?> caller, String name, MethodType type,

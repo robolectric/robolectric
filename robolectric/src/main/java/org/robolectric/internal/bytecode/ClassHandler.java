@@ -20,6 +20,8 @@ public interface ClassHandler {
 
   <T extends Throwable> T stripStackTrace(T throwable);
 
+  void methodReturned();
+
   public interface Plan {
     Object run(Object instance, Object roboData, Object[] params) throws Throwable;
 
