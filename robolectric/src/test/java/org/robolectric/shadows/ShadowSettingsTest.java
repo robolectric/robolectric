@@ -11,6 +11,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
@@ -41,7 +42,7 @@ public class ShadowSettingsTest {
   }
 
   @Test
-  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR1)
+  @Config(minSdk = JELLY_BEAN_MR1)
   public void testGlobalGetInt() throws Exception {
     assertThat(Settings.Global.getInt(contentResolver, "property", 0)).isEqualTo(0);
     assertThat(Settings.Global.getInt(contentResolver, "property", 2)).isEqualTo(2);

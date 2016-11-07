@@ -13,6 +13,7 @@ import org.junit.runners.JUnit4;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.SdkConfig;
 
+import static android.os.Build.VERSION_CODES.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
@@ -55,8 +56,72 @@ public class MultiApiRobolectricTestRunnerTest {
   }
 
   @Test
-  public void classConfig() throws Throwable {
-    MultiApiRobolectricTestRunner runner = new MultiApiRobolectricTestRunner(TestWithClassConfig.class);
+  public void classConfigWithSdkGroup() throws Throwable {
+    MultiApiRobolectricTestRunner runner = new MultiApiRobolectricTestRunner(TestClassConfigWithSdkGroup.class);
+
+    assertThat(runner.getChildren()).hasSize(numSupportedApis);
+
+    RunNotifier runNotifier = new RunNotifier();
+    RunListener runListener = mock(RunListener.class);
+    runNotifier.addListener(runListener);
+    runner.run(runNotifier);
+
+    verify(runListener, never()).testIgnored(any(Description.class));
+    // Test method should be run for JellyBean and Lollipop
+    verify(runListener, times(2)).testFinished(any(Description.class));
+  }
+
+  @Test
+  public void methodConfigWithSdkGroup() throws Throwable {
+    MultiApiRobolectricTestRunner runner = new MultiApiRobolectricTestRunner(TestMethodConfigWithSdkGroup.class);
+
+    assertThat(runner.getChildren()).hasSize(numSupportedApis);
+
+    RunNotifier runNotifier = new RunNotifier();
+    RunListener runListener = mock(RunListener.class);
+    runNotifier.addListener(runListener);
+    runner.run(runNotifier);
+
+    verify(runListener, never()).testIgnored(any(Description.class));
+    // Test method should be run for JellyBean and Lollipop
+    verify(runListener, times(2)).testFinished(any(Description.class));
+  }
+
+  @Test
+  public void classConfigMinSdk() throws Throwable {
+    MultiApiRobolectricTestRunner runner = new MultiApiRobolectricTestRunner(TestClassLollipopAndUp.class);
+
+    assertThat(runner.getChildren()).hasSize(numSupportedApis);
+
+    RunNotifier runNotifier = new RunNotifier();
+    RunListener runListener = mock(RunListener.class);
+    runNotifier.addListener(runListener);
+    runner.run(runNotifier);
+
+    verify(runListener, never()).testIgnored(any(Description.class));
+    int sdksAfterAndIncludingLollipop = 3;
+    verify(runListener, times(sdksAfterAndIncludingLollipop)).testFinished(any(Description.class));
+  }
+
+  @Test
+  public void classConfigMaxSdk() throws Throwable {
+    MultiApiRobolectricTestRunner runner = new MultiApiRobolectricTestRunner(TestClassUpToAndIncludingLollipop.class);
+
+    assertThat(runner.getChildren()).hasSize(numSupportedApis);
+
+    RunNotifier runNotifier = new RunNotifier();
+    RunListener runListener = mock(RunListener.class);
+    runNotifier.addListener(runListener);
+    runner.run(runNotifier);
+
+    verify(runListener, never()).testIgnored(any(Description.class));
+    int sdksUpToAndIncludingLollipop = 5;
+    verify(runListener, times(sdksUpToAndIncludingLollipop)).testFinished(any(Description.class));
+  }
+
+  @Test
+  public void classConfigWithMinSdkAndMaxSdk() throws Throwable {
+    MultiApiRobolectricTestRunner runner = new MultiApiRobolectricTestRunner(TestClassBetweenJellyBeanMr2AndLollipop.class);
 
     assertThat(runner.getChildren()).hasSize(numSupportedApis);
 
@@ -67,12 +132,13 @@ public class MultiApiRobolectricTestRunnerTest {
 
     verify(runListener, never()).testIgnored(any(Description.class));
     // Since test method should only be run once
-    verify(runListener, times(1)).testFinished(any(Description.class));
+    int sdksInclusivelyBetweenJellyBeanMr2AndLollipop = 3;
+    verify(runListener, times(sdksInclusivelyBetweenJellyBeanMr2AndLollipop)).testFinished(any(Description.class));
   }
 
   @Test
-  public void methodConfig() throws Throwable {
-    MultiApiRobolectricTestRunner runner = new MultiApiRobolectricTestRunner(TestWithMethodConfig.class);
+  public void methodConfigMinSdk() throws Throwable {
+    MultiApiRobolectricTestRunner runner = new MultiApiRobolectricTestRunner(TestMethodLollipopAndUp.class);
 
     assertThat(runner.getChildren()).hasSize(numSupportedApis);
 
@@ -82,8 +148,40 @@ public class MultiApiRobolectricTestRunnerTest {
     runner.run(runNotifier);
 
     verify(runListener, never()).testIgnored(any(Description.class));
-    // Each of the 5 methods should be run once only each
-    verify(runListener, times(5)).testFinished(any(Description.class));
+    int sdksAfterAndIncludingLollipop = 3;
+    verify(runListener, times(sdksAfterAndIncludingLollipop)).testFinished(any(Description.class));
+  }
+
+  @Test
+  public void methodConfigMaxSdk() throws Throwable {
+    MultiApiRobolectricTestRunner runner = new MultiApiRobolectricTestRunner(TestMethodUpToAndIncludingLollipop.class);
+
+    assertThat(runner.getChildren()).hasSize(numSupportedApis);
+
+    RunNotifier runNotifier = new RunNotifier();
+    RunListener runListener = mock(RunListener.class);
+    runNotifier.addListener(runListener);
+    runner.run(runNotifier);
+
+    verify(runListener, never()).testIgnored(any(Description.class));
+    int sdksUpToAndIncludingLollipop = 5;
+    verify(runListener, times(sdksUpToAndIncludingLollipop)).testFinished(any(Description.class));
+  }
+
+  @Test
+  public void methodConfigWithMinSdkAndMaxSdk() throws Throwable {
+    MultiApiRobolectricTestRunner runner = new MultiApiRobolectricTestRunner(TestMethodBetweenJellyBeanMr2AndLollipop.class);
+
+    assertThat(runner.getChildren()).hasSize(numSupportedApis);
+
+    RunNotifier runNotifier = new RunNotifier();
+    RunListener runListener = mock(RunListener.class);
+    runNotifier.addListener(runListener);
+    runner.run(runNotifier);
+
+    verify(runListener, never()).testIgnored(any(Description.class));
+    int sdksInclusivelyBetweenJellyBeanMr2AndLollipop = 3;
+    verify(runListener, times(sdksInclusivelyBetweenJellyBeanMr2AndLollipop)).testFinished(any(Description.class));
   }
 
   @RunWith(MultiApiRobolectricTestRunner.class)
@@ -93,40 +191,74 @@ public class MultiApiRobolectricTestRunnerTest {
   }
 
   @RunWith(MultiApiRobolectricTestRunner.class)
-  @Config(sdk = 18)
-  public class TestWithClassConfig {
+  @Config(sdk = {JELLY_BEAN, LOLLIPOP})
+  public class TestClassConfigWithSdkGroup {
 
     @Test public void testShouldRunApi18() {
-      assertThat(Build.VERSION.SDK_INT).isEqualTo(18);
+      assertThat(Build.VERSION.SDK_INT).isIn(JELLY_BEAN, LOLLIPOP);
     }
   }
 
   @RunWith(MultiApiRobolectricTestRunner.class)
-  public class TestWithMethodConfig {
+  public class TestMethodConfigWithSdkGroup {
 
-    @Config(sdk = 16)
+    @Config(sdk = {JELLY_BEAN, LOLLIPOP})
     @Test public void testShouldRunApi16() {
-      assertThat(Build.VERSION.SDK_INT).isEqualTo(16);
+      assertThat(Build.VERSION.SDK_INT).isIn(JELLY_BEAN, LOLLIPOP);
     }
+  }
 
-    @Config(sdk = 17)
-    @Test public void testShouldRunApi17() {
-      assertThat(Build.VERSION.SDK_INT).isEqualTo(17);
+  @RunWith(MultiApiRobolectricTestRunner.class)
+  @Config(minSdk = LOLLIPOP)
+  public class TestClassLollipopAndUp {
+
+    @Test public void testSomeApiLevel() {
+      assertThat(Build.VERSION.SDK_INT).isGreaterThanOrEqualTo(LOLLIPOP);
     }
+  }
 
-    @Config(sdk = 18)
-    @Test public void testShouldRunApi18() {
-      assertThat(Build.VERSION.SDK_INT).isEqualTo(18);
+  @RunWith(MultiApiRobolectricTestRunner.class)
+  @Config(maxSdk = LOLLIPOP)
+  public class TestClassUpToAndIncludingLollipop {
+
+    @Test public void testSomeApiLevel() {
+      assertThat(Build.VERSION.SDK_INT).isLessThanOrEqualTo(LOLLIPOP);
     }
+  }
 
-    @Config(sdk = 19)
-    @Test public void testShouldRunApi19() {
-      assertThat(Build.VERSION.SDK_INT).isEqualTo(19);
+  @RunWith(MultiApiRobolectricTestRunner.class)
+  @Config(minSdk = JELLY_BEAN_MR2, maxSdk = LOLLIPOP)
+  public class TestClassBetweenJellyBeanMr2AndLollipop {
+
+    @Test public void testSomeApiLevel() {
+      assertThat(Build.VERSION.SDK_INT).isBetween(JELLY_BEAN_MR2, LOLLIPOP);
     }
+  }
 
-    @Config(sdk = 21)
-    @Test public void testShouldRunApi21() {
-      assertThat(Build.VERSION.SDK_INT).isEqualTo(21);
+  @RunWith(MultiApiRobolectricTestRunner.class)
+  public class TestMethodLollipopAndUp {
+
+    @Config(minSdk = LOLLIPOP)
+    @Test public void testSomeApiLevel() {
+      assertThat(Build.VERSION.SDK_INT).isGreaterThanOrEqualTo(LOLLIPOP);
+    }
+  }
+
+  @RunWith(MultiApiRobolectricTestRunner.class)
+  public class TestMethodUpToAndIncludingLollipop {
+
+    @Config(maxSdk = LOLLIPOP)
+    @Test public void testSomeApiLevel() {
+      assertThat(Build.VERSION.SDK_INT).isLessThanOrEqualTo(LOLLIPOP);
+    }
+  }
+
+  @RunWith(MultiApiRobolectricTestRunner.class)
+  public class TestMethodBetweenJellyBeanMr2AndLollipop {
+
+    @Config(minSdk = JELLY_BEAN_MR2, maxSdk = LOLLIPOP)
+    @Test public void testSomeApiLevel() {
+      assertThat(Build.VERSION.SDK_INT).isBetween(JELLY_BEAN_MR2, LOLLIPOP);
     }
   }
 }

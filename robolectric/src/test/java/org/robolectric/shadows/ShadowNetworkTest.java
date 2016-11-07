@@ -9,10 +9,11 @@ import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
-@Config(sdk = Build.VERSION_CODES.LOLLIPOP)
+@Config(minSdk = LOLLIPOP)
 public class ShadowNetworkTest {
   @Test
   public void getNetId_shouldReturnConstructorNetId() {

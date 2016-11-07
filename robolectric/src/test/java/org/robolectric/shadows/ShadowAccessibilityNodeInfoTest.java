@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
@@ -100,9 +101,7 @@ public class ShadowAccessibilityNodeInfoTest {
   }
 
   @Test
-  @Config(sdk = {
-      android.os.Build.VERSION_CODES.LOLLIPOP,
-      android.os.Build.VERSION_CODES.LOLLIPOP_MR1})
+  @Config(minSdk = LOLLIPOP)
   public void shouldRecordFlagsProperly() {
     node = AccessibilityNodeInfo.obtain();
     node.setClickable(false);

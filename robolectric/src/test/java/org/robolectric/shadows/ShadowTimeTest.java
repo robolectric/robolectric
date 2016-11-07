@@ -14,10 +14,13 @@ import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
+@Config(minSdk = JELLY_BEAN_MR2)
 public class ShadowTimeTest {
   private static final TimeZone DEFAULT_TIMEZONE = TimeZone.getDefault();
   
@@ -30,7 +33,6 @@ public class ShadowTimeTest {
   }
   
   @Test
-  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void shouldSetToNow() throws Exception {
     Time t = new Time();
     SystemClock.setCurrentTimeMillis(1000);
@@ -39,14 +41,12 @@ public class ShadowTimeTest {
   }
 
   @Test
-  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void shouldHaveNoArgsConstructor() throws Exception {
     Time t = new Time();
     assertNotNull(t.timezone);
   }
 
   @Test
-  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void shouldHaveCopyConstructor() throws Exception {
     Time t = new Time();
     t.setToNow();
@@ -61,7 +61,6 @@ public class ShadowTimeTest {
   }
 
   @Test
-  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void shouldHaveSetTime() throws Exception {
     Time t = new Time();
     t.setToNow();
@@ -77,7 +76,6 @@ public class ShadowTimeTest {
   }
 
   @Test
-  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void shouldHaveSet3Args() throws Exception {
     Time t = new Time();
     t.set(1, 1, 2000);
@@ -87,7 +85,6 @@ public class ShadowTimeTest {
   }
 
   @Test
-  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void shouldHaveSet6Args() throws Exception {
     Time t = new Time();
     t.set(1, 1, 1, 1, 1, 2000);
@@ -100,14 +97,12 @@ public class ShadowTimeTest {
   }
 
   @Test
-  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void shouldHaveTimeZoneConstructor() throws Exception {
     Time t = new Time("UTC");
     assertEquals(t.timezone, "UTC");
   }
 
   @Test
-  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void shouldClear() throws Exception {
     Time t = new Time();
     t.setToNow();
@@ -126,7 +121,6 @@ public class ShadowTimeTest {
   }
 
   @Test
-  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void shouldHaveToMillis() throws Exception {
     Time t = new Time();
     t.set(86400 * 1000);
@@ -134,13 +128,11 @@ public class ShadowTimeTest {
   }
 
   @Test
-  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void shouldHaveCurrentTimeZone() throws Exception {
     assertNotNull(Time.getCurrentTimezone());
   }
   
   @Test
-  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void shouldSwitchTimeZones() throws Exception {
     Time t = new Time("UTC");
   	
@@ -157,7 +149,6 @@ public class ShadowTimeTest {
   }
 
   @Test
-  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void shouldHaveCompareAndBeforeAfter() throws Exception {
     Time a = new Time();
     Time b = new Time();
@@ -178,7 +169,6 @@ public class ShadowTimeTest {
   }
 
   @Test
-  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void shouldHaveParse() throws Exception {
     Time t = new Time("Europe/Berlin");
     assertFalse(t.parse("20081013T160000"));
@@ -199,7 +189,6 @@ public class ShadowTimeTest {
   }
   
   @Test
-  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void shouldParseRfc3339() {
     for (String tz : Arrays.asList("Europe/Berlin", "America/Los Angeles", "Australia/Adelaide")) {
       String desc = "Eval when local timezone is " + tz;
@@ -228,17 +217,6 @@ public class ShadowTimeTest {
       assertFalse(desc, t.allDay);
     
       t = new Time("Europe/Berlin");
-      assertTrue(desc, t.parse3339("2008-10-13T16:30:50.999-03"));
-      assertEquals(desc, 2008, t.year);
-      assertEquals(desc, 9, t.month);
-      assertEquals(desc, 13, t.monthDay);
-      assertEquals(desc, 19, t.hour);
-      assertEquals(desc, 30, t.minute);
-      assertEquals(desc, 50, t.second);
-      assertEquals(desc, "UTC", t.timezone);
-      assertFalse(desc, t.allDay);
-    
-      t = new Time("Europe/Berlin");
       assertFalse(desc, t.parse3339("2008-10-13"));
       assertEquals(desc, 2008, t.year);
       assertEquals(desc, 9, t.month);
@@ -251,6 +229,27 @@ public class ShadowTimeTest {
     }
   }
 
+  @Test
+  @Config(maxSdk = KITKAT)
+  // this fails on LOLLIPOP+; is the shadow impl of parse3339 correct for pre-LOLLIPOP?
+  public void shouldParseRfc3339_withQuestionableFormat() {
+    for (String tz : Arrays.asList("Europe/Berlin", "America/Los Angeles", "Australia/Adelaide")) {
+      String desc = "Eval when local timezone is " + tz;
+      TimeZone.setDefault(TimeZone.getTimeZone(tz));
+
+      Time t = new Time("Europe/Berlin");
+      assertTrue(desc, t.parse3339("2008-10-13T16:30:50.999-03"));
+      assertEquals(desc, 2008, t.year);
+      assertEquals(desc, 9, t.month);
+      assertEquals(desc, 13, t.monthDay);
+      assertEquals(desc, 19, t.hour);
+      assertEquals(desc, 30, t.minute);
+      assertEquals(desc, 50, t.second);
+      assertEquals(desc, "UTC", t.timezone);
+      assertFalse(desc, t.allDay);
+    }
+  }
+
   @Test(expected = TimeFormatException.class)
   public void shouldThrowTimeFormatException() throws Exception {
     Time t = new Time();
@@ -258,7 +257,6 @@ public class ShadowTimeTest {
   }
 
   @Test
-  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void shouldHaveParseShort() throws Exception {
     Time t = new Time();
     t.parse("20081013");
@@ -271,7 +269,6 @@ public class ShadowTimeTest {
   }
 
   @Test
-  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void shouldFormat() throws Exception {
     Time t = new Time(Time.TIMEZONE_UTC);
     t.set(3600000L);
@@ -281,7 +278,6 @@ public class ShadowTimeTest {
   }
 
   @Test
-  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void shouldFormatAndroidStrings() throws Exception {
     Time t = new Time("UTC");
     // NOTE: month is zero-based.
@@ -308,7 +304,6 @@ public class ShadowTimeTest {
   }
 
   @Test
-  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void shouldFormatAllFormats() throws Exception {
     Time t = new Time("Asia/Tokyo");
     t.set(1407496560000L);
@@ -345,16 +340,10 @@ public class ShadowTimeTest {
     assertEquals("5", t.format("%u"));
     assertEquals("32", t.format("%V"));
     assertEquals("5", t.format("%w"));
-    assertEquals("08/08/2014", t.format("%x"));
-    assertEquals("08:16:00 PM", t.format("%X"));
     assertEquals("14", t.format("%y"));
     assertEquals("2014", t.format("%Y"));
     assertEquals("+0900", t.format("%z"));
     assertEquals("JST", t.format("%Z"));
-
-    // Case.
-    assertEquals("PM", t.format("%^P"));
-    assertEquals("PM", t.format("%#P"));
 
     // Padding.
     assertEquals("8", t.format("%-l"));
@@ -366,7 +355,21 @@ public class ShadowTimeTest {
   }
 
   @Test
-  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
+  @Config(maxSdk = KITKAT)
+  // these fail on LOLLIPOP+; is the shadow impl of format correct for pre-LOLLIPOP?
+  public void shouldFormatAllFormats_withQuestionableResults() throws Exception {
+    Time t = new Time("Asia/Tokyo");
+    t.set(1407496560000L);
+
+    assertEquals("08/08/2014", t.format("%x"));
+    assertEquals("08:16:00 PM", t.format("%X"));
+
+    // Case.
+    assertEquals("PM", t.format("%^P"));
+    assertEquals("PM", t.format("%#P"));
+  }
+
+  @Test
   public void shouldFormat2445() throws Exception {
     Time t = new Time();
     assertEquals("19700101T000000", t.format2445());
@@ -376,7 +379,6 @@ public class ShadowTimeTest {
   }
 
   @Test
-  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void shouldFormat3339() throws Exception {
     Time t = new Time("Europe/Berlin");
     assertEquals("1970-01-01T00:00:00.000+00:00", t.format3339(false));
@@ -384,7 +386,6 @@ public class ShadowTimeTest {
   }
 
   @Test
-  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void testIsEpoch() throws Exception {
     Time t = new Time();
     boolean isEpoch = Time.isEpoch(t);
@@ -392,7 +393,6 @@ public class ShadowTimeTest {
   }
 
   @Test
-  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void testGetJulianDay() throws Exception {
     Time time = new Time();
 
@@ -417,7 +417,6 @@ public class ShadowTimeTest {
   }
 
   @Test
-  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   public void testSetJulianDay() throws Exception {
     Time time = new Time();
     time.set(0, 0, 0, 12, 5, 2008);

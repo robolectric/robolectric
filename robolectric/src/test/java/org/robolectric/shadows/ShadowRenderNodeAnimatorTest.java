@@ -17,14 +17,11 @@ import org.robolectric.Robolectric;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
-@Config(sdk = {
-  Build.VERSION_CODES.LOLLIPOP,
-  Build.VERSION_CODES.LOLLIPOP_MR1,
-  Build.VERSION_CODES.M,
-})
+@Config(minSdk = LOLLIPOP)
 public class ShadowRenderNodeAnimatorTest {
   private Activity activity;
   private View view;

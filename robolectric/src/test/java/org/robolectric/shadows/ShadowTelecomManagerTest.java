@@ -18,14 +18,14 @@ import org.robolectric.annotation.Config;
 
 import java.util.List;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
+import static android.os.Build.VERSION_CODES.M;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
-@Config(sdk = {
-    Build.VERSION_CODES.LOLLIPOP,
-    Build.VERSION_CODES.LOLLIPOP_MR1,
-    Build.VERSION_CODES.M})
+@Config(minSdk = LOLLIPOP)
 public class ShadowTelecomManagerTest {
 
   private TelecomManager telecomService;
@@ -74,9 +74,7 @@ public class ShadowTelecomManagerTest {
   }
 
   @Test
-  @Config(sdk = {
-      Build.VERSION_CODES.LOLLIPOP_MR1,
-      Build.VERSION_CODES.M})
+  @Config(minSdk = LOLLIPOP_MR1)
   public void clearAccountsForPackage() {
     PhoneAccountHandle accountHandle1 = createHandle("a.package", "id1");
     telecomService.registerPhoneAccount(PhoneAccount.builder(accountHandle1, "another_package")
@@ -110,8 +108,7 @@ public class ShadowTelecomManagerTest {
   }
 
   @Test
-  @Config(sdk = {
-      Build.VERSION_CODES.M})
+  @Config(minSdk = M)
   public void getCallCapablePhoneAccounts() {
     PhoneAccountHandle callCapableHandle = createHandle("id1");
     telecomService.registerPhoneAccount(PhoneAccount.builder(callCapableHandle, "enabled")
@@ -128,9 +125,7 @@ public class ShadowTelecomManagerTest {
   }
 
   @Test
-  @Config(sdk = {
-      Build.VERSION_CODES.LOLLIPOP_MR1,
-      Build.VERSION_CODES.M})
+  @Config(minSdk = LOLLIPOP_MR1)
   public void getPhoneAccountsForPackage() {
     PhoneAccountHandle handleInThisApplicationsPackage = createHandle("id1");
     telecomService.registerPhoneAccount(PhoneAccount.builder(handleInThisApplicationsPackage, "this_package")
@@ -161,8 +156,7 @@ public class ShadowTelecomManagerTest {
   }
 
   @Test
-  @Config(sdk = {
-      Build.VERSION_CODES.M})
+  @Config(minSdk = M)
   public void setDefaultDialerPackage() {
     shadowOf(telecomService).setDefaultDialer("some.package");
     assertThat(telecomService.getDefaultDialerPackage()).isEqualTo("some.package");

@@ -13,6 +13,8 @@ import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -179,7 +181,7 @@ public class ShadowMessageTest {
   }
   
   @Test
-  @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
+  @Config(minSdk = LOLLIPOP)
   public void testIsInUse() {
     ShadowLooper.pauseMainLooper();
     Handler h = new Handler();
@@ -191,13 +193,13 @@ public class ShadowMessageTest {
   }
   
   @Test
-  @Config(sdk = Build.VERSION_CODES.KITKAT)
+  @Config(maxSdk = KITKAT)
   public void recycle_shouldInvokeRealObject19() {
     recycle_shouldInvokeRealObject("recycle");
   }
 
   @Test
-  @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
+  @Config(minSdk = LOLLIPOP)
   public void recycle_shouldInvokeRealObject21() {
     recycle_shouldInvokeRealObject("recycleUnchecked");
   }
@@ -210,13 +212,13 @@ public class ShadowMessageTest {
   }
   
   @Test
-  @Config(sdk = Build.VERSION_CODES.KITKAT)
+  @Config(maxSdk = KITKAT)
   public void recycle_shouldRemoveMessageFromScheduler19() {
     recycle_shouldRemoveMessageFromScheduler();
   }
   
   @Test
-  @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
+  @Config(minSdk = LOLLIPOP)
   public void recycle_shouldRemoveMessageFromScheduler21() {
     recycle_shouldRemoveMessageFromScheduler();
   }
