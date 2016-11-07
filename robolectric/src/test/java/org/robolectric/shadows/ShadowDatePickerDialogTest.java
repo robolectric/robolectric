@@ -39,7 +39,7 @@ public class ShadowDatePickerDialogTest {
 
     DatePickerDialog datePickerDialog = new DatePickerDialog(RuntimeEnvironment.application, expectedDateSetListener, 2012, 6, 7);
 
-    ShadowDatePickerDialog shadowDatePickerDialog = (ShadowDatePickerDialog) shadowOf(datePickerDialog);
+    ShadowDatePickerDialog shadowDatePickerDialog = shadowOf(datePickerDialog);
     assertThat(shadowDatePickerDialog.getOnDateSetListenerCallback()).isEqualTo(expectedDateSetListener);
   }
 }
