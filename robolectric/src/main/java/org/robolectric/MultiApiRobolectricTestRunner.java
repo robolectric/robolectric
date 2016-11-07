@@ -1,7 +1,5 @@
 package org.robolectric;
 
-import android.os.Build;
-
 import org.junit.runner.Runner;
 import org.junit.runners.Suite;
 import org.junit.runners.model.FrameworkMethod;
@@ -110,17 +108,17 @@ public class MultiApiRobolectricTestRunner extends Suite {
   /*
    * Only called reflectively. Do not use programmatically.
    */
-  public MultiApiRobolectricTestRunner(Class<?> klass) throws Throwable {
+  public MultiApiRobolectricTestRunner(Class<?> klass, Set<Integer> supportedApis) throws Throwable {
     super(klass, Collections.<Runner>emptyList());
 
-    for (Integer integer : getSupportedApis()) {
+    for (Integer integer : supportedApis) {
       runners.add(createTestRunner(integer));
     }
    }
 
-  protected Set<Integer> getSupportedApis() {
-    return SdkConfig.getSupportedApis();
-  }
+   public MultiApiRobolectricTestRunner(Class<?> klass) throws Throwable {
+    this(klass, SdkConfig.getSupportedApis());
+   }
 
   protected TestRunnerForApiVersion createTestRunner(Integer integer) throws InitializationError {
     return new TestRunnerForApiVersion(getTestClass().getJavaClass(), integer);

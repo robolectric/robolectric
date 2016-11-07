@@ -4,6 +4,7 @@ import static org.robolectric.util.TestUtil.resourceFile;
 
 import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
+import org.robolectric.internal.SdkConfig;
 import org.robolectric.manifest.AndroidManifest;
 
 import java.util.Locale;
