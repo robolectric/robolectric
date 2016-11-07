@@ -2,6 +2,7 @@ package org.robolectric;
 
 import android.os.Build;
 
+import com.google.common.collect.ImmutableSet;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.Description;
@@ -24,16 +25,25 @@ import static org.mockito.Mockito.verify;
 @RunWith(JUnit4.class)
 public class MultiApiRobolectricTestRunnerTest {
 
+  private final ImmutableSet<Integer> APIS_FOR_TEST = ImmutableSet.of(
+      Build.VERSION_CODES.JELLY_BEAN,
+      Build.VERSION_CODES.JELLY_BEAN_MR1,
+      Build.VERSION_CODES.JELLY_BEAN_MR2,
+      Build.VERSION_CODES.KITKAT,
+      Build.VERSION_CODES.LOLLIPOP,
+      Build.VERSION_CODES.LOLLIPOP_MR1,
+      Build.VERSION_CODES.M);
+
   private int numSupportedApis;
 
   @Before
   public void setUp() {
-    numSupportedApis = SdkConfig.getSupportedApis().size();
+    numSupportedApis = APIS_FOR_TEST.size();
   }
 
   @Test
   public void createChildrenForEachSupportedApi() throws Throwable {
-    MultiApiRobolectricTestRunner runner = new MultiApiRobolectricTestRunner(TestWithNoConfig.class);
+    MultiApiRobolectricTestRunner runner = new MultiApiRobolectricTestRunner(TestWithNoConfig.class, APIS_FOR_TEST);
 
     assertThat(runner.getChildren()).hasSize(numSupportedApis);
 
@@ -44,7 +54,7 @@ public class MultiApiRobolectricTestRunnerTest {
 
   @Test
   public void noConfig() throws Throwable {
-    MultiApiRobolectricTestRunner runner = new MultiApiRobolectricTestRunner(TestWithNoConfig.class);
+    MultiApiRobolectricTestRunner runner = new MultiApiRobolectricTestRunner(TestWithNoConfig.class, APIS_FOR_TEST);
 
     RunNotifier runNotifier = new RunNotifier();
     RunListener runListener = mock(RunListener.class);
@@ -57,7 +67,7 @@ public class MultiApiRobolectricTestRunnerTest {
 
   @Test
   public void classConfigWithSdkGroup() throws Throwable {
-    MultiApiRobolectricTestRunner runner = new MultiApiRobolectricTestRunner(TestClassConfigWithSdkGroup.class);
+    MultiApiRobolectricTestRunner runner = new MultiApiRobolectricTestRunner(TestClassConfigWithSdkGroup.class, APIS_FOR_TEST);
 
     assertThat(runner.getChildren()).hasSize(numSupportedApis);
 
@@ -73,7 +83,7 @@ public class MultiApiRobolectricTestRunnerTest {
 
   @Test
   public void methodConfigWithSdkGroup() throws Throwable {
-    MultiApiRobolectricTestRunner runner = new MultiApiRobolectricTestRunner(TestMethodConfigWithSdkGroup.class);
+    MultiApiRobolectricTestRunner runner = new MultiApiRobolectricTestRunner(TestMethodConfigWithSdkGroup.class, APIS_FOR_TEST);
 
     assertThat(runner.getChildren()).hasSize(numSupportedApis);
 
@@ -89,7 +99,7 @@ public class MultiApiRobolectricTestRunnerTest {
 
   @Test
   public void classConfigMinSdk() throws Throwable {
-    MultiApiRobolectricTestRunner runner = new MultiApiRobolectricTestRunner(TestClassLollipopAndUp.class);
+    MultiApiRobolectricTestRunner runner = new MultiApiRobolectricTestRunner(TestClassLollipopAndUp.class, APIS_FOR_TEST);
 
     assertThat(runner.getChildren()).hasSize(numSupportedApis);
 
@@ -105,7 +115,7 @@ public class MultiApiRobolectricTestRunnerTest {
 
   @Test
   public void classConfigMaxSdk() throws Throwable {
-    MultiApiRobolectricTestRunner runner = new MultiApiRobolectricTestRunner(TestClassUpToAndIncludingLollipop.class);
+    MultiApiRobolectricTestRunner runner = new MultiApiRobolectricTestRunner(TestClassUpToAndIncludingLollipop.class, APIS_FOR_TEST);
 
     assertThat(runner.getChildren()).hasSize(numSupportedApis);
 
@@ -121,7 +131,7 @@ public class MultiApiRobolectricTestRunnerTest {
 
   @Test
   public void classConfigWithMinSdkAndMaxSdk() throws Throwable {
-    MultiApiRobolectricTestRunner runner = new MultiApiRobolectricTestRunner(TestClassBetweenJellyBeanMr2AndLollipop.class);
+    MultiApiRobolectricTestRunner runner = new MultiApiRobolectricTestRunner(TestClassBetweenJellyBeanMr2AndLollipop.class, APIS_FOR_TEST);
 
     assertThat(runner.getChildren()).hasSize(numSupportedApis);
 
@@ -138,7 +148,7 @@ public class MultiApiRobolectricTestRunnerTest {
 
   @Test
   public void methodConfigMinSdk() throws Throwable {
-    MultiApiRobolectricTestRunner runner = new MultiApiRobolectricTestRunner(TestMethodLollipopAndUp.class);
+    MultiApiRobolectricTestRunner runner = new MultiApiRobolectricTestRunner(TestMethodLollipopAndUp.class, APIS_FOR_TEST);
 
     assertThat(runner.getChildren()).hasSize(numSupportedApis);
 
@@ -154,7 +164,7 @@ public class MultiApiRobolectricTestRunnerTest {
 
   @Test
   public void methodConfigMaxSdk() throws Throwable {
-    MultiApiRobolectricTestRunner runner = new MultiApiRobolectricTestRunner(TestMethodUpToAndIncludingLollipop.class);
+    MultiApiRobolectricTestRunner runner = new MultiApiRobolectricTestRunner(TestMethodUpToAndIncludingLollipop.class, APIS_FOR_TEST);
 
     assertThat(runner.getChildren()).hasSize(numSupportedApis);
 
@@ -170,7 +180,7 @@ public class MultiApiRobolectricTestRunnerTest {
 
   @Test
   public void methodConfigWithMinSdkAndMaxSdk() throws Throwable {
-    MultiApiRobolectricTestRunner runner = new MultiApiRobolectricTestRunner(TestMethodBetweenJellyBeanMr2AndLollipop.class);
+    MultiApiRobolectricTestRunner runner = new MultiApiRobolectricTestRunner(TestMethodBetweenJellyBeanMr2AndLollipop.class, APIS_FOR_TEST);
 
     assertThat(runner.getChildren()).hasSize(numSupportedApis);
 
