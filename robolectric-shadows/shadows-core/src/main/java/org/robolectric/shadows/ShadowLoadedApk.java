@@ -4,7 +4,7 @@ import android.app.LoadedApk;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-@Implements(LoadedApk.class)
+@Implements(value = LoadedApk.class, isInAndroidSdk = false)
 public class ShadowLoadedApk {
 
   @Implementation

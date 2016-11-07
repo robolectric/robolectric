@@ -7,7 +7,7 @@ import org.robolectric.annotation.Implements;
 import java.util.HashMap;
 import java.util.Map;
 
-@Implements(VirtualRefBasePtr.class)
+@Implements(value = VirtualRefBasePtr.class, isInAndroidSdk = false)
 public class ShadowVirtualRefBasePtr {
   private static final Map<Long, RefHolder> POINTERS = new HashMap<>();
   private static long nextNativeObj = 10000;

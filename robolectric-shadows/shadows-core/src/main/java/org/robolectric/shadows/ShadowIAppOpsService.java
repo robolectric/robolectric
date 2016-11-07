@@ -9,7 +9,7 @@ import org.robolectric.util.ReflectionHelpers;
 
 public class ShadowIAppOpsService {
 
-  @Implements(value = IAppOpsService.Stub.class)
+  @Implements(value = IAppOpsService.Stub.class, isInAndroidSdk = false)
   public static class ShadowStub {
 
     @Implementation
