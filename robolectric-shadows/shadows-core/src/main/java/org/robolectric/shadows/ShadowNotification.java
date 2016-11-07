@@ -9,9 +9,15 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+
+import static android.os.Build.VERSION_CODES.N;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.shadows.ResourceHelper.getInternalResourceId;
 
 /**
@@ -24,15 +30,16 @@ public class ShadowNotification {
   Notification realNotification;
 
   public CharSequence getContentTitle() {
-    return ((TextView) applyContentView().findViewById(getInternalResourceId("title"))).getText();
+    return findText(applyContentView(), "title");
   }
 
   public CharSequence getContentText() {
-    return ((TextView) applyContentView().findViewById(getInternalResourceId("text"))).getText();
+    return findText(applyContentView(), "text");
   }
 
   public CharSequence getContentInfo() {
-   return ((TextView) applyContentView().findViewById(getInternalResourceId("info"))).getText();
+    String resourceName = getApiLevel() >= N ? "header_text" : "info";
+    return findText(applyContentView(), resourceName);
   }
 
   public boolean isOngoing() {
@@ -40,33 +47,35 @@ public class ShadowNotification {
   }
 
   public CharSequence getBigText() {
-    return ((TextView) applyBigContentView().findViewById(getInternalResourceId("big_text"))).getText();
+    return findText(applyBigContentView(), "big_text");
   }
 
   public CharSequence getBigContentTitle() {
-    return ((TextView) applyBigContentView().findViewById(getInternalResourceId("title"))).getText();
+    return findText(applyBigContentView(), "title");
   }
 
   public CharSequence getBigContentText() {
-    return ((TextView) applyBigContentView().findViewById(getInternalResourceId("text"))).getText();
+    String resourceName = getApiLevel() >= N ? "header_text" : "text";
+    return findText(applyBigContentView(), resourceName);
   }
 
   public Bitmap getBigPicture() {
     ImageView imageView = (ImageView) applyBigContentView().findViewById(getInternalResourceId("big_picture"));
-    return imageView !=null && imageView.getDrawable() != null ? ((BitmapDrawable) imageView.getDrawable()).getBitmap() : null;
+    return imageView != null && imageView.getDrawable() != null
+        ? ((BitmapDrawable) imageView.getDrawable()).getBitmap() : null;
   }
 
   public boolean isWhenShown() {
-    return applyContentView().findViewById(getInternalResourceId("chronometer")).getVisibility() == View.VISIBLE
-        || applyContentView().findViewById(getInternalResourceId("time")).getVisibility() == View.VISIBLE;
+    return findView(applyContentView(), "chronometer").getVisibility() == View.VISIBLE
+        || findView(applyContentView(), "time").getVisibility() == View.VISIBLE;
   }
 
   public ProgressBar getProgressBar() {
-    return ((ProgressBar) applyContentView().findViewById(getInternalResourceId("progress")));
+    return ((ProgressBar) findView(applyContentView(), "progress"));
   }
 
   public boolean usesChronometer() {
-    return applyContentView().findViewById(getInternalResourceId("chronometer")).getVisibility() == View.VISIBLE;
+    return findView(applyContentView(), "chronometer").getVisibility() == View.VISIBLE;
   }
 
   private View applyContentView() {
@@ -75,5 +84,20 @@ public class ShadowNotification {
 
   private View applyBigContentView() {
     return realNotification.bigContentView.apply(RuntimeEnvironment.application, new FrameLayout(RuntimeEnvironment.application));
+  }
+
+  private CharSequence findText(View view, String resourceName) {
+    TextView textView = (TextView) findView(view, resourceName);
+    return textView.getText();
+  }
+
+  private View findView(View view, String resourceName) {
+    View subView = view.findViewById(getInternalResourceId(resourceName));
+    if (subView == null) {
+      ByteArrayOutputStream buf = new ByteArrayOutputStream();
+      Shadows.shadowOf(view).dump(new PrintStream(buf), 4);
+      throw new IllegalArgumentException("no id." + resourceName + " found in view:\n" + buf.toString());
+    }
+    return subView;
   }
 }
