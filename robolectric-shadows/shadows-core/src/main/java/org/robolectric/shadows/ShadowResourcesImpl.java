@@ -29,7 +29,7 @@ import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.internal.Shadow.directlyOn;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
-@Implements(value = ResourcesImpl.class)
+@Implements(value = ResourcesImpl.class, isInAndroidSdk = false, minSdk = N)
 public class ShadowResourcesImpl {
   private static Resources system = null;
   private static List<LongSparseArray<?>> resettableArrays;
@@ -80,12 +80,6 @@ public class ShadowResourcesImpl {
     }
     return system;
   }
-//
-//  @Implementation
-//  public TypedArray obtainAttributes(AttributeSet set, int[] attrs) {
-//    return shadowOf(realResourcesImpl.getAssets())
-//        .attrsToTypedArray(realResourcesImpl, set, attrs, 0, null, 0);
-//  }
 
   @Implementation
   public String getQuantityString(int id, int quantity, Object... formatArgs) throws Resources.NotFoundException {
@@ -173,7 +167,7 @@ public class ShadowResourcesImpl {
     return loadXmlResourceParser(id, type);
   }
 
-  @Implements(value = ResourcesImpl.ThemeImpl.class, minSdk = N)
+  @Implements(value = ResourcesImpl.ThemeImpl.class, minSdk = N, isInAndroidSdk = false)
   public static class ShadowThemeImpl {
     @RealObject ResourcesImpl.ThemeImpl realThemeImpl;
 

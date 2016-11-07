@@ -5,6 +5,6 @@ import org.robolectric.annotation.Implements;
 
 import static android.os.Build.VERSION_CODES.N;
 
-@Implements(value = NativeAllocationRegistry.class, callThroughByDefault = false, minSdk = N)
+@Implements(value = NativeAllocationRegistry.class, callThroughByDefault = false, minSdk = N, isInAndroidSdk = false)
 public class ShadowNativeAllocationRegistry {
 }

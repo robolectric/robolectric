@@ -7,7 +7,7 @@ import org.robolectric.annotation.Implements;
 
 import java.io.File;
 
-@Implements(Posix.class)
+@Implements(value = Posix.class, isInAndroidSdk = false)
 public class ShadowPosix {
   @Implementation
   public static void mkdir(String path, int mode) throws ErrnoException {
