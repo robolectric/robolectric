@@ -5,17 +5,26 @@
 # more information on building AOSP.
 #
 # Usage:
-#   build-android.sh <android version> <robolectric version>
+#   build-android.sh <android repo path> <android version> <robolectric version>
 #
 # For a tutorial check scripts/README.md
 
-if [[ $# -eq 0 ]]; then
-    echo "Usage: ${0} <android-version> <robolectric-sub-version>"
+set -ex
+
+function usage() {
+    echo "Usage: ${0} <android repo path> <android-version> <robolectric-sub-version>"
+}
+
+if [[ $# -ne 3 ]]; then
+    usage
     exit 1
 fi
 
-if [[ -z "${BUILD_ROOT}" ]]; then
-    echo "Please set the AOSP build root path as BUILD_ROOT"
+buildRoot=$1
+
+if [[ ! -d $buildRoot ]]; then
+    echo $buildRoot is not a directory
+    usage
     exit 1
 fi
 
@@ -24,16 +33,14 @@ if [[ -z "${SIGNING_PASSWORD}" ]]; then
     exit 1
 fi
 
-ANDROID_VERSION=$1
-if [[ -z "$2" ]]; then
-    ROBOLECTRIC_SUB_VERSION=0
-else
-    ROBOLECTRIC_SUB_VERSION=$2
-fi
+buildRoot=$(cd $buildRoot; pwd)
+
+ANDROID_VERSION=$2
+ROBOLECTRIC_SUB_VERSION=$3
 
 SCRIPT_DIR=$(cd $(dirname "$0"); pwd)
 
-ANDROID_SOURCES_BASE=${BUILD_ROOT}
+ANDROID_SOURCES_BASE=${buildRoot}
 FRAMEWORKS_BASE_DIR=${ANDROID_SOURCES_BASE}/frameworks/base
 ROBOLECTRIC_VERSION=${ANDROID_VERSION}-robolectric-${ROBOLECTRIC_SUB_VERSION}
 
@@ -57,25 +64,36 @@ ANDROID_ALL_DOC=android-all-${ROBOLECTRIC_VERSION}-javadoc.jar
 ANDROID_BUNDLE=android-all-${ROBOLECTRIC_VERSION}-bundle.jar
 
 build_platform() {
+    NATIVE_ARTIFACTS=()
+
     if [[ "${ANDROID_VERSION}" == "4.1.2_r1" ]]; then
         ARTIFACTS=("core" "services" "framework" "android.policy" "ext")
+        SOURCES=(core graphics media location opengl policy sax services telephony wifi)
     elif [[ "${ANDROID_VERSION}" == "4.2.2_r1.2" ]]; then
         ARTIFACTS=("core" "services" "telephony-common" "framework" "android.policy" "ext")
+        SOURCES=(core graphics media location opengl policy sax services telephony wifi)
     elif [[ "${ANDROID_VERSION}" == "4.3_r2" ]]; then
         ARTIFACTS=("core" "services" "telephony-common" "framework" "android.policy" "ext")
+        SOURCES=(core graphics media location opengl policy sax services telephony wifi)
     elif [[ "${ANDROID_VERSION}" == "4.4_r1" ]]; then
         ARTIFACTS=("core" "services" "telephony-common" "framework" "framework2" "framework-base" "android.policy" "ext" "webviewchromium")
+        SOURCES=(core graphics media location opengl policy sax services telephony wifi)
     elif [[ "${ANDROID_VERSION}" == "5.0.0_r2" ]]; then
         ARTIFACTS=("core-libart" "services" "telephony-common" "framework" "android.policy" "ext")
+        SOURCES=(core graphics media location opengl policy sax services telephony wifi)
     elif [[ "${ANDROID_VERSION}" == "5.1.1_r9" ]]; then
         ARTIFACTS=("core-libart" "services" "telephony-common" "framework" "android.policy" "ext")
+        SOURCES=(core graphics media location opengl policy sax services telephony wifi)
     elif [[ "${ANDROID_VERSION}" == "6.0.0_r1" ]]; then
         ARTIFACTS=("core-libart" "services" "services.accessibility" "telephony-common" "framework" "ext" "icu4j-icudata-jarjar")
+        SOURCES=(core graphics media location opengl sax services telephony wifi)
         LIB_PHONE_NUMBERS_PKG="com/google/i18n/phonenumbers"
         LIB_PHONE_NUMBERS_PATH="external/libphonenumber/libphonenumber/src"
         TZDATA_ARCH="generic"
     elif [[ "${ANDROID_VERSION}" == "7.0.0_r1" ]]; then
-        ARTIFACTS=("core-libart" "services" "services.accessibility" "telephony-common" "framework" "ext" "icu4j")
+        ARTIFACTS=("core-libart" "services" "services.accessibility" "telephony-common" "framework" "ext")
+        NATIVE_ARTIFACTS=("icu4j-icudata-host-jarjar" "icu4j-icutzdata-host-jarjar")
+        SOURCES=(core graphics media location opengl sax services telephony wifi)
         LIB_PHONE_NUMBERS_PKG="com/google/i18n/phonenumbers"
         LIB_PHONE_NUMBERS_PATH="external/libphonenumber/libphonenumber/src"
         TZDATA_ARCH="generic"
@@ -110,7 +128,24 @@ build_android_classes() {
     mkdir ${OUT}/android-all-classes
     for artifact in "${ARTIFACTS[@]}"; do
         src=${ANDROID_SOURCES_BASE}/out/target/common/obj/JAVA_LIBRARIES/${artifact}_intermediates
-        cd ${OUT}/android-all-classes; jar xf ${src}/classes.jar
+        cd ${OUT}/android-all-classes
+        if [[ -f ${src}/classes.jar ]]; then
+            jar xf ${src}/classes.jar
+        else
+            echo "Couldn't find ${artifact} at ${src}/classes.jar"
+            exit 1
+        fi
+    done
+
+    for artifact in "${NATIVE_ARTIFACTS[@]}"; do
+        jarPath=${ANDROID_SOURCES_BASE}/out/host/linux-x86/framework/${artifact}.jar
+        cd ${OUT}/android-all-classes
+        if [[ -f $jarPath ]]; then
+            jar xf $jarPath
+        else
+            echo "Couldn't find ${artifact} at $jarPath"
+            exit 1
+        fi
     done
     build_tzdata
     build_jarjared_classes
@@ -128,7 +163,7 @@ build_jarjared_classes() {
     echo "Robolectric: jarjaring classes..."
     mkdir ${OUT}/android-jarjar-workspace
     cd ${OUT}/android-jarjar-workspace
-    wget https://jarjar.googlecode.com/files/jarjar-1.4.jar
+    wget https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/jarjar/jarjar-1.4.jar
     echo "rule com.squareup.** com.android.**" >> rules
     echo "rule org.conscrypt.** com.android.**" >> rules
 
@@ -167,17 +202,11 @@ build_android_src_jar() {
     local src=${ANDROID_SOURCES_BASE}/frameworks/base
     local tmp=${OUT}/sources
     mkdir ${tmp}
-    rsync -va ${src}/core/java/ ${tmp}/
-    rsync -va ${src}/graphics/java/ ${tmp}/
-    rsync -va ${src}/media/java/ ${tmp}/
-    rsync -va ${src}/location/java/ ${tmp}/
-    rsync -va ${src}/opengl/java/ ${tmp}/
-    rsync -va ${src}/policy/src/ ${tmp}/
-    rsync -va ${src}/sax/java/ ${tmp}/
-    rsync -va ${src}/services/java/ ${tmp}/
-    rsync -va ${src}/telephony/java/ ${tmp}/
-    rsync -va ${src}/wifi/java/ ${tmp}/
-    rsync -va ${ANDROID_SOURCES_BASE}/libcore/luni/src/main/java/ ${tmp}/ # this is new
+
+    for sourceSubDir in "${SOURCES[@]}"; do
+        rsync -a ${src}/${sourceSubDir}/java/ ${tmp}/
+    done
+    rsync -a ${ANDROID_SOURCES_BASE}/libcore/luni/src/main/java/ ${tmp}/ # this is new
     cd ${tmp}; jar cf ${OUT}/${ANDROID_ALL_SRC} .
     rm -rf ${tmp}
 }
