@@ -13,5 +13,6 @@ class ProvidedPlugin implements Plugin<Project> {
             test.compileClasspath += project.configurations.provided
             test.runtimeClasspath += project.configurations.provided
         }
+
     }
 }

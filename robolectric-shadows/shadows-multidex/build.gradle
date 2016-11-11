@@ -8,9 +8,9 @@ dependencies {
     compile project(":robolectric")
     compile project(":robolectric-shadows/shadows-core")
 
-    provided "com.android.support:multidex:1.0.1"
+    compileOnly "com.android.support:multidex:1.0.1"
 
-    provided "org.robolectric:android-all:6.0.0_r1-robolectric-0"
+    compileOnly "org.robolectric:android-all:6.0.0_r1-robolectric-0"
 
     // Testing dependencies
     testCompile "junit:junit:4.8.2"

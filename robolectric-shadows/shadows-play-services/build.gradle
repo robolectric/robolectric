@@ -8,11 +8,11 @@ dependencies {
     compile project(":robolectric")
     compile project(":robolectric-shadows/shadows-core")
 
-    provided "com.android.support:support-v4:23.2.0"
-    provided "com.google.android.gms:play-services-base:8.4.0"
-    provided "com.google.android.gms:play-services-basement:8.4.0"
+    compileOnly "com.android.support:support-v4:23.2.0"
+    compileOnly "com.google.android.gms:play-services-base:8.4.0"
+    compileOnly "com.google.android.gms:play-services-basement:8.4.0"
 
-    provided "org.robolectric:android-all:6.0.0_r1-robolectric-0"
+    compileOnly "org.robolectric:android-all:6.0.0_r1-robolectric-0"
 
     // Testing dependencies
     testCompile "junit:junit:4.8.2"

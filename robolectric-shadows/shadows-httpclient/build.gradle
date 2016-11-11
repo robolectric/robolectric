@@ -16,7 +16,7 @@ dependencies {
     // Compile dependencies
     earlyRuntime "org.apache.httpcomponents:httpcore:4.0.1"
     compile "org.apache.httpcomponents:httpclient:4.0.3"
-    provided("org.robolectric:android-all:${AndroidSdk.versions[22]}") { force = true }
+    compileOnly("org.robolectric:android-all:${AndroidSdk.versions[22]}") { force = true }
 
     // Testing dependencies
     testCompile "junit:junit:4.8.2"
