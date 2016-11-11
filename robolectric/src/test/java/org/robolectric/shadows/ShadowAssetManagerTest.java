@@ -6,10 +6,12 @@ import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.util.AttributeSet;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
@@ -29,6 +31,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.TestUtil.joinPath;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
@@ -37,11 +40,13 @@ public class ShadowAssetManagerTest {
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
 
-  AssetManager assetManager;
+  private AssetManager assetManager;
+  private Resources resources;
 
   @Before
   public void setUp() throws Exception {
     assetManager = Robolectric.buildActivity(Activity.class).create().get().getAssets();
+    resources = RuntimeEnvironment.application.getResources();
   }
 
   @Test
@@ -51,7 +56,7 @@ public class ShadowAssetManagerTest {
     assetManager = RuntimeEnvironment.application.getAssets();
     assertNotNull(assetManager);
 
-    assetManager = RuntimeEnvironment.application.getResources().getAssets();
+    assetManager = resources.getAssets();
     assertNotNull(assetManager);
   }
 
@@ -131,6 +136,24 @@ public class ShadowAssetManagerTest {
   }
 
   @Test
+  public void unknownResourceIdsShouldReportPackagesSearched() throws IOException {
+    expectedException.expect(Resources.NotFoundException.class);
+    expectedException.expectMessage("Unable to find resource ID #0xffffffff in packages [android, org.robolectric, org.robolectric.lib1, org.robolectric.lib2, org.robolectric.lib3]");
+
+    resources.newTheme().applyStyle(-1, false);
+    assetManager.openNonAsset(0, "./res/drawable/does_not_exist.png", 0);
+  }
+
+  @Test
+  public void forSystemResources_unknownResourceIdsShouldReportPackagesSearched() throws IOException {
+    expectedException.expect(Resources.NotFoundException.class);
+    expectedException.expectMessage("Unable to find resource ID #0xffffffff in packages [android]");
+
+    Resources.getSystem().newTheme().applyStyle(-1, false);
+    assetManager.openNonAsset(0, "./res/drawable/does_not_exist.png", 0);
+  }
+
+  @Test
   @Config(qualifiers = "mdpi")
   public void openNonAssetShouldOpenCorrectAssetBasedOnQualifierMdpi() throws IOException {
     InputStream inputStream = assetManager.openNonAsset(0, "./res/drawable/robolectric.png", 0);
@@ -155,7 +178,106 @@ public class ShadowAssetManagerTest {
     when(mockAttributeSet.getAttributeNameResource(0)).thenReturn(android.R.attr.windowBackground);
     when(mockAttributeSet.getAttributeValue(0)).thenReturn("value");
 
-    Resources resources = RuntimeEnvironment.application.getResources();
     resources.obtainAttributes(mockAttributeSet, new int[]{android.R.attr.windowBackground});
+  }
+
+  @Test
+  public void forUntouchedThemes_copyTheme_shouldCopyNothing() throws Exception {
+    Resources.Theme theme1 = resources.newTheme();
+    Resources.Theme theme2 = resources.newTheme();
+    theme2.setTo(theme1);
+  }
+
+  @Test
+  public void whenStyleAttrResolutionFails_attrsToTypedArray_returnsNiceErrorMessage() throws Exception {
+    expectedException.expect(RuntimeException.class);
+    expectedException.expectMessage(
+        "no value for org.robolectric:attr/styleNotSpecifiedInAnyTheme " +
+            "in theme with applied styles: [Style org.robolectric:Theme_Robolectric (and parents)]");
+
+    Resources.Theme theme = resources.newTheme();
+    theme.applyStyle(R.style.Theme_Robolectric, false);
+
+    shadowOf(assetManager).attrsToTypedArray(resources,
+        Robolectric.buildAttributeSet().setStyleAttribute("?attr/styleNotSpecifiedInAnyTheme").build(),
+        new int[]{R.attr.string1}, 0, theme, 0);
+  }
+
+  @Test
+  public void getResourceIdentifier_shouldReturnValueFromRClass() throws Exception {
+    assertThat(shadowOf(assetManager).getResourceIdentifier("idInRClassAndXml", "id", "org.robolectric"))
+        .isEqualTo(R.id.idInRClassAndXml);
+    assertThat(shadowOf(assetManager).getResourceIdentifier("id/idInRClassAndXml", null, "org.robolectric"))
+        .isEqualTo(R.id.idInRClassAndXml);
+    assertThat(shadowOf(assetManager).getResourceIdentifier("org.robolectric:idInRClassAndXml", "id", null))
+        .isEqualTo(R.id.idInRClassAndXml);
+    assertThat(shadowOf(assetManager).getResourceIdentifier("org.robolectric:id/idInRClassAndXml", "other", "other"))
+        .isEqualTo(R.id.idInRClassAndXml);
+  }
+
+  @Test
+  public void whenPackageIsUnknown_getResourceIdentifier_shouldReturnZero() throws Exception {
+    assertThat(shadowOf(assetManager).getResourceIdentifier("whatever", "id", "some.unknown.package"))
+        .isEqualTo(0);
+    assertThat(shadowOf(assetManager).getResourceIdentifier("id/whatever", null, "some.unknown.package"))
+        .isEqualTo(0);
+    assertThat(shadowOf(assetManager).getResourceIdentifier("some.unknown.package:whatever", "id", null))
+        .isEqualTo(0);
+    assertThat(shadowOf(assetManager).getResourceIdentifier("some.unknown.package:id/whatever", "other", "other"))
+        .isEqualTo(0);
+
+    assertThat(shadowOf(assetManager).getResourceIdentifier("whatever", "drawable", "some.unknown.package"))
+        .isEqualTo(0);
+    assertThat(shadowOf(assetManager).getResourceIdentifier("drawable/whatever", null, "some.unknown.package"))
+        .isEqualTo(0);
+    assertThat(shadowOf(assetManager).getResourceIdentifier("some.unknown.package:whatever", "drawable", null))
+        .isEqualTo(0);
+    assertThat(shadowOf(assetManager).getResourceIdentifier("some.unknown.package:id/whatever", "other", "other"))
+        .isEqualTo(0);
+  }
+
+  @Test @Ignore("currently ids are always automatically assigned a value; to fix this we'd need to check layouts for +@id/___, which is expensive")
+  public void whenCalledForIdWithNameNotInRClassOrXml_getResourceIdentifier_shouldReturnZero() throws Exception {
+    assertThat(shadowOf(assetManager).getResourceIdentifier("org.robolectric:id/idThatDoesntExistAnywhere", "other", "other"))
+        .isEqualTo(0);
+  }
+
+  @Test
+  public void whenIdIsAbsentInRClassButPresentInXml_getResourceIdentifier_shouldReturnGeneratedId() throws Exception {
+    int id = shadowOf(assetManager).getResourceIdentifier("idNotInRClass", "id", "org.robolectric");
+    assertThat(id).isGreaterThan(0);
+    assertThat(shadowOf(assetManager).getResourceIdentifier("id/idNotInRClass", null, "org.robolectric")).isEqualTo(id);
+    assertThat(shadowOf(assetManager).getResourceIdentifier("org.robolectric:idNotInRClass", "id", null)).isEqualTo(id);
+    assertThat(shadowOf(assetManager).getResourceIdentifier("org.robolectric:id/idNotInRClass", "other", "other")).isEqualTo(id);
+  }
+
+  @Test
+  public void whenIdIsAbsentInXmlButPresentInRClass_getResourceIdentifier_shouldReturnIdFromRClass_probablyBecauseItWasDeclaredInALayout() throws Exception {
+    assertThat(shadowOf(assetManager).getResourceIdentifier("idNotInXml", "id", "org.robolectric"))
+        .isEqualTo(R.id.idNotInXml);
+  }
+
+  @Test
+  public void whenResourceIsAbsentInXml_getResourceIdentifier_shouldReturn0() throws Exception {
+    assertThat(shadowOf(assetManager).getResourceIdentifier("fictitiousDrawable", "drawable", "org.robolectric"))
+        .isEqualTo(0);
+  }
+
+  @Test
+  public void whenResourceIsAbsentInXml_getResourceIdentifier_shouldReturnId() throws Exception {
+    assertThat(shadowOf(assetManager).getResourceIdentifier("an_image", "drawable", "org.robolectric"))
+        .isEqualTo(R.drawable.an_image);
+  }
+
+  @Test
+  public void whenResourceIsXml_getResourceIdentifier_shouldReturnId() throws Exception {
+    assertThat(shadowOf(assetManager).getResourceIdentifier("preferences", "xml", "org.robolectric"))
+        .isEqualTo(R.xml.preferences);
+  }
+
+  @Test
+  public void whenResourceIsRaw_getResourceIdentifier_shouldReturnId() throws Exception {
+    assertThat(shadowOf(assetManager).getResourceIdentifier("raw_resource", "raw", "org.robolectric"))
+        .isEqualTo(R.raw.raw_resource);
   }
 }

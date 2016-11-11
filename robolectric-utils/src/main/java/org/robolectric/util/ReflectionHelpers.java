@@ -1,15 +1,51 @@
 package org.robolectric.util;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Proxy;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Collection of helper methods for calling methods and accessing fields reflectively.
  */
 public class ReflectionHelpers {
+  public static final Map<String, Object> PRIMITIVE_RETURN_VALUES =
+      Collections.unmodifiableMap(new HashMap<String, Object>() {{
+        put("boolean", Boolean.FALSE);
+        put("int", 0);
+        put("long", (long) 0);
+        put("float", (float) 0);
+        put("double", (double) 0);
+        put("short", (short) 0);
+        put("byte", (byte) 0);
+      }});
+
+  public static <T> T createNullProxy(Class<T> clazz) {
+    return (T) Proxy.newProxyInstance(clazz.getClassLoader(),
+        new Class[]{clazz}, new InvocationHandler() {
+          @Override
+          public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            return PRIMITIVE_RETURN_VALUES.get(method.getReturnType().getName());
+          }
+        });
+  }
+
+  public static <A extends Annotation> A defaultsFor(Class<A> annotation) {
+    return annotation.cast(
+        Proxy.newProxyInstance(annotation.getClassLoader(), new Class[] { annotation },
+            new InvocationHandler() {
+              public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                return method.getDefaultValue();
+              }
+            }));
+  }
 
   /**
    * Reflectively get the value of a field.

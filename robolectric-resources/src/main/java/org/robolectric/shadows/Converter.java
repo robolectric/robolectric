@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.content.res.Resources;
 import android.util.TypedValue;
 import org.robolectric.res.*;
+import org.robolectric.util.Logger;
 import org.robolectric.util.Util;
 
 public class Converter<T> {
@@ -49,6 +50,8 @@ public class Converter<T> {
       TypedResource dereferencedRef = resourceLoader.getValue(resName, qualifiers);
 
       if (dereferencedRef == null) {
+        Logger.strict("couldn't resolve %s from %s", resName.getFullyQualifiedName(), attribute);
+
         if (resName.type.equals("id")) {
           return;
         } else if (resName.type.equals("layout")) {
@@ -65,14 +68,14 @@ public class Converter<T> {
           return;
         } else if (DrawableResourceLoader.isStillHandledHere(resName.type)) {
           // wtf. color and drawable references reference are all kinds of stupid.
-          DrawableNode drawableNode = resourceLoader.getDrawableNode(resName, qualifiers);
-          if (drawableNode == null) {
+          TypedResource drawableResource = resourceLoader.getValue(resName, qualifiers);
+          if (drawableResource == null) {
             throw new Resources.NotFoundException("can't find file for " + resName);
           } else {
             outValue.type = TypedValue.TYPE_STRING;
             outValue.data = 0;
             outValue.assetCookie = getNextStringCookie();
-            outValue.string = drawableNode.getFsFile().getPath();
+            outValue.string = (CharSequence) drawableResource.getData();
             return;
           }
         } else {
@@ -251,7 +254,7 @@ public class Converter<T> {
 
 
 
-  private static class FromFilePath extends Converter<String> {
+  public static class FromFilePath extends Converter<String> {
     @Override
     public boolean fillTypedValue(String data, TypedValue typedValue) {
       typedValue.type = TypedValue.TYPE_STRING;

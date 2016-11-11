@@ -6,7 +6,7 @@ shadows {
 
 dependencies {
     compile project(":robolectric")
-    compile project(":robolectric-shadows/shadows-core/v23")
+    compile project(":robolectric-shadows/shadows-core")
 
     provided "com.android.support:multidex:1.0.1"
 

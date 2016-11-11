@@ -62,6 +62,9 @@ public class ShadowBitmapFactory {
 
   @Implementation
   public static Bitmap decodeResource(Resources res, int id, BitmapFactory.Options options) {
+    if (id == 0) {
+      return null;
+    }
     Bitmap bitmap = create("resource:" + RuntimeEnvironment.application.getResources().getResourceName(id), options);
     Shadows.shadowOf(bitmap).createdFromResId = id;
     return bitmap;

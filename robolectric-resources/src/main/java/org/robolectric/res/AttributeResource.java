@@ -33,7 +33,7 @@ public class AttributeResource {
 
   public @NotNull ResName getResourceReference() {
     if (!isResourceReference()) throw new RuntimeException("not a resource reference: " + this);
-    return ResName.qualifyResName(value.substring(1).replace("+", ""), contextPackageName, "attr");
+    return ResName.qualifyResName(value.substring(1).replace("+", ""), contextPackageName, "style");
   }
 
   public boolean isStyleReference() {

@@ -8,11 +8,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowAccessibilityServiceTest {
   private MyService service ;
   private ShadowAccessibilityService shadow;

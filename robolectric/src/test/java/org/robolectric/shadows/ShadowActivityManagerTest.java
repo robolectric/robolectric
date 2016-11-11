@@ -3,11 +3,15 @@ package org.robolectric.shadows;
 import android.app.ActivityManager;
 import android.content.ComponentName;
 import android.content.Context;
+import android.os.Build;
 import com.google.android.collect.Lists;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
+
+import static android.os.Build.VERSION_CODES.M;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -102,6 +106,13 @@ public class ShadowActivityManagerTest {
     assertThat(ActivityManager.isUserAMonkey()).isFalse();
   }
 
+  @Test @Config(minSdk = M)
+  public void getLockTaskModeState() throws Exception {
+    assertThat(getActivityManager().getLockTaskModeState()).isEqualTo(0); // just don't throw
+  }
+
+  ///////////////////////
+  
   private ActivityManager getActivityManager() {
     return (ActivityManager) RuntimeEnvironment.application.getSystemService(Context.ACTIVITY_SERVICE);
   }

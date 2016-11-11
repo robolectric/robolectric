@@ -25,7 +25,7 @@ Copy all required Android dependencies into your local Maven repository:
 
 Perform a full build of all shadows:
 
-    ./scripts/install-robolectric.sh
+    ./gradlew clean assemble install compileTest
 
 ## Building and Testing
 

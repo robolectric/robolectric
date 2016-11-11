@@ -1,5 +1,6 @@
 package org.robolectric.res.builder;
 
+import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
 import com.android.internal.util.XmlUtils;
 import org.robolectric.res.AttributeResource;
@@ -318,7 +319,8 @@ public class XmlResourceParserImpl implements XmlResourceParser {
     return qualify(getAttributeAt(index).getNodeValue());
   }
 
-  private String qualify(String value) {
+  // for testing only...
+  public String qualify(String value) {
     if (value == null) return null;
     if (AttributeResource.isResourceReference(value)) {
       return "@" + ResName.qualifyResourceName(value.substring(1).replace("+", ""), packageName, "attr");
@@ -772,13 +774,21 @@ public class XmlResourceParserImpl implements XmlResourceParser {
     if (AttributeResource.isNull(possiblyQualifiedResourceName)) return 0;
 
     if (AttributeResource.isStyleReference(possiblyQualifiedResourceName)) {
-      Integer resourceId = resourceLoader.getResourceIndex().getResourceId(AttributeResource.getStyleReference(possiblyQualifiedResourceName, defaultPackageName, defaultType));
-      return resourceId == null ? 0 : resourceId;
+      ResName styleReference = AttributeResource.getStyleReference(possiblyQualifiedResourceName, defaultPackageName, "attr");
+      Integer resourceId = resourceLoader.getResourceIndex().getResourceId(styleReference);
+      if (resourceId == null) {
+        throw new Resources.NotFoundException(styleReference.getFullyQualifiedName());
+      }
+      return resourceId;
     }
 
     if (AttributeResource.isResourceReference(possiblyQualifiedResourceName)) {
-      Integer resourceId = resourceLoader.getResourceIndex().getResourceId(AttributeResource.getResourceReference(possiblyQualifiedResourceName, defaultPackageName, defaultType));
-      return resourceId == null ? 0 : resourceId;
+      ResName resourceReference = AttributeResource.getResourceReference(possiblyQualifiedResourceName, defaultPackageName, defaultType);
+      Integer resourceId = resourceLoader.getResourceIndex().getResourceId(resourceReference);
+      if (resourceId == null) {
+        throw new Resources.NotFoundException(resourceReference.getFullyQualifiedName());
+      }
+      return resourceId;
     }
     possiblyQualifiedResourceName = removeLeadingSpecialCharsIfAny(possiblyQualifiedResourceName);
     ResName resName = ResName.qualifyResName(possiblyQualifiedResourceName, defaultPackageName, defaultType);

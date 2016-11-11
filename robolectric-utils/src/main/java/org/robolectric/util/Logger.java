@@ -11,9 +11,17 @@ public class Logger {
   private static final String LOGGING_ENABLED = "robolectric.logging.enabled";
 
   public static void strict(String message, Throwable e) {
-    debug(message);
-    if (Boolean.getBoolean(LOGGING_ENABLED)) {
+    if (loggingEnabled()) {
+      System.out.print("WARNING: ");
+      System.out.println(message);
       e.printStackTrace();
+    }
+  }
+
+  public static void strict(String message, Object... args) {
+    if (loggingEnabled()) {
+      System.out.print("WARNING: ");
+      System.out.println(String.format(message, args));
     }
   }
 
@@ -24,7 +32,8 @@ public class Logger {
    * @param args    Message arguments.
    */
   public static void info(String message, Object... args) {
-    if (Boolean.getBoolean(LOGGING_ENABLED)) {
+    if (loggingEnabled()) {
+      System.out.print("INFO: ");
       System.out.println(String.format(message, args));
     }
   }
@@ -36,6 +45,7 @@ public class Logger {
    * @param args    Message arguments.
    */
   public static void error(String message, Object... args) {
+    System.err.print("ERROR: ");
     System.err.println(String.format(message, args));
   }
 
@@ -46,8 +56,13 @@ public class Logger {
    * @param args    Message arguments.
    */
   public static void debug(String message, Object... args) {
-    if (Boolean.getBoolean(LOGGING_ENABLED)) {
-      System.out.println("DEBUG: " + String.format(message, args));
+    if (loggingEnabled()) {
+      System.out.print("DEBUG: ");
+      System.out.println(String.format(message, args));
     }
+  }
+
+  private static boolean loggingEnabled() {
+    return Boolean.getBoolean(LOGGING_ENABLED);
   }
 }

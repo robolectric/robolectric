@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.shadows.ShadowSQLiteConnection.convertSQLWithLocalizedUnicodeCollator;
@@ -27,8 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
-@Config(sdk = {
-    Build.VERSION_CODES.LOLLIPOP })
+@Config(minSdk = LOLLIPOP)
 public class ShadowSQLiteConnectionTest {
   private SQLiteDatabase database;
   private File databasePath;
@@ -45,7 +45,7 @@ public class ShadowSQLiteConnectionTest {
     SQLiteStatement createStatement = database.compileStatement(
         "CREATE TABLE `routine` (`id` INTEGER PRIMARY KEY AUTOINCREMENT , `name` VARCHAR , `lastUsed` INTEGER DEFAULT 0 ,  UNIQUE (`name`)) ;");
     createStatement.execute();
-    ptr = ShadowSQLiteConnection.nativeOpen(databasePath.getPath(), 0, "test connection", false, false);
+    ptr = ShadowSQLiteConnection.nativeOpen(databasePath.getPath(), 0, "test connection", false, false).longValue();
     CONNECTIONS = ReflectionHelpers.getStaticField(ShadowSQLiteConnection.class, "CONNECTIONS");
     conn = CONNECTIONS.getConnection(ptr);
   }

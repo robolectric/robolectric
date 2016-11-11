@@ -13,16 +13,14 @@ import org.robolectric.annotation.Config;
 import java.util.Calendar;
 import java.util.TimeZone;
 
+import static android.os.Build.VERSION_CODES.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowDateUtilsTest {
 
   @Test
-  @Config(sdk = {
-      Build.VERSION_CODES.KITKAT,
-      Build.VERSION_CODES.LOLLIPOP,
-      Build.VERSION_CODES.LOLLIPOP_MR1})
+  @Config(minSdk = KITKAT, maxSdk = LOLLIPOP_MR1)
   public void formatDateTime_withCurrentYear_worksSinceKitKat() {
     final long millisAtStartOfYear = getMillisAtStartOfYear();
 
@@ -31,21 +29,18 @@ public class ShadowDateUtilsTest {
   }
 
   @Test
-  @Config(sdk = {Build.VERSION_CODES.M})
+  @Config(minSdk = M)
   public void formatDateTime_withCurrentYear_worksSinceM() {
-    Calendar calendar = Calendar.getInstance();
-    final int currentYear = calendar.get(Calendar.YEAR);
     final long millisAtStartOfYear = getMillisAtStartOfYear();
 
+    // starting with M, sometimes the year is there, sometimes it's missing, unless you specify FORMAT_SHOW_YEAR
     String actual = DateUtils.formatDateTime(RuntimeEnvironment.application, millisAtStartOfYear, DateUtils.FORMAT_SHOW_YEAR | DateUtils.FORMAT_NUMERIC_DATE);
+    final int currentYear = Calendar.getInstance().get(Calendar.YEAR);
     assertThat(actual).isEqualTo("1/1/" + currentYear);
   }
 
   @Test
-  @Config(sdk = {
-      Build.VERSION_CODES.JELLY_BEAN,
-      Build.VERSION_CODES.JELLY_BEAN_MR1,
-      Build.VERSION_CODES.JELLY_BEAN_MR2})
+  @Config(maxSdk = JELLY_BEAN_MR2)
   public void formatDateTime_withCurrentYear_worksPreKitKat() {
     Calendar calendar = Calendar.getInstance();
     final int currentYear = calendar.get(Calendar.YEAR);
@@ -56,14 +51,6 @@ public class ShadowDateUtilsTest {
   }
 
   @Test
-  @Config(sdk = {
-      Build.VERSION_CODES.JELLY_BEAN,
-      Build.VERSION_CODES.JELLY_BEAN_MR1,
-      Build.VERSION_CODES.JELLY_BEAN_MR2,
-      Build.VERSION_CODES.KITKAT,
-      Build.VERSION_CODES.LOLLIPOP,
-      Build.VERSION_CODES.LOLLIPOP_MR1,
-      Build.VERSION_CODES.M})
   public void formatDateTime_withPastYear() {
       String actual = DateUtils.formatDateTime(RuntimeEnvironment.application, 1420099200000L, DateUtils.FORMAT_NUMERIC_DATE);
       assertThat(actual).isEqualTo("1/1/2015");

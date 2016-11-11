@@ -73,6 +73,18 @@ def install_aar(repo_root_dir, group_id, artifact_id, version, &block)
   end
 end
 
+def install_stubs(api)
+  path  = "#{ANDROID_HOME}/platforms/android-#{api}/android.jar"
+  unless File.exists?(path)
+    puts "#{path} not found!"
+    puts "Make sure that 'SDK Platform' is up to date in the SDK manager for API #{api}."
+    exit 1
+  end
+
+  puts "Installing stubs jar at com.google.android:android-stubs:#{api}."
+  install("com.google.android", "android-stubs", "#{api}", path)
+end
+
 def install_map(group_id, artifact_id, api, revision)
   dir  = "#{ADDONS}/addon-google_apis-google-#{api}"
   path = "#{dir}/libs/maps.jar"
@@ -100,9 +112,10 @@ def install_map(group_id, artifact_id, api, revision)
 end
 
 # Local repository paths
-ADDONS = "#{ENV['ANDROID_HOME']}/add-ons"
-GOOGLE_REPO  = "#{ENV['ANDROID_HOME']}/extras/google/m2repository"
-ANDROID_REPO = "#{ENV['ANDROID_HOME']}/extras/android/m2repository"
+ANDROID_HOME = ENV['ANDROID_HOME']
+ADDONS = "#{ANDROID_HOME}/add-ons"
+GOOGLE_REPO  = "#{ANDROID_HOME}/extras/google/m2repository"
+ANDROID_REPO = "#{ANDROID_HOME}/extras/android/m2repository"
 
 # Android Support libraries maven constants
 ANDROID_SUPPORT_GROUP_ID = "com.android.support"
@@ -143,6 +156,8 @@ MAPS_API_VERSION = "23"
 MAPS_REVISION_VERSION = "1"
 
 # Mavenize all dependencies
+
+install_stubs(23)
 
 install_map(MAPS_GROUP_ID, MAPS_ARTIFACT_ID, MAPS_API_VERSION, MAPS_REVISION_VERSION)
 

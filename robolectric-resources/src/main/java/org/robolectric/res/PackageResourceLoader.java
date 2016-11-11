@@ -43,7 +43,7 @@ public class PackageResourceLoader extends XResourceLoader {
         new ValueResourceLoader(data, "/resources/fraction", "fraction", ResType.FRACTION),
         new ValueResourceLoader(data, "/resources/item[@type='fraction']", "fraction", ResType.FRACTION),
         new ValueResourceLoader(data, "/resources/item", "layout", ResType.LAYOUT),
-        new PluralResourceLoader(pluralsData),
+        new PluralResourceLoader(data),
         new ValueResourceLoader(data, "/resources/string", "string", ResType.CHAR_SEQUENCE),
         new ValueResourceLoader(data, "/resources/item[@type='string']", "string", ResType.CHAR_SEQUENCE),
         new ValueResourceLoader(data, "/resources/string-array", "array", ResType.CHAR_SEQUENCE_ARRAY),
@@ -53,7 +53,7 @@ public class PackageResourceLoader extends XResourceLoader {
 
     documentLoader.load("layout", new OpaqueFileLoader(data, "layout"), new XmlBlockLoader(xmlDocuments, "layout"));
     documentLoader.load("menu", new OpaqueFileLoader(data, "menu"), new XmlBlockLoader(xmlDocuments, "menu"));
-    documentLoader.load("drawable", new OpaqueFileLoader(data, "drawable"), new XmlBlockLoader(xmlDocuments, "drawable"));
+    documentLoader.load("drawable", new OpaqueFileLoader(data, "drawable", ResType.DRAWABLE), new XmlBlockLoader(xmlDocuments, "drawable"));
     documentLoader.load("anim", new OpaqueFileLoader(data, "anim"), new XmlBlockLoader(xmlDocuments, "anim"));
     documentLoader.load("animator", new OpaqueFileLoader(data, "animator"), new XmlBlockLoader(xmlDocuments, "animator"));
     documentLoader.load("color", new ColorResourceLoader(data), new XmlBlockLoader(xmlDocuments, "color"));
@@ -61,15 +61,13 @@ public class PackageResourceLoader extends XResourceLoader {
     documentLoader.load("transition", new OpaqueFileLoader(data, "transition"), new XmlBlockLoader(xmlDocuments, "transition"));
     documentLoader.load("interpolator", new OpaqueFileLoader(data, "interpolator"), new XmlBlockLoader(xmlDocuments, "interpolator"));
 
-    new DrawableResourceLoader(drawableData).findDrawableResources(resourcePath);
+    new DrawableResourceLoader(data).findDrawableResources(resourcePath);
     new RawResourceLoader(resourcePath).loadTo(rawResources);
   }
 
   @Override
   public String toString() {
-    return "PackageResourceLoader{" +
-        "resourcePath=" + resourcePath +
-        '}';
+    return "PackageResourceLoader{" + resourcePath.getPackageName() + '}';
   }
 
   @Override public boolean providesFor(String namespace) {

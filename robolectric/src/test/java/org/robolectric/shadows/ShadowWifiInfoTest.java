@@ -7,6 +7,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.TestRunners;
 import static android.content.Context.WIFI_SERVICE;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.RuntimeEnvironment.application;
 import static org.robolectric.Shadows.shadowOf;
@@ -80,7 +81,7 @@ public class ShadowWifiInfoTest {
     assertThat(wifiInfo.getLinkSpeed()).isEqualTo(10);
   }
 
-  @Test @Config(sdk = 21)
+  @Test @Config(minSdk = LOLLIPOP)
   public void shouldReturnFrequency() {
     WifiManager wifiManager = (WifiManager) application.getSystemService(WIFI_SERVICE);
     WifiInfo wifiInfo = wifiManager.getConnectionInfo();

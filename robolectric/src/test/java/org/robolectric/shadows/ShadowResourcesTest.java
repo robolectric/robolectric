@@ -15,7 +15,6 @@ import android.os.Build;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
-
 import com.google.common.collect.ImmutableMap;
 import org.assertj.core.data.Offset;
 import org.jetbrains.annotations.NotNull;
@@ -29,8 +28,6 @@ import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 import org.robolectric.res.AttrData;
-import org.robolectric.res.DrawableNode;
-import org.robolectric.res.Plural;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResType;
 import org.robolectric.res.ResourceExtractor;
@@ -39,6 +36,7 @@ import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.res.TypedResource;
 import org.robolectric.res.builder.XmlBlock;
+import org.robolectric.res.builder.XmlResourceParserImpl;
 import org.robolectric.util.TestUtil;
 import org.xmlpull.v1.XmlPullParser;
 
@@ -46,7 +44,9 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.Map;
 
+import static android.os.Build.VERSION_CODES.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
@@ -516,8 +516,9 @@ public class ShadowResourcesTest {
   }
 
   @Test
-  @Config(sdk = {Build.VERSION_CODES.JELLY_BEAN, Build.VERSION_CODES.LOLLIPOP, Build.VERSION_CODES.LOLLIPOP_MR1})
-  // todo: get this working on KITKAT
+  @Config(sdk = {JELLY_BEAN, LOLLIPOP, LOLLIPOP_MR1})
+  // todo: get this working on KITKAT by fixing resource id collision issue
+  // todo: change this to @Config(minSdk = JELLY_BEAN)
   public void obtainStyledAttributesShouldCheckXmlFirst() throws Exception {
 
     // This simulates a ResourceLoader built from a 21+ SDK as viewportHeight / viewportWidth were introduced in API 21
@@ -549,14 +550,16 @@ public class ShadowResourcesTest {
   }
 
   @Test
-  @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
+  @Config(minSdk = LOLLIPOP)
   public void whenAttrIsDefinedInRuntimeSdk_getResourceName_findsResource() {
     assertThat(RuntimeEnvironment.application.getResources().getResourceName(android.R.attr.viewportHeight))
         .isEqualTo("android:attr/viewportHeight");
   }
 
   @Test
-  @Config(sdk = Build.VERSION_CODES.KITKAT)
+  @Config(sdk = KITKAT)
+  // todo: get this working on KITKAT by fixing resource id collision issue
+  // todo: change this to @Config(minSdk = KITKAT)
   public void whenAttrIsNotDefinedInRuntimeSdk_getResourceName_doesntFindRequestedResourceButInsteadFindsInternalResourceWithSameId() {
     // asking for an attr defined after the current SDK doesn't have a defined result; in this case it returns
     //   numberPickerStyle from com.internal.android.R
@@ -637,6 +640,36 @@ public class ShadowResourcesTest {
     arr.recycle();
   }
 
+  @Test
+  public void getXml() throws Exception {
+    XmlResourceParser xmlResourceParser = resources.getXml(R.xml.preferences);
+    assertThat(xmlResourceParser).isNotNull();
+    assertThat(xmlResourceParser.next()).isEqualTo(XmlResourceParser.START_DOCUMENT);
+    assertThat(xmlResourceParser.next()).isEqualTo(XmlResourceParser.START_TAG);
+    assertThat(xmlResourceParser.getName()).isEqualTo("PreferenceScreen");
+  }
+
+  @Test
+  public void getXml_shouldHavePackageContextForReferenceResolution() throws Exception {
+    XmlResourceParserImpl xmlResourceParser =
+        (XmlResourceParserImpl) resources.getXml(R.xml.preferences);
+    assertThat(xmlResourceParser.qualify("?ref")).isEqualTo("?org.robolectric:attr/ref");
+
+    xmlResourceParser =
+        (XmlResourceParserImpl) resources.getXml(android.R.layout.list_content);
+    assertThat(xmlResourceParser.qualify("?ref")).isEqualTo("?android:attr/ref");
+  }
+
+  @Test
+  public void whenMissingXml_loadXmlResourceParser() throws Exception {
+    try {
+      resources.getXml(R.id.ungulate);
+      fail();
+    } catch (Resources.NotFoundException e) {
+      assertThat(e.getMessage()).contains("org.robolectric:id/ungulate");
+    }
+  }
+
   private static String findRootTag(XmlResourceParser parser) throws Exception {
     int event;
     do {
@@ -666,17 +699,7 @@ public class ShadowResourcesTest {
     }
 
     @Override
-    public Plural getPlural(ResName resName, int quantity, String qualifiers) {
-      return null;
-    }
-
-    @Override
     public XmlBlock getXml(ResName resName, String qualifiers) {
-      return null;
-    }
-
-    @Override
-    public DrawableNode getDrawableNode(ResName resName, String qualifiers) {
       return null;
     }
 
@@ -693,6 +716,10 @@ public class ShadowResourcesTest {
     @Override
     public boolean providesFor(String namespace) {
       return false;
+    }
+
+    @Override
+    public void receive(Visitor visitor) {
     }
   }
 }

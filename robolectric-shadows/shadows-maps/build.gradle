@@ -6,7 +6,7 @@ shadows {
 
 dependencies {
     compile project(":robolectric")
-    compile project(":robolectric-shadows/shadows-core/v23")
+    compile project(":robolectric-shadows/shadows-core")
 
     provided "org.robolectric:android-all:6.0.0_r1-robolectric-0"
     compile "com.ibm.icu:icu4j:53.1"

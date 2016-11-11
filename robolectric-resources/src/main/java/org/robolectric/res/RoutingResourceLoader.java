@@ -27,18 +27,8 @@ public class RoutingResourceLoader extends ResourceLoader {
   }
 
   @Override
-  public Plural getPlural(ResName resName, int quantity, String qualifiers) {
-    return pickFor(resName).getPlural(resName, quantity, qualifiers);
-  }
-
-  @Override
   public XmlBlock getXml(ResName resName, String qualifiers) {
     return pickFor(resName).getXml(resName, qualifiers);
-  }
-
-  @Override
-  public DrawableNode getDrawableNode(ResName resName, String qualifiers) {
-    return pickFor(resName).getDrawableNode(resName, qualifiers);
   }
 
   @Override
@@ -53,6 +43,13 @@ public class RoutingResourceLoader extends ResourceLoader {
 
   @Override public boolean providesFor(String namespace) {
     return whichProvidesFor(namespace) != null;
+  }
+
+  @Override
+  public void receive(Visitor visitor) {
+    for (ResourceLoader resourceLoader : resourceLoaders.values()) {
+      resourceLoader.receive(visitor);
+    }
   }
 
   private ResourceLoader pickFor(int id) {
@@ -72,8 +69,7 @@ public class RoutingResourceLoader extends ResourceLoader {
     ResourceLoader resourceLoader = resourceLoaders.get(namespace);
     if (resourceLoader == null) {
       resourceLoader = whichProvidesFor(namespace);
-      if (resourceLoader != null) return resourceLoader;
-      throw new RuntimeException("no ResourceLoader found for " + namespace);
+      return (resourceLoader != null) ? resourceLoader : new NullResourceLoader();
     }
     return resourceLoader;
   }
@@ -98,5 +94,10 @@ public class RoutingResourceLoader extends ResourceLoader {
     @Override public boolean providesFor(String namespace) {
       return true;
     }
+  }
+
+  @Override
+  public String toString() {
+    return "RoutingResourceLoader{" + resourceLoaders + "}";
   }
 }

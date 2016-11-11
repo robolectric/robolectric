@@ -40,6 +40,7 @@ import org.robolectric.util.Transcript;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static junit.framework.Assert.assertEquals;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
@@ -609,7 +610,7 @@ public class ShadowViewTest {
   }
 
   @Test
-  @Config(sdk = { Build.VERSION_CODES.LOLLIPOP })
+  @Config(minSdk = LOLLIPOP)
   public void cameraDistance() {
     view.setCameraDistance(100f);
     assertThat(view.getCameraDistance()).isEqualTo(100f);
@@ -642,7 +643,7 @@ public class ShadowViewTest {
   }
 
   @Test
-  @Config(sdk = { Build.VERSION_CODES.LOLLIPOP })
+  @Config(minSdk = LOLLIPOP)
   public void elevation() {
     view.setElevation(10f);
     assertThat(view.getElevation()).isEqualTo(10f);
@@ -661,14 +662,14 @@ public class ShadowViewTest {
   }
 
   @Test
-  @Config(sdk = { Build.VERSION_CODES.LOLLIPOP })
+  @Config(minSdk = LOLLIPOP)
   public void translationZ() {
     view.setTranslationZ(10f);
     assertThat(view.getTranslationZ()).isEqualTo(10f);
   }
 
   @Test
-  @Config(sdk = { Build.VERSION_CODES.LOLLIPOP })
+  @Config(minSdk = LOLLIPOP)
   public void clipToOutline() {
     view.setClipToOutline(true);
     assertThat(view.getClipToOutline()).isTrue();

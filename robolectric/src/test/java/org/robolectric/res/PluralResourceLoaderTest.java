@@ -8,12 +8,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.util.TestUtil.testResources;
 
 public class PluralResourceLoaderTest {
-  private ResBundle<PluralResourceLoader.PluralRules> pluralRulesResBundle;
+  private ResBunch resBunch;
 
   @Before
   public void setUp() throws Exception {
-    pluralRulesResBundle = new ResBundle<>();
-    PluralResourceLoader pluralResourceLoader = new PluralResourceLoader(pluralRulesResBundle);
+    resBunch = new ResBunch();
+    PluralResourceLoader pluralResourceLoader = new PluralResourceLoader(resBunch);
 
     new DocumentLoader(testResources()).load("values", pluralResourceLoader);
   }
@@ -21,7 +21,8 @@ public class PluralResourceLoaderTest {
   @Test
   public void testPluralsAreResolved() throws Exception {
     ResName resName = new ResName(TestUtil.TEST_PACKAGE, "plurals", "beer");
-    PluralResourceLoader.PluralRules pluralRules = pluralRulesResBundle.get(resName, "");
+    PluralResourceLoader.PluralRules pluralRules =
+        (PluralResourceLoader.PluralRules) resBunch.get(resName, "");
     assertThat(pluralRules.find(0).string).isEqualTo("@string/howdy");
     assertThat(pluralRules.find(1).string).isEqualTo("One beer");
     assertThat(pluralRules.find(2).string).isEqualTo("Two beers");

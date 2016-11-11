@@ -10,15 +10,12 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
-@Config(sdk = {
-    Build.VERSION_CODES.JELLY_BEAN_MR2,
-    Build.VERSION_CODES.KITKAT,
-    Build.VERSION_CODES.LOLLIPOP })
-
+@Config(minSdk = JELLY_BEAN_MR2)
 public class ShadowSmsManagerTest {
   private SmsManager smsManager = SmsManager.getDefault();
   private final String scAddress = "serviceCenterAddress";

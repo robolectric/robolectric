@@ -1,6 +1,11 @@
 package org.robolectric.shadows;
 
-import android.content.res.*;
+import android.content.res.AssetFileDescriptor;
+import android.content.res.AssetManager;
+import android.content.res.Configuration;
+import android.content.res.Resources;
+import android.content.res.TypedArray;
+import android.content.res.XmlResourceParser;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -11,12 +16,17 @@ import android.util.LongSparseArray;
 import android.util.TypedValue;
 import android.view.Display;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.*;
+import org.robolectric.annotation.HiddenApi;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.res.Plural;
+import org.robolectric.res.PluralResourceLoader;
 import org.robolectric.res.ResType;
+import org.robolectric.res.Style;
+import org.robolectric.res.ThemeStyleSet;
 import org.robolectric.res.TypedResource;
-import org.robolectric.res.builder.ResourceParser;
-import org.robolectric.res.builder.XmlBlock;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -30,6 +40,7 @@ import java.util.Locale;
 
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.internal.Shadow.directlyOn;
+import static org.robolectric.internal.Shadow.invokeConstructor;
 
 /**
  * Shadow for {@link android.content.res.Resources}.
@@ -87,7 +98,8 @@ public class ShadowResources {
 
   @Implementation
   public TypedArray obtainAttributes(AttributeSet set, int[] attrs) {
-    return shadowOf(realResources.getAssets()).attrsToTypedArray(realResources, set, attrs, 0, 0, 0);
+    return shadowOf(realResources.getAssets())
+        .attrsToTypedArray(realResources, set, attrs, 0, null, 0);
   }
 
   @Implementation
@@ -99,10 +111,22 @@ public class ShadowResources {
   @Implementation
   public String getQuantityString(int resId, int quantity) throws Resources.NotFoundException {
     ShadowAssetManager shadowAssetManager = shadowOf(realResources.getAssets());
-    Plural plural = shadowAssetManager.getResourceLoader().getPlural(resId, quantity, RuntimeEnvironment.getQualifiers());
-    TypedResource<?> typedResource = shadowAssetManager.resolve(
-        new TypedResource<>(plural.getString(), ResType.CHAR_SEQUENCE), RuntimeEnvironment.getQualifiers(), resId);
-    return typedResource == null ? null : typedResource.asString();
+
+    TypedResource typedResource = shadowAssetManager.getResourceLoader().getValue(resId, RuntimeEnvironment.getQualifiers());
+    if (typedResource != null && typedResource instanceof PluralResourceLoader.PluralRules) {
+      PluralResourceLoader.PluralRules pluralRules = (PluralResourceLoader.PluralRules) typedResource;
+      Plural plural = pluralRules.find(quantity);
+
+      if (plural == null) {
+        return null;
+      }
+
+      TypedResource<?> resolvedTypedResource = shadowAssetManager.resolve(
+          new TypedResource<>(plural.getString(), ResType.CHAR_SEQUENCE), RuntimeEnvironment.getQualifiers(), resId);
+      return resolvedTypedResource == null ? null : resolvedTypedResource.asString();
+    } else {
+      return null;
+    }
   }
 
   @Implementation
@@ -155,11 +179,7 @@ public class ShadowResources {
   @HiddenApi @Implementation
   public XmlResourceParser loadXmlResourceParser(int resId, String type) throws Resources.NotFoundException {
     ShadowAssetManager shadowAssetManager = shadowOf(realResources.getAssets());
-    XmlBlock block = shadowAssetManager.getResourceLoader().getXml(resId, RuntimeEnvironment.getQualifiers());
-    if (block == null) {
-      throw new Resources.NotFoundException();
-    }
-    return ResourceParser.from(block, shadowAssetManager.getResourcePackageName(resId), shadowAssetManager.getResourceLoader());
+    return shadowAssetManager.loadXmlResourceParser(resId, type);
   }
 
   @HiddenApi @Implementation
@@ -170,25 +190,12 @@ public class ShadowResources {
   @Implements(Resources.Theme.class)
   public static class ShadowTheme {
     @RealObject Resources.Theme realTheme;
-    protected Resources resources;
-    private int styleResourceId;
+    private ThemeStyleSet themeStyleSet = new ThemeStyleSet();
 
-    @Implementation
-    public void applyStyle(int resid, boolean force) {
-      if (styleResourceId == 0) {
-        this.styleResourceId = resid;
-      }
-
-      ShadowAssetManager.applyThemeStyle(styleResourceId, resid, force);
-    }
-
-    @Implementation
-    public void setTo(Resources.Theme other) {
-      this.styleResourceId = shadowOf(other).styleResourceId;
-    }
-
-    public int getStyleResourceId() {
-      return styleResourceId;
+    public void __constructor__(Resources this$0) {
+      invokeConstructor(Resources.Theme.class, realTheme, ClassParameter.from(Resources.class, this$0));
+      Number themePtr = ReflectionHelpers.getField(realTheme, "mTheme");
+      ShadowAssetManager.saveTheme(themePtr, realTheme);
     }
 
     @Implementation
@@ -203,21 +210,29 @@ public class ShadowResources {
 
     @Implementation
     public TypedArray obtainStyledAttributes(AttributeSet set, int[] attrs, int defStyleAttr, int defStyleRes) {
-      return shadowOf(getResources().getAssets()).attrsToTypedArray(getResources(), set, attrs, defStyleAttr, styleResourceId, defStyleRes);
+      return getShadowAssetManager().attrsToTypedArray(getResources(), set, attrs, defStyleAttr, realTheme, defStyleRes);
     }
 
-    @Implementation
-    public Resources getResources() {
+    public ThemeStyleSet getThemeStyleSet() {
+      return themeStyleSet;
+    }
+
+    public void setThemeStyleSet(ThemeStyleSet themeStyleSet) {
+      this.themeStyleSet = themeStyleSet;
+    }
+
+    void doApplyStyle(int styleRes, boolean force) {
+      Style style = getShadowAssetManager().resolveStyle(styleRes, null);
+      themeStyleSet.apply(style, force);
+    }
+
+    private ShadowAssetManager getShadowAssetManager() {
+      return shadowOf(getResources().getAssets());
+    }
+
+    private Resources getResources() {
       return ReflectionHelpers.getField(realTheme, "this$0");
     }
-  }
-
-  @Implementation
-  public final Resources.Theme newTheme() {
-    Resources.Theme theme = directlyOn(realResources, Resources.class).newTheme();
-    int themeId = Integer.valueOf(ReflectionHelpers.getField(theme, "mTheme").toString()); // TODO: in Lollipop, these can be longs, which will overflow int
-    shadowOf(realResources.getAssets()).setTheme(themeId, theme);
-    return theme;
   }
 
   @HiddenApi @Implementation

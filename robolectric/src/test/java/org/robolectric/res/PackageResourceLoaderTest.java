@@ -7,6 +7,26 @@ import static org.assertj.core.api.Assertions.*;
 public class PackageResourceLoaderTest {
 
   @Test
+  public void shouldLoadDrawableXmlResources() throws Exception {
+    PackageResourceLoader loader = new PackageResourceLoader(testResources());
+    TypedResource value = loader.getValue(new ResName("org.robolectric", "drawable", "rainbow"), "");
+    assertThat(value).isNotNull();
+    assertThat(value.getResType()).isEqualTo(ResType.DRAWABLE);
+    assertThat(value.isFile()).isTrue();
+    assertThat((String) value.getData()).contains("rainbow.xml");
+  }
+
+  @Test
+  public void shouldLoadDrawableBitmapResources() throws Exception {
+    PackageResourceLoader loader = new PackageResourceLoader(testResources());
+    TypedResource value = loader.getValue(new ResName("org.robolectric", "drawable", "an_image"), "");
+    assertThat(value).isNotNull();
+    assertThat(value.getResType()).isEqualTo(ResType.DRAWABLE);
+    assertThat(value.isFile()).isTrue();
+    assertThat((String) value.getData()).contains("an_image.png");
+  }
+
+  @Test
   public void shouldLoadResourcesFromGradleOutputDirectories() {
     PackageResourceLoader loader = new PackageResourceLoader(gradleAppResources());
     TypedResource value = loader.getValue(org.robolectric.gradleapp.R.string.from_gradle_output, "");

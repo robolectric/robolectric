@@ -37,7 +37,7 @@ If you'd like to start a new project with Robolectric tests you can refer to `de
 ### Gradle
 
 ```groovy
-testCompile "org.robolectric:robolectric:3.1.1"
+testCompile "org.robolectric:robolectric:3.1.4"
 ```
 
 ### Maven
@@ -46,7 +46,7 @@ testCompile "org.robolectric:robolectric:3.1.1"
 <dependency>
    <groupId>org.robolectric</groupId>
    <artifactId>robolectric</artifactId>
-   <version>3.1.1</version>
+   <version>3.1.4</version>
    <scope>test</scope>
 </dependency>
 ```
@@ -61,7 +61,7 @@ You will need to have portions of the Android SDK available in your local Maven 
 
 Robolectric supports running tests against multiple Android API levels. The work it must do to support each API level is slightly different, so its shadows are built separately for each. To build shadows for every API version, run:
 
-    ./scripts/install-robolectric.sh
+    ./gradlew clean assemble install compileTest
 
 ### Using Snapshots
 

@@ -35,7 +35,15 @@ public class ImplementsValidatorTest {
       .withErrorContaining("@Implements: could not resolve class <some.Stuff>")
       .onLine(6);
   }
-  
+
+  @Test
+  public void value_withUnresolvableClassNameAndOldMaxSdk_shouldNotCompile() {
+    final String testClass = "org.robolectric.annotation.processing.shadows.ShadowImplementsAnythingWithUnresolvableClassNameAndOldMaxSdk";
+    ASSERT.about(singleClass())
+        .that(testClass)
+        .compilesWithoutError();
+  }
+
   @Test
   public void value_withClassName_shouldNotCompile() {
     final String testClass = "org.robolectric.annotation.processing.shadows.ShadowImplementsDummyWithOuterDummyClassName";

@@ -42,17 +42,9 @@ public class Robolectric {
   }
 
   public static ShadowsAdapter getShadowsAdapter() {
-    synchronized(ShadowsAdapter.class) {
-      if(shadowsAdapter == null) {
-        try {
-          shadowsAdapter = instantiateShadowsAdapter();
-        } catch(Throwable t) {
-          Throwable cause = t;
-          while(cause.getCause() != null) {
-            cause = cause.getCause();
-          }
-          cause.printStackTrace();
-        }
+    synchronized (ShadowsAdapter.class) {
+      if (shadowsAdapter == null) {
+        shadowsAdapter = instantiateShadowsAdapter();
       }
     }
     return shadowsAdapter;
@@ -160,10 +152,6 @@ public class Robolectric {
     }
 
     public AttributeSetBuilder setStyleAttribute(String value) {
-      if (appResourceLoader.getValue(AttributeResource.getResourceReference(value, RuntimeEnvironment.application.getPackageName(), "style"),
-          RuntimeEnvironment.getQualifiers()) == null) {
-        throw new Resources.NotFoundException("Invalid style attribute: " + value);
-      }
       ((Element)doc.getFirstChild()).setAttribute("style", value);
       return this;
     }

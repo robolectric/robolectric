@@ -17,15 +17,10 @@ dependencies {
     compile project(":robolectric-annotations")
     compile project(":robolectric-resources")
     compile project(":robolectric-utils")
-    provided project(":robolectric-shadows/shadows-core/v23")
 
-    shadow project(":robolectric-shadows/shadows-core/v16")
-    shadow project(":robolectric-shadows/shadows-core/v17")
-    shadow project(":robolectric-shadows/shadows-core/v18")
-    shadow project(":robolectric-shadows/shadows-core/v19")
-    shadow project(":robolectric-shadows/shadows-core/v21")
-    shadow project(":robolectric-shadows/shadows-core/v22")
-    shadow project(":robolectric-shadows/shadows-core/v23")
+    // We need to have shadows-core.jar on the runtime system classpath so ServiceLoader
+    //   can find its META-INF/services/org.robolectric.shadows.ShadowAdapter.
+    compile project(":robolectric-shadows/shadows-core")
 
     // Compile dependencies
     compile "org.ow2.asm:asm:5.0.1"
@@ -39,7 +34,9 @@ dependencies {
     provided "com.intellij:annotations:12.0"
 
     compile "org.apache.ant:ant:1.8.0"
-    compile "org.apache.maven:maven-ant-tasks:2.1.3"
+    compile("org.apache.maven:maven-ant-tasks:2.1.3") {
+        exclude group: "junit", module: "junit"
+    }
     provided "org.robolectric:android-all:6.0.0_r1-robolectric-0"
     provided "junit:junit:4.8.2"
 

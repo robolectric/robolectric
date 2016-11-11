@@ -40,12 +40,19 @@ public @interface Config {
   String DEFAULT_BUILD_FOLDER = "build";
 
   /**
-   * The Android SDK level to emulate. If not specified, Robolectric defaults to API 16.
-   * This value will also be set as Build.VERSION.SDK_INT.
-   *
-   * @return The Android SDK level to emulate.
+   * The Android SDK level to emulate. This value will also be set as Build.VERSION.SDK_INT.
    */
   int[] sdk() default {};  // DEFAULT_SDK
+
+  /**
+   * The minimum Android SDK level to emulate when running tests on multiple API versions.
+   */
+  int minSdk() default -1;
+
+  /**
+   * The minimum Android SDK level to emulate when running tests on multiple API versions.
+   */
+  int maxSdk() default -1;
 
   /**
    * The Android manifest file to load; Robolectric will look relative to the current directory.
@@ -151,6 +158,8 @@ public @interface Config {
 
   class Implementation implements Config {
     private final int[] sdk;
+    private final int minSdk;
+    private final int maxSdk;
     private final String manifest;
     private final String qualifiers;
     private final String resourceDir;
@@ -168,6 +177,8 @@ public @interface Config {
       if (properties == null || properties.size() == 0) return null;
       return new Implementation(
           parseIntArrayProperty(properties.getProperty("sdk", "")),
+          Integer.parseInt(properties.getProperty("minSdk", "-1")),
+          Integer.parseInt(properties.getProperty("maxSdk", "-1")),
           properties.getProperty("manifest", DEFAULT_MANIFEST),
           properties.getProperty("qualifiers", DEFAULT_QUALIFIERS),
           properties.getProperty("packageName", DEFAULT_PACKAGE_NAME),
@@ -222,8 +233,10 @@ public @interface Config {
       return result;
     }
 
-    public Implementation(int[] sdk, String manifest, String qualifiers, String packageName, String abiSplit, String resourceDir, String assetDir, String buildDir, Class<?>[] shadows, String[] instrumentedPackages, Class<? extends Application> application, String[] libraries, Class<?> constants) {
+    public Implementation(int[] sdk, int minSdk, int maxSdk, String manifest, String qualifiers, String packageName, String abiSplit, String resourceDir, String assetDir, String buildDir, Class<?>[] shadows, String[] instrumentedPackages, Class<? extends Application> application, String[] libraries, Class<?> constants) {
       this.sdk = sdk;
+      this.minSdk = minSdk;
+      this.maxSdk = maxSdk;
       this.manifest = manifest;
       this.qualifiers = qualifiers;
       this.packageName = packageName;
@@ -240,6 +253,8 @@ public @interface Config {
 
     public Implementation(Config other) {
       this.sdk = other.sdk();
+      this.minSdk = other.minSdk();
+      this.maxSdk = other.maxSdk();
       this.manifest = other.manifest();
       this.qualifiers = other.qualifiers();
       this.packageName = other.packageName();
@@ -256,6 +271,8 @@ public @interface Config {
 
     public Implementation(Config baseConfig, Config overlayConfig) {
       this.sdk = pickSdk(baseConfig.sdk(), overlayConfig.sdk(), new int[0]);
+      this.minSdk = pick(baseConfig.minSdk(), overlayConfig.minSdk(), -1);
+      this.maxSdk = pick(baseConfig.maxSdk(), overlayConfig.maxSdk(), -1);
       this.manifest = pick(baseConfig.manifest(), overlayConfig.manifest(), DEFAULT_MANIFEST);
       this.qualifiers = pick(baseConfig.qualifiers(), overlayConfig.qualifiers(), "");
       this.packageName = pick(baseConfig.packageName(), overlayConfig.packageName(), "");
@@ -294,6 +311,16 @@ public @interface Config {
     @Override
     public int[] sdk() {
       return sdk;
+    }
+
+    @Override
+    public int minSdk() {
+      return minSdk;
+    }
+
+    @Override
+    public int maxSdk() {
+      return maxSdk;
     }
 
     @Override
@@ -364,6 +391,8 @@ public @interface Config {
 
   class Builder {
     private int[] sdk = new int[0];
+    private int minSdk = -1;
+    private int maxSdk = -1;
     private String manifest = Config.DEFAULT_MANIFEST;
     private String qualifiers = Config.DEFAULT_QUALIFIERS;
     private String packageName = Config.DEFAULT_PACKAGE_NAME;
@@ -379,6 +408,16 @@ public @interface Config {
 
     public Builder setSdk(int[] sdk) {
       this.sdk = sdk;
+      return this;
+    }
+
+    public Builder setMinSdk(int minSdk) {
+      this.minSdk = minSdk;
+      return this;
+    }
+
+    public Builder setMaxSdk(int maxSdk) {
+      this.maxSdk = maxSdk;
       return this;
     }
 
@@ -443,7 +482,7 @@ public @interface Config {
     }
 
     public Implementation build() {
-      return new Implementation(sdk, manifest, qualifiers, packageName, abiSplit, resourceDir, assetDir, buildDir, shadows, instrumentedPackages, application, libraries, constants);
+      return new Implementation(sdk, minSdk, maxSdk, manifest, qualifiers, packageName, abiSplit, resourceDir, assetDir, buildDir, shadows, instrumentedPackages, application, libraries, constants);
     }
   }
 }
