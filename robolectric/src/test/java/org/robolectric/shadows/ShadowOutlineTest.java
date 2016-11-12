@@ -2,17 +2,15 @@ package org.robolectric.shadows;
 
 import android.graphics.Outline;
 import android.graphics.Path;
-import android.os.Build;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+
 @RunWith(TestRunners.MultiApiWithDefaults.class)
-@Config(sdk = {
-    Build.VERSION_CODES.LOLLIPOP,
-    Build.VERSION_CODES.LOLLIPOP_MR1
-})
+@Config(minSdk = LOLLIPOP)
 public class ShadowOutlineTest {
 
     @Test

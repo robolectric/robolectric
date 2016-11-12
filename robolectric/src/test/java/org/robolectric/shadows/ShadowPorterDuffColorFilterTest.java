@@ -10,11 +10,11 @@ import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
-@Config(sdk = {
-    Build.VERSION_CODES.LOLLIPOP })
+@Config(minSdk = LOLLIPOP)
 public class ShadowPorterDuffColorFilterTest {
   @Test
   public void constructor_shouldWork() {

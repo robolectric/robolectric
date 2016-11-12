@@ -13,6 +13,8 @@ import org.robolectric.annotation.Config;
 import org.robolectric.TestRunners;
 
 import static android.content.Context.TELEPHONY_SERVICE;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
@@ -75,7 +77,7 @@ public class ShadowTelephonyManagerTest {
     assertEquals(TelephonyManager.NETWORK_TYPE_CDMA, telephonyManager.getNetworkType());
   }
 
-  @Test @Config(sdk = 17)
+  @Test @Config(minSdk = JELLY_BEAN_MR1)
   public void shouldGiveAllCellInfo() {
     TelephonyManager telephonyManager = (TelephonyManager) application.getSystemService(TELEPHONY_SERVICE);
     ShadowTelephonyManager shadowTelephonyManager = shadowOf(telephonyManager);
@@ -108,7 +110,7 @@ public class ShadowTelephonyManagerTest {
     assertEquals("123-244-2222", telephonyManager.getLine1Number());
   }
 
-  @Test @Config(sdk = 18)
+  @Test @Config(minSdk = JELLY_BEAN_MR2)
   public void shouldGiveGroupIdLevel1() {
     TelephonyManager telephonyManager = (TelephonyManager) application.getSystemService(TELEPHONY_SERVICE);
     ShadowTelephonyManager shadowTelephonyManager = shadowOf(telephonyManager);

@@ -22,6 +22,7 @@ import org.robolectric.util.Transcript;
 import java.util.ArrayList;
 import java.util.List;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNull;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -126,7 +127,7 @@ public class ShadowAlertDialogTest {
   }
 
   @Test
-  @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
+  @Config(minSdk = LOLLIPOP)
   public void shouldSetView_withLayoutId() throws Exception {
     AlertDialog.Builder builder = new AlertDialog.Builder(application);
     builder.setView(R.layout.custom_layout);

@@ -10,6 +10,8 @@ import org.robolectric.annotation.Config;
 
 import java.io.File;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.M;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -50,7 +52,7 @@ public class ShadowEnvironmentTest {
   }
 
   @Test
-  @Config(sdk = Build.VERSION_CODES.M)
+  @Config(minSdk = M)
   public void isExternalStorageRemovable_primaryShouldReturnSavedValue() {
     assertThat(Environment.isExternalStorageRemovable()).isFalse();
     ShadowEnvironment.setExternalStorageRemovable(Environment.getExternalStorageDirectory(), true);
@@ -58,8 +60,7 @@ public class ShadowEnvironmentTest {
   }
 
   @Test
-  @Config(sdk = {
-      Build.VERSION_CODES.LOLLIPOP })
+  @Config(minSdk = LOLLIPOP)
   public void isExternalStorageRemovable_shouldReturnSavedValue() {
     final File file = new File("/mnt/media/file");
     assertThat(Environment.isExternalStorageRemovable(file)).isFalse();
@@ -68,8 +69,7 @@ public class ShadowEnvironmentTest {
   }
 
   @Test
-  @Config(sdk = {
-      Build.VERSION_CODES.LOLLIPOP })
+  @Config(minSdk = LOLLIPOP)
   public void isExternalStorageEmulated_shouldReturnSavedValue() {
     final File file = new File("/mnt/media/file");
     assertThat(Environment.isExternalStorageEmulated(file)).isFalse();
@@ -78,8 +78,7 @@ public class ShadowEnvironmentTest {
   }
 
   @Test
-  @Config(sdk = {
-      Build.VERSION_CODES.LOLLIPOP })
+  @Config(minSdk = LOLLIPOP)
   public void storageIsLazy() {
     assertNull(ShadowEnvironment.EXTERNAL_CACHE_DIR);
     assertNull(ShadowEnvironment.EXTERNAL_FILES_DIR);
@@ -92,8 +91,7 @@ public class ShadowEnvironmentTest {
   }
 
   @Test
-  @Config(sdk = {
-      Build.VERSION_CODES.LOLLIPOP })
+  @Config(minSdk = LOLLIPOP)
   public void reset_shouldClearRemovableFiles() {
     final File file = new File("foo");
     ShadowEnvironment.setExternalStorageRemovable(file, true);
@@ -104,8 +102,7 @@ public class ShadowEnvironmentTest {
   }
 
   @Test
-  @Config(sdk = {
-      Build.VERSION_CODES.LOLLIPOP })
+  @Config(minSdk = LOLLIPOP)
   public void reset_shouldClearEmulatedFiles() {
     final File file = new File("foo");
     ShadowEnvironment.setExternalStorageEmulated(file, true);

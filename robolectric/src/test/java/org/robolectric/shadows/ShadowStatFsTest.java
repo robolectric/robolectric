@@ -9,6 +9,7 @@ import org.robolectric.annotation.Config;
 
 import java.io.File;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
@@ -45,7 +46,7 @@ public class ShadowStatFsTest {
   }
 
   @Test
-  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
+  @Config(minSdk = JELLY_BEAN_MR2)
   public void withApi18_shouldRegisterStats() {
     ShadowStatFs.registerStats("/tmp", 100, 20, 10);
     StatFs statsFs = new StatFs("/tmp");
@@ -56,7 +57,7 @@ public class ShadowStatFsTest {
   }
 
   @Test
-  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
+  @Config(minSdk = JELLY_BEAN_MR2)
   public void withApi18_shouldRegisterStatsWithFile() {
     ShadowStatFs.registerStats(new File("/tmp"), 100, 20, 10);
     StatFs statsFs = new StatFs(new File("/tmp").getAbsolutePath());
@@ -67,7 +68,7 @@ public class ShadowStatFsTest {
   }
 
   @Test
-  @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
+  @Config(minSdk = JELLY_BEAN_MR2)
   public void withApi18_shouldResetStateBetweenTests() {
     StatFs statsFs = new StatFs("/tmp");
     assertThat(statsFs.getBlockCountLong()).isEqualTo(0);

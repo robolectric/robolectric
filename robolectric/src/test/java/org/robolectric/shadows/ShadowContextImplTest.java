@@ -19,6 +19,7 @@ import org.robolectric.TestApplication;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
@@ -26,12 +27,7 @@ public class ShadowContextImplTest {
   private final Context context = RuntimeEnvironment.application;
 
   @Test
-  @Config(sdk = {
-    Build.VERSION_CODES.JELLY_BEAN_MR2,
-    Build.VERSION_CODES.KITKAT,
-    Build.VERSION_CODES.LOLLIPOP,
-    Build.VERSION_CODES.LOLLIPOP_MR1
-  })
+  @Config(minSdk = JELLY_BEAN_MR2)
   public void getSystemService_shouldReturnBluetoothAdapter() {
     assertThat(context.getSystemService(Context.BLUETOOTH_SERVICE)).isInstanceOf(BluetoothManager.class);
   }

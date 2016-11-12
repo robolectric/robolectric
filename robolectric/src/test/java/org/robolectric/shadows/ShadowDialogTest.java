@@ -17,6 +17,7 @@ import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.Transcript;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static junit.framework.Assert.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
@@ -175,7 +176,7 @@ public class ShadowDialogTest {
   }
 
   @Test
-  @Config(sdk = Build.VERSION_CODES.KITKAT)
+  @Config(minSdk = KITKAT)
   public void show_shouldWorkWithAPI19() {
     Dialog dialog = new Dialog(RuntimeEnvironment.application);
     dialog.show();

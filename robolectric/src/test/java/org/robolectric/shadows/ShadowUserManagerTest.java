@@ -12,16 +12,15 @@ import org.robolectric.annotation.Config;
 
 import java.util.List;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowUserManagerTest {
 
   @Test
-  @Config(sdk = {
-      Build.VERSION_CODES.LOLLIPOP,
-      Build.VERSION_CODES.LOLLIPOP_MR1,
-      Build.VERSION_CODES.M})
+  @Config(minSdk = LOLLIPOP)
   public void shouldGetUserProfiles() {
     UserManager userManager = new UserManager(null, null);
     List<UserHandle> userProfiles = userManager.getUserProfiles();
@@ -29,12 +28,7 @@ public class ShadowUserManagerTest {
   }
 
   @Test
-  @Config(sdk = {
-      Build.VERSION_CODES.JELLY_BEAN_MR2,
-      Build.VERSION_CODES.KITKAT,
-      Build.VERSION_CODES.LOLLIPOP,
-      Build.VERSION_CODES.LOLLIPOP_MR1,
-      Build.VERSION_CODES.M})
+  @Config(minSdk = JELLY_BEAN_MR2)
   public void shouldGetApplicationRestrictions() {
     UserManager userManager = new UserManager(null, null);
     Bundle userProfiles = userManager.getApplicationRestrictions("somepackage");

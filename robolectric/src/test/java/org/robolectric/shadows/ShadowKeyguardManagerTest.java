@@ -11,6 +11,7 @@ import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 
 import static android.content.Context.KEYGUARD_SERVICE;
+import static android.os.Build.VERSION_CODES.M;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -48,7 +49,7 @@ public class ShadowKeyguardManagerTest {
   }
 
   @Test
-  @Config(sdk = Build.VERSION_CODES.M)
+  @Config(minSdk = M)
   public void isKeyguardSecure() {
     assertThat(manager.isKeyguardSecure()).isFalse();
 
@@ -59,7 +60,7 @@ public class ShadowKeyguardManagerTest {
   }
 
   @Test
-  @Config(sdk = Build.VERSION_CODES.M)
+  @Config(minSdk = M)
   public void isDeviceSecure() {
     assertThat(manager.isDeviceSecure()).isFalse();
 
