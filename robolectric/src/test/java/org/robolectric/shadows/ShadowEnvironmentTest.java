@@ -125,4 +125,12 @@ public class ShadowEnvironmentTest {
     assertNull(ShadowEnvironment.EXTERNAL_FILES_DIR);
     assertThat(c).doesNotExist();
   }
+
+  @Test
+  public void isExternalStorageEmulatedNoArg_shouldReturnSavedValue() {
+    ShadowEnvironment.setIsExternalStorageEmulated(true);
+    assertThat(Environment.isExternalStorageEmulated()).isTrue();
+    ShadowEnvironment.reset();
+    assertThat(Environment.isExternalStorageEmulated()).isFalse();
+  }
 }
