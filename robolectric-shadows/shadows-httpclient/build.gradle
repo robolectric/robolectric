@@ -25,6 +25,13 @@ dependencies {
     testCompile "org.mockito:mockito-core:1.8.0"
 }
 
+// change local artifact name to match dependencies
+install {
+    repositories.mavenInstaller {
+        pom.artifactId = 'shadows-httpclient'
+    }
+}
+
 // httpcore needs to come before android-all on runtime classpath; the gradle IntelliJ plugin
 //   needs the compileClasspath order patched too (bug?)
 sourceSets.main.compileClasspath = configurations.earlyRuntime + sourceSets.main.compileClasspath

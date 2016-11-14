@@ -35,6 +35,13 @@ jar {
     dependsOn copyNatives
 }
 
+// change local artifact name to match dependencies
+install {
+    repositories.mavenInstaller {
+        pom.artifactId = 'shadows-core'
+    }
+}
+
 dependencies {
     // Project dependencies
     compile project(":robolectric-annotations")
