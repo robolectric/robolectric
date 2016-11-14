@@ -1,7 +1,3 @@
-def androidApi = hasProperty("androidApi") ? ext.androidApi.toInteger() : AndroidSdk.latestVersion
-def robolectricVersion = AndroidSdk.versions[androidApi]
-logger.info "Android API: $androidApi — $robolectricVersion"
-
 apply plugin: ShadowsPlugin
 
 shadows {
@@ -51,7 +47,7 @@ dependencies {
     // Compile dependencies
     compileOnly "com.intellij:annotations:12.0"
     compile "com.almworks.sqlite4java:sqlite4java:0.282"
-    compileOnly("org.robolectric:android-all:${AndroidSdk.versions[AndroidSdk.latestVersion]}") { force = true }
+    compileOnly(AndroidSdk.MAX_SDK.coordinates) { force = true }
     compile "com.ibm.icu:icu4j:53.1"
 
     jni "com.github.axet.litedb:libsqlite:0.282-3:natives-mac-x86_64"

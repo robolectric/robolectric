@@ -2,9 +2,11 @@ package org.robolectric.internal;
 
 import android.os.Build;
 import org.robolectric.internal.dependency.DependencyJar;
+import org.robolectric.util.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -12,29 +14,36 @@ import java.util.Properties;
 import java.util.Set;
 
 public class SdkConfig {
-  private static final String ROBOLECTRIC_VERSION;
-  private static final Map<Integer, SdkVersion> SUPPORTED_APIS;
+  private static final String ROBOLECTRIC_VERSION = getRobolectricVersion();
+
+  private static final Map<Integer, SdkVersion> SUPPORTED_APIS = Collections.unmodifiableMap(new HashMap<Integer, SdkVersion>() {
+    private final double jdkVersion = Double.parseDouble(System.getProperty("java.specification.version"));
+
+    {
+      addSdk(Build.VERSION_CODES.JELLY_BEAN, "4.1.2_r1", "0", "1.6");
+      addSdk(Build.VERSION_CODES.JELLY_BEAN_MR1, "4.2.2_r1.2", "0", "1.6");
+      addSdk(Build.VERSION_CODES.JELLY_BEAN_MR2, "4.3_r2", "0", "1.6");
+      addSdk(Build.VERSION_CODES.KITKAT, "4.4_r1", "1", "1.7");
+      addSdk(Build.VERSION_CODES.LOLLIPOP, "5.0.0_r2", "1", "1.7");
+      addSdk(Build.VERSION_CODES.LOLLIPOP_MR1, "5.1.1_r9", "1", "1.7");
+      addSdk(Build.VERSION_CODES.M, "6.0.0_r1", "0", "1.7");
+//      addSdk(Build.VERSION_CODES.N, "7.0.0_r1", "0", "1.8");
+    }
+
+    private void addSdk(int sdkVersion, String androidVersion, String frameworkSdkBuildVersion, String minJdkVersion) {
+      if (jdkVersion >= Double.parseDouble(minJdkVersion)) {
+        put(sdkVersion, new SdkVersion(androidVersion, frameworkSdkBuildVersion));
+      } else {
+        Logger.info("Android SDK %s not supported on JDK %s (it requires %s)", sdkVersion, jdkVersion, minJdkVersion);
+      }
+    }
+  });
+
   public static final int FALLBACK_SDK_VERSION = Build.VERSION_CODES.JELLY_BEAN;
-  public static final int MAX_SDK_VERSION = Build.VERSION_CODES.M;
+  public static final int MAX_SDK_VERSION = Collections.max(getSupportedApis());
 
   private final int apiLevel;
   private final SdkVersion sdkVersion;
-
-  static {
-    SUPPORTED_APIS = new HashMap<>();
-    addSdk(Build.VERSION_CODES.JELLY_BEAN, "4.1.2_r1", "0");
-    addSdk(Build.VERSION_CODES.JELLY_BEAN_MR1, "4.2.2_r1.2", "0");
-    addSdk(Build.VERSION_CODES.JELLY_BEAN_MR2, "4.3_r2", "0");
-    addSdk(Build.VERSION_CODES.KITKAT, "4.4_r1", "1");
-    addSdk(Build.VERSION_CODES.LOLLIPOP, "5.0.0_r2", "1");
-    addSdk(Build.VERSION_CODES.LOLLIPOP_MR1, "5.1.1_r9", "1");
-    addSdk(Build.VERSION_CODES.M, "6.0.0_r1", "0");
-    ROBOLECTRIC_VERSION = getRobolectricVersion();
-  }
-
-  public static void addSdk(int sdkVersion, String androidVersion, String robolectricVersion) {
-    SUPPORTED_APIS.put(sdkVersion, new SdkVersion(androidVersion, robolectricVersion));
-  }
 
   public static Set<Integer> getSupportedApis() {
     return SUPPORTED_APIS.keySet();
