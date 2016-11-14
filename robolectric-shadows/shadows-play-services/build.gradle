@@ -19,6 +19,11 @@ dependencies {
     testCompile "org.hamcrest:hamcrest-core:1.3"
     testCompile "org.assertj:assertj-core:2.0.0"
     testCompile "org.mockito:mockito-core:1.8.0"
+    testRuntime "com.android.support:support-v4:23.2.0"
+    testRuntime "com.google.android.gms:play-services-base:8.4.0"
+    testRuntime "com.google.android.gms:play-services-basement:8.4.0"
+
+    testRuntime "org.robolectric:android-all:6.0.0_r1-robolectric-0"
 }
 
 install {
