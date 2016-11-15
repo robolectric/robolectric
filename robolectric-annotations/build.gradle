@@ -1,5 +1,5 @@
 dependencies {
     // Compile dependencies
-    provided "com.intellij:annotations:12.0"
-    provided "org.robolectric:android-all:6.0.0_r1-robolectric-0"
+    compileOnly "com.intellij:annotations:12.0"
+    compileOnly "org.robolectric:android-all:6.0.0_r1-robolectric-0"
 }

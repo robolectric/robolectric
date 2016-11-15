@@ -26,7 +26,11 @@ allprojects {
         }
     }
 
-    apply plugin: ProvidedPlugin
+    // it's weird that compileOnly deps aren't included for test compilation; fix that:
+    project.sourceSets {
+        test.compileClasspath += project.configurations.compileOnly
+    }
+
     apply plugin: "signing"
     apply plugin: "maven"
 
@@ -35,10 +39,7 @@ allprojects {
         from sourceSets.main.allJava
     }
 
-    javadoc {
-        classpath += configurations.provided
-        failOnError = false
-    }
+    javadoc.failOnError = false
 
     task javadocJar(type: Jar, dependsOn: javadoc) {
         classifier "javadoc"

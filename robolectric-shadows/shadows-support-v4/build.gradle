@@ -5,7 +5,7 @@ shadows {
 }
 
 configurations {
-    earlyRuntime
+    earlyTestRuntime
 }
 
 dependencies {
@@ -14,9 +14,9 @@ dependencies {
     compile project(":robolectric-shadows/shadows-core")
 
     // Compile dependencies
-    provided "org.robolectric:android-all:6.0.0_r1-robolectric-0"
-    provided "com.android.support:support-v4:23.2.0"
-    provided "com.android.support:internal_impl:23.2.0"
+    compileOnly "org.robolectric:android-all:6.0.0_r1-robolectric-0"
+    compileOnly "com.android.support:support-v4:23.2.0"
+    compileOnly "com.android.support:internal_impl:23.2.0"
 
     // Testing dependencies
     testCompile "junit:junit:4.8.2"
@@ -24,13 +24,20 @@ dependencies {
     testCompile "org.assertj:assertj-core:2.0.0"
     testCompile "org.mockito:mockito-core:1.8.0"
 
-    earlyRuntime "org.hamcrest:hamcrest-core:1.3"
+    earlyTestRuntime "org.hamcrest:hamcrest-core:1.3"
+    testRuntime "org.robolectric:android-all:6.0.0_r1-robolectric-0"
+    testRuntime "com.android.support:support-v4:23.2.0"
+    testRuntime "com.android.support:internal_impl:23.2.0"
 }
 
-// hamcrest needs to come becore junit on runtime classpath; the gradle IntelliJ plugin
-//   needs the compileClasspath order patched too (bug?)
-sourceSets.main.compileClasspath = configurations.earlyRuntime + sourceSets.main.compileClasspath
-sourceSets.main.runtimeClasspath = configurations.earlyRuntime + sourceSets.main.runtimeClasspath
+// change local artifact name to match dependencies
+install {
+    repositories.mavenInstaller {
+        pom.artifactId = 'shadows-support-v4'
+    }
+}
 
-sourceSets.test.compileClasspath = configurations.earlyRuntime + sourceSets.test.compileClasspath
-sourceSets.test.runtimeClasspath = configurations.earlyRuntime + sourceSets.test.runtimeClasspath
+// hamcrest needs to come before junit on runtime classpath; the gradle IntelliJ plugin
+//   needs the compileClasspath order patched too (bug?)
+sourceSets.test.compileClasspath = configurations.earlyTestRuntime + sourceSets.test.compileClasspath
+sourceSets.test.runtimeClasspath = configurations.earlyTestRuntime + sourceSets.test.runtimeClasspath

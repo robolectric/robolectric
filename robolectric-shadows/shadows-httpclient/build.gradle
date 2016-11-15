@@ -16,13 +16,21 @@ dependencies {
     // Compile dependencies
     earlyRuntime "org.apache.httpcomponents:httpcore:4.0.1"
     compile "org.apache.httpcomponents:httpclient:4.0.3"
-    provided("org.robolectric:android-all:${AndroidSdk.versions[22]}") { force = true }
+    compileOnly("org.robolectric:android-all:${AndroidSdk.versions[22]}") { force = true }
 
     // Testing dependencies
     testCompile "junit:junit:4.8.2"
     testCompile "org.hamcrest:hamcrest-core:1.3"
     testCompile "org.assertj:assertj-core:2.0.0"
     testCompile "org.mockito:mockito-core:1.8.0"
+    testRuntime "org.robolectric:android-all:${AndroidSdk.versions[22]}"
+}
+
+// change local artifact name to match dependencies
+install {
+    repositories.mavenInstaller {
+        pom.artifactId = 'shadows-httpclient'
+    }
 }
 
 // httpcore needs to come before android-all on runtime classpath; the gradle IntelliJ plugin
