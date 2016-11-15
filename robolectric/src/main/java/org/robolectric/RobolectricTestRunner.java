@@ -311,7 +311,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   }
 
   public Config getConfig(Method method) {
-    Config config = new Config.Builder().build();
+    Config config = Config.Builder.defaults().build();
 
     Config globalConfig = buildGlobalConfig();
     if (globalConfig != null) {
