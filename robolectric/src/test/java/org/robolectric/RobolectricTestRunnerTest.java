@@ -38,10 +38,10 @@ public class RobolectricTestRunnerTest {
   @Test
   public void whenClassDoesntHaveConfigAnnotation_getConfig_shouldUseMethodConfig() throws Exception {
     assertConfig(configFor(Test2.class, "withoutAnnotation"),
-        new int[0], "--default", Application.class, "", "", "res", "assets", new Class[]{}, new String[]{}, new String[]{}, Void.class);
+        new int[0], "AndroidManifest.xml", Application.class, "", "", "res", "assets", new Class[]{}, new String[]{}, new String[]{}, Void.class);
 
     assertConfig(configFor(Test2.class, "withDefaultsAnnotation"),
-        new int[0], "--default", Application.class, "", "", "res", "assets", new Class[]{}, new String[]{}, new String[]{}, Void.class);
+        new int[0], "AndroidManifest.xml", Application.class, "", "", "res", "assets", new Class[]{}, new String[]{}, new String[]{}, Void.class);
 
     assertConfig(configFor(Test2.class, "withOverrideAnnotation"),
         new int[] {9}, "furf", TestFakeApp.class, "com.example.method", "from-method", "method/res", "method/assets", new Class[]{Test1.class}, new String[]{"com.example.method2"}, new String[]{"libs/method"}, BuildConfigConstants.class);
@@ -86,10 +86,10 @@ public class RobolectricTestRunnerTest {
   @Test
   public void whenClassDoesntHaveConfigAnnotationButSubclassDoes_getConfig_shouldMergeSubclassAndMethodConfig() throws Exception {
     assertConfig(configFor(Test4.class, "withoutAnnotation"),
-        new int[0],  "--default", Application.class, "", "from-subclass", "res", "assets", new Class[]{}, new String[]{}, new String[]{}, Void.class);
+        new int[0],  "AndroidManifest.xml", Application.class, "", "from-subclass", "res", "assets", new Class[]{}, new String[]{}, new String[]{}, Void.class);
 
     assertConfig(configFor(Test4.class, "withDefaultsAnnotation"),
-        new int[0],  "--default", Application.class, "", "from-subclass", "res", "assets", new Class[]{}, new String[]{}, new String[]{}, Void.class);
+        new int[0],  "AndroidManifest.xml", Application.class, "", "from-subclass", "res", "assets", new Class[]{}, new String[]{}, new String[]{}, Void.class);
 
     assertConfig(configFor(Test4.class, "withOverrideAnnotation"),
         new int[] {9}, "furf", TestFakeApp.class, "com.example.method", "from-method", "method/res", "method/assets", new Class[]{Test1.class}, new String[]{"com.example.method2"}, new String[]{"libs/method"}, BuildConfigConstants.class);
@@ -117,7 +117,7 @@ public class RobolectricTestRunnerTest {
   @Test
   public void withEmptyShadowList_shouldLoadDefaultsFromPropertiesFile() throws Exception {
     Properties properties = properties("shadows:");
-    assertConfig(configFor(Test2.class, "withoutAnnotation", properties), new int[0],  "--default", Application.class, "", "", "res", "assets", new Class[] {}, new String[]{}, new String[]{}, null);
+    assertConfig(configFor(Test2.class, "withoutAnnotation", properties), new int[0],  "AndroidManifest.xml", Application.class, "", "", "res", "assets", new Class[] {}, new String[]{}, new String[]{}, null);
   }
 
   private Config configFor(Class<?> testClass, String methodName, final Properties configProperties) throws InitializationError {
