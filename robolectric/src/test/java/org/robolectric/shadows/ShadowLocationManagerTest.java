@@ -430,6 +430,15 @@ public class ShadowLocationManagerTest {
     assertThat(shadowLocationManager.getRequestLocationUpdateListeners().size()).isEqualTo(0);
   }
 
+  @Test
+  public void requestLocationUpdates_shouldNotRegisterDuplicateListeners() throws Exception {
+    TestLocationListener listener = new TestLocationListener();
+    shadowLocationManager.requestLocationUpdates(GPS_PROVIDER, 0, 0, listener);
+    shadowLocationManager.requestLocationUpdates(GPS_PROVIDER, 0, 0, listener);
+    shadowLocationManager.simulateLocation(new Location(GPS_PROVIDER));
+    assertThat(listener.updateCount).isEqualTo(1);
+  }
+
   private Listener addGpsListenerToLocationManager() {
     Listener listener = new TestGpsListener();
     locationManager.addGpsStatusListener(listener);
@@ -437,12 +446,14 @@ public class ShadowLocationManagerTest {
   }
 
   private static class TestLocationListener implements LocationListener {
-    public boolean providerEnabled;
-    public Location location;
+    boolean providerEnabled;
+    Location location;
+    int updateCount;
 
     @Override
     public void onLocationChanged(Location location) {
       this.location = location;
+      updateCount++;
     }
 
     @Override
