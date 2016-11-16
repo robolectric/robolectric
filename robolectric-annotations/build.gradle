@@ -1,5 +1,5 @@
 dependencies {
     // Compile dependencies
     compileOnly "com.intellij:annotations:12.0"
-    compileOnly "org.robolectric:android-all:6.0.0_r1-robolectric-0"
+    compileOnly AndroidSdk.MAX_SDK.coordinates
 }

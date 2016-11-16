@@ -6,7 +6,7 @@ dependencies {
     // Compile dependencies
     compile "com.ximpleware:vtd-xml:2.11"
     compile "com.google.guava:guava:19.0"
-    compileOnly "org.robolectric:android-all:6.0.0_r1-robolectric-0"
+    compileOnly AndroidSdk.MAX_SDK.coordinates
     compileOnly "com.intellij:annotations:12.0"
 
     // Testing dependencies
@@ -14,5 +14,5 @@ dependencies {
     testCompile "org.hamcrest:hamcrest-core:1.3"
     testCompile "org.assertj:assertj-core:2.0.0"
     testCompile "com.google.testing.compile:compile-testing:0.6"
-    testRuntime "org.robolectric:android-all:6.0.0_r1-robolectric-0"
+    testRuntime AndroidSdk.MAX_SDK.coordinates
 }

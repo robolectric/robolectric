@@ -10,7 +10,7 @@ dependencies {
 
     compileOnly "com.android.support:multidex:1.0.1"
 
-    compileOnly "org.robolectric:android-all:6.0.0_r1-robolectric-0"
+    compileOnly AndroidSdk.MAX_SDK.coordinates
 }
 
 // change local artifact name to match dependencies
