@@ -68,8 +68,15 @@ public class PropertiesDependencyResolver implements DependencyResolver {
         }
       }
     } else {
-      urls.add(delegate.getLocalArtifactUrl(dependency));
+      if (delegate != null) {
+        urls.add(delegate.getLocalArtifactUrl(dependency));
+      }
     }
+
+    if (urls.isEmpty()) {
+      throw new RuntimeException("no artifacts found for " + dependency);
+    }
+
     return urls;
   }
 
