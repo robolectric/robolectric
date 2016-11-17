@@ -240,6 +240,7 @@ public class Converter<T> {
         typedValue.type = TypedValue.TYPE_INT_COLOR_ARGB8;
         typedValue.data = ResourceHelper.getColor(data);
         typedValue.assetCookie = 0;
+        typedValue.string = null;
         return true;
       } catch (NumberFormatException nfe) {
         return false;
@@ -279,6 +280,7 @@ public class Converter<T> {
         typedValue.type = TypedValue.TYPE_INT_HEX;
         typedValue.data = convertInt(data);
         typedValue.assetCookie = 0;
+        typedValue.string = null;
         return true;
       } catch (NumberFormatException nfe) {
         return false;
@@ -321,6 +323,7 @@ public class Converter<T> {
     public boolean fillTypedValue(String data, TypedValue typedValue) {
       typedValue.type = TypedValue.TYPE_INT_BOOLEAN;
       typedValue.assetCookie = 0;
+      typedValue.string = null;
 
       if ("true".equalsIgnoreCase(data)) {
         typedValue.data = 1;
@@ -369,6 +372,7 @@ public class Converter<T> {
         typedValue.type = TypedValue.TYPE_INT_HEX;
         typedValue.data = findValueFor(data);
         typedValue.assetCookie = 0;
+        typedValue.string = null;
         return true;
       } catch (Exception e) {
         return false;
@@ -392,6 +396,7 @@ public class Converter<T> {
         typedValue.type = TypedValue.TYPE_INT_HEX;
         typedValue.data = flags;
         typedValue.assetCookie = 0;
+        typedValue.string = null;
         return true;
       } catch (Exception e) {
         return false;
