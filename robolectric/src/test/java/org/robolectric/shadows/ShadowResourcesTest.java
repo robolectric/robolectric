@@ -641,6 +641,35 @@ public class ShadowResourcesTest {
   }
 
   @Test
+  public void getValueShouldClearTypedArrayBetweenCalls() throws Exception {
+    TypedValue outValue = new TypedValue();
+
+    resources.getValue(R.string.hello, outValue, true);
+    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_STRING);
+    assertThat(outValue.string).isEqualTo(resources.getString(R.string.hello));
+    assertThat(outValue.data).isEqualTo(TypedValue.DATA_NULL_UNDEFINED);
+    assertThat(outValue.assetCookie).isNotEqualTo(0);
+
+    resources.getValue(R.color.blue, outValue, true);
+    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_COLOR_ARGB8);
+    assertThat(outValue.data).isEqualTo(ResourceHelper.getColor("#0000ff"));
+    assertThat(outValue.string).isNull();
+    assertThat(outValue.assetCookie).isEqualTo(TypedValue.DATA_NULL_UNDEFINED);
+
+    resources.getValue(R.integer.loneliest_number, outValue, true);
+    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_HEX);
+    assertThat(outValue.data).isEqualTo(1);
+    assertThat(outValue.string).isNull();
+    assertThat(outValue.assetCookie).isEqualTo(TypedValue.DATA_NULL_UNDEFINED);
+
+    resources.getValue(R.bool.true_bool_value, outValue, true);
+    assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_BOOLEAN);
+    assertThat(outValue.data).isEqualTo(1);
+    assertThat(outValue.string).isNull();
+    assertThat(outValue.assetCookie).isEqualTo(TypedValue.DATA_NULL_UNDEFINED);
+  }
+
+  @Test
   public void getXml() throws Exception {
     XmlResourceParser xmlResourceParser = resources.getXml(R.xml.preferences);
     assertThat(xmlResourceParser).isNotNull();
