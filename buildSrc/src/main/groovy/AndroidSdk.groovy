@@ -44,6 +44,10 @@ class AndroidSdk implements Comparable<AndroidSdk> {
         return "org.robolectric:android-all:${androidVersion}-robolectric-${frameworkSdkBuildVersion}"
     }
 
+    String propertiesString() {
+        return "${apiLevel}:${androidVersion}:${frameworkSdkBuildVersion}:${minJdkVersion}"
+    }
+
     @Override
     int compareTo(AndroidSdk other) {
         return apiLevel - other.apiLevel

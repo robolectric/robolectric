@@ -1,7 +1,9 @@
 processResources {
     filesMatching("**/robolectric-version.properties") {
         filter { String line ->
-            return line.replaceAll(/\$\{project.version\}/, project.version)
+            return line.
+                    replaceAll(/\$\{project.version\}/, project.version as String).
+                    replaceAll(/__SDKS__/, AndroidSdk.ALL_SDKS*.propertiesString().join(","))
         }
     }
 }
