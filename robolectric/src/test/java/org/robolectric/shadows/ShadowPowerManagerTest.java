@@ -11,6 +11,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -42,10 +43,7 @@ public class ShadowPowerManagerTest {
   }
 
   @Test
-  @Config(sdk = {
-      Build.VERSION_CODES.LOLLIPOP,
-      Build.VERSION_CODES.LOLLIPOP_MR1,
-      Build.VERSION_CODES.M})
+  @Config(minSdk = LOLLIPOP)
   public void isWakeLockLevelSupported() {
     assertThat(powerManager.isWakeLockLevelSupported(PowerManager.PARTIAL_WAKE_LOCK)).isFalse();
 
@@ -126,7 +124,7 @@ public class ShadowPowerManagerTest {
   }
 
   @Test
-  @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
+  @Config(minSdk = LOLLIPOP)
   public void isInteractive_shouldGetAndSet() {
     shadowPowerManager.setIsInteractive(true);
     assertThat(powerManager.isInteractive()).isTrue();

@@ -17,11 +17,13 @@ public class ShadowBinderTest {
     TestBinder testBinder = new TestBinder();
     Parcel data = Parcel.obtain();
     Parcel reply = Parcel.obtain();
+    data.writeString("Hello Robolectric");
     assertTrue(testBinder.transact(2, data, reply, 3));
     assertThat(testBinder.code).isEqualTo(2);
     assertThat(testBinder.data).isSameAs(data);
     assertThat(testBinder.reply).isSameAs(reply);
     assertThat(testBinder.flags).isEqualTo(3);
+    assertThat(reply.readString()).isEqualTo("Hello Robolectric");
   }
 
   static class TestBinder extends Binder {
@@ -36,6 +38,8 @@ public class ShadowBinderTest {
       this.data = data;
       this.reply = reply;
       this.flags = flags;
+      String string = data.readString();
+      reply.writeString(string);
       return true;
     }
   }

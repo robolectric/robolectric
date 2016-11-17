@@ -8,6 +8,7 @@ import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
 
 import java.io.File;
+import java.net.URL;
 
 public class GradleManifestFactory implements ManifestFactory {
   @Override
@@ -49,10 +50,17 @@ public class GradleManifestFactory implements ManifestFactory {
       assets = FileFsFile.from(buildOutputDir, "bundles", flavor, type, "assets");
     }
 
-    if (FileFsFile.from(buildOutputDir, "manifests").exists()) {
-      manifest = FileFsFile.from(buildOutputDir, "manifests", "full", flavor, abiSplit, type, DEFAULT_MANIFEST_NAME);
+    String manifestName = config.manifest();
+    URL manifestUrl = getClass().getClassLoader().getResource(manifestName);
+    if (manifestUrl != null && manifestUrl.getProtocol().equals("file")) {
+      manifest = FileFsFile.from(manifestUrl.getPath());
+    } else if (FileFsFile.from(buildOutputDir, "manifests", "full").exists()) {
+      manifest = FileFsFile.from(buildOutputDir, "manifests", "full", flavor, abiSplit, type, manifestName);
+    } else if (FileFsFile.from(buildOutputDir, "manifests", "aapt").exists()) {
+      // Android gradle plugin 2.2.0+ can put library manifest files inside of "aapt" instead of "full"
+      manifest = FileFsFile.from(buildOutputDir, "manifests", "aapt", flavor, abiSplit, type, manifestName);
     } else {
-      manifest = FileFsFile.from(buildOutputDir, "bundles", flavor, abiSplit, type, DEFAULT_MANIFEST_NAME);
+      manifest = FileFsFile.from(buildOutputDir, "bundles", flavor, abiSplit, type, manifestName);
     }
 
     return new ManifestIdentifier(manifest, res, assets, packageName, null);

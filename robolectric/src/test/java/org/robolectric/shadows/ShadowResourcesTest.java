@@ -44,6 +44,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.Map;
 
+import static android.os.Build.VERSION_CODES.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
@@ -515,8 +516,9 @@ public class ShadowResourcesTest {
   }
 
   @Test
-  @Config(sdk = {Build.VERSION_CODES.JELLY_BEAN, Build.VERSION_CODES.LOLLIPOP, Build.VERSION_CODES.LOLLIPOP_MR1})
-  // todo: get this working on KITKAT
+  @Config(sdk = {JELLY_BEAN, LOLLIPOP, LOLLIPOP_MR1})
+  // todo: get this working on KITKAT by fixing resource id collision issue
+  // todo: change this to @Config(minSdk = JELLY_BEAN)
   public void obtainStyledAttributesShouldCheckXmlFirst() throws Exception {
 
     // This simulates a ResourceLoader built from a 21+ SDK as viewportHeight / viewportWidth were introduced in API 21
@@ -548,14 +550,16 @@ public class ShadowResourcesTest {
   }
 
   @Test
-  @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
+  @Config(minSdk = LOLLIPOP)
   public void whenAttrIsDefinedInRuntimeSdk_getResourceName_findsResource() {
     assertThat(RuntimeEnvironment.application.getResources().getResourceName(android.R.attr.viewportHeight))
         .isEqualTo("android:attr/viewportHeight");
   }
 
   @Test
-  @Config(sdk = Build.VERSION_CODES.KITKAT)
+  @Config(sdk = KITKAT)
+  // todo: get this working on KITKAT by fixing resource id collision issue
+  // todo: change this to @Config(minSdk = KITKAT)
   public void whenAttrIsNotDefinedInRuntimeSdk_getResourceName_doesntFindRequestedResourceButInsteadFindsInternalResourceWithSameId() {
     // asking for an attr defined after the current SDK doesn't have a defined result; in this case it returns
     //   numberPickerStyle from com.internal.android.R

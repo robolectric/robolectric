@@ -16,6 +16,7 @@ import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.CancellationSignal;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -164,6 +165,12 @@ public class ShadowContentResolver {
           sortOrder);
       return returnCursor;
     }
+  }
+
+  @Implementation
+  public Cursor query(Uri uri, String[] projection, String selection,
+      String[] selectionArgs, String sortOrder, CancellationSignal cancellationSignal) {
+    return query(uri, projection, selection, selectionArgs, sortOrder);
   }
 
   @Implementation

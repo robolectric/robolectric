@@ -77,6 +77,12 @@ public class ShadowWifiManager {
   }
 
   @Implementation
+  public boolean removeNetwork(int netId) {
+    networkIdToConfiguredNetworks.remove(netId);
+    return true;
+  }
+
+  @Implementation
   public int updateNetwork(WifiConfiguration config) {
     if (config == null || config.networkId < 0) {
       return -1;

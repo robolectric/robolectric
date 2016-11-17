@@ -16,11 +16,11 @@ import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 
+import static android.os.Build.VERSION_CODES.M;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
-@Config(sdk = {
-    Build.VERSION_CODES.M })
+@Config(minSdk = M)
 public class ShadowDateIntervalFormatTest {
   @Test
   public void testDateInterval_FormatDateRange() throws ParseException {

@@ -11,6 +11,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 
+import static android.os.Build.VERSION_CODES.M;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -105,7 +106,7 @@ public class ShadowActivityManagerTest {
     assertThat(ActivityManager.isUserAMonkey()).isFalse();
   }
 
-  @Test @Config(sdk = Build.VERSION_CODES.M)
+  @Test @Config(minSdk = M)
   public void getLockTaskModeState() throws Exception {
     assertThat(getActivityManager().getLockTaskModeState()).isEqualTo(0); // just don't throw
   }

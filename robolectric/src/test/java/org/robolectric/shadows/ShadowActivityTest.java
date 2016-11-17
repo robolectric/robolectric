@@ -54,6 +54,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.M;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -68,7 +71,7 @@ import static org.robolectric.Robolectric.setupActivity;
 import static org.robolectric.RuntimeEnvironment.application;
 import static org.robolectric.Shadows.shadowOf;
 
-@RunWith(TestRunners.WithDefaults.class)
+@RunWith(TestRunners.MultiApiWithDefaults.class)
 public class ShadowActivityTest {
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
   private Activity activity;
@@ -119,6 +122,7 @@ public class ShadowActivityTest {
   }
 
   @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
   public void shouldReportDestroyedStatus() {
     ActivityController<DialogCreatingActivity> controller = Robolectric.buildActivity(DialogCreatingActivity.class);
     activity = controller.get();
@@ -574,7 +578,7 @@ public class ShadowActivityTest {
   }
 
   @Test
-  @Config(sdk = {Build.VERSION_CODES.M})
+  @Config(minSdk = M)
   public void requestsPermissions() {
     TestActivity activity = new TestActivity();
     activity.requestPermissions(new String[0], -1);

@@ -55,9 +55,23 @@ public class MultiApiRobolectricTestRunner extends Suite {
 
     @Override
     protected boolean shouldRunApiVersion(Config config) {
-      if (config.sdk().length == 0) {
+      // If no SDK range or set of SDKs is specified default to running all supported APIs
+      if (config.minSdk() == -1 && config.maxSdk() == -1 && config.sdk().length == 0) {
         return true;
       }
+
+      // For SDK ranges
+      if (config.minSdk() != -1 || config.maxSdk() != -1) {
+        if (config.minSdk() <= apiVersion && config.maxSdk() == -1) {
+          return true;
+        } else if (config.minSdk() == -1 && config.maxSdk() >= apiVersion) {
+          return true;
+        } else if (config.minSdk() <= apiVersion && config.maxSdk() >= apiVersion) {
+          return true;
+        }
+      }
+
+      // For SDK groups
       for (int sdk : config.sdk()) {
         if (sdk == apiVersion) {
           return true;

@@ -10,15 +10,11 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
-@Config(sdk = {
-    Build.VERSION_CODES.JELLY_BEAN_MR2,
-    Build.VERSION_CODES.KITKAT,
-    Build.VERSION_CODES.LOLLIPOP,
-    Build.VERSION_CODES.LOLLIPOP_MR1
-})
+@Config(minSdk = JELLY_BEAN_MR2)
 public class ShadowBluetoothManagerTest {
     private final BluetoothManager manager = (BluetoothManager) RuntimeEnvironment.application.getSystemService(Context.BLUETOOTH_SERVICE);
 
