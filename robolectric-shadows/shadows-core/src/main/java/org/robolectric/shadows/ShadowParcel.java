@@ -19,7 +19,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static android.os.Build.VERSION_CODES;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.RuntimeEnvironment.castNativePtr;
@@ -30,9 +29,9 @@ import static org.robolectric.RuntimeEnvironment.castNativePtr;
 @Implements(Parcel.class)
 @SuppressWarnings("unchecked")
 public class ShadowParcel {
-  @RealObject private Parcel realObject;
-  private static final Map<Long, ByteBuffer> NATIVE_PTR_TO_PARCEL = new LinkedHashMap<>();
+  private static final Map<Long, ByteBuffer> NATIVE_PTR_TO_BUF = new LinkedHashMap<>();
   private static long nextNativePtr = 1; // this needs to start above 0, which is a magic number to Parcel
+  @RealObject private Parcel realObject;
 
   @Implementation
   public void writeByteArray(byte[] b, int offset, int len) {
@@ -52,7 +51,7 @@ public class ShadowParcel {
 
   @Implementation(minSdk = LOLLIPOP)
   public static int nativeDataSize(long nativePtr) {
-    return NATIVE_PTR_TO_PARCEL.get(nativePtr).dataSize();
+    return getByteBuffer(nativePtr).dataSize();
   }
 
   @HiddenApi
@@ -63,7 +62,7 @@ public class ShadowParcel {
 
   @Implementation(minSdk = LOLLIPOP)
   public static int nativeDataAvail(long nativePtr) {
-    return NATIVE_PTR_TO_PARCEL.get(nativePtr).dataAvailable();
+    return getByteBuffer(nativePtr).dataAvailable();
   }
 
   @HiddenApi
@@ -74,7 +73,7 @@ public class ShadowParcel {
 
   @Implementation(minSdk = LOLLIPOP)
   public static int nativeDataPosition(long nativePtr) {
-    return NATIVE_PTR_TO_PARCEL.get(nativePtr).dataPosition();
+    return getByteBuffer(nativePtr).dataPosition();
   }
 
   @HiddenApi
@@ -85,7 +84,7 @@ public class ShadowParcel {
 
   @Implementation(minSdk = LOLLIPOP)
   public static int nativeDataCapacity(long nativePtr) {
-    return NATIVE_PTR_TO_PARCEL.get(nativePtr).dataCapacity();
+    return getByteBuffer(nativePtr).dataCapacity();
   }
 
   @HiddenApi
@@ -96,7 +95,7 @@ public class ShadowParcel {
 
   @Implementation(minSdk = LOLLIPOP)
   public static void nativeSetDataSize(long nativePtr, int size) {
-    NATIVE_PTR_TO_PARCEL.get(nativePtr).setDataSize(size);
+    getByteBuffer(nativePtr).setDataSize(size);
   }
 
   @HiddenApi
@@ -107,7 +106,7 @@ public class ShadowParcel {
 
   @Implementation(minSdk = LOLLIPOP)
   public static void nativeSetDataPosition(long nativePtr, int pos) {
-    NATIVE_PTR_TO_PARCEL.get(nativePtr).setDataPosition(pos);
+    getByteBuffer(nativePtr).setDataPosition(pos);
   }
 
   @HiddenApi
@@ -118,7 +117,7 @@ public class ShadowParcel {
 
   @Implementation(minSdk = LOLLIPOP)
   public static void nativeSetDataCapacity(long nativePtr, int size) {
-    NATIVE_PTR_TO_PARCEL.get(nativePtr).setDataCapacity(size);
+    getByteBuffer(nativePtr).setDataCapacity(size);
   }
 
   @HiddenApi
@@ -129,7 +128,7 @@ public class ShadowParcel {
 
   @Implementation(minSdk = LOLLIPOP)
   public static void nativeWriteByteArray(long nativePtr, byte[] b, int offset, int len) {
-    NATIVE_PTR_TO_PARCEL.get(nativePtr).writeByteArray(b, offset, len);
+    getByteBuffer(nativePtr).writeByteArray(b, offset, len);
   }
 
   @HiddenApi
@@ -140,7 +139,7 @@ public class ShadowParcel {
 
   @Implementation(minSdk = LOLLIPOP)
   public static void nativeWriteInt(long nativePtr, int val) {
-    NATIVE_PTR_TO_PARCEL.get(nativePtr).writeInt(val);
+    getByteBuffer(nativePtr).writeInt(val);
   }
 
   @HiddenApi
@@ -151,7 +150,7 @@ public class ShadowParcel {
 
   @Implementation(minSdk = LOLLIPOP)
   public static void nativeWriteLong(long nativePtr, long val) {
-    NATIVE_PTR_TO_PARCEL.get(nativePtr).writeLong(val);
+    getByteBuffer(nativePtr).writeLong(val);
   }
 
   @HiddenApi
@@ -162,7 +161,7 @@ public class ShadowParcel {
 
   @Implementation(minSdk = LOLLIPOP)
   public static void nativeWriteFloat(long nativePtr, float val) {
-    NATIVE_PTR_TO_PARCEL.get(nativePtr).writeFloat(val);
+    getByteBuffer(nativePtr).writeFloat(val);
   }
 
   @HiddenApi
@@ -173,7 +172,7 @@ public class ShadowParcel {
 
   @Implementation(minSdk = LOLLIPOP)
   public static void nativeWriteDouble(long nativePtr, double val) {
-    NATIVE_PTR_TO_PARCEL.get(nativePtr).writeDouble(val);
+    getByteBuffer(nativePtr).writeDouble(val);
   }
 
   @HiddenApi
@@ -184,7 +183,7 @@ public class ShadowParcel {
 
   @Implementation(minSdk = LOLLIPOP)
   public static void nativeWriteString(long nativePtr, String val) {
-    NATIVE_PTR_TO_PARCEL.get(nativePtr).writeString(val);
+    getByteBuffer(nativePtr).writeString(val);
   }
 
   @HiddenApi
@@ -195,7 +194,7 @@ public class ShadowParcel {
 
   @Implementation(minSdk = LOLLIPOP)
   public static byte[] nativeCreateByteArray(long nativePtr) {
-    return NATIVE_PTR_TO_PARCEL.get(nativePtr).readByteArray();
+    return getByteBuffer(nativePtr).readByteArray();
   }
 
   @HiddenApi
@@ -206,7 +205,7 @@ public class ShadowParcel {
 
   @Implementation(minSdk = LOLLIPOP)
   public static int nativeReadInt(long nativePtr) {
-    return NATIVE_PTR_TO_PARCEL.get(nativePtr).readInt();
+    return getByteBuffer(nativePtr).readInt();
   }
 
   @HiddenApi
@@ -217,7 +216,7 @@ public class ShadowParcel {
 
   @Implementation(minSdk = LOLLIPOP)
   public static long nativeReadLong(long nativePtr) {
-    return NATIVE_PTR_TO_PARCEL.get(nativePtr).readLong();
+    return getByteBuffer(nativePtr).readLong();
   }
 
   @HiddenApi
@@ -228,7 +227,7 @@ public class ShadowParcel {
 
   @Implementation(minSdk = LOLLIPOP)
   public static float nativeReadFloat(long nativePtr) {
-    return NATIVE_PTR_TO_PARCEL.get(nativePtr).readFloat();
+    return getByteBuffer(nativePtr).readFloat();
   }
 
   @HiddenApi
@@ -239,7 +238,7 @@ public class ShadowParcel {
 
   @Implementation(minSdk = LOLLIPOP)
   public static double nativeReadDouble(long nativePtr) {
-    return NATIVE_PTR_TO_PARCEL.get(nativePtr).readDouble();
+    return getByteBuffer(nativePtr).readDouble();
   }
 
   @HiddenApi
@@ -250,13 +249,13 @@ public class ShadowParcel {
 
   @Implementation(minSdk = LOLLIPOP)
   public static String nativeReadString(long nativePtr) {
-    return NATIVE_PTR_TO_PARCEL.get(nativePtr).readString();
+    return getByteBuffer(nativePtr).readString();
   }
 
   @Implementation @HiddenApi
   synchronized public static Number nativeCreate() {
     long nativePtr = nextNativePtr++;
-    NATIVE_PTR_TO_PARCEL.put(nativePtr, new ByteBuffer());
+    setByteBuffer(nativePtr, new ByteBuffer());
     return castNativePtr(nativePtr);
   }
 
@@ -268,7 +267,7 @@ public class ShadowParcel {
 
   @Implementation(minSdk = LOLLIPOP)
   public static void nativeFreeBuffer(long nativePtr) {
-    NATIVE_PTR_TO_PARCEL.get(nativePtr).clear();
+    getByteBuffer(nativePtr).clear();
   }
 
   @HiddenApi
@@ -279,7 +278,7 @@ public class ShadowParcel {
 
   @Implementation(minSdk = LOLLIPOP)
   public static void nativeDestroy(long nativePtr) {
-    NATIVE_PTR_TO_PARCEL.remove(nativePtr);
+    removeByteBuf(nativePtr);
   }
 
   @HiddenApi
@@ -290,7 +289,7 @@ public class ShadowParcel {
 
   @Implementation(minSdk = LOLLIPOP)
   public static byte[] nativeMarshall(long nativePtr) {
-    return NATIVE_PTR_TO_PARCEL.get(nativePtr).toByteArray();
+    return getByteBuffer(nativePtr).toByteArray();
   }
 
   @HiddenApi
@@ -301,7 +300,7 @@ public class ShadowParcel {
 
   @Implementation(minSdk = LOLLIPOP)
   public static void nativeUnmarshall(long nativePtr, byte[] data, int offset, int length) {
-    NATIVE_PTR_TO_PARCEL.put(nativePtr, ByteBuffer.fromByteArray(data, offset, length));
+    setByteBuffer(nativePtr, ByteBuffer.fromByteArray(data, offset, length));
   }
 
   @HiddenApi
@@ -312,9 +311,21 @@ public class ShadowParcel {
 
   @Implementation(minSdk = LOLLIPOP)
   public static void nativeAppendFrom(long thisNativePtr, long otherNativePtr, int offset, int length) {
-    ByteBuffer thisByteBuffer = NATIVE_PTR_TO_PARCEL.get(thisNativePtr);
-    ByteBuffer otherByteBuffer = NATIVE_PTR_TO_PARCEL.get(otherNativePtr);
+    ByteBuffer thisByteBuffer = getByteBuffer(thisNativePtr);
+    ByteBuffer otherByteBuffer = getByteBuffer(otherNativePtr);
     thisByteBuffer.appendFrom(otherByteBuffer, offset, length);
+  }
+
+  synchronized private static ByteBuffer setByteBuffer(long nativePtr, ByteBuffer value) {
+    return NATIVE_PTR_TO_BUF.put(nativePtr, value);
+  }
+
+  synchronized private static ByteBuffer getByteBuffer(long nativePtr) {
+    return NATIVE_PTR_TO_BUF.get(nativePtr);
+  }
+
+  synchronized private static void removeByteBuf(long nativePtr) {
+    NATIVE_PTR_TO_BUF.remove(nativePtr);
   }
 
   private static class ByteBuffer {
@@ -592,5 +603,5 @@ public class ShadowParcel {
       }
       return i;
     }
-  }
+ }
 }
