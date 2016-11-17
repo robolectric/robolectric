@@ -262,7 +262,7 @@ public class ShadowTime {
     if (rfc3339String.matches("\\d{4}-\\d{2}-\\d{2}")) {
       final TimeZone tz = TimeZone.getTimeZone(time.timezone);
       formatter.applyLocalizedPattern("yyyy-MM-dd");
-      // Make sure we parse the date in the context of the specified time zone
+      // Make sure we inferFromValue the date in the context of the specified time zone
       // instead of the system default time zone.
       formatter.setTimeZone(tz);
       Calendar calendar = Calendar.getInstance(tz, Locale.getDefault());

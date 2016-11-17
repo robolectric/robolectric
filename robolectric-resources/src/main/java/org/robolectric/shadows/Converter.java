@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.content.res.Resources;
 import android.util.TypedValue;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.res.*;
 import org.robolectric.util.Logger;
 import org.robolectric.util.Util;
@@ -24,12 +25,6 @@ public class Converter<T> {
       return;
     }
 
-    TypedResource attrTypeData = resourceLoader.getValue(attribute.resName, qualifiers);
-    if (attrTypeData == null) {
-      return;
-    }
-
-    AttrData attrData = (AttrData) attrTypeData.getData();
     // short-circuit Android caching of loaded resources cuz our string positions don't remain stable...
     outValue.assetCookie = getNextStringCookie();
 
@@ -38,16 +33,25 @@ public class Converter<T> {
       return;
     }
 
-    ResourceIndex resourceIndex = resourceLoader.getResourceIndex();
     while (attribute.isResourceReference()) {
       ResName resName = attribute.getResourceReference();
-      Integer resourceId = resourceIndex.getResourceId(resName);
+
+      // TODO: Refactor this to a ResourceLoaderChooser
+      ResourceLoader myResourceLoader;
+      if ("android".equals(resName.packageName)) {
+        myResourceLoader = RuntimeEnvironment.getSystemResourceLoader();
+      } else {
+        myResourceLoader = RuntimeEnvironment.getAppResourceLoader();
+      }
+
+      Integer resourceId = myResourceLoader.getResourceIndex().getResourceId(resName);
       if (resourceId == null) {
         throw new Resources.NotFoundException("unknown resource " + resName);
       }
       outValue.type = TypedValue.TYPE_REFERENCE;
       outValue.resourceId = resourceId;
-      TypedResource dereferencedRef = resourceLoader.getValue(resName, qualifiers);
+
+      TypedResource dereferencedRef = myResourceLoader.getValue(resName, qualifiers);
 
       if (dereferencedRef == null) {
         Logger.strict("couldn't resolve %s from %s", resName.getFullyQualifiedName(), attribute);
@@ -68,7 +72,7 @@ public class Converter<T> {
           return;
         } else if (DrawableResourceLoader.isStillHandledHere(resName.type)) {
           // wtf. color and drawable references reference are all kinds of stupid.
-          TypedResource drawableResource = resourceLoader.getValue(resName, qualifiers);
+          TypedResource drawableResource = myResourceLoader.getValue(resName, qualifiers);
           if (drawableResource == null) {
             throw new Resources.NotFoundException("can't find file for " + resName);
           } else {
@@ -107,17 +111,31 @@ public class Converter<T> {
       return;
     }
 
-    String format = attrData.getFormat();
-    String[] types = format.split("\\|");
-    for (String type : types) {
-      if ("reference".equals(type)) continue; // already handled above
-      Converter converter = getConverterFor(attrData, type);
+    TypedResource attrTypeData = resourceLoader.getValue(attribute.resName, qualifiers);
+    if (attrTypeData != null) {
+      AttrData attrData = (AttrData) attrTypeData.getData();
+      String format = attrData.getFormat();
+      String[] types = format.split("\\|");
+      for (String type : types) {
+        if ("reference".equals(type)) continue; // already handled above
+        Converter converter = getConverterFor(attrData, type);
 
-      if (converter != null) {
-        if (converter.fillTypedValue(attribute.value, outValue)) {
-          return;
+        if (converter != null) {
+          if (converter.fillTypedValue(attribute.value, outValue)) {
+            return;
+          }
         }
       }
+    } else {
+      /**
+       * In cases where the runtime framework doesn't know this attribute, e.g: viewportHeight (added in 21) on a
+       * KitKat runtine, then infer the attribute type from the value.
+       *
+       * TODO: When we are able to pass the SDK resources from the build environment then we can remove this
+       * and replace the NullResourceLoader with simple ResourceLoader that only parses attribute type information.
+       */
+      ResType resType = ResType.inferFromValue(attribute.value);
+      getConverter(resType).fillTypedValue(attribute.value, outValue);
     }
   }
 

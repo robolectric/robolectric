@@ -14,6 +14,7 @@ import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.res.AttributeResource;
 import org.robolectric.res.DrawableResourceLoader;
 import org.robolectric.res.EmptyStyle;
@@ -21,6 +22,7 @@ import org.robolectric.res.FileTypedResource;
 import org.robolectric.res.FsFile;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResType;
+import org.robolectric.res.ResourceIds;
 import org.robolectric.res.ResourceIndex;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.Style;
@@ -30,8 +32,8 @@ import org.robolectric.res.ThemeStyleSet;
 import org.robolectric.res.TypedResource;
 import org.robolectric.res.builder.ResourceParser;
 import org.robolectric.res.builder.XmlBlock;
-import org.robolectric.res.builder.XmlResourceParserImpl;
 import org.robolectric.util.Logger;
+import org.robolectric.util.ReflectionHelpers;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -121,14 +123,13 @@ public final class ShadowAssetManager {
   public int getResourceIdentifier(String name, String defType, String defPackage) {
     ResName resName = ResName.qualifyResName(name, defPackage, defType);
 
-    // ids are often declared from within layouts, so a special case since we don't collect those:
+    // If the resource does not exist then return 0, otherwise ResourceIndex.getResourceId() will generate a placeholder.
     if (!ResName.ID_TYPE.equals(resName.type)
-        && !resourceLoader.hasValue(resName, RuntimeEnvironment.getQualifiers())) {
+        && !getResourceLoader(resName).hasValue(resName, RuntimeEnvironment.getQualifiers())) {
       return 0;
     }
 
-    ResourceIndex resourceIndex = resourceLoader.getResourceIndex();
-    Integer resourceId = resourceIndex.getResourceId(resName);
+    Integer resourceId = getResourceLoader(resName).getResourceIndex().getResourceId(resName);
     return resourceId == null ? 0 : resourceId;
   }
 
@@ -170,7 +171,7 @@ public final class ShadowAssetManager {
 
   @HiddenApi @Implementation(minSdk = LOLLIPOP)
   public boolean getThemeValue(long themePtr, int ident, TypedValue outValue, boolean resolveRefs) {
-    ResourceIndex resourceIndex = resourceLoader.getResourceIndex();
+    ResourceIndex resourceIndex = getResourceLoader(ident).getResourceIndex();
     ResName resName = resourceIndex.getResName(ident);
 
     ThemeStyleSet themeStyleSet = getNativeTheme(themePtr).themeStyleSet;
@@ -180,7 +181,7 @@ public final class ShadowAssetManager {
       attrValue = themeStyleSet.getAttrValue(attrResName);
     }
     if (attrValue != null) {
-      Converter.convertAndFill(attrValue, outValue, resourceLoader, RuntimeEnvironment.getQualifiers(), resolveRefs);
+      Converter.convertAndFill(attrValue, outValue, getResourceLoader(resName), RuntimeEnvironment.getQualifiers(), resolveRefs);
       return true;
     }
     return false;
@@ -219,6 +220,9 @@ public final class ShadowAssetManager {
   @HiddenApi @Implementation
   public final InputStream openNonAsset(int cookie, String fileName, int accessMode) throws IOException {
     final ResName resName = qualifyFromNonAssetFileName(fileName);
+
+    ResourceLoader resourceLoader = getResourceLoader(resName);
+
     final FileTypedResource typedResource =
         (FileTypedResource) resourceLoader.getValue(resName, RuntimeEnvironment.getQualifiers());
 
@@ -260,11 +264,13 @@ public final class ShadowAssetManager {
     }
     resName = resolvedResName;
 
-    XmlBlock block = getResourceLoader().getXml(resName, RuntimeEnvironment.getQualifiers());
+    ResourceLoader resourceLoader = getResourceLoader(resId);
+    XmlBlock block = resourceLoader.getXml(resName, RuntimeEnvironment.getQualifiers());
     if (block == null) {
       throw new Resources.NotFoundException(resName.getFullyQualifiedName());
     }
-    return ResourceParser.from(block, resName.packageName, getResourceLoader());
+
+    return ResourceParser.from(block, resName.packageName, resourceLoader);
   }
 
   @HiddenApi @Implementation
@@ -370,20 +376,23 @@ public final class ShadowAssetManager {
   /////////////////////////
 
   Style resolveStyle(int resId, Style themeStyleSet) {
-    return resolveStyle(getResName(resId), themeStyleSet);
+    ShadowAssetManager shadowAssetManager = ResourceIds.isFrameworkResource(resId) ? shadowOf(AssetManager.getSystem()) : this;
+    return shadowAssetManager.resolveStyle(getResName(resId), themeStyleSet);
   }
 
-  Style resolveStyle(@NotNull ResName themeStyleName, Style themeStyleSet) {
-    TypedResource themeStyleResource = resourceLoader.getValue(themeStyleName, RuntimeEnvironment.getQualifiers());
+  private Style resolveStyle(@NotNull ResName themeStyleName, Style themeStyleSet) {
+    TypedResource themeStyleResource = getResourceLoader(themeStyleName).getValue(themeStyleName, RuntimeEnvironment.getQualifiers());
     if (themeStyleResource == null) return null;
     StyleData themeStyleData = (StyleData) themeStyleResource.getData();
     if (themeStyleSet == null) {
       themeStyleSet = new ThemeStyleSet();
     }
-    return new StyleResolver(resourceLoader, themeStyleData, themeStyleSet, themeStyleName, RuntimeEnvironment.getQualifiers());
+    return new StyleResolver(resourceLoader, shadowOf(AssetManager.getSystem()).getResourceLoader(), themeStyleData, themeStyleSet, themeStyleName, RuntimeEnvironment.getQualifiers());
   }
 
   private TypedResource getAndResolve(int resId, String qualifiers, boolean resolveRefs) {
+    ResourceLoader resourceLoader = getResourceLoader(resId);
+
     TypedResource value = resourceLoader.getValue(resId, qualifiers);
     if (resolveRefs) {
       value = resolve(value, qualifiers, resId);
@@ -404,12 +413,26 @@ public final class ShadowAssetManager {
     return value;
   }
 
+  /**
+   * Returns either the Application's ResourceLoader or the Framework's ResourceLoader based on the package type of the resId
+   */
+  ResourceLoader getResourceLoader(int resId) {
+    return ResourceIds.isFrameworkResource(resId) ? shadowOf(AssetManager.getSystem()).getResourceLoader() : this.resourceLoader;
+  }
+
+  /**
+   * Returns either the Application's ResourceLoader or the Framework's ResourceLoader based on the package of the ResName
+   */
+  private ResourceLoader getResourceLoader(ResName resName) {
+    return "android".equals(resName.packageName) ? shadowOf(AssetManager.getSystem()).getResourceLoader() : this.resourceLoader;
+  }
+
   TypedResource resolve(TypedResource value, String qualifiers, int resId) {
     return resolveResourceValue(value, qualifiers, resId);
   }
 
   public ResName resolveResName(ResName resName, String qualifiers) {
-    TypedResource value = getResourceLoader().getValue(resName, qualifiers);
+    TypedResource value = getResourceLoader(resName).getValue(resName, qualifiers);
     return resolveResource(value, qualifiers, resName);
   }
 
@@ -422,7 +445,7 @@ public final class ShadowAssetManager {
       } else {
         String refStr = s.substring(1).replace("+", "");
         resName = ResName.qualifyResName(refStr, resName);
-        value = getResourceLoader().getValue(resName, qualifiers);
+        value = getResourceLoader(resName).getValue(resName, qualifiers);
       }
     }
 
@@ -437,7 +460,7 @@ public final class ShadowAssetManager {
       } else {
         String refStr = s.substring(1).replace("+", "");
         resName = ResName.qualifyResName(refStr, resName);
-        value = getResourceLoader().getValue(resName, qualifiers);
+        value = getResourceLoader(resName).getValue(resName, qualifiers);
       }
     }
 
@@ -524,7 +547,7 @@ public final class ShadowAssetManager {
         Logger.info("huh... circular reference for %s?", attribute.resName.getFullyQualifiedName());
         return null;
       }
-      ResName resName = resourceLoader.getResourceIndex().getResName(resId);
+      ResName resName = getResourceLoader(resId).getResourceIndex().getResName(resId);
 
       AttributeResource otherAttr = themeStyleSet.getAttrValue(otherAttrName);
       if (otherAttr == null) {
@@ -562,10 +585,7 @@ public final class ShadowAssetManager {
       AttributeResource attribute = buildAttribute(set, attrs[i], defStyleAttr, themeStyleSet, defStyleRes);
       if (attribute != null && !attribute.isNull()) {
         TypedValue typedValue = new TypedValue();
-        // If there is an AttributeSet then use the resource loader that the attribute set was created with.
-        ResourceLoader resourceLoader = set != null && set instanceof XmlResourceParserImpl
-            ? ((XmlResourceParserImpl) set).getResourceLoader()
-            : this.resourceLoader;
+        ResourceLoader resourceLoader = getResourceLoader(attribute.resName);
         Converter.convertAndFill(attribute, typedValue, resourceLoader, RuntimeEnvironment.getQualifiers(), true);
         //noinspection PointlessArithmeticExpression
         data[offset + ShadowAssetManager.STYLE_TYPE] = typedValue.type;
@@ -594,6 +614,7 @@ public final class ShadowAssetManager {
     if (attributeSet != null) {
       for (int i = 0; i < attributeSet.getAttributeCount(); i++) {
         if (attributeSet.getAttributeNameResource(i) == resId && attributeSet.getAttributeValue(i) != null) {
+          // TODO: If there is a match in the XML then we should get the resource name from the XML rather than look it up from the app resource loader.
           ResName resName = resourceLoader.getResourceIndex().getResName(resId);
 
           if (resName == null) {
@@ -606,6 +627,7 @@ public final class ShadowAssetManager {
       }
     }
 
+    ResourceLoader resourceLoader = getResourceLoader(resId);
     ResName attrName = resourceLoader.getResourceIndex().getResName(resId);
     if (attrName == null) return null;
 
@@ -636,6 +658,7 @@ public final class ShadowAssetManager {
   }
 
   @NotNull private ResName getResName(int id) {
+    ResourceLoader resourceLoader = getResourceLoader(id);
     ResName resName = resourceLoader.getResourceIndex().getResName(id);
     if (resName == null) {
       List<String> packages = new ArrayList<>(resourceLoader.getResourceIndex().getPackages());
@@ -664,5 +687,10 @@ public final class ShadowAssetManager {
   @Implementation
   public String getResourceEntryName(int resid) {
    return getResName(resid).name;
+  }
+
+  @Resetter
+  public static void reset() {
+    ReflectionHelpers.setStaticField(AssetManager.class, "sSystem", null);
   }
 }

@@ -52,4 +52,30 @@ public enum ResType {
   public TypedResource getValueWithType(XpathResourceXmlLoader.XmlNode xmlNode, XmlLoader.XmlContext xmlContext) {
     return new TypedResource<>(xmlNode.getTextContent(), this, xmlContext);
   }
+
+  /**
+   * Parses a resource value to infer the type
+   */
+  public static ResType inferFromValue(String value) {
+    if (value.startsWith("#")) {
+      return ResType.COLOR;
+    } else if ("true".equals(value) || "false".equals(value)) {
+      return ResType.BOOLEAN;
+    } else if (value.endsWith("dp") || value.endsWith("sp") || value.endsWith("pt") || value.endsWith("px") || value.endsWith("mm") || value.endsWith("in")) {
+      return ResType.DIMEN;
+    } else {
+      try {
+        Integer.parseInt(value);
+        return ResType.INTEGER;
+      } catch (NumberFormatException nfe) {}
+
+      try {
+        Float.parseFloat(value);
+        return ResType.FRACTION;
+      } catch (NumberFormatException nfe) {}
+
+
+      return ResType.CHAR_SEQUENCE;
+    }
+  }
 }
