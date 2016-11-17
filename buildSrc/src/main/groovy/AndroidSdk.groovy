@@ -12,7 +12,7 @@ class AndroidSdk implements Comparable<AndroidSdk> {
 
     static final List<AndroidSdk> ALL_SDKS = [
             JELLY_BEAN, JELLY_BEAN_MR1, JELLY_BEAN_MR2, KITKAT,
-            LOLLIPOP, LOLLIPOP_MR1, M, // N
+            LOLLIPOP, LOLLIPOP_MR1, M, N
     ]
     static final SUPPORTED_SDKS = ALL_SDKS.findAll { it.isSupportedOnThisJdk() }
     static final MAX_SUPPORTED_SDK = Collections.max(SUPPORTED_SDKS)
