@@ -14,13 +14,13 @@ class AndroidSdk implements Comparable<AndroidSdk> {
             JELLY_BEAN, JELLY_BEAN_MR1, JELLY_BEAN_MR2, KITKAT,
             LOLLIPOP, LOLLIPOP_MR1, M, N
     ]
-    static final SUPPORTED_SDKS = ALL_SDKS.findAll { it.isSupportedOnThisJdk() }
-    static final MAX_SUPPORTED_SDK = Collections.max(SUPPORTED_SDKS)
+    static final JDK_SUPPORTED_SDKS = ALL_SDKS.findAll { it.isSupportedOnThisJdk() }
+    static final MAX_SDK_FOR_THIS_JDK = Collections.max(JDK_SUPPORTED_SDKS)
     static final MAX_SDK = Collections.max(ALL_SDKS)
 
     static {
-        if (MAX_SUPPORTED_SDK != MAX_SDK) {
-            println "WARNING: Running with JDK $jdkVersion, max supported Android SDK is $MAX_SUPPORTED_SDK.apiLevel."
+        if (MAX_SDK_FOR_THIS_JDK != MAX_SDK) {
+            println "WARNING: Running with JDK $jdkVersion, max supported Android SDK is $MAX_SDK_FOR_THIS_JDK.apiLevel."
         }
     }
 
@@ -30,10 +30,10 @@ class AndroidSdk implements Comparable<AndroidSdk> {
     private final String minJdkVersion
 
     AndroidSdk(int apiLevel, String androidVersion, int frameworkSdkBuildVersion, String minJdkVersion) {
-        this.minJdkVersion = minJdkVersion
-        this.frameworkSdkBuildVersion = frameworkSdkBuildVersion
-        this.androidVersion = androidVersion
         this.apiLevel = apiLevel
+        this.androidVersion = androidVersion
+        this.frameworkSdkBuildVersion = frameworkSdkBuildVersion
+        this.minJdkVersion = minJdkVersion
     }
 
     boolean isSupportedOnThisJdk() {
