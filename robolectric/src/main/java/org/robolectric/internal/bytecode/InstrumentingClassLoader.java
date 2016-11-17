@@ -686,9 +686,10 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
               interceptInvokeVirtualMethod(instructions, targetMethod);
             }
             break;
+
           case INVOKEDYNAMIC:
-            System.out.println("invokedynamic?");
-            /* falls through */
+            /* no unusual behavior */
+            break;
 
           default:
             break;
