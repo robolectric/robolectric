@@ -123,6 +123,10 @@ public class RoboCursor extends BaseCursor {
     return resultsIndex;
   }
 
+  @Override public boolean move(int offset) {
+    return moveToPosition(resultsIndex + offset);
+  }
+
   public void setColumnNames(List<String> columnNames) {
     this.columnNames = columnNames;
   }
