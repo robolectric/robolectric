@@ -127,6 +127,7 @@ public class RoboCursor extends BaseCursor {
     System.err.println("JesseW: RoboCursor.move(" + offset + ")");
     resultsIndex += offset;
     System.err.println(resultsIndex >= 0 && resultsIndex < results.length);
+    moveToPosition(resultsIndex + offset);
     return false;
   }
 
