@@ -124,7 +124,7 @@ public class RoboCursor extends BaseCursor {
   }
 
   @Override public boolean move(int offset) {
-    return moveToPosition(resultsIndex + offset);
+    return super.move(offset);
   }
 
   public void setColumnNames(List<String> columnNames) {
