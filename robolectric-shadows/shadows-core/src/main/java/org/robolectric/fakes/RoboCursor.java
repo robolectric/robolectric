@@ -119,6 +119,10 @@ public class RoboCursor extends BaseCursor {
     return resultsIndex == results.length - 1;
   }
 
+  @Override public int getPosition() {
+    return resultsIndex;
+  }
+
   public void setColumnNames(List<String> columnNames) {
     this.columnNames = columnNames;
   }
