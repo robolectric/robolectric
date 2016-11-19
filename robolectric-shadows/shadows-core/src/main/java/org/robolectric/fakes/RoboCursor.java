@@ -76,6 +76,10 @@ public class RoboCursor extends BaseCursor {
   @Override
   public boolean moveToPosition(int position) {
     System.err.println("JesseW: RoboCursor.moveToPosition(" + position + ")");
+    return doMoveToPosition(position);
+  }
+
+  private boolean doMoveToPosition(int position) {
     resultsIndex = position;
     return resultsIndex >= 0 && resultsIndex < results.length;
   }
@@ -126,8 +130,7 @@ public class RoboCursor extends BaseCursor {
 
   @Override public boolean move(int offset) {
     System.err.println("JesseW: RoboCursor.move(" + offset + ")");
-    moveToFirst();
-    return false;
+    return doMoveToPosition(resultsIndex + offset);
   }
 
   public void setColumnNames(List<String> columnNames) {
