@@ -123,7 +123,7 @@ build_jarjared_classes() {
     echo "Robolectric: jarjaring classes..."
     mkdir ${OUT}/android-jarjar-workspace
     cd ${OUT}/android-jarjar-workspace
-    wget https://jarjar.googlecode.com/files/jarjar-1.4.jar
+    wget https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/jarjar/jarjar-1.4.jar
     echo "rule com.squareup.** com.android.**" >> rules
     echo "rule org.conscrypt.** com.android.**" >> rules
 
