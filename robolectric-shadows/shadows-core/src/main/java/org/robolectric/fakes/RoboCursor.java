@@ -65,16 +65,20 @@ public class RoboCursor extends BaseCursor {
 
   @Override
   public boolean moveToNext() {
-    return move(1);
+    return doMoveToPosition(resultsIndex + 1);
   }
 
   @Override
   public boolean moveToFirst() {
-    return moveToPosition(0);
+    return doMoveToPosition(0);
   }
 
   @Override
   public boolean moveToPosition(int position) {
+    return doMoveToPosition(position);
+  }
+
+  private boolean doMoveToPosition(int position) {
     resultsIndex = position;
     return resultsIndex >= 0 && resultsIndex < results.length;
   }
@@ -124,15 +128,15 @@ public class RoboCursor extends BaseCursor {
   }
 
   @Override public boolean move(int offset) {
-    return moveToPosition(resultsIndex + offset);
+    return doMoveToPosition(resultsIndex + offset);
   }
 
   @Override public boolean moveToLast() {
-    return moveToPosition(results.length - 1);
+    return doMoveToPosition(results.length - 1);
   }
 
   @Override public boolean moveToPrevious() {
-    return move(-1);
+    return doMoveToPosition(resultsIndex - 1);
   }
 
   @Override public String[] getColumnNames() {
