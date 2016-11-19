@@ -12,7 +12,7 @@
                 <data android:scheme="content"
                       android:host="testhost1.com"
                       android:port="1"
-                      android:path="/testPath"
+                      android:path="/testPath/test.jpeg"
                       android:mimeType="video/mpeg" />
                 <data android:scheme="http"
                       android:host="testhost2.com"

@@ -361,19 +361,19 @@ public class AndroidManifestTest {
 
 
     assertThat(intentFilterData.getSchemes().get(0)).isEqualTo("content");
-    assertThat(intentFilterData.getPaths().get(0).toString()).isEqualTo("/testPath");
+    assertThat(intentFilterData.getPaths().get(0)).isEqualTo("/testPath/test.jpeg");
     assertThat(intentFilterData.getMimeTypes().get(0)).isEqualTo("video/mpeg");
     assertThat(intentFilterData.getAuthorities().get(0).getHost()).isEqualTo("testhost1.com");
     assertThat(intentFilterData.getAuthorities().get(0).getPort()).isEqualTo("1");
 
     assertThat(intentFilterData.getSchemes().get(1)).isEqualTo("http");
-    assertThat(intentFilterData.getPathPrefixes().get(0).toString()).isEqualTo("/testPrefix");
+    assertThat(intentFilterData.getPathPrefixes().get(0)).isEqualTo("/testPrefix");
     assertThat(intentFilterData.getMimeTypes().get(1)).isEqualTo("image/jpeg");
     assertThat(intentFilterData.getAuthorities().get(1).getHost()).isEqualTo("testhost2.com");
     assertThat(intentFilterData.getAuthorities().get(1).getPort()).isEqualTo("2");
 
     assertThat(intentFilterData.getSchemes().get(2)).isEqualTo("https");
-    assertThat(intentFilterData.getPathPatterns().get(0).toString()).isEqualTo("/.*testPattern");
+    assertThat(intentFilterData.getPathPatterns().get(0)).isEqualTo("/.*testPattern");
     assertThat(intentFilterData.getMimeTypes().get(2)).isEqualTo("image/*");
     assertThat(intentFilterData.getAuthorities().get(2).getHost()).isEqualTo("testhost3.com");
     assertThat(intentFilterData.getAuthorities().get(2).getPort()).isEqualTo("3");
