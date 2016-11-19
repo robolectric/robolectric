@@ -15,7 +15,6 @@ public class ShadowMessengerTest {
 
   @Test
   public void testMessengerSend() throws Exception {
-    System.err.println("JesseW: testMessengerSend");
     Handler handler = new Handler();
     Messenger messenger = new Messenger(handler);
 
