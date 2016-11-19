@@ -136,7 +136,7 @@ public class RoboCursor extends BaseCursor {
   }
 
   @Override public boolean moveToPrevious() {
-    return doMoveToPosition(resultsIndex - 1);;
+    return doMoveToPosition(resultsIndex - 1);
   }
 
   @Override public String[] getColumnNames() {
