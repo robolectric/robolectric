@@ -321,7 +321,7 @@ public class ShadowMatrix {
       return Objects.hashCode(mMatrix);
   }
 
-  public String describe() {
+  public String getDescription() {
     return "Matrix[pre=" + preOps + ", set=" + setOps + ", post=" + postOps + "]";
   }
 

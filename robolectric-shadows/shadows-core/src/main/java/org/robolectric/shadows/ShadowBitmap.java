@@ -8,7 +8,6 @@ import android.util.DisplayMetrics;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.res.ResName;
 import org.robolectric.util.ReflectionHelpers;
 
 import java.io.FileDescriptor;
@@ -301,7 +300,7 @@ public class ShadowBitmap {
     shadowBitmap.appendDescription(" at (" + x + "," + y + ")");
     shadowBitmap.appendDescription(" with width " + width + " and height " + height);
     if (matrix != null) {
-      shadowBitmap.appendDescription(" using matrix " + shadowOf(matrix).describe());
+      shadowBitmap.appendDescription(" using matrix " + shadowOf(matrix).getDescription());
     }
     if (filter) {
       shadowBitmap.appendDescription(" with filter");
