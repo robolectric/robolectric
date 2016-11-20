@@ -33,6 +33,10 @@ public class ShadowParcel {
   private static long nextNativePtr = 1; // this needs to start above 0, which is a magic number to Parcel
   @RealObject private Parcel realObject;
 
+  /**
+   * Needed because the framework impl calls {@link java.util.Arrays#checkOffsetAndCount()}.
+   * TODO: rewrite checkOffsetAndCount() calls from the framework to use a helper class instead.
+   */
   @Implementation
   public void writeByteArray(byte[] b, int offset, int len) {
     if (b == null) {
