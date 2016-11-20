@@ -298,10 +298,10 @@ public class ShadowBitmap {
     ShadowBitmap shadowBitmap = shadowOf(newBitmap);
 
     shadowBitmap.appendDescription(shadowOf(src).getDescription());
-    shadowBitmap.appendDescription(" at (" + x + "," + y);
+    shadowBitmap.appendDescription(" at (" + x + "," + y + ")");
     shadowBitmap.appendDescription(" with width " + width + " and height " + height);
     if (matrix != null) {
-      shadowBitmap.appendDescription(" using matrix " + matrix);
+      shadowBitmap.appendDescription(" using matrix " + shadowOf(matrix).describe());
     }
     if (filter) {
       shadowBitmap.appendDescription(" with filter");

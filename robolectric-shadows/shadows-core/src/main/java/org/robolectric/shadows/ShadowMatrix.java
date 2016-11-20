@@ -321,6 +321,10 @@ public class ShadowMatrix {
       return Objects.hashCode(mMatrix);
   }
 
+  public String describe() {
+    return "Matrix[pre=" + preOps + ", set=" + setOps + ", post=" + postOps + "]";
+  }
+
   private static SimpleMatrix getSimpleMatrix(Matrix matrix) {
     final ShadowMatrix otherMatrix = (ShadowMatrix) ShadowExtractor.extract(matrix);
     return otherMatrix.mMatrix;
