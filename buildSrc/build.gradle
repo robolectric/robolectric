@@ -3,9 +3,12 @@ apply plugin: "groovy"
 repositories {
     mavenLocal()
     mavenCentral()
+    jcenter()
 }
 
 dependencies {
     compile gradleApi()
     compile localGroovy()
+
+    compile 'me.champeau.gradle:japicmp-gradle-plugin:0.1.1'
 }

@@ -26,6 +26,30 @@ allprojects {
         }
     }
 
+    apply plugin: "me.champeau.gradle.japicmp"
+
+    def refVersion = "3.1.1"
+    afterEvaluate {
+        task japicmp(type: me.champeau.gradle.JapicmpTask) {
+            oldArchive = jarFor("org.robolectric:${mavenArtifactName()}:$refVersion")
+            newArchive = jar.archivePath
+            classpath = project.sourceSets.test.runtimeClasspath.files
+            onlyModified = true
+//                failOnModification = true
+            txtOutputFile = file("$buildDir/reports/japi.txt")
+            outputs.upToDateWhen { false }
+
+            doLast {
+                println file("$buildDir/reports/japi.txt").readLines().join("\n")
+            }
+        }
+        japicmp.enabled = project.name.startsWith("robolectric")
+    }
+
+//    task checkApi() {
+//        if (project.getTasksByName('japicmp', false).any()) tasks['japicmp'].execute()
+//    }
+
     // it's weird that compileOnly deps aren't included for test compilation; fix that:
     project.sourceSets {
         test.compileClasspath += project.configurations.compileOnly
@@ -146,5 +170,21 @@ allprojects {
                 beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
             }
         }
+    }
+}
+
+private File jarFor(String coordinates) {
+    def oldGroup = project.group
+    try {
+        project.group = 'virtual_group_for_japicmp'
+
+        def dep = project.configurations.detachedConfiguration(
+                project.dependencies.create(coordinates) { transitive = false })
+        return dep.singleFile
+    } catch (e) {
+        println "Couldn't resolve $coordinates"
+        return null
+    } finally {
+        project.group = oldGroup
     }
 }
