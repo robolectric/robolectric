@@ -48,9 +48,9 @@ To check out a branch other than `master`, specify it with `-b`. For a list of b
 *  `4.4_r1`      - Kit Kat
 *  `5.0.0_r2`    - Lollipop
 *  `5.1.1_r9`    - Lollipop MR1
-*  `6.0.0_r1`    - Marshmallow
+*  `6.0.1_r3`    - Marshmallow
 ```
-$ repo init -u https://android.googlesource.com/platform/manifest -b android-6.0.0_r1
+$ repo init -u https://android.googlesource.com/platform/manifest -b android-6.0.1_r3
 ```
 
 A successful initialization will end with a message stating that Repo is initialized in your working directory. Your client directory should now contain a `.repo` directory where files such as the manifest will be kept.
@@ -113,4 +113,4 @@ Finally, in your Robolectric directory run:
 $ build-android.sh <android version> <robolectric sub-version>
 ```
 
-For Robolectric version `6.0.0_r1-robolectric-0`, android version would be `6.0.0_r1` and  robolectric sub-version `0`.
+For Robolectric version `6.0.1_r3-robolectric-0`, android version would be `6.0.1_r3` and  robolectric sub-version `0`.

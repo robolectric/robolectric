@@ -5,7 +5,7 @@ class AndroidSdk implements Comparable<AndroidSdk> {
     static final KITKAT = new AndroidSdk(19, "4.4_r1", 1, "1.7")
     static final LOLLIPOP = new AndroidSdk(21, "5.0.0_r2", 1, "1.7")
     static final LOLLIPOP_MR1 = new AndroidSdk(22, "5.1.1_r9", 1, "1.7")
-    static final M = new AndroidSdk(23, "6.0.0_r1", 0, "1.7")
+    static final M = new AndroidSdk(23, "6.0.1_r3", 0, "1.7")
     static final N = new AndroidSdk(24, "7.0.0_r1", 0, "1.8")
 
     private static final double jdkVersion = Double.parseDouble(System.getProperty("java.specification.version"));
