@@ -143,47 +143,36 @@ public class InstrumentingClassLoader extends ClassLoader implements Opcodes {
 
   @Override
   protected Class<?> findClass(final String className) throws ClassNotFoundException {
-    if (config.shouldAcquire(className)) {
-      final byte[] origClassBytes = getByteCode(className);
+    final byte[] origClassBytes = getByteCode(className);
 
-      ClassNode classNode = new ClassNode(Opcodes.ASM4) {
-        @Override
-        public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
-          desc = remapParamType(desc);
-          return super.visitField(access, name, desc, signature, value);
-        }
-
-        @Override
-        public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-          MethodVisitor methodVisitor = super.visitMethod(access, name, remapParams(desc), signature, exceptions);
-          return new JSRInlinerAdapter(methodVisitor, access, name, desc, signature, exceptions);
-        }
-      };
-
-      final ClassReader classReader = new ClassReader(origClassBytes);
-      classReader.accept(classNode, 0);
-
-      classNode.interfaces.add(Type.getInternalName(ShadowedObject.class));
-
-      try {
-        byte[] bytes;
-        ClassInfo classInfo = new ClassInfo(className, classNode);
-        if (config.shouldInstrument(classInfo)) {
-          bytes = getInstrumentedBytes(classNode, config.containsStubs(classInfo));
-        } else {
-          bytes = origClassBytes;
-        }
-        ensurePackage(className);
-        return defineClass(className, bytes, 0, bytes.length);
-      } catch (Exception e) {
-        throw new ClassNotFoundException("couldn't load " + className, e);
-      } catch (OutOfMemoryError e) {
-        System.err.println("[ERROR] couldn't load " + className + " in " + this);
-        throw e;
+    ClassNode classNode = new ClassNode(Opcodes.ASM4) {
+      @Override
+      public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
+        desc = remapParamType(desc);
+        return super.visitField(access, name, desc, signature, value);
       }
+
+      @Override
+      public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
+        MethodVisitor methodVisitor = super.visitMethod(access, name, remapParams(desc), signature, exceptions);
+        return new JSRInlinerAdapter(methodVisitor, access, name, desc, signature, exceptions);
+      }
+    };
+
+    final ClassReader classReader = new ClassReader(origClassBytes);
+    classReader.accept(classNode, 0);
+
+    classNode.interfaces.add(Type.getInternalName(ShadowedObject.class));
+
+    byte[] bytes;
+    ClassInfo classInfo = new ClassInfo(className, classNode);
+    if (config.shouldInstrument(classInfo)) {
+      bytes = getInstrumentedBytes(classNode, config.containsStubs(classInfo));
     } else {
-      throw new IllegalStateException("how did we get here? " + className);
+      bytes = origClassBytes;
     }
+    ensurePackage(className);
+    return defineClass(className, bytes, 0, bytes.length);
   }
 
   protected byte[] getByteCode(String className) throws ClassNotFoundException {
