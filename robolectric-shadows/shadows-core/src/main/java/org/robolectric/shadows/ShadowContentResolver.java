@@ -70,7 +70,7 @@ public class ShadowContentResolver {
   private static boolean masterSyncAutomatically;
 
   @Resetter
-  public static void reset() {
+  synchronized public static void reset() {
     syncableAccounts.clear();
     providers.clear();
     masterSyncAutomatically = false;
@@ -434,7 +434,7 @@ public class ShadowContentResolver {
     return getProvider(uri.getAuthority());
   }
 
-  private static ContentProvider getProvider(String authority) {
+  synchronized private static ContentProvider getProvider(String authority) {
     if (!providers.containsKey(authority)) {
       AndroidManifest manifest = shadowOf(RuntimeEnvironment.application).getAppManifest();
       if (manifest != null) {
@@ -451,12 +451,12 @@ public class ShadowContentResolver {
   /**
    * @deprecated Use {@link org.robolectric.Robolectric#buildContentProvider(Class)} instead.
    */
-  public static void registerProvider(String authority, ContentProvider provider) {
+  synchronized public static void registerProvider(String authority, ContentProvider provider) {
     initialize(provider, authority);
     providers.put(authority, provider);
   }
 
-  public static void registerProviderInternal(String authority, ContentProvider provider) {
+  synchronized public static void registerProviderInternal(String authority, ContentProvider provider) {
     providers.put(authority, provider);
   }
 
