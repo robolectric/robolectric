@@ -5,7 +5,7 @@ dependencies {
 
     // Compile dependencies
     compile "com.ximpleware:vtd-xml:2.11"
-    compile "com.google.guava:guava:19.0"
+    compile "com.google.guava:guava:20.0"
     compileOnly AndroidSdk.MAX_SDK.coordinates
     compileOnly "com.intellij:annotations:12.0"
 
