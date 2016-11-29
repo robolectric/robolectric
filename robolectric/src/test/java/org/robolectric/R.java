@@ -123,6 +123,8 @@ public final class R {
     public static final int space = 0x1011f;
     public static final int say_it_with_item = 0x10120;
     public static final int test_menu_2 = 0x10121;
+    public static final int typed_array_a = 0x10122;
+    public static final int typed_array_b = 0x10123;
   }
 
   public static final class plurals {
@@ -139,6 +141,8 @@ public final class R {
     public static final int empty_int_array = 0x10305;
     public static final int with_references_int_array = 0x10306;
     public static final int referenced_colors_int_array = 0x10307;
+    public static final int typed_array_values = 0x10308;
+    public static final int typed_array_references = 0x10309;
   }
 
   public static final class color {
@@ -356,6 +360,7 @@ public final class R {
     public static final int reference_to_meaning_of_life = 0x10e09;
     public static final int meaning_of_life_as_item = 0x10e0a;
     public static final int scrollbar_style_ordinal_outside_overlay = 0x10e0b;
+    public static final int typed_array_5 = 0x10e0c;
   }
 
   public static final class bool {
@@ -367,6 +372,7 @@ public final class R {
     public static final int true_as_item = 0x10f05;
     public static final int different_resource_boolean=0x10f06;
     public static final int value_only_present_in_w320dp=0x10f07;
+    public static final int typed_array_true = 0x10f08;
   }
 
   public static final class style {

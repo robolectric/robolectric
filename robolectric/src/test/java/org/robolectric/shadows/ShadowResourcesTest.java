@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.app.Activity;
 import android.content.res.*;
 import android.graphics.drawable.*;
+import android.graphics.Color;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
@@ -101,6 +102,23 @@ public class ShadowResourcesTest {
   public void getStringArray() throws Exception {
     assertThat(resources.getStringArray(R.array.items)).isEqualTo(new String[]{"foo", "bar"});
     assertThat(resources.getStringArray(R.array.greetings)).isEqualTo(new String[]{"hola", "Hello"});
+  }
+
+  @Test
+  public void obtainTypedArray() throws Exception {
+    final TypedArray valuesTypedArray = resources.obtainTypedArray(R.array.typed_array_values);
+    assertThat(valuesTypedArray.getString(0)).isEqualTo("abcdefg");
+    assertThat(valuesTypedArray.getInt(1, 0)).isEqualTo(3875);
+    assertThat(valuesTypedArray.getInteger(1, 0)).isEqualTo(3875);
+    assertThat(valuesTypedArray.getFloat(2, 0.0f)).isEqualTo(2.0f);
+    assertThat(valuesTypedArray.getColor(3, Color.BLACK)).isEqualTo(Color.MAGENTA);
+    assertThat(valuesTypedArray.getColor(4, Color.BLACK)).isEqualTo(Color.parseColor("#00ffff"));
+
+    final TypedArray refsTypedArray = resources.obtainTypedArray(R.array.typed_array_references);
+    assertThat(refsTypedArray.getString(0)).isEqualTo("apple");
+    assertThat(refsTypedArray.getString(1)).isEqualTo("banana");
+    assertThat(refsTypedArray.getInt(2, 0)).isEqualTo(5);
+    assertThat(refsTypedArray.getBoolean(3, false)).isTrue();
   }
 
   @Test

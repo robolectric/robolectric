@@ -429,6 +429,86 @@ public final class ShadowAssetManager {
     return ints;
   }
 
+ protected TypedArray getTypedArrayResource(Resources resources, int resId) {
+    TypedResource value = getAndResolve(resId, RuntimeEnvironment.getQualifiers(), true);
+    if (value == null) {
+      return null;
+    }
+    TypedResource[] items = getConverter(value).getItems(value);
+    return getTypedArray(resources, items, resId);
+  }
+
+  private TypedArray getTypedArray(Resources resources, TypedResource[] typedResources, int resId) {
+    final CharSequence[] stringData = new CharSequence[typedResources.length];
+    final int totalLen = typedResources.length * ShadowAssetManager.STYLE_NUM_ENTRIES;
+    final int[] data = new int[totalLen];
+
+    for (int i = 0; i < typedResources.length; i++) {
+      final int offset = i * ShadowAssetManager.STYLE_NUM_ENTRIES;
+      TypedResource typedResource = typedResources[i];
+
+      // Classify the item.
+      int type = getResType(typedResource);
+      if (type == -1) {
+        // This type is unsupported; leave empty.
+        continue;
+      }
+
+      final TypedValue typedValue = new TypedValue();
+      if (type == TypedValue.TYPE_REFERENCE) {
+        final String resName = typedResource.asString();
+        final int startIdx = resName.indexOf("@");
+        final int slashIdx = resName.indexOf("/");
+        typedValue.resourceId = getResourceIdentifier(resName.substring(slashIdx + 1),
+                resName.substring(startIdx + 1, slashIdx), getResourcePackageName(resId));
+        typedResource = resolve(typedResource, RuntimeEnvironment.getQualifiers(), typedValue.resourceId);
+        // Reclassify to a non-reference type.
+        type = getResType(typedResource);
+        if (type == -1) {
+          // This type is unsupported; leave empty.
+          continue;
+        }
+      }
+
+      getConverter(typedResource).fillTypedValue(typedResource.getData(), typedValue);
+
+      data[offset + ShadowAssetManager.STYLE_TYPE] = type;
+      data[offset + ShadowAssetManager.STYLE_RESOURCE_ID] = typedValue.resourceId;
+      data[offset + ShadowAssetManager.STYLE_DATA] = typedValue.data;
+      data[offset + ShadowAssetManager.STYLE_ASSET_COOKIE] = typedValue.assetCookie;
+      data[offset + ShadowAssetManager.STYLE_CHANGING_CONFIGURATIONS] = typedValue.changingConfigurations;
+      data[offset + ShadowAssetManager.STYLE_DENSITY] = typedValue.density;
+      stringData[i] = typedResource.asString();
+    }
+
+    int[] indices = new int[typedResources.length + 1]; /* keep zeroed out */
+    return ShadowTypedArray.create(resources, null, data, indices, totalLen, stringData);
+  }
+
+  private int getResType(TypedResource typedResource) {
+    int type;
+    if (typedResource.getData() == null) {
+      type = TypedValue.TYPE_NULL;
+    } else if (typedResource.isReference()) {
+      type = TypedValue.TYPE_REFERENCE;
+    } else if (typedResource.getResType() == ResType.CHAR_SEQUENCE) {
+      type = TypedValue.TYPE_STRING;
+    } else if (typedResource.getResType() == ResType.INTEGER) {
+      type = TypedValue.TYPE_INT_DEC;
+    } else if (typedResource.getResType() == ResType.FLOAT) {
+      type = TypedValue.TYPE_FLOAT;
+    } else if (typedResource.getResType() == ResType.BOOLEAN) {
+      type = TypedValue.TYPE_INT_BOOLEAN;
+    } else if (typedResource.getResType() == ResType.DIMEN) {
+      type = TypedValue.TYPE_DIMENSION;
+    } else if (typedResource.getResType() == ResType.COLOR) {
+      type = TypedValue.TYPE_INT_COLOR_ARGB8;
+    } else {
+      type = -1;
+    }
+    return type;
+  }
+
   @HiddenApi @Implementation
   public Number createTheme() {
     synchronized (nativeThemes) {
