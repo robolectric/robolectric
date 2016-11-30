@@ -19,6 +19,8 @@ public class RuntimeAdapterFactory {
       return new Api22RuntimeAdapter();
     } else if (apiLevel <= Build.VERSION_CODES.M) {
       return new Api23RuntimeAdapter();
+    } else if (apiLevel <= Build.VERSION_CODES.N) {
+      return new Api24RuntimeAdapter();
     } else {
       throw new RuntimeException("Could not find AndroidRuntimeAdapter for API level: " + apiLevel);
     }

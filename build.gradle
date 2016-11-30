@@ -66,7 +66,17 @@ allprojects {
 
         minHeapSize = "2048m"
         maxHeapSize = "4096m"
-        jvmArgs "-XX:MaxPermSize=1024m"
+
+        def forwardedSystemProperties = System.properties
+                .findAll { k,v -> k.startsWith("robolectric.") }
+                .collect { k,v -> "-D$k=$v" }
+        jvmArgs = ["-XX:MaxPermSize=1024m"] + forwardedSystemProperties
+
+        doFirst {
+            if (!forwardedSystemProperties.isEmpty()) {
+                println "Running tests with ${forwardedSystemProperties}"
+            }
+        }
     }
 
     signing {

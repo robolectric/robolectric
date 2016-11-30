@@ -9,7 +9,8 @@ import android.os.IBinder;
 
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.ShadowsAdapter;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
+
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 public class IntentServiceController<T extends IntentService> extends ComponentController<IntentServiceController<T>, T> {
   private final String shadowActivityThreadClassName;
@@ -44,19 +45,19 @@ public class IntentServiceController<T extends IntentService> extends ComponentC
         }
 
       ReflectionHelpers.callInstanceMethod(Service.class, component, "attach",
-         ReflectionHelpers.ClassParameter.from(Context.class, baseContext),
-         ReflectionHelpers.ClassParameter.from(activityThreadClass, null),
-         ReflectionHelpers.ClassParameter.from(String.class, component.getClass().getSimpleName()),
-         ReflectionHelpers.ClassParameter.from(IBinder.class, null),
-         ReflectionHelpers.ClassParameter.from(Application.class, RuntimeEnvironment.application),
-         ReflectionHelpers.ClassParameter.from(Object.class, null));
+         from(Context.class, baseContext),
+         from(activityThreadClass, null),
+         from(String.class, component.getClass().getSimpleName()),
+         from(IBinder.class, null),
+         from(Application.class, RuntimeEnvironment.application),
+         from(Object.class, null));
 
       attached = true;
       return this;
     }
 
     public IntentServiceController<T> bind() {
-      invokeWhilePaused("onBind", getIntent());
+      invokeWhilePaused("onBind", from(Intent.class, getIntent()));
       return this;
     }
 
@@ -71,7 +72,7 @@ public class IntentServiceController<T extends IntentService> extends ComponentC
     }
 
     public IntentServiceController<T> rebind() {
-      invokeWhilePaused("onRebind", getIntent());
+      invokeWhilePaused("onRebind", from(Intent.class, getIntent()));
       return this;
     }
 
@@ -82,12 +83,12 @@ public class IntentServiceController<T extends IntentService> extends ComponentC
     }
 
     public IntentServiceController<T> unbind() {
-      invokeWhilePaused("onUnbind", getIntent());
+      invokeWhilePaused("onUnbind", from(Intent.class, getIntent()));
       return this;
     }
 
     public IntentServiceController<T> handleIntent() {
-      invokeWhilePaused("onHandleIntent", getIntent());
+      invokeWhilePaused("onHandleIntent", from(Intent.class, getIntent()));
       return this;
     }
 }

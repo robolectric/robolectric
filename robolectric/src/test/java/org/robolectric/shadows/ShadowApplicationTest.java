@@ -15,6 +15,7 @@ import android.os.IBinder;
 import android.os.IInterface;
 import android.os.Parcel;
 import android.os.RemoteException;
+import android.os.ResultReceiver;
 import android.os.UserManager;
 import android.print.PrintManager;
 import android.view.Gravity;
@@ -480,6 +481,11 @@ public class ShadowApplicationTest {
     @Override
     public boolean unlinkToDeath(DeathRecipient recipient, int flags) {
       return false;
+    }
+
+    @Override
+    public void shellCommand(FileDescriptor in, FileDescriptor out, FileDescriptor err,
+            String[] args, ResultReceiver resultReceiver) throws RemoteException {
     }
   }
 

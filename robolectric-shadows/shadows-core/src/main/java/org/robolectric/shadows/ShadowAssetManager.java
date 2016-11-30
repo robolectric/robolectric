@@ -37,7 +37,6 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -47,7 +46,6 @@ import java.util.List;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.RuntimeEnvironment.castNativePtr;
-import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.Shadows.shadowOf;
 
 /**
@@ -66,8 +64,20 @@ public final class ShadowAssetManager {
   boolean strictErrors = false;
 
   private static long nextInternalThemeId = 1000;
-  private static final Map<Long, WeakReference<Resources.Theme>> themes = new HashMap<>();
+  private static final Map<Long, NativeTheme> nativeThemes = new HashMap<>();
   private ResourceLoader resourceLoader;
+
+  class NativeTheme {
+    private ThemeStyleSet themeStyleSet;
+
+    public NativeTheme(ThemeStyleSet themeStyleSet) {
+      this.themeStyleSet = themeStyleSet;
+    }
+
+    public ShadowAssetManager getShadowAssetManager() {
+      return ShadowAssetManager.this;
+    }
+  }
 
   @RealObject
   AssetManager realObject;
@@ -163,7 +173,7 @@ public final class ShadowAssetManager {
     ResourceIndex resourceIndex = resourceLoader.getResourceIndex();
     ResName resName = resourceIndex.getResName(ident);
 
-    ThemeStyleSet themeStyleSet = shadowOf(getTheme(themePtr)).getThemeStyleSet();
+    ThemeStyleSet themeStyleSet = getNativeTheme(themePtr).themeStyleSet;
     AttributeResource attrValue = themeStyleSet.getAttrValue(resName);
     while(resolveRefs && attrValue != null && attrValue.isStyleReference()) {
       ResName attrResName = new ResName(attrValue.contextPackageName, "attr", attrValue.value.substring(1));
@@ -299,37 +309,37 @@ public final class ShadowAssetManager {
 
   @HiddenApi @Implementation
   public Number createTheme() {
-    synchronized (themes) {
-      return castNativePtr(nextInternalThemeId++);
+    synchronized (nativeThemes) {
+      long nativePtr = nextInternalThemeId++;
+      nativeThemes.put(nativePtr, new NativeTheme(new ThemeStyleSet()));
+      return castNativePtr(nativePtr);
     }
   }
 
-  public static void saveTheme(Number themePtr, Resources.Theme theme) {
-    synchronized (themes) {
-      themes.put(themePtr.longValue(), new WeakReference<>(theme));
-    }
+  private static NativeTheme getNativeTheme(Resources.Theme theme) {
+    return getNativeTheme(shadowOf(theme).getNativePtr());
   }
 
-  private static Resources.Theme getTheme(long themePtr) {
-    WeakReference<Resources.Theme> themeRef;
-    synchronized (themes) {
-      themeRef = themes.get(themePtr);
+  private static NativeTheme getNativeTheme(long themePtr) {
+    NativeTheme nativeTheme;
+    synchronized (nativeThemes) {
+      nativeTheme = nativeThemes.get(themePtr);
     }
-    if (themeRef == null) {
+    if (nativeTheme == null) {
       throw new RuntimeException("no theme " + themePtr + " found in AssetManager");
     }
-    return themeRef.get();
+    return nativeTheme;
   }
 
   @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
   public void releaseTheme(int themePtr) {
-    themes.remove(themePtr);
+    releaseTheme((long) themePtr);
   }
 
   @HiddenApi @Implementation(minSdk = LOLLIPOP)
   public void releaseTheme(long themePtr) {
-    synchronized (themes) {
-      themes.remove(themePtr);
+    synchronized (nativeThemes) {
+      nativeThemes.remove(themePtr);
     }
   }
 
@@ -340,9 +350,9 @@ public final class ShadowAssetManager {
 
   @HiddenApi @Implementation(minSdk = LOLLIPOP)
   public static void applyThemeStyle(long themePtr, int styleRes, boolean force) {
-    Resources.Theme theme = getTheme(themePtr);
-    ShadowResources.ShadowTheme shadowTheme = shadowOf(theme);
-    shadowTheme.doApplyStyle(styleRes, force);
+    NativeTheme nativeTheme = getNativeTheme(themePtr);
+    Style style = nativeTheme.getShadowAssetManager().resolveStyle(styleRes, null);
+    nativeTheme.themeStyleSet.apply(style, force);
 }
 
   @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
@@ -352,9 +362,9 @@ public final class ShadowAssetManager {
 
   @HiddenApi @Implementation(minSdk = LOLLIPOP)
   public static void copyTheme(long destPtr, long sourcePtr) {
-    Resources.Theme destTheme = getTheme(destPtr);
-    Resources.Theme sourceTheme = getTheme(sourcePtr);
-    shadowOf(destTheme).setThemeStyleSet(shadowOf(sourceTheme).getThemeStyleSet().copy());
+    NativeTheme destNativeTheme = getNativeTheme(destPtr);
+    NativeTheme sourceNativeTheme = getNativeTheme(sourcePtr);
+    destNativeTheme.themeStyleSet = sourceNativeTheme.themeStyleSet.copy();
   }
 
   /////////////////////////
@@ -536,15 +546,15 @@ public final class ShadowAssetManager {
     }
   }
 
-  TypedArray attrsToTypedArray(Resources resources, AttributeSet set, int[] attrs, int defStyleAttr, Resources.Theme theme, int defStyleRes) {
+  TypedArray attrsToTypedArray(Resources resources, AttributeSet set, int[] attrs, int defStyleAttr, long nativeTheme, int defStyleRes) {
     CharSequence[] stringData = new CharSequence[attrs.length];
     int[] data = new int[attrs.length * ShadowAssetManager.STYLE_NUM_ENTRIES];
     int[] indices = new int[attrs.length + 1];
     int nextIndex = 0;
 
-    Style themeStyleSet = theme == null
+    Style themeStyleSet = nativeTheme == 0
         ? new EmptyStyle()
-        : shadowOf(theme).getThemeStyleSet();
+        : getNativeTheme(nativeTheme).themeStyleSet;
 
     for (int i = 0; i < attrs.length; i++) {
       int offset = i * ShadowAssetManager.STYLE_NUM_ENTRIES;

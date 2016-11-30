@@ -1,13 +1,13 @@
 package org.robolectric;
 
-import static org.robolectric.util.TestUtil.resourceFile;
-
 import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
 import org.robolectric.manifest.AndroidManifest;
 
 import java.util.Locale;
 import java.util.Properties;
+
+import static org.robolectric.util.TestUtil.resourceFile;
 
 public class TestRunners {
 

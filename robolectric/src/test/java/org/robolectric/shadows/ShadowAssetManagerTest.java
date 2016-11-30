@@ -200,7 +200,7 @@ public class ShadowAssetManagerTest {
 
     shadowOf(assetManager).attrsToTypedArray(resources,
         Robolectric.buildAttributeSet().setStyleAttribute("?attr/styleNotSpecifiedInAnyTheme").build(),
-        new int[]{R.attr.string1}, 0, theme, 0);
+        new int[]{R.attr.string1}, 0, shadowOf(theme).getNativePtr(), 0);
   }
 
   @Test

@@ -7,7 +7,7 @@ import android.content.IntentFilter;
 import android.content.IntentSender;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
-import android.content.pm.ContainerEncryptionParams;
+import android.content.pm.EphemeralApplicationInfo;
 import android.content.pm.FeatureInfo;
 import android.content.pm.IPackageDataObserver;
 import android.content.pm.IPackageDeleteObserver;
@@ -17,7 +17,6 @@ import android.content.pm.IPackageStatsObserver;
 import android.content.pm.InstrumentationInfo;
 import android.content.pm.IntentFilterVerificationInfo;
 import android.content.pm.KeySet;
-import android.content.pm.ManifestDigest;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageInstaller;
 import android.content.pm.PackageItemInfo;
@@ -132,7 +131,6 @@ public class StubPackageManager extends PackageManager {
     return null;
   }
 
-  @Override
   public List<PackageInfo> getInstalledPackages(int flags, int userId) {
     return null;
   }
@@ -441,27 +439,7 @@ public class StubPackageManager extends PackageManager {
   }
 
   @Override
-  public void installPackageWithVerification(Uri packageURI, IPackageInstallObserver observer, int flags, String installerPackageName, Uri verificationURI, ManifestDigest manifestDigest, ContainerEncryptionParams encryptionParams) {
-
-  }
-
-  @Override
-  public void installPackageWithVerificationAndEncryption(Uri packageURI, IPackageInstallObserver observer, int flags, String installerPackageName, VerificationParams verificationParams, ContainerEncryptionParams encryptionParams) {
-
-  }
-
-  @Override
   public void installPackage(Uri uri, PackageInstallObserver packageInstallObserver, int i, String s) {
-
-  }
-
-  @Override
-  public void installPackageWithVerification(Uri uri, PackageInstallObserver packageInstallObserver, int i, String s, Uri uri1, ManifestDigest manifestDigest, ContainerEncryptionParams containerEncryptionParams) {
-
-  }
-
-  @Override
-  public void installPackageWithVerificationAndEncryption(Uri uri, PackageInstallObserver packageInstallObserver, int i, String s, VerificationParams verificationParams, ContainerEncryptionParams containerEncryptionParams) {
 
   }
 
@@ -505,7 +483,6 @@ public class StubPackageManager extends PackageManager {
 
   }
 
-  @Override
   public void getPackageSizeInfo(String packageName, int userHandle, IPackageStatsObserver observer) {
 
   }
@@ -604,7 +581,6 @@ public class StubPackageManager extends PackageManager {
     return false;
   }
 
-  @Override
   public void movePackage(String packageName, IPackageMoveObserver observer, int flags) {
 
   }
@@ -707,12 +683,10 @@ public class StubPackageManager extends PackageManager {
 
   }
 
-  @Override
   public int getIntentVerificationStatus(String packageName, int userId) {
     return 0;
   }
 
-  @Override
   public boolean updateIntentVerificationStatus(String packageName, int status, int userId) {
     return false;
   }
@@ -727,12 +701,10 @@ public class StubPackageManager extends PackageManager {
     return null;
   }
 
-  @Override
   public String getDefaultBrowserPackageName(int userId) {
     return null;
   }
 
-  @Override
   public boolean setDefaultBrowserPackageName(String packageName, int userId) {
     return false;
   }
@@ -763,5 +735,118 @@ public class StubPackageManager extends PackageManager {
   @Override
   public PackageInfo getPackageArchiveInfo(String archiveFilePath, int flags) {
     return null;
+  }
+
+  public boolean isPackageSuspendedForUser(String packageName, int userId) {
+    return false;
+  }
+
+  public String[] setPackagesSuspendedAsUser(
+            String[] packageNames, boolean suspended, int userId) {
+    return null;
+  }
+
+  public void flushPackageRestrictionsAsUser(int userId) {
+  }
+
+  public void getPackageSizeInfoAsUser(String packageName, int userId,
+            IPackageStatsObserver observer) {
+  }
+
+  public void deleteApplicationCacheFilesAsUser(String packageName, int userId,
+            IPackageDataObserver observer) {
+  }
+
+  public void deletePackageAsUser(String packageName, IPackageDeleteObserver observer,
+            int flags, int userId) {
+  }
+
+  public String getDefaultBrowserPackageNameAsUser(int userId) {
+    return null;
+  }
+
+  public boolean updateIntentVerificationStatusAsUser(String packageName, int status,
+            int userId) {
+     return false;
+  }
+
+  public int getIntentVerificationStatusAsUser(String packageName, int userId) {
+    return 0;
+  }
+
+  public int installExistingPackageAsUser(String packageName, int userId)
+            throws NameNotFoundException {
+    return 0;
+  }
+
+  public boolean setDefaultBrowserPackageNameAsUser(String packageName,
+            int userId) {
+    return false;
+  }
+  public Drawable getUserBadgeForDensityNoBackground(UserHandle user, int density) {
+    return null;
+  }
+  public Drawable getManagedUserBadgedDrawable(Drawable drawable, Rect badgeLocation,
+        int badgeDensity) {
+    return null;
+  }
+  public List<ResolveInfo> queryBroadcastReceiversAsUser(Intent intent,
+            int flags, int userId) {
+    return null;
+  }
+  public boolean hasSystemFeature(String name, int version) {
+    return false;
+  }
+
+  public String getServicesSystemSharedLibraryPackageName() {
+    return null;
+  }
+
+  public List<EphemeralApplicationInfo> getEphemeralApplications() {
+    return null;
+  }
+
+  public Drawable getEphemeralApplicationIcon(String packageName) {
+    return null;
+  }
+
+  public boolean isEphemeralApplication() {
+    return false;}
+
+    public int getEphemeralCookieMaxSizeBytes() {return 0;}
+
+    public byte[] getEphemeralCookie() {
+  return null;
+  }
+  public boolean setEphemeralCookie(byte[] cookie) {
+    return false;
+  }
+  public List<PackageInfo> getInstalledPackagesAsUser(int flags,
+            int userId) {
+    return null;
+  }
+  public ApplicationInfo getApplicationInfoAsUser(String packageName,
+            int flags, int userId) throws NameNotFoundException {
+    return null;
+  }
+  public int getPackageUidAsUser(String packageName, int userId)
+            throws NameNotFoundException {
+    return 0;
+  }
+
+  public int getPackageUidAsUser(String packageName, int flags,
+            int userId) throws NameNotFoundException {
+    return 0;
+  }
+  public int[] getPackageGids(String packageName, int flags)
+            throws NameNotFoundException {
+    return null;
+  }
+  public PackageInfo getPackageInfoAsUser(String packageName,
+            int flags, int userId) throws NameNotFoundException {
+    return null;
+  }
+  public String getSharedSystemSharedLibraryPackageName() {
+    return "";
   }
 }
