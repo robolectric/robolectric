@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
 /**
@@ -110,23 +111,21 @@ public class MultiApiRobolectricTestRunner extends Suite {
   /*
    * Only called reflectively. Do not use programmatically.
    */
-  public MultiApiRobolectricTestRunner(Class<?> klass, Set<Integer> supportedApis) throws Throwable {
+  public MultiApiRobolectricTestRunner(Class<?> klass) throws Throwable {
+    this(klass, SdkConfig.getSupportedApis(), System.getProperties());
+  }
+
+  MultiApiRobolectricTestRunner(Class<?> klass, Set<Integer> supportedApis, Properties properties) throws Throwable {
     super(klass, Collections.<Runner>emptyList());
 
-    for (Integer integer : supportedApis) {
+    for (Integer integer : filterSupportedApis(supportedApis, properties)) {
       runners.add(createTestRunner(integer));
     }
    }
 
-   public MultiApiRobolectricTestRunner(Class<?> klass) throws Throwable {
-    this(klass, filterSupportedApis());
-   }
-
   @NotNull
-  private static Set<Integer> filterSupportedApis() {
-    Set<Integer> supportedApis = SdkConfig.getSupportedApis();
-
-    String overrideSupportedApis = System.getProperty("robolectric.enabledApis");
+  private static Set<Integer> filterSupportedApis(Set<Integer> supportedApis, Properties properties) {
+    String overrideSupportedApis = properties.getProperty("robolectric.enabledApis");
     if (overrideSupportedApis == null || overrideSupportedApis.isEmpty()) {
       return supportedApis;
     } else {
