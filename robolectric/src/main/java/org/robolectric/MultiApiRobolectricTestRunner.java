@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * A test runner for Robolectric that will run a test against multiple API versions.
@@ -118,7 +119,7 @@ public class MultiApiRobolectricTestRunner extends Suite {
   MultiApiRobolectricTestRunner(Class<?> klass, Set<Integer> supportedApis, Properties properties) throws Throwable {
     super(klass, Collections.<Runner>emptyList());
 
-    for (Integer integer : filterSupportedApis(supportedApis, properties)) {
+    for (Integer integer : new TreeSet<>(filterSupportedApis(supportedApis, properties))) {
       runners.add(createTestRunner(integer));
     }
    }
