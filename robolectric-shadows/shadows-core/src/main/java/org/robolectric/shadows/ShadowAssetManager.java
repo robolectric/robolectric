@@ -71,13 +71,13 @@ public final class ShadowAssetManager {
   AssetManager realObject;
 
   private void convertAndFill(AttributeResource attribute, TypedValue outValue, String qualifiers, boolean resolveRefs) {
-    if (attribute.isNull() || attribute.isEmpty()) {
+    if (attribute.isNull()) {
       outValue.type = TypedValue.TYPE_NULL;
-      if (attribute.isEmpty()) {
-        outValue.data = TypedValue.DATA_NULL_EMPTY;
-      } else {
-        outValue.data = TypedValue.DATA_NULL_UNDEFINED;
-      }
+      outValue.data = TypedValue.DATA_NULL_UNDEFINED;
+      return;
+    } else if (attribute.isEmpty()) {
+      outValue.type = TypedValue.TYPE_NULL;
+      outValue.data = TypedValue.DATA_NULL_EMPTY;
       return;
     }
 
@@ -575,7 +575,7 @@ public final class ShadowAssetManager {
     return resolveResourceValue(value, qualifiers, resName);
   }
 
-  private AttributeResource buildAttribute(AttributeSet set, int resId, int defStyleAttr, Style themeStyleSet, int defStyleRes) {
+  private TypedValue buildTypedValue(AttributeSet set, int resId, int defStyleAttr, Style themeStyleSet, int defStyleRes) {
     /*
      * When determining the final value of a particular attribute, there are four inputs that come into play:
      *
@@ -661,7 +661,13 @@ public final class ShadowAssetManager {
       }
     }
 
-    return attribute;
+    if (attribute == null || attribute.isNull()) {
+      return null;
+    } else {
+      TypedValue typedValue = new TypedValue();
+      convertAndFill(attribute, typedValue, RuntimeEnvironment.getQualifiers(), true);
+      return typedValue;
+    }
   }
 
   private void strictError(String message, Object... args) {
@@ -685,10 +691,8 @@ public final class ShadowAssetManager {
     for (int i = 0; i < attrs.length; i++) {
       int offset = i * ShadowAssetManager.STYLE_NUM_ENTRIES;
 
-      AttributeResource attribute = buildAttribute(set, attrs[i], defStyleAttr, themeStyleSet, defStyleRes);
-      if (attribute != null && !attribute.isNull()) {
-        TypedValue typedValue = new TypedValue();
-        convertAndFill(attribute, typedValue, RuntimeEnvironment.getQualifiers(), true);
+      TypedValue typedValue = buildTypedValue(set, attrs[i], defStyleAttr, themeStyleSet, defStyleRes);
+      if (typedValue != null) {
         //noinspection PointlessArithmeticExpression
         data[offset + ShadowAssetManager.STYLE_TYPE] = typedValue.type;
         data[offset + ShadowAssetManager.STYLE_DATA] = typedValue.type == TypedValue.TYPE_STRING ? i : typedValue.data;
