@@ -1,46 +1,29 @@
 package org.robolectric.shadows;
 
 import android.app.Activity;
-import android.content.res.ColorStateList;
-import android.content.res.Configuration;
-import android.content.res.Resources;
-import android.content.res.TypedArray;
-import android.content.res.XmlResourceParser;
-import android.graphics.drawable.AnimationDrawable;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.NinePatchDrawable;
+import android.content.res.*;
+import android.graphics.drawable.*;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import org.assertj.core.data.Offset;
-import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.R;
-import org.robolectric.Robolectric;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.Shadows;
-import org.robolectric.TestRunners;
+import org.robolectric.*;
 import org.robolectric.annotation.Config;
-import org.robolectric.res.*;
-import org.robolectric.res.builder.XmlBlock;
 import org.robolectric.res.builder.XmlResourceParserImpl;
 import org.robolectric.util.TestUtil;
 import org.xmlpull.v1.XmlPullParser;
 
 import java.io.File;
 import java.io.InputStream;
-import java.util.Map;
 
-import static android.os.Build.VERSION_CODES.*;
+import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
@@ -504,6 +487,16 @@ public class ShadowResourcesTest {
   }
 
   @Test
+  public void obtainAttributes_shouldUseReferencedIdFromAttributeSet() throws Exception {
+    // android:id/mask was introduced in API 21, but it's still possible for apps built against API 21 to refer to it
+    // in older runtimes because referenced resource ids are compiled (by aapt) into the binary XML format.
+    AttributeSet attributeSet = Robolectric.buildAttributeSet()
+        .addAttribute(android.R.attr.id, "@android:id/mask").build();
+    TypedArray typedArray = resources.obtainAttributes(attributeSet, new int[]{android.R.attr.id});
+    assertThat(typedArray.getResourceId(0, -9)).isEqualTo(android.R.id.mask);
+  }
+
+  @Test
   public void obtainStyledAttributesShouldDereferenceValues() {
     Resources.Theme theme = resources.newTheme();
     theme.applyStyle(R.style.MyBlackTheme, false);
@@ -513,13 +506,6 @@ public class ShadowResourcesTest {
     arr.recycle();
 
     assertThat(value.type).isGreaterThanOrEqualTo(TypedValue.TYPE_FIRST_COLOR_INT).isLessThanOrEqualTo(TypedValue.TYPE_LAST_INT);
-  }
-
-  public static final class Lollipop_R_snippet {
-    public static final class attr {
-      public static final int viewportHeight = 16843779;
-      public static final int viewportWidth = 16843778;
-    }
   }
 
   @Test
@@ -727,46 +713,6 @@ public class ShadowResourcesTest {
   private static class SubClassResources extends Resources {
     public SubClassResources(Resources res) {
       super(res.getAssets(), res.getDisplayMetrics(), res.getConfiguration());
-    }
-  }
-
-  private static class FakeResourceLoader extends ResourceLoader {
-    private final Map<String, AttrData> attributesTypes;
-    private final ResourceIndex resourceIndex;
-
-    public FakeResourceLoader(Map<String, AttrData> attributesTypes, ResourceIndex resourceIndex) {
-      this.attributesTypes = attributesTypes;
-      this.resourceIndex = resourceIndex;
-    }
-
-    @Override
-    public TypedResource getValue(@NotNull ResName resName, String qualifiers) {
-      return new TypedResource<>(attributesTypes.get(resName.name), ResType.FLOAT,
-          new XmlLoader.XmlContext("", Fs.newFile(new File("res/values/foo.xml"))));
-    }
-
-    @Override
-    public XmlBlock getXml(ResName resName, String qualifiers) {
-      return null;
-    }
-
-    @Override
-    public InputStream getRawValue(ResName resName) {
-      return null;
-    }
-
-    @Override
-    public ResourceIndex getResourceIndex() {
-      return resourceIndex;
-    }
-
-    @Override
-    public boolean providesFor(String namespace) {
-      return false;
-    }
-
-    @Override
-    public void receive(Visitor visitor) {
     }
   }
 }

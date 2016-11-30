@@ -90,9 +90,14 @@ public final class ShadowAssetManager {
     }
 
     while (attribute.isResourceReference()) {
+      Integer resourceId;
       ResName resName = attribute.getResourceReference();
+      if (attribute.getReferenceResId() != null) {
+        resourceId = attribute.getReferenceResId();
+      } else {
+        resourceId = getResourceLoader(resName).getResourceIndex().getResourceId(resName);
+      }
 
-      Integer resourceId = getResourceLoader(resName).getResourceIndex().getResourceId(resName);
       if (resourceId == null) {
         throw new Resources.NotFoundException("unknown resource " + resName);
       }
@@ -722,13 +727,17 @@ public final class ShadowAssetManager {
         if (attributeSet.getAttributeNameResource(i) == resId && attributeSet.getAttributeValue(i) != null) {
           // TODO: If there is a match in the XML then we should get the resource name from the XML rather than look it up from the app resource loader.
           ResName resName = resourceLoader.getResourceIndex().getResName(resId);
+          Integer referenceResId = null;
+          if (AttributeResource.isResourceReference(attributeSet.getAttributeValue(i))) {
+            referenceResId = attributeSet.getAttributeResourceValue(i, -1);
+          }
 
           if (resName == null) {
             // We're looking for an attribute that doesn't yet exist at this SDK level just pass it back blindly and
             // assume the user knows what they're doing with it.
             resName = ResName.qualifyResName(attributeSet.getAttributeName(i), null, "attr");
           }
-          return new AttributeResource(resName, attributeSet.getAttributeValue(i), "fixme!!!");
+          return new AttributeResource(resName, attributeSet.getAttributeValue(i), "fixme!!!", referenceResId);
         }
       }
     }

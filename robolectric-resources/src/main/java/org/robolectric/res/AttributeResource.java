@@ -12,19 +12,19 @@ public class AttributeResource {
   public final @NotNull ResName resName;
   public final @NotNull String value;
   public final @NotNull String contextPackageName;
+  private final Integer referenceResId;
 
   public AttributeResource(@NotNull ResName resName, @NotNull String value, @NotNull String contextPackageName) {
+    this(resName, value, contextPackageName, null);
+  }
+
+  public AttributeResource(@NotNull ResName resName, @NotNull String value, @NotNull String contextPackageName, Integer referenceResId) {
+    this.referenceResId = referenceResId;
     if (!resName.type.equals("attr")) throw new IllegalStateException("\"" + resName.getFullyQualifiedName() + "\" unexpected");
 
     this.resName = resName;
     this.value = value;
     this.contextPackageName = contextPackageName;
-  }
-
-  public String qualifiedValue() {
-    if (isResourceReference()) return "@" + getResourceReference().getFullyQualifiedName();
-    if (isStyleReference()) return "?" + getStyleReference().getFullyQualifiedName();
-    else return value;
   }
 
   public boolean isResourceReference() {
@@ -86,5 +86,9 @@ public class AttributeResource {
 
   public static boolean isEmpty(String value) {
     return EMPTY_VALUE.equals(value);
+  }
+
+  public Integer getReferenceResId() {
+    return referenceResId;
   }
 }
