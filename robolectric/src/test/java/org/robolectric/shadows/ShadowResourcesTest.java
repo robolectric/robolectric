@@ -27,14 +27,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
-import org.robolectric.res.AttrData;
-import org.robolectric.res.ResName;
-import org.robolectric.res.ResType;
-import org.robolectric.res.ResourceExtractor;
-import org.robolectric.res.ResourceIndex;
-import org.robolectric.res.ResourceLoader;
-import org.robolectric.res.ResourcePath;
-import org.robolectric.res.TypedResource;
+import org.robolectric.res.*;
 import org.robolectric.res.builder.XmlBlock;
 import org.robolectric.res.builder.XmlResourceParserImpl;
 import org.robolectric.util.TestUtil;
@@ -47,6 +40,8 @@ import java.util.Map;
 import static android.os.Build.VERSION_CODES.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(TestRunners.MultiApiWithDefaults.class)
@@ -724,7 +719,8 @@ public class ShadowResourcesTest {
 
     @Override
     public TypedResource getValue(@NotNull ResName resName, String qualifiers) {
-      return new TypedResource<>(attributesTypes.get(resName.name), ResType.FLOAT);
+      return new TypedResource<>(attributesTypes.get(resName.name), ResType.FLOAT,
+          new XmlLoader.XmlContext("", Fs.newFile(new File("res/values/foo.xml"))));
     }
 
     @Override

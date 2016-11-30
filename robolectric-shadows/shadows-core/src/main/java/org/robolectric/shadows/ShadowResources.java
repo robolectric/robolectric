@@ -122,7 +122,8 @@ public class ShadowResources {
       }
 
       TypedResource<?> resolvedTypedResource = shadowAssetManager.resolve(
-          new TypedResource<>(plural.getString(), ResType.CHAR_SEQUENCE), RuntimeEnvironment.getQualifiers(), resId);
+          new TypedResource<>(plural.getString(), ResType.CHAR_SEQUENCE, pluralRules.getXmlContext()),
+          RuntimeEnvironment.getQualifiers(), resId);
       return resolvedTypedResource == null ? null : resolvedTypedResource.asString();
     } else {
       return null;
