@@ -15,21 +15,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.res.AttributeResource;
-import org.robolectric.res.DrawableResourceLoader;
-import org.robolectric.res.EmptyStyle;
-import org.robolectric.res.FileTypedResource;
-import org.robolectric.res.FsFile;
-import org.robolectric.res.ResName;
-import org.robolectric.res.ResType;
-import org.robolectric.res.ResourceIds;
-import org.robolectric.res.ResourceIndex;
-import org.robolectric.res.ResourceLoader;
-import org.robolectric.res.Style;
-import org.robolectric.res.StyleData;
-import org.robolectric.res.StyleResolver;
-import org.robolectric.res.ThemeStyleSet;
-import org.robolectric.res.TypedResource;
+import org.robolectric.res.*;
 import org.robolectric.res.builder.ResourceParser;
 import org.robolectric.res.builder.XmlBlock;
 import org.robolectric.util.Logger;
@@ -83,6 +69,132 @@ public final class ShadowAssetManager {
 
   @RealObject
   AssetManager realObject;
+
+  private void convertAndFill(AttributeResource attribute, TypedValue outValue, String qualifiers, boolean resolveRefs) {
+    ResourceLoader resourceLoader = getResourceLoader(attribute.resName);
+    if (attribute.isNull() || attribute.isEmpty()) {
+      outValue.type = TypedValue.TYPE_NULL;
+      if (attribute.isEmpty()) {
+        outValue.data = TypedValue.DATA_NULL_EMPTY;
+      } else {
+        outValue.data = TypedValue.DATA_NULL_UNDEFINED;
+      }
+      return;
+    }
+
+    // short-circuit Android caching of loaded resources cuz our string positions don't remain stable...
+    outValue.assetCookie = Converter.getNextStringCookie();
+
+    // TODO: Handle resource and style references
+    if (attribute.isStyleReference()) {
+      return;
+    }
+
+    while (attribute.isResourceReference()) {
+      ResName resName = attribute.getResourceReference();
+
+      // TODO: Refactor this to a ResourceLoaderChooser
+      ResourceLoader myResourceLoader;
+      if ("android".equals(resName.packageName)) {
+        myResourceLoader = RuntimeEnvironment.getSystemResourceLoader();
+      } else {
+        myResourceLoader = RuntimeEnvironment.getAppResourceLoader();
+      }
+
+      Integer resourceId = myResourceLoader.getResourceIndex().getResourceId(resName);
+      if (resourceId == null) {
+        throw new Resources.NotFoundException("unknown resource " + resName);
+      }
+      outValue.type = TypedValue.TYPE_REFERENCE;
+      outValue.resourceId = resourceId;
+
+      TypedResource dereferencedRef = myResourceLoader.getValue(resName, qualifiers);
+
+      if (dereferencedRef == null) {
+        Logger.strict("couldn't resolve %s from %s", resName.getFullyQualifiedName(), attribute);
+
+        if (resName.type.equals("id")) {
+          return;
+        } else if (resName.type.equals("layout")) {
+          return; // resourceId is good enough, right?
+        } else if (resName.type.equals("dimen")) {
+          return;
+        } else if (resName.type.equals("transition")) {
+          return;
+        } else if (resName.type.equals("interpolator")) {
+          return;
+        } else if (resName.type.equals("menu")) {
+          return;
+        } else if (resName.type.equals("raw")) {
+          return;
+        } else if (DrawableResourceLoader.isStillHandledHere(resName.type)) {
+          // wtf. color and drawable references reference are all kinds of stupid.
+          TypedResource drawableResource = myResourceLoader.getValue(resName, qualifiers);
+          if (drawableResource == null) {
+            throw new Resources.NotFoundException("can't find file for " + resName);
+          } else {
+            outValue.type = TypedValue.TYPE_STRING;
+            outValue.data = 0;
+            outValue.assetCookie = Converter.getNextStringCookie();
+            outValue.string = (CharSequence) drawableResource.getData();
+            return;
+          }
+        } else {
+          throw new RuntimeException("huh? " + resName);
+        }
+      } else {
+        if (dereferencedRef.isFile()) {
+          outValue.type = TypedValue.TYPE_STRING;
+          outValue.data = 0;
+          outValue.assetCookie = Converter.getNextStringCookie();
+          outValue.string = dereferencedRef.asString();
+          return;
+        } else if (dereferencedRef.getData() instanceof String) {
+          attribute = new AttributeResource(attribute.resName, dereferencedRef.asString(), resName.packageName);
+          if (attribute.isResourceReference()) {
+            continue;
+          }
+          if (resolveRefs) {
+            Converter.getConverter(dereferencedRef.getResType()).fillTypedValue(attribute.value, outValue);
+            return;
+          }
+        }
+      }
+      break;
+    }
+
+    if (attribute.isNull()) {
+      outValue.type = TypedValue.TYPE_NULL;
+      return;
+    }
+
+    TypedResource attrTypeData = resourceLoader.getValue(attribute.resName, qualifiers);
+    if (attrTypeData != null) {
+      AttrData attrData = (AttrData) attrTypeData.getData();
+      String format = attrData.getFormat();
+      String[] types = format.split("\\|");
+      for (String type : types) {
+        if ("reference".equals(type)) continue; // already handled above
+        Converter converter = Converter.getConverterFor(attrData, type);
+
+        if (converter != null) {
+          if (converter.fillTypedValue(attribute.value, outValue)) {
+            return;
+          }
+        }
+      }
+    } else {
+      /**
+       * In cases where the runtime framework doesn't know this attribute, e.g: viewportHeight (added in 21) on a
+       * KitKat runtine, then infer the attribute type from the value.
+       *
+       * TODO: When we are able to pass the SDK resources from the build environment then we can remove this
+       * and replace the NullResourceLoader with simple ResourceLoader that only parses attribute type information.
+       */
+      ResType resType = ResType.inferFromValue(attribute.value);
+      Converter.getConverter(resType).fillTypedValue(attribute.value, outValue);
+    }
+  }
 
   public void __constructor__() {
     resourceLoader = RuntimeEnvironment.getAppResourceLoader();
@@ -181,7 +293,7 @@ public final class ShadowAssetManager {
       attrValue = themeStyleSet.getAttrValue(attrResName);
     }
     if (attrValue != null) {
-      Converter.convertAndFill(attrValue, outValue, getResourceLoader(resName), RuntimeEnvironment.getQualifiers(), resolveRefs);
+      convertAndFill(attrValue, outValue, RuntimeEnvironment.getQualifiers(), resolveRefs);
       return true;
     }
     return false;
@@ -585,8 +697,7 @@ public final class ShadowAssetManager {
       AttributeResource attribute = buildAttribute(set, attrs[i], defStyleAttr, themeStyleSet, defStyleRes);
       if (attribute != null && !attribute.isNull()) {
         TypedValue typedValue = new TypedValue();
-        ResourceLoader resourceLoader = getResourceLoader(attribute.resName);
-        Converter.convertAndFill(attribute, typedValue, resourceLoader, RuntimeEnvironment.getQualifiers(), true);
+        convertAndFill(attribute, typedValue, RuntimeEnvironment.getQualifiers(), true);
         //noinspection PointlessArithmeticExpression
         data[offset + ShadowAssetManager.STYLE_TYPE] = typedValue.type;
         data[offset + ShadowAssetManager.STYLE_DATA] = typedValue.type == TypedValue.TYPE_STRING ? i : typedValue.data;
