@@ -60,7 +60,7 @@ public class DrawableResourceLoaderNoRunnerTest {
     DrawableResourceLoader testLoader = new DrawableResourceLoader(bunch);
     testLoader.findDrawableResources(resourcePath);
 
-    verify(bunch).put(eq("drawable"), eq("bar.png"), (TypedResource) any(), (XmlLoader.XmlContext) any());
+    verify(bunch).put(eq("drawable"), eq("bar.png"), (TypedResource) any());
   }
 
   @Test
@@ -84,7 +84,7 @@ public class DrawableResourceLoaderNoRunnerTest {
     DrawableResourceLoader testLoader = new DrawableResourceLoader(bunch);
     testLoader.findDrawableResources(resourcePath);
 
-    verify(bunch).put(eq("drawable"), eq("bar.png"), (TypedResource) any(), (XmlLoader.XmlContext) any());
+    verify(bunch).put(eq("drawable"), eq("bar.png"), (TypedResource) any());
   }
 
   @Test
@@ -108,7 +108,7 @@ public class DrawableResourceLoaderNoRunnerTest {
     DrawableResourceLoader testLoader = new DrawableResourceLoader(bunch);
     testLoader.findDrawableResources(resourcePath);
 
-    verify(bunch).put(eq("drawable"), eq("bar.png"), (TypedResource) any(), (XmlLoader.XmlContext) any());
+    verify(bunch).put(eq("drawable"), eq("bar.png"), (TypedResource) any());
   }
 
   @Test
@@ -132,7 +132,7 @@ public class DrawableResourceLoaderNoRunnerTest {
     DrawableResourceLoader testLoader = new DrawableResourceLoader(bunch);
     testLoader.findDrawableResources(resourcePath);
 
-    verify(bunch).put(eq("drawable"), eq("bar.png"), (TypedResource) any(), (XmlLoader.XmlContext) any());
+    verify(bunch).put(eq("drawable"), eq("bar.png"), (TypedResource) any());
   }
 
   private void setFileSeparator(String separator) throws Exception {

@@ -65,10 +65,15 @@ public abstract class XmlLoader {
     }
 
     public String getQualifiers() {
-      String parentDir = xmlFile.getParent().getName();
-      Matcher matcher = DIR_QUALIFIER_PATTERN.matcher(parentDir);
-      if (!matcher.find()) throw new IllegalStateException(parentDir);
-      return matcher.group(1);
+      FsFile parentDir = xmlFile.getParent();
+      if (parentDir == null) {
+        return "";
+      } else {
+        String parentDirName = parentDir.getName();
+        Matcher matcher = DIR_QUALIFIER_PATTERN.matcher(parentDirName);
+        if (!matcher.find()) throw new IllegalStateException(parentDirName);
+        return matcher.group(1);
+      }
     }
 
     public FsFile getXmlFile() {

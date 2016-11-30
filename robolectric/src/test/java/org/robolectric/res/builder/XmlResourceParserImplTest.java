@@ -57,12 +57,12 @@ public class XmlResourceParserImplTest {
 
   @Before
   public void setUp() throws Exception {
-    ResBundle<XmlBlock> resBundle = new ResBundle<>();
+    ResBundle resBundle = new ResBundle();
     XmlBlockLoader xmlBlockLoader = new XmlBlockLoader(resBundle, "xml");
     new DocumentLoader(testResources()).load("xml", xmlBlockLoader);
 
     ResName resName = new ResName(TEST_PACKAGE, "xml", "preferences");
-    XmlBlock xmlBlock = resBundle.get(resName, "");
+    XmlBlock xmlBlock = (XmlBlock) resBundle.get(resName, "").getData();
     ResourceIndex resourceIndex = new ResourceExtractor(testResources());
     resourceLoader = mock(ResourceLoader.class);
     when(resourceLoader.getResourceIndex()).thenReturn(resourceIndex);

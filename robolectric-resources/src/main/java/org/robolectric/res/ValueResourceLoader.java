@@ -33,6 +33,6 @@ public class ValueResourceLoader extends XpathResourceXmlLoader {
 
   @Override
   protected void processNode(String name, XmlNode xmlNode, XmlContext xmlContext) throws XPathExpressionException {
-    resBunch.put(attrType, name, resType.getValueWithType(xmlNode), xmlContext);
+    resBunch.put(attrType, name, resType.getValueWithType(xmlNode, xmlContext));
   }
 }

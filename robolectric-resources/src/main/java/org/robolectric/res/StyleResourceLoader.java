@@ -32,7 +32,7 @@ public class StyleResourceLoader extends XpathResourceXmlLoader {
       styleData.add(attrResName, new AttributeResource(attrResName, value, xmlContext.packageName));
     }
 
-    data.put("style", styleNameWithUnderscores, new TypedResource<>(styleData, ResType.STYLE), xmlContext);
+    data.put("style", styleNameWithUnderscores, new TypedResource<>(styleData, ResType.STYLE, xmlContext));
   }
 
   private String underscorize(String s) {
