@@ -71,7 +71,6 @@ public final class ShadowAssetManager {
   AssetManager realObject;
 
   private void convertAndFill(AttributeResource attribute, TypedValue outValue, String qualifiers, boolean resolveRefs) {
-    ResourceLoader resourceLoader = getResourceLoader(attribute.resName);
     if (attribute.isNull() || attribute.isEmpty()) {
       outValue.type = TypedValue.TYPE_NULL;
       if (attribute.isEmpty()) {
@@ -93,22 +92,14 @@ public final class ShadowAssetManager {
     while (attribute.isResourceReference()) {
       ResName resName = attribute.getResourceReference();
 
-      // TODO: Refactor this to a ResourceLoaderChooser
-      ResourceLoader myResourceLoader;
-      if ("android".equals(resName.packageName)) {
-        myResourceLoader = RuntimeEnvironment.getSystemResourceLoader();
-      } else {
-        myResourceLoader = RuntimeEnvironment.getAppResourceLoader();
-      }
-
-      Integer resourceId = myResourceLoader.getResourceIndex().getResourceId(resName);
+      Integer resourceId = getResourceLoader(resName).getResourceIndex().getResourceId(resName);
       if (resourceId == null) {
         throw new Resources.NotFoundException("unknown resource " + resName);
       }
       outValue.type = TypedValue.TYPE_REFERENCE;
       outValue.resourceId = resourceId;
 
-      TypedResource dereferencedRef = myResourceLoader.getValue(resName, qualifiers);
+      TypedResource dereferencedRef = getResourceLoader(resName).getValue(resName, qualifiers);
 
       if (dereferencedRef == null) {
         Logger.strict("couldn't resolve %s from %s", resName.getFullyQualifiedName(), attribute);
@@ -129,7 +120,7 @@ public final class ShadowAssetManager {
           return;
         } else if (DrawableResourceLoader.isStillHandledHere(resName.type)) {
           // wtf. color and drawable references reference are all kinds of stupid.
-          TypedResource drawableResource = myResourceLoader.getValue(resName, qualifiers);
+          TypedResource drawableResource = getResourceLoader(resName).getValue(resName, qualifiers);
           if (drawableResource == null) {
             throw new Resources.NotFoundException("can't find file for " + resName);
           } else {
@@ -168,7 +159,7 @@ public final class ShadowAssetManager {
       return;
     }
 
-    TypedResource attrTypeData = resourceLoader.getValue(attribute.resName, qualifiers);
+    TypedResource attrTypeData = getResourceLoader(attribute.resName).getValue(attribute.resName, qualifiers);
     if (attrTypeData != null) {
       AttrData attrData = (AttrData) attrTypeData.getData();
       String format = attrData.getFormat();
