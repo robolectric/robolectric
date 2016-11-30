@@ -1,5 +1,6 @@
 package org.robolectric;
 
+import org.jetbrains.annotations.NotNull;
 import org.junit.runner.Runner;
 import org.junit.runners.Suite;
 import org.junit.runners.model.FrameworkMethod;
@@ -10,6 +11,7 @@ import org.robolectric.manifest.AndroidManifest;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -117,8 +119,27 @@ public class MultiApiRobolectricTestRunner extends Suite {
    }
 
    public MultiApiRobolectricTestRunner(Class<?> klass) throws Throwable {
-    this(klass, SdkConfig.getSupportedApis());
+    this(klass, filterSupportedApis());
    }
+
+  @NotNull
+  private static Set<Integer> filterSupportedApis() {
+    Set<Integer> supportedApis = SdkConfig.getSupportedApis();
+
+    String overrideSupportedApis = System.getProperty("robolectric.enabledApis");
+    if (overrideSupportedApis == null || overrideSupportedApis.isEmpty()) {
+      return supportedApis;
+    } else {
+      Set<Integer> filteredApis = new HashSet<>();
+      for (String s : overrideSupportedApis.split(",")) {
+        int apiLevel = Integer.parseInt(s);
+        if (supportedApis.contains(apiLevel)) {
+          filteredApis.add(apiLevel);
+        }
+      }
+      return filteredApis;
+    }
+  }
 
   protected TestRunnerForApiVersion createTestRunner(Integer integer) throws InitializationError {
     return new TestRunnerForApiVersion(getTestClass().getJavaClass(), integer);
