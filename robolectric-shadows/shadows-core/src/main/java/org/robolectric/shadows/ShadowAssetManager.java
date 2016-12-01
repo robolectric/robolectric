@@ -448,7 +448,7 @@ public final class ShadowAssetManager {
       TypedResource typedResource = typedResources[i];
 
       // Classify the item.
-      int type = getResType(typedResource);
+      int type = getResourceType(typedResource);
       if (type == -1) {
         // This type is unsupported; leave empty.
         continue;
@@ -463,7 +463,7 @@ public final class ShadowAssetManager {
                 resName.substring(startIdx + 1, slashIdx), getResourcePackageName(resId));
         typedResource = resolve(typedResource, RuntimeEnvironment.getQualifiers(), typedValue.resourceId);
         // Reclassify to a non-reference type.
-        type = getResType(typedResource);
+        type = getResourceType(typedResource);
         if (type == -1) {
           // This type is unsupported; leave empty.
           continue;
@@ -485,7 +485,7 @@ public final class ShadowAssetManager {
     return ShadowTypedArray.create(resources, null, data, indices, totalLen, stringData);
   }
 
-  private int getResType(TypedResource typedResource) {
+  private int getResourceType(TypedResource typedResource) {
     int type;
     if (typedResource.getData() == null) {
       type = TypedValue.TYPE_NULL;

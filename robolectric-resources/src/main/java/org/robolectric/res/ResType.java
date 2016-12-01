@@ -60,21 +60,15 @@ public enum ResType {
     final List<TypedResource> items = new ArrayList<>();
     for (XpathResourceXmlLoader.XmlNode item : xmlNode.selectElements("item")) {
       final String itemString = item.getTextContent();
-      ResType itemResType = null;
-      if (Pattern.matches("\\d+", itemString)) {
-        itemResType = ResType.INTEGER;
-      } else if (itemString.charAt(0) == '#') {
-        itemResType = ResType.COLOR;
-      } else if (itemString.contains("px") || itemString.contains("sp") || itemString.contains("dp")) {
-        itemResType = ResType.DIMEN;
-      } else if (Pattern.matches("\\d+.+?", itemString)) {
-        itemResType = ResType.FLOAT;
-      } else if (itemString.equals("true") || itemString.equals("false")) {
-        itemResType = ResType.BOOLEAN;
-      } else if (!(itemString.charAt(0) == '@' && itemString.contains("/"))) {
-        itemResType = ResType.CHAR_SEQUENCE;
+      ResType itemResType = inferFromValue(itemString);
+      if (itemResType == ResType.CHAR_SEQUENCE) {
+        if (itemString.startsWith("?")) {
+          itemResType = ResType.STYLE;
+        } else if(itemString.startsWith("@") && itemString.contains("/")) {
+          // This is a reference; no type info needed.
+          itemResType = null;
+        }
       }
-      // All other ResTypes are references; no type info needed.
       items.add(new TypedResource<>(itemString, itemResType, xmlContext));
     }
     final TypedResource[] typedResources = items.toArray(new TypedResource[items.size()]);
