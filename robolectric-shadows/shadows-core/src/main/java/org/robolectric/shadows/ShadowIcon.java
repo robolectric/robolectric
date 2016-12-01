@@ -3,17 +3,19 @@ package org.robolectric.shadows;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Icon;
 import android.net.Uri;
+import android.os.Build;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
+import static android.os.Build.VERSION_CODES.M;
 import static org.robolectric.internal.Shadow.directlyOn;
 
 /**
  * Shadow for {@link android.graphics.drawable.Icon}.
  */
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(Icon.class)
+@Implements(value = Icon.class, minSdk = M)
 public class ShadowIcon {
 
   @RealObject
