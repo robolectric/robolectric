@@ -45,6 +45,15 @@ public class ShadowLooper {
   boolean quit;
 
   @Resetter
+  public static synchronized void resetAll() {
+    resetThreadLoopers();
+
+    mainLooper = null;
+
+    ReflectionHelpers.setStaticField(Looper.class, "sMainLooper", null);
+    ReflectionHelpers.setStaticField(Looper.class, "sThreadLocal", new ThreadLocal<>());
+  }
+
   public static synchronized void resetThreadLoopers() {
     // Blech. We need to keep the main looper because somebody might refer to it in a static
     // field. The other loopers need to be wrapped in WeakReferences so that they are not prevented from
@@ -67,11 +76,7 @@ public class ShadowLooper {
     // called, this might be null on that occasion.
     if (mainLooper != null) {
       shadowOf(mainLooper).reset();
-      mainLooper = null;
     }
-
-    ReflectionHelpers.setStaticField(Looper.class, "sMainLooper", null);
-    ReflectionHelpers.setStaticField(Looper.class, "sThreadLocal", new ThreadLocal<>());
   }
 
   @Implementation
