@@ -9,7 +9,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.Display;
 import android.view.View;
-
+import android.view.ViewParent;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,9 +25,7 @@ import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowDisplay;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowView;
-import org.robolectric.shadows.StubViewRoot;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.TestOnClickListener;
 
 import java.io.ByteArrayOutputStream;
@@ -129,7 +127,7 @@ public class RobolectricTest {
   @Test
   public void clickOn_shouldCallClickListener() throws Exception {
     View view = new View(RuntimeEnvironment.application);
-    shadowOf(view).setMyParent(new StubViewRoot());
+    shadowOf(view).setMyParent(ReflectionHelpers.newInstance(ViewParent.class));
     TestOnClickListener testOnClickListener = new TestOnClickListener();
     view.setOnClickListener(testOnClickListener);
     ShadowView.clickOn(view);
