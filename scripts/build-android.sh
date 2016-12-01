@@ -97,6 +97,13 @@ build_platform() {
         LIB_PHONE_NUMBERS_PKG="com/google/i18n/phonenumbers"
         LIB_PHONE_NUMBERS_PATH="external/libphonenumber/libphonenumber/src"
         TZDATA_ARCH="generic"
+    elif [[ "${ANDROID_VERSION}" == "7.1.0_r7" ]]; then
+        ARTIFACTS=("core-libart" "services" "services.accessibility" "telephony-common" "framework" "ext")
+        NATIVE_ARTIFACTS=("icu4j-icudata-host-jarjar" "icu4j-icutzdata-host-jarjar")
+        SOURCES=(core graphics media location opengl sax services telephony wifi)
+        LIB_PHONE_NUMBERS_PKG="com/google/i18n/phonenumbers"
+        LIB_PHONE_NUMBERS_PATH="external/libphonenumber/libphonenumber/src"
+        TZDATA_ARCH="generic"
     else
         echo "Robolectric: No match for version: ${ANDROID_VERSION}"
         exit 1
