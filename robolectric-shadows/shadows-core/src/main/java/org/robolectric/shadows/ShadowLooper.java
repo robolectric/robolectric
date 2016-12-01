@@ -14,6 +14,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 
 import static org.robolectric.RuntimeEnvironment.isMainThread;
@@ -59,12 +60,18 @@ public class ShadowLooper {
           }
         }
       }
+      loopingLoopers.clear();
     }
+
     // Because resetStaticState() is called by ParallelUniverse on startup before prepareMainLooper() is
     // called, this might be null on that occasion.
     if (mainLooper != null) {
       shadowOf(mainLooper).reset();
+      mainLooper = null;
     }
+
+    ReflectionHelpers.setStaticField(Looper.class, "sMainLooper", null);
+    ReflectionHelpers.setStaticField(Looper.class, "sThreadLocal", new ThreadLocal<>());
   }
 
   @Implementation

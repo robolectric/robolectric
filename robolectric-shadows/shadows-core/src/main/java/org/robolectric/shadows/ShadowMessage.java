@@ -29,10 +29,10 @@ public class ShadowMessage {
   private void unschedule() {
     Handler target = realMessage.getTarget();
 
-	if (target != null && scheduledRunnable != null) {
-	  shadowOf(target.getLooper()).getScheduler().remove(scheduledRunnable);
-	  scheduledRunnable = null;
-	}
+    if (target != null && scheduledRunnable != null) {
+      shadowOf(target.getLooper()).getScheduler().remove(scheduledRunnable);
+      scheduledRunnable = null;
+    }
   }
 
   /**
