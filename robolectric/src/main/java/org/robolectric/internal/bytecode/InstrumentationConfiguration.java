@@ -104,7 +104,6 @@ public class InstrumentationConfiguration {
           TestLifecycle.class,
           ShadowWrangler.class,
           AndroidManifest.class,
-          R.class,
           InstrumentingClassLoader.class,
           SdkEnvironment.class,
           SdkConfig.class,
@@ -146,6 +145,10 @@ public class InstrumentationConfiguration {
       classNameTranslations.put("java.net.ExtendedResponseCache", RoboExtendedResponseCache.class.getName());
       classNameTranslations.put("java.net.ResponseSource", RoboResponseSource.class.getName());
       classNameTranslations.put("java.nio.charset.Charsets", RoboCharsets.class.getName());
+
+      // Instrumenting these classes causes a wierd failure.
+      classesToNotInstrument.add("android.R");
+      classesToNotInstrument.add("android.R$styleable");
 
       instrumentedPackages.addAll(Arrays.asList("dalvik.", "libcore.", "android.", "com.android.internal.", "org.apache.http.", "org.kxml2."));
       for (ShadowProvider provider : ServiceLoader.load(ShadowProvider.class)) {
@@ -210,8 +213,7 @@ public class InstrumentationConfiguration {
       return name.contains("Test");
     }
 
-    // Both internal and public R class must be loaded from the same classloader since they only
-    // have stable ID's within a given API version.
+    // Internal android R class must be loaded from the framework resources in the framework jar.
     if (name.matches("com\\.android\\.internal\\.R(\\$.*)?")) {
       return true;
     }
@@ -219,7 +221,7 @@ public class InstrumentationConfiguration {
     // Android SDK code almost universally refers to com.android.internal.R, except
     // when refering to android.R.stylable, as in HorizontalScrollView. arghgh.
     // See https://github.com/robolectric/robolectric/issues/521
-    if (name.equals("android.R$styleable")) {
+    if (name.startsWith("android.R")) {
       return true;
     }
 

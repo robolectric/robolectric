@@ -2,7 +2,6 @@ package org.robolectric;
 
 import org.junit.Assert;
 import org.junit.runner.Runner;
-import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Suite;
 import org.junit.runners.model.FrameworkMethod;
@@ -13,6 +12,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.internal.DeepCloner;
 import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.res.EmptyResourceLoader;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -102,13 +102,13 @@ public final class ParameterizedRobolectricTestRunner extends Suite {
     }
 
     @Override
-    Statement methodBlock(FrameworkMethod method, Config config, AndroidManifest appManifest, SdkEnvironment sdkEnvironment) {
-      configureShadows(sdkEnvironment, config);
+    Statement methodBlock(FrameworkMethod method, Config config, AndroidManifest appManifest, SdkEnvironment environment, EmptyResourceLoader sdkEnvironment) {
+      configureShadows(environment, config);
 
-      DeepCloner deepCloner = new DeepCloner(sdkEnvironment.getRobolectricClassLoader());
+      DeepCloner deepCloner = new DeepCloner(environment.getRobolectricClassLoader());
       parameters = deepCloner.clone(parameters);
 
-      return super.methodBlock(method, config, appManifest, sdkEnvironment);
+      return super.methodBlock(method, config, appManifest, environment, sdkEnvironment);
     }
 
     @Override

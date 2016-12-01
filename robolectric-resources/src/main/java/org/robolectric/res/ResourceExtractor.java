@@ -11,6 +11,7 @@ public class ResourceExtractor extends ResourceIndex {
 
   private final String packageName;
   private Integer maxUsedInt = null;
+  private Integer generatedIdStart = null;
 
   public ResourceExtractor(ResourcePath resourcePath) {
     packageName = resourcePath.getPackageName();
@@ -24,7 +25,7 @@ public class ResourceExtractor extends ResourceIndex {
     }
   }
 
-  private void gatherResourceIdsAndNames(Class<?> rClass, String packageName) {
+  private synchronized void gatherResourceIdsAndNames(Class<?> rClass, String packageName) {
     for (Class innerClass : rClass.getClasses()) {
       for (Field field : innerClass.getDeclaredFields()) {
         if (field.getType().equals(Integer.TYPE) && Modifier.isStatic(field.getModifiers())) {
@@ -50,16 +51,22 @@ public class ResourceExtractor extends ResourceIndex {
 
   @Override
   public synchronized Integer getResourceId(ResName resName) {
+    if (!packageName.equals(resName.packageName)) {
+      return null;
+    }
     Integer id = resourceNameToId.get(resName);
     if (id == null && ("android".equals(resName.packageName) || "".equals(resName.packageName))) {
       if (maxUsedInt == null) {
         maxUsedInt = resourceIdToResName.isEmpty() ? 0 : Collections.max(resourceIdToResName.keySet());
+        generatedIdStart = maxUsedInt;
       }
       id = ++maxUsedInt;
       resourceNameToId.put(resName, id);
       resourceIdToResName.put(id, resName);
       LOGGER.fine("no id mapping found for " + resName.getFullyQualifiedName() + "; assigning ID #0x" + Integer.toHexString(id));
     }
+    if (id == null) return 0;
+
     return id;
   }
 

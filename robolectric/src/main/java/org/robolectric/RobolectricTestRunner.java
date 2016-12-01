@@ -40,6 +40,7 @@ import org.robolectric.internal.dependency.LocalDependencyResolver;
 import org.robolectric.internal.dependency.MavenDependencyResolver;
 import org.robolectric.internal.dependency.PropertiesDependencyResolver;
 import org.robolectric.manifest.AndroidManifest;
+import org.robolectric.res.EmptyResourceLoader;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
 import org.robolectric.res.OverlayResourceLoader;
@@ -205,7 +206,10 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
         AndroidManifest appManifest = getAppManifest(config);
         InstrumentingClassLoaderFactory instrumentingClassLoaderFactory = new InstrumentingClassLoaderFactory(createClassLoaderConfig(config), getJarResolver());
         SdkEnvironment sdkEnvironment = instrumentingClassLoaderFactory.getSdkEnvironment(new SdkConfig(pickSdkVersion(config, appManifest)));
-        methodBlock(method, config, appManifest, sdkEnvironment).evaluate();
+
+        EmptyResourceLoader sdkResourceLoader = new EmptyResourceLoader("android", new ResourceExtractor(new ResourcePath(android.R.class, "android", null, null)));
+
+        methodBlock(method, config, appManifest, sdkEnvironment, sdkResourceLoader).evaluate();
       } catch (AssumptionViolatedException e) {
         eachNotifier.addFailedAssumption(e);
       } catch (Throwable e) {
@@ -226,7 +230,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
   private ParallelUniverseInterface parallelUniverseInterface;
 
-  Statement methodBlock(final FrameworkMethod method, final Config config, final AndroidManifest appManifest, final SdkEnvironment sdkEnvironment) {
+  Statement methodBlock(final FrameworkMethod method, final Config config, final AndroidManifest appManifest, final SdkEnvironment sdkEnvironment, final EmptyResourceLoader compileTimeResourceLoader) {
     return new Statement() {
       @Override
       public void evaluate() throws Throwable {
@@ -267,7 +271,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
             ReflectionHelpers.setStaticField(androidBuildVersionClass, "RELEASE", sdkConfig.getAndroidVersion());
 
             ResourceLoader systemResourceLoader = sdkEnvironment.getSystemResourceLoader(getJarResolver());
-            parallelUniverseInterface.setUpApplicationState(bootstrappedMethod, testLifecycle, systemResourceLoader, appManifest, config);
+            parallelUniverseInterface.setUpApplicationState(bootstrappedMethod, testLifecycle, systemResourceLoader, compileTimeResourceLoader, appManifest, config);
             testLifecycle.beforeTest(bootstrappedMethod);
           } catch (Exception e) {
             e.printStackTrace();

@@ -50,9 +50,9 @@ public final class MetaData {
               valueMap.put(entry.getKey(), resIndex.getResourceId(resName));
               break;
             case VALUE:
-              // Was provided by value attribute, need to parse it
+              // Was provided by value attribute, need to inferFromValue it
               TypedResource<?> typedRes = resLoader.getValue(resName, "");
-              // The typed resource's data is always a String, so need to parse the value.
+              // The typed resource's data is always a String, so need to inferFromValue the value.
               if (typedRes == null) {
                 throw new Resources.NotFoundException(resName.getFullyQualifiedName());
               }
@@ -66,7 +66,7 @@ public final class MetaData {
               break;
           }
         } else if (entry.getValue() == VALUE_TYPE.VALUE) {
-          // Raw value, so parse it in to the appropriate type and store it
+          // Raw value, so inferFromValue it in to the appropriate type and store it
           valueMap.put(entry.getKey(), parseValue(value));
         }
       }

@@ -20,7 +20,7 @@ public class ResourceExtractorTest {
   @Test
   public void shouldHandleStyleable() throws Exception {
     assertThat(ResName.getResourceId(resourceIndex, "id/textStyle", R.class.getPackage().getName())).isEqualTo(R.id.textStyle);
-    assertThat(ResName.getResourceId(resourceIndex, "styleable/TitleBar_textStyle", R.class.getPackage().getName())).isNull();
+    assertThat(ResName.getResourceId(resourceIndex, "styleable/TitleBar_textStyle", R.class.getPackage().getName())).isEqualTo(0);
   }
 
   @Test

@@ -9,7 +9,7 @@ import org.robolectric.res.ResourceLoader;
 public interface ParallelUniverseInterface {
   void resetStaticState(Config config);
 
-  void setUpApplicationState(Method method, TestLifecycle testLifecycle, ResourceLoader systemResourceLoader, AndroidManifest appManifest, Config config);
+  void setUpApplicationState(Method method, TestLifecycle testLifecycle, ResourceLoader systemResourceLoader, ResourceLoader compiletimeSdkResourceLoader, AndroidManifest appManifest, Config config);
 
   Thread getMainThread();
 
