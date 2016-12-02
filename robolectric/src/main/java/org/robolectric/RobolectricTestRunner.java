@@ -28,13 +28,8 @@ import org.robolectric.internal.ParallelUniverse;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.SdkConfig;
 import org.robolectric.internal.SdkEnvironment;
-import org.robolectric.internal.bytecode.ClassHandler;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
-import org.robolectric.internal.bytecode.InvokeDynamic;
-import org.robolectric.internal.bytecode.RobolectricInternals;
-import org.robolectric.internal.bytecode.ShadowInvalidator;
 import org.robolectric.internal.bytecode.ShadowMap;
-import org.robolectric.internal.bytecode.ShadowWrangler;
 import org.robolectric.internal.dependency.CachedDependencyResolver;
 import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.internal.dependency.LocalDependencyResolver;
@@ -68,9 +63,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import static com.google.common.collect.Lists.reverse;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 /**
  * Installs a {@link org.robolectric.internal.bytecode.InstrumentingClassLoader} and
@@ -81,7 +76,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   private static final Map<Pair<AndroidManifest, SdkConfig>, ResourceLoader> resourceLoadersCache = new HashMap<>();
   private static final Map<ManifestIdentifier, AndroidManifest> appManifestsCache = new HashMap<>();
 
-  private TestLifecycle<Application> testLifecycle;
+  private TestLifecycle testLifecycle;
   private DependencyResolver dependencyResolver;
 
   static {
@@ -102,12 +97,10 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     super(testClass);
   }
 
-  @SuppressWarnings("unchecked")
   private void assureTestLifecycle(SdkEnvironment sdkEnvironment) {
     try {
-      ClassLoader robolectricClassLoader = sdkEnvironment.getRobolectricClassLoader();
-      testLifecycle = (TestLifecycle) robolectricClassLoader.loadClass(getTestLifecycleClass().getName()).newInstance();
-    } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+      testLifecycle = sdkEnvironment.bootstrappedClass(getTestLifecycleClass(), TestLifecycle.class).newInstance();
+    } catch (InstantiationException | IllegalAccessException e) {
       throw new RuntimeException(e);
     }
   }
@@ -150,14 +143,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
   protected Class<? extends TestLifecycle> getTestLifecycleClass() {
     return DefaultTestLifecycle.class;
-  }
-
-  public static void injectEnvironment(ClassLoader robolectricClassLoader,
-      ClassHandler classHandler, ShadowInvalidator invalidator) {
-    String className = RobolectricInternals.class.getName();
-    Class<?> robolectricInternalsClass = ReflectionHelpers.loadClass(robolectricClassLoader, className);
-    ReflectionHelpers.setStaticField(robolectricInternalsClass, "classHandler", classHandler);
-    ReflectionHelpers.setStaticField(robolectricInternalsClass, "shadowInvalidator", invalidator);
   }
 
   @Override
@@ -236,7 +221,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
         Thread.currentThread().setContextClassLoader(sdkEnvironment.getRobolectricClassLoader());
 
-        Class bootstrappedTestClass = sdkEnvironment.bootstrappedClass(getTestClass().getJavaClass());
+        Class<?> bootstrappedTestClass = sdkEnvironment.bootstrappedClass(getTestClass().getJavaClass());
         HelperTestRunner helperTestRunner = getHelperTestRunner(bootstrappedTestClass);
 
         final Method bootstrappedMethod;
@@ -472,26 +457,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       }
     }
 
-    if (InvokeDynamic.ENABLED) {
-      ShadowMap oldShadowMap = sdkEnvironment.replaceShadowMap(shadowMap);
-      Set<String> invalidatedClasses = shadowMap.getInvalidatedClasses(oldShadowMap);
-      sdkEnvironment.getShadowInvalidator().invalidateClasses(invalidatedClasses);
-    }
-
-    ClassHandler classHandler = getClassHandler(sdkEnvironment, shadowMap);
-    injectEnvironment(sdkEnvironment.getRobolectricClassLoader(), classHandler, sdkEnvironment.getShadowInvalidator());
-  }
-
-  private ClassHandler getClassHandler(SdkEnvironment sdkEnvironment, ShadowMap shadowMap) {
-    ClassHandler classHandler;
-    synchronized (sdkEnvironment) {
-      classHandler = sdkEnvironment.classHandlersByShadowMap.get(shadowMap);
-      if (classHandler == null) {
-        classHandler = new ShadowWrangler(shadowMap, sdkEnvironment.getSdkConfig().getApiLevel());
-        sdkEnvironment.classHandlersByShadowMap.put(shadowMap, classHandler);
-      }
-    }
-    return classHandler;
+    sdkEnvironment.useShadowMap(shadowMap);
   }
 
   protected int pickSdkVersion(Config config, AndroidManifest manifest) {
@@ -505,15 +471,9 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   }
 
   private ParallelUniverseInterface getHooksInterface(SdkEnvironment sdkEnvironment) {
-    ClassLoader robolectricClassLoader = sdkEnvironment.getRobolectricClassLoader();
-    try {
-      Class<?> clazz = robolectricClassLoader.loadClass(ParallelUniverse.class.getName());
-      Class<? extends ParallelUniverseInterface> typedClazz = clazz.asSubclass(ParallelUniverseInterface.class);
-      Constructor<? extends ParallelUniverseInterface> constructor = typedClazz.getConstructor(RobolectricTestRunner.class);
-      return constructor.newInstance(this);
-    } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
-      throw new RuntimeException(e);
-    }
+    Class<ParallelUniverseInterface> typedClazz =
+        sdkEnvironment.bootstrappedClass(ParallelUniverse.class, ParallelUniverseInterface.class);
+    return ReflectionHelpers.callConstructor(typedClazz, from(RobolectricTestRunner.class, this));
   }
 
   public void internalAfterTest(final Method method) {

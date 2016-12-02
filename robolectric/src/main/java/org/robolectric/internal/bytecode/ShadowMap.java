@@ -12,8 +12,10 @@ import java.util.ServiceLoader;
 
 public class ShadowMap {
   public static final ShadowMap EMPTY = new ShadowMap(Collections.<String, ShadowConfig>emptyMap());
-  private final Map<String, ShadowConfig> map;
+
   private static final Map<String, String> SHADOWS = new HashMap<>();
+
+  private final Map<String, ShadowConfig> map;
 
   static {
     for (ShadowProvider provider : ServiceLoader.load(ShadowProvider.class)) {

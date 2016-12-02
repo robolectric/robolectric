@@ -3,8 +3,7 @@ package org.robolectric.internal.bytecode;
 import android.os.Build;
 
 import org.junit.Test;
-import org.mockito.Mockito;
-import org.robolectric.RobolectricTestRunner;
+import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.internal.Shadow;
 import org.robolectric.internal.ShadowConstants;
 import org.robolectric.internal.ShadowExtractor;
@@ -41,7 +40,6 @@ import org.robolectric.util.Util;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
-import java.lang.invoke.SwitchPoint;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -723,9 +721,13 @@ public class InstrumentingClassLoaderTest {
     if (classLoader == null) {
       classLoader = new InstrumentingClassLoader(InstrumentationConfiguration.newBuilder().build());
     }
-    ShadowInvalidator invalidator = Mockito.mock(ShadowInvalidator.class);
-    when(invalidator.getSwitchPoint(any(Class.class))).thenReturn(new SwitchPoint());
-    RobolectricTestRunner.injectEnvironment(classLoader, classHandler, invalidator);
+    SdkEnvironment sdkEnvironment = new SdkEnvironment(null, classLoader) {
+      @Override
+      public ClassHandler getClassHandler(ShadowMap shadowMap) {
+        return classHandler;
+      }
+    };
+    sdkEnvironment.injectEnvironment();
     return classLoader.loadClass(clazz.getName());
   }
 
