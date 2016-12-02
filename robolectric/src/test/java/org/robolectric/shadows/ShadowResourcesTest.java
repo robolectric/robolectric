@@ -8,12 +8,15 @@ import android.os.Build;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
+import android.view.Display;
+
 import org.assertj.core.data.Offset;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.*;
 import org.robolectric.annotation.Config;
+import org.robolectric.internal.Shadow;
 import org.robolectric.res.builder.XmlResourceParserImpl;
 import org.robolectric.util.TestUtil;
 import org.xmlpull.v1.XmlPullParser;
@@ -106,6 +109,13 @@ public class ShadowResourcesTest {
 
   @Test
   public void obtainTypedArray() throws Exception {
+    final Display display = Shadow.newInstanceOf(Display.class);
+    final ShadowDisplay shadowDisplay = shadowOf(display);
+    // Standard xxhdpi screen
+    shadowDisplay.setDensityDpi(480);
+    final DisplayMetrics displayMetrics = new DisplayMetrics();
+    display.getMetrics(displayMetrics);
+
     final TypedArray valuesTypedArray = resources.obtainTypedArray(R.array.typed_array_values);
     assertThat(valuesTypedArray.getString(0)).isEqualTo("abcdefg");
     assertThat(valuesTypedArray.getInt(1, 0)).isEqualTo(3875);
@@ -113,12 +123,23 @@ public class ShadowResourcesTest {
     assertThat(valuesTypedArray.getFloat(2, 0.0f)).isEqualTo(2.0f);
     assertThat(valuesTypedArray.getColor(3, Color.BLACK)).isEqualTo(Color.MAGENTA);
     assertThat(valuesTypedArray.getColor(4, Color.BLACK)).isEqualTo(Color.parseColor("#00ffff"));
+    assertThat(valuesTypedArray.getDimension(5, 0.0f)).isEqualTo(8.0f);
+    assertThat(valuesTypedArray.getDimension(6, 0.0f)).isEqualTo(12.0f);
+    assertThat(valuesTypedArray.getDimension(7, 0.0f)).isEqualTo(6.0f);
+    assertThat(valuesTypedArray.getDimension(8, 0.0f)).isEqualTo(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, 3.0f, displayMetrics));
+    assertThat(valuesTypedArray.getDimension(9, 0.0f)).isEqualTo(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_IN, 4.0f, displayMetrics));
+    assertThat(valuesTypedArray.getDimension(10, 0.0f)).isEqualTo(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 36.0f, displayMetrics));
+    assertThat(valuesTypedArray.getDimension(11, 0.0f)).isEqualTo(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_PT, 18.0f, displayMetrics));
 
     final TypedArray refsTypedArray = resources.obtainTypedArray(R.array.typed_array_references);
     assertThat(refsTypedArray.getString(0)).isEqualTo("apple");
     assertThat(refsTypedArray.getString(1)).isEqualTo("banana");
     assertThat(refsTypedArray.getInt(2, 0)).isEqualTo(5);
     assertThat(refsTypedArray.getBoolean(3, false)).isTrue();
+    assertThat(refsTypedArray.getType(4)).isEqualTo(TypedValue.TYPE_NULL);
+    assertThat(shadowOf(refsTypedArray.getDrawable(5)).getCreatedFromResId()).isEqualTo(R.drawable.an_image);
+    assertThat(refsTypedArray.getColor(6, Color.BLACK)).isEqualTo(Color.parseColor("#ff5c00"));
+    assertThat(refsTypedArray.getThemeAttributeId(7, -1)).isEqualTo(R.attr.animalStyle);
   }
 
   @Test

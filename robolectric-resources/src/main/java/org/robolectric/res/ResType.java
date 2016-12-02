@@ -2,7 +2,6 @@ package org.robolectric.res;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
 
 public enum ResType {
   DRAWABLE,
@@ -45,7 +44,9 @@ public enum ResType {
     @Override public TypedResource getValueWithType(XpathResourceXmlLoader.XmlNode xmlNode, XmlLoader.XmlContext xmlContext) {
       return extractTypedItems(xmlNode, TYPED_ARRAY, xmlContext);
     }
-  };
+  },
+
+  NULL;
 
   private static TypedResource extractScalarItems(XpathResourceXmlLoader.XmlNode xmlNode, ResType arrayResType, ResType itemResType, XmlLoader.XmlContext xmlContext) {
     List<TypedResource> items = new ArrayList<>();
@@ -64,7 +65,9 @@ public enum ResType {
       if (itemResType == ResType.CHAR_SEQUENCE) {
         if (itemString.startsWith("?")) {
           itemResType = ResType.STYLE;
-        } else if(itemString.startsWith("@") && itemString.contains("/")) {
+        } else if (itemString.equals("@null")) {
+          itemResType = ResType.NULL;
+        } else if (itemString.startsWith("@") && itemString.contains("/")) {
           // This is a reference; no type info needed.
           itemResType = null;
         }
@@ -87,7 +90,7 @@ public enum ResType {
       return ResType.COLOR;
     } else if ("true".equals(value) || "false".equals(value)) {
       return ResType.BOOLEAN;
-    } else if (value.endsWith("dp") || value.endsWith("sp") || value.endsWith("pt") || value.endsWith("px") || value.endsWith("mm") || value.endsWith("in")) {
+    } else if (value.endsWith("dp") || value.endsWith("sp") || value.endsWith("pt") || value.endsWith("px") || value.endsWith("mm") || value.endsWith("in") || value.endsWith("dip")) {
       return ResType.DIMEN;
     } else {
       try {

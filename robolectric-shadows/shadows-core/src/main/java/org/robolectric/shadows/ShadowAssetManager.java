@@ -455,6 +455,7 @@ public final class ShadowAssetManager {
       }
 
       final TypedValue typedValue = new TypedValue();
+
       if (type == TypedValue.TYPE_REFERENCE) {
         final String resName = typedResource.asString();
         final int startIdx = resName.indexOf("@");
@@ -470,7 +471,15 @@ public final class ShadowAssetManager {
         }
       }
 
-      getConverter(typedResource).fillTypedValue(typedResource.getData(), typedValue);
+      if (type == TypedValue.TYPE_ATTRIBUTE) {
+        final String resName = typedResource.asString();
+        final int slashIdx = resName.indexOf("/");
+        typedValue.data = resources.getIdentifier(resName.substring(slashIdx + 1), "attr", getResourcePackageName(resId));
+      }
+
+      if (type != TypedValue.TYPE_NULL && type != TypedValue.TYPE_ATTRIBUTE) {
+        getConverter(typedResource).fillTypedValue(typedResource.getData(), typedValue);
+      }
 
       data[offset + ShadowAssetManager.STYLE_TYPE] = type;
       data[offset + ShadowAssetManager.STYLE_RESOURCE_ID] = typedValue.resourceId;
@@ -486,23 +495,26 @@ public final class ShadowAssetManager {
   }
 
   private int getResourceType(TypedResource typedResource) {
+    final ResType resType = typedResource.getResType();
     int type;
-    if (typedResource.getData() == null) {
+    if (typedResource.getData() == null || resType == ResType.NULL) {
       type = TypedValue.TYPE_NULL;
     } else if (typedResource.isReference()) {
       type = TypedValue.TYPE_REFERENCE;
-    } else if (typedResource.getResType() == ResType.CHAR_SEQUENCE) {
+    } else if (resType == ResType.CHAR_SEQUENCE || resType == ResType.DRAWABLE) {
       type = TypedValue.TYPE_STRING;
-    } else if (typedResource.getResType() == ResType.INTEGER) {
+    } else if (resType == ResType.INTEGER) {
       type = TypedValue.TYPE_INT_DEC;
-    } else if (typedResource.getResType() == ResType.FLOAT) {
+    } else if (resType == ResType.FLOAT || resType == ResType.FRACTION) {
       type = TypedValue.TYPE_FLOAT;
-    } else if (typedResource.getResType() == ResType.BOOLEAN) {
+    } else if (resType == ResType.BOOLEAN) {
       type = TypedValue.TYPE_INT_BOOLEAN;
-    } else if (typedResource.getResType() == ResType.DIMEN) {
+    } else if (resType == ResType.DIMEN) {
       type = TypedValue.TYPE_DIMENSION;
-    } else if (typedResource.getResType() == ResType.COLOR) {
+    } else if (resType == ResType.COLOR) {
       type = TypedValue.TYPE_INT_COLOR_ARGB8;
+    } else if (resType == ResType.STYLE) {
+      type = TypedValue.TYPE_ATTRIBUTE;
     } else {
       type = -1;
     }
