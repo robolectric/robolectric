@@ -83,6 +83,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   private static final String CONFIG_PROPERTIES = "robolectric.properties";
   private static final Map<Pair<AndroidManifest, SdkConfig>, ResourceLoader> resourceLoadersCache = new HashMap<>();
   private static final Map<ManifestIdentifier, AndroidManifest> appManifestsCache = new HashMap<>();
+  private static final Map<Class, Method> resetterMethodCache = new HashMap<>();
 
   private TestLifecycle<Application> testLifecycle;
   private DependencyResolver dependencyResolver;
@@ -496,16 +497,26 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   void resetUserShadows(Config config) throws InvocationTargetException, IllegalAccessException {
     Class<?>[] shadows = config.shadows();
     for (Class c : shadows) {
-      for (Method m : c.getDeclaredMethods()) {
-        if (m.isAnnotationPresent(Resetter.class)
-            && m.getParameterTypes().length == 0
-            && Modifier.isPublic(m.getModifiers())
-            && Modifier.isStatic(m.getModifiers())) {
-            m.invoke(null);
-            break;
-        }
+      if (!resetterMethodCache.containsKey(c)) {
+        resetterMethodCache.put(c, findResetterMethod(c));
+      }
+      Method resetter = resetterMethodCache.get(c);
+      if (resetter != null) {
+        resetter.invoke(null);
       }
     }
+  }
+
+  private Method findResetterMethod(Class shadowClass) {
+    for (Method m : shadowClass.getDeclaredMethods()) {
+      if (m.isAnnotationPresent(Resetter.class)
+          && m.getParameterTypes().length == 0
+          && Modifier.isPublic(m.getModifiers())
+          && Modifier.isStatic(m.getModifiers())) {
+        return m;
+      }
+    }
+    return null;
   }
 
   private ClassHandler getClassHandler(SdkEnvironment sdkEnvironment, ShadowMap shadowMap) {
