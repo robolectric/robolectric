@@ -58,13 +58,12 @@ public class ParallelUniverse implements ParallelUniverseInterface {
   }
 
   @Override
-  public void setUpApplicationState(Method method, TestLifecycle testLifecycle, ResourceLoader systemResourceLoader, ResourceLoader compiletimeSdkResourceLoader, AndroidManifest appManifest, Config config) {
+  public void setUpApplicationState(Method method, TestLifecycle testLifecycle, ResourceLoader systemResourceLoader, ResourceLoader appResourceLoader, AndroidManifest appManifest, Config config) {
     ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", sdkConfig.getApiLevel());
 
     RuntimeEnvironment.application = null;
     RuntimeEnvironment.setMasterScheduler(new Scheduler());
     RuntimeEnvironment.setMainThread(Thread.currentThread());
-    ResourceLoader appResourceLoader = robolectricTestRunner.getAppResourceLoader(sdkConfig, compiletimeSdkResourceLoader, appManifest);
 
     DefaultPackageManager packageManager = new DefaultPackageManager();
     initializeAppManifest(appManifest, appResourceLoader, packageManager);

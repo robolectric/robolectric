@@ -102,13 +102,13 @@ public final class ParameterizedRobolectricTestRunner extends Suite {
     }
 
     @Override
-    Statement methodBlock(FrameworkMethod method, Config config, AndroidManifest appManifest, SdkEnvironment environment, EmptyResourceLoader sdkEnvironment) {
+    Statement methodBlock(FrameworkMethod method, Config config, AndroidManifest appManifest, SdkEnvironment environment) {
       configureShadows(environment, config);
 
       DeepCloner deepCloner = new DeepCloner(environment.getRobolectricClassLoader());
       parameters = deepCloner.clone(parameters);
 
-      return super.methodBlock(method, config, appManifest, environment, sdkEnvironment);
+      return super.methodBlock(method, config, appManifest, environment);
     }
 
     @Override
