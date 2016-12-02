@@ -2,6 +2,7 @@ package org.robolectric;
 
 import android.app.Application;
 import android.os.Build;
+import com.google.common.annotations.VisibleForTesting;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
@@ -18,6 +19,7 @@ import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.internal.GradleManifestFactory;
 import org.robolectric.internal.InstrumentingClassLoaderFactory;
 import org.robolectric.internal.ManifestFactory;
@@ -59,6 +61,7 @@ import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -263,6 +266,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
             parallelUniverseInterface.setSdkConfig(sdkEnvironment.getSdkConfig());
             parallelUniverseInterface.resetStaticState(config);
+            resetUserShadows(config);
 
             int sdkVersion = pickSdkVersion(config, appManifest);
             Class<?> androidBuildVersionClass = sdkEnvironment.bootstrappedClass(Build.VERSION.class);
@@ -291,6 +295,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
                 internalAfterTest(bootstrappedMethod);
               } finally {
                 parallelUniverseInterface.resetStaticState(config); // afterward too, so stuff doesn't hold on to classes?
+                resetUserShadows(config);
                 // todo: is this really needed?
                 Thread.currentThread().setContextClassLoader(RobolectricTestRunner.class.getClassLoader());
               }
@@ -485,6 +490,22 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
     ClassHandler classHandler = getClassHandler(sdkEnvironment, shadowMap);
     injectEnvironment(sdkEnvironment.getRobolectricClassLoader(), classHandler, sdkEnvironment.getShadowInvalidator());
+  }
+
+  @VisibleForTesting
+  void resetUserShadows(Config config) throws InvocationTargetException, IllegalAccessException {
+    Class<?>[] shadows = config.shadows();
+    for (Class c : shadows) {
+      for (Method m : c.getDeclaredMethods()) {
+        if (m.isAnnotationPresent(Resetter.class)
+            && m.getParameterTypes().length == 0
+            && Modifier.isPublic(m.getModifiers())
+            && Modifier.isStatic(m.getModifiers())) {
+            m.invoke(null);
+            break;
+        }
+      }
+    }
   }
 
   private ClassHandler getClassHandler(SdkEnvironment sdkEnvironment, ShadowMap shadowMap) {
