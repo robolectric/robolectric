@@ -274,7 +274,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
             parallelUniverseInterface.setUpApplicationState(bootstrappedMethod, testLifecycle, systemResourceLoader, compileTimeResourceLoader, appManifest, config);
             testLifecycle.beforeTest(bootstrappedMethod);
           } catch (Exception e) {
-            e.printStackTrace();
             throw new RuntimeException(e);
           }
 
@@ -291,12 +290,11 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
                 internalAfterTest(bootstrappedMethod);
               } finally {
                 parallelUniverseInterface.resetStaticState(config); // afterward too, so stuff doesn't hold on to classes?
-                // todo: is this really needed?
-                Thread.currentThread().setContextClassLoader(RobolectricTestRunner.class.getClassLoader());
               }
             }
           }
         } finally {
+          Thread.currentThread().setContextClassLoader(RobolectricTestRunner.class.getClassLoader());
           parallelUniverseInterface = null;
         }
       }
@@ -508,7 +506,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     }
   }
 
-  private ParallelUniverseInterface getHooksInterface(SdkEnvironment sdkEnvironment) {
+  ParallelUniverseInterface getHooksInterface(SdkEnvironment sdkEnvironment) {
     ClassLoader robolectricClassLoader = sdkEnvironment.getRobolectricClassLoader();
     try {
       Class<?> clazz = robolectricClassLoader.loadClass(ParallelUniverse.class.getName());

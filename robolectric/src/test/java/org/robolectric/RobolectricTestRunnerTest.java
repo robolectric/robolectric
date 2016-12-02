@@ -3,15 +3,26 @@ package org.robolectric;
 import android.app.Application;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.internal.TextListener;
+import org.junit.runner.notification.Failure;
+import org.junit.runner.notification.RunListener;
+import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
+import org.robolectric.internal.ParallelUniverse;
+import org.robolectric.internal.ParallelUniverseInterface;
+import org.robolectric.internal.SdkEnvironment;
 import org.robolectric.shadows.ShadowView;
 import org.robolectric.shadows.ShadowViewGroup;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import static com.google.common.collect.ImmutableMap.of;
@@ -131,6 +142,61 @@ public class RobolectricTestRunnerTest {
   public void withEmptyShadowList_shouldLoadDefaultsFromGlobalPropertiesFile() throws Exception {
     assertConfig(configFor(Test2.class, "withoutAnnotation", of("/robolectric.properties", "shadows:")),
         new int[0],  "AndroidManifest.xml", Application.class, "", "", "res", "assets", new Class[] {}, new String[]{}, new String[]{}, null);
+  }
+
+  @Test
+  public void failureInResetterDoesntBreakAllTests() throws Exception {
+    RobolectricTestRunner runner = new RobolectricTestRunner(TestWithTwoMethods.class) {
+      @Override
+      ParallelUniverseInterface getHooksInterface(SdkEnvironment sdkEnvironment) {
+        ClassLoader robolectricClassLoader = sdkEnvironment.getRobolectricClassLoader();
+        try {
+          Class<?> clazz = robolectricClassLoader.loadClass(MyParallelUniverse.class.getName());
+          Class<? extends ParallelUniverseInterface> typedClazz = clazz.asSubclass(ParallelUniverseInterface.class);
+          Constructor<? extends ParallelUniverseInterface> constructor = typedClazz.getConstructor(RobolectricTestRunner.class);
+          return constructor.newInstance(this);
+        } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    };
+    RunNotifier notifier = new RunNotifier();
+    final List<String> failures = new ArrayList<>();
+    notifier.addListener(new RunListener() {
+      @Override
+      public void testFailure(Failure failure) throws Exception {
+        failures.add(failure.getMessage());
+      }
+    });
+    runner.run(notifier);
+    assertThat(failures).containsExactly(
+        "java.lang.RuntimeException: fake error in resetStaticState",
+        "java.lang.RuntimeException: fake error in resetStaticState"
+    );
+  }
+
+  /////////////////////////////
+
+  public static class MyParallelUniverse extends ParallelUniverse {
+    public MyParallelUniverse(RobolectricTestRunner robolectricTestRunner) {
+      super(robolectricTestRunner);
+    }
+
+    @Override
+    public void resetStaticState(Config config) {
+      throw new RuntimeException("fake error in resetStaticState");
+    }
+  }
+
+  @Ignore
+  public static class TestWithTwoMethods {
+    @Test
+    public void first() throws Exception {
+    }
+
+    @Test
+    public void second() throws Exception {
+    }
   }
 
   private Config configFor(Class<?> testClass, String methodName, final Map<String, String> configProperties) throws InitializationError {
