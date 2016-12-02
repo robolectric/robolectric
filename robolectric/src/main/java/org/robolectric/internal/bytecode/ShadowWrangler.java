@@ -9,6 +9,7 @@ import android.os.Build;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.internal.LruCacheHashMap;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Function;
 import org.robolectric.internal.ShadowConstants;
@@ -54,12 +55,7 @@ public class ShadowWrangler implements ClassHandler {
   private int apiLevel;
   private final Map<Class, MetaShadow> metaShadowMap = new HashMap<>();
   private final Map<String, Plan> planCache =
-      Collections.synchronizedMap(new LinkedHashMap<String, Plan>() {
-        @Override
-        protected boolean removeEldestEntry(Map.Entry<String, Plan> eldest) {
-          return size() > 500;
-        }
-      });
+      Collections.synchronizedMap(new LruCacheHashMap<String, Plan>(500));
   private final Map<Class, ShadowConfig> shadowConfigCache = new ConcurrentHashMap<>();
   private final ClassValue<ShadowConfig> shadowConfigs = new ClassValue<ShadowConfig>() {
     @Override protected ShadowConfig computeValue(Class<?> type) {

@@ -20,6 +20,7 @@ import org.junit.runners.model.TestClass;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.GradleManifestFactory;
 import org.robolectric.internal.InstrumentingClassLoaderFactory;
+import org.robolectric.internal.LruCacheHashMap;
 import org.robolectric.internal.ManifestFactory;
 import org.robolectric.internal.ManifestIdentifier;
 import org.robolectric.internal.MavenManifestFactory;
@@ -64,7 +65,6 @@ import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -89,12 +89,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
   }
 
   private final HashSet<Class<?>> loadedTestClasses = new HashSet<>();
-  private final Map<String, Config> packageConfigCache = new LinkedHashMap<String, Config>() {
-    @Override
-    protected boolean removeEldestEntry(Map.Entry eldest) {
-      return size() > 10;
-    }
-  };
+  private final Map<String, Config> packageConfigCache = new LruCacheHashMap(10);
 
   /**
    * Creates a runner to run {@code testClass}. Looks in your working directory for your AndroidManifest.xml file
@@ -493,6 +488,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
       classHandler = sdkEnvironment.classHandlersByShadowMap.get(shadowMap);
       if (classHandler == null) {
         classHandler = new ShadowWrangler(shadowMap, sdkEnvironment.getSdkConfig().getApiLevel());
+        sdkEnvironment.classHandlersByShadowMap.put(shadowMap, classHandler);
       }
     }
     return classHandler;

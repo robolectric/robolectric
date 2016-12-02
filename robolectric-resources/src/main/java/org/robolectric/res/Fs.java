@@ -1,5 +1,6 @@
 package org.robolectric.res;
 
+import org.robolectric.internal.LruCacheHashMap;
 import org.robolectric.util.Join;
 import org.robolectric.util.Util;
 
@@ -53,13 +54,7 @@ abstract public class Fs {
   }
 
   static class JarFs extends Fs {
-    private static final Map<File, NavigableMap<String, JarEntry>> CACHE =
-        new LinkedHashMap<File, NavigableMap<String, JarEntry>>() {
-          @Override
-          protected boolean removeEldestEntry(Map.Entry<File, NavigableMap<String, JarEntry>> fileNavigableMapEntry) {
-            return size() > 10;
-          }
-        };
+    private static final Map<File, NavigableMap<String, JarEntry>> CACHE = new LruCacheHashMap<>(10);
 
     private final JarFile jarFile;
     private final NavigableMap<String, JarEntry> jarEntryMap;

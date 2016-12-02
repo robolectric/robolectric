@@ -1,5 +1,6 @@
 package org.robolectric.internal;
 
+import org.robolectric.internal.bytecode.ClassHandler;
 import org.robolectric.internal.bytecode.ShadowInvalidator;
 import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.internal.bytecode.ShadowMap;
@@ -11,13 +12,14 @@ import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.ResourcePath;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class SdkEnvironment {
   private final SdkConfig sdkConfig;
   private final ClassLoader robolectricClassLoader;
   private final ShadowInvalidator shadowInvalidator;
-  public final Map<ShadowMap, ShadowWrangler> classHandlersByShadowMap = new HashMap<>();
+  public final Map<ShadowMap, ClassHandler> classHandlersByShadowMap = new LruCacheHashMap<>(10);
   private ShadowMap shadowMap = ShadowMap.EMPTY;
   private ResourceLoader systemResourceLoader;
 

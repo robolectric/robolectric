@@ -18,13 +18,8 @@ public class InstrumentingClassLoaderFactory {
   /** We need to set the cache size of class loaders more than the number of supported APIs as different tests may have different configurations. */
   private static final int CACHE_SIZE = SdkConfig.getSupportedApis().size() * CACHE_SIZE_FACTOR;
 
-  // Simple LRU Cache. SdkEnvironments are unique across InstrumentingClassloaderConfig and SdkConfig
-  private static final LinkedHashMap<Pair<InstrumentationConfiguration, SdkConfig>, SdkEnvironment> sdkToEnvironment = new LinkedHashMap<Pair<InstrumentationConfiguration, SdkConfig>, SdkEnvironment>() {
-    @Override
-    protected boolean removeEldestEntry(Map.Entry<Pair<InstrumentationConfiguration, SdkConfig>, SdkEnvironment> eldest) {
-      return size() > CACHE_SIZE;
-    }
-  };
+  // SdkEnvironments are unique across InstrumentingClassloaderConfig and SdkConfig
+  private static final Map<Pair<InstrumentationConfiguration, SdkConfig>, SdkEnvironment> sdkToEnvironment = new LruCacheHashMap<>(CACHE_SIZE);
 
   private final InstrumentationConfiguration instrumentationConfig;
   private final DependencyResolver dependencyResolver;
