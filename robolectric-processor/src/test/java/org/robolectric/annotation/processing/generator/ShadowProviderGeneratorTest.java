@@ -27,7 +27,7 @@ public class ShadowProviderGeneratorTest {
   @Before
   public void setUp() throws Exception {
     model = mock(RobolectricModel.class);
-    generator = new ShadowProviderGenerator(model, mock(ProcessingEnvironment.class), true);
+    generator = new ShadowProviderGenerator(model, mock(ProcessingEnvironment.class), true, "Base");
     writer = new StringWriter();
   }
 

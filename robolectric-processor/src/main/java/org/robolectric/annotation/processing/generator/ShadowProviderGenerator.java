@@ -29,14 +29,16 @@ public class ShadowProviderGenerator extends Generator {
   private final Elements elements;
   private final RobolectricModel model;
   private final boolean shouldInstrumentPackages;
+  private final String tier;
 
   public ShadowProviderGenerator(RobolectricModel model, ProcessingEnvironment environment, 
-      boolean shouldInstrumentPackages) {
+      boolean shouldInstrumentPackages, String tier) {
     this.messager = environment.getMessager();
     this.elements = environment.getElementUtils();
     this.filer = environment.getFiler();
     this.model = model;
     this.shouldInstrumentPackages = shouldInstrumentPackages;
+    this.tier = tier;
   }
 
   @Override
@@ -175,6 +177,10 @@ public class ShadowProviderGenerator extends Generator {
     writer.println("    return new String[] {" + providedPackages + "};");
     writer.println("  }");
 
+    writer.println("  @Override");
+    writer.println("  public Tier getTier() {");
+    writer.println("    return Tier." + tier + ";");
+    writer.println("  }");
     writer.println('}');
   }
 }

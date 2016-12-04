@@ -35,7 +35,8 @@ class ShadowsPlugin implements Plugin<Project> {
                 options.compilerArgs.addAll(
                         "-proc:only",
                         "-processor", "org.robolectric.annotation.processing.RobolectricProcessor",
-                        "-Aorg.robolectric.annotation.processing.shadowPackage=${project.shadows.packageName}"
+                        "-Aorg.robolectric.annotation.processing.shadowPackage=${project.shadows.packageName}",
+                        "-Aorg.robolectric.annotation.processing.shadowProviderTier=Base"
                 )
             }
 
